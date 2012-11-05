@@ -85,9 +85,8 @@ public class ChromeManagerAccessor implements ExtensionManagerAccessor {
     private static final String NO_WEB_STORE_SWITCH=
             "netbeans.extbrowser.manual_chrome_plugin_install"; // NOI18N
     
-    // XXX: change it to the real plugin url for FCS
     private static final String PLUGIN_PAGE= 
-            "https://chrome.google.com/webstore/detail/icpgjfneehieebagbmdbhnlpiopdcmna?utm_campaign=en&utm_source=en-et-na-us-oc-webstrhm";// NOI18N
+            "https://chrome.google.com/webstore/detail/netbeans-connector/ehdgmbjjaocpjdnapfadcldificeaaki"; //NOI18N
 
     /* (non-Javadoc)
      * @see org.netbeans.modules.web.plugins.ExtensionManagerAccessor#getManager()
@@ -106,9 +105,12 @@ public class ChromeManagerAccessor implements ExtensionManagerAccessor {
         
         private static final String STATE = "\"state\":";                       // NOI18N
         
-        private static final String PLUGIN_NAME = "NetBeans IDE Support Plugin";// NOI18N
+        // keeping old name for a while; after most of users upgraded to new plugin we can remove this:
+        private static final String PLUGIN_OLD_NAME = "NetBeans IDE Support Plugin";// NOI18N
         
-        private static final String EXTENSION_PATH = "modules/lib/netbeans-ros-chrome-plugin.crx"; // NOI18N
+        private static final String PLUGIN_NAME = "NetBeans Connector";// NOI18N
+        
+        private static final String EXTENSION_PATH = "modules/lib/netbeans-chrome-connector.crx"; // NOI18N
 
         /* (non-Javadoc)
          * @see org.netbeans.modules.web.plugins.ExtensionManagerAccessor.BrowserExtensionManager#isInstalled()
@@ -165,7 +167,7 @@ public class ChromeManagerAccessor implements ExtensionManagerAccessor {
                         return ExtensionManager.ExtensitionStatus.INSTALLED;
                     }
                     JSONObject manifest = (JSONObject)extension.get("manifest");
-                    if (manifest != null && PLUGIN_NAME.equals((String)manifest.get("name"))) {
+                    if (manifest != null && (PLUGIN_NAME.equals((String)manifest.get("name")) || PLUGIN_OLD_NAME.equals((String)manifest.get("name"))) ) {
                         String version = (String)manifest.get("version");
                         if (isUpdateRequired( version )){
                             return ExtensionManager.ExtensitionStatus.NEEDS_UPGRADE;
@@ -313,6 +315,11 @@ public class ChromeManagerAccessor implements ExtensionManagerAccessor {
                 String localAppData = System.getenv("LOCALAPPDATA");                // NOI18N
                 if (localAppData != null) {
                     result.add(localAppData+"\\Google\\Chrome\\User Data");
+                } else {
+                    localAppData = Utils.getLOCALAPPDATAonWinXP();
+                    if (localAppData != null) {
+                        result.add(localAppData+"\\Google\\Chrome\\User Data");
+                    }
                 }
                 String appData = System.getenv("APPDATA");                // NOI18N
                 if (appData != null) {
@@ -320,10 +327,14 @@ public class ChromeManagerAccessor implements ExtensionManagerAccessor {
                     File f = new File(appData);
                     if (f.exists()) {
                         String fName = f.getName();
+                        // #219824 - below code will not work on some localized WinXP where
+                        //    "Local Settings" name might be "Lokale Einstellungen";
+                        //     no harm if we try though:
                         f = new File(f.getParentFile(),"Local Settings");
                         f = new File(f, fName);
-                        if (f.exists())
+                        if (f.exists()) {
                             result.add(f.getPath()+"\\Google\\Chrome\\User Data");
+                        }
                     }
                 }
                 return result.toArray(new String[result.size()]);
@@ -335,7 +346,7 @@ public class ChromeManagerAccessor implements ExtensionManagerAccessor {
                 return Utils.getUserPaths("/.config/google-chrome", "/.config/chrome");// NOI18N
             }
         }
-        
+
         private boolean manualInstallPluginDialog( PluginLoader loader,
                 ExtensionManager.ExtensitionStatus currentStatus,
                 File extensionFile ) throws IOException

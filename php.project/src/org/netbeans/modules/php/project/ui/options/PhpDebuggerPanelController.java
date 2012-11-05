@@ -61,7 +61,7 @@ import org.openide.util.NbBundle;
 )
 public class PhpDebuggerPanelController extends BaseOptionsPanelController {
 
-    public static final String ID = "Debugger";
+    public static final String ID = "Debugger"; // NOI18N
 
     private PhpDebuggerPanel debuggerPanel = null;
 

@@ -1,7 +1,10 @@
 #! /bin/bash -x
 
-#base=/net/endif/export/home1/deimos/dev/spb/vk155633/netbeans.src/trunk/cnd/
-base=/home/vv159170/trunk/cnd
+#
+# Copyright (c) 2009, 2012, Oracle and/or its affiliates. All rights reserved.
+#
+
+base="<change-me>"
 module=${base}/modelimpl
 unit=${module}/test/unit
 

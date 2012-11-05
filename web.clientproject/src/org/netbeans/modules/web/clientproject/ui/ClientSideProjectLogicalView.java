@@ -52,6 +52,8 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.Action;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
@@ -90,8 +92,8 @@ import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.WeakSet;
 import org.openide.util.actions.SystemAction;
-import org.openide.util.lookup.Lookups;
-import org.openide.util.lookup.ProxyLookup;
+import org.openide.util.lookup.AbstractLookup;
+import org.openide.util.lookup.InstanceContent;
 
 @ActionReferences({
     @ActionReference(
@@ -101,7 +103,9 @@ import org.openide.util.lookup.ProxyLookup;
 })
 public class ClientSideProjectLogicalView implements LogicalViewProvider {
 
-    private ClientSideProject project;
+    static final Logger LOGGER = Logger.getLogger(ClientSideProjectLogicalView.class.getName());
+
+    private final ClientSideProject project;
 
     public ClientSideProjectLogicalView(ClientSideProject project) {
         this.project = project;
@@ -109,20 +113,7 @@ public class ClientSideProjectLogicalView implements LogicalViewProvider {
 
     @Override
     public Node createLogicalView() {
-        try {
-            FileObject root = project.getProjectDirectory();
-
-            DataFolder df =
-                    DataFolder.findFolder(root);
-
-            Node node = df.getNodeDelegate();
-
-            return new ClientSideProjectNode(node, project);
-
-        } catch (DataObjectNotFoundException e) {
-            Exceptions.printStackTrace(e);
-            return new AbstractNode(Children.LEAF);
-        }
+        return new ClientSideProjectNode(project);
     }
 
     @Override
@@ -216,19 +207,71 @@ public class ClientSideProjectLogicalView implements LogicalViewProvider {
 
 
 /** This is the node you actually see in the project tab for the project */
-    private static final class ClientSideProjectNode extends FilterNode {
+    private static final class ClientSideProjectNode extends AbstractNode {
 
         final ClientSideProject project;
 
-        public ClientSideProjectNode(Node node, ClientSideProject project) throws DataObjectNotFoundException {
-            super(node, new ClientSideProjectChildren(project),
-                    //The projects system wants the project in the Node's lookup.
-                    //NewAction and friends want the original Node's lookup.
-                    //Make a merge of both
-                    new ProxyLookup(new Lookup[]{Lookups.singleton(project),
-                        node.getLookup()
-                    }));
+        public ClientSideProjectNode(ClientSideProject project) {
+            super(new ClientSideProjectChildren(project), createLookup(project));
             this.project = project;
+        }
+
+        private static Lookup createLookup(ClientSideProject project) {
+            final InstanceContent instanceContent = new InstanceContent();
+            instanceContent.add(project);
+            instanceContent.add(project, new InstanceContent.Convertor<ClientSideProject, FileObject>() {
+                @Override
+                public FileObject convert(ClientSideProject obj) {
+                    return obj.getProjectDirectory();
+                }
+
+                @Override
+                public Class<? extends FileObject> type(ClientSideProject obj) {
+                    return FileObject.class;
+                }
+
+                @Override
+                public String id(ClientSideProject obj) {
+                    final FileObject fo = obj.getProjectDirectory();
+                    return fo == null ? "" : fo.getPath();  // NOI18N
+                }
+
+                @Override
+                public String displayName(ClientSideProject obj) {
+                    return obj.toString();
+                }
+
+            });
+            instanceContent.add(project, new InstanceContent.Convertor<ClientSideProject, DataObject>() {
+                @Override
+                public DataObject convert(ClientSideProject obj) {
+                    try {
+                        final FileObject fo = obj.getProjectDirectory();
+                        return fo == null ? null : DataObject.find(fo);
+                    } catch (DataObjectNotFoundException ex) {
+                        LOGGER.log(Level.WARNING, null, ex);
+                        return null;
+                    }
+                }
+
+                @Override
+                public Class<? extends DataObject> type(ClientSideProject obj) {
+                    return DataObject.class;
+                }
+
+                @Override
+                public String id(ClientSideProject obj) {
+                    final FileObject fo = obj.getProjectDirectory();
+                    return fo == null ? "" : fo.getPath();  // NOI18N
+                }
+
+                @Override
+                public String displayName(ClientSideProject obj) {
+                    return obj.toString();
+                }
+
+            });
+            return new AbstractLookup(instanceContent);
         }
 
         @Override
@@ -290,15 +333,9 @@ public class ClientSideProjectLogicalView implements LogicalViewProvider {
     }
     private static class ClientSideProjectChildren extends Children.Keys<BasicNodes> {
 
-        // XXX threading! for all fields
         private ClientSideProject project;
         private final FileObject nbprojectFolder;
-        private FileObject siteRootFolder;
-        private FileObject testsFolder;
-        private FileObject configFolder;
-        private boolean siteRootFolderEmpty;
-        private boolean testsFolderEmpty;
-        private boolean configFolderEmpty;
+        private Listener listener;
 
         public ClientSideProjectChildren(ClientSideProject p) {
             this.project = p;
@@ -311,145 +348,66 @@ public class ClientSideProjectLogicalView implements LogicalViewProvider {
                     updateKeys();
                 }
             });
-            siteRootFolder = project.getSiteRootFolder();
-            siteRootFolderEmpty = siteRootFolder != null && siteRootFolder.getChildren().length == 0;
-            testsFolder = project.getTestsFolder();
-            testsFolderEmpty = testsFolder != null && testsFolder.getChildren().length == 0;
-            configFolder = project.getConfigFolder();
-            configFolderEmpty = configFolder != null && configFolder.getChildren().length == 0;
-            project.getEvaluator().addPropertyChangeListener(new PropertyChangeListener() {
-                @Override
-                public void propertyChange(PropertyChangeEvent evt) {
-                    if (ClientSideProjectConstants.PROJECT_SITE_ROOT_FOLDER.equals(evt.getPropertyName())) {
-                        refreshKeyInAWT(BasicNodes.Sources);
-                    }
-                    if (ClientSideProjectConstants.PROJECT_TEST_FOLDER.equals(evt.getPropertyName())) {
-                        // XXX refactor
-                        testsFolder = project.getTestsFolder();
-                        testsFolderEmpty = testsFolder != null && testsFolder.getChildren().length == 0;
-                        refreshKeyInAWT(BasicNodes.Tests);
-                        // refresh sources as well, they can contain tests
-                        refreshKeyInAWT(BasicNodes.Sources);
-                    }
-                    if (ClientSideProjectConstants.PROJECT_CONFIG_FOLDER.equals(evt.getPropertyName())) {
-                        // XXX refactor
-                        configFolder = project.getConfigFolder();
-                        configFolderEmpty = configFolder != null && configFolder.getChildren().length == 0;
-                        refreshKeyInAWT(BasicNodes.Configuration);
-                        // refresh sources as well, they can contain config
-                        refreshKeyInAWT(BasicNodes.Sources);
-                    }
-                }
-            });
+            listener = new Listener();
+            project.getEvaluator().addPropertyChangeListener(listener);
+            project.getProjectDirectory().addRecursiveListener(listener);
+        }
 
-            // XXX: refactor listening; it is ugly!!
-            project.getProjectDirectory().addRecursiveListener(new FileChangeAdapter() {
-                @Override
-                public void fileFolderCreated(FileEvent fe) {
-                    if (siteRootFolder == null) {
-                        siteRootFolder = project.getSiteRootFolder();
-                        if (siteRootFolder != null) {
-                            refreshKeyInAWT(BasicNodes.Sources);
-                        }
-                    } else if (siteRootFolderEmpty) {
-                        siteRootFolderEmpty = siteRootFolder.getChildren().length == 0;
-                        if (!siteRootFolderEmpty) {
-                            refreshKeyInAWT(BasicNodes.Sources);
-                        }
-                    }
-                    if (testsFolder == null) {
-                        testsFolder = project.getTestsFolder();
-                        if (testsFolder != null) {
-                            refreshKeyInAWT(BasicNodes.Tests);
-                        }
-                    } else if (testsFolderEmpty) {
-                        testsFolderEmpty = testsFolder.getChildren().length == 0;
-                        if (!testsFolderEmpty) {
-                            refreshKeyInAWT(BasicNodes.Tests);
-                        }
-                    }
-                    if (configFolder == null) {
-                        configFolder = project.getConfigFolder();
-                        if (configFolder != null) {
-                            refreshKeyInAWT(BasicNodes.Configuration);
-                        }
-                    } else if (configFolderEmpty) {
-                        configFolderEmpty = configFolder.getChildren().length == 0;
-                        if (!configFolderEmpty) {
-                            refreshKeyInAWT(BasicNodes.Configuration);
-                        }
-                    }
-                }
+        private class Listener extends FileChangeAdapter implements PropertyChangeListener {
 
-                @Override
-                public void fileDataCreated(FileEvent fe) {
-                    if (siteRootFolder != null && siteRootFolderEmpty) {
-                        siteRootFolderEmpty = siteRootFolder.getChildren().length == 0;
-                        if (!siteRootFolderEmpty) {
-                            refreshKeyInAWT(BasicNodes.Sources);
-                        }
-                    }
-                    if (testsFolder != null && testsFolderEmpty) {
-                        testsFolderEmpty = testsFolder.getChildren().length == 0;
-                        if (!testsFolderEmpty) {
-                            refreshKeyInAWT(BasicNodes.Tests);
-                        }
-                    }
-                    if (configFolder != null && configFolderEmpty) {
-                        configFolderEmpty = configFolder.getChildren().length == 0;
-                        if (!configFolderEmpty) {
-                            refreshKeyInAWT(BasicNodes.Configuration);
-                        }
-                    }
-                }
+            private boolean sourcesNodeHidden;
+            private boolean testsNodeHidden;
+            private boolean configNodeHidden;
+
+            public Listener() {
+                sourcesNodeHidden = isNodeHidden(BasicNodes.Sources);
+                testsNodeHidden = isNodeHidden(BasicNodes.Tests);
+                configNodeHidden = isNodeHidden(BasicNodes.Configuration);
+            }
+
+            @Override
+            public void fileFolderCreated(FileEvent fe) {
+                updateNodes();
+            }
+
+            @Override
+            public void fileDataCreated(FileEvent fe) {
+                updateNodes();
+            }
 
 
-                @Override
-                public void fileDeleted(FileEvent fe) {
-                    if (siteRootFolder != null) {
-                        if (!siteRootFolder.isValid()) {
-                            siteRootFolder = null;
-                            siteRootFolderEmpty = true;
-                            refreshKeyInAWT(BasicNodes.Sources);
-                        } else {
-                            if (!siteRootFolderEmpty) {
-                                siteRootFolderEmpty = siteRootFolder.getChildren().length == 0;
-                                if (siteRootFolderEmpty) {
-                                    refreshKeyInAWT(BasicNodes.Sources);
-                                }
-                            }
-                        }
-                    }
-                    if (testsFolder != null) {
-                        if (!testsFolder.isValid()) {
-                            testsFolder = null;
-                            testsFolderEmpty = true;
-                            refreshKeyInAWT(BasicNodes.Tests);
-                        } else {
-                            if (!testsFolderEmpty) {
-                                testsFolderEmpty = testsFolder.getChildren().length == 0;
-                                if (testsFolderEmpty) {
-                                    refreshKeyInAWT(BasicNodes.Tests);
-                                }
-                            }
-                        }
-                    }
-                    if (configFolder != null) {
-                        if (!configFolder.isValid()) {
-                            configFolder = null;
-                            configFolderEmpty = true;
-                            refreshKeyInAWT(BasicNodes.Configuration);
-                        } else {
-                            if (!configFolderEmpty) {
-                                configFolderEmpty = configFolder.getChildren().length == 0;
-                                if (configFolderEmpty) {
-                                    refreshKeyInAWT(BasicNodes.Configuration);
-                                }
-                            }
-                        }
-                    }
+            @Override
+            public void fileDeleted(FileEvent fe) {
+                updateNodes();
+            }
+
+            @Override
+            public void propertyChange(PropertyChangeEvent evt) {
+                if (ClientSideProjectConstants.PROJECT_SITE_ROOT_FOLDER.equals(evt.getPropertyName()) ||
+                    ClientSideProjectConstants.PROJECT_TEST_FOLDER.equals(evt.getPropertyName()) ||
+                    ClientSideProjectConstants.PROJECT_CONFIG_FOLDER.equals(evt.getPropertyName())) {
+                    updateNodes();
                 }
-            });
+            }
+
+            private void updateNodes() {
+                boolean nodeHidden = isNodeHidden(BasicNodes.Sources);
+                if (nodeHidden != sourcesNodeHidden) {
+                    sourcesNodeHidden = nodeHidden;
+                    refreshKeyInAWT(BasicNodes.Sources);
+                }
+                nodeHidden = isNodeHidden(BasicNodes.Tests);
+                if (nodeHidden != testsNodeHidden) {
+                    testsNodeHidden = nodeHidden;
+                    refreshKeyInAWT(BasicNodes.Tests);
+                }
+                nodeHidden = isNodeHidden(BasicNodes.Configuration);
+                if (nodeHidden != configNodeHidden) {
+                    configNodeHidden = nodeHidden;
+                    refreshKeyInAWT(BasicNodes.Configuration);
+                }
+            }
+
         }
 
         private void refreshKeyInAWT(final BasicNodes type) {
@@ -465,13 +423,13 @@ public class ClientSideProjectLogicalView implements LogicalViewProvider {
         protected Node[] createNodes(BasicNodes k) {
             switch (k) {
                 case Sources:
-                    return createNodeForFolder(k, project.getSiteRootFolder(), getIgnoredFiles(k));
+                    return createNodeForFolder(k);
                 case Tests:
-                    return createNodeForFolder(k, project.getTestsFolder(), getIgnoredFiles(k));
+                    return createNodeForFolder(k);
                 case RemoteFiles:
                     return new Node[]{new RemoteFilesNode(project)};
                 case Configuration:
-                    return createNodeForFolder(k, project.getConfigFolder(), getIgnoredFiles(k));
+                    return createNodeForFolder(k);
                 default:
                     return new Node[0];
             }
@@ -507,11 +465,32 @@ public class ClientSideProjectLogicalView implements LogicalViewProvider {
             }
         }
 
-        private Node[] createNodeForFolder(BasicNodes type, FileObject root, List<File> ignoreList) {
+        private boolean isNodeHidden(BasicNodes type) {
+            FileObject root = getRootForNode(type);
             if (root != null && root.isValid()) {
                 DataFolder df = DataFolder.findFolder(root);
                 if (df.getChildren().length > 0 || type == BasicNodes.Sources) {
-                    return new Node[]{new FolderFilterNode(type, df.getNodeDelegate(), ignoreList)};
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        private FileObject getRootForNode(BasicNodes node) {
+            switch (node) {
+                case Configuration: return project.getConfigFolder();
+                case Tests: return project.getTestsFolder();
+                case Sources: return project.getSiteRootFolder();
+                default: assert false; return null;
+            }
+        }
+
+        private Node[] createNodeForFolder(BasicNodes type) {
+            FileObject root = getRootForNode(type);
+            if (root != null && root.isValid()) {
+                DataFolder df = DataFolder.findFolder(root);
+                if (!isNodeHidden(type)) {
+                    return new Node[]{new FolderFilterNode(type, df.getNodeDelegate(), getIgnoredFiles(type))};
                 }
             }
             // missing root should be solved by project problems

@@ -3,9 +3,9 @@
 <filesystem>
     <folder name="Windows2">
         <folder name="Groups">
-            <file name="RuleEditor.wsgrp" url="RuleEditor.wsgrp"/>
-            <folder name="RuleEditor">
-                <file name="RuleEditorTC.wstcgrp" url="RuleEditorTC.xml"/>
+            <file name="CssStyles.wsgrp" url="CssStyles.wsgrp"/>
+            <folder name="CssStyles">
+                <file name="CssStylesTC.wstcgrp" url="CssStylesTC.xml"/>
             </folder>
         </folder>
     </folder>

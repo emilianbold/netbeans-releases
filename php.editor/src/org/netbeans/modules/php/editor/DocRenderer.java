@@ -150,7 +150,10 @@ class DocRenderer {
         if (canBeProcessed(indexedElement)) {
             FileObject nextFo = indexedElement.getFileObject();
             try {
-                ParserManager.parse(Collections.singleton(Source.create(nextFo)), new PHPDocExtractor(header, phpDoc, indexedElement));
+                Source source = Source.create(nextFo);
+                if (source != null) {
+                    ParserManager.parse(Collections.singleton(source), new PHPDocExtractor(header, phpDoc, indexedElement));
+                }
             } catch (ParseException ex) {
                 Exceptions.printStackTrace(ex);
             }

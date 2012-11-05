@@ -1,18 +1,10 @@
-[[36,60]-Syntax error:
-expected: exit, if, identifier, variable, echo, do, while, for, foreach, declare, switch, break, continue, function, const, return, try, throw, use, global, unset, isset, empty, class, interface, array, {, include, include_once, eval, require, require_once, print, ';', +, -, !, ~, ++, --, @, [, new, static, abstract, final, (, $] 36-60:Syntax error:
-expected: exit, if, identifier, variable, echo, do, while, for, foreach, declare, switch, break, continue, function, const, return, try, throw, use, global, unset, isset, empty, class, interface, array, {, include, include_once, eval, require, require_once, print, ';', +, -, !, ~, ++, --, @, [, new, static, abstract, final, (, $
-[[36,60]-Syntax error:
-expected: exit, if, identifier, variable, echo, do, while, for, foreach, declare, switch, break, continue, function, const, return, try, throw, use, global, unset, isset, empty, class, interface, array, {, include, include_once, eval, require, require_once, print, ';', +, -, !, ~, ++, --, @, [, new, static, abstract, final, (, $] 36-60:Syntax error:
-expected: exit, if, identifier, variable, echo, do, while, for, foreach, declare, switch, break, continue, function, const, return, try, throw, use, global, unset, isset, empty, class, interface, array, {, include, include_once, eval, require, require_once, print, ';', +, -, !, ~, ++, --, @, [, new, static, abstract, final, (, $
-[[36,60]-Syntax error:
-expected: exit, if, identifier, variable, echo, do, while, for, foreach, declare, switch, break, continue, function, const, return, try, throw, use, global, unset, isset, empty, class, interface, array, {, include, include_once, eval, require, require_once, print, ';', +, -, !, ~, ++, --, @, [, new, static, abstract, final, (, $] 36-60:Syntax error:
-expected: exit, if, identifier, variable, echo, do, while, for, foreach, declare, switch, break, continue, function, const, return, try, throw, use, global, unset, isset, empty, class, interface, array, {, include, include_once, eval, require, require_once, print, ';', +, -, !, ~, ++, --, @, [, new, static, abstract, final, (, $
-[[36,60]-Syntax error:
-expected: function, static, private, protected, public] 36-60:Syntax error:
-expected: function, static, private, protected, public
-[[36,60]-Syntax error: unexpected: $canNotBe2
-expected: function, const, use, var, }, static, abstract, final, private, protected, public] 36-60:Syntax error: unexpected: $canNotBe2
-expected: function, const, use, var, }, static, abstract, final, private, protected, public
-[[36,60]-Syntax error: unexpected: $canNotBe2
-expected: function, static, private, protected, public] 36-60:Syntax error: unexpected: $canNotBe2
-expected: function, static, private, protected, public
+[[49,59]-Syntax error
+ unexpected:	variable '$canNotBe2'
+ after:	abstract
+ expected:	function, static, private, protected, public] 49-59:Syntax error
+ unexpected:	variable '$canNotBe2'
+ after:	abstract
+ expected:	function, static, private, protected, public
+[[62,63]-POSSIBLE Syntax Error (check preceding valid syntax error)
+ unexpected:	}] 62-63:POSSIBLE Syntax Error (check preceding valid syntax error)
+ unexpected:	}

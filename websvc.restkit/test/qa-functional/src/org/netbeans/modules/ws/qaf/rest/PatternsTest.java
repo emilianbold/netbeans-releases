@@ -50,7 +50,6 @@ import junit.framework.Test;
 import org.netbeans.jellytools.*;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jemmy.operators.*;
-import org.netbeans.modules.ws.qaf.utilities.RestWizardOperator;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
@@ -249,33 +248,6 @@ public class PatternsTest extends RestTestBase {
         Set<File> files = createWsFromPatterns(name, Pattern.CcContainerItem, MimeType.TEXT_HTML);
     }
 
-    /**
-     * Make sure all REST services nodes are visible in project log. view
-     */
-    public void testNodes() {
-        Node restNode = getRestNode();
-        int expectedCount = 0;
-        switch (getJavaEEversion()) {
-            case JAVAEE5 :
-                if (getProjectType().isAntBasedProject()) {
-                    expectedCount = 22;
-                } else {
-                    expectedCount = 15;
-                }
-                break;
-            case JAVAEE6:
-                if (getProjectType().isAntBasedProject()) {
-                    expectedCount = 20;
-                } else {
-                    expectedCount = 20;
-                }
-                break;
-        }
-        assertEquals("missing nodes?", expectedCount, restNode.getChildren().length); //NOI18N
-        restNode.tree().clickOnPath(restNode.getTreePath(), 2);
-        assertTrue("Node not collapsed", restNode.isCollapsed());
-    }
-
     private Set<File> createWsFromPatterns(String name, Pattern pattern, MimeType mimeType) {
         //RESTful Web Services from Patterns
         String patternsTypeName = Bundle.getStringTrimmed("org.netbeans.modules.websvc.rest.wizard.Bundle", "Templates/WebServices/RestServicesFromPatterns");
@@ -284,25 +256,11 @@ public class PatternsTest extends RestTestBase {
         new JRadioButtonOperator(wo, pattern.ordinal()).changeSelection(true);
         wo.next();
         wo.stepsWaitSelectedValue("Specify Resource Classes");
-        wo = new RestWizardOperator(patternsTypeName);
         //set resource package
         JComboBoxOperator jcbo = new JComboBoxOperator(wo, new Pkg());
         jcbo.clickMouse();
         jcbo.clearText();
         jcbo.typeText(getRestPackage());
-
-        if (!getProjectType().isAntBasedProject() && Pattern.CcContainerItem.equals(pattern)) {
-            //set resource class name
-            JTextFieldOperator jtfo = new JTextFieldOperator(wo, new ClsName());
-            jtfo.clickMouse();
-            jtfo.clearText();
-            jtfo.typeText("ItemResource_1"); //NOI18N
-            //set container resource class name
-            jtfo = new JTextFieldOperator(wo, new CClsName());
-            jtfo.clickMouse();
-            jtfo.clearText();
-            jtfo.typeText("ItemsResource_1"); //NOI18N
-        }
 
         if (name != null) {
             //we're not using Defs when name != null !!!
@@ -375,7 +333,9 @@ public class PatternsTest extends RestTestBase {
         if (useJerseyCheckBox != null) {
             new JCheckBoxOperator(useJerseyCheckBox).setSelected(true);
         }
-        wo.finish();
+        wo.btFinish().requestFocus();
+        wo.btFinish().pushNoBlock();
+        closeResourcesConfDialog();
         String progressDialogTitle = Bundle.getStringTrimmed("org.netbeans.modules.websvc.rest.wizard.Bundle", "LBL_RestServicesFromPatternsProgress");
         waitDialogClosed(progressDialogTitle);
         Set<File> createdFiles = new HashSet<File>();
@@ -407,6 +367,7 @@ public class PatternsTest extends RestTestBase {
                 break;
         }
         closeCreatedFiles(createdFiles);
+        checkNodes(createdFiles);
         checkFiles(createdFiles);
         return createdFiles;
     }
@@ -423,6 +384,13 @@ public class PatternsTest extends RestTestBase {
         for (File f : files) {
             EditorOperator eo = new EditorOperator(f.getName());
             eo.close();
+        }
+    }
+    
+    private void checkNodes(Set<File> files) {
+        Node restNode = getRestNode();
+        for (File f : files) {
+            Node node = new Node(restNode, f.getName().replace(".java", ""));
         }
     }
 
@@ -444,7 +412,6 @@ public class PatternsTest extends RestTestBase {
                 "testContainerI3", //NOI18N
                 "testCcContainerI2", //NOI18N
                 "testCcContainerI3", //NOI18N
-                "testNodes", //NOI18N
                 "testDeploy", //NOI18N
                 "testUndeploy" //NOI18N
                 );

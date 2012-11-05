@@ -623,14 +623,8 @@ public class ChildrenKeysTest extends NbTestCase {
             if (k.removeNotify == 1) {
                 break;
             }
-            try {
-                ref = new WeakReference(root.getChildren().getEntrySupport());
-                assertGC("Stimulate GC activity", ref);
-            } catch (AssertionFailedError err) {
-                // OK, entry support cannot be GCed
-                continue;
-            }
-            fail("assertGC shall fail before");
+            ref = new WeakReference(root.getChildren().getEntrySupport());
+            assertNotGC("Stimulate GC activity", ref);
         }
 
         assertEquals("Remove notify is being called", 1, k.removeNotify);
@@ -2463,6 +2457,12 @@ public class ChildrenKeysTest extends NbTestCase {
         K ch2 = new K(lazy(), "c", "d");
         addNotifyForbidden.set(true);
         root.setChildren(ch2);
+    }
+
+    private static void assertNotGC(String msg, Reference ref) {
+        System.gc();
+        System.runFinalization();
+        assertNotNull(msg, ref);
     }
     
     /** Sample keys.

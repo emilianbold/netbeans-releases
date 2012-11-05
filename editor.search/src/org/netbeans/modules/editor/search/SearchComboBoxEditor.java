@@ -58,6 +58,7 @@ import javax.swing.text.*;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.editor.EditorUI;
 import org.netbeans.editor.MultiKeymap;
+import org.netbeans.editor.ext.ExtKit;
 import org.netbeans.lib.editor.util.swing.DocumentListenerPriority;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 import org.openide.util.Exceptions;
@@ -154,8 +155,9 @@ public class SearchComboBoxEditor implements ComboBoxEditor {
 
         editorPane.setEditorKit(kit);
 
-        ActionInvoker.putActionToComponent(new ActionInvoker(SearchNbEditorKit.INCREMENTAL_SEARCH_FORWARD, editorPane), editorPane);
+        ActionInvoker.putActionToComponent(new ActionInvoker(SearchNbEditorKit.SEARCH_ACTION, editorPane), editorPane);
         ActionInvoker.putActionToComponent(new ActionInvoker(SearchNbEditorKit.REPLACE_ACTION, editorPane), editorPane);
+        ActionInvoker.putActionToComponent(new ActionInvoker(ExtKit.gotoAction, editorPane), editorPane);
 
         InputMap im = editorPane.getInputMap();
         im.put(KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), NO_ACTION);

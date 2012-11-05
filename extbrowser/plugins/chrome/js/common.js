@@ -575,7 +575,8 @@ NetBeans_ViewPort = {
     width: -1,
     height: -1,
     marginWidth: 0,
-    marginHeight: 0
+    marginHeight: 0,
+    isMac: false
 };
 
 /**

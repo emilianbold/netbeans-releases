@@ -30,12 +30,9 @@
  */
 package org.netbeans.modules.html.editor.gsf.embedding;
 
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-import org.netbeans.modules.css.editor.api.CssCslParserResult;
+import org.netbeans.modules.css.lib.api.CssParserResult;
 import org.netbeans.modules.html.editor.test.TestBase;
 import org.netbeans.modules.parsing.api.Embedding;
 import org.netbeans.modules.parsing.api.ParserManager;
@@ -44,7 +41,6 @@ import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.spi.Parser.Result;
-import org.netbeans.modules.parsing.spi.SchedulerTask;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -83,7 +79,7 @@ public class CssEmbeddingProviderTest extends TestBase {
             @Override
             public void run(ResultIterator resultIterator) throws Exception {
                 Result parserResult = resultIterator.getParserResult(caret);
-                assert parserResult instanceof CssCslParserResult;
+                assert parserResult instanceof CssParserResult;
             }
         });
         

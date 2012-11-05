@@ -42,6 +42,7 @@
 package org.netbeans.modules.web.webkit.debugging.spi;
 
 import org.json.simple.JSONObject;
+import org.netbeans.modules.web.webkit.debugging.api.TransportStateException;
 
 /**
  * WebKit response.
@@ -49,12 +50,20 @@ import org.json.simple.JSONObject;
 public final class Response {
     
     private JSONObject response;
+    private TransportStateException transportEx;
 
     public Response(JSONObject reponse) {
         this.response = reponse;
     }
     
+    public Response(TransportStateException transportEx) {
+        this.transportEx = transportEx;
+    }
+    
     public int getID() {
+        if (response == null) {
+            return -1;
+        }
         Object o = response.get(Command.COMMAND_ID);
         if (o == null) {
             return -1;
@@ -64,24 +73,41 @@ public final class Response {
     }
 
     public JSONObject getResult() {
+        if (response == null) {
+            return null;
+        }
         return (JSONObject)response.get(Command.COMMAND_RESULT);
     }
 
     public String getMethod() {
+        if (response == null) {
+            return null;
+        }
         return (String)response.get(Command.COMMAND_METHOD);
     }
 
     public JSONObject getParams() {
+        if (response == null) {
+            return null;
+        }
         return (JSONObject)response.get(Command.COMMAND_PARAMS);
     }
 
     public JSONObject getResponse() {
         return response;
     }
+    
+    public TransportStateException getException() {
+        return transportEx;
+    }
 
     @Override
     public String toString() {
-        return response.toJSONString();
+        if (response != null) {
+            return response.toJSONString();
+        } else {
+            return transportEx.toString();
+        }
     }
 
     

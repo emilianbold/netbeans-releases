@@ -46,6 +46,7 @@ package org.netbeans.modules.spellchecker.options;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import javax.swing.JComponent;
+import org.netbeans.api.options.OptionsDisplayer;
 import org.netbeans.spi.options.OptionsPanelController;
 import org.netbeans.spi.options.OptionsPanelController.SubRegistration;
 import org.openide.util.HelpCtx;
@@ -56,8 +57,7 @@ import org.openide.util.Lookup;
  * @author Jan Lahoda
  */
 @SubRegistration(
-    location="Editor",
-    id="Spellchecker",
+    location=OptionsDisplayer.EDITOR,
     position=750,
     displayName="#TITLE_OptionsPanel",
     keywords="#KW_SpellcheckerOptions",

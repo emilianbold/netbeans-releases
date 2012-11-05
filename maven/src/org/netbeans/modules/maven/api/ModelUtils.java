@@ -311,10 +311,10 @@ public final class ModelUtils {
      * @return 
      */
     public static Descriptor checkLibraries(Library library) {
-        return checkLibraries(library.getProperties(), library.getContent("maven-pom"));
+        return checkLibraries(library.getProperties());
     }
     //for tests
-    static Descriptor checkLibraries(Map<String, String> properties, List<URL> volume) {
+    static Descriptor checkLibraries(Map<String, String> properties) {
         List<LibraryDescriptor> libs = new ArrayList<LibraryDescriptor>();
         List<RepositoryDescriptor> reps = new ArrayList<RepositoryDescriptor>();
                 
@@ -345,24 +345,7 @@ public final class ModelUtils {
                     reps.add(new RepositoryDescriptor(rep[0], rep[1]));
                 }
             }
-        } else {
-            for (URL pom : volume) {
-                LibraryDescriptor ld = checkLibrary(pom);
-                if (ld != null) {
-                    libs.add(ld);
-                }
-            }
-            //now come up with repositories
-            for (LibraryDescriptor ld : libs) {
-                if (ld.repoRoot != null) {
-                    RepositoryDescriptor rd = new RepositoryDescriptor(ld.repoType, ld.repoRoot);
-                    if (!reps.contains(rd)) {
-                        reps.add(rd);
-                    }
-                }
-            }
-        }
-        
+        }        
         return new Descriptor(libs, reps);
     }
     

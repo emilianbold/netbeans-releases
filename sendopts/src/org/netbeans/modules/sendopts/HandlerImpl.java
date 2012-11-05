@@ -72,7 +72,11 @@ final class HandlerImpl extends Object {
             // XXX pst is not useful, only in verbose mode
             // the question is how to turn that mode on
             // ex.printStackTrace(ps);
-            return ex.getExitCode();
+            int ret = ex.getExitCode();
+            if (ret == 0) {
+                ret = Integer.MIN_VALUE;
+            }
+            return ret;
         }
     }
     

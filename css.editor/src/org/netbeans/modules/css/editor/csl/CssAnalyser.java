@@ -48,6 +48,8 @@ import java.util.List;
 import org.netbeans.modules.csl.api.Error;
 import org.netbeans.modules.csl.api.Severity;
 import org.netbeans.modules.css.editor.Css3Utils;
+import org.netbeans.modules.css.lib.api.CssParserResult;
+import org.netbeans.modules.css.lib.api.ErrorsProvider;
 import org.netbeans.modules.css.lib.api.Node;
 import org.netbeans.modules.css.lib.api.NodeType;
 import org.netbeans.modules.css.lib.api.NodeUtil;
@@ -59,19 +61,25 @@ import org.netbeans.modules.css.lib.api.properties.Token;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
+import org.openide.util.lookup.ServiceProvider;
 
 /**
+ * Provides extended errors from semantic css analysis.
+ * 
  * @author mfukala@netbeans.org
  */
-public class CssAnalyser {
+@ServiceProvider(service=ErrorsProvider.class)
+public class CssAnalyser implements ErrorsProvider {
 
     private static final String UNKNOWN_PROPERTY_BUNDLE_KEY = "unknown_property";//NOI18N
     private static final String UNKNOWN_PROPERTY_ERROR_KEY_DELIMITER = "/";//NOI18N
     private static final String UNKNOWN_PROPERTY_ERROR_KEY = "unknown_property" + UNKNOWN_PROPERTY_ERROR_KEY_DELIMITER;//NOI18N
     private static final String INVALID_PROPERTY_VALUE = "invalid_property_value";//NOI18N
 
-    //returned error offsets are AST offsets
-    public static List<Error> checkForErrors(final Snapshot snapshot, final Node node) {
+    @Override
+    public List<? extends Error> getExtendedDiagnostics(CssParserResult parserResult) {
+        final Node node = parserResult.getParseTree();
+        final Snapshot snapshot = parserResult.getSnapshot();
         final FileObject file = snapshot.getSource().getFileObject();
         
         List<Error> errors = new ArrayList<Error>();
@@ -130,7 +138,7 @@ public class CssAnalyser {
                             if (!Css3Utils.containsGeneratedCode(valueImage) 
                                     //TODO add support for checking value of vendor specific properties, not it is disabled.
                                     && !Css3Utils.isVendorSpecificPropertyValue(file, valueImage)) {
-                                ResolvedProperty pv = new ResolvedProperty(property, valueImage);
+                                ResolvedProperty pv = new ResolvedProperty(file, property, valueImage);
                                 if (!pv.isResolved()) {
                                     String errorMsg = null;
 

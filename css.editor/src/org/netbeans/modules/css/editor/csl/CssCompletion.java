@@ -61,7 +61,6 @@ import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.css.editor.CssProjectSupport;
 import org.netbeans.modules.css.editor.HtmlTags;
 import org.netbeans.modules.css.editor.URLRetriever;
-import org.netbeans.modules.css.editor.api.CssCslParserResult;
 import org.netbeans.modules.css.editor.module.CssModuleSupport;
 import org.netbeans.modules.css.editor.module.spi.*;
 import org.netbeans.modules.css.indexing.api.CssIndex;
@@ -96,7 +95,7 @@ public class CssCompletion implements CodeCompletionHandler {
 
         final List<CompletionProposal> completionProposals = new ArrayList<CompletionProposal>();
 
-        CssCslParserResult info = (CssCslParserResult) context.getParserResult();
+        CssParserResult info = (CssParserResult) context.getParserResult();
         Snapshot snapshot = info.getSnapshot();
         FileObject file = snapshot.getSource().getFileObject();
 
@@ -779,8 +778,8 @@ public class CssCompletion implements CodeCompletionHandler {
         int offset = context.getAnchorOffset();
         NodeType nodeType = node.type();
 
-        if (NodeUtil.isOfType(node, NodeType.root, NodeType.styleSheet, NodeType.body, NodeType.moz_document)
-                || nodeType == NodeType.error && NodeUtil.isOfType(node.parent(), NodeType.root, NodeType.styleSheet, NodeType.body, NodeType.moz_document)) {
+        if (NodeUtil.isOfType(node, NodeType.root, NodeType.styleSheet, NodeType.body, NodeType.moz_document, NodeType.imports)
+                || nodeType == NodeType.error && NodeUtil.isOfType(node.parent(), NodeType.root, NodeType.styleSheet, NodeType.body, NodeType.moz_document, NodeType.imports)) {
             /*
              * somewhere between rules, in an empty or very broken file, between
              * rules
@@ -818,6 +817,7 @@ public class CssCompletion implements CodeCompletionHandler {
             case combinator:
             case selector:
             case body:
+            case imports:
                 //complete selector list without prefix in selector list e.g. BODY, | { ... }
                 completionProposals.addAll(completeHtmlSelectors(completionContext, prefix, caretOffset));
                 break;
@@ -1007,7 +1007,7 @@ public class CssCompletion implements CodeCompletionHandler {
                 PropertyDefinition prop = Properties.getPropertyDefinition(context.getFileObject(), property.image().toString().trim());
                 if (prop != null) {
 
-                    ResolvedProperty propVal = new ResolvedProperty(prop, expressionText);
+                    ResolvedProperty propVal = new ResolvedProperty(context.getFileObject(), prop, expressionText);
 
                     Collection<ValueGrammarElement> alts = propVal.getAlternatives();
 
@@ -1127,7 +1127,7 @@ public class CssCompletion implements CodeCompletionHandler {
                     expressionText = expressionText.substring(0, eolIndex);
                 }
 
-                ResolvedProperty propVal = new ResolvedProperty(propertyDefinition, expressionText);
+                ResolvedProperty propVal = new ResolvedProperty(context.getFileObject(), propertyDefinition, expressionText);
                 Collection<ValueGrammarElement> alts = propVal.getAlternatives();
                 Collection<ValueGrammarElement> filteredByPrefix = filterElements(alts, prefix);
 
@@ -1192,7 +1192,7 @@ public class CssCompletion implements CodeCompletionHandler {
                         expressionText = expressionText.substring(0, eolIndex);
                     }
 
-                    propVal = new ResolvedProperty(propertyDefinition, expressionText);
+                    propVal = new ResolvedProperty(context.getFileObject(), propertyDefinition, expressionText);
                     alts = propVal.getAlternatives();
                     filteredByPrefix = alts; //no prefix
                     completionItemInsertPosition = context.getCaretOffset(); //no prefix

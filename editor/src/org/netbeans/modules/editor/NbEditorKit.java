@@ -49,6 +49,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.awt.event.KeyEvent;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
@@ -403,6 +404,7 @@ public class NbEditorKit extends ExtKit implements Callable {
                 String actionNames = prefs.get(settingName, null);
 
                 if (actionNames != null) {
+                    l = new ArrayList();
                     for(StringTokenizer t = new StringTokenizer(actionNames, ","); t.hasMoreTokens(); ) { //NOI18N
                         String action = t.nextToken().trim();
                         l.add(action);
@@ -732,7 +734,9 @@ public class NbEditorKit extends ExtKit implements Callable {
             Action a = kit.getActionByName(actionName);
             if (a != null) {
                 JMenuItem item = null;
-                if (a instanceof BaseAction) {
+                if (a instanceof Presenter.Menu) {
+                    item = ((Presenter.Menu)a).getMenuPresenter();
+                } else if (a instanceof BaseAction) {
                     item = ((BaseAction)a).getPopupMenuItem(target);
                 }
                 if (item == null) {
@@ -742,7 +746,6 @@ public class NbEditorKit extends ExtKit implements Callable {
                         item.addActionListener(a);
                         Mnemonics.setLocalizedText(item, itemText);
                         addAcceleretors(a, item, target);
-                        item.setEnabled(a.isEnabled() && foldingEnabled);
                         Object helpID = a.getValue ("helpID"); // NOI18N
                         if (helpID != null && (helpID instanceof String))
                             item.putClientProperty ("HelpID", helpID); // NOI18N
@@ -750,6 +753,7 @@ public class NbEditorKit extends ExtKit implements Callable {
                 }
 
                 if (item != null) {
+                    item.setEnabled(a.isEnabled() && foldingEnabled);
                     menu.add(item);
                 }
 

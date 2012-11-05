@@ -273,4 +273,10 @@ public class CssCompletionTest extends CssModuleTestBase {
         checkCC("div { transform: sca|leZ(0.3); }", arr("scaleZ"), Match.CONTAINS);
     }
     
+    //http://netbeans.org/bugzilla/show_bug.cgi?id=221349
+    public void testNoCompletionAfterImport() throws ParseException, BadLocationException {
+        checkCC("@import \"s1.css\"; |  root { display: block;}", arr("body"), Match.CONTAINS);
+        
+    }
+    
 }

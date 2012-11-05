@@ -45,6 +45,7 @@
     schemaType=SchemaType.XML_SCHEMA,
     mddFile="../../resources/j2ee_web_services_1_1.mdd",
     validate=true,
+    java5=true,
     attrProp=true,
 	generateHasChanged=true,
 	outputType=OutputType.JAVABEANS,

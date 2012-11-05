@@ -81,7 +81,6 @@ public class MvnJEE6Suite extends J2eeTestCase {
                 "testContainerI3", //NOI18N
                 "testCcContainerI2", //NOI18N
                 "testCcContainerI3", //NOI18N
-                "testNodes", //NOI18N
                 "testRun", //NOI18N
                 "testUndeploy").enableModules(".*").clusters(".*").suite();
     }

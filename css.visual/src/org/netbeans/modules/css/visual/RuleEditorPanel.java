@@ -77,7 +77,7 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.Document;
 import org.jdesktop.swingx.autocomplete.ObjectToStringConverter;
-import org.netbeans.modules.css.editor.api.CssCslParserResult;
+import org.netbeans.modules.css.lib.api.CssParserResult;
 import org.netbeans.modules.css.lib.api.properties.Properties;
 import org.netbeans.modules.css.lib.api.properties.PropertyDefinition;
 import org.netbeans.modules.css.model.api.Declaration;
@@ -86,7 +86,7 @@ import org.netbeans.modules.css.model.api.Model;
 import org.netbeans.modules.css.model.api.ModelUtils;
 import org.netbeans.modules.css.model.api.Rule;
 import org.netbeans.modules.css.model.api.StyleSheet;
-import org.netbeans.modules.css.visual.RuleNode.DeclarationProperty;
+import org.netbeans.modules.css.visual.RuleEditorNode.DeclarationProperty;
 import org.netbeans.modules.css.visual.actions.AddPropertyAction;
 import org.netbeans.modules.css.visual.actions.CreateRuleAction;
 import org.netbeans.modules.css.visual.actions.DeleteRuleAction;
@@ -166,7 +166,7 @@ public class RuleEditorPanel extends JPanel {
         ERROR_LABEL.setToolTipText(Bundle.label_rule_error_tooltip());
     }
 //    private static final Color defaultPanelBackground = javax.swing.UIManager.getDefaults().getColor("Panel.background"); //NOI18N
-    private PropertySheet sheet;
+    private REPropertySheet sheet;
     private Model model;
     private Rule rule;
     private Action addPropertyAction;
@@ -177,7 +177,7 @@ public class RuleEditorPanel extends JPanel {
     private RuleEditorFilters filters;
     private boolean showAllProperties, showCategories;
     private SortMode sortMode;
-    public RuleNode node;
+    public RuleEditorNode node;
     private PropertyChangeSupport CHANGE_SUPPORT = new PropertyChangeSupport(this);
     private boolean addPropertyMode;
    
@@ -213,8 +213,8 @@ public class RuleEditorPanel extends JPanel {
                                         public void run(ResultIterator resultIterator) throws Exception {
                                             resultIterator = WebUtils.getResultIterator(resultIterator, "text/css");
                                             if (resultIterator != null) {
-                                                CssCslParserResult result = (CssCslParserResult) resultIterator.getParserResult();
-                                                final Model model = result.getModel();
+                                                CssParserResult result = (CssParserResult) resultIterator.getParserResult();
+                                                final Model model = Model.getModel(result);
                                                 LOG.log(Level.INFO, "Model.CHANGES_APPLIED_TO_DOCUMENT event handler - setting new model {0}", model);
                                                 setModel(model);
                                             }
@@ -256,7 +256,7 @@ public class RuleEditorPanel extends JPanel {
                 ? new FiltersSettings(false, false, true)
                 : new FiltersSettings();
 
-        node = new RuleNode(this);
+        node = new RuleEditorNode(this);
 
         sortMode = SortMode.ALPHABETICAL;
 
@@ -461,6 +461,9 @@ public class RuleEditorPanel extends JPanel {
         }
     }
     
+    public FeatureDescriptor getSelected() {
+        return sheet.getSelectedFeatureDescriptor();
+    }
     
     private void editCreatedDeclaration() {
         DeclarationProperty descriptor = node.getDeclarationProperty(createdDeclaration);
@@ -777,6 +780,7 @@ public class RuleEditorPanel extends JPanel {
         filterTextField.setMaximumSize(new java.awt.Dimension(32767, 32767));
         filterTextField.setMinimumSize(new java.awt.Dimension(60, 28));
 
+        setPreferredSize(new java.awt.Dimension(400, 300));
         setLayout(new java.awt.BorderLayout());
 
         northPanel.setBorder(javax.swing.BorderFactory.createEmptyBorder(2, 2, 2, 2));
@@ -848,7 +852,7 @@ public class RuleEditorPanel extends JPanel {
 
         private Collection<PropertyDefinition> getProperties() {
             Collection<PropertyDefinition> properties = new TreeSet<PropertyDefinition>(PropertyUtils.PROPERTY_DEFINITIONS_COMPARATOR);
-            properties.addAll(Properties.getPropertyDefinitions(getModel().getLookup().lookup(FileObject.class)));
+            properties.addAll(Properties.getPropertyDefinitions(getModel().getLookup().lookup(FileObject.class), true));
             return properties;
         }
 
@@ -938,11 +942,15 @@ public class RuleEditorPanel extends JPanel {
             this.genericPopupMenu = genericPopupMenu;
         }
         
+        public FeatureDescriptor getSelectedFeatureDescriptor() {
+            return super.getSelection();
+        }
+        
         @Override
         protected JPopupMenu createPopupMenu() {
             FeatureDescriptor fd = getSelection();
             if(fd != null) {
-                if(fd instanceof RuleNode.DeclarationProperty) {
+                if(fd instanceof RuleEditorNode.DeclarationProperty) {
                     //property
                     //
                     //actions:
@@ -952,13 +960,13 @@ public class RuleEditorPanel extends JPanel {
                     //custom popop for the whole panel
                     JPopupMenu pm = new JPopupMenu();
                     
-                    pm.add(new GoToSourceAction(RuleEditorPanel.this, (RuleNode.DeclarationProperty)fd));
+                    pm.add(new GoToSourceAction(RuleEditorPanel.this, (RuleEditorNode.DeclarationProperty)fd));
                     pm.addSeparator();
-                    pm.add(new RemovePropertyAction(RuleEditorPanel.this, (RuleNode.DeclarationProperty)fd));
+                    pm.add(new RemovePropertyAction(RuleEditorPanel.this, (RuleEditorNode.DeclarationProperty)fd));
 
                     return pm;
                     
-                } else if(fd instanceof RuleNode.PropertyCategoryPropertySet) {
+                } else if(fd instanceof RuleEditorNode.PropertyCategoryPropertySet) {
                     //property category
                     //TODO possibly add "add property" action which would
                     //preselect the css category in the "add property dialog".

@@ -58,6 +58,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import java.util.HashSet;
+import java.util.Set;
 import javax.swing.JComponent;
 import javax.swing.filechooser.FileFilter;
 import org.netbeans.modules.mercurial.Mercurial;
@@ -75,8 +77,9 @@ import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 import static org.netbeans.modules.mercurial.util.HgCommand.HG_COMMAND;
+import org.netbeans.modules.versioning.util.VCSOptionsKeywordsProvider;
 
-final class MercurialOptionsPanelController extends OptionsPanelController implements ActionListener {
+final class MercurialOptionsPanelController extends OptionsPanelController implements ActionListener, VCSOptionsKeywordsProvider {
     
     private MercurialPanel panel;
     private final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
@@ -149,6 +152,13 @@ final class MercurialOptionsPanelController extends OptionsPanelController imple
         } else if (evt.getSource() == panel.manageButton) {
             onManageClick();
         }
+    }
+
+    @Override
+    public boolean acceptKeywords (List<String> keywords) {
+        Set<String> allKeywords = new HashSet<String>(panel.getKeywords());
+        allKeywords.retainAll(keywords);
+        return !allKeywords.isEmpty();
     }
 
     private File getExportFile() {

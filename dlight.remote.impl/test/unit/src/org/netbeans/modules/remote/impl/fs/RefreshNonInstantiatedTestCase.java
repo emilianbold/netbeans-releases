@@ -110,7 +110,7 @@ public class RefreshNonInstantiatedTestCase extends RemoteFileTestBase {
 
             System.err.printf("Cache size: %d -> %d   Dir sync count: %d -> %d\n", cacheSize_1, cacheSize_2, dirSyncCount_1, dirSyncCount_2);
 
-            assertEquals("Wrong dir sync count:", 2, dirSyncCount_2 - dirSyncCount_1);
+            assertEquals("Wrong dir sync count:", 1, dirSyncCount_2 - dirSyncCount_1);
             assertEquals("Wrong cache size increment:", 1, cacheSize_2 - cacheSize_1);
         } finally {
             if (baseDir != null) {

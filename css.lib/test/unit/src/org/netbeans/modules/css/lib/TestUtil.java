@@ -123,7 +123,7 @@ public class TestUtil {
     public static void dumpResult(CssParserResult result) {
         System.out.println("Parse Tree:");
         NodeUtil.dumpTree(result.getParseTree());
-        Collection<ProblemDescription> problems = result.getDiagnostics();
+        Collection<ProblemDescription> problems = result.getParserDiagnostics();
         if (!problems.isEmpty()) {
             System.out.println(String.format("Found %s problems while parsing:", problems.size()));
             for (ProblemDescription pp : problems) {

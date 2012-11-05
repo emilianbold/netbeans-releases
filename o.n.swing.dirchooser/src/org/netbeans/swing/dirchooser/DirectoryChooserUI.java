@@ -174,7 +174,7 @@ public class DirectoryChooserUI extends BasicFileChooserUI {
     
     private BasicFileView fileView = new DirectoryChooserFileView();
     
-    private static JTree tree;
+    private JTree tree;
     
     private DirectoryTreeModel model;
     
@@ -184,7 +184,7 @@ public class DirectoryChooserUI extends BasicFileChooserUI {
     
     private InputBlocker blocker;
     
-    private static JFileChooser fileChooser;
+    private JFileChooser fileChooser;
     
     private boolean changeDirectory = true;
     

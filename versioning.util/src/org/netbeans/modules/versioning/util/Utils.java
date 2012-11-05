@@ -76,11 +76,9 @@ import java.util.logging.Logger;
 import java.util.logging.Level;
 import java.awt.Rectangle;
 import java.awt.Point;
-import java.beans.PropertyChangeEvent;
 import java.text.MessageFormat;
 import java.beans.PropertyChangeListener;
 import java.beans.VetoableChangeListener;
-import java.lang.reflect.InvocationTargetException;
 import java.nio.charset.Charset;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -97,8 +95,6 @@ import org.openide.ErrorManager;
 import org.openide.awt.AcceleratorBinding;
 import org.openide.cookies.EditorCookie;
 import org.openide.cookies.OpenCookie;
-import org.openide.text.NbDocument;
-import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.Mutex;
 import org.openide.util.Utilities;
@@ -822,6 +818,7 @@ public final class Utils {
 
     private static final Object ENCODING_LOCK = new Object();
     private static Map<FileObject, Charset> fileToCharset;
+    private static Map<File, FileObject> fileToFileObject;
 
     /**
      * Retrieves the Charset for the referenceFile and associates it weakly with
@@ -833,7 +830,24 @@ public final class Utils {
      *
      */
     public static void associateEncoding(File referenceFile, File file) {
-        associateEncoding(FileUtil.toFileObject(referenceFile), FileUtil.toFileObject(file));
+        FileObject refFO = FileUtil.toFileObject(referenceFile);
+        if (refFO == null || refFO.isFolder()) {
+            return;
+        }
+        FileObject fo = FileUtil.toFileObject(file);
+        if (fo == null || fo.isFolder()) {
+            return;
+        }
+        Charset c = FileEncodingQuery.getEncoding(refFO);
+        if (c != null) {
+            synchronized(ENCODING_LOCK) {
+                if (fileToFileObject == null) {
+                    fileToFileObject = new WeakHashMap<File, FileObject>();
+                }
+                fileToFileObject.put(file, fo);
+            }
+            associateEncoding(fo, c);
+        }
     }
     
     /**

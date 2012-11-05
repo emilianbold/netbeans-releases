@@ -130,4 +130,6 @@ public abstract class SPIAccessor {
 
     public abstract Object getProperty(@NonNull Context context, @NonNull String propName);
 
+    public abstract void setFinished(@NonNull Context context, @NullAllowed Boolean success);
+
 }

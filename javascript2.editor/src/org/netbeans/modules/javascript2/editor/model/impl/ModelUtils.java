@@ -145,11 +145,19 @@ public class ModelUtils {
     
     public static JsObject findJsObjectByName(JsObject global, String fqName) {
         JsObject result = global;
+        JsObject property = result;
         for (StringTokenizer stringTokenizer = new StringTokenizer(fqName, "."); stringTokenizer.hasMoreTokens() && result != null;) {
             String token = stringTokenizer.nextToken();
-            result = result.getProperty(token);
-            if (result == null) {
-                break;
+            property = result.getProperty(token);
+            if (property == null) {
+                result = (result instanceof JsFunction)
+                        ? ((JsFunction)result).getParameter(token)
+                        : null;
+                if (result == null) {
+                    break;
+                }
+            } else {
+                result = property;
             }
         }
         return result;
@@ -372,7 +380,7 @@ public class ModelUtils {
             String name = type.getType().substring(5);
             JsFunction declarationScope = (JsFunction)getDeclarationScope(object);
 
-            //if(parent != null && parent.getJSKind().isFunction()) {
+            if (declarationScope != null) {
                 Collection<? extends JsObject> parameters = declarationScope.getParameters();
                 boolean isParameter = false;
                 for (JsObject parameter : parameters) {
@@ -386,9 +394,7 @@ public class ModelUtils {
                 if (!isParameter) {
                     result.add(new TypeUsageImpl(name, type.getOffset(), false));
                 }
-//            } else {
-//                result.add(new TypeUsageImpl(name, type.getOffset(), false));
-//            }
+            }
         } else if(type.getType().startsWith("@param;")) {   //NOI18N
             String functionName = type.getType().substring(7);
             int index = functionName.indexOf(":");

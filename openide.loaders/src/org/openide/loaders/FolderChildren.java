@@ -257,7 +257,10 @@ implements PropertyChangeListener, ChangeListener, FileChangeListener {
     @Override
     public Node[] getNodes(boolean optimalResult) {
         Node[] arr;
-        for (;;) {
+        Level previous = null;
+        int limit = -1;
+        assert (limit = 1000) > 0; 
+        for (int round = 0; ; round++) {
             if (optimalResult) {
                 waitOptimalResult();
             }
@@ -267,6 +270,7 @@ implements PropertyChangeListener, ChangeListener, FileChangeListener {
                 if (n instanceof DelayedNode) {
                     DelayedNode dn = (DelayedNode)n;
                     if (checkChildrenMutex() && dn.waitFinished()) {
+                        err.fine("Waiting for delayed node " + dn);
                         stop = false;
                     }
                 }
@@ -274,6 +278,18 @@ implements PropertyChangeListener, ChangeListener, FileChangeListener {
             if (stop) {
                 break;
             }
+            if (round == 500) {
+                err.warning("getNodes takes ages, turning on logging");
+                previous = err.getLevel();
+                err.setLevel(Level.FINE);
+            }
+            if (round == limit) {
+                err.setLevel(previous);
+                throw new IllegalStateException("Too many repetitions in getNodes(true). Giving up.");
+            }
+        }
+        if (previous != null) {
+            err.setLevel(previous);
         }
         return arr;
     }
@@ -396,19 +412,18 @@ implements PropertyChangeListener, ChangeListener, FileChangeListener {
         refreshChildren(RefreshMode.SHALLOW);
     }
     
-    private final class DelayedNode extends FilterNode 
-    implements Runnable, InstanceContent.Convertor<DelayedNode,DataObject>{
-        private final FolderChildrenPair pair;
+    private final class DelayedNode extends FilterNode implements Runnable {
+        final FolderChildrenPair pair;
         private volatile RequestProcessor.Task task;
 
         public DelayedNode(FolderChildrenPair pair) {
-            this(pair, new InstanceContent());
+            this(pair, new DelayedLkp(new InstanceContent()));
         }
         
-        private DelayedNode(FolderChildrenPair pair, InstanceContent ic) {
-            this(pair, new AbstractNode(Children.LEAF, new AbstractLookup(ic)));
-            ic.add(pair.primaryFile);
-            ic.add(this, this);
+        private DelayedNode(FolderChildrenPair pair, DelayedLkp lkp) {
+            this(pair, new AbstractNode(Children.LEAF, lkp));
+            lkp.ic.add(pair.primaryFile);
+            lkp.node = this;
         }
         
         private DelayedNode(FolderChildrenPair pair, AbstractNode an) {
@@ -429,6 +444,7 @@ implements PropertyChangeListener, ChangeListener, FileChangeListener {
                 refreshKey(pair);
             }
             task = null;
+            err.fine("delayed node refreshed " + this + " original: " + n);
         }
         
         /* @return true if there was some change in the node while waiting */
@@ -437,12 +453,32 @@ implements PropertyChangeListener, ChangeListener, FileChangeListener {
             if (t == null) {
                 return false;
             }
+            err.fine("original before wait: " + getOriginal());
             t.waitFinished();
+            err.fine("original after wait: " + getOriginal());
             return true;
         }
-
+    }
+    
+    private final class DelayedLkp extends AbstractLookup {
+        DelayedNode node;
+        final InstanceContent ic;
+        
+        public DelayedLkp(InstanceContent content) {
+            super(content);
+            ic = content;
+        }
+        
         @Override
+        protected void beforeLookup(Template<?> template) {
+            Class<?> type = template.getType();
+            if (DataObject.class.isAssignableFrom(type)) {
+                ic.add(convert(node));
+            }
+        }
+        
         public DataObject convert(DelayedNode obj) {
+            final FolderChildrenPair pair = obj.pair;
             if (EventQueue.isDispatchThread()) {
                 err.log(Level.WARNING, "Attempt to obtain DataObject for {0} from EDT", pair.primaryFile);
                 boolean assertsOn = false;
@@ -457,21 +493,6 @@ implements PropertyChangeListener, ChangeListener, FileChangeListener {
                 err.log(Level.INFO, "Cannot convert " + pair.primaryFile, ex);
                 return null;
             }
-        }
-
-        @Override
-        public Class<? extends DataObject> type(DelayedNode obj) {
-            return DataObject.class;
-        }
-
-        @Override
-        public String id(DelayedNode obj) {
-            return type(obj).getName();
-        }
-
-        @Override
-        public String displayName(DelayedNode obj) {
-            return id(obj);
         }
     }
 }

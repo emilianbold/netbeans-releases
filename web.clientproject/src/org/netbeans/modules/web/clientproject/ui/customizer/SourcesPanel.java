@@ -51,6 +51,7 @@ import javax.swing.event.DocumentListener;
 import org.netbeans.modules.web.clientproject.ClientSideProject;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
 import org.openide.filesystems.FileChooserBuilder;
+import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -85,10 +86,25 @@ public class SourcesPanel extends JPanel implements HelpCtx.Provider {
 
     private void init() {
         jProjectFolderTextField.setText(FileUtil.getFileDisplayName(project.getProjectDirectory()));
-        jSiteRootFolderTextField.setText(uiProperties.getSiteRootFolder());
+        jSiteRootFolderTextField.setText(getSiteRootPath());
         jTestFolderTextField.setText(uiProperties.getTestFolder());
         jEncodingComboBox.setModel(ProjectCustomizer.encodingModel(uiProperties.getEncoding()));
         jEncodingComboBox.setRenderer(ProjectCustomizer.encodingRenderer());
+    }
+
+    private String getSiteRootPath() {
+        String siteRootPath = null;
+        File siteRoot = uiProperties.getResolvedSiteRootFolder();
+        if (siteRoot != null) {
+            FileObject siteRootFO = FileUtil.toFileObject(siteRoot);
+            if (siteRootFO != null) {
+                siteRootPath = FileUtil.getRelativePath(project.getProjectDirectory(), siteRootFO);
+            }
+        }
+        if (siteRootPath == null) {
+            siteRootPath = uiProperties.getSiteRootFolder();
+        }
+        return siteRootPath;
     }
 
     private void initListeners() {
@@ -131,7 +147,7 @@ public class SourcesPanel extends JPanel implements HelpCtx.Provider {
     @NbBundle.Messages("SourcesPanel.error.siteRoot.invalid=Site Root must be a valid directory.")
     private String validateSiteRoot() {
         File siteRootFolder = getSiteRootFolder();
-        if (siteRootFolder == null || !siteRootFolder.isDirectory()) {
+        if (siteRootFolder != null && !siteRootFolder.isDirectory()) {
             return Bundle.SourcesPanel_error_siteRoot_invalid();
         }
         return null;
@@ -270,10 +286,10 @@ public class SourcesPanel extends JPanel implements HelpCtx.Provider {
                     .addComponent(jLabel4))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jProjectFolderTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 1, Short.MAX_VALUE)
+                    .addComponent(jProjectFolderTextField)
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                            .addComponent(jEncodingComboBox, javax.swing.GroupLayout.Alignment.LEADING, 0, 195, Short.MAX_VALUE)
+                            .addComponent(jEncodingComboBox, javax.swing.GroupLayout.Alignment.LEADING, 0, 159, Short.MAX_VALUE)
                             .addComponent(jTestFolderTextField)
                             .addComponent(jSiteRootFolderTextField))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -297,11 +313,11 @@ public class SourcesPanel extends JPanel implements HelpCtx.Provider {
                     .addComponent(jLabel3)
                     .addComponent(jTestFolderTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jBrowseTestButton))
-                .addGap(18, 18, 18)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel4)
                     .addComponent(jEncodingComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGap(0, 146, Short.MAX_VALUE))
+                .addGap(0, 148, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
 

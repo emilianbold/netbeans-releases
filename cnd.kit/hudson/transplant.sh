@@ -1,6 +1,10 @@
 #!/bin/sh
 
 #
+# Copyright (c) 2009, 2012, Oracle and/or its affiliates. All rights reserved.
+#
+
+#
 # This script is used to transplant changes from one repository to another.
 # Only changes made by listed authors are transplanted.
 #

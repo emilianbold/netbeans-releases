@@ -652,7 +652,7 @@ public class SunDeploymentManager implements Constants, DeploymentManager, SunDe
         }
     }
 
-    class MyMT extends ModuleType {
+    static class MyMT extends ModuleType {
         MyMT(int foo) {
             super(foo);
         }
@@ -1691,7 +1691,7 @@ public class SunDeploymentManager implements Constants, DeploymentManager, SunDe
     
     // VBK hack target objects to support configuration prototyping in
     // J2EE 1.4 RI beta 1 deploytool
-    class FakeTarget implements Target {
+    static class FakeTarget implements Target {
         
         public String getDescription() {
             return "fakeTargetDescr";      // NOI18N
@@ -1769,7 +1769,7 @@ public class SunDeploymentManager implements Constants, DeploymentManager, SunDe
      * it has been used
      */
 // <editor-fold defaultstate="collapsed" desc=" FileDeleter code ">
-    class FileDeleter implements ProgressListener {
+    static class FileDeleter implements ProgressListener {
         File f;
         public FileDeleter(File f) {
             this.f = f;
@@ -1790,7 +1790,7 @@ public class SunDeploymentManager implements Constants, DeploymentManager, SunDe
     /** the PO returned by start has TMID objects that do not have the WebUrl property
      * initialized.  That is so helpful.
      */
-    class StartPOWorkAround implements ProgressObject {
+    static class StartPOWorkAround implements ProgressObject {
 
         TargetModuleID[] modules;
         ProgressObject po;

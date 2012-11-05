@@ -719,34 +719,34 @@ public final class UpdateTracking {
         
         void write( ) {
             Document document = XMLUtil.createDocument(ELEMENT_MODULE);
-            
+
             Element e_module = document.getDocumentElement();
             Element e_version;
             Element e_file;
-            
+
             e_module.setAttribute(ATTR_CODENAMEBASE, getCodenamebase());
-            Iterator it2 = getVersions().iterator();
-            while ( it2.hasNext() ) {
-                Version ver = (Version)it2.next();
+
+            for (Version ver : getVersions()) {
                 e_version = document.createElement(ELEMENT_VERSION);
-                if ( ver.getVersion() != null )
+                if (ver.getVersion() != null) {
                     e_version.setAttribute(ATTR_VERSION, ver.getVersion());
+                }
                 e_version.setAttribute(ATTR_ORIGIN, ver.getOrigin());
-                e_version.setAttribute(ATTR_LAST, Boolean.valueOf( ver.isLast() ).toString());
-                e_version.setAttribute(ATTR_INSTALL, Long.toString(ver.getInstall_time()));                
-                e_module.appendChild( e_version );
-                Iterator it3 = ver.getFiles().iterator();
-                while ( it3.hasNext() ) {
-                    ModuleFile moduleFile = (ModuleFile)it3.next();
+                e_version.setAttribute(ATTR_LAST, Boolean.valueOf(ver.isLast()).toString());
+                e_version.setAttribute(ATTR_INSTALL, Long.toString(ver.getInstall_time()));
+                e_module.appendChild(e_version);
+                
+                for (ModuleFile moduleFile : ver.getFiles()) {
                     e_file = document.createElement(ELEMENT_FILE);
                     e_file.setAttribute(ATTR_FILE_NAME, moduleFile.getName());
                     e_file.setAttribute(ATTR_CRC, moduleFile.getCrc());
-                    if ( moduleFile.getLocaleversion() != null )
+                    if (moduleFile.getLocaleversion() != null) {
                         e_file.setAttribute(ATTR_VERSION, moduleFile.getLocaleversion());
-                    e_version.appendChild( e_file );                
+                    }
+                    e_version.appendChild(e_file);
                 }
             }
-            
+
             document.getDocumentElement().normalize();
 
             OutputStream os = null;
@@ -770,7 +770,7 @@ public final class UpdateTracking {
             if (os != null) {
                 try {
                     XMLUtil.write(document, os);
-                    XMLUtil.LOG.info("File " + file + " modified." );
+                    XMLUtil.LOG.info("File " + file + " modified.");
                 } catch (IOException e) {
                     XMLUtil.LOG.log(Level.WARNING, "Cannot write " + file, e);
                 } finally {
@@ -784,11 +784,10 @@ public final class UpdateTracking {
         }
 
         void deleteUnusedFiles() {
-            if ( lastVersion == null || newVersion == null )
+            if ( lastVersion == null || newVersion == null ) {
                 return;
-            Iterator it = lastVersion.getFiles().iterator();
-            while ( it.hasNext() ) {
-                ModuleFile modFile = (ModuleFile)it.next();
+            }
+            for (ModuleFile modFile : lastVersion.getFiles()) {
                 if ( ! newVersion.containsFile( modFile ) && modFile.getName().indexOf( LOCALE_DIR ) == -1 )
                     safeDelete( modFile );
             }
@@ -1020,9 +1019,7 @@ public final class UpdateTracking {
          * @param files New value of property files.
          */
         void addL10NFiles(List<ModuleFile> l10nfiles) {
-            Iterator it = l10nfiles.iterator();
-            while ( it.hasNext() ) {
-                ModuleFile lf = (ModuleFile) it.next();
+            for (ModuleFile lf : l10nfiles) {
                 String lname = lf.getName();
                 for ( int i = files.size() - 1; i >=0; i-- ) {
                     ModuleFile f = files.get( i );
@@ -1053,9 +1050,7 @@ public final class UpdateTracking {
         }
         
         boolean containsFile( ModuleFile file ) {
-            Iterator it = files.iterator();
-            while ( it.hasNext() ) {
-                ModuleFile f = (ModuleFile)it.next();
+            for (ModuleFile f : files) {
                 if ( f.getName().equals( file.getName() ) )
                     return true;
             }
@@ -1063,9 +1058,7 @@ public final class UpdateTracking {
         }
         
         ModuleFile findFile(String filename) {
-            Iterator it = files.iterator();
-            while ( it.hasNext() ) {
-                ModuleFile f = (ModuleFile)it.next();
+            for (ModuleFile f : files) {
                 if ( f.getName().equals( filename ) )
                     return f;
             }

@@ -42,9 +42,8 @@
 package org.netbeans.modules.web.inspect.webkit.ui;
 
 import java.awt.BorderLayout;
+import java.awt.Dimension;
 import java.awt.EventQueue;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.net.MalformedURLException;
@@ -55,23 +54,19 @@ import java.util.Collections;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.AbstractButton;
-import javax.swing.ButtonGroup;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
-import javax.swing.JToggleButton;
-import javax.swing.JToolBar;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.css.editor.api.CssCslParserResult;
+import org.netbeans.modules.css.lib.api.CssParserResult;
 import org.netbeans.modules.css.model.api.Declaration;
 import org.netbeans.modules.css.model.api.Expression;
 import org.netbeans.modules.css.model.api.Model;
 import org.netbeans.modules.css.model.api.Property;
 import org.netbeans.modules.css.model.api.PropertyValue;
 import org.netbeans.modules.css.model.api.StyleSheet;
+import org.netbeans.modules.css.visual.api.CssStylesTC;
 import org.netbeans.modules.css.visual.api.DeclarationInfo;
 import org.netbeans.modules.css.visual.api.RuleEditorController;
-import org.netbeans.modules.css.visual.api.RuleEditorTC;
 import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.api.Snapshot;
@@ -96,7 +91,6 @@ import org.openide.nodes.Node;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
-import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ProxyLookup;
@@ -110,14 +104,8 @@ import org.openide.windows.WindowManager;
 public class CSSStylesPanel extends JPanel implements PageModel.CSSStylesView {
     /** Request processor used by this class. */
     private static final RequestProcessor RP = new RequestProcessor(CSSStylesPanel.class);
-    /** Action command for switching to document view. */
-    static final String DOCUMENT_ACTION_COMMAND = "document"; // NOI18N
-    /** Action command for switching to selection view. */
-    static final String SELECTION_ACTION_COMMAND = "selection"; // NOI18N
     /** The default instance of this class. */
     private static final CSSStylesPanel DEFAULT = new CSSStylesPanel();
-    /** Document section of CSS Styles view. */
-    private CSSStylesDocumentPanel documentPanel = new CSSStylesDocumentPanel();
     /** Selection section of CSS Styles view. */
     private CSSStylesSelectionPanel selectionPanel = new CSSStylesSelectionPanel();
     /** The current inspected page. */
@@ -134,57 +122,13 @@ public class CSSStylesPanel extends JPanel implements PageModel.CSSStylesView {
      */
     private CSSStylesPanel() {
         setLayout(new BorderLayout());
-        add(createToolbar(), BorderLayout.PAGE_START);
+        setPreferredSize(new Dimension(400,400));
         PageInspectorImpl.getDefault().addPropertyChangeListener(getListener());
-        updatePageModel();
-        add(documentPanel, BorderLayout.CENTER);
-        updateVisiblePanel(false);
+        lookup.updateLookup(selectionPanel.getLookup());
         ruleLookupResult = lookup.lookupResult(Rule.class);
+        updatePageModel();
+        add(selectionPanel, BorderLayout.CENTER);
         ruleLookupResult.addLookupListener(getListener());
-    }
-
-    /**
-     * Creates the toolbar for this view.
-     *
-     * @return toolbar for this view.
-     */
-    private JToolBar createToolbar() {
-        // The toolbar itself
-        JToolBar toolBar = new JToolBar();
-        toolBar.setFloatable(false);
-        toolBar.setRollover(true);
-
-        // Button group for document and source buttons
-        ButtonGroup buttonGroup = new ButtonGroup();
-
-        // Document button
-        JToggleButton documentButton = new JToggleButton();
-        documentButton.setText(NbBundle.getMessage(CSSStylesPanel.class, "CSSStylesPanel.document")); // NOI18N
-        documentButton.setActionCommand(DOCUMENT_ACTION_COMMAND);
-        initToolbarButton(documentButton, toolBar, buttonGroup);
-
-        // Selection button
-        JToggleButton selectionButton = new JToggleButton();
-        selectionButton.setText(NbBundle.getMessage(CSSStylesPanel.class, "CSSStylesPanel.selection")); // NOI18N
-        selectionButton.setActionCommand(SELECTION_ACTION_COMMAND);
-        initToolbarButton(selectionButton, toolBar, buttonGroup);
-        selectionButton.setSelected(true);
-
-        return toolBar;
-    }
-
-    /**
-     * Initializes the specified toolbar button.
-     *
-     * @param button button to initialize.
-     * @param toolBar toolbar where the button belongs to.
-     * @param buttonGroup group where the button belongs to.
-     */
-    private void initToolbarButton(AbstractButton button, JToolBar toolBar, ButtonGroup buttonGroup) {
-        button.setFocusPainted(false);
-        button.addActionListener(getListener());
-        buttonGroup.add(button);
-        toolBar.add(button);
     }
 
     /**
@@ -235,29 +179,6 @@ public class CSSStylesPanel extends JPanel implements PageModel.CSSStylesView {
     }
 
     /**
-     * Switches the visible panel (either document or selection view).
-     *
-     * @param showDocumentPanel if {@code true} then the document view
-     * should be shown, otherwise the selection view should be shown.
-     */
-    private void updateVisiblePanel(boolean showDocumentPanel) {
-        boolean documentPanelVisible = (documentPanel.getParent() != null);
-        if (documentPanelVisible != showDocumentPanel) {
-            if (showDocumentPanel) {
-                remove(selectionPanel);
-                add(documentPanel, BorderLayout.CENTER);
-                lookup.updateLookup(documentPanel.getLookup());
-            } else {
-                remove(documentPanel);
-                add(selectionPanel, BorderLayout.CENTER);
-                lookup.updateLookup(selectionPanel.getLookup());
-            }
-        }
-        revalidate();
-        repaint();
-    }
-
-    /**
      * Updates the content of this panel.
      *
      * @param keepSelection if {@code true} then an attempt to keep the current
@@ -267,7 +188,6 @@ public class CSSStylesPanel extends JPanel implements PageModel.CSSStylesView {
         try {
             contentUpdateInProgress = keepSelection;
             nodeLookup.setPageModel(pageModel);
-            documentPanel.updateContent(pageModel, keepSelection);
             selectionPanel.updateContent(pageModel, keepSelection);
         } finally {
             // Ugly hack that ensures that contentUpdateInProgress
@@ -324,7 +244,7 @@ public class CSSStylesPanel extends JPanel implements PageModel.CSSStylesView {
         EventQueue.invokeLater(new Runnable() {
             @Override
             public void run() {
-                RuleEditorTC ruleEditor = (RuleEditorTC)WindowManager.getDefault().findTopComponent(RuleEditorTC.ID);
+                CssStylesTC ruleEditor = (CssStylesTC)WindowManager.getDefault().findTopComponent(CssStylesTC.ID);
                 final RuleEditorController controller = ruleEditor.getRuleEditorController();
                 RP.post(new Runnable() {
                     @Override
@@ -356,6 +276,7 @@ public class CSSStylesPanel extends JPanel implements PageModel.CSSStylesView {
         });
     }
 
+    
     @Override
     public JComponent getView() {
         return this;
@@ -378,17 +299,7 @@ public class CSSStylesPanel extends JPanel implements PageModel.CSSStylesView {
     /**
      * Listener for various events important for {@code CSSStylesPanel}.
      */
-    class Listener implements ActionListener, PropertyChangeListener, LookupListener, CSS.Listener {
-
-        @Override
-        public void actionPerformed(ActionEvent e) {
-            String command = e.getActionCommand();
-            if (DOCUMENT_ACTION_COMMAND.equals(command)) {
-                updateVisiblePanel(true);
-            } else if (SELECTION_ACTION_COMMAND.equals(command)) {
-                updateVisiblePanel(false);
-            }
-        }
+    class Listener implements PropertyChangeListener, LookupListener, CSS.Listener {
 
         @Override
         public void propertyChange(PropertyChangeEvent evt) {
@@ -404,7 +315,7 @@ public class CSSStylesPanel extends JPanel implements PageModel.CSSStylesView {
         public void resultChanged(LookupEvent ev) {
             Collection<? extends Rule> rules = ruleLookupResult.allInstances();
             // Trying to avoid unwanted flashing of Rule Editor
-            if (!contentUpdateInProgress || !rules.isEmpty()) {
+            if (!contentUpdateInProgress) {
                 updateRulesEditor(rules);
             }
         }
@@ -494,8 +405,8 @@ public class CSSStylesPanel extends JPanel implements PageModel.CSSStylesView {
         @Override
         public void run(ResultIterator resultIterator) throws Exception {
             final boolean[] found = new boolean[1];
-            for (final CssCslParserResult result : Utilities.cssParserResults(resultIterator)) {
-                final Model sourceModel = result.getModel();
+            for (final CssParserResult result : Utilities.cssParserResults(resultIterator)) {
+                final Model sourceModel = Model.getModel(result);
                 sourceModel.runReadTask(new Model.ModelTask() {
                     @Override
                     public void run(StyleSheet styleSheet) {
@@ -553,10 +464,14 @@ public class CSSStylesPanel extends JPanel implements PageModel.CSSStylesView {
          * @return {@code true} when the property uses star or underscore hack.
          */
         private boolean isIEHackIgnoredByWebKit(Property property, Snapshot snapshot) {
+            boolean isHack = false;
             String styleSheetText = snapshot.getText().toString();
             int startOffset = property.getStartOffset();
-            char c = styleSheetText.charAt(startOffset-1);
-            return (c == '_' || c == '*');
+            if (startOffset != -1) {
+                char c = styleSheetText.charAt(startOffset-1);
+                isHack = (c == '_' || c == '*');
+            }
+            return isHack;
         }
 
     }

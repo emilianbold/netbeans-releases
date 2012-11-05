@@ -333,7 +333,9 @@ public final class VCSContext {
                     {
                         child = child.normalizeFile();
                         rootChildFo = child.toFileObject();
-                        if(SharabilityQuery.getSharability(rootChildFo) != Sharability.NOT_SHARABLE) {
+                        if(rootChildFo != null && 
+                           SharabilityQuery.getSharability(rootChildFo) != Sharability.NOT_SHARABLE) 
+                        {
                             rootFilesExclusions.add(child);
                         }
                     }
@@ -351,11 +353,13 @@ public final class VCSContext {
                     }
                     children += "]";
                     logger.log(Level.WARNING, "srcRootFo.getChildren(): {0}", children);
-                    if (!rootChildFo.isValid()) {
-                        logger.log(Level.WARNING, "{0} does not exist ", rootChildFo);
-                    }
-                    if (!FileUtil.isParentOf(srcRootFo, rootChildFo)) {
-                        logger.log(Level.WARNING, "{0} is not under {1}", new Object[]{rootChildFo, srcRootFo});
+                    if(rootChildFo != null) {
+                        if (!rootChildFo.isValid()) {
+                            logger.log(Level.WARNING, "{0} does not exist ", rootChildFo);
+                        }
+                        if (!FileUtil.isParentOf(srcRootFo, rootChildFo)) {
+                            logger.log(Level.WARNING, "{0} is not under {1}", new Object[]{rootChildFo, srcRootFo});
+                        }
                     }
                     logger.log(Level.WARNING, null, ex);
                 }

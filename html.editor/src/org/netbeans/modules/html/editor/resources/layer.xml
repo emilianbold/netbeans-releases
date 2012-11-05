@@ -350,10 +350,8 @@ made subject to such option by the copyright holder.
                         <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-RunSingle.instance"/>
                       <attr name="position" intvalue="1700"/>
                     </file>
-                    <file name="ViewAction.shadow">
-                        <attr name="originalFile" stringvalue="Actions/System/org-openide-actions-ViewAction.instance"/>
-                        <attr name="position" intvalue="1800"/>
-                    </file>
+                    
+                    <!-- ViewAction at 1800 from html.editor -->
                     <!-- ToggleBreakpointAction at 1833 from web.javascript.debugger -->
                     <!-- AddWatchAction at 1866 from web.javascript.debugger -->
                     

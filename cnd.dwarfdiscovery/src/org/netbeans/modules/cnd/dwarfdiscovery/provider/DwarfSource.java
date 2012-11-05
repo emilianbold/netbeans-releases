@@ -51,6 +51,7 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -69,6 +70,7 @@ import org.netbeans.modules.cnd.dwarfdump.CompilationUnitInterface;
 import org.netbeans.modules.cnd.dwarfdump.dwarf.DwarfMacinfoEntry;
 import org.netbeans.modules.cnd.dwarfdump.dwarf.DwarfMacinfoTable;
 import org.netbeans.modules.cnd.dwarfdump.dwarf.DwarfStatementList;
+import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
 import org.netbeans.modules.nativeexecution.api.util.LinkSupport;
 import org.openide.util.Exceptions;
 import org.openide.util.Utilities;
@@ -215,6 +217,9 @@ public class DwarfSource extends RelocatableImpl implements SourceFileProperties
     }
     
     public Set<String> getIncludedFiles() {
+        if (false && ConfigurationDescriptorProvider.VCS_WRITE) {
+            return Collections.emptySet();
+        }
         return includedFiles;
     }
     

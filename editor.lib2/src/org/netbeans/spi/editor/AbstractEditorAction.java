@@ -61,23 +61,88 @@ import javax.swing.JMenuItem;
 import javax.swing.KeyStroke;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.TextAction;
+import org.netbeans.api.editor.EditorActionRegistration;
 import org.netbeans.modules.editor.lib2.actions.EditorActionUtilities;
 import org.netbeans.modules.editor.lib2.actions.MacroRecording;
 import org.netbeans.modules.editor.lib2.actions.PresenterUpdater;
+import org.netbeans.modules.editor.lib2.actions.WrapperEditorAction;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.WeakListeners;
 import org.openide.util.actions.Presenter;
 
 /**
- * Base class for editor actions.
+ * Base class for editor actions that should be used together with
+ * {@link EditorActionRegistration} annotation.
  * <br/>
- * It may be used in two modes
+ * It may be constructed and used in two ways: direct construction or construction
+ * upon invocation by a wrapper action:
  * <ul>
- *   <li> Regular mode - action is created directly and it controls all its behavior.
+ *   <li> Direct construction - action is created directly when an editor kit
+ *        gets constructed (its <code>kit.getActions()</code> gets used).
+ *        <br/>
+ *        Advantages: Action controls all its behavior and properties (including enabled status)
+ *        since the begining.
+ *        <br/>
+ *        Disadvantages: Action's class is loaded by classloader at editor kit's construction.
+ *        <br/>
+ *        Example of registration:
+ *        <br/>
+ * <code>
+ * public static final class MyAction extends AbstractEditorAction {<br/>
+ *<br/>
+ *     &#64;EditorActionRegistration(name = "my-action")<br/>
+ *     public static MyAction create(Map&lt;String,?&gt; attrs) {<br/>
+ *         return new MyAction(attrs);<br/>
+ *     }<br/>
+ * <br/>
+ *     private MyAction(Map&lt;String,?&gt; attrs) {<br/>
+ *         super(attrs);<br/>
+ *         ...<br/>
+ *     }<br/>
+ * <br/>
+ *     protected void actionPerformed(ActionEvent evt, JTextComponent component) {<br/>
+ *         ...<br/>
+ *     }<br/>
+ * <br/>
+ * }<br/>
+ * </code>
  *   </li>
- *   <li> Delegating mode - action is wrapper around the delegate that only gets
- *        created when the action needs to be performed. An advantage is less class loading.
+ * 
+ *   <li> Construction upon invocation - {@link WrapperEditorAction} is constructed
+ *        upon editor kit's construction and the target action only gets
+ *        created when the action needs to be executed
+ *        (upon {@link Action#actionPerformed(java.awt.event.ActionEvent)} call).
+ *        Existing properties of the wrapper action (including <code>Action.NAME</code> property)
+ *        get transferred into delegate action.
+ *        <br/>
+ *        Advantages: Action's class is only loaded upon action's execution.
+ *        <br/>
+ *        Disadvantages: Only a limited set of action's properties gets populated
+ *        (those defined by {@link EditorActionRegistration}).
+ *        <br/>
+ *        Example of registration:
+ *        <br/>
+ * <code>
+ * &#64;EditorActionRegistration(name = "my-action")<br/>
+ * public static final class MyAction extends AbstractEditorAction {<br/>
+ *<br/>
+ *     public MyAction() {<br/>
+ *         // Here the properties are not yet set.<br/>
+ *     }<br/>
+ * <br/>
+ *     &#64;Override<br/>
+ *     protected void valuesUpdated() {<br/>
+ *         // Here the wrapper action has transferred all its properties into this action<br/>
+ *         // so properties like Action.NAME etc. are now populated.<br/>
+ *     }<br/>
+ * <br/>
+ *     protected void actionPerformed(ActionEvent evt, JTextComponent component) {<br/>
+ *         ...<br/>
+ *     }<br/>
+ * <br/>
+ * }<br/>
+ * </code>
  *   </li>
  * </ul>
  *
@@ -137,9 +202,13 @@ public abstract class AbstractEditorAction extends TextAction implements
      * Key of {@link String} property containing a mime type for which this action
      * is registered.
      * <br/>
+     * Note: action's mime-type is not necessarily the same like <code>EditorKit.getContentType()</code>
+     * for which the action was created because the kit may inherit some actions
+     * from a global mime-type "".
+     * <br/>
      * Value of this property is checked at action's initialization
      * (it needs to be passed as part of 'attrs' parameter to constructor).
-     * Subsequent modifications of this property should be avoided.
+     * Subsequent modifications of this property should be avoided and they will likely not affect its behavior.
      */
     public static final String MIME_TYPE_KEY = "mimeType"; // (named in sync with doc's property) NOI18N
 
@@ -169,7 +238,7 @@ public abstract class AbstractEditorAction extends TextAction implements
      * <br/>
      * Value of this property is checked at action's initialization
      * (it needs to be passed as part of 'attrs' parameter to constructor).
-     * Subsequent modifications of this property should be avoided.
+     * Subsequent modifications of this property should be avoided and they will likely not affect its behavior.
      */
     public static final String WRAPPER_ACTION_KEY = "WrapperActionKey"; // NOI18N
 
@@ -207,19 +276,23 @@ public abstract class AbstractEditorAction extends TextAction implements
      * Example:
      * <br/>
      * <code>
-     * public static final class MyAction extends AbstractEditorAction {
-     *
-     *     @EditorActionRegistration(name = "my-action")
-     *     public static MyAction create(Map&lt;String,?&gt; attrs) {
-     *         return new MyAction(attrs);
-     *     }
-     * 
-     *     private MyAction(Map&lt;String,?&gt; attrs) {
-     *         super(attrs);
-     *         ...
-     *     }
-     * 
-     * }
+     * public static final class MyAction extends AbstractEditorAction {<br/>
+     *<br/>
+     *     &#64;EditorActionRegistration(name = "my-action")<br/>
+     *     public static MyAction create(Map&lt;String,?&gt; attrs) {<br/>
+     *         return new MyAction(attrs);<br/>
+     *     }<br/>
+     * <br/>
+     *     private MyAction(Map&lt;String,?&gt; attrs) {<br/>
+     *         super(attrs);<br/>
+     *         ...<br/>
+     *     }<br/>
+     * <br/>
+     *     protected void actionPerformed(ActionEvent evt, JTextComponent component) {<br/>
+     *         ...<br/>
+     *     }<br/>
+     * <br/>
+     * }<br/>
      * </code>
      *
      * @param attrs non-null attributes that hold action's properties.
@@ -243,20 +316,24 @@ public abstract class AbstractEditorAction extends TextAction implements
      * Example:
      * <br/>
      * <code>
-     * @EditorActionRegistration(name = "my-action")
-     * public static final class MyAction extends AbstractEditorAction {
-     *
-     *     public MyAction() {
-     *         // Here the properties are not yet set.
-     *     }
-     * 
-     *     @Override
-     *     protected void attributesUpdated() {
-     *         // Here the wrapper action has transferred all its attributes into this action
-     *         // so properties like Action.NAME etc. are now populated.
-     *     }
-     * 
-     * }
+     * &#64;EditorActionRegistration(name = "my-action")<br/>
+     * public static final class MyAction extends AbstractEditorAction {<br/>
+     *<br/>
+     *     public MyAction() {<br/>
+     *         // Here the properties are not yet set.<br/>
+     *     }<br/>
+     * <br/>
+     *     &#64;Override<br/>
+     *     protected void valuesUpdated() {<br/>
+     *         // Here the wrapper action has transferred all its properties into this action<br/>
+     *         // so properties like Action.NAME etc. are now populated.<br/>
+     *     }<br/>
+     * <br/>
+     *     protected void actionPerformed(ActionEvent evt, JTextComponent component) {<br/>
+     *         ...<br/>
+     *     }<br/>
+     * <br/>
+     * }<br/>
      * </code>
      */
     protected AbstractEditorAction() {
@@ -270,10 +347,10 @@ public abstract class AbstractEditorAction extends TextAction implements
      * @param component "active" text component obtained by {@link TextAction#getFocusedComponent()}.
      *  It may be null.
      */
-    public abstract void actionPerformed(ActionEvent evt, JTextComponent component);
+    protected abstract void actionPerformed(ActionEvent evt, JTextComponent component);
 
     /**
-     * Called when property values from wrapper action were set into this action
+     * Called when property values from wrapper action were transferred into delegate action (this action)
      * so properties like Action.NAME will start to return correct values.
      *
      * @see AbstractEditorAction()
@@ -282,8 +359,10 @@ public abstract class AbstractEditorAction extends TextAction implements
     }
 
     /**
-     * Possibly allow asynchronous execution of the action by returning true.
-     * @return false (by default) or true to allow asynchronous execution.
+     * Possibly allow asynchronous execution of this action by returning true.
+     *
+     * @return Value of {@link #ASYNCHRONOUS_KEY} property is returned
+     *  but subclasses may possibly implement some more elaborate algorithm.
      */
     protected boolean asynchronous() {
         return Boolean.TRUE.equals(getValue(ASYNCHRONOUS_KEY));
@@ -291,24 +370,56 @@ public abstract class AbstractEditorAction extends TextAction implements
 
     /**
      * Reset caret's magic position.
+     * <br/>
+     * Magic caret position is useful when going through empty lines with Down/Up arrow
+     * then the caret returns on original horizontal column when a particular line has sufficient
+     * number of characters.
+     *
      * @param component target text component.
      */
     protected final void resetCaretMagicPosition(JTextComponent component) {
         EditorActionUtilities.resetCaretMagicPosition(component);
     }
 
+    /**
+     * Get presenter of this action in main menu.
+     * <br/>
+     * Default implementation uses {@link #MENU_TEXT_KEY} for menu item's text
+     * and the presenter is placed in the menu according to rules
+     * given in the corresponding {@link EditorActionRegistration}.
+     * <br/>
+     * Moreover the default presenter is sensitive to currently active text component
+     * and if the active editor kit has that action redefined it uses the active action's
+     * properties for this presenter.
+     *
+     * @return instance of menu presenter for this action.
+     */
     @Override
     public JMenuItem getMenuPresenter() {
         // No reusal (as component it can only be present in a single place in component hierarchy)
         return PresenterUpdater.createMenuPresenter(this);
     }
 
+    /**
+     * Get presenter of this action in popup menu.
+     * <br/>
+     * Default implementation uses {@link #POPUP_TEXT_KEY} for popup menu item's text
+     * and the presenter is placed in the popup menu according to rules
+     * given in the corresponding {@link EditorActionRegistration}.
+     *
+     * @return instance of popup menu presenter for this action.
+     */
     @Override
     public JMenuItem getPopupPresenter() {
         // No reusal (as component it can only be present in a single place in component hierarchy)
         return PresenterUpdater.createPopupPresenter(this);
     }
 
+    /**
+     * Get presenter of this action in toolbar.
+     *
+     * @return instance of toolbar presenter for this action.
+     */
     @Override
     public Component getToolbarPresenter() {
         // No reusal (as component it can only be present in a single place in component hierarchy)
@@ -389,9 +500,23 @@ public abstract class AbstractEditorAction extends TextAction implements
         Action dAction = delegateAction;
         // Delegate whole getValue() if delegateAction already exists
         if (dAction != null && dAction != UNITIALIZED_ACTION) {
-            return dAction.getValue(key);
+            Object value = dAction.getValue(key);
+            if (value == null) {
+                value = getValueLocal(key);
+                if (value != null) {
+                    if (LOG.isLoggable(Level.FINE)) {
+                        LOG.fine("Transfer wrapper action property: key=" + key + ", value=" + value + '\n'); // NOI18N
+                    }
+                    dAction.putValue(key, value);
+                }
+            }
+            return value;
         }
 
+        return getValueLocal(key);
+    }
+
+    private Object getValueLocal(String key) {
         if ("enabled" == key) { // Same == in AbstractAction
             return enabled;
         }
@@ -417,6 +542,21 @@ public abstract class AbstractEditorAction extends TextAction implements
         }
     }
     
+    /**
+     * This method is called when a value for the given property
+     * was not yet populated.
+     * <br/>
+     * This method is only called once for the given property. Even if this method
+     * returns null for the given property the infrastructure remembers the
+     * returned value and no longer queries this method (the property can still
+     * be modified by {@link #putValue(java.lang.String, java.lang.Object) }.)
+     * <br/>
+     * Calling of this method and remembering of the returned value does not trigger
+     * {@link #firePropertyChange(java.lang.String, java.lang.Object, java.lang.Object) }.
+     *
+     * @param key key of the property.
+     * @return value of the property or null.
+     */
     protected Object createValue(String key) {
         Object value;
         if (Action.SMALL_ICON.equals(key)) {
@@ -483,7 +623,7 @@ public abstract class AbstractEditorAction extends TextAction implements
                     new DelegateActionPropertyChangeListener(this), dAction));
             delegateAction = dAction;
             if (LOG.isLoggable(Level.FINE)) {
-                LOG.fine("Delegate action created: " + dAction);
+                LOG.fine("Delegate action created: " + dAction + '\n');
             }
         }
         return dAction;
@@ -492,7 +632,7 @@ public abstract class AbstractEditorAction extends TextAction implements
     private void transferProperties(Action dAction) {
         boolean log = LOG.isLoggable(Level.FINE);
         if (log) {
-            LOG.fine("Transfer properties into " + dAction); // NOI18N
+            LOG.fine("Transfer properties into " + dAction + '\n'); // NOI18N
         }
         synchronized (properties) {
             for (Map.Entry<String,Object> entry : properties.entrySet()) {
@@ -500,7 +640,7 @@ public abstract class AbstractEditorAction extends TextAction implements
                 Object value = entry.getValue();
                 if (value != MASK_NULL_VALUE) { // Allow to call createValue() for the property
                     if (log) {
-                        LOG.fine("    key=" + key + ", value=" + value); // NOI18N
+                        LOG.fine("    key=" + key + ", value=" + value + '\n'); // NOI18N
                     }
                     dAction.putValue(key, value);
                 }
@@ -526,7 +666,9 @@ public abstract class AbstractEditorAction extends TextAction implements
     @Override
     public String toString() {
         String clsName = getClass().getSimpleName();
-        return clsName + '@' + System.identityHashCode(this) + " name=\"" + actionName() + "\""; // NOI18N
+        return clsName + '@' + System.identityHashCode(this) +
+                " mime=\"" + getValue(MIME_TYPE_KEY) +  // NOI18N
+                "\" name=\"" + actionName() + "\""; // NOI18N
     }
     
     private static final class DelegateActionPropertyChangeListener implements PropertyChangeListener {

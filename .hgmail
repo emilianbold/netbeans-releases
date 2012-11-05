@@ -43,6 +43,7 @@ libs@ide.netbeans.org=libs.freemarker/*,c.jcraft.*/*,libs.jsr223/*,libs.lucene/*
 logger-commits@ide.netbeans.org=uihandler/*,uihandler.interactive/*,lib.uihandler/*,uihandler.exceptionreporter/*
 maven-dev@projects.netbeans.org=*maven*/*
 mentlicher@netbeans.org=openide.explorer/*,o.n.swing.outline/*,web.javascript.debugger/*,web.webkit.debugging/*
+jstola@netbeans.org=web.webkit.debugging/*,web.inspect/*
 nbbuild-commits@ide.netbeans.org=nbbuild/*,.hg*,.nbbugzilla-components,build.xml
 openide-commits@platform.netbeans.org=openide.*/*,masterfs*/*
 refactoring-commits@java.netbeans.org=refactoring.api/*,refactoring.java/*

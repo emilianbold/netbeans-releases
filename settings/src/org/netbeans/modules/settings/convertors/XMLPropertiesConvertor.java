@@ -124,7 +124,7 @@ public final class XMLPropertiesConvertor extends Convertor implements PropertyC
     private Saver saver;
     public void registerSaver(Object inst, Saver s) {
         if (saver != null) {
-            XMLSettingsSupport.err.warning("[Warning] Saver already registered");
+            XMLSettingsSupport.err.log(Level.WARNING, "Already registered Saver: {0} for settings object: {1}", new Object[]{s.getClass().getCanonicalName(), inst.getClass().getCanonicalName()});
             return;
         }
         
@@ -150,7 +150,7 @@ public final class XMLPropertiesConvertor extends Convertor implements PropertyC
     public void unregisterSaver(Object inst, Saver s) {
         if (saver == null) return;
         if (saver != s) {
-            XMLSettingsSupport.err.warning("[Warning] trying unregistered unknown Saver");
+            XMLSettingsSupport.err.log(Level.WARNING, "Unregistering unknown Saver: {0} for settings object: {1}", new Object[]{s.getClass().getCanonicalName(), inst.getClass().getCanonicalName()});
             return;
         }
         try {

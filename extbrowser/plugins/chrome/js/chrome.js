@@ -62,6 +62,9 @@ NetBeans.browserCloseCallback = function(tabId) {
     chrome.tabs.remove(tabId);
 };
 
+NetBeans.lastClosedTabId = null;
+NetBeans.debuggedTab = null;
+NetBeans.windowWithDebuggedTab = null;
 NetBeans.browserAttachDebugger = function(tabId) {
     if (NetBeans.DEBUG) {
         console.log('debugger attach for tab ' + tabId);
@@ -69,6 +72,11 @@ NetBeans.browserAttachDebugger = function(tabId) {
     chrome.debugger.attach({tabId : tabId}, "1.0", function(){
         if (chrome.extension.lastError) {
             console.log('debugger attach result code: ' + chrome.extension.lastError);
+        } else {
+            NetBeans.debuggedTab = tabId;
+            chrome.tabs.get(tabId, function(tab) {
+                NetBeans.windowWithDebuggedTab = tab.windowId;
+            });
         }
     });
 };
@@ -78,6 +86,8 @@ NetBeans.browserDetachDebugger = function(tabId) {
         console.log('debugger detaching from tab ' + tabId);
     }
     chrome.debugger.detach({tabId : tabId});
+    NetBeans.debuggedTab = null;
+    NetBeans.windowWithDebuggedTab = null;
 };
 
 // display NB icon in URL bar
@@ -181,15 +191,22 @@ NetBeans.resizePage = function(preset, callback) {
 // resize actual page
 NetBeans._resizePage = function(width, height, callback) {
     this.detectViewPort(function() {
+        width = parseInt(width);
+        height = parseInt(height);
+        // resize info
+        var opt = {};
+        opt.state = 'normal';
+        opt.width = width + NetBeans_ViewPort.marginWidth;
+        opt.height = height + NetBeans_ViewPort.marginHeight;
         // resize
         chrome.windows.getLastFocused(function(win) {
-            var opt = {};
-            opt.state = 'normal';
-            opt.width = parseInt(width) + NetBeans_ViewPort.marginWidth;
-            opt.height = parseInt(height) + NetBeans_ViewPort.marginHeight;
             chrome.windows.update(win.id, opt);
             if (callback) {
                 callback();
+            }
+            // #218974
+            if (NetBeans_ViewPort.isMac && width < 400) {
+                NetBeans.openPopup('html/warnWindowTooSmall.html');
             }
         });
     });
@@ -242,11 +259,43 @@ NetBeans.addPageInspectionPropertyListener(function(event) {
     }
 });
 
+/**
+ * Open page with warning about unexpected/incorrect debugger detach.
+ * This means that the NetBeans integration will not work.
+ * This warning is shown always except these cases:
+ * 1. user closes NetBeans IDE
+ * 2. user closes the tab that is being debugged by NetBeans
+ */
+NetBeans._checkUnexpectedDetach = function(tabId) {
+    // delay the check since detach is called before tabClosed
+    setTimeout(function() {
+        var warn = false;
+        // 1. user closes NetBeans IDE -> this case already works out-of-the-box
+        // 2. user closes the tab that is being debugged by NetBeans
+        if (NetBeans.lastClosedTabId != tabId) {
+            warn = true;
+        }
+        if (warn) {
+            NetBeans.openPopup('html/warnDebuggerDetached.html');
+        }
+    }, 100);
+}
+
+NetBeans.openPopup = function(url) {
+    chrome.windows.create({
+        'url': url,
+        type: 'popup',
+        width: 600,
+        height: 250
+    });
+}
+
 chrome.debugger.onEvent.addListener(function(source, method, params) {
     NetBeans.sendDebuggingResponse(source.tabId, {method : method, params : params});
 });
 
 chrome.debugger.onDetach.addListener(function(source) {
+    NetBeans._checkUnexpectedDetach(source.tabId);
     NetBeans.hidePageIcon(source.tabId);
     chrome.contextMenus.removeAll();
     NetBeans.sendDebuggerDetached(source.tabId);
@@ -260,6 +309,7 @@ chrome.tabs.onUpdated.addListener(function(tabId, changeInfo, tab) {
     NetBeans.tabUpdated(tab);
 });
 chrome.tabs.onRemoved.addListener(function(tabId) {
+    NetBeans.lastClosedTabId = tabId;
     NetBeans.tabRemoved(tabId);
 });
 
@@ -272,6 +322,7 @@ chrome.extension.onMessage.addListener(function(message, sender, sendResponse) {
         NetBeans_ViewPort.height = message.height;
         NetBeans_ViewPort.marginWidth = message.marginWidth;
         NetBeans_ViewPort.marginHeight = message.marginHeight;
+        NetBeans_ViewPort.isMac = message.isMac;
         sendResponse();
     } else if (type === 'switchSelectionMode') {
         NetBeans.setSelectionMode(!NetBeans.getSelectionMode());
@@ -294,5 +345,16 @@ chrome.windows.getAll({populate: true}, function(windows) {
                 NetBeans.tabUpdated(tab);
             }
         }
+    }
+});
+
+chrome.windows.onFocusChanged.addListener(function(windowId) {
+    if (NetBeans.debuggedTab !== null) {
+        var active = (windowId === NetBeans.windowWithDebuggedTab);
+        var script = 'if (typeof(NetBeans) === "object") { NetBeans.setWindowActive('+active+'); }';
+        chrome.debugger.sendCommand(
+            {tabId : NetBeans.debuggedTab},
+            'Runtime.evaluate',
+            {expression: script});
     }
 });

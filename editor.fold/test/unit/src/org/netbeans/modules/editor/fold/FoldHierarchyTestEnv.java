@@ -96,6 +96,7 @@ class FoldHierarchyTestEnv {
     
     public FoldHierarchy getHierarchy() {
         FoldHierarchy hierarchy = FoldHierarchy.get(getPane());
+        FoldHierarchyExecution.waitHierarchyInitialized(getPane());
         assert (hierarchy != null);
         return hierarchy;
     }

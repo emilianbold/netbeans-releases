@@ -222,7 +222,10 @@ public class PersistenceCfgProperties {
             ret.addAll(possiblePropertyValues.get(null).keySet());
         }
         if(provider !=null ) {
-            ret.addAll(possiblePropertyValues.get(provider).keySet());
+            Map<String, String[]> props = possiblePropertyValues.get(provider);
+            if(props!=null) {
+                ret.addAll(props.keySet());
+            }
         }
         return ret;
     }

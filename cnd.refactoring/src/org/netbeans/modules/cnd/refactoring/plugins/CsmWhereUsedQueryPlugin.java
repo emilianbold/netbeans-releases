@@ -119,9 +119,7 @@ public class CsmWhereUsedQueryPlugin extends CsmRefactoringPlugin {
             return null;
         }
         Collection<RefactoringElementImplementation> res = doPrepareElements(referencedObject, elements);
-        if (res != null) {
-            elements.addAll(refactoring, res);
-        }
+        elements.addAll(refactoring, res);
         fireProgressListenerStop();
         return null;
     }
@@ -130,7 +128,7 @@ public class CsmWhereUsedQueryPlugin extends CsmRefactoringPlugin {
         Collection<RefactoringElementImplementation> res = null;
         referencedObject = CsmRefactoringUtils.convertToCsmObjectIfNeeded(referencedObject);
         if (referencedObject == null) {
-            return null;
+            return Collections.emptyList();
         }
         long time = System.currentTimeMillis();
         if (isFindUsages()) {

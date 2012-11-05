@@ -44,12 +44,14 @@ package org.netbeans.modules.php.editor.codegen;
 import java.awt.Dialog;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.prefs.Preferences;
 import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JPanel;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.lib.editor.codetemplates.api.CodeTemplate;
 import org.netbeans.lib.editor.codetemplates.api.CodeTemplateManager;
 import org.netbeans.modules.editor.NbEditorUtilities;
@@ -62,8 +64,6 @@ import org.netbeans.modules.php.editor.codegen.ui.MethodPanel;
 import org.netbeans.modules.php.editor.elements.TypeNameResolverImpl;
 import org.netbeans.modules.php.editor.model.ModelUtils;
 import org.netbeans.spi.editor.codegen.CodeGenerator;
-import org.netbeans.spi.project.support.ant.AntProjectHelper;
-import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.filesystems.FileObject;
@@ -485,43 +485,28 @@ public class CGSGenerator implements CodeGenerator {
 
     @Override
     public void invoke() {
-        String methodGenerationWay = null;
-        AntProjectHelper helper = null;
-        EditableProperties properties = null;
-        boolean fluentSetter = false;
-
         // obtain the generation from project properties
         FileObject fo = NbEditorUtilities.getFileObject(component.getDocument());
         Project project = FileOwnerQuery.getOwner(fo);
         if (project != null) {
-            helper = project.getLookup().lookup(AntProjectHelper.class);
-            properties = helper.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
-            methodGenerationWay = properties.getProperty(GETTER_SETTER_PROJECT_PROPERTY);
-            fluentSetter = Boolean.valueOf(properties.getProperty(FLUENT_SETTER_PROJECT_PROPERTY));
-        }
-        if (methodGenerationWay != null) {
+            Preferences preferences = ProjectUtils.getPreferences(project, CGSGenerator.class, false);
             try {
-                cgsInfo.setHowToGenerate(GenWay.valueOf(methodGenerationWay));
-            } catch (IllegalArgumentException exception) {
+                cgsInfo.setHowToGenerate(GenWay.valueOf(preferences.get(GETTER_SETTER_PROJECT_PROPERTY, GenWay.AS_JAVA.name())));
+            } catch (IllegalArgumentException ex) {
                 cgsInfo.setHowToGenerate(GenWay.AS_JAVA);
             }
-        } else {
-            cgsInfo.setHowToGenerate(GenWay.AS_JAVA);
-        }
-        cgsInfo.setFluentSetter(fluentSetter);
-        DialogDescriptor desc = new DialogDescriptor(type.createPanel(cgsInfo), type.getDialogTitle());
-        Dialog dialog = DialogDisplayer.getDefault().createDialog(desc);
-        dialog.setVisible(true);
-        dialog.dispose();
-        if (desc.getValue() == DialogDescriptor.OK_OPTION) {
-            CodeTemplateManager manager = CodeTemplateManager.get(component.getDocument());
-            CodeTemplate template = manager.createTemporary(type.getTemplateText(cgsInfo, component));
-            template.insert(component);
-            //save the gen type value to the project properties
-            if (project != null) {
-                properties.put(GETTER_SETTER_PROJECT_PROPERTY, cgsInfo.getHowToGenerate().name());
-                properties.put(FLUENT_SETTER_PROJECT_PROPERTY, String.valueOf(cgsInfo.isFluentSetter()));
-                helper.putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, properties);
+            cgsInfo.setFluentSetter(preferences.getBoolean(FLUENT_SETTER_PROJECT_PROPERTY, false));
+            DialogDescriptor desc = new DialogDescriptor(type.createPanel(cgsInfo), type.getDialogTitle());
+            Dialog dialog = DialogDisplayer.getDefault().createDialog(desc);
+            dialog.setVisible(true);
+            dialog.dispose();
+            if (desc.getValue() == DialogDescriptor.OK_OPTION) {
+                CodeTemplateManager manager = CodeTemplateManager.get(component.getDocument());
+                CodeTemplate template = manager.createTemporary(type.getTemplateText(cgsInfo, component));
+                template.insert(component);
+                //save the gen type value to the project properties
+                preferences.put(GETTER_SETTER_PROJECT_PROPERTY, cgsInfo.getHowToGenerate().name());
+                preferences.putBoolean(FLUENT_SETTER_PROJECT_PROPERTY, cgsInfo.isFluentSetter());
             }
         }
     }

@@ -57,7 +57,8 @@ import org.openide.util.NbBundle;
  *
  * @author  Tor Norbye
  */
-@OptionsPanelController.Keywords(keywords={"javascript"}, location=OptionsDisplayer.ADVANCED, tabTitle="#JsOptions.displayName")
+@OptionsPanelController.Keywords(keywords={"#KW_JavascriptOptions"}, location=OptionsDisplayer.ADVANCED, tabTitle="#JsOptions.displayName")
+@NbBundle.Messages("KW_JavascriptOptions=JavaScript,JavaScript Version,JavaScript Options,Targeted Browsers")
 public class BrowserPanel extends JSPreferencesPanel {
 
 

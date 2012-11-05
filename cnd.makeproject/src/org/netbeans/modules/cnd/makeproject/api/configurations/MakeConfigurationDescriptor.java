@@ -1051,7 +1051,7 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
         if (folderVisibilityQuery == null) {
             folderVisibilityQuery = new CndVisibilityQuery(regex);
         } else {
-            folderVisibilityQuery.setPattern(regex);
+            folderVisibilityQuery.setIgnoredPattern(regex);
         }
     }
 
@@ -1778,8 +1778,8 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
             String rootPath = ProjectSupport.toProperPath(baseDirFO, dir, project);
             rootPath = CndPathUtilitities.normalizeSlashes(rootPath);
             top.setRoot(rootPath);
-        }
-        addFiles(new HashSet<String>(), top, dir, null, filesAdded, true, true, fileFilter);
+        }        
+        addFilesImpl(new HashSet<String>(), top, dir, null, filesAdded, true, true, fileFilter, true/*all found are included by default*/);
         if (getNativeProjectChangeSupport() != null) { // once not null, it never becomes null
             getNativeProjectChangeSupport().fireFilesAdded(filesAdded);
         }
@@ -1790,22 +1790,33 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
         addSourceRoot(dir.getPath());
     }
 
+    public Folder addFilesFromRefreshedDir(Folder folder, FileObject dir, boolean attachListeners, boolean setModified, @NullAllowed FileObjectFilter fileFilter, boolean useOldSchemeBehavior) {
+        return addFilesFromDirImpl(folder, dir, attachListeners, setModified, fileFilter, useOldSchemeBehavior);
+    }
+
     public Folder addFilesFromDir(Folder folder, FileObject dir, boolean attachListeners, boolean setModified, @NullAllowed FileObjectFilter fileFilter) {
+        return addFilesFromDirImpl(folder, dir, attachListeners, setModified, fileFilter, false);
+    }
+    
+    private Folder addFilesFromDirImpl(Folder folder, FileObject dir, boolean attachListeners, boolean setModified, @NullAllowed FileObjectFilter fileFilter, boolean useOldSchemeBehavior) {
         ArrayList<NativeFileItem> filesAdded = new ArrayList<NativeFileItem>();
-        Folder top = new Folder(folder.getConfigurationDescriptor(), folder, dir.getNameExt(), dir.getNameExt(), true, null);
-        folder.addFolder(top, setModified);
-        addFiles(new HashSet<String>(), top, dir, null, filesAdded, true, setModified, fileFilter);
+        Folder subFolder = folder.findFolderByName(dir.getNameExt());
+        if (subFolder == null) {
+            subFolder = new Folder(folder.getConfigurationDescriptor(), folder, dir.getNameExt(), dir.getNameExt(), true, null);
+        }
+        subFolder = folder.addFolder(subFolder, setModified);
+        addFilesImpl(new HashSet<String>(), subFolder, dir, null, filesAdded, true, setModified, fileFilter, useOldSchemeBehavior);
         if (getNativeProjectChangeSupport() != null) { // once not null, it never becomes null
             getNativeProjectChangeSupport().fireFilesAdded(filesAdded);
         }
         if (attachListeners) {
-            top.attachListeners();
+            subFolder.attachListeners();
         }
-        return top;
+        return subFolder;
     }
 
-    private void addFiles(Set<String> antiLoop, Folder folder, FileObject dir, ProgressHandle handle, ArrayList<NativeFileItem> filesAdded,
-            boolean notify, boolean setModified, final @NullAllowed FileObjectFilter fileFilter) {
+    private void addFilesImpl(Set<String> antiLoop, Folder folder, FileObject dir, ProgressHandle handle, ArrayList<NativeFileItem> filesAdded, boolean notify, boolean setModified, @NullAllowed
+    final FileObjectFilter fileFilter, boolean useOldSchemeBehavior) {
         List<String> absTestRootsList = getAbsoluteTestRoots();
         try {
             String canPath = RemoteFileUtil.getCanonicalPath(dir);
@@ -1835,7 +1846,12 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
             if (hideBinaryFiles && CndFileVisibilityQuery.getDefault().isIgnored(file.getNameExt())) {
                 continue;
             }
-            if (file.isFolder() && getFolderVisibilityQuery().isVisible(file)) {
+            if (file.isData() && folder.isDiskFolder() && !CndFileVisibilityQuery.getDefault().isVisible(file)) {
+                // be consistent in checks to prevent adding item here followed
+                // by remove in Folder.refreshDiskFolder due to !CndFileVisibilityQuery.getDefault().isIgnored(file)
+                continue;
+            }
+            if (file.isFolder() && getFolderVisibilityQuery().isIgnored(file)) {
                 continue;
             }
             if (file.isFolder()) {
@@ -1852,17 +1868,19 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
                 }
                 Folder dirfolder = folder.findFolderByName(file.getNameExt());
                 if (dirfolder == null) {
+                    // child folder inherits kind of parent folder
                     if (inList(absTestRootsList, RemoteFileUtil.getAbsolutePath(file)) || folder.isTestLogicalFolder()) {
                         dirfolder = folder.addNewFolder(file.getNameExt(), file.getNameExt(), true, Folder.Kind.TEST_LOGICAL_FOLDER);
                     } else {
-                        dirfolder = folder.addNewFolder(file.getNameExt(), file.getNameExt(), true, Folder.Kind.SOURCE_LOGICAL_FOLDER);
+                        dirfolder = folder.addNewFolder(file.getNameExt(), file.getNameExt(), true, (Folder.Kind)null);
                     }
                 }
-                addFiles(antiLoop, dirfolder, file, handle, filesAdded, notify, setModified, fileFilter);
+                dirfolder.markRemoved(false);
+                addFilesImpl(antiLoop, dirfolder, file, handle, filesAdded, notify, setModified, fileFilter, useOldSchemeBehavior);
             } else {
                 String path = ProjectSupport.toProperPath(baseDirFO, file, project);
                 Item item = Item.createInBaseDir(baseDirFO, path);
-                if (folder.addItem(item, notify, setModified) != null) {
+                if (folder.addItemFromRefreshDir(item, notify, setModified, useOldSchemeBehavior) == item) {
                     filesAdded.add(item);
                 }
                 if (handle != null) {

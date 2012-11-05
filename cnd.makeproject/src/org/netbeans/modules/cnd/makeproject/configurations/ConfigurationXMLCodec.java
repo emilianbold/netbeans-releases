@@ -261,13 +261,22 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
             } else {
                 String name = getString(atts.getValue(NAME_ATTR));
                 String root = getString(atts.getValue(ROOT_ATTR));
-                if (root != null) {
-                    // Restore actual source root name. See bug #216604
+                // physical folders have own name as display name
+                String displayName = name;
+                if (root != null) { 
+                    // except source root which has name as ID and we'd like to display physical
                     String absRootPath = CndPathUtilitities.toAbsolutePath(projectDescriptor.getBaseDirFileObject(), root);
                     absRootPath = RemoteFileUtil.normalizeAbsolutePath(absRootPath, projectDescriptor.getProject());
-                    name = CndPathUtilitities.getBaseName(absRootPath);
+                    displayName = CndPathUtilitities.getBaseName(absRootPath);
+                    if (name == null) {
+                        // due to fix of bug #216604 name can be null => if we lucky we can try to deserialize with folder physical name
+                        name = displayName;
+                    }                    
+                    if (descriptorVersion < VERSION_WITH_INVERTED_SERIALIZATION) {
+                        // TODO: at the end of decoding source root physical folders will be assigned with unique IDs
+                    }
                 }
-                currentFolder = currentFolder.addNewFolder(name, name, true, Folder.Kind.SOURCE_DISK_FOLDER);
+                currentFolder = currentFolder.addNewFolder(name, displayName, true, Folder.Kind.SOURCE_DISK_FOLDER);
                 if (root != null) {
                     currentFolder.setRoot(root);
                 }
@@ -318,6 +327,14 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
         } else if (element.equals(CODE_ASSISTANCE_ELEMENT)) {
             if (currentConf != null) {
                 currentCodeAssistanceConfiguration = ((MakeConfiguration) currentConf).getCodeAssistanceConfiguration();
+            }
+        } else if (element.equals(CODE_ASSISTANCE_ENVIRONMENT_ELEMENT)) {
+            if (currentCodeAssistanceConfiguration != null) {
+                currentList = currentCodeAssistanceConfiguration.getEnvironmentVariables().getValue();
+            }
+        } else if (element.equals(CODE_ASSISTANCE_TRANSIENT_MACROS_ELEMENT)) {
+            if (currentCodeAssistanceConfiguration != null) {
+                currentList = currentCodeAssistanceConfiguration.getTransientMacros().getValue();
             }
         } else if (element.equals(COMPILERTOOL_ELEMENT)) {
         } else if (element.equals(CCOMPILERTOOL_ELEMENT2) || element.equals(CCOMPILERTOOL_ELEMENT) || element.equals(SUN_CCOMPILERTOOL_OLD_ELEMENT)) { // FIXUP: <= 23
@@ -647,6 +664,10 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
             if (currentCodeAssistanceConfiguration != null) {
                 currentCodeAssistanceConfiguration.getTools().setValue(getString(currentText));
             }
+        } else if (element.equals(CODE_ASSISTANCE_ENVIRONMENT_ELEMENT)) {
+            currentList = null;
+        } else if (element.equals(CODE_ASSISTANCE_TRANSIENT_MACROS_ELEMENT)) {
+            currentList = null;
         } else if (element.equals(COMPILERTOOL_ELEMENT)) { // FIXUP: < 10
         } else if (element.equals(CCOMPILERTOOL_ELEMENT2) || element.equals(CCOMPILERTOOL_ELEMENT) || element.equals(SUN_CCOMPILERTOOL_OLD_ELEMENT)) { // FIXUP: <=23
             currentCCompilerConfiguration = null;

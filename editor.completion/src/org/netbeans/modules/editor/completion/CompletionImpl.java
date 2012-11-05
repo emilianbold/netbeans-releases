@@ -138,7 +138,6 @@ CaretListener, KeyListener, FocusListener, ListSelectionListener, PropertyChange
 
     static LazyListModel.Filter filter = new LazyListModel.Filter() {
         public boolean accept(Object obj) {
-            get().documentationCancel();
             if (obj instanceof LazyCompletionItem)
                 return ((LazyCompletionItem)obj).accept();
             return true;
@@ -739,7 +738,7 @@ CaretListener, KeyListener, FocusListener, ListSelectionListener, PropertyChange
             synchronized (this) {
                 completionResult = refreshResult;
             }
-            refreshResult.invokeRefresh();
+            refreshResult.invokeRefresh(true);
         }
     }
     
@@ -1301,7 +1300,7 @@ outer:      for (Iterator it = localCompletionResult.getResultSets().iterator();
             synchronized (this) {
                 toolTipResult = refreshResult;
             }
-            refreshResult.invokeRefresh();
+            refreshResult.invokeRefresh(false);
         }
     }
 
@@ -1777,13 +1776,15 @@ outer:      for (Iterator it = localCompletionResult.getResultSets().iterator();
          * This method should be invoked on the result set returned from
          * {@link #createRefreshResult()}.
          */
-        void invokeRefresh() {
+        void invokeRefresh(boolean docCancel) {
             refreshResultSets(getResultSets(), beforeQuery);
             if (!beforeQuery) {
                 queryInvoked();
                 synchronized (CompletionImpl.this) {
                     if (completionResult != null) {
                         if (!isAllResultsFinished(completionResult.getResultSets())) {
+                            if (docCancel)
+                                documentationCancel();
                             pleaseWaitTimer.restart();
                         }
                     }

@@ -42,6 +42,8 @@
 
 package org.netbeans.modules.cnd.highlight.error;
 
+import org.netbeans.junit.RandomlyFails;
+
 /**
  * Test for IdentifierErrorProvider.
  *
@@ -69,6 +71,7 @@ public class UnresolvedCpp11IdentifierTest extends ErrorHighlightingBaseTestCase
         performStaticTest("bug214184.cpp");
     }   
 
+    @RandomlyFails
     public void testBug214864() throws Exception {
         // Bug 214864 - C++11 parser error on constexpr 
         performStaticTest("bug214864.cpp");
@@ -79,6 +82,7 @@ public class UnresolvedCpp11IdentifierTest extends ErrorHighlightingBaseTestCase
         performStaticTest("bug217067.cpp");
     }        
 
+    @RandomlyFails
     public void testBug217052() throws Exception {
         // Bug 217052 - unexpected token: override in editor
         performStaticTest("bug217052.cpp");
@@ -89,6 +93,7 @@ public class UnresolvedCpp11IdentifierTest extends ErrorHighlightingBaseTestCase
         performStaticTest("bug217470.cpp");
     }        
     
+    @RandomlyFails
     public void testBug217858() throws Exception {
         // Bug 217858 - C++11 parser fails on u8 in static_assert
         performStaticTest("bug217858.cpp");
@@ -98,6 +103,17 @@ public class UnresolvedCpp11IdentifierTest extends ErrorHighlightingBaseTestCase
         // Bug 217827 - Parser fails on const auto (C++11)
         performStaticTest("bug217827.cpp");
     }     
+    
+    public void testBug220527() throws Exception {
+        // Bug 220527 - [73cat] Unexpected token return
+        performStaticTest("bug220527.cpp");
+    }        
+    
+    public void testBug220307() throws Exception {
+        // Bug 220307 - C++11 parsing: Cannot parse member initializer for array
+        performStaticTest("bug220307.cpp");
+    }        
+    
     
     /////////////////////////////////////////////////////////////////////
     // FAILS

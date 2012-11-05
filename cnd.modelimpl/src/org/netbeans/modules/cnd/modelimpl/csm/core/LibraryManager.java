@@ -187,6 +187,8 @@ public final class LibraryManager {
      * Find project for resolved file.
      * Search for project in project, dependencies, artificial libraries.
      * If search is false then method creates artificial library or returns base project.
+     * 
+     * Can return NULL !
      */
     public ProjectBase resolveFileProjectOnInclude(ProjectBase baseProject, FileImpl curFile, ResolvedPath resolvedPath) {
         String absPath = resolvedPath.getPath().toString();
@@ -227,19 +229,21 @@ public final class LibraryManager {
                     if (TraceFlags.TRACE_RESOLVED_LIBRARY) {
                         trace("Base Project as Default Search Path", curFile, resolvedPath, res, baseProject);//NOI18N
                     }
+                    // if (res != null && res.isArtificial()) { // TODO: update lib source roots here }
                 } else if (!baseProject.isArtificial()) {
                     res = getLibrary((ProjectImpl) baseProject, resolvedPath.getFileSystem(), folder);
-                    if (res == null) {
-                        if (CndUtils.isDebugMode()) {
-                            trace("Not created library for folder " + folder, curFile, resolvedPath, res, baseProject); //NOI18N
-                        }
-                        res = baseProject;
+                    if (res == null && CndUtils.isDebugMode()) {
+                        CndUtils.assertTrue(false, "Can not create library; folder=" + folder + " curFile=" + //NOI18N
+                                curFile + " path=" + resolvedPath + " baseProject=" + baseProject); //NOI18N
                     }
                     if (TraceFlags.TRACE_RESOLVED_LIBRARY) {
                         trace("Library for folder " + folder, curFile, resolvedPath, res, baseProject); //NOI18N
                     }
                 } else {
-                    res = baseProject;
+                    if (CndUtils.isDebugMode()) {
+                        CndUtils.assertTrue(false, "Can not get library for artificial project; folder=" + folder + " curFile=" + //NOI18N
+                                curFile + " path=" + resolvedPath + " baseProject=" + baseProject); //NOI18N
+                    }                    
                     if (TraceFlags.TRACE_RESOLVED_LIBRARY) {
                         trace("Base Project", curFile, resolvedPath, res, baseProject);//NOI18N
                     }
@@ -367,6 +371,8 @@ public final class LibraryManager {
         }
         if (!entry.containsProject(projectUid)) {
             entry.addProject(projectUid);
+            Notificator.instance().registerChangedLibraryDependency(project);
+            Notificator.instance().flush(); // should we rely on subsequent flush instead? 
         }
         return (LibProjectImpl) entry.getLibrary().getObject();
     }
@@ -400,11 +406,17 @@ public final class LibraryManager {
     public void onProjectPropertyChanged(ProjectBase project) {
         project.getGraph().clear();
         CsmUID<CsmProject> uid = project.getUID();
+        boolean notify = false;
         for (LibraryEntry entry : librariesEntries.values()) {
             Boolean removed = entry.removeProject(uid);
             if (removed != null) {
                 project.invalidateLibraryStorage(entry.libraryUID);
+                notify = true;
             }
+        }
+        if (notify) {
+            Notificator.instance().registerChangedLibraryDependency(project);
+            Notificator.instance().flush(); // should we rely on subsequent flush instead? 
         }
     }
 
@@ -488,7 +500,7 @@ public final class LibraryManager {
             for (int i = 0; i < len; i++) {
                 LibraryKey key =  new LibraryKey(input);
                 LibraryEntry entry =  getOrCreateLibrary(key);
-                entry.addProject(project);
+                entry.addProject(project); // no need to notiy here, we are called from project constructor here
             }
         }
     }
@@ -598,7 +610,7 @@ public final class LibraryManager {
         private Boolean removeProject(CsmUID<CsmProject> project) {
             return dependentProjects.remove(project);
         }
-
+        
         @Override
         public String toString() {
             StringBuilder sb = new StringBuilder();

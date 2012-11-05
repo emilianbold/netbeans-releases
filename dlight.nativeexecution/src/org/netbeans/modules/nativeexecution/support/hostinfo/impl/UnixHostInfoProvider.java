@@ -60,6 +60,7 @@ import org.netbeans.modules.nativeexecution.JschSupport.ChannelStreams;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.HostInfo;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
+import org.netbeans.modules.nativeexecution.api.util.RemoteStatistics;
 import org.netbeans.modules.nativeexecution.pty.NbStartUtility;
 import org.netbeans.modules.nativeexecution.support.EnvReader;
 import org.netbeans.modules.nativeexecution.support.InstalledFileLocatorProvider;
@@ -73,6 +74,7 @@ import org.openide.util.lookup.ServiceProvider;
 @ServiceProvider(service = org.netbeans.modules.nativeexecution.support.hostinfo.HostInfoProvider.class, position = 100)
 public class UnixHostInfoProvider implements HostInfoProvider {
 
+    private static final String TMPBASE = System.getProperty("cnd.tmpbase", null); // NOI18N
     private static final String PATH_VAR = "PATH"; // NOI18N
     private static final String PATH_TO_PREPEND = "/bin:/usr/bin"; // NOI18N
     private static final java.util.logging.Logger log = Logger.getInstance();
@@ -132,8 +134,20 @@ public class UnixHostInfoProvider implements HostInfoProvider {
             ProcessBuilder pb = new ProcessBuilder("/bin/sh", // NOI18N
                     hostinfoScript.getAbsolutePath());
 
-            File tmpDirFile = new File(System.getProperty("java.io.tmpdir")); // NOI18N
-            String tmpDirBase = tmpDirFile.getCanonicalPath();
+            String tmpDirBase = null;
+            if (TMPBASE != null) {
+                if (pathIsOK(TMPBASE, false)) {
+                    tmpDirBase = TMPBASE;
+                } else {
+                    log.log(Level.WARNING, "Ignoring cnd.tmpbase property [{0}] as it contains illegal characters", TMPBASE); // NOI18N
+                }
+            }
+
+            if (tmpDirBase == null) {
+                File tmpDirFile = new File(System.getProperty("java.io.tmpdir")); // NOI18N
+                tmpDirBase = tmpDirFile.getCanonicalPath();
+            }
+
 
             pb.environment().put("TMPBASE", tmpDirBase); // NOI18N
             pb.environment().put("NB_KEY", HostInfoFactory.getNBKey()); // NOI18N
@@ -181,6 +195,13 @@ public class UnixHostInfoProvider implements HostInfoProvider {
 
             // echannel.setEnv() didn't work, so writing this directly
             out.write(("NB_KEY=" + HostInfoFactory.getNBKey() + '\n').getBytes()); // NOI18N
+            if (TMPBASE != null) {
+                if (pathIsOK(TMPBASE, true)) {
+                    out.write(("TMPBASE=" + TMPBASE + '\n').getBytes()); // NOI18N
+                } else {
+                    log.log(Level.WARNING, "Ignoring cnd.tmpbase property [{0}] as it contains illegal characters", TMPBASE); // NOI18N
+                }
+            }
             out.flush();
 
             BufferedReader scriptReader = new BufferedReader(new FileReader(hostinfoScript));
@@ -258,8 +279,10 @@ public class UnixHostInfoProvider implements HostInfoProvider {
 
         ChannelStreams login_shell_channels = null;
 
+        Object activityID = null;
         try {
             login_shell_channels = JschSupport.startLoginShellSession(execEnv);
+            activityID = RemoteStatistics.stratChannelActivity("UnixHostInfoProvider", login_shell_channels.channel, execEnv.getDisplayName()); // NOI18N
             if (nbstart != null && envPath != null) {
                 login_shell_channels.in.write((nbstart + " --dumpenv " + envPath + "\n").getBytes()); // NOI18N
             }
@@ -272,6 +295,9 @@ public class UnixHostInfoProvider implements HostInfoProvider {
         } catch (Exception ex) {
             log.log(Level.WARNING, "Failed to get getRemoteUserEnvironment for " + execEnv.getDisplayName(), ex); // NOI18N
         } finally {
+            if (activityID != null) {
+                RemoteStatistics.stopChannelActivity(activityID);
+            }
             if (login_shell_channels != null) {
                 if (login_shell_channels.channel != null) {
                     try {
@@ -286,5 +312,35 @@ public class UnixHostInfoProvider implements HostInfoProvider {
 
     private void getLocalUserEnvironment(HostInfo hostInfo, Map<String, String> environmentToFill) {
         environmentToFill.putAll(System.getenv());
+    }
+
+    private boolean pathIsOK(String path, boolean remote) {
+        for (char c : path.toCharArray()) {
+            if (c >= '0' && c <= '9') {
+                continue;
+            }
+            if (c >= 'a' && c <= 'z') {
+                continue;
+            }
+            if (c >= 'A' && c <= 'Z') {
+                continue;
+            }
+            if (c == '_' || c == '=') {
+                continue;
+            }
+            if (remote && c == '\\') {
+                continue;
+            }
+            if (!remote && c == File.pathSeparatorChar) {
+                continue;
+            }
+            if (c == ':' && !remote && Utilities.isWindows()) {
+                continue;
+            }
+
+            return false;
+        }
+
+        return true;
     }
 }

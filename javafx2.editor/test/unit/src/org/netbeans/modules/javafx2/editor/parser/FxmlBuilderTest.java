@@ -41,9 +41,11 @@
  */
 package org.netbeans.modules.javafx2.editor.parser;
 
+import java.util.Collection;
 import org.netbeans.modules.javafx2.editor.completion.model.FxTreeUtilities;
 import org.netbeans.modules.javafx2.editor.ErrorMark;
 import org.netbeans.modules.javafx2.editor.GoldenFileTestBase;
+import org.netbeans.modules.javafx2.editor.completion.model.FxNewInstance;
 import org.netbeans.modules.javafx2.editor.sax.XmlLexerParser;
 
 /**
@@ -64,11 +66,25 @@ public class FxmlBuilderTest extends GoldenFileTestBase {
 //    }
     
     public void testBaseLoad() throws Exception {
-        XmlLexerParser parser = new XmlLexerParser(hierarchy);
+        final XmlLexerParser parser = new XmlLexerParser(hierarchy);
         builder = new FxModelBuilder();
         parser.setContentHandler(builder);
-        parser.parse();
         
+        
+        final Exception[] exc = new Exception[1];
+        document.render(new Runnable() {
+            public void run() {
+                try {
+                    parser.parse();
+                } catch (Exception ex) {
+                    exc[0] = ex;
+                }
+            }
+        });
+        if (exc[0] != null) {
+            throw exc[0];
+        }
+
         PrintVisitor v = new PrintVisitor(new FxTreeUtilities(ModelAccessor.INSTANCE, builder.getModel(), hierarchy));
         builder.getModel().accept(v);
         
@@ -100,10 +116,23 @@ public class FxmlBuilderTest extends GoldenFileTestBase {
     }
 
     private void defaultTestContents() throws Exception {
-        XmlLexerParser parser = new XmlLexerParser(hierarchy);
+        final XmlLexerParser parser = new XmlLexerParser(hierarchy);
         builder = new FxModelBuilder();
         parser.setContentHandler(builder);
-        parser.parse();
+        
+        final Exception[] exc = new Exception[1];
+        document.render(new Runnable() {
+            public void run() {
+                try {
+                    parser.parse();
+                } catch (Exception ex) {
+                    exc[0] = ex;
+                }
+            }
+        });
+        if (exc[0] != null) {
+            throw exc[0];
+        }
 
         PrintVisitor v = new PrintVisitor(
                 new FxTreeUtilities(ModelAccessor.INSTANCE, builder.getModel(), hierarchy));
@@ -119,6 +148,23 @@ public class FxmlBuilderTest extends GoldenFileTestBase {
         }
         
         assertContents(v.out);
+    }
+    
+    /**
+     * Checks that fx:define is recognized, and that those beans are resolved
+     * when referenced from fx:copy, fx:reference.
+     * 
+     * @throws Exception 
+     */
+    public void testDefinedBeans() throws Exception {
+        defaultTestContents();
+        Collection<FxNewInstance> defs = builder.getModel().getDefinitions();
+        assertEquals(2, defs.size());
+        for (FxNewInstance d : defs) {
+            String id = d.getId();
+            assertNotNull(id);
+            assertTrue(id.equals("SubmitButtonX") || id.equals("OptOutCheckBox"));
+        }
     }
     
 }

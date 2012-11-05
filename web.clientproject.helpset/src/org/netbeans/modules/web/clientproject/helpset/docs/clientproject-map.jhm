@@ -8,8 +8,14 @@
     <mapID target="html5-create" url="html5/html5-createproj.html"/>
     <mapID target="html5-templates" url="html5/html5-sitetemplate.html"/>
     <mapID target="html5-process" url="html5/html5-process.html"/>
-    <mapID target="html5-debug" url="html5/html5-debug.html"/>
     <mapID target="html5-chrome" url="html5/html5-chrome.html"/>
+    <mapID target="html5-inspect" url="html5/html5-inspect.html"/>
+    <mapID target="html5-run" url="html5/html5-runproject.html"/>
+    <mapID target="html5-create" url="html5/html5-createproj.html"/>
+    <mapID target="html5-quickref" url="html5/html5_quickref.html"/>
+    <mapID target="js-breakpoints" url="javascript/js-breakpoints.html"/>
+    <mapID target="js-debug" url="javascript/js-debug.html"/>
+    <mapID target="js-testdriver" url="javascript/js-testdriver.html"/>
     
     
     
@@ -25,6 +31,9 @@
     <mapID target="org.netbeans.modules.web.clientproject.ui.customizer.SourcesPanel" url="csh/csh-html5-prop-sources.html"/>
     <mapID target="org.netbeans.modules.web.clientproject.ui.customizer.JavaScriptFilesPanel" url="csh/csh-html5-prop-js.html"/>
     <mapID target="org.netbeans.modules.web.clientproject.ui.customizer.RunPanel" url="csh/csh-html5-prop-run.html"/>
+    
+    <!-- CSH for Test Results window -->
+    <mapID target="org.netbeans.modules.gsf.testrunner.api.ResultWindow" url="csh/csh-html5-prop-run.html"/>
     
     
 </map>

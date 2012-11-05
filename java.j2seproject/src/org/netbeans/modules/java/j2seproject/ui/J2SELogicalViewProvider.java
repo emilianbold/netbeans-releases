@@ -82,15 +82,19 @@ import org.openide.awt.ActionReference;
 import org.openide.awt.ActionReferences;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Node;
 import org.openide.util.ChangeSupport;
 import org.openide.util.HelpCtx;
 import org.openide.util.ImageUtilities;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.WeakListeners;
-import org.openide.util.lookup.Lookups;
+import org.openide.util.lookup.AbstractLookup;
+import org.openide.util.lookup.InstanceContent;
 import org.openide.xml.XMLUtil;
 
 /**
@@ -187,7 +191,52 @@ public class J2SELogicalViewProvider implements LogicalViewProvider2 {
     @Override
     public Node createLogicalView() {
         initListeners();
-        return new J2SELogicalViewRootNode();
+        final InstanceContent ic = new InstanceContent();
+        ic.add(project);
+        ic.add(project, new InstanceContent.Convertor<J2SEProject, FileObject>() {
+            @Override
+            public FileObject convert(J2SEProject obj) {
+                return obj.getProjectDirectory();
+            }
+            @Override
+            public Class<? extends FileObject> type(J2SEProject obj) {
+                return FileObject.class;
+            }
+            @Override
+            public String id(J2SEProject obj) {
+                final FileObject fo = obj.getProjectDirectory();
+                return fo == null ? "" : fo.getPath();  //NOI18N
+            }
+            @Override
+            public String displayName(J2SEProject obj) {
+                return obj.toString();
+            }
+        });
+        ic.add(project, new InstanceContent.Convertor<J2SEProject, DataObject>() {
+            @Override
+            public DataObject convert(J2SEProject obj) {
+                try {
+                    final FileObject fo = obj.getProjectDirectory();
+                    return fo == null ? null : DataObject.find(fo);
+                } catch (DataObjectNotFoundException ex) {
+                    return null;
+                }
+            }
+            @Override
+            public Class<? extends DataObject> type(J2SEProject obj) {
+                return DataObject.class;
+            }
+            @Override
+            public String id(J2SEProject obj) {
+                final FileObject fo = obj.getProjectDirectory();
+                return fo == null ? "" : fo.getPath();  //NOI18N
+            }
+            @Override
+            public String displayName(J2SEProject obj) {
+                return obj.toString();
+            }
+        });
+        return new J2SELogicalViewRootNode(new AbstractLookup(ic));
     }
     
     public PropertyEvaluator getEvaluator() {
@@ -282,9 +331,9 @@ public class J2SELogicalViewProvider implements LogicalViewProvider2 {
         private final ProjectInformation info = ProjectUtils.getInformation(project);        
         
         @SuppressWarnings("LeakingThisInConstructor")
-        public J2SELogicalViewRootNode() {
+        J2SELogicalViewRootNode(@NonNull final Lookup lkp) {
             super(NodeFactorySupport.createCompositeChildren(project, "Projects/org-netbeans-modules-java-j2seproject/Nodes"), 
-                  Lookups.singleton(project));
+                  lkp);
             setIconBaseWithExtension("org/netbeans/modules/java/j2seproject/ui/resources/j2seProject.png");
             broken = ProjectProblems.isBroken(project);
             compileOnSaveDisabled = isCompileOnSaveDisabled();

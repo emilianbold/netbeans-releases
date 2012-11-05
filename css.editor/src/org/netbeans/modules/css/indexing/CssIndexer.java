@@ -50,8 +50,11 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.css.editor.csl.CssLanguage;
-import org.netbeans.modules.css.editor.api.CssCslParserResult;
+import org.netbeans.modules.css.indexing.api.CssIndex;
+import org.netbeans.modules.css.lib.api.CssParserResult;
 import org.netbeans.modules.css.refactoring.api.Entry;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.spi.Parser.Result;
@@ -63,6 +66,7 @@ import org.netbeans.modules.parsing.spi.indexing.support.IndexDocument;
 import org.netbeans.modules.parsing.spi.indexing.support.IndexingSupport;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
+import org.openide.util.RequestProcessor;
 
 /**
  * Css content indexer
@@ -71,6 +75,11 @@ import org.openide.util.Exceptions;
  */
 public class CssIndexer extends EmbeddingIndexer {
 
+    /**
+     * For firing index changes out of the parsing thread.
+     */
+    private static RequestProcessor RP = new RequestProcessor();
+    
     private static final Logger LOGGER = Logger.getLogger(CssIndexer.class.getSimpleName());
     private static final boolean LOG = LOGGER.isLoggable(Level.FINE);
 
@@ -100,8 +109,8 @@ public class CssIndexer extends EmbeddingIndexer {
                 LOGGER.log(Level.FINE, "indexing {0}", fo.getPath()); //NOI18N
             }
 
-            CssCslParserResult wrapper = (CssCslParserResult) parserResult;
-            CssFileModel model = CssFileModel.create(wrapper.getWrappedCssParserResult());
+            CssParserResult result = (CssParserResult) parserResult;
+            CssFileModel model = CssFileModel.create(result);
             IndexingSupport support = IndexingSupport.getInstance(context);
             IndexDocument document = support.createDocument(indexable);
 
@@ -125,7 +134,7 @@ public class CssIndexer extends EmbeddingIndexer {
             document.addPair(CSS_CONTENT_KEY, Boolean.TRUE.toString(), true, true);
 
             support.addDocument(document);
-
+            
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
         }
@@ -176,6 +185,31 @@ public class CssIndexer extends EmbeddingIndexer {
         return 0;
     }
     
+    private static void fireChange(final FileObject fo) {
+        // handle events firing in separate thread:
+        RP.post(new Runnable() {
+            @Override
+            public void run() {
+                fireChangeImpl(fo);
+            }
+        });
+    }
+    
+    static private void fireChangeImpl(FileObject fo) {
+        Project p = FileOwnerQuery.getOwner(fo);
+        if (p == null) {
+            // no project to notify
+            return;
+        }
+        try {
+            CssIndex index = CssIndex.get(p);
+            if (index != null) {
+                index.notifyChange();
+            }
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+    }
 
     public static class Factory extends EmbeddingIndexerFactory {
 
@@ -190,7 +224,7 @@ public class CssIndexer extends EmbeddingIndexer {
                 return null;
             }
         }
-
+    
         @Override
         public boolean scanStarted(Context context) {
             importsHashCodes.remove(context.getRoot()); //remove the computed hashcode for the given indexing root
@@ -200,6 +234,10 @@ public class CssIndexer extends EmbeddingIndexer {
         
         @Override
         public void scanFinished(Context context) {
+            FileObject root = context.getRoot();
+            if(root != null) {
+                fireChange(root);
+            }
             computedImportsHashCodes = new HashMap<FileObject, AtomicLong>(importsHashCodes); //shallow copy
             super.scanFinished(context);
         }

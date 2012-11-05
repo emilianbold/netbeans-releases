@@ -192,7 +192,7 @@ final class CallHierarchyTopComponent extends TopComponent implements ExplorerMa
         setLayout(new java.awt.BorderLayout());
 
         jToolBar.setFloatable(false);
-        jToolBar.setOrientation(1);
+        jToolBar.setOrientation(javax.swing.SwingConstants.VERTICAL);
         jToolBar.setRollover(true);
 
         jBtnRefresh.setToolTipText(org.openide.util.NbBundle.getMessage(CallHierarchyTopComponent.class, "CallHierarchyTopComponent.jBtnRefresh.toolTipText")); // NOI18N
@@ -371,6 +371,7 @@ private void jMenuItemScopeActionPerformed(java.awt.event.ActionEvent evt) {//GE
             @Override
             public void run() {
                 jSplitPane1.setDividerLocation(0.8);
+                jSplitPane1.setResizeWeight(1.0);
             }
         });
     }

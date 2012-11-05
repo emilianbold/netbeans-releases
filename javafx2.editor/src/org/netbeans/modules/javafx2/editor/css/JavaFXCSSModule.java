@@ -41,13 +41,18 @@
  */
 package org.netbeans.modules.javafx2.editor.css;
 
+import java.lang.ref.SoftReference;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.csl.api.ElementKind;
 import org.netbeans.modules.css.editor.module.spi.*;
 import org.netbeans.modules.css.lib.api.CssModule;
 import org.netbeans.modules.css.lib.api.properties.PropertyDefinition;
+import org.netbeans.modules.javafx2.project.api.JavaFXProjectUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
 import org.openide.util.lookup.ServiceProvider;
@@ -55,16 +60,19 @@ import org.openide.util.lookup.ServiceProvider;
 /**
  * Java FX CSS editor
  *
- * @author Anton Chechel <anton.chechel@oracle.com>
- * @version 1.0
+ * @author Anton Chechel, Marek Fukala, Petr Somol
+ * @version 2.0
  */
+@NbBundle.Messages({
+    "JavaFXCSSModule.displayName=JavaFX"
+})
 @ServiceProvider(service = CssEditorModule.class)
 public class JavaFXCSSModule extends CssEditorModule implements CssModule {
 
-//    private static final String NAMESPACE_KEYWORD = "@namespace"; // NOI18N
     static ElementKind JFX_CSS_ELEMENT_KIND = ElementKind.GLOBAL;
     private static final String PROPERTIES_DEFINITION_PATH = "org/netbeans/modules/javafx2/editor/css/javafx2"; // NOI18N
     private static Map<String, PropertyDefinition> propertyDescriptors;
+    private static SoftReference<Map<String, Boolean>> fileTypeCache;
 
     @Override
     public Collection<String> getPropertyNames(FileObject file) {
@@ -84,100 +92,41 @@ public class JavaFXCSSModule extends CssEditorModule implements CssModule {
     }
 
     /**
-     * TODO IMPLEMENT!!!
+     * Checks whether the file is standard CSS or FX CSS. Unfortunately this
+     * can not be easily determined by file extension nor file contents as FX CSS
+     * is a superset of CSS; a valid FX CSS file can be also a valid standard CSS file.
+     * Here we decide based on file location - CSS files within a FX project are considered
+     * to be FX CSS, all others are considered to be standard CSS.
      * 
      * @param file file context - may be null!
      * @return
      */
     private boolean isJavaFXContext(FileObject file) {
-        return true;
+        if(file != null) {
+            Map<String, Boolean> m;
+            if(fileTypeCache == null) {
+                m = new HashMap<String, Boolean>();
+                fileTypeCache = new SoftReference<Map<String, Boolean>>( m );
+            } else {
+                m = fileTypeCache.get();
+            }
+            if(m != null) {
+                Boolean b = m.get(file.getPath());
+                if(b != null) {
+                    return b.booleanValue();
+                } else {
+                    Project p = FileOwnerQuery.getOwner(file);
+                    if(p != null) {
+                        boolean isFX = JavaFXProjectUtils.isJavaFxEnabled(p);
+                        m.put(file.getPath(), isFX);
+                        return isFX;
+                    }
+                }
+            }
+        }
+        return false;
     }
 
-//    @Override
-//    public List<org.netbeans.modules.csl.api.CompletionProposal> getCompletionProposals(CompletionContext context) {
-//        List<CompletionProposal> proposals = new ArrayList<CompletionProposal>();
-//        Node activeNode = context.getActiveNode();
-//        boolean isError = activeNode.type() == NodeType.error;
-//        if (isError) {
-//            activeNode = activeNode.parent();
-//        }
-//
-//        switch (activeNode.type()) {
-//            case namespace_prefix:
-//            case elementName:
-//                //already in the prefix
-//
-//                //todo: rewrite to use index later
-//                Stylesheet model = context.getParserResult().getModel();
-//                for (Namespace ns : model.getNamespaces()) {
-//                    proposals.add(new JavaFXCSSCompletionItem(ns.getPrefix().toString(), ns.getResourceIdentifier().toString(), context.getAnchorOffset()));
-//                }
-//                break;
-//
-//            case root:
-//            case styleSheet:
-//            case bodylist:
-//                CompletionProposal nsKeywordProposal =
-//                        CssCompletionItem.createRAWCompletionItem(new CssElement(NAMESPACE_KEYWORD), NAMESPACE_KEYWORD, ElementKind.FIELD, context.getAnchorOffset(), false);
-//                proposals.add(nsKeywordProposal);
-//
-//            case bodyset:
-//            case media:
-//            case combinator:
-//            case selector:
-//                proposals.addAll(getJavaFXCSSCompletionProposals(context));
-//                break;
-//
-//            case elementSubsequent: //after element selector
-//            case typeSelector: //after class or id selector
-//                CssTokenId tokenNodeTokenId = context.getActiveTokenNode().type() == NodeType.token ? NodeUtil.getTokenNodeTokenId(context.getActiveTokenNode()) : null;
-//                if (tokenNodeTokenId == CssTokenId.WS) {
-//                    proposals.addAll(getJavaFXCSSCompletionProposals(context));
-//                }
-//                break;
-//
-//            case namespace:
-//                CssTokenId tokenId = context.getTokenSequence().token().id();
-//                if (tokenId == CssTokenId.NAMESPACE_SYM) {
-//                    nsKeywordProposal =
-//                            CssCompletionItem.createRAWCompletionItem(new CssElement(NAMESPACE_KEYWORD), NAMESPACE_KEYWORD, ElementKind.FIELD, context.getAnchorOffset(), false);
-//                    proposals.add(nsKeywordProposal);
-//                }
-//
-//            case simpleSelectorSequence:
-//                if (isError) {
-//                    Token<CssTokenId> token = context.getTokenSequence().token();
-//                    switch (token.id()) {
-//                        case IDENT:
-//                            if (JavaFXEditorUtils.followsToken(context.getTokenSequence(), EnumSet.of(CssTokenId.LBRACKET, CssTokenId.COMMA), true, true, CssTokenId.WS) != null) {
-//                                proposals.addAll(getJavaFXCSSCompletionProposals(context));
-//                            }
-//                            break;
-//                        case LBRACKET:
-//                        case WS:
-//                            proposals.addAll(getJavaFXCSSCompletionProposals(context));
-//                            break;
-//
-//                    }
-//                }
-//                break;
-//
-//            case attrib:
-//            case attrib_name:
-//            case namespace_wqname_prefix:
-//                proposals.addAll(getJavaFXCSSCompletionProposals(context));
-//                break;
-//        }
-//
-//        return JavaFXEditorUtils.filterCompletionProposals(proposals, context.getPrefix(), true);
-//    }
-//    private static List<CompletionProposal> getJavaFXCSSCompletionProposals(CompletionContext context) {
-//        List<CompletionProposal> proposals = new ArrayList<CompletionProposal>();
-//        for (Namespace ns : context.getParserResult().getModel().getNamespaces()) {
-//            proposals.add(new JavaFXCSSCompletionItem(ns.getPrefix().toString(), ns.getResourceIdentifier().toString(), context.getAnchorOffset()));
-//        }
-//        return proposals;
-//    }
     @Override
     public String getName() {
         return "javafx2_css"; //NOI18N
@@ -185,7 +134,8 @@ public class JavaFXCSSModule extends CssEditorModule implements CssModule {
 
     @Override
     public String getDisplayName() {
-        return NbBundle.getMessage(this.getClass(), "css-module-displayname-" + getName()); // NOI18N
+        return Bundle.JavaFXCSSModule_displayName();
+        
     }
 
     @Override

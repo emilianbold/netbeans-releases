@@ -39,32 +39,27 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-
 package org.netbeans.test.subversion.operators.actions;
-
-import org.netbeans.jellytools.actions.ActionNoBlock;
 
 /**
  *
  * @author peter
  */
-public class CopyAction extends ActionNoBlock {
-    
-    /** "Team" menu item. */
-    public static final String TEAM_ITEM = "Team";
-    
-    /** "Subversion" menu item. */
-    public static final String SVN_ITEM = "Subversion";
+public class CopyAction extends SvnAction {
 
-    /** "Copy..." menu item. */
+    /**
+     * "Copy..." menu item.
+     */
     public static final String COPY_MENU_ITEM = "Copy to...";
-    
-    /** "Copy..." popup item. */
+    /**
+     * "Copy..." popup item.
+     */
     public static final String COPY_POPUP_ITEM = "Copy To...";
-    
-    /** Creates a new instance of CopyAction */
+
+    /**
+     * Creates a new instance of CopyAction
+     */
     public CopyAction() {
         super(TEAM_ITEM + "|" + COPY_MENU_ITEM, SVN_ITEM + "|" + COPY_POPUP_ITEM);
     }
-    
 }

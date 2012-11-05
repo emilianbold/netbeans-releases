@@ -90,6 +90,7 @@ public class ItemConfiguration implements ConfigurationAuxObject {
         // General
         this.configuration = configuration;
         setItem(item);
+        // we want non-default (bold) title to be only for excluded items => use false
         this.excluded = new BooleanConfiguration(false);
 
         // This is side effect of lazy configuration. We should init folder configuration
@@ -111,8 +112,15 @@ public class ItemConfiguration implements ConfigurationAuxObject {
     }
 
     public boolean isDefaultConfiguration() {
-        if (excluded.getValue()) {
-            return false;
+        if (org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider.VCS_WRITE) {
+            // was included => not default state to allow serialization
+            if (!excluded.getValue()) {
+                return false;
+            }
+        } else {
+            if (excluded.getValue()) {
+                return false;
+            }
         }
         if (getTool() != item.getDefaultTool()) {
             return false;
@@ -345,7 +353,18 @@ public class ItemConfiguration implements ConfigurationAuxObject {
     public boolean shared() {
         return true;
     }
-
+    
+    public boolean isVCSVisible() {
+        assert org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider.VCS_WRITE;
+        if (item != null && getExcluded() != null) {
+            Folder folder = item.getFolder();
+            if (folder != null && folder.isDiskFolder()) {
+                return !getExcluded().getValue();
+            }
+        }
+        return shared();
+    }
+    
     // interface ConfigurationAuxObject
     @Override
     public boolean hasChanged() {
@@ -674,7 +693,11 @@ public class ItemConfiguration implements ConfigurationAuxObject {
 
     @Override
     public String toString() {
-        return getItem().getPath();
+        String pref = "";
+        if (this.excluded != null && excluded.getValue()) {
+            pref = "[excluded]"; // NOI18N
+        }
+        return pref + getItem().getPath();
     }
     private static ResourceBundle bundle = null;
 

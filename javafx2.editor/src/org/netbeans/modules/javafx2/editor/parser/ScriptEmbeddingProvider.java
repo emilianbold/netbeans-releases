@@ -42,7 +42,6 @@
 package org.netbeans.modules.javafx2.editor.parser;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedList;
@@ -57,6 +56,7 @@ import org.netbeans.api.xml.lexer.XMLTokenId;
 import org.netbeans.modules.javafx2.editor.JavaFXEditorUtils;
 import org.netbeans.modules.javafx2.editor.completion.model.EventHandler;
 import org.netbeans.modules.javafx2.editor.completion.model.FxNodeVisitor;
+import org.netbeans.modules.javafx2.editor.completion.model.FxScriptFragment;
 import org.netbeans.modules.javafx2.editor.completion.model.FxmlParserResult;
 import org.netbeans.modules.javafx2.editor.completion.model.TextPositions;
 import org.netbeans.modules.parsing.api.Embedding;
@@ -168,6 +168,76 @@ public class ScriptEmbeddingProvider extends EmbeddingProvider {
                 ts = (TokenSequence<XMLTokenId>)TokenHierarchy.get(doc).tokenSequence();
             }
         }
+
+        @Override
+        public void visitScript(FxScriptFragment script) {
+            TextPositions pos = fxResult.getTreeUtilities().positions(script);
+            createEmbedding(pos);
+            super.visitScript(script); 
+        }
+        
+        private void createEmbedding(TextPositions pos) {
+            int skip = ts.move(pos.getContentStart());
+            if (skip != 0) {
+                System.err.println("");
+            }
+
+            List<Embedding> content = new LinkedList<Embedding>();
+
+            while (ts.moveNext() && ts.offset() < pos.getContentEnd()) {
+                Token<XMLTokenId> token = ts.token();
+                XMLTokenId id = token.id();
+
+                switch (id) {
+                    case CHARACTER:
+                        // uh-oh, not supported yet; treat as text
+                    case TEXT:
+                        content.add(
+                            snapshot.create(
+                                ts.offset(), token.length(), JAVASCRIPT_MIME
+                            )
+                        );
+                        if (doc != null) {
+                            ts.createEmbedding(Language.find(JAVASCRIPT_MIME), 0, 0, true);
+                        }
+                        break;
+
+                    case CDATA_SECTION: {
+                        int start = ts.offset();
+                        int startPad = 0;
+                        int endPad = 0;
+                        int len = token.length();
+                        CharSequence text = token.text();
+
+                        if (len > 9 && text.subSequence(0, 9).toString().equals("<![CDATA[")) {
+                            startPad = 9;
+                        }
+                        if (len > 3 && text.subSequence(len - 3, len).toString().equals("]]>")) {
+                            endPad = 3;
+                        }
+                        content.add(
+                            snapshot.create(
+                                start + startPad, len - startPad - endPad, 
+                                JAVASCRIPT_MIME
+                            )
+                        );
+                        if (doc != null) {
+                            ts.createEmbedding(Language.find(JAVASCRIPT_MIME), startPad, endPad);
+                        }
+                        break;
+                    }
+                }
+                skip = 0;
+            }
+            if (content.isEmpty()) {
+                return;
+            }
+            if (content.size() == 1) {
+                embeddings.add(content.get(0));
+            } else {
+                embeddings.add(Embedding.create(content));
+            }
+        }
         
         @Override
         public void visitEvent(EventHandler eh) {
@@ -193,63 +263,7 @@ public class ScriptEmbeddingProvider extends EmbeddingProvider {
                     ts.createEmbedding(Language.find(JAVASCRIPT_MIME), skip, skip, true);
                 }
             } else {
-                int skip = ts.move(pos.getContentStart());
-                if (skip != 0) {
-                    System.err.println("");
-                }
-                
-                List<Embedding> content = new LinkedList<Embedding>();
-                
-                while (ts.moveNext() && ts.offset() < pos.getContentEnd()) {
-                    Token<XMLTokenId> token = ts.token();
-                    XMLTokenId id = token.id();
-                    
-                    switch (id) {
-                        case CHARACTER:
-                            // uh-oh, not supported yet; treat as text
-                        case TEXT:
-                            content.add(
-                                snapshot.create(
-                                    ts.offset(), token.length(), JAVASCRIPT_MIME
-                                )
-                            );
-                            if (doc != null) {
-                                ts.createEmbedding(Language.find(JAVASCRIPT_MIME), 0, 0, true);
-                            }
-                            break;
-                                    
-                        case CDATA_SECTION: {
-                            int start = ts.offset();
-                            int startPad = 0;
-                            int endPad = 0;
-                            int len = token.length();
-                            CharSequence text = token.text();
-                            
-                            if (len > 9 && text.subSequence(0, 9).toString().equals("<![CDATA[")) {
-                                startPad = 9;
-                            }
-                            if (len > 3 && text.subSequence(len - 3, len).toString().equals("]]>")) {
-                                endPad = 3;
-                            }
-                            content.add(
-                                snapshot.create(
-                                    start + startPad, len - startPad - endPad, 
-                                    JAVASCRIPT_MIME
-                                )
-                            );
-                            if (doc != null) {
-                                ts.createEmbedding(Language.find(JAVASCRIPT_MIME), startPad, endPad);
-                            }
-                            break;
-                        }
-                    }
-                    skip = 0;
-                }
-                if (content.size() == 1) {
-                    embeddings.add(content.get(0));
-                } else {
-                    embeddings.add(Embedding.create(content));
-                }
+                createEmbedding(pos);
             }
         }
     }

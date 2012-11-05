@@ -54,6 +54,7 @@ import com.sun.source.tree.ExpressionStatementTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.ForLoopTree;
 import com.sun.source.tree.IdentifierTree;
+import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.ModifiersTree;
 import com.sun.source.tree.NewArrayTree;
@@ -797,7 +798,8 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
         while (    statementPath != null
                 && (   !StatementTree.class.isAssignableFrom(statementPath.getLeaf().getKind().asInterface())
                 || (   statementPath.getParentPath() != null
-                && statementPath.getParentPath().getLeaf().getKind() != Kind.BLOCK))) {
+                && statementPath.getParentPath().getLeaf().getKind() != Kind.BLOCK
+                && statementPath.getParentPath().getLeaf().getKind() != Kind.CASE))) {
             if (TreeUtilities.CLASS_TREE_KINDS.contains(statementPath.getLeaf().getKind()))
                 return null;
 
@@ -857,7 +859,7 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
         return true;
     }
 
-    private static BlockTree findAddPosition(CompilationInfo info, TreePath original, Set<? extends TreePath> candidates, int[] outPosition) {
+    private static TreePath findAddPosition(CompilationInfo info, TreePath original, Set<? extends TreePath> candidates, int[] outPosition) {
         //find least common block holding all the candidates:
         TreePath statement = original;
 
@@ -888,17 +890,16 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
         }
 
         //#126269: the common parent may not be block:
-        while (statement.getParentPath() != null && statement.getParentPath().getLeaf().getKind() != Kind.BLOCK) {
+        while (statement.getParentPath() != null && statement.getParentPath().getLeaf().getKind() != Kind.BLOCK && statement.getParentPath().getLeaf().getKind() != Kind.CASE) {
             statement = statement.getParentPath();
         }
 
         if (statement.getParentPath() == null)
             return null;//XXX: log
 
-        BlockTree statements = (BlockTree) statement.getParentPath().getLeaf();
         StatementTree statementTree = (StatementTree) statement.getLeaf();
 
-        int index = statements.getStatements().indexOf(statementTree);
+        int index = getStatements(statement).indexOf(statementTree);
 
         if (index == (-1)) {
             //really strange...
@@ -907,7 +908,7 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
 
         outPosition[0] = index;
 
-        return statements;
+        return statement;
     }
 
     private static int[] computeInitializeIn(final CompilationInfo info, TreePath firstOccurrence, Set<TreePath> occurrences) {
@@ -1445,7 +1446,7 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
         return targetClassWithDuplicates;
     }
     
-    private static ClassTree insertField(WorkingCopy parameter, ClassTree clazz, VariableTree fieldToAdd, Set<Tree> allNewUses) {
+    private static ClassTree insertField(final WorkingCopy parameter, ClassTree clazz, VariableTree fieldToAdd, Set<Tree> allNewUses) {
         ClassTree nueClass = GeneratorUtilities.get(parameter).insertClassMember(clazz, fieldToAdd);
 
         class Contains extends TreeScanner<Boolean, Set<Tree>> {
@@ -1459,6 +1460,7 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
         }
 
         int i = 0;
+        int insertLocation = -1;
 
         for (Tree member : nueClass.getMembers()) {
             i++;
@@ -1482,9 +1484,53 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
                 continue;
             }
 
-            nueClass = parameter.getTreeMaker().insertClassMember(clazz, i - 1, fieldToAdd);
+            insertLocation = i - 1;
             break;
         }
+        
+        TreePath clazzPath = TreePath.getPath(parameter.getCompilationUnit(), clazz); //TODO: efficiency
+        final Set<Element> used = Collections.newSetFromMap(new IdentityHashMap<Element, Boolean>());
+        final boolean statik = fieldToAdd.getModifiers().getFlags().contains(Modifier.STATIC);
+        
+        new TreePathScanner<Void, Void>() {
+            @Override public Void visitIdentifier(IdentifierTree node, Void p) {
+                handleCurrentPath();
+                return super.visitIdentifier(node, p); //To change body of generated methods, choose Tools | Templates.
+            }
+            @Override public Void visitMemberSelect(MemberSelectTree node, Void p) {
+                handleCurrentPath();
+                return super.visitMemberSelect(node, p); //To change body of generated methods, choose Tools | Templates.
+            }
+            private void handleCurrentPath() {
+                Element el = parameter.getTrees().getElement(getCurrentPath());
+                
+                if (el != null && el.getKind().isField() && el.getModifiers().contains(Modifier.STATIC) == statik) {
+                    used.add(el);
+                }
+            }
+        }.scan(new TreePath(clazzPath, fieldToAdd), null);
+        
+        List<? extends Tree> nueMembers = new ArrayList<Tree>(nueClass.getMembers());
+        
+        Collections.reverse(nueMembers);
+        
+        i = nueMembers.size() - 1;
+        for (Tree member : nueMembers) {
+            Element el = parameter.getTrees().getElement(new TreePath(clazzPath, member));
+            
+            if (el != null && used.contains(el)) {
+                insertLocation = i;
+                break;
+            }
+            
+            i--;
+            
+            if (member == fieldToAdd || i < insertLocation)
+                break;
+        }
+
+        if (insertLocation != (-1))
+            nueClass = parameter.getTreeMaker().insertClassMember(clazz, insertLocation, fieldToAdd);
 
         return nueClass;
     }
@@ -1627,7 +1673,7 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
                                 return ; //TODO...
                             }
 
-                            BlockTree statements;
+                            TreePath  statement;
                             int       index;
 
                             if (replaceAll) {
@@ -1639,25 +1685,25 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
                                 }
 
                                 int[] out = new int[1];
-                                statements = findAddPosition(parameter, resolved, candidates, out);
+                                statement = findAddPosition(parameter, resolved, candidates, out);
 
-                                if (statements == null) {
+                                if (statement == null) {
                                     return;
                                 }
 
                                 index = out[0];
                             } else {
                                 int[] out = new int[1];
-                                statements = findAddPosition(parameter, resolved, Collections.<TreePath>emptySet(), out);
+                                statement = findAddPosition(parameter, resolved, Collections.<TreePath>emptySet(), out);
 
-                                if (statements == null) {
+                                if (statement == null) {
                                     return;
                                 }
 
                                 index = out[0];
                             }
 
-                            List<StatementTree> nueStatements = new LinkedList<StatementTree>(statements.getStatements());
+                            List<StatementTree> nueStatements = new LinkedList<StatementTree>(getStatements(statement));
                             mods = make.Modifiers(declareFinal ? EnumSet.of(Modifier.FINAL) : EnumSet.noneOf(Modifier.class));
 
                             nueStatements.add(index, make.Variable(mods, name, make.Type(tm), expression));
@@ -1665,9 +1711,7 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
                             if (expressionStatement)
                                 nueStatements.remove(resolved.getParentPath().getLeaf());
 
-                            BlockTree nueBlock = make.Block(nueStatements, false);
-
-                            parameter.rewrite(statements, nueBlock);
+                            doReplaceInBlockCatchSingleStatement(parameter, new HashMap<Tree, Tree>(), statement, nueStatements);
                             break;
                     }
 

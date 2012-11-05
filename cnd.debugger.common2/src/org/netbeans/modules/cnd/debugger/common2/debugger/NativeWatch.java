@@ -130,8 +130,10 @@ public class NativeWatch {
 	assert watch == null;
 	this.restricted = restricted;
     }
-
-
+    
+    public boolean isEnabled() {
+        return watch.isEnabled();
+    }
     public String getQualifiedExpression() {
 	assert watch == null;
 	return qexpression;

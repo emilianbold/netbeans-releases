@@ -20,12 +20,14 @@
         <p>NetBeans IDE supports the XDebug third-party PHP debugger. If Xdebug is installed
             correctly and the PHP environment is configured correctly, you can debug PHP projects
             inside the IDE. You can also debug PHP files remotely if you set up path mapping.</p>
-        <p>Additional information can be found in the netbeans.org <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+        <p>Additional information can be found in the following wiki document.</p>
+            <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
                 <param name="content" value="http://wiki.netbeans.org/HowToConfigureXDebug">
                 <param name="text" value="<html><u>How to Configure XDebug wiki</u></html>">
                 <param name="textFontSize" value="medium">
                 <param name="textColor" value="blue">
-            </object>.</p>
+            </object>.
+            
         <h3>Checking If XDebug Is Installed</h3>
         <p>The first step you should take is to see if XDebug is already installed on your
             system. Some AMP packages come with XDebug. Run <tt>phpinfo()</tt>. If there
@@ -38,7 +40,8 @@
             <li>Run <tt>phpinfo()</tt>.</li>
             <li>Copy the results of <tt>phpinfo()</tt> from your browser into the
                 clipboard.</li>
-            <li>In a browser window, open <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+            <li>In a browser window, open the following URL.<br>
+                <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
                     <param name="content" value="http://xdebug.org/wizard.php">
                     <param name="text" value="<html><u>http://xdebug.org/wizard.php</u></html>">
                     <param name="textFontSize" value="medium">
@@ -47,6 +50,7 @@
             <li>Paste your PHP info into the XDebug wizard form and click Analyze.</li>
             <li>Follow the instructions that appear.</li>
         </ol>
+        <a name="setup"></a>
         <h3 id="setup">Setting Up XDebug</h3>
         <p>In this section we assume you have XDebug installed and you need to set it up.</p>
         <ol>
@@ -103,12 +107,14 @@ Debugger, or other Zend extensions.</li>
         <param name="textFontSize" value="medium">
         <param name="textColor" value="blue">
     </object>).</li>
-<li>Start a debug session for an arbitrary PHP file from within a browser window (e.g. <tt>http://localhost/index.php?XDEBUG_SESSION_START=mysession</tt>. See <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+<li>Start a debug session for an arbitrary PHP file from within a browser window (e.g. <tt>http://localhost/index.php?XDEBUG_SESSION_START=mysession</tt>).
+    <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
         <param name="content" value="http://xdebug.org/docs/remote#browser_session">
         <param name="text" value="<html><u>XDebug documentation on starting browser sessions</u></html>">
         <param name="textFontSize" value="medium">
         <param name="textColor" value="blue">
-    </object>.)</li>
+    </object>
+</li>
         </ol>
         <p>If XDebug is properly configured, the script started in step 3 should print a message like "Connection established: Resource id #5". If no message is printed and the script is still running, xdebug is not properly configured or uses a different port or has another problem. In this case, kill the running process and investigate where the problem is.</p>
         <h3>Setting Up Debugging Options in NetBeans IDE</h3>
@@ -116,26 +122,33 @@ Debugger, or other Zend extensions.</li>
             set up XDebug options in the IDE. To learn more about these options,
             open Tools &gt; Options (NetBeans Preferences on Mac), go to the PHP Options,
         open the Debugging tab, and click Help.</p>
-        <dl> 
-            <dt><a name="seealso">See Also</a></dt>
-            <dd><object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+        
+        <p>For more information about XDebug, see the following documents.</p>
+        <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
                     <param name="content" value="http://wiki.netbeans.org/HowToConfigureXDebug">
                     <param name="text" value="<html><u>How to Configure XDebug</u></html>">
                     <param name="textFontSize" value="medium">
                     <param name="textColor" value="blue">
-                </object> (NetBeans wiki page)</dd>
-            <dd><object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+                </object> (NetBeans wiki page)
+                <br>
+                <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
                     <param name="content" value="http://xdebug.org/docs/install">
                     <param name="text" value="<html><u>XDebug installation guide</u></html>">
                     <param name="textFontSize" value="medium">
                     <param name="textColor" value="blue">
-                </object></dd>
-                <dd><object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+                </object>
+                <br>
+                <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
                         <param name="content" value="http://forums.netbeans.org/viewtopic.php?t=1513&sid=1bf924860f28bbffc0f55b92fca9395e">
                         <param name="text" value="<html><u>Won't Connect to XDebug</u></html>">
                         <param name="textFontSize" value="medium">
                         <param name="textColor" value="blue">
-                    </object> (NetBeans PHP User's Forum thread)</dd></dl>
+                    </object> (NetBeans PHP User's Forum thread)
+        <dl> 
+            <dt><a name="seealso">See Also</a></dt>
+            <dd></dd>
+            <dd></dd>
+            <dd></dd></dl>
         <hr>
         <p>
             <small><a href="./credits.html">Legal Notices</a></small>

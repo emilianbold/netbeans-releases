@@ -54,5 +54,5 @@ public interface CndTraceFlags {
     // use of weak refs instead of soft to allow quicker GC
     public static final boolean WEAK_REFS_HOLDERS = DebugUtils.getBoolean("cnd.weak.refs", false); // NOI18N
     
-    public static final boolean TEXT_INDEX = DebugUtils.getBoolean("cnd.model.text.index", false); // NOI18N
+    public static final boolean TEXT_INDEX = DebugUtils.getBoolean("cnd.model.text.index", true); // NOI18N
 }

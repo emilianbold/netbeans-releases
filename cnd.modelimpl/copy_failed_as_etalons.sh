@@ -1,4 +1,9 @@
 #!/bin/sh -x
+
+#
+# Copyright (c) 2009, 2012, Oracle and/or its affiliates. All rights reserved.
+#
+
 #
 # For all tests that failed,
 # copy goldens and data into build/test/unit/work/tmp2
