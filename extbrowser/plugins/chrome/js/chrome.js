@@ -191,15 +191,22 @@ NetBeans.resizePage = function(preset, callback) {
 // resize actual page
 NetBeans._resizePage = function(width, height, callback) {
     this.detectViewPort(function() {
+        width = parseInt(width);
+        height = parseInt(height);
+        // resize info
+        var opt = {};
+        opt.state = 'normal';
+        opt.width = width + NetBeans_ViewPort.marginWidth;
+        opt.height = height + NetBeans_ViewPort.marginHeight;
         // resize
         chrome.windows.getLastFocused(function(win) {
-            var opt = {};
-            opt.state = 'normal';
-            opt.width = parseInt(width) + NetBeans_ViewPort.marginWidth;
-            opt.height = parseInt(height) + NetBeans_ViewPort.marginHeight;
             chrome.windows.update(win.id, opt);
             if (callback) {
                 callback();
+            }
+            // #218974
+            if (NetBeans_ViewPort.isMac && width < 400) {
+                NetBeans.openPopup('html/warnWindowTooSmall.html');
             }
         });
     });
@@ -262,17 +269,25 @@ NetBeans.addPageInspectionPropertyListener(function(event) {
 NetBeans._checkUnexpectedDetach = function(tabId) {
     // delay the check since detach is called before tabClosed
     setTimeout(function() {
+        var warn = false;
         // 1. user closes NetBeans IDE -> this case already works out-of-the-box
         // 2. user closes the tab that is being debugged by NetBeans
         if (NetBeans.lastClosedTabId != tabId) {
-            chrome.windows.create({
-                url: 'html/warnDebuggerDetached.html',
-                type: 'popup',
-                width: 600,
-                height: 250
-            });
+            warn = true;
+        }
+        if (warn) {
+            NetBeans.openPopup('html/warnDebuggerDetached.html');
         }
     }, 100);
+}
+
+NetBeans.openPopup = function(url) {
+    chrome.windows.create({
+        'url': url,
+        type: 'popup',
+        width: 600,
+        height: 250
+    });
 }
 
 chrome.debugger.onEvent.addListener(function(source, method, params) {
@@ -307,6 +322,7 @@ chrome.extension.onMessage.addListener(function(message, sender, sendResponse) {
         NetBeans_ViewPort.height = message.height;
         NetBeans_ViewPort.marginWidth = message.marginWidth;
         NetBeans_ViewPort.marginHeight = message.marginHeight;
+        NetBeans_ViewPort.isMac = message.isMac;
         sendResponse();
     } else if (type === 'switchSelectionMode') {
         NetBeans.setSelectionMode(!NetBeans.getSelectionMode());
