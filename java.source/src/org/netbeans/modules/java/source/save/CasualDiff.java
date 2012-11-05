@@ -596,7 +596,12 @@ public class CasualDiff {
             copyTo(localPointer, restypeBounds[0]);
             localPointer = diffTree(oldT.restype, newT.restype, restypeBounds);
             copyTo(localPointer, localPointer = restypeBounds[1]);
+        } else if(oldT.restype == null && newT.restype != null) {
+            copyTo(localPointer, localPointer = oldT.pos);
+            printer.print(newT.restype);
+            printer.print(" "); // print the space after return type
         }
+        
         int posHint;
         if (oldT.typarams.isEmpty()) {
             posHint = oldT.restype != null ? oldT.restype.getStartPosition() : oldT.getStartPosition();
