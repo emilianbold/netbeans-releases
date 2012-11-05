@@ -44,69 +44,46 @@
  *
  * @author marekfukala
  */
-
 package org.netbeans.modules.css.visual;
 
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import javax.swing.ComboBoxModel;
+import java.util.Collection;
+import java.util.Comparator;
+import java.util.TreeSet;
+import javax.swing.DefaultComboBoxModel;
 import javax.swing.JComboBox;
-import javax.swing.event.PopupMenuEvent;
-import javax.swing.event.PopupMenuListener;
-import org.jdesktop.swingx.autocomplete.AutoCompleteDecorator;
-import org.jdesktop.swingx.autocomplete.ObjectToStringConverter;
+import org.netbeans.modules.css.lib.api.properties.Properties;
+import org.netbeans.modules.css.lib.api.properties.PropertyDefinition;
+import org.openide.filesystems.FileObject;
 
 public class AutocompleteJComboBox extends JComboBox {
-
-    private static final Logger LOGGER = Logger.getLogger(AutocompleteJComboBox.class.getSimpleName());
     
-    private boolean popupCancelled;
+    private static Comparator PROPERTY_COMPARATOR = new Comparator<String>() {
+        @Override
+        public int compare(String s1, String s2) {
+            //sort the vendor spec. props below the common ones
+            boolean s1vendor = Properties.isVendorSpecificPropertyName(s1);
+            boolean s2vendor = Properties.isVendorSpecificPropertyName(s2);
 
-    public AutocompleteJComboBox(ComboBoxModel model, ObjectToStringConverter objectToStringConverter) {
-        super(model);
-        initialize(objectToStringConverter);
-    }
-
-    private void initialize(ObjectToStringConverter converter) {
-        AutoCompleteDecorator.decorate(this, converter);
-
-        //At least on Mac and Windows XP L&F, the decorated JComboBox doesn't not fire
-        //ActionEvent when the value is confirmed.
-        addPopupMenuListener(new PopupMenuListener() {
-            @Override
-            public void popupMenuWillBecomeVisible(PopupMenuEvent e) {
-                popupCancelled = false;
+            if (s1vendor && !s2vendor) {
+                return +1;
+            } else if (!s1vendor && s2vendor) {
+                return -1;
             }
+            //delegate to string compare
+            return s1.compareTo(s2);
+        }
+    };
 
-            @Override
-            public void popupMenuWillBecomeInvisible(PopupMenuEvent e) {
-                if (!popupCancelled) {
-                    superFireActionEvent();
-                }
-            }
-
-            @Override
-            public void popupMenuCanceled(PopupMenuEvent e) {
-                popupCancelled = false;
-            }
-        });
-
+    public AutocompleteJComboBox(FileObject file) {
+        super(new DefaultComboBoxModel(getProperties(file)));
     }
 
-    @Override
-    protected void fireActionEvent() {
-        LOGGER.log(Level.FINE, "fireActionEvent()", new Exception());
-        LOGGER.log(Level.FINE, "popup opened: {0}", isPopupVisible());
-            
-        //On the contrary to the ActionEvent not being fired upon entering the value,
-        //each keystroke causes an ActionEvent to be fired!!!
-        //So filter out such action events and fire the action event only when the popup is closed
-        //and it has not been cancelled.
+    private static String[] getProperties(FileObject file) {
+        Collection<String> properties = new TreeSet<String>(PROPERTY_COMPARATOR);
+        for (PropertyDefinition pdef : Properties.getPropertyDefinitions(file, true)) {
+            properties.add(pdef.getName());
+        }
+        return properties.toArray(new String[0]);
     }
-
-    private void superFireActionEvent() {
-        //really fire the action event once the edited value is confirmed
-        super.fireActionEvent();
-    }
-
+    
 }
