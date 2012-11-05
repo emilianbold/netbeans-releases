@@ -46,6 +46,7 @@ import java.lang.management.ManagementFactory;
 import java.lang.management.MemoryMXBean;
 import java.lang.management.MemoryUsage;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.logging.Logger;
 
 /**
  * A service providing information about
@@ -55,8 +56,10 @@ import java.util.concurrent.atomic.AtomicBoolean;
  */
 public final class LowMemoryWatcher {
 
-    private static float heapLimit = 0.8f;
-    private static long absHeapLimit = 100<<20;
+    private static final Logger LOG = Logger.getLogger(LowMemoryWatcher.class.getName());
+    private static final float heapLimit = 0.8f;
+    private static final long absHeapLimit = 100<<20;
+    //@GuardedBy("LowMemoryWatcher.class")
     private static LowMemoryWatcher instance;
     private final MemoryMXBean memBean;
     private final AtomicBoolean testEnforcesLowMemory = new AtomicBoolean();
