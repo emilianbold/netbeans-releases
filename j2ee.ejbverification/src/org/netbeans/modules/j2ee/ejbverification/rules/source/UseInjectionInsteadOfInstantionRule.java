@@ -102,11 +102,6 @@ public final class UseInjectionInsteadOfInstantionRule {
             return null;
         }
 
-        final FileObject targetType = SourceUtils.getFile(ElementHandle.create(javaClass), cpi.getClasspathInfo());
-        if (targetType == null) {
-            return null;
-        }
-
         // is the file source of enterprise app?
         final EjbJar ejbJar = getEjbJarForFileObject(ctx.getInfo().getFileObject());
         if (ejbJar == null) {
