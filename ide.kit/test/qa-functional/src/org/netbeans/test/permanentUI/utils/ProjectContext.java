@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,27 +37,27 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-
-package org.netbeans.test.permanentUI;
-
-import junit.framework.Test;
-import org.netbeans.junit.NbModuleSuite;
+package org.netbeans.test.permanentUI.utils;
 
 /**
  *
- * @author Lukas Hasik
+ * @author jpeska
  */
-public class PermanentUITest {
-    public static Test suite() {
-        return NbModuleSuite.emptyConfiguration()
-                .clusters(".*").enableModules(".*")
-                .addTest(MainMenuTest.class, MainMenuTest.ALL_TESTS)
-                .addTest(MainMenuTestJava.class, MainMenuTest.ALL_TESTS)
-                //.addTest(NewProjectTest.class)
-                //.addTest(OptionsTest.class)
-                .suite();
-  }
+public enum ProjectContext {
 
+    NONE(""),
+    JAVA("-java"),
+    PHP("-php");
+
+    private String pathSuffix;
+
+    private ProjectContext(String pathSuffix) {
+        this.pathSuffix = pathSuffix;
+    }
+
+    public String getPathSuffix() {
+        return pathSuffix;
+    }
 }

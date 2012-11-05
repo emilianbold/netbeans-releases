@@ -1,6 +1,6 @@
 | Profile |                            P (mnemonics)
 ===========
-Profile Project                        P   - Profile Project (project-name) - Profile Main Project
+Profile Project (SampleProject)        P   - Profile Project (project-name) - Profile Main Project
 Profile File
 Profile Test File
 Attach Profiler...                     A

@@ -19,6 +19,7 @@ Fix Code...                       x
 Fix Imports...                    o
 Organize Imports
 Organize Members
+Fix Uses...
 Show Method Parameters            S
 Show Documentation                D
 ===============================
@@ -26,6 +27,8 @@ Make Controller
 ===============================
 Insert Next Matching Word         N
 Insert Previous Matching Word     P
+===============================
+Preprocessor Blocks           >   B
 ===============================
 Inspect...
 ===============================

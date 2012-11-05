@@ -5,7 +5,7 @@
                                Expand All                x
                                =======================
                                Collapse All Javadoc      J
-                               Expand All Javadoc        a
+                               Expand All Javadoc
                                =======================
                                Collapse All Java Code    v
-                               Expand All Java Code      o
+                               Expand All Java Code
