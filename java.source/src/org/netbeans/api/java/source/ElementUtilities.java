@@ -88,6 +88,7 @@ import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.TypeParameterElement;
+import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.ExecutableType;
 import javax.lang.model.type.TypeKind;
@@ -535,6 +536,16 @@ public final class ElementUtilities {
         }
         return false;
     }
+    
+    /** Check whether the given variable is effectively final or final.
+     * 
+     * @param e variable to check for effectively final status
+     * @return true if the given variable is effectively final or final
+     */
+    public boolean isEffectivelyFinal(VariableElement e) {
+        return (((Symbol) e).flags() & (Flags.EFFECTIVELY_FINAL | Flags.FINAL)) != 0;
+    };
+    
     // private implementation --------------------------------------------------
 
 
