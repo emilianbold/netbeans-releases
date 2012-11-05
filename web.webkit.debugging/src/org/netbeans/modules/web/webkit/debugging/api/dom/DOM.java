@@ -538,6 +538,11 @@ public class DOM {
         synchronized (this) {
             int parentId = ((Number)params.get("parentId")).intValue(); // NOI18N
             parent = nodes.get(parentId);
+            if (parent == null) {
+                // 221449 - prevent NullPointerException
+                // Martin, please review - this is just an hotfix
+                //return;
+            }
             JSONArray children = (JSONArray)params.get("nodes"); // NOI18N
             parent.initChildren();
             for (Object child : children) {
