@@ -1233,7 +1233,7 @@ public abstract class FileObject extends Object implements Serializable, Lookup.
         try {
             URI uri = toURL().toURI();
             assert uri.isAbsolute() : uri;
-            assert uri.equals(uri.normalize()) : uri + " from " + this;
+            assert uri.equals(uri.normalize()) : uri + " == " + uri.normalize() + " from " + this;
             return uri;
         } catch (URISyntaxException x) {
             throw new IllegalStateException(x);
