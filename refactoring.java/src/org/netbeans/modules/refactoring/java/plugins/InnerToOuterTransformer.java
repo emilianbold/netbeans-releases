@@ -49,6 +49,7 @@ import com.sun.source.util.TreePath;
 import java.io.IOException;
 import java.util.*;
 import javax.lang.model.element.*;
+import javax.lang.model.type.TypeMirror;
 import javax.tools.JavaFileObject;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.source.Comment;
@@ -300,6 +301,9 @@ public class InnerToOuterTransformer extends RefactoringVisitor {
                 return newOuter;
             } else {
                 ClassTree outerTree = (ClassTree) workingCopy.getTrees().getTree(outer);
+                if(!outerouter.getKind().isClass()) {
+                    outerouter = workingCopy.getElementUtilities().enclosingTypeElement(outerouter);
+                }
                 ClassTree outerouterTree = (ClassTree) workingCopy.getTrees().getTree(outerouter);
                 ClassTree newOuter = make.removeClassMember(outerTree, innerClass);
                 ClassTree newOuterOuter = GeneratorUtilities.get(workingCopy).insertClassMember(outerouterTree, newInnerClass);
@@ -538,8 +542,20 @@ public class InnerToOuterTransformer extends RefactoringVisitor {
         ClassTree newInnerClass = innerClass;
         String referenceName = refactoring.getReferenceName();
         GeneratorUtilities genUtils = GeneratorUtilities.get(workingCopy);
+        final TypeMirror outerType;
+        if(workingCopy.getElementUtilities().isLocal(outer) && (outer.getKind().isClass() || outer.getKind().isInterface())) {
+            TypeElement outerTypeElement = (TypeElement) outer;
+            List<? extends TypeMirror> interfaces = outerTypeElement.getInterfaces();
+            if(interfaces.isEmpty()) {
+                outerType = outerTypeElement.getSuperclass();
+            } else {
+                outerType = interfaces.get(0);
+            }
+        } else {
+            outerType = outer.asType();
+        }
         if (referenceName != null) {
-            VariableTree variable = make.Variable(make.Modifiers(EnumSet.of(Modifier.PRIVATE, Modifier.FINAL)), refactoring.getReferenceName(), make.Type(outer.asType()), null);
+            VariableTree variable = make.Variable(make.Modifiers(EnumSet.of(Modifier.PRIVATE, Modifier.FINAL)), refactoring.getReferenceName(), make.Type(outerType), null);
             newInnerClass = genUtils.insertClassMember(newInnerClass, variable);
         }
         
@@ -557,7 +573,7 @@ public class InnerToOuterTransformer extends RefactoringVisitor {
                 if (member.getKind() == Tree.Kind.METHOD) {
                     MethodTree m = (MethodTree) member;
                     if (m.getReturnType()==null) {
-                        VariableTree parameter = make.Variable(make.Modifiers(EnumSet.of(Modifier.FINAL)), refactoring.getReferenceName(), make.Type(outer.asType()), null);
+                        VariableTree parameter = make.Variable(make.Modifiers(EnumSet.of(Modifier.FINAL)), refactoring.getReferenceName(), make.Type(outerType), null);
                         MethodTree newConstructor = hasVarArgs(m) ?
                             make.insertMethodParameter(m, m.getParameters().size() - 1, parameter) : 
                             make.addMethodParameter(m, parameter);
