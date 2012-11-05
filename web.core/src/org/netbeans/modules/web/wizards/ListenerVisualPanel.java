@@ -44,6 +44,8 @@
 
 package org.netbeans.modules.web.wizards;
 
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
 import org.netbeans.api.j2ee.core.Profile;
 import org.openide.util.NbBundle;
 import org.netbeans.modules.web.api.webmodule.WebModule;
@@ -102,6 +104,14 @@ public class ListenerVisualPanel extends javax.swing.JPanel {
         if (j2eeVersion == Profile.JAVA_EE_6_FULL || j2eeVersion == Profile.JAVA_EE_6_WEB) {
             jCheckBox1.setSelected(false);
         }
+
+        jCheckBox1.addItemListener(new ItemListener() {
+
+            @Override
+            public void itemStateChanged(ItemEvent e) {
+                ListenerVisualPanel.this.wizardPanel.fireChangeEvent();
+            }
+        });
     }
     
     /** This method is called from within the constructor to
