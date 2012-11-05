@@ -161,7 +161,14 @@
         "message": "To restore the NetBeans integration, <b>close the tab with your application and rerun it from the NetBeans IDE</b>."
     },
     "_BrokenNetBeansIntegrationChromeIssue": {
-        "message": "For more information please see this <a href=\"http://code.google.com/p/chromium/issues/detail?id=138258\">Chrome issue</a>."
+        "message": "For more information please see this <a href=\"#\" id=\"chromeIssueLink\">Chrome issue</a>."
+    },
+
+    "_WindowTooSmall": {
+        "message": "Window cannot be resized properly"
+    },
+    "_WindowTooSmallInfo": {
+        "message": "Unfortunately, on Mac OS, the minimal width of the Chrome window is 400 pixels."
     }
 
 }

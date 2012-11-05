@@ -47,5 +47,5 @@ window.addEventListener('load', function() {
     I18n.element('info');
     I18n.element('rerun');
     I18n.element('chromeIssue');
+    I18n.element('okButton');
 }, false);
-
