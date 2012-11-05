@@ -297,7 +297,7 @@ public class PhpStructureScanner implements StructureScanner {
             if (node.getTrueStatement() != null) {
                 addFold(node.getTrueStatement());
             }
-            if (node.getFalseStatement() instanceof Block) {
+            if (node.getFalseStatement() != null && !(node.getFalseStatement() instanceof IfStatement)) {
                 addFold(node.getFalseStatement());
             }
         }
