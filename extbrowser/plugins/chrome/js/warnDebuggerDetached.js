@@ -44,12 +44,18 @@
  * Debugger detached warning.
  */
 var NetBeans_DebuggerDetachedWarning = {};
+
+NetBeans_DebuggerDetachedWarning.CHROME_ISSUE_LINK = 'http://code.google.com/p/chromium/issues/detail?id=138258';
+
 NetBeans_DebuggerDetachedWarning._okButton = null;
+NetBeans_DebuggerDetachedWarning._chromeIssueLink = null;
+
 NetBeans_DebuggerDetachedWarning.init = function() {
     if (NetBeans_DebuggerDetachedWarning._okButton != null) {
         return;
     }
     NetBeans_DebuggerDetachedWarning._okButton = document.getElementById('okButton');
+    NetBeans_DebuggerDetachedWarning._chromeIssueLink = document.getElementById('chromeIssueLink');
     this._registerEvents();
 }
 // register events
@@ -58,9 +64,17 @@ NetBeans_DebuggerDetachedWarning._registerEvents = function() {
     this._okButton.addEventListener('click', function() {
         that._close();
     }, false);
+    this._chromeIssueLink.addEventListener('click', function() {
+        that._openChromeIssueInMainWindow();
+    }, false);
 }
 NetBeans_DebuggerDetachedWarning._close = function() {
     window.close();
+}
+NetBeans_DebuggerDetachedWarning._openChromeIssueInMainWindow = function() {
+    this._chromeIssueLink.setAttribute('href', NetBeans_DebuggerDetachedWarning.CHROME_ISSUE_LINK);
+    this._chromeIssueLink.setAttribute('target', '_blank');
+    this._close();
 }
 
 // run!
