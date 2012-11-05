@@ -86,8 +86,7 @@ public final class Context {
     private FileObject indexFolder;
     private boolean allFilesJob;
     private FileObject root;
-    private IndexingSupport indexingSupport;
-    private Boolean successStatus;
+    private IndexingSupport indexingSupport;    
 
     private final IndexFactoryImpl factory;
 
@@ -269,11 +268,9 @@ public final class Context {
      * @since 1.13
      */
     public boolean isCancelled() {
-        return successStatus != null ?
-            !successStatus :
-            cancelRequest != null ?
-                cancelRequest.isRaised() :
-                false;
+        return cancelRequest != null ?
+            cancelRequest.isRaised() :
+            false;
     }
     
     /**
@@ -338,11 +335,7 @@ public final class Context {
     Object getProperty(@NonNull String propName) {
         Parameters.notNull("propName", propName);   //NOI18N
         return props.get(propName);
-    }
-
-    void setFinished(@NullAllowed final Boolean success) {
-        this.successStatus = success;
-    }
+    }    
 
     static String getIndexerPath (final String indexerName, final int indexerVersion) {
         final StringBuilder sb = new StringBuilder();
