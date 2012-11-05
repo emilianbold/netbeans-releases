@@ -77,7 +77,7 @@ public class CssStylesTCController implements PropertyChangeListener {
     private static CssStylesTCController STATIC_INSTANCE;
     
     //called from CssCaretAwareSourceTask constructor
-    public static synchronized void init() {
+    static synchronized void init() {
         if (STATIC_INSTANCE == null) {
             STATIC_INSTANCE = new CssStylesTCController();
         }
