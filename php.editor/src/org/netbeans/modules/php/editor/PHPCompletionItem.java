@@ -320,6 +320,41 @@ public abstract class PHPCompletionItem implements CompletionProposal {
         return null;
     }
 
+    public static boolean insertOnlyMethodsName(CompletionRequest request) {
+        boolean result = false;
+        TokenHierarchy<?> tokenHierarchy = request.result.getSnapshot().getTokenHierarchy();
+        TokenSequence<PHPTokenId> tokenSequence = (TokenSequence<PHPTokenId>) tokenHierarchy.tokenSequence();
+        if (tokenSequence != null) {
+            VariableScope variableScope = request.result.getModel().getVariableScope(request.anchor);
+            if (variableScope != null) {
+                tokenSequence = tokenSequence.subSequence(request.anchor, variableScope.getBlockRange().getEnd());
+            }
+            boolean wasWhitespace = false;
+            while (tokenSequence.moveNext()) {
+                Token<PHPTokenId> token = tokenSequence.token();
+                PHPTokenId id = token.id();
+                if (PHPTokenId.PHP_STRING.equals(id)) {
+                    if (wasWhitespace) {
+                        // this needs brackets: curl_set^ curl_setopt($ch, $option, $ch);
+                        break;
+                    } else {
+                        // this doesn't need brackets: curl_setopt^  ($ch, $option, $ch);
+                        continue;
+                    }
+                } else if (PHPTokenId.WHITESPACE.equals(id)) {
+                    wasWhitespace = true;
+                    continue;
+                } else if (PHPTokenId.PHP_TOKEN.equals(id) && token.text().toString().equals("(")) { //NOI18N
+                    result = true;
+                    break;
+                } else {
+                    break;
+                }
+            }
+        }
+        return result;
+    }
+
     static class NewClassItem extends MethodElementItem {
 
         /**
@@ -809,7 +844,7 @@ public abstract class PHPCompletionItem implements CompletionProposal {
 
                 @Override
                 public String getCustomInsertTemplate() {
-                    return super.getNameAndFunctionBodyForTemplate();
+                    return insertOnlyMethodsName(request) ? super.getInsertPrefix() : super.getNameAndFunctionBodyForTemplate();
                 }
             };
         }
