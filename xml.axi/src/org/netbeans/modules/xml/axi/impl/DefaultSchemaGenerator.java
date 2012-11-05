@@ -333,7 +333,7 @@ public abstract class DefaultSchemaGenerator extends SchemaGenerator {
             lct = (ComplexType) ctd.getParent();
             if(ctd.getChildren().get(0) instanceof SimpleExtension) {
                 NamedComponentReference base = ((SimpleExtension)ctd.getChildren().get(0)).getBase();                
-                if(base.get() instanceof GlobalSimpleType) {
+                if(base != null && base.get() instanceof GlobalSimpleType) {
                     SimpleContent sc1 = (SimpleContent) ctd;                    
                     copyAttribute(parent, lct, sc1);
                     copyAttribute(parent, lct, sc1.getLocalDefinition());

@@ -115,6 +115,11 @@ public final class MasterMatcher {
         return threadTask.isCanceled();
     }
     
+    /* test */ public static void markTestThread() {
+        MasterMatcher mm = new MasterMatcher(null);
+        THREAD_RESULTS.put(Thread.currentThread(), mm.new Result(null, -1, null, null, -1, -1));
+    }
+    
     public void highlight(
         Document document,
         int caretOffset, 
