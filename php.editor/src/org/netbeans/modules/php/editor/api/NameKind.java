@@ -71,6 +71,7 @@ public class NameKind {
     }
 
     public static Exact exact(String query) {
+        Parameters.notWhitespace("String query: can't be null or empty", query); //NOI18N
         return new Exact(query);
     }
 
@@ -99,6 +100,7 @@ public class NameKind {
             case PREFIX:
                 return new Prefix(query);
             case EXACT:
+                Parameters.notWhitespace("String query: can't be null or empty", query); //NOI18N
                 return new Exact(query);
             case CASE_INSENSITIVE_PREFIX:
                 return new CaseInsensitivePrefix(query);
@@ -281,7 +283,6 @@ public class NameKind {
 
         private Exact(String name) {
             super(name, Kind.EXACT);
-            Parameters.notWhitespace("String name: can't be null or empty", name);//NOI18N
         }
 
         private Exact(QualifiedName name) {
