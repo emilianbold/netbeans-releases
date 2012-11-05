@@ -39,68 +39,45 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.php.composer.ui.actions;
-
-import java.awt.event.ActionEvent;
-import javax.swing.AbstractAction;
-import javax.swing.JMenu;
-import javax.swing.JMenuItem;
-import org.openide.awt.ActionID;
-import org.openide.awt.ActionReference;
-import org.openide.awt.ActionRegistration;
-import org.openide.util.NbBundle;
-import org.openide.util.actions.Presenter;
 
 /**
- * Factory for Composer actions.
+ * Debugger detached warning.
  */
-@ActionID(id="org.netbeans.modules.php.composer.ui.actions.ComposerActionsFactory", category="Project")
-@ActionRegistration(displayName="#ActionsFactory.name", lazy=false)
-@ActionReference(position=1050, path="Projects/org-netbeans-modules-php-phpproject/Actions")
-public final class ComposerActionsFactory extends AbstractAction implements Presenter.Popup {
+var NetBeans_DebuggerDetachedWarning = {};
 
-    private static final long serialVersionUID = 54786435246576574L;
+NetBeans_DebuggerDetachedWarning.CHROME_ISSUE_LINK = 'http://code.google.com/p/chromium/issues/detail?id=138258';
 
-    private JMenu composerActions = null;
+NetBeans_DebuggerDetachedWarning._okButton = null;
+NetBeans_DebuggerDetachedWarning._chromeIssueLink = null;
 
-
-    public ComposerActionsFactory() {
-        super();
+NetBeans_DebuggerDetachedWarning.init = function() {
+    if (NetBeans_DebuggerDetachedWarning._okButton != null) {
+        return;
     }
-
-    @Override
-    public void actionPerformed(ActionEvent e) {
-        assert false;
-    }
-
-    @Override
-    public JMenuItem getPopupPresenter() {
-        if (composerActions == null) {
-            composerActions = new ComposerActions();
-        }
-        return composerActions;
-    }
-
-    //~ Inner classes
-
-    private static final class ComposerActions extends JMenu {
-
-        private static final long serialVersionUID = -877135786765411L;
-
-
-        @NbBundle.Messages("ComposerActionsFactory.name=Composer")
-        public ComposerActions() {
-            super(Bundle.ComposerActionsFactory_name());
-            add(new InitAction());
-            add(new InstallAction());
-            add(new InstallDevAction());
-            add(new UpdateAction());
-            add(new UpdateDevAction());
-            add(new ValidateAction());
-            addSeparator();
-            add(new SelfUpdateAction());
-        }
-
-    }
-
+    NetBeans_DebuggerDetachedWarning._okButton = document.getElementById('okButton');
+    NetBeans_DebuggerDetachedWarning._chromeIssueLink = document.getElementById('chromeIssueLink');
+    this._registerEvents();
 }
+// register events
+NetBeans_DebuggerDetachedWarning._registerEvents = function() {
+    var that = this;
+    this._okButton.addEventListener('click', function() {
+        that._close();
+    }, false);
+    this._chromeIssueLink.addEventListener('click', function() {
+        that._openChromeIssueInMainWindow();
+    }, false);
+}
+NetBeans_DebuggerDetachedWarning._close = function() {
+    window.close();
+}
+NetBeans_DebuggerDetachedWarning._openChromeIssueInMainWindow = function() {
+    this._chromeIssueLink.setAttribute('href', NetBeans_DebuggerDetachedWarning.CHROME_ISSUE_LINK);
+    this._chromeIssueLink.setAttribute('target', '_blank');
+    this._close();
+}
+
+// run!
+window.addEventListener('load', function() {
+    NetBeans_DebuggerDetachedWarning.init();
+}, false);

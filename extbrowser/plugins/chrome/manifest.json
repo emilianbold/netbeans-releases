@@ -3,7 +3,7 @@
   "description": "__MSG__pluginDescription__",
   "manifest_version": 2,
 
-  "version": "0.6.1",
+  "version": "0.6.2",
 
   "background": {
     "page": "html/main.html"
