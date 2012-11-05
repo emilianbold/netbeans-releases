@@ -46,6 +46,7 @@ import java.lang.management.ManagementFactory;
 import java.lang.management.MemoryMXBean;
 import java.lang.management.MemoryUsage;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
@@ -57,12 +58,16 @@ import java.util.logging.Logger;
 public final class LowMemoryWatcher {
 
     private static final Logger LOG = Logger.getLogger(LowMemoryWatcher.class.getName());
+    private static final long LOGGER_RATE = Integer.getInteger(
+            String.format("%s.logger_rate",LowMemoryWatcher.class.getName()),   //NOI18N
+            1000);   //1s
     private static final float heapLimit = 0.8f;
     private static final long absHeapLimit = 100<<20;
     //@GuardedBy("LowMemoryWatcher.class")
     private static LowMemoryWatcher instance;
     private final MemoryMXBean memBean;
     private final AtomicBoolean testEnforcesLowMemory = new AtomicBoolean();
+    private volatile long lastTime;
 
     private LowMemoryWatcher () {
         this.memBean = ManagementFactory.getMemoryMXBean();
@@ -83,7 +88,22 @@ public final class LowMemoryWatcher {
             if (usage != null) {
                 long used = usage.getUsed();
                 long max = usage.getMax();
-                return (used > max * heapLimit) && (max-used <= absHeapLimit);
+                final boolean res = (used > max * heapLimit) && (max-used <= absHeapLimit);
+                if (LOG.isLoggable(Level.FINEST)) {
+                    final long now = System.currentTimeMillis();
+                    if (now - lastTime > LOGGER_RATE) {
+                        LOG.log(
+                            Level.FINEST,
+                            "Max memory: {0}, Used memory: {1}, Low memory condition: {2}", //NOI18N
+                            new Object[]{
+                                max,
+                                used,
+                                res
+                            });
+                        lastTime = now;
+                    }
+                }
+                return res;
             }
         }
         return false;
