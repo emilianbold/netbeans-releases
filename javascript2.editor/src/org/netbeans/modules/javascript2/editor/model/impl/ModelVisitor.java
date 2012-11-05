@@ -559,12 +559,17 @@ public class ModelVisitor extends PathNodeVisitor {
             List<Identifier> fqName = null;
             int pathSize = getPath().size();
             boolean isDeclaredInParent = false;
+            boolean isPrivate = false;
             Node lastVisited = getPath().get(pathSize - 1);
             VarNode varNode = null;
 
             if ( lastVisited instanceof VarNode) {
                 fqName = getName((VarNode)lastVisited);
                 isDeclaredInParent = true;
+                JsObject declarationScope = modelBuilder.getCurrentDeclarationScope();
+                if (fqName.indexOf('.') == -1 &&! ModelUtils.isGlobal(declarationScope)) {
+                    isPrivate = true;
+                }
             } else if (lastVisited instanceof PropertyNode) {
                 fqName = getName((PropertyNode) lastVisited);
                 isDeclaredInParent = true;
@@ -594,8 +599,13 @@ public class ModelVisitor extends PathNodeVisitor {
             if (objectScope != null) {
                 objectScope.setJsKind(JsElement.Kind.OBJECT_LITERAL);
                 modelBuilder.setCurrentObject(objectScope);
+                if(isPrivate) {
+                    objectScope.getModifiers().remove(Modifier.PUBLIC);
+                    objectScope.getModifiers().add(Modifier.PRIVATE);
+                }
             }
         }
+
         return super.enter(objectNode);
     }
 
