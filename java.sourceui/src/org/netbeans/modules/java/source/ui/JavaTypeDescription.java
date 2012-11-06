@@ -49,11 +49,14 @@ import javax.lang.model.element.TypeElement;
 import javax.swing.Icon;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
+import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.java.source.ui.ElementOpen;
 import org.netbeans.modules.java.ui.Icons;
+import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.netbeans.spi.jumpto.type.TypeDescriptor;
 import org.openide.awt.StatusDisplayer;
 import org.openide.filesystems.FileObject;
@@ -93,7 +96,25 @@ public class JavaTypeDescription extends TypeDescriptor {
             Toolkit.getDefaultToolkit().beep();
             return;
         }
-        final ClasspathInfo ci = ClasspathInfo.create(root);
+
+        ClassPath bootPath = ClassPath.getClassPath(root, ClassPath.BOOT);
+        if (bootPath == null) {
+            bootPath = JavaPlatformManager.getDefault().getDefaultPlatform().getBootstrapLibraries();
+        }
+        final ClasspathInfo ci;
+        if (cacheItem.isBinary()) {
+            final ClassPath compilePath = ClassPathSupport.createClassPath(root);
+            ci = ClasspathInfo.create(
+                bootPath,
+                compilePath,
+                ClassPath.EMPTY);
+        } else {
+            final ClassPath sourcePath = ClassPathSupport.createClassPath(root);
+            ci = ClasspathInfo.create(
+                bootPath,
+                ClassPath.EMPTY,
+                sourcePath);
+        }
         if ( cacheItem.isBinary() ) {            
             final ElementHandle<TypeElement> eh = handle;
             if (!ElementOpen.open(ci, eh)) {
