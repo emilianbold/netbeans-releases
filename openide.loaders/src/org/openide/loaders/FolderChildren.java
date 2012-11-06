@@ -259,8 +259,7 @@ implements PropertyChangeListener, ChangeListener, FileChangeListener {
     public Node[] getNodes(boolean optimalResult) {
         Node[] arr;
         Level previous = null;
-        int limit = -1;
-        assert (limit = 1000) > 0; 
+        final int limit = 1000;
         for (int round = 0; ; round++) {
             if (optimalResult) {
                 waitOptimalResult();
@@ -271,8 +270,12 @@ implements PropertyChangeListener, ChangeListener, FileChangeListener {
                 if (n instanceof DelayedNode) {
                     DelayedNode dn = (DelayedNode)n;
                     if (checkChildrenMutex() && dn.waitFinished()) {
-                        err.fine("Waiting for delayed node " + dn);
+                        err.log(Level.FINE, "Waiting for delayed node {0}", dn);
                         stop = false;
+                        if (round > 600) {
+                            err.log(Level.WARNING, "Scheduling additional refresh for {0}", dn);
+                            dn.scheduleRefresh();
+                        }
                     }
                 }
             }
@@ -289,7 +292,12 @@ implements PropertyChangeListener, ChangeListener, FileChangeListener {
                 System.err.flush();
                 System.out.flush();
                 err.setLevel(previous);
-                throw new IllegalStateException("Too many repetitions in getNodes(true). Giving up.");
+                boolean thrw = false;
+                assert thrw = true;
+                if (thrw) {
+                    throw new IllegalStateException("Too many repetitions in getNodes(true). Giving up.");
+                }
+                break;
             }
         }
         if (previous != null) {
@@ -435,8 +443,7 @@ implements PropertyChangeListener, ChangeListener, FileChangeListener {
             this.pair = pair;
             an.setName(pair.primaryFile.getNameExt());
             an.setIconBaseWithExtension("org/openide/loaders/unknown.gif"); // NOI18N
-            
-            task = DataNodeUtils.reqProcessor().post(this);
+            scheduleRefresh();
         }
         
         @Override
@@ -448,7 +455,7 @@ implements PropertyChangeListener, ChangeListener, FileChangeListener {
                 refreshKey(pair);
             }
             task = null;
-            err.fine("delayed node refreshed " + this + " original: " + n);
+            err.log(Level.FINE, "delayed node refreshed {0} original: {1}", new Object[]{this, n});
         }
         
         /* @return true if there was some change in the node while waiting */
@@ -457,10 +464,15 @@ implements PropertyChangeListener, ChangeListener, FileChangeListener {
             if (t == null) {
                 return false;
             }
-            err.fine("original before wait: " + getOriginal());
+            err.log(Level.FINE, "original before wait: {0}", getOriginal());
             t.waitFinished();
-            err.fine("original after wait: " + getOriginal());
+            err.log(Level.FINE, "original after wait: {0}", getOriginal());
+            err.log(Level.FINE, "task after waitFinished {0}", task);
             return true;
+        }
+
+        final void scheduleRefresh() {
+            task = DataNodeUtils.reqProcessor().post(this);
         }
     }
     
