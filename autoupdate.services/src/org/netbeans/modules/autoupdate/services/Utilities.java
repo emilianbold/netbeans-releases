@@ -45,6 +45,8 @@
 package org.netbeans.modules.autoupdate.services;
 
 import java.io.*;
+import java.lang.ref.Reference;
+import java.lang.ref.WeakReference;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
@@ -556,7 +558,6 @@ public class Utilities {
                     brokenDependencies.addAll (moreBroken);
                     break;
                 }
-                tmp = new HashSet<ModuleInfo> ();
                 for (UpdateElement e : more) {
                     //infos.addAll (Trampoline.API.impl (el).getModuleInfos ());
                     tmp.add (((ModuleUpdateElementImpl) Trampoline.API.impl (e)).getModuleInfo ());
@@ -585,7 +586,17 @@ public class Utilities {
         return retval;
     }
     
+    private static Reference<Set<ModuleInfo>> cachedInfosReference = null;            
+    private static Reference<Set<UpdateElement>> cachedResultReference = null;
+    
     public static Set<UpdateElement> handleBackwardCompatability (Set<ModuleInfo> forInstall, Set<Dependency> brokenDependencies, boolean aggressive) {
+        if (cachedInfosReference != null && cachedInfosReference.get() != null && cachedInfosReference.get().equals(forInstall)) {
+            if (cachedResultReference != null && cachedResultReference.get() != null) {
+                return cachedResultReference.get();
+            }
+        }
+        cachedInfosReference = new WeakReference<Set<ModuleInfo>>(forInstall);
+        
         Set<UpdateElement> moreRequested = new HashSet<UpdateElement> ();
         // backward compatibility
         for (ModuleInfo mi : forInstall) {
@@ -652,6 +663,8 @@ public class Utilities {
                     }
             }
         }
+        cachedResultReference = new WeakReference<Set<UpdateElement>>(moreRequested);
+
         return moreRequested;
     }
 

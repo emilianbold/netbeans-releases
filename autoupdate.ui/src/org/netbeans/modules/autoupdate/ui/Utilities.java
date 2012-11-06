@@ -157,7 +157,7 @@ public class Utilities {
         logger.fine("License IDs - Stored: " + (sb.length() == 0 ? "" : sb.substring(0, sb.length() - 1)));
     }
     
-    public static void initAcceptedLicenseIDs() {
+    public static synchronized void initAcceptedLicenseIDs() {
         assert ! SwingUtilities.isEventDispatchThread() : "Don't call in AWT queue";
         if (acceptedLicenseIDs == null) {
             acceptedLicenseIDs = new HashSet<String> ();
