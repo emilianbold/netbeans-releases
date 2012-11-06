@@ -133,6 +133,10 @@ public final class RuleEditorController {
         return peer;
     }
     
+    RuleEditorPanel getRuleEditorPanel() {
+        return peer;
+    }
+    
     /**
      * Sets the css source model to the {@link RuleEditorPanel}.
      * 
