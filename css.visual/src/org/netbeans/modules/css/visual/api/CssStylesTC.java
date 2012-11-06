@@ -43,6 +43,7 @@ package org.netbeans.modules.css.visual.api;
 
 import java.awt.BorderLayout;
 import org.netbeans.modules.css.visual.CssStylesPanel;
+import org.netbeans.modules.css.visual.RuleEditorPanel;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
 import org.openide.filesystems.FileObject;
@@ -113,6 +114,12 @@ public final class CssStylesTC extends TopComponent {
     public void setContext(FileObject file) {
         setFileNameInTitle(file);
         cssStylesPanel.setContext(file);
+    }
+
+    @Override
+    protected void componentDeactivated() {
+        super.componentDeactivated();
+        getRuleEditorController().getRuleEditorPanel().componentDeactivated();
     }
     
     /**
