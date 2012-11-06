@@ -42,16 +42,16 @@
 
 package org.netbeans.modules.maven.j2ee;
 
-import org.netbeans.modules.maven.j2ee.utils.LoggingUtils;
-import org.netbeans.modules.maven.j2ee.utils.MavenProjectSupport;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.api.ejbjar.Ear;
 import org.netbeans.modules.j2ee.api.ejbjar.EjbJar;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
+import org.netbeans.modules.maven.api.NbMavenProject;
+import org.netbeans.modules.maven.j2ee.utils.LoggingUtils;
+import org.netbeans.modules.maven.j2ee.utils.MavenProjectSupport;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.spi.project.ProjectServiceProvider;
 import org.netbeans.spi.project.ui.ProjectOpenedHook;
