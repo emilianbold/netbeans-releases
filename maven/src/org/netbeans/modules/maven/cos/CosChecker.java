@@ -670,8 +670,12 @@ public class CosChecker implements PrerequisitesChecker, LateBoundPrerequisitesC
             return false;
         }
         if (fl.getParentFile() == null || !(fl.getParentFile().exists())) {
-            //the project was not built
-            return false;
+            // The project was not built or it doesn't contains any source file
+            // and thus the target/classes folder isn't created yet - see #219916
+            boolean folderCreated = fl.getParentFile().mkdir();
+            if (!folderCreated) {
+                return false;
+            }
         }
         if (!fl.exists()) {
             try {
