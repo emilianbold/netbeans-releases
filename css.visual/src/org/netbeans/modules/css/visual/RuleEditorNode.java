@@ -84,7 +84,6 @@ import org.netbeans.modules.css.visual.api.DeclarationInfo;
 import org.netbeans.modules.css.visual.api.SortMode;
 import org.netbeans.modules.css.visual.editors.PropertyValuesEditor;
 import org.netbeans.modules.parsing.api.Snapshot;
-import org.netbeans.modules.web.common.api.LexerUtils;
 import org.openide.explorer.propertysheet.ExPropertyEditor;
 import org.openide.explorer.propertysheet.PropertyEnv;
 import org.openide.filesystems.FileObject;
@@ -752,31 +751,52 @@ public class RuleEditorNode extends AbstractNode {
 
             String property = declaration.getProperty().getContent().toString().trim();
             PropertyDefinition model = Properties.getPropertyDefinition(getFileObject(), property);
-            if (model != null) {
-                PropertyValue value = declaration.getPropertyValue();
-                if (value != null) {
-                    CharSequence content = value.getExpression().getContent();
-                    ResolvedProperty rp = new ResolvedProperty(getFileObject(), model, content);
-                    if (!rp.isResolved()) {
-                        info = DeclarationInfo.ERRONEOUS;
-                        List<Token> unresolvedTokens = rp.getUnresolvedTokens();
-                        if (!unresolvedTokens.isEmpty()) {
-                            Token unexpectedToken = unresolvedTokens.iterator().next();
-                            String unexpectedText = unexpectedToken.image().toString();
-                            shortDescription = Bundle.property_value_unexpected_token(getLocationPrefix(), unexpectedText);
-                        } else {
-                            shortDescription = Bundle.property_value_not_resolved(getLocationPrefix());
-                        }
-                        return;
-                    }
-                }
-
-                shortDescription = Bundle.property_description(getLocationPrefix());
-            } else {
+            if (model == null) {
                 //flag as unknown
                 info = DeclarationInfo.ERRONEOUS;
                 shortDescription = Bundle.property_unknown(getLocationPrefix());
+                return ;
             }
+             
+            //so we have a property model...
+            
+            //but before checking the property value ensure we are not trying
+            //to do so for vendor specific property. Values of these properties
+            //are not supposed to be checked as the grammars are not very much
+            //up-to-date and reliable.
+            if(Properties.isVendorSpecificProperty(model)) {
+                shortDescription = Bundle.property_description(getLocationPrefix());
+                return ;
+            }
+
+            PropertyValue value = declaration.getPropertyValue();
+            if (value != null) {
+                CharSequence content = value.getExpression().getContent();
+                ResolvedProperty rp = new ResolvedProperty(getFileObject(), model, content);
+                if (!rp.isResolved()) {
+                    List<Token> unresolvedTokens = rp.getUnresolvedTokens();
+                    if(unresolvedTokens.isEmpty()) {
+                        //no value token/s
+                        info = DeclarationInfo.ERRONEOUS;
+                        shortDescription = Bundle.property_value_not_resolved(getLocationPrefix());
+                        return ;
+                    }
+                    
+                    //we have some unresolved token,
+                    //lets check if the token is vendor specific value token
+                    Token unexpectedToken = unresolvedTokens.iterator().next();
+                    String unexpectedText = unexpectedToken.image().toString();
+                    
+                    if(!org.netbeans.modules.css.editor.module.spi.Utilities.isVendorSpecificPropertyValueToken(getFileObject(), unexpectedText)) {
+                        //no, it seems to be a common value token
+                        shortDescription = Bundle.property_value_unexpected_token(getLocationPrefix(), unexpectedText);
+                        return;
+                    }
+                }
+            }
+
+            //else everything seems to be all right
+            shortDescription = Bundle.property_description(getLocationPrefix());
         }
 
         /**
@@ -1063,6 +1083,12 @@ public class RuleEditorNode extends AbstractNode {
     
     private Property ADD_PROPERTY_FD = new AddPropertyFD();
 
+    @NbBundle.Messages({
+        "AddProperty.displayName.html=<html><body><b>Add Property</b></body></html>",
+        "AddProperty.displayName=Add Property",
+        "AddProperty.shortDescription=Click here to add a new property."
+    })
+    
     private class AddPropertyFD extends Property<String> {
 
         private String valueSet;
@@ -1070,7 +1096,8 @@ public class RuleEditorNode extends AbstractNode {
         public AddPropertyFD() {
             super(String.class);
             setName(AddPropertyFD.class.getSimpleName());
-//            setDisplayName("Add Property");
+            setDisplayName(Bundle.AddProperty_displayName());
+            setShortDescription(Bundle.AddProperty_shortDescription());
         }
 
         @Override
@@ -1090,13 +1117,12 @@ public class RuleEditorNode extends AbstractNode {
 
         @Override
         public boolean canWrite() {
-            return true;
+            return false;
         }
 
         //called from AddPropertyPropertyEditor when a value is entered
         @Override
         public void setValue(final String propertyName) {
-            System.out.println("AddProperty - setValue(" + propertyName + ")");
             if (propertyName == null) {
                 return;
             }
@@ -1166,7 +1192,7 @@ public class RuleEditorNode extends AbstractNode {
 
         @Override
         public Component getTableCellRendererComponent(JTable jtable, Object o, boolean bln, boolean bln1, int i, int i1) {
-            return new JLabel("<html><body><b>Add Property</b></body></html>");
+            return new JLabel(Bundle.AddProperty_displayName_html());
         }
     }
 
@@ -1174,7 +1200,6 @@ public class RuleEditorNode extends AbstractNode {
 
         private AutocompleteJComboBox editor;
         private AddPropertyFD property;
-        private List<CellEditorListener> listeners = new ArrayList<CellEditorListener>();
 
         public AddPropertyCellEditorComponent(AutocompleteJComboBox jcb, AddPropertyFD addFDProperty) {
             super(jcb);
