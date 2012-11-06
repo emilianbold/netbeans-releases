@@ -86,7 +86,7 @@ public class ChromeManagerAccessor implements ExtensionManagerAccessor {
             "netbeans.extbrowser.manual_chrome_plugin_install"; // NOI18N
     
     private static final String PLUGIN_PAGE= 
-            "https://chrome.google.com/webstore/detail/netbeans-connector/ehdgmbjjaocpjdnapfadcldificeaaki"; //NOI18N
+            "https://chrome.google.com/webstore/detail/netbeans-connector/hafdlehgocfcodbgjnpecfajgkeejnaa"; //NOI18N
 
     /* (non-Javadoc)
      * @see org.netbeans.modules.web.plugins.ExtensionManagerAccessor#getManager()
