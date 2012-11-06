@@ -128,8 +128,6 @@ public abstract class SPIAccessor {
 
     public abstract void putProperty(@NonNull Context context, @NonNull String propName, @NullAllowed Object value);
 
-    public abstract Object getProperty(@NonNull Context context, @NonNull String propName);
-
-    public abstract void setFinished(@NonNull Context context, @NullAllowed Boolean success);
+    public abstract Object getProperty(@NonNull Context context, @NonNull String propName);    
 
 }

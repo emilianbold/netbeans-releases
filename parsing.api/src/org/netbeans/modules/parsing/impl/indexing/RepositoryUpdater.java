@@ -2105,11 +2105,7 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
         private final boolean checkEditor;
         private final boolean steady;
         private final CountDownLatch latch = new CountDownLatch(1);
-        private final CancelRequest cancelRequest = new CancelRequest() {
-            public @Override boolean isRaised() {
-                return cancelled.get();
-            }
-        };
+        private final CancelRequestImpl cancelRequest = new CancelRequestImpl(cancelled);
         private final String progressTitle;
         private final SuspendStatus suspendStatus;
         private volatile LogContext logCtx;
@@ -2340,11 +2336,11 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
                     }
                     long time = System.currentTimeMillis();
                     
-                    SPIAccessor.getInstance().setFinished(entry.second, finished);
+                    cancelRequest.setResult(finished);
                     try {
                         entry.first.scanFinished(entry.second);
                     } finally {
-                        SPIAccessor.getInstance().setFinished(entry.second, null);
+                        cancelRequest.setResult(null);
                     }
 
 
@@ -3204,6 +3200,28 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
                     return null;
                 }
                 return new ProxyIterable<Indexable>(usedIndexables, false);
+            }
+        }
+
+        private static final class CancelRequestImpl implements CancelRequest {
+
+            private final AtomicBoolean cancelled;
+            private Boolean successStatus;
+
+            CancelRequestImpl(@NonNull final AtomicBoolean cancelled) {
+                Parameters.notNull("cancelled", cancelled); //NOI18N
+                this.cancelled = cancelled;
+            }
+
+            void setResult(@NullAllowed final Boolean result) {
+                successStatus = result;
+            }
+
+            @Override
+            public boolean isRaised() {
+                return successStatus != null ?
+                    !successStatus :
+                    cancelled.get();
             }
         }
 
