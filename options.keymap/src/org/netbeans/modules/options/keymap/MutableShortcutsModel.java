@@ -215,7 +215,7 @@ class MutableShortcutsModel extends ShortcutsFinderImpl implements ShortcutsFind
 
     private ShortcutAction findActionForShortcut (String shortcut, String category, boolean prefixSearch, Set<ShortcutAction> set, String completeMultikeySC) {
         //search in modified profiles first
-        Map<ShortcutAction, Set<String>> map = modifiedProfiles.get(currentProfile);
+        Map<ShortcutAction, Set<String>> map = modifiedProfiles.get(getCurrentProfile());
         if (map != null) {
             for (Map.Entry<ShortcutAction, Set<String>> entry : map.entrySet()) {
                 for (String sc : entry.getValue()) {
@@ -271,10 +271,11 @@ class MutableShortcutsModel extends ShortcutsFinderImpl implements ShortcutsFind
     }
     
     public String[] getShortcuts (ShortcutAction action) {
-        if (modifiedProfiles.containsKey (currentProfile)) {
+        String profile = getCurrentProfile();
+        if (modifiedProfiles.containsKey (profile)) {
             // find it in modified shortcuts
             Map<ShortcutAction, Set<String>> actionToShortcuts = modifiedProfiles.
-                get (currentProfile);
+                get (profile);
             if (actionToShortcuts.containsKey (action)) {
                 Set<String> s = actionToShortcuts.get (action);
                 return s.toArray (new String [s.size ()]);
@@ -291,7 +292,8 @@ class MutableShortcutsModel extends ShortcutsFinderImpl implements ShortcutsFind
     public Set<String> getAllCurrentlyUsedShortcuts() {
         Set<String> set = new LinkedHashSet<String>();
         //add modified shortcuts, if any
-        Map<ShortcutAction, Set<String>> modMap = modifiedProfiles.get(currentProfile);
+        String profile = getCurrentProfile();
+        Map<ShortcutAction, Set<String>> modMap = modifiedProfiles.get(profile);
         if (modMap != null) {
             for (Map.Entry<ShortcutAction, Set<String>> entry : modMap.entrySet()) {
                 for (String sc : entry.getValue()) {
@@ -303,7 +305,7 @@ class MutableShortcutsModel extends ShortcutsFinderImpl implements ShortcutsFind
             }
         }
         //add default shortcuts
-        for (Map.Entry<ShortcutAction, Set<String>> entry : getProfileMap(currentProfile).entrySet()) {
+        for (Map.Entry<ShortcutAction, Set<String>> entry : getProfileMap(profile).entrySet()) {
             for (String sc : entry.getValue()) {
                     set.add(sc);
                     if (sc.contains(" ")) {
@@ -334,7 +336,7 @@ class MutableShortcutsModel extends ShortcutsFinderImpl implements ShortcutsFind
      * @return {@code null} for success, or collection of conflicting actions 
      */
     Collection<ShortcutAction> revertShortcutsToDefault(ShortcutAction action, boolean force) {
-        Map<ShortcutAction, Set<String>> m = model.getKeymapDefaults (currentProfile);
+        Map<ShortcutAction, Set<String>> m = model.getKeymapDefaults (getCurrentProfile());
         m = convertFromEmacs(m);
         Set<String> shortcuts = m.get(action);
         if (shortcuts == null) {
@@ -356,10 +358,10 @@ class MutableShortcutsModel extends ShortcutsFinderImpl implements ShortcutsFind
     }
 
     public void setShortcuts (ShortcutAction action, Set<String> shortcuts) {
-        Map<ShortcutAction, Set<String>> actionToShortcuts = modifiedProfiles.get (currentProfile);
+        Map<ShortcutAction, Set<String>> actionToShortcuts = modifiedProfiles.get (getCurrentProfile());
         if (actionToShortcuts == null) {
             actionToShortcuts = new HashMap<ShortcutAction, Set<String>> ();
-            modifiedProfiles.put (currentProfile, actionToShortcuts);
+            modifiedProfiles.put (getCurrentProfile(), actionToShortcuts);
         }
         actionToShortcuts.put (action, shortcuts);
     }
