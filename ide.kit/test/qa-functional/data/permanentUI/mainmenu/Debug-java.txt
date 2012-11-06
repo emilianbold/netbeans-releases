@@ -1,6 +1,6 @@
 | Debug |                   D (mnemonics)
 =========
-Debug Project               D   - Debug Project (project-name) - Debug Main Project
+Debug Project (SampleProject)   D   - Debug Project (project-name) - Debug Main Project
 Debug File                  g
 Debug Test File             l
 Attach Debugger...          A

@@ -1,12 +1,12 @@
     Toolbars                 > [x] File                   F
                                [ ] Clipboard              p
                                [x] Undo/Redo              U
+                               [ ] Remote                 O
                                [x] Run                    R
                                [ ] Debug                  D
-                               [ ] Memory                 M
-                               [x] Quick Search           Q
+                               [x] Memory                 M
                                ========================
                                [ ] Small Toolbar Icons    S
                                ========================
                                    Reset Toolbars         T
-                                   Customize...           C
+                                   Customize              C

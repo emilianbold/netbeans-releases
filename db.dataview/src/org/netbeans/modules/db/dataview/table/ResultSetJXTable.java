@@ -57,10 +57,12 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.DefaultRowSorter;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JTable;
 import javax.swing.JTextField;
+import javax.swing.RowFilter;
 import javax.swing.RowSorter;
 import javax.swing.SwingUtilities;
 import javax.swing.TransferHandler;
@@ -144,6 +146,16 @@ public class ResultSetJXTable extends JXTableDecorator {
     @Override
     protected RowSorter<? extends TableModel> createDefaultRowSorter() {
         return new StringFallbackRowSorter(this.getModel());
+    }
+
+    @Override
+    @SuppressWarnings("unchecked")
+    public <R extends TableModel> void setRowFilter(RowFilter<? super R, ? super Integer> filter) {
+        if(getRowSorter() instanceof DefaultRowSorter) {
+            ((DefaultRowSorter) getRowSorter()).setRowFilter(filter);
+        } else {
+            super.setRowFilter(filter);
+        }
     }
 
     public void createTableModel(List<Object[]> rows, final JXTableRowHeader rowHeader) {

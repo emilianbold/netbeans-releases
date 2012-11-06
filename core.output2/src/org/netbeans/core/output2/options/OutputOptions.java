@@ -47,6 +47,7 @@ import java.awt.Font;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.BackingStoreException;
@@ -73,6 +74,7 @@ public class OutputOptions {
     private boolean initialized = false;
     private static final Logger LOG = Logger.getLogger(
             OutputOptions.class.getName());
+    private static AtomicBoolean saveScheduled = new AtomicBoolean(false);
     private static final String PREFIX = "output.settings.";            //NOI18N
     public static final String PROP_FONT = "font";                      //NOI18N
     private static final String PROP_FONT_FAMILY = "font.family";       //NOI18N
@@ -86,10 +88,13 @@ public class OutputOptions {
     public static final String PROP_COLOR_BACKGROUND =
             "color.backgorund";                                         //NOI18N
     public static final String PROP_STYLE_LINK = "style.link";          //NOI18N
+    public static final String PROP_FONT_SIZE_WRAP = "font.size.wrap";  //NOI18N
     private static final String PROP_INITIALIZED = "initialized";       //NOI18N
     private static final int MIN_FONT_SIZE = 3;
+    private static final int MAX_FONT_SIZE = 72;
     private static Font defaultFont = null;
     private Font font = null;
+    private Font fontWrapped = null; // font for wrapped mode
     private Color colorStandard;
     private Color colorError;
     private Color colorLink;
@@ -97,6 +102,7 @@ public class OutputOptions {
     private Color colorBackground;
     private LinkStyle linkStyle = LinkStyle.UNDERLINE;
     private PropertyChangeSupport pcs = new PropertyChangeSupport(this);
+    private boolean defaultFontType = false;
 
     private OutputOptions(boolean initFromDisk) {
         resetToDefault();
@@ -127,6 +133,10 @@ public class OutputOptions {
         int fontStyle = preferences.getInt(PREFIX + PROP_FONT_STYLE,
                 getDefaultFont().getStyle());
         diskData.setFont(new Font(fontFamily, fontStyle, fontSize));
+        int fontSizeWrapped = preferences.getInt(PREFIX + PROP_FONT_SIZE_WRAP,
+                getDefaultFont().getSize());
+        diskData.setFontForWrappedMode(
+                getDefaultFont().deriveFont((float) fontSizeWrapped));
         int rgbStandard = preferences.getInt(PREFIX + PROP_COLOR_STANDARD,
                 getDefaultColorStandard().getRGB());
         diskData.setColorStandard(new Color(rgbStandard));
@@ -176,6 +186,8 @@ public class OutputOptions {
                 getColorLinkImportant().getRGB());
         preferences.putInt(PREFIX + PROP_FONT_SIZE, getFont().getSize());
         preferences.putInt(PREFIX + PROP_FONT_STYLE, getFont().getStyle());
+        preferences.putInt(PREFIX + PROP_FONT_SIZE_WRAP,
+                getFontForWrappedMode().getSize());
         preferences.put(PREFIX + PROP_FONT_FAMILY, getFont().getFamily());
         preferences.put(PREFIX + PROP_STYLE_LINK, getLinkStyle().name());
         try {
@@ -195,6 +207,7 @@ public class OutputOptions {
 
     private void setDefaultFont() {
         setFont(getDefaultFont());
+        setFontForWrappedMode(getDefaultFont());
     }
 
     public static Font getDefaultFont() {
@@ -221,6 +234,14 @@ public class OutputOptions {
         return font;
     }
 
+    public Font getFontForWrappedMode() {
+        return fontWrapped;
+    }
+
+    public Font getFont(boolean wrapped) {
+        return wrapped ? getFontForWrappedMode() : getFont();
+    }
+
     public Color getColorStandard() {
         return colorStandard;
     }
@@ -245,13 +266,77 @@ public class OutputOptions {
         return linkStyle;
     }
 
+    /**
+     * Set font for standard mode.
+     */
     public void setFont(Font font) {
-        Font fontToSet = font == null ? getDefaultFont() : font;
+        Font fontToSet = checkFontToSet(font);
         if (!fontToSet.equals(this.font)) {
             Font oldFont = this.font;
             this.font = fontToSet;
+            defaultFontType = checkDefaultFontType();
             pcs.firePropertyChange(PROP_FONT, oldFont, fontToSet);
         }
+    }
+
+    private void setFontForWrappedMode(Font font) {
+        Font fontToSet = checkFontToSet(font);
+        if (!fontToSet.equals(this.fontWrapped)) {
+            int oldFontSize = this.fontWrapped != null
+                    ? this.fontWrapped.getSize() : 0;
+            this.fontWrapped = fontToSet;
+            pcs.firePropertyChange(PROP_FONT_SIZE_WRAP, oldFontSize,
+                    fontToSet.getSize());
+        }
+    }
+
+    private Font checkFontToSet(Font font) {
+        Font checkedFont = font == null ? getDefaultFont() : font;
+        if (checkedFont.getSize() < MIN_FONT_SIZE) {
+            checkedFont = checkedFont.deriveFont((float) MIN_FONT_SIZE);
+        } else if (checkedFont.getSize() > MAX_FONT_SIZE) {
+            checkedFont = checkedFont.deriveFont((float) MAX_FONT_SIZE);
+        }
+        return checkedFont;
+    }
+
+    /**
+     * Set font size for one of modes. If standard mode uses the same font as
+     * wrapped mode, set the same font size for both modes.
+     *
+     * @param wrapped If true, the size is set for wrapped mode, if false, size
+     * is set for standard mode. If standard mode uses the same font as wrapped
+     * mode, sizes for both modes are modified.
+     */
+    public void setFontSize(boolean wrapped, int fontSize) {
+        if (getFont() != null && (!wrapped || isDefaultFontType())) {
+            if (fontSize != getFont().getSize()) {
+                setFont(getFont().deriveFont((float) fontSize));
+            }
+        }
+        if (getFontForWrappedMode() != null
+                && (wrapped || isDefaultFontType())) {
+            setFontForWrappedMode(
+                    getFontForWrappedMode().deriveFont((float) fontSize));
+        }
+    }
+
+    /**
+     * Check if currently used font (for not wrapped mode) is of the same type
+     * (family, style) as font for wrapped mode (the default font).
+     */
+    public boolean isDefaultFontType() {
+        return defaultFontType;
+    }
+
+    /**
+     * Check if the font currently used for standard mode is of the same type as
+     * font for wrapped mode (default, monospaced).
+     */
+    private boolean checkDefaultFontType() {
+        Font defFont = getDefaultFont();
+        return defFont.getName().equals(font.getName())
+                && defFont.getStyle() == font.getStyle();
     }
 
     public void setColorStandard(Color colorStandard) {
@@ -335,6 +420,7 @@ public class OutputOptions {
     public OutputOptions makeCopy() {
         final OutputOptions copy = new OutputOptions(false);
         copy.font = font;
+        copy.fontWrapped = fontWrapped;
         copy.colorStandard = this.colorStandard;
         copy.colorError = this.colorError;
         copy.colorBackground = this.colorBackground;
@@ -365,6 +451,7 @@ public class OutputOptions {
      */
     public void assign(OutputOptions outputOptions) {
         this.setFont(outputOptions.getFont());
+        this.setFontForWrappedMode(outputOptions.getFontForWrappedMode());
         this.setColorStandard(outputOptions.getColorStandard());
         this.setColorError(outputOptions.getColorError());
         this.setColorLink(outputOptions.getColorLink());
@@ -434,6 +521,22 @@ public class OutputOptions {
                 return getColorLinkImportant();
             default:
                 return getColorStandard();
+        }
+    }
+
+    /**
+     * Save default options to persistent storage, in background.
+     */
+    public static void storeDefault() {
+        if (saveScheduled.compareAndSet(false, true)) {
+            RequestProcessor.getDefault().post(new Runnable() {
+                @Override
+                public void run() {
+                    OutputOptions.getDefault().saveTo(
+                            NbPreferences.forModule(Controller.class));
+                    saveScheduled.set(false);
+                }
+            }, 100);
         }
     }
 }
