@@ -48,6 +48,7 @@ import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.SourcePackagesNode;
 import org.netbeans.jemmy.ComponentChooser;
 import org.netbeans.jemmy.EventTool;
+import org.netbeans.jemmy.TimeoutExpiredException;
 import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.jemmy.operators.JCheckBoxOperator;
 import org.netbeans.jemmy.operators.JListOperator;
@@ -215,7 +216,17 @@ public class JsfFunctionalTest extends WebProjectValidationEE5 {
         new EventTool().waitNoEvent(500);
         Action addBeanAction = new ActionNoBlock(null, "Insert|Managed Bean...");
         addBeanAction.perform(editor);
-        AddManagedBeanOperator addBeanOper = new AddManagedBeanOperator();
+        AddManagedBeanOperator addBeanOper;
+        try {
+            addBeanOper = new AddManagedBeanOperator();
+        } catch (TimeoutExpiredException tee) {
+            // sometimes Insert menu item is not available so try it once more
+            editor.close();
+            editor = getFacesConfig();
+            new EventTool().waitNoEvent(500);
+            addBeanAction.perform(editor);
+            addBeanOper = new AddManagedBeanOperator();
+        }
         addBeanOper.setBeanName("SecondBean");
         addBeanOper.setBeanClass("mypackage.MyManagedBean");
         addBeanOper.selectScope("application");
