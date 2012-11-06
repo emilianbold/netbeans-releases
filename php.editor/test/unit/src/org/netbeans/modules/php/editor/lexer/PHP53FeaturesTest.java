@@ -42,13 +42,6 @@
 
 package org.netbeans.modules.php.editor.lexer;
 
-
-import java.io.File;
-import java.util.ArrayList;
-import java.util.List;
-import org.netbeans.api.lexer.TokenSequence;
-import org.netbeans.junit.NbTestCase;
-
 /**
  *
  * @author Petr Pisl
