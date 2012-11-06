@@ -55,8 +55,6 @@ import org.netbeans.modules.maven.j2ee.utils.MavenProjectSupport;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.spi.project.ProjectServiceProvider;
 import org.netbeans.spi.project.ui.ProjectOpenedHook;
-import org.openide.filesystems.FileStateInvalidException;
-import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
@@ -85,11 +83,7 @@ public class ProjectHookImpl extends ProjectOpenedHook {
 
         final CopyOnSave copyOnSave = project.getLookup().lookup(CopyOnSave.class);
         if (copyOnSave != null) {
-            try {
-                copyOnSave.initialize();
-            } catch (FileStateInvalidException ex) {
-                Exceptions.printStackTrace(ex);
-            }
+            copyOnSave.initialize();
         }
 
         if (refreshListener == null) {
@@ -128,11 +122,7 @@ public class ProjectHookImpl extends ProjectOpenedHook {
         }
         CopyOnSave copyOnSave = project.getLookup().lookup(CopyOnSave.class);
         if (copyOnSave != null) {
-            try {
-                copyOnSave.cleanup();
-            } catch (FileStateInvalidException ex) {
-                Exceptions.printStackTrace(ex);
-            }
+            copyOnSave.cleanup();
         }
     }
     

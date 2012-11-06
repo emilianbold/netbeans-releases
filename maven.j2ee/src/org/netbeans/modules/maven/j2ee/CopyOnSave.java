@@ -81,10 +81,10 @@ public class CopyOnSave implements AdditionalDestination, J2eeModuleProvider.Dep
         this.project = project;
     }
 
-    public void initialize() throws FileStateInvalidException {
+    public void initialize() {
     }
 
-    public void cleanup() throws FileStateInvalidException {
+    public void cleanup() {
     }
 
     protected void copySrcToDest( FileObject srcFile, FileObject destFile) throws IOException {

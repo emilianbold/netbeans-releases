@@ -51,8 +51,6 @@ import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.maven.api.execute.RunUtils;
 import org.netbeans.modules.maven.j2ee.utils.MavenProjectSupport;
 import org.netbeans.spi.project.AuxiliaryProperties;
-import org.openide.filesystems.FileStateInvalidException;
-import org.openide.util.Exceptions;
 
 /**
  * Base class for ModuleProvider implementation of different project types
@@ -108,14 +106,9 @@ public abstract class BaseEEModuleProvider extends J2eeModuleProvider {
     @CheckForNull
     private CopyOnSave getCopyOnSave() {
         if (copyOnSave == null) {
-            try {
-                copyOnSave = project.getLookup().lookup(CopyOnSave.class);
-                if (copyOnSave != null) {
-                    copyOnSave.initialize();
-                }
-                
-            } catch (FileStateInvalidException ex) {
-                Exceptions.printStackTrace(ex);
+            copyOnSave = project.getLookup().lookup(CopyOnSave.class);
+            if (copyOnSave != null) {
+                copyOnSave.initialize();
             }
         }
         return copyOnSave;
