@@ -220,7 +220,7 @@ public class WebKitNodeDescription extends DOMNodeDescription {
                             int i = 0;
                             while (i < nodes.length && Utils.getWebKitNode(nodes[i]) != child) {
                                 i++;
-                            };
+                            }
                             if (i >= nodes.length) {
                                 //netbeans fake node
                                 continue;
