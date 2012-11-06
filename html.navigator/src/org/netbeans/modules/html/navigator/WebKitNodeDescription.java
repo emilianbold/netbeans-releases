@@ -102,7 +102,7 @@ public class WebKitNodeDescription extends DOMNodeDescription {
         nbNode.addNodeListener(NodeOp.weakNodeListener(nodeListener, nbNode));
     }
 
-    private Node webKitNode;
+    private final Node webKitNode;
     private final String elementPath;
     private final Map<String, String> attributes;
     private Collection<WebKitNodeDescription> children;
@@ -206,33 +206,35 @@ public class WebKitNodeDescription extends DOMNodeDescription {
     @Override
     public synchronized Collection<WebKitNodeDescription> getChildren() {
         if (children == null) {
-            final List<Node> wkChildren = webKitNode.getChildren();
-            if (wkChildren == null || wkChildren.isEmpty()) {
-                return Collections.emptyList();
-            }
-            children = new ArrayList<WebKitNodeDescription>();
-            Children.MUTEX.readAccess(new Runnable() {
-                @Override
-                public void run() {
-                    org.openide.nodes.Node[] nodes = nbNode.getChildren().getNodes();
-                    for (Node child : wkChildren) {
-                        int i = 0;
-                        while (i < nodes.length && Utils.getWebKitNode(nodes[i]) != child) {
-                            i++;
-                        };
-                        if (i >= nodes.length) {
-                            //netbeans fake node
-                            continue;
-                        }
-                        switch (child.getNodeType()) {
-                            case org.w3c.dom.Node.ELEMENT_NODE:
-                            case org.w3c.dom.Node.DOCUMENT_NODE:
-                                children.add(new WebKitNodeDescription(WebKitNodeDescription.this, child, nodes[i]));
-                                break;
+            synchronized (webKitNode) {
+                final List<Node> wkChildren = webKitNode.getChildren();
+                if (wkChildren == null || wkChildren.isEmpty()) {
+                    return Collections.emptyList();
+                }
+                children = new ArrayList<WebKitNodeDescription>();
+                Children.MUTEX.readAccess(new Runnable() {
+                    @Override
+                    public void run() {
+                        org.openide.nodes.Node[] nodes = nbNode.getChildren().getNodes();
+                        for (Node child : wkChildren) {
+                            int i = 0;
+                            while (i < nodes.length && Utils.getWebKitNode(nodes[i]) != child) {
+                                i++;
+                            };
+                            if (i >= nodes.length) {
+                                //netbeans fake node
+                                continue;
+                            }
+                            switch (child.getNodeType()) {
+                                case org.w3c.dom.Node.ELEMENT_NODE:
+                                case org.w3c.dom.Node.DOCUMENT_NODE:
+                                    children.add(new WebKitNodeDescription(WebKitNodeDescription.this, child, nodes[i]));
+                                    break;
+                            }
                         }
                     }
-                }
-            });
+                });
+            }
         }
         return children==null?Collections.EMPTY_LIST:children;
     }
