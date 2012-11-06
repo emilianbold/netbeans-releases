@@ -849,6 +849,22 @@ public class JavaFixUtilitiesTest extends TestBase {
                            "    }\n" +
 		           "}\n");
     }
+    
+    public void testMultiNewArray() throws Exception {
+        performRewriteTest("package test;\n" +
+                           "public class Test {\n" +
+                           "    private static void t(Object... obj) {\n" +
+                           "        Test.t(1);\n" +
+                           "    }\n" +
+                           "}\n",
+                           "test.Test.t($args$) => test.Test.t(new Object[] {$args$})",
+                           "package test;\n" +
+                           "public class Test {\n" +
+                           "    private static void t(Object... obj) {\n" +
+                           "        Test.t(new Object[]{1});\n" +
+                           "    }\n" +
+		           "}\n");
+    }
 
     public void testFakeBlock2FakeBlock191283() throws Exception {
         performRewriteTest("package test;\n" +

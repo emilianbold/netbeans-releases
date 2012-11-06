@@ -221,7 +221,9 @@ final class ProxyNode extends AbstractNode {
                     Node.PropertySet[] p = ops.get(j);
 
                     for (int k = 0; k < p.length; k++) {
-                        if (current.getName().equals(p[k].getName())) {
+                        final String cn = current == null ? null : current.getName();
+                        final String pkn = p[k] == null ? null : p[k].getName();
+                        if (cn != null && cn.equals(pkn)) {
                             props.retainAll(new HashSet<Property>(Arrays.asList(p[k].getProperties())));
                         }
                     }

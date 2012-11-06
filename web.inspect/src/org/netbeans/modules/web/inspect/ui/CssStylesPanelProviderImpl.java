@@ -73,8 +73,6 @@ import org.netbeans.modules.web.inspect.webkit.WebKitPageModel;
 import org.netbeans.spi.project.ActionProvider;
 import org.openide.explorer.view.BeanTreeView;
 import org.openide.filesystems.FileObject;
-import org.openide.loaders.DataObject;
-import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;

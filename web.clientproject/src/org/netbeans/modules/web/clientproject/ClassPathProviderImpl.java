@@ -75,7 +75,12 @@ public class ClassPathProviderImpl implements ClassPathProvider {
     @Override
     public ClassPath findClassPath(FileObject file, String type) {
         if (SOURCE_CP.equals(type)) {
-            if (FileUtil.isParentOf(project.getSiteRootFolder(), file) ||
+            FileObject siteRootFolder = project.getSiteRootFolder();
+            if (siteRootFolder == null) {
+                // broken project
+                return null;
+            }
+            if (FileUtil.isParentOf(siteRootFolder, file) ||
                     (project.getTestsFolder() != null && FileUtil.isParentOf(project.getTestsFolder(), file))) {
                 return project.getSourceClassPath();
             }

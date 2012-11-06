@@ -233,7 +233,7 @@ public class ShortcutTextField extends JTextField {
                 getParent().getParent().getParent().
                 getParent().getParent()).getModel();
         //get shortcut cache (used shortcuts in current profile)
-        Set<String> allCurrentlyUsedShortcuts = model.getAllCurrentlyUsedShortcuts();
+        Set<String> allCurrentlyUsedShortcuts = model.getMutableModel().getAllCurrentlyUsedShortcuts();
 
         //substract the cache from all possible shortcut set
         Set<String> result = new LinkedHashSet<String>();

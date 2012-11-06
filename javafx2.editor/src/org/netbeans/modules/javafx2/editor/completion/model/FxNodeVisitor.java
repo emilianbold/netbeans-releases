@@ -129,10 +129,15 @@ public abstract class FxNodeVisitor {
             }
             scan(node.i().getChildren());
         }
-
+        
         public void visitCopy(FxInstanceCopy copy) {
             // do not call super
             visitBaseInstance(copy);
+        }
+
+        public void visitInclude(FxInclude incl) {
+            // do not call super
+            visitBaseInstance(incl);
         }
 
         public void visitInstance(FxNewInstance decl) {

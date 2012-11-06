@@ -105,6 +105,7 @@ import org.openide.util.Lookup;
 import org.openide.util.Lookup.Result;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
+import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.WeakListeners;
@@ -168,6 +169,8 @@ public class HtmlNavigatorPanelUI extends JPanel implements ExplorerManager.Prov
                 updateSelection();
             } else if (PageModel.PROP_HIGHLIGHTED_NODES.equals(propName)) {
                 updateHighlight();
+            } else if (PageModel.PROP_BROWSER_SELECTED_NODES.equals(propName)) {
+                updateEditor();
             }
         }
     };
@@ -819,7 +822,7 @@ public class HtmlNavigatorPanelUI extends JPanel implements ExplorerManager.Prov
         };
     }
     
-    /**
+     /**
      * Updates the content of the panel. It fetches the current data
      * from the model and updates the view accordingly.
      */
@@ -858,11 +861,6 @@ public class HtmlNavigatorPanelUI extends JPanel implements ExplorerManager.Prov
             updatingView = true;
             try {
                 manager.setSelectedNodes(selection.toArray(new Node[0]));
-
-                if(!selection.isEmpty()) {
-                    updateCaretInEditor(selection.get(0));
-                }
-                
             } catch (PropertyVetoException pvex) {
                 Logger.getLogger(HtmlNavigatorPanelUI.class.getName()).log(Level.FINE, null, pvex);
             } finally {
@@ -876,6 +874,22 @@ public class HtmlNavigatorPanelUI extends JPanel implements ExplorerManager.Prov
                 }
             });
         }
+    }
+    
+    private void updateEditor() {
+        Mutex.EVENT.readAccess(new Runnable() {
+            @Override
+            public void run() {
+                List<? extends Node> nodes = pageModel == null ? Collections.EMPTY_LIST : pageModel.getSelectedNodes();
+                for (Node n : nodes) {
+                    HtmlElementNode htmlNode = getHtmlNode(n);
+                    if (htmlNode != null) {
+                        updateCaretInEditor(htmlNode);
+                        break;
+                    }
+                }
+            }
+        });
     }
     
     /**
@@ -901,14 +915,10 @@ public class HtmlNavigatorPanelUI extends JPanel implements ExplorerManager.Prov
                     }
                 }
             }
-            //<<< caret update
             catch (DataObjectNotFoundException ex) {
                 Exceptions.printStackTrace(ex);
             }
         }
-
-
-        //<<< caret update
     }
     
     /**

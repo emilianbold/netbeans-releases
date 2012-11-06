@@ -76,10 +76,6 @@ public final class CssCaretAwareSourceTask extends ParserResultTask<CssParserRes
     private static final String CSS_MIMETYPE = "text/css"; //NOI18N
     private boolean cancelled;
 
-    public CssCaretAwareSourceTask() {
-        CssStylesTCController.init();
-    }
-
     @Override
     public int getPriority() {
         return 5000; //low priority
