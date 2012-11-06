@@ -56,6 +56,7 @@ import java.util.prefs.PreferenceChangeEvent;
 import java.util.prefs.PreferenceChangeListener;
 import javax.swing.SwingUtilities;
 import org.netbeans.core.ui.SwingBrowser;
+import org.openide.awt.HtmlBrowser;
 import org.openide.awt.HtmlBrowser.Factory;
 import org.openide.awt.HtmlBrowser.Impl;
 import org.openide.awt.HtmlBrowser.URLDisplayer;
@@ -80,8 +81,7 @@ public final class NbURLDisplayer extends URLDisplayer {
             @Override
             public void run() {
                 //warm the browser up to avoid waiting for Lookups
-                IDESettings.getWWWBrowser();
-                IDESettings.getExternalWWWBrowser();
+                warmBrowserUp( false );
                 SwingUtilities.invokeLater( new Runnable() {
                     @Override
                     public void run() {
@@ -101,8 +101,7 @@ public final class NbURLDisplayer extends URLDisplayer {
             @Override
             public void run() {
                 //warm the browser up to avoid waiting for Lookups
-                IDESettings.getWWWBrowser();
-                IDESettings.getExternalWWWBrowser();
+                warmBrowserUp( true );
                 SwingUtilities.invokeLater( new Runnable() {
                     @Override
                     public void run() {
@@ -114,6 +113,21 @@ public final class NbURLDisplayer extends URLDisplayer {
                 });
             }
         });
+    }
+
+    //#220880 - ask for browser Lookup outside the EDT
+    private void warmBrowserUp( boolean externalBrowser ) {
+        if( externalBrowser && null == htmlViewer.externalBrowser 
+                || !externalBrowser && null == htmlViewer.brComp ) {
+
+            Factory browserFactory = externalBrowser ? IDESettings.getExternalWWWBrowser() : IDESettings.getWWWBrowser();
+            if( null != browserFactory ) {
+                HtmlBrowser.Impl browserImpl = browserFactory.createHtmlBrowserImpl();
+                if( null != browserImpl ) {
+                    browserImpl.getLookup();
+                }
+            }
+        }
     }
 
     /**
