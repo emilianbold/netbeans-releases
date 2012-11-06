@@ -82,6 +82,16 @@ public class ProjectHookImpl extends ProjectOpenedHook {
     @Override
     protected void projectOpened() {
         MavenProjectSupport.changeServer(project, false);
+
+        final CopyOnSave copyOnSave = project.getLookup().lookup(CopyOnSave.class);
+        if (copyOnSave != null) {
+            try {
+                copyOnSave.initialize();
+            } catch (FileStateInvalidException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
+
         if (refreshListener == null) {
             //#121148 when the user edits the file we need to reset the server instance
             NbMavenProject watcher = project.getLookup().lookup(NbMavenProject.class);
