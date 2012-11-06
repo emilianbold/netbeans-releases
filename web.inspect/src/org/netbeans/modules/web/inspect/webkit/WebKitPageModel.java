@@ -349,6 +349,7 @@ public class WebKitPageModel extends PageModel {
                             public void run() {
                                 if (selected) {
                                     setSelectedNodes(selection);
+                                    firePropertyChange(PageModel.PROP_BROWSER_SELECTED_NODES, null, null);
                                     activateStylesView();
                                 } else {
                                     setHighlightedNodesImpl(selection);
