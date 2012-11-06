@@ -59,8 +59,6 @@ import org.openide.DialogDisplayer;
 import org.openide.awt.ColorComboBox;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
-import org.openide.util.NbPreferences;
-import org.openide.util.RequestProcessor;
 import org.openide.windows.IOColorPrint;
 import org.openide.windows.IOContainer;
 import org.openide.windows.InputOutput;
@@ -420,13 +418,7 @@ public final class OutputSettingsPanel extends javax.swing.JPanel {
     void store() {
         Controller.getDefault().updateOptions(outputOptions);
         OutputOptions.getDefault().assign(outputOptions);
-        RequestProcessor.getDefault().post(new Runnable() {
-            @Override
-            public void run() {
-                 OutputOptions.getDefault().saveTo(
-                        NbPreferences.forModule(Controller.class));
-            }
-        });
+        OutputOptions.storeDefault();
     }
 
     void cancel() {

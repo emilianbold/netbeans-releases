@@ -446,8 +446,8 @@ implements AWTEventListener, DragSourceListener, DragSourceMotionListener {
             public void eventDispatched(AWTEvent event) {
                 KeyEvent keyevent = (KeyEvent)event;
                 
-                if (keyevent.getID() == KeyEvent.KEY_RELEASED && 
-                    keyevent.getKeyCode() == KeyEvent.VK_ESCAPE) {
+                if ((keyevent.getID() == KeyEvent.KEY_PRESSED || keyevent.getID() == KeyEvent.KEY_RELEASED)
+                        && keyevent.getKeyCode() == KeyEvent.VK_ESCAPE) {
                     hackESC = true;
                 }                
             }

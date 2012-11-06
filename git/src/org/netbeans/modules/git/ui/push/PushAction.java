@@ -98,15 +98,20 @@ public class PushAction extends SingleRepositoryAction {
         push(repository);
     }
     
-    private void push (File repository) {
+    private void push (final File repository) {
         RepositoryInfo info = RepositoryInfo.getInstance(repository);
         info.refreshRemotes();
-        Map<String, GitRemoteConfig> remotes = info.getRemotes();
-        PushWizard wiz = new PushWizard(repository, remotes);
-        if (wiz.show()) {
-            Utils.logVCSExternalRepository("GIT", wiz.getPushUri()); //NOI18N
-            push(repository, wiz.getPushUri(), wiz.getPushMappings(), wiz.getFetchRefSpecs());
-        }
+        final Map<String, GitRemoteConfig> remotes = info.getRemotes();
+        EventQueue.invokeLater(new Runnable() {
+            @Override
+            public void run () {
+                PushWizard wiz = new PushWizard(repository, remotes);
+                if (wiz.show()) {
+                    Utils.logVCSExternalRepository("GIT", wiz.getPushUri()); //NOI18N
+                    push(repository, wiz.getPushUri(), wiz.getPushMappings(), wiz.getFetchRefSpecs());
+                }
+            }
+        });
     }
     
     public void push (File repository, final String remote, final Collection<PushMapping> pushMappins, final List<String> fetchRefSpecs) {
