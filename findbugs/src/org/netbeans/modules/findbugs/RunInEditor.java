@@ -70,6 +70,7 @@ import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.HintsController;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.NbPreferences;
 import org.openide.util.lookup.ServiceProvider;
 
@@ -164,19 +165,23 @@ public class RunInEditor implements CancellableTask<CompilationInfo> {
         
         long documentTimeStamp;
         
-        DataObject d = DataObject.find(parameter.getFileObject());
-        
-        if (d.isModified()) {
-            Document doc = parameter.getDocument();
-            
-            documentTimeStamp = doc != null ? DocumentUtilities.getDocumentTimestamp(doc) : 0;
-        } else {
-            documentTimeStamp = parameter.getFileObject().lastModified().getTime();
-        }
-        
-        if (documentTimeStamp > 0 && latest.get() > 0 && documentTimeStamp > latest.get()) {
-            LOG.log(Level.FINE, "Document is too new for the classfiles, skipping FindBugs in editor (classfiles timestamp {0}, document timestamp {1})", new Object[] {latest.get(), documentTimeStamp});
-            return ;
+        try {
+            DataObject d = DataObject.find(parameter.getFileObject());
+
+            if (d.isModified()) {
+                Document doc = parameter.getDocument();
+
+                documentTimeStamp = doc != null ? DocumentUtilities.getDocumentTimestamp(doc) : 0;
+            } else {
+                documentTimeStamp = parameter.getFileObject().lastModified().getTime();
+            }
+
+            if (documentTimeStamp > 0 && latest.get() > 0 && documentTimeStamp > latest.get()) {
+                LOG.log(Level.FINE, "Document is too new for the classfiles, skipping FindBugs in editor (classfiles timestamp {0}, document timestamp {1})", new Object[] {latest.get(), documentTimeStamp});
+                return ;
+            }
+        } catch (DataObjectNotFoundException ex) {
+            LOG.log(Level.FINE, null, ex);
         }
         
         HintsController.setErrors(parameter.getFileObject(), HINTS_KEY, bugs);

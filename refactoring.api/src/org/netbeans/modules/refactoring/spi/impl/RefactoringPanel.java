@@ -202,6 +202,8 @@ public class RefactoringPanel extends JPanel implements FiltersManagerImpl.Filte
         add(splitPane, BorderLayout.CENTER);
         if (!isQuery) {
             splitPane.setRightComponent(new JLabel(org.openide.util.NbBundle.getMessage(RefactoringPanel.class, "LBL_Preview_not_Available"), SwingConstants.CENTER));
+        } else {
+            splitPane.setDividerSize(0);
         }
         splitPane.setBorder(null);
         // add panel with buttons
