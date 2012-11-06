@@ -44,9 +44,9 @@ package org.netbeans.test.permanentUI;
 import java.io.IOException;
 import junit.framework.Test;
 import org.netbeans.jellytools.EditorOperator;
+import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.actions.OpenAction;
 import org.netbeans.jellytools.nodes.Node;
-import org.netbeans.jellytools.nodes.SourcePackagesNode;
 import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.test.permanentUI.utils.ProjectContext;
 
@@ -68,9 +68,11 @@ public class MainMenuTestJava extends MainMenuTest {
     @Override
     protected void initSources() {
         try {
-            openDataProjects("SampleProject");
+            openDataProjects("SampleProject"); // NOI18N
             EditorOperator.closeDiscardAll();
-            Node sample1 = new Node(new SourcePackagesNode("SampleProject"), "sample1"); // NOI18N
+            ProjectsTabOperator pto = new ProjectsTabOperator();
+            // find node in given tree
+            Node sample1 = new Node(pto.tree(), "SampleProject|Source Packages|sample1"); // NOI18N
             Node node = new Node(sample1, "SampleClass1.java"); // NOI18N
             new OpenAction().performAPI(node);
         } catch (IOException ex) {
