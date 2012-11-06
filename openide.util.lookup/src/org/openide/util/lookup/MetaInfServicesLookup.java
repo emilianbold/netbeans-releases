@@ -374,7 +374,11 @@ final class MetaInfServicesLookup extends AbstractLookup {
         }
     }
     private static String clazzToString(Class<?> clazz) {
-        return clazz.getName() + "@" + clazz.getClassLoader() + ":" + clazz.getProtectionDomain().getCodeSource().getLocation(); // NOI18N
+        URL loc = null;
+        if (clazz.getProtectionDomain() != null && clazz.getProtectionDomain().getCodeSource() != null) {
+            loc = clazz.getProtectionDomain().getCodeSource().getLocation();
+        }
+        return clazz.getName() + "@" + clazz.getClassLoader() + ":" + loc; // NOI18N
     }
 
     /**

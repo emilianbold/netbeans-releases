@@ -108,8 +108,6 @@ public class CssStylesTCController implements PropertyChangeListener {
 
             final TopComponent activated = (TopComponent) evt.getNewValue();
 
-            LOG.log(Level.FINE, "Component {0} activated", activated);
-            
             if (!WindowManager.getDefault().isOpenedEditorTopComponent(activated)) {
                 return; //not editor TC, ignore
             }

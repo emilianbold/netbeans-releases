@@ -539,8 +539,7 @@ public class DOM {
             int parentId = ((Number)params.get("parentId")).intValue(); // NOI18N
             parent = nodes.get(parentId);
             if (parent == null) {
-                // 221449 - prevent NullPointerException
-                // Martin, please review - this is just an hotfix
+                Logger.getLogger(DOM.class.getName()).log(Level.INFO, "Nodes set to an unknown parent: {0}!", params); // NOI18N
                 return;
             }
             JSONArray children = (JSONArray)params.get("nodes"); // NOI18N

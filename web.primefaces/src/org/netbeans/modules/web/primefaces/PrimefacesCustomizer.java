@@ -69,6 +69,7 @@ import org.openide.util.RequestProcessor;
  */
 public class PrimefacesCustomizer implements JsfComponentCustomizer {
 
+    private static final RequestProcessor RP = new RequestProcessor(JsfComponentCustomizer.class);
     private final ChangeSupport changeSupport = new ChangeSupport(this);
     private PrimefacesCustomizerPanel panel;
     private Future<Boolean> result = null;
@@ -105,7 +106,7 @@ public class PrimefacesCustomizer implements JsfComponentCustomizer {
 
         synchronized (this) {
             if (result == null) {
-                result = RequestProcessor.getDefault().submit(new Callable<Boolean>() {
+                result = RP.submit(new Callable<Boolean>() {
                     @Override
                     public Boolean call() throws Exception {
                         for (Library library : LibraryManager.getDefault().getLibraries()) {
