@@ -25,6 +25,7 @@
     <mapID target="org.netbeans.modules.web.clientproject.ui.wizard.NewClientSideProjectPanel" url="csh/csh-html5-newproject.html"/>
     <mapID target="org.netbeans.modules.web.clientproject.ui.wizard.SiteTemplateWizard" url="csh/csh-html5-newproject-sitetemplate.html"/>
     <mapID target="org.netbeans.modules.web.clientproject.ui.wizard.JavaScriptLibrarySelectionPanel" url="csh/csh-html5-newproject-jslibraries.html"/>
+    <mapID target="org.netbeans.modules.web.clientproject.ui.wizard.ExistingClientSideProjectPanel" url="csh/csh-html5-existing.html"/>
     <!-- CSH for Create Site Template dialog -->
     <mapID target="org.netbeans.modules.web.clientproject.ui.wizard.CreateSiteTemplate" url="csh/csh-html5-createtemplate.html"/>
     <!-- CSH for HTML5 project Properties dialog -->
