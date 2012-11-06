@@ -51,6 +51,7 @@ import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.FocusEvent;
+import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -67,6 +68,7 @@ import javax.swing.JComponent;
 import javax.swing.JPopupMenu;
 import javax.swing.JTabbedPane;
 import javax.swing.JToolBar;
+import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.border.Border;
 import javax.swing.event.ChangeEvent;
@@ -253,6 +255,14 @@ public final class IOWindow implements IOContainer.Provider {
                 @Override
                 protected void showPopup(MouseEvent evt) {
                     popupMenu.show(IOWindowImpl.this, evt.getX(), evt.getY());
+                }
+            });
+            pane.addMouseListener(new MouseAdapter() { // #221375
+                @Override
+                public void mouseClicked(MouseEvent e) {
+                    if (SwingUtilities.isLeftMouseButton(e)) {
+                        requestActive();
+                    }
                 }
             });
 
