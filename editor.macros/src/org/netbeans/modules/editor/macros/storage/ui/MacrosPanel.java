@@ -94,6 +94,8 @@ public class MacrosPanel extends JPanel {
      */
     private TableSorter sorter;
     
+    private ShortcutsFinder.Writer finder;
+    
     /** 
      * Creates new form MacrosPanel.
      */
@@ -159,6 +161,8 @@ public class MacrosPanel extends JPanel {
         lMacros.setLabelFor(tMacros);
         loc(lMacroCode, "Macro_Code"); //NOI18N
         lMacroCode.setLabelFor(epMacroCode);
+        
+        finder = Lookup.getDefault().lookup(ShortcutsFinder.class).localCopy();
     }
 
     public MacrosModel getModel() {
@@ -278,14 +282,11 @@ public class MacrosPanel extends JPanel {
     }//GEN-LAST:event_bNewActionPerformed
 
     private void bSetShortcutActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_bSetShortcutActionPerformed
-        ShortcutsFinder shortcutsFinder = Lookup.getDefault().lookup(ShortcutsFinder.class);
-        assert shortcutsFinder != null : "Can't find ShortcutsFinder"; //NOI18N
-        
 	int selectedRow = tMacros.getSelectedRow();
-	shortcutsFinder.refreshActions();
-        String shortcut = shortcutsFinder.showShortcutsDialog();
+	finder.refreshActions();
+        String shortcut = finder.showShortcutsDialog();
         // is there already an action with such SC defined?
-        ShortcutAction act = shortcutsFinder.findActionForShortcut(shortcut);
+        ShortcutAction act = finder.findActionForShortcut(shortcut);
 	
 	List<Macro> list = model.getAllMacros();
 	Iterator<Macro> it = list.iterator();
@@ -308,23 +309,22 @@ public class MacrosPanel extends JPanel {
 		((MacrosModel.Macro) act).setShortcuts(set);
             }
 	    
-            shortcutsFinder.setShortcuts(act, set);
+            finder.setShortcuts(act, set);
         }
         
         if (shortcut != null) {
             int modelRow = sorter.modelIndex(selectedRow);
             MacrosModel.Macro macro = model.getMacroByIndex(modelRow);
             macro.setShortcut(shortcut);
-            shortcutsFinder.setShortcuts(macro, Collections.singleton(shortcut));
+            finder.setShortcuts(macro, Collections.singleton(shortcut));
 //	    shortcutsFinder.apply();
 //                StorageSupport.keyStrokesToString(Arrays.asList(StorageSupport.stringToKeyStrokes(shortcut, true)), false)));
         }
     }//GEN-LAST:event_bSetShortcutActionPerformed
 
     private void bRemoveActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_bRemoveActionPerformed
-	ShortcutsFinder shortcutsFinder = Lookup.getDefault().lookup(ShortcutsFinder.class);
         int modelIndex = sorter.modelIndex(tMacros.getSelectedRow());
-	shortcutsFinder.setShortcuts(model.getMacroByIndex(modelIndex), Collections.<String>emptySet());
+	finder.setShortcuts(model.getMacroByIndex(modelIndex), Collections.<String>emptySet());
         model.deleteMacro(modelIndex);
     }//GEN-LAST:event_bRemoveActionPerformed
 
@@ -430,7 +430,6 @@ public class MacrosPanel extends JPanel {
     public void save() {
         getModel().save();
         // force shortcut finder flush
-        ShortcutsFinder f = Lookup.getDefault().lookup(ShortcutsFinder.class);
-        f.apply();
+        finder.apply();
     }
 }

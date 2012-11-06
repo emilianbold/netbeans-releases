@@ -61,6 +61,7 @@ import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.ModifiersTree;
+import com.sun.source.tree.NewArrayTree;
 import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.ParameterizedTypeTree;
 import com.sun.source.tree.Scope;
@@ -1107,7 +1108,18 @@ public class JavaFixUtilities {
             return super.visitModifiers(node, p);
         }
 
+        @Override
+        public Number visitNewArray(NewArrayTree node, Void p) {
+            List<? extends ExpressionTree> dimensions = (List<? extends ExpressionTree>) resolveMultiParameters(node.getDimensions());
+            List<? extends ExpressionTree> initializers = (List<? extends ExpressionTree>) resolveMultiParameters(node.getInitializers());
+            NewArrayTree nue = make.NewArray(node.getType(), dimensions, initializers);
+
+            rewrite(node, nue);
+            return super.visitNewArray(node, p);
+        }
+
         private <T extends Tree> List<T> resolveMultiParameters(List<T> list) {
+            if (list == null) return null;
             if (!Utilities.containsMultistatementTrees(list)) return list;
 
             List<T> result = new LinkedList<T>();
