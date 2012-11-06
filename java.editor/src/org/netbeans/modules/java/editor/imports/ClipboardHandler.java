@@ -553,13 +553,22 @@ public class ClipboardHandler {
             return delegate.importData(comp, t);
         }
         
-        private boolean insideToken(JTextComponent jtc, JavaTokenId first, JavaTokenId... rest) {
-            int offset = jtc.getSelectionStart();
-            TokenSequence<JavaTokenId> ts = SourceUtils.getJavaTokenSequence(TokenHierarchy.get(jtc.getDocument()), offset);
-            if (ts == null || !ts.moveNext() && !ts.movePrevious() || offset == ts.offset())
-                return false;
-            EnumSet tokenIds = EnumSet.of(first, rest);
-            return tokenIds.contains(ts.token().id());
+        private boolean insideToken(final JTextComponent jtc, final JavaTokenId first, final JavaTokenId... rest) {
+            final Document doc = jtc.getDocument();
+            final boolean[] result = new boolean[1];
+            
+            doc.render(new Runnable() {
+                @Override public void run() {
+                    int offset = jtc.getSelectionStart();
+                    TokenSequence<JavaTokenId> ts = SourceUtils.getJavaTokenSequence(TokenHierarchy.get(doc), offset);
+                    if (ts == null || !ts.moveNext() && !ts.movePrevious() || offset == ts.offset())
+                        result[0] = false;
+                    EnumSet tokenIds = EnumSet.of(first, rest);
+                    result[0] = tokenIds.contains(ts.token().id());
+                }
+            });
+            
+            return result[0];
         }
     }
 
