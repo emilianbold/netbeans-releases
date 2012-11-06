@@ -242,6 +242,17 @@ public class ChangeParamsTransformer extends RefactoringVisitor {
                                     element.isVarArgs());
                         } else {
                             newMethod = make.Method(element, body);
+                            if(element.getKind() == ElementKind.CONSTRUCTOR) {
+                                newMethod = make.Method(newMethod.getModifiers(),
+                                        newMethod.getName(),
+                                        null, // workaround: make.Method(element, body) uses void as return type for contructors
+                                        newMethod.getTypeParameters(),
+                                        newMethod.getParameters(),
+                                        newMethod.getThrows(),
+                                        newMethod.getBody(),
+                                        (ExpressionTree)newMethod.getDefaultValue(),
+                                        element.isVarArgs());
+                            }
                         }
                         genutils.copyComments(tree, newMethod, true);
                         genutils.copyComments(tree, newMethod, false);
