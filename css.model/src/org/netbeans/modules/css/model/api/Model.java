@@ -509,14 +509,17 @@ public final class Model {
     public String toString() {
         FileObject file = getLookup().lookup(FileObject.class);
         Snapshot snapshot = getLookup().lookup(Snapshot.class);
+        Document doc = getLookup().lookup(Document.class);
         return new StringBuilder()
                 .append(getClass().getSimpleName())
                 .append(':')
                 .append(getSerialNumber())
-                .append(", snapshot=")
+                .append(", snapshot#=")
                 .append(snapshot.hashCode())
                 .append(", file=")
                 .append(file != null ? file.getNameExt() : null)
+                .append(", document#=")
+                .append(doc != null ? System.identityHashCode(doc) : null)
                 .append(", saved=")
                 .append(changesApplied)
                 .toString();
