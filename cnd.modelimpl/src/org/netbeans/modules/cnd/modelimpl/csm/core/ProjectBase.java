@@ -1800,36 +1800,40 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         for (CsmProject lib : libraries) {
             ProjectBase libProject = (ProjectBase) lib;
             Storage libStorage = getIncludedLibraryStorage(libProject);
-            Map<CharSequence, FileEntry> internalMap = libStorage.getInternalMap();
-            for (Map.Entry<CharSequence, FileEntry> entry : internalMap.entrySet()) {
-                CharSequence fileName = entry.getKey();
-                FileEntry entryFromLibrary = libProject.getFileContainer().getEntry(fileName);
-                List<PreprocessorStatePair> libCurrentPairs;
-                if (entryFromLibrary != null) {
-                    // library already knows about included file
-                    synchronized (entryFromLibrary.getLock()) {
-                        // check all included states to see if they would contribute to the lib's file model
-                        libCurrentPairs = new ArrayList<PreprocessorStatePair>(entryFromLibrary.getStatePairs());
+            if (libStorage == null) {
+                Utils.LOG.log(Level.INFO, "Can not find storage for dependent library {0}\n\tinside project {1}", new Object[]{libProject, this}); //NOI18N
+            } else {
+                Map<CharSequence, FileEntry> internalMap = libStorage.getInternalMap();
+                for (Map.Entry<CharSequence, FileEntry> entry : internalMap.entrySet()) {
+                    CharSequence fileName = entry.getKey();
+                    FileEntry entryFromLibrary = libProject.getFileContainer().getEntry(fileName);
+                    List<PreprocessorStatePair> libCurrentPairs;
+                    if (entryFromLibrary != null) {
+                        // library already knows about included file
+                        synchronized (entryFromLibrary.getLock()) {
+                            // check all included states to see if they would contribute to the lib's file model
+                            libCurrentPairs = new ArrayList<PreprocessorStatePair>(entryFromLibrary.getStatePairs());
+                        }
+                    } else {
+                        // library doesn't know about file yet
+                        // assign empty states to be the weakest during comparison
+                        libCurrentPairs = Collections.emptyList();
                     }
-                } else {
-                    // library doesn't know about file yet
-                    // assign empty states to be the weakest during comparison
-                    libCurrentPairs = Collections.emptyList();
-                }
-                FileEntry includedEntry = entry.getValue();
-                for (PreprocessorStatePair pair : includedEntry.getStatePairs()) {
-                    boolean addToReparse = false;
-                    if (!pair.state.isValid() || pair.pcState == FilePreprocessorConditionState.PARSING) {
-                        addToReparse = true;
-                    }
-                    if (!addToReparse) {
-                        ComparisonResult comResult = fillStatesToKeepBasedOnPCState(pair.pcState, libCurrentPairs, new ArrayList<PreprocessorStatePair>());
-                        addToReparse = (comResult != ComparisonResult.DISCARD);
-                    }
-                    if (addToReparse) {
-                        StartEntry se = APTHandlersSupport.extractStartEntry(pair.state);
-                        filesToReparseLibs.add(se.getStartFile());
-                        includedEntry.invalidateStates();
+                    FileEntry includedEntry = entry.getValue();
+                    for (PreprocessorStatePair pair : includedEntry.getStatePairs()) {
+                        boolean addToReparse = false;
+                        if (!pair.state.isValid() || pair.pcState == FilePreprocessorConditionState.PARSING) {
+                            addToReparse = true;
+                        }
+                        if (!addToReparse) {
+                            ComparisonResult comResult = fillStatesToKeepBasedOnPCState(pair.pcState, libCurrentPairs, new ArrayList<PreprocessorStatePair>());
+                            addToReparse = (comResult != ComparisonResult.DISCARD);
+                        }
+                        if (addToReparse) {
+                            StartEntry se = APTHandlersSupport.extractStartEntry(pair.state);
+                            filesToReparseLibs.add(se.getStartFile());
+                            includedEntry.invalidateStates();
+                        }
                     }
                 }
             }

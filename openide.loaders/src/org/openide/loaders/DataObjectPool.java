@@ -865,7 +865,10 @@ implements ChangeListener {
             return item;
         }
         Item prev = map.remove(item.primaryFile);
-        assert prev == item;
+        if (prev == null && item.getDataObjectOrNull() == null) {
+            return item;
+        }
+        assert prev == item : "Item: " + item;
         final Item ni = new Item(item, newFile);
         map.put (newFile, ni);
         countRegistration(newFile);

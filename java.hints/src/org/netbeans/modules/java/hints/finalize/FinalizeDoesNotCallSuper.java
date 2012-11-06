@@ -43,6 +43,8 @@
 package org.netbeans.modules.java.hints.finalize;
 
 import com.sun.source.tree.BlockTree;
+import com.sun.source.tree.CatchTree;
+import com.sun.source.tree.ExpressionStatementTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.IdentifierTree;
 import com.sun.source.tree.MemberSelectTree;
@@ -50,14 +52,18 @@ import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.StatementTree;
 import com.sun.source.tree.Tree;
+import com.sun.source.tree.Tree.Kind;
+import com.sun.source.tree.TryTree;
 import com.sun.source.util.TreePath;
 import com.sun.source.util.TreeScanner;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import org.netbeans.api.java.source.GeneratorUtilities;
 import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.api.java.source.WorkingCopy;
+import org.netbeans.modules.java.hints.errors.Utilities;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.java.hints.ErrorDescriptionFactory;
 import org.netbeans.spi.java.hints.Hint;
@@ -143,18 +149,38 @@ public class FinalizeDoesNotCallSuper {
         @Override
         protected void performRewrite(TransformationContext ctx) {
             WorkingCopy wc = ctx.getWorkingCopy();
+            final TreeMaker tm = wc.getTreeMaker();
             TreePath tp = ctx.getPath();
             final BlockTree oldBody = ((MethodTree)tp.getLeaf()).getBody();
-            final TreeMaker tm = wc.getTreeMaker();
-            final List<StatementTree> statements = new ArrayList<StatementTree>(1+oldBody.getStatements().size());
-            statements.add(
-                    tm.ExpressionStatement(
-                        tm.MethodInvocation(Collections.<ExpressionTree>emptyList(),
-                            tm.MemberSelect(
-                                tm.Identifier(SUPER),
-                                FINALIZE), Collections.<ExpressionTree>emptyList())));
-            statements.addAll(oldBody.getStatements());
-            wc.rewrite(oldBody,tm.Block(statements, false));
+            final List<StatementTree> newStatements = new ArrayList<StatementTree>(2);
+            BlockTree superFinalize = tm.Block(
+                                        Collections.singletonList(
+                                            tm.ExpressionStatement(
+                                                tm.MethodInvocation(Collections.<ExpressionTree>emptyList(),
+                                                    tm.MemberSelect(
+                                                        tm.Identifier(SUPER),
+                                                        FINALIZE), Collections.<ExpressionTree>emptyList()))),
+                                        false);
+            if (oldBody.getStatements().isEmpty()) {
+                wc.rewrite(oldBody, superFinalize);
+            } else {
+                TryTree soleTry = soleTryWithoutFinally(oldBody);
+                
+                if (soleTry != null) {
+                    wc.rewrite(soleTry, tm.Try(soleTry.getBlock(), soleTry.getCatches(), superFinalize));
+                } else {
+                    wc.rewrite(oldBody, tm.Block(Collections.singletonList(tm.Try(oldBody, Collections.<CatchTree>emptyList(), superFinalize)), false));
+                }
+            }
+        }
+        
+        private TryTree soleTryWithoutFinally(BlockTree block) {
+            if (block.getStatements().size() != 1) return null;
+            StatementTree first = block.getStatements().get(0);
+            if (first.getKind() != Kind.TRY) return null;
+            TryTree tt = (TryTree) first;
+            if (tt.getFinallyBlock() != null) return null;
+            return tt;
         }
     }
 }
