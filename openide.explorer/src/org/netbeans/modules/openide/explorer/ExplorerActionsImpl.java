@@ -163,15 +163,6 @@ public final class ExplorerActionsImpl {
         // Sets action state updater and registers listening on manager and
         // exclipboard.
         actionStateUpdater = new ActionStateUpdater(manager);
-
-        Clipboard c = getClipboard();
-        if (c != null) {
-            c.addFlavorListener(
-                WeakListeners.create(
-                    FlavorListener.class, actionStateUpdater, c
-                )
-            );
-        }
         actionStateUpdater.schedule();
     }
 
@@ -768,6 +759,7 @@ public final class ExplorerActionsImpl {
     private class ActionStateUpdater implements PropertyChangeListener, FlavorListener, Runnable {
         private final RequestProcessor.Task timer;
         private final PropertyChangeListener weakL;
+        private FlavorListener flavL;
         private Transferable trans;
 
         ActionStateUpdater(ExplorerManager m) {
@@ -799,9 +791,20 @@ public final class ExplorerActionsImpl {
             if (EventQueue.isDispatchThread()) {
                 syncActions();
             } else {
+                registerListener();
                 updateTrans();
                 updateActions(true);
                 EventQueue.invokeLater(this);
+            }
+        }
+        
+        private void registerListener() {
+            if (flavL == null) {
+                Clipboard c = getClipboard();
+                if (c != null) {
+                    flavL = WeakListeners.create(FlavorListener.class, this, c);
+                    c.addFlavorListener(flavL);
+                }
             }
         }
 
