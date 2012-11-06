@@ -232,11 +232,18 @@ Other names may be trademarks of their respective owners.
 	<mapID target="org.netbeans.modules.project.libraries.ui.LibrariesCustomizer" url="project/csh/csh_library_manager.html"/>
 
 
-<!--CSH for plain text editor-->
+<!--CSH for plain text editor -->
 <mapID target="text.plain" url="editing/csh/plain_editor.html" />
 
-<!--CSH for css text editor-->
+<!--CSH for css text editor -->
 <mapID target="text.css" url="xml/css/csh/about_source_editor.html" />
+
+<!--CSH for CSS Styles window -->
+<mapID target="css_visual_CssStylesTC" url="xml/css/csh/css_styles_window.html" />
+<!--CSH for CSS Add Property dialog -->
+<mapID target="css_visual_AddPropertyPanel" url="xml/css/csh/css_addproperty_dialog.html" />
+<!--CSH for CSS Create Rule dialog -->
+<mapID target="css_visual_CreateRulePanel" url="xml/css/csh/css_createrule_dialog.html" />
 
 <!-- CSH for HTML and JSP text editor -->
 <mapID target="org.netbeans.modules.html.editor.api.HtmlKit" url="html/csh/about_source_editor.html" />
