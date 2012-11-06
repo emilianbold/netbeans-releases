@@ -50,11 +50,11 @@ import java.util.Collections;
 import java.util.List;
 import java.util.StringTokenizer;
 import org.netbeans.api.annotations.common.CheckForNull;
-import org.netbeans.modules.j2ee.deployment.devmodules.spi.ArtifactListener;
-import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
+import org.netbeans.modules.j2ee.deployment.devmodules.spi.ArtifactListener;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
+import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.spi.cos.AdditionalDestination;
 import org.netbeans.spi.project.ProjectServiceProvider;
 import org.openide.filesystems.FileLock;
@@ -74,7 +74,7 @@ import org.openide.util.Exceptions;
 public class CopyOnSave implements AdditionalDestination, J2eeModuleProvider.DeployOnSaveSupport {
 
     private final List<ArtifactListener> listeners = new ArrayList<ArtifactListener>();
-    private Project project;
+    private final Project project;
 
 
     public CopyOnSave(Project project) {
