@@ -291,8 +291,11 @@ public class PHPLexerTest extends PHPLexerTestBase {
         PHPLexerUtils.printTokenSequence(ts, "testInlineHtml"); ts.moveStart();
     }
 
-    public void testHeroDoc() throws Exception {
+    public void testHeroDoc_00() throws Exception {
         performTest("heredoc00");
+    }
+
+    public void testHeroDoc_01() throws Exception {
         performTest("heredoc01");
     }
 
