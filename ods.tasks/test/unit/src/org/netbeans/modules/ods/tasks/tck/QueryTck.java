@@ -39,7 +39,7 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.ods.tasks;
+package org.netbeans.modules.ods.tasks.tck;
 
 import com.tasktop.c2c.server.tasks.domain.PredefinedTaskQuery;
 import java.util.ArrayList;

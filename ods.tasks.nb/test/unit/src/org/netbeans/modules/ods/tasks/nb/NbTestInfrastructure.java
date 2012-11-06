@@ -41,7 +41,7 @@
  */
 package org.netbeans.modules.ods.tasks.nb;
 
-import org.netbeans.modules.ods.tasks.C2CTestInfrastructure;
+import org.netbeans.modules.ods.tasks.tck.C2CTestInfrastructure;
 import java.net.URL;
 import java.net.URLStreamHandlerFactory;
 import junit.framework.Assert;

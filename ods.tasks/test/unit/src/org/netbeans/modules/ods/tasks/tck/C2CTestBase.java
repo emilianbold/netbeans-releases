@@ -39,7 +39,7 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.ods.tasks;
+package org.netbeans.modules.ods.tasks.tck;
 
 import java.io.IOException;
 import java.util.Iterator;
@@ -50,6 +50,7 @@ import org.eclipse.mylyn.tasks.core.TaskRepository;
 import org.eclipse.mylyn.tasks.core.TaskRepositoryLocationFactory;
 import org.eclipse.mylyn.tasks.core.data.TaskAttribute;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.ods.tasks.C2C;
 import org.netbeans.modules.ods.tasks.spi.C2CExtender;
 import org.openide.util.Lookup;
 

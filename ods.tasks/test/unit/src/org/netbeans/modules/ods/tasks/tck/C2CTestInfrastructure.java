@@ -39,7 +39,7 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.ods.tasks;
+package org.netbeans.modules.ods.tasks.tck;
 
 /** Methods to support test execution on own or proprietary connector.
  *

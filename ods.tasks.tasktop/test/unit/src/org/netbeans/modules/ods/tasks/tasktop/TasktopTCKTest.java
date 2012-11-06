@@ -48,9 +48,10 @@ import java.io.IOException;
 import junit.framework.Test;
 import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.ods.tasks.C2CTestInfrastructure;
-import org.netbeans.modules.ods.tasks.QueryTck;
+import org.netbeans.modules.ods.tasks.tck.C2CTestInfrastructure;
+import org.netbeans.modules.ods.tasks.tck.QueryTck;
 import org.netbeans.modules.ods.tasks.spi.C2CExtender;
+import org.netbeans.modules.ods.tasks.tck.C2CDataTck;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 
@@ -99,6 +100,7 @@ public class TasktopTCKTest extends NbTestCase {
             .gui(false)
             .addTest(TasktopTCKTest.class) // initialize first
             .addTest(QueryTck.class)
+            .addTest(C2CDataTck.class)
             .suite();
     }
     

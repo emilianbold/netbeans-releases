@@ -42,7 +42,8 @@
 package org.netbeans.modules.ods.tasks.nb;
 
 import org.netbeans.junit.NbTestSuite;
-import org.netbeans.modules.ods.tasks.QueryTck;
+import org.netbeans.modules.ods.tasks.tck.C2CDataTck;
+import org.netbeans.modules.ods.tasks.tck.QueryTck;
 
 /** Runs all the tests from TCK defined in ods.tasks module.
  *

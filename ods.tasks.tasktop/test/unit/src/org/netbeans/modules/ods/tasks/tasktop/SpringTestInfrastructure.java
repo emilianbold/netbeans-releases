@@ -49,7 +49,7 @@ import org.apache.commons.httpclient.ConnectTimeoutException;
 import org.apache.commons.httpclient.params.HttpConnectionParams;
 import org.apache.commons.httpclient.protocol.Protocol;
 import org.apache.commons.httpclient.protocol.ProtocolSocketFactory;
-import org.netbeans.modules.ods.tasks.C2CTestInfrastructure;
+import org.netbeans.modules.ods.tasks.tck.C2CTestInfrastructure;
 import org.openide.util.lookup.ServiceProvider;
 
 /**
