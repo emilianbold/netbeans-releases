@@ -253,6 +253,10 @@ public class PropertyResolver extends FxNodeVisitor.ModelTreeTraversal implement
     private void processDefaultProperty(PropertySetter p) {
         FxProperty pi = beanInfo.getDefaultProperty();
         if (pi == null) {
+            // check if the bean is not a Map or Collection:
+            if (beanInfo.isCollection() || beanInfo.isMap()) {
+                return;
+            }
             int[] posInfo = findContentPositions(p);
             env.addError(new ErrorMark(
                     posInfo[0],

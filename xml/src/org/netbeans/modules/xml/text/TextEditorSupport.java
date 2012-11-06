@@ -51,6 +51,7 @@ import java.beans.PropertyChangeEvent;
 import java.nio.charset.Charset;
 import java.nio.charset.CharsetEncoder;
 import java.nio.charset.CodingErrorAction;
+import java.nio.charset.IllegalCharsetNameException;
 import java.nio.charset.UnmappableCharacterException;
 import java.nio.charset.UnsupportedCharsetException;
 
@@ -411,6 +412,9 @@ public class TextEditorSupport extends DataEditorSupport implements EditorCookie
         } catch (BadLocationException ble) {
             // should not happen
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ble);
+            return;
+        } catch (IllegalCharsetNameException ex) {
+            handleUnsupportedEncoding(doc, enc);
             return;
         } catch (UnsupportedCharsetException ex) {
             // handle invalid character set

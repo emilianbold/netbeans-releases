@@ -77,6 +77,14 @@ public class DataFolderTest extends LoggingTestCaseHid {
         clearWorkDir ();
     }
     
+    public void testShadowFolder() throws Exception {
+        File f = new File(getWorkDir(), "my.shadow");
+        f.mkdirs();
+        FileObject fo = FileUtil.toFileObject(f);
+        DataFolder fldr = DataFolder.findFolder(fo);
+        assertEquals("No children", 0, fldr.getChildren().length);
+    }
+    
     public void testPossibleToCallFindDataObjectDirectly () throws Exception {
         String fsstruct [] = new String [] {
             "AA/",

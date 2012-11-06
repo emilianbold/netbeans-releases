@@ -91,9 +91,9 @@ made subject to such option by the copyright holder.
     <target name="build-chrome-plugin" depends="build-crx-task">
         <taskdef name="crx" classname="org.netbeans.modules.extbrowser.CrxTask" classpath="build/antclasses"/>
         <zip destfile="build/netbeans-chrome-connector.zip">
-            <fileset dir="plugins/chrome" excludes="**/*.pem"/>
+            <fileset dir="plugins/chrome" excludes="**/public.pem"/>
         </zip> 
-        <crx src="build/netbeans-chrome-connector.zip" privatekey="plugins/chrome/private.pem" publickey="plugins/chrome/public.pem"/>
+        <crx src="build/netbeans-chrome-connector.zip" privatekey="plugins/chrome/key.pem" publickey="plugins/chrome/public.pem"/>
         <mkdir dir="${cluster}/modules/lib"/>
         <copy file="build/netbeans-chrome-connector.crx" todir="${cluster}/modules/lib/"/>
     </target>

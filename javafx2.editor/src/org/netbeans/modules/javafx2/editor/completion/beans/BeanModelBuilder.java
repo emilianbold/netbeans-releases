@@ -111,7 +111,7 @@ public final class BeanModelBuilder {
     /**
      * Names of factory methods usable to create the bean instance
      */
-    private Set<String> factoryMethods = Collections.emptySet();
+    private Map<String, TypeMirrorHandle> factoryMethods = Collections.emptyMap();
     
     private FxBean  resultInfo;
     
@@ -164,6 +164,7 @@ public final class BeanModelBuilder {
         classElement = compilationInfo.getElements().getTypeElement(className);
         TypeElement builderEl = compilationInfo.getElements().getTypeElement("javafx.util.Builder"); // NOI18N
         TypeElement mapEl = compilationInfo.getElements().getTypeElement("java.util.Map"); // NOI18N
+        TypeElement collectionEl = compilationInfo.getElements().getTypeElement("java.util.Collection"); // NOI18N
         
         if (classElement == null) {
             return resultInfo = null;
@@ -209,6 +210,13 @@ public final class BeanModelBuilder {
                 resultInfo.makeMap();
             }
         }
+        if (collectionEl != null) {
+            Types t = compilationInfo.getTypes();
+            if (t.isAssignable(
+                    t.erasure(classElement.asType()), t.erasure(collectionEl.asType()))) {
+                resultInfo.makeCollection();
+            }
+        }
         inspectMembers();
         
         // try to find default property
@@ -216,7 +224,7 @@ public final class BeanModelBuilder {
         resultInfo.setSimpleProperties(simpleProperties);
         resultInfo.setAttachedProperties(staticProperties);
         resultInfo.setEvents(events);
-        resultInfo.setFactoryNames(factoryMethods);
+        resultInfo.setFactories(factoryMethods);
         resultInfo.setConstants(constants);
         String defaultProperty = FxClassUtils.getDefaultProperty(classElement);
         resultInfo.setDefaultPropertyName(defaultProperty);
@@ -226,10 +234,7 @@ public final class BeanModelBuilder {
         merge.setValueOf(resultInfo.hasValueOf());
         merge.setFxInstance(resultInfo.isFxInstance());
         merge.setDeclaredInfo(resultInfo);
-        if (resultInfo.isMap()) {
-            merge.makeMap();
-        }
-        
+        merge.setFactories(factoryMethods);
         resultInfo = merge;
 
         // try to find the builder
@@ -553,16 +558,12 @@ public final class BeanModelBuilder {
         if (!m.getParameters().isEmpty()) {
             return;
         }
-        // the method must return the type itself:
-        if (!compilationInfo.getTypes().isSameType(
-                m.getReturnType(), classElement.asType())) {
-            return;
-        }
+        TypeMirrorHandle returnType = TypeMirrorHandle.create(m.getReturnType());
         
         if (factoryMethods.isEmpty()) {
-            factoryMethods = new HashSet<String>();
+            factoryMethods = new HashMap<String, TypeMirrorHandle>();
         }
-        factoryMethods.add(m.getSimpleName().toString());
+        factoryMethods.put(m.getSimpleName().toString(), returnType);
         consumed = true;
     }
     

@@ -349,6 +349,7 @@ public class WebKitPageModel extends PageModel {
                             public void run() {
                                 if (selected) {
                                     setSelectedNodes(selection);
+                                    firePropertyChange(PageModel.PROP_BROWSER_SELECTED_NODES, null, null);
                                     activateStylesView();
                                 } else {
                                     setHighlightedNodesImpl(selection);
@@ -582,18 +583,19 @@ public class WebKitPageModel extends PageModel {
      * @return nodes matching the specified selector.
      */
     List<DOMNode> matchingNodes(String selector) {
-        List<DOMNode> domNodes;
-        if (selector == null) {
-            domNodes = Collections.EMPTY_LIST;
-        } else {
+        List<DOMNode> domNodes = Collections.EMPTY_LIST;
+        if (selector != null) {
             DOM dom = webKit.getDOM();
-            List<Node> matchingNodes = dom.querySelectorAll(dom.getDocument(), selector);
-            domNodes = new ArrayList<DOMNode>(matchingNodes.size());
-            for (Node node : matchingNodes) {
-                int nodeId = node.getNodeId();
-                DOMNode domNode = getNode(nodeId);
-                if (domNode != null) {
-                    domNodes.add(domNode);
+            Node documentElement = dom.getDocument();
+            if (documentElement != null) {
+                List<Node> matchingNodes = dom.querySelectorAll(documentElement, selector);
+                domNodes = new ArrayList<DOMNode>(matchingNodes.size());
+                for (Node node : matchingNodes) {
+                    int nodeId = node.getNodeId();
+                    DOMNode domNode = getNode(nodeId);
+                    if (domNode != null) {
+                        domNodes.add(domNode);
+                    }
                 }
             }
         }
