@@ -538,6 +538,10 @@ public class DOM {
         synchronized (this) {
             int parentId = ((Number)params.get("parentId")).intValue(); // NOI18N
             parent = nodes.get(parentId);
+            if (parent == null) {
+                Logger.getLogger(DOM.class.getName()).log(Level.INFO, "Nodes set to an unknown parent: {0}!", params); // NOI18N
+                return;
+            }
             JSONArray children = (JSONArray)params.get("nodes"); // NOI18N
             parent.initChildren();
             for (Object child : children) {
