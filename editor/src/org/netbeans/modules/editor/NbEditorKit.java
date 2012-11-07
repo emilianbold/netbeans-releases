@@ -989,6 +989,9 @@ public class NbEditorKit extends ExtKit implements Callable {
         // initialize popup menu actions providers (#174175)
         PopupMenuActionsProvider.getPopupMenuItems(getContentType());
 
+        // preinitialize keymap, see issue #203920
+        getKeymap();
+        
         return null;
     }
 }

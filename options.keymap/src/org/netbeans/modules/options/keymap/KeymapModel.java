@@ -550,7 +550,7 @@ public class KeymapModel {
                 result.add(compoundAction);
                 sharedActions.put(origAction, compoundAction);
                 sharedActions.put(action, compoundAction);
-                result.add(compoundAction);
+                continue;
             }
             String delegatingId = action.getDelegatingActionId();
             if (idToAction.containsKey(delegatingId)) {
@@ -563,7 +563,28 @@ public class KeymapModel {
                 result.add(compoundAction);
                 sharedActions.put(origAction, compoundAction);
                 sharedActions.put(action, compoundAction);
-                result.add(compoundAction);
+                continue;
+            }
+            ShortcutAction old = idToAction.get(id);
+            if (old != null) {
+                if (old instanceof CompoundAction) {
+                    ((CompoundAction)old).addAction(name, action);
+                    sharedActions.put(action, (CompoundAction)old);
+                } else {
+                    idToAction.remove(id);
+                    ShortcutAction origAction = old;
+                    KeymapManager origActionKeymapManager = findOriginator(origAction);
+                    Map<String, ShortcutAction> ss = new HashMap<String, ShortcutAction>();
+                    ss.put(origActionKeymapManager.getName(), origAction);
+                    ss.put(name,action);
+                    CompoundAction compoundAction = new CompoundAction(ss);
+                    // must remove
+                    result.remove(origAction);
+                    result.add(compoundAction);
+                    sharedActions.put(origAction, compoundAction);
+                    sharedActions.put(action, compoundAction);
+                }
+                continue;
             }
             if (!sharedActions.containsKey(action)) {
                 result.add(action);
