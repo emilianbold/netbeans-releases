@@ -372,12 +372,7 @@ public final class MakeProject implements Project, MakeProjectListener, Runnable
                 if (cacheDirectory == null) {
                     File cacheFile = getCacheLocation(projectDirectory);
                     if (cacheFile == null) {
-                        String path = System.getProperty("cnd.repository.cache.path");
-                        if (path != null) {
-                            cacheFile = new File(path);
-                        } else {
-                            cacheFile = Places.getCacheSubdirectory("cnd/model");
-                        }
+                        cacheFile = Places.getCacheDirectory();
                     }
                     cacheDirectory = FileUtil.createFolder(cacheFile);
                 }

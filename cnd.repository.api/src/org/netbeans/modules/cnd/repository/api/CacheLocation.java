@@ -50,7 +50,7 @@ import org.openide.modules.Places;
  */
 public final class CacheLocation {
     
-    public static final CacheLocation DEFAULT = new CacheLocation(getDefault());
+    public static final CacheLocation DEFAULT = new CacheLocation(Places.getCacheSubdirectory("cnd/model"));
         
     private final File location;
 
@@ -85,18 +85,5 @@ public final class CacheLocation {
         }
         final CacheLocation other = (CacheLocation) obj;
         return this.location.equals(other.location);
-    }    
-
-    private static File getDefault() {
-        File diskRepository = null;
-        if (diskRepository == null) {
-            String diskRepositoryPath = System.getProperty("cnd.repository.cache.path");
-            if (diskRepositoryPath != null) {
-                diskRepository = new File(diskRepositoryPath);
-            } else {
-                diskRepository = Places.getCacheSubdirectory("cnd/model"); // NOI18N
-            }
-        }
-        return diskRepository;    
     }
 }
