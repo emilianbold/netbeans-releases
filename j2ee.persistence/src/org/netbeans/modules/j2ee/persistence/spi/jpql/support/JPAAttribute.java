@@ -171,6 +171,14 @@ public class JPAAttribute {
             if( tm!=null ){
                 if(tm.getKind() == TypeKind.DECLARED){
                     DeclaredType declaredType = (DeclaredType) tm;
+                    if(declaredType.getTypeArguments()!=null && declaredType.getTypeArguments().size()>0) {//it's some generic type
+                        if(mType == IMappingType.ONE_TO_MANY || mType == IMappingType.MANY_TO_MANY) {//we suppose it should be for relationship mapping only
+                            tm = declaredType.getTypeArguments().get(0);
+                            if(tm.getKind() == TypeKind.DECLARED){
+                                declaredType = (DeclaredType) tm;
+                            }
+                        }
+                    }
                     typeElement =  (TypeElement) declaredType.asElement();
                     typeName = typeElement.getQualifiedName().toString();
                 } else if (TypeKind.BOOLEAN == tm.getKind()) {
