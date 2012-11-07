@@ -113,7 +113,7 @@ public abstract class C2CExtender<Data> {
 
     private static C2CExtender getDefault() {
         Collection<? extends C2CExtender> extenders = Lookup.getDefault().lookupAll(C2CExtender.class);
-        String preferedExtenderName = System.getProperty("ods.tasks.prefereredExtender", ""); // NOI18N
+        String preferedExtenderName = System.getProperty("ods.tasks.prefereredExtender", TASKTOP_EXTENDER); // NOI18N
         if(!preferedExtenderName.isEmpty()) {
             for (C2CExtender extender : extenders) {
                 if(extender.getClass().getName().equals(preferedExtenderName)) {
