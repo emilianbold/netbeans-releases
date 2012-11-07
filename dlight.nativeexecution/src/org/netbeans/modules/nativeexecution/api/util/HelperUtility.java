@@ -120,7 +120,8 @@ public class HelperUtility {
 
                     final String fileName = localFile.getName();
                     // Construct destination: {tmpbase}/{hash}/{name}
-                    HostInfo localHostInfo = HostInfoUtils.getHostInfo(ExecutionEnvironmentFactory.getLocal());
+                    HostInfo localHostInfo = env.isLocal() ? hinfo
+                            : HostInfoUtils.getHostInfo(ExecutionEnvironmentFactory.getLocal());
                     File localTmpBase = localHostInfo.getTempDirFile();
                     // hash - a string unique to pair: 
                     //        local file location and env
