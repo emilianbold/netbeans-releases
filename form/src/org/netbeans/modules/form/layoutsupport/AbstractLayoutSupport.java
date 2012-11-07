@@ -46,6 +46,7 @@ package org.netbeans.modules.form.layoutsupport;
 
 import java.awt.*;
 import java.beans.*;
+import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 import java.lang.reflect.Method;
 
@@ -55,6 +56,7 @@ import org.openide.util.ImageUtilities;
 
 import org.netbeans.modules.form.*;
 import org.netbeans.modules.form.codestructure.*;
+import org.openide.util.Utilities;
 
 /**
  * Default implementation of LayoutSupportDelegate interface. This class
@@ -111,6 +113,7 @@ public abstract class AbstractLayoutSupport implements LayoutSupportDelegate
     private BeanCodeManager layoutBeanCode;
     private CodeGroup setLayoutCode;
 
+    private MetaLayout initialLayout;
     protected MetaLayout metaLayout;
     private FormProperty[] allProperties;
 
@@ -127,13 +130,13 @@ public abstract class AbstractLayoutSupport implements LayoutSupportDelegate
      *    (lmInstance == null, fromCode == true).
      * @param layoutContext provides a necessary context information for the
      *                      layout delegate
-     * @param lmInstance LayoutManager instance for initialization (may be null)
+     * @param initialInstance LayoutManager instance for initialization (may be null)
      * @param fromCode indicates whether to initialize from code structure
      * @exception any Exception occurred during initialization
      */
     @Override
     public void initialize(LayoutSupportContext layoutContext,
-                           LayoutManager lmInstance,
+                           LayoutManager initialInstance,
                            boolean fromCode)
         throws Exception
     {
@@ -154,15 +157,10 @@ public abstract class AbstractLayoutSupport implements LayoutSupportDelegate
         Class cls = getSupportedClass();
         if (cls != null && LayoutManager.class.isAssignableFrom(cls)) {
             // create MetaLayout to manage layout manager as a bean
-            if (lmInstance == null || !lmInstance.getClass().equals(cls)) {
-                // no valid layout manager instance - create a default one
-                lmInstance = createDefaultLayoutInstance();
+            if (initialInstance != null && !cls.isAssignableFrom(initialInstance.getClass())) {
+                initialInstance = null; // no relevant layout manager instance - create a default one
             }
-
-            if (lmInstance != null) {
-                metaLayout = new MetaLayout(this, lmInstance);
-                deriveChangedPropertiesFromInstance(metaLayout);
-            }
+            initializeInstance(initialInstance, !fromCode);
         }
         else metaLayout = null;
 
@@ -194,8 +192,18 @@ public abstract class AbstractLayoutSupport implements LayoutSupportDelegate
             }
         }
     }
-    
-    protected void deriveChangedPropertiesFromInstance(MetaLayout metaLayout) {
+
+    protected void initializeInstance(LayoutManager initialInstance, boolean initializeProperties)
+            throws Exception {
+        metaLayout = new MetaLayout(this, createDefaultLayoutInstance());
+        if (initialInstance != null) {
+            initialLayout = new MetaLayout(this, initialInstance);
+            if (initializeProperties) {
+                FormUtils.copyProperties(initialLayout.getAllBeanProperties(),
+                                         metaLayout.getAllBeanProperties(),
+                                         FormUtils.DISABLE_CHANGE_FIRING);
+            }
+        }
     }
 
     /** States whether this support class is dedicted to some special container.
@@ -531,10 +539,11 @@ public abstract class AbstractLayoutSupport implements LayoutSupportDelegate
         if (!layoutClass.isAssignableFrom(lm.getClass()))
             return true;
 
-        FormProperty[] props = getAllProperties();
-        for (int i=0; i < props.length; i++)
-            if (props[i].isChanged())
+        for (FormProperty prop : getAllProperties()) {
+            if (isPropertyChangedFromInitial(prop)) {
                 return true;
+            }
+        }
 
         return false;
     }
@@ -861,8 +870,9 @@ public abstract class AbstractLayoutSupport implements LayoutSupportDelegate
                                      CodeExpression[] targetComponents)
     {
         AbstractLayoutSupport clone = createLayoutSupportInstance();
+        LayoutManager initialInstance = isDedicated() ? null : getLayoutContext().getDefaultLayoutInstance();
         try {
-            clone.initialize(targetContext, null, false);
+            clone.initialize(targetContext, initialInstance, false);
         }
         catch (Exception ex) { // should not fail (not reading from code)
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
@@ -1198,6 +1208,20 @@ public abstract class AbstractLayoutSupport implements LayoutSupportDelegate
      */
     protected FormProperty[] getProperties() {
         return null; // use default "bean" properties
+    }
+
+    protected boolean isPropertyChangedFromInitial(FormProperty prop) {
+        if (initialLayout != null) {
+            FormProperty initProp = initialLayout.getBeanProperty(prop.getName());
+            if (initProp != null) {
+                try {
+                    return !Utilities.compareObjects(prop.getValue(), initProp.getValue());
+                } catch (IllegalAccessException ex) { // unlikely, don't care here
+                } catch (InvocationTargetException ex) { // unlikely, don't care here
+                }
+            }
+        }
+        return prop.isChanged();
     }
 
     // ---------------

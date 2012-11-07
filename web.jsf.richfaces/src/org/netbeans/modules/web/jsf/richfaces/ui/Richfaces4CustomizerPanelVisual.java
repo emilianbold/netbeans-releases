@@ -62,13 +62,14 @@ import java.util.prefs.Preferences;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JComboBox;
 import javax.swing.SwingUtilities;
+import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.libraries.LibrariesCustomizer;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.modules.j2ee.common.Util;
-import org.netbeans.modules.web.jsf.richfaces.Richfaces4Implementation;
 import org.netbeans.modules.web.jsf.richfaces.Richfaces4Customizer;
+import org.netbeans.modules.web.jsf.richfaces.Richfaces4Implementation;
 import org.openide.util.ChangeSupport;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -84,18 +85,23 @@ public final class Richfaces4CustomizerPanelVisual extends javax.swing.JPanel im
     public static final Logger LOGGER = Logger.getLogger(Richfaces4CustomizerPanelVisual.class.getName());
 
     private volatile Set<Library> richfacesLibraries = new HashSet<Library>();
-
+    private final Richfaces4Customizer customizer;
     private ChangeSupport changeSupport = new ChangeSupport(this);
 
     /** Creates new form Richfaces4CustomizerPanelVisual */
-    public Richfaces4CustomizerPanelVisual(ChangeListener listener) {
+    public Richfaces4CustomizerPanelVisual(Richfaces4Customizer customizer) {
+        this.customizer = customizer;
         initComponents();
-        addChangeListener(listener);
+        addChangeListener(new ChangeListener() {
+            @Override
+            public void stateChanged(ChangeEvent e) {
+                Richfaces4CustomizerPanelVisual.this.customizer.fireChange();
+            }
+        });
 
         initLibraries(true);
 
         richfacesComboBox.addActionListener(new ActionListener() {
-
             @Override
             public void actionPerformed(ActionEvent e) {
                 changeSupport.fireChange();
@@ -133,6 +139,7 @@ public final class Richfaces4CustomizerPanelVisual extends javax.swing.JPanel im
                         if (firstInit && !richfacesLibraries.isEmpty()) {
                             setDefaultComboBoxValues();
                         } else {
+                            customizer.setFixedLibrary(!registeredRichfaces.isEmpty());
                             changeSupport.fireChange();
                         }
                     }

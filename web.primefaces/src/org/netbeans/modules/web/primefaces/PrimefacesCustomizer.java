@@ -48,8 +48,6 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.prefs.Preferences;
 import javax.swing.JComponent;
-import javax.swing.SwingUtilities;
-import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
@@ -73,6 +71,7 @@ public class PrimefacesCustomizer implements JsfComponentCustomizer {
     private final ChangeSupport changeSupport = new ChangeSupport(this);
     private PrimefacesCustomizerPanel panel;
     private Future<Boolean> result = null;
+    private boolean fixedLibrary = false;
 
     @Override
     public void addChangeListener(ChangeListener listener) {
@@ -91,7 +90,7 @@ public class PrimefacesCustomizer implements JsfComponentCustomizer {
 
     private synchronized PrimefacesCustomizerPanel getPanel() {
         if (panel == null) {
-            panel = new PrimefacesCustomizerPanel(new PrimefacesPanelChangeListener());
+            panel = new PrimefacesCustomizerPanel(this);
         }
         return panel;
     }
@@ -129,7 +128,7 @@ public class PrimefacesCustomizer implements JsfComponentCustomizer {
                         Mutex.EVENT.readAccess(new Runnable() {
                             @Override
                             public void run() {
-                                changeSupport.fireChange();
+                                fireChange();
                             }
                         });
                     }
@@ -138,7 +137,7 @@ public class PrimefacesCustomizer implements JsfComponentCustomizer {
                 return false;
             } else {
                 try {
-                    return result.get();
+                    return result.get() || fixedLibrary;
                 } catch (InterruptedException ex) {
                     Exceptions.printStackTrace(ex);
                 } catch (ExecutionException ex) {
@@ -154,7 +153,7 @@ public class PrimefacesCustomizer implements JsfComponentCustomizer {
     })
     @Override
     public String getErrorMessage() {
-        if (result == null || !result.isDone()) {
+        if ((result == null && !isValid()) || (result != null && !result.isDone())) {
             return Bundle.PrimefacesCustomizer_err_searching_primefaces_library();
         }
         return getPanel().getErrorMessage();
@@ -179,13 +178,15 @@ public class PrimefacesCustomizer implements JsfComponentCustomizer {
     }
 
     /**
-     * Listener for listening changes on the {@link PrimefacesCustomizerPanel).
+     * Sets to true when the library troubles were fixed.
+     * @param fixed whether the library was really fixed
      */
-    private class PrimefacesPanelChangeListener implements ChangeListener {
+    public void setFixedLibrary(boolean fixed) {
+        fixedLibrary = fixed;
+    }
 
-        @Override
-        public void stateChanged(ChangeEvent e) {
-            changeSupport.fireChange();
-        }
+    /** Fire event that validation should be redone. */
+    public void fireChange() {
+        changeSupport.fireChange();
     }
 }

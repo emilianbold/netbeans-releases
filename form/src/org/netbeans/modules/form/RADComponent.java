@@ -429,7 +429,7 @@ public class RADComponent {
     public BeanInfo getBeanInfo() {
         if (beanInfo == null) {
             try {
-                beanInfo = FormUtils.getBeanInfo(beanClass);        
+                beanInfo = createBeanInfo(beanClass);        
             } catch (Error err) { // Issue 74002
                 org.openide.ErrorManager.getDefault().notify(org.openide.ErrorManager.INFORMATIONAL, err);
                 beanInfo = new FakeBeanInfo();
@@ -447,7 +447,11 @@ public class RADComponent {
             return fakeBeanInfo ;            
         }        
     }            
-    
+
+    protected BeanInfo createBeanInfo(Class cls) throws IntrospectionException {
+        return FormUtils.getBeanInfo(cls);        
+    }
+
     /** This method can be used to check whether the bean represented by this
      * RADComponent has hidden-state.
      * @return true if the component has hidden state, false otherwise
