@@ -43,6 +43,7 @@
  */
 package org.netbeans.modules.db.dataview.output;
 
+import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Toolkit;
@@ -56,16 +57,19 @@ import java.awt.event.MouseEvent;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.JComponent;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
 import javax.swing.JTable;
 import javax.swing.RowFilter;
+import javax.swing.border.LineBorder;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableModel;
+import org.jdesktop.swingx.renderer.JRendererCheckBox;
 import org.netbeans.modules.db.dataview.meta.DBColumn;
 import org.netbeans.modules.db.dataview.meta.DBException;
 import org.netbeans.modules.db.dataview.meta.DBTable;
@@ -74,7 +78,6 @@ import org.netbeans.modules.db.dataview.table.ResultSetJXTable;
 import org.netbeans.modules.db.dataview.table.ResultSetTableModel;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
-import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.datatransfer.ExClipboard;
@@ -150,13 +153,15 @@ final class DataViewTableUI extends ResultSetJXTable {
     }
 
     private static class UpdatedResultSetCellRenderer extends ResultSetCellRenderer {
-
+        static int borderThickness = 1;
         static Color green = new Color(0, 128, 0);
         static Color gray = new Color(245, 245, 245);
+        private JComponent holder = new JComponent() {};
         DataView dataView;
 
         public UpdatedResultSetCellRenderer(DataView dView) {
             dataView = dView;
+            holder.setLayout(new BorderLayout());
         }
 
         @Override
@@ -166,18 +171,33 @@ final class DataViewTableUI extends ResultSetJXTable {
                     table.convertRowIndexToModel(row),
                     table.convertColumnIndexToModel(column));
 
+            Color color;
+            boolean override = false;
+
             if (isSelected) {
                 if ((obj == null && value == null) || (obj != null && value != null && value.equals(obj))) {
-                    c.setForeground(gray);
+                    color = gray;
+                    override = true;
                 } else {
-                    c.setForeground(Color.ORANGE);
+                    color = Color.ORANGE;
+                    override = true;
                 }
             } else {
                 if ((obj == null && value == null) || (obj != null && value != null && value.equals(obj))) {
-                    c.setForeground(table.getForeground());
+                    color = table.getForeground();
                 } else {
-                    c.setForeground(green);
+                    color = green;
+                    override = true;
                 }
+            }
+
+            if(override && c instanceof JRendererCheckBox) {
+                holder.removeAll();
+                holder.setBorder(new LineBorder(color, borderThickness));
+                holder.add(c);
+                return holder;
+            } else {
+                c.setForeground(color);
             }
             return c;
         }

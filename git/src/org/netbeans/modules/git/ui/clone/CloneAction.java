@@ -83,6 +83,7 @@ import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
+import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor.Task;
 
@@ -170,9 +171,14 @@ public class CloneAction implements ActionListener, HelpCtx.Provider {
     }
     
     public static File performClone(String url, PasswordAuthentication pa, boolean waitFinished) throws MissingResourceException {
-        CloneWizard wiz = new CloneWizard(pa, url);
-        if (wiz.show()) {
-            
+        final CloneWizard wiz = new CloneWizard(pa, url);
+        Boolean ok = Mutex.EVENT.readAccess(new Mutex.Action<Boolean>() {
+            @Override
+            public Boolean run () {
+                return wiz.show();
+            }
+        });
+        if (Boolean.TRUE.equals(ok)) {            
             final GitURI remoteUri = wiz.getRemoteURI();
             final File destination = wiz.getDestination();
             final String remoteName = wiz.getRemoteName();

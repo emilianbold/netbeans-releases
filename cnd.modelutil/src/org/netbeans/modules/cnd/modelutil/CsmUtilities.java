@@ -565,10 +565,15 @@ public class CsmUtilities {
     public static FileObject getFileObject(Document doc) {
         FileObject fo = (FileObject)doc.getProperty(FileObject.class);
         if(fo == null) {
-            CsmFile csmFile = getCsmFile(doc, false, false);
-            if(csmFile != null) {
-                fo = getFileObject(csmFile);
-            }
+            DataObject dobj = NbEditorUtilities.getDataObject(doc);
+            if (dobj != null) {
+                fo = dobj.getPrimaryFile();
+            } else {
+                CsmFile csmFile = getCsmFile(doc, false, false);
+                if (csmFile != null) {
+                    fo = getFileObject(csmFile);
+                }
+            }            
         }
         return fo;
     }

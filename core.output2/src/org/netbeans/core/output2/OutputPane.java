@@ -51,6 +51,7 @@ import javax.swing.text.PlainDocument;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
+import org.netbeans.core.output2.options.OutputOptions;
 import org.openide.util.NbPreferences;
 
 
@@ -132,7 +133,7 @@ class OutputPane extends AbstractOutputPane {
     public void setWrapped (boolean val) {
         if (val != isWrapped() || !(getEditorKit() instanceof OutputEditorKit)) {
             NbPreferences.forModule(OutputPane.class).putBoolean("wrap", val); //NOI18N
-            textView.setFont(val ? Controller.getDefault().getCurrentFontMS() : Controller.getDefault().getCurrentFont());
+            textView.setFont(OutputOptions.getDefault().getFont(val));
             final int pos = textView.getCaret().getDot();
             Cursor cursor = textView.getCursor();
             try {
