@@ -53,8 +53,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
 import javax.swing.JComponent;
-import javax.swing.SwingUtilities;
-import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
@@ -77,6 +75,7 @@ public class Richfaces4Customizer implements JsfComponentCustomizer {
     private Richfaces4CustomizerPanelVisual panel;
     private ChangeSupport changeSupport = new ChangeSupport(this);
     private Future<Boolean> result = null;
+    private boolean fixedLibrary = false;
 
     public static final Logger LOGGER = Logger.getLogger(Richfaces4Customizer.class.getName());
 
@@ -96,7 +95,7 @@ public class Richfaces4Customizer implements JsfComponentCustomizer {
     @Override
     public JComponent getComponent() {
         if (panel == null) {
-            panel = new Richfaces4CustomizerPanelVisual(new PanelChangeListener());
+            panel = new Richfaces4CustomizerPanelVisual(this);
             panel.initLibraries(true);
         }
         return panel;
@@ -136,7 +135,7 @@ public class Richfaces4Customizer implements JsfComponentCustomizer {
                         Mutex.EVENT.readAccess(new Runnable() {
                             @Override
                             public void run() {
-                                changeSupport.fireChange();
+                                fireChange();
                             }
                         });
                     }
@@ -145,7 +144,7 @@ public class Richfaces4Customizer implements JsfComponentCustomizer {
                 return false;
             } else {
                 try {
-                    return result.get();
+                    return result.get() || fixedLibrary;
                 } catch (InterruptedException ex) {
                     Exceptions.printStackTrace(ex);
                 } catch (ExecutionException ex) {
@@ -166,7 +165,7 @@ public class Richfaces4Customizer implements JsfComponentCustomizer {
     })
     @Override
     public String getErrorMessage() {
-        if (result == null || !result.isDone()) {
+        if ((result == null && !isValid()) || (result != null && !result.isDone())) {
             return Bundle.Richfaces4Customizer_err_searching_richfaces_library();
         }
         return panel.getErrorMessage();
@@ -176,6 +175,19 @@ public class Richfaces4Customizer implements JsfComponentCustomizer {
     public void saveConfiguration() {
         Preferences preferences = Richfaces4Implementation.getRichfacesPreferences();
         preferences.put(Richfaces4Implementation.PREF_RICHFACES_LIBRARY, panel.getRichFacesLibrary());
+    }
+
+    /**
+     * Sets to true when the library troubles were fixed.
+     * @param fixed whether the library was really fixed
+     */
+    public void setFixedLibrary(boolean fixed) {
+        fixedLibrary = fixed;
+    }
+
+    /** Fire event that validation should be redone. */
+    public void fireChange() {
+        changeSupport.fireChange();
     }
 
     public static List<Library> getRichfacesLibraries() {
@@ -213,17 +225,6 @@ public class Richfaces4Customizer implements JsfComponentCustomizer {
     @Override
     public HelpCtx getHelpCtx() {
         return panel.getHelpCtx();
-    }
-
-    /**
-     * Listener for listening changes on the {@link Richfaces4CustomizerPanelVisual).
-     */
-    private class PanelChangeListener implements ChangeListener {
-
-        @Override
-        public void stateChanged(ChangeEvent e) {
-            changeSupport.fireChange();
-        }
     }
 
 }
