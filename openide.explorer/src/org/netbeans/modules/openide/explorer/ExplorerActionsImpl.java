@@ -791,6 +791,8 @@ public final class ExplorerActionsImpl {
             if (EventQueue.isDispatchThread()) {
                 syncActions();
             } else {
+                updateActions(false);
+                EventQueue.invokeLater(this);
                 registerListener();
                 updateTrans();
                 updateActions(true);
