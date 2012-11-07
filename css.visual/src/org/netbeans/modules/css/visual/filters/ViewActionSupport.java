@@ -47,9 +47,10 @@ package org.netbeans.modules.css.visual.filters;
 import java.awt.event.ActionEvent;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
+import javax.swing.ButtonGroup;
 import javax.swing.JMenuItem;
 import javax.swing.JRadioButtonMenuItem;
-import org.netbeans.modules.css.visual.api.SortMode;
+import org.netbeans.modules.css.visual.api.ViewMode;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.Presenter;
@@ -66,17 +67,18 @@ import org.openide.util.actions.Presenter;
  * @author Dafe Simonek
  */
 @NbBundle.Messages({
-        "action.name.natural=Natural Sort",
-        "action.name.alphabetical=Alphabetical Sort"
+        "action.name.updated=Show updated properties only",
+        "action.name.categorized=Show categorized properties",
+        "action.name.all=Show all properties"
 })
-public abstract class SortActionSupport extends AbstractAction implements Presenter.Popup {
+public abstract class ViewActionSupport extends AbstractAction implements Presenter.Popup {
     
     private JRadioButtonMenuItem menuItem;
-    protected RuleEditorFilters filters;
+    protected RuleEditorViews views;
     
     /** Creates a new instance of SortByNameAction */
-    public SortActionSupport ( RuleEditorFilters filters ) {
-        this.filters = filters;
+    public ViewActionSupport (RuleEditorViews views ) {
+        this.views = views;
     }
     
     @Override
@@ -96,46 +98,67 @@ public abstract class SortActionSupport extends AbstractAction implements Presen
     
     protected abstract void updateMenuItem ();
     
-    public static final class NaturalSortAction extends SortActionSupport {
+    public static final class UpdatedOnlyViewAction extends ViewActionSupport {
         
-        public NaturalSortAction ( RuleEditorFilters filters) {
+        public UpdatedOnlyViewAction ( RuleEditorViews filters) {
             super(filters);
-            putValue(Action.NAME, Bundle.action_name_natural()); //NOI18N
-            putValue(Action.SMALL_ICON, ImageUtilities.loadImageIcon("org/netbeans/modules/css/visual/resources/sortNatural.png", false)); //NOI18N
+            putValue(Action.NAME, Bundle.action_name_updated()); //NOI18N
+            putValue(Action.SMALL_ICON, ImageUtilities.loadImageIcon("org/netbeans/modules/css/visual/resources/viewByUpdated.png", false)); //NOI18N
         }
     
         @Override
         public void actionPerformed (ActionEvent e) {
-            filters.setSortMode(SortMode.NATURAL);
+            views.setViewMode(ViewMode.UPDATED_ONLY);
             updateMenuItem();
         }
 
         @Override
         protected void updateMenuItem () {
             JRadioButtonMenuItem mi = obtainMenuItem();
-            mi.setSelected(filters.getSortMode() == SortMode.NATURAL);
+            mi.setSelected(views.getViewMode() == ViewMode.UPDATED_ONLY);
         }
         
     } 
 
-    public static final class AlphabeticalSortAction extends SortActionSupport {
+    public static final class CategorizedViewAction extends ViewActionSupport {
         
-        public AlphabeticalSortAction ( RuleEditorFilters filters ) {
+        public CategorizedViewAction ( RuleEditorViews filters ) {
             super(filters);
-            putValue(Action.NAME, Bundle.action_name_alphabetical()); //NOI18N
-            putValue(Action.SMALL_ICON, ImageUtilities.loadImageIcon("org/netbeans/modules/css/visual/resources/sortAlpha.png", false)); //NOI18N
+            putValue(Action.NAME, Bundle.action_name_categorized()); //NOI18N
+            putValue(Action.SMALL_ICON, ImageUtilities.loadImageIcon("org/netbeans/modules/css/visual/resources/viewByCategory.png", false)); //NOI18N
         }
     
         @Override
         public void actionPerformed (ActionEvent e) {
-            filters.setSortMode(SortMode.ALPHABETICAL);
+            views.setViewMode(ViewMode.CATEGORIZED);
             updateMenuItem();
         }
 
         @Override
         protected void updateMenuItem () {
             JRadioButtonMenuItem mi = obtainMenuItem();
-            mi.setSelected(filters.getSortMode() == SortMode.ALPHABETICAL);
+            mi.setSelected(views.getViewMode() == ViewMode.CATEGORIZED);
+        }
+    } 
+   
+    public static final class AllViewAction extends ViewActionSupport {
+        
+        public AllViewAction ( RuleEditorViews filters ) {
+            super(filters);
+            putValue(Action.NAME, Bundle.action_name_all()); //NOI18N
+            putValue(Action.SMALL_ICON, ImageUtilities.loadImageIcon("org/netbeans/modules/css/visual/resources/viewAll.png", false)); //NOI18N
+        }
+    
+        @Override
+        public void actionPerformed (ActionEvent e) {
+            views.setViewMode(ViewMode.ALL);
+            updateMenuItem();
+        }
+
+        @Override
+        protected void updateMenuItem () {
+            JRadioButtonMenuItem mi = obtainMenuItem();
+            mi.setSelected(views.getViewMode() == ViewMode.ALL);
         }
     } 
    
