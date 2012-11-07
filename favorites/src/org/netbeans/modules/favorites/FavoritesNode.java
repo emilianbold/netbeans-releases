@@ -80,6 +80,7 @@ import org.openide.nodes.NodeReorderEvent;
 import org.openide.util.ChangeSupport;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
 import org.openide.util.datatransfer.PasteType;
 
@@ -90,6 +91,7 @@ import org.openide.util.datatransfer.PasteType;
 public final class FavoritesNode extends FilterNode implements Index {
     /** default node */
     private static Node node;
+    static RequestProcessor RP = new RequestProcessor("Favorites Nodes"); //NOI18N
 
     /** Creates new ProjectRootFilterNode. */
     private FavoritesNode(Node node) {
@@ -373,9 +375,7 @@ public final class FavoritesNode extends FilterNode implements Index {
     } // end of Chldrn
     
     static Node createFilterNode(Node node) {
-        org.openide.nodes.Children ch = findChildren(node);
-        return new ProjectFilterNode(node, ch);
-        
+        return new ProjectFilterNode(node, Children.LEAF);
     }
     private static org.openide.nodes.Children findChildren(Node node) {
         org.openide.nodes.Children ch = Children.LEAF;
@@ -396,12 +396,23 @@ public final class FavoritesNode extends FilterNode implements Index {
      * When this property is true then original DataObjects pointed to by links under the project's node
      * are deleted as the Delete is performed on the link's node.
      */
-    private static class ProjectFilterNode extends FilterNode implements NodeListener {
+    private static class ProjectFilterNode extends FilterNode implements NodeListener, Runnable {
+        private boolean initialized;
 
         /** Creates new ProjectFilterNode. */
         public ProjectFilterNode (Node node, org.openide.nodes.Children children) {
             super (node, children);
             addNodeListener(this);
+            RP.post(this);
+        }
+
+        @Override
+        public void run () {
+            setChildren(findChildren(getOriginal()));
+            if (!initialized) {
+                initialized = true;
+                fireDisplayNameChange(null, null);
+            }
         }
 
         @Override
@@ -411,7 +422,7 @@ public final class FavoritesNode extends FilterNode implements Index {
                 protected void propertyChange(FilterNode fn, PropertyChangeEvent ev) {
                     super.propertyChange(fn, ev);
                     if (Node.PROP_LEAF.equals(ev.getPropertyName())) {
-                        setChildren(findChildren(getOriginal()));
+                        RP.post(ProjectFilterNode.this);
                     }
                 }
             };
@@ -436,7 +447,7 @@ public final class FavoritesNode extends FilterNode implements Index {
         public String getDisplayName () {
             //Change display name only for favorite nodes (links) under Favorites node.
             if (FavoritesNode.getNode().equals(this.getParentNode())) {
-                DataShadow ds = getCookie(DataShadow.class);
+                DataShadow ds = initialized ? getCookie(DataShadow.class) : null;
                 if (ds != null) {
                     String name = ds.getName();
                     String path = FileUtil.getFileDisplayName(ds.getOriginal().getPrimaryFile());
@@ -452,7 +463,7 @@ public final class FavoritesNode extends FilterNode implements Index {
         @Override
         public String getHtmlDisplayName() {
             if (FavoritesNode.getNode().equals(this.getParentNode())) {
-                DataShadow ds = getCookie(DataShadow.class);
+                DataShadow ds = initialized ? getCookie(DataShadow.class) : null;
                 if (ds != null) {
                     String name = ds.getName();
                     String path = FileUtil.getFileDisplayName(ds.getOriginal().getPrimaryFile());
