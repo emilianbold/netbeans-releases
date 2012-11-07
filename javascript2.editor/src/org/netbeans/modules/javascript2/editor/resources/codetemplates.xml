@@ -190,6 +190,9 @@ function ${name}(${parameters}) {
 ]]>
         </code>
     </codetemplate>
+    <codetemplate abbreviation="us">
+        <code><![CDATA[${no-indent}"use strict"]]></code>
+    </codetemplate>
     <codetemplate abbreviation="var">
         <code><![CDATA[${no-indent}var ${name} = ${value};]]></code>
     </codetemplate>

@@ -55,6 +55,7 @@ import java.util.MissingResourceException;
 import java.util.logging.Level;
 import org.netbeans.modules.nativeexecution.ConnectionManagerAccessor;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.nativeexecution.api.HostInfo;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager.CancellationException;
 import org.netbeans.modules.nativeexecution.api.util.MacroExpanderFactory.MacroExpander;
@@ -118,7 +119,18 @@ public class HelperUtility {
                     }
 
                     final String fileName = localFile.getName();
-                    File safeLocalFile = new File(hinfo.getTempDirFile(), fileName);
+                    // Construct destination: {tmpbase}/{hash}/{name}
+                    HostInfo localHostInfo = env.isLocal() ? hinfo
+                            : HostInfoUtils.getHostInfo(ExecutionEnvironmentFactory.getLocal());
+                    File localTmpBase = localHostInfo.getTempDirFile();
+                    // hash - a string unique to pair: 
+                    //        local file location and env
+                    String key = localFile.getAbsolutePath().concat(env.getDisplayName());
+                    String hash = Integer.toString(key.hashCode()).replace('-', '0');
+                    File safeLocalDir = new File(localTmpBase, hash);
+                    safeLocalDir.mkdirs();
+
+                    File safeLocalFile = new File(safeLocalDir, fileName);
                     copyFile(localFile, safeLocalFile);
 
                     if (env.isLocal()) {
@@ -126,7 +138,8 @@ public class HelperUtility {
                     } else {
                         Logger.assertNonUiThread("Potentially long method " + getClass().getName() + ".getPath() is invoked in AWT thread"); // NOI18N
 
-                        final String remoteFile = hinfo.getTempDir() + '/' + fileName;
+                        final String remoteDir = hinfo.getTempDir() + '/' + hash;
+                        final String remoteFile = remoteDir + '/' + fileName;
                         // Helper utility could be needed at the early stages
                         // Should not use NPB here
                         ConnectionManagerAccessor cmAccess = ConnectionManagerAccessor.getDefault();
@@ -158,6 +171,7 @@ public class HelperUtility {
                                 remoteSize = -1;
                             }
                             if (remoteSize < 0) {
+                                channel.mkdir(remoteDir);
                                 channel.put(safeLocalFile.getAbsolutePath(), remoteFile);
                                 channel.chmod(0700, remoteFile);
                             }

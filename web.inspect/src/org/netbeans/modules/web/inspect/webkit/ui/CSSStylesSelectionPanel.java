@@ -654,13 +654,16 @@ public class CSSStylesSelectionPanel extends JPanel {
         public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
             JComponent component = (JComponent)super.getListCellRendererComponent(list, "", index, isSelected, cellHasFocus); // NOI18N
             JLabel htmlLabel = (JLabel)htmlRenderer.getListCellRendererComponent(list, "", index, isSelected, cellHasFocus); // NOI18N
-            Color bgColor = backgroundColor(htmlLabel);
+            Color bgColor = color(htmlLabel, false);
             if (bgColor == null) {
                 bgColor = component.getBackground();
             }
             renderer.setBackground(bgColor);
             renderer.setBorder(component.getBorder());
-            Color foreground = component.getForeground();
+            Color foreground = color(htmlLabel, true);
+            if (foreground == null) {
+                foreground = component.getForeground();
+            }
             matchedNodeLabel.setForeground(foreground);
             selectorLabel.setForeground(foreground);
             mediaLabel.setForeground(foreground);
@@ -726,19 +729,22 @@ public class CSSStylesSelectionPanel extends JPanel {
         }
 
         /**
-         * Returns the background color of the given label. We cannot use
-         * {@code getBackground()} method because the given label is
-         * {@code HTMLRendererImpl} that handles its background
-         * in a non-standard way.
+         * Returns the background or foreground color of the given label.
+         * We cannot use {@code getBackground()} or {@code getForeground()}
+         * method because the given label is {@code HTMLRendererImpl} that
+         * handles its background and foreground in a non-standard way.
          *
-         * @param label label whose background should be returned.
-         * @return background color of the given label.
+         * @param label label whose background or foreground should be returned.
+         * @param foreground if true then the method returns the foreground
+         * color, it returns background color otherwise.
+         * @return background or foreground color of the given label.
          */
-        private Color backgroundColor(JLabel label) {
+        private Color color(JLabel label, boolean foreground) {
             Color color = null;
             Object htmlUI = label.getUI();
             try {
-                Method method = htmlUI.getClass().getDeclaredMethod("getBackgroundFor", htmlRenderer.getClass()); // NOI18N
+                String methodName = foreground ? "getForegroundFor" : "getBackgroundFor"; // NOI18N
+                Method method = htmlUI.getClass().getDeclaredMethod(methodName, htmlRenderer.getClass()); // NOI18N
                 method.setAccessible(true);
                 Object result = method.invoke(null, htmlRenderer);
                 if (result instanceof Color) {
