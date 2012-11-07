@@ -64,36 +64,33 @@ public class BufferedRWAccess implements FileRWAccess {
 	
 	private int oldPosition;
 	private int flushed = 0;
-	private ByteBuffer buffer;
 	
-	public ByteBufferOutputStream(ByteBuffer buffer) {
-	    this.buffer = buffer;
-	    oldPosition = buffer.position();
+	public ByteBufferOutputStream() {
+	    oldPosition = writeBuffer.position();
 	}
 	
         @Override
 	public void write(int b) throws IOException {
-	    if( buffer.remaining() <= 0 ) {
-		flushed += buffer.position();
+	    if( writeBuffer.remaining() <= 0 ) {
+		flushed += writeBuffer.position();
 		writeBuffer();
 	    }
-	    buffer.put((byte) b);
+	    writeBuffer.put((byte) b);
 	}
 	
 	private int count() {
-	    return flushed + buffer.position() - oldPosition;
+	    return flushed + writeBuffer.position() - oldPosition;
 	}
     }
     
     private final RandomAccessFile randomAccessFile;
     private final FileChannel channel;
     private final ByteBuffer writeBuffer;
-    private final int bufSize;
     private final UnitCodec unitCodec;
     
     public BufferedRWAccess(File file, UnitCodec unitCodec) throws IOException {
         this.unitCodec = unitCodec;
-	this.bufSize = Stats.bufSize > 0 ? Stats.bufSize : 32*1024;
+	int bufSize = Stats.bufSize > 0 ? Stats.bufSize : 32*1024;
         File parent = new File(file.getParent());
         
         if (!parent.exists()) {
@@ -127,21 +124,12 @@ public class BufferedRWAccess implements FileRWAccess {
     @Override
     public int write(PersistentFactory factory, Persistent object, long offset) throws IOException {
 	channel.position(offset);
-	ByteBufferOutputStream bos = new ByteBufferOutputStream(getWriteBuffer());
+	ByteBufferOutputStream bos = new ByteBufferOutputStream();
 	RepositoryDataOutput out = new RepositoryDataOutputStream(bos, unitCodec);
 	factory.write(out, object);
 	int count = bos.count();
 	writeBuffer();
 	return count;
-    }
-    
-    // TODO: handle possible buffer overflow 
-    // (for now we just allocate large buffer and hope that it will never ovrflow
-    private ByteBuffer getWriteBuffer() {
-//	if( writeBuffer == null ) {
-//	    writeBuffer = ByteBuffer.allocateDirect(bufSize);
-//	}
-	return writeBuffer;
     }
     
     // TODO: optimize buffer allocation
