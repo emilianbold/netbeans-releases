@@ -477,6 +477,11 @@ public final class NbMavenProject {
                 progress.progress(MSG_Checking_Sources(art.getId()), 1);
                 online.resolve(sources, project.getOriginalMavenProject().getRemoteArtifactRepositories(), project.getEmbedder().getLocalRepository());
             }
+        } catch (ThreadDeath td) {
+        } catch (IllegalStateException ise) { //download interrupted in dependent thread. #213812
+            if (!(ise.getCause() instanceof ThreadDeath)) {
+                throw ise;
+            }   
         } catch (ArtifactNotFoundException ex) {
             // just ignore..ex.printStackTrace();
         } catch (ArtifactResolutionException ex) {
