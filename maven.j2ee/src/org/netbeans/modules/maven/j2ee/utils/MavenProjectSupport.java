@@ -42,7 +42,6 @@
 package org.netbeans.modules.maven.j2ee.utils;
 
 import java.awt.event.ActionEvent;
-import java.io.File;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.logging.Level;

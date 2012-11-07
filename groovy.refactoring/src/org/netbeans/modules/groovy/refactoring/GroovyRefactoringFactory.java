@@ -81,8 +81,12 @@ public class GroovyRefactoringFactory implements RefactoringPluginFactory {
         if (sourceFO == null){
             if (pkg != null){
                 sourceFO = pkg.getFolder();
-            } else if (element != null) {
-                sourceFO = element.getFileObject();
+            } else {
+                if (element != null) {
+                    sourceFO = element.getFileObject();
+                } else {
+                    return null; // Might happened #221580
+                }
             }
         }
 
