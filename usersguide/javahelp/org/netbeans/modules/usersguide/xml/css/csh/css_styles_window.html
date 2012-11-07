@@ -8,39 +8,37 @@
     <head>
         <meta http-equiv="content-type" content="text/html; charset=UTF-8">
         <title>CSS Styles Window</title>
-        <link href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" 
-              rel="StyleSheet" type="text/css">
+        <link href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" rel="StyleSheet" type="text/css">
 
     </head>
     <body>
 
         <h2>CSS Styles Window</h2>
         <p> <small><a href="#seealso">See Also</a>&nbsp; </small>
-        <p>The CSS Styles window enables you to edit the properties of HTML elements and selectors in a CSS file. 
+        <p>The CSS Styles window enables you to edit the declarations of rules for HTML elements and selectors in a CSS file. 
         You can open the CSS Styles window by choosing Window &gt; Web &gt; CSS Styles from the main menu.
         </p> 
 
-        <p>The upper pane of the CSS Styles window displays a list of the elements that
+        <p>The upper pane of the CSS Styles window displays a list of the rules that
         are defined in the CSS file. 
-        You can filter the list by typing a string in the textfield at the top of the pane.
+        You can filter the list by typing a string in the text field at the top of the pane.
         You can double-click an element in the list to navigate to the line in the CSS file
-        where the element is defined.</p>
+        where the rule is defined.</p>
         
-        <p>
-            When your insert cursor is in an element definition in the CSS file in the editor,
-            the properties of that element are listed in the lower pane of the CSS Styles window.
-            You can use the lower pane to create rules for elements and to modify, add and remove 
-            the properties of elements. 
-            You can use the dropdown list to select values for each property.</p>
+        <p>The lower pane of the CSS Styles window displays a list of the properties of a rule definition.
+            In the editor, when your insert cursor is in a line that contains properties for a CSS rule
+            the properties of that rule are listed in the lower pane of the window.
+            You can use the lower pane to create and delete rules for elements and to modify, add and remove 
+            the properties of rules. 
+            You can use the dropdown list to select values for each property or type a value
+            in the text field.</p>
         
-        <p>The toolbar of the lower pane contains the following options.</p>
-            
-        <p>You can use the buttons in the toolbar to modify the how the properties are displayed.
-        The following table lists the buttons that are available in the toolbar when a CSS file is open.</p>
+        <p>The toolbar in the lower pane contains the following 
+        toggle buttons that you can use to modify how the properties are displayed.</p>
         
         <table border="1" cellpadding="5" cellspacing="0">
             <tr>
-                <th align="left" scope="col">Icon</th>
+                <th align="left" scope="col">Button</th>
                 <th align="left" scope="col">Description</th>
             </tr>
             <tr valign="top">
@@ -66,9 +64,10 @@
         to display a menu with the following options.</p>
         
         <ul>
-            <li><strong>Add Property.</strong></li>
-            <li><strong>Create Rule.</strong></li>
-            <li><strong>Delete Rule.</strong></li>
+            <li><strong>Add Property.</strong> Opens a dialog box that enables you to add properties to elements in a style sheet. </li>
+            <li><strong>Create Rule.</strong> Opens a dialog box that enables you to create a new rule in a style sheet. </li>
+            <li><strong>Delete Rule.</strong> Deletes the rule that is displayed in the lower pane of the window.
+            This option is disabled if no rule is selected in the style sheet.</li>
         </ul>
         
         
