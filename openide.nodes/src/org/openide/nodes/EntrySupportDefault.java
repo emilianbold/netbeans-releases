@@ -60,7 +60,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.openide.nodes.Children.Entry;
 import org.openide.util.Utilities;
-import org.openide.util.WeakSet;
 
 /** Default support that just fires changes directly to children and is suitable
  * for simple mappings.
@@ -82,6 +81,13 @@ class EntrySupportDefault extends EntrySupport {
     public EntrySupportDefault(Children ch) {
         super(ch);
     }
+
+    @Override
+    public String toString() {
+        return super.toString() + " array: " + array.get(); // NOI18N
+    }
+    
+    
 
     public boolean isInitialized() {
         ChildrenArray arr = array.get();
@@ -828,16 +834,12 @@ class EntrySupportDefault extends EntrySupport {
         }
     }
 
-    private static final Collection<ChArrRef> KEEP = Collections.synchronizedSet(
-        new HashSet<ChArrRef>()
-    );
     private class ChArrRef extends WeakReference<ChildrenArray> implements Runnable {
         private final ChildrenArray chArr;
 
         public ChArrRef(ChildrenArray referent, boolean weak) {
             super(referent, Utilities.activeReferenceQueue());
             this.chArr = weak ? null : referent;
-            KEEP.add(this);
         }
 
         @Override
@@ -852,7 +854,6 @@ class EntrySupportDefault extends EntrySupport {
         @Override
         public void run() {
             finalizedChildrenArray(this);
-            KEEP.remove(this);
         }
     }
     
