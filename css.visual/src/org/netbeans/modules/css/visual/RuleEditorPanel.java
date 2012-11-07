@@ -202,7 +202,7 @@ public class RuleEditorPanel extends JPanel {
                                             if (resultIterator != null) {
                                                 CssParserResult result = (CssParserResult) resultIterator.getParserResult();
                                                 final Model model = Model.getModel(result);
-                                                LOG.log(Level.INFO, "Model.CHANGES_APPLIED_TO_DOCUMENT event handler - setting new model {0}", model);
+                                                LOG.log(Level.FINE, "Model.CHANGES_APPLIED_TO_DOCUMENT event handler - setting new model {0}", model);
                                                 setModel(model);
                                             }
                                         }
@@ -543,7 +543,7 @@ public class RuleEditorPanel extends JPanel {
             CHANGE_SUPPORT.firePropertyChange(RuleEditorController.PropertyNames.RULE_SET.name(), oldRule, match);
 
         } else {
-            LOG.log(Level.FINE, "no rule was set before");
+            LOG.log(Level.FINER, "no rule was set before");
             //no rule was set - fire event anyway
             CHANGE_SUPPORT.firePropertyChange(RuleEditorController.PropertyNames.RULE_SET.name(), oldRule, rule);
         }
@@ -602,7 +602,7 @@ public class RuleEditorPanel extends JPanel {
     }
 
     public void setNoRuleState() {
-        LOG.log(Level.FINE, "setNoRuleState()");
+        LOG.log(Level.FINER, "setNoRuleState()");
 
         assert SwingUtilities.isEventDispatchThread();
         Rule old = this.rule;

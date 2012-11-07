@@ -51,6 +51,7 @@ import org.glassfish.tools.ide.admin.TaskState;
 import org.glassfish.tools.ide.data.GlassFishVersion;
 import org.glassfish.tools.ide.server.ServerStatus;
 import org.glassfish.tools.ide.utils.ServerUtils;
+import org.netbeans.modules.glassfish.common.ui.WarnPanel;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 
@@ -286,11 +287,7 @@ public class GlassFishStatus {
         // Remote GlassFish 3.1.2 won't crash NetBeans.
         if (mode == Mode.STARTUP && version == GlassFishVersion.GF_3_1_2
                 && !instance.isRemote()) {
-            String message = NbBundle.getMessage(
-                    CommonServerSupport.class, "MSG_GF312_BUG",
-                    instance.getName());
-            CommonServerSupport.displayPopUpMessage(
-                    instance.getCommonSupport(), message);
+            WarnPanel.gf312WSWarning(instance.getName());
         }
     }
 

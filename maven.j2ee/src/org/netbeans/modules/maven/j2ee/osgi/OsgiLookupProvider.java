@@ -52,8 +52,6 @@ import org.netbeans.modules.maven.j2ee.utils.MavenProjectSupport;
 import org.netbeans.modules.maven.j2ee.web.*;
 import org.netbeans.modules.web.jsfapi.spi.JsfSupportHandle;
 import org.netbeans.spi.project.LookupProvider;
-import org.openide.filesystems.FileStateInvalidException;
-import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
@@ -154,13 +152,8 @@ public class OsgiLookupProvider implements LookupProvider, PropertyChangeListene
         ic.remove(provider);
 
         if (copyOnSave != null) {
-            try {
-                copyOnSave.cleanup();
-                ic.remove(copyOnSave);
-                
-            } catch (FileStateInvalidException ex) {
-                Exceptions.printStackTrace(ex);
-            }
+            copyOnSave.cleanup();
+            ic.remove(copyOnSave);
         }
     }
     
@@ -168,15 +161,9 @@ public class OsgiLookupProvider implements LookupProvider, PropertyChangeListene
         String packaging = project.getLookup().lookup(NbMavenProject.class).getPackagingType();
         
         if (MavenProjectSupport.isBundlePackaging(project, packaging)) {
+            copyOnSave.initialize();
             
-            try {
-                copyOnSave.initialize();
-                ic.add(copyOnSave);
-
-            } catch (FileStateInvalidException ex) {
-                Exceptions.printStackTrace(ex);
-            }
-            
+            ic.add(copyOnSave);
             ic.add(provider);
             ic.add(webReplaceTokenProvider);
             ic.add(entRefContainerImpl);
