@@ -472,6 +472,9 @@ Other names may be trademarks of their respective owners.
 <!--CSH - Whenever F1 is clicked on property sheet and there is no help button activated:-->
 <mapID target="org.netbeans.core.windows.view.ui.NbSheet" url="files/csh/files_properties.html" />
 
+<!--CSH - Window | Documents dialog -->
+<mapID target="org.netbeans.core.windows.view.ui.DocumentsDlg" url="files/csh/documents-dialog.html" />
+
 
 <!--IDs that are used for basic menu items-->
 <!--Help menu-->

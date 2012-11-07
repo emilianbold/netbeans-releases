@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.git.ui.fetch;
 
+import java.awt.EventQueue;
 import java.io.File;
 import java.util.Arrays;
 import java.util.Collections;
@@ -60,6 +61,7 @@ import org.netbeans.modules.versioning.spi.VCSContext;
 import org.netbeans.modules.versioning.util.Utils;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionRegistration;
+import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
 
 /**
@@ -88,15 +90,20 @@ public class FetchAction extends GetRemoteChangesAction {
         }
     }
     
-    private void fetch (File repository) {
+    private void fetch (final File repository) {
         RepositoryInfo info = RepositoryInfo.getInstance(repository);
         info.refreshRemotes();
-        Map<String, GitRemoteConfig> remotes = info.getRemotes();
-        FetchWizard wiz = new FetchWizard(repository, remotes);
-        if (wiz.show()) {
-            Utils.logVCSExternalRepository("GIT", wiz.getFetchUri()); //NOI18N
-            fetch(repository, wiz.getFetchUri(), wiz.getFetchRefSpecs(), wiz.getRemoteToPersist());
-        }
+        final Map<String, GitRemoteConfig> remotes = info.getRemotes();
+        EventQueue.invokeLater(new Runnable() {
+            @Override
+            public void run () {
+                FetchWizard wiz = new FetchWizard(repository, remotes);
+                if (wiz.show()) {
+                    Utils.logVCSExternalRepository("GIT", wiz.getFetchUri()); //NOI18N
+                    fetch(repository, wiz.getFetchUri(), wiz.getFetchRefSpecs(), wiz.getRemoteToPersist());
+                }
+            }
+        });
     }
     
     public void fetch (File repository, final String target, final List<String> fetchRefSpecs, final String remoteNameToUpdate) {
