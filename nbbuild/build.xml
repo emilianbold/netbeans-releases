@@ -1654,17 +1654,45 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
     </junitreport>
     <echo message="Report generated to ${sigtest.output.dir}/html/index.html"/>
   </target>
-  
+
+  <target name="version-check-sigtests">
+    <echo message="Checking version of signature files for ${cluster.config} modules"/>
+    
+    <property name="sigtest.previous.url" value="http://deadlock.netbeans.org/hudson/job/nbms-and-javadoc/lastStableBuild/artifact/nbbuild/build/sigtest/snapshot/*zip*/snapshot.zip"/>
+    <property name="sigtest.prev.dir" location="${nb.build.dir}/sigtest/prev-snapshot"/>
+    <property name="sigtest.output.dir" location="${nb.build.dir}/sigtest/versioncheck"/>
+
+    <mkdir dir="${sigtest.prev.dir}"/>    
+    <get src="${sigtest.previous.url}" dest="${sigtest.prev.dir}/snapshot.zip"/>
+    <unzip src="${sigtest.prev.dir}/snapshot.zip" dest="${sigtest.prev.dir}">
+        <mapper type="flatten"/>
+    </unzip>
+    
+    <antcall target="-do-check-sigtests">
+        <param name="sigtest.check.type" value="versioncheck"/>
+        <param name="sigtest.basedir" location="${sigtest.prev.dir}"/>
+        <param name="sigtest.output.dir" value="${sigtest.output.dir}"/>
+    </antcall>
+    <junitreport todir="${sigtest.output.dir}">
+        <fileset dir="${sigtest.output.dir}">
+            <include name="*.xml"/>
+        </fileset>
+        <report todir="${sigtest.output.dir}/html" format="frames"/>
+    </junitreport>
+    <echo message="Report generated to ${sigtest.output.dir}/html/index.html"/>
+  </target>
+    
   <target name="-do-check-sigtests" depends="init-module-list">
     <fail unless="sigtest.check.type"/>
     <fail unless="sigtest.output.dir"/>
 
     <property name="sigtest.basedir" location="${nb.build.dir}/sigtest/snapshot"/>
+    <property name="sigtest.fail.on.error" value="false"/>
     
     <mkdir dir="${sigtest.basedir}"/>
     <delete dir="${sigtest.output.dir}"/>
     <mkdir dir="${sigtest.output.dir}"/>
-    <subant target="check-sigtest" buildpath="${modules.fullpath}" failonerror="false">
+    <subant target="check-sigtest" buildpath="${modules.fullpath}" failonerror="${sigtest.fail.on.error}">
         <property name="sigtest.output.dir" value="${sigtest.output.dir}"/>
         <property name="sigtest.basedir" value="${sigtest.basedir}"/>
     </subant>

@@ -698,6 +698,7 @@ public class AbstractLookup extends Lookup implements Serializable {
             return t.cleanUpResult(template) == null;
         } finally {
             exitStorage();
+            Thread.yield();
         }
     }
 

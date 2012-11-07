@@ -815,8 +815,9 @@ public abstract class FileObject extends Object implements Serializable, Lookup.
                 @Override
                 public void close() throws IOException {
                     try {
-                        super.close();
+                        super.flush();
                         lock.releaseLock();
+                        super.close();
                     } catch(IOException iex) {
                         if (lock.isValid()) {
                             lock.releaseLock();

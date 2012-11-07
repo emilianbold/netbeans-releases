@@ -366,9 +366,6 @@ class IndexedStorageFile extends FileStorage {
             case 0:
                 result = new BufferedRWAccess(file, unitCodec);
                 break;
-            case 1:
-                result = new SimpleRWAccess(file, unitCodec);
-                break;
             default:
                 result = new BufferedRWAccess(file, unitCodec);
         }
