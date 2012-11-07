@@ -58,6 +58,15 @@ public class CompoundAction implements ShortcutAction {
     public CompoundAction(Map<String, ShortcutAction> actions) {
         this.actions = actions;
     }
+    
+    /**
+     * Use with care, invalidates hashcode.
+     * @param mgr
+     * @param ac 
+     */
+    void addAction(String mgr, ShortcutAction ac) {
+        this.actions.put(mgr, ac);
+    }
 
     public String getDisplayName () {
         ShortcutAction s = actions.get(DEFAULT_PROVIDER);
