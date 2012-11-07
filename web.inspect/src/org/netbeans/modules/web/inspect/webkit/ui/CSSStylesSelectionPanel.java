@@ -670,10 +670,10 @@ public class CSSStylesSelectionPanel extends JPanel {
             Node node = Visualizer.findNode(value);
             Rule rule = node.getLookup().lookup(Rule.class);
             if (rule != null) {
-                String matchedNode = node.getHtmlDisplayName();
-                matchedNodeLabel.setText(matchedNode);
+                // Using HTML labels to allow wrapping of their content
+                String matchedNode = node.getDisplayName();
+                matchedNodeLabel.setText("<html>"+matchedNode); // NOI18N
                 String selector = rule.getSelector();
-                // Using HTML label to allow wrapping of its content
                 selectorLabel.setText("<html>"+selector); // NOI18N
                 String mediaQuery = null;
                 for (Media media : rule.getMedia()) {
