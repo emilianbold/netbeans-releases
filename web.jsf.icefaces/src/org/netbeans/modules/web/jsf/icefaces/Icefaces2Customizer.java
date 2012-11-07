@@ -48,6 +48,7 @@ import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
@@ -76,6 +77,7 @@ public class Icefaces2Customizer implements JsfComponentCustomizer {
     private Icefaces2CustomizerPanelVisual panel;
     private ChangeSupport changeSupport = new ChangeSupport(this);
     private Future<Boolean> result = null;
+    private AtomicBoolean fixedLibrary = new AtomicBoolean(false);
 
     @Override
     public void addChangeListener(ChangeListener listener) {
