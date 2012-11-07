@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.css.model.api;
 
+import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.IOException;
@@ -51,12 +52,14 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Observable;
 import java.util.WeakHashMap;   
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
+import javax.swing.text.StyledDocument;
 import org.netbeans.api.diff.Difference;
 import org.netbeans.api.editor.EditorRegistry;
 import org.netbeans.editor.BaseDocument;
@@ -75,10 +78,13 @@ import org.openide.cookies.EditorCookie;
 import org.openide.cookies.SaveCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.Mutex;
+import org.openide.util.WeakListeners;
 import org.openide.util.lookup.Lookups;
+import org.openide.util.lookup.ProxyLookup;
 
 /**
  * Model for CSS3 source
@@ -90,7 +96,7 @@ import org.openide.util.lookup.Lookups;
  *
  * @author marekfukala
  */
-public final class Model {
+public final class Model implements PropertyChangeListener {
 
     /**
      * Property fired when one calls {@link #applyChanges()} and there were some 
@@ -110,16 +116,20 @@ public final class Model {
     public static final String MODEL_WRITE_TASK_FINISHED = "model.write.task.finished"; //NOI18N
     
     private PropertyChangeSupport support = new PropertyChangeSupport(this);
-    private static final Logger LOGGER = Logger.getLogger(Model.class.getName());
+    private static final Logger LOGGER = Logger.getLogger("css.model"); //NOI18N
     private final Mutex MODEL_MUTEX = new Mutex();
+    
     private Lookup MODEL_LOOKUP;
+    private DocumentLookup documentLookup;
+    
     private ElementFactory ELEMENT_FACTORY; 
-    private static final Map<CssParserResult, Reference<Model>> PR_MODEL_CACHE = new WeakHashMap<CssParserResult, Reference<Model>>();
 
     private boolean changesApplied;
     
     private int modelSerialNumber;
     private static int globalModelSerialNumber;
+    
+    private EditorCookie.Observable editorCookie;
     
     /**
      * Gets cached instance of {@link Model}.
@@ -184,11 +194,48 @@ public final class Model {
         if (file != null) {
             lookupContent.add(file);
         }
+        
+        documentLookup = new DocumentLookup();
         if (doc != null) {
-            lookupContent.add(doc);
+            documentLookup.updateLookup(Lookups.fixed(doc));
         }
 
-        MODEL_LOOKUP = Lookups.fixed(lookupContent.toArray());
+        MODEL_LOOKUP = new ProxyLookup(Lookups.fixed(lookupContent.toArray()), documentLookup);
+        
+        //Listen on the EditorCookie.Observable so we may re-new the document instance
+        //if the original document was closed.
+        //See issue http://netbeans.org/bugzilla/show_bug.cgi?id=219493 for more details
+        try {
+            DataObject dobj = DataObject.find(file);
+            editorCookie = dobj.getLookup().lookup(EditorCookie.Observable.class);
+            editorCookie.addPropertyChangeListener(WeakListeners.propertyChange(this, editorCookie));
+        } catch (DataObjectNotFoundException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        
+    }
+
+    @Override
+    public void propertyChange(PropertyChangeEvent pce) {
+        if (EditorCookie.Observable.PROP_DOCUMENT.equals(pce.getPropertyName())) {
+            Object newValue = pce.getNewValue();
+            if (newValue == null) {
+                try {
+                    //Document closed.
+                    //Re-create the document and update the lookup.
+                    StyledDocument newDocument = editorCookie.openDocument();
+                    documentLookup.updateLookup(Lookups.fixed(newDocument));
+
+                    LOGGER.log(Level.FINE, "Model: {0}: new document instance set to {0} upon "
+                            + "EditorCookie.Observable.PROP_DOCUMENT property change.", 
+                            new Object[]{this, System.identityHashCode(newDocument)}); //NOI18N
+                    
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+
+        }
     }
     
     /**
@@ -551,6 +598,12 @@ public final class Model {
         @Override
         public int getOriginalOffset(int embeddedOffset) {
             return snapshot.getOriginalOffset(embeddedOffset);
+        }
+    }
+    
+    private static class DocumentLookup extends ProxyLookup {
+        protected final void updateLookup(Lookup lookup) {
+            setLookups(lookup);
         }
     }
 }
