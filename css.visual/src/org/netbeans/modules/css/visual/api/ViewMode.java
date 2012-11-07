@@ -39,36 +39,49 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.css.visual.filters;
+package org.netbeans.modules.css.visual.api;
 
 /**
- *
+ * View modes for the rule editor UI component.
+ * 
  * @author marekfukala
  */
-public final class FiltersSettings {
+public enum ViewMode {
     
-    private boolean sortingEnabled, showAllPropertiesEnabled, showCategoriesEnabled;
+    /**
+     * No categories, properties sorted alphabetically, show only set properties.
+     */
+    UPDATED_ONLY(false, false),
+    
+    /**
+     * Categories shown, elements sorted alphabetically, show only set properties.
+     */
+    CATEGORIZED(true, false),
+    
+    /**
+     * No categories, properties sorted alphabetically, show all existing properties.
+     */
+    ALL(false, true),
+    
+    /**
+     * Internal only.
+     */
+    CATEGORIZED_ALL(true, true);
+    
+    private final boolean showCategories;
+    private final boolean showAllProperties;
 
-    public FiltersSettings() {
-        this(true, true, true);
+    private ViewMode(boolean showCategories, boolean showAllProperties) {
+        this.showCategories = showCategories;
+        this.showAllProperties = showAllProperties;
     }
 
-    public FiltersSettings(boolean sortingEnabled, boolean showAllPropertiesEnabled, boolean showCategoriesEnabled) {
-        this.sortingEnabled = sortingEnabled;
-        this.showAllPropertiesEnabled = showAllPropertiesEnabled;
-        this.showCategoriesEnabled = showCategoriesEnabled;
+    public boolean isShowCategories() {
+        return showCategories;
     }
 
-    public boolean isSortingEnabled() {
-        return sortingEnabled;
-    }
-
-    public boolean isShowAllPropertiesEnabled() {
-        return showAllPropertiesEnabled;
-    }
-
-    public boolean isShowCategoriesEnabled() {
-        return showCategoriesEnabled;
+    public boolean isShowAllProperties() {
+        return showAllProperties;
     }
     
 }

@@ -47,12 +47,14 @@ import java.awt.event.ActionListener;
 import java.util.Collections;
 import java.util.concurrent.atomic.AtomicReference;
 import javax.swing.AbstractAction;
+import javax.swing.text.View;
 import org.netbeans.modules.css.lib.api.CssParserResult;
 import org.netbeans.modules.css.model.api.Model;
 import org.netbeans.modules.css.model.api.ModelUtils;
 import org.netbeans.modules.css.model.api.Rule;
 import org.netbeans.modules.css.model.api.StyleSheet;
 import org.netbeans.modules.css.visual.RuleEditorPanel;
+import org.netbeans.modules.css.visual.api.ViewMode;
 import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.api.Snapshot;
@@ -124,10 +126,7 @@ public class AddPropertyAction extends AbstractAction {
             addPropertyPanel.setModel(model);
             addPropertyPanel.setRule(rule);
             
-            addPropertyPanel.setShowAllProperties(true);
-            addPropertyPanel.setShowCategories(true);
-
-            addPropertyPanel.updateFiltersPresenters();
+            addPropertyPanel.setViewMode(ViewMode.CATEGORIZED_ALL);
 
             DialogDescriptor descriptor = new DialogDescriptor(addPropertyPanel, Bundle.label_add_property(), true, DialogDescriptor.OK_CANCEL_OPTION, DialogDescriptor.OK_OPTION, new ActionListener() {
                 @Override
