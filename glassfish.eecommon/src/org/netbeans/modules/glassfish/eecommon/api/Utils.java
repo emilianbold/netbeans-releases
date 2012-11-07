@@ -129,7 +129,7 @@ public final class Utils {
         try {
             fo = module.getContentDirectory();
             if (null != fo) {
-                moduleID = ProjectUtils.getInformation(FileOwnerQuery.getOwner(fo)).getName();
+                moduleID = ProjectUtils.getInformation(FileOwnerQuery.getOwner(fo)).getDisplayName();
             }
         } catch (IOException ex) {
             Logger.getLogger("glassfish-eecommon").log(Level.FINER, null, ex);
