@@ -64,7 +64,6 @@ import javax.swing.DefaultCellEditor;
 import javax.swing.JLabel;
 import javax.swing.JTable;
 import javax.swing.SwingUtilities;
-import javax.swing.event.CellEditorListener;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
@@ -81,7 +80,6 @@ import org.netbeans.modules.css.lib.api.properties.Token;
 import org.netbeans.modules.css.lib.api.properties.UnitGrammarElement;
 import org.netbeans.modules.css.model.api.*;
 import org.netbeans.modules.css.visual.api.DeclarationInfo;
-import org.netbeans.modules.css.visual.api.SortMode;
 import org.netbeans.modules.css.visual.editors.PropertyValuesEditor;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.openide.explorer.propertysheet.ExPropertyEditor;
@@ -139,15 +137,11 @@ public class RuleEditorNode extends AbstractNode {
     }
 
     public boolean isShowAllProperties() {
-        return panel.isShowAllProperties();
+        return panel.getViewMode().isShowAllProperties();
     }
 
     public boolean isShowCategories() {
-        return panel.isShowCategories();
-    }
-
-    public SortMode getSortMode() {
-        return panel.getSortMode();
+        return panel.getViewMode().isShowCategories();
     }
 
     public boolean isAddPropertyMode() {
@@ -356,9 +350,8 @@ public class RuleEditorNode extends AbstractNode {
             for (Entry<PropertyCategory, List<Declaration>> entry : categoryToDeclarationsMap.entrySet()) {
 
                 List<Declaration> categoryDeclarations = entry.getValue();
-                if (getSortMode() == SortMode.ALPHABETICAL) {
-                    Collections.sort(categoryDeclarations, PropertyUtils.getDeclarationsComparator());
-                }
+                //sort alpha
+                Collections.sort(categoryDeclarations, PropertyUtils.getDeclarationsComparator());
 
                 PropertyCategoryPropertySet propertyCategoryPropertySet = new PropertyCategoryPropertySet(entry.getKey());
                 propertyCategoryPropertySet.addAll(categoryDeclarations);
@@ -426,10 +419,9 @@ public class RuleEditorNode extends AbstractNode {
                 }
             }
 
-            if (getSortMode() == SortMode.ALPHABETICAL) {
-                Comparator<Declaration> comparator = PropertyUtils.createDeclarationsComparator(getRule(), panel.getCreatedDeclarationsIdsList());
-                Collections.sort(filtered, comparator);
-            }
+            //sort aplha
+            Comparator<Declaration> comparator = PropertyUtils.createDeclarationsComparator(getRule(), panel.getCreatedDeclarationsIdsList());
+            Collections.sort(filtered, comparator);
 
             //just create one top level property set for virtual category (the items actually don't belong to the category)
             PropertyCategoryPropertySet set = new PropertyCategoryPropertySet(PropertyCategory.DEFAULT);
@@ -656,7 +648,7 @@ public class RuleEditorNode extends AbstractNode {
 
         protected abstract T getEmptyValue();
     }
-    private static String EMPTY = "";
+    private static String EMPTY_STRING = "";
 
     private class PlainPDP extends AbstractPDP<String> {
 
@@ -671,7 +663,7 @@ public class RuleEditorNode extends AbstractNode {
 
         @Override
         protected String getEmptyValue() {
-            return EMPTY;
+            return EMPTY_STRING;
         }
     }
 

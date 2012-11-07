@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,44 +34,42 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.css.visual.filters;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import javax.swing.Action;
+import javax.swing.ButtonGroup;
+
 /**
- * This file is originally from Retouche, the Java Support
- * infrastructure in NetBeans. I have modified the file as little
- * as possible to make merging Retouche fixes back as simple as
- * possible. 
- * <p>
- * Interface for navigator models to notify clients about their not-ready
- * state, during long computations.
  *
- * Note, this is temporary and will be deleted and replaced by simpler JComponent
- * navigator based API.
- *
- * @author Dafe Simonek
+ * @author marekfukala
  */
-public interface ModelBusyListener {
+public class ViewActions {
+    
+    private final Collection<ViewActionSupport> actions;
 
-    /** Computation started.
-     * Threading: Can be called on any thread
-     */
-    public void busyStart ();
+    public ViewActions(RuleEditorViews views) {
+        actions = new ArrayList<ViewActionSupport>();
+        
+        actions.add(new ViewActionSupport.UpdatedOnlyViewAction(views));
+        actions.add(new ViewActionSupport.CategorizedViewAction(views));
+        actions.add(new ViewActionSupport.AllViewAction(views));
+        
+        ButtonGroup group = new ButtonGroup();
+        for(ViewActionSupport action : actions) {
+            group.add(action.obtainMenuItem());
+        }
+        
+    }
 
-    /** Computation finished.
-     * Threading: Can be called on any thread
-     */
-    public void busyEnd ();
-
-    /** Called when new content was loaded and is ready. It means that 
-     * list data change events was already fired and so the Swing component
-     * which contains the model already knows about new data.
-     * Currently used only to keep selection in swing components after 
-     * load of new data.
-     *
-     * Threading: Always called from EQT 
-     */ 
-    public void newContentReady ();
+    public Action[] getActions() {
+        return actions.toArray(new Action[0]);
+    }
     
 }

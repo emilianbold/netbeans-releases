@@ -63,7 +63,6 @@ import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.SwingUtilities;
 import javax.swing.border.EmptyBorder;
-import javax.swing.event.ChangeEvent;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.Document;
@@ -81,12 +80,10 @@ import org.netbeans.modules.css.visual.actions.GoToSourceAction;
 import org.netbeans.modules.css.visual.actions.RemovePropertyAction;
 import org.netbeans.modules.css.visual.api.DeclarationInfo;
 import org.netbeans.modules.css.visual.api.RuleEditorController;
-import org.netbeans.modules.css.visual.api.SortMode;
-import org.netbeans.modules.css.visual.filters.FilterSubmenuAction;
-import org.netbeans.modules.css.visual.filters.FiltersManager;
-import org.netbeans.modules.css.visual.filters.FiltersSettings;
-import org.netbeans.modules.css.visual.filters.RuleEditorFilters;
-import org.netbeans.modules.css.visual.filters.SortActionSupport;
+import org.netbeans.modules.css.visual.api.ViewMode;
+import org.netbeans.modules.css.visual.filters.RuleEditorViews;
+import org.netbeans.modules.css.visual.filters.ViewActionSupport;
+import org.netbeans.modules.css.visual.filters.ViewActions;
 import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.api.Source;
@@ -161,9 +158,8 @@ public class RuleEditorPanel extends JPanel {
     private Action removeRuleAction;
     private Action[] actions;
     private JPopupMenu popupMenu;
-    private RuleEditorFilters filters;
-    private boolean showAllProperties, showCategories;
-    private SortMode sortMode;
+    private RuleEditorViews views;
+    private ViewMode viewMode;
     public RuleEditorNode node;
     private PropertyChangeSupport CHANGE_SUPPORT = new PropertyChangeSupport(this);
     private boolean addPropertyMode;
@@ -231,21 +227,10 @@ public class RuleEditorPanel extends JPanel {
     public RuleEditorPanel(boolean addPropertyMode) {
 
         this.addPropertyMode = addPropertyMode;
-        FiltersSettings filtersSettings = addPropertyMode
-                ? new FiltersSettings(false, false, true)
-                : new FiltersSettings();
-
         node = new RuleEditorNode(this);
 
-        sortMode = SortMode.ALPHABETICAL;
-
-        filters = new RuleEditorFilters(this, filtersSettings);
-        filters.getInstance().hookChangeListener(new FiltersManager.FilterChangeListener() {
-            @Override
-            public void filterStateChanged(ChangeEvent e) {
-                updateFiltersPresenters();
-            }
-        });
+        viewMode = ViewMode.UPDATED_ONLY; //default view
+        views = new RuleEditorViews(this);
 
         //initialize actions
         addPropertyAction = new AddPropertyAction(this);
@@ -265,15 +250,16 @@ public class RuleEditorPanel extends JPanel {
             }
         });
 
+        Action[] viewActions = new ViewActions(views).getActions();
+        
         actions = new Action[]{
             addPropertyAction,
             addRuleAction,
             removeRuleAction,
             null,
-            new SortActionSupport.NaturalSortAction(filters),
-            new SortActionSupport.AlphabeticalSortAction(filters),
-            null,
-            new FilterSubmenuAction(filters)
+            viewActions[0],
+            viewActions[1],
+            viewActions[2]
         };
 
         //custom popop for the whole panel
@@ -330,9 +316,9 @@ public class RuleEditorPanel extends JPanel {
             northWestPanel.add(cancelFilterLabel, BorderLayout.WEST);
         }
         
-        northEastPanel.add(filters.getComponent(), BorderLayout.WEST);
-
-        updateFiltersPresenters();
+        if(!addPropertyMode) {
+            northEastPanel.add(views.getComponent(), BorderLayout.WEST);
+        }
 
         //add document listener to the filter text field 
         filterTextField.getDocument().addDocumentListener(new DocumentListener() {
@@ -413,52 +399,19 @@ public class RuleEditorPanel extends JPanel {
         select_method.invoke(sheet, descriptor, edit);
     }
 
-    public final void updateFiltersPresenters() {
-        if (filters.getSettings().isShowCategoriesEnabled()) {
-            setShowCategories(filters.getInstance().isSelected(RuleEditorFilters.SHOW_CATEGORIES));
-        }
-        if (filters.getSettings().isShowAllPropertiesEnabled()) {
-            setShowAllProperties(filters.getInstance().isSelected(RuleEditorFilters.SHOW_ALL_PROPERTIES));
-        }
-    }
-
     public boolean isAddPropertyMode() {
         return addPropertyMode;
     }
 
-    public SortMode getSortMode() {
-        return sortMode;
+    public ViewMode getViewMode() {
+        return viewMode;
     }
 
-    public void setSortMode(SortMode mode) {
-        if (this.sortMode == mode) {
+    public void setViewMode(ViewMode mode) {
+        if (this.viewMode == mode) {
             return; //no change
         }
-        this.sortMode = mode;
-        node.fireContextChanged(true);
-    }
-
-    public boolean isShowAllProperties() {
-        return showAllProperties;
-    }
-
-    public void setShowAllProperties(boolean showAllProperties) {
-        if (this.showAllProperties == showAllProperties) {
-            return; //no change
-        }
-        this.showAllProperties = showAllProperties;
-        node.fireContextChanged(true);
-    }
-
-    public boolean isShowCategories() {
-        return showCategories;
-    }
-
-    public void setShowCategories(boolean showCategories) {
-        if (this.showCategories == showCategories) {
-            return; //no change
-        }
-        this.showCategories = showCategories;
+        this.viewMode = mode;
         node.fireContextChanged(true);
     }
 
@@ -660,7 +613,7 @@ public class RuleEditorPanel extends JPanel {
         northWestPanel = new javax.swing.JPanel();
         titleLabel = new javax.swing.JLabel();
 
-        menuLabel.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/css/visual/resources/menu.png"))); // NOI18N
+        menuLabel.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/css/visual/resources/build.png"))); // NOI18N
         menuLabel.setText(org.openide.util.NbBundle.getMessage(RuleEditorPanel.class, "RuleEditorPanel.menuLabel.text")); // NOI18N
         menuLabel.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 16, 0, 0));
         menuLabel.addMouseListener(new java.awt.event.MouseAdapter() {
