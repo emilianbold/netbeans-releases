@@ -140,8 +140,6 @@ public final class GroovyLexer implements Lexer<GroovyTokenId> {
                 }
                 LOG.log(Level.FINEST, "Length of token to create: {0}", len);
 
-//                System.out.println("### nextToken [" + lexerInput.readText() + "], " + scanner.getInputState().guessing);
-                
                 switch (intId) {
                     case GroovyTokenTypes.STRING_CTOR_START:
                     case GroovyTokenTypes.STRING_CTOR_MIDDLE:
@@ -157,8 +155,7 @@ public final class GroovyLexer implements Lexer<GroovyTokenId> {
                 
                 return createToken(intId, len);
 
-            } 
-            else { // antlrToken is null
+            } else {
                 LOG.finest("Antlr token was null");
                 int scannerTextTokenLength = scanner.getText().length();
                 if ( scannerTextTokenLength > 0 ) {
@@ -265,7 +262,6 @@ public final class GroovyLexer implements Lexer<GroovyTokenId> {
                 parenLevelStack = new ArrayList(d.parenLevelStack);
             }
         }
-        
     }
     
     /**
@@ -308,7 +304,6 @@ public final class GroovyLexer implements Lexer<GroovyTokenId> {
             hash = 67 * hash + (this.parenLevelStack != null ? this.parenLevelStack.hashCode() : 0);
             return hash;
         }
-        
     }
     
     private GroovyTokenId getTokenId(int token) {
