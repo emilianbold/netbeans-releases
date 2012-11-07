@@ -49,14 +49,24 @@ import java.util.List;
 import java.util.Map;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.StyledDocument;
+import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.java.project.classpath.ProjectClassPathModifier;
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.modules.editor.indent.api.Reformat;
+import org.netbeans.modules.java.api.common.util.CommonProjectUtils;
+import org.netbeans.modules.web.api.webmodule.WebModule;
+import org.netbeans.spi.project.ant.AntArtifactProvider;
+import org.netbeans.spi.project.libraries.LibraryFactory;
+import org.netbeans.spi.project.libraries.LibraryImplementation3;
 import org.openide.cookies.EditorCookie;
 import org.openide.loaders.DataObject;
 import org.openide.text.NbDocument;
 import org.openide.util.Exceptions;
 import org.openide.util.Mutex;
+import org.openide.util.Parameters;
 
 /**
  * Contains utilities methods for JSF components plugins.
@@ -78,8 +88,16 @@ public class JsfComponentUtils {
      * @param poms {@code List} of maven-pom {@code URI}s
      * @return library with pom content (the original library if the content wasn't added)
      * @throws IOException when original library cannot be deleted or recreated
+     * @deprecated Instead of enhancing Ant libraries for Maven contents, another memory library should be created and
+     * added to project using {@link ProjectClassPathModifier#addLibraries(org.netbeans.api.project.libraries.Library[],
+     * org.openide.filesystems.FileObject, java.lang.String)}. Library enhances by "maven-pom" needn't to work since
+     * {@code LibraryImplementation3}. Use {@link #createMavenDependencyLibrary(java.lang.String, java.lang.String[],
+     * java.lang.String[])} instead.
+     * @see #createMavenDependencyLibrary(java.lang.String, java.lang.String[], java.lang.String[]) 
      */
     public static Library enhanceLibraryWithPomContent(final Library library, final List<URI> poms) throws IOException {
+        Parameters.notNull("library", library);     //NOI18N
+        Parameters.notNull("poms", poms);           //NOI18N
         List<URL> mavenContent = library.getContent("maven-pom"); //NOI18N
         final String name = library.getName();
         if (mavenContent == null || mavenContent.isEmpty()) {
@@ -119,7 +137,8 @@ public class JsfComponentUtils {
      * @param dob {@code DataObject} to reformat.
      * @since 1.35
      */
-    public static void reformat(DataObject dob) {
+    public static void reformat(@NonNull DataObject dob) {
+        Parameters.notNull("dob", dob); //NOI18N
         try {
             EditorCookie ec = dob.getLookup().lookup(EditorCookie.class);
             if (ec == null) {
@@ -159,7 +178,10 @@ public class JsfComponentUtils {
      * @param enhanceBy enhancing content
      * @since 1.35
      */
-    public static void enhanceFileBody(DataObject dob, final String find, final String enhanceBy) {
+    public static void enhanceFileBody(@NonNull DataObject dob, @NonNull final String find, @NonNull final String enhanceBy) {
+        Parameters.notNull("dob", dob);             //NOI18N
+        Parameters.notNull("find", find);           //NOI18N
+        Parameters.notNull("enhanceBy", enhanceBy); //NOI18N
         try {
             EditorCookie ec = dob.getLookup().lookup(EditorCookie.class);
             if (ec == null) {
@@ -191,6 +213,37 @@ public class JsfComponentUtils {
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
         }
+    }
+
+    /**
+     * Says whether the given webModule is Maven based or not. It should prevent dependency of JSF component suite
+     * libraries on Maven or Ant based modules.
+     * @param webModule to be examined
+     * @return {@code true} when the webModule is Maven based, {@code false} otherwise
+     * @since 1.43
+     */
+    public static boolean isMavenBased(@NonNull WebModule webModule) {
+        Parameters.notNull("webModule", webModule); //NOI18N
+        Project project = FileOwnerQuery.getOwner(webModule.getDocumentBase());
+        AntArtifactProvider antArtifactProvider = project.getLookup().lookup(AntArtifactProvider.class);
+        return antArtifactProvider == null;
+    }
+
+    /**
+     * Creates library used for Maven project extending by given pom resources.
+     * @param name name of the library
+     * @param mavenDeps maven dependencies to store in project pom.xml
+     * @param mavenRepos maven repositories to store in project pom.xml
+     * @return created library
+     * @since 1.43
+     */
+    public static Library createMavenDependencyLibrary(@NonNull String name, @NonNull String[] mavenDeps, @NonNull String[] mavenRepos) {
+        Parameters.notNull("name", name);               //NOI18N
+        Parameters.notNull("mavenDeps", mavenDeps);     //NOI18N
+        Parameters.notNull("mavenRepos", mavenRepos);   //NOI18N
+        LibraryImplementation3 libImpl = CommonProjectUtils.createJavaLibraryImplementation(
+                name, new URL[0], new URL[0], new URL[0], mavenDeps, mavenRepos);
+        return LibraryFactory.createLibrary(libImpl);
     }
 
 }
