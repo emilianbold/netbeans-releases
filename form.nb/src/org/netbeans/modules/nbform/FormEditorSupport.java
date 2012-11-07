@@ -1642,6 +1642,9 @@ public class FormEditorSupport extends DataEditorSupport implements EditorSuppor
                 } catch (InterruptedException ex) {
                     Logger.getLogger(FormEditorSupport.class.getName()).log(Level.INFO, "", ex); // NOI18N
                 } catch (InvocationTargetException ex) {
+                    if (ex.getCause() instanceof RuntimeException) {
+                        throw (RuntimeException) ex.getCause();
+                    }
                     Logger.getLogger(FormEditorSupport.class.getName()).log(Level.INFO, "", ex); // NOI18N
                 }
             }

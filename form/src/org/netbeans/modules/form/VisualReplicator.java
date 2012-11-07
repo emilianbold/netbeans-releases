@@ -77,6 +77,7 @@ public class VisualReplicator {
     private Map<String,Object> idToClone = new HashMap<String,Object>();
     private Map<Object,String> cloneToId = new HashMap<Object,String>();
 
+    private Map<Container,LayoutManager> defaultLayouts = new HashMap<Container,LayoutManager>();
     private Map<String,SwingLayoutBuilder> layoutBuilders = new HashMap<String,SwingLayoutBuilder>();
 
     private BindingDesignSupport bindingSupport;
@@ -154,6 +155,7 @@ public class VisualReplicator {
         topMetaComponent = metacomponent;
         idToClone.clear();
         cloneToId.clear();
+        defaultLayouts.clear();
         layoutBuilders.clear();
         bindingReplicator = null;
     }
@@ -315,9 +317,11 @@ public class VisualReplicator {
 
         // set the layout and re-add the components
         if (laysup != null) { // old layout support
+            handleDefaultLayout(metacont, contDelegate);
             laysup.setLayoutToContainer(cont, contDelegate);
-            if (comps.length > 0)
+            if (comps.length > 0) {
                 laysup.addComponentsToContainer(cont, contDelegate, comps, 0);
+            }
             laysup.arrangeContainer(cont, contDelegate);
         }
         else { // new layout support
@@ -747,6 +751,7 @@ public class VisualReplicator {
             } else { // set layout
                 final LayoutSupportManager laysup = metacont.getLayoutSupport();
                 if (laysup != null) { // old layout support
+                    handleDefaultLayout(metacont, contDelegate);
                     laysup.setLayoutToContainer(cont, contDelegate);
                     if (comps.length > 0) { // add cloned subcomponents to container
                         laysup.addComponentsToContainer(cont, contDelegate, comps, 0);
@@ -833,6 +838,21 @@ public class VisualReplicator {
         if (th != null) {
             ErrorManager.getDefault().notify(th);
             getFormModel().forceUndoOfCompoundEdit();            
+        }
+    }
+
+    private void handleDefaultLayout(RADVisualContainer metacont, Container cont) {
+        // first remember the default layout if not remembered yet
+        if (!metacont.hasDedicatedLayoutSupport() && !defaultLayouts.containsKey(cont)) {
+            defaultLayouts.put(cont, cont.getLayout());
+        }
+        // set the default layout instance if the primary container is set so
+        if (metacont.hasDefaultLayout() && defaultLayouts.containsKey(cont)) {
+            LayoutManager defaultLayout = defaultLayouts.get(cont);
+            if (cont.getLayout() != defaultLayout) {
+                // e.g. UnknownLayoutSupport can't set the layout
+                cont.setLayout(defaultLayout);
+            }
         }
     }
 
@@ -979,8 +999,12 @@ public class VisualReplicator {
 
     private void removeMapping(RADComponent metacomp) {
         Object comp = idToClone.remove(metacomp.getId());
-        if (comp != null)
+        if (comp != null) {
             cloneToId.remove(comp);
+            if (comp instanceof Container) {
+                defaultLayouts.remove((Container)comp);
+            }
+        }
 
         if (metacomp instanceof ComponentContainer) {
             layoutBuilders.remove(metacomp.getId());

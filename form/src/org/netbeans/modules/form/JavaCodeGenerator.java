@@ -267,13 +267,15 @@ class JavaCodeGenerator extends CodeGenerator {
             else canGenerate = false;
 
             if (formEditor.getGuardedSectionManager() == null) {
+                System.err.println("ERROR: Cannot initialize guarded sections... code generation is disabled."); // NOI18N
+                canGenerate = false;
                 return;
             }
             SimpleSection initComponentsSection = formEditor.getInitComponentSection();
             SimpleSection variablesSection = formEditor.getVariablesSection();
 
             if (initComponentsSection == null || variablesSection == null) {
-                System.err.println("ERROR: Cannot initialize guarded sections... code generation is disabled."); // NOI18N
+                System.err.println("ERROR: Cannot find guarded sections... code generation is disabled."); // NOI18N
 
                 formModel.setReadOnly(true);
                 NotifyDescriptor d = new NotifyDescriptor.Message(
@@ -3209,8 +3211,11 @@ class JavaCodeGenerator extends CodeGenerator {
      * @param handlerName The name of the event handler
      */
     private String deleteEventHandler(String handlerName, int startPos) {
+        if (!initialized || !canGenerate) {
+            return null;
+        }
         InteriorSection section = getEventHandlerSection(handlerName);
-        if (section == null || !initialized || !canGenerate) {
+        if (section == null) {
             return null;
         }
 
@@ -3276,8 +3281,11 @@ class JavaCodeGenerator extends CodeGenerator {
     private void renameEventHandler(String oldHandlerName,
                                     String newHandlerName)
     {
+        if (!initialized || !canGenerate) {
+            return;
+        }
         InteriorSection sec = getEventHandlerSection(oldHandlerName);
-        if (sec == null || !initialized || !canGenerate) {
+        if (sec == null) {
             return;
         }
 
@@ -3305,9 +3313,11 @@ class JavaCodeGenerator extends CodeGenerator {
 
     /** Focuses the specified event handler in the editor. */
     private void gotoEventHandler(String handlerName) {
-        InteriorSection sec = getEventHandlerSection(handlerName);
-        if (sec != null && initialized) {
-            formEditorSupport.openAt(sec.getCaretPosition());
+        if (initialized) {
+            InteriorSection sec = getEventHandlerSection(handlerName);
+            if (sec != null) {
+                formEditorSupport.openAt(sec.getCaretPosition());
+            }
         }
     }
 
