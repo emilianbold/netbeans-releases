@@ -170,9 +170,7 @@ public class CSSStylesSelectionPanel extends JPanel {
         propertyPanePanel.setLayout(new BorderLayout());
         propertyPanePanel.add(propertyPane, BorderLayout.CENTER);
         propertySummaryLabel = new JLabel();
-        propertySummaryLabel.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createEtchedBorder(),
-                BorderFactory.createEmptyBorder(4, 16, 4, 0)));
+        propertySummaryLabel.setBorder(BorderFactory.createEmptyBorder(4, 2, 4, 0));
         propertyPanePanel.add(propertySummaryLabel, BorderLayout.PAGE_START);
         propertyPaneManager = propertyPanePanel.getExplorerManager();
         propertyPanePanel.setMinimumSize(new Dimension(0,0)); // allow shrinking in JSplitPane
@@ -197,9 +195,7 @@ public class CSSStylesSelectionPanel extends JPanel {
         JLabel rulePaneSummaryLabel = new JLabel();
         rulePaneSummaryLabel.setText(NbBundle.getMessage(
                 CSSStylesSelectionPanel.class, "CSSStylesSelectionPanel.rulePaneHeader")); // NOI18N
-        rulePaneSummaryLabel.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createEtchedBorder(),
-                BorderFactory.createEmptyBorder(4, 16, 4, 0)));
+        rulePaneSummaryLabel.setBorder(BorderFactory.createEmptyBorder(4, 2, 4, 0));
         rulePanePanel.add(rulePaneSummaryLabel, BorderLayout.PAGE_START);
         rulePanePanel.setMinimumSize(new Dimension(0,0)); // allow shrinking in JSplitPane
         rulePaneManager = rulePanePanel.getExplorerManager();
@@ -538,7 +534,10 @@ public class CSSStylesSelectionPanel extends JPanel {
                 // Text rendered in the first column of tree-table (i.e. in the tree)
                 // is not baseline-aligned with the text in the other columns for some reason.
                 // This border attempts to work around this problem.
-                private Border border = BorderFactory.createEmptyBorder(1,0,0,0);
+                private Border border[] = {
+                    BorderFactory.createEmptyBorder(1,0,0,0),
+                    BorderFactory.createEmptyBorder(1,3,0,0),
+                };
                 @Override
                 public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
                     String toolTip = null;
@@ -554,7 +553,7 @@ public class CSSStylesSelectionPanel extends JPanel {
                     Component component = defaultRenderer.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
                     if (component instanceof JComponent) {
                         JComponent jcomponent = ((JComponent)component);
-                        jcomponent.setBorder(border);
+                        jcomponent.setBorder(border[column]);
                         jcomponent.setToolTipText(toolTip);
                     }
                     return component;
@@ -569,7 +568,7 @@ public class CSSStylesSelectionPanel extends JPanel {
                         label.setText("<html><b>"+label.getText()+"<b>"); // NOI18N
                         label.setBorder(BorderFactory.createCompoundBorder(
                             BorderFactory.createEtchedBorder(),
-                            BorderFactory.createEmptyBorder(0, 16, 0, 0)));
+                            BorderFactory.createEmptyBorder(0, (column == 0) ? 17 : 1, 0, 0)));
                     }
                     return component;
                 }
