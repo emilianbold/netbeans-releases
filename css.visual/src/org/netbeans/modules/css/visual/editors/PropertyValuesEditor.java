@@ -145,7 +145,7 @@ public class PropertyValuesEditor extends PropertyEditorSupport implements ExPro
                         tags2fixedElement.put(value, element);
 
                         //TBD possibly refactor out so it is not so hardcoded
-                        if ("color".equals(element.getVisibleOrigin())) { //NOI18N
+                        if ("@colors-list".equals(element.origin())) { //NOI18N
                             containsColor = true;
                         }
 
@@ -381,7 +381,7 @@ public class PropertyValuesEditor extends PropertyEditorSupport implements ExPro
                 FixedTextGrammarElement element = tags2fixedElement.get(strval);
                 if (!"inherit".equals(strval)) { //filter out colors for inherit
                     if (element != null) {
-                        if ("color".equals(element.getVisibleOrigin())) { //NOI18N
+                        if ("@colors-list".equals(element.origin())) { //NOI18N
                             //try to find color code
                             CssColor color = CssColor.getColor(strval);
                             icon = WebUtils.createColorIcon(color == null ? null : color.colorCode()); //null CssColor will create default icon

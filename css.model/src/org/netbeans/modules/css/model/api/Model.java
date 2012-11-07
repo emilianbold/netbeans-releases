@@ -532,10 +532,14 @@ public final class Model implements PropertyChangeListener {
                             Exceptions.printStackTrace(ex);
                         }
                     }
-                    liveUpdater.update(document);
+                    if(liveUpdater != null) { 
+                        liveUpdater.update(document);
+                    }
                 } else {
                     if (!ec.getOpenedPanes()[0].equals(EditorRegistry.lastFocusedComponent())) {
-                        liveUpdater.update(document);
+                        if(liveUpdater != null) {
+                            liveUpdater.update(document);
+                        }
                     }
                 }
             }
