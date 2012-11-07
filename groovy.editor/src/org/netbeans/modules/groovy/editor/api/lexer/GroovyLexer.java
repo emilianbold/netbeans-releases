@@ -52,6 +52,7 @@ import groovyjarjarantlr.TokenStreamException;
 import java.io.IOException;
 import java.io.Reader;
 import java.util.ArrayList;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.codehaus.groovy.antlr.parser.GroovyRecognizer;
 import org.codehaus.groovy.antlr.parser.GroovyTokenTypes;
@@ -114,7 +115,7 @@ public final class GroovyLexer implements Lexer<GroovyTokenId> {
 
     private Token<GroovyTokenId> createToken(int tokenIntId, int tokenLength) {
         GroovyTokenId id = getTokenId(tokenIntId);
-        LOG.finest("Creating token: " + id.name() + ", length: " + tokenLength);
+        LOG.log(Level.FINEST, "Creating token: {0}, length: {1}", new Object[]{id.name(), tokenLength});
         String fixedText = id.fixedText();
         return (fixedText != null) ? tokenFactory.getFlyweightToken(id, fixedText)
                                    : tokenFactory.createToken(id, tokenLength);
@@ -123,20 +124,21 @@ public final class GroovyLexer implements Lexer<GroovyTokenId> {
     // token index used in nextToken()
     private int index = 1;
 
+    @Override
     public Token<GroovyTokenId> nextToken() {
         LOG.finest("");
         try {
             groovyjarjarantlr.Token antlrToken = parser.LT(index++);
-            LOG.finest("Received token from antlr: " + antlrToken);
+            LOG.log(Level.FINEST, "Received token from antlr: {0}", antlrToken);
             if (antlrToken != null) {
                 int intId = antlrToken.getType();
 
                 int len = lexerInput.readLengthEOF() - myCharBuffer.getExtraCharCount();
                 if ( antlrToken.getText() != null ) {
                     len = Math.max( len, antlrToken.getText().length() );
-                    LOG.finest("Counting length from " + lexerInput.readLengthEOF() + " and " + myCharBuffer.getExtraCharCount());
+                    LOG.log(Level.FINEST, "Counting length from {0} and {1}", new Object[]{lexerInput.readLengthEOF(), myCharBuffer.getExtraCharCount()});
                 }
-                LOG.finest("Length of token to create: " + len);
+                LOG.log(Level.FINEST, "Length of token to create: {0}", len);
 
 //                System.out.println("### nextToken [" + lexerInput.readText() + "], " + scanner.getInputState().guessing);
                 
@@ -165,15 +167,17 @@ public final class GroovyLexer implements Lexer<GroovyTokenId> {
                 return null;  // no more tokens from tokenManager
             }
         } catch (TokenStreamException e) {
-            LOG.finest("Caught exception: " + e);
+            LOG.log(Level.FINEST, "Caught exception: {0}", e);
             return recovery();
         }
     }
 
+    @Override
     public Object state() {
         return scanner.getState();
     }
 
+    @Override
     public void release() {
     }
 
@@ -221,6 +225,7 @@ public final class GroovyLexer implements Lexer<GroovyTokenId> {
             this.input = input;
         }
 
+        @Override
         public int read(char[] buf, int off, int len) throws IOException {
             for (int i = 0; i < len; i++) {
                 int c = input.read();
@@ -232,6 +237,7 @@ public final class GroovyLexer implements Lexer<GroovyTokenId> {
             return len;
         }
 
+        @Override
         public void close() throws IOException {
         }
     }
