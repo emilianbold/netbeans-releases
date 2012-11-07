@@ -14,6 +14,8 @@ dobuild() {
 
     testmodule openide.awt || exit 5
 
+    ant version-check-sigtests -Dsigtest.fail.on.error=true || (echo See http://wiki.netbeans.org/SignatureTest; exit 6)
+
     FAILED=`cat $RESULT | wc -l`
     if [ "$FAILED" -gt 0 ]; then
         echo "No push. Failed tests in following modules:"

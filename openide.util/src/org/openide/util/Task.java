@@ -261,17 +261,24 @@ public class Task extends Object implements Runnable {
         }
     }
 
-    /** Add a listener to the task.
-    * @param l the listener to add
-    */
-    public synchronized void addTaskListener(TaskListener l) {
-        if (list == null) {
-            list = new HashSet<TaskListener>();
+    /** Add a listener to the task. The listener will be called once the 
+     * task {@link #isFinished()}. In case the task is already finished, the
+     * listener is called immediately.
+     * 
+     * @param l the listener to add
+     */
+    public void addTaskListener(TaskListener l) {
+        boolean callNow;
+        synchronized (this) {
+            if (list == null) {
+                list = new HashSet<TaskListener>();
+            }
+            list.add(l);
+            
+            callNow = finished;
         }
 
-        list.add(l);
-
-        if (finished) {
+        if (callNow) {
             l.taskFinished(this);
         }
     }

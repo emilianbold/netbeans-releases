@@ -627,7 +627,7 @@ public class ChildrenKeysTest extends NbTestCase {
             assertNotGC("Stimulate GC activity", ref);
         }
 
-        assertEquals("Remove notify is being called", 1, k.removeNotify);
+        assertEquals("Remove notify is being called, support: " + root.getChildren().getEntrySupport(), 1, k.removeNotify);
 
         n = root.getChildren().getNodes();
         assertEquals("Still remains one", 1, n.length);
