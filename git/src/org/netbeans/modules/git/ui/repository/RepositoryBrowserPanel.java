@@ -1335,7 +1335,7 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
         private final File repository;
 
         public RemoteNode (File repository, GitRemoteConfig remote) {
-            super(new RemoteChildren(remote), repository);
+            super(new RemoteChildren(remote), repository, Lookups.fixed(remote));
             this.repository = repository;
             this.remoteName = remote.getRemoteName();
             setIconBaseWithExtension("org/netbeans/modules/git/resources/icons/remote.png"); //NOI18N

@@ -1,6 +1,6 @@
-Profiling               > Profiler Control Panel   C
-                          Telemetry Overview       O
+Profiling               > Profiler                 R
                           Live Results             L
-                          VM Telemetry             V
                           Threads                  T
+                          VM Telemetry             V
+                          VM Telemetry Overview    O
                           Profiling Points         P

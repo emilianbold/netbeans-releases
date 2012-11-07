@@ -99,6 +99,7 @@ public class JUnitOutputListenerProvider implements OutputProcessor {
     private File outputDir;
     String runningTestClass;
     private final Set<String> usedNames;
+    private final long startTimeStamp;
     
     private static final Logger LOG = Logger.getLogger(JUnitOutputListenerProvider.class.getName());
     private RunConfig config;
@@ -109,6 +110,7 @@ public class JUnitOutputListenerProvider implements OutputProcessor {
         outDirPattern2 = Pattern.compile("Setting reports dir\\: (.*)", Pattern.DOTALL); //NOI18N
         this.config = config;
         usedNames = new HashSet<String>();
+        startTimeStamp = System.currentTimeMillis();
     }
 
 
@@ -345,7 +347,7 @@ public class JUnitOutputListenerProvider implements OutputProcessor {
             suffix = "-" + suffix;
         }
         File report = new File(outputDir, "TEST-" + runningTestClass + suffix + ".xml");
-        if (!report.isFile()) {
+        if (!report.isFile() || report.lastModified() < startTimeStamp) { //#219097 ignore results from previous invokation.
             return;
         }
         try {
