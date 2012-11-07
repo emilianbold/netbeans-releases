@@ -266,6 +266,19 @@ implements LookupListener, FlavorListener, AWTEventListener
         return new FlavorListener[0];
     }
 
+    @Override
+    public synchronized void addFlavorListener(FlavorListener listener) {
+        Boolean prev = FIRING.get();
+        try {
+            FIRING.set(true);
+            super.addFlavorListener(listener); 
+        } finally {
+            FIRING.set(prev);
+        }
+    }
+    
+    
+
     private void scheduleSetContents(final Transferable cnts, final ClipboardOwner ownr, int delay) {
         setContentsTask = RP.post(new SetContents(cnts, ownr), delay);
     }

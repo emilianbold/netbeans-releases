@@ -220,7 +220,7 @@ public class NativeProcessTest extends NativeExecutionBaseTestCase {
         assertEquals(count, counters.getCounter("Killed").get()); // NOI18N
         assertEquals(count, counters.getCounter("Finished").get()); // NOI18N
         assertEquals(count, counters.getCounter("State == " + State.CANCELLED.name()).get());
-        System.out.println("==== TestDestroyInfiniteTasks@" + getTestHostName() + " DONE ===="); // NOI18N
+        System.out.println("==== TestDestroyInfiniteTasks@" + execEnv.getDisplayName() + " DONE ===="); // NOI18N
     }
 
     public void doTestExecAndWaitTasks(final ExecutionEnvironment execEnv) throws Exception {

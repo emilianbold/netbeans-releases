@@ -201,7 +201,7 @@ public class FilesAccessStrategyImpl implements FilesAccessStrategy {
                 } else {
                     aFile.lock.writeLock().lock();
                 }
-                if (aFile.getFD().valid()) {
+                if (aFile.isValid()) {
                     keepLocked = true;
                     break;
                 } else if( TRACE_CONFLICTS ) {
@@ -230,7 +230,7 @@ public class FilesAccessStrategyImpl implements FilesAccessStrategy {
         if (removedFile != null) {
             try {
                 removedFile.lock.writeLock().lock();
-                if (removedFile.getFD().valid()) {
+                if (removedFile.isValid()) {
                     removedFile.close();
                 }
                 
@@ -254,7 +254,7 @@ public class FilesAccessStrategyImpl implements FilesAccessStrategy {
             try {
                 removedFile.lock.writeLock().lock();
                 
-                if (removedFile.getFD().valid() ) {
+                if (removedFile.isValid() ) {
                     removedFile.close();
                 }
                 
@@ -284,7 +284,7 @@ public class FilesAccessStrategyImpl implements FilesAccessStrategy {
             for (ConcurrentFileRWAccess fileToRemove: removedFiles) {
                 try {
                     fileToRemove.lock.writeLock().lock();
-                    if (fileToRemove.getFD().valid()) {
+                    if (fileToRemove.isValid()) {
                         fileToRemove.close();
                     }
 

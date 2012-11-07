@@ -109,7 +109,8 @@ public abstract class BaseRunCustomizer extends JPanel implements ApplyChangesCu
                 if (s != null) {
                     return Boolean.valueOf(s);
                 } else {
-                    return Boolean.FALSE;
+                    // null means no customization in nb-configuration.xml --> set default value which is true
+                    return Boolean.TRUE;
                 }
             }
 

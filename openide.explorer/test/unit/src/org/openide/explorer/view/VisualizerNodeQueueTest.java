@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,36 +34,68 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
+package org.openide.explorer.view;
 
-package org.netbeans.modules.cnd.repository.sfs;
-
-import java.io.*;
-import org.netbeans.modules.cnd.repository.spi.Persistent;
-import org.netbeans.modules.cnd.repository.spi.PersistentFactory;
+import java.awt.EventQueue;
+import java.util.concurrent.CountDownLatch;
+import org.netbeans.junit.NbTestCase;
+import org.openide.util.Exceptions;
 
 /**
- * The most simple interface for random file access.
- * The purpose is to hide all details that concerns file access and have several 
- * pluggable implementations
- * @author Vladimir Kvashin
+ *
+ * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
-public interface FileRWAccess {
+public class VisualizerNodeQueueTest extends NbTestCase {
 
-    public Persistent read(PersistentFactory factory, long offset, int size) throws IOException;
-    
-    public int write(PersistentFactory factory, Persistent object, long offset) throws IOException;
-    
-    public void move(long offset, int size, long newOffset) throws IOException;
-    
-    public void move(FileRWAccess from, long offset, int size, long newOffset) throws IOException;
-    
-    public void truncate(long size) throws IOException;
-    
-    public void close() throws IOException;
-    
-    public long size() throws IOException;
-    
-    public boolean isValid() throws IOException;
+    public VisualizerNodeQueueTest(String name) {
+        super(name);
+    }
+    public void testLongExecutionInEQInterrupted() throws Exception {
+        class Slow implements Runnable {
+            @Override
+            public void run() {
+                try {
+                    Thread.sleep(1000);
+                } catch (InterruptedException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+        }
+        Slow slow = new Slow();
+        class InBetween implements Runnable {
+            boolean executed;
+            @Override
+            public void run() {
+                executed = true;
+            }
+        }
+        final InBetween in = new InBetween();
+        final CountDownLatch cdl = new CountDownLatch(1);
+        class AtTheEnd implements Runnable {
+            boolean state;
+            @Override
+            public void run() {
+                state = in.executed;
+                cdl.countDown();
+            }
+        }
+        AtTheEnd at = new AtTheEnd();
+        
+        assertFalse("Outside of EDT", EventQueue.isDispatchThread());
+        
+        VisualizerNode.runSafe(slow);
+        VisualizerNode.runSafe(at);
+        EventQueue.invokeLater(in);
+        
+        cdl.await();
+        
+        assertTrue("InBetween was executed before AtTheEnd "
+            + "because Slow was slow", at.state);
+    }
     
 }

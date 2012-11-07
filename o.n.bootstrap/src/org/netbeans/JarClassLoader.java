@@ -504,7 +504,16 @@ public class JarClassLoader extends ProxyClassLoader {
                                 for (;;) {
                                     try {
                                         long now = System.currentTimeMillis();
-                                        JarFile ret = new JarFile(file, false);
+                                        JarFile ret;
+                                        try {
+                                            ret = new JarFile(file, false);
+                                        } catch (FileNotFoundException ex) {
+                                            if (ex.getMessage().contains("Too many open files")) {
+                                                throw (ZipException)new ZipException(ex.getMessage()).initCause(ex);
+                                            } else {
+                                                throw ex;
+                                            }
+                                        }
                                         long took = System.currentTimeMillis() - now;
                                         opened(JarClassLoader.JarSource.this, forWhat);
                                         if (took > 500) {
