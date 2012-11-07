@@ -297,7 +297,12 @@ public class DocumentViewPanel extends javax.swing.JPanel implements ExplorerMan
      */
     private void initFilter() {
         JPanel panel = new JPanel();
-        Color background = treeView.getViewport().getView().getBackground();
+        Color background;
+        if(CssStylesPanel.AQUA) {
+            background = UIManager.getColor("NbExplorerView.background"); //NOI18N
+        } else {
+            background = treeView.getViewport().getView().getBackground();
+        }
         panel.setBackground(background);
 
         // "Find" label
