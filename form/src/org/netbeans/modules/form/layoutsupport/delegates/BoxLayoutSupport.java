@@ -64,13 +64,16 @@ import org.netbeans.modules.form.FormProperty;
  * @author Tran Duc Trung, Tomas Pavek
  */
 // Expects ltr orientation of the designer
-public class BoxLayoutSupport extends AbstractLayoutSupport
-{
+public class BoxLayoutSupport extends AbstractLayoutSupport {
+
+    private int initialAxis = BoxLayout.LINE_AXIS;
     private int axis = BoxLayout.LINE_AXIS;
 
     private FormProperty[] properties;
 
     private static Constructor boxLayoutConstructor;
+
+    private static final String PROP_AXIS = "axis"; // NOI18N
 
     /** Gets the supported layout manager class - BoxLayout.
      * @return the class supported by this delegate
@@ -93,6 +96,12 @@ public class BoxLayoutSupport extends AbstractLayoutSupport
         // since it has no properties, it must be create again
         updateLayoutInstance();
         super.acceptContainerLayoutChange(ev);
+    }
+
+    @Override
+    public boolean isLayoutChanged(Container defaultContainer, Container defaultContainerDelegate) {
+        return super.isLayoutChanged(defaultContainer, defaultContainerDelegate)
+                || axis != initialAxis; // the axis property is not a bean property, so not found by the super method
     }
 
     /** This method calculates position (index) for a component dragged
@@ -253,6 +262,18 @@ public class BoxLayoutSupport extends AbstractLayoutSupport
 
     // ------------
 
+    @Override
+    protected void initializeInstance(LayoutManager initialInstance, boolean initializeProperties)
+            throws Exception {
+        super.initializeInstance(null, false);
+        if (initialInstance != null) {
+            initialAxis = ((BoxLayout)initialInstance).getAxis();
+            if (initializeProperties) {
+                axis = initialAxis;
+            }
+        }
+    }
+
     /** Creates a default instance of LayoutManager (for internal use).
      * This method must override AbstractLayoutSupport because BoxLayout is not
      * a bean (so it cannot be created automatically).
@@ -336,7 +357,7 @@ public class BoxLayoutSupport extends AbstractLayoutSupport
             properties = new FormProperty[1];
 
             properties[0] = new FormProperty(
-                                "axis", // NOI18N
+                                PROP_AXIS,
                                 Integer.TYPE,
                                 getBundle().getString("PROP_axis"), // NOI18N
                                 getBundle().getString("HINT_axis")) // NOI18N
@@ -385,7 +406,16 @@ public class BoxLayoutSupport extends AbstractLayoutSupport
      */
     @Override
     protected Node.Property getProperty(String propName) {
-        return "axis".equals(propName) ? getProperties()[0] : null; // NOI18N
+        return PROP_AXIS.equals(propName) ? getProperties()[0] : null;
+    }
+
+    @Override
+    protected boolean isPropertyChangedFromInitial(FormProperty prop) {
+        if (PROP_AXIS.equals(prop.getName())) { // NOI18N
+            // axis is not a bean property that could be compared by the super method
+            return axis != initialAxis;
+        }
+        return prop.isChanged();
     }
 
     // --------

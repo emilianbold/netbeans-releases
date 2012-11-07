@@ -1084,8 +1084,8 @@ public class GandalfPersistenceManager extends PersistenceManager {
                         }
                         else {
                             layoutSupport.setUnknownLayoutDelegate(false);
-                            System.err.println("[WARNING] Unknown layout in "+createLoadingErrorMessage((String)null, node) // NOI18N
-                                +" ("+component.getBeanClass().getName()+")"); // NOI18N
+//                            System.err.println("[WARNING] Unknown layout in "+createLoadingErrorMessage((String)null, node) // NOI18N
+//                                +" ("+component.getBeanClass().getName()+")"); // NOI18N
                         }
                         layoutInitialized = true;
                     }
@@ -5049,8 +5049,18 @@ public class GandalfPersistenceManager extends PersistenceManager {
         String name = node.getNodeValue();
 
         CodeVariable var = getCodeStructure().getVariable(name);
-        if (var != null)
-            return var;
+        if (var != null) {
+            if ((var.getType() & (CodeVariable.LOCAL|CodeVariable.EXPLICIT_DECLARATION)) == CodeVariable.LOCAL) {
+                // clashing with an implicitly created variable
+                int i = name.length();
+                while (Character.isDigit(name.charAt(i-1))) {
+                    i--;
+                }
+                getCodeStructure().renameVariable(name, getCodeStructure().findFreeVariableName(name.substring(0, i)));
+            } else {
+                return var;
+            }
+        }
 
         node = attr.getNamedItem(ATTR_VAR_TYPE);
         if (node == null)

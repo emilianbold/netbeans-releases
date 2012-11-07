@@ -64,6 +64,7 @@ import org.netbeans.modules.form.editors2.BorderDesignSupport;
 import org.netbeans.modules.form.palette.PaletteItem;
 import org.netbeans.modules.form.project.ClassSource;
 import org.netbeans.modules.form.project.ClassPathUtils;
+import org.openide.util.Exceptions;
 
 /**
  * This class represents an access point for adding new components to FormModel.
@@ -226,6 +227,28 @@ public class MetaComponentCreator {
         return target != null
                && (target.targetType == TargetType.BORDER
                    || target.targetType == TargetType.LAYOUT);
+    }
+
+    public void restoreDefaultLayout(RADVisualContainer metacont) {
+        Throwable t = null;
+        try {
+            LayoutSupportDelegate layoutDelegate = metacont.getDefaultLayoutDelegate(true);
+            formModel.setContainerLayout(metacont, layoutDelegate);
+        } catch (Exception ex) {
+            t = ex;
+        } catch (LinkageError ex) {
+            t = ex;
+        }
+        if (t != null) {
+            LayoutManager layout = metacont.getDefaultLayout();
+            if (layout == null) { // should not fail for null layout
+                Exceptions.printStackTrace(t);
+            } else { // failure on custom layout
+                String msg = FormUtils.getFormattedBundleString(
+                               "FMT_ERR_LayoutInit", layout.getClass().getName()); // NOI18N
+                showErrorDialogWithException("Error", msg, t);
+            }
+        }
     }
 
     // --------
@@ -666,6 +689,62 @@ public class MetaComponentCreator {
                && metacomp.getAuxValue("autoScrollPane") != null; // NOI18N
     }
 
+    /**
+     * Checks if given container should be considered a general purpose contaier
+     * which can be set with Free Design. In other words that it is a container
+     * that does not have a specific layout preset that should be preserved. This
+     * method assumes that the container has already been checked for not being
+     * a special purpose container (like JScrollPane or JTabbedPane) and that it
+     * has a known layout manager.
+     * @param container
+     * @return true if the container does not have layout customization that
+     *         should be preserved
+     */
+    private static boolean isGeneralContainer(Container container) {
+        String clsName = container.getClass().getName();
+        if (clsName.startsWith("javax.swing.") || clsName.startsWith("java.awt.")) { // NOI18N
+            return true; // all standard containers not recognized as dedicated can be set to Free Design
+        }
+        if (clsName.equals("org.jdesktop.swingx.JXPanel") // NOI18N
+                || clsName.equals("org.jdesktop.swingx.JXTitledPanel") // NOI18N
+                || clsName.equals("org.jdesktop.swingx.JXFrame")) { // NOI18N
+            return true; // known general SwingX containers
+        }
+        // the code below tries to preserve layout in custom components, bug 215528
+        if (container instanceof JPanel) {
+            LayoutManager layout = container.getLayout();
+            if (layout instanceof FlowLayout) {
+                FlowLayout flowLayout = (FlowLayout) layout;
+                if (flowLayout.getClass().equals(FlowLayout.class)) {
+                    FlowLayout defaultFlowLayout = (FlowLayout) BeanSupport.getDefaultInstance(FlowLayout.class);
+                    if (flowLayout.getAlignment() == defaultFlowLayout.getAlignment()
+                            && flowLayout.getAlignOnBaseline() == defaultFlowLayout.getAlignOnBaseline()
+                            && flowLayout.getHgap() == defaultFlowLayout.getHgap()
+                            && flowLayout.getVgap() == defaultFlowLayout.getVgap()) {
+                        return true; // unchanged FlowLayout in JPanel subclass
+                    }
+                }
+            }
+        } else if (container instanceof RootPaneContainer) {
+            Container contentPane = ((RootPaneContainer)container).getContentPane();
+            if (contentPane != null) {
+                LayoutManager layout = contentPane.getLayout();
+                LayoutManager defaultLayout = ((JRootPane)BeanSupport.getDefaultInstance(JRootPane.class)).getContentPane().getLayout();
+                if (layout instanceof BorderLayout && defaultLayout instanceof BorderLayout) {
+                    BorderLayout borderLayout = (BorderLayout) layout;
+                    BorderLayout defaultBorderLayout = (BorderLayout) defaultLayout;
+                    if (borderLayout.getClass().equals(defaultBorderLayout.getClass())) {
+                        if (borderLayout.getHgap() == defaultBorderLayout.getHgap()
+                                && borderLayout.getVgap() == defaultBorderLayout.getVgap()) {
+                            return true; // unchanged BorderLayout in some window subclass
+                        }
+                    }
+                }
+            }
+        }
+        return false;
+    }
+
     // ---------
 
     private RADComponent makeCopy(RADComponent sourceComp/*, int targetPlacement*/) {
@@ -712,8 +791,6 @@ public class MetaComponentCreator {
                 newSubs[i] = newSubComp;
             }
 
-            ((ComponentContainer)newComp).initSubComponents(newSubs);
-
             // 2nd - clone layout support
             if (sourceComp instanceof RADVisualContainer) {
                 RADVisualComponent[] newComps =
@@ -726,9 +803,10 @@ public class MetaComponentCreator {
                 if (sourceLayout != null) {
                     RADVisualContainer newCont = (RADVisualContainer)newComp;
                     newCont.setOldLayoutSupport(true);
-                    newCont.getLayoutSupport()
-                        .copyLayoutDelegateFrom(sourceLayout, newComps);
+                    newCont.initSubComponents(newSubs); // bug 128797
+                    newCont.getLayoutSupport().copyLayoutDelegateFrom(sourceLayout, newComps);
                 } else {
+                    ((ComponentContainer)newComp).initSubComponents(newSubs);
                     Map<String,String> sourceToTargetIds = new HashMap<String,String>(sourceSubs.length);
                     for (int i=0; i<sourceSubs.length; i++) {
                         sourceToTargetIds.put(sourceSubs[i].getId(), newSubs[i].getId());
@@ -739,6 +817,8 @@ public class MetaComponentCreator {
                     formModel.getLayoutModel().copyContainerLayout(sourceLayoutModel,
                             sourceContainerId, sourceToTargetIds, targetContainerId);
                 }
+            } else {
+                ((ComponentContainer)newComp).initSubComponents(newSubs);
             }
         }
 
@@ -905,7 +985,9 @@ public class MetaComponentCreator {
                 LayoutSupportManager laysup = newMetaCont.getLayoutSupport();
                 knownLayout = laysup.prepareLayoutDelegate(false, false);
 
-                if ((knownLayout && !laysup.isDedicated() && !laysup.isSpecialLayout() && formModel.isFreeDesignDefaultLayout())
+                if ((knownLayout && !laysup.isDedicated() && !laysup.isSpecialLayout()
+                        && formModel.isFreeDesignDefaultLayout()
+                        && isGeneralContainer((Container)newMetaCont.getBeanInstance()))
                     || (!knownLayout && SwingLayoutBuilder.isRelevantContainer(laysup.getPrimaryContainerDelegate())))
                 {   // general containers should use the new layout support when created
                     newMetaCont.setOldLayoutSupport(false);
