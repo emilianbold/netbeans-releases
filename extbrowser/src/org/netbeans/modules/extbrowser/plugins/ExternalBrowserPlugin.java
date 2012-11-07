@@ -93,6 +93,8 @@ public final class ExternalBrowserPlugin {
     }
 
     private static final ExternalBrowserPlugin INSTANCE = new ExternalBrowserPlugin();
+    
+    private static RequestProcessor RP = new RequestProcessor("ExternalBrowserPlugin", 5); // NOI18N
 
     private ExternalBrowserPlugin() {
         try {
@@ -135,7 +137,7 @@ public final class ExternalBrowserPlugin {
      * Show URL in browser in given browser tab.
      */
     public void showURLInTab(final BrowserTabDescriptor tab, final URL url) {
-        RequestProcessor.getDefault().post(new Runnable() {
+        RP.post(new Runnable() {
             @Override
             public void run() {
                 tab.init();
@@ -460,7 +462,7 @@ public final class ExternalBrowserPlugin {
                     executor.activate();
                 }
                 // Do not block WebSocket thread
-                RequestProcessor.getDefault().post(new Runnable() {
+                RP.post(new Runnable() {
                     @Override
                     public void run() {
                         inspector.inspectPage(new ProxyLookup(context, projectContext));

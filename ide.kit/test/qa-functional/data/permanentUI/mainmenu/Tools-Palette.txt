@@ -1,9 +1,4 @@
-Palette                    > Swing/AWT Components              S
-                             HTML/JSP Code Clips               H
-                             PHP Code Clips                    P
-                             Visual Web JSF 1.1 Components     1
-                             Visual Web JSF 1.2 Components     2
-                             Mobility Components               M
-                             SVG Shapes                        G
-                             XML Schema Components             X
-                             BPEL Activities                   B
+Palette     > Swing/AWT Components              S
+              HTML/JSP Code Clips               H
+              Code Clips                        C
+              SVG Shapes                        G

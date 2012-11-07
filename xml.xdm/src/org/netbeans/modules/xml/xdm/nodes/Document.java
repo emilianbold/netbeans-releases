@@ -1021,10 +1021,15 @@ public class Document extends NodeImpl implements Node, org.w3c.dom.Document {
     }	
 
     private FindNamespaceVisitor getNamespaceCache() {
-        if (fnv == null || fnv.get() == null) {
-            fnv = new SoftReference<FindNamespaceVisitor>(new FindNamespaceVisitor(this));
+        FindNamespaceVisitor v;
+        
+        if (fnv == null || (v = fnv.get()) == null) {
+            v = new FindNamespaceVisitor(this);
+            // preinitialize, further calls will not mutate the visitor.
+            v.getNamespaceMap();
+            fnv = new SoftReference<FindNamespaceVisitor>(v);
         }
-        return fnv.get();
+        return v;
     }
     
     Map<Integer,String> getNamespaceMap() {
@@ -1034,5 +1039,5 @@ public class Document extends NodeImpl implements Node, org.w3c.dom.Document {
     /**
      * Namespace finder visitor
      */
-    private SoftReference<FindNamespaceVisitor> fnv;
+    private volatile SoftReference<FindNamespaceVisitor> fnv;
 }

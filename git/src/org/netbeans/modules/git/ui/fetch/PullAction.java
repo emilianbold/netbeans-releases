@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.git.ui.fetch;
 
+import java.awt.EventQueue;
 import java.io.File;
 import java.util.Arrays;
 import java.util.Collection;
@@ -82,15 +83,20 @@ public class PullAction extends GetRemoteChangesAction {
         pull(repository);
     }
     
-    private void pull (File repository) {
+    private void pull (final File repository) {
         RepositoryInfo info = RepositoryInfo.getInstance(repository);
         info.refreshRemotes();
-        Map<String, GitRemoteConfig> remotes = info.getRemotes();
-        PullWizard wiz = new PullWizard(repository, remotes);
-        if (wiz.show()) {
-            Utils.logVCSExternalRepository("GIT", wiz.getFetchUri()); //NOI18N
-            pull(repository, wiz.getFetchUri(), wiz.getFetchRefSpecs(), wiz.getBranchToMerge(), wiz.getRemoteToPersist());
-        }
+        final Map<String, GitRemoteConfig> remotes = info.getRemotes();
+        EventQueue.invokeLater(new Runnable() {
+            @Override
+            public void run () {
+                PullWizard wiz = new PullWizard(repository, remotes);
+                if (wiz.show()) {
+                    Utils.logVCSExternalRepository("GIT", wiz.getFetchUri()); //NOI18N
+                    pull(repository, wiz.getFetchUri(), wiz.getFetchRefSpecs(), wiz.getBranchToMerge(), wiz.getRemoteToPersist());
+                }
+            }
+        });
     }
     
     public void pull (File repository, final String target, final List<String> fetchRefSpecs, final String branchToMerge, final String remoteNameToUpdate) {

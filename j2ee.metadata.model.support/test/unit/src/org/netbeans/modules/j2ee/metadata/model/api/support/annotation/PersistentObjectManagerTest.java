@@ -63,6 +63,7 @@ import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.RootsEvent;
 import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.java.source.TypesEvent;
+import org.netbeans.junit.RandomlyFails;
 import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.parser.AnnotationParser;
 import org.netbeans.modules.j2ee.metadata.model.support.TestUtilities;
 import org.netbeans.modules.j2ee.metadata.model.support.PersistenceTestCase;
@@ -230,7 +231,7 @@ public class PersistentObjectManagerTest extends PersistenceTestCase {
         rootAddedLatch.await(EVENT_TIMEOUT, TimeUnit.SECONDS);
         assertTrue("Should have got a rootsAdded event", rootAdded.get());
         cpi.getClassIndex().removeClassIndexListener(listener);
-        changeListener.assertEvent();
+        changeListener.expectEvent(EVENT_TIMEOUT * 1000);
         helper.runJavaSourceTask(new Runnable() {
             public void run() {
                 Collection<EntityImpl> entities = manager.getObjects();
@@ -287,6 +288,7 @@ public class PersistentObjectManagerTest extends PersistenceTestCase {
         });
     }
 
+    @RandomlyFails
     public void testChangedFiles() throws Exception {
         GlobalPathRegistry.getDefault().register(ClassPath.SOURCE, new ClassPath[] { ClassPath.getClassPath(srcFO, ClassPath.SOURCE) });
         IndexingManager.getDefault().refreshIndexAndWait(srcFO.getURL(), null);
@@ -379,7 +381,7 @@ public class PersistentObjectManagerTest extends PersistenceTestCase {
         changedLatch2.await(EVENT_TIMEOUT, TimeUnit.SECONDS);
         assertTrue("Should have got a typesChanged event for Department", departmentChanged2.get());
         cpi.getClassIndex().removeClassIndexListener(listener);
-        changeListener.assertEvent();
+        changeListener.expectEvent(EVENT_TIMEOUT * 1000);
         helper.runJavaSourceTask(new Runnable() {
             public void run() {
                 assertEquals(0, manager.getObjects().size());

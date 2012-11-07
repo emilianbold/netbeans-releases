@@ -77,7 +77,7 @@ public class CssStylesTCController implements PropertyChangeListener {
     private static CssStylesTCController STATIC_INSTANCE;
     
     //called from CssCaretAwareSourceTask constructor
-    public static synchronized void init() {
+    static synchronized void init() {
         if (STATIC_INSTANCE == null) {
             STATIC_INSTANCE = new CssStylesTCController();
         }
@@ -108,8 +108,6 @@ public class CssStylesTCController implements PropertyChangeListener {
 
             final TopComponent activated = (TopComponent) evt.getNewValue();
 
-            LOG.log(Level.FINE, "Component {0} activated", activated);
-            
             if (!WindowManager.getDefault().isOpenedEditorTopComponent(activated)) {
                 return; //not editor TC, ignore
             }

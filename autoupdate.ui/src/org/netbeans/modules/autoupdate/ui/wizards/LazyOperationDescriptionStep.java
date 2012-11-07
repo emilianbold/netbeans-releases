@@ -174,6 +174,7 @@ public class LazyOperationDescriptionStep implements WizardDescriptor.Panel<Wiza
                                 oc.add (el);
                             }
                         }
+                        model.getBaseContainer().listAll();
                         final WizardDescriptor.Iterator<WizardDescriptor> panels = new InstallUnitWizardIterator (model, true);
                         SwingUtilities.invokeLater (new Runnable () {
                             @Override

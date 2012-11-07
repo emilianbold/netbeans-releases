@@ -1,19 +1,16 @@
-Debugging               > Local Variables           L
+Debugging               > Variables                 V
                           Watches                   W
                           Call Stack                k
                           Loaded Classes            C
                           Breakpoints               B
                           Sessions                  n
                           Threads                   T
+                          Expression Evaluation
                           Sources                   S
                           Debugging                 D
                           Disassembly               m
-                          Registers                 R
-                          Memory                    o
                           HTTP Server Monitor       H
-                          HTTP Client Monitor       i
+                          Memory                    o
+                          Registers                 R
                           ========================
-                          BPEL Partner Links        a
-                          BPEL Process Instances    P
-                          BPEL Process Execution    E
-                          BPEL Debugger Console     g
+                          Debugger Console

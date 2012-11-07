@@ -1,3 +1,0 @@
-Profile Other                      > Profile Project         P
-                                     Profile File            F
-                                     Profile Test for File   T

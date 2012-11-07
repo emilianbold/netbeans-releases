@@ -103,7 +103,7 @@ public class WebCopyOnSave extends CopyOnSave implements PropertyChangeListener 
     }
 
     @Override
-    public void initialize() throws FileStateInvalidException {
+    public void initialize() {
         if (!active) {
             smallinitialize();
             NbMavenProject.addPropertyChangeListener(getProject(), this);
@@ -112,7 +112,7 @@ public class WebCopyOnSave extends CopyOnSave implements PropertyChangeListener 
     }
 
     @Override
-    public void cleanup() throws FileStateInvalidException {
+    public void cleanup() {
         if (active) {
             smallcleanup();
             NbMavenProject.removePropertyChangeListener(getProject(), this);
@@ -120,34 +120,38 @@ public class WebCopyOnSave extends CopyOnSave implements PropertyChangeListener 
         }
     }
 
-    private void smallinitialize() throws FileStateInvalidException {
+    private void smallinitialize() {
         WebModule webModule = getWebModule();
 
         if (webModule != null) {
             docBase = webModule.getDocumentBase();
             if (docBase != null) {
-                docBase.getFileSystem().addFileChangeListener(listener);
+                try {
+                    docBase.getFileSystem().addFileChangeListener(listener);
+                } catch (FileStateInvalidException ex) {
+                    // doc base is invalid --> just do nothing
+                }
             }
         }
     }
 
-    private void smallcleanup() throws FileStateInvalidException {
+    private void smallcleanup() {
         if (docBase != null) {
-            docBase.getFileSystem().removeFileChangeListener(listener);
+            try {
+                docBase.getFileSystem().removeFileChangeListener(listener);
+            } catch (FileStateInvalidException ex) {
+                // doc base is invalid --> just do nothing
+            }
         }
     }
 
     @Override
     public void propertyChange(PropertyChangeEvent evt) {
         if (NbMavenProject.PROP_PROJECT.equals(evt.getPropertyName())) {
-            try {
-                //TODO reduce cleanup to cases where the actual directory locations change..
-                if (active) {
-                    smallcleanup();
-                    smallinitialize();
-                }
-            } catch (org.openide.filesystems.FileStateInvalidException e) {
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+            //TODO reduce cleanup to cases where the actual directory locations change..
+            if (active) {
+                smallcleanup();
+                smallinitialize();
             }
         }
     }

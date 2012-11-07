@@ -8,7 +8,7 @@ Go to Test                       G
 Go to Grails Domain class
 Go to Grails Controller
 Go to Grails View                e
-Go to Previous Document          r
+Go to Previous Document
 ==============================
 Go to Source                     S
 Go to Declaration                D

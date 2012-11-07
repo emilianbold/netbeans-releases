@@ -629,9 +629,11 @@ public class CSSStylesSelectionPanel extends JPanel {
                     .addComponent(selectorLabel, 1, 1, Short.MAX_VALUE)
                     .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
                     .addComponent(matchedNodeLabel, 1, 1, Short.MAX_VALUE);
-            GroupLayout.Group vGroup = layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
-                    .addComponent(selectorLabel)
-                    .addComponent(matchedNodeLabel);
+            GroupLayout.Group vGroup = layout.createSequentialGroup()
+                    .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
+                        .addComponent(selectorLabel)
+                        .addComponent(matchedNodeLabel))
+                    .addGap(0, 0, Short.MAX_VALUE);
             hGroup = layout.createParallelGroup()
                     .addComponent(mediaLabel, 1, 1, Short.MAX_VALUE)
                     .addGroup(hGroup);

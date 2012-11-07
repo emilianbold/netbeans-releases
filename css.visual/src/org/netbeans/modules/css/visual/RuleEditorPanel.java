@@ -42,11 +42,6 @@
 package org.netbeans.modules.css.visual;
 
 import java.awt.BorderLayout;
-import java.awt.Component;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.FocusEvent;
-import java.awt.event.FocusListener;
 import java.beans.FeatureDescriptor;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -55,19 +50,15 @@ import java.beans.PropertyVetoException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
-import java.util.TreeSet;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.Action;
-import javax.swing.DefaultComboBoxModel;
-import javax.swing.DefaultListCellRenderer;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JLabel;
-import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.SwingUtilities;
@@ -76,12 +67,8 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.Document;
-import org.jdesktop.swingx.autocomplete.ObjectToStringConverter;
 import org.netbeans.modules.css.lib.api.CssParserResult;
-import org.netbeans.modules.css.lib.api.properties.Properties;
-import org.netbeans.modules.css.lib.api.properties.PropertyDefinition;
 import org.netbeans.modules.css.model.api.Declaration;
-import org.netbeans.modules.css.model.api.Declarations;
 import org.netbeans.modules.css.model.api.Model;
 import org.netbeans.modules.css.model.api.ModelUtils;
 import org.netbeans.modules.css.model.api.Rule;
@@ -181,9 +168,9 @@ public class RuleEditorPanel extends JPanel {
     private PropertyChangeSupport CHANGE_SUPPORT = new PropertyChangeSupport(this);
     private boolean addPropertyMode;
    
-    Declaration createdDeclaration;
+    private Declaration createdDeclaration;
+    private List<String> createdDeclarationsIdsList = new ArrayList<String>();
     
-    private AddPropertyComboBoxModel ADD_PROPERTY_CB_MODEL = new AddPropertyComboBoxModel();
     private PropertyChangeListener MODEL_LISTENER = new PropertyChangeListener() {
         @Override
         public void propertyChange(final PropertyChangeEvent evt) {
@@ -215,7 +202,7 @@ public class RuleEditorPanel extends JPanel {
                                             if (resultIterator != null) {
                                                 CssParserResult result = (CssParserResult) resultIterator.getParserResult();
                                                 final Model model = Model.getModel(result);
-                                                LOG.log(Level.INFO, "Model.CHANGES_APPLIED_TO_DOCUMENT event handler - setting new model {0}", model);
+                                                LOG.log(Level.FINE, "Model.CHANGES_APPLIED_TO_DOCUMENT event handler - setting new model {0}", model);
                                                 setModel(model);
                                             }
                                         }
@@ -234,14 +221,6 @@ public class RuleEditorPanel extends JPanel {
                     }
                 }
             });
-        }
-    };
-
-    private final ActionListener addPropertyCBActionListener = new ActionListener() {
-
-        @Override
-        public void actionPerformed(ActionEvent e) {
-            addPropertyCBValueEntered();
         }
     };
     
@@ -323,36 +302,11 @@ public class RuleEditorPanel extends JPanel {
         //init default components
         initComponents();
 
-        //init the add property combo box
  
-        addPropertyCB.getEditor().getEditorComponent().addFocusListener(new FocusListener() {
-            @Override
-            public void focusGained(FocusEvent e) {
-                ADD_PROPERTY_CB_MODEL.removeInitialText();
-                
-                //add the ActionListener after the model change (removed initial text) 
-                //as it fires an action event
-                addPropertyCB.addActionListener(addPropertyCBActionListener);
-            }
-
-            @Override
-            public void focusLost(FocusEvent e) {
-                ADD_PROPERTY_CB_MODEL.addInitialText();
-                
-                //add the ActionListener after the model change (added initial text) 
-                //as it fires an action event
-                addPropertyCB.removeActionListener(addPropertyCBActionListener);
-            }
-        });
-
-
         if (!addPropertyMode) {
             northEastPanel.add(menuLabel, java.awt.BorderLayout.EAST);
             menuLabel.setComponentPopupMenu(popupMenu);
         }
-
-        addPropertyButton.setVisible(!addPropertyMode);
-        addPropertyCB.setVisible(!addPropertyMode);
 
         titleLabel.setText(null);
 
@@ -401,68 +355,39 @@ public class RuleEditorPanel extends JPanel {
             public void changedUpdate(DocumentEvent e) {
             }
         });
-        
+       
     }
-
-    private void addPropertyCBValueEntered() {
-        Object selected = ADD_PROPERTY_CB_MODEL.getSelectedItem();
-        if (selected == null) {
-            return;
-        }
-
-        final String propertyName;
-        if (selected instanceof PropertyDefinition) {
-            PropertyDefinition pd = (PropertyDefinition) selected;
-            propertyName = pd.getName();
-        } else if (selected instanceof String) {
-            String val = (String) selected;
-            if (!val.trim().isEmpty()) {
-                propertyName = val;
-            } else {
-                propertyName = null;
-            }
-        } else {
-            propertyName = null;
-        }
-
-        if (propertyName != null) {
-            //1.verify whether there's such property
-            if(Properties.getPropertyDefinition(model.getLookup().lookup(FileObject.class), propertyName) != null) {
-                //2.create the property
-                //3.select the corresponding row in the PS
-
-                model.runWriteTask(new Model.ModelTask() {
-                    @Override
-                    public void run(StyleSheet styleSheet) {
-                        //add the new declaration to the model.
-                        //the declaration is not complete - the value is missing and it is necessary to 
-                        //enter in the PS otherwise the model become invalid.
-                        ModelUtils utils = new ModelUtils(model);
-                        Declarations decls = rule.getDeclarations();
-                        if (decls == null) {
-                            decls = model.getElementFactory().createDeclarations();
-                            rule.setDeclarations(decls);
-                        }
-
-                        Declaration declaration = utils.createDeclaration(propertyName + ":");
-                        decls.addDeclaration(declaration);
-
-                        //do not save the model (apply changes) - once the write task finishes
-                        //the embedded property sheet will be refreshed from the modified model.
-
-                        //remember the created declaration so once the model change is fired
-                        //and the property sheet is refreshed, we can find and select the corresponding
-                        //FeatureDescriptor
-                        createdDeclaration = declaration;
-                    }
-                });
-            }
-
-        }
+    
+    //called fro the containing TC's componentDeactivated();
+    public void componentDeactivated() {
+        //Support for clearing the "created declarations list".
+        //
+        //When user adds new properties using the "Add Property" item 
+        //at the end of the PS the items stays at the positions unsorted
+        //At some point we need to resort the items according to their 
+        //alphabetical order - lets do that when the TopComponent containing
+        //rhe RuleEditor panel lost focus.
+        createdDeclarationsIdsList.clear();
+        node.fireContextChanged(true);
     }
     
     public FeatureDescriptor getSelected() {
         return sheet.getSelectedFeatureDescriptor();
+    }
+    
+    void setCreatedDeclaration(Rule rule, Declaration declaration) {
+        createdDeclaration = declaration;
+        
+        String declarationId = PropertyUtils.getDeclarationId(rule, declaration);
+        createdDeclarationsIdsList.add(declarationId);
+    }
+    
+    Declaration getCreatedDeclaration() {
+        return this.createdDeclaration;
+    }
+    
+    List<String> getCreatedDeclarationsIdsList() {
+        return createdDeclarationsIdsList;
     }
     
     private void editCreatedDeclaration() {
@@ -618,7 +543,7 @@ public class RuleEditorPanel extends JPanel {
             CHANGE_SUPPORT.firePropertyChange(RuleEditorController.PropertyNames.RULE_SET.name(), oldRule, match);
 
         } else {
-            LOG.log(Level.FINE, "no rule was set before");
+            LOG.log(Level.FINER, "no rule was set before");
             //no rule was set - fire event anyway
             CHANGE_SUPPORT.firePropertyChange(RuleEditorController.PropertyNames.RULE_SET.name(), oldRule, rule);
         }
@@ -655,27 +580,8 @@ public class RuleEditorPanel extends JPanel {
         this.rule = rule;
         LOG.log(Level.FINE, "set new rule ({0})", rule);
         
-        //refresh new AddPropertyComboBoxModel so the add property combobox doesn't contain 
-        //already existing properties
-        Declarations decls = rule.getDeclarations();
-        Collection<Declaration> declarations = decls == null 
-                ? Collections.<Declaration>emptyList() 
-                : decls.getDeclarations();
-                        
-        ADD_PROPERTY_CB_MODEL.setExistingProperties(declarations);
-
         CHANGE_SUPPORT.firePropertyChange(RuleEditorController.PropertyNames.RULE_SET.name(), old, this.rule);
 
-        //check if the rule is valid
-        if (!rule.isValid()) {
-            northWestPanel.add(ERROR_LABEL);
-            addPropertyButton.setEnabled(false);
-            addPropertyCB.setEnabled(false);
-        } else {
-            northWestPanel.remove(ERROR_LABEL);
-            addPropertyButton.setEnabled(true);
-            addPropertyCB.setEnabled(true);
-        }
         northWestPanel.revalidate();
 
         //force property sets refresh if the rule is erroneous or 
@@ -696,7 +602,7 @@ public class RuleEditorPanel extends JPanel {
     }
 
     public void setNoRuleState() {
-        LOG.log(Level.FINE, "setNoRuleState()");
+        LOG.log(Level.FINER, "setNoRuleState()");
 
         assert SwingUtilities.isEventDispatchThread();
         Rule old = this.rule;
@@ -707,8 +613,6 @@ public class RuleEditorPanel extends JPanel {
         titleLabel.setToolTipText(Bundle.titleLabel_tooltip_no_selected_rule());
         titleLabel.setEnabled(false);
         
-        addPropertyButton.setEnabled(false);
-        addPropertyCB.setEnabled(false);
         node.fireContextChanged(false);
     }
 
@@ -755,9 +659,6 @@ public class RuleEditorPanel extends JPanel {
         northEastPanel = new javax.swing.JPanel();
         northWestPanel = new javax.swing.JPanel();
         titleLabel = new javax.swing.JLabel();
-        southPanel = new javax.swing.JPanel();
-        addPropertyButton = new javax.swing.JButton();
-        addPropertyCB = new AutocompleteJComboBox(ADD_PROPERTY_CB_MODEL, new AddPropertyCBObjectToStringConverter());
 
         menuLabel.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/css/visual/resources/menu.png"))); // NOI18N
         menuLabel.setText(org.openide.util.NbBundle.getMessage(RuleEditorPanel.class, "RuleEditorPanel.menuLabel.text")); // NOI18N
@@ -799,23 +700,6 @@ public class RuleEditorPanel extends JPanel {
         northPanel.add(northWestPanel, java.awt.BorderLayout.CENTER);
 
         add(northPanel, java.awt.BorderLayout.NORTH);
-
-        southPanel.setMinimumSize(new java.awt.Dimension(0, 0));
-        southPanel.setLayout(new java.awt.BorderLayout());
-
-        addPropertyButton.setAction(addPropertyAction);
-        addPropertyButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/css/visual/resources/plus.gif"))); // NOI18N
-        addPropertyButton.setText(org.openide.util.NbBundle.getMessage(RuleEditorPanel.class, "RuleEditorPanel.addPropertyButton.text")); // NOI18N
-        addPropertyButton.setEnabled(false);
-        addPropertyButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
-        southPanel.add(addPropertyButton, java.awt.BorderLayout.LINE_END);
-
-        addPropertyCB.setEditable(true);
-        addPropertyCB.setEnabled(false);
-        addPropertyCB.setRenderer(new AddPropertyCBRendeder());
-        southPanel.add(addPropertyCB, java.awt.BorderLayout.CENTER);
-
-        add(southPanel, java.awt.BorderLayout.SOUTH);
     }// </editor-fold>//GEN-END:initComponents
 
     private void menuLabelMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_menuLabelMouseClicked
@@ -828,112 +712,15 @@ public class RuleEditorPanel extends JPanel {
     }//GEN-LAST:event_cancelFilterLabelMouseClicked
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JButton addPropertyButton;
-    private javax.swing.JComboBox addPropertyCB;
     private javax.swing.JLabel cancelFilterLabel;
     private javax.swing.JTextField filterTextField;
     private javax.swing.JLabel menuLabel;
     private javax.swing.JPanel northEastPanel;
     private javax.swing.JPanel northPanel;
     private javax.swing.JPanel northWestPanel;
-    private javax.swing.JPanel southPanel;
     private javax.swing.JLabel titleLabel;
     // End of variables declaration//GEN-END:variables
-    private static Object INITIAL_TEXT_OBJECT = new Object();
-    private static String ADD_PROPERTY_CB_TEXT = Bundle.addPropertyCB_initial_text();
 
-    private class AddPropertyComboBoxModel extends DefaultComboBoxModel {
-
-        private boolean containsInitialText;
-
-        public AddPropertyComboBoxModel() {
-            addInitialText();
-        }
-
-        private Collection<PropertyDefinition> getProperties() {
-            Collection<PropertyDefinition> properties = new TreeSet<PropertyDefinition>(PropertyUtils.PROPERTY_DEFINITIONS_COMPARATOR);
-            properties.addAll(Properties.getPropertyDefinitions(getModel().getLookup().lookup(FileObject.class), true));
-            return properties;
-        }
-
-        private void addInitialText() {
-            if (!containsInitialText) {
-                insertElementAt(INITIAL_TEXT_OBJECT, 0);
-                setSelectedItem(INITIAL_TEXT_OBJECT);
-                containsInitialText = true;
-            }
-        }
-
-        private void removeInitialText() {
-            if (containsInitialText) {
-                removeElement(INITIAL_TEXT_OBJECT);
-                setSelectedItem(null);
-                containsInitialText = false;
-            }
-        }
-        
-        private void setExistingProperties(Collection<Declaration> existing) {
-            removeInitialText();
-            removeAllElements();
-            
-            addInitialText();
-            
-            FileObject file = model.getLookup().lookup(FileObject.class);
-            Collection<PropertyDefinition> existingDefs = new ArrayList<PropertyDefinition>();
-            for(Declaration d : existing) {
-                PropertyDefinition definition = Properties.getPropertyDefinition(file, d.getProperty().getContent().toString());
-                if(definition != null) {
-                    existingDefs.add(definition);
-                }
-            }
-            
-            for(PropertyDefinition prop : getProperties()) {
-                if(!existingDefs.contains(prop)) {
-                    addElement(prop);
-                }
-            }
-        }
-        
-        
-    }
-
-    private static class AddPropertyCBRendeder extends DefaultListCellRenderer {
-
-        @Override
-        public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
-            Component c = super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
-            if (value != null) {
-                if (value == INITIAL_TEXT_OBJECT) {
-                    setText(ADD_PROPERTY_CB_TEXT);
-                } else {
-                    PropertyDefinition pd = (PropertyDefinition) value;
-                    setText(pd.getName());
-                }
-            }
-            return c;
-        }
-    };
-    
-    private static class AddPropertyCBObjectToStringConverter extends ObjectToStringConverter {
-        
-        @Override
-        public String getPreferredStringForItem(Object o) {
-            if (o == null) {
-                return null;
-            } else {
-                if (o instanceof PropertyDefinition) {
-                    return ((PropertyDefinition) o).getName();
-                } else {
-                    if (o == INITIAL_TEXT_OBJECT) {
-                        return ADD_PROPERTY_CB_TEXT;
-                    } else {
-                        return o.toString();
-                    }
-                }
-            }
-        }
-    }
-    
     private class REPropertySheet extends PropertySheet {
 
         private final JPopupMenu genericPopupMenu;

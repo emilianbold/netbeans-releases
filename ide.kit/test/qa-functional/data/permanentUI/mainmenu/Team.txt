@@ -1,0 +1,10 @@
+| Team |           m (mnemonics)
+=========
+Git                  >   G
+Mercurial            >   M
+Subversion           >   S
+===================
+History              >   H
+Find Issues...
+Report Issue...
+Create Build Job...

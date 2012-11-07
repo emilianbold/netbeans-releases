@@ -76,10 +76,6 @@ public final class CssCaretAwareSourceTask extends ParserResultTask<CssParserRes
     private static final String CSS_MIMETYPE = "text/css"; //NOI18N
     private boolean cancelled;
 
-    public CssCaretAwareSourceTask() {
-        CssStylesTCController.init();
-    }
-
     @Override
     public int getPriority() {
         return 5000; //low priority
@@ -165,7 +161,7 @@ public final class CssCaretAwareSourceTask extends ParserResultTask<CssParserRes
             //check whether the rule is virtual
             if(result.getSnapshot().getOriginalOffset(rule.getSelectorsGroup().getStartOffset()) == -1) {
                 //virtual selector created for html source element with class or id attribute
-                LOG.log(Level.FINE, "the found rule is virtual, exiting w/o change of the RuleEditor", caretOffset);
+                LOG.log(Level.FINER, "the found rule is virtual, exiting w/o change of the RuleEditor", caretOffset);
                 return ;
             }
         }
@@ -174,7 +170,7 @@ public final class CssCaretAwareSourceTask extends ParserResultTask<CssParserRes
             //if not a css file, 
             //update the rule editor only if there's a rule in an embedded css code
             if (rule == null) {
-                LOG.log(Level.FINE, "not a css file and rule not found at {0} offset, exiting w/o change of the RuleEditor", caretOffset);
+                LOG.log(Level.FINER, "not a css file and rule not found at {0} offset, exiting w/o change of the RuleEditor", caretOffset);
                 return;
             }
         }

@@ -48,12 +48,12 @@ import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
 import javax.swing.JComponent;
 import javax.swing.SwingUtilities;
-import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
@@ -76,6 +76,7 @@ public class Icefaces2Customizer implements JsfComponentCustomizer {
     private Icefaces2CustomizerPanelVisual panel;
     private ChangeSupport changeSupport = new ChangeSupport(this);
     private Future<Boolean> result = null;
+    private boolean fixedLibrary = false;
 
     @Override
     public void addChangeListener(ChangeListener listener) {
@@ -90,7 +91,7 @@ public class Icefaces2Customizer implements JsfComponentCustomizer {
     @Override
     public JComponent getComponent() {
         if (panel == null) {
-            panel = new Icefaces2CustomizerPanelVisual(new PanelChangeListener());
+            panel = new Icefaces2CustomizerPanelVisual(this);
             panel.initLibraries(true);
         }
         return panel;
@@ -129,7 +130,7 @@ public class Icefaces2Customizer implements JsfComponentCustomizer {
                         SwingUtilities.invokeLater(new Runnable() {
                             @Override
                             public void run() {
-                                changeSupport.fireChange();
+                                fireChange();
                             }
                         });
                     }
@@ -138,7 +139,7 @@ public class Icefaces2Customizer implements JsfComponentCustomizer {
                 return false;
             } else {
                 try {
-                    return result.get();
+                    return result.get() || fixedLibrary;
                 } catch (InterruptedException ex) {
                     Exceptions.printStackTrace(ex);
                 } catch (ExecutionException ex) {
@@ -154,7 +155,7 @@ public class Icefaces2Customizer implements JsfComponentCustomizer {
     })
     @Override
     public String getErrorMessage() {
-        if (result == null || !result.isDone()) {
+        if ((result == null && !isValid()) || (result != null && !result.isDone())) {
             return Bundle.Icefaces2Customizer_err_searching_icefaces_library();
         }
         return panel.getErrorMessage();
@@ -176,6 +177,19 @@ public class Icefaces2Customizer implements JsfComponentCustomizer {
     @Override
     public HelpCtx getHelpCtx() {
         return HelpCtx.DEFAULT_HELP;
+    }
+
+    /**
+     * Sets to true when the library troubles were fixed.
+     * @param fixed whether the library was really fixed
+     */
+    public void setFixedLibrary(boolean fixed) {
+        fixedLibrary = fixed;
+    }
+
+    /** Fire event that validation should be redone. */
+    public void fireChange() {
+        changeSupport.fireChange();
     }
 
     /**
@@ -214,14 +228,4 @@ public class Icefaces2Customizer implements JsfComponentCustomizer {
         }
     }
 
-    /**
-     * Listener for listening changes on the {@link Icefaces2CustomizerPanelVisual).
-     */
-    private class PanelChangeListener implements ChangeListener {
-
-        @Override
-        public void stateChanged(ChangeEvent e) {
-            changeSupport.fireChange();
-        }
-    }
 }

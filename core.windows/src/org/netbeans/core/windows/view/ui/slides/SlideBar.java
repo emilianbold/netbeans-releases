@@ -469,6 +469,10 @@ public final class SlideBar extends JPanel implements ComplexListDataListener,
 
     void makeBusy( TopComponent tc, boolean busy ) {
         BusyTabsSupport.getDefault().makeTabBusy( tabbed, 0, busy );
+        if( !busy ) {
+            Component slide = getSlidedComp();
+            slide.repaint();
+        }
         syncWithModel();
     }
 

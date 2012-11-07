@@ -137,10 +137,10 @@ public final class ClientSideProjectUtilities {
         projectProperties.save();
     }
 
-    private static void ensureDirectoryExists(File folder) {
+    private static void ensureDirectoryExists(File folder) throws IOException {
         if (!folder.isDirectory()) {
             if (!folder.mkdirs()) {
-                LOGGER.log(Level.WARNING, "Folder cannot be created", folder);
+                throw new IOException("Cannot create folder " + folder);
             }
         }
     }

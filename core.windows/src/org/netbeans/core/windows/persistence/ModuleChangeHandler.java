@@ -46,14 +46,13 @@ package org.netbeans.core.windows.persistence;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
-
 import org.netbeans.core.windows.Debug;
 import org.netbeans.core.windows.WindowManagerImpl;
 import org.openide.cookies.InstanceCookie;
@@ -65,6 +64,7 @@ import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileSystem;
 import org.openide.loaders.DataObject;
+import org.openide.util.RequestProcessor;
 
 /**
  * Handler of changes in module folder. Changes can be for example
@@ -96,6 +96,8 @@ class ModuleChangeHandler implements FileChangeListener {
     /** List of <FileObject> which contains file objects of tc refs waiting
      * for their related settings files to be processed */
     private List<FileObject> tcRefsWaitingOnSettings;
+
+    private static final RequestProcessor RP = new RequestProcessor( "WinSysModuleChangeHandler", 1 ); //NOI18N
     
     /** Creates a new instance of ModuleChangeHandler */
     public ModuleChangeHandler() {
@@ -240,58 +242,72 @@ class ModuleChangeHandler implements FileChangeListener {
         return false;
     }
     
+    @Override
     public void fileAttributeChanged (FileAttributeEvent fe) {
     }
     
+    @Override
     public void fileChanged (FileEvent fe) {
     }
     
-    public void fileDataCreated (FileEvent fe) {
-        FileObject fo = fe.getFile();
-        boolean accepted = acceptEvent(fo);
-        if (!accepted) {
-            return;
-        }
-        if (DEBUG) {
-            Debug.log(ModuleChangeHandler.class, "-- fileDataCreated fo: " + fo
-            + " isFolder:" + fo.isFolder()
-            + " ACCEPTED"
-            + " th:" + Thread.currentThread().getName());
-            if (accepted && fo.isFolder()) {
-                FileObject [] files = fo.getChildren();
-                for (int i = 0; i < files.length; i++) {
-                    Debug.log(ModuleChangeHandler.class, "fo[" + i + "]: " + files[i]);
+    @Override
+    public void fileDataCreated (final FileEvent fe) {
+        RP.post( new Runnable() {
+            @Override
+            public void run() {
+                FileObject fo = fe.getFile();
+                boolean accepted = acceptEvent(fo);
+                if (!accepted) {
+                    return;
                 }
+                if (DEBUG) {
+                    Debug.log(ModuleChangeHandler.class, "-- fileDataCreated fo: " + fo
+                    + " isFolder:" + fo.isFolder()
+                    + " ACCEPTED"
+                    + " th:" + Thread.currentThread().getName());
+                    if (accepted && fo.isFolder()) {
+                        FileObject [] files = fo.getChildren();
+                        for (int i = 0; i < files.length; i++) {
+                            Debug.log(ModuleChangeHandler.class, "fo[" + i + "]: " + files[i]);
+                        }
+                    }
+                }
+                processDataOrFolderCreated(fo);
             }
-        }
-        processDataOrFolderCreated(fo);
+        });
     }
     
-    public void fileFolderCreated (FileEvent fe) {
-        FileObject fo = fe.getFile();
-        boolean accepted = acceptEvent(fo);
-        if (!accepted) {
-            return;
-        }
-        if (isInModesFolder(fo)) {
-            refreshModesFolder();
-        }
-        if (isInGroupsFolder(fo)) {
-            refreshGroupsFolder();
-        }
-        if (DEBUG) {
-            Debug.log(ModuleChangeHandler.class, "-- fileFolderCreated fo: " + fo
-            + " isFolder:" + fo.isFolder()
-            + " ACCEPTED"
-            + " th:" + Thread.currentThread().getName());
-            if (accepted && fo.isFolder()) {
-                FileObject [] files = fo.getChildren();
-                for (int i = 0; i < files.length; i++) {
-                    Debug.log(ModuleChangeHandler.class, "fo[" + i + "]: " + files[i]);
+    @Override
+    public void fileFolderCreated (final FileEvent fe) {
+        RP.post( new Runnable() {
+            @Override
+            public void run() {
+                FileObject fo = fe.getFile();
+                boolean accepted = acceptEvent(fo);
+                if (!accepted) {
+                    return;
                 }
+                if (isInModesFolder(fo)) {
+                    refreshModesFolder();
+                }
+                if (isInGroupsFolder(fo)) {
+                    refreshGroupsFolder();
+                }
+                if (DEBUG) {
+                    Debug.log(ModuleChangeHandler.class, "-- fileFolderCreated fo: " + fo
+                    + " isFolder:" + fo.isFolder()
+                    + " ACCEPTED"
+                    + " th:" + Thread.currentThread().getName());
+                    if (accepted && fo.isFolder()) {
+                        FileObject [] files = fo.getChildren();
+                        for (int i = 0; i < files.length; i++) {
+                            Debug.log(ModuleChangeHandler.class, "fo[" + i + "]: " + files[i]);
+                        }
+                    }
+                }
+                processDataOrFolderCreated(fo);
             }
-        }
-        processDataOrFolderCreated(fo);
+        });
     }
     
     private void processDataOrFolderCreated (FileObject fo) {
@@ -328,51 +344,58 @@ class ModuleChangeHandler implements FileChangeListener {
         }
     }
     
-    public void fileDeleted (FileEvent fe) {
-        FileObject fo = fe.getFile();
-        boolean accepted = acceptEvent(fo);
-        if (!accepted) {
-            return;
-        }
-        if (isInModesFolder(fo)) {
-            refreshModesFolder();
-        }
-        if (isInGroupsFolder(fo)) {
-            refreshGroupsFolder();
-        }
-        
-        if (DEBUG) Debug.log(ModuleChangeHandler.class, "-- fileDeleted fo: " + fo
-        + " isFolder:" + fo.isFolder()
-        + " isValid:" + fo.isValid()
-        + " ACCEPTED"
-        + " th:" + Thread.currentThread().getName());
-        
-        FileObject parent1 = fo.getParent();
-        if (parent1.getPath().equals(modesModuleFolder.getPath())) {
-            if (!fo.isFolder() && PersistenceManager.MODE_EXT.equals(fo.getExt())) {
-                if (DEBUG) Debug.log(ModuleChangeHandler.class, "++ process MODE REMOVE ++");
-                removeMode(fo.getName());
+    @Override
+    public void fileDeleted (final FileEvent fe) {
+        RP.post( new Runnable() {
+            @Override
+            public void run() {
+                FileObject fo = fe.getFile();
+                boolean accepted = acceptEvent(fo);
+                if (!accepted) {
+                    return;
+                }
+                if (isInModesFolder(fo)) {
+                    refreshModesFolder();
+                }
+                if (isInGroupsFolder(fo)) {
+                    refreshGroupsFolder();
+                }
+
+                if (DEBUG) Debug.log(ModuleChangeHandler.class, "-- fileDeleted fo: " + fo
+                + " isFolder:" + fo.isFolder()
+                + " isValid:" + fo.isValid()
+                + " ACCEPTED"
+                + " th:" + Thread.currentThread().getName());
+
+                FileObject parent1 = fo.getParent();
+                if (parent1.getPath().equals(modesModuleFolder.getPath())) {
+                    if (!fo.isFolder() && PersistenceManager.MODE_EXT.equals(fo.getExt())) {
+                        if (DEBUG) Debug.log(ModuleChangeHandler.class, "++ process MODE REMOVE ++");
+                        removeMode(fo.getName());
+                    }
+                } else if (parent1.getPath().equals(groupsModuleFolder.getPath())) {
+                    if (!fo.isFolder() && PersistenceManager.GROUP_EXT.equals(fo.getExt())) {
+                        if (DEBUG) Debug.log(ModuleChangeHandler.class, "++ process GROUP REMOVE ++");
+                        removeGroup(fo.getName());
+                    }
+                }
+                FileObject parent2 = parent1.getParent();
+                if (parent2.getPath().equals(modesModuleFolder.getPath())) {
+                    if (!fo.isFolder() && PersistenceManager.TCREF_EXT.equals(fo.getExt())) {
+                        if (DEBUG) Debug.log(ModuleChangeHandler.class, "++ process tcRef REMOVE ++");
+                        removeTCRef(fo.getName());
+                    }
+                } else if (parent2.getPath().equals(groupsModuleFolder.getPath())) {
+                    if (!fo.isFolder() && PersistenceManager.TCGROUP_EXT.equals(fo.getExt())) {
+                        if (DEBUG) Debug.log(ModuleChangeHandler.class, "++ process tcGroup REMOVE ++");
+                        removeTCGroup(parent1.getName(), fo.getName());
+                    }
+                }
             }
-        } else if (parent1.getPath().equals(groupsModuleFolder.getPath())) {
-            if (!fo.isFolder() && PersistenceManager.GROUP_EXT.equals(fo.getExt())) {
-                if (DEBUG) Debug.log(ModuleChangeHandler.class, "++ process GROUP REMOVE ++");
-                removeGroup(fo.getName());
-            }
-        }
-        FileObject parent2 = parent1.getParent();
-        if (parent2.getPath().equals(modesModuleFolder.getPath())) {
-            if (!fo.isFolder() && PersistenceManager.TCREF_EXT.equals(fo.getExt())) {
-                if (DEBUG) Debug.log(ModuleChangeHandler.class, "++ process tcRef REMOVE ++");
-                removeTCRef(fo.getName());
-            }
-        } else if (parent2.getPath().equals(groupsModuleFolder.getPath())) {
-            if (!fo.isFolder() && PersistenceManager.TCGROUP_EXT.equals(fo.getExt())) {
-                if (DEBUG) Debug.log(ModuleChangeHandler.class, "++ process tcGroup REMOVE ++");
-                removeTCGroup(parent1.getName(), fo.getName());
-            }
-        }
+        });
     }
     
+    @Override
     public void fileRenamed (FileRenameEvent fe) {
     }
     
@@ -383,6 +406,7 @@ class ModuleChangeHandler implements FileChangeListener {
         if (modeConfig != null) {
             // #37529 WindowsAPI to be called from AWT thread only.
             SwingUtilities.invokeLater(new Runnable() {
+                @Override
                 public void run() {
                     WindowManagerImpl.getInstance().getPersistenceObserver().modeConfigAdded(modeConfig);
                 }
@@ -397,6 +421,7 @@ class ModuleChangeHandler implements FileChangeListener {
         if (groupConfig != null) {
             // #37529 WindowsAPI to be called from AWT thread only.
             SwingUtilities.invokeLater(new Runnable() {
+                @Override
                 public void run() {
                     WindowManagerImpl.getInstance().getPersistenceObserver().groupConfigAdded(groupConfig);
                 }
@@ -453,6 +478,7 @@ class ModuleChangeHandler implements FileChangeListener {
             final String [] tcRefNameArray = tcRefNameList.toArray(new String[tcRefNameList.size()]);
             // #37529 WindowsAPI to be called from AWT thread only.
             SwingUtilities.invokeLater(new Runnable() {
+                @Override
                 public void run() {
                     WindowManagerImpl.getInstance().getPersistenceObserver().topComponentRefConfigAdded(modeName, tcRefConfig, tcRefNameArray);
                 }
@@ -467,6 +493,7 @@ class ModuleChangeHandler implements FileChangeListener {
         if (tcGroupConfig != null) {
             // #37529 WindowsAPI to be called from AWT thread only.
             SwingUtilities.invokeLater(new Runnable() {
+                @Override
                 public void run() {
                     WindowManagerImpl.getInstance().getPersistenceObserver().topComponentGroupConfigAdded(groupName, tcGroupConfig);
                 }
@@ -533,6 +560,7 @@ class ModuleChangeHandler implements FileChangeListener {
         wmParser.removeGroup(groupName);
         // #37529 WindowsAPI to be called from AWT thread only.
         SwingUtilities.invokeLater(new Runnable() {
+            @Override
             public void run() {
                 WindowManagerImpl.getInstance().getPersistenceObserver().groupConfigRemoved(groupName);
             }
@@ -545,6 +573,7 @@ class ModuleChangeHandler implements FileChangeListener {
         if (wmParser.removeTCRef(tcRefName)) {
             // #37529 WindowsAPI to be called from AWT thread only.
             SwingUtilities.invokeLater(new Runnable() {
+                @Override
                 public void run() {
                     WindowManagerImpl.getInstance().getPersistenceObserver().topComponentRefConfigRemoved(tcRefName);
                 }
@@ -558,6 +587,7 @@ class ModuleChangeHandler implements FileChangeListener {
         if (wmParser.removeTCGroup(groupName, tcGroupName)) {
             // #37529 WindowsAPI to be called from AWT thread only.
             SwingUtilities.invokeLater(new Runnable() {
+                @Override
                 public void run() {
                     WindowManagerImpl.getInstance().getPersistenceObserver().topComponentGroupConfigRemoved(groupName, tcGroupName);
                 }

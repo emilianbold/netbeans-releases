@@ -86,7 +86,7 @@ public class ChromeManagerAccessor implements ExtensionManagerAccessor {
             "netbeans.extbrowser.manual_chrome_plugin_install"; // NOI18N
     
     private static final String PLUGIN_PAGE= 
-            "https://chrome.google.com/webstore/detail/netbeans-connector/ehdgmbjjaocpjdnapfadcldificeaaki"; //NOI18N
+            "https://chrome.google.com/webstore/detail/netbeans-connector/hafdlehgocfcodbgjnpecfajgkeejnaa"; //NOI18N
 
     /* (non-Javadoc)
      * @see org.netbeans.modules.web.plugins.ExtensionManagerAccessor#getManager()
@@ -105,10 +105,11 @@ public class ChromeManagerAccessor implements ExtensionManagerAccessor {
         
         private static final String STATE = "\"state\":";                       // NOI18N
         
-        // keeping old name for a while; after most of users upgraded to new plugin we can remove this:
-        private static final String PLUGIN_OLD_NAME = "NetBeans IDE Support Plugin";// NOI18N
-        
-        private static final String PLUGIN_NAME = "NetBeans Connector";// NOI18N
+        private static final String PLUGIN_PUBLIC_KEY = 
+            "MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDgo89CrO8f/2srD2BGUP9+dG4I" +
+            "kTC2D3gzEjXITaMaQgy8B4ObVpkA3bc27qc7HB9jhVj8P51aAETr89u+AvFgCeFt" +
+            "vtva0h0oodKRC3dCkQLnEWPGi7mEKB98cRhZmQ1Wa9A9tg3plKsujwwWskaFEL/h" +
+            "O7uu7myF0qLIeuiG6wIDAQAB";// NOI18N
         
         private static final String EXTENSION_PATH = "modules/lib/netbeans-chrome-connector.crx"; // NOI18N
 
@@ -167,7 +168,7 @@ public class ChromeManagerAccessor implements ExtensionManagerAccessor {
                         return ExtensionManager.ExtensitionStatus.INSTALLED;
                     }
                     JSONObject manifest = (JSONObject)extension.get("manifest");
-                    if (manifest != null && (PLUGIN_NAME.equals((String)manifest.get("name")) || PLUGIN_OLD_NAME.equals((String)manifest.get("name"))) ) {
+                    if (manifest != null && PLUGIN_PUBLIC_KEY.equals((String)manifest.get("key"))) {
                         String version = (String)manifest.get("version");
                         if (isUpdateRequired( version )){
                             return ExtensionManager.ExtensitionStatus.NEEDS_UPGRADE;

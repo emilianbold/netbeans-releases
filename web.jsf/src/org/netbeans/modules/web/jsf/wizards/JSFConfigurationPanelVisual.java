@@ -366,9 +366,7 @@ public class JSFConfigurationPanelVisual extends javax.swing.JPanel implements H
                     }
 
                     // if maven, exclude user defined libraries
-                    Properties properties = panel.getController().getProperties();
-                    Boolean isMaven = (Boolean) properties.getProperty("maven");
-                    if (isMaven != null && isMaven.booleanValue()) {
+                    if (panel.isMaven()) {
                         removeUserDefinedLibraries(registeredItems);
                     }
 
@@ -1097,18 +1095,21 @@ private void serverLibrariesActionPerformed(java.awt.event.ActionEvent evt) {//G
             setInfoMessage(NbBundle.getMessage(JSFConfigurationPanelVisual.class, "ERR_MissingTargetServer")); //NOI18N
         }
 
-        // check all enabled JSF component libraries
-        for (JsfComponentImplementation jsfComponentDescriptor : getActivedJsfDescriptors()) {
-            JsfComponentCustomizer componentCustomizer = jsfComponentDescriptor.createJsfComponentCustomizer(null);
-            if (componentCustomizer != null && !componentCustomizer.isValid()) {
-                StringBuilder error = new StringBuilder("<html>"); //NOI18N
-                error.append(NbBundle.getMessage(JSFConfigurationPanelVisual.class, "LBL_JsfComponentNotValid", jsfComponentDescriptor.getName())); //NOI18N
-                if (componentCustomizer.getErrorMessage() != null) {
-                    error.append("<br>").append(componentCustomizer.getErrorMessage()); //NOI18N
+        // no libraries validation necessary in case of Maven projects
+        if (!panel.isMaven()) {
+            // check all enabled JSF component libraries
+            for (JsfComponentImplementation jsfComponentDescriptor : getActivedJsfDescriptors()) {
+                JsfComponentCustomizer componentCustomizer = jsfComponentDescriptor.createJsfComponentCustomizer(null);
+                if (componentCustomizer != null && !componentCustomizer.isValid()) {
+                    StringBuilder error = new StringBuilder("<html>"); //NOI18N
+                    error.append(NbBundle.getMessage(JSFConfigurationPanelVisual.class, "LBL_JsfComponentNotValid", jsfComponentDescriptor.getName())); //NOI18N
+                    if (componentCustomizer.getErrorMessage() != null) {
+                        error.append("<br>").append(componentCustomizer.getErrorMessage()); //NOI18N
+                    }
+                    error.append("</html>"); //NOI18N
+                    setErrorMessage(error.toString());
+                    return false;
                 }
-                error.append("</html>"); //NOI18N
-                setErrorMessage(error.toString());
-                return false;
             }
         }
 
@@ -1184,8 +1185,7 @@ private void serverLibrariesActionPerformed(java.awt.event.ActionEvent evt) {//G
         String j2eeLevel = (String)properties.getProperty("j2eeLevel"); // NOI18N
         Profile prof = j2eeLevel == null ? Profile.JAVA_EE_6_FULL : Profile.fromPropertiesString(j2eeLevel);
         serverInstanceID = (String)properties.getProperty("serverInstanceID"); //NOI18N
-        Boolean isMaven = (Boolean) properties.getProperty("maven");
-        if (isMaven != null && isMaven.booleanValue()) {
+        if (panel.isMaven()) {
             setNewLibraryOptionVisible(false);
             if (!isServerRegistered(serverInstanceID)) {
                 cbPackageJars.setVisible(true);
@@ -1618,7 +1618,9 @@ private void serverLibrariesActionPerformed(java.awt.event.ActionEvent evt) {//G
         table.setShowVerticalLines(false);
 
         table.getColumnModel().getColumn(0).setMaxWidth(30);
-        table.getColumnModel().getColumn(2).setMaxWidth(100);
+        if (!panel.isMaven()) {
+            table.getColumnModel().getColumn(2).setMaxWidth(100);
+        }
 
     }
 
@@ -1735,7 +1737,11 @@ private void serverLibrariesActionPerformed(java.awt.event.ActionEvent evt) {//G
         }
 
         public int getColumnCount() {
-            return COLUMN_TYPES.length;
+            if (panel.isMaven()) {
+                return 2;
+            } else {
+                return COLUMN_TYPES.length;
+            }
         }
 
         public int getRowCount() {
