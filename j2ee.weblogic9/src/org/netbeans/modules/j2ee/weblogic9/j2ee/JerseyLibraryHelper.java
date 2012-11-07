@@ -45,18 +45,21 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.api.project.libraries.Library;
+import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.modules.j2ee.deployment.common.api.Version;
-import org.netbeans.modules.java.api.common.util.CommonProjectUtils;
-import org.netbeans.spi.project.libraries.LibraryImplementation3;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.URLMapper;
+import org.openide.util.NbBundle;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
@@ -67,10 +70,13 @@ import org.xml.sax.helpers.DefaultHandler;
  */
 public class JerseyLibraryHelper {
 
+    private static final String LIBRARY_PROVIDER_TYPE = "j2se"; // NOI18N
+
     private static final String LIBRARY_TYPE = "wl_jersey"; // NOI18N
 
+    @NbBundle.Messages({"# {0} - server version", "library.displayName=Jersey WebLogic {0}"})
     @CheckForNull
-    static LibraryImplementation3 getJerseyInMemoryLibrary(
+    static Library getJerseyLibrary(
             Version serverVersion, FileObject modulesFolder) {
 
         if (serverVersion == null) {
@@ -97,20 +103,44 @@ public class JerseyLibraryHelper {
                     }
                 }
                 if (serverToUse != null) {
-                    List<String> mavenDeps = new ArrayList<String>();
+                    Library lib = LibraryManager.getDefault().getLibrary(LIBRARY_TYPE + "_" + serverToUse.getVersion());
+                    if (lib != null) {
+                        return lib;
+                    }
+
+                    StringBuilder mavenDeps = new StringBuilder();
                     List<URL> cp = new ArrayList<URL>();
                     for (ServerJar jar : serverToUse.getServerJars()) {
                         FileObject fo = getJarFile(modulesFolder, jar.getFilename());
                         if (fo != null) {
                             cp.add(URLMapper.findURL(fo, URLMapper.EXTERNAL));
                         }
-                        mavenDeps.add(jar.getGroupId() + ":" + jar.getArtifactId()
-                                + ":" + jar.getVersion() + ":" + "jar");
+                        mavenDeps.append(jar.getGroupId())
+                                .append(':') // NOI18N
+                                .append(jar.getArtifactId())
+                                .append(':') // NOI18N
+                                .append(jar.getVersion())
+                                .append(":jar"); // NOI18N
+                        mavenDeps.append(' ');
+                    }
+                    if (mavenDeps.length() > 0) {
+                        mavenDeps.setLength(mavenDeps.length() - 1);
                     }
 
-                    return CommonProjectUtils.createJavaLibraryImplementation(LIBRARY_TYPE,
-                            cp.toArray(new URL[cp.size()]), new URL[] {}, new URL[] {},
-                            mavenDeps.toArray(new String[mavenDeps.size()]), new String[] {"default"}); // NOI18N
+                    Map<String,List<URL>> contents = new HashMap<String, List<URL>>(1);
+                    contents.put("classpath", cp); // NOI18N
+                    Map<String, String> properties = new HashMap<String, String>(2);
+                    properties.put("maven-dependencies", mavenDeps.toString()); // NOI18N
+                    properties.put("maven-repositories", "default"); // NOI18N
+
+                    lib = LibraryManager.getDefault().createLibrary(LIBRARY_PROVIDER_TYPE,
+                            LIBRARY_TYPE + "_" + serverToUse.getVersion(), // NOI18N
+                            Bundle.library_displayName(serverToUse.getVersion()),
+                            null,
+                            contents,
+                            properties);
+
+                    return lib;
                 }
             } finally {
                 is.close();

@@ -42,9 +42,9 @@
 package org.netbeans.modules.j2ee.weblogic9.j2ee;
 
 import java.util.Map;
+import org.netbeans.api.project.libraries.Library;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.j2ee.deployment.common.api.Version;
-import org.netbeans.spi.project.libraries.LibraryImplementation3;
 
 /**
  *
@@ -57,7 +57,7 @@ public class JerseyLibraryHelperTest extends NbTestCase {
     }
 
     public void testMavenDepsWL1211() {
-        LibraryImplementation3 impl = JerseyLibraryHelper.getJerseyInMemoryLibrary(
+        Library impl = JerseyLibraryHelper.getJerseyLibrary(
                 Version.fromDottedNotationWithFallback("12.1.1"), null);
         assertNotNull(impl);
         Map<String, String> props = impl.getProperties();
@@ -66,7 +66,7 @@ public class JerseyLibraryHelperTest extends NbTestCase {
     }
 
     public void testMavenDepsWL120() {
-        LibraryImplementation3 impl = JerseyLibraryHelper.getJerseyInMemoryLibrary(
+        Library impl = JerseyLibraryHelper.getJerseyLibrary(
                 Version.fromDottedNotationWithFallback("12.0"), null);
         assertNotNull(impl);
         Map<String, String> props = impl.getProperties();
@@ -75,7 +75,7 @@ public class JerseyLibraryHelperTest extends NbTestCase {
     }
 
     public void testMavenDepsWL12() {
-        LibraryImplementation3 impl = JerseyLibraryHelper.getJerseyInMemoryLibrary(
+        Library impl = JerseyLibraryHelper.getJerseyLibrary(
                 Version.fromDottedNotationWithFallback("12"), null);
         assertNotNull(impl);
         Map<String, String> props = impl.getProperties();
@@ -84,7 +84,7 @@ public class JerseyLibraryHelperTest extends NbTestCase {
     }
 
     public void testMavenDepsWL10() {
-        LibraryImplementation3 impl = JerseyLibraryHelper.getJerseyInMemoryLibrary(
+        Library impl = JerseyLibraryHelper.getJerseyLibrary(
                 Version.fromDottedNotationWithFallback("10"), null);
         assertNull(impl);
     }
