@@ -54,6 +54,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.StringTokenizer;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.junit.NbTestCase;
@@ -219,6 +220,67 @@ public class LibraryManagerTest extends NbTestCase {
         pcl.assertEvents(LibraryManager.PROP_LIBRARIES);
         assertEquals(Collections.emptyList(), Arrays.asList(mgr.getLibraries()));
         assertEquals(0, alp.libs.get(home).size());
+    }
+
+    public void testCreateLibraryWithPropertiesInGlobalLM() throws Exception {
+        final String name = "LibWithProperties";                //NOI18N
+        final String displayName = "Library With Properties";   //NOI18N
+        final String desc = "A nice library with even nicer properties";   //NOI18N
+        final String key = "key";                               //NOI18N
+        final String value = "EA0000FFFF";                      //NOI18N
+        LibraryManager mgr = LibraryManager.getDefault();
+        URL fooJar = mkJar("foo.jar");                          //NOI18N
+        final List<URL> bin = Arrays.asList(fooJar);
+        Library lib = mgr.createLibrary(
+                LIBRARY_TYPE,
+                name,
+                displayName,
+                desc,
+                Collections.singletonMap("bin", bin),           //NOI18N
+                Collections.<String,String>singletonMap(key,value));
+        lib = mgr.getLibrary(name);
+        assertNotNull(lib);
+        assertEquals("Name", name, lib.getName());                  //NOI18N
+        assertEquals("Display Name", displayName, lib.getDisplayName());    //NOI18N
+        assertEquals("Description", desc, lib.getDescription());    //NOI18N
+        assertEquals("Content.bin", bin, lib.getContent("bin"));    //NOI18N
+        assertEquals("Properties.size", 1, lib.getProperties().size());    //NOI18N
+        assertEquals("Properties[key]", value, lib.getProperties().get(key));    //NOI18N
+    }
+
+    public void testCreateLibraryWithPropertiesInAreaLM() throws Exception {
+        ALP alp = new ALP();
+        MockLookup.setLookup(Lookups.fixed(lp, alp, new RecognizeInstanceObjects()));
+        new LibrariesModel().createArea();
+        Area space = new Area("space");  //NOI18N
+        LibraryManager mgr = LibraryManager.forLocation(space.getLocation());
+        assertNotNull(mgr);
+        assertEquals(space.getLocation(), mgr.getLocation());
+        assertEquals("space", mgr.getDisplayName()); //NOI18N
+        assertEquals(0, mgr.getLibraries().length);
+
+        final String name = "LibWithProperties";                //NOI18N
+        final String displayName = "Library With Properties";   //NOI18N
+        final String desc = "A nice library with even nicer properties";   //NOI18N
+        final String key = "key";                               //NOI18N
+        final String value = "0F07";                      //NOI18N
+        URL fooJar = mkJar("foo.jar");
+        final List<URL> bin = Arrays.asList(fooJar);
+        Library lib = mgr.createLibrary(
+            LIBRARY_TYPE,
+            name,
+            displayName,
+            desc,
+            Collections.singletonMap("bin", bin),           //NOI18N
+            Collections.<String,String>singletonMap(key,value));
+        lib = mgr.getLibrary(name);
+        assertNotNull(lib);
+        assertEquals("Name", name, lib.getName());                  //NOI18N
+        assertEquals("Display Name", displayName, lib.getDisplayName());    //NOI18N
+        assertEquals("Description", desc, lib.getDescription());    //NOI18N
+        assertEquals("Content.bin", bin, lib.getContent("bin"));    //NOI18N
+        assertEquals("Properties.size", 1, lib.getProperties().size());    //NOI18N
+        assertEquals("Properties[key]", value, lib.getProperties().get(key));    //NOI18N
     }
 
     static LibraryImplementation[] createTestLibs () throws MalformedURLException {

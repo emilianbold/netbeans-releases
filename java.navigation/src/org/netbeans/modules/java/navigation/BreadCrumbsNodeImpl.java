@@ -58,6 +58,7 @@ import com.sun.source.tree.SwitchTree;
 import com.sun.source.tree.SynchronizedTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
+import com.sun.source.tree.TryTree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.tree.WhileLoopTree;
 import com.sun.source.util.SourcePositions;
@@ -267,6 +268,12 @@ public class BreadCrumbsNodeImpl extends AbstractNode {
                     sb.append(escape(((WhileLoopTree) leaf).getCondition().toString()));
                     sb.append("</font>"); //NOI18N
                     return new BreadCrumbsNodeImpl(tph, DEFAULT_ICON, sb.toString(), info.getFileObject(), (int) sp.getStartPosition(path.getCompilationUnit(), leaf));
+                case BLOCK:
+                    if (path.getParentPath().getLeaf().getKind() == Kind.TRY && ((TryTree) path.getParentPath().getLeaf()).getFinallyBlock() == leaf) {
+                        sb = new StringBuilder("finally"); //NOI18N
+                        return new BreadCrumbsNodeImpl(tph, DEFAULT_ICON, sb.toString(), info.getFileObject(), (int) sp.getStartPosition(path.getCompilationUnit(), leaf));
+                    }
+                    break;
             }
 
             return null;
