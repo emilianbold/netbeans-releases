@@ -208,35 +208,12 @@ public final class RuleEditorController {
     }
     
     /**
-     * Sets the sort mode of the rule editor. 
-     * @see SortMode
-     * @param sortMode 
+     * Sets the {@link ViewMode} of the rule editor. 
+     * @see ViewMode
+     * @param viewMode 
      */
-    public void setSortMode(SortMode sortMode) {
-        peer.setSortMode(sortMode);
-    }
-    
-    /**
-     * Show physical propertis + all existing unused properties.
-     * 
-     * Shows physical properties of the selected rule first, then all
-     * of the existing unused properties. The unused the properties are sorted
-     * alphabetically.
-     */
-    public void setShowAllProperties(boolean enabled) {
-        peer.setShowAllProperties(enabled);
-    }
-    
-     /**
-     * Show property categories.
-     * 
-     * Shows categories for the css properties. In each category the physical
-     * properties of the selected rule are show first, then the rest of 
-     * existing css properties belonging to the category. All unused properties 
-     * sorted  alphabetically, categories also sorted alphabetically.
-     */
-    public void setShowCategories(boolean enabled) {
-        peer.setShowCategories(enabled);
+    public void setViewMode(ViewMode sortMode) {
+        peer.setViewMode(sortMode);
     }
     
     /**

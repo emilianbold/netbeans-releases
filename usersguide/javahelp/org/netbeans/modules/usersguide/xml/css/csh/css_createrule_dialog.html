@@ -16,25 +16,43 @@
 
         <h2>Create CSS Rule Dialog Box</h2>
         <p> <small><a href="#seealso">See Also</a>&nbsp; </small>
-        <p>Content to come.</p>
-            <!-- <p>The Add CSS Property dialog box enables you to add properties to elements in a style sheet.
-        The dialog box displays a list of properties and provides
-        a dropdown list of standard values for each property.
-        You open this dialog box by clicking the plus (<img src="../../images/plus.gif" alt="plus icon">) button 
-        in the CSS Styles window.</p>
-            
-        <p>To add a property and value, select a value for a property from the dropdown list
-        or type a value in the text field adjacent to the property and click OK.
-        When you click OK the property and value pair is added at the location of the insert cursor
-        in the style sheet.</p>
+        <p>The Create CSS Rule dialog box enables you to create new rules in a CSS style sheet.
+        The dialog box displays a list of types of selectors 
+        and options for specifying and naming the selector.
+        After you create a rule you can add declarations to the rule by editing the style sheet
+        in the editor or in the CSS Styles window.</p> 
         
-        <p>You can use the text field at the top of the dialog box to filter
-        the list of properties that are displayed in the dialog box.
-        You can sort the list of properties by category by clicking the 
-        Show Property Categories button (<img src="../../images/showCategories.gif" alt="show categories icon">)
-        at the top of the dialog box next to the text field.
-        You can expand and collapse each category node to display or hide
-        the properties for that category.</p>-->
+        <p>You open this dialog box by choosing Create Rule in the menu 
+        (<img src="../../images/menu.png" alt="Menu">) in the toolbar of the CSS Styles window.</p>
+            
+        <p>To create a new rule you must select a Selector Type and then specify
+            the details for the selector either by typing in the Selector text field
+            or by using the dropdown list.</p>
+        
+        <p>You can specify the following details in this dialog box.</p>
+        <ul>
+            <li><strong>Selector Type.</strong> Select one of the following types from the list.
+            <ul>
+                <li><strong>Class.</strong> Select this type to create a rule for a class selector to specify a style for a group of elements.
+                    When you select this type you must supply the name of the class selector in the Selector text field.</li>
+                <li><strong>ID.</strong> Select this type to create a rule for an id selector to specify a style for a single, unique element.
+                    When you select this type you must supply the name of the id selector in the Selector text field.</li>
+                <li><strong>Element.</strong> Select this type to create a rule for an HTML element.
+                    When you select this type you must select an HTML element from the Selector dropdown list
+                    or type the name of the HTML element in the Selector text field.</li>
+                <li><strong>Compound.</strong> Select this type to create a rule for a nested selector.
+                    When you select this type you must type the names of the HTML elements or selectors in the Selector text field.</li>
+            </ul>
+        </li>
+        <li><strong>Selector.</strong> Specify the selector by typing the name in the Selector text field
+            or by using the dropdown list to select an HTML element.</li>
+        <li><strong>Style Sheet.</strong> Select the style sheet from the dropdown list.
+            This option is disabled if there are no references to additional style sheets in the application or file.</li>
+        <li><strong>At Rule.</strong> Select a media type from the dropdown list to create a new
+            rule that only applies to the selected media (for example, <tt>@print</tt>).
+            This option is disabled if no media types are specified in the style sheet.
+            By default, rules are applied to all media types.</li>
+        </ul>
         
         <dl>
             <dt><a name="seealso">See Also</a></dt>

@@ -92,6 +92,11 @@ public class MatchedRuleNode extends AbstractNode {
     }
 
     @Override
+    public String getDisplayName() {
+        return node.getDisplayName();
+    }
+
+    @Override
     public synchronized PropertySet[] getPropertySets() {
         if (propertySets == null) {
             propertySets = createPropertySets();

@@ -40,6 +40,7 @@ import org.netbeans.modules.project.libraries.ui.LibrariesModel;
 import org.netbeans.spi.project.libraries.ArealLibraryProvider;
 import org.netbeans.spi.project.libraries.LibraryImplementation;
 import org.netbeans.spi.project.libraries.LibraryImplementation2;
+import org.netbeans.spi.project.libraries.LibraryImplementation3;
 import org.netbeans.spi.project.libraries.LibraryProvider;
 import org.netbeans.spi.project.libraries.LibraryStorageArea;
 import org.openide.util.WeakSet;
@@ -252,13 +253,15 @@ public class TestUtil {
         return new URL("jar:http://nowhere.net/" + name + "!/");
     }
 
-    private static class TestLibraryImplementation implements LibraryImplementation2 {
+    private static class TestLibraryImplementation implements LibraryImplementation2, LibraryImplementation3 {
         private String description;
         private Map<String,List<URI>> contents;
         private String name;
         private String libraryType;
         private String localizingBundle;
         private List<PropertyChangeListener> listeners;
+        private String dispName;
+        private Map<String,String> props;
 
         /**
          * Create new LibraryImplementation supporting given <tt>library</tt>.
@@ -360,6 +363,26 @@ public class TestUtil {
             for (PropertyChangeListener l : ls) {
                 l.propertyChange(event);
             }
+        }
+
+        @Override
+        public Map<String, String> getProperties() {
+            return props;
+        }
+
+        @Override
+        public void setProperties(Map<String, String> properties) {
+            props = Collections.unmodifiableMap(new HashMap<String, String>(properties));
+        }
+
+        @Override
+        public void setDisplayName(String displayName) {
+            dispName = displayName;
+        }
+
+        @Override
+        public String getDisplayName() {
+            return dispName;
         }
     }
 }

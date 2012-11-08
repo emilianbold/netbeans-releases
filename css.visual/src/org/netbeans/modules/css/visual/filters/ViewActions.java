@@ -41,34 +41,35 @@
  */
 package org.netbeans.modules.css.visual.filters;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import javax.swing.Action;
+import javax.swing.ButtonGroup;
+
 /**
  *
  * @author marekfukala
  */
-public final class FiltersSettings {
+public class ViewActions {
     
-    private boolean sortingEnabled, showAllPropertiesEnabled, showCategoriesEnabled;
+    private final Collection<ViewActionSupport> actions;
 
-    public FiltersSettings() {
-        this(true, true, true);
+    public ViewActions(RuleEditorViews views) {
+        actions = new ArrayList<ViewActionSupport>();
+        
+        actions.add(new ViewActionSupport.UpdatedOnlyViewAction(views));
+        actions.add(new ViewActionSupport.CategorizedViewAction(views));
+        actions.add(new ViewActionSupport.AllViewAction(views));
+        
+        ButtonGroup group = new ButtonGroup();
+        for(ViewActionSupport action : actions) {
+            group.add(action.obtainMenuItem());
+        }
+        
     }
 
-    public FiltersSettings(boolean sortingEnabled, boolean showAllPropertiesEnabled, boolean showCategoriesEnabled) {
-        this.sortingEnabled = sortingEnabled;
-        this.showAllPropertiesEnabled = showAllPropertiesEnabled;
-        this.showCategoriesEnabled = showCategoriesEnabled;
-    }
-
-    public boolean isSortingEnabled() {
-        return sortingEnabled;
-    }
-
-    public boolean isShowAllPropertiesEnabled() {
-        return showAllPropertiesEnabled;
-    }
-
-    public boolean isShowCategoriesEnabled() {
-        return showCategoriesEnabled;
+    public Action[] getActions() {
+        return actions.toArray(new Action[0]);
     }
     
 }

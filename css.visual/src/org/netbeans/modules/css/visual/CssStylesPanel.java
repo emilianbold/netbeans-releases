@@ -42,6 +42,7 @@
 package org.netbeans.modules.css.visual;
 
 import java.awt.BorderLayout;
+import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
@@ -50,6 +51,8 @@ import javax.swing.ButtonGroup;
 import javax.swing.JComponent;
 import javax.swing.JToggleButton;
 import javax.swing.JToolBar;
+import javax.swing.UIManager;
+import javax.swing.border.Border;
 import org.netbeans.modules.css.visual.api.RuleEditorController;
 import org.netbeans.modules.css.visual.spi.CssStylesPanelProvider;
 import org.openide.filesystems.FileObject;
@@ -64,6 +67,8 @@ import org.openide.util.lookup.ProxyLookup;
  */
 public class CssStylesPanel extends javax.swing.JPanel {
 
+     static final boolean AQUA = "Aqua".equals(UIManager.getLookAndFeel().getID()); //NOI18N 
+    
      private final RuleEditorController controller;
      private final Collection<CssStylesPanelProvider> providers;
      private final ActionListener toolbarListener;
@@ -115,10 +120,38 @@ public class CssStylesPanel extends javax.swing.JPanel {
         
         toolBar = new JToolBar();
         toolBar.setFloatable(false);
-        toolBar.setRollover(true);
+        
+        //copied from org.netbeans.core.multiview.TabsComponent to make the look 
+        //similar to the editor tabs
+        Border b = (Border)UIManager.get("Nb.Editor.Toolbar.border"); //NOI18N
+        toolBar.setBorder(b);
+        toolBar.setFocusable(true);
+        if( "Windows".equals( UIManager.getLookAndFeel().getID()) 
+                && !isXPTheme()) {
+            toolBar.setRollover(true);
+        } else if( AQUA ) {
+            toolBar.setBackground(UIManager.getColor("NbExplorerView.background"));
+        }
         
         splitPane.setResizeWeight(0.5);
     }
+    
+    private Border buttonBorder = null;
+    private Border getButtonBorder() {
+        if (buttonBorder == null) {
+            //For some lf's, core will supply one
+            buttonBorder = UIManager.getBorder ("nb.tabbutton.border"); //NOI18N
+        }
+        
+        return buttonBorder;
+    }
+    
+    private static boolean isXPTheme () {
+        Boolean isXP = (Boolean)Toolkit.getDefaultToolkit().
+                        getDesktopProperty("win.xpstyle.themeActive"); //NOI18N
+        return isXP == null ? false : isXP.booleanValue();
+    }
+        
     
     /**
      * Returns lookup which content changes based on the lookups of the active
@@ -170,12 +203,26 @@ public class CssStylesPanel extends javax.swing.JPanel {
             JToggleButton button = new JToggleButton();
             button.setText(provider.getPanelDisplayName());
             button.setActionCommand(provider.getPanelID());
-
-            button.setFocusPainted(false);
             button.addActionListener(toolbarListener);
+
+            button.setFocusable(true);
+            button.setFocusPainted(false);
+            button.setRolloverEnabled(true);
+            
+            //copied from org.netbeans.core.multiview.TabsComponent.createButton to make the look 
+            //similar to the editor tabs
+            Border b = (getButtonBorder());
+            if (b != null) {
+               button.setBorder(b);
+            }
+            if( AQUA ) {
+                button.putClientProperty("JButton.buttonType", "square"); //NOI18N
+                button.putClientProperty("JComponent.sizeVariant", "small"); //NOI18N
+            }
+            
+            
             buttonGroup.add(button);
             toolBar.add(button);
-
             button.setSelected(first);
             if (first) {
                 setActiveProvider(provider);

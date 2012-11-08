@@ -621,7 +621,7 @@ final class VisualizerNode extends EventListenerList implements NodeListener, Tr
     * the order of processed objects will be exactly the same as they
     * arrived.
     */
-    private static final class QP implements Runnable {
+    private static final class QP  {
         /** queue of all requests (Runnable) that should be processed
          * AWT-Event queue.
          */
@@ -648,7 +648,7 @@ final class VisualizerNode extends EventListenerList implements NodeListener, Tr
                         queue.addLast(null);
                     }
                     queue.addLast(run);
-                    SwingUtilities.invokeLater(this);
+                    SwingUtilities.invokeLater(new ProcessQueue(Integer.MAX_VALUE));
                     return;
                 }
                 
@@ -660,12 +660,16 @@ final class VisualizerNode extends EventListenerList implements NodeListener, Tr
                 // either starts the processing of the queue immediatelly
                 // (if we are in AWT-Event thread) or uses 
                 // SwingUtilities.invokeLater to do so
-                Mutex.EVENT.writeAccess(this);
+                if (SwingUtilities.isEventDispatchThread()) {
+                    processQueue(Integer.MAX_VALUE);
+                } else {
+                    SwingUtilities.invokeLater(new ProcessQueue(500));
+                }
             }
         }
 
-        public void run() {
-
+        private void processQueue(int limitMillis) {
+            long until = System.currentTimeMillis() + limitMillis;
             boolean isEmpty = false;
             while (!isEmpty) {
                 Runnable r;
@@ -680,8 +684,27 @@ final class VisualizerNode extends EventListenerList implements NodeListener, Tr
                 LOG.log(Level.FINER, "Running from queue {0}", r); // NOI18N
                 Children.MUTEX.readAccess(r); // run the update under Children.MUTEX
                 LOG.log(Level.FINER, "Finished {0}", r); // NOI18N
+                
+                if (System.currentTimeMillis() > until) {
+                    SwingUtilities.invokeLater(new ProcessQueue(limitMillis));
+                    LOG.log(Level.FINER, "timeout from {0} ms", limitMillis);
+                    return;
+                }
             }
             LOG.log(Level.FINER, "Queue processing over"); // NOI18N
+        }
+
+        private class ProcessQueue implements Runnable {
+            private final int limitMillis;
+
+            public ProcessQueue(int limitMillis) {
+                this.limitMillis = limitMillis;
+            }
+
+            @Override
+            public void run() {
+                processQueue(limitMillis);
+            }
         }
     }
 

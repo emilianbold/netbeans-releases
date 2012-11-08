@@ -42,20 +42,46 @@
 package org.netbeans.modules.css.visual.api;
 
 /**
- * Sorting modes for the rule editor UI component.
+ * View modes for the rule editor UI component.
  * 
  * @author marekfukala
  */
-public enum SortMode {
+public enum ViewMode {
     
     /**
-     * Elements sorted according to their natural order in the source code.
+     * No categories, properties sorted alphabetically, show only set properties.
      */
-    NATURAL,
+    UPDATED_ONLY(false, false),
     
     /**
-     * Elements sorted alphabetically.
+     * Categories shown, elements sorted alphabetically, show only set properties.
      */
-    ALPHABETICAL;
+    CATEGORIZED(true, false),
+    
+    /**
+     * No categories, properties sorted alphabetically, show all existing properties.
+     */
+    ALL(false, true),
+    
+    /**
+     * Internal only.
+     */
+    CATEGORIZED_ALL(true, true);
+    
+    private final boolean showCategories;
+    private final boolean showAllProperties;
+
+    private ViewMode(boolean showCategories, boolean showAllProperties) {
+        this.showCategories = showCategories;
+        this.showAllProperties = showAllProperties;
+    }
+
+    public boolean isShowCategories() {
+        return showCategories;
+    }
+
+    public boolean isShowAllProperties() {
+        return showAllProperties;
+    }
     
 }

@@ -60,8 +60,10 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.List;
 import java.util.Set;
+import junit.framework.TestSuite;
 import org.netbeans.core.startup.NbRepository;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.junit.NbTestSuite;
 import org.netbeans.modules.mobility.project.TestUtil;
 import org.openide.filesystems.Repository;
 import org.openide.util.Lookup;
@@ -96,6 +98,15 @@ public class KeyStoreRepositoryTest extends NbTestCase {
                 return ((Class)obj).getName();
             }
         } ),Lookups.metaInfServices(NbRepository.class.getClassLoader())});
+    }
+    
+    public static TestSuite suite() {
+        TestSuite suite = new NbTestSuite();
+        
+        suite.addTest(new KeyStoreRepositoryTest("testKeystore"));
+        suite.addTest(new KeyStoreRepositoryTest("testBean"));
+        
+        return suite;
     }
     
     public KeyStoreRepositoryTest(String testName) {
