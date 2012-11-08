@@ -45,6 +45,8 @@
 package org.netbeans.modules.applemenu;
 
 import com.apple.eawt.*;
+import java.awt.Dialog;
+import java.awt.Window;
 
 import java.beans.Beans;
 import java.awt.event.ActionEvent;
@@ -52,6 +54,7 @@ import java.io.File;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.Action;
+import javax.swing.JDialog;
 import javax.swing.SwingUtilities;
 
 import org.openide.ErrorManager;
@@ -131,6 +134,22 @@ class NbApplicationAdapter implements ApplicationListener {
     }
     
     public void handleAbout(ApplicationEvent e) {
+        //#221571 - check if About window is showing already
+        Window[] windows = Dialog.getWindows();
+        if( null != windows ) {
+            for( Window w : windows ) {
+                if( w instanceof JDialog ) {
+                    JDialog dlg = (JDialog) w;
+                    if( Boolean.TRUE.equals(dlg.getRootPane().getClientProperty("nb.about.dialog") ) ) { //NOI18N
+                        if( dlg.isVisible() ) {
+                            dlg.toFront();
+                            e.setHandled(true);
+                            return;
+                        }
+                    }
+                }
+            }
+        }
         e.setHandled(performAction("Help", "org.netbeans.core.actions.AboutAction"));
     }
     
