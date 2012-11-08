@@ -243,8 +243,10 @@ NetBeans.clearHighlight = function() {
     NetBeans.lastHighlighted = null;
     // Notify NetBeans
     var canvas = document.getElementById(NetBeans.GLASSPANE_ID);
-    canvas.setAttribute(NetBeans.ATTR_HIGHLIGHTED, 'clear');
-    canvas.removeAttribute(NetBeans.ATTR_HIGHLIGHTED);
+    if (canvas !== null) {
+        canvas.setAttribute(NetBeans.ATTR_HIGHLIGHTED, 'clear');
+        canvas.removeAttribute(NetBeans.ATTR_HIGHLIGHTED);
+    }
 };
 
 NetBeans.setSelectionMode = function(selectionMode) {
