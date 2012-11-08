@@ -41,19 +41,47 @@
  */
 package org.netbeans.modules.ods.tasks.nb;
 
-import org.netbeans.junit.NbTestSuite;
+import junit.framework.Test;
+import org.netbeans.junit.NbModuleSuite;
+import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.ods.tasks.spi.C2CExtender;
 import org.netbeans.modules.ods.tasks.tck.C2CDataTck;
+import org.netbeans.modules.ods.tasks.tck.C2CTestInfrastructure;
 import org.netbeans.modules.ods.tasks.tck.QueryTck;
+import org.openide.util.Lookup;
 
 /** Runs all the tests from TCK defined in ods.tasks module.
+ * 
+ * NOTE that test.run.args in project.properties has to be set to the value 
+ * given by {@link C2CExtender.NETBEANS_EXTENDER}
  *
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
-public class NbTCKTest {
-    public static NbTestSuite suite() {
-        NbTestSuite s = new NbTestSuite();
-        s.addTestSuite(QueryTck.class);
-        return s;
+public class NbTCKTest extends NbTestCase{
+
+    public NbTCKTest(String name) {
+        super(name);
+    }
+    
+    public static Test suite() {
+        return NbModuleSuite.emptyConfiguration()
+            .honorAutoloadEager(true)
+            .gui(false)
+            .addTest(NbTCKTest.class)
+            .addTest(QueryTck.class)
+            .suite();
+    }
+    
+    public void testVerifyRightTestInfrastructure() {
+        C2CTestInfrastructure test = Lookup.getDefault().lookup(C2CTestInfrastructure.class);
+        assertNotNull("Test infra found", test);
+        assertEquals("Test infra is our", NbTestInfrastructure.class, test.getClass());
+    }
+
+    public void testVerifyRightExtender() {
+        C2CExtender ext = Lookup.getDefault().lookup(C2CExtender.class);
+        assertNotNull("extender found", ext);
+        assertEquals("extender is our", NbExtender.class, ext.getClass());
     }
     
 }

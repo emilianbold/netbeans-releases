@@ -57,9 +57,12 @@ public final class NbTestInfrastructure extends C2CTestInfrastructure {
     static {
         URLStreamHandlerFactory f = Lookup.getDefault().lookup(URLStreamHandlerFactory.class);
         Assert.assertNotNull("Factory found: ", f);
-        URL.setURLStreamHandlerFactory(f);
+//        URL.setURLStreamHandlerFactory(f);
     }
 
+    public NbTestInfrastructure() {
+    }
+    
     @Override
     protected String initializeRepository() {
         return "test://my.dream.org/alm/s/anagramgame/tasks";
