@@ -39,16 +39,26 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.cnd.modelimpl.util;
+package org.netbeans.modules.cnd.modelimpl.debug;
+
+import org.netbeans.modules.cnd.api.model.CsmUID;
+import org.netbeans.modules.cnd.repository.spi.Key;
 
 /**
  * A common exception to throw when trying to get something from repository
  * and getting null, while it should be not null
+ * 
+ * Use via DiagnosticExceptoins.registerIllegalRepositoryStateException()
+ * 
  * @author Vladimir Kvashin
  */
 public class IllegalRepositoryStateException extends IllegalStateException {
 
-    public IllegalRepositoryStateException(String s) {
-        super(s);
+    /*package*/ IllegalRepositoryStateException(String s, Key key) {
+        super(s + ' ' + key);
+    }    
+
+    /*package*/ IllegalRepositoryStateException(String s, CsmUID uid) {
+        super(s + ' ' + uid);
     }    
 }

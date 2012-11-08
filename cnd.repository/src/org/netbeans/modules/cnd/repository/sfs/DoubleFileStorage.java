@@ -299,4 +299,9 @@ public final class DoubleFileStorage extends FileStorage {
         boolean activeFlag = getFlag();
         return getFileByFlag(activeFlag).getObjectsCount() + getFileByFlag(!activeFlag).getObjectsCount();
     }
+
+    @Override
+    public void debugDump(Key key) {
+        // not implemented so far
+    }
 }

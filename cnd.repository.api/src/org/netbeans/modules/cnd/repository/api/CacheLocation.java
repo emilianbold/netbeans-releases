@@ -45,12 +45,12 @@ import java.io.File;
 import org.openide.modules.Places;
 
 /**
- *
- * @author vk155633
+ * Determines repository storage location
+ * @author Vladimir Kvashin
  */
 public final class CacheLocation {
     
-    public static final CacheLocation DEFAULT = new CacheLocation(Places.getCacheSubdirectory("cnd/model"));
+    public static final CacheLocation DEFAULT = new CacheLocation(getDefault()); // NOI18N
         
     private final File location;
 
@@ -85,5 +85,16 @@ public final class CacheLocation {
         }
         final CacheLocation other = (CacheLocation) obj;
         return this.location.equals(other.location);
+    }
+
+    private static File getDefault() {
+        // TODO: find more elegant soluition than duplicating "cnd.repository.cache.path" in CacheLocation and MakeProject
+        // What we can do is our own Places impl. that delegates to the next Places impl. if this property is not set; is it worth doing?
+        String diskRepositoryPath = System.getProperty("cnd.repository.cache.path");
+        if (diskRepositoryPath != null) {
+            return new File(diskRepositoryPath);
+        } else {
+            return Places.getCacheSubdirectory("cnd/model"); // NOI18N
+        }
     }
 }

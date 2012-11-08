@@ -46,7 +46,6 @@ import org.netbeans.modules.cnd.api.model.CsmValidable;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
-import org.netbeans.modules.cnd.modelimpl.util.IllegalRepositoryStateException;
 import org.netbeans.modules.cnd.repository.spi.Key;
 import org.netbeans.modules.cnd.utils.CndUtils;
 
@@ -97,7 +96,7 @@ public final class WeakContainer<T> {
                         postfix = " second attempt OK";// NOI18N
                     }
                 }
-                DiagnosticExceptoins.register(new IllegalRepositoryStateException("Failed to get container sorage by key " + storageKey + postfix)); // NOI18N
+                DiagnosticExceptoins.registerIllegalRepositoryStateException("Failed to get container sorage by key " + postfix, storageKey); // NOI18N
                 preventMultiplyDiagnosticExceptionsSorage++;
 //            } else{
 //                System.err.printf("OK %s\n", storageKey);
