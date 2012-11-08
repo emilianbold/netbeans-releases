@@ -729,7 +729,7 @@ private void buttonCustomJSMessageActionPerformed(java.awt.event.ActionEvent evt
             int index = name.lastIndexOf('.');
             if (index > 0 && index < name.length() - 1) {
                 String ext = name.substring(index+1).toLowerCase();
-                if ("gif".equals(ext) || "png".equals(ext) || "jpg".equals(ext)) { // NOI18N
+                if ("gif".equals(ext) || "png".equals(ext) || "jpg".equals(ext) || "ico".equals(ext)) { // NOI18N
                     return true;
                 }
             }
