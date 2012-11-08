@@ -97,7 +97,7 @@ public class SourcesPanel extends JPanel implements HelpCtx.Provider {
     private String getSiteRootPath() {
         String siteRootPath = null;
         File siteRoot = uiProperties.getResolvedSiteRootFolder();
-        if (siteRoot != null) {
+        if (siteRoot.exists()) {
             FileObject siteRootFO = FileUtil.toFileObject(siteRoot);
             if (siteRootFO != null) {
                 siteRootPath = FileUtil.getRelativePath(project.getProjectDirectory(), siteRootFO);
@@ -148,14 +148,19 @@ public class SourcesPanel extends JPanel implements HelpCtx.Provider {
 
     private void storeData() {
         File siteRootFolder = getSiteRootFolder();
-        uiProperties.setSiteRootFolder(siteRootFolder != null ? siteRootFolder.getAbsolutePath() : ""); // NOI18N
+        uiProperties.setSiteRootFolder(siteRootFolder.getAbsolutePath());
         File testFolder = getTestFolder();
         uiProperties.setTestFolder(testFolder != null ? testFolder.getAbsolutePath() : ""); // NOI18N
         uiProperties.setEncoding(getEncoding().name());
     }
 
     private File getSiteRootFolder() {
-        return resolveFile(jSiteRootFolderTextField.getText());
+        File resolved = resolveFile(jSiteRootFolderTextField.getText());
+        if (resolved != null) {
+            return resolved;
+        }
+        // return project dir
+        return FileUtil.toFile(project.getProjectDirectory());
     }
 
     private File getTestFolder() {

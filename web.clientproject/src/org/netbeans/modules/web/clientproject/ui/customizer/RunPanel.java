@@ -264,11 +264,7 @@ public class RunPanel extends JPanel implements DocumentListener, ItemListener, 
 
     @CheckForNull
     private FileObject getSiteRoot() {
-        File siteRoot = uiProperties.getResolvedSiteRootFolder();
-        if (siteRoot == null) {
-            return null;
-        }
-        return FileUtil.toFileObject(siteRoot);
+        return FileUtil.toFileObject(uiProperties.getResolvedSiteRootFolder());
     }
 
     private String getStartFile() {
