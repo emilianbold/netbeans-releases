@@ -53,22 +53,20 @@ public final class ProjectFoldersValidator {
     public static final String SITE_ROOT_FOLDER = "site.root.folder"; // NOI18N
     public static final String TEST_FOLDER = "test.folder"; // NOI18N
 
+    private final ValidationResult result = new ValidationResult();
 
-    public ValidationResult validate(File projectDirectory, File siteRootFolder, File testFolder) {
-        ValidationResult result = new ValidationResult();
-        validateSiteRootFolder(result, siteRootFolder);
-        validateTestFolder(result, projectDirectory, testFolder);
+
+    public ValidationResult getResult() {
         return result;
     }
 
-    public ValidationResult validateSiteRootFolder(File siteRootFolder) {
-        ValidationResult result = new ValidationResult();
-        validateSiteRootFolder(result, siteRootFolder);
-        return result;
+    public void validate(File projectDirectory, File siteRootFolder, File testFolder) {
+        validateSiteRootFolder(siteRootFolder);
+        validateTestFolder(projectDirectory, testFolder);
     }
 
     @NbBundle.Messages("ProjectFoldersValidator.error.siteRoot.invalid=Site Root must be a valid directory.")
-    private void validateSiteRootFolder(ValidationResult result, File siteRootFolder) {
+    public void validateSiteRootFolder(File siteRootFolder) {
         if (siteRootFolder == null || !siteRootFolder.isDirectory()) {
             result.addError(new ValidationResult.Message(SITE_ROOT_FOLDER, Bundle.ProjectFoldersValidator_error_siteRoot_invalid()));
         }
@@ -78,7 +76,7 @@ public final class ProjectFoldersValidator {
         "ProjectFoldersValidator.error.test.invalid=Unit Tests must be a valid directory.",
         "ProjectFoldersValidator.error.test.notUnderProjectDir=Unit Tests must be underneath project directory."
     })
-    private void validateTestFolder(ValidationResult result, File projectDirectory, File testFolder) {
+    private void validateTestFolder(File projectDirectory, File testFolder) {
         if (testFolder == null) {
             // can be empty
             return;

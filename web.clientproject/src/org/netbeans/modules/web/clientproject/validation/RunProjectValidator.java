@@ -55,11 +55,10 @@ public final class RunProjectValidator {
     public static final String START_FILE = "start.file"; // NOI18N
     public static final String PROJECT_URL = "project.url"; // NOI18N
 
+    private final ValidationResult result = new ValidationResult();
 
-    public ValidationResult validate(File siteRootFolder, File startFile, String projectUrl) {
-        ValidationResult result = new ProjectFoldersValidator().validateSiteRootFolder(siteRootFolder);
-        validateStartFile(result, siteRootFolder, startFile);
-        validateProjectUrl(result, projectUrl);
+
+    public ValidationResult getResult() {
         return result;
     }
 
@@ -67,7 +66,14 @@ public final class RunProjectValidator {
         "RunProjectValidator.error.startFile.invalid=Start File must be a valid file.",
         "RunProjectValidator.error.startFile.notUnderSiteRoot=Start File must be underneath Site Root directory."
     })
-    private void validateStartFile(ValidationResult result, File siteRootFolder, File startFile) {
+    public void validateStartFile(File siteRootFolder, File startFile) {
+        ProjectFoldersValidator projectFoldersValidator = new ProjectFoldersValidator();
+        projectFoldersValidator.validateSiteRootFolder(siteRootFolder);
+        ValidationResult foldersResult = projectFoldersValidator.getResult();
+        if (foldersResult.hasErrors()) {
+            result.merge(foldersResult);
+            return;
+        }
         if (startFile == null || !startFile.isFile()) {
             result.addError(new ValidationResult.Message(START_FILE, Bundle.RunProjectValidator_error_startFile_invalid()));
             return;
@@ -82,10 +88,7 @@ public final class RunProjectValidator {
         "RunProjectValidator.error.projectUrl.invalidProtocol=Project URL must start with http(s):// or file://.",
         "RunProjectValidator.error.projectUrl.invalid=Project URL is invalid."
     })
-    private void validateProjectUrl(ValidationResult result, String projectUrl) {
-//        if (!jProjectURLTextField.isVisible()) {
-//            return null;
-//        }
+    public void validateProjectUrl(String projectUrl) {
         if (projectUrl == null || projectUrl.isEmpty()) {
             result.addError(new ValidationResult.Message(PROJECT_URL, Bundle.RunProjectValidator_error_projectUrl_missing()));
             return;

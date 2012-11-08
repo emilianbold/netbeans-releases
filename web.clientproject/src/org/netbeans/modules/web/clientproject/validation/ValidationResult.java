@@ -80,6 +80,11 @@ public final class ValidationResult {
         warnings.add(warning);
     }
 
+    void merge(ValidationResult otherResult) {
+        errors.addAll(otherResult.errors);
+        warnings.addAll(otherResult.warnings);
+    }
+
     //~ Inner classes
 
     /**
