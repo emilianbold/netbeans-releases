@@ -118,7 +118,6 @@ Other names may be trademarks of their respective owners.
       <tocitem text="Cascading Style Sheets in the IDE">
         <tocitem text="Creating a Cascading Style Sheet" target="css_createcss" />
         <tocitem text="Editing a Cascading Style Sheet" target="css_editcss" />
-        <tocitem text="Checking a Cascading Style Sheet for Validity" target="css_checkcss" />
         <tocitem text="Copying and Pasting CSS References" target="css_copypastecss" />
       </tocitem>
     </tocitem>
