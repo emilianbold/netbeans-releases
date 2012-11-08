@@ -190,6 +190,6 @@ public class BufferedRWAccess implements FileRWAccess {
 
     @Override
     public String toString() {
-        return getClass().getSimpleName() + " [" + path + ']';
+        return getClass().getSimpleName() + " [" + path + ']'; // NOI18N
     }
 }

@@ -458,4 +458,9 @@ class IndexedStorageFile extends FileStorage {
             }
         }
     }
+
+    @Override
+    public void debugDump(Key key) {
+        // not implemented so far
+    }
 }
