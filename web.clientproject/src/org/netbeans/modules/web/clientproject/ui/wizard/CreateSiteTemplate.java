@@ -65,6 +65,7 @@ import org.netbeans.api.queries.VisibilityQuery;
 import org.netbeans.modules.web.clientproject.ClientSideProject;
 import org.netbeans.modules.web.clientproject.ClientSideProjectConstants;
 import org.netbeans.modules.web.clientproject.sites.SiteZip;
+import org.netbeans.modules.web.clientproject.ui.customizer.ClientSideProjectProperties;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -130,6 +131,7 @@ public class CreateSiteTemplate extends javax.swing.JPanel implements ExplorerMa
         fileTextField.setText(new File(System.getProperty("user.home")).getAbsolutePath()); // NOI18N
     }
 
+    @Override
     public String getName() {
         return Bundle.CreateSiteTemplate_Label();
     }
@@ -580,6 +582,12 @@ public class CreateSiteTemplate extends javax.swing.JPanel implements ExplorerMa
         public String getDisplayName() {
             return ClientSideProjectConstants.DEFAULT_SITE_ROOT_FOLDER;
         }
+
+        @Override
+        public String getShortDescription() {
+            return getDisplayName();
+        }
+
     }
 
     private static class Checkable implements CheckableNode {
@@ -664,7 +672,7 @@ public class CreateSiteTemplate extends javax.swing.JPanel implements ExplorerMa
         ZipOutputStream str = new ZipOutputStream(new FileOutputStream(templateFile));
         try {
             writeProjectMetadata(str, project);
-            writeChildren(str, project.getProjectDirectory(), rootNode.getChildren());
+            writeChildren(str, project.getProjectDirectory(), project.getSiteRootFolder(), rootNode.getChildren());
         } finally {
             str.close();
         }
@@ -675,25 +683,20 @@ public class CreateSiteTemplate extends javax.swing.JPanel implements ExplorerMa
         ZipEntry ze = new ZipEntry(ClientSideProjectConstants.TEMPLATE_DESCRIPTOR);
         str.putNextEntry(ze);
         EditableProperties ep = new EditableProperties(false);
-        String s = project.getEvaluator().getProperty(ClientSideProjectConstants.PROJECT_SITE_ROOT_FOLDER);
-        if (s == null) {
-            s = ""; //NOI18N
+        ClientSideProjectProperties projectProperties = new ClientSideProjectProperties(project);
+        String siteRoot;
+        if (isSiteRootExternal(project.getProjectDirectory(), project.getSiteRootFolder())) {
+            siteRoot = ClientSideProjectConstants.DEFAULT_SITE_ROOT_FOLDER;
+        } else {
+            siteRoot = projectProperties.getSiteRootFolder();
         }
-        ep.setProperty(ClientSideProjectConstants.PROJECT_SITE_ROOT_FOLDER, s);
-        s = project.getEvaluator().getProperty(ClientSideProjectConstants.PROJECT_TEST_FOLDER);
-        if (s == null) {
-            s = ""; //NOI18N
-        }
-        ep.setProperty(ClientSideProjectConstants.PROJECT_TEST_FOLDER, s);
-        s = project.getEvaluator().getProperty(ClientSideProjectConstants.PROJECT_CONFIG_FOLDER);
-        if (s == null) {
-            s = ""; //NOI18N
-        }
-        ep.setProperty(ClientSideProjectConstants.PROJECT_CONFIG_FOLDER, s);
+        ep.setProperty(ClientSideProjectConstants.PROJECT_SITE_ROOT_FOLDER, siteRoot);
+        ep.setProperty(ClientSideProjectConstants.PROJECT_TEST_FOLDER, projectProperties.getTestFolder());
+        ep.setProperty(ClientSideProjectConstants.PROJECT_CONFIG_FOLDER, projectProperties.getConfigFolder());
         ep.store(str);
     }
 
-    private static void writeChildren(ZipOutputStream str, FileObject root, Children children) throws IOException {
+    private static void writeChildren(ZipOutputStream str, FileObject projectDirectory, FileObject siteRoot, Children children) throws IOException {
         for (Node node : children.getNodes(true)) {
             FileObject fo = node.getLookup().lookup(FileObject.class);
             InputStream is = null;
@@ -705,7 +708,7 @@ public class CreateSiteTemplate extends javax.swing.JPanel implements ExplorerMa
                 if (Boolean.TRUE != ch.isSelected()) {
                     continue;
                 }
-                String relPath = FileUtil.getRelativePath(root, fo);
+                String relPath = getRelativePath(projectDirectory, siteRoot, fo);
                 if (fo.isFolder()) {
                     relPath += "/"; //NOI18N
                 }
@@ -720,9 +723,32 @@ public class CreateSiteTemplate extends javax.swing.JPanel implements ExplorerMa
                 }
             }
             if (!node.isLeaf()) {
-                writeChildren(str, root, node.getChildren());
+                writeChildren(str, projectDirectory, siteRoot, node.getChildren());
             }
         }
+    }
+
+    private static boolean isSiteRootExternal(FileObject projectDirectory, FileObject siteRootFolder) {
+        if (projectDirectory.equals(siteRootFolder)
+                || FileUtil.isParentOf(projectDirectory, siteRootFolder)) {
+            return false;
+        }
+        return true;
+    }
+
+    private static String getRelativePath(FileObject projectDirectory, FileObject siteRoot, FileObject fo) {
+        String relativePath = FileUtil.getRelativePath(projectDirectory, fo);
+        if (relativePath != null) {
+            return relativePath;
+        }
+        if (fo.equals(siteRoot)) {
+            // site root itself
+            return ClientSideProjectConstants.DEFAULT_SITE_ROOT_FOLDER;
+        }
+        relativePath = FileUtil.getRelativePath(siteRoot, fo);
+        assert relativePath != null : "File '" + fo + "' not underneath site root '" + siteRoot + "'";
+        assert !relativePath.isEmpty() : "Some relative path expected for '" + fo + "' and site root '" + siteRoot + "'";
+        return ClientSideProjectConstants.DEFAULT_SITE_ROOT_FOLDER + "/" + relativePath; // NOI18N
     }
 
 }
