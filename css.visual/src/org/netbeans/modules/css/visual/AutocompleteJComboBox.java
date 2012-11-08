@@ -85,5 +85,12 @@ public class AutocompleteJComboBox extends JComboBox {
         }
         return properties.toArray(new String[0]);
     }
+
+    @Override
+    public void addNotify() {
+        super.addNotify();
+        //make sure the combo list is opened when editing starts
+        setPopupVisible( true );
+    }
     
 }

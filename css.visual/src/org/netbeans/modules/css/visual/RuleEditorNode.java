@@ -1207,24 +1207,7 @@ public class RuleEditorNode extends AbstractNode {
         }
         @Override
         public Component getTableCellEditorComponent(JTable jtable, Object o, boolean bln, int i, int i1) {
-            //hack!!! for:>>>
-            //
-            //1) the popup not auto opened upon the editor is shown in the property sheet,
-            //2) the first item is selected in the text field.
-            //
-            //both needs to be addressed on the PS side, do not forget to remove this!!!!!
-            SwingUtilities.invokeLater(new Runnable() {
-
-                @Override
-                public void run() {
-                    if(editor.isShowing()) {
-                        editor.getEditor().setItem(""); //remove the prefiled value
-                        editor.setPopupVisible(true); //open the popup
-                    }
-                }
-                
-            });
-            //<<<
+            editor.setSelectedIndex( -1 );
             return editor;
         }
 
