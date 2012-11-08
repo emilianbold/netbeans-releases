@@ -50,7 +50,7 @@ import org.openide.modules.Places;
  */
 public final class CacheLocation {
     
-    public static final CacheLocation DEFAULT = new CacheLocation(Places.getCacheSubdirectory("cnd/model"));
+    public static final CacheLocation DEFAULT = new CacheLocation(Places.getCacheSubdirectory("cnd/model")); // NOI18N
         
     private final File location;
 
