@@ -39,45 +39,55 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.css.visual.api;
+package org.netbeans.modules.web.clientproject.validation;
+
+import java.io.File;
+import org.openide.filesystems.FileUtil;
+import org.openide.util.NbBundle;
 
 /**
- * View modes for the rule editor UI component.
- * 
- * @author marekfukala
+ * Validator for project sources.
  */
-public enum ViewMode {
-    
-    /**
-     * No categories, properties sorted alphabetically, show only set properties.
-     */
-    UPDATED_ONLY(false, false),
-    
-    /**
-     * Categories shown, elements sorted alphabetically, show all existing properties.
-     */
-    CATEGORIZED(true, true),
-    
-    /**
-     * No categories, properties sorted alphabetically, show all existing properties.
-     */
-    ALL(false, true);
-    
-    
-    private final boolean showCategories;
-    private final boolean showAllProperties;
+public final class ProjectFoldersValidator {
 
-    private ViewMode(boolean showCategories, boolean showAllProperties) {
-        this.showCategories = showCategories;
-        this.showAllProperties = showAllProperties;
+    public static final String SITE_ROOT_FOLDER = "site.root.folder"; // NOI18N
+    public static final String TEST_FOLDER = "test.folder"; // NOI18N
+
+    private final ValidationResult result = new ValidationResult();
+
+
+    public ValidationResult getResult() {
+        return result;
     }
 
-    public boolean isShowCategories() {
-        return showCategories;
+    public void validate(File projectDirectory, File siteRootFolder, File testFolder) {
+        validateSiteRootFolder(siteRootFolder);
+        validateTestFolder(projectDirectory, testFolder);
     }
 
-    public boolean isShowAllProperties() {
-        return showAllProperties;
+    @NbBundle.Messages("ProjectFoldersValidator.error.siteRoot.invalid=Site Root must be a valid directory.")
+    public void validateSiteRootFolder(File siteRootFolder) {
+        if (siteRootFolder == null || !siteRootFolder.isDirectory()) {
+            result.addError(new ValidationResult.Message(SITE_ROOT_FOLDER, Bundle.ProjectFoldersValidator_error_siteRoot_invalid()));
+        }
     }
-    
+
+    @NbBundle.Messages({
+        "ProjectFoldersValidator.error.test.invalid=Unit Tests must be a valid directory.",
+        "ProjectFoldersValidator.error.test.notUnderProjectDir=Unit Tests must be underneath project directory."
+    })
+    private void validateTestFolder(File projectDirectory, File testFolder) {
+        if (testFolder == null) {
+            // can be empty
+            return;
+        }
+        if (!testFolder.isDirectory()) {
+            result.addError(new ValidationResult.Message(TEST_FOLDER, Bundle.ProjectFoldersValidator_error_test_invalid()));
+            return;
+        }
+        if (!FileUtil.isParentOf(FileUtil.toFileObject(projectDirectory), FileUtil.toFileObject(testFolder))) {
+            result.addError(new ValidationResult.Message(TEST_FOLDER, Bundle.ProjectFoldersValidator_error_test_notUnderProjectDir()));
+        }
+    }
+
 }

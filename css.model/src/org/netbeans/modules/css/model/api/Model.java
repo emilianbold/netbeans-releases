@@ -193,6 +193,17 @@ public final class Model implements PropertyChangeListener {
         lookupContent.add(snapshot.getText());
         if (file != null) {
             lookupContent.add(file);
+            
+            //Listen on the EditorCookie.Observable so we may re-new the document instance
+            //if the original document was closed.
+            //See issue http://netbeans.org/bugzilla/show_bug.cgi?id=219493 for more details
+            try {
+                DataObject dobj = DataObject.find(file);
+                editorCookie = dobj.getLookup().lookup(EditorCookie.Observable.class);
+                editorCookie.addPropertyChangeListener(WeakListeners.propertyChange(this, editorCookie));
+            } catch (DataObjectNotFoundException ex) {
+                Exceptions.printStackTrace(ex);
+            }
         }
         
         documentLookup = new DocumentLookup();
@@ -201,17 +212,6 @@ public final class Model implements PropertyChangeListener {
         }
 
         MODEL_LOOKUP = new ProxyLookup(Lookups.fixed(lookupContent.toArray()), documentLookup);
-        
-        //Listen on the EditorCookie.Observable so we may re-new the document instance
-        //if the original document was closed.
-        //See issue http://netbeans.org/bugzilla/show_bug.cgi?id=219493 for more details
-        try {
-            DataObject dobj = DataObject.find(file);
-            editorCookie = dobj.getLookup().lookup(EditorCookie.Observable.class);
-            editorCookie.addPropertyChangeListener(WeakListeners.propertyChange(this, editorCookie));
-        } catch (DataObjectNotFoundException ex) {
-            Exceptions.printStackTrace(ex);
-        }
         
     }
 

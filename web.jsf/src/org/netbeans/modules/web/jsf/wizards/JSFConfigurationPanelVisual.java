@@ -1101,13 +1101,8 @@ private void serverLibrariesActionPerformed(java.awt.event.ActionEvent evt) {//G
             for (JsfComponentImplementation jsfComponentDescriptor : getActivedJsfDescriptors()) {
                 JsfComponentCustomizer componentCustomizer = jsfComponentDescriptor.createJsfComponentCustomizer(null);
                 if (componentCustomizer != null && !componentCustomizer.isValid()) {
-                    StringBuilder error = new StringBuilder("<html>"); //NOI18N
-                    error.append(NbBundle.getMessage(JSFConfigurationPanelVisual.class, "LBL_JsfComponentNotValid", jsfComponentDescriptor.getName())); //NOI18N
-                    if (componentCustomizer.getErrorMessage() != null) {
-                        error.append("<br>").append(componentCustomizer.getErrorMessage()); //NOI18N
-                    }
-                    error.append("</html>"); //NOI18N
-                    setErrorMessage(error.toString());
+                    setErrorMessage(getFormatedJsfSuiteErrorMessage(
+                            jsfComponentDescriptor.getName(), componentCustomizer.getErrorMessage()));
                     return false;
                 }
             }
@@ -1115,6 +1110,18 @@ private void serverLibrariesActionPerformed(java.awt.event.ActionEvent evt) {//G
 
         controller.setErrorMessage(null);
         return true;
+    }
+
+    private String getFormatedJsfSuiteErrorMessage(String suiteName, String suiteErrorMessage) {
+        StringBuilder errorMessage = new StringBuilder();
+        String suiteError = suiteErrorMessage == null ? "" : suiteErrorMessage; //NOI18N
+        String localizedError = NbBundle.getMessage(JSFConfigurationPanelVisual.class, "LBL_JsfComponentNotValid", suiteName); //NOI18N
+        if (!customizer) {
+            errorMessage.append("<html><b>").append(localizedError).append("</b><br>").append(suiteError).append("</html>"); //NOI18N
+        } else {
+            errorMessage.append(localizedError).append("\n").append(suiteError); //NOI18N
+        }
+        return errorMessage.toString();
     }
 
     /**
