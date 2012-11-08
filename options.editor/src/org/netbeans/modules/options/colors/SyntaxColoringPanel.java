@@ -46,6 +46,7 @@ package org.netbeans.modules.options.colors;
 
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.EventQueue;
 import java.awt.Font;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
@@ -178,9 +179,15 @@ public class SyntaxColoringPanel extends JPanel implements ActionListener,
             new Runnable () {
             @Override
                 public void run () {
-                    refreshUI ();
-                    if (!blink) return;
-                    startBlinking ();
+                    if(EventQueue.isDispatchThread()) {
+                        refreshUI ();
+                        if (!blink) {
+                            return;
+                        }
+                        startBlinking ();
+                    } else {
+                        EventQueue.invokeLater(this);
+                    }
                 }
             }
         );
@@ -658,10 +665,16 @@ public class SyntaxColoringPanel extends JPanel implements ActionListener,
         ("SyntaxColoringPanel").create (new Runnable () {
         @Override
         public void run () {
-            updatePreview ();
-            if (blinkSequence == 0) return;
-            blinkSequence --;
-            task.schedule (250);
+            if (EventQueue.isDispatchThread()) {
+                updatePreview ();
+                if (blinkSequence == 0) {
+                    return;
+                }
+                blinkSequence --;
+                task.schedule (250);
+            } else {
+                EventQueue.invokeLater(this);
+            }
         }
     });
     
