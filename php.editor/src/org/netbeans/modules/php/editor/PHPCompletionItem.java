@@ -107,11 +107,18 @@ public abstract class PHPCompletionItem implements CompletionProposal {
     protected QualifiedNameKind generateAs;
     private static ScheduledExecutorService service = Executors.newSingleThreadScheduledExecutor();
     private static final Cache<FileObject, PhpLanguageProperties> PROPERTIES_CACHE = new Cache<FileObject, PhpLanguageProperties>(new WeakHashMap<FileObject, PhpLanguageProperties>());
+    private final boolean isPlatform;
 
     PHPCompletionItem(ElementHandle element, CompletionRequest request, QualifiedNameKind generateAs) {
         this.request = request;
         this.element = element;
         this.generateAs = generateAs;
+        if (element instanceof PhpElement) {
+            final PhpElement phpElement = (PhpElement) element;
+            isPlatform = phpElement.isPlatform();
+        } else {
+            isPlatform = false;
+        }
     }
 
     PHPCompletionItem(ElementHandle element, CompletionRequest request) {
@@ -302,7 +309,7 @@ public abstract class PHPCompletionItem implements CompletionProposal {
             return formatter.getText();
         } else if (element instanceof PhpElement) {
             PhpElement ie = (PhpElement) element;
-            if (ie.isPlatform()) {
+            if (isPlatform) {
                 return NbBundle.getMessage(PHPCompletionItem.class, "PHPPlatform");
             }
 
