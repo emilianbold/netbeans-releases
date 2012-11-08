@@ -62,7 +62,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.prefs.PreferenceChangeEvent;
 import java.util.prefs.PreferenceChangeListener;
-import java.util.regex.Pattern;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.Icon;
@@ -83,7 +82,6 @@ import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.annotations.common.StaticResource;
 import org.netbeans.api.java.queries.JavadocForBinaryQuery;
-import org.netbeans.api.java.queries.SourceForBinaryQuery;
 import org.netbeans.api.progress.aggregate.AggregateProgressFactory;
 import org.netbeans.api.progress.aggregate.AggregateProgressHandle;
 import org.netbeans.api.progress.aggregate.ProgressContributor;
@@ -118,7 +116,6 @@ import org.openide.awt.StatusDisplayer;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
-import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
@@ -475,23 +472,17 @@ public class DependencyNode extends AbstractNode implements PreferenceChangeList
     }
 
     public File getJavadocFile() {
-        return getJavadocFile(art.getFile());
-    }
-
-    private static File getJavadocFile(File artifact) {
+        File artifact = art.getFile();
         String version = artifact.getParentFile().getName();
         String artifactId = artifact.getParentFile().getParentFile().getName();
-        return new File(artifact.getParentFile(), artifactId + "-" + version + "-javadoc.jar"); //NOI18N
+        return new File(artifact.getParentFile(), artifactId + "-" + version + (art.getClassifier() != null ? "-" + art.getClassifier() : "") + "-javadoc.jar"); //NOI18N
     }
 
     public File getSourceFile() {
-        return getSourceFile(art.getFile());
-    }
-
-    private static File getSourceFile(File artifact) {
+        File artifact = art.getFile();
         String version = artifact.getParentFile().getName();
         String artifactId = artifact.getParentFile().getParentFile().getName();
-        return new File(artifact.getParentFile(), artifactId + "-" + version + "-sources.jar"); //NOI18N
+        return new File(artifact.getParentFile(), artifactId + "-" + version + (art.getClassifier() != null ? "-" + art.getClassifier() : "") + "-sources.jar"); //NOI18N
     }
 
     public boolean hasSourceInRepository() {
@@ -515,7 +506,7 @@ public class DependencyNode extends AbstractNode implements PreferenceChangeList
                     art.getArtifactId(),
                     art.getVersion(),
                     art.getType(),
-                    "javadoc"); //NOI18N
+                    (art.getClassifier() != null ? art.getClassifier() + "-" : "") + "javadoc"); //NOI18N
                 progress.progress(org.openide.util.NbBundle.getMessage(DependencyNode.class, "MSG_Checking_Javadoc", art.getId()), 1);
                 online.resolve(javadoc, project.getOriginalMavenProject().getRemoteArtifactRepositories(), project.getEmbedder().getLocalRepository());
             } else {
@@ -524,7 +515,7 @@ public class DependencyNode extends AbstractNode implements PreferenceChangeList
                     art.getArtifactId(),
                     art.getVersion(),
                     art.getType(),
-                    "sources"); //NOI18N
+                    (art.getClassifier() != null ? art.getClassifier() + "-" : "") + "sources"); //NOI18N
                 progress.progress(org.openide.util.NbBundle.getMessage(DependencyNode.class, "MSG_Checking_Sources",art.getId()), 1);
                 online.resolve(sources, project.getOriginalMavenProject().getRemoteArtifactRepositories(), project.getEmbedder().getLocalRepository());
             }
