@@ -48,8 +48,6 @@ import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.io.File;
-import java.net.MalformedURLException;
-import java.net.URL;
 import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JList;
@@ -65,6 +63,9 @@ import org.netbeans.modules.web.clientproject.spi.platform.ProjectConfigurationC
 import org.netbeans.modules.web.clientproject.ui.BrowseFolders;
 import org.netbeans.modules.web.clientproject.ui.customizer.ClientSideProjectProperties.ProjectServer;
 import org.netbeans.modules.web.clientproject.util.ClientSideProjectUtilities;
+import org.netbeans.modules.web.clientproject.validation.ProjectFoldersValidator;
+import org.netbeans.modules.web.clientproject.validation.RunProjectValidator;
+import org.netbeans.modules.web.clientproject.validation.ValidationResult;
 import org.netbeans.modules.web.common.api.WebServer;
 import org.netbeans.spi.project.ProjectConfiguration;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
@@ -110,16 +111,20 @@ public class RunPanel extends JPanel implements DocumentListener, ItemListener, 
     @Override
     public void addNotify() {
         super.addNotify();
-        FileObject siteRoot = getSiteRoot();
+        File siteRoot = getSiteRoot();
+        ProjectFoldersValidator projectFoldersValidator = new ProjectFoldersValidator();
+        projectFoldersValidator.validateSiteRootFolder(siteRoot);
+        ValidationResult result = projectFoldersValidator.getResult();
+        boolean siteRootValid = !result.hasErrors();
         String info;
-        if (siteRoot != null) {
-            info = NbBundle.getMessage(RunPanel.class, "URL_DESCRIPTION", FileUtil.getFileDisplayName(siteRoot));
+        if (siteRootValid) {
+            info = NbBundle.getMessage(RunPanel.class, "URL_DESCRIPTION", siteRoot.getAbsolutePath());
         } else {
             info = " "; // NOI18N
         }
         jProjectURLDescriptionLabel.setText(info);
-        jFileToRunTextField.setEnabled(siteRoot != null);
-        jBrowseButton.setEnabled(siteRoot != null);
+        jFileToRunTextField.setEnabled(siteRootValid);
+        jBrowseButton.setEnabled(siteRootValid);
         validateData();
     }
 
@@ -168,73 +173,27 @@ public class RunPanel extends JPanel implements DocumentListener, ItemListener, 
     }
 
     private void validateData() {
-        // start file
-        String error = validateStartFile();
-        if (error != null) {
-            category.setErrorMessage(error);
+        RunProjectValidator validator = new RunProjectValidator();
+        validator.validateStartFile(getSiteRoot(), getResolvedStartFile());
+        if (jProjectURLTextField.isVisible()) {
+            validator.validateProjectUrl(getProjectUrl());
+        }
+        ValidationResult result = validator.getResult();
+        // errors
+        if (result.hasErrors()) {
+            category.setErrorMessage(result.getErrors().get(0).getMessage());
             category.setValid(false);
             return;
         }
-        // project url
-        error = validateProjectUrl();
-        if (error != null) {
-            category.setErrorMessage(error);
-            category.setValid(false);
+        // warnings
+        if (result.hasWarnings()) {
+            category.setErrorMessage(result.getWarnings().get(0).getMessage());
+            category.setValid(true);
             return;
         }
         // all ok
         category.setErrorMessage(" "); // NOI18N
         category.setValid(true);
-    }
-
-    @NbBundle.Messages({
-        "RunPanel.error.siteRoot.invalid=Invalid Site Root, fix it in Sources category.",
-        "RunPanel.error.startFile.invalid=Start File must be a valid file.",
-        "RunPanel.error.startFile.notUnderSiteRoot=Start File must be underneath Site Root directory."
-    })
-    private String validateStartFile() {
-        FileObject siteRoot = getSiteRoot();
-        if (siteRoot == null) {
-            return Bundle.RunPanel_error_siteRoot_invalid();
-        }
-        File startFile = getResolvedStartFile();
-        if (startFile == null || !startFile.isFile()) {
-            return Bundle.RunPanel_error_startFile_invalid();
-        }
-        if (!FileUtil.isParentOf(siteRoot, FileUtil.toFileObject(startFile))) {
-            return Bundle.RunPanel_error_startFile_notUnderSiteRoot();
-        }
-        return null;
-    }
-
-    @NbBundle.Messages({
-        "RunPanel.error.projectUrl.missing=Project URL is missing.",
-        "RunPanel.error.projectUrl.invalidProtocol=Project URL must start with http(s):// or file://.",
-        "RunPanel.error.projectUrl.invalid=Project URL is invalid."
-    })
-    private String validateProjectUrl() {
-        if (!jProjectURLTextField.isVisible()) {
-            return null;
-        }
-        String projectUrl = getProjectUrl();
-        if (projectUrl.isEmpty()) {
-            return Bundle.RunPanel_error_projectUrl_missing();
-        }
-        if (!projectUrl.startsWith("http://") // NOI18N
-                && !projectUrl.startsWith("https://") // NOI18N
-                && !projectUrl.startsWith("file://")) { // NOI18N
-            return Bundle.RunPanel_error_projectUrl_invalidProtocol();
-        }
-        try {
-            URL url = new URL(projectUrl);
-            String host = url.getHost();
-            if (host == null || host.isEmpty()) {
-                return Bundle.RunPanel_error_projectUrl_invalid();
-            }
-        } catch (MalformedURLException ex) {
-            return Bundle.RunPanel_error_projectUrl_invalid();
-        }
-        return null;
     }
 
     private void storeData() {
@@ -262,13 +221,8 @@ public class RunPanel extends JPanel implements DocumentListener, ItemListener, 
         return (ClientProjectConfigurationImplementation) jConfigurationComboBox.getSelectedItem();
     }
 
-    @CheckForNull
-    private FileObject getSiteRoot() {
-        File siteRoot = uiProperties.getResolvedSiteRootFolder();
-        if (siteRoot == null) {
-            return null;
-        }
-        return FileUtil.toFileObject(siteRoot);
+    private File getSiteRoot() {
+        return uiProperties.getResolvedSiteRootFolder();
     }
 
     private String getStartFile() {
@@ -287,7 +241,7 @@ public class RunPanel extends JPanel implements DocumentListener, ItemListener, 
         if (directFile.isAbsolute()) {
             return directFile;
         }
-        FileObject siteRoot = getSiteRoot();
+        FileObject siteRoot = FileUtil.toFileObject(getSiteRoot());
         if (siteRoot == null) {
             return null;
         }
@@ -432,7 +386,7 @@ public class RunPanel extends JPanel implements DocumentListener, ItemListener, 
     }// </editor-fold>//GEN-END:initComponents
 
     private void jBrowseButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jBrowseButtonActionPerformed
-        FileObject siteRootFolder = getSiteRoot();
+        FileObject siteRootFolder = FileUtil.toFileObject(getSiteRoot());
         assert siteRootFolder != null;
         FileObject selectedFile = BrowseFolders.showDialog(new FileObject[] {siteRootFolder}, DataObject.class, getStartFile());
         if (selectedFile != null) {
