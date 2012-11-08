@@ -78,6 +78,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.Mutex;
+import org.openide.util.NbBundle;
 
 /**
  * @author rm111737
@@ -394,7 +395,10 @@ public final class FolderObj extends BaseFileObj {
             FSException.io("EXC_CannotCreateData", file2Create.getName(), getPath());// NOI18N
         } else if (FileChangedManager.getInstance().exists(file2Create)) {
             extensions.createFailure(this, file2Create.getName(), false);
-            throw new SyncFailedException(file2Create.getAbsolutePath());// NOI18N               
+            SyncFailedException sfe = new SyncFailedException(file2Create.getAbsolutePath()); // NOI18N               
+            String msg = NbBundle.getMessage(FolderObj.class, "EXC_CannotCreateData", file2Create.getName(), getPath()); // NOI18N
+            Exceptions.attachLocalizedMessage(sfe, msg);
+            throw sfe;
         } else if (!file2Create.createNewFile()) {
             extensions.createFailure(this, file2Create.getName(), false);            
             FSException.io("EXC_CannotCreateData", file2Create.getName(), getPath());// NOI18N
