@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project basedir="." default="netbeans" name="ods.ui">
+    <description>Builds, tests, and runs the project org.netbeans.modules.ods.ui</description>
+    <import file="../nbbuild/templates/projectized.xml"/>
+</project>

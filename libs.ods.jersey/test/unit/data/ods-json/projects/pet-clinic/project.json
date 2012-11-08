@@ -1,0 +1,11 @@
+{
+    "name" : "Pet Clinic",
+    "organization" : null,
+    "identifier" : "pet-clinic",    
+    "description" : "project description",
+    "numWatchers" : null,
+    "numCommiters" : null,
+    "accessibility" : "PUBLIC",
+    "projectPreferences" : null,
+    "id" : 1234
+}
