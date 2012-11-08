@@ -74,4 +74,6 @@ public interface FilesAccessStrategy {
     void remove(Key id) throws IOException;
 
     void closeUnit(CharSequence unitName) throws IOException;
+
+    public void debugDump(Key key);
 }
