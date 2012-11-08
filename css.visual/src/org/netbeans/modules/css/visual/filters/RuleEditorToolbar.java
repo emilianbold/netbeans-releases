@@ -41,89 +41,90 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.css.visual.filters;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.awt.Dimension;
+import java.awt.Graphics;
+import java.awt.Insets;
+import java.util.Collection;
+import javax.swing.AbstractButton;
+import javax.swing.BorderFactory;
+import javax.swing.Box;
+import javax.swing.BoxLayout;
 import javax.swing.Icon;
+import javax.swing.JSeparator;
+import javax.swing.JToolBar;
+import javax.swing.border.EmptyBorder;
 
-/**
- * This file is originally from Retouche, the Java Support 
- * infrastructure in NetBeans. I have modified the file as little
- * as possible to make merging Retouche fixes back as simple as
- * possible. 
- * <p>
- * 
- * @author Dafe Simonek
- */
-public final class FiltersDescription {
+public class RuleEditorToolbar extends Box {
 
-    public static FiltersManager createManager (FiltersDescription descr) {
-        return FiltersManager.create(descr);
+    private static Dimension space = new Dimension(3, 0);
+    private JToolBar toolbar;
+
+    public RuleEditorToolbar() {
+        super(BoxLayout.X_AXIS);
+        initPanel();
     }
 
-    /** List of <FilterItem> describing filters properties */
-    private List<FilterItem> filters;
-    
-    /** Creates a new instance of FiltersDescription */
-    public FiltersDescription() {
-        filters = new ArrayList<FilterItem>();
+    private void initPanel() {
+        setBorder(new EmptyBorder(1, 2, 3, 5));
+
+        // configure toolbar
+        toolbar = new NoBorderToolBar(JToolBar.HORIZONTAL);
+        toolbar.setFloatable(false);
+        toolbar.setRollover(true);
+        toolbar.setBorderPainted(false);
+        toolbar.setBorder(BorderFactory.createEmptyBorder());
+        toolbar.setOpaque(false);
+        toolbar.setFocusable(false);
+
+        add(toolbar);
     }
-    
-    public void addFilter (String name, String displayName, String tooltip,
-            boolean isSelected, Icon selectedIcon, Icon unselectedIcon) {
-        FilterItem newItem = new FilterItem(name, displayName, tooltip, 
-                isSelected, selectedIcon, unselectedIcon);
-        filters.add(newItem);
-    }
-    
-    public int getFilterCount () {
-        return filters.size();
-    }
-    
-    public String getName (int index) {
-        return filters.get(index).name;
-    }
-    
-    public String getDisplayName (int index) {
-        return filters.get(index).displayName;
-    }
-    
-    public String getTooltip (int index) {
-        return filters.get(index).tooltip;
-    }
-    
-    public Icon getSelectedIcon (int index) {
-        return filters.get(index).selectedIcon;
-    }
-    
-    public Icon getUnselectedIcon (int index) {
-        return filters.get(index).unselectedIcon;
-    }
-    
-    public boolean isSelected (int index) {
-        return filters.get(index).isSelected;
-    }
-    
-    static class FilterItem {
-        String name;
-        String displayName;
-        String tooltip;
-        Icon selectedIcon;
-        Icon unselectedIcon;
-        boolean isSelected;
-        
-        FilterItem (String name, String displayName, String tooltip,
-                boolean isSelected, Icon selectedIcon, Icon unselectedIcon) {
-            this.name = name;
-            this.displayName = displayName;
-            this.tooltip = tooltip;
-            this.selectedIcon = selectedIcon;
-            this.unselectedIcon = unselectedIcon;
-            this.isSelected = isSelected;
+
+    public void addButtons(Collection<AbstractButton> buttons) {
+        for (AbstractButton button : buttons) {
+            addButton(button);
         }
-        
+    }
+
+    public void addButton(AbstractButton button) {
+        Icon icon = button.getIcon();
+        Dimension size = new Dimension(icon.getIconWidth() + 6, icon.getIconHeight() + 4);
+        button.setPreferredSize(size);
+        button.setMargin(new Insets(2, 3, 2, 3));
+        toolbar.addSeparator(space);
+        toolbar.add(button);
     }
     
+    public void addSeparator() {
+        toolbar.addSeparator(space);
+        toolbar.add(new JSeparator(JSeparator.VERTICAL));
+    }
+
+    /**
+     * ToolBar that doesn't paint any border.
+     *
+     * @author S. Aubrecht
+     */
+    public class NoBorderToolBar extends JToolBar {
+
+        /**
+         * Creates a new instance of NoBorderToolbar
+         */
+        public NoBorderToolBar() {
+        }
+
+        /**
+         * Creates a new instance of NoBorderToolbar
+         *
+         * @param layout
+         */
+        public NoBorderToolBar(int layout) {
+            super(layout);
+        }
+
+        @Override
+        protected void paintComponent(Graphics g) {
+        }
+    }
 }
