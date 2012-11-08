@@ -615,10 +615,21 @@ abstract class OperationValidator {
         result.removeAll (installedEagers);
 
         // add only affected eagers again
-        LOGGER.log (Level.FINE, "Affected eagers are " + affectedEagers);
-        result.addAll (affectedEagers);
-        
-        result.removeAll (findDeepRequired (mustRemain, mm));
+        LOGGER.log(Level.FINE, "Possible affected eagers are " + affectedEagers);
+
+        result.removeAll(findDeepRequired(mustRemain, mm));
+
+        // once again check the eagers
+        Set<Module> notAffectedEagers = new HashSet<Module>();
+        for (Module eager : affectedEagers) {
+            Set<Module> requiredByEager = Utilities.findRequiredModules(eager, mm, module2depending);
+            if (! requiredByEager.removeAll(result)) {
+                notAffectedEagers.add(eager);
+            }
+        }
+        affectedEagers.removeAll(notAffectedEagers);
+        result.addAll(affectedEagers);
+        LOGGER.log(Level.FINE, "Real affected eagers are " + affectedEagers);
 
         return result;
     }
