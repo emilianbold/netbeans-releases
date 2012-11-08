@@ -310,7 +310,14 @@ class PropertiesStorage implements NbPreferences.FileStorage {
     protected FileObject toPropertiesFile(boolean create) throws IOException {
         FileObject retval = toPropertiesFile();
         if (retval == null && create) {
-            retval = FileUtil.createData(SFS_ROOT,filePath());//NOI18N
+	    // there might be inconsistency between the cache and the disk (#208227)
+	    SFS_ROOT.refresh();
+	    // and try again
+	    retval = toPropertiesFile();
+	    if (retval == null) {
+		// we really need to create the file
+		retval = FileUtil.createData(SFS_ROOT, filePath());
+	    }
         }
         assert (retval == null && !create) || (retval != null && retval.isData());
         return retval;
