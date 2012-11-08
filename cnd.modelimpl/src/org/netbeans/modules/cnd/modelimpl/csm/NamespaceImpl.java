@@ -72,7 +72,6 @@ import org.netbeans.modules.cnd.repository.spi.Persistent;
 import org.netbeans.modules.cnd.repository.support.SelfPersistent;
 import org.openide.util.CharSequences;
 import org.netbeans.modules.cnd.modelimpl.textcache.NameCache;
-import org.netbeans.modules.cnd.modelimpl.util.IllegalRepositoryStateException;
 import org.netbeans.modules.cnd.repository.spi.Key;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
@@ -293,7 +292,7 @@ public class NamespaceImpl implements CsmNamespace, MutableDeclarationsContainer
         }
         dc = (DeclarationContainerNamespace) RepositoryUtils.get(declarationsSorageKey);
         if (dc == null && preventMultiplyDiagnosticExceptions < DiagnosticExceptoins.LimitMultiplyDiagnosticExceptions) {
-            DiagnosticExceptoins.register(new IllegalRepositoryStateException("Failed to get DeclarationsSorage by key " + declarationsSorageKey)); // NOI18N
+            DiagnosticExceptoins.registerIllegalRepositoryStateException("Failed to get DeclarationsSorage by key ", declarationsSorageKey); // NOI18N
             preventMultiplyDiagnosticExceptions++;
         }
         if (TraceFlags.USE_WEAK_MEMORY_CACHE && dc != null && weakDeclarationContainer != null) {
