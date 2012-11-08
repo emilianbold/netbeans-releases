@@ -65,6 +65,7 @@ import org.netbeans.modules.csl.api.StructureItem;
 import org.netbeans.modules.csl.core.Language;
 import org.netbeans.modules.csl.core.LanguageRegistry;
 import org.netbeans.modules.csl.api.HtmlFormatter;
+import org.netbeans.modules.csl.navigation.ElementNode.Description;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.parsing.api.Embedding;
 import org.netbeans.modules.parsing.api.ParserManager;
@@ -337,12 +338,13 @@ public abstract class ElementScanningTask extends IndexingAwareParserResultTask<
 
         private MimetypeRootNode(Language lang, List<? extends StructureItem> items, MimePath mimePath) {
             this.language = lang;
-            this.items = items;
+            this.items = new ArrayList<StructureItem>(items);
+            Collections.sort(items, Description.POSITION_COMPARATOR);
             this.from = items.size() > 0 ? items.get(0).getPosition() : 0;
             this.to = items.size() > 0 ? items.get(items.size() - 1).getEndPosition() : 0;
             this.mimePath = mimePath;
         }
-
+        
         public MimePath getMimePath() {
             return mimePath;
         }

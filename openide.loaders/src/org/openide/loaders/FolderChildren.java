@@ -47,7 +47,6 @@ package org.openide.loaders;
 
 import java.awt.EventQueue;
 import java.beans.*;
-import java.io.ByteArrayOutputStream;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -288,9 +287,7 @@ implements PropertyChangeListener, ChangeListener, FileChangeListener {
                 err.setLevel(Level.FINE);
             }
             if (round == limit) {
-                Thread.dumpStack();
-                System.err.flush();
-                System.out.flush();
+                err.warning(threadDump());
                 err.setLevel(previous);
                 boolean thrw = false;
                 assert thrw = true;
@@ -305,6 +302,54 @@ implements PropertyChangeListener, ChangeListener, FileChangeListener {
         }
         return arr;
     }
+    
+    private static void appendThread(StringBuffer sb, String indent, Thread t, java.util.Map<Thread,StackTraceElement[]> data) {
+        sb.append(indent).append("Thread ").append(t.getName()).append('\n');
+        indent = indent.concat("  ");
+        StackTraceElement[] stack = data.get(t);
+        if (stack != null) {
+        for (StackTraceElement e : stack) {
+            sb.append("\tat ").append(e.getClassName()).append('.').append(e.getMethodName())
+                    .append('(').append(e.getFileName()).append(':').append(e.getLineNumber()).append(")\n");
+        }
+        }
+    }
+    
+    private static void appendGroup(StringBuffer sb, String indent, ThreadGroup tg, java.util.Map<Thread,StackTraceElement[]> data) {
+        sb.append(indent).append("Group ").append(tg.getName()).append('\n');
+        indent = indent.concat("  ");
+
+        int groups = tg.activeGroupCount();
+        ThreadGroup[] chg = new ThreadGroup[groups];
+        tg.enumerate(chg, false);
+        for (ThreadGroup inner : chg) {
+            if (inner != null) {
+                appendGroup(sb, indent, inner, data);
+            }
+        }
+
+        int threads = tg.activeCount();
+        Thread[] cht= new Thread[threads];
+        tg.enumerate(cht, false);
+        for (Thread t : cht) {
+            if (t != null) {
+                appendThread(sb, indent, t, data);
+            }
+        }
+    }
+    
+    private static String threadDump() {
+        java.util.Map<Thread,StackTraceElement[]> all = Thread.getAllStackTraces();
+        ThreadGroup root = Thread.currentThread().getThreadGroup();
+        while (root.getParent() != null) {
+            root = root.getParent();
+        }
+
+        StringBuffer sb = new StringBuffer();
+        appendGroup(sb, "", root, all);
+        return sb.toString();
+    }
+    
 
     @Override
     public Node findChild(String name) {

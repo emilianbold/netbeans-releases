@@ -122,7 +122,7 @@ public class PHPSQLCompletionTest extends ParserTestBase {
     }
 
     public void testIncompleteString_003() {
-        checkPHPSQLStatement("<?php echo <<<HERE\nSELECT | FROM ?>", "SELECT  FROM ?>\n");
+        checkPHPSQLStatement("<?php echo <<<HERE\nSELECT | FROM ?>", "SELECT  FROM ?>");
     }
 
     public void testIncompleteString_004() {
@@ -165,10 +165,10 @@ public class PHPSQLCompletionTest extends ParserTestBase {
                 "HERE\n ?>", "select * from __UNKNOWN__");
     }
 
-//    public void testHereDoc_002() {
-//        checkPHPSQLStatement("<?php\n echo <<<HERE\nselect * from |$foo\nHERE\n . \" where foo| = bar\" ?>",
-//                "select * from __UNKNOWN__  where foo = bar ");
-//    }
+    public void testHereDoc_002() {
+        checkPHPSQLStatement("<?php\n echo <<<HERE\nselect * from |$foo\nHERE\n . \" where foo| = bar\" ?>",
+                "select * from __UNKNOWN__  where foo = bar ");
+    }
 
     public void testNowDoc_001() {
         checkPHPSQLStatement("<?php\n" +

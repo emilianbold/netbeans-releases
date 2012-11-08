@@ -43,7 +43,6 @@
  */
 package org.netbeans.modules.css.visual.filters;
 
-import javax.swing.JComponent;
 import javax.swing.JToggleButton;
 import org.netbeans.modules.css.visual.RuleEditorPanel;
 import org.netbeans.modules.css.visual.api.ViewMode;
@@ -53,34 +52,52 @@ import org.netbeans.modules.css.visual.api.ViewMode;
  * @author mfukala@netbeans.org
  */
 public final class RuleEditorViews {
+
+    private final JToggleButton updatedOnlyToggleButton;
+    private final JToggleButton categorizedToggleButton;
+    private final JToggleButton allToggleButton;
     
-    private JToggleButton updatedOnlyToggleButton;
-    private JToggleButton categorizedToggleButton;
-    private JToggleButton allToggleButton;
-    
-    private RuleEditorPanel ruleEditorPanel;
-    private FiltersManager filters;
+    private final RuleEditorPanel ruleEditorPanel;
 
     public RuleEditorViews(RuleEditorPanel ruleEditorPanel) {
         this.ruleEditorPanel = ruleEditorPanel;
+
+        updatedOnlyToggleButton = new JToggleButton(new ViewActionSupport.UpdatedOnlyViewAction(this));
+        updatedOnlyToggleButton.setToolTipText(updatedOnlyToggleButton.getText());
+        updatedOnlyToggleButton.setText(null);
+        updatedOnlyToggleButton.setSelected(getViewMode() == ViewMode.UPDATED_ONLY);
+        updatedOnlyToggleButton.setFocusable(false);
+
+        categorizedToggleButton = new JToggleButton(new ViewActionSupport.CategorizedViewAction(this));
+        categorizedToggleButton.setToolTipText(categorizedToggleButton.getText());
+        categorizedToggleButton.setText(null);
+        categorizedToggleButton.setSelected(getViewMode() == ViewMode.CATEGORIZED);
+        categorizedToggleButton.setFocusable(false);
+
+        allToggleButton = new JToggleButton(new ViewActionSupport.AllViewAction(this));
+        allToggleButton.setToolTipText(allToggleButton.getText());
+        allToggleButton.setText(null);
+        allToggleButton.setSelected(getViewMode() == ViewMode.ALL);
+        allToggleButton.setFocusable(false);
+
     }
 
-    public FiltersManager getInstance() {
-        if (filters == null) {
-            filters = FiltersManager.create(new FiltersDescription()); //empty
-        }
-        return filters;
+    public JToggleButton getUpdatedOnlyToggleButton() {
+        return updatedOnlyToggleButton;
     }
 
-    public JComponent getComponent() {
-        FiltersManager f = getInstance();
-        return f.getComponent(createSortButtons());
+    public JToggleButton getCategorizedToggleButton() {
+        return categorizedToggleButton;
+    }
+
+    public JToggleButton getAllToggleButton() {
+        return allToggleButton;
     }
 
     void setViewMode(ViewMode mode) {
         ruleEditorPanel.setViewMode(mode);
 
-        //update the toggle bottons (they are switching)
+        //update the toggle bottons
         updatedOnlyToggleButton.setSelected(mode == ViewMode.UPDATED_ONLY);
         categorizedToggleButton.setSelected(mode == ViewMode.CATEGORIZED);
         allToggleButton.setSelected(mode == ViewMode.ALL);
@@ -88,36 +105,5 @@ public final class RuleEditorViews {
 
     ViewMode getViewMode() {
         return ruleEditorPanel.getViewMode();
-    }
-
-    private JToggleButton[] createSortButtons() {
-            JToggleButton[] res = new JToggleButton[3];
-            if (null == updatedOnlyToggleButton) {
-                updatedOnlyToggleButton = new JToggleButton(new ViewActionSupport.UpdatedOnlyViewAction(this));
-                updatedOnlyToggleButton.setToolTipText(updatedOnlyToggleButton.getText());
-                updatedOnlyToggleButton.setText(null);
-                updatedOnlyToggleButton.setSelected(getViewMode() == ViewMode.UPDATED_ONLY);
-                updatedOnlyToggleButton.setFocusable(false);
-            }
-            res[0] = updatedOnlyToggleButton;
-
-            if (null == categorizedToggleButton) {
-                categorizedToggleButton = new JToggleButton(new ViewActionSupport.CategorizedViewAction(this));
-                categorizedToggleButton.setToolTipText(categorizedToggleButton.getText());
-                categorizedToggleButton.setText(null);
-                categorizedToggleButton.setSelected(getViewMode() == ViewMode.CATEGORIZED);
-                categorizedToggleButton.setFocusable(false);
-            }
-            res[1] = categorizedToggleButton;
-            
-            if (null == allToggleButton) {
-                allToggleButton = new JToggleButton(new ViewActionSupport.AllViewAction(this));
-                allToggleButton.setToolTipText(allToggleButton.getText());
-                allToggleButton.setText(null);
-                allToggleButton.setSelected(getViewMode() == ViewMode.ALL);
-                allToggleButton.setFocusable(false);
-            }
-            res[2] = allToggleButton;
-            return res;
     }
 }

@@ -39,45 +39,94 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.css.visual.api;
+package org.netbeans.modules.web.clientproject.validation;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
- * View modes for the rule editor UI component.
- * 
- * @author marekfukala
+ * Validation result.
+ * <p>
+ * This class is not thread safe.
  */
-public enum ViewMode {
-    
-    /**
-     * No categories, properties sorted alphabetically, show only set properties.
-     */
-    UPDATED_ONLY(false, false),
-    
-    /**
-     * Categories shown, elements sorted alphabetically, show all existing properties.
-     */
-    CATEGORIZED(true, true),
-    
-    /**
-     * No categories, properties sorted alphabetically, show all existing properties.
-     */
-    ALL(false, true);
-    
-    
-    private final boolean showCategories;
-    private final boolean showAllProperties;
+public final class ValidationResult {
 
-    private ViewMode(boolean showCategories, boolean showAllProperties) {
-        this.showCategories = showCategories;
-        this.showAllProperties = showAllProperties;
+    private final List<Message> errors = new ArrayList<Message>();
+    private final List<Message> warnings = new ArrayList<Message>();
+
+
+    public boolean hasErrors() {
+        return !errors.isEmpty();
     }
 
-    public boolean isShowCategories() {
-        return showCategories;
+    public List<Message> getErrors() {
+        return new ArrayList<Message>(errors);
     }
 
-    public boolean isShowAllProperties() {
-        return showAllProperties;
+    public boolean hasWarnings() {
+        return !warnings.isEmpty();
     }
-    
+
+    public List<Message> getWarnings() {
+        return new ArrayList<Message>(warnings);
+
+    }
+
+    void addError(Message error) {
+        errors.add(error);
+    }
+
+    void addWarning(Message warning) {
+        warnings.add(warning);
+    }
+
+    void merge(ValidationResult otherResult) {
+        errors.addAll(otherResult.errors);
+        warnings.addAll(otherResult.warnings);
+    }
+
+    //~ Inner classes
+
+    /**
+     * Validation message.
+     */
+    public static final class Message {
+
+        private final String source;
+        private final String message;
+
+
+        /**
+         * Create new validation message.
+         * @param source source of the message, e.g. "siteRootFolder"
+         * @param message message itself, e.g. "Invalid directory specified."
+         */
+        public Message(String source, String message) {
+            this.source = source;
+            this.message = message;
+        }
+
+        /**
+         * Get source of the message, e.g. "siteRootFolder".
+         * @return source of the message, e.g. "siteRootFolder"
+         */
+        public String getSource() {
+            return source;
+        }
+
+        /**
+         * Get message itself, e.g. "Invalid directory specified."
+         * @return message itself, e.g. "Invalid directory specified.".
+         */
+        public String getMessage() {
+            return message;
+        }
+
+        @Override
+        public String toString() {
+            return "ValidationMessage{source=" + source + ", message=" + message + '}'; // NOI18N
+        }
+
+    }
+
 }

@@ -58,6 +58,8 @@ import javax.swing.event.ChangeListener;
 import org.netbeans.api.progress.ProgressUtils;
 import org.netbeans.modules.web.clientproject.ui.JavaScriptLibrarySelection;
 import org.netbeans.modules.web.clientproject.ui.JavaScriptLibrarySelection.SelectedLibrary;
+import org.netbeans.modules.web.clientproject.validation.ProjectFoldersValidator;
+import org.netbeans.modules.web.clientproject.validation.ValidationResult;
 import org.netbeans.modules.web.common.api.Pair;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
 import org.openide.filesystems.FileObject;
@@ -90,16 +92,10 @@ public final class JavaScriptFilesPanel extends JPanel implements HelpCtx.Provid
         javaScriptLibrarySelection = new JavaScriptLibrarySelection(new LibraryValidator(uiProperties));
 
         initComponents();
-
-        initJsFiles();
-        // initial data validation
-        validateData();
+        init();
     }
 
-    private void initJsFiles() {
-        assert EventQueue.isDispatchThread();
-        // add js files
-        javaScriptLibrarySelection.updateDefaultLibraries(findProjectJsFiles());
+    private void init() {
         // add listener
         javaScriptLibrarySelection.addChangeListener(new ChangeListener() {
             @Override
@@ -109,6 +105,29 @@ public final class JavaScriptFilesPanel extends JPanel implements HelpCtx.Provid
         });
         // add to placeholder
         placeholderPanel.add(javaScriptLibrarySelection, BorderLayout.CENTER);
+    }
+
+    @Override
+    public void addNotify() {
+        super.addNotify();
+        setJsFiles();
+        validateData();
+    }
+
+    private void setJsFiles() {
+        assert EventQueue.isDispatchThread();
+        // set js files
+        File siteRootFolder = uiProperties.getResolvedSiteRootFolder();
+        ProjectFoldersValidator projectFoldersValidator = new ProjectFoldersValidator();
+        projectFoldersValidator.validateSiteRootFolder(siteRootFolder);
+        ValidationResult result = projectFoldersValidator.getResult();
+        Collection<String> jsFiles;
+        if (result.hasErrors()) {
+            jsFiles = Collections.<String>emptyList();
+        } else {
+            jsFiles = findProjectJsFiles(FileUtil.toFileObject(siteRootFolder));
+        }
+        javaScriptLibrarySelection.updateDefaultLibraries(jsFiles);
     }
 
     void validateAndStore() {
@@ -144,12 +163,11 @@ public final class JavaScriptFilesPanel extends JPanel implements HelpCtx.Provid
     }
 
     @NbBundle.Messages("JavaScriptFilesPanel.progress.detectingJsFiles=Detecting JavaScript files...")
-    private Collection<String> findProjectJsFiles() {
+    private Collection<String> findProjectJsFiles(final FileObject siteRoot) {
         final Set<String> jsFiles = Collections.synchronizedSortedSet(new TreeSet<String>());
         ProgressUtils.showProgressDialogAndRun(new Runnable() {
             @Override
             public void run() {
-                FileObject siteRoot = uiProperties.getProject().getSiteRootFolder();
                 Enumeration<? extends FileObject> children = siteRoot.getChildren(true);
                 while (children.hasMoreElements()) {
                     FileObject child = children.nextElement();
@@ -235,17 +253,12 @@ public final class JavaScriptFilesPanel extends JPanel implements HelpCtx.Provid
         }
 
         private FileObject getLibsFolder(String librariesFolder) {
-            File siteRootFolder = uiProperties.getResolvedSiteRootFolder();
+            FileObject siteRootFolder = FileUtil.toFileObject(uiProperties.getResolvedSiteRootFolder());
             if (siteRootFolder == null) {
-                // invalid site root
-                return null;
-            }
-            FileObject fo = FileUtil.toFileObject(siteRootFolder);
-            if (fo == null) {
                 // non-existing folder
                 return null;
             }
-            return fo.getFileObject(librariesFolder);
+            return siteRootFolder.getFileObject(librariesFolder);
         }
 
     }

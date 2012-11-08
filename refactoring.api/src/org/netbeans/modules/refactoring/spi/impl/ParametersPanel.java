@@ -1010,7 +1010,7 @@ public class ParametersPanel extends JPanel implements ProgressListener, ChangeL
                     problem=null;
                     if (rui.isQuery()) {
                         //run queries asynchronously
-                        RequestProcessor.Task post = RequestProcessor.getDefault().post(new Runnable() {
+                        RP.post(new Runnable() {
                             @Override
                             public void run() {
                                     problem = rui.getRefactoring().prepare(refactoringSession);
