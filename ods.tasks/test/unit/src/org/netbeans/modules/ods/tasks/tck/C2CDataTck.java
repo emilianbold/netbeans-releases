@@ -66,12 +66,12 @@ public class C2CDataTck extends NbTestSuite {
     public C2CDataTck() {
         
 //        addTestSuite(JSONDumper.class);
-        addTestSuite(C2CDataTest.class);
+        addTestSuite(C2CDataTestCase.class);
         
         List<Method> notTested = new LinkedList<Method>();
         for (Method m : RepositoryConfiguration.class.getDeclaredMethods()) {
             if(m.getParameterTypes().length == 0) {
-                addTest(new GetAttributeTest(m));
+                addTest(new GetAttributeTestCase(m));
             } else if(!m.getName().startsWith("set") &&
                       !m.getName().startsWith("getMilestones") &&
                       !m.getName().startsWith("getComponents") && 
@@ -106,10 +106,10 @@ public class C2CDataTck extends NbTestSuite {
         
     }
     
-    public static class GetAttributeTest extends C2CDataTestCase {
+    public static class GetAttributeTestCase extends AbstractC2CDataTestCase {
         private final Method method;
 
-        public GetAttributeTest(Method m) {
+        public GetAttributeTestCase(Method m) {
             super("test" + m.getName().substring(0,1).toUpperCase() + m.getName().substring(1, m.getName().length()));
             method = m;
         }
@@ -216,9 +216,9 @@ public class C2CDataTck extends NbTestSuite {
             
     }
     
-    public static class C2CDataTest extends C2CDataTestCase {
+    public static class C2CDataTestCase extends AbstractC2CDataTestCase {
 
-        public C2CDataTest(String n) {
+        public C2CDataTestCase(String n) {
             super(n);
         }
         
@@ -246,9 +246,9 @@ public class C2CDataTck extends NbTestSuite {
         }
     }
     
-    private static abstract class C2CDataTestCase extends C2CTestBase {
+    private static abstract class AbstractC2CDataTestCase extends C2CTestBase {
         private RepositoryConfiguration repositoryConfiguration;
-        public C2CDataTestCase(String n) {
+        public AbstractC2CDataTestCase(String n) {
             super(n);
         }
 
@@ -494,13 +494,13 @@ public class C2CDataTck extends NbTestSuite {
         
     }
     
-    public static class JSONDumper extends C2CDataTestCase {
+    public static class JSONDumper extends AbstractC2CDataTestCase {
         public JSONDumper(String n) {
             super(n);
         }
         public void testDump() throws IOException, URISyntaxException {
             StringBuilder sb = new StringBuilder();
-            C2CDataTest t = new C2CDataTest("dump");
+            C2CDataTestCase t = new C2CDataTestCase("dump");
             t.expectQuery(t.repositoryURL() + "/repositoryContext", sb, t.REPOSITORY_CONFIGURATION_RESPONSE);
             C2CData data = t.getData(false, sb);
             ObjectOutputStream os = null;
