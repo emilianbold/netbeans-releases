@@ -22,14 +22,15 @@
         <p>The upper pane of the CSS Styles window displays a list of the rules that
         are defined in the CSS file. 
         You can filter the list by typing a string in the text field at the top of the pane.
-        You can double-click an element in the list to navigate to the line in the CSS file
+        You can double-click an rule in the list to navigate to the line in the CSS file
         where the rule is defined.</p>
         
-        <p>The lower pane of the CSS Styles window displays a list of the properties of a rule definition.
-            In the editor, when your insert cursor is in a line that contains properties for a CSS rule
-            the properties of that rule are listed in the lower pane of the window.
-            You can use the lower pane to create and delete rules for elements and to modify, add and remove 
-            the properties of rules. 
+        <p>The lower pane of the CSS Styles window displays a list of the properties and values 
+            that are specified in the declarations of a rule.
+            In the editor, when your insert cursor is in a line that contains a declaration for a CSS rule
+            the properties for that rule are listed in the lower pane of the window.
+            You can use the lower pane to create and delete rules and to modify, add and remove 
+            the properties of declarations. 
             You can use the dropdown list to select values for each property or type a value
             in the text field.</p>
         
@@ -42,31 +43,27 @@
                 <th align="left" scope="col">Description</th>
             </tr>
             <tr valign="top">
-                <td align="center"><img src="../../images/showAllProperties.png" alt="Show all CSS Properties"></td>
-                <td>Show All CSS Properties. </td>
+                <td align="center"><img src="../../images/viewByUpdated.png" alt="Show Updated Properties Only"></td>
+                <td>Only the properties that have a specific value are displayed. </td>
             </tr>
             <tr valign="top">
-                <td align="center"><img src="../../images/showCategories.gif" alt="Show Property Categories"></td>
-                <td>Show Property Categories.</td>
-            </tr>
-            <tr>
-                <td align="center"><img src="../../images/sortNatural.png" alt="Natural Sort"></td>
-                <td>Sort properties by natural order.</td>
-            </tr>
-            <tr>
-                <td align="center"><img src="../../images/sortAlpha.png" alt="Alphabetical Sort"></td>
-                <td>Sort properties alphabetically.</td>
+                <td align="center"><img src="../../images/viewByCategory.gif" alt="Show Categorized Properties"></td>
+                <td>Show all properties, organized by category.</td>
             </tr>
             
+            <tr>
+                <td align="center"><img src="../../images/sortAlpha.png" alt="Show All Properties"></td>
+                <td>Show all properties, listed alphabetically.</td>
+            </tr>
         </table>
 
-        <p>You can click the Menu icon (<img src="../../images/menu.png" alt="Menu">)
+        <p>You can click the Menu icon (<img src="../../images/build.png" alt="Menu">)
         to display a menu with the following options.</p>
         
         <ul>
-            <li><strong>Add Property.</strong> Opens a dialog box that enables you to add properties to elements in a style sheet. </li>
+            <li><strong>Add Property.</strong> Opens a dialog box that enables you to add properties to the selected rule that is displayed in the lower pane of the window. </li>
             <li><strong>Create Rule.</strong> Opens a dialog box that enables you to create a new rule in a style sheet. </li>
-            <li><strong>Delete Rule.</strong> Deletes the rule that is displayed in the lower pane of the window.
+            <li><strong>Delete Rule.</strong> Deletes the selected rule that is displayed in the lower pane of the window.
             This option is disabled if no rule is selected in the style sheet.</li>
         </ul>
         
@@ -76,7 +73,6 @@
             <dt><a name="seealso">See Also</a></dt>
             <dd><a href="../css_create.html">Creating a Cascading Style Sheet</a></dd>
             <dd><a href="../css_edit.html">Editing a Cascading Style Sheet</a></dd>
-            <dd><a href="../css_check.html">Checking a Cascading Style Sheet for Validity</a></dd>
         </dl>
         
         <hr>
