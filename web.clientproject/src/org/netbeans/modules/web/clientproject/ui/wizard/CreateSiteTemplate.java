@@ -568,7 +568,7 @@ public class CreateSiteTemplate extends javax.swing.JPanel implements ExplorerMa
 
     /**
      * This node wraps 'external site root folder node' and gives it
-     * display name of "public_html".
+     * display name of {@value ClientSideProjectConstants#DEFAULT_SITE_ROOT_FOLDER}.
      */
     private class ExternalSiteRootNode extends OurFilteredNode {
 
@@ -578,7 +578,7 @@ public class CreateSiteTemplate extends javax.swing.JPanel implements ExplorerMa
 
         @Override
         public String getDisplayName() {
-            return "public_html"; // NOI18N
+            return ClientSideProjectConstants.DEFAULT_SITE_ROOT_FOLDER;
         }
     }
 
