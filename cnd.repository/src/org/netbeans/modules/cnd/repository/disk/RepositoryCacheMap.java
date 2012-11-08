@@ -144,7 +144,7 @@ public class RepositoryCacheMap<K,V>  {
 
         @Override
         public String toString() {
-            return "RepositoryCacheValue {" + value + ", frq=" + frequency + ", nwBrn=" + newBorn + ", stmp=" + bornStamp + '}';
+            return "RepositoryCacheValue {" + value + ", frq=" + frequency + ", nwBrn=" + newBorn + ", stmp=" + bornStamp + '}'; // NOI18N
         }
 
     }
