@@ -367,30 +367,35 @@ public class ClientSideProjectLogicalView implements LogicalViewProvider {
 
             @Override
             public void fileFolderCreated(FileEvent fe) {
-                updateNodes();
+                updateNodesVisibility();
             }
 
             @Override
             public void fileDataCreated(FileEvent fe) {
-                updateNodes();
+                updateNodesVisibility();
             }
 
 
             @Override
             public void fileDeleted(FileEvent fe) {
-                updateNodes();
+                updateNodesVisibility();
             }
 
             @Override
             public void propertyChange(PropertyChangeEvent evt) {
-                if (ClientSideProjectConstants.PROJECT_SITE_ROOT_FOLDER.equals(evt.getPropertyName()) ||
-                    ClientSideProjectConstants.PROJECT_TEST_FOLDER.equals(evt.getPropertyName()) ||
-                    ClientSideProjectConstants.PROJECT_CONFIG_FOLDER.equals(evt.getPropertyName())) {
-                    updateNodes();
+                if (ClientSideProjectConstants.PROJECT_SITE_ROOT_FOLDER.equals(evt.getPropertyName())) {
+                    sourcesNodeHidden = isNodeHidden(BasicNodes.Sources);
+                    refreshKeyInAWT(BasicNodes.Sources);
+                } else if (ClientSideProjectConstants.PROJECT_TEST_FOLDER.equals(evt.getPropertyName())) {
+                    testsNodeHidden = isNodeHidden(BasicNodes.Tests);
+                    refreshKeyInAWT(BasicNodes.Tests);
+                } else if (ClientSideProjectConstants.PROJECT_CONFIG_FOLDER.equals(evt.getPropertyName())) {
+                    configNodeHidden = isNodeHidden(BasicNodes.Configuration);
+                    refreshKeyInAWT(BasicNodes.Configuration);
                 }
             }
 
-            private void updateNodes() {
+            private void updateNodesVisibility() {
                 boolean nodeHidden = isNodeHidden(BasicNodes.Sources);
                 if (nodeHidden != sourcesNodeHidden) {
                     sourcesNodeHidden = nodeHidden;
