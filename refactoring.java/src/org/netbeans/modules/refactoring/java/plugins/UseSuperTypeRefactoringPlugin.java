@@ -300,7 +300,7 @@ public class UseSuperTypeRefactoringPlugin extends JavaRefactoringPlugin {
 
             Types types = workingCopy.getTypes();
             TypeMirror varTypeErasure = erasureOf(varElement.asType());
-            TypeMirror elToMatchErasure = erasureOf(elementToMatch.asType());
+            TypeMirror elToMatchErasure = erasureOf(subTypeElement.asType());
         
             if (types.isSameType(varTypeErasure, elToMatchErasure)) {
                 if (isReplaceCandidate(varElement)) {
@@ -318,7 +318,7 @@ public class UseSuperTypeRefactoringPlugin extends JavaRefactoringPlugin {
             TreePath path = getCurrentPath();
             Types types = workingCopy.getTypes();
             TypeMirror castTypeErasure = erasureOf(workingCopy.getTrees().getTypeMirror(path));
-            TypeMirror elToMatchErasure = erasureOf(elementToMatch.asType());
+            TypeMirror elToMatchErasure = erasureOf(subTypeElement.asType());
             path = path.getParentPath();
             Element element = workingCopy.getTrees().getElement(path);
             if (element instanceof VariableElement && types.isSameType(castTypeErasure, elToMatchErasure)) {
@@ -330,7 +330,7 @@ public class UseSuperTypeRefactoringPlugin extends JavaRefactoringPlugin {
                     rewrite(castTree, newTree);
                 }
             }
-            return super.visitTypeCast(castTree, element);
+            return super.visitTypeCast(castTree, elementToMatch);
         }
         
         private boolean hidesSupTypeMember(Element methElement, TypeElement superTypeElement) {
