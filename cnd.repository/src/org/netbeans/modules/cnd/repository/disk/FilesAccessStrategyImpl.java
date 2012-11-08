@@ -48,6 +48,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URLEncoder;
 import java.util.Collection;
+import java.util.Date;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import org.netbeans.modules.cnd.repository.api.CacheLocation;
 import org.netbeans.modules.cnd.repository.api.RepositoryAccessor;
@@ -411,4 +412,19 @@ public class FilesAccessStrategyImpl implements FilesAccessStrategy {
         return nameToFileCache.size();
     }
     
+    @Override
+    public void debugDump(Key key) {
+        assert key != null;
+        try {
+            String fileName = resolveFileName(key);
+            ls(new File(fileName));
+        } catch (IOException ex) {
+            System.err.printf("Exception when dumping by key %s\n", key);
+            ex.printStackTrace(System.err);
+        }
+    }
+    
+    private void ls(File file) {
+        System.err.printf("\tFile: %s\n\tExists: %b\n\tLength: %d\n\tModified: %s\n\n", file.getAbsolutePath(), file.exists(), file.length(), new Date(file.lastModified()));
+    }
 }
