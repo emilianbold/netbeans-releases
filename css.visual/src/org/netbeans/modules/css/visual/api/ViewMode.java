@@ -54,19 +54,15 @@ public enum ViewMode {
     UPDATED_ONLY(false, false),
     
     /**
-     * Categories shown, elements sorted alphabetically, show only set properties.
+     * Categories shown, elements sorted alphabetically, show all existing properties.
      */
-    CATEGORIZED(true, false),
+    CATEGORIZED(true, true),
     
     /**
      * No categories, properties sorted alphabetically, show all existing properties.
      */
-    ALL(false, true),
+    ALL(false, true);
     
-    /**
-     * Internal only.
-     */
-    CATEGORIZED_ALL(true, true);
     
     private final boolean showCategories;
     private final boolean showAllProperties;

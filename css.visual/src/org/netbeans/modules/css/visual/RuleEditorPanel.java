@@ -42,6 +42,9 @@
 package org.netbeans.modules.css.visual;
 
 import java.awt.BorderLayout;
+import java.awt.Point;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.beans.FeatureDescriptor;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -81,6 +84,7 @@ import org.netbeans.modules.css.visual.actions.RemovePropertyAction;
 import org.netbeans.modules.css.visual.api.DeclarationInfo;
 import org.netbeans.modules.css.visual.api.RuleEditorController;
 import org.netbeans.modules.css.visual.api.ViewMode;
+import org.netbeans.modules.css.visual.filters.RuleEditorToolbar;
 import org.netbeans.modules.css.visual.filters.RuleEditorViews;
 import org.netbeans.modules.css.visual.filters.ViewActionSupport;
 import org.netbeans.modules.css.visual.filters.ViewActions;
@@ -157,8 +161,8 @@ public class RuleEditorPanel extends JPanel {
     private Action addRuleAction;
     private Action removeRuleAction;
     private Action[] actions;
-    private JPopupMenu popupMenu;
     private RuleEditorViews views;
+    private RuleEditorToolbar toolbar;
     private ViewMode viewMode;
     public RuleEditorNode node;
     private PropertyChangeSupport CHANGE_SUPPORT = new PropertyChangeSupport(this);
@@ -232,6 +236,14 @@ public class RuleEditorPanel extends JPanel {
         viewMode = ViewMode.UPDATED_ONLY; //default view
         views = new RuleEditorViews(this);
 
+        //create toolbar
+        toolbar = new RuleEditorToolbar();
+        toolbar.addButton(views.getUpdatedOnlyToggleButton());
+        toolbar.addButton(views.getCategorizedToggleButton());
+        toolbar.addButton(views.getAllToggleButton());
+        toolbar.addSeparator();
+        
+        
         //initialize actions
         addPropertyAction = new AddPropertyAction(this);
         addRuleAction = new CreateRuleAction(this);
@@ -277,27 +289,37 @@ public class RuleEditorPanel extends JPanel {
             }
         }
 
-        setComponentPopupMenu(pm);
-
-        //custom popup for the "menu icon"
-        popupMenu = new JPopupMenu();
-        popupMenu.add(addPropertyAction);
-        popupMenu.add(addRuleAction);
-        popupMenu.add(removeRuleAction);
-
         //init default components
         initComponents();
-
- 
+        
+        //the popup menu for the "build toolbar button"
+        final JPopupMenu buildButtonPopup = new JPopupMenu();
+        
         if (!addPropertyMode) {
-            northEastPanel.add(menuLabel, java.awt.BorderLayout.EAST);
-            menuLabel.setComponentPopupMenu(popupMenu);
+            setComponentPopupMenu(pm);
+            
+            buildButtonPopup.add(addPropertyAction);
+            buildButtonPopup.add(addRuleAction);
+            buildButtonPopup.add(removeRuleAction);
+            
+            toolbar.addButton(buildButton);
+            buildButton.addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent ae) {
+                    buildButton.setSelected(false);
+                    buildButtonPopup.setInvoker(RuleEditorPanel.this);
+                    Point locationOnScreen = buildButton.getLocationOnScreen();
+                    Point popupLocationOnScreen = new Point((int)locationOnScreen.getX(), (int)(locationOnScreen.getY() + buildButton.getHeight()));
+                    buildButtonPopup.setLocation(popupLocationOnScreen);
+                    buildButtonPopup.setVisible(true);
+                }
+            });
         }
 
         titleLabel.setText(null);
 
         //add the property sheet to the center
-        sheet = new REPropertySheet(popupMenu);
+        sheet = new REPropertySheet(buildButtonPopup);
         try {
             sheet.setSortingMode(PropertySheet.UNSORTED);
         } catch (PropertyVetoException ex) {
@@ -317,7 +339,7 @@ public class RuleEditorPanel extends JPanel {
         }
         
         if(!addPropertyMode) {
-            northEastPanel.add(views.getComponent(), BorderLayout.WEST);
+            northEastPanel.add(toolbar, BorderLayout.WEST);
         }
 
         //add document listener to the filter text field 
@@ -605,22 +627,13 @@ public class RuleEditorPanel extends JPanel {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        menuLabel = new javax.swing.JLabel();
         cancelFilterLabel = new javax.swing.JLabel();
         filterTextField = new javax.swing.JTextField();
+        buildButton = new javax.swing.JToggleButton();
         northPanel = new javax.swing.JPanel();
         northEastPanel = new javax.swing.JPanel();
         northWestPanel = new javax.swing.JPanel();
         titleLabel = new javax.swing.JLabel();
-
-        menuLabel.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/css/visual/resources/build.png"))); // NOI18N
-        menuLabel.setText(org.openide.util.NbBundle.getMessage(RuleEditorPanel.class, "RuleEditorPanel.menuLabel.text")); // NOI18N
-        menuLabel.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 16, 0, 0));
-        menuLabel.addMouseListener(new java.awt.event.MouseAdapter() {
-            public void mouseClicked(java.awt.event.MouseEvent evt) {
-                menuLabelMouseClicked(evt);
-            }
-        });
 
         cancelFilterLabel.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/css/visual/resources/cancel.png"))); // NOI18N
         cancelFilterLabel.setText(org.openide.util.NbBundle.getMessage(RuleEditorPanel.class, "RuleEditorPanel.cancelFilterLabel.text")); // NOI18N
@@ -633,6 +646,10 @@ public class RuleEditorPanel extends JPanel {
         filterTextField.setText(org.openide.util.NbBundle.getMessage(RuleEditorPanel.class, "RuleEditorPanel.filterTextField.text")); // NOI18N
         filterTextField.setMaximumSize(new java.awt.Dimension(32767, 32767));
         filterTextField.setMinimumSize(new java.awt.Dimension(60, 28));
+
+        buildButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/css/visual/resources/build.png"))); // NOI18N
+        buildButton.setText(null);
+        buildButton.setFocusable(false);
 
         setPreferredSize(new java.awt.Dimension(400, 300));
         setLayout(new java.awt.BorderLayout());
@@ -655,19 +672,14 @@ public class RuleEditorPanel extends JPanel {
         add(northPanel, java.awt.BorderLayout.NORTH);
     }// </editor-fold>//GEN-END:initComponents
 
-    private void menuLabelMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_menuLabelMouseClicked
-        //just invoke popup as if right-clicked
-        popupMenu.show(menuLabel, 0, 0);
-    }//GEN-LAST:event_menuLabelMouseClicked
-
     private void cancelFilterLabelMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_cancelFilterLabelMouseClicked
         filterTextField.setText(null);
     }//GEN-LAST:event_cancelFilterLabelMouseClicked
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JToggleButton buildButton;
     private javax.swing.JLabel cancelFilterLabel;
     private javax.swing.JTextField filterTextField;
-    private javax.swing.JLabel menuLabel;
     private javax.swing.JPanel northEastPanel;
     private javax.swing.JPanel northPanel;
     private javax.swing.JPanel northWestPanel;
