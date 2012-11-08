@@ -372,7 +372,14 @@ public final class MakeProject implements Project, MakeProjectListener, Runnable
                 if (cacheDirectory == null) {
                     File cacheFile = getCacheLocation(projectDirectory);
                     if (cacheFile == null) {
-                        cacheFile = Places.getCacheDirectory();
+                        // TODO: find more elegant soluition than duplicating "cnd.repository.cache.path" in CacheLocation and MakeProject
+                        // What we can do is our own Places impl. that delegates to the next Places impl. if this property is not set; is it worth doing?
+                        String path = System.getProperty("cnd.repository.cache.path");
+                        if (path == null) {
+                            cacheFile = Places.getCacheDirectory();
+                        } else {
+                            cacheFile = new File(path);
+                        }
                     }
                     cacheDirectory = FileUtil.createFolder(cacheFile);
                 }
