@@ -86,7 +86,6 @@ import org.netbeans.modules.css.visual.api.RuleEditorController;
 import org.netbeans.modules.css.visual.api.ViewMode;
 import org.netbeans.modules.css.visual.filters.RuleEditorToolbar;
 import org.netbeans.modules.css.visual.filters.RuleEditorViews;
-import org.netbeans.modules.css.visual.filters.ViewActionSupport;
 import org.netbeans.modules.css.visual.filters.ViewActions;
 import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
@@ -147,13 +146,9 @@ public class RuleEditorPanel extends JPanel {
     
     private static final Icon ERROR_ICON = new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/css/visual/resources/error-glyph.gif")); //NOI18N
     private static final Icon APPLIED_ICON = new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/css/visual/resources/database.gif")); //NOI18N
-    private static final JLabel ERROR_LABEL = new JLabel(ERROR_ICON);
-    private static final JLabel APPLIED_LABEL = new JLabel(APPLIED_ICON);
+    
+    private final JLabel errorLabel, appliedLabel;
 
-    static {
-        ERROR_LABEL.setToolTipText(Bundle.label_rule_error_tooltip());
-    }
-//    private static final Color defaultPanelBackground = javax.swing.UIManager.getDefaults().getColor("Panel.background"); //NOI18N
     private REPropertySheet sheet;
     private Model model;
     private Rule rule;
@@ -183,7 +178,7 @@ public class RuleEditorPanel extends JPanel {
                         node.fireContextChanged(false);
                         
                     } else if (Model.CHANGES_APPLIED_TO_DOCUMENT.equals(evt.getPropertyName())) {
-                        northWestPanel.add(APPLIED_LABEL);
+                        northWestPanel.add(appliedLabel);
                         northWestPanel.revalidate();
                         northWestPanel.repaint();
 
@@ -229,8 +224,12 @@ public class RuleEditorPanel extends JPanel {
     }
 
     public RuleEditorPanel(boolean addPropertyMode) {
-
         this.addPropertyMode = addPropertyMode;
+        
+        errorLabel = new JLabel(ERROR_ICON);
+        errorLabel.setToolTipText(Bundle.label_rule_error_tooltip());
+        appliedLabel = new JLabel(APPLIED_ICON);
+        
         node = new RuleEditorNode(this);
 
         viewMode = ViewMode.UPDATED_ONLY; //default view
@@ -490,7 +489,7 @@ public class RuleEditorPanel extends JPanel {
         this.model.addPropertyChangeListener(MODEL_LISTENER);
 
         //remove the "applied changes mark"
-        northWestPanel.remove(APPLIED_LABEL);
+        northWestPanel.remove(appliedLabel);
         northWestPanel.validate();
         northWestPanel.repaint();
 
