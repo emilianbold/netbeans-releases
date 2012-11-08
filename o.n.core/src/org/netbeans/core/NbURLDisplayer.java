@@ -117,8 +117,8 @@ public final class NbURLDisplayer extends URLDisplayer {
 
     //#220880 - ask for browser Lookup outside the EDT
     private void warmBrowserUp( boolean externalBrowser ) {
-        if( externalBrowser && null == htmlViewer.externalBrowser 
-                || !externalBrowser && null == htmlViewer.brComp ) {
+        if( externalBrowser && (null == htmlViewer || null == htmlViewer.externalBrowser)
+                || !externalBrowser && (null == htmlViewer || null == htmlViewer.brComp) ) {
 
             Factory browserFactory = externalBrowser ? IDESettings.getExternalWWWBrowser() : IDESettings.getWWWBrowser();
             if( null != browserFactory ) {

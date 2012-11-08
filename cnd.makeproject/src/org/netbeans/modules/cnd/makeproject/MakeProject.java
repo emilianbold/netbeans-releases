@@ -140,6 +140,7 @@ import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
 import org.openide.loaders.DataLoaderPool;
+import org.openide.modules.Places;
 import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
@@ -333,6 +334,7 @@ public final class MakeProject implements Project, MakeProjectListener, Runnable
                     new RemoteProjectImpl(),
                     new ToolchainProjectImpl(),
                     new CPPImpl(sources),
+                    new CacheDirectoryProviderImpl(helper.getProjectDirectory()),
                     this
                 };
         
@@ -350,29 +352,49 @@ public final class MakeProject implements Project, MakeProjectListener, Runnable
         if(!containsNativeProject) {
             lookups = augment(lookups, new NativeProjectProvider(this, projectDescriptorProvider));
         }
-        File cacheLocation = getCacheLocation(helper);
-        if (cacheLocation != null) {            
-            final FileObject cacheFO;
-            try {
-                cacheFO = FileUtil. createFolder(cacheLocation);
-                lookups = augment(lookups, new CacheDirectoryProvider() {
-                    @Override
-                    public FileObject getCacheDirectory() throws IOException {
-                        return cacheFO;
-                    }
-                });
-            } catch (IOException ex) {
-                ex.printStackTrace();
-            }
-        }
         Lookup lkp = Lookups.fixed(lookups);
         return LookupProviderSupport.createCompositeLookup(lkp, kind.getLookupMergerPath());
     }
 
+    private static class CacheDirectoryProviderImpl extends ProjectOpenedHook implements CacheDirectoryProvider {
+        
+        private final FileObject projectDirectory;
+        private FileObject cacheDirectory;
+        private final Object lock = new Object();
+
+        public CacheDirectoryProviderImpl(FileObject projectDirectory) {
+            this.projectDirectory = projectDirectory;
+        }
+
+        @Override
+        public FileObject getCacheDirectory() throws IOException {
+            synchronized (lock) {
+                if (cacheDirectory == null) {
+                    File cacheFile = getCacheLocation(projectDirectory);
+                    if (cacheFile == null) {
+                        cacheFile = Places.getCacheDirectory();
+                    }
+                    cacheDirectory = FileUtil.createFolder(cacheFile);
+                }
+                return cacheDirectory;
+            }
+        }
+
+        @Override
+        protected void projectOpened() {}
+
+        @Override
+        protected void projectClosed() {
+            synchronized (lock) {
+                cacheDirectory = null;
+            }
+        }
+    }
+        
     private static <T> T[] augment(T[] array, T value) {
         ArrayList<T> newLookups = new ArrayList<T>();
         newLookups.addAll(Arrays.asList(array));
-        newLookups.add(value);
+            newLookups.add(value);            
         return (T[]) newLookups.toArray();
     }
 
@@ -380,9 +402,7 @@ public final class MakeProject implements Project, MakeProjectListener, Runnable
      * Tries getting cache path from project.properties -
      * first private, then public
      */
-    private static File getCacheLocation(MakeProjectHelper helper) {
-
-        FileObject projectDirectory = helper.getProjectDirectory();
+    private static File getCacheLocation(FileObject projectDirectory) {
 
         String[] propertyPaths = new String[] {
             MakeProjectHelper.PRIVATE_PROPERTIES_PATH,

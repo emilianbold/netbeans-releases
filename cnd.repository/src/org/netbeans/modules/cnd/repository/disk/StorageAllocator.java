@@ -51,7 +51,6 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import org.netbeans.modules.cnd.repository.api.CacheLocation;
 import org.netbeans.modules.cnd.repository.testbench.Stats;
-import org.openide.modules.Places;
 
 /**
  *
@@ -83,7 +82,7 @@ public class StorageAllocator {
             try {
                 prefix = URLEncoder.encode(prefix, Stats.ENCODING);
             } catch (UnsupportedEncodingException ex) {
-                ex.printStackTrace();
+                ex.printStackTrace(System.err);
             } 
             
             prefix = reduceString(prefix);
@@ -113,7 +112,7 @@ public class StorageAllocator {
     }
 
     public void deleteUnitFiles (CharSequence unitName, boolean removeUnitFolder) {
-	if( Stats.TRACE_UNIT_DELETION ) System.err.printf("Deleting unit files for %s\n", unitName);
+	if( Stats.TRACE_UNIT_DELETION ) { System.err.printf("Deleting unit files for %s\n", unitName); }
         String path = getUnitStorageName(unitName);
         File pathFile = new File (path);
         deleteDirectory(pathFile, removeUnitFolder);

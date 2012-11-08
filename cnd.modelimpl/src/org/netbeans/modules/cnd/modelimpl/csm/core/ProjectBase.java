@@ -463,7 +463,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
                     if (cacheDir != null) {
                         File cacheDirFile = FileUtil.toFile(cacheDir);
                         if (cacheDirFile != null) {
-                            return new CacheLocation(cacheDirFile);
+                            return new CacheLocation(new File(cacheDirFile, "cnd/model")); //NOI18N
                         }
                     }
                 } catch (IOException ex) {

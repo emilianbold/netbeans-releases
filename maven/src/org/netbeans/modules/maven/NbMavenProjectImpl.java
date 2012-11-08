@@ -131,7 +131,11 @@ public final class NbMavenProjectImpl implements Project {
     private final Lookup lookup;
     private final Updater projectFolderUpdater;
     private final Updater userFolderUpdater;
+    
     private Reference<MavenProject> project;
+    private boolean hardReferencingMavenProject = false; //only should be true when project is open.
+    private MavenProject hardRefProject;
+    
     private ProblemReporterImpl problemReporter;
     private final @NonNull NbMavenProject watcher;
     private final M2ConfigProvider configProvider;
@@ -320,8 +324,11 @@ public final class NbMavenProjectImpl implements Project {
         MavenProject mp = project == null ? null : project.get();
         if (mp == null) {
             mp = loadOriginalMavenProject(false);
+            project = new SoftReference<MavenProject>(mp);
+            if (hardReferencingMavenProject) {
+                hardRefProject = mp;
+            }
         }
-        project = new SoftReference<MavenProject>(mp);
         return mp;
     }
     
@@ -336,6 +343,29 @@ public final class NbMavenProjectImpl implements Project {
         }
         return false;
     }
+    
+    /**
+     * open projects should always hard reference the Mavenproject instance to prevent it from
+     * being GCed, the instance will get reloaded almost instantly anyway
+     */
+    void startHardReferencingMavenPoject() {
+        synchronized (this) {
+            hardReferencingMavenProject = true;
+            MavenProject mp = project == null ? null : project.get();
+            hardRefProject = mp;
+        }
+    }
+    /**
+     * open projects should always hard reference the Mavenproject instance to prevent it from
+     * being GCed, the instance will get reloaded almost instantly anyway
+     */
+    void stopHardReferencingMavenPoject() {
+        synchronized (this) {
+            hardReferencingMavenProject = false;
+            hardRefProject = null;
+        }
+    }
+    
 
     @Messages({
         "TXT_RuntimeException=RuntimeException occurred in Apache Maven embedder while loading",
@@ -392,6 +422,9 @@ public final class NbMavenProjectImpl implements Project {
         MavenProject prj = loadOriginalMavenProject(true);
         synchronized (this) {
             project = new SoftReference<MavenProject>(prj);
+            if (hardReferencingMavenProject) {
+                hardRefProject = prj;
+            }
         }
         ACCESSOR.doFireReload(watcher);
         problemReporter.doIDEConfigChecks();

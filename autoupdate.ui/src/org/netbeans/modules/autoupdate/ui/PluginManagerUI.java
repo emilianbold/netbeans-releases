@@ -569,7 +569,7 @@ private void bHelpActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:e
     }
     
     private void selectFirstRow (UnitTable table) {
-        if (table.getSelectedRow () == -1) {
+        if (table != null && table.getSelectedRow () == -1) {
             UnitCategoryTableModel model = (UnitCategoryTableModel)table.getModel ();
             int row = findRowWithFirstUnit (model);
             if (row != -1) {
