@@ -504,8 +504,7 @@ final class PHPSQLStatement {
                     case PHP_NOWDOC_TAG:
                         switch (state) {
                             case STARTING:
-                                // Not inside a string, done
-                                break outer;
+                                // Not inside a string, but possible concatination xDOCs with outer common strings
                             case VARSUB_STRING:
                                 // Not done yet, you can concatenate heredocs too, you know...
                                 state = StringState.SUBSTRING_TERM;
