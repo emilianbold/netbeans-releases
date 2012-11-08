@@ -143,7 +143,6 @@ import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDManager;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDUtilities;
-import org.netbeans.modules.cnd.modelimpl.util.IllegalRepositoryStateException;
 import org.netbeans.modules.cnd.repository.api.RepositoryAccessor;
 import org.netbeans.modules.cnd.repository.spi.Key;
 import org.netbeans.modules.cnd.repository.spi.Persistent;
@@ -2948,7 +2947,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
     private NamespaceImpl _getGlobalNamespace() {
         NamespaceImpl ns = (NamespaceImpl) UIDCsmConverter.UIDtoNamespace(globalNamespaceUID);
         if (ns == null && preventMultiplyDiagnosticExceptionsGlobalNamespace < 5) {
-            DiagnosticExceptoins.register(new IllegalRepositoryStateException("Failed to get global namespace by key " + globalNamespaceUID)); // NOI18N
+            DiagnosticExceptoins.registerIllegalRepositoryStateException("Failed to get global namespace by key ", globalNamespaceUID); // NOI18N
             preventMultiplyDiagnosticExceptionsGlobalNamespace++;
         }
         return ns != null ? ns : FAKE_GLOBAL_NAMESPACE;
