@@ -171,6 +171,9 @@ public final class FastTypeProvider implements TypeProvider {
                     LOG.fine("Search canceled");
                     return;
                 }
+                if (m.start() == m.end()) {
+                    continue;
+                }
                 CharSequence f = fileIndex.getFilename(m.start(), m.end());
                 CharSequence pkg = fileIndex.findPath(m.start());
                 SimpleDescriptor desc = new SimpleDescriptor(p, root, f, pkg);
