@@ -1030,12 +1030,39 @@ public class JavaCompletionProvider implements CompletionProvider {
                 if (last == null) {
                     addMemberModifiers(env, mth.getModifiers().getFlags(), false);
                     addTypes(env, EnumSet.of(CLASS, INTERFACE, ENUM, ANNOTATION_TYPE, TYPE_PARAMETER), null);
-                    return;
                 }
+                return;
             } else {
                 if (offset <= sourcePositions.getStartPosition(root, retType)) {
-                    addMemberModifiers(env, mth.getModifiers().getFlags(), false);
-                    addTypes(env, EnumSet.of(CLASS, INTERFACE, ENUM, ANNOTATION_TYPE, TYPE_PARAMETER), null);
+                    TypeParameterTree lastTypeParam = null;
+                    for (TypeParameterTree tp : mth.getTypeParameters()) {
+                        int tpPos = (int)sourcePositions.getEndPosition(root, tp);
+                        if (tpPos == Diagnostic.NOPOS || offset <= tpPos)
+                            break;
+                        lastTypeParam = tp;
+                        startPos = tpPos;
+                    }
+                    TokenSequence<JavaTokenId> last = findLastNonWhitespaceToken(env, startPos, offset);
+                    if (last != null) {
+                        switch (last.token().id()) {
+                            case LT:
+                                break;
+                            case GT:
+                            case GTGT:
+                            case GTGTGT:
+                                addPrimitiveTypeKeywords(env);
+                                addKeyword(env, VOID_KEYWORD, SPACE, false);
+                                addTypes(env, EnumSet.of(CLASS, INTERFACE, ENUM, ANNOTATION_TYPE, TYPE_PARAMETER), null);
+                                break;
+                            case COMMA:
+                                break;
+                            default:
+                                addMemberModifiers(env, mth.getModifiers().getFlags(), false);
+                                addTypes(env, EnumSet.of(CLASS, INTERFACE, ENUM, ANNOTATION_TYPE, TYPE_PARAMETER), null);
+                        }
+                    } else if (lastTypeParam != null && lastTypeParam.getBounds().isEmpty()) {
+                        addKeyword(env, EXTENDS_KEYWORD, SPACE, false);
+                    }
                     return;
                 }
                 startPos = (int)sourcePositions.getEndPosition(root, retType) + 1;
