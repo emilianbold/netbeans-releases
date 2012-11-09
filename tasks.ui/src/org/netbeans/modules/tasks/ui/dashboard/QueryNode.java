@@ -76,6 +76,7 @@ public class QueryNode extends TaskContainerNode implements Comparable<QueryNode
     public QueryNode(Query query, TreeListNode parent, boolean refresh) {
         super(refresh, true, parent, query.getDisplayName());
         this.query = query;
+        updateNodes();
         queryListener = new QueryListener();
         query.addPropertyChangeListener(queryListener);
     }
@@ -140,7 +141,6 @@ public class QueryNode extends TaskContainerNode implements Comparable<QueryNode
             setError(false);
             return null;
         }
-        updateNodes();
         panel = new JPanel(new GridBagLayout());
         panel.setOpaque(false);
         synchronized (LOCK) {
