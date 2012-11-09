@@ -182,7 +182,7 @@ public class OQLCompletionProvider implements CompletionProvider {
                             }
                         }
                         if ("heap".startsWith(tokentext.trim())) { // NOI18N
-                            resultSet.addItem(new KeywordCompletionItem("00", "heap", ts.offset() + tokentext.trim().length(), tokentext.trim().length())); // NOI18N
+                            resultSet.addItem(new KeywordCompletionItem("00", "heap", ts.offset() + tokentext.trim().length() + wsPosDiff, tokentext.trim().length())); // NOI18N
                         }
 
                         if (isHeap) {
