@@ -58,6 +58,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.prefs.Preferences;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
@@ -95,6 +97,8 @@ import org.openide.util.lookup.ServiceProvider;
 @ServiceProvider(service=HintProvider.class)
 public class CodeHintProviderImpl implements HintProvider {
 
+    private static final Logger LOG = Logger.getLogger(WorkerImpl.class.getName());
+    
     public Map<HintMetadata, ? extends Collection<? extends HintDescription>> computeHints() {
         return computeHints(findLoader(), "META-INF/nb-hints/hints");
     }
@@ -326,7 +330,9 @@ public class CodeHintProviderImpl implements HintProvider {
             } catch (NoSuchMethodException ex) {
                 Exceptions.printStackTrace(ex);
             } catch (InvocationTargetException ex) {
-                Exceptions.printStackTrace(ex);
+                LOG.log(Level.INFO, null, ex);
+                //so that the exceptions are categorized better:
+                Exceptions.printStackTrace(ex.getCause());
             }
 
             return null;
