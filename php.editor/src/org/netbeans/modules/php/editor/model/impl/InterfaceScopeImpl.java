@@ -71,20 +71,6 @@ class InterfaceScopeImpl extends TypeScopeImpl implements InterfaceScope {
     }
 
     @Override
-    public String toString() {
-        StringBuilder sb = new StringBuilder();
-        sb.append(super.toString());
-        List<? extends InterfaceScope> implementedInterfaces = getSuperInterfaceScopes();
-        if (implementedInterfaces.size() > 0) {
-            sb.append(" implements ");
-            for (InterfaceScope interfaceScope : implementedInterfaces) {
-                sb.append(interfaceScope.getName()).append(" ");
-            }
-        }
-        return sb.toString();
-    }
-
-    @Override
     public String asString(PrintAs as) {
         StringBuilder retval = new StringBuilder();
         switch (as) {
@@ -204,4 +190,19 @@ class InterfaceScopeImpl extends TypeScopeImpl implements InterfaceScope {
         }
         return super.getNamespaceName();
     }
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        sb.append(super.toString());
+        List<? extends InterfaceScope> implementedInterfaces = getSuperInterfaceScopes();
+        if (implementedInterfaces.size() > 0) {
+            sb.append(" implements ");
+            for (InterfaceScope interfaceScope : implementedInterfaces) {
+                sb.append(interfaceScope.getName()).append(" ");
+            }
+        }
+        return sb.toString();
+    }
+    
 }
