@@ -158,32 +158,6 @@ class ClassScopeImpl extends TypeScopeImpl implements ClassScope, VariableNameFa
     }
 
     @Override
-    public String toString() {
-        StringBuilder sb = new StringBuilder();
-        sb.append(super.toString());
-        Collection<? extends ClassScope> extendedClasses = getSuperClasses();
-        ClassScope extClass = ModelUtils.getFirst(extendedClasses);
-        if (extClass != null) {
-            sb.append(" extends ").append(extClass.getName());//NOI18N
-        }
-        List<? extends InterfaceScope> implementedInterfaces = getSuperInterfaceScopes();
-        if (implementedInterfaces.size() > 0) {
-            sb.append(" implements "); //NOI18N
-            for (InterfaceScope interfaceScope : implementedInterfaces) {
-                sb.append(interfaceScope.getName()).append(" ");
-            }
-        }
-        Collection<? extends TraitScope> traits = getTraits();
-        if (traits.size() > 0) {
-            sb.append(" uses "); //NOI18N
-            for (TraitScope traitScope : traits) {
-                sb.append(traitScope.getName()).append(" ");
-            }
-        }
-        return sb.toString();
-    }
-
-    @Override
     public String asString(PrintAs as) {
         StringBuilder retval = new StringBuilder();
         switch (as) {
@@ -596,6 +570,32 @@ class ClassScopeImpl extends TypeScopeImpl implements ClassScope, VariableNameFa
             }
         }
         return result;
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        sb.append(super.toString());
+        Collection<? extends ClassScope> extendedClasses = getSuperClasses();
+        ClassScope extClass = ModelUtils.getFirst(extendedClasses);
+        if (extClass != null) {
+            sb.append(" extends ").append(extClass.getName());//NOI18N
+        }
+        List<? extends InterfaceScope> implementedInterfaces = getSuperInterfaceScopes();
+        if (implementedInterfaces.size() > 0) {
+            sb.append(" implements "); //NOI18N
+            for (InterfaceScope interfaceScope : implementedInterfaces) {
+                sb.append(interfaceScope.getName()).append(" ");
+            }
+        }
+        Collection<? extends TraitScope> traits = getTraits();
+        if (traits.size() > 0) {
+            sb.append(" uses "); //NOI18N
+            for (TraitScope traitScope : traits) {
+                sb.append(traitScope.getName()).append(" ");
+            }
+        }
+        return sb.toString();
     }
 
 }
