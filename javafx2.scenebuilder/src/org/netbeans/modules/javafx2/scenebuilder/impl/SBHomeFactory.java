@@ -140,8 +140,21 @@ public class SBHomeFactory {
                     ver = s;
                     break;
                 }
-            }            
-            return getHomeForPath(customPath, LAUNCHER_PATH + ver, PROPERTIES_PATH);
+            }
+            File f = new File(customPath + File.separator + LAUNCHER_PATH + ver);
+            if(f != null && f.exists() && f.isFile()) {
+                return getHomeForPath(customPath, LAUNCHER_PATH + ver, PROPERTIES_PATH);
+            }
+            // launcher file name derived from customPath is incorrect - try all other valid options
+            List<String> suffixes = new ArrayList<String>(VER_CURRENT);
+            suffixes.add("");
+            for(String s : suffixes) {
+                f = new File(customPath + File.separator + LAUNCHER_PATH + s);
+                if(f != null && f.exists() && f.isFile()) {
+                    return getHomeForPath(customPath, LAUNCHER_PATH + s, PROPERTIES_PATH);
+                }
+            }
+            return null;
         }
     };
     
@@ -155,6 +168,13 @@ public class SBHomeFactory {
         }
     }
     
+    /**
+     * Returns Home if path is valid path and launcherPath points at existing launcher file
+     * @param path
+     * @param launcherPath
+     * @param propertiesPath
+     * @return 
+     */
     private static Home getHomeForPath(String path, String launcherPath, String propertiesPath) {
         String homePath = path;
         if(path.startsWith("~")) {
@@ -165,18 +185,22 @@ public class SBHomeFactory {
         if (installDir != null && installDir.exists() && installDir.isDirectory()) {
             FileObject installDirFO = FileUtil.toFileObject(installDir);
 
-            FileObject propertiesFO = installDirFO.getFileObject(propertiesPath); // NOI18N
-            if (propertiesFO != null && propertiesFO.isValid() && propertiesFO.isData()) {
-                try {
-                    Properties props = new Properties();
-                    FileReader reader = new FileReader(FileUtil.toFile(propertiesFO));
+            File launcher = new File(homePath + File.separator + launcherPath);
+            if(launcher != null && launcher.exists() && launcher.isFile()) {
+            
+                FileObject propertiesFO = installDirFO.getFileObject(propertiesPath); // NOI18N
+                if (propertiesFO != null && propertiesFO.isValid() && propertiesFO.isData()) {
                     try {
-                        props.load(reader);
-                    } finally {
-                        reader.close();
+                        Properties props = new Properties();
+                        FileReader reader = new FileReader(FileUtil.toFile(propertiesFO));
+                        try {
+                            props.load(reader);
+                        } finally {
+                            reader.close();
+                        }
+                        return new Home(homePath, launcherPath, propertiesPath, props.getProperty("version", "1.0")); // NOI18N
+                    } catch (IOException e) {
                     }
-                    return new Home(homePath, launcherPath, propertiesPath, props.getProperty("version", "1.0")); // NOI18N
-                } catch (IOException e) {
                 }
             }
         }
