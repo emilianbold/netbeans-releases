@@ -44,6 +44,7 @@ package org.netbeans.modules.css.visual;
 import java.awt.Component;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -57,6 +58,9 @@ import javax.swing.JList;
 import javax.swing.ListCellRenderer;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
+import org.netbeans.modules.css.indexing.api.CssIndex;
 import org.netbeans.modules.css.lib.api.CssParserResult;
 import org.netbeans.modules.css.model.api.Body;
 import org.netbeans.modules.css.model.api.Declarations;
@@ -78,6 +82,7 @@ import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.spi.ParseException;
+import org.netbeans.modules.web.common.api.DependenciesGraph;
 import org.netbeans.modules.web.common.api.WebUtils;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
@@ -100,21 +105,33 @@ import org.openide.util.NbBundle;
 })
 public class CreateRulePanel extends javax.swing.JPanel {
 
-    private RuleEditorPanel ruleEditorPanel;
     private String selector;
+    
     private String[] SELECTOR_TYPE_DESCRIPTIONS = new String[]{
         Bundle.class_selector_descr(),
         Bundle.id_selector_descr(),
         Bundle.element_selector_descr(),
         Bundle.compound_selector_descr()
     };
-
     /**
-     * Creates new form AddRuleDialog
+     * Models for stylesheets and at rules comboboxes.
      */
-    public CreateRulePanel(RuleEditorPanel ruleEditorPanel) {
-        this.ruleEditorPanel = ruleEditorPanel;
-
+    private DefaultComboBoxModel STYLESHEETS_MODEL, AT_RULES_MODEL;
+    
+    /**
+     * Context of the create rule panel.
+     */
+    private FileObject context;
+    
+    /**
+     * Css source {@link Model} for the selected stylesheet.
+     */
+    private Model selectedStyleSheetModel;
+    
+    public CreateRulePanel() {
+        STYLESHEETS_MODEL = new DefaultComboBoxModel();
+        AT_RULES_MODEL = new DefaultComboBoxModel();
+        
         initComponents();
 
         selectorTypeList.addListSelectionListener(new ListSelectionListener() {
@@ -167,6 +184,80 @@ public class CreateRulePanel extends javax.swing.JPanel {
 
     }
 
+    public void setContext(FileObject context) {
+        this.context = context;
+        updateModels();
+    }
+    
+    private void updateModels() {
+        //update stylesheets combobox model
+        updateStyleSheetsModel();
+        
+        //create css model for the selected stylesheet
+        updateCssModel(context);
+        
+        //update at rules model
+        updateAtRulesModel();
+    }
+    
+    private void updateStyleSheetsModel() {
+        try {
+            STYLESHEETS_MODEL.removeAllElements();
+            Project project = FileOwnerQuery.getOwner(context);
+            if(project == null) {
+                return ;
+            }
+            CssIndex index = CssIndex.create(project);
+            for(FileObject file : index.getAllIndexedFiles()) {
+                if("text/css".equals(file.getMIMEType())) {
+                    STYLESHEETS_MODEL.addElement(file);                    
+                }
+            }
+            STYLESHEETS_MODEL.setSelectedItem(context);
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        
+    }
+    
+    private void updateCssModel(FileObject file) {
+        try {
+            Source source = Source.create(file);
+            ParserManager.parse(Collections.singleton(source), new UserTask() {
+                @Override
+                public void run(ResultIterator resultIterator) throws Exception {
+                    resultIterator = WebUtils.getResultIterator(resultIterator, "text/css");
+                    if (resultIterator != null) {
+                        CssParserResult result = (CssParserResult) resultIterator.getParserResult();
+                        selectedStyleSheetModel = Model.getModel(result);
+                    }
+                }
+            });
+        } catch (ParseException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+    }
+    
+    private void updateAtRulesModel() {
+        AT_RULES_MODEL.removeAllElements();
+        
+        AT_RULES_MODEL.addElement(null);
+        selectedStyleSheetModel.runReadTask(new Model.ModelTask() {
+            @Override
+            public void run(StyleSheet styleSheet) {
+                ModelVisitor visitor = new ModelVisitor.Adapter() {
+                    @Override
+                    public void visitMedia(Media media) {
+                        String displayName = selectedStyleSheetModel.getElementSource(media.getMediaQueryList()).toString();
+                        AT_RULES_MODEL.addElement(new MediaItem(displayName, media));
+                    }
+                };
+                styleSheet.accept(visitor);
+            }
+        });
+
+    }
+    
     /**
      * call outside of AWT thread, it does some I/Os
      */
@@ -176,13 +267,12 @@ public class CreateRulePanel extends javax.swing.JPanel {
             return;
         }
 
-        final Model model = ruleEditorPanel.getModel();
         //called if the dialog is confirmed
-        model.runWriteTask(new Model.ModelTask() {
+        selectedStyleSheetModel.runWriteTask(new Model.ModelTask() {
             @Override
             public void run(StyleSheet styleSheet) {
 
-                ElementFactory factory = model.getElementFactory();
+                ElementFactory factory = selectedStyleSheetModel.getElementFactory();
                 Selector s = factory.createSelector(selector);
                 SelectorsGroup sg = factory.createSelectorsGroup(s);
                 Declarations ds = factory.createDeclarations();
@@ -204,8 +294,8 @@ public class CreateRulePanel extends javax.swing.JPanel {
                 }
 
                 try {
-                    model.applyChanges();
-                    selectTheRuleInEditorIfOpened(model, rule);
+                    selectedStyleSheetModel.applyChanges();
+                    selectTheRuleInEditorIfOpened(selectedStyleSheetModel, rule);
                 } catch (Exception /*ParseException, IOException, BadLocationException*/ ex) {
                     Exceptions.printStackTrace(ex);
                 }
@@ -232,7 +322,7 @@ public class CreateRulePanel extends javax.swing.JPanel {
                         public void run(StyleSheet styleSheet) {
                             ModelUtils utils = new ModelUtils(model);
                             Rule match = utils.findMatchingRule(omodel, orule);
-                            if(match != null) {
+                            if (match != null) {
                                 ruleOffset.set(match.getStartOffset());
                             }
                         }
@@ -240,8 +330,8 @@ public class CreateRulePanel extends javax.swing.JPanel {
                 }
             }
         });
-        if(ruleOffset.get() == -1) {
-            return ;
+        if (ruleOffset.get() == -1) {
+            return;
         }
         Mutex.EVENT.readAccess(new Runnable() {
             @Override
@@ -268,10 +358,6 @@ public class CreateRulePanel extends javax.swing.JPanel {
         return ((MediaItem) selected).getMedia();
     }
 
-    private ComboBoxModel createStylesheetsModel() {
-        return new DefaultComboBoxModel(new Object[]{getFile().getNameExt()});
-    }
-
     private ComboBoxModel createSelectorModel() {
         HtmlModel model = HtmlModelFactory.getModel(HtmlVersion.HTML5);
         Collection<String> tagNames = new ArrayList<String>();
@@ -281,32 +367,6 @@ public class CreateRulePanel extends javax.swing.JPanel {
         }
         return new DefaultComboBoxModel(tagNames.toArray());
 
-    }
-
-    private ComboBoxModel createAtRulesModel() {
-        final Model model = ruleEditorPanel.getModel();
-
-        //adding just medias for now
-        //TODO, add page, font-face, ...
-        final List<MediaItem> medias = new ArrayList<MediaItem>();
-        medias.add(null);
-
-        model.runReadTask(new Model.ModelTask() {
-            @Override
-            public void run(StyleSheet styleSheet) {
-                ModelVisitor visitor = new ModelVisitor.Adapter() {
-                    @Override
-                    public void visitMedia(Media media) {
-                        String displayName = model.getElementSource(media.getMediaQueryList()).toString();
-                        medias.add(new MediaItem(displayName, media));
-                    }
-                };
-                styleSheet.accept(visitor);
-            }
-        });
-
-
-        return new DefaultComboBoxModel(medias.toArray());
     }
 
     private ListCellRenderer createAtRulesRenderer() {
@@ -323,10 +383,16 @@ public class CreateRulePanel extends javax.swing.JPanel {
             }
         };
     }
-
-    private FileObject getFile() {
-        Model cssModel = ruleEditorPanel.getModel();
-        return cssModel.getLookup().lookup(FileObject.class);
+    
+    private ListCellRenderer createStylesheetsRenderer() {
+        return new DefaultListCellRenderer() {
+            @Override
+            public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+                Component c = super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+                setText(((FileObject) value).getNameExt());
+                return c;
+            }
+        };
     }
 
     private static class MediaItem {
@@ -395,10 +461,10 @@ public class CreateRulePanel extends javax.swing.JPanel {
 
         org.openide.awt.Mnemonics.setLocalizedText(jLabel3, org.openide.util.NbBundle.getMessage(CreateRulePanel.class, "CreateRulePanel.jLabel3.text")); // NOI18N
 
-        styleSheetCB.setModel(createStylesheetsModel());
-        styleSheetCB.setEnabled(false);
+        styleSheetCB.setModel(STYLESHEETS_MODEL);
+        styleSheetCB.setRenderer(createStylesheetsRenderer());
 
-        atRuleCB.setModel(createAtRulesModel());
+        atRuleCB.setModel(AT_RULES_MODEL);
         atRuleCB.setRenderer(createAtRulesRenderer());
 
         org.openide.awt.Mnemonics.setLocalizedText(jLabel4, org.openide.util.NbBundle.getMessage(CreateRulePanel.class, "CreateRulePanel.jLabel4.text")); // NOI18N
@@ -465,4 +531,5 @@ public class CreateRulePanel extends javax.swing.JPanel {
     private javax.swing.JList selectorTypeList;
     private javax.swing.JComboBox styleSheetCB;
     // End of variables declaration//GEN-END:variables
+    
 }

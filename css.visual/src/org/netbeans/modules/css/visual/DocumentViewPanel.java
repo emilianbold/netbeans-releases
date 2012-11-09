@@ -53,6 +53,7 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.beans.PropertyVetoException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
@@ -66,6 +67,7 @@ import javax.swing.JTree;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
+import javax.swing.border.EmptyBorder;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
@@ -77,6 +79,7 @@ import org.netbeans.modules.css.model.api.Model;
 import org.netbeans.modules.css.model.api.ModelUtils;
 import org.netbeans.modules.css.model.api.Rule;
 import org.netbeans.modules.css.model.api.StyleSheet;
+import org.netbeans.modules.css.visual.actions.CreateRuleAction;
 import org.netbeans.modules.css.visual.api.RuleEditorController;
 import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
@@ -127,6 +130,8 @@ public class DocumentViewPanel extends javax.swing.JPanel implements ExplorerMan
     private Filter filter = new Filter();
     private DocumentViewModel documentModel;
 
+    private final CreateRuleAction createRuleAction;
+    
     private final ChangeListener DOCUMENT_VIEW_MODEL_LISTENER = new ChangeListener() {
         @Override
         public void stateChanged(ChangeEvent ce) {
@@ -139,10 +144,14 @@ public class DocumentViewPanel extends javax.swing.JPanel implements ExplorerMan
      */
     public DocumentViewPanel(Lookup cssStylesLookup) {
         this.cssStylesLookup = cssStylesLookup;
+
+        createRuleAction = new CreateRuleAction();
+        
         Result<FileObject> result = cssStylesLookup.lookupResult(FileObject.class);
         result.addLookupListener(new LookupListener() {
             @Override
             public void resultChanged(LookupEvent ev) {
+                //current stylesheet changed
                 contextChanged();
             }
         });
@@ -152,6 +161,7 @@ public class DocumentViewPanel extends javax.swing.JPanel implements ExplorerMan
         lookupResult.addLookupListener(new LookupListener() {
             @Override
             public void resultChanged(LookupEvent ev) {
+                //selected node changed
                 Node[] selectedNodes = manager.getSelectedNodes();
                 Node selected = selectedNodes.length > 0 ? selectedNodes[0] : null;
                 if (selected != null) {
@@ -160,6 +170,11 @@ public class DocumentViewPanel extends javax.swing.JPanel implements ExplorerMan
                         selectRuleInRuleEditor(ruleHandle);
                         CssStylesListenerSupport.fireRuleSelected(ruleHandle.getRule());
                     }
+                    Location location = selected.getLookup().lookup(Location.class);
+                    if(location != null) {
+                        createRuleAction.setStyleSheet(location.getFile());
+                    }
+                    
                 }
             }
         });
@@ -167,8 +182,40 @@ public class DocumentViewPanel extends javax.swing.JPanel implements ExplorerMan
         initComponents();
 
         initTreeView();
-        initFilter();
+        
+        //create toolbar
+        CustomToolbar toolbar = new CustomToolbar();
+        toolbar.addButton(filterToggleButton);
+        toolbar.addLineSeparator();
+        toolbar.addButton(createRuleToggleButton);
+        
+        northPanel.add(toolbar, BorderLayout.EAST);
+        
+          //add document listener to the filter text field 
+        filterTextField.getDocument().addDocumentListener(new DocumentListener() {
+ 
+            private void contentChanged() {
+                filter.setPattern(filterTextField.getText());
+            }
+            
+            @Override
+            public void insertUpdate(DocumentEvent e) {
+                contentChanged();
+            }
 
+            @Override
+            public void removeUpdate(DocumentEvent e) {
+                contentChanged();
+            }
+
+            @Override
+            public void changedUpdate(DocumentEvent e) {
+            }
+        });
+        
+        setFilterVisible(true);
+        filterToggleButton.setSelected(true);
+        
         contextChanged();
     }
 
@@ -227,6 +274,9 @@ public class DocumentViewPanel extends javax.swing.JPanel implements ExplorerMan
      */
     private void contextChanged() {
         final FileObject context = getContext();
+        
+        //update the action context
+        createRuleAction.setStyleSheet(context);
 
         //dispose old model
         if (documentModel != null) {
@@ -295,7 +345,7 @@ public class DocumentViewPanel extends javax.swing.JPanel implements ExplorerMan
     /**
      * Initializes the filter section of this panel.
      */
-    private void initFilter() {
+    private JPanel getFilterPanel() {
         JPanel panel = new JPanel();
         Color background;
         if(CssStylesPanel.AQUA) {
@@ -357,7 +407,7 @@ public class DocumentViewPanel extends javax.swing.JPanel implements ExplorerMan
                 .addComponent(label)
                 .addComponent(field)
                 .addComponent(button)));
-        add(panel, BorderLayout.PAGE_START);
+        return panel;
     }
 
     final void updateContent() {
@@ -522,6 +572,25 @@ public class DocumentViewPanel extends javax.swing.JPanel implements ExplorerMan
         };
     }
 
+     private void setFilterVisible(boolean visible) {
+        northPanel.remove(filterTextField);
+        if(visible) {
+            //update the UI
+            northPanel.add(filterTextField, BorderLayout.CENTER);
+            //set the filter text to the node
+            filter.setPattern(filterTextField.getText());
+
+            filterTextField.requestFocus();
+        } else {
+            //just remove the filter text from the node, but keep it in the field
+            //so next time it is opened it will contain the old value
+            filter.setPattern(null);
+        }
+        northPanel.revalidate();
+        northPanel.repaint();
+    }
+    
+    
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -531,8 +600,52 @@ public class DocumentViewPanel extends javax.swing.JPanel implements ExplorerMan
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
+        createRuleToggleButton = new javax.swing.JToggleButton();
+        filterToggleButton = new javax.swing.JToggleButton();
+        filterTextField = new javax.swing.JTextField();
+        northPanel = new javax.swing.JPanel();
+
+        createRuleToggleButton.setAction(createRuleAction);
+        createRuleToggleButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/css/visual/resources/newRule.png"))); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(createRuleToggleButton, null);
+        createRuleToggleButton.setToolTipText(org.openide.util.NbBundle.getMessage(DocumentViewPanel.class, "DocumentViewPanel.createRuleToggleButton.toolTipText")); // NOI18N
+        createRuleToggleButton.setFocusable(false);
+        createRuleToggleButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                createRuleToggleButtonActionPerformed(evt);
+            }
+        });
+
+        filterToggleButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/css/visual/resources/find.png"))); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(filterToggleButton, null);
+        filterToggleButton.setToolTipText(org.openide.util.NbBundle.getMessage(DocumentViewPanel.class, "DocumentViewPanel.filterToggleButton.toolTipText")); // NOI18N
+        filterToggleButton.setFocusable(false);
+        filterToggleButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                filterToggleButtonActionPerformed(evt);
+            }
+        });
+
+        filterTextField.setText(org.openide.util.NbBundle.getMessage(DocumentViewPanel.class, "DocumentViewPanel.filterTextField.text")); // NOI18N
+
         setLayout(new java.awt.BorderLayout());
+
+        northPanel.setLayout(new java.awt.BorderLayout());
+        add(northPanel, java.awt.BorderLayout.NORTH);
     }// </editor-fold>//GEN-END:initComponents
+
+    private void filterToggleButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_filterToggleButtonActionPerformed
+        setFilterVisible(filterToggleButton.isSelected());
+    }//GEN-LAST:event_filterToggleButtonActionPerformed
+
+    private void createRuleToggleButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_createRuleToggleButtonActionPerformed
+        createRuleToggleButton.setSelected(false); //disable selected as it's a toggle button
+    }//GEN-LAST:event_createRuleToggleButtonActionPerformed
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JToggleButton createRuleToggleButton;
+    private javax.swing.JTextField filterTextField;
+    private javax.swing.JToggleButton filterToggleButton;
+    private javax.swing.JPanel northPanel;
     // End of variables declaration//GEN-END:variables
 }

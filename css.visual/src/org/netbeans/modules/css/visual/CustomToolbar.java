@@ -41,7 +41,7 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.css.visual.filters;
+package org.netbeans.modules.css.visual;
 
 import java.awt.Dimension;
 import java.awt.Graphics;
@@ -56,12 +56,12 @@ import javax.swing.JSeparator;
 import javax.swing.JToolBar;
 import javax.swing.border.EmptyBorder;
 
-public class RuleEditorToolbar extends Box {
+public class CustomToolbar extends Box {
 
     private static Dimension space = new Dimension(4, 0);
     private JToolBar toolbar;
 
-    public RuleEditorToolbar() {
+    public CustomToolbar() {
         super(BoxLayout.X_AXIS);
         initPanel();
     }
