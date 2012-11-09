@@ -42,7 +42,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.css.visual.filters;
+package org.netbeans.modules.css.visual;
 
 import java.awt.event.ActionEvent;
 import javax.swing.AbstractAction;

@@ -84,9 +84,6 @@ import org.netbeans.modules.css.visual.actions.RemovePropertyAction;
 import org.netbeans.modules.css.visual.api.DeclarationInfo;
 import org.netbeans.modules.css.visual.api.RuleEditorController;
 import org.netbeans.modules.css.visual.api.ViewMode;
-import org.netbeans.modules.css.visual.filters.RuleEditorToolbar;
-import org.netbeans.modules.css.visual.filters.RuleEditorViews;
-import org.netbeans.modules.css.visual.filters.ViewActions;
 import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.api.Source;
@@ -153,11 +150,11 @@ public class RuleEditorPanel extends JPanel {
     private Model model;
     private Rule rule;
     private Action addPropertyAction;
-    private Action addRuleAction;
+    private CreateRuleAction addRuleAction;
     private Action removeRuleAction;
     private Action[] actions;
     private RuleEditorViews views;
-    private RuleEditorToolbar toolbar;
+    private CustomToolbar toolbar;
     private ViewMode viewMode;
     public RuleEditorNode node;
     private PropertyChangeSupport CHANGE_SUPPORT = new PropertyChangeSupport(this);
@@ -226,6 +223,11 @@ public class RuleEditorPanel extends JPanel {
     public RuleEditorPanel(boolean addPropertyMode) {
         this.addPropertyMode = addPropertyMode;
         
+        //initialize actions
+        addPropertyAction = new AddPropertyAction(this);
+        addRuleAction = new CreateRuleAction();
+        removeRuleAction = new DeleteRuleAction(this);
+
         //init default components
         initComponents();
 
@@ -239,7 +241,7 @@ public class RuleEditorPanel extends JPanel {
         views = new RuleEditorViews(this);
 
         //create toolbar
-        toolbar = new RuleEditorToolbar();
+        toolbar = new CustomToolbar();
         
         if(!addPropertyMode) {
             toolbar.addButton(filterToggleButton);
@@ -253,11 +255,6 @@ public class RuleEditorPanel extends JPanel {
         toolbar.addSpaceSeparator();
         toolbar.addButton(views.getAllToggleButton());
         
-        //initialize actions
-        addPropertyAction = new AddPropertyAction(this);
-        addRuleAction = new CreateRuleAction(this);
-        removeRuleAction = new DeleteRuleAction(this);
-
         //keep actions status
         addRuleEditorListener(new PropertyChangeListener() {
             @Override
@@ -309,18 +306,9 @@ public class RuleEditorPanel extends JPanel {
             buildButtonPopup.add(removeRuleAction);
             
             toolbar.addLineSeparator();
-            toolbar.addButton(buildButton);
-            buildButton.addActionListener(new ActionListener() {
-                @Override
-                public void actionPerformed(ActionEvent ae) {
-                    buildButton.setSelected(false);
-                    buildButtonPopup.setInvoker(RuleEditorPanel.this);
-                    Point locationOnScreen = buildButton.getLocationOnScreen();
-                    Point popupLocationOnScreen = new Point((int)locationOnScreen.getX(), (int)(locationOnScreen.getY() + buildButton.getHeight()));
-                    buildButtonPopup.setLocation(popupLocationOnScreen);
-                    buildButtonPopup.setVisible(true);
-                }
-            });
+            toolbar.addButton(createRuleToggleButton);
+            toolbar.addButton(createPropertyToggleButton);
+            
         }
 
         titleLabel.setText(null);
@@ -496,6 +484,9 @@ public class RuleEditorPanel extends JPanel {
 
         CHANGE_SUPPORT.firePropertyChange(RuleEditorController.PropertyNames.MODEL_SET.name(), oldModel, this.model);
 
+        //update the context in create rule action
+        addRuleAction.setStyleSheet(model.getLookup().lookup(FileObject.class));
+        
         if (this.rule != null) {
             //resolve the old rule from the previous model to corresponding rule in the new model
             final AtomicReference<Rule> rule_ref = new AtomicReference<Rule>();
@@ -629,8 +620,9 @@ public class RuleEditorPanel extends JPanel {
 
         cancelFilterLabel = new javax.swing.JLabel();
         filterTextField = new javax.swing.JTextField();
-        buildButton = new javax.swing.JToggleButton();
+        createRuleToggleButton = new javax.swing.JToggleButton();
         filterToggleButton = new javax.swing.JToggleButton();
+        createPropertyToggleButton = new javax.swing.JToggleButton();
         northPanel = new javax.swing.JPanel();
         northEastPanel = new javax.swing.JPanel();
         northWestPanel = new javax.swing.JPanel();
@@ -648,9 +640,16 @@ public class RuleEditorPanel extends JPanel {
         filterTextField.setMaximumSize(new java.awt.Dimension(32767, 32767));
         filterTextField.setMinimumSize(new java.awt.Dimension(60, 28));
 
-        buildButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/css/visual/resources/build.png"))); // NOI18N
-        buildButton.setText(null);
-        buildButton.setFocusable(false);
+        createRuleToggleButton.setAction(addRuleAction);
+        createRuleToggleButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/css/visual/resources/newRule.png"))); // NOI18N
+        createRuleToggleButton.setText(null);
+        createRuleToggleButton.setToolTipText(org.openide.util.NbBundle.getMessage(RuleEditorPanel.class, "DocumentViewPanel.createRuleToggleButton.toolTipText")); // NOI18N
+        createRuleToggleButton.setFocusable(false);
+        createRuleToggleButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                createRuleToggleButtonActionPerformed(evt);
+            }
+        });
 
         filterToggleButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/css/visual/resources/find.png"))); // NOI18N
         filterToggleButton.setText(null);
@@ -658,6 +657,17 @@ public class RuleEditorPanel extends JPanel {
         filterToggleButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 filterToggleButtonActionPerformed(evt);
+            }
+        });
+
+        createPropertyToggleButton.setAction(addPropertyAction);
+        createPropertyToggleButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/css/visual/resources/newProperty.png"))); // NOI18N
+        createPropertyToggleButton.setText(null);
+        createPropertyToggleButton.setToolTipText(org.openide.util.NbBundle.getMessage(RuleEditorPanel.class, "RuleEditorPanel.createPropertyToggleButton.toolTipText")); // NOI18N
+        createPropertyToggleButton.setFocusable(false);
+        createPropertyToggleButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                createPropertyToggleButtonActionPerformed(evt);
             }
         });
 
@@ -717,9 +727,18 @@ public class RuleEditorPanel extends JPanel {
         
     }//GEN-LAST:event_filterToggleButtonActionPerformed
 
+    private void createRuleToggleButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_createRuleToggleButtonActionPerformed
+        createRuleToggleButton.setSelected(false);
+    }//GEN-LAST:event_createRuleToggleButtonActionPerformed
+
+    private void createPropertyToggleButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_createPropertyToggleButtonActionPerformed
+        createPropertyToggleButton.setSelected(false);
+    }//GEN-LAST:event_createPropertyToggleButtonActionPerformed
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JToggleButton buildButton;
     private javax.swing.JLabel cancelFilterLabel;
+    private javax.swing.JToggleButton createPropertyToggleButton;
+    private javax.swing.JToggleButton createRuleToggleButton;
     private javax.swing.JTextField filterTextField;
     private javax.swing.JToggleButton filterToggleButton;
     private javax.swing.JPanel northEastPanel;

@@ -151,15 +151,17 @@
     <Component class="javax.swing.JComboBox" name="styleSheetCB">
       <Properties>
         <Property name="model" type="javax.swing.ComboBoxModel" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
-          <Connection code="createStylesheetsModel()" type="code"/>
+          <Connection code="STYLESHEETS_MODEL" type="code"/>
         </Property>
-        <Property name="enabled" type="boolean" value="false"/>
+        <Property name="renderer" type="javax.swing.ListCellRenderer" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
+          <Connection code="createStylesheetsRenderer()" type="code"/>
+        </Property>
       </Properties>
     </Component>
     <Component class="javax.swing.JComboBox" name="atRuleCB">
       <Properties>
         <Property name="model" type="javax.swing.ComboBoxModel" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
-          <Connection code="createAtRulesModel()" type="code"/>
+          <Connection code="AT_RULES_MODEL" type="code"/>
         </Property>
         <Property name="renderer" type="javax.swing.ListCellRenderer" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
           <Connection code="createAtRulesRenderer()" type="code"/>
