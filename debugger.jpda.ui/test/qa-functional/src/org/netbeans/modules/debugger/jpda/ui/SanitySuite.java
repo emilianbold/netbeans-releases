@@ -39,58 +39,20 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.debugger.jpda.ui;
+
+import junit.framework.Test;
+import org.netbeans.jellytools.JellyTestCase;
+
 /**
- * JComboBox with auto completion feature.
+ * Run all tests in the same instance of the IDE.
  *
- * @author marekfukala
+ * @author Jiri Kovalsky
  */
-package org.netbeans.modules.css.visual;
+public class SanitySuite {
 
-import java.util.Collection;
-import java.util.Comparator;
-import java.util.TreeSet;
-import javax.swing.DefaultComboBoxModel;
-import javax.swing.JComboBox;
-import org.netbeans.modules.css.lib.api.properties.Properties;
-import org.netbeans.modules.css.lib.api.properties.PropertyDefinition;
-import org.openide.filesystems.FileObject;
-
-public class AutocompleteJComboBox extends JComboBox {
-    
-    private static Comparator PROPERTY_COMPARATOR = new Comparator<String>() {
-        @Override
-        public int compare(String s1, String s2) {
-            //sort the vendor spec. props below the common ones
-            boolean s1vendor = Properties.isVendorSpecificPropertyName(s1);
-            boolean s2vendor = Properties.isVendorSpecificPropertyName(s2);
-
-            if (s1vendor && !s2vendor) {
-                return +1;
-            } else if (!s1vendor && s2vendor) {
-                return -1;
-            }
-            //delegate to string compare
-            return s1.compareTo(s2);
-        }
-    };
-
-    public AutocompleteJComboBox(FileObject file) {
-        super(new DefaultComboBoxModel(getProperties(file)));
+    public static Test suite() {
+        return JellyTestCase.emptyConfiguration().
+                addTest(AntSanityTest.class, AntSanityTest.testNames).suite();
     }
-
-    private static String[] getProperties(FileObject file) {
-        Collection<String> properties = new TreeSet<String>(PROPERTY_COMPARATOR);
-        for (PropertyDefinition pdef : Properties.getPropertyDefinitions(file, true)) {
-            properties.add(pdef.getName());
-        }
-        return properties.toArray(new String[0]);
-    }
-
-    @Override
-    public void addNotify() {
-        super.addNotify();
-        //make sure the combo list is opened when editing starts
-        setPopupVisible( true );
-    }
-    
 }

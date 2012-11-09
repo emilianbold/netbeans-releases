@@ -257,7 +257,7 @@ public class JsStructureScanner implements StructureScanner {
                 JsStructureItem item = (JsStructureItem) obj;
                 if (item.getName() != null && this.getName() != null) {
                     thesame = item.modelElement.getName().equals(modelElement.getName()) 
-                            && item.modelElement.getOffsetRange() == modelElement.getOffsetRange();
+                            && item.modelElement.getOffsetRange().equals(modelElement.getOffsetRange());
                 }
             }
             return thesame;

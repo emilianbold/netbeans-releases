@@ -104,7 +104,11 @@ public final class HelpCtxProcessor implements Environment.Provider {
                     if (!el.getNodeName().equals("helpctx")) { // NOI18N
                         throw new IOException();
                     }
-                    return new ShortcutAction(obj, el.getAttribute("id"), Boolean.valueOf(el.getAttribute("showmaster")));
+                    Action a = new ShortcutAction(obj, el.getAttribute("id"), Boolean.valueOf(el.getAttribute("showmaster")));
+                    if (obj.getPrimaryFile().getAttribute("iconBase") != null) { //NOI18N
+                        a.putValue("iconBase", obj.getPrimaryFile().getAttribute("iconBase")); //NOI18N
+                    }
+                    return a;
                 } catch (IOException x) {
                     throw x;
                 } catch (Exception x) {

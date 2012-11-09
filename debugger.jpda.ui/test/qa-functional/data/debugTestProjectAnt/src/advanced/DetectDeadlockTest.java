@@ -39,58 +39,54 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-/**
- * JComboBox with auto completion feature.
- *
- * @author marekfukala
- */
-package org.netbeans.modules.css.visual;
 
-import java.util.Collection;
-import java.util.Comparator;
-import java.util.TreeSet;
-import javax.swing.DefaultComboBoxModel;
-import javax.swing.JComboBox;
-import org.netbeans.modules.css.lib.api.properties.Properties;
-import org.netbeans.modules.css.lib.api.properties.PropertyDefinition;
-import org.openide.filesystems.FileObject;
+package advanced;
 
-public class AutocompleteJComboBox extends JComboBox {
-    
-    private static Comparator PROPERTY_COMPARATOR = new Comparator<String>() {
-        @Override
-        public int compare(String s1, String s2) {
-            //sort the vendor spec. props below the common ones
-            boolean s1vendor = Properties.isVendorSpecificPropertyName(s1);
-            boolean s2vendor = Properties.isVendorSpecificPropertyName(s2);
+public class DetectDeadlockTest {
 
-            if (s1vendor && !s2vendor) {
-                return +1;
-            } else if (!s1vendor && s2vendor) {
-                return -1;
+    static Object mutex1 = new Object();
+    static Object mutex2 = new Object();
+
+    public DetectDeadlockTest() {
+    }
+
+    public static void main(String[] args) {
+        Thread1 t1 = new Thread1();
+        Thread2 t2 = new Thread2();
+        t1.start();
+        t2.start();
+    }
+
+    static class Thread1 extends Thread {
+
+        public void run() {
+            synchronized (mutex1) {
+                System.out.println("mutex 1");
+                try {
+                    Thread.sleep(100);
+                } catch (Exception ex) {}
+                synchronized (mutex2) {
+                    try {
+                        java.lang.System.out.println("mutex 2 - mutex 1");
+                        mutex2.wait(100);
+                    } catch (InterruptedException ex) {}
+                }
             }
-            //delegate to string compare
-            return s1.compareTo(s2);
         }
-    };
-
-    public AutocompleteJComboBox(FileObject file) {
-        super(new DefaultComboBoxModel(getProperties(file)));
     }
 
-    private static String[] getProperties(FileObject file) {
-        Collection<String> properties = new TreeSet<String>(PROPERTY_COMPARATOR);
-        for (PropertyDefinition pdef : Properties.getPropertyDefinitions(file, true)) {
-            properties.add(pdef.getName());
+    static class Thread2 extends Thread {
+
+        public void run() {
+            synchronized (mutex2) {
+                System.out.println("mutex 2");
+                try {
+                    Thread.sleep(100);
+                } catch (Exception ex) {}
+                synchronized (mutex1) {
+                    System.out.println("mutex 2 - mutex 1");
+                }
+            }
         }
-        return properties.toArray(new String[0]);
     }
-
-    @Override
-    public void addNotify() {
-        super.addNotify();
-        //make sure the combo list is opened when editing starts
-        setPopupVisible( true );
-    }
-    
 }
