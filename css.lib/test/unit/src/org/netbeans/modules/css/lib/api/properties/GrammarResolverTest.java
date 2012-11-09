@@ -315,7 +315,7 @@ public class GrammarResolverTest extends CssTestBase {
     }
     
     public void testAmbiguousGrammarAnimation() {
-        PropertyDefinition p = Properties.getPropertyDefinition(null, "@animation-arg");
+        PropertyDefinition p = Properties.getPropertyDefinition( "@animation-arg");
         assertResolve(p.getGrammar(), "cubic-bezier");
         
     }
@@ -532,7 +532,7 @@ public class GrammarResolverTest extends CssTestBase {
     }
 
     public void testFont() {
-        PropertyDefinition p = Properties.getPropertyDefinition(null, "font");
+        PropertyDefinition p = Properties.getPropertyDefinition( "font");
         ResolvedProperty pv = assertResolve(p, "20% serif");
         assertTrue(pv.isResolved());
     }
@@ -545,7 +545,7 @@ public class GrammarResolverTest extends CssTestBase {
     }
 
     public void testFontFamily() {
-        PropertyDefinition p = Properties.getPropertyDefinition(null, "font-family");
+        PropertyDefinition p = Properties.getPropertyDefinition( "font-family");
 
         assertTrue(new ResolvedProperty(p, "serif").isResolved());
         assertTrue(new ResolvedProperty(p, "cursive, serif").isResolved());
@@ -556,14 +556,14 @@ public class GrammarResolverTest extends CssTestBase {
     }
 
     public void testFontFamilyWithQuotedValue() {
-        PropertyDefinition p = Properties.getPropertyDefinition(null, "font-family");
+        PropertyDefinition p = Properties.getPropertyDefinition( "font-family");
         ResolvedProperty csspv = assertResolve(p, "'Times New Roman',serif");
 //        dumpResult(csspv);
         assertTrue(csspv.isResolved());
     }
 
     public void testFontSize() {
-        PropertyDefinition p = Properties.getPropertyDefinition(null, "font-size");
+        PropertyDefinition p = Properties.getPropertyDefinition( "font-size");
         String text = "xx-small";
 
         ResolvedProperty csspv = assertResolve(p, text);
@@ -572,28 +572,28 @@ public class GrammarResolverTest extends CssTestBase {
     }
 
     public void testBorder() {
-        PropertyDefinition p = Properties.getPropertyDefinition(null, "border");
+        PropertyDefinition p = Properties.getPropertyDefinition( "border");
         String text = "20px double";
         ResolvedProperty csspv = assertResolve(p, text);
         assertTrue(csspv.isResolved());
     }
 
     public void testMarginWidth() {
-        PropertyDefinition p = Properties.getPropertyDefinition(null, "margin");
+        PropertyDefinition p = Properties.getPropertyDefinition( "margin");
         String text = "20px 10em 30px 30em";
         ResolvedProperty csspv = assertResolve(p, text);
         assertTrue(csspv.isResolved());
     }
 
     public void testPaddingWidth() {
-        PropertyDefinition p = Properties.getPropertyDefinition(null, "padding");
+        PropertyDefinition p = Properties.getPropertyDefinition( "padding");
         String text = "20px 10em 30px 30em";
         ResolvedProperty csspv = assertResolve(p, text);
         assertTrue(csspv.isResolved());
     }
 
     public void testTimeUnit() {
-        PropertyDefinition p = Properties.getPropertyDefinition(null, "pause-after");
+        PropertyDefinition p = Properties.getPropertyDefinition( "pause-after");
         assertNotNull(p);
         String text = "200ms";
         ResolvedProperty csspv = assertResolve(p, text);
@@ -608,7 +608,7 @@ public class GrammarResolverTest extends CssTestBase {
     }
 
     public void testFrequencyUnit() {
-        PropertyDefinition p = Properties.getPropertyDefinition(null, "pitch");
+        PropertyDefinition p = Properties.getPropertyDefinition( "pitch");
         String text = "200kHz";
         ResolvedProperty csspv = assertResolve(p, text);
         assertTrue(csspv.isResolved());
@@ -622,7 +622,7 @@ public class GrammarResolverTest extends CssTestBase {
     }
 
     public void testIdentifierUnit() {
-        PropertyDefinition p = Properties.getPropertyDefinition(null, "counter-increment");
+        PropertyDefinition p = Properties.getPropertyDefinition( "counter-increment");
         String text = "ovecka";
         ResolvedProperty csspv = assertResolve(p, text);
         assertTrue(csspv.isResolved());
@@ -637,7 +637,7 @@ public class GrammarResolverTest extends CssTestBase {
     }
 
     public void testBackgroundImageURL() {
-        PropertyDefinition p = Properties.getPropertyDefinition(null, "background-image");
+        PropertyDefinition p = Properties.getPropertyDefinition( "background-image");
         String text = "url('/images/v6/tabs-bg.png')";
         ResolvedProperty csspv = assertResolve(p, text);
 
@@ -655,32 +655,32 @@ public class GrammarResolverTest extends CssTestBase {
     }
 
     public void testAbsoluteLengthUnits() {
-        PropertyDefinition p = Properties.getPropertyDefinition(null, "font");
+        PropertyDefinition p = Properties.getPropertyDefinition( "font");
         String text = "12px/14cm sans-serif";
         ResolvedProperty csspv = assertResolve(p, text);
         assertTrue(csspv.isResolved());
     }
 
     public void testUnquotedURL() {
-        PropertyDefinition p = Properties.getPropertyDefinition(null, "@uri");
+        PropertyDefinition p = Properties.getPropertyDefinition( "@uri");
         String text = "url(http://www.redballs.com/redball.png)";
         ResolvedProperty csspv = assertResolve(p, text);
         assertTrue(csspv.isResolved());
     }
 
     public void testBackroundImage() {
-        PropertyDefinition p = Properties.getPropertyDefinition(null, "background-image");
+        PropertyDefinition p = Properties.getPropertyDefinition( "background-image");
         assertNotResolve(p.getGrammar(), "");
     }
 
     public void testBackroundPositionOrder() {
         // TODO: fix #142254 and enable this test again
-        PropertyDefinition p = Properties.getPropertyDefinition(null, "@bg-pos");
+        PropertyDefinition p = Properties.getPropertyDefinition( "@bg-pos");
         assertResolve(p.getGrammar(), "center top");
     }
 
     public void testBorderColor() {
-        PropertyDefinition p = Properties.getPropertyDefinition(null, "border-color");
+        PropertyDefinition p = Properties.getPropertyDefinition( "border-color");
         assertResolve(p.getGrammar(), "red yellow black yellow");
         assertResolve(p.getGrammar(), "red yellow black");
         assertResolve(p.getGrammar(), "red yellow");
@@ -691,12 +691,12 @@ public class GrammarResolverTest extends CssTestBase {
     }
 
     public void testIssue185995() {
-        PropertyDefinition p = Properties.getPropertyDefinition(null, "border-color");
+        PropertyDefinition p = Properties.getPropertyDefinition( "border-color");
         assertResolve(p.getGrammar(), "transparent transparent");
     }
 
     public void testBorder_Top_Style() {
-        PropertyDefinition p = Properties.getPropertyDefinition(null, "border-top-style");
+        PropertyDefinition p = Properties.getPropertyDefinition( "border-top-style");
         assertNotNull(p);
         assertResolve(p, "dotted dotted dashed dashed", false);
         assertResolve(p, "dotted");
@@ -704,7 +704,7 @@ public class GrammarResolverTest extends CssTestBase {
     }
 
     public void testCaseSensitivity() {
-        PropertyDefinition p = Properties.getPropertyDefinition(null, "azimuth");
+        PropertyDefinition p = Properties.getPropertyDefinition( "azimuth");
         String text = "behind";
         ResolvedProperty csspv = assertResolve(p, text);
         assertTrue(csspv.isResolved());
@@ -802,17 +802,17 @@ public class GrammarResolverTest extends CssTestBase {
     }
     
     public void testBackground() {
-        PropertyDefinition pm = Properties.getPropertyDefinition(null, "background");
+        PropertyDefinition pm = Properties.getPropertyDefinition( "background");
         assertResolve(pm.getGrammarElement(null), "url(images/shadow.gif) no-repeat bottom right");
     }
     
     public void testBorder2() {
-        assertResolve(Properties.getPropertyDefinition(null, "border"), "red solid");
+        assertResolve(Properties.getPropertyDefinition( "border"), "red solid");
     }
     
     //Bug 206035 - Incorrect background property value validation/completion
     public void testBackground2() {
-        PropertyDefinition pm = Properties.getPropertyDefinition(null, "background");
+        PropertyDefinition pm = Properties.getPropertyDefinition( "background");
         assertResolve(pm.getGrammarElement(null), "#fff url(\"../images/google\") no-repeat center left");
     }
 
@@ -829,7 +829,7 @@ public class GrammarResolverTest extends CssTestBase {
 //    
     
     public void testBgPosition() {
-        PropertyDefinition pm = Properties.getPropertyDefinition(null, "@bg-pos");
+        PropertyDefinition pm = Properties.getPropertyDefinition( "@bg-pos");
         assertResolve(pm.getGrammarElement(null), "center left");
     }
     

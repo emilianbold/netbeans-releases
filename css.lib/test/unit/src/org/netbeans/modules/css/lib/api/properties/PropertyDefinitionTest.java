@@ -67,7 +67,7 @@ public class PropertyDefinitionTest extends CssTestBase {
     }
     
     private void assertAggregated(boolean expected, String propertyName) {
-        PropertyDefinition propertyDefinition = Properties.getPropertyDefinition(null, propertyName);
+        PropertyDefinition propertyDefinition = Properties.getPropertyDefinition( propertyName);
         assertNotNull("Couldn't find property '" + propertyName + "'", propertyDefinition);
         assertEquals("Unexpected result for property " + propertyName, expected, Properties.isAggregatedProperty(null, propertyDefinition));
     }

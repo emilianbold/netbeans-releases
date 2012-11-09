@@ -202,7 +202,7 @@ public class DefaultCssEditorModule extends CssEditorModule {
     }
 
     @Override
-    public PropertyDefinition getPropertyDefinition(FileObject context, String propertyName) {
+    public PropertyDefinition getPropertyDefinition(String propertyName) {
         return getProperties().get(propertyName);
     }
     

@@ -71,7 +71,7 @@ public class GeneratedAndReplacedContentModuleTest extends CssModuleTestBase {
     }
 
     public void testContent2() {
-        PropertyDefinition model = Properties.getPropertyDefinition(null, "content");
+        PropertyDefinition model = Properties.getPropertyDefinition( "content");
 
         assertResolve(model.getGrammarElement(null), "url(\"link\") normal");
         assertResolve(model.getGrammarElement(null), "url(\"link\") counter(anid, anotherid)");
