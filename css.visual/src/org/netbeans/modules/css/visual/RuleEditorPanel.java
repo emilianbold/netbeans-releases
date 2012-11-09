@@ -235,7 +235,7 @@ public class RuleEditorPanel extends JPanel {
         
         node = new RuleEditorNode(this);
 
-        viewMode = addPropertyMode ? ViewMode.ALL : ViewMode.UPDATED_ONLY; //default view
+        viewMode = addPropertyMode ? ViewMode.CATEGORIZED : ViewMode.UPDATED_ONLY; //default view
         views = new RuleEditorViews(this);
 
         //create toolbar
