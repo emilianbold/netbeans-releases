@@ -429,8 +429,12 @@ public class HtmlNavigatorPanelUI extends JPanel implements ExplorerManager.Prov
     
 
     void deactivate() {
-        setPageModel(null);
-        if (contextResult !=null) {
+        RP.post(new Runnable() {
+            public void run() {
+                setPageModel(null);
+            }
+        });
+        if (contextResult != null) {
             contextResult.removeLookupListener(lookupListener);
         }
         domToNb.clear();
