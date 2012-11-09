@@ -41,7 +41,10 @@
  */
 package org.netbeans.modules.cordova.platforms.android;
 
+import java.awt.BorderLayout;
 import java.awt.Component;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.util.Collection;
 import javax.swing.DefaultComboBoxModel;
@@ -50,6 +53,8 @@ import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.cordova.platforms.MobilePlatformsSetup;
+import org.netbeans.modules.cordova.platforms.PlatformConstants;
 import org.netbeans.modules.cordova.platforms.PropertyProvider;
 import org.netbeans.modules.web.clientproject.spi.platform.ProjectConfigurationCustomizer;
 import org.openide.util.Exceptions;
@@ -65,6 +70,19 @@ public class AndroidConfigurationPanel extends javax.swing.JPanel {
     
     private PropertyProvider config;
     final RequestProcessor RP = new RequestProcessor(AndroidConfigurationPanel.class);
+
+    private void initControls() {
+        initComponents();
+        String device = config.getProperty(PlatformConstants.DEVICE_PROP); //NOI18N
+        if (PlatformConstants.DEVICE.equals(device)) { //NOI18N
+            deviceCombo.setSelectedIndex(PlatformConstants.DEVICE.equals(device)?1:0); //NOI18N
+        }
+        setAVDComboVisible(!PlatformConstants.DEVICE.equals(device)); //NOI18N
+        debuggerCheckBox.setVisible(false);
+        deviceLabel.setVisible(false);
+        deviceCombo.setVisible(false);
+        validate();
+    }
 
     public static class AndroidConfigurationCustomizer implements ProjectConfigurationCustomizer {
         
@@ -99,12 +117,23 @@ public class AndroidConfigurationPanel extends javax.swing.JPanel {
      */
     public AndroidConfigurationPanel(final PropertyProvider config) {
         this.config = config;
-        initComponents();
-        String device = config.getProperty("device"); //NOI18N
-        if ("device".equals(device)) { //NOI18N
-            deviceCombo.setSelectedIndex("device".equals(device)?1:0); //NOI18N
+        if (!AndroidPlatform.getDefault().isReady()) {
+            setLayout(new BorderLayout());
+            add(new MobilePlatformsSetup(), BorderLayout.CENTER);
+            validate();
+            AndroidPlatform.getDefault().addPropertyChangeListener(new PropertyChangeListener() {
+                @Override
+                public void propertyChange(PropertyChangeEvent evt) {
+                    if (AndroidPlatform.getDefault().getDefault().isReady()) {
+                        removeAll();
+                        initControls();
+                        validate();
+                    }
+                }
+            });
+        } else {
+            initControls();
         }
-        setAVDComboVisible(!"device".equals(device)); //NOI18N
     }
 
     @NbBundle.Messages("LBL_PleaseWait=Please Wait...")
@@ -138,7 +167,7 @@ public class AndroidConfigurationPanel extends javax.swing.JPanel {
                 final AVD[] avds = (AVD[]) avDs.toArray(new AVD[avDs.size()]);
                 avdCombo.setModel(new DefaultComboBoxModel(avds));
                 for (AVD avd : avds) {
-                    if (avd.getName().equals(config.getProperty("device"))) {//NOI18N
+                    if (avd.getName().equals(config.getProperty(PlatformConstants.DEVICE_PROP))) {//NOI18N
                         avdCombo.setSelectedItem(avd);
                         break;
                     }
@@ -204,7 +233,7 @@ public class AndroidConfigurationPanel extends javax.swing.JPanel {
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
-                .addContainerGap()
+                .add(0, 0, 0)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(layout.createSequentialGroup()
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -212,14 +241,14 @@ public class AndroidConfigurationPanel extends javax.swing.JPanel {
                             .add(avdLabel))
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(deviceCombo, 0, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .add(deviceCombo, 0, 181, Short.MAX_VALUE)
                             .add(avdCombo, 0, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(manageButton))
                     .add(layout.createSequentialGroup()
                         .add(debuggerCheckBox)
                         .add(0, 0, Short.MAX_VALUE)))
-                .addContainerGap())
+                .add(0, 0, 0))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -269,10 +298,10 @@ public class AndroidConfigurationPanel extends javax.swing.JPanel {
 
     private void deviceComboActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_deviceComboActionPerformed
         if (deviceCombo.getSelectedIndex() == 0) {
-            config.putProperty("device", "emulator"); //NOI18N
+            config.putProperty(PlatformConstants.DEVICE_PROP, PlatformConstants.EMULATOR); //NOI18N
             setAVDComboVisible(true);
         } else {
-            config.putProperty("device", "device"); //NOI18N
+            config.putProperty(PlatformConstants.DEVICE_PROP, PlatformConstants.DEVICE); //NOI18N
             setAVDComboVisible(false);
         }
     }//GEN-LAST:event_deviceComboActionPerformed

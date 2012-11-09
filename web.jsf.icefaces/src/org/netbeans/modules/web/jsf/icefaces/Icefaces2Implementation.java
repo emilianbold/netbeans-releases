@@ -106,6 +106,14 @@ public class Icefaces2Implementation implements JsfComponentImplementation {
         return ICEFACES_NAME;
     }
 
+    @NbBundle.Messages({
+        "Icefaces2Implementation.icefaces.display.name=ICEfaces"
+    })
+    @Override
+    public String getDisplayName() {
+        return Bundle.Icefaces2Implementation_icefaces_display_name();
+    }
+
     @Override
     public String getDescription() {
         return NbBundle.getMessage(Icefaces2Implementation.class, "DESC_IcefacesImplementation"); //NOI18N

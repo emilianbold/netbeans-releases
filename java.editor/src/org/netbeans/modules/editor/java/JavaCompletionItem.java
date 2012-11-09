@@ -432,18 +432,37 @@ public abstract class JavaCompletionItem implements CompletionItem {
         int length = j - substitutionOffset;
         if (toAdd.length() > 0) {
             boolean partialMatch = false;
+            int taNL = -1;
+            int docNL = -1;
             while (true) {
                 char taChar = '\0';
-                while (i < toAdd.length() && (taChar = toAdd.charAt(i++)) <= ' ');
+                while (i < toAdd.length() && (taChar = toAdd.charAt(i++)) <= ' ') {
+                    if (taChar == '\n' && taNL < 0) {
+                        taNL = i - 1;
+                    }
+                }
                 char docChar = '\0';
-                while (j < docText.length() && (docChar = docText.charAt(j++)) <= ' ' && docChar != '\n');
+                while (j < docText.length() && (docChar = docText.charAt(j++)) <= ' ') {
+                    if (docChar == '\n') {
+                        if (taNL < 0) {
+                            break;
+                        } else if (docNL < 0) {
+                            docNL = j - 1;
+                        }
+                    }
+                }
                 if (taChar <= ' ' || docChar == '\n') {
                     length = j - substitutionOffset - (j <= docText.length() ? 1 : 0);
                     break;
                 } else if (taChar != docChar) {
                     if (partialMatch) {
-                        toAdd.delete(i - 1, toAdd.length());
-                        length = j - substitutionOffset - (j <= docText.length() ? 1 : 0);
+                        if (docNL < 0) {
+                            toAdd.delete(i - 1, toAdd.length());
+                            length = j - substitutionOffset - (j <= docText.length() ? 1 : 0);
+                        } else {
+                            toAdd.delete(taNL, toAdd.length());
+                            length = docNL - substitutionOffset;
+                        }
                     }
                     break;
                 } else {
@@ -1006,7 +1025,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
                                 StringBuilder sb = new StringBuilder();
                                 if (addSimpleName || enclName == null) {
                                     sb.append(elem.getSimpleName());
-                                } else if (!"text/x-java".equals(controller.getSnapshot().getMimePath())) { //NOI18N
+                                } else if (!"text/x-java".equals(controller.getSnapshot().getMimePath().getPath())) { //NOI18N
                                     TreePath tp = controller.getTreeUtilities().pathFor(controller.getSnapshot().getEmbeddedOffset(offset));
                                     sb.append(AutoImport.resolveImport(controller, tp, controller.getTypes().getDeclaredType(elem)));
                                 } else {
@@ -2159,7 +2178,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
             if ("this".equals(simpleName) || "super".equals(simpleName)) { //NOI18N
                 sb.append(';');
             } else if (isAbstract) {
-                sb.append(" {}"); //NOI18N
+                sb.append(" {\n}"); //NOI18N
             }
             return sb;
         }
@@ -2167,17 +2186,18 @@ public abstract class JavaCompletionItem implements CompletionItem {
         @Override
         protected CharSequence substituteText(final JTextComponent c, final int offset, final int length, final CharSequence text, final CharSequence toAdd) {
             BaseDocument doc = (BaseDocument) c.getDocument();
+            boolean inPlace = offset == c.getCaretPosition();
             Position startPos;
             Position endPos;
             try {
-                startPos = doc.createPosition(offset + (insertName ? 0 : Math.min(text.length(), length)), Bias.Backward);
+                startPos = doc.createPosition(insertName || inPlace ? offset : offset + text.length(), Bias.Backward);
                 endPos = doc.createPosition(offset + length);
             } catch (BadLocationException ex) {
                 return null; // Invalid offset -> do nothing
             }
             CharSequence cs = insertName
                     ? super.substituteText(c, startPos.getOffset(), length, text, toAdd)
-                    : super.substituteText(c, startPos.getOffset(), Math.max(length - text.length(), 0), null, toAdd);
+                    : super.substituteText(c, startPos.getOffset(), inPlace ? length : length - text.length(), null, toAdd);
             StringBuilder sb = new StringBuilder();
             if (toAdd != null) {
                 CharSequence postfix = getInsertPostfix(c);
@@ -2324,7 +2344,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
                 sb.append(';');
             }
             if (isAbstract) {
-                sb.append(" {}"); //NOI18N
+                sb.append(" {\n}"); //NOI18N
             }
             return sb;
         }
@@ -2332,13 +2352,14 @@ public abstract class JavaCompletionItem implements CompletionItem {
         @Override
         protected CharSequence substituteText(final JTextComponent c, final int offset, final int length, final CharSequence text, final CharSequence toAdd) {
             BaseDocument doc = (BaseDocument) c.getDocument();
+            boolean inPlace = offset == c.getCaretPosition();
             Position startPos;
             try {
-                startPos = doc.createPosition(offset + length, Bias.Backward);
+                startPos = doc.createPosition(offset + (inPlace ? 0 : text.length()), Bias.Backward);
             } catch (BadLocationException ex) {
                 return null; // Invalid offset -> do nothing
             }
-            CharSequence cs = super.substituteText(c, startPos.getOffset(), 0, null, toAdd);
+            CharSequence cs = super.substituteText(c, startPos.getOffset(), inPlace ? length : length - text.length(), null, toAdd);
             if (toAdd != null) {
                 CharSequence postfix = getInsertPostfix(c);
                 if (postfix != null) {

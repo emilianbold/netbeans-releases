@@ -47,18 +47,15 @@ package org.netbeans.modules.web.core.syntax;
 
 import java.util.Map;
 import org.netbeans.editor.ext.ExtKit;
-import org.netbeans.modules.csl.api.KeystrokeHandler;
 import org.netbeans.modules.editor.NbEditorDocument;
 import org.netbeans.modules.editor.NbEditorKit;
 import org.netbeans.modules.web.core.syntax.deprecated.Jsp11Syntax;
 import java.awt.event.ActionEvent;
 import java.beans.*;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicBoolean;
 import javax.swing.Action;
 import javax.swing.SwingUtilities;
 import javax.swing.text.*;
-import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
@@ -71,16 +68,10 @@ import org.openide.util.WeakListeners;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.netbeans.modules.web.core.syntax.deprecated.HtmlSyntax;
-import org.netbeans.modules.editor.java.JavaKit;
 import org.netbeans.modules.web.core.api.JspColoringData;
 import org.netbeans.api.jsp.lexer.JspTokenId;
 import org.netbeans.api.lexer.InputAttributes;
-import org.netbeans.editor.BaseAction;
-import org.netbeans.editor.BaseKit.InsertBreakAction;
-import org.netbeans.editor.ext.ExtKit.ExtDefaultKeyTypedAction;
-import org.netbeans.editor.ext.ExtKit.ExtDeleteCharAction;
 import org.netbeans.modules.csl.api.*;
-import org.netbeans.modules.web.core.syntax.gsf.JspCommentHandler;
 import org.netbeans.spi.lexer.MutableTextInput;
 
 /**
@@ -177,10 +168,6 @@ public class JspKit extends NbEditorKit implements org.openide.util.HelpCtx.Prov
     @Override
     protected Action[] createActions() {
         Action[] javaActions = new Action[] {
-            new JspInsertBreakAction(),
-            new JspDefaultKeyTypedAction(),
-            new JspDeleteCharAction(deletePrevCharAction, false),
-            new JspDeleteCharAction(deleteNextCharAction, true),
             new SelectCodeElementAction(SelectCodeElementAction.selectNextElementAction, true),
             new SelectCodeElementAction(SelectCodeElementAction.selectPreviousElementAction, false),
             new InstantRenameAction(),
@@ -421,286 +408,6 @@ public class JspKit extends NbEditorKit implements org.openide.util.HelpCtx.Prov
     // Implement HelpCtx.Provider to provide help for CloneableEditor
     public org.openide.util.HelpCtx getHelpCtx() {
         return new org.openide.util.HelpCtx(JspKit.class);
-    }
-
-    /**
-     * Returns true if bracket completion is enabled in options.
-     */
-    private static boolean completionSettingEnabled() {
-        //return ((Boolean)Settings.getValue(JspKit.class, JavaSettingsNames.PAIR_CHARACTERS_COMPLETION)).booleanValue();
-        return true;
-    }
-
-    public static class JspInsertBreakAction extends InsertBreakAction {
-
-        @Override
-        public void actionPerformed(ActionEvent e, JTextComponent target) {
-            if (target != null) {
-                TokenSequence javaTokenSequence;
-                AbstractDocument adoc = (AbstractDocument)target.getDocument();
-                adoc.readLock();
-                try {
-                    javaTokenSequence = JspSyntaxSupport.tokenSequence(TokenHierarchy.get(target.getDocument()), JavaTokenId.language(), target.getCaret().getDot() - 1);
-                } finally {
-                    adoc.readUnlock();
-                }
-
-                if (javaTokenSequence != null) {
-                    JavaKit jkit = (JavaKit) getKit(JavaKit.class);
-                    if (jkit != null) {
-                        Action action = jkit.getActionByName(DefaultEditorKit.insertBreakAction);
-                        if (action != null && action instanceof JavaKit.JavaInsertBreakAction) {
-                            ((JavaKit.JavaInsertBreakAction) action).actionPerformed(e, target);
-                            return;
-                        }
-                    }
-                }
-            }
-            super.actionPerformed(e, target);
-        }
-
-        @Override
-        protected Object beforeBreak(JTextComponent target, BaseDocument doc, Caret caret) {
-            if (completionSettingEnabled()) {
-                KeystrokeHandler bracketCompletion = UiUtils.getBracketCompletion(doc, caret.getDot());
-
-                if (bracketCompletion != null) {
-                    try {
-                        int newOffset = bracketCompletion.beforeBreak(doc, caret.getDot(), target);
-
-                        if (newOffset >= 0) {
-                            return new Integer(newOffset);
-                        }
-                    } catch (BadLocationException ble) {
-                        Exceptions.printStackTrace(ble);
-                    }
-                }
-            }
-
-            return null;
-        }
-
-        @Override
-        protected void afterBreak(JTextComponent target, BaseDocument doc, Caret caret,
-                Object cookie) {
-            if (completionSettingEnabled()) {
-                if (cookie != null) {
-                    if (cookie instanceof Integer) {
-                        // integer
-                        int dotPos = ((Integer) cookie).intValue();
-                        if (dotPos != -1) {
-                            caret.setDot(dotPos);
-                        } else {
-                            int nowDotPos = caret.getDot();
-                            caret.setDot(nowDotPos + 1);
-                        }
-                    }
-                }
-            }
-        }
-
-    }
-
-    public static class JspDefaultKeyTypedAction extends ExtDefaultKeyTypedAction {
-
-        private JTextComponent currentTarget;
-
-        @Override
-        public void actionPerformed(final ActionEvent e, final JTextComponent target) {
-            // Preliminary checks that avoid interpreting e.g. Ctrl+W that would then invoke runAtomic()
-            if ((target != null) && (e != null)) {
-                    // Check whether the modifiers are OK
-                    int mod = e.getModifiers();
-                    boolean ctrl = ((mod & ActionEvent.CTRL_MASK) != 0);
-                    // On the mac, norwegian and french keyboards use Alt to do bracket characters.
-                    // This replicates Apple's modification DefaultEditorKit.DefaultKeyTypedAction
-                    boolean alt = org.openide.util.Utilities.isMac() ? ((mod & ActionEvent.META_MASK) != 0) :
-                        ((mod & ActionEvent.ALT_MASK) != 0);
-                    if (alt || ctrl) {
-                        return;
-                    }
-                    // Check whether the target is enabled and editable
-                    if (!target.isEditable() || !target.isEnabled()) {
-                        target.getToolkit().beep();
-                        return;
-                    }
-            }
-
-            currentTarget = target;
-            try {
-                if (!triggerJavaDefaultKeyTypedAction(e, target)) {
-                    super.actionPerformed(e, target);
-                } else {
-                    return; //java triggered this already
-                }
-            } finally {
-                currentTarget = null;
-            }
-        }
-
-        private boolean triggerJavaDefaultKeyTypedAction(final ActionEvent e, final JTextComponent target) {
-            BaseDocument bdoc = (BaseDocument) target.getDocument();
-            final boolean[] retcode = new boolean[1];
-            bdoc.runAtomic(new Runnable() {
-                public void run() {
-                    TokenSequence javaTokenSequence = JspSyntaxSupport.tokenSequence(TokenHierarchy.get(target.getDocument()), JavaTokenId.language(), target.getCaret().getDot() - 1);
-                    if (javaTokenSequence != null) {
-                        JavaKit jkit = (JavaKit) getKit(JavaKit.class);
-                        if (jkit != null) {
-                            Action action = jkit.getActionByName(DefaultEditorKit.defaultKeyTypedAction);
-                            if (action != null && action instanceof JavaKit.JavaDefaultKeyTypedAction) {
-                                ((JavaKit.JavaDefaultKeyTypedAction) action).actionPerformed(e, target);
-                                retcode[0] = true;
-                            }
-                        }
-                    }
-                }
-            });
-            return retcode[0];
-        }
-
-        /** called under document atomic lock */
-        @Override
-        protected void insertString(BaseDocument doc, int dotPos,
-                Caret caret, String str,
-                boolean overwrite) throws BadLocationException {
-            // see issue #211036 - inserted string can be empty since #204450
-            if (str.isEmpty()) {
-                return;
-            }
-
-            if (completionSettingEnabled()) {
-                KeystrokeHandler bracketCompletion = UiUtils.getBracketCompletion(doc, dotPos);
-
-                if (bracketCompletion != null) {
-                    // TODO - check if we're in a comment etc. and if so, do nothing
-                    boolean handled =
-                            bracketCompletion.beforeCharInserted(doc, dotPos, currentTarget,
-                            str.charAt(0));
-
-                    if (!handled) {
-                        super.insertString(doc, dotPos, caret, str, overwrite);
-                        handled = bracketCompletion.afterCharInserted(doc, dotPos, currentTarget,
-                                    str.charAt(0));
-                    }
-
-                    return;
-                }
-            }
-
-            super.insertString(doc, dotPos, caret, str, overwrite);
-        }
-
-        @Override
-        protected void replaceSelection(JTextComponent target, int dotPos, Caret caret,
-                String str, boolean overwrite) throws BadLocationException {
-            //workaround for #209019 - regression of issue 
-            //#204450 - Rewrite actions to use TypingHooks SPI
-            if(str.length() == 0) {
-                //called from BaseKit.actionPerformed():1160 with empty str argument
-                //==> ignore this call since we are going to be called a bit later
-                //from HtmlKit.performTextInsertion() properly with the text typed
-                return ;
-            }            
-            char insertedChar = str.charAt(0);
-            Document document = target.getDocument();
-
-            if (document instanceof BaseDocument) {
-                BaseDocument doc = (BaseDocument) document;
-
-                if (completionSettingEnabled()) {
-                    KeystrokeHandler bracketCompletion = UiUtils.getBracketCompletion(doc, dotPos);
-
-                    if (bracketCompletion != null) {
-                        try {
-                            int caretPosition = caret.getDot();
-
-                            boolean handled =
-                                    bracketCompletion.beforeCharInserted(doc, caretPosition,
-                                    target, insertedChar);
-
-                            int p0 = Math.min(caret.getDot(), caret.getMark());
-                            int p1 = Math.max(caret.getDot(), caret.getMark());
-
-                            if (p0 != p1) {
-                                doc.remove(p0, p1 - p0);
-                            }
-
-                            if (!handled) {
-                                if (str.length() > 0) {
-                                    doc.insertString(p0, str, null);
-                                    handled = bracketCompletion.afterCharInserted(doc, dotPos, currentTarget, str.charAt(0));
-                                }
-
-
-                            }
-                        } catch (BadLocationException e) {
-                            e.printStackTrace();
-                        }
-
-                        return;
-                    }
-                }
-            }
-
-            super.replaceSelection(target, dotPos, caret, str, overwrite);
-        }
-
-    }
-
-    public static class JspDeleteCharAction extends ExtDeleteCharAction {
-
-        JTextComponent currentTarget;
-
-        public JspDeleteCharAction(String nm, boolean nextChar) {
-            super(nm, nextChar);
-        }
-
-        @Override
-        public void actionPerformed(ActionEvent e, JTextComponent target) {
-            currentTarget = target;
-            if (target!=null){
-                TokenSequence javaTokenSequence;
-                AbstractDocument adoc = (AbstractDocument)target.getDocument();
-                adoc.readLock();
-                try {
-                    javaTokenSequence = JspSyntaxSupport.tokenSequence(
-                        TokenHierarchy.get(target.getDocument()),
-                        JavaTokenId.language(),
-                        target.getCaret().getDot() - 1);
-                } finally {
-                    adoc.readUnlock();
-                }
-
-                if (javaTokenSequence != null){
-                    JavaKit jkit = (JavaKit)getKit(JavaKit.class);
-                    if (jkit!=null){
-                        Action action = jkit.getActionByName(nextChar ? DefaultEditorKit.deleteNextCharAction : DefaultEditorKit.deletePrevCharAction);
-                        if (action != null && action instanceof JavaKit.JavaDeleteCharAction){
-                            ((JavaKit.JavaDeleteCharAction)action).actionPerformed(e, target);
-                            return;
-                        }
-                    }
-                }
-            }
-            super.actionPerformed(e, target);
-            currentTarget = null;
-        }
-
-        @Override
-         protected void charBackspaced(BaseDocument doc, int dotPos, Caret caret, char ch) throws BadLocationException {
-              if (completionSettingEnabled()) {
-                KeystrokeHandler bracketCompletion = UiUtils.getBracketCompletion(doc, dotPos);
-
-                if (bracketCompletion != null) {
-                    bracketCompletion.charBackspaced(doc, dotPos, currentTarget, ch);
-                    return;
-                }
-            }
-
-            super.charBackspaced(doc, dotPos, caret, ch);
-        }
-
     }
 
 }

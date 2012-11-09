@@ -41,24 +41,20 @@
  */
 package org.netbeans.modules.cordova.platforms;
 
-import org.netbeans.api.project.Project;
-
 /**
  *
  * @author Jan Becicka
  */
-public interface BuildPerformer {
-    public static final String BUILD_ANDROID = "build-android"; //NOI18N
-    public static final String BUILD_IOS = "build-ios"; //NOI18N
-    public static final String CLEAN_ANDROID = "clean-android"; //NOI18N
-    public static final String CLEAN_IOS = "clean-ios"; //NOI18N
-    public static final String RUN_ANDROID = "sim-android"; //NOI18N
-    public static final String RUN_IOS = "sim-ios"; //NOI18N
+public class PlatformConstants {
     
-    public void perform(String target, Project p);
+    public static String DEVICE_PROP = "device";
+    public static String DEVICE = "device";
+    public static String EMULATOR = "emulator";
     
-    public String getUrl(Project p);
-
-    public boolean isPhoneGapBuild(Project p);
+    public static String SDK_PROP = "sdk";
+    public static String VIRTUAL_DEVICE_PROP = "vd";
+    
+    public static final String IOS_TYPE = "ios"; //NOI18N
+    public static final String ANDROID_TYPE = "android"; //NOI18N
     
 }

@@ -39,34 +39,21 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.cordova.template;
+package org.netbeans.modules.cordova.platforms;
 
-import org.openide.util.NbBundle;
+import org.netbeans.api.options.OptionsDisplayer;
 
 /**
  *
  * @author Jan Becicka
  */
-public class CordovaTemplatePanel extends javax.swing.JPanel {
+public class MobilePlatformsSetup extends javax.swing.JPanel {
 
-    private CordovaTemplate.CordovaExtender ext;
-    
-    public static String PROP_EXT_ENABLED = "PROP_EXT_ENABLED";//NOI18N
-    
     /**
-     * Creates new form CordovaTemplatePanel
+     * Creates new form MobilePlatformsSetup
      */
-    public CordovaTemplatePanel(CordovaTemplate.CordovaExtender ext) {
-        this.ext = ext;
-        setName(NbBundle.getMessage(CordovaTemplatePanel.class, "LBL_CordovaSetup"));//NOI18N
+    public MobilePlatformsSetup() {
         initComponents();
-        ext.setEnabled(phonegapCheckBox.isSelected());
-        update();
-    }
-    
-    public void update() {
-        cordovaPanel.update();
-        cordovaPanel.setEnabled(phonegapCheckBox.isSelected());
     }
 
     /**
@@ -78,48 +65,44 @@ public class CordovaTemplatePanel extends javax.swing.JPanel {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        phonegapCheckBox = new javax.swing.JCheckBox();
-        cordovaPanel = new org.netbeans.modules.cordova.project.CordovaPanel();
+        mobilePlatformsLabel = new javax.swing.JLabel();
+        mobilePlatforms = new javax.swing.JButton();
 
-        org.openide.awt.Mnemonics.setLocalizedText(phonegapCheckBox, org.openide.util.NbBundle.getMessage(CordovaTemplatePanel.class, "CordovaTemplatePanel.phonegapCheckBox.text")); // NOI18N
-        phonegapCheckBox.addChangeListener(new javax.swing.event.ChangeListener() {
-            public void stateChanged(javax.swing.event.ChangeEvent evt) {
-                phonegapCheckBoxStateChanged(evt);
+        org.openide.awt.Mnemonics.setLocalizedText(mobilePlatformsLabel, org.openide.util.NbBundle.getMessage(MobilePlatformsSetup.class, "MobilePlatformsSetup.mobilePlatformsLabel.text")); // NOI18N
+
+        org.openide.awt.Mnemonics.setLocalizedText(mobilePlatforms, org.openide.util.NbBundle.getMessage(MobilePlatformsSetup.class, "MobilePlatformsSetup.mobilePlatforms.text")); // NOI18N
+        mobilePlatforms.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                mobilePlatformsActionPerformed(evt);
             }
         });
 
-        org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
+        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
-            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(layout.createSequentialGroup()
-                .addContainerGap()
-                .add(phonegapCheckBox)
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(layout.createSequentialGroup()
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.CENTER)
+                    .addComponent(mobilePlatformsLabel)
+                    .addComponent(mobilePlatforms))
                 .addContainerGap())
-            .add(cordovaPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
-            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(layout.createSequentialGroup()
-                .add(phonegapCheckBox)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(cordovaPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addContainerGap())
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(layout.createSequentialGroup()
+                .addComponent(mobilePlatformsLabel)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(mobilePlatforms)
+                .addGap(0, 0, 0))
         );
     }// </editor-fold>//GEN-END:initComponents
 
-    private void phonegapCheckBoxStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_phonegapCheckBoxStateChanged
-        cordovaPanel.setControlsEnabled(phonegapCheckBox.isSelected());  
-        ext.setEnabled(phonegapCheckBox.isSelected());
-        firePropertyChange(PROP_EXT_ENABLED, !phonegapCheckBox.isSelected(), phonegapCheckBox.isSelected());
-    }//GEN-LAST:event_phonegapCheckBoxStateChanged
+    private void mobilePlatformsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_mobilePlatformsActionPerformed
+        OptionsDisplayer.getDefault().open("Advanced/MobilePlatforms");//NOI18N
+    }//GEN-LAST:event_mobilePlatformsActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private org.netbeans.modules.cordova.project.CordovaPanel cordovaPanel;
-    private javax.swing.JCheckBox phonegapCheckBox;
+    private javax.swing.JButton mobilePlatforms;
+    private javax.swing.JLabel mobilePlatformsLabel;
     // End of variables declaration//GEN-END:variables
-
-    void setPanelEnabled(boolean b) {
-        phonegapCheckBox.setSelected(b);
-    }
 }

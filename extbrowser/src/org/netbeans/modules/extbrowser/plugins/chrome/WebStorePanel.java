@@ -42,6 +42,7 @@
 package org.netbeans.modules.extbrowser.plugins.chrome;
 
 import java.util.logging.Logger;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -53,8 +54,15 @@ class WebStorePanel extends javax.swing.JPanel {
     static final Logger LOGGER = Logger.getLogger(WebStorePanel.class.getName());
 
 
-    WebStorePanel(){
+    WebStorePanel(boolean update) {
         initComponents();
+        String info;
+        if (update) {
+            info = NbBundle.getMessage(WebStorePanel.class, "TXT_WebStoreUpdate");
+        } else {
+            info = NbBundle.getMessage(WebStorePanel.class, "TXT_WebStoreInstall");
+        }
+        myEditorPane.setText(info);
     }
 
     /**
@@ -71,7 +79,7 @@ class WebStorePanel extends javax.swing.JPanel {
 
         myEditorPane.setEditable(false);
         myEditorPane.setContentType("text/html"); // NOI18N
-        myEditorPane.setText(org.openide.util.NbBundle.getMessage(WebStorePanel.class, "TXT_WebStore")); // NOI18N
+        myEditorPane.setText("WebStore info..."); // NOI18N
         myScrollPane.setViewportView(myEditorPane);
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);

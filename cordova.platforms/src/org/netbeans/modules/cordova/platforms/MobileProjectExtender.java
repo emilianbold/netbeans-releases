@@ -41,50 +41,62 @@
  */
 package org.netbeans.modules.cordova.platforms;
 
-import java.io.BufferedInputStream;
+import java.io.File;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.util.Arrays;
-import org.netbeans.api.extexecution.ProcessBuilder;
+import org.netbeans.modules.web.clientproject.spi.ClientProjectExtender;
+import org.openide.WizardDescriptor;
+import org.openide.WizardDescriptor.Panel;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.util.EditableProperties;
+import org.openide.util.Exceptions;
+import org.openide.util.NbBundle;
+import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
  * @author Jan Becicka
  */
-public class ProcessUtils {
+@ServiceProvider(service = ClientProjectExtender.class)
+public class MobileProjectExtender implements ClientProjectExtender {
 
-    public static String callProcess(String executable, boolean wait, String... parameters) throws IOException {
-        ProcessBuilder pb = ProcessBuilder.getLocal();
-        pb.setExecutable(executable);
-        pb.setArguments(Arrays.asList(parameters));
-        Process call = pb.call();
-        if (!wait) {
-            return null;
-        }
-        try {
-            call.waitFor();
-        } catch (InterruptedException ex) {
-            throw new IOException(ex);
-        }
-        InputStreamReader inputStreamReader = new InputStreamReader(new BufferedInputStream(call.getErrorStream()));
-        if (call.exitValue() != 0) {
-            StringBuilder error = new StringBuilder();
-            char[] ch = new char[1];
-            while (inputStreamReader.ready()) {
-                inputStreamReader.read(ch);
-                error.append(ch);
-            }
-            throw new IOException(error.toString());
-        }
-        inputStreamReader = new InputStreamReader(call.getInputStream());
-        StringBuilder avdString = new StringBuilder();
-        char[] ch = new char[1];
-        while (inputStreamReader.ready()) {
-            inputStreamReader.read(ch);
-            avdString.append(ch);
-        }
-        inputStreamReader.close();
-        return avdString.toString();
+    @Override
+    public Panel<WizardDescriptor>[] createWizardPanels() {
+        return new Panel[0];
     }
-    
+
+    @Override
+    @NbBundle.Messages({
+        "LBL_iPhoneSimulator=iPhone Simulator",
+        "LBL_AndroidEmulator=Android Emulator",
+        "LBL_AndroidDevice=Android Device"
+    })
+
+    public void apply(FileObject projectRoot, FileObject siteRoot, String librariesPath) {
+        try {
+            createMobileConfigs(projectRoot);
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+    }
+
+    public static void createMobileConfigs(FileObject projectRoot) throws IOException {
+        EditableProperties ios = new EditableProperties(true);
+        ios.put("display.name", Bundle.LBL_iPhoneSimulator());//NOI18N
+        ios.put("type", PlatformConstants.IOS_TYPE);//NOI18N
+        ios.put(PlatformConstants.DEVICE_PROP, PlatformConstants.EMULATOR);//NOI18N
+        ConfigUtils.createConfigFile(projectRoot, "ios", ios);//NOI18N
+
+        EditableProperties androide = new EditableProperties(true);
+        androide.put("display.name", Bundle.LBL_AndroidEmulator());
+        androide.put("type", PlatformConstants.ANDROID_TYPE);//NOI18N
+        androide.put(PlatformConstants.DEVICE_PROP, PlatformConstants.EMULATOR);//NOI18N
+        ConfigUtils.createConfigFile(projectRoot, "android", androide);//NOI18N
+
+        EditableProperties androidd = new EditableProperties(true);
+        androidd.put("display.name", Bundle.LBL_AndroidDevice());
+        androidd.put("type", PlatformConstants.ANDROID_TYPE);//NOI18N
+        androidd.put(PlatformConstants.DEVICE_PROP, PlatformConstants.DEVICE);//NOI18N
+        ConfigUtils.createConfigFile(projectRoot, "android", androidd);//NOI18N
+    }
 }

@@ -51,17 +51,17 @@ public final class WebClientProjectConstants {
     }
     
     /**
-     * Constant for Site Root sources group.
+     * Constant for Configuration Files sources group.
      */
     public static final String SOURCES_TYPE_HTML5_CONFIG = "HTML5-Config"; // NOI18N
     
     /**
-     * Constant for Tests sources group.
+     * Constant for Site Root sources group.
      */
     public static final String SOURCES_TYPE_HTML5 = "HTML5-Sources"; // NOI18N
     
     /**
-     * Constant for Configuration Files sources group.
+     * Constant for Test Files sources group.
      */
     public static final String SOURCES_TYPE_HTML5_TEST = "HTML5-Tests"; // NOI18N
 
