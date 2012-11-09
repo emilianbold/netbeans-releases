@@ -39,7 +39,7 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.cordova.project;
+package org.netbeans.modules.cordova.platforms;
 
 import java.io.File;
 import java.io.IOException;

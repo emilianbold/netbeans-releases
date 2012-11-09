@@ -74,7 +74,7 @@ public abstract class ExtCssEditorModule extends CssEditorModule {
     }
 
     @Override
-    public PropertyDefinition getPropertyDefinition(FileObject context, String propertyName) {
+    public PropertyDefinition getPropertyDefinition(String propertyName) {
         //Note: the context param is ignored by the "standard" css editor modules.
         return getProperties().get(propertyName);
     }

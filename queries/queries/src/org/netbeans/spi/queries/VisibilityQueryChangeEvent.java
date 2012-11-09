@@ -39,15 +39,37 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.cordova.platforms.ios;
+package org.netbeans.spi.queries;
+
+import javax.swing.event.ChangeEvent;
+import org.openide.filesystems.FileObject;
 
 /**
- *
- * @author Jan Becicka
+ * ChangeEvent subclass to be used by VisibilityQueryImplementation implementations
+ * to fire changes when it's known what files changed visibility. Allows clients to use that information
+ * for improved performance when reacting on the event.
+ * @author mkleint
+ * @since 1.32
  */
-public enum ConfigConstants {
+public final class VisibilityQueryChangeEvent extends ChangeEvent {
+    private final FileObject[] fileObjects;
+
+
+    /**
+     * create new instance of the event, typically called by VisibilityQueryImplementation providers.
+     * @param source
+     * @param changedFileObjects 
+     */
+    public VisibilityQueryChangeEvent(Object source, FileObject[] changedFileObjects) {
+        super(source);
+        fileObjects = changedFileObjects;
+    }
     
-    sdk,
-    device
-    
+    /**
+     * return the FileObjects that changed visibility
+     * @return 
+     */
+    public FileObject[] getFileObjects() {
+        return fileObjects;
+    }
 }

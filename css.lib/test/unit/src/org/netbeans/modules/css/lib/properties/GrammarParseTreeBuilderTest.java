@@ -91,7 +91,7 @@ public class GrammarParseTreeBuilderTest extends CssTestBase {
         }
 
         @Override
-        public PropertyDefinition getPropertyDefinition(FileObject context, String propertyName) {
+        public PropertyDefinition getPropertyDefinition(String propertyName) {
             if(propertyName.equals("ref")) {
                 return new PropertyDefinition("ref", "[ [ a | b ] | [ a | b ] ]", null);
             }

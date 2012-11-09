@@ -54,8 +54,8 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.cordova.platforms.android.AndroidPlatform;
-import org.netbeans.modules.cordova.platforms.ios.IOSPlatform;
+import org.netbeans.modules.cordova.platforms.ConfigUtils;
+import org.netbeans.modules.cordova.platforms.PlatformConstants;
 import org.netbeans.modules.web.clientproject.spi.platform.ClientProjectConfigurationImplementation;
 import org.netbeans.modules.web.clientproject.spi.platform.ClientProjectPlatformImplementation;
 import org.openide.filesystems.FileChangeAdapter;
@@ -68,68 +68,75 @@ import org.openide.util.EditableProperties;
 import org.openide.util.Exceptions;
 
 /**
- *
+ * @author Jan Becicka
  */
 public class ClientProjectPlatformImpl implements ClientProjectPlatformImplementation {
 
     private Project p;
     private Map<String, ClientProjectConfigurationImpl> configs;
     private FileObject configDir;
+    private FileObject nbProjectDir;
     private PropertyChangeSupport support = new PropertyChangeSupport(this);
     private static final Logger LOGGER = Logger.getLogger(ClientProjectPlatformImpl.class.getName());
+    private FileChangeListener fclWeakNB;
+    private FileChangeListener fclWeakConfig;    
+    
     private final FileChangeListener fcl = new FileChangeAdapter() {
+
+        @Override
         public void fileFolderCreated(FileEvent fe) {
             update(fe);
         }
 
+        @Override
         public void fileDataCreated(FileEvent fe) {
             update(fe);
         }
 
+        @Override
         public void fileDeleted(FileEvent fe) {
             update(fe);
         }
 
+        @Override
         public void fileRenamed(FileRenameEvent fe) {
             update(fe);
         }
-
-        private void update(FileEvent ev) {
-            LOGGER.log(Level.FINEST, "Received {0}", ev); 
-            Set<String> oldConfigs = configs != null ? configs.keySet() : Collections.<String>emptySet();
-            configDir = p.getProjectDirectory().getFileObject("nbproject/configs"); // NOI18N
-            if (configDir != null) {
-                if (fclWeakConfig!=null)
-                    configDir.removeFileChangeListener(fclWeakConfig);
-                fclWeakConfig = FileUtil.weakFileChangeListener(fcl, configDir);
-                configDir.addFileChangeListener(fclWeakConfig);
-                LOGGER.log(Level.FINEST, "(Re-)added listener to {0}", configDir);
-            } else {
-                LOGGER.log(Level.FINEST, "No nbproject/configs exists");
-            }
-            calculateConfigs();
-            Set<String> newConfigs = configs.keySet();
-            if (!oldConfigs.equals(newConfigs)) {
-                LOGGER.log(Level.FINER, "Firing " + ClientProjectPlatformImplementation.PROP_CONFIGURATIONS + ": {0} -> {1}", new Object[]{oldConfigs, newConfigs});
-                support.firePropertyChange(ClientProjectPlatformImplementation.PROP_CONFIGURATIONS, null, null);
-            }
-        }
     };
-    
-    private FileChangeListener fclWeakNB;
-    private FileChangeListener fclWeakConfig;
 
+    private void update(FileEvent ev) {
+        LOGGER.log(Level.FINEST, "Received {0}", ev);
+        Set<String> oldConfigs = configs != null ? configs.keySet() : Collections.<String>emptySet();
+        configDir = p.getProjectDirectory().getFileObject("nbproject/configs"); // NOI18N
+        if (configDir != null) {
+            if (fclWeakConfig != null) {
+                configDir.removeFileChangeListener(fclWeakConfig);
+            }
+            fclWeakConfig = FileUtil.weakFileChangeListener(fcl, configDir);
+            configDir.addFileChangeListener(fclWeakConfig);
+            LOGGER.log(Level.FINEST, "(Re-)added listener to {0}", configDir);
+        } else {
+            LOGGER.log(Level.FINEST, "No nbproject/configs exists");
+        }
+        calculateConfigs();
+        Set<String> newConfigs = configs.keySet();
+        if (!oldConfigs.equals(newConfigs)) {
+            LOGGER.log(Level.FINER, "Firing " + ClientProjectPlatformImplementation.PROP_CONFIGURATIONS + ": {0} -> {1}", new Object[]{oldConfigs, newConfigs});
+            support.firePropertyChange(ClientProjectPlatformImplementation.PROP_CONFIGURATIONS, null, null);
+        }
+    }
+    
     public ClientProjectPlatformImpl(Project p) {
         this.p = p;
-        FileObject nbp = p.getProjectDirectory().getFileObject("nbproject"); // NOI18N
-        if (nbp != null) {
-            fclWeakNB = FileUtil.weakFileChangeListener(fcl, nbp);
-            nbp.addFileChangeListener(fcl);
-            LOGGER.log(Level.FINEST, "Added listener to {0}", nbp);
-            configDir = nbp.getFileObject("configs"); // NOI18N
+        this.nbProjectDir = p.getProjectDirectory().getFileObject("nbproject"); // NOI18N
+        if (nbProjectDir != null) {
+            fclWeakNB = FileUtil.weakFileChangeListener(fcl, nbProjectDir);
+            nbProjectDir.addFileChangeListener(fclWeakNB);
+            LOGGER.log(Level.FINEST, "Added listener to {0}", nbProjectDir);
+            configDir = nbProjectDir.getFileObject("configs"); // NOI18N
             if (configDir != null) {
                 fclWeakConfig = FileUtil.weakFileChangeListener(fcl, configDir);
-                configDir.addFileChangeListener(fcl);
+                configDir.addFileChangeListener(fclWeakConfig);
                 LOGGER.log(Level.FINEST, "Added listener to {0}", configDir);
             }
         }
@@ -170,7 +177,7 @@ public class ClientProjectPlatformImpl implements ClientProjectPlatformImplement
 
     @Override
     public List<String> getNewConfigurationTypes() {
-        return Arrays.asList(new String[]{AndroidPlatform.TYPE, IOSPlatform.TYPE});
+        return Arrays.asList(new String[]{PlatformConstants.ANDROID_TYPE, PlatformConstants.IOS_TYPE});
     }
 
     @Override

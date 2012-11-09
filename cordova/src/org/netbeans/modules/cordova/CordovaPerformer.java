@@ -44,15 +44,22 @@ package org.netbeans.modules.cordova;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.Properties;
+import java.util.prefs.Preferences;
 import org.apache.tools.ant.module.api.support.ActionUtils;
+import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.cordova.platforms.BuildPerformer;
+import org.netbeans.modules.cordova.platforms.PlatformConstants;
 import org.netbeans.modules.cordova.platforms.android.AndroidPlatform;
 import org.netbeans.modules.cordova.platforms.ios.Device;
 import org.netbeans.modules.cordova.platforms.ios.IOSPlatform;
 import org.netbeans.modules.cordova.project.ClientProjectConfigurationImpl;
+import org.netbeans.modules.web.common.api.ServerURLMapping;
+import org.netbeans.modules.web.common.api.WebServer;
 import org.netbeans.spi.project.ProjectConfigurationProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -96,13 +103,13 @@ public class CordovaPerformer implements BuildPerformer {
         props.put("debug.enable", debug);//NOI18N
         //workaround for some strange behavior of ant execution in netbeans
         props.put("env.DISPLAY", ":0.0");//NOI18N
-        if (activeConfiguration.getType().equals(AndroidPlatform.TYPE)) {
+        if (activeConfiguration.getType().equals(PlatformConstants.ANDROID_TYPE)) {
             props.put("android.build.target", AndroidPlatform.getDefault().getPrefferedTarget());//NOI18N
             props.put("android.sdk.home", AndroidPlatform.getDefault().getSdkLocation());//NOI18N
-            props.put("android.target.device.arg", "device".equals(activeConfiguration.getProperty("device"))?"-d":"-e");//NOI18N
-        } else if (activeConfiguration.getType().equals(IOSPlatform.TYPE)) {
-            props.put("ios.sim.exec", InstalledFileLocator.getDefault().locate("bin/ios-sim", "org.netbeans.modules.cordova", false).getPath());//NOI18N
-            String virtualDevice = activeConfiguration.getProperty("vd");
+            props.put("android.target.device.arg", PlatformConstants.DEVICE.equals(activeConfiguration.getProperty(PlatformConstants.DEVICE_PROP))?"-d":"-e");//NOI18N
+        } else if (activeConfiguration.getType().equals(PlatformConstants.IOS_TYPE)) {
+            props.put("ios.sim.exec", InstalledFileLocator.getDefault().locate("bin/ios-sim", "org.netbeans.modules.cordova.platforms.ios", false).getPath());//NOI18N
+            String virtualDevice = activeConfiguration.getProperty(PlatformConstants.VIRTUAL_DEVICE_PROP);
             if (virtualDevice!=null) {
                 Device dev = Device.valueOf(virtualDevice);
                 props.put("ios.device.args", dev.getArgs());//NOI18N
@@ -146,9 +153,11 @@ public class CordovaPerformer implements BuildPerformer {
             }
             props.put("project.name", ProjectUtils.getInformation(project).getDisplayName().replaceAll(" ", ""));//NOI18N
             props.put("android.project.activity", ProjectUtils.getInformation(project).getDisplayName().replaceAll(" ", ""));//NOI18N
-            props.put("android.project.package","org.netbeans");//NOI18N
-            props.put("android.project.package.folder","org/netbeans");//NOI18N
-            FileObject p= FileUtil.createData(project.getProjectDirectory(), nbprojectbuildproperties);
+            props.put("android.project.package", "org.netbeans");//NOI18N
+            props.put("android.project.package.folder", "org/netbeans");//NOI18N
+            props.put("site.root", org.netbeans.modules.cordova.project.Utilities.getSiteRoot(project));
+            props.put("start.file", org.netbeans.modules.cordova.project.Utilities.getStartFile(project));
+            FileObject p = FileUtil.createData(project.getProjectDirectory(), nbprojectbuildproperties);
             OutputStream outputStream = p.getOutputStream();
             try {
                 props.store(outputStream, null);
@@ -158,5 +167,28 @@ public class CordovaPerformer implements BuildPerformer {
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
         }
+    }
+
+    @Override
+    public String getUrl(Project p) {
+        if (org.netbeans.modules.cordova.project.Utilities.isUsingEmbeddedServer(p)) {
+            WebServer.getWebserver().start(p, org.netbeans.modules.cordova.project.Utilities.getStartFile(p), org.netbeans.modules.cordova.project.Utilities.getWebContextRoot(p));
+        } else {
+            WebServer.getWebserver().stop(p);
+        }
+        
+        FileObject fileObject = org.netbeans.modules.cordova.project.Utilities.getStartFile(p);
+        try {
+            return ServerURLMapping.toServer(p, fileObject).toExternalForm().replace("localhost", InetAddress.getLocalHost().getHostAddress());
+        } catch (UnknownHostException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        return null;
+    }
+
+    @Override
+    public boolean isPhoneGapBuild(Project p) {
+        Preferences preferences = ProjectUtils.getPreferences(p, CordovaPlatform.class, true);
+        return Boolean.parseBoolean(preferences.get("phonegap", "false"));
     }
 }

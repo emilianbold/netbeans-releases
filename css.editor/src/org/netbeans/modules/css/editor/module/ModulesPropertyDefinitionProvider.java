@@ -66,9 +66,9 @@ public class ModulesPropertyDefinitionProvider implements PropertyDefinitionProv
     }
 
     @Override
-    public PropertyDefinition getPropertyDefinition(FileObject context, String propertyName) {
+    public PropertyDefinition getPropertyDefinition(String propertyName) {
         for (CssEditorModule module : CssModuleSupport.getModules()) {
-            PropertyDefinition def = module.getPropertyDefinition(context, propertyName);
+            PropertyDefinition def = module.getPropertyDefinition(propertyName);
             if(def != null) {
                 return def;
             }

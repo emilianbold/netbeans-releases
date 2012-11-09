@@ -141,7 +141,7 @@ public class CSSStylesSelectionPanel extends JPanel {
         JSplitPane splitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
         splitPane.setTopComponent(initPropertyPane());
         splitPane.setBottomComponent(initRulePane());
-        splitPane.setDividerLocation(100);
+        splitPane.setResizeWeight(0.5);
         splitPane.setBorder(null);
         selectionView = splitPane;
         initMessageLabel();
