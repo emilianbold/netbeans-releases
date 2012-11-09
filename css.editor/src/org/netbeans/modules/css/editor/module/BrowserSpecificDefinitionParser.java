@@ -178,10 +178,10 @@ public class BrowserSpecificDefinitionParser extends PropertySupportResolver {
         @Override
         public synchronized GroupGrammarElement getGrammarElement(FileObject context) {
             //try to get the normal property first
-            PropertyDefinition p = Properties.getPropertyDefinition(context, delegateToPropertyName);
+            PropertyDefinition p = Properties.getPropertyDefinition(delegateToPropertyName);
             if(p == null) {
                 //the browser specific definition may address an invisible property
-                p = Properties.getPropertyDefinition(context, delegateToPropertyName, true);
+                p = Properties.getPropertyDefinition(delegateToPropertyName, true);
             }
             
             if (p == null) {

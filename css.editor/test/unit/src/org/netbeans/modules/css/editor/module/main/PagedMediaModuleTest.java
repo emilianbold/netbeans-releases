@@ -105,12 +105,12 @@ public class PagedMediaModuleTest extends CssModuleTestBase {
     public void testProperties() {
         assertPropertyValues("size", "10px 20px");
         
-        PropertyDefinition p = Properties.getPropertyDefinition(null, "size");
+        PropertyDefinition p = Properties.getPropertyDefinition( "size");
         assertNotNull(p);
         assertTrue(new ResolvedProperty(p, "auto").isResolved());
         assertTrue(new ResolvedProperty(p, "portrait").isResolved());
         
-        p = Properties.getPropertyDefinition(null, "orphans");
+        p = Properties.getPropertyDefinition( "orphans");
         assertNotNull(p);
         assertTrue(new ResolvedProperty(p, "2").isResolved());
         
