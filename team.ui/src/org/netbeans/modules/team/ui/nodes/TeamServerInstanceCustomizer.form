@@ -38,15 +38,15 @@
                               <Component id="cmbProvider" min="-2" max="-2" attributes="0"/>
                               <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
                           </Group>
-                          <Component id="txtDisplayName" max="32767" attributes="0"/>
-                          <Component id="txtUrl" max="32767" attributes="0"/>
+                          <Component id="txtUrl" pref="350" max="32767" attributes="0"/>
+                          <Component id="txtDisplayName" alignment="0" max="32767" attributes="0"/>
                       </Group>
                   </Group>
                   <Group type="102" alignment="0" attributes="0">
                       <EmptySpace min="12" pref="12" max="-2" attributes="0"/>
                       <Component id="proxy" min="-2" max="-2" attributes="0"/>
                       <EmptySpace type="separate" min="-2" max="-2" attributes="0"/>
-                      <Component id="progress" pref="229" max="32767" attributes="0"/>
+                      <Component id="progress" max="32767" attributes="0"/>
                   </Group>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
