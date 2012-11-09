@@ -396,7 +396,7 @@ public final class FolderObj extends BaseFileObj {
         } else if (FileChangedManager.getInstance().exists(file2Create)) {
             extensions.createFailure(this, file2Create.getName(), false);
             SyncFailedException sfe = new SyncFailedException(file2Create.getAbsolutePath()); // NOI18N               
-            String msg = NbBundle.getMessage(FolderObj.class, "EXC_CannotCreateData", file2Create.getName(), getPath()); // NOI18N
+            String msg = NbBundle.getMessage(FileBasedFileSystem.class, "EXC_CannotCreateData", file2Create.getName(), getPath()); // NOI18N
             Exceptions.attachLocalizedMessage(sfe, msg);
             throw sfe;
         } else if (!file2Create.createNewFile()) {
