@@ -105,6 +105,14 @@ public class Richfaces4Implementation implements JsfComponentImplementation {
         return RICHFACES_NAME;
     }
 
+    @NbBundle.Messages({
+        "Richfaces4Implementation.richfaces.display.name=RichFaces"
+    })
+    @Override
+    public String getDisplayName() {
+        return Bundle.Richfaces4Implementation_richfaces_display_name();
+    }
+
     @Override
     public String getDescription() {
         return NbBundle.getMessage(Richfaces4Implementation.class, "LBL_RichFaces_Description");  //NOI18N
