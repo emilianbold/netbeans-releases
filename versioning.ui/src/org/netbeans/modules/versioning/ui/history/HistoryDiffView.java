@@ -675,7 +675,10 @@ public class HistoryDiffView implements PropertyChangeListener {
             private JLabel label = new JLabel();
             private Component progressComponent;
             private ProgressHandle handle;
-            private final Timer timer = new Timer(0, this);;
+            
+            private final Timer timer = new Timer(0, this);
+            private final Object TIMER_LOCK = new Object();
+            
             public PreparingDiffHandler() {
                 label.setText(NbBundle.getMessage(HistoryDiffView.class, "LBL_PreparingDiff")); // NOI18N
                 this.setBackground(UIManager.getColor("TextArea.background")); // NOI18N
@@ -692,7 +695,7 @@ public class HistoryDiffView implements PropertyChangeListener {
                 if(isCancelled()) {
                     return;
                 }
-                synchronized(timer) {
+                synchronized(TIMER_LOCK) {
                     handle = ProgressHandleFactory.createHandle(NbBundle.getMessage(HistoryDiffView.class, "LBL_PreparingDiff")); // NOI18N
                     setProgressComponent(ProgressHandleFactory.createProgressComponent(handle));
                     handle.start();
@@ -703,14 +706,14 @@ public class HistoryDiffView implements PropertyChangeListener {
 
             void startPrepareProgress() {
                 History.LOG.fine("starting prepare diff handler"); // NOI18N
-                synchronized(timer) {
+                synchronized(TIMER_LOCK) {
                     timer.start();
                 }
             }
 
             void finishPrepareProgress() {
                 History.LOG.fine("finishing prepare diff handler"); // NOI18N
-                synchronized(timer) {
+                synchronized(TIMER_LOCK) {
                     timer.stop();
                     if(handle != null) {
                         handle.finish();

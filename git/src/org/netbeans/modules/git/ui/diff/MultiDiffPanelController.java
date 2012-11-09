@@ -89,6 +89,7 @@ import org.netbeans.modules.git.ui.commit.CommitAction;
 import org.netbeans.modules.git.ui.commit.GitFileNode;
 import org.netbeans.modules.versioning.util.status.VCSStatusTableModel;
 import org.netbeans.modules.git.ui.status.StatusAction;
+import org.netbeans.modules.git.utils.GitUtils;
 import org.netbeans.modules.versioning.util.status.VCSStatusTable;
 import org.netbeans.modules.versioning.diff.DiffLookup;
 import org.netbeans.modules.versioning.diff.DiffUtils;
@@ -671,7 +672,7 @@ public class MultiDiffPanelController implements ActionListener, PropertyChangeL
         } else {
             if (!oldInfo.containsStatus(displayStatuses) && !newInfo.containsStatus(displayStatuses)) return false;
         }
-        return context == null ? false: context.contains(file);
+        return context == null ? false : GitUtils.contains(context.getRootFiles(), file);
     }
 
     private void initPanelMode () {

@@ -50,6 +50,7 @@ import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.jellytools.MainWindowOperator;
 import org.netbeans.jemmy.operators.JMenuBarOperator;
 import org.netbeans.jemmy.operators.Operator.DefaultStringComparator;
+import org.netbeans.jemmy.util.PNGEncoder;
 import org.netbeans.junit.Manager;
 import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.test.permanentUI.utils.NbMenuItem;
@@ -104,6 +105,7 @@ public class MainMenuTest extends JellyTestCase {
         "testMnemonicsCollision"};
 
     protected boolean logging = false;
+    private static final boolean screen = false;
 
     /** Need to be defined because of JUnit */
     public MainMenuTest(String name) {
@@ -317,6 +319,7 @@ public class MainMenuTest extends JellyTestCase {
             Utilities.printMenuStructure(goldenFile, permanentMenu, "---", 1);
 
             NbMenuItem menuItem = getMainMenuItem(menuName);
+            captureScreen();
             ideFile = new PrintStream(menuItemsLogFile);
             Utilities.printMenuStructure(ideFile, menuItem, "---", 1);
 
@@ -387,11 +390,11 @@ public class MainMenuTest extends JellyTestCase {
 
             ideFile = new PrintStream(menuItemsLogFile);
             pushMainMenuItem(submenuPath);
+            captureScreen();
             if(w84init) {
                 waitForInit();
                 pushMainMenuItem(submenuPath);
             }
-
             String submenuItems[] = submenuPath.split("\\|");
             assertTrue("submenuPath must be >= 2. - " + submenuPath, submenuItems.length >= 2); //check the size
             NbMenuItem mainM = getMainMenuItem(submenuItems[0]);
@@ -467,6 +470,17 @@ public class MainMenuTest extends JellyTestCase {
             Thread.sleep(1000);
         } catch (InterruptedException ex) {
             Exceptions.printStackTrace(ex);
+        }
+    }
+
+    private void captureScreen() {
+        if(screen) {
+            try {
+                String captureFile = getWorkDir().getAbsolutePath() + File.separator + "screen.png";
+                PNGEncoder.captureScreen(captureFile, PNGEncoder.COLOR_MODE);
+            } catch (Exception ex) {
+                ex.printStackTrace(getLog());
+            }
         }
     }
 }

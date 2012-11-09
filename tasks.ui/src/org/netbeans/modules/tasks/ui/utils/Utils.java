@@ -92,8 +92,7 @@ public class Utils {
     public static String getTaskDisplayString(Issue task, JComponent component, int maxWidth, boolean active, boolean hasFocus) {
         String displayName;
         String fitText = computeFitText(component, maxWidth, task.getID() + " - " + task.getSummary(), active); //NOI18N
-        //replace spaces to prevent line breaking
-        fitText = removeSpaces(fitText);
+        
         String activeText = active ? "<b>" + fitText + "</b>" : getFilterBoldText(fitText); //NOI18N
 
         if (task.isFinished()) {
@@ -107,6 +106,8 @@ public class Utils {
         } else {
             displayName = "<html>" + activeText + "</html>"; //NOI18N
         }
+        //replace spaces to prevent line breaking
+        displayName = removeSpaces(displayName);
         return displayName;
     }
 
