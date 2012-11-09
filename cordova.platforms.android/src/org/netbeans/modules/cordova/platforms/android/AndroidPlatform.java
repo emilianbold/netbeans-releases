@@ -46,18 +46,10 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
-import java.util.Timer;
-import java.util.TimerTask;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
-import java.util.concurrent.FutureTask;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import javax.swing.SwingUtilities;
@@ -79,8 +71,9 @@ public class AndroidPlatform {
     private static AndroidPlatform instance;
     
     private static String ANDROID_SDK_ROOT_PREF = "android.sdk.home"; //NOI18N
-    public static final String TYPE = "android"; //NOI18N
 
+    private transient final java.beans.PropertyChangeSupport propertyChangeSupport = new java.beans.PropertyChangeSupport(this);
+    
     private AndroidPlatform() {
     }
 
@@ -124,14 +117,14 @@ public class AndroidPlatform {
     
     public Collection<AVD> getAVDs() throws IOException {
         assert !SwingUtilities.isEventDispatchThread();
-        String avdString = ProcessUtils.callProcess(getSdkLocation() + "/tools/android", "list", "avd"); //NOI18N
+        String avdString = ProcessUtils.callProcess(getSdkLocation() + "/tools/android", true, "list", "avd"); //NOI18N
         return AVD.parse(avdString);
     }
     
 
     public List<Target> getTargets() throws IOException {
         //assert !SwingUtilities.isEventDispatchThread();
-        String avdString = ProcessUtils.callProcess(getSdkLocation() + "/tools/android", "list", "targets");//NOI18N
+        String avdString = ProcessUtils.callProcess(getSdkLocation() + "/tools/android", true, "list", "targets");//NOI18N
         return Target.parse(avdString);
     }
     
@@ -166,14 +159,14 @@ public class AndroidPlatform {
     
     public Collection<Device> getDevices() throws IOException {
         //assert !SwingUtilities.isEventDispatchThread();
-        String avdString = ProcessUtils.callProcess(getSdkLocation() + "/platform-tools/adb", "devices"); //NOI18N
+        String avdString = ProcessUtils.callProcess(getSdkLocation() + "/platform-tools/adb", true, "devices"); //NOI18N
         Collection<Device> devices = Device.parse(avdString);
         if (devices.isEmpty()) {
             //maybe adb is just down. try to restart adb
-            ProcessUtils.callProcess(getSdkLocation() + "/platform-tools/adb", "kill-server"); //NOI18N
-            ProcessUtils.callProcess(getSdkLocation() + "/platform-tools/adb", "start-server"); //NOI18N
+            ProcessUtils.callProcess(getSdkLocation() + "/platform-tools/adb", true, "kill-server"); //NOI18N
+            ProcessUtils.callProcess(getSdkLocation() + "/platform-tools/adb", true, "start-server"); //NOI18N
         }
-        avdString = ProcessUtils.callProcess(getSdkLocation() + "/platform-tools/adb", "devices"); //NOI18N
+        avdString = ProcessUtils.callProcess(getSdkLocation() + "/platform-tools/adb", true, "devices"); //NOI18N
         devices = Device.parse(avdString);
         return devices;
     }
@@ -200,6 +193,7 @@ public class AndroidPlatform {
 
     public void setSdkLocation(String sdkLocation) {
         NbPreferences.forModule(AndroidPlatform.class).put(ANDROID_SDK_ROOT_PREF, sdkLocation);
+        propertyChangeSupport.firePropertyChange("SDK", null, sdkLocation);//NOI18N
     }
     
     public boolean waitEmulatorReady(int timeout) {
@@ -223,7 +217,7 @@ public class AndroidPlatform {
         try {
             String value;
             for(;;) {
-                value = ProcessUtils.callProcess(getSdkLocation() + "/platform-tools/adb", "-e", "wait-for-device", "shell", "getprop", "init.svc.bootanim"); //NOI18N
+                value = ProcessUtils.callProcess(getSdkLocation() + "/platform-tools/adb", true, "-e", "wait-for-device", "shell", "getprop", "init.svc.bootanim"); //NOI18N
                 if ("stopped".equals(value.trim())) { //NOI18N
                     return true;
                 }
@@ -244,7 +238,7 @@ public class AndroidPlatform {
     public void manageAVDs() {
         assert !SwingUtilities.isEventDispatchThread();
         try {
-            ProcessUtils.callProcess(getSdkLocation() + "/tools/android", "avd"); //NOI18N
+            ProcessUtils.callProcess(getSdkLocation() + "/tools/android", true, "avd"); //NOI18N
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
         }
@@ -253,6 +247,33 @@ public class AndroidPlatform {
     public boolean isReady() {
         return getSdkLocation() != null;
     }
+    
+    public void openUrl(boolean device, String url) {
+        try {
+            String s = ProcessUtils.callProcess(getSdkLocation() + "/platform-tools/adb", false, device?"-d":"-e", "wait-for-device", "shell", "am", "start", "-a", "android.intent.action.VIEW", "-n", "com.android.browser/.BrowserActivity", url); //NOI18N
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+    }
+    
+    /**
+     * Add PropertyChangeListener.
+     *
+     * @param listener
+     */
+    public void addPropertyChangeListener(java.beans.PropertyChangeListener listener ) {
+        propertyChangeSupport.addPropertyChangeListener( listener );
+    }
+
+    /**
+     * Remove PropertyChangeListener.
+     *
+     * @param listener
+     */
+    public void removePropertyChangeListener(java.beans.PropertyChangeListener listener ) {
+        propertyChangeSupport.removePropertyChangeListener( listener );
+    }
+    
     
 }
 

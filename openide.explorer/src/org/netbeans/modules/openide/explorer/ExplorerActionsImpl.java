@@ -827,7 +827,15 @@ public final class ExplorerActionsImpl {
 
         /** Updates actions states now if there is pending event. */
         public void update() {
-            timer.waitFinished();
+            if (EventQueue.isDispatchThread()) {
+                try {
+                    timer.waitFinished(100);
+                } catch (InterruptedException ex) {
+                    LOG.log(Level.FINE, null, ex);
+                }
+            } else {
+                timer.waitFinished();
+            }
         }
 
         private void schedule() {

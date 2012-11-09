@@ -39,26 +39,29 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.cordova.platforms;
+package org.netbeans.modules.php.editor.api.elements;
 
-import org.netbeans.api.project.Project;
+import java.util.Collection;
+import org.netbeans.modules.php.editor.api.AliasedName;
+import org.netbeans.modules.php.editor.api.QualifiedName;
 
 /**
  *
- * @author Jan Becicka
+ * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public interface BuildPerformer {
-    public static final String BUILD_ANDROID = "build-android"; //NOI18N
-    public static final String BUILD_IOS = "build-ios"; //NOI18N
-    public static final String CLEAN_ANDROID = "clean-android"; //NOI18N
-    public static final String CLEAN_IOS = "clean-ios"; //NOI18N
-    public static final String RUN_ANDROID = "sim-android"; //NOI18N
-    public static final String RUN_IOS = "sim-ios"; //NOI18N
-    
-    public void perform(String target, Project p);
-    
-    public String getUrl(Project p);
+public class AliasedTrait extends AliasedType implements TraitElement {
 
-    public boolean isPhoneGapBuild(Project p);
-    
+    public AliasedTrait(AliasedName aliasedName, TraitElement traitElement) {
+        super(aliasedName, traitElement);
+    }
+
+    private TraitElement getTraitElement() {
+        return (TraitElement) element;
+    }
+
+    @Override
+    public Collection<QualifiedName> getUsedTraits() {
+        return getTraitElement().getUsedTraits();
+    }
+
 }

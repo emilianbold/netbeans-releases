@@ -126,8 +126,6 @@ public class AddPropertyAction extends AbstractAction {
             addPropertyPanel.setModel(model);
             addPropertyPanel.setRule(rule);
             
-            addPropertyPanel.setViewMode(ViewMode.CATEGORIZED);
-
             DialogDescriptor descriptor = new DialogDescriptor(addPropertyPanel, Bundle.label_add_property(), true, DialogDescriptor.OK_CANCEL_OPTION, DialogDescriptor.OK_OPTION, new ActionListener() {
                 @Override
                 public void actionPerformed(ActionEvent e) {
