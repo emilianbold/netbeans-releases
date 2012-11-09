@@ -4444,19 +4444,35 @@ public class JavaCompletionProvider implements CompletionProvider {
                     case AND_ASSIGNMENT:
                     case XOR_ASSIGNMENT:
                     case OR_ASSIGNMENT:
-                    case PREFIX_INCREMENT:
-                    case PREFIX_DECREMENT:
-                    case BITWISE_COMPLEMENT:
-                    case LEFT_SHIFT:
-                    case RIGHT_SHIFT:
-                    case UNSIGNED_RIGHT_SHIFT:
                     case LEFT_SHIFT_ASSIGNMENT:
                     case RIGHT_SHIFT_ASSIGNMENT:
                     case UNSIGNED_RIGHT_SHIFT_ASSIGNMENT:
+                        CompoundAssignmentTree cat = (CompoundAssignmentTree)tree;
+                        pos = (int)env.getSourcePositions().getEndPosition(env.getRoot(), cat.getVariable());
+                        if (offset <= pos)
+                            break;
+                        ret = new HashSet<TypeMirror>();
+                        types = controller.getTypes();
+                        ret.add(types.getPrimitiveType(TypeKind.BYTE));
+                        ret.add(types.getPrimitiveType(TypeKind.CHAR));
+                        ret.add(types.getPrimitiveType(TypeKind.INT));
+                        ret.add(types.getPrimitiveType(TypeKind.LONG));
+                        ret.add(types.getPrimitiveType(TypeKind.SHORT));
+                        return ret;
+                    case LEFT_SHIFT:
+                    case RIGHT_SHIFT:
+                    case UNSIGNED_RIGHT_SHIFT:
                     case AND:                        
                     case OR:
                     case XOR:
                     case REMAINDER:
+                        BinaryTree bt = (BinaryTree)tree;
+                        pos = (int)env.getSourcePositions().getEndPosition(env.getRoot(), bt.getLeftOperand());
+                        if (offset <= pos)
+                            break;
+                    case PREFIX_INCREMENT:
+                    case PREFIX_DECREMENT:
+                    case BITWISE_COMPLEMENT:
                         ret = new HashSet<TypeMirror>();
                         types = controller.getTypes();
                         ret.add(types.getPrimitiveType(TypeKind.BYTE));
@@ -4467,10 +4483,17 @@ public class JavaCompletionProvider implements CompletionProvider {
                         return ret;
                     case CONDITIONAL_AND:
                     case CONDITIONAL_OR:
+                        bt = (BinaryTree)tree;
+                        pos = (int)env.getSourcePositions().getEndPosition(env.getRoot(), bt.getLeftOperand());
+                        if (offset <= pos)
+                            break;
                     case LOGICAL_COMPLEMENT:
                         return Collections.singleton(controller.getTypes().getPrimitiveType(TypeKind.BOOLEAN));
                     case PLUS:
-                        BinaryTree bt = (BinaryTree)tree;
+                        bt = (BinaryTree)tree;
+                        pos = (int)env.getSourcePositions().getEndPosition(env.getRoot(), bt.getLeftOperand());
+                        if (offset <= pos)
+                            break;
                         TypeMirror tm = controller.getTrees().getTypeMirror(new TreePath(path, bt.getLeftOperand()));
                         if (tm == null)
                             return null;
@@ -4488,7 +4511,10 @@ public class JavaCompletionProvider implements CompletionProvider {
                         }
                         return Collections.singleton(tm);
                     case PLUS_ASSIGNMENT:
-                        CompoundAssignmentTree cat = (CompoundAssignmentTree)tree;
+                        cat = (CompoundAssignmentTree)tree;
+                        pos = (int)env.getSourcePositions().getEndPosition(env.getRoot(), cat.getVariable());
+                        if (offset <= pos)
+                            break;
                         tm = controller.getTrees().getTypeMirror(new TreePath(path, cat.getVariable()));
                         if (tm == null)
                             return null;
@@ -4508,6 +4534,20 @@ public class JavaCompletionProvider implements CompletionProvider {
                     case MULTIPLY_ASSIGNMENT:
                     case DIVIDE_ASSIGNMENT:
                     case MINUS_ASSIGNMENT:
+                        cat = (CompoundAssignmentTree)tree;
+                        pos = (int)env.getSourcePositions().getEndPosition(env.getRoot(), cat.getVariable());
+                        if (offset <= pos)
+                            break;
+                        ret = new HashSet<TypeMirror>();
+                        types = controller.getTypes();
+                        ret.add(types.getPrimitiveType(TypeKind.BYTE));
+                        ret.add(types.getPrimitiveType(TypeKind.CHAR));
+                        ret.add(types.getPrimitiveType(TypeKind.DOUBLE));
+                        ret.add(types.getPrimitiveType(TypeKind.FLOAT));
+                        ret.add(types.getPrimitiveType(TypeKind.INT));
+                        ret.add(types.getPrimitiveType(TypeKind.LONG));
+                        ret.add(types.getPrimitiveType(TypeKind.SHORT));
+                        return ret;
                     case DIVIDE:
                     case EQUAL_TO:
                     case GREATER_THAN:
@@ -4517,6 +4557,10 @@ public class JavaCompletionProvider implements CompletionProvider {
                     case MINUS:
                     case MULTIPLY:
                     case NOT_EQUAL_TO:
+                        bt = (BinaryTree)tree;
+                        pos = (int)env.getSourcePositions().getEndPosition(env.getRoot(), bt.getLeftOperand());
+                        if (offset <= pos)
+                            break;
                     case UNARY_PLUS:
                     case UNARY_MINUS:
                         ret = new HashSet<TypeMirror>();
