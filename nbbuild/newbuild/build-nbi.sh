@@ -56,11 +56,19 @@ if [ ! -z $NATIVE_MAC_MACHINE ] && [ ! -z $MAC_PATH ]; then
    fi
 #   ssh $NATIVE_MAC_MACHINE $MAC_PATH/run-mac-installer.sh $ML_BUILD > $MAC_LOG 2>&1 &
 
-# Run new builds
+   # Run new builds
    sh $NB_ALL/installer/mac/newbuild/init.sh | ssh $NATIVE_MAC_MACHINE "cat > $MAC_PATH/installer/mac/newbuild/build-private.sh"
    ssh $NATIVE_MAC_MACHINE chmod a+x $MAC_PATH/installer/mac/newbuild/build.sh
 
-   ssh $NATIVE_MAC_MACHINE $MAC_PATH/installer/mac/newbuild/build.sh $MAC_PATH $BASENAME_PREFIX $BUILDNUMBER $ML_BUILD $BUILD_NBJDK7 0 $LOCALES > $MAC_LOG_NEW 2>&1 &
+   if [ ! -z $SIGNING_PASSWORD ] ; then
+       UNLOCK_COMMAND="security unlock-keychain -p $SIGNING_PASSWORD ;"
+   else
+       SIGNING_IDENTITY=0
+   fi
+
+   BASE_COMMAND="$MAC_PATH/installer/mac/newbuild/build.sh $MAC_PATH $BASENAME_PREFIX $BUILDNUMBER $BUILD_NBJDK7 '"$SIGNING_IDENTITY"' $LOCALES"
+
+   ssh $NATIVE_MAC_MACHINE "$UNLOCK_COMMAND $BASE_COMMAND" > $MAC_LOG_NEW 2>&1 &
 
 fi
 
