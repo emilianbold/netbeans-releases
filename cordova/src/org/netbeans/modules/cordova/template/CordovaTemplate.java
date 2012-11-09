@@ -47,15 +47,15 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.prefs.Preferences;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
 import javax.swing.text.StyledDocument;
-import org.netbeans.api.options.OptionsDisplayer;
 import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.cordova.CordovaPlatform;
-import org.netbeans.modules.cordova.platforms.android.AndroidPlatform;
-import org.netbeans.modules.cordova.platforms.ios.IOSPlatform;
-import org.netbeans.modules.cordova.project.ConfigUtils;
+import org.netbeans.modules.cordova.project.CordovaPanel;
 import org.netbeans.modules.web.clientproject.spi.ClientProjectExtender;
 import org.netbeans.modules.web.clientproject.spi.SiteTemplateImplementation;
 import org.openide.WizardDescriptor;
@@ -66,11 +66,9 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.util.ChangeSupport;
-import org.openide.util.EditableProperties;
 import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
-import org.openide.util.WeakListeners;
 import org.openide.util.lookup.ServiceProvider;
 
 /**
@@ -185,32 +183,16 @@ public class CordovaTemplate implements SiteTemplateImplementation {
                 FileObject libFo = FileUtil.toFileObject(lib);
                 FileObject createFolder = FileUtil.createFolder(siteRoot, librariesPath + "/Cordova-" + version);//NOI18N
                 FileUtil.copyFile(libFo, createFolder, "cordova-" + version);//NOI18N
-
-
-                EditableProperties ios = new EditableProperties(true);
-                ios.put("display.name", Bundle.LBL_iPhoneSimulator());//NOI18N
-                ios.put("type", IOSPlatform.TYPE);//NOI18N
-                ios.put("device", "emulator");//NOI18N
-                ConfigUtils.createConfigFile(projectRoot, "ios", ios);//NOI18N
-
-                EditableProperties androide = new EditableProperties(true);
-                androide.put("display.name", Bundle.LBL_AndroidEmulator());
-                androide.put("type", AndroidPlatform.TYPE);//NOI18N
-                androide.put("device", "emulator");//NOI18N
-                ConfigUtils.createConfigFile(projectRoot, "android", androide);//NOI18N
-
-                EditableProperties androidd = new EditableProperties(true);
-                androidd.put("display.name", Bundle.LBL_AndroidDevice());
-                androidd.put("type", AndroidPlatform.TYPE);//NOI18N
-                androidd.put("device", "device");//NOI18N
-                ConfigUtils.createConfigFile(projectRoot, "android", androidd);//NOI18N
-
+                
+                Preferences preferences = ProjectUtils.getPreferences(FileOwnerQuery.getOwner(projectRoot), CordovaPlatform.class, true);
+                preferences.put("phonegap", "true");
             } catch (IOException ex) {
                 Exceptions.printStackTrace(ex);
             } catch (Throwable ex) {
                 Exceptions.printStackTrace(ex);
             }
         }
+
     }
 
     private static class CordovaWizardPanel implements Panel<WizardDescriptor>, PropertyChangeListener  {
@@ -222,7 +204,7 @@ public class CordovaTemplate implements SiteTemplateImplementation {
             this.ext = ext;
         }
 
-        private CordovaTemplatePanel panel;
+        private CordovaPanel panel;
         private transient final ChangeSupport changeSupport = new ChangeSupport(this);
 
         @Override
@@ -238,7 +220,7 @@ public class CordovaTemplate implements SiteTemplateImplementation {
         @Override
         public JComponent getComponent() {
             if (panel == null) {
-                panel = new CordovaTemplatePanel(ext);
+                panel = new CordovaPanel(ext);
                 panel.addPropertyChangeListener(this);
             }
             return panel;

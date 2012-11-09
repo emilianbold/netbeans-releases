@@ -47,6 +47,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.cordova.platforms.PlatformConstants;
 import org.netbeans.modules.cordova.platforms.android.AndroidActionProvider;
 import org.netbeans.modules.cordova.platforms.android.AndroidConfigurationPanel;
 import org.netbeans.modules.cordova.platforms.android.AndroidPlatform;
@@ -78,7 +79,7 @@ public class ClientProjectConfigurationImpl implements ClientProjectConfiguratio
         this.project = project;
         this.name = id;
         this.displayName = displayName;
-        assert type.equals(AndroidPlatform.TYPE) || type.equals(IOSPlatform.TYPE);
+        assert type.equals(PlatformConstants.ANDROID_TYPE) || type.equals(PlatformConstants.IOS_TYPE);
         this.type = type;
         this.props = ep;
         this.file = kid;
@@ -158,7 +159,7 @@ public class ClientProjectConfigurationImpl implements ClientProjectConfiguratio
 
     @Override
     public ActionProvider getActionProvider() {
-        if (type.equals(AndroidPlatform.TYPE)) {
+        if (type.equals(PlatformConstants.ANDROID_TYPE)) {
             return new AndroidActionProvider(project);
         } else {
             return new IOSActionProvider(project);
@@ -167,7 +168,7 @@ public class ClientProjectConfigurationImpl implements ClientProjectConfiguratio
 
     @Override
     public ProjectConfigurationCustomizer getProjectConfigurationCustomizer() {
-        if (type.equals(AndroidPlatform.TYPE)) {
+        if (type.equals(PlatformConstants.ANDROID_TYPE)) {
             return new AndroidConfigurationPanel.AndroidConfigurationCustomizer(project, this);
         } else {
             return new IOSConfigurationPanel.IOSConfigurationCustomizer(project, this);

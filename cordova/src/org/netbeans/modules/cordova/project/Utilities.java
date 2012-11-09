@@ -39,15 +39,37 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.cordova.platforms.ios;
+package org.netbeans.modules.cordova.project;
+
+import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.api.project.SourceGroup;
+import org.netbeans.api.project.Sources;
+import org.netbeans.modules.web.clientproject.api.WebClientProjectConstants;
+import org.openide.filesystems.FileObject;
 
 /**
  *
  * @author Jan Becicka
  */
-public enum ConfigConstants {
+public class Utilities {
     
-    sdk,
-    device
+    public static FileObject getSiteRoot(Project project) {
+        Sources sources = ProjectUtils.getSources(project);
+        SourceGroup[] sourceGroups = sources.getSourceGroups(WebClientProjectConstants.SOURCES_TYPE_HTML5);
+        assert sourceGroups.length == 1;
+        return sourceGroups[0].getRootFolder();
+    }
     
+    public static FileObject getStartFile(Project project) {
+        return getSiteRoot(project).getFileObject("index.html");
+    }
+
+    public static String getWebContextRoot(Project p) {
+        return "/" + ProjectUtils.getInformation(p).getName();
+    }
+
+    public static boolean isUsingEmbeddedServer(Project p) {
+        return true;
+    }
 }

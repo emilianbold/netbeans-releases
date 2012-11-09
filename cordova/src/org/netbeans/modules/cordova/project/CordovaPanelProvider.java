@@ -63,7 +63,9 @@ public class CordovaPanelProvider implements ProjectCustomizer.CompositeCategory
 
     @Override
     public JComponent createComponent(Category category, Lookup context) {
-        return new CordovaCustomizerPanel(context.lookup(Project.class));
+        final CordovaCustomizerPanel cordovaCustomizerPanel = new CordovaCustomizerPanel(context.lookup(Project.class));
+        category.setStoreListener(cordovaCustomizerPanel);
+        return cordovaCustomizerPanel;
     }
 
     @ProjectCustomizer.CompositeCategoryProvider.Registration(
