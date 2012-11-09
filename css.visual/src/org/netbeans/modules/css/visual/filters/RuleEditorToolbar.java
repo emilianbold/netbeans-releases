@@ -58,7 +58,7 @@ import javax.swing.border.EmptyBorder;
 
 public class RuleEditorToolbar extends Box {
 
-    private static Dimension space = new Dimension(3, 0);
+    private static Dimension space = new Dimension(4, 0);
     private JToolBar toolbar;
 
     public RuleEditorToolbar() {
@@ -67,7 +67,7 @@ public class RuleEditorToolbar extends Box {
     }
 
     private void initPanel() {
-        setBorder(new EmptyBorder(1, 2, 3, 5));
+        setBorder(new EmptyBorder(1, 2, 1, 2));
 
         // configure toolbar
         toolbar = new NoBorderToolBar(JToolBar.HORIZONTAL);
@@ -89,9 +89,9 @@ public class RuleEditorToolbar extends Box {
 
     public void addButton(AbstractButton button) {
         Icon icon = button.getIcon();
-        Dimension size = new Dimension(icon.getIconWidth() + 6, icon.getIconHeight() + 4);
+        Dimension size = new Dimension(icon.getIconWidth() + 6, icon.getIconHeight() + 10);
         button.setPreferredSize(size);
-        button.setMargin(new Insets(2, 3, 2, 3));
+        button.setMargin(new Insets(5, 4, 5, 4));
         toolbar.add(button);
     }
     
