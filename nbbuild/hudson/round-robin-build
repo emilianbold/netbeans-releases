@@ -14,7 +14,12 @@ dobuild() {
 
     testmodule openide.awt || exit 5
 
-    ant version-check-sigtests -Dsigtest.fail.on.error=true || (echo See http://wiki.netbeans.org/SignatureTest; exit 6)
+    if ant check-sigtests-version -Dsigtest.fail.on.error=true; then
+        echo Sigtest version check OK
+    else
+        echo More info at http://wiki.netbeans.org/SignatureTest
+        exit 6
+    fi
 
     FAILED=`cat $RESULT | wc -l`
     if [ "$FAILED" -gt 0 ]; then

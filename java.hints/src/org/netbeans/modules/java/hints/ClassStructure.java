@@ -254,6 +254,7 @@ public class ClassStructure {
             return true;
         }
         final Element element = trees.getElement(path);
+        if (element == null) return false; //see bug #221820
         final TypeMirror superclass = element.getKind().isClass() ? ((TypeElement) element).getSuperclass() : null;
         if (superclass == null || superclass.getKind() != TypeKind.DECLARED
                 || !"java.lang.Object".contentEquals(((TypeElement) ((DeclaredType) superclass).asElement()).getQualifiedName())) { //NOI18N
