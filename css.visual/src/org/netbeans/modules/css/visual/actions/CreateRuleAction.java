@@ -41,21 +41,16 @@
  */
 package org.netbeans.modules.css.visual.actions;
 
-import java.awt.Component;
 import java.awt.Dialog;
-import java.awt.Frame;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import javax.swing.AbstractAction;
-import javax.swing.JOptionPane;
-import javax.swing.SwingUtilities;
 import org.netbeans.modules.css.visual.CreateRulePanel;
-import org.netbeans.modules.css.visual.RuleEditorPanel;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
+import org.openide.filesystems.FileObject;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
-import org.openide.util.RequestProcessor;
 
 /**
  *
@@ -68,17 +63,20 @@ public class CreateRuleAction extends AbstractAction {
 
     private static final String HELP_ID = "css_visual_CreateRulePanel"; //NOI18N
     
-    private RuleEditorPanel ruleEditorPanel;
+    private FileObject stylesheet;
 
-    public CreateRuleAction(RuleEditorPanel ruleEditorPanel) {
+    public CreateRuleAction() {
         super(Bundle.label_create_rule());
-        this.ruleEditorPanel = ruleEditorPanel;
-        setEnabled(false);
+    }
+    
+    public void setStyleSheet(FileObject stylesheet) {
+        this.stylesheet = stylesheet;
     }
 
     @Override
     public void actionPerformed(ActionEvent e) {
-        final CreateRulePanel panel = new CreateRulePanel(ruleEditorPanel);
+        final CreateRulePanel panel = new CreateRulePanel();
+        panel.setContext(stylesheet);
         
         DialogDescriptor descriptor = new DialogDescriptor(
                 panel,

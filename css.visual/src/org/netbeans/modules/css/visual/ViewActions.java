@@ -39,7 +39,7 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.css.visual.filters;
+package org.netbeans.modules.css.visual;
 
 import java.util.ArrayList;
 import java.util.Collection;
