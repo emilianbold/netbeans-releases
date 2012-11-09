@@ -38,6 +38,21 @@ trait X {
 class A implements B {
     use X;
 }
+////////////////////////////
+interface I1 {
+    public function m();
+}
+
+trait T1 {
+    public $foo;
+    public function m() {}
+}
+
+abstract class A1 implements I1 {
+    use T1;
+}
+
+class C1 extends A1 {}
 
 //END
 ?>

@@ -1105,7 +1105,7 @@ public final class IndexQueryImpl implements ElementQuery.Index {
         final LinkedHashSet<TypeMemberElement> typeMembers =
                 getInheritedTypeMembers(typeElement, new LinkedHashSet<TypeElement>(),
                 new LinkedHashSet<TypeMemberElement>(getDeclaredMethods(typeElement)),
-                EnumSet.of(PhpElementKind.CLASS,PhpElementKind.IFACE),
+                EnumSet.of(PhpElementKind.CLASS,PhpElementKind.IFACE,PhpElementKind.TRAIT),
                 EnumSet.of(PhpElementKind.METHOD));
         final Set<MethodElement> retval = new HashSet<MethodElement>();
         for (TypeMemberElement member : typeMembers) {
