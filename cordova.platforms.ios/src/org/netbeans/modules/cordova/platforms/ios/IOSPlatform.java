@@ -41,10 +41,13 @@
  */
 package org.netbeans.modules.cordova.platforms.ios;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.Collections;
 import org.netbeans.modules.cordova.platforms.ProcessUtils;
+import org.openide.modules.InstalledFileLocator;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -54,8 +57,6 @@ import org.netbeans.modules.cordova.platforms.ProcessUtils;
 public class IOSPlatform {
     
     private static IOSPlatform instance;
-    
-    public static final String TYPE = "ios"; //NOI18N
     
     private IOSPlatform() {
     }
@@ -68,7 +69,23 @@ public class IOSPlatform {
     }
     
     public Collection<SDK> getSDKs() throws IOException {
-        String listSdks = ProcessUtils.callProcess("xcodebuild", "-showsdks"); //NOI18N
+        String listSdks = ProcessUtils.callProcess("xcodebuild", true, "-showsdks"); //NOI18N
         return SDK.parse(listSdks);
     }
+    
+    public void openUrl(Device device, String url) {
+        try {
+            String sim = InstalledFileLocator.getDefault().locate("bin/ios-sim", "org.netbeans.modules.cordova.platforms.ios", false).getPath();
+            String a = ProcessUtils.callProcess(sim, false, "launch", "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator6.0.sdk/Applications/MobileSafari.app", "--args", "-u", url); //NOI18N
+            System.out.println(a);
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+    }
+    
+    public boolean isReady() {
+        File f = new File("/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform");
+        return f.exists();
+    }
+    
 }

@@ -75,7 +75,11 @@ public class IOSActionProvider implements ActionProvider {
         } else if (COMMAND_CLEAN.equals(command)) {
             build.perform(build.CLEAN_IOS, p);
         } else if (COMMAND_RUN.equals(command)) {
-            build.perform(build.RUN_IOS,p);
+            if (build.isPhoneGapBuild(p)) {
+                build.perform(build.RUN_IOS,p);
+            } else {
+                IOSPlatform.getDefault().openUrl(Device.IPHONE, build.getUrl(p));
+            }
         }
     }
 
