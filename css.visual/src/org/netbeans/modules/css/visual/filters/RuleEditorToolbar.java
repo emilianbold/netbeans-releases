@@ -92,13 +92,17 @@ public class RuleEditorToolbar extends Box {
         Dimension size = new Dimension(icon.getIconWidth() + 6, icon.getIconHeight() + 4);
         button.setPreferredSize(size);
         button.setMargin(new Insets(2, 3, 2, 3));
-        toolbar.addSeparator(space);
         toolbar.add(button);
     }
     
-    public void addSeparator() {
+    public void addSpaceSeparator() {
+        toolbar.addSeparator(space);
+    }
+    
+    public void addLineSeparator() {
         toolbar.addSeparator(space);
         toolbar.add(new JSeparator(JSeparator.VERTICAL));
+        toolbar.addSeparator(space);
     }
 
     /**

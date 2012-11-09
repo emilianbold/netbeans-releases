@@ -482,8 +482,8 @@ public class JavaCustomIndexer extends CustomIndexer {
                     String fileName = file.getName();
                     fileName = fileName.substring(0, fileName.lastIndexOf('.'));
                     final String[][] patterns = new String[][]{
-                        new String[]{fileName + '.', FileObjects.SIG, FileObjects.RS, FileObjects.RAPT, FileObjects.RX},    //NOI18N
-                        new String[]{fileName + '$', FileObjects.SIG}                                                       //NOI18N
+                        new String[]{fileName + '.', "", FileObjects.SIG, FileObjects.RS, FileObjects.RAPT, FileObjects.RX},    //NOI18N
+                        new String[]{fileName + '$', null, FileObjects.SIG}                                                       //NOI18N
                     };
                     File parent = file.getParentFile();
                     FilenameFilter filter = new FilenameFilter() {
@@ -493,8 +493,8 @@ public class JavaCustomIndexer extends CustomIndexer {
                             for (final String[] pattern : patterns) {
                                 if (name.startsWith(pattern[0])) {
                                     final String ext = FileObjects.getExtension(name);
-                                    for (int i = 1; i< pattern.length; i++) {
-                                        if (pattern[i].equals(ext)) {
+                                    for (int i = 2; i< pattern.length; i++) {
+                                        if (pattern[i].equals(ext) && (pattern[1] == null || name.length() == pattern[0].length() + pattern[i].length())) {
                                             return true;
                                         }
                                     }

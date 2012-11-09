@@ -156,7 +156,7 @@ public class Utilities {
             } 
         }
         return proposals;
-    }
+    } 
     
     /**
      * Utility method which creates a map of property name to PropertyDefinition for 

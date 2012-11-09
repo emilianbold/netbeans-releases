@@ -57,4 +57,8 @@ public interface BuildPerformer {
     
     public void perform(String target, Project p);
     
+    public String getUrl(Project p);
+
+    public boolean isPhoneGapBuild(Project p);
+    
 }

@@ -79,11 +79,8 @@ public class PrimefacesImplementation implements JsfComponentImplementation {
 
     private PrimefacesCustomizer customizer;
 
-    private final String name;
-    private final String description;
-
     /** Framework name used also for statistics. */
-    public static final String PRIMEFACES_NAME = "Primefaces"; //NOI18N
+    public static final String PRIMEFACES_NAME = "PrimeFaces"; //NOI18N
 
     // ICEfaces Maven resources
     private static final String MAVEN_REPO ="default:http://repository.primefaces.org/"; //NOI18N
@@ -99,18 +96,24 @@ public class PrimefacesImplementation implements JsfComponentImplementation {
     public static final String PROP_PREFERRED_LIBRARY = "preferred-library"; //NOI18N
 
     public PrimefacesImplementation() {
-        this.name = NbBundle.getMessage(PrimefacesProvider.class, "LBL_PrimeFaces");  //NOI18N
-        this.description = NbBundle.getMessage(PrimefacesProvider.class, "LBL_PrimeFaces_Description"); //NOI18N
     }
 
     @Override
     public String getName() {
-        return name;
+        return PRIMEFACES_NAME;
+    }
+
+    @NbBundle.Messages({
+        "PrimefacesImplementation.primefaces.display.name=PrimeFaces"
+    })
+    @Override
+    public String getDisplayName() {
+        return Bundle.PrimefacesImplementation_primefaces_display_name();
     }
 
     @Override
     public String getDescription() {
-        return description;
+        return NbBundle.getMessage(PrimefacesProvider.class, "LBL_PrimeFaces_Description"); //NOI18N
     }
 
     @Override

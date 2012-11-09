@@ -43,6 +43,8 @@ package org.netbeans.modules.cordova.project;
 
 import org.netbeans.api.options.OptionsDisplayer;
 import org.netbeans.modules.cordova.CordovaPlatform;
+import org.netbeans.modules.cordova.template.CordovaTemplate;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -50,11 +52,24 @@ import org.netbeans.modules.cordova.CordovaPlatform;
  */
 public class CordovaPanel extends javax.swing.JPanel {
 
+    private CordovaTemplate.CordovaExtender ext;
+    
+    public static String PROP_EXT_ENABLED = "PROP_EXT_ENABLED";//NOI18N
+
     /**
      * Creates new form CordovaPanel
      */
-    public CordovaPanel() {
+    public CordovaPanel(CordovaTemplate.CordovaExtender ext) {
+        this.ext = ext;
+        setName(NbBundle.getMessage(CordovaPanel.class, "LBL_CordovaSetup"));//NOI18N
         initComponents();
+        if (ext!=null)
+            ext.setEnabled(phoneGapCheckBox.isSelected());
+        update();
+    }
+
+    CordovaPanel() {
+        this(null);
     }
     
     public void setControlsEnabled(boolean enabled) {
@@ -93,6 +108,7 @@ public class CordovaPanel extends javax.swing.JPanel {
         iosTarget = new javax.swing.JLabel();
         androidTargetCombo = new javax.swing.JComboBox();
         iosTargetCombo = new javax.swing.JComboBox();
+        phoneGapCheckBox = new javax.swing.JCheckBox();
 
         packageTextField.setText(org.openide.util.NbBundle.getMessage(CordovaPanel.class, "CordovaPanel.packageTextField.text")); // NOI18N
 
@@ -113,58 +129,78 @@ public class CordovaPanel extends javax.swing.JPanel {
 
         iosTargetCombo.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "iOS 5.1", "iOS 5.0" }));
 
+        org.openide.awt.Mnemonics.setLocalizedText(phoneGapCheckBox, org.openide.util.NbBundle.getMessage(CordovaPanel.class, "CordovaPanel.phoneGapCheckBox.text")); // NOI18N
+        phoneGapCheckBox.addChangeListener(new javax.swing.event.ChangeListener() {
+            public void stateChanged(javax.swing.event.ChangeEvent evt) {
+                phoneGapCheckBoxStateChanged(evt);
+            }
+        });
+
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(0, 400, Short.MAX_VALUE)
+            .add(layout.createSequentialGroup()
+                .add(phoneGapCheckBox)
+                .add(0, 0, Short.MAX_VALUE))
+            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
+                .add(0, 0, 0)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(layout.createSequentialGroup()
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                            .add(androidTarget)
+                            .add(iosTarget))
+                        .add(15, 15, 15)
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                            .add(androidTargetCombo, 0, 281, Short.MAX_VALUE)
+                            .add(iosTargetCombo, 0, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
+                    .add(layout.createSequentialGroup()
+                        .add(packageLabel)
+                        .add(18, 18, 18)
+                        .add(packageTextField)))
+                .addContainerGap())
             .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                 .add(layout.createSequentialGroup()
-                    .addContainerGap()
-                    .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                        .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                            .add(0, 0, Short.MAX_VALUE)
-                            .add(platformSetup))
-                        .add(layout.createSequentialGroup()
-                            .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                                .add(androidTarget)
-                                .add(iosTarget))
-                            .add(15, 15, 15)
-                            .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                                .add(androidTargetCombo, 0, 275, Short.MAX_VALUE)
-                                .add(iosTargetCombo, 0, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
-                        .add(layout.createSequentialGroup()
-                            .add(packageLabel)
-                            .add(18, 18, 18)
-                            .add(packageTextField)))
-                    .addContainerGap()))
+                    .addContainerGap(199, Short.MAX_VALUE)
+                    .add(platformSetup)
+                    .add(0, 0, 0)))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(0, 198, Short.MAX_VALUE)
+            .add(layout.createSequentialGroup()
+                .add(phoneGapCheckBox)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(packageLabel)
+                    .add(packageTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(androidTarget)
+                    .add(androidTargetCombo, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(iosTarget)
+                    .add(iosTargetCombo, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .add(0, 132, Short.MAX_VALUE))
             .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                 .add(layout.createSequentialGroup()
-                    .add(11, 11, 11)
-                    .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                        .add(packageLabel)
-                        .add(packageTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                    .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                    .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                        .add(androidTarget)
-                        .add(androidTargetCombo, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                    .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                    .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                        .add(iosTarget)
-                        .add(iosTargetCombo, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                    .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 52, Short.MAX_VALUE)
+                    .addContainerGap(226, Short.MAX_VALUE)
                     .add(platformSetup)
-                    .add(12, 12, 12)))
+                    .add(0, 0, 0)))
         );
     }// </editor-fold>//GEN-END:initComponents
 
     private void platformSetupActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_platformSetupActionPerformed
         OptionsDisplayer.getDefault().open("Advanced/MobilePlatforms");//NOI18N
     }//GEN-LAST:event_platformSetupActionPerformed
+
+    private void phoneGapCheckBoxStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_phoneGapCheckBoxStateChanged
+        setControlsEnabled(phoneGapCheckBox.isSelected());
+        if (ext!=null)
+            ext.setEnabled(phoneGapCheckBox.isSelected());
+        firePropertyChange(PROP_EXT_ENABLED, !phoneGapCheckBox.isSelected(), phoneGapCheckBox.isSelected());
+        
+    }//GEN-LAST:event_phoneGapCheckBoxStateChanged
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel androidTarget;
@@ -173,6 +209,17 @@ public class CordovaPanel extends javax.swing.JPanel {
     private javax.swing.JComboBox iosTargetCombo;
     private javax.swing.JLabel packageLabel;
     private javax.swing.JTextField packageTextField;
+    private javax.swing.JCheckBox phoneGapCheckBox;
     private javax.swing.JButton platformSetup;
     // End of variables declaration//GEN-END:variables
+
+    public void setPanelEnabled(boolean b) {
+        phoneGapCheckBox.setSelected(b);
+    }
+    
+    public boolean isPanelEnabled() {
+        return phoneGapCheckBox.isSelected();
+    }
+
+
 }

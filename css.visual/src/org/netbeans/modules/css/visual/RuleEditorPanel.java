@@ -226,6 +226,9 @@ public class RuleEditorPanel extends JPanel {
     public RuleEditorPanel(boolean addPropertyMode) {
         this.addPropertyMode = addPropertyMode;
         
+        //init default components
+        initComponents();
+
         errorLabel = new JLabel(ERROR_ICON);
         errorLabel.setToolTipText(Bundle.label_rule_error_tooltip());
         appliedLabel = new JLabel(APPLIED_ICON);
@@ -237,11 +240,14 @@ public class RuleEditorPanel extends JPanel {
 
         //create toolbar
         toolbar = new RuleEditorToolbar();
-        toolbar.addButton(views.getUpdatedOnlyToggleButton());
-        toolbar.addButton(views.getCategorizedToggleButton());
-        toolbar.addButton(views.getAllToggleButton());
-        toolbar.addSeparator();
         
+        toolbar.addButton(filterToggleButton);
+        toolbar.addLineSeparator();
+        toolbar.addButton(views.getUpdatedOnlyToggleButton());
+        toolbar.addSpaceSeparator();
+        toolbar.addButton(views.getCategorizedToggleButton());
+        toolbar.addSpaceSeparator();
+        toolbar.addButton(views.getAllToggleButton());
         
         //initialize actions
         addPropertyAction = new AddPropertyAction(this);
@@ -287,10 +293,7 @@ public class RuleEditorPanel extends JPanel {
                 pm.addSeparator();
             }
         }
-
-        //init default components
-        initComponents();
-        
+       
         //the popup menu for the "build toolbar button"
         final JPopupMenu buildButtonPopup = new JPopupMenu();
         
@@ -301,6 +304,7 @@ public class RuleEditorPanel extends JPanel {
             buildButtonPopup.add(addRuleAction);
             buildButtonPopup.add(removeRuleAction);
             
+            toolbar.addLineSeparator();
             toolbar.addButton(buildButton);
             buildButton.addActionListener(new ActionListener() {
                 @Override
@@ -330,17 +334,6 @@ public class RuleEditorPanel extends JPanel {
 
         add(sheet, BorderLayout.CENTER);
 
-        if(addPropertyMode) {
-            northWestPanel.remove(titleLabel);
-            northWestPanel.add(filterTextField, BorderLayout.CENTER);
-            cancelFilterLabel.setBorder(new EmptyBorder(0,4,0,8));
-            northWestPanel.add(cancelFilterLabel, BorderLayout.WEST);
-        }
-        
-        if(!addPropertyMode) {
-            northEastPanel.add(toolbar, BorderLayout.WEST);
-        }
-
         //add document listener to the filter text field 
         filterTextField.getDocument().addDocumentListener(new DocumentListener() {
  
@@ -362,6 +355,12 @@ public class RuleEditorPanel extends JPanel {
             public void changedUpdate(DocumentEvent e) {
             }
         });
+        
+        setFilterVisible(addPropertyMode);
+        
+        if(!addPropertyMode) {
+            northEastPanel.add(toolbar, BorderLayout.WEST);
+        }
        
     }
     
@@ -629,6 +628,7 @@ public class RuleEditorPanel extends JPanel {
         cancelFilterLabel = new javax.swing.JLabel();
         filterTextField = new javax.swing.JTextField();
         buildButton = new javax.swing.JToggleButton();
+        filterToggleButton = new javax.swing.JToggleButton();
         northPanel = new javax.swing.JPanel();
         northEastPanel = new javax.swing.JPanel();
         northWestPanel = new javax.swing.JPanel();
@@ -649,6 +649,15 @@ public class RuleEditorPanel extends JPanel {
         buildButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/css/visual/resources/build.png"))); // NOI18N
         buildButton.setText(null);
         buildButton.setFocusable(false);
+
+        filterToggleButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/css/visual/resources/find.png"))); // NOI18N
+        filterToggleButton.setText(null);
+        filterToggleButton.setFocusable(false);
+        filterToggleButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                filterToggleButtonActionPerformed(evt);
+            }
+        });
 
         setPreferredSize(new java.awt.Dimension(400, 300));
         setLayout(new java.awt.BorderLayout());
@@ -675,10 +684,32 @@ public class RuleEditorPanel extends JPanel {
         filterTextField.setText(null);
     }//GEN-LAST:event_cancelFilterLabelMouseClicked
 
+    private void setFilterVisible(boolean visible) {
+        northWestPanel.removeAll();
+        if(visible) {
+            northWestPanel.add(filterTextField, BorderLayout.CENTER);
+            cancelFilterLabel.setBorder(new EmptyBorder(0,4,0,8));
+            if(addPropertyMode) {
+                northWestPanel.add(cancelFilterLabel, BorderLayout.WEST);
+            }
+        } else {
+            filterTextField.setText(null);
+            northWestPanel.add(titleLabel);
+        }
+        northWestPanel.revalidate();
+        northWestPanel.repaint();
+    }
+    
+    private void filterToggleButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_filterToggleButtonActionPerformed
+        setFilterVisible(filterToggleButton.isSelected());
+        
+    }//GEN-LAST:event_filterToggleButtonActionPerformed
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JToggleButton buildButton;
     private javax.swing.JLabel cancelFilterLabel;
     private javax.swing.JTextField filterTextField;
+    private javax.swing.JToggleButton filterToggleButton;
     private javax.swing.JPanel northEastPanel;
     private javax.swing.JPanel northPanel;
     private javax.swing.JPanel northWestPanel;

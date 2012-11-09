@@ -328,7 +328,7 @@ public class RuleEditorNode extends AbstractNode {
                 PropertyValue propertyValue = d.getPropertyValue();
                 if (property != null && propertyValue != null) {
                     if (matchesFilterText(property.getContent().toString())) {
-                        PropertyDefinition def = Properties.getPropertyDefinition(file, property.getContent().toString());
+                        PropertyDefinition def = Properties.getPropertyDefinition(property.getContent().toString());
                         PropertyCategory category;
                         if (def != null) {
                             category = def.getPropertyCategory();
@@ -379,7 +379,7 @@ public class RuleEditorNode extends AbstractNode {
 
                     //remove already used
                     for (Declaration d : propertySet.getDeclarations()) {
-                        PropertyDefinition def = Properties.getPropertyDefinition(file, d.getProperty().getContent().toString());
+                        PropertyDefinition def = Properties.getPropertyDefinition(d.getProperty().getContent().toString());
                         allInCat.remove(def);
                     }
 
@@ -440,7 +440,7 @@ public class RuleEditorNode extends AbstractNode {
 
                 //remove already used
                 for (Declaration d : set.getDeclarations()) {
-                    PropertyDefinition def = Properties.getPropertyDefinition(file, d.getProperty().getContent().toString());
+                    PropertyDefinition def = Properties.getPropertyDefinition(d.getProperty().getContent().toString());
                     all.remove(def);
                 }
 
@@ -549,7 +549,7 @@ public class RuleEditorNode extends AbstractNode {
     }
 
     private Property createPropertyDefinitionProperty(FileObject context, PropertyDefinition definition) {
-        PropertyDefinition pmodel = Properties.getPropertyDefinition(context, definition.getName());
+        PropertyDefinition pmodel = Properties.getPropertyDefinition(definition.getName());
         return new PropertyDefinitionProperty(definition, createPropertyValueEditor(context, pmodel, false));
     }
 
@@ -742,7 +742,7 @@ public class RuleEditorNode extends AbstractNode {
             }
 
             String property = declaration.getProperty().getContent().toString().trim();
-            PropertyDefinition model = Properties.getPropertyDefinition(getFileObject(), property);
+            PropertyDefinition model = Properties.getPropertyDefinition(property);
             if (model == null) {
                 //flag as unknown
                 info = DeclarationInfo.ERRONEOUS;
@@ -1207,24 +1207,7 @@ public class RuleEditorNode extends AbstractNode {
         }
         @Override
         public Component getTableCellEditorComponent(JTable jtable, Object o, boolean bln, int i, int i1) {
-            //hack!!! for:>>>
-            //
-            //1) the popup not auto opened upon the editor is shown in the property sheet,
-            //2) the first item is selected in the text field.
-            //
-            //both needs to be addressed on the PS side, do not forget to remove this!!!!!
-            SwingUtilities.invokeLater(new Runnable() {
-
-                @Override
-                public void run() {
-                    if(editor.isShowing()) {
-                        editor.getEditor().setItem(""); //remove the prefiled value
-                        editor.setPopupVisible(true); //open the popup
-                    }
-                }
-                
-            });
-            //<<<
+            editor.setSelectedIndex( -1 );
             return editor;
         }
 
