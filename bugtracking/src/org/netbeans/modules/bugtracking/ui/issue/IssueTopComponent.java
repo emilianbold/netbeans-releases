@@ -200,7 +200,7 @@ public final class IssueTopComponent extends TopComponent implements PropertyCha
      *
      * @param issue displayed by this top-component.
      */
-    public void setIssue(IssueImpl issue) {
+    void setIssue(IssueImpl issue) {
         assert (this.issue == null);
         LogUtils.logBugtrackingUsage(issue.getRepositoryImpl().getRepository(), "ISSUE_EDIT"); // NOI18N
         this.issue = issue;
@@ -216,6 +216,10 @@ public final class IssueTopComponent extends TopComponent implements PropertyCha
         repoPanel.setVisible(false);
         setNameAndTooltip();
         issue.addPropertyChangeListener(this);
+        
+        if(!issue.isNew()) {
+            BugtrackingManager.getInstance().addRecentIssue(issue.getRepositoryImpl(), issue);
+        }
     }
 
     /** This method is called from within the constructor to
