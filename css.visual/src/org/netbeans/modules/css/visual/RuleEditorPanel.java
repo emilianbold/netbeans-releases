@@ -235,16 +235,20 @@ public class RuleEditorPanel extends JPanel {
         
         node = new RuleEditorNode(this);
 
-        viewMode = ViewMode.UPDATED_ONLY; //default view
+        viewMode = addPropertyMode ? ViewMode.ALL : ViewMode.UPDATED_ONLY; //default view
         views = new RuleEditorViews(this);
 
         //create toolbar
         toolbar = new RuleEditorToolbar();
         
-        toolbar.addButton(filterToggleButton);
-        toolbar.addLineSeparator();
-        toolbar.addButton(views.getUpdatedOnlyToggleButton());
-        toolbar.addSpaceSeparator();
+        if(!addPropertyMode) {
+            toolbar.addButton(filterToggleButton);
+            toolbar.addLineSeparator();
+            toolbar.addButton(views.getUpdatedOnlyToggleButton());
+            toolbar.addSpaceSeparator();
+        } else {
+            toolbar.addLineSeparator();
+        }
         toolbar.addButton(views.getCategorizedToggleButton());
         toolbar.addSpaceSeparator();
         toolbar.addButton(views.getAllToggleButton());
@@ -358,9 +362,7 @@ public class RuleEditorPanel extends JPanel {
         
         setFilterVisible(addPropertyMode);
         
-        if(!addPropertyMode) {
-            northEastPanel.add(toolbar, BorderLayout.WEST);
-        }
+        northEastPanel.add(toolbar, BorderLayout.WEST);
        
     }
     
@@ -690,7 +692,7 @@ public class RuleEditorPanel extends JPanel {
         if(visible) {
             //update the UI
             northWestPanel.add(filterTextField, BorderLayout.CENTER);
-            cancelFilterLabel.setBorder(new EmptyBorder(0,4,0,8));
+            cancelFilterLabel.setBorder(new EmptyBorder(0,4,0,0));
             if(addPropertyMode) {
                 northWestPanel.add(cancelFilterLabel, BorderLayout.WEST);
             }
