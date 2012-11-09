@@ -207,7 +207,11 @@ public class ConfigurationXMLReader extends XMLDocReader {
         for (Configuration configuration : configurationDescriptor.getConfs().getConfigurations()) {
             for (Item item : projectItems) {
                 if (item.getItemConfiguration(configuration) == null) {
-                    configuration.addAuxObject(new ItemConfiguration(configuration, item));
+                    ItemConfiguration itemConfiguration = new ItemConfiguration(configuration, item);
+                    configuration.addAuxObject(itemConfiguration);
+                    if (configurationDescriptor.getVersion() >= CommonConfigurationXMLCodec.VERSION_WITH_INVERTED_SERIALIZATION) {
+                        itemConfiguration.getExcluded().setValue(true);
+                    }
                 }
             }
         }

@@ -45,9 +45,7 @@
           <Properties>
             <Property name="editable" type="boolean" value="false"/>
             <Property name="contentType" type="java.lang.String" value="text/html" noResource="true"/>
-            <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-              <ResourceString bundle="org/netbeans/modules/extbrowser/plugins/chrome/Bundle.properties" key="TXT_WebStore" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
-            </Property>
+            <Property name="text" type="java.lang.String" value="WebStore info..." noResource="true"/>
           </Properties>
         </Component>
       </SubComponents>
