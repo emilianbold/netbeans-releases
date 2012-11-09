@@ -189,10 +189,7 @@ public class VcsVisibilityQueryImplementation implements VisibilityQueryImplemen
             if(fo != null) {
                 fileObjects[i] = fo;
             } else {
-                // not sure if this is even possible, but let's err on the safe side
-                fireVisibilityChanged((FileObject[])null);
-                LOG.log(Level.WARNING, "VCS fired global visibility change because of {0} which returns no FileObject", proxies[i]); // NOI18N
-                break;
+                LOG.log(Level.WARNING, "VCS visibility did not fire because of {0} which returns no FileObject", proxies[i]); // NOI18N
             }
         }
         fireVisibilityChanged(fileObjects);
