@@ -364,8 +364,7 @@ public class RuleEditorNode extends AbstractNode {
                 //Show all properties
                 for (PropertyCategory cat : PropertyCategory.values()) {
                     //now add all the remaining properties
-//                    List<PropertyDefinition> allInCat = new LinkedList<PropertyDefinition>(filterByPrefix(cat.getProperties()));
-                    List<PropertyDefinition> allInCat = getCategoryProperties(cat);
+                    List<PropertyDefinition> allInCat = new LinkedList<PropertyDefinition>(filterByPrefix(getCategoryProperties(cat)));
                     if (allInCat.isEmpty()) {
                         continue; //skip empty categories (when filtering)
                     }
