@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,55 +37,39 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2011 Sun Microsystems, Inc.
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.css.editor.module.main;
+package org.netbeans.spi.queries;
 
-import org.netbeans.modules.css.lib.api.properties.Properties;
-import org.netbeans.modules.css.lib.api.properties.PropertyDefinition;
+import javax.swing.event.ChangeEvent;
+import org.openide.filesystems.FileObject;
 
 /**
- *
- * @author mfukala@netbeans.org
+ * ChangeEvent subclass to be used by VisibilityQueryImplementation implementations
+ * to fire changes when it's known what files changed visibility. Allows clients to use that information
+ * for improved performance when reacting on the event.
+ * @author mkleint
+ * @since 1.32
  */
-public class GeneratedAndReplacedContentModuleTest extends CssModuleTestBase {
+public final class VisibilityQueryChangeEvent extends ChangeEvent {
+    private final FileObject[] fileObjects;
 
-    public GeneratedAndReplacedContentModuleTest(String testName) {
-        super(testName);
+
+    /**
+     * create new instance of the event, typically called by VisibilityQueryImplementation providers.
+     * @param source
+     * @param changedFileObjects 
+     */
+    public VisibilityQueryChangeEvent(Object source, FileObject[] changedFileObjects) {
+        super(source);
+        fileObjects = changedFileObjects;
     }
-
-    @Override
-    protected void setUp() throws Exception {
-//        GrammarResolver.setLogging(GrammarResolver.Log.DEFAULT, true);
-//        PRINT_INFO_IN_ASSERT_RESOLVE = true;
-    }
-
-    public void testContent() {
-        assertPropertyDeclaration("content: string(title)");
-        assertPropertyDeclaration("content: \"Note: \" ");
-        assertPropertyDeclaration("content: \"after1\" string(example1);");
-        assertPropertyDeclaration("content: \"Chapter \" counter(chapter) \"\\A\"; ");
-        assertPropertyDeclaration("content: counter(item, decimal) '.';");
-
-        assertPropertyDeclaration("content: url(\"link\")");
-    }
-
-    public void testContent2() {
-        PropertyDefinition model = Properties.getPropertyDefinition( "content");
-
-        assertResolve(model.getGrammarElement(null), "url(\"link\") normal");
-        assertResolve(model.getGrammarElement(null), "url(\"link\") counter(anid, anotherid)");
-    }
-
-    public void testCounter() {
-        assertPropertyDeclaration("counter-increment: chapter;");
-        assertPropertyDeclaration("counter-increment: chapter 10;");
-        assertPropertyDeclaration("counter-reset: chapter;");
-        assertPropertyDeclaration("counter-reset: chapter 2;");
-    }
-
-    public void testQuotes() {
-        assertPropertyDeclaration("quotes: 'arg1' 'arg2'");
-        assertPropertyDeclaration("quotes: \"arg1\" 'arg2' 'arg3' 'arg4'");
+    
+    /**
+     * return the FileObjects that changed visibility
+     * @return 
+     */
+    public FileObject[] getFileObjects() {
+        return fileObjects;
     }
 }

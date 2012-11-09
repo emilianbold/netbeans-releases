@@ -172,7 +172,7 @@ public class DefaultCssModuleTest extends CssModuleTestBase {
         HelpResolver resolver = CssModuleSupport.getHelpResolver();
         assertNotNull(resolver);
 
-        PropertyDefinition color = Properties.getPropertyDefinition(null, "color");
+        PropertyDefinition color = Properties.getPropertyDefinition( "color");
         assertNotNull(color);
         
         String help = resolver.getHelp(null, color);
@@ -184,7 +184,7 @@ public class DefaultCssModuleTest extends CssModuleTestBase {
 
     public void testAllCSS21PropertiesAreAvailable() {
         for(String propName : ALL_CSS21_PROPERTIES) {
-            PropertyDefinition prop = Properties.getPropertyDefinition(null, propName);
+            PropertyDefinition prop = Properties.getPropertyDefinition( propName);
             assertNotNull(String.format("No such property %s found!", propName), prop);
             
         }

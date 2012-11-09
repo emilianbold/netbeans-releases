@@ -328,7 +328,7 @@ public class RuleEditorNode extends AbstractNode {
                 PropertyValue propertyValue = d.getPropertyValue();
                 if (property != null && propertyValue != null) {
                     if (matchesFilterText(property.getContent().toString())) {
-                        PropertyDefinition def = Properties.getPropertyDefinition(file, property.getContent().toString());
+                        PropertyDefinition def = Properties.getPropertyDefinition(property.getContent().toString());
                         PropertyCategory category;
                         if (def != null) {
                             category = def.getPropertyCategory();
@@ -379,7 +379,7 @@ public class RuleEditorNode extends AbstractNode {
 
                     //remove already used
                     for (Declaration d : propertySet.getDeclarations()) {
-                        PropertyDefinition def = Properties.getPropertyDefinition(file, d.getProperty().getContent().toString());
+                        PropertyDefinition def = Properties.getPropertyDefinition(d.getProperty().getContent().toString());
                         allInCat.remove(def);
                     }
 
@@ -440,7 +440,7 @@ public class RuleEditorNode extends AbstractNode {
 
                 //remove already used
                 for (Declaration d : set.getDeclarations()) {
-                    PropertyDefinition def = Properties.getPropertyDefinition(file, d.getProperty().getContent().toString());
+                    PropertyDefinition def = Properties.getPropertyDefinition(d.getProperty().getContent().toString());
                     all.remove(def);
                 }
 
@@ -549,7 +549,7 @@ public class RuleEditorNode extends AbstractNode {
     }
 
     private Property createPropertyDefinitionProperty(FileObject context, PropertyDefinition definition) {
-        PropertyDefinition pmodel = Properties.getPropertyDefinition(context, definition.getName());
+        PropertyDefinition pmodel = Properties.getPropertyDefinition(definition.getName());
         return new PropertyDefinitionProperty(definition, createPropertyValueEditor(context, pmodel, false));
     }
 
@@ -742,7 +742,7 @@ public class RuleEditorNode extends AbstractNode {
             }
 
             String property = declaration.getProperty().getContent().toString().trim();
-            PropertyDefinition model = Properties.getPropertyDefinition(getFileObject(), property);
+            PropertyDefinition model = Properties.getPropertyDefinition(property);
             if (model == null) {
                 //flag as unknown
                 info = DeclarationInfo.ERRONEOUS;

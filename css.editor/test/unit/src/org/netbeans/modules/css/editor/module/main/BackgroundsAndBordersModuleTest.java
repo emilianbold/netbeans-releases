@@ -59,7 +59,7 @@ public class BackgroundsAndBordersModuleTest extends CssModuleTestBase {
     }
 
     public void testBackground_Attachment() throws ParseException {
-        PropertyDefinition prop = Properties.getPropertyDefinition(null, "background-attachment");
+        PropertyDefinition prop = Properties.getPropertyDefinition( "background-attachment");
         assertNotNull(prop);
 
         assertTrue(new ResolvedProperty(prop, "scroll").isResolved());
@@ -71,7 +71,7 @@ public class BackgroundsAndBordersModuleTest extends CssModuleTestBase {
     }
     
     public void testBackground_Image() throws ParseException {
-        PropertyDefinition prop = Properties.getPropertyDefinition(null, "background-image");
+        PropertyDefinition prop = Properties.getPropertyDefinition( "background-image");
         assertNotNull(prop);
 
         assertTrue(new ResolvedProperty(prop, "none").isResolved());
@@ -84,7 +84,7 @@ public class BackgroundsAndBordersModuleTest extends CssModuleTestBase {
     }
     
     public void testBackground_Position() throws ParseException {
-        PropertyDefinition prop = Properties.getPropertyDefinition(null, "background-position");
+        PropertyDefinition prop = Properties.getPropertyDefinition( "background-position");
         assertNotNull(prop);
         
         assertTrue(new ResolvedProperty(prop, "left      top").isResolved());
@@ -92,14 +92,14 @@ public class BackgroundsAndBordersModuleTest extends CssModuleTestBase {
     }
     
     public void testIssue201769() {
-        PropertyDefinition prop = Properties.getPropertyDefinition(null, "background-position");
+        PropertyDefinition prop = Properties.getPropertyDefinition( "background-position");
         ResolvedProperty pv = new ResolvedProperty(prop, "center top");
 //        PropertyDefinitionTest.dumpResult(pv);
         assertTrue(pv.isResolved());
     }
     
     public void testBackground() {
-        PropertyDefinition prop = Properties.getPropertyDefinition(null, "background");
+        PropertyDefinition prop = Properties.getPropertyDefinition( "background");
 //        PRINT_INFO_IN_ASSERT_RESOLVE = true;
 //        GrammarResolver.setLogging(GrammarResolver.Log.DEFAULT, true);
         assertTrue(new ResolvedProperty(prop, "url(image.png) , url(image2.png)").isResolved());
@@ -107,7 +107,7 @@ public class BackgroundsAndBordersModuleTest extends CssModuleTestBase {
     }
     
     public void testBackgroundPosition() {
-        PropertyDefinition prop = Properties.getPropertyDefinition(null, "background-position");
+        PropertyDefinition prop = Properties.getPropertyDefinition( "background-position");
         assertTrue(new ResolvedProperty(prop, "center").isResolved());
         assertTrue(new ResolvedProperty(prop, "center center").isResolved());
         assertTrue(new ResolvedProperty(prop, "center right 20px").isResolved());
@@ -149,7 +149,7 @@ public class BackgroundsAndBordersModuleTest extends CssModuleTestBase {
         //from the <length> element defined as @length=-? !length
         //desired: the completion should not contain the minus item, at least not with 
         //the multiplicity qualifier
-        PropertyDefinition pm = Properties.getPropertyDefinition(null, "border-width");
+        PropertyDefinition pm = Properties.getPropertyDefinition( "border-width");
         ResolvedProperty rp = assertResolve(pm.getGrammarElement(null), "", false);
         
         assertAlternatives(rp, "thick","thin","inherit","!length","-", "medium");
@@ -159,7 +159,7 @@ public class BackgroundsAndBordersModuleTest extends CssModuleTestBase {
     }
     
     public void testPropertyCategory() {
-        PropertyDefinition pd = Properties.getPropertyDefinition(null, "border-width");
+        PropertyDefinition pd = Properties.getPropertyDefinition( "border-width");
         assertNotNull(pd);
         assertEquals(PropertyCategory.BOX, pd.getPropertyCategory());
     }

@@ -133,7 +133,7 @@ public class CssStylesPanel extends javax.swing.JPanel {
             toolBar.setBackground(UIManager.getColor("NbExplorerView.background"));
         }
         
-        splitPane.setResizeWeight(0.5);
+        splitPane.setResizeWeight(0.66);
     }
     
     private Border buttonBorder = null;

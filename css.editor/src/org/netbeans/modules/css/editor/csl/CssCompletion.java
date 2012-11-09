@@ -1004,7 +1004,7 @@ public class CssCompletion implements CodeCompletionHandler {
 
                 }
 
-                PropertyDefinition prop = Properties.getPropertyDefinition(context.getFileObject(), property.image().toString().trim());
+                PropertyDefinition prop = Properties.getPropertyDefinition(property.image().toString().trim());
                 if (prop != null) {
 
                     ResolvedProperty propVal = new ResolvedProperty(context.getFileObject(), prop, expressionText);
@@ -1107,7 +1107,7 @@ public class CssCompletion implements CodeCompletionHandler {
                 Node property = result[0];
 
                 String propertyName = property.image().toString();
-                PropertyDefinition propertyDefinition = Properties.getPropertyDefinition(context.getFileObject(), propertyName);
+                PropertyDefinition propertyDefinition = Properties.getPropertyDefinition(propertyName);
                 if (propertyDefinition == null) {
                     return;
                 }
