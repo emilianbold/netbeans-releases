@@ -317,11 +317,11 @@ final class JavadocCompletionUtils {
             return false;
         }
         
-        if (pos < 0 || pos > token.length()) {
-            throw new IndexOutOfBoundsException("pos: " + pos + ", token.length: " + token.length());
+        CharSequence text = token.text();
+        if (pos < 0 || pos > token.length() || text.length() != token.length()) {
+            throw new IndexOutOfBoundsException("pos: " + pos + ", token.length: " + token.length() + ", token text: " + text);
         }
 
-        CharSequence text = token.text();
         boolean result = pos > 0
                 && JAVADOC_LINE_BREAK.matcher(text.subSequence(0, pos)).find()
                 && (pos == token.length() || !isInsideIndent(token, pos));
