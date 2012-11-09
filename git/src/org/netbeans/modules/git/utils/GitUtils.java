@@ -754,6 +754,15 @@ public final class GitUtils {
         return sorted;
     }
     
+    public static boolean contains (Collection<File> roots, File file) {
+        for (File root : roots) {
+            if (Utils.isAncestorOrEqual(root, file)) {
+                return true;
+            }
+        }
+        return false;
+    }
+    
     private static final String REF_SPEC_PATTERN = "+refs/heads/{0}:refs/remotes/{1}/{0}"; //NOI18N
     private static final String REF_PUSHSPEC_PATTERN = "+refs/heads/{0}:refs/heads/{1}"; //NOI18N
     private static final String REF_TAG_PUSHSPEC_PATTERN = "+refs/tags/{0}:refs/tags/{0}"; //NOI18N
