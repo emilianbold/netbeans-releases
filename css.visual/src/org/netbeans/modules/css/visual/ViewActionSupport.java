@@ -67,7 +67,7 @@ import org.openide.util.actions.Presenter;
  * @author Dafe Simonek
  */
 @NbBundle.Messages({
-        "action.name.updated=Show updated properties only",
+        "action.name.updated=Show set properties only",
         "action.name.categorized=Show categorized properties",
         "action.name.all=Show all properties"
 })
