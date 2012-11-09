@@ -206,8 +206,7 @@ public class ChromeManagerAccessor implements ExtensionManagerAccessor {
                     return manualInstallPluginDialog(loader, currentStatus, extensionFile);
                 }
                 else {
-                    alertGoogleWebStore();
-                    return false;
+                    return alertGoogleWebStore(currentStatus);
                 }
             }
             catch( IOException e ){
@@ -380,8 +379,17 @@ public class ChromeManagerAccessor implements ExtensionManagerAccessor {
                 }
             }
         }
-        
-        private void alertGoogleWebStore(){
+
+        private boolean alertGoogleWebStore(ExtensionManager.ExtensitionStatus currentStatus) {
+            // #221325
+            if (currentStatus == ExtensionManager.ExtensitionStatus.MISSING) {
+                return alertGoogleWebStoreInstall();
+            }
+            // update
+            return alertGoogleWebStoreUpdate();
+        }
+
+        private boolean alertGoogleWebStoreInstall() {
             JButton goToButton = new JButton(NbBundle.getMessage(
                     ChromeExtensionManager.class, "LBL_GoToWebStore"));            // NOI18N
             goToButton.getAccessibleContext().setAccessibleName(NbBundle.
@@ -389,11 +397,11 @@ public class ChromeManagerAccessor implements ExtensionManagerAccessor {
             goToButton.getAccessibleContext().setAccessibleDescription(NbBundle.
                     getMessage(ChromeExtensionManager.class, "ACSD_GoToWebStore"));    // NOI18N
             DialogDescriptor descriptor = new DialogDescriptor(
-                    new WebStorePanel(), 
-                    NbBundle.getMessage(ChromeExtensionManager.class, 
-                            "TTL_InstallExtension"), true, 
-                    new Object[]{goToButton, 
-                            DialogDescriptor.CANCEL_OPTION}, goToButton, 
+                    new WebStorePanel(false),
+                    NbBundle.getMessage(ChromeExtensionManager.class,
+                            "TTL_InstallExtension"), true,
+                    new Object[]{goToButton,
+                            DialogDescriptor.CANCEL_OPTION}, goToButton,
                             DialogDescriptor.DEFAULT_ALIGN, null, null);
             Object result = DialogDisplayer.getDefault().notify(descriptor);
             if ( result == goToButton ){
@@ -405,8 +413,36 @@ public class ChromeManagerAccessor implements ExtensionManagerAccessor {
                     assert false;
                 }
             }
+            return false;
         }
-        
+
+        private boolean alertGoogleWebStoreUpdate() {
+            JButton continueButton = new JButton(NbBundle.getMessage(
+                    ChromeExtensionManager.class, "LBL_ContinueUpdate"));                // NOI18N
+            continueButton.getAccessibleContext().setAccessibleName(NbBundle.
+                    getMessage(ChromeExtensionManager.class, "ACSN_Continue"));    // NOI18N
+            continueButton.getAccessibleContext().setAccessibleDescription(NbBundle.
+                    getMessage(ChromeExtensionManager.class, "ACSD_Continue"));    // NOI18N
+            DialogDescriptor descriptor = new DialogDescriptor(
+                    new WebStorePanel(true),
+                    NbBundle.getMessage(ChromeExtensionManager.class, "TTL_UpdateExtension"),
+                    true,
+                    new Object[]{continueButton,
+                            DialogDescriptor.CANCEL_OPTION}, continueButton,
+                            DialogDescriptor.DEFAULT_ALIGN, null, null);
+            while (true) {
+                Object result = DialogDisplayer.getDefault().notify(descriptor);
+                if (result == continueButton) {
+                    ExtensitionStatus status = isInstalled();
+                    if (status != ExtensitionStatus.INSTALLED) {
+                        continue;
+                    }
+                    return true;
+                }
+                return false;
+            }
+        }
+
         static private class FileFinder implements FileFilter {
             FileFinder(String name){
                 this( name, false );
