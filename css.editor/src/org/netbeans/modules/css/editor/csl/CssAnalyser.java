@@ -112,7 +112,7 @@ public class CssAnalyser implements ErrorsProvider {
                         }
 
                         //check for vendor specific properies - ignore them
-                        PropertyDefinition property = Properties.getPropertyDefinition(file, propertyName);
+                        PropertyDefinition property = Properties.getPropertyDefinition(propertyName);
                         if (!Css3Utils.containsGeneratedCode(propertyName) && !Css3Utils.isVendorSpecificProperty(propertyName) && property == null) {
                             //unknown property - report
                             String msg = NbBundle.getMessage(CssAnalyser.class, UNKNOWN_PROPERTY_BUNDLE_KEY, propertyName);

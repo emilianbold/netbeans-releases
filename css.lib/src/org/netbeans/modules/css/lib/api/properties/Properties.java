@@ -71,8 +71,8 @@ public class Properties {
      * @param propertyName property name
      * @return instance of {@link PropertyDefinition} or null if not found.
      */
-    public static PropertyDefinition getPropertyDefinition(FileObject context, String propertyName) {
-        return PropertyDefinitionProvider.Query.getPropertyDefinition(context, propertyName);
+    public static PropertyDefinition getPropertyDefinition(String propertyName) {
+        return PropertyDefinitionProvider.Query.getPropertyDefinition(propertyName);
     }
 
 //    /**
@@ -102,10 +102,10 @@ public class Properties {
      * @param propertyName property name
      * @return instance of {@link PropertyDefinition} or null if not found.
      */
-    public static PropertyDefinition getPropertyDefinition(FileObject context, String propertyName, boolean preferInvisibleProperties) {
+    public static PropertyDefinition getPropertyDefinition(String propertyName, boolean preferInvisibleProperties) {
         StringBuilder sb = new StringBuilder().append(GrammarElement.INVISIBLE_PROPERTY_PREFIX).append(propertyName);
-        PropertyDefinition invisibleProperty = getPropertyDefinition(context, sb.toString());
-        return preferInvisibleProperties && invisibleProperty != null ? invisibleProperty : getPropertyDefinition(context, propertyName);
+        PropertyDefinition invisibleProperty = getPropertyDefinition(sb.toString());
+        return preferInvisibleProperties && invisibleProperty != null ? invisibleProperty : getPropertyDefinition(propertyName);
     }
 
 //    /**
@@ -132,7 +132,7 @@ public class Properties {
     public static Collection<PropertyDefinition> getPropertyDefinitions(FileObject context, boolean visibleOnly) {
         Collection<PropertyDefinition> all = new ArrayList<PropertyDefinition>();
         for (String propName : getPropertyNames(context)) {
-            PropertyDefinition propertyDefinition = getPropertyDefinition(context, propName);
+            PropertyDefinition propertyDefinition = getPropertyDefinition(propName);
             if (!visibleOnly || isVisibleProperty(propertyDefinition)) {
                 all.add(propertyDefinition);
             }
@@ -179,7 +179,7 @@ public class Properties {
                 }
                 String elementName = element.getName();
                 if (elementName != null) {
-                    PropertyDefinition subDef = Properties.getPropertyDefinition(null, elementName);
+                    PropertyDefinition subDef = Properties.getPropertyDefinition(elementName);
                     if (subDef != null && isVisibleProperty(subDef)) {
                         isAggregated.set(true); //contains visible sub properties
                         cancelled = true;

@@ -53,11 +53,14 @@ import org.netbeans.api.extexecution.ProcessBuilder;
  */
 public class ProcessUtils {
 
-    public static String callProcess(String executable, String... parameters) throws IOException {
+    public static String callProcess(String executable, boolean wait, String... parameters) throws IOException {
         ProcessBuilder pb = ProcessBuilder.getLocal();
         pb.setExecutable(executable);
         pb.setArguments(Arrays.asList(parameters));
         Process call = pb.call();
+        if (!wait) {
+            return null;
+        }
         try {
             call.waitFor();
         } catch (InterruptedException ex) {

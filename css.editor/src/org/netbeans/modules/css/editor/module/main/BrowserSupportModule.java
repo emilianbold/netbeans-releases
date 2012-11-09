@@ -88,7 +88,7 @@ public class BrowserSupportModule extends CssEditorModule implements CssModule {
     }
 
     @Override
-    public PropertyDefinition getPropertyDefinition(FileObject context, String propertyName) {
+    public PropertyDefinition getPropertyDefinition(String propertyName) {
         return parser.getVendorSpecificProperties().get(propertyName);
     }
 
@@ -111,7 +111,7 @@ public class BrowserSupportModule extends CssEditorModule implements CssModule {
                 if(property.getName().startsWith(getBrowser().getVendorSpecificPropertyPrefix())) {
                     //try to delegate to the corresponding standard property help
                     String standardPropertyName = property.getName().substring(getBrowser().getVendorSpecificPropertyPrefix().length());
-                    PropertyDefinition standardPropertyDefinition = Properties.getPropertyDefinition(context, standardPropertyName);
+                    PropertyDefinition standardPropertyDefinition = Properties.getPropertyDefinition(standardPropertyName);
                     if(standardPropertyDefinition != null) {
                         StandardPropertiesHelpResolver resolver = new StandardPropertiesHelpResolver();
                         String help = resolver.getHelp(context, standardPropertyDefinition);

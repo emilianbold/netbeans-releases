@@ -41,8 +41,6 @@
  */
 package org.netbeans.modules.css.lib.api.properties;
 
-import java.util.Map;
-import java.util.WeakHashMap;
 import org.netbeans.modules.css.lib.api.CssModule;
 import org.netbeans.modules.css.lib.properties.GrammarParser;
 import org.openide.filesystems.FileObject;
@@ -78,7 +76,6 @@ public class PropertyDefinition {
     private CssModule cssModule;
     private PropertyCategory propertyCategory;
     private GroupGrammarElement resolved;
-    private Map<FileObject, GroupGrammarElement> CACHE = new WeakHashMap<FileObject, GroupGrammarElement>();
 
     /**
      * Creates an instance of PropertyDefinition with the PropertyCategory.OTHER
@@ -132,12 +129,10 @@ public class PropertyDefinition {
      * @return a non null value.
      */
     public synchronized GroupGrammarElement getGrammarElement(FileObject context) {
-        GroupGrammarElement element = CACHE.get(context);
-        if (element == null) {
-            element = GrammarParser.parse(context, getGrammar(), getName());
-            CACHE.put(context, element);
+        if(resolved == null) {
+            resolved = GrammarParser.parse(getGrammar(), getName());
         }
-        return element;
+        return resolved;
     }
 
     /**

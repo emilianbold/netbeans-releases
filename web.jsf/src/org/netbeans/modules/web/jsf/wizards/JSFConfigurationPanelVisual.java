@@ -1102,7 +1102,7 @@ private void serverLibrariesActionPerformed(java.awt.event.ActionEvent evt) {//G
                 JsfComponentCustomizer componentCustomizer = jsfComponentDescriptor.createJsfComponentCustomizer(null);
                 if (componentCustomizer != null && !componentCustomizer.isValid()) {
                     setErrorMessage(getFormatedJsfSuiteErrorMessage(
-                            jsfComponentDescriptor.getName(), componentCustomizer.getErrorMessage()));
+                            jsfComponentDescriptor.getDisplayName(), componentCustomizer.getErrorMessage()));
                     return false;
                 }
             }
@@ -1655,7 +1655,7 @@ private void serverLibrariesActionPerformed(java.awt.event.ActionEvent evt) {//G
         public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
             if (value instanceof JsfComponentImplementation) {
                 JsfComponentImplementation item = (JsfComponentImplementation) value;
-                Component comp = super.getTableCellRendererComponent(table, item.getName(), isSelected, false, row, column);
+                Component comp = super.getTableCellRendererComponent(table, item.getDisplayName(), isSelected, false, row, column);
                 if (comp instanceof JComponent) {
                     ((JComponent)comp).setOpaque(isSelected);
                 }
@@ -1817,7 +1817,7 @@ private void serverLibrariesActionPerformed(java.awt.event.ActionEvent evt) {//G
             this.jsfDescriptor = jsfDescriptor;
             listener = new JSFComponentWindowChangeListener();
             jsfCustomizer = jsfDescriptor.createJsfComponentCustomizer(null);
-            dialogDescriptor = new DialogDescriptor(jsfCustomizer.getComponent(), jsfDescriptor.getName(), true, null);
+            dialogDescriptor = new DialogDescriptor(jsfCustomizer.getComponent(), jsfDescriptor.getDisplayName(), true, null);
             initDialog();
         }
 

@@ -79,6 +79,7 @@ import org.netbeans.modules.php.editor.api.elements.AliasedElement.Trait;
 import org.netbeans.modules.php.editor.api.elements.AliasedFunction;
 import org.netbeans.modules.php.editor.api.elements.AliasedInterface;
 import org.netbeans.modules.php.editor.api.elements.AliasedNamespace;
+import org.netbeans.modules.php.editor.api.elements.AliasedTrait;
 import org.netbeans.modules.php.editor.api.elements.AliasedType;
 import org.netbeans.modules.php.editor.api.elements.ClassElement;
 import org.netbeans.modules.php.editor.api.elements.ConstantElement;
@@ -1085,7 +1086,7 @@ public final class IndexQueryImpl implements ElementQuery.Index {
         final LinkedHashSet<TypeMemberElement> typeMembers =
                 getInheritedTypeMembers(typeElement, new LinkedHashSet<TypeElement>(),
                 new LinkedHashSet<TypeMemberElement>(),
-                EnumSet.of(PhpElementKind.CLASS,PhpElementKind.IFACE),
+                EnumSet.of(PhpElementKind.CLASS,PhpElementKind.IFACE,PhpElementKind.TRAIT),
                 EnumSet.of(PhpElementKind.METHOD));
         final Set<MethodElement> retval = new HashSet<MethodElement>();
         for (TypeMemberElement member : typeMembers) {
@@ -1105,7 +1106,7 @@ public final class IndexQueryImpl implements ElementQuery.Index {
         final LinkedHashSet<TypeMemberElement> typeMembers =
                 getInheritedTypeMembers(typeElement, new LinkedHashSet<TypeElement>(),
                 new LinkedHashSet<TypeMemberElement>(getDeclaredMethods(typeElement)),
-                EnumSet.of(PhpElementKind.CLASS,PhpElementKind.IFACE),
+                EnumSet.of(PhpElementKind.CLASS,PhpElementKind.IFACE,PhpElementKind.TRAIT),
                 EnumSet.of(PhpElementKind.METHOD));
         final Set<MethodElement> retval = new HashSet<MethodElement>();
         for (TypeMemberElement member : typeMembers) {
@@ -1125,7 +1126,7 @@ public final class IndexQueryImpl implements ElementQuery.Index {
         final LinkedHashSet<TypeMemberElement> typeMembers =
                 getInheritedTypeMembers(typeElement, new LinkedHashSet<TypeElement>(),
                 new LinkedHashSet<TypeMemberElement>(getDeclaredFields(typeElement)),
-                EnumSet.of(PhpElementKind.CLASS),
+                EnumSet.of(PhpElementKind.CLASS, PhpElementKind.TRAIT),
                 EnumSet.of(PhpElementKind.FIELD));
         final Set<FieldElement> retval = new HashSet<FieldElement>();
         for (TypeMemberElement member : typeMembers) {
@@ -1179,7 +1180,8 @@ public final class IndexQueryImpl implements ElementQuery.Index {
     public Set<TypeMemberElement> getInheritedTypeMembers(final TypeElement typeElement) {
         final EnumSet<PhpElementKind> typeKinds = EnumSet.of(
                 PhpElementKind.CLASS,
-                PhpElementKind.IFACE
+                PhpElementKind.IFACE,
+                PhpElementKind.TRAIT
                 );
         final EnumSet<PhpElementKind> memberKinds = EnumSet.of(
                 PhpElementKind.METHOD,
@@ -1803,6 +1805,8 @@ public final class IndexQueryImpl implements ElementQuery.Index {
                         aliasedElement = new AliasedClass(aliasedName, (ClassElement) nextElement);
                     } else if (nextElement instanceof InterfaceElement) {
                         aliasedElement = new AliasedInterface(aliasedName, (InterfaceElement) nextElement);
+                    } else if (nextElement instanceof TraitElement) {
+                        aliasedElement = new AliasedTrait(aliasedName, (TraitElement) nextElement);
                     }
                     if (aliasedElement != null) {
                         if (trait != null) {
@@ -1857,6 +1861,8 @@ public final class IndexQueryImpl implements ElementQuery.Index {
                         aliasedType = new AliasedClass(aliasedName, (ClassElement) nextType);
                     } else if (nextType instanceof InterfaceElement) {
                         aliasedType = new AliasedInterface(aliasedName, (InterfaceElement) nextType);
+                    } else if (nextType instanceof TraitElement) {
+                        aliasedType = new AliasedTrait(aliasedName, (TraitElement) nextType);
                     } else {
                         assert false : nextType.getClass();
                     }
