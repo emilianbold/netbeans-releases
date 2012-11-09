@@ -637,6 +637,7 @@ public class RuleEditorPanel extends JPanel {
         });
 
         filterTextField.setText(org.openide.util.NbBundle.getMessage(RuleEditorPanel.class, "RuleEditorPanel.filterTextField.text")); // NOI18N
+        filterTextField.setToolTipText(org.openide.util.NbBundle.getMessage(RuleEditorPanel.class, "DocumentViewPanel.filterToggleButton.toolTipText")); // NOI18N
         filterTextField.setMaximumSize(new java.awt.Dimension(32767, 32767));
         filterTextField.setMinimumSize(new java.awt.Dimension(60, 28));
 
