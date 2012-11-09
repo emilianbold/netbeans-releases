@@ -55,7 +55,7 @@ public interface PropertyDefinitionProvider {
     
     public Collection<String> getPropertyNames(FileObject context);
     
-    public PropertyDefinition getPropertyDefinition(FileObject context, String propertyName);
+    public PropertyDefinition getPropertyDefinition(String propertyName);
     
     
     public static class Query {
@@ -69,10 +69,10 @@ public interface PropertyDefinitionProvider {
             return all;
         }
         
-        public static PropertyDefinition getPropertyDefinition(FileObject context, String propertyName) {
+        public static PropertyDefinition getPropertyDefinition(String propertyName) {
             Collection<? extends PropertyDefinitionProvider> providers = Lookup.getDefault().lookupAll(PropertyDefinitionProvider.class);
             for(PropertyDefinitionProvider provider : providers) {
-                PropertyDefinition def = provider.getPropertyDefinition(context, propertyName);
+                PropertyDefinition def = provider.getPropertyDefinition(propertyName);
                 if(def != null) {
                     return def;
                 }
