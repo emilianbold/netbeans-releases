@@ -143,7 +143,9 @@ public class HtmlNavigatorPanelUI extends JPanel implements ExplorerManager.Prov
     private ChangeListener changeListener;
     
     private HashMap<Node, HtmlElementNode> domToNb = new HashMap<Node, HtmlElementNode>();    
-    private RequestProcessor.Task task;
+    private RequestProcessor.Task domTask;
+    private RequestProcessor.Task sourceTask;
+    
     private FileObject lastInspectedFileObject;
     
     
@@ -178,7 +180,7 @@ public class HtmlNavigatorPanelUI extends JPanel implements ExplorerManager.Prov
     private final LookupListener lookupListener = new LookupListener() {
         @Override
         public void resultChanged(final LookupEvent ev) {
-            refresh((Lookup.Result<Object>) ev.getSource());
+            refreshSource((Lookup.Result<Object>) ev.getSource());
         }
     };
     
@@ -282,17 +284,30 @@ public class HtmlNavigatorPanelUI extends JPanel implements ExplorerManager.Prov
     }
     
     private synchronized void refreshDOM() {
-        if (task != null) {
-            task.cancel();
+        if (domTask != null) {
+            domTask.cancel();
         }
 
-        task = RP.post(new Runnable() {
+        domTask = RP.post(new Runnable() {
             @Override
             public void run() {
                 refreshNodeDOMStatus();
             }
         });
     }
+    
+    private synchronized void refreshSource(final Lookup.Result<Object> result) {
+        if (sourceTask != null) {
+            sourceTask.cancel();
+        }
+
+        sourceTask = RP.post(new Runnable() {
+            @Override
+            public void run() {
+                refresh(result);
+            }
+        });
+    }    
     
     private void cacheDomToNb(Node root) {
         if (root==null)
@@ -349,7 +364,7 @@ public class HtmlNavigatorPanelUI extends JPanel implements ExplorerManager.Prov
     void activate(Lookup context) {
         contextResult = context.lookupResult(Object.class);
         contextResult.addLookupListener(lookupListener);
-        refresh(contextResult);
+        refreshSource(contextResult);
     }
     
     private void refresh(Lookup.Result<Object> result) {
