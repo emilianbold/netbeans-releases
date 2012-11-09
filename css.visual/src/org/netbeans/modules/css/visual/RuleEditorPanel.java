@@ -235,16 +235,20 @@ public class RuleEditorPanel extends JPanel {
         
         node = new RuleEditorNode(this);
 
-        viewMode = ViewMode.UPDATED_ONLY; //default view
+        viewMode = addPropertyMode ? ViewMode.CATEGORIZED : ViewMode.UPDATED_ONLY; //default view
         views = new RuleEditorViews(this);
 
         //create toolbar
         toolbar = new RuleEditorToolbar();
         
-        toolbar.addButton(filterToggleButton);
-        toolbar.addLineSeparator();
-        toolbar.addButton(views.getUpdatedOnlyToggleButton());
-        toolbar.addSpaceSeparator();
+        if(!addPropertyMode) {
+            toolbar.addButton(filterToggleButton);
+            toolbar.addLineSeparator();
+            toolbar.addButton(views.getUpdatedOnlyToggleButton());
+            toolbar.addSpaceSeparator();
+        } else {
+            toolbar.addLineSeparator();
+        }
         toolbar.addButton(views.getCategorizedToggleButton());
         toolbar.addSpaceSeparator();
         toolbar.addButton(views.getAllToggleButton());
@@ -358,9 +362,7 @@ public class RuleEditorPanel extends JPanel {
         
         setFilterVisible(addPropertyMode);
         
-        if(!addPropertyMode) {
-            northEastPanel.add(toolbar, BorderLayout.WEST);
-        }
+        northEastPanel.add(toolbar, BorderLayout.WEST);
        
     }
     
@@ -681,20 +683,30 @@ public class RuleEditorPanel extends JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
     private void cancelFilterLabelMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_cancelFilterLabelMouseClicked
+        //clear out the filter text, this will fire change event and clear the filter text in the node.
         filterTextField.setText(null);
     }//GEN-LAST:event_cancelFilterLabelMouseClicked
 
     private void setFilterVisible(boolean visible) {
         northWestPanel.removeAll();
         if(visible) {
+            //update the UI
             northWestPanel.add(filterTextField, BorderLayout.CENTER);
-            cancelFilterLabel.setBorder(new EmptyBorder(0,4,0,8));
+            cancelFilterLabel.setBorder(new EmptyBorder(0,4,0,0));
             if(addPropertyMode) {
                 northWestPanel.add(cancelFilterLabel, BorderLayout.WEST);
             }
+            //set the filter text to the node
+            node.setFilterText(filterTextField.getText());
+
+            filterTextField.requestFocus();
         } else {
-            filterTextField.setText(null);
+            //update the UI
             northWestPanel.add(titleLabel);
+            
+            //just remove the filter text from the node, but keep it in the field
+            //so next time it is opened it will contain the old value
+            node.setFilterText(null);
         }
         northWestPanel.revalidate();
         northWestPanel.repaint();
