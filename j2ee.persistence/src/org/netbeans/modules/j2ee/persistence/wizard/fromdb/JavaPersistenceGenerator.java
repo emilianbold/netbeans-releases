@@ -453,7 +453,12 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
                         generatedEntityClasses.add(entityClassName);
 
                         // XXX Javadoc
-                        entity = GenerationUtils.createClass(packageFileObject, entityClassName, NbBundle.getMessage(JavaPersistenceGenerator.class, "MSG_Javadoc_Class"));
+                        try {
+                            entity = GenerationUtils.createClass(packageFileObject, entityClassName, NbBundle.getMessage(JavaPersistenceGenerator.class, "MSG_Javadoc_Class"));
+                        } catch (RuntimeException ex) {
+                            Logger.getLogger(JavaPersistenceGenerator.class.getName()).log(Level.WARNING, "Can't create class {0} from template in package {1} with package fileobject validity {2}.", new Object[]{entityClassName, packageFileObject.getPath(), packageFileObject.isValid()});//NOI18N
+                            throw ex;
+                        }
                         generatedEntityFOs.add(entity);
                         generatedFOs.add(entity);
 
