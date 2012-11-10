@@ -490,7 +490,10 @@ public final class JFXProjectProperties {
      * 
      * @param category marker string to indicate which category provider is calling this
      * @return instance of JFXProjectProperties shared among category panels in the current Project Properties dialog only
+     * 
+     * @deprecated handle cleanup using ProjectCustomizer.Category.setCloseListener instead
      */
+    @Deprecated
     public static JFXProjectProperties getInstancePerSession(Lookup context, String category) {
         Project proj = context.lookup(Project.class);
         String projDir = proj.getProjectDirectory().getPath();

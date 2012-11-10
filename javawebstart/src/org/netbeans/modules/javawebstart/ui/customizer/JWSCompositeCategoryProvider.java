@@ -44,6 +44,10 @@
 
 package org.netbeans.modules.javawebstart.ui.customizer;
 
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.util.HashMap;
+import java.util.Map;
 import javax.swing.JComponent;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.java.j2seproject.api.J2SEPropertyEvaluator;
@@ -62,8 +66,8 @@ public class JWSCompositeCategoryProvider implements ProjectCustomizer.Composite
 
     private static final String CAT_WEBSTART = "WebStart"; // NOI18N
     
-    private static JWSProjectProperties jwsProps = null;
-
+    private static final Map<String, JWSProjectProperties> projectProperties = new HashMap<String, JWSProjectProperties>();
+    
     public JWSCompositeCategoryProvider() {}
     
     @Override
@@ -74,14 +78,49 @@ public class JWSCompositeCategoryProvider implements ProjectCustomizer.Composite
             final J2SEPropertyEvaluator j2sepe = project.getLookup().lookup(J2SEPropertyEvaluator.class);
             fxOverride = JWSProjectProperties.isTrue(j2sepe.evaluator().getProperty("javafx.enabled")); //NOI18N
         }
-        jwsProps = JWSProjectProperties.getInstancePerSession(context, CAT_WEBSTART);
-        return fxOverride ? null : ProjectCustomizer.Category.create(CAT_WEBSTART,
+        if(!fxOverride) {
+            ProjectCustomizer.Category c = ProjectCustomizer.Category.create(CAT_WEBSTART,
                     NbBundle.getMessage(JWSCompositeCategoryProvider.class, "LBL_Category_WebStart"), null); //NOI18N
+            c.setOkButtonListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    if(project != null) {
+                        JWSProjectProperties prop = JWSProjectProperties.getInstanceIfExists(project.getLookup());
+                        if(prop != null) {
+                            projectProperties.put(project.getProjectDirectory().getPath(), prop);
+                        }
+                    }
+                }
+            });
+            c.setStoreListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    if(project != null) {
+                        JWSProjectProperties prop = projectProperties.get(project.getProjectDirectory().getPath());
+                        if(prop != null) {
+                            JWSProjectPropertiesUtils.updateMasterFiles(prop, project);
+                            JWSProjectPropertiesUtils.savePropsAndUpdateMetaFiles(prop, project);
+                        }
+                        projectProperties.remove(project.getProjectDirectory().getPath());
+                    }
+                }
+            });
+            c.setCloseListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    if(project != null) {
+                        JWSProjectProperties.cleanup(project.getLookup());
+                    }
+                }
+            });
+            return c;
+        }
+        return null;
     }
     
     @Override
     public JComponent createComponent(ProjectCustomizer.Category category, Lookup context) {
-        return new JWSCustomizerPanel(jwsProps);
+        return new JWSCustomizerPanel(JWSProjectProperties.getInstance(context));
     }
 
 }
