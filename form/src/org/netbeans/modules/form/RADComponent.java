@@ -1707,7 +1707,8 @@ public class RADComponent {
         for (Object o : props) {
             FormProperty prop = (FormProperty)o;
             String propName = prop.getName();
-            if (!nameToProperty.containsKey(propName)) {
+            Node.Property knownProp = nameToProperty.get(propName);
+            if (prop != knownProp) {
                 nameToProperty.put(propName, prop);
                 setPropertyListener(prop);
             }
