@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,7 +37,7 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2011 Sun Microsystems, Inc.
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.javafx2.scenebuilder.impl;
 
@@ -53,132 +53,154 @@ import org.netbeans.modules.javafx2.scenebuilder.HomeFactory;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
+import org.openide.util.Parameters;
 import org.openide.util.Utilities;
 
 /**
  * Creates {@linkplain Home} instance for an SB installation path
- * @author Jaroslav Bachorik, Petr Somol
+ * @author Jaroslav Bachorik
+ * @author Petr Somol
  */
 public class SBHomeFactory {
-    private static final List<String> VER_CURRENT = getVersions(NbBundle.getMessage(SBHomeFactory.class, "SB_Version")); // NOI18N
+    private static final String PATH_DELIMITER = ";"; //NOI18N
+    private static final String VER_DELIMITER = "$ver$"; //NOI18N
+    private static final String EMPTY_STRING = "$empty$"; //NOI18N
+    private static final String DEFAULT_VERSION = "1.0"; //NOI18N
     
-    private static final HomeFactory WINDOWS_HOME_LOCATOR = new HomeFactory() {
-        final private String WKIP = NbBundle.getMessage(SBHomeFactory.class, "WIN_WKIP"); // NOI18N
-        final private String WKIP_MIX = NbBundle.getMessage(SBHomeFactory.class, "WIN_WKIP_MIX"); // NOI18N
-        final private String LAUNCHER_PATH = NbBundle.getMessage(SBHomeFactory.class, "WIN_LAUNCHER"); // NOI18N
-        final private String PROPERTIES_PATH = NbBundle.getMessage(SBHomeFactory.class, "WIN_PROPERTIES"); // NOI18N
-        @Override
-        public Home loadHome(String customPath) {
-            return getHomeForPath(customPath, LAUNCHER_PATH, PROPERTIES_PATH);
+    private static final List<String> VER_CURRENT = tokenize(NbBundle.getMessage(SBHomeFactory.class, "SB_Version"), PATH_DELIMITER); // NOI18N
+    
+    private static HomeFactory WINDOWS_HOME_LOCATOR = null;
+    private static HomeFactory MAC_HOME_LOCATOR = null;    
+    private static HomeFactory UX_HOME_LOCATOR = null;
+    
+    /**
+     * Return default Home factory depending on current OS
+     * @return default Home factory
+     */
+    public static HomeFactory getDefault() {
+        if (Utilities.isWindows()) {
+            return getDefaultWindows();
+        } else if (Utilities.isMac()) {
+            return getDefaultMac();
+        } else {
+            return getDefaultUx();
         }
-
+    }
+    
+    private static HomeFactory getDefaultWindows() {
+        if(WINDOWS_HOME_LOCATOR == null) {
+            WINDOWS_HOME_LOCATOR = new HomeFactoryCommon(
+                tokenize(NbBundle.getMessage(SBHomeFactory.class, "WIN_WKIP"), PATH_DELIMITER), // NOI18N
+                tokenize(NbBundle.getMessage(SBHomeFactory.class, "WIN_LAUNCHER"), PATH_DELIMITER), // NOI18N
+                tokenize(NbBundle.getMessage(SBHomeFactory.class, "WIN_PROPERTIES"), PATH_DELIMITER) // NOI18N
+            );
+        }
+        return WINDOWS_HOME_LOCATOR;
+    }
+    
+    private static HomeFactory getDefaultMac() {
+        if(MAC_HOME_LOCATOR == null) {
+            MAC_HOME_LOCATOR = new HomeFactoryCommon(
+                tokenize(NbBundle.getMessage(SBHomeFactory.class, "MAC_WKIP"), PATH_DELIMITER), // NOI18N
+                tokenize(NbBundle.getMessage(SBHomeFactory.class, "MAC_LAUNCHER"), PATH_DELIMITER), // NOI18N
+                tokenize(NbBundle.getMessage(SBHomeFactory.class, "MAC_PROPERTIES"), PATH_DELIMITER) // NOI18N
+            );
+        }
+        return MAC_HOME_LOCATOR;
+    }
+    
+    private static HomeFactory getDefaultUx() {
+        if(UX_HOME_LOCATOR == null) {
+            UX_HOME_LOCATOR = new HomeFactoryCommon(
+                tokenize(NbBundle.getMessage(SBHomeFactory.class, "UX_WKIP"), PATH_DELIMITER), // NOI18N
+                tokenize(NbBundle.getMessage(SBHomeFactory.class, "UX_LAUNCHER"), PATH_DELIMITER), // NOI18N
+                tokenize(NbBundle.getMessage(SBHomeFactory.class, "UX_PROPERTIES"), PATH_DELIMITER) // NOI18N
+            );
+        }
+        return UX_HOME_LOCATOR;
+    }
+    
+    /**
+     * Home factory implementation to be shared across different OSs.
+     * See Bundle.properties for OS specific definitions
+     */
+    private static final class HomeFactoryCommon implements HomeFactory {
+        final private List<String> WKIP;
+        final private List<String> LAUNCHER_PATH;
+        final private List<String> PROPERTIES_PATH;
+        
+        HomeFactoryCommon(List<String> WKIP, List<String> LAUNCHER_PATH, List<String> PROPERTIES_PATH) {
+            Parameters.notNull("WKIP", WKIP); //NOI18N
+            Parameters.notNull("LAUNCHER_PATH", LAUNCHER_PATH); //NOI18N
+            Parameters.notNull("PROPERTIES_PATH", PROPERTIES_PATH); //NOI18N
+            this.WKIP = WKIP;
+            this.LAUNCHER_PATH = LAUNCHER_PATH;
+            this.PROPERTIES_PATH = PROPERTIES_PATH;
+        }
+        
+        /**
+         * Return Home for default SB location, if SB can be found there
+         * @return Home
+         */
         @Override
         public Home defaultHome() {
             Home h = null;
-            for(String s : VER_CURRENT) {
-                h = loadHome(WKIP + " " + s); // NOI18N
-                if(h != null) {
-                    return h;
-                }
-                h = loadHome(WKIP_MIX + " " + s); // NOI18N
-                if(h != null) {
-                    return h;
+            for(String ver : VER_CURRENT) {
+                for(String path : WKIP) {
+                    h = loadHome(path.replace(VER_DELIMITER, ver), ver);
+                    if(h != null) {
+                        return h;
+                    }
                 }
             }            
             return h;
         }
-    };
-    private static final HomeFactory MAC_HOME_LOCATOR = new HomeFactory() {
-        final private String WKIP = NbBundle.getMessage(SBHomeFactory.class, "MAC_WKIP"); // NOI18N
-        final private String LAUNCHER_PATH = NbBundle.getMessage(SBHomeFactory.class, "MAC_LAUNCHER"); // NOI18N
-        final private String PROPERTIES_PATH = NbBundle.getMessage(SBHomeFactory.class, "MAC_PROPERTIES"); // NOI18N
-        
-        @Override
-        public Home defaultHome() {
-            Home h = null;
-            for(String s : VER_CURRENT) {
-                h = loadHome(WKIP + " " + s + ".app"); // NOI18N
-                if(h != null) {
-                    return h;
-                }
-            }
-            return h;
-        }
 
+        /**
+         * Return SB Home for given customPath, if it is a valid SB location
+         * @param customPath
+         * @return Home
+         */
         @Override
         public Home loadHome(String customPath) {
-            return getHomeForPath(customPath, LAUNCHER_PATH, PROPERTIES_PATH);
+            return loadHome(customPath, DEFAULT_VERSION);
         }
-    };
-    private static final HomeFactory UX_HOME_LOCATOR = new HomeFactory() {
-        final private String WKIP = NbBundle.getMessage(SBHomeFactory.class, "UX_WKIP"); // NOI18N
-        final private String WKIP_MIX = NbBundle.getMessage(SBHomeFactory.class, "UX_WKIP_MIX"); // NOI18N
-        final private String LAUNCHER_PATH = NbBundle.getMessage(SBHomeFactory.class, "UX_LAUNCHER"); // NOI18N
-        final private String PROPERTIES_PATH = NbBundle.getMessage(SBHomeFactory.class, "UX_PROPERTIES"); // NOI18N
         
-        @Override
-        public Home defaultHome() {
+        private Home loadHome(String customPath, String defaultVersion) {
             Home h = null;
-            for(String s : VER_CURRENT) {
-                h = loadHome(WKIP + s); // NOI18N
-                if(h != null) {
-                    return h;
-                }
-                h = loadHome(WKIP_MIX + s); // NOI18N
-                if(h != null) {
-                    return h;
-                }
-            }            
-            return h;
-        }
-
-        @Override
-        public Home loadHome(String customPath) {
-            String ver = "";
-            for(String s : VER_CURRENT) {
-                if(customPath.lastIndexOf(s) == customPath.length()- s.length()) {
-                    ver = s;
-                    break;
-                }
-            }
-            File f = new File(customPath + File.separator + LAUNCHER_PATH + ver);
-            if(f != null && f.exists() && f.isFile()) {
-                return getHomeForPath(customPath, LAUNCHER_PATH + ver, PROPERTIES_PATH);
-            }
-            // launcher file name derived from customPath is incorrect - try all other valid options
-            List<String> suffixes = new ArrayList<String>(VER_CURRENT);
-            suffixes.add("");
-            for(String s : suffixes) {
-                f = new File(customPath + File.separator + LAUNCHER_PATH + s);
-                if(f != null && f.exists() && f.isFile()) {
-                    return getHomeForPath(customPath, LAUNCHER_PATH + s, PROPERTIES_PATH);
+            for(String ver : VER_CURRENT) {
+                for(String launcher : LAUNCHER_PATH) {
+                    for(String props : PROPERTIES_PATH) {
+                        try {
+                            h = getHomeForPath(customPath, launcher.replace(VER_DELIMITER, ver), props.replace(VER_DELIMITER, ver), defaultVersion.isEmpty() ? (ver.isEmpty() ? DEFAULT_VERSION : ver) : defaultVersion);
+                            if(h != null) {
+                                return h;
+                            }
+                        } catch(PathDoesNotExist e) {
+                            // stop search only if customPath does not exits, otherwise try other version/launcher/properties combination
+                            return null;
+                        }
+                    }
                 }
             }
             return null;
         }
     };
-    
-    public static HomeFactory getDefault() {
-        if (Utilities.isWindows()) {
-            return WINDOWS_HOME_LOCATOR;
-        } else if (Utilities.isMac()) {
-            return MAC_HOME_LOCATOR;
-        } else {
-            return UX_HOME_LOCATOR;
-        }
-    }
-    
+
     /**
      * Returns Home if path is valid path and launcherPath points at existing launcher file
      * @param path
      * @param launcherPath
      * @param propertiesPath
-     * @return 
+     * @return Home
      */
-    private static Home getHomeForPath(String path, String launcherPath, String propertiesPath) {
+    private static Home getHomeForPath(String path, String launcherPath, String propertiesPath, String defaultVersion) throws PathDoesNotExist {
+        Parameters.notNull("path", path); //NOI18N
+        Parameters.notNull("launcherPath", launcherPath); //NOI18N
+        Parameters.notNull("propertiesPath", propertiesPath); //NOI18N
         String homePath = path;
-        if(path.startsWith("~")) {
-            String userHome = System.getProperty("user.home");
+        if(path.startsWith("~")) { // NOI18N
+            String userHome = System.getProperty("user.home"); // NOI18N
             homePath = userHome + path.substring(1);
         }
         File installDir = new File(homePath);
@@ -198,20 +220,37 @@ public class SBHomeFactory {
                         } finally {
                             reader.close();
                         }
-                        return new Home(homePath, launcherPath, propertiesPath, props.getProperty("version", "1.0")); // NOI18N
+                        String version = props.getProperty("version"); //NOI18N
+                        return new Home(homePath, launcherPath, propertiesPath, version == null ? defaultVersion : version);
                     } catch (IOException e) {
                     }
                 }
             }
+        } else {
+            throw new PathDoesNotExist();
         }
         return null;
     }
     
-    private static List<String> getVersions(String versions) {
-        StringTokenizer st = new StringTokenizer(versions, ";"); // NOI18N
+    private static final class PathDoesNotExist extends IOException {
+        int code;
+        PathDoesNotExist(int code) {
+            this.code = code;
+        }
+        PathDoesNotExist() {
+            this.code = 0;
+        }
+        int getCode() {
+            return code;
+        }
+    }
+    
+    private static List<String> tokenize(String sequence, String delimiter) {
+        StringTokenizer st = new StringTokenizer(sequence, delimiter);
         List<String> r = new ArrayList<String>();
-        while(st.hasMoreTokens()) { 
-            r.add(st.nextToken());
+        while(st.hasMoreTokens()) {
+            String next = st.nextToken();
+            r.add(next.equals(EMPTY_STRING) ? "" : next); // NOI18N
         }
         return r;
     }
