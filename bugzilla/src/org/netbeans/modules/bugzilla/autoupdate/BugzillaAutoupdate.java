@@ -61,6 +61,8 @@ import org.netbeans.modules.bugzilla.BugzillaConfig;
 import org.netbeans.modules.bugzilla.repository.BugzillaConfiguration;
 import org.netbeans.modules.bugzilla.repository.BugzillaRepository;
 import org.netbeans.modules.bugzilla.util.BugzillaUtil;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
@@ -129,8 +131,13 @@ public class BugzillaAutoupdate {
                             new HelpCtx(BugzillaAutoupdate.class)))
                     {
                         OperationContainer<InstallSupport> oc = OperationContainer.createForUpdate();
-                        oc.add(ue);
-                        PluginManager.openInstallWizard(oc);
+                        if (oc.canBeAdded(ue.getUpdateUnit(), ue)) {
+                            oc.add(ue);
+                            PluginManager.openInstallWizard(oc);
+                        } else {
+                            notifyError(NbBundle.getMessage(BugzillaAutoupdate.class, "MSG_CannotBeInstalled"),  // NOI18N
+                                        NbBundle.getMessage(BugzillaAutoupdate.class, "LBL_Error"));            // NOI18N
+                        }
                         return false;
                     }
                 }
@@ -141,6 +148,17 @@ public class BugzillaAutoupdate {
         return true;
     }
 
+    private static void notifyError (final String message, final String title) {
+        notifyInDialog(message, title, NotifyDescriptor.ERROR_MESSAGE, true);
+    }
+
+    private static void notifyInDialog (final String message, final String title, int messageType, boolean cancelVisible) {
+        NotifyDescriptor nd = new NotifyDescriptor(message, title, NotifyDescriptor.DEFAULT_OPTION, messageType,
+                cancelVisible ? new Object[] {NotifyDescriptor.OK_OPTION, NotifyDescriptor.CANCEL_OPTION} : new Object[] {NotifyDescriptor.OK_OPTION},
+                NotifyDescriptor.OK_OPTION);
+        DialogDisplayer.getDefault().notifyLater(nd);
+    }        
+    
     UpdateElement checkNewBugzillaPluginAvailable() {
         List<UpdateUnit> units = UpdateManager.getDefault().getUpdateUnits(UpdateManager.TYPE.MODULE);
         for (UpdateUnit u : units) {
