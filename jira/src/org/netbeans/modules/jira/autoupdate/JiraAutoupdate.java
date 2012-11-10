@@ -66,6 +66,8 @@ import org.netbeans.modules.jira.repository.JiraConfiguration;
 import org.netbeans.modules.jira.repository.JiraRepository;
 import org.netbeans.modules.jira.util.JiraUtils;
 import org.netbeans.modules.mylyn.util.BugtrackingCommand;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
@@ -114,8 +116,15 @@ public class JiraAutoupdate {
                             NbBundle.getMessage(JiraAutoupdate.class, "CTL_Yes"), // NOI18N
                             new HelpCtx(JiraAutoupdate.class))) {
                         OperationContainer<InstallSupport> oc = OperationContainer.createForUpdate();
-                        oc.add(ue);
-                        PluginManager.openInstallWizard(oc);
+                        
+                        if (oc.canBeAdded(ue.getUpdateUnit(), ue)) {
+                            oc.add(ue);
+                            PluginManager.openInstallWizard(oc);
+                        } else {
+                            notifyError(NbBundle.getMessage(JiraAutoupdate.class, "MSG_CannotBeInstalled"),  // NOI18N
+                                        NbBundle.getMessage(JiraAutoupdate.class, "LBL_Error"));            // NOI18N
+                        }
+                        
                         return false;
                     }
                 }
@@ -127,6 +136,17 @@ public class JiraAutoupdate {
         return true;
     }
 
+    private static void notifyError (final String message, final String title) {
+        notifyInDialog(message, title, NotifyDescriptor.ERROR_MESSAGE, true);
+    }
+
+    private static void notifyInDialog (final String message, final String title, int messageType, boolean cancelVisible) {
+        NotifyDescriptor nd = new NotifyDescriptor(message, title, NotifyDescriptor.DEFAULT_OPTION, messageType,
+                cancelVisible ? new Object[] {NotifyDescriptor.OK_OPTION, NotifyDescriptor.CANCEL_OPTION} : new Object[] {NotifyDescriptor.OK_OPTION},
+                NotifyDescriptor.OK_OPTION);
+        DialogDisplayer.getDefault().notifyLater(nd);
+    }    
+    
     UpdateElement checkNewJiraPluginAvailable() {
         List<UpdateUnit> units = UpdateManager.getDefault().getUpdateUnits(UpdateManager.TYPE.MODULE);
         for (UpdateUnit u : units) {
