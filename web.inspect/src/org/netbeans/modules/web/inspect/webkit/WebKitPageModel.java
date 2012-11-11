@@ -495,9 +495,28 @@ public class WebKitPageModel extends PageModel {
             if (selectedNodes.equals(nodes)) {
                 return;
             }
-            selectedNodes = nodes;
+            selectedNodes = knownNodes(nodes);
         }
         firePropertyChange(PROP_SELECTED_NODES, null, null);
+    }
+
+    private List<? extends org.openide.nodes.Node> knownNodes(List<? extends org.openide.nodes.Node> nodeList) {
+        List<org.openide.nodes.Node> knownNodes = new ArrayList<org.openide.nodes.Node>(nodeList.size());
+        for (org.openide.nodes.Node node : nodeList) {
+            Node webKitNode = node.getLookup().lookup(Node.class);
+            if (webKitNode == null) {
+                LOG.log(Level.INFO, "Not a wrapper of a WebKit node: {0}.", node); // NOI18N
+            } else {
+                int nodeId = webKitNode.getNodeId();
+                org.openide.nodes.Node knownNode = nodes.get(nodeId);
+                if (knownNode == null) {
+                    LOG.log(Level.INFO, "Ignoring node that is not (no longer?) valid: {0}.", node); // NOI18N
+                } else {
+                    knownNodes.add(knownNode);
+                }
+            }
+        }
+        return knownNodes;
     }
 
     @Override
