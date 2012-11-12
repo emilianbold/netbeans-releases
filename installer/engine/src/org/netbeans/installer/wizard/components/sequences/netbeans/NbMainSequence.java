@@ -41,6 +41,7 @@ package org.netbeans.installer.wizard.components.sequences.netbeans;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.FilenameFilter;
+import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -160,114 +161,74 @@ public class NbMainSequence extends WizardSequence {
                     "-J-Dorg.netbeans.core.WindowSystem.show=false",
                     "--userdir",
                     tmpUserDir.getPath()));
-            List<String> commands = new ArrayList(commandsBase);
-
-            String title = null;
-            int estimate = 25;
-            boolean installJUnit = nbJavaSE != null && Boolean.parseBoolean(nbJavaSE.getProperty(NbPreInstallSummaryPanel.JUNIT_ACCEPTED_PROPERTY));
-            boolean checkForUpdate = Boolean.getBoolean(NbPreInstallSummaryPanel.CHECK_FOR_UPDATES_CHECKBOX_PROPERTY);
-            if (installJUnit) {
-                // install JUnit
-                if (! commands.contains("--modules")) {
-                    commands.add("--modules");
-                    estimate += 10;
-                }
-                commands.add("--install");
-                commands.add("\".*junit.*\"");
-                estimate += 10;
-                title = ResourceUtils.getString(NbMainSequence.class, "NBMS.CACHE.InstallJUnit"); // NOI18N
-                LogManager.log("    .... install JUnit");
-            }
-            if (checkForUpdate) {
-                // check for updates
-                if (! commands.contains("--modules")) {
-                    commands.add("--modules");
-                    estimate += 10;
-                }
-                commands.add("--update-all");
-                estimate += 10;
-                title = title == null ?
-                        ResourceUtils.getString(NbMainSequence.class, "NBMS.CACHE.CheckForUpdate") : // NOI18N
-                        ResourceUtils.getString(NbMainSequence.class, "NBMS.CACHE.CheckForUpdateInstallJUnit"); // NOI18N
-                LogManager.log("    .... check for updates");
-            }
-            if (title == null) {
-                title = ResourceUtils.getString(NbMainSequence.class, "NBMS.CACHE.generate"); // NOI18N
-            }
-            LogManager.log("    Run " + commands);
             
-            CountdownProgress countdownProgress = new CountdownProgress(compositeProgress, estimate*1000, 72, title);
-            countdownProgress.countdown();
-            try {
-                ExecutionResults executeResult = SystemUtils.executeCommand(compositeProgress, nbInstallLocation, commands.toArray(new String[commands.size()]));
-                int updates = 0;
-                if (checkForUpdate) {
-                    for (int index = 0; (index = executeResult.getStdOut().indexOf(UPDATE_PATTERN, index)) >= 0; index++) {
-                        updates++;
+            boolean installJUnit = nbJavaSE != null && Boolean.parseBoolean(nbJavaSE.getProperty(NbPreInstallSummaryPanel.JUNIT_ACCEPTED_PROPERTY));
+            final boolean installJUnitOrig = installJUnit;
+            boolean checkForUpdate = Boolean.getBoolean(NbPreInstallSummaryPanel.CHECK_FOR_UPDATES_CHECKBOX_PROPERTY);
+            
+            int percentage = 50;
+            
+            ExecutionResults executeResult;
+            int updates = 0;
+            boolean start = true;
+            while (start) {
+                try {
+                    executeResult = runIDE(commandsBase, nbInstallLocation, installJUnit, checkForUpdate, compositeProgress, percentage);
+                    percentage=+10;
+                    if (checkForUpdate) {
+                        for (int index = 0; (index = executeResult.getStdOut().indexOf(UPDATE_PATTERN, index)) >= 0; index++) {
+                            updates++;
+                        }
                     }
-                }
-                if (executeResult.getErrorCode() > 0) {
-                    LogManager.log("    .... exit code: " + executeResult.getErrorCode());
-                    String msg = "";
-                    switch (executeResult.getErrorCode()) {
-                        case 31: // network problem
-                            if (installJUnit && checkForUpdate) {
-                                msg = ResourceUtils.getString(NbMainSequence.class, "NBMS.CACHE.NetworkProblemBoth"); // NOI18N
-                            } else if (installJUnit) {
-                                msg = ResourceUtils.getString(NbMainSequence.class, "NBMS.CACHE.NetworkProblemJunit"); // NOI18N
-                            } else if (checkForUpdate) {
-                                msg = ResourceUtils.getString(NbMainSequence.class, "NBMS.CACHE.NetworkProblemUpdates"); // NOI18N
-                            }
-                            break;
-                        case 32: // install JUnit
-                            msg = ResourceUtils.getString(NbMainSequence.class, "NBMS.CACHE.ProblemInstallJUnit"); // NOI18N
-                            break;
-                        case 33: // update problem
-                            msg = ResourceUtils.getString(NbMainSequence.class, "NBMS.CACHE.ProblemInstallUpdates", updates); // NOI18N
-                            break;
-                        case 34: // timeout loading JUnit
-                            LogManager.log("    Run again " + commandsBase);
-                            executeResult = SystemUtils.executeCommand(compositeProgress, nbInstallLocation, commandsBase.toArray(new String[commandsBase.size()]));
-                            if (executeResult.getErrorCode() > 0) {
-                                LogManager.log("    .... exit code: " + executeResult.getErrorCode());
-                            } else {
-                                LogManager.log("    .... success ");
+                    start = false;
+                    if (executeResult.getErrorCode() > 0) {
+                        LogManager.log("    .... exit code: " + executeResult.getErrorCode());
+                        String msg = "";
+                        switch (executeResult.getErrorCode()) {
+                            case 31: // network problem
                                 if (installJUnit && checkForUpdate) {
-                                    msg = updates == 0 ?
-                                            ResourceUtils.getString(NbMainSequence.class, "NBMS.CACHE.SuccessBoth") : // NOI18N
-                                            ResourceUtils.getString(NbMainSequence.class, "NBMS.CACHE.SuccessInstallBoth", updates); // NOI18N
+                                    msg = ResourceUtils.getString(NbMainSequence.class, "NBMS.CACHE.NetworkProblemBoth"); // NOI18N
                                 } else if (installJUnit) {
-                                    msg = ResourceUtils.getString(NbMainSequence.class, "NBMS.CACHE.SuccessInstallJunit"); // NOI18N
+                                    msg = ResourceUtils.getString(NbMainSequence.class, "NBMS.CACHE.NetworkProblemJunit"); // NOI18N
                                 } else if (checkForUpdate) {
-                                    msg = updates == 0 ?
-                                            ResourceUtils.getString(NbMainSequence.class, "NBMS.CACHE.SuccessCheckForUpdates") : // NOI18N
-                                            ResourceUtils.getString(NbMainSequence.class, "NBMS.CACHE.SuccessInstallUpdates", updates); // NOI18N
+                                    msg = ResourceUtils.getString(NbMainSequence.class, "NBMS.CACHE.NetworkProblemUpdates"); // NOI18N
                                 }
-                            }
-                            break;
+                                break;
+                            case 32: // install JUnit
+                                msg = ResourceUtils.getString(NbMainSequence.class, "NBMS.CACHE.ProblemInstallJUnit"); // NOI18N
+                                break;
+                            case 33: // update problem
+                                msg = ResourceUtils.getString(NbMainSequence.class, "NBMS.CACHE.ProblemInstallUpdates", updates); // NOI18N
+                                break;
+                            case 34: // timeout loading JUnit
+                                LogManager.log("    Run again " + commandsBase);
+                                start = true;
+                                installJUnit = false;
+                                break;
+                        }
+                        nbBase.setProperty(NbPostInstallSummaryPanel.NETBEANS_SUMMARY_MESSAGE_TEXT_PROPERTY, msg);
+                    } else {
+                        LogManager.log("    .... success ");
+                        String msg = "";
+                        if (installJUnitOrig && checkForUpdate) {
+                            msg = updates == 0 ?
+                                    ResourceUtils.getString(NbMainSequence.class, "NBMS.CACHE.SuccessBoth") : // NOI18N
+                                    ResourceUtils.getString(NbMainSequence.class, "NBMS.CACHE.SuccessInstallBoth", updates); // NOI18N
+                        } else if (installJUnitOrig) {
+                            msg = ResourceUtils.getString(NbMainSequence.class, "NBMS.CACHE.SuccessInstallJunit"); // NOI18N
+                        } else if (checkForUpdate) {
+                            msg = updates == 0 ?
+                                    ResourceUtils.getString(NbMainSequence.class, "NBMS.CACHE.SuccessCheckForUpdates") : // NOI18N
+                                    ResourceUtils.getString(NbMainSequence.class, "NBMS.CACHE.SuccessInstallUpdates", updates); // NOI18N
+                        }
+                        nbBase.setProperty(NbPostInstallSummaryPanel.NETBEANS_SUMMARY_MESSAGE_TEXT_PROPERTY, msg);
                     }
-                    nbBase.setProperty(NbPostInstallSummaryPanel.NETBEANS_SUMMARY_MESSAGE_TEXT_PROPERTY, msg);
-                } else {
-                    LogManager.log("    .... success ");
-                    String msg = "";
-                    if (installJUnit && checkForUpdate) {
-                        msg = updates == 0 ?
-                                ResourceUtils.getString(NbMainSequence.class, "NBMS.CACHE.SuccessBoth") : // NOI18N
-                                ResourceUtils.getString(NbMainSequence.class, "NBMS.CACHE.SuccessInstallBoth", updates); // NOI18N
-                    } else if (installJUnit) {
-                        msg = ResourceUtils.getString(NbMainSequence.class, "NBMS.CACHE.SuccessInstallJunit"); // NOI18N
-                    } else if (checkForUpdate) {
-                        msg = updates == 0 ?
-                                ResourceUtils.getString(NbMainSequence.class, "NBMS.CACHE.SuccessCheckForUpdates") : // NOI18N
-                                ResourceUtils.getString(NbMainSequence.class, "NBMS.CACHE.SuccessInstallUpdates", updates); // NOI18N
-                    }
-                    nbBase.setProperty(NbPostInstallSummaryPanel.NETBEANS_SUMMARY_MESSAGE_TEXT_PROPERTY, msg);
+                } catch (Exception ioe) {
+                    LogManager.log("    .... exception ", ioe);
+                    return ;
+                } finally {
+                    LogManager.log("    .... done. ");
                 }
-            } catch (Exception ioe) {
-                LogManager.log("    .... exception ", ioe);
-                return ;
-            } finally {
-                LogManager.log("    .... done. ");
             }
             
             LogManager.log("preparing caches : ");
@@ -287,7 +248,6 @@ public class NbMainSequence extends WizardSequence {
                 return ;
             } finally {
                 LogManager.log("    .... done. ");
-                countdownProgress.stop();
             }
             
             
@@ -404,6 +364,50 @@ public class NbMainSequence extends WizardSequence {
         }        
     }
     
+    private static ExecutionResults runIDE(List<String> commandsBase, File nbInstallLocation, boolean installJUnit, boolean checkForUpdate, CompositeProgress compositeProgress, int percentage) throws IOException {
+        List<String> commands = new ArrayList(commandsBase);
+
+        String title = null;
+        int estimate = 25;
+        if (installJUnit) {
+            // install JUnit
+            if (! commands.contains("--modules")) {
+                commands.add("--modules");
+                estimate += 10;
+            }
+            commands.add("--install");
+            commands.add("\".*junit.*\"");
+            estimate += 10;
+            title = ResourceUtils.getString(NbMainSequence.class, "NBMS.CACHE.InstallJUnit"); // NOI18N
+            LogManager.log("    .... install JUnit");
+        }
+        if (checkForUpdate) {
+            // check for updates
+            if (! commands.contains("--modules")) {
+                commands.add("--modules");
+                estimate += 10;
+            }
+            commands.add("--update-all");
+            estimate += 10;
+            title = title == null ?
+                    ResourceUtils.getString(NbMainSequence.class, "NBMS.CACHE.CheckForUpdate") : // NOI18N
+                    ResourceUtils.getString(NbMainSequence.class, "NBMS.CACHE.CheckForUpdateInstallJUnit"); // NOI18N
+            LogManager.log("    .... check for updates");
+        }
+        if (title == null) {
+            title = ResourceUtils.getString(NbMainSequence.class, "NBMS.CACHE.generate"); // NOI18N
+        }
+        LogManager.log("    Run " + commands);
+
+        CountdownProgress countdownProgress = new CountdownProgress(compositeProgress, estimate*1000, percentage, title);
+        countdownProgress.countdown();
+        try {
+            return SystemUtils.executeCommand(compositeProgress, nbInstallLocation, commands.toArray(new String[commands.size()]));
+        } finally {
+            countdownProgress.stop();
+        }
+    }
+    
     // a candidate to be placed somewhere in utils
     private static class CountdownProgress {
 
@@ -445,6 +449,8 @@ public class NbMainSequence extends WizardSequence {
                 @Override
                 public void run() {
                     countdown.setPercentage(Progress.COMPLETE);
+                    Progress moreProgress = new Progress();
+                    main.addChild(moreProgress, 50);
                     ticTac.cancel(true);
                 }
             }, time, TimeUnit.MILLISECONDS);
@@ -457,6 +463,11 @@ public class NbMainSequence extends WizardSequence {
                 countdown.setPercentage(Progress.COMPLETE);
                 ticTac.cancel(true);
             }
+        }
+
+        private void increase(int updates) {
+            Progress moreProgress = new Progress();
+            main.addChild(moreProgress, 50);
         }
     }
 

@@ -43,6 +43,8 @@
  */
 package org.netbeans.modules.autoupdate.cli;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.util.Arrays;
@@ -55,11 +57,14 @@ import java.util.logging.Logger;
 import java.util.prefs.Preferences;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
+import javax.swing.JLabel;
 import org.netbeans.api.autoupdate.*;
 import org.netbeans.api.autoupdate.InstallSupport.Installer;
 import org.netbeans.api.autoupdate.InstallSupport.Validator;
 import org.netbeans.api.autoupdate.OperationContainer.OperationInfo;
 import org.netbeans.api.autoupdate.OperationSupport.Restarter;
+import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.api.sendopts.CommandException;
 import org.netbeans.spi.sendopts.Env;
 import org.netbeans.spi.sendopts.Option;
@@ -233,16 +238,20 @@ public class ModuleOptions extends OptionProcessor {
         "# {0} - module name",
         "# {1} - installed version",
         "# {2} - available version",
-        "MSG_Update=Will update {0}@{1} to version {2}"
+        "MSG_Update=Will update {0}@{1} to version {2}",
+        "# {0} - plugin name",
+        "MSG_Download=Downloading {0}",
+        "# {0} - plugin name",
+        "MSG_Install=Installing {0}",
     })
-    private void updateModules(Env env, String... pattern) throws CommandException {
+    private void updateModules(final Env env, String... pattern) throws CommandException {
         if (! initialized()) {
             refresh(env);
         }
         Pattern[] pats = findMatcher(env, pattern);
         
         List<UpdateUnit> units = UpdateManager.getDefault().getUpdateUnits();
-        OperationContainer<InstallSupport> operate = OperationContainer.createForInternalUpdate();
+        OperationContainer<InstallSupport> operate = OperationContainer.createForUpdate();
         for (UpdateUnit uu : units) {
             if (uu.getInstalled() == null) {
                 continue;
@@ -277,9 +286,39 @@ public class ModuleOptions extends OptionProcessor {
             return;
         }
         try {
-            final Validator res1 = support.doDownload(null, null, false);
+            ProgressHandle downloadHandle = ProgressHandleFactory.createHandle ("downloading-updates");
+            downloadHandle.setInitialDelay(0);
+            JLabel downloadDetailLabel = ProgressHandleFactory.createDetailLabelComponent (downloadHandle);
+            downloadDetailLabel.addPropertyChangeListener(new PropertyChangeListener () {
+
+                @Override
+                public void propertyChange(PropertyChangeEvent evt) {
+                    if ("text".equals(evt.getPropertyName())) {
+                        env.getOutputStream().println(
+                            Bundle.MSG_Download(evt.getNewValue()));
+                        LOG.fine("  ... downloading update " + evt.getNewValue());
+                    }
+                }
+            });
+            final Validator res1 = support.doDownload(downloadHandle, null, false);
+            
             Installer res2 = support.doValidate(res1, null);
-            Restarter res3 = support.doInstall(res2, null);
+            
+            ProgressHandle installHandle = ProgressHandleFactory.createHandle ("installing-updates");
+            installHandle.setInitialDelay(0);
+            JLabel installDetailLabel = ProgressHandleFactory.createDetailLabelComponent (installHandle);
+            installDetailLabel.addPropertyChangeListener(new PropertyChangeListener () {
+
+                @Override
+                public void propertyChange(PropertyChangeEvent evt) {
+                    if ("text".equals(evt.getPropertyName())) {
+                        env.getOutputStream().println(
+                            Bundle.MSG_Download(evt.getNewValue()));
+                        LOG.fine("  ... installing update " + evt.getNewValue());
+                    }
+                }
+            });
+            Restarter res3 = support.doInstall(res2, installHandle);
             if (res3 != null) {
                 support.doRestart(res3, null);
             }
@@ -323,7 +362,7 @@ public class ModuleOptions extends OptionProcessor {
         "# {0} - paterns",
         "MSG_InstallNoMatch=Cannot install. No match for {0}."
     })
-    private void install(Env env, String... pattern) throws CommandException {
+    private void install(final Env env, String... pattern) throws CommandException {
         if (! initialized()) {
             refresh(env);
         }
@@ -353,9 +392,39 @@ public class ModuleOptions extends OptionProcessor {
             return;
         }
         try {
+            ProgressHandle downloadHandle = ProgressHandleFactory.createHandle ("downloading-updates");
+            downloadHandle.setInitialDelay(0);
+            JLabel downloadDetailLabel = ProgressHandleFactory.createDetailLabelComponent (downloadHandle);
+            downloadDetailLabel.addPropertyChangeListener(new PropertyChangeListener () {
+
+                @Override
+                public void propertyChange(PropertyChangeEvent evt) {
+                    if ("text".equals(evt.getPropertyName())) {
+                        env.getOutputStream().println(
+                            Bundle.MSG_Download(evt.getNewValue()));
+                        LOG.fine("  ... downloading module " + evt.getNewValue());
+                    }
+                }
+            });
             final Validator res1 = support.doDownload(null, null, false);
+            
             Installer res2 = support.doValidate(res1, null);
-            Restarter res3 = support.doInstall(res2, null);
+            
+            ProgressHandle installHandle = ProgressHandleFactory.createHandle ("installing-updates");
+            installHandle.setInitialDelay(0);
+            JLabel installDetailLabel = ProgressHandleFactory.createDetailLabelComponent (installHandle);
+            installDetailLabel.addPropertyChangeListener(new PropertyChangeListener () {
+
+                @Override
+                public void propertyChange(PropertyChangeEvent evt) {
+                    if ("text".equals(evt.getPropertyName())) {
+                        env.getOutputStream().println(
+                            Bundle.MSG_Download(evt.getNewValue()));
+                        LOG.fine("  ... installing module " + evt.getNewValue());
+                    }
+                }
+            });
+            Restarter res3 = support.doInstall(res2, installHandle);
             if (res3 != null) {
                 support.doRestart(res3, null);
             }
