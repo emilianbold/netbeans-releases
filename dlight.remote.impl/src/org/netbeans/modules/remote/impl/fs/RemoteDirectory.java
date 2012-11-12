@@ -155,7 +155,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
     }
 
     @Override
-    public FileObject createDataImpl(String name, String ext, RemoteFileObjectBase orig) throws IOException {
+    public RemoteFileObject createDataImpl(String name, String ext, RemoteFileObjectBase orig) throws IOException {
         return create(composeName(name, ext), false, orig);
     }
 

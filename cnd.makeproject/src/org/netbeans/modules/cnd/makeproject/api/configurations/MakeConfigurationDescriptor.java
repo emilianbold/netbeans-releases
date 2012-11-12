@@ -1296,15 +1296,16 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
 
         // Create active configuration type node
         NodeList nodeList = data.getElementsByTagName(MakeProjectTypeImpl.ACTIVE_CONFIGURATION_TYPE_ELEMENT);
-        if (getConfs().getActive() != null) {
+        MakeConfiguration active = (MakeConfiguration) getConfs().getActive();
+        if (active != null) {
             if (nodeList != null && nodeList.getLength() > 0) {
                 // Node already there
                 Node node = nodeList.item(0);
-                node.setTextContent("" + ((MakeConfiguration) getConfs().getActive()).getConfigurationType().getValue());
+                node.setTextContent("" + active.getConfigurationType().getValue());
             } else {
                 // Create node
                 Element elem = doc.createElementNS(MakeProjectTypeImpl.PRIVATE_CONFIGURATION_NAMESPACE, MakeProjectTypeImpl.ACTIVE_CONFIGURATION_TYPE_ELEMENT); // NOI18N
-                elem.appendChild(doc.createTextNode("" + ((MakeConfiguration) getConfs().getActive()).getConfigurationType().getValue()));
+                elem.appendChild(doc.createTextNode("" + active.getConfigurationType().getValue()));
                 data.appendChild(elem);
             }
         }
@@ -1322,17 +1323,17 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
             data.appendChild(elem);
         }
 
-        if (((MakeConfiguration) getConfs().getActive()).isCustomConfiguration()) {
+        if (active != null && active.isCustomConfiguration()) {
             // Create custumizerid type node
             nodeList = data.getElementsByTagName(MakeProjectTypeImpl.ACTIVE_CONFIGURATION_CUSTOMIZERID);
             if (nodeList != null && nodeList.getLength() > 0) {
                 // Node already there
                 Node node = nodeList.item(0);
-                node.setTextContent(((MakeConfiguration) getConfs().getActive()).getCustomizerId());
+                node.setTextContent(active.getCustomizerId());
             } else {
                 // Create node
                 Element elem = doc.createElementNS(MakeProjectTypeImpl.PRIVATE_CONFIGURATION_NAMESPACE, MakeProjectTypeImpl.ACTIVE_CONFIGURATION_CUSTOMIZERID); // NOI18N
-                elem.appendChild(doc.createTextNode(((MakeConfiguration) getConfs().getActive()).getCustomizerId()));
+                elem.appendChild(doc.createTextNode(active.getCustomizerId()));
                 data.appendChild(elem);
             }
         }

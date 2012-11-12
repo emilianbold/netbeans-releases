@@ -48,6 +48,7 @@ import java.util.Collection;
 import java.util.HashSet;
 import javax.swing.text.Document;
 import org.netbeans.editor.BaseDocument;
+import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 import org.netbeans.modules.cnd.model.tasks.CsmFileTaskFactory.PhaseRunner;
 import org.netbeans.modules.cnd.modelutil.CsmFontColorManager;
 import org.netbeans.modules.cnd.modelutil.FontColorProvider;
@@ -72,7 +73,7 @@ public abstract class HighlighterBase implements PhaseRunner, CsmFontColorManage
     }
 
     protected void init(Document doc){
-        String mimeType = (String) doc.getProperty("mimeType"); //NOI18N
+        String mimeType = DocumentUtilities.getMimeType(doc);
         CsmFontColorManager.instance().addListener(mimeType, this);
     }
     

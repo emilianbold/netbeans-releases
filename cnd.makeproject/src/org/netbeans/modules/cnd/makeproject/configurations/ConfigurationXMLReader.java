@@ -209,6 +209,9 @@ public class ConfigurationXMLReader extends XMLDocReader {
                 if (item.getItemConfiguration(configuration) == null) {
                     ItemConfiguration itemConfiguration = new ItemConfiguration(configuration, item);
                     configuration.addAuxObject(itemConfiguration);
+                    // in version with inverted serialization all items not seen 
+                    // during deserialization of current 'configuration' are 
+                    // considered as excluded by default => set exclude state to 'true'
                     if (configurationDescriptor.getVersion() >= CommonConfigurationXMLCodec.VERSION_WITH_INVERTED_SERIALIZATION) {
                         itemConfiguration.getExcluded().setValue(true);
                     }

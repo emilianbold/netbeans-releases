@@ -1431,13 +1431,13 @@ public class JSFClientGenerator {
                     StringBuffer codeToPopulatePkFields = new StringBuffer();
                     if (embeddable[0]) {
                         Set<ExecutableElement> methods = embeddedPkSupport.getPkAccessorMethods(entityType);
-                        boolean missedSetters = false;
+                        boolean missedSetters = true;
                         for (ExecutableElement pkMethod : methods) {
                             if (embeddedPkSupport.isRedundantWithRelationshipField(entityType, pkMethod)) {
                                 codeToPopulatePkFields.append(fieldName + "." +idGetterName[0] + "().s" + pkMethod.getSimpleName().toString().substring(1) + "(" +  //NOI18N
                                     fieldName + "." + embeddedPkSupport.getCodeToPopulatePkField(entityType, pkMethod) + ");\n");
                                 if(!embeddedPkSupport.getPkSetterMethodExist(entityType, pkMethod)) {
-                                    missedSetters = true;
+                                    missedSetters = false;
                                 }
                             }
                         }
@@ -1449,6 +1449,7 @@ public class JSFClientGenerator {
 
 
                     bodyText =
+                            codeToPopulatePkFields.toString() +
                             (useSessionBean ? "try{utx.begin();} catch( Exception ex ){}\n" : "")+
                             "try {\n" +
                             (useSessionBean ? "Exception transactionException = null;\n" : "")+
@@ -1533,7 +1534,7 @@ public class JSFClientGenerator {
                     bodyText = "String idAsString = JsfUtil.getRequestParameter(\"jsfcrud.current" + simpleEntityName + "\");\n" +
                             (embeddable[0] ? simpleIdPropertyType + " id = converter.getId(idAsString);" : createIdFieldDeclaration(idPropertyType[0], "idAsString")) +
                             "\n";
-                    bodyText += 
+                    bodyText +=
                             (useSessionBean ? "try{utx.begin();} catch( Exception ex ){}\n" : "")+
                             "try {\n" +
                             (useSessionBean ? "Exception transactionException = null;\n" : "")+

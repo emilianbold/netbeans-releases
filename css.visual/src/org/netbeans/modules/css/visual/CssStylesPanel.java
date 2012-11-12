@@ -47,6 +47,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
 import javax.swing.ButtonGroup;
 import javax.swing.JComponent;
 import javax.swing.JToggleButton;
@@ -85,6 +87,15 @@ public class CssStylesPanel extends javax.swing.JPanel {
      private JComponent activePanel;
      private FileObject context;
      
+     /**
+      * Remember last selected tab per mimetype.
+      * 
+      * Note: this is not exactly correct as the panel's activity is no more
+      * driven purely by the file context mimetype. 
+      * See {@link CssStylesPanelProvider#providesContentFor(org.openide.filesystems.FileObject) }.
+      */
+     private Map<String, CssStylesPanelProvider> selectedTabs = new HashMap<String, CssStylesPanelProvider>();
+     
     /**
      * Creates new form CssStylesPanel
      */
@@ -112,6 +123,8 @@ public class CssStylesPanel extends javax.swing.JPanel {
                 //linear search, but should be at most 2 or 3 items
                 for(CssStylesPanelProvider provider : providers) {
                     if(provider.getPanelID().equals(command)) {
+                        FileObject file = providersLookup.lookup(FileObject.class);
+                        selectedTabs.put(file.getMIMEType(), provider);
                         setActiveProvider(provider);
                     }
                 }
@@ -199,6 +212,8 @@ public class CssStylesPanel extends javax.swing.JPanel {
         ButtonGroup buttonGroup = new ButtonGroup();
         
         boolean first = true;
+        
+        CssStylesPanelProvider selected = selectedTabs.get(file.getMIMEType());
         for (CssStylesPanelProvider provider : activeProviders) {
             JToggleButton button = new JToggleButton();
             button.setText(provider.getPanelDisplayName());
@@ -223,12 +238,26 @@ public class CssStylesPanel extends javax.swing.JPanel {
             
             buttonGroup.add(button);
             toolBar.add(button);
-            button.setSelected(first);
-            if (first) {
-                setActiveProvider(provider);
-                first = false;
+            
+            if(selected != null) {
+                //user has already selected a provider for this mimetype
+                if(provider == selected) {
+                    button.setSelected(true);
+                    setActiveProvider(provider);
+                }
+                button.setSelected(false);
+            } else {
+                //no provider has been explicitly selected by the user yet
+                button.setSelected(first);
+                if (first) {
+                    setActiveProvider(provider);
+                    first = false;
+                }
             }
         }
+        
+        revalidate();
+        repaint();
     }
     
     public void setContext(FileObject file) {

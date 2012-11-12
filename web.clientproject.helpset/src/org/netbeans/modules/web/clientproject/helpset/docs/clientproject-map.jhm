@@ -37,10 +37,10 @@
     <mapID target="org.netbeans.modules.gsf.testrunner.api.ResultWindow" url="csh/csh-html5-prop-run.html"/>
     
     <!-- CSH for JavaScript Breakpoints dialogs -->
-    <mapID target="NetbeansDebuggerLineBreakpointJavaScript" url="csh/csh-html5-prop-run.html"/>
-    <mapID target="NetbeansDebuggerDOMBreakpointJavaScript" url="csh/csh-html5-prop-run.html"/>
-    <mapID target="NetbeansDebuggerEventsBreakpointJavaScript" url="csh/csh-html5-prop-run.html"/>
-    <mapID target="NetbeansDebuggerXHRBreakpointJavaScript" url="csh/csh-html5-prop-run.html"/>
+    <mapID target="NetbeansDebuggerLineBreakpointJavaScript" url="csh/js_newbreakpoint-line.html"/>
+    <mapID target="NetbeansDebuggerDOMBreakpointJavaScript" url="csh/js_newbreakpoint-dom.html"/>
+    <mapID target="NetbeansDebuggerEventsBreakpointJavaScript" url="csh/js_newbreakpoint-event.html"/>
+    <mapID target="NetbeansDebuggerXHRBreakpointJavaScript" url="csh/js_newbreakpoint-request.html"/>
     
     
 </map>
