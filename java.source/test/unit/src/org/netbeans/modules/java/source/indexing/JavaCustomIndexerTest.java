@@ -164,7 +164,7 @@ public class JavaCustomIndexerTest extends NbTestCase {
     private void assertExistsAndContent(File dir, String pathAndName, String content) throws Exception {
         File target = new File(dir, pathAndName);
         assertTrue(target.getPath(), target.canRead());
-        assertEquals(content, TestUtilities.copyFileToString(target));
+        assertEquals(content.replace("\n", System.getProperty("line.separator", "\n")), TestUtilities.copyFileToString(target));
     }
     
     private void deleteFile(String pathAndName) throws IOException {
