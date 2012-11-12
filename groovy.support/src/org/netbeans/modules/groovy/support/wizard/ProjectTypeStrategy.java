@@ -92,10 +92,20 @@ public abstract class ProjectTypeStrategy {
 
     protected abstract List<SourceGroup> moveSourceFolderAsFirst(List<SourceGroup> groups);
 
+    protected final List<SourceGroup> getOnlyTestSourceGroups(List<SourceGroup> groups) {
+        List<SourceGroup> reorderedGroup = new ArrayList<SourceGroup>();
+        for (SourceGroup group : groups) {
+            if (group.getRootFolder().getPath().contains("/test")) { // NOI18N
+                reorderedGroup.add(group);
+            }
+        }
+        return reorderedGroup;
+    }
+
     protected final List<SourceGroup> moveAsFirst(List<SourceGroup> groups, String folderName) {
         List<SourceGroup> reorderedGroup = new ArrayList<SourceGroup>();
         for (SourceGroup group : groups) {
-            if (group.getRootFolder().getPath().endsWith(folderName)) { // NOI18N
+            if (group.getRootFolder().getPath().contains(folderName)) { // NOI18N
                 reorderedGroup.add(0, group);
             } else {
                 reorderedGroup.add(group);

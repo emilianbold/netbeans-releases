@@ -142,7 +142,7 @@ public class GroovyJUnitTestWizardIterator extends GroovyFileWizardIterator {
             // Retrieve the source groups again, but now with a newly created /test/groovy folder
             groups = GroovySources.getGroovySourceGroups(ProjectUtils.getSources(project));
         }
-        return strategy.moveTestFolderAsFirst(groups);
+        return strategy.getOnlyTestSourceGroups(groups);
     }
 
     @Override
