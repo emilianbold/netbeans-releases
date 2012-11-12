@@ -58,6 +58,8 @@ import java.io.IOException;
 import javax.swing.JEditorPane;
 import javax.swing.SwingUtilities;
 import javax.swing.text.Document;
+import org.netbeans.editor.BaseDocument;
+import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.api.model.CsmScope;
@@ -67,7 +69,6 @@ import org.netbeans.modules.cnd.support.ReadOnlySupport;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.netbeans.modules.cnd.navigation.hierarchy.ContextUtils;
 import org.netbeans.modules.cnd.utils.MIMENames;
-import org.netbeans.modules.editor.NbEditorDocument;
 import org.netbeans.modules.editor.NbEditorUtilities;
 import org.openide.cookies.CloseCookie;
 import org.openide.cookies.EditorCookie;
@@ -218,7 +219,7 @@ public final class MacroExpansionViewUtils {
 
         mainDoc.putProperty(Document.class, doc);
         doc.putProperty(Document.class, mainDoc);
-        setupMimeType(doc);
+        setupMimeType(doc, mainDoc);
 
         return doc;
     }
@@ -258,7 +259,7 @@ public final class MacroExpansionViewUtils {
         }
         DataObject dobj = NbEditorUtilities.getDataObject(doc);
         if (dobj != null) {
-            EditorCookie ec = dobj.getCookie(EditorCookie.class);
+            EditorCookie ec = dobj.getLookup().lookup(EditorCookie.class);
             return ec == null ? null : CsmUtilities.findRecentEditorPaneInEQ(ec);
         }
         return null;
@@ -269,14 +270,16 @@ public final class MacroExpansionViewUtils {
      *
      * @param doc - document
      */
-    public static void setupMimeType(Document doc) {
-        Object mimeTypeObj = doc.getProperty(NbEditorDocument.MIME_TYPE_PROP);
-        if (mimeTypeObj instanceof String) {
-            if ("text/plain".equals(mimeTypeObj)) { // NOI18N
-                doc.putProperty(NbEditorDocument.MIME_TYPE_PROP, MIMENames.CPLUSPLUS_MIME_TYPE);
+    public static void setupMimeType(Document doc, Document mainDoc) {
+        String mimeType = DocumentUtilities.getMimeType(mainDoc);
+        if (mimeType != null) {
+            if (MIMENames.isHeaderOrCppOrC(mimeType)) {
+                doc.putProperty(BaseDocument.MIME_TYPE_PROP, mimeType);
             } else {
-                doc.putProperty(NbEditorDocument.MIME_TYPE_PROP, mimeTypeObj);
+                doc.putProperty(BaseDocument.MIME_TYPE_PROP, MIMENames.CPLUSPLUS_MIME_TYPE);
             }
+        } else {
+            doc.putProperty(BaseDocument.MIME_TYPE_PROP, MIMENames.CPLUSPLUS_MIME_TYPE);
         }
     }
 
@@ -307,7 +310,7 @@ public final class MacroExpansionViewUtils {
         Document doc = null;
         try {
             DataObject dob = DataObject.find(fo);
-            EditorCookie ec = dob.getCookie(EditorCookie.class);
+            EditorCookie ec = dob.getLookup().lookup(EditorCookie.class);
             doc = CsmUtilities.openDocument(ec);
             if (doc != null) {
                 doc.putProperty(Document.StreamDescriptionProperty, dob);
@@ -322,7 +325,7 @@ public final class MacroExpansionViewUtils {
         if (doc != null && doc.getProperty(CsmMacroExpansion.MACRO_EXPANSION_VIEW_DOCUMENT) != null) {
             DataObject dob = (DataObject) doc.getProperty(Document.StreamDescriptionProperty);
             if (dob != null) {
-                CloseCookie closeCookie = dob.getCookie(CloseCookie.class);
+                CloseCookie closeCookie = dob.getLookup().lookup(CloseCookie.class);
                 if (closeCookie != null) {
                     closeCookie.close();
                 }

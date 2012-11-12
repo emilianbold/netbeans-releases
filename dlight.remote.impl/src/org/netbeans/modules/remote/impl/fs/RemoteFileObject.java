@@ -240,6 +240,7 @@ public final class RemoteFileObject extends FileObject implements Serializable {
     }
 
     @Override
+    @SuppressWarnings("deprecation") // we have to override abstract deprecated method
     public void setImportant(boolean b) {
         getImplementor().setImportant(b);
     }
@@ -335,6 +336,7 @@ public final class RemoteFileObject extends FileObject implements Serializable {
     }
 
     @Override
+    @SuppressWarnings("deprecation") // we have to override abstract deprecated method
     public boolean isReadOnly() {
         return getImplementor().isReadOnly();
     }

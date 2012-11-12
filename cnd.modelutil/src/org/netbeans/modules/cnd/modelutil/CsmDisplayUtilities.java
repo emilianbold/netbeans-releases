@@ -62,6 +62,7 @@ import org.netbeans.cnd.api.lexer.CndLexerUtilities;
 import org.netbeans.cnd.api.lexer.CppTokenId;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
+import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmClassifier;
 import org.netbeans.modules.cnd.api.model.CsmDeclaration;
@@ -144,8 +145,7 @@ public class CsmDisplayUtilities {
         int startBold = stToken - startLine;
         int endBold = endToken - startLine;
         String content = doc.getText(startLine, endLine - startLine);
-
-        String mime = (String) doc.getProperty("mimeType"); // NOI18N
+        String mime = DocumentUtilities.getMimeType(doc);
         if (startBold >= 0 && endBold >= 0 && startBold <= content.length() && endBold <= content.length()  && startBold < endBold) {
             StringBuilder buf = new StringBuilder();
             buf.append(getHtml(mime, trimStart(content.substring(0, startBold))));
