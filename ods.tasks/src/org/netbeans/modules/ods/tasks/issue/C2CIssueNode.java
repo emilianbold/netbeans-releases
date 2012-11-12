@@ -42,15 +42,13 @@
 
 package org.netbeans.modules.ods.tasks.issue;
 
-import com.tasktop.c2c.server.tasks.domain.TaskSeverity;
+import com.tasktop.c2c.server.tasks.domain.AbstractReferenceValue;
+import java.lang.reflect.InvocationTargetException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import org.netbeans.modules.bugtracking.issuetable.IssueNode;
-import org.netbeans.modules.ods.tasks.C2C;
-import org.netbeans.modules.ods.tasks.spi.C2CData;
 import org.netbeans.modules.ods.tasks.util.C2CUtil;
 import org.openide.nodes.Node.Property;
-import org.openide.util.NbBundle;
 
 /**
  *
@@ -70,17 +68,17 @@ public class C2CIssueNode extends IssueNode<C2CIssue> {
         return new Property<?>[] {
             // XXX is this complete?
             new IDProperty(),
-            new C2CFieldProperty(C2CIssue.LABEL_NAME_TASK_TYPE, IssueField.TASK_TYPE, "CTL_Issue_Task_Type_Title", "CTL_Issue_Task_Type_Desc"), // NOI18N
+            new C2CFieldProperty(IssueField.TASK_TYPE),
             new SeverityProperty(),
             new PriorityProperty(),
-            new C2CFieldProperty(C2CIssue.LABEL_NAME_STATUS, IssueField.STATUS, "CTL_Issue_Status_Title", "CTL_Issue_Status_Desc"), // NOI18N
+            new StatusProperty(),
             new ResolutionProperty(),
             new SummaryProperty(), 
             new ModificationProperty(),
-            new C2CFieldProperty(C2CIssue.LABEL_NAME_PRODUCT, IssueField.PRODUCT, "CTL_Issue_Product_Title", "CTL_Issue_Product_Desc"), // NOI18N
-            new C2CFieldProperty(C2CIssue.LABEL_NAME_COMPONENT, IssueField.COMPONENT, "CTL_Issue_Component_Title", "CTL_Issue_Component_Desc"), // NOI18N
-            new C2CFieldProperty(C2CIssue.LABEL_NAME_ITERATION, IssueField.ITERATION, "CTL_Issue_Iteration_Title", "CTL_Issue_Iteration_Desc"), // NOI18N
-            new C2CFieldProperty(C2CIssue.LABEL_NAME_MILESTONE, IssueField.MILESTONE, "CTL_Issue_Milestone_Title", "CTL_Issue_Milestone_Desc"), // NOI18N
+            new C2CFieldProperty(IssueField.PRODUCT), 
+            new C2CFieldProperty(IssueField.COMPONENT), 
+            new IterationProperty(),
+            new MilestoneProperty(), 
         };
     };
 
@@ -89,18 +87,9 @@ public class C2CIssueNode extends IssueNode<C2CIssue> {
         super.fireDataChanged();
     }
 
-    private Integer getSortKey(String severity, Class clazz) {
-        C2CData cd = C2C.getInstance().getClientData(getC2CIssue().getRepository());
-        TaskSeverity ts = cd.getValue(severity, TaskSeverity.class);
-        return ts.getSortkey().intValue();
-    }
-
     private class IDProperty extends IssueNode<C2CIssue>.IssueProperty<String> {
         public IDProperty() {
-            super(C2CIssue.LABEL_NAME_ID,
-                  String.class,
-                  NbBundle.getMessage(C2CIssue.class, "CTL_Issue_ID_Title"), // NOI18N
-                  NbBundle.getMessage(C2CIssue.class, "CTL_Issue_ID_Desc")); // NOI18N
+            super(IssueField.ID.getKey(), String.class, IssueField.ID.getDisplayName(), IssueField.ID.getDescription()); 
         }
         @Override
         public String getValue() {
@@ -108,83 +97,82 @@ public class C2CIssueNode extends IssueNode<C2CIssue> {
         }
         @Override
         public int compareTo(IssueProperty p) {
-            if(p == null) return 1;
+            if(p == null) {
+                return 1;
+            }
             Integer i1 = Integer.parseInt(getIssue().getID());
             Integer i2 = Integer.parseInt(p.getIssue().getID());
             return i1.compareTo(i2);
         }
     }
 
-    private class SeverityProperty extends IssueNode<C2CIssue>.IssueProperty<String> {
+    private class SeverityProperty extends ARVProperty {
         public SeverityProperty() {
-            super(C2CIssue.LABEL_NAME_SEVERITY,
-                  String.class,
-                  NbBundle.getMessage(C2CIssue.class, "CTL_Issue_Severity_Title"), // NOI18N
-                  NbBundle.getMessage(C2CIssue.class, "CTL_Issue_Severity_Desc")); // NOI18N
+            super(IssueField.SEVERITY);
         }
         @Override
-        public String getValue() {
-            return getC2CIssue().getFieldValue(IssueField.SEVERITY);
-        }
-        @Override
-        public Object getValue(String attributeName) {
-            if("sortkey".equals(attributeName)) {                               // NOI18N
-                return -1; //getSeveritySortKey(getC2CIssue().getFieldValue(IssueField.SEVERITY));
-            } else {
-                return super.getValue(attributeName);
-            }
+        public AbstractReferenceValue getValue() {
+            return getC2CIssue().getSeverity();
         }
     }
 
-    public class PriorityProperty extends IssueNode<C2CIssue>.IssueProperty<String> {
+    public class PriorityProperty extends ARVProperty {
         public PriorityProperty() {
-            super(C2CIssue.LABEL_NAME_PRIORITY,
-                  String.class,
-                  NbBundle.getMessage(C2CIssue.class, "CTL_Issue_Priority_Title"), // NOI18N
-                  NbBundle.getMessage(C2CIssue.class, "CTL_Issue_Priority_Desc")); // NOI18N
+            super(IssueField.PRIORITY); 
         }
         @Override
-        public String getValue() {
-            return getC2CIssue().getFieldValue(IssueField.PRIORITY);
-        }
-        @Override
-        public Object getValue(String attributeName) {
-            if("sortkey".equals(attributeName)) {                               // NOI18N
-                return -1; //getPrioritySortKey(getC2CIssue().getFieldValue(IssueField.PRIORITY));
-            } else {
-                return super.getValue(attributeName);
-            }
+        public AbstractReferenceValue getValue() {
+            return getC2CIssue().getPriority();
         }
     }
 
-    private class ResolutionProperty extends IssueNode<C2CIssue>.IssueProperty<String> {
+    private class ResolutionProperty extends ARVProperty {
         public ResolutionProperty() {
-            super(C2CIssue.LABEL_NAME_RESOLUTION,
-                  String.class,
-                  NbBundle.getMessage(C2CIssue.class, "CTL_Issue_Resolution_Title"), // NOI18N
-                  NbBundle.getMessage(C2CIssue.class, "CTL_Issue_ID_Desc")); // NOI18N
+            super(IssueField.RESOLUTION); 
         }
         @Override
-        public String getValue() {
-            return getC2CIssue().getFieldValue(IssueField.RESOLUTION);
-        }
-        @Override
-        public Object getValue(String attributeName) {
-            if("sortkey".equals(attributeName)) {                               // NOI18N
-                return -1; //getResolutionSortKey(getC2CIssue().getFieldValue(IssueField.RESOLUTION));
-            } else {
-                return super.getValue(attributeName);
-            }
+        public AbstractReferenceValue getValue() throws IllegalAccessException, InvocationTargetException {
+            return getC2CIssue().getResolution();
         }
     }
-
+    
+    private class StatusProperty extends ARVProperty {
+        public StatusProperty() {
+            super(IssueField.STATUS); 
+        }
+        @Override
+        public AbstractReferenceValue getValue() throws IllegalAccessException, InvocationTargetException {
+            return getC2CIssue().getStatus();
+        }
+    }
+    
+    private class IterationProperty extends ARVProperty {
+        public IterationProperty() {
+            super(IssueField.ITERATION); 
+        }
+        @Override
+        public AbstractReferenceValue getValue() throws IllegalAccessException, InvocationTargetException {
+            return getC2CIssue().getIteration();
+        }
+    }
+    
+    private class MilestoneProperty extends ARVProperty {
+        public MilestoneProperty() {
+            super(IssueField.MILESTONE); 
+        }
+        @Override
+        public AbstractReferenceValue getValue() throws IllegalAccessException, InvocationTargetException {
+            return getC2CIssue().getMilestone();
+        }
+    }
+    
     private class ModificationProperty extends IssueNode<C2CIssue>.IssueProperty<String> {
         private SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm");
         public ModificationProperty() {
-            super(C2CIssue.LABEL_NAME_MODIFIED,
+            super(IssueField.MODIFIED.getKey(),
                   String.class,
-                  NbBundle.getMessage(C2CIssue.class, "CTL_Issue_Modification_Title"), // NOI18N
-                  NbBundle.getMessage(C2CIssue.class, "CTL_Issue_Modification_Desc")); // NOI18N
+                  IssueField.MODIFIED.getDisplayName(), 
+                  IssueField.MODIFIED.getDescription());
         }
         @Override
         public String getValue() {
@@ -193,21 +181,48 @@ public class C2CIssueNode extends IssueNode<C2CIssue> {
         }
         @Override
         public int compareTo(IssueNode<C2CIssue>.IssueProperty<String> p) {
-            if(p == null) return 1;
-            // XXX sort as date
-            String s1 = getC2CIssue().getFieldValue(IssueField.MODIFIED);
-            String s2 = p.getIssueData().getFieldValue(IssueField.MODIFIED);
-            return s1.compareTo(s2);
+            if(p == null) {
+                return 1;
+            }
+            Date d1 = getC2CIssue().getLastModifyDate();
+            if(d1 == null) {
+                return 1;
+            }
+            Date d2 = p.getIssueData().getLastModifyDate();
+            return d1.compareTo(d2);
+        }
+    }
+    
+    private abstract class ARVProperty extends IssueProperty<AbstractReferenceValue> {
+        public ARVProperty(IssueField f) {
+            super(f.getKey(),
+                  AbstractReferenceValue.class,
+                  f.getDisplayName(), 
+                  f.getDescription()); 
+        }
+
+        @Override
+        public int compareTo(IssueProperty<AbstractReferenceValue> p) {
+            if(p == null) {
+                return 1;
+            }
+            try {
+                return getValue().compareTo(p.getValue());
+            } catch (IllegalAccessException ex) {
+                return 0;
+            } catch (InvocationTargetException ex) {
+                return 0;
+            }
         }
     }
 
     private class C2CFieldProperty extends IssueProperty<String> {
         private final IssueField field;
-        public C2CFieldProperty(String fieldLabel, IssueField f, String titleProp, String descProp) {
-            super(fieldLabel,
+        public C2CFieldProperty(IssueField f) {
+            super(f.getKey(),
                   String.class,
-                  NbBundle.getMessage(C2CIssue.class, titleProp), // NOI18N
-                  NbBundle.getMessage(C2CIssue.class, descProp)); // NOI18N
+                  f.getDisplayName(),
+                  f.getDescription());
             this.field = f;
         }
         @Override
@@ -216,7 +231,9 @@ public class C2CIssueNode extends IssueNode<C2CIssue> {
         }
         @Override
         public int compareTo(IssueNode<C2CIssue>.IssueProperty<String> p) {
-            if(p == null) return 1;
+            if(p == null) {
+                return 1;
+            }
             String s1 = getC2CIssue().getFieldValue(field);
             String s2 = p.getIssueData().getFieldValue(field);
             return s1.compareTo(s2);

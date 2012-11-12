@@ -41,8 +41,13 @@
  */
 package org.netbeans.modules.ods.tasks.util;
 
+import com.tasktop.c2c.server.tasks.domain.Iteration;
 import com.tasktop.c2c.server.tasks.domain.Keyword;
+import com.tasktop.c2c.server.tasks.domain.Milestone;
+import com.tasktop.c2c.server.tasks.domain.Priority;
 import com.tasktop.c2c.server.tasks.domain.TaskResolution;
+import com.tasktop.c2c.server.tasks.domain.TaskSeverity;
+import com.tasktop.c2c.server.tasks.domain.TaskStatus;
 import com.tasktop.c2c.server.tasks.domain.TaskUserProfile;
 import java.text.DateFormat;
 import java.text.ParseException;
@@ -73,7 +78,6 @@ import org.netbeans.modules.ods.tasks.query.C2CQuery;
 import org.netbeans.modules.ods.tasks.repository.C2CRepository;
 import org.netbeans.modules.ods.tasks.spi.C2CData;
 import org.netbeans.modules.mylyn.util.GetTaskDataCommand;
-import org.netbeans.modules.ods.tasks.spi.C2CExtender;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
@@ -231,7 +235,53 @@ public class C2CUtil {
         }
         return null;
     }
+    
+    public static TaskStatus getStatusByValue(C2CData cd, String value) {
+        return cd.getStatusByValue(value);
+    }
+    
+    public static Priority getPriorityByValue(C2CData cd, String value) {
+        List<Priority> priorities = cd.getPriorities();
+        for (Priority p : priorities) {
+            if(p.getValue().equals(value)) {
+                return p;
+            }
+        }
+        return null;
+    }
+    
+    public static TaskSeverity getSeverityByValue(C2CData cd, String value) {
+        List<TaskSeverity> severities = cd.getSeverities();
+        for (TaskSeverity s : severities) {
+            if(s.getValue().equals(value)) {
+                return s;
+            }
+        }
+        return null;
+    }
 
+    public static Iteration getIterationByValue(C2CData cd, String value) {
+        List<Iteration> iterations = cd.getRepositoryConfiguration().getIterations();
+        for (Iteration i : iterations) {
+            if(i.getValue().equals(value)) {
+                return i;
+            }
+        }
+        return null;
+    }
+
+
+    public static Milestone getMilestoneByValue(C2CData cd, String value) {
+        List<Milestone> milestones = cd.getMilestones();
+        for (Milestone m : milestones) {
+            if(m.getValue().equals(value)) {
+                return m;
+            }
+        }
+        return null;
+    }
+
+    
     public static String getKeywords(String message, String keywordString, C2CRepository repository) {
         String[] ks = keywordString.split(","); // NOI18N
         if(ks == null || ks.length == 0) {

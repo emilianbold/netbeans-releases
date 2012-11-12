@@ -53,46 +53,48 @@ import org.openide.util.NbBundle;
  */
 public class IssueField {
     
-    public static final IssueField SUMMARY = new IssueField(TaskAttribute.SUMMARY, "LBL_SUMMARY"); // NOI18N
-    public static final IssueField CC = new IssueField(C2CData.ATTR_CC, "LBL_CC"); // NOI18N
-    public static final IssueField COMPONENT = new IssueField(TaskAttribute.COMPONENT, "LBL_COMPONENT"); // NOI18N
-    public static final IssueField DESCRIPTION = new IssueField(TaskAttribute.DESCRIPTION, "LBL_DESCRIPTION"); // NOI18N
-    public static final IssueField DUEDATE = new IssueField(C2CData.ATTR_DUEDATE, "LBL_DUEDATE"); // NOI18N
-    public static final IssueField ESTIMATE = new IssueField(C2CData.ATTR_ESTIMATE_WITH_UNITS, "LBL_ESTIMATE"); //NOI18N
-    public static final IssueField FOUNDIN = new IssueField(C2CData.ATTR_FOUND_IN_RELEASE, "LBL_FOUNDIN"); //NOI18N
-    public static final IssueField ITERATION = new IssueField(C2CData.ATTR_ITERATION, "LBL_ITERATION"); // NOI18N
-    public static final IssueField MILESTONE = new IssueField(C2CData.ATTR_MILESTONE, "LBL_MILESTONE"); // NOI18N
-    public static final IssueField PRIORITY = new IssueField(TaskAttribute.PRIORITY, "LBL_PRIORITY"); // NOI18N
-    public static final IssueField PRODUCT = new IssueField(TaskAttribute.PRODUCT, "LBL_PRODUCT"); // NOI18N
-    public static final IssueField STATUS = new IssueField(TaskAttribute.STATUS, "LBL_STATUS"); // NOI18N
-    public static final IssueField RESOLUTION = new IssueField(TaskAttribute.RESOLUTION, "LBL_RESOLUTION"); // NOI18N
-    public static final IssueField DUPLICATE = new IssueField(C2CData.ATTR_DUPLICATE_OF, "LBL_DUPLICATE"); // NOI18N
-    public static final IssueField SEVERITY = new IssueField(TaskAttribute.SEVERITY, "LBL_SEVERITY"); // NOI18N
-    public static final IssueField TASK_TYPE = new IssueField(C2CData.ATTR_TASK_TYPE, "LBL_TASK_TYPE"); // NOI18N
-    public static final IssueField REPORTER = new IssueField(C2CData.ATTR_REPORTER, "LBL_REPORTER"); // NOI18N
-    public static final IssueField OWNER = new IssueField(C2CData.ATTR_OWNER, "LBL_OWNER"); // NOI18N
-    public static final IssueField KEYWORDS = new IssueField(C2CData.ATTR_TAGS, "LBL_KEYWORDS"); // NOI18N
-    public static final IssueField PARENT = new IssueField(C2CData.ATTR_PARENT, "LBL_PARENT"); // NOI18N
-    public static final IssueField SUBTASK = new IssueField(C2CData.ATTR_SUBTASK, "LBL_SUBTASK"); // NOI18N
+    public static final IssueField ID = new IssueField(TaskAttribute.TASK_KEY, "CTL_Issue_ID_Title", "CTL_Issue_ID_Desc"); // NOI18N
+    public static final IssueField SUMMARY = new IssueField(TaskAttribute.SUMMARY, "CTL_Issue_Summary_Title", "CTL_Issue_Summary_Desc"); // NOI18N
+    public static final IssueField CC = new IssueField(C2CData.ATTR_CC, "CTL_Issue_CC_Title", "CTL_Issue_CC_Desc"); // NOI18N
+    public static final IssueField COMPONENT = new IssueField(TaskAttribute.COMPONENT, "CTL_Issue_Component_Title", "CTL_Issue_Component_Desc"); // NOI18N
+    public static final IssueField DESCRIPTION = new IssueField(TaskAttribute.DESCRIPTION, "CTL_Issue_Description_Title", "CTL_Issue_Description_Desc"); // NOI18N
+    public static final IssueField DUEDATE = new IssueField(C2CData.ATTR_DUEDATE, "CTL_Issue_DueDate_Title", "CTL_Issue_DueDate_Desc"); // NOI18N
+    public static final IssueField ESTIMATE = new IssueField(C2CData.ATTR_ESTIMATE_WITH_UNITS, "CTL_Issue_Estimate_Title", "CTL_Issue_Estimate_Desc"); //NOI18N
+    public static final IssueField FOUNDIN = new IssueField(C2CData.ATTR_FOUND_IN_RELEASE, "CTL_Issue_FoundIn_Title", "CTL_Issue_FoundIn_Title"); //NOI18N
+    public static final IssueField ITERATION = new IssueField(C2CData.ATTR_ITERATION, "CTL_Issue_Iteration_Title", "CTL_Issue_Iteration_Desc"); // NOI18N
+    public static final IssueField MILESTONE = new IssueField(C2CData.ATTR_MILESTONE, "CTL_Issue_Milestone_Title", "CTL_Issue_Milestone_Desc"); // NOI18N
+    public static final IssueField PRIORITY = new IssueField(TaskAttribute.PRIORITY, "CTL_Issue_Priority_Title", "CTL_Issue_Priority_Desc"); // NOI18N
+    public static final IssueField PRODUCT = new IssueField(TaskAttribute.PRODUCT, "CTL_Issue_Product_Title", "CTL_Issue_Product_Desc"); // NOI18N
+    public static final IssueField STATUS = new IssueField(TaskAttribute.STATUS, "CTL_Issue_Status_Title", "CTL_Issue_Status_Desc"); // NOI18N
+    public static final IssueField RESOLUTION = new IssueField(TaskAttribute.RESOLUTION, "CTL_Issue_Resolution_Title", "CTL_Issue_Resolution_Desc"); // NOI18N
+    public static final IssueField DUPLICATE = new IssueField(C2CData.ATTR_DUPLICATE_OF, "CTL_Issue_Duplicate_Title", "CTL_Issue_Duplicate_Desc"); // NOI18N
+    public static final IssueField SEVERITY = new IssueField(TaskAttribute.SEVERITY, "CTL_Issue_Severity_Title", "CTL_Issue_Severity_Desc"); // NOI18N
+    public static final IssueField TASK_TYPE = new IssueField(C2CData.ATTR_TASK_TYPE, "CTL_Issue_Task_Type_Title", "CTL_Issue_Task_Type_Desc"); // NOI18N
+    public static final IssueField REPORTER = new IssueField(C2CData.ATTR_REPORTER, "CTL_Issue_Reporter_Title", "CTL_Issue_Reporter_Title"); // NOI18N
+    public static final IssueField OWNER = new IssueField(C2CData.ATTR_OWNER, "CTL_Issue_Owner_Title", "CTL_Issue_Owner_Desc"); // NOI18N
+    public static final IssueField KEYWORDS = new IssueField(C2CData.ATTR_TAGS, "CTL_Issue_Keywords_Title", "CTL_Issue_Keywords_Desc"); // NOI18N
+    public static final IssueField PARENT = new IssueField(C2CData.ATTR_PARENT, "CTL_Issue_Parent_Title", "CTL_Issue_Parent_Desc"); // NOI18N
+    public static final IssueField SUBTASK = new IssueField(C2CData.ATTR_SUBTASK, "CTL_Issue_Subtask_Title", "CTL_Issue_Subtask_Desc"); // NOI18N
+    public static final IssueField MODIFIED = new IssueField(C2CData.ATTR_MODIFIED, "CTL_Issue_Modification_Title", "CTL_Issue_Modification_Desc"); // NOI18N
+    public static final IssueField CREATED = new IssueField(C2CData.ATTR_MODIFIED, "CTL_Issue_Creation_Title", "CTL_Issue_Creation_Desc"); // NOI18N
     
-    public static final IssueField CREATED = new IssueField(C2CData.ATTR_MODIFIED, "LBL_CREATED"); // NOI18N
-    
-    public static final IssueField NEWCC = new IssueField(C2CData.ATTR_NEWCC, null); // NOI18N
-    public static final IssueField MODIFIED = new IssueField(C2CData.ATTR_MODIFIED, null); // NOI18N
-    public static final IssueField COMMENT_COUNT = new IssueField(TaskAttribute.TYPE_COMMENT, null, false);
-    public static final IssueField ATTACHEMENT_COUNT = new IssueField(TaskAttribute.TYPE_ATTACHMENT, null, false);
+    public static final IssueField NEWCC = new IssueField(C2CData.ATTR_NEWCC, null, null); // NOI18N
+    public static final IssueField COMMENT_COUNT = new IssueField(TaskAttribute.TYPE_COMMENT, null, null, false);
+    public static final IssueField ATTACHEMENT_COUNT = new IssueField(TaskAttribute.TYPE_ATTACHMENT, null, null, false);
 
     private final String attribute;
     private final String displayNameKey;
+    private final String descriptionKey;
     private boolean singleFieldAttribute;
 
-    IssueField(String key, String displayNameKey) {
-        this(key, displayNameKey, true);
+    IssueField(String key, String displayNameKey, String descriptionKey) {
+        this(key, displayNameKey, descriptionKey, true);
     }
 
-    IssueField(String key, String displayNameKey, boolean singleAttribute) {
+    IssueField(String key, String displayNameKey, String descriptionKey, boolean singleAttribute) {
         this.attribute = key;
         this.displayNameKey = displayNameKey;
+        this.descriptionKey = displayNameKey;
         this.singleFieldAttribute = singleAttribute;
     }
 
@@ -102,6 +104,11 @@ public class IssueField {
 
     public String getDisplayName() {
         assert displayNameKey != null; // shouldn't be called for a field with a null display name
+        return NbBundle.getMessage(IssueField.class, displayNameKey);
+    }
+    
+    public String getDescription() {
+        assert descriptionKey != null; // shouldn't be called for a field with a null description
         return NbBundle.getMessage(IssueField.class, displayNameKey);
     }
 
