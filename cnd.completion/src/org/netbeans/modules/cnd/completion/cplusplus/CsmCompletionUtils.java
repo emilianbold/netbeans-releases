@@ -48,7 +48,7 @@ import javax.swing.text.EditorKit;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.settings.SimpleValueNames;
-import org.netbeans.editor.BaseDocument;
+import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.modules.editor.NbEditorDocument;
 
@@ -76,7 +76,7 @@ public class CsmCompletionUtils {
      * @see NbEditorDocument#MIME_TYPE_PROP
      */
     public  static String getMimeType(Document doc) {
-        return (String)doc.getProperty(BaseDocument.MIME_TYPE_PROP); //NOI18N
+        return DocumentUtilities.getMimeType(doc);
     }
 
     /**
