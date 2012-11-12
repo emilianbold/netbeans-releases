@@ -41,7 +41,17 @@
  */
 package org.netbeans.modules.php.editor.model.impl;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.spi.ParserResult;
@@ -56,7 +66,20 @@ import org.netbeans.modules.php.editor.api.elements.PhpElement;
 import org.netbeans.modules.php.editor.api.elements.TypeResolver;
 import org.netbeans.modules.php.editor.elements.TypeResolverImpl;
 import org.netbeans.modules.php.editor.elements.VariableElementImpl;
-import org.netbeans.modules.php.editor.model.*;
+import org.netbeans.modules.php.editor.model.ClassScope;
+import org.netbeans.modules.php.editor.model.CodeMarker;
+import org.netbeans.modules.php.editor.model.FileScope;
+import org.netbeans.modules.php.editor.model.FunctionScope;
+import org.netbeans.modules.php.editor.model.IndexScope;
+import org.netbeans.modules.php.editor.model.MethodScope;
+import org.netbeans.modules.php.editor.model.ModelElement;
+import org.netbeans.modules.php.editor.model.ModelUtils;
+import org.netbeans.modules.php.editor.model.NamespaceScope;
+import org.netbeans.modules.php.editor.model.Occurence;
+import org.netbeans.modules.php.editor.model.Scope;
+import org.netbeans.modules.php.editor.model.TypeScope;
+import org.netbeans.modules.php.editor.model.VariableName;
+import org.netbeans.modules.php.editor.model.VariableScope;
 import org.netbeans.modules.php.editor.model.nodes.ASTNodeInfo;
 import org.netbeans.modules.php.editor.model.nodes.ASTNodeInfo.Kind;
 import org.netbeans.modules.php.editor.model.nodes.ClassConstantDeclarationInfo;
@@ -65,8 +88,65 @@ import org.netbeans.modules.php.editor.model.nodes.PhpDocTypeTagInfo;
 import org.netbeans.modules.php.editor.nav.NavUtils;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
 import org.netbeans.modules.php.editor.parser.api.Utils;
-import org.netbeans.modules.php.editor.parser.astnodes.*;
+import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
+import org.netbeans.modules.php.editor.parser.astnodes.ArrayAccess;
+import org.netbeans.modules.php.editor.parser.astnodes.ArrayCreation;
+import org.netbeans.modules.php.editor.parser.astnodes.ArrayElement;
+import org.netbeans.modules.php.editor.parser.astnodes.Assignment;
+import org.netbeans.modules.php.editor.parser.astnodes.CatchClause;
+import org.netbeans.modules.php.editor.parser.astnodes.ClassDeclaration;
+import org.netbeans.modules.php.editor.parser.astnodes.ClassInstanceCreation;
+import org.netbeans.modules.php.editor.parser.astnodes.ClassName;
+import org.netbeans.modules.php.editor.parser.astnodes.Comment;
+import org.netbeans.modules.php.editor.parser.astnodes.ConstantDeclaration;
+import org.netbeans.modules.php.editor.parser.astnodes.DoStatement;
+import org.netbeans.modules.php.editor.parser.astnodes.Expression;
+import org.netbeans.modules.php.editor.parser.astnodes.FieldAccess;
+import org.netbeans.modules.php.editor.parser.astnodes.FieldsDeclaration;
+import org.netbeans.modules.php.editor.parser.astnodes.ForEachStatement;
+import org.netbeans.modules.php.editor.parser.astnodes.ForStatement;
+import org.netbeans.modules.php.editor.parser.astnodes.FormalParameter;
+import org.netbeans.modules.php.editor.parser.astnodes.FunctionDeclaration;
+import org.netbeans.modules.php.editor.parser.astnodes.FunctionInvocation;
+import org.netbeans.modules.php.editor.parser.astnodes.FunctionName;
+import org.netbeans.modules.php.editor.parser.astnodes.GlobalStatement;
+import org.netbeans.modules.php.editor.parser.astnodes.GotoLabel;
+import org.netbeans.modules.php.editor.parser.astnodes.GotoStatement;
+import org.netbeans.modules.php.editor.parser.astnodes.IfStatement;
+import org.netbeans.modules.php.editor.parser.astnodes.Include;
+import org.netbeans.modules.php.editor.parser.astnodes.InstanceOfExpression;
+import org.netbeans.modules.php.editor.parser.astnodes.InterfaceDeclaration;
+import org.netbeans.modules.php.editor.parser.astnodes.LambdaFunctionDeclaration;
+import org.netbeans.modules.php.editor.parser.astnodes.MethodDeclaration;
+import org.netbeans.modules.php.editor.parser.astnodes.MethodInvocation;
+import org.netbeans.modules.php.editor.parser.astnodes.NamespaceDeclaration;
+import org.netbeans.modules.php.editor.parser.astnodes.NamespaceName;
+import org.netbeans.modules.php.editor.parser.astnodes.PHPDocBlock;
+import org.netbeans.modules.php.editor.parser.astnodes.PHPDocMethodTag;
+import org.netbeans.modules.php.editor.parser.astnodes.PHPDocTag;
+import org.netbeans.modules.php.editor.parser.astnodes.PHPDocTypeTag;
+import org.netbeans.modules.php.editor.parser.astnodes.PHPDocVarTypeTag;
+import org.netbeans.modules.php.editor.parser.astnodes.PHPVarComment;
+import org.netbeans.modules.php.editor.parser.astnodes.Program;
+import org.netbeans.modules.php.editor.parser.astnodes.Reference;
+import org.netbeans.modules.php.editor.parser.astnodes.ReflectionVariable;
+import org.netbeans.modules.php.editor.parser.astnodes.ReturnStatement;
+import org.netbeans.modules.php.editor.parser.astnodes.Scalar;
 import org.netbeans.modules.php.editor.parser.astnodes.Scalar.Type;
+import org.netbeans.modules.php.editor.parser.astnodes.SingleFieldDeclaration;
+import org.netbeans.modules.php.editor.parser.astnodes.StaticConstantAccess;
+import org.netbeans.modules.php.editor.parser.astnodes.StaticFieldAccess;
+import org.netbeans.modules.php.editor.parser.astnodes.StaticMethodInvocation;
+import org.netbeans.modules.php.editor.parser.astnodes.SwitchStatement;
+import org.netbeans.modules.php.editor.parser.astnodes.TraitConflictResolutionDeclaration;
+import org.netbeans.modules.php.editor.parser.astnodes.TraitDeclaration;
+import org.netbeans.modules.php.editor.parser.astnodes.TraitMethodAliasDeclaration;
+import org.netbeans.modules.php.editor.parser.astnodes.TryStatement;
+import org.netbeans.modules.php.editor.parser.astnodes.UseStatementPart;
+import org.netbeans.modules.php.editor.parser.astnodes.UseTraitStatementPart;
+import org.netbeans.modules.php.editor.parser.astnodes.Variable;
+import org.netbeans.modules.php.editor.parser.astnodes.VariableBase;
+import org.netbeans.modules.php.editor.parser.astnodes.WhileStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.visitors.DefaultTreePathVisitor;
 import org.netbeans.modules.php.project.api.PhpEditorExtender;
 import org.netbeans.modules.php.spi.annotation.AnnotationParsedLine;
@@ -118,7 +198,7 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
     }
 
     public List<PhpBaseElement> extendedElements() {
-        synchronized(this) {
+        synchronized (this) {
             if (!askForEditorExtensions) {
                 return new ArrayList<PhpBaseElement>(baseElements);
             }
@@ -193,7 +273,7 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
     public void visit(ReturnStatement node) {
         super.visit(node);
         final ScopeImpl currentScope = modelBuilder.getCurrentScope();
-        markerBuilder.prepare(node,currentScope);
+        markerBuilder.prepare(node, currentScope);
         String typeName = null;
 
         if (currentScope instanceof FunctionScope) {
@@ -208,7 +288,7 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
                 typeName = VariousUtils.extractTypeFroVariableBase((VariableBase) expression);
                 if (typeName != null) {
                     Collection<? extends VariableName> allVariables = VariousUtils.getAllVariables(functionScope, typeName);
-                    Map<String,String> var2Type = new HashMap<String, String>();
+                    Map<String, String> var2Type = new HashMap<String, String>();
                     for (VariableName variable : allVariables) {
                         String name = variable.getName();
                         String type = resolveVariableType(name, functionScope, node);
@@ -226,25 +306,25 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
             if (typeName != null) {
                 Set<String> types = new HashSet<String>();
                 if (functionScope.returnType != null) {
-                    String[] split = functionScope.returnType.split("\\|");//NOI18N
+                    String[] split = functionScope.returnType.split("\\|"); //NOI18N
                     types.addAll(Arrays.asList(split));
                 }
                 String tp = QualifiedName.create(typeName).toString();
                 if (types.isEmpty()) {
                     functionScope.returnType = tp;
-                } else if (types.add(tp)){
-                    functionScope.returnType += "|" + tp;//NOI18N
+                } else if (types.add(tp)) {
+                    functionScope.returnType += "|" + tp; //NOI18N
                 }
             }
         }
     }
 
-    private static Set<String> recursionDetection = new HashSet<String>();//#168868
+    private static Set<String> recursionDetection = new HashSet<String>(); //#168868
 
     private String resolveVariableType(String varName, FunctionScopeImpl varScope, ReturnStatement node) {
         try {
             if (varName != null && recursionDetection.add(varName)) {
-                if (varName.equalsIgnoreCase("$this") && varScope instanceof MethodScope) {//NOI18N
+                if (varName.equalsIgnoreCase("$this") && varScope instanceof MethodScope) { //NOI18N
                     return varScope.getInScope().getName();
                 }
                 VariableNameImpl var = (VariableNameImpl) ModelUtils.getFirst(varScope.getDeclaredVariables(), varName);
@@ -253,7 +333,7 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
                     if (assignment != null) {
                         String typeName = assignment.typeNameFromUnion();
                         if (typeName != null) {
-                            if (!typeName.contains(VariousUtils.PRE_OPERATION_TYPE_DELIMITER)) {//NOI18N
+                            if (!typeName.contains(VariousUtils.PRE_OPERATION_TYPE_DELIMITER)) { //NOI18N
                                 return typeName;
                             } else {
                                 String variableName = getName(typeName, VariousUtils.Kind.VAR, true);
@@ -466,9 +546,9 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
         ClassName className = node.getClassName();
         Expression expression = node.getExpression();
         if (className.getName() instanceof Variable) {
-            occurencesBuilder.prepare((Variable)className.getName(), modelBuilder.getCurrentScope());
+            occurencesBuilder.prepare((Variable) className.getName(), modelBuilder.getCurrentScope());
             if (expression instanceof Variable) {
-                occurencesBuilder.prepare((Variable)expression, modelBuilder.getCurrentScope());
+                occurencesBuilder.prepare((Variable) expression, modelBuilder.getCurrentScope());
             }
         } else {
             if (className.getName() instanceof NamespaceName) {
@@ -509,8 +589,8 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
     @Override
     public void visit(Scalar scalar) {
         String stringValue = scalar.getStringValue();
-        if (stringValue != null && stringValue.trim().length() > 0 &&
-                scalar.getScalarType() == Type.STRING && !NavUtils.isQuoted(stringValue)) {
+        if (stringValue != null && stringValue.trim().length() > 0
+                && scalar.getScalarType() == Type.STRING && !NavUtils.isQuoted(stringValue)) {
             occurencesBuilder.prepare(Kind.CONSTANT, scalar, fileScope);
         }
         super.visit(scalar);
@@ -616,7 +696,7 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
 
         if (scope instanceof VariableNameFactory) {
             ASTNodeInfo<Variable> varInfo = ASTNodeInfo.create(node);
-            if (scope instanceof MethodScope && "$this".equals(varInfo.getName())) {//NOI18N
+            if (scope instanceof MethodScope && "$this".equals(varInfo.getName())) { //NOI18N
                 scope = scope.getInScope();
             }
             if (scope instanceof VariableNameFactory) {
@@ -687,7 +767,7 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
         //intentionally ommited - if deleted, golden tests will fail and will show the reason
         //super.visit(node);
         if (node.getName() instanceof Variable) {
-            occurencesBuilder.prepare((Variable)node.getName(), modelBuilder.getCurrentScope());
+            occurencesBuilder.prepare((Variable) node.getName(), modelBuilder.getCurrentScope());
         }
     }
 
@@ -723,8 +803,6 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
         super.scan(leftHandSide);
         if (leftHandSide instanceof Variable) {
             VariableNameImpl varN = findVariable(scope, leftHandSide);
-            //TODO: global variables or vars from other files
-            //assert varN != null : CodeUtils.extractVariableName((Variable)leftHandSide);
             if (varN != null) {
                 Map<String, AssignmentImpl> allAssignments = getAssignmentMap(scope, leftHandSide);
                 Variable var = ((Variable) leftHandSide);
@@ -736,19 +814,35 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
                             Expression value = arrayElement.getValue();
                             String typeName = VariousUtils.extractVariableTypeFromExpression(value, allAssignments);
                             ASTNode conditionalNode = findConditionalStatement(getPath());
-                            VarAssignmentImpl vAssignment = varN.createAssignment(scope, conditionalNode != null, getBlockRange(conditionalNode, scope), new OffsetRange(var.getStartOffset(), var.getEndOffset()), typeName);
+                            VarAssignmentImpl vAssignment = varN.createAssignment(
+                                    scope,
+                                    conditionalNode != null,
+                                    getBlockRange(conditionalNode, scope),
+                                    new OffsetRange(var.getStartOffset(), var.getEndOffset()),
+                                    typeName);
                             varN.addElement(vAssignment);
                             vAssignment.setAsArrayAccess(true);
                         }
                     } else {
                         String typeName = VariousUtils.extractVariableTypeFromExpression(rightHandSide, allAssignments);
                         ASTNode conditionalNode = findConditionalStatement(getPath());
-                        VarAssignmentImpl varAssignment = varN.createAssignment(scope, conditionalNode != null, getBlockRange(conditionalNode, scope), new OffsetRange(var.getStartOffset(), var.getEndOffset()), typeName);
+                        VarAssignmentImpl varAssignment = varN.createAssignment(
+                                scope,
+                                conditionalNode != null,
+                                getBlockRange(conditionalNode, scope),
+                                new OffsetRange(var.getStartOffset(), var.getEndOffset()),
+                                typeName);
                         varN.addElement(varAssignment);
                     }
                 } else {
                     ASTNode conditionalNode = findConditionalStatement(getPath());
-                    VarAssignmentImpl varAssignment = varN.createAssignment(scope, conditionalNode != null, getBlockRange(conditionalNode, scope), new OffsetRange(var.getStartOffset(), var.getEndOffset()), node, allAssignments);
+                    VarAssignmentImpl varAssignment = varN.createAssignment(
+                            scope,
+                            conditionalNode != null,
+                            getBlockRange(conditionalNode, scope),
+                            new OffsetRange(var.getStartOffset(), var.getEndOffset()),
+                            node,
+                            allAssignments);
                     varN.addElement(varAssignment);
                 }
                 occurencesBuilder.prepare((Variable) leftHandSide, scope);
@@ -759,10 +853,7 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
             if (varN != null) {
                 varN.createLazyFieldAssignment(fieldAccess, node, scope);
             }
-        } else if (leftHandSide instanceof StaticFieldAccess) {
-            //TODO
         }
-
         super.scan(rightHandSide);
     }
 
@@ -777,19 +868,31 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
             if (varValue != null) {
                 varValue.setTypeResolutionKind(VariableNameImpl.TypeResolutionKind.MERGE_ASSIGNMENTS);
                 if (expression instanceof Variable) {
-                    VariableNameImpl varArray = findVariable(scope, (Variable)expression);
+                    VariableNameImpl varArray = findVariable(scope, (Variable) expression);
                     if (varArray != null) {
                         processVarComment(varArray.getName(), scope);
                         Collection<? extends String> typeNames = varArray.getArrayAccessTypeNames(node.getStartOffset());
                         for (String tpName : typeNames) {
-                            VarAssignmentImpl varAssignment = varValue.createAssignment(scope, true, getBlockRange(scope), new OffsetRange(value.getStartOffset(), value.getEndOffset()), tpName);
+                            VarAssignmentImpl varAssignment = varValue.createAssignment(
+                                    scope,
+                                    true,
+                                    getBlockRange(scope),
+                                    new OffsetRange(value.getStartOffset(),
+                                    value.getEndOffset()),
+                                    tpName);
                             varValue.addElement(varAssignment);
                         }
                     }
                 } else {
                     String varType = VariousUtils.extractVariableTypeFromExpression(expression, getAssignmentMap(scope, (Variable) value));
                     if (varType != null) {
-                        VarAssignmentImpl varAssignment = varValue.createAssignment(scope, true, getBlockRange(scope), new OffsetRange(value.getStartOffset(), value.getEndOffset()), varType);
+                        VarAssignmentImpl varAssignment = varValue.createAssignment(
+                                scope,
+                                true,
+                                getBlockRange(scope),
+                                new OffsetRange(value.getStartOffset(),
+                                value.getEndOffset()),
+                                varType);
                         varValue.addElement(varAssignment);
                     }
                 }
@@ -851,7 +954,12 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
         if (scope instanceof VariableNameFactory) {
             VariableNameImpl varNameImpl = createVariable((VariableNameFactory) scope, variable);
             if (varNameImpl != null) {
-                VarAssignmentImpl varAssignment = varNameImpl.createAssignment(scope, true, new OffsetRange(node.getStartOffset(), node.getEndOffset()), VariableNameImpl.toOffsetRange(variable), CodeUtils.extractUnqualifiedTypeName(node));
+                VarAssignmentImpl varAssignment = varNameImpl.createAssignment(
+                        scope,
+                        true,
+                        new OffsetRange(node.getStartOffset(), node.getEndOffset()),
+                        VariableNameImpl.toOffsetRange(variable),
+                        CodeUtils.extractUnqualifiedTypeName(node));
                 varNameImpl.addElement(varAssignment);
             }
         }
@@ -876,7 +984,7 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
             if (expression instanceof Variable) {
                 Variable variable = (Variable) expression;
                 currentLexicalVariables.add(CodeUtils.extractVariableName(variable));
-                VariableNameImpl varNameImpl= createVariable((VariableNameFactory) fncScope, variable);
+                VariableNameImpl varNameImpl = createVariable((VariableNameFactory) fncScope, variable);
                 varNameImpl.setGloballyVisible(true);
             }
         }
@@ -895,13 +1003,14 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
     public void visit(FunctionDeclaration node) {
         //Scope scope = currentScope.peek();
         ScopeImpl scope = modelBuilder.getCurrentScope();
-        assert scope != null && ((scope instanceof FunctionScope) ||
-                (scope instanceof MethodScope) || (scope instanceof NamespaceScopeImpl));
+        assert scope != null && ((scope instanceof FunctionScope)
+                || (scope instanceof MethodScope) || (scope instanceof NamespaceScopeImpl));
         if (scope instanceof NamespaceScopeImpl) {
             NamespaceScopeImpl ps = (NamespaceScopeImpl) scope;
             FunctionScopeImpl fncScope = ps.createElement(modelBuilder.getProgram(), node);
             //currentScope.push(scope = fncScope);
-            modelBuilder.setCurrentScope(scope = fncScope);
+            scope = fncScope;
+            modelBuilder.setCurrentScope(scope);
             occurencesBuilder.prepare(node, fncScope);
             markerBuilder.prepare(node, modelBuilder.getCurrentScope());
             checkComments(node);
@@ -914,7 +1023,8 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
                 NamespaceScopeImpl ps = (NamespaceScopeImpl) tmpScope;
                 FunctionScopeImpl fncScope = ps.createElement(modelBuilder.getProgram(), node);
                 //currentScope.push(scope = fncScope);
-                modelBuilder.setCurrentScope(scope = fncScope);
+                scope = fncScope;
+                modelBuilder.setCurrentScope(scope);
                 occurencesBuilder.prepare(node, fncScope);
                 markerBuilder.prepare(node, modelBuilder.getCurrentScope());
                 checkComments(node);
@@ -939,7 +1049,7 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
         }
         ASTNodeInfo<FunctionInvocation> nodeInfo = ASTNodeInfo.create(node);
         String name = nodeInfo.getName();
-        if ("define".equals(name) && node.getParameters().size() == 2) {//NOI18N
+        if ("define".equals(name) && node.getParameters().size() == 2) { //NOI18N
             Expression d = node.getParameters().get(0);
             if (d instanceof Scalar && ((Scalar) d).getScalarType() == Type.STRING) {
                 Scalar scalar = (Scalar) d;
@@ -947,8 +1057,8 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
                 if (NavUtils.isQuoted(value)) {
                     ASTNodeInfo<Scalar> scalarInfo = ASTNodeInfo.create(Kind.CONSTANT, scalar);
                     Expression parameterExpression = node.getParameters().get(1);
-                    String parameterValue = (parameterExpression instanceof Scalar) ?
-                        ((Scalar) parameterExpression).getStringValue() : null;
+                    String parameterValue = (parameterExpression instanceof Scalar)
+                            ? ((Scalar) parameterExpression).getStringValue() : null;
                     ScalarConstantElementImpl constantImpl = modelBuilder.getCurrentNameSpace().
                             createConstantElement(scalarInfo, parameterValue);
                     occurencesBuilder.prepare(scalarInfo, constantImpl);
@@ -1013,7 +1123,7 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
                 StringBuilder fqNames = new StringBuilder();
                 if (typeName != null) {
                     if (sb.length() > 0) {
-                        sb.append("|");//NOI18N
+                        sb.append("|"); //NOI18N
                     }
                     if (fqNames.length() > 0) {
                         fqNames.append("|"); //NOI18N
@@ -1196,7 +1306,6 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
         return null;
     }
 
-    //TODO:
     @CheckForNull
     public List<Occurence> getOccurence(ModelElement element) {
         if (occurencesBuilder != null) {
@@ -1209,7 +1318,7 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
         final int offset = element.getOffset();
         final List<? extends ModelElement> elements = ModelUtils.getElements(getFileScope(), true);
         ModelElement possibleElement = null;
-        final OffsetRange nameOffsetRange = new OffsetRange(offset,offset+element.getName().length());
+        final OffsetRange nameOffsetRange = new OffsetRange(offset, offset + element.getName().length());
         for (ModelElement modelElement : elements) {
             if (modelElement.getNameRange().overlaps(nameOffsetRange)) {
                 if (possibleElement == null || contains(possibleElement.getNameRange(), modelElement.getNameRange())) {
@@ -1257,8 +1366,7 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
                 for (MethodScope methodScope : allMethods) {
                     OffsetRange blockRange = methodScope.getBlockRange();
                     if (blockRange != null && blockRange.containsInclusive(offset)) {
-                        if (retval == null ||
-                                retval.getBlockRange().overlaps(methodScope.getBlockRange())) {
+                        if (retval == null || retval.getBlockRange().overlaps(methodScope.getBlockRange())) {
                             retval = methodScope;
                         }
                     }
@@ -1346,7 +1454,12 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
         }
         if (varInstance != null) {
             ASTNode conditionalNode = findConditionalStatement(getPath());
-            VarAssignmentImpl varAssignment = varInstance.createAssignment((Scope) varScope, conditionalNode != null, getBlockRange(varScope), phpDocTypeTagInfo.getRange(), phpDocTypeTagInfo.getTypeName());
+            VarAssignmentImpl varAssignment = varInstance.createAssignment(
+                    (Scope) varScope,
+                    conditionalNode != null,
+                    getBlockRange(varScope),
+                    phpDocTypeTagInfo.getRange(),
+                    phpDocTypeTagInfo.getTypeName());
             varInstance.addElement(varAssignment);
         }
         //scan(phpDocTypeTagInfo.getTypeTag());
