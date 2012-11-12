@@ -407,6 +407,10 @@ public class DebuggerManagerListener extends DebuggerManagerAdapter {
                 }
                 List<ComponentInfo> openedWindows = new ArrayList<ComponentInfo>();
                 for (List<? extends ComponentInfo> lci : openedWindowsByProvider.values()) {
+                    if (lci == null) {
+                        // The components are not set up yet for this engine.
+                        continue;
+                    }
                     openedWindows.addAll(lci);
                 }
                 // Check whether the component is opened by some other engine...
