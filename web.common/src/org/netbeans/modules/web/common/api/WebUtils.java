@@ -406,7 +406,9 @@ public class WebUtils {
         StringBuilder sb = new StringBuilder();
         sb.append(uri.getScheme());
         sb.append("://"); // NOI18N
-        sb.append(uri.getAuthority());
+        if (uri.getAuthority() != null) {
+            sb.append(uri.getAuthority());
+        }
         sb.append(uri.getPath());
         if (!pathOnly && uri.getQuery() != null) {
             sb.append("?"); // NOI18N
