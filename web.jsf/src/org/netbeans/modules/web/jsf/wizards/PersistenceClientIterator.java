@@ -524,7 +524,7 @@ public class PersistenceClientIterator implements TemplateWizard.Iterator {
             if ( persistenceUnitName != null) {
                 params.put("persistenceUnitName", persistenceUnitName); //NOI18N
             }
-            FromEntityBase.createParamsForConverterTemplate(params, targetFolder, entityClass);
+            FromEntityBase.createParamsForConverterTemplate(params, targetFolder, entityClass, embeddedPkSupport);
 
             JSFPaletteUtilities.expandJSFTemplate(template, params, controllerFileObjects[i]);
 

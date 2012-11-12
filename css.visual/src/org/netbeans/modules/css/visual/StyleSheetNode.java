@@ -43,6 +43,8 @@ package org.netbeans.modules.css.visual;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import javax.swing.Action;
 import org.netbeans.modules.css.visual.actions.OpenLocationAction;
@@ -76,7 +78,7 @@ public class StyleSheetNode extends AbstractNode {
      * @param filter filter for the subtree of the node.
      */
     StyleSheetNode(DocumentViewModel model, FileObject stylesheet, Filter filter) {
-        super(Children.create(new StyleSheetChildFactory(model, stylesheet, filter), true), Lookups.fixed(new Location(stylesheet)));
+        super(new StyleSheetChildren(model, stylesheet, filter), Lookups.fixed(new Location(stylesheet)));
         this.styleSheet = stylesheet;
         updateDisplayName();
         setIconBaseWithExtension(ICON_BASE);
@@ -111,7 +113,7 @@ public class StyleSheetNode extends AbstractNode {
     /**
      * Factory for children of {@code StyleSheetNode}.
      */
-    static class StyleSheetChildFactory extends ChildFactory<RuleHandle> {
+    static class StyleSheetChildren extends Children.Keys<RuleHandle> {
         
         private DocumentViewModel model;
         private FileObject stylesheet;
@@ -119,11 +121,13 @@ public class StyleSheetNode extends AbstractNode {
         /** Filter of the subtree of the node. */
         private Filter filter;
 
-        StyleSheetChildFactory(DocumentViewModel model, FileObject stylesheet, Filter filter) {
+        StyleSheetChildren(DocumentViewModel model, FileObject stylesheet, Filter filter) {
             this.model = model;
             this.stylesheet = stylesheet;
             this.filter = filter;
             filter.addPropertyChangeListener(createListener());
+            
+            refreshKeys();
         }
 
         /**
@@ -137,22 +141,27 @@ public class StyleSheetNode extends AbstractNode {
                 public void propertyChange(PropertyChangeEvent evt) {
                     String propertyName = evt.getPropertyName();
                     if (Filter.PROPERTY_PATTERN.equals(propertyName)) {
-                        refresh(false);
+                        DocumentViewPanel.RP.post(new Runnable() {
+                            @Override
+                            public void run() {
+                                refreshKeys();
+                            }
+                        });
                     }
                 }
             };
         }
 
-        @Override
-        protected boolean createKeys(List<RuleHandle> toPopulate) {
+        private void refreshKeys() {
+            Collection<RuleHandle> keys = new ArrayList<RuleHandle>();
             for(RuleHandle handle : model.getFilesToRulesMap().get(stylesheet)) {
                 if(includeKey(handle)) {
-                    toPopulate.add(handle);
+                    keys.add(handle);
                 }
             }
-            return true;
+            setKeys(keys);
         }
-
+        
         /**
          * Determines whether the specified rule should be included among keys.
          *
@@ -171,8 +180,8 @@ public class StyleSheetNode extends AbstractNode {
         }
         
         @Override
-        protected Node createNodeForKey(RuleHandle key) {
-            return new RuleNode(key);
+        protected Node[] createNodes(RuleHandle key) {
+            return new Node[]{new RuleNode(key)};
         }
 
     }

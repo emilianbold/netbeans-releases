@@ -39,73 +39,39 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.css.visual;
+package org.netbeans.modules.php.editor;
 
-import org.netbeans.modules.css.model.api.Model;
-import org.netbeans.modules.css.model.api.Rule;
-import org.netbeans.modules.parsing.api.Snapshot;
+import java.io.File;
+import java.util.Collections;
+import java.util.Map;
+import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.modules.php.project.api.PhpSourcePath;
+import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.filesystems.FileObject;
-import org.openide.util.Lookup;
+import org.openide.filesystems.FileUtil;
 
 /**
  *
- * @author marekfukala
+ * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public class RuleHandle extends Location {
-    
-    private String selectorsImage;
-    private Rule rule;
+public class PHPCodeCompletion221725Test extends PHPCodeCompletionTestBase {
 
-    /**
-     * Must be called under model's read lock!
-     */
-    static RuleHandle createRuleHandle(Rule rule) {
-        Model model = rule.getModel();
-        Lookup lookup = model.getLookup();
-        Snapshot snapshot = lookup.lookup(Snapshot.class);
-        FileObject file = lookup.lookup(FileObject.class);
-        String img = model.getElementSource(rule.getSelectorsGroup()).toString();
-        int offset = snapshot.getOriginalOffset(rule.getStartOffset());
-        
-        return new RuleHandle(file, rule, offset, img);
-    }
-    
-    private RuleHandle(FileObject styleSheet, Rule rule, int offset, String selectorsImage) {
-        super(styleSheet, offset);
-        this.rule = rule;
-        this.selectorsImage = selectorsImage;
+    public PHPCodeCompletion221725Test(String testName) {
+        super(testName);
     }
 
-    public Rule getRule() {
-        return rule;
-    }
-    
-    public String getDisplayName() {
-        return selectorsImage;
+    public void testUseCase1() throws Exception {
+        checkCompletion("testfiles/completion/lib/test221725/test221725.php", "$class->setFoo(new God())->^setFoo($foo);", false);
     }
 
     @Override
-    public int hashCode() {
-        int hash = 7;
-        hash = 43 * hash + (this.selectorsImage != null ? this.selectorsImage.hashCode() : 0);
-        hash = 43 * hash + super.hashCode();
-        return hash;
+    protected Map<String, ClassPath> createClassPathsForTest() {
+        return Collections.singletonMap(
+            PhpSourcePath.SOURCE_CP,
+            ClassPathSupport.createClassPath(new FileObject[] {
+                FileUtil.toFileObject(new File(getDataDir(), "/testfiles/completion/lib/test221725/"))
+            })
+        );
     }
 
-    @Override
-    public boolean equals(Object obj) {
-        if (obj == null) {
-            return false;
-        }
-        if (getClass() != obj.getClass()) {
-            return false;
-        }
-        final RuleHandle other = (RuleHandle) obj;
-        if ((this.selectorsImage == null) ? (other.selectorsImage != null) : !this.selectorsImage.equals(other.selectorsImage)) {
-            return false;
-        }
-        return super.equals(obj);
-    }
-  
- 
 }

@@ -110,7 +110,7 @@ abstract class ModelElementImpl extends PHPElement implements ModelElement {
         if (file.hasFirst() && file.first() != null) {
             this.filenameUrl = file.first();
         } else if (file.hasSecond() && file.second() != null) {
-            this.filenameUrl = file.second().getNameExt();
+            this.filenameUrl = file.second().toURL().toExternalForm();
         } else {
             this.filenameUrl = "";
         }

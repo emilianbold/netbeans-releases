@@ -64,6 +64,7 @@ public class DocumentViewPanelProvider implements CssStylesPanelProvider {
 
     private static String DOCUMENT_PANEL_ID = "static_document";
     private static Collection<String> MIME_TYPES = new HashSet(Arrays.asList(new String[]{"text/css", "text/html", "text/xhtml"}));
+    private DocumentViewPanel panel;
     
     @Override
     public String getPanelDisplayName() {
@@ -72,7 +73,10 @@ public class DocumentViewPanelProvider implements CssStylesPanelProvider {
 
     @Override
     public JComponent getContent(Lookup lookup) {
-        return new DocumentViewPanel(lookup);
+        if(panel == null) {
+            panel = new DocumentViewPanel(lookup);
+        }
+        return panel;
     }
 
     @Override
