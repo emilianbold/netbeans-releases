@@ -400,7 +400,7 @@ public class DebuggerManagerListener extends DebuggerManagerAdapter {
             final Map<EngineComponentsProvider, List<? extends ComponentInfo>> openedWindowsByProvider = openedComponents.remove(engine);
             if (openedWindowsByProvider != null) {
                 // If it's not filled yet by AWT, wait...
-                if (openedWindowsByProvider.size() == 1 && openedWindowsByProvider.containsKey(null)) {
+                while (openedWindowsByProvider.size() == 1 && openedWindowsByProvider.containsKey(null)) {
                     try {
                        openedComponents.wait();
                     } catch (InterruptedException iex) {}
