@@ -60,7 +60,7 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import org.netbeans.modules.team.ui.treelist.TreeListNode;
 import org.netbeans.modules.team.ui.treelist.TreeLabel;
-import org.netbeans.modules.team.ui.spi.BuildAccessor;
+import org.netbeans.modules.team.ui.spi.BuilderAccessor;
 import org.netbeans.modules.team.ui.spi.DashboardProvider;
 import org.netbeans.modules.team.ui.spi.ProjectAccessor;
 import org.netbeans.modules.team.ui.spi.ProjectHandle;
@@ -146,7 +146,7 @@ public class ProjectNode<S extends TeamServer, P> extends TreeListNode {
         if( null != provider.getMemberAccessor() ) {
             children.add( new MemberListNode(this, provider) );
         }
-        BuildAccessor builds = provider.getBuildAccessor();
+        BuilderAccessor builds = provider.getBuilderAccessor();
         if (builds != null && builds.isEnabled(project)) {
             children.add(new BuildListNode(this, builds));
         }

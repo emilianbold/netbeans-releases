@@ -323,6 +323,12 @@ public class RepositoryImpl<R, Q, I> {
         return queryImpl != null ? queryImpl.getQuery() : null;
     }
 
+    public boolean isMutable() {
+        DelegatingConnector dc = BugtrackingManager.getInstance().getConnector(getConnectorId());
+        assert dc != null;
+        return dc.providesRepositoryManagement();
+    }
+    
     public void remove() {
         repositoryProvider.remove(r);
         RepositoryRegistry.getInstance().removeRepository(this);
