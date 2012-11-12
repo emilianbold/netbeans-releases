@@ -260,8 +260,7 @@ public abstract class RemoteLinkBase extends RemoteFileObjectBase implements Fil
     protected RemoteFileObject createFolderImpl(String name, RemoteFileObjectBase orig) throws IOException {
         RemoteFileObjectBase delegate = getDelegate();
         if (delegate != null) {
-            // TODO return right object
-            return delegate.createFolderImpl(name, orig);
+            return wrapFileObject(delegate.createFolderImpl(name, orig), null);
         } else {
             throw fileNotFoundException("create a folder in"); //NOI18N
         }
@@ -271,8 +270,7 @@ public abstract class RemoteLinkBase extends RemoteFileObjectBase implements Fil
     protected RemoteFileObject createDataImpl(String name, String ext, RemoteFileObjectBase orig) throws IOException {
         RemoteFileObjectBase delegate = getDelegate();
         if (delegate != null) {
-            // TODO return right object
-            return delegate.createDataImpl(name, ext, orig);
+            return wrapFileObject(delegate.createDataImpl(name, ext, orig), null);
         } else {
             throw fileNotFoundException("create a file in"); //NOI18N
         }
