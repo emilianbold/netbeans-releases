@@ -68,6 +68,7 @@ import org.netbeans.modules.bugtracking.kenai.spi.KenaiProject;
 import org.netbeans.modules.bugtracking.kenai.spi.OwnerInfo;
 import org.netbeans.modules.bugtracking.spi.QueryProvider;
 import org.netbeans.modules.bugtracking.ui.issue.cache.IssueCache;
+import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.bugtracking.util.LogUtils;
 import org.netbeans.modules.mylyn.util.PerformQueryCommand;
 import org.netbeans.modules.ods.client.api.ODSClient;
@@ -78,6 +79,10 @@ import org.netbeans.modules.ods.tasks.C2CConnector;
 import org.netbeans.modules.ods.tasks.issue.C2CIssue;
 import org.netbeans.modules.ods.tasks.repository.C2CRepository;
 import org.netbeans.modules.ods.tasks.spi.C2CData;
+import org.netbeans.modules.ods.tasks.util.C2CUtil;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
+import org.openide.util.NbBundle;
 
 
 /**
@@ -563,8 +568,10 @@ public abstract class C2CQuery {
 
         @Override
         public void remove() {
-            // XXX this is called from API, need a proper error msg
-            throw new UnsupportedOperationException("Can't remove a predefined query."); // NOI18N
+            NotifyDescriptor nd = new NotifyDescriptor.Message(
+                NbBundle.getMessage(C2CQueryController.class, "MSG_CantRemoveQuery"), // NOI18N
+                NotifyDescriptor.INFORMATION_MESSAGE);
+            DialogDisplayer.getDefault().notify(nd);
         }
     }
 }
