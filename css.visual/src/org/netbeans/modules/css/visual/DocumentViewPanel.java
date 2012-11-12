@@ -49,6 +49,7 @@ import java.awt.Insets;
 import java.awt.dnd.DnDConstants;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.beans.PropertyVetoException;
@@ -627,6 +628,7 @@ public class DocumentViewPanel extends javax.swing.JPanel implements ExplorerMan
         });
 
         filterTextField.setText(org.openide.util.NbBundle.getMessage(DocumentViewPanel.class, "DocumentViewPanel.filterTextField.text")); // NOI18N
+        filterTextField.setToolTipText(org.openide.util.NbBundle.getMessage(DocumentViewPanel.class, "DocumentViewPanel.filterToggleButton.toolTipText")); // NOI18N
 
         setLayout(new java.awt.BorderLayout());
 
