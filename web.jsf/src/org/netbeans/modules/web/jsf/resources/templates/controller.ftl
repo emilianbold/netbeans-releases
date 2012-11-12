@@ -19,6 +19,7 @@
     keyStringBody - body of Controller.Converter.getStringKey() method
     keyGetter - entity getter method returning primaty key instance
     keySetter - entity setter method to set primary key instance
+    embeddedIdField - contains information about embedded primary Id
 
   This template is accessible via top level menu Tools->Templates and can
   be found in category JavaServer Faces->JSF from Entity.
@@ -175,6 +176,9 @@ public class ${controllerClassName} implements Serializable {
 
     public String create() {
         try {
+<#if embeddedIdField??>
+            current.${keyGetter}().${embeddedIdField.getEmbeddedSetter()}(current.${embeddedIdField.getCodeToPopulate()});
+</#if>
 <#if ejbClassName??>
             getFacade().create(current);
 <#elseif jpaControllerClassName??>
@@ -196,6 +200,9 @@ public class ${controllerClassName} implements Serializable {
 
     public String update() {
         try {
+<#if embeddedIdField??>
+            current.${keyGetter}().${embeddedIdField.getEmbeddedSetter()}(current.${embeddedIdField.getCodeToPopulate()});
+</#if>
 <#if ejbClassName??>
             getFacade().edit(current);
 <#elseif jpaControllerClassName??>
