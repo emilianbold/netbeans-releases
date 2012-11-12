@@ -338,6 +338,7 @@ public class ParameterInfoSupport {
 
     private static ParameterInfo parametersNodeImpl(final int caretOffset, final ParserResult info) {
         final ParameterInfo[] retval = new ParameterInfo[1];
+        retval[0] = ParameterInfo.NONE;
         DefaultVisitor visitor = new DefaultVisitor() {
 
             @Override
@@ -412,11 +413,8 @@ public class ParameterInfoSupport {
         Program root = Utils.getRoot(info);
         if (root != null) {
             visitor.scan(root);
-            if (retval[0] != null) {
-                return retval[0];
-            }
         }
-        return ParameterInfo.NONE;
+        return retval[0];
     }
 
     @NonNull
