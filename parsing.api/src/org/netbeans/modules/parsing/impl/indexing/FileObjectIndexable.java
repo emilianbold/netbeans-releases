@@ -44,6 +44,8 @@ package org.netbeans.modules.parsing.impl.indexing;
 
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
@@ -55,6 +57,8 @@ import org.openide.util.Parameters;
  */
 public final class FileObjectIndexable implements IndexableImpl, FileObjectProvider {
 
+    private static final Logger LOG = Logger.getLogger(FileObjectIndexable.class.getName());
+
     private final FileObject root;
     private final String relativePath;
 
@@ -65,6 +69,9 @@ public final class FileObjectIndexable implements IndexableImpl, FileObjectProvi
     public FileObjectIndexable (FileObject root, FileObject file) {
         this(root, FileUtil.getRelativePath(root, file));
         this.file = file;
+        if (LOG.isLoggable(Level.FINEST)) {
+            LOG.log(Level.FINEST, "File: {0}", FileUtil.getFileDisplayName(file));  //NOI18N
+        }
     }
 
     public FileObjectIndexable (FileObject root, String relativePath) {
@@ -72,6 +79,10 @@ public final class FileObjectIndexable implements IndexableImpl, FileObjectProvi
         Parameters.notNull("relativePath", relativePath); //NOI18N
         this.root = root;
         this.relativePath = relativePath;
+        if (LOG.isLoggable(Level.FINEST)) {
+            LOG.log(Level.FINEST, "Root: {0}", FileUtil.getFileDisplayName(root));  //NOI18N
+            LOG.log(Level.FINEST, "Path: {0}", relativePath);                       //NOI8N
+        }
     }
 
     @Override
@@ -86,8 +97,28 @@ public final class FileObjectIndexable implements IndexableImpl, FileObjectProvi
                 FileObject f = getFileObject();
                 if (f != null) {
                     url = f.getURL();
+                    if (LOG.isLoggable(Level.FINEST)) {
+                        LOG.log(
+                            Level.FINEST,
+                            "URL from existing FileObject: {0} = {1}",  //NOI18N
+                            new Object[] {
+                                FileUtil.getFileDisplayName(f),
+                                url
+                            });
+                    }
                 } else {
-                    url = Util.resolveUrl(root.getURL(), relativePath, false);
+                    url = Util.resolveUrl(root.toURL(), relativePath, false);
+                    if (LOG.isLoggable(Level.FINEST)) {
+                        LOG.log(
+                            Level.FINEST,
+                            "URL from non existing FileObject root: {0} ({1}), relative path: {2} = {3}",  //NOI18N
+                            new Object[] {
+                                FileUtil.getFileDisplayName(root),
+                                root.toURL(),
+                                relativePath,
+                                url
+                            });
+                    }
                 }
             } catch (FileStateInvalidException ex) {
                 url = ex;
@@ -151,6 +182,15 @@ public final class FileObjectIndexable implements IndexableImpl, FileObjectProvi
     public FileObject getFileObject() {
         if (file == null) {
             file = root.getFileObject(relativePath);
+            if (LOG.isLoggable(Level.FINEST)) {
+                LOG.log(
+                    Level.FINEST,
+                    "File: {0} in Root: {1}", //NOI18N
+                    new Object[] {
+                        FileUtil.getFileDisplayName(file),
+                        FileUtil.getFileDisplayName(root)
+                    });
+            }
         }
         return file == null ? null : file.isValid() ? file : null;
     }
