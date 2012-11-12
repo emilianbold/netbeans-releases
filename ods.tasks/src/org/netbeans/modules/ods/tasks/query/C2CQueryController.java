@@ -132,7 +132,7 @@ public class C2CQueryController extends QueryController implements ItemListener,
         this.modifiable = modifiable;
         this.criteria = criteria;
         
-        issueTable = new IssueTable<C2CQuery>(C2CUtil.getRepository(repository), query, query.getColumnDescriptors());
+        issueTable = new IssueTable<C2CQuery>(C2CUtil.getRepository(repository), query, query.getColumnDescriptors(), false);
 //      setupRenderer(issueTable);
         panel = new QueryPanel(issueTable.getComponent());
 
