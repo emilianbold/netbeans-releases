@@ -93,7 +93,7 @@ import org.openide.util.RequestProcessor;
 @NbBundle.Messages({})
 public class DocumentViewPanel extends javax.swing.JPanel implements ExplorerManager.Provider {
 
-    private static RequestProcessor RP = new RequestProcessor();
+    static RequestProcessor RP = new RequestProcessor();
     /**
      * Tree view showing the style sheet information.
      */

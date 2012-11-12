@@ -141,7 +141,12 @@ public class StyleSheetNode extends AbstractNode {
                 public void propertyChange(PropertyChangeEvent evt) {
                     String propertyName = evt.getPropertyName();
                     if (Filter.PROPERTY_PATTERN.equals(propertyName)) {
-                        refreshKeys();
+                        DocumentViewPanel.RP.post(new Runnable() {
+                            @Override
+                            public void run() {
+                                refreshKeys();
+                            }
+                        });
                     }
                 }
             };
