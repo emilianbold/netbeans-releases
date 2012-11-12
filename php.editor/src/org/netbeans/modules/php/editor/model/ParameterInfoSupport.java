@@ -393,14 +393,14 @@ public class ParameterInfoSupport {
                             PhpElement declaration = allDeclarations.iterator().next();
                             final boolean oneDeclaration = occurence.getAllDeclarations().size() == 1;
                             if (declaration instanceof FunctionScope && oneDeclaration) {
-                                FunctionScope functionScope = (FunctionScope) declaration;
-                                return new ParameterInfo(toParamNames(functionScope), idx, anchor);
+                                List<String> paramNames = toParamNames((FunctionScope) declaration);
+                                return paramNames.isEmpty() ? ParameterInfo.NONE :new ParameterInfo(paramNames, idx, anchor);
                             } else if (declaration instanceof BaseFunctionElement && oneDeclaration) {
-                                BaseFunctionElement functionElement = (BaseFunctionElement) declaration;
-                                return new ParameterInfo(toParamNames(functionElement), idx, anchor);
+                                List<String> paramNames = toParamNames((BaseFunctionElement) declaration);
+                                return paramNames.isEmpty() ? ParameterInfo.NONE :new ParameterInfo(paramNames, idx, anchor);
                             } else if (declaration instanceof ClassElement && oneDeclaration) {
-                                ClassElement clsElement = (ClassElement) declaration;
-                                return new ParameterInfo(toParamNames(clsElement), idx, anchor);
+                                List<String> paramNames = toParamNames((ClassElement) declaration);
+                                return paramNames.isEmpty() ? ParameterInfo.NONE : new ParameterInfo(paramNames, idx, anchor);
                             }
 
                         }
