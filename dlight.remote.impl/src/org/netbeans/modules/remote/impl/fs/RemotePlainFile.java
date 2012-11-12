@@ -356,12 +356,12 @@ public final class RemotePlainFile extends RemoteFileObjectBase {
     }
 
     @Override
-    public FileObject createDataImpl(String name, String ext, RemoteFileObjectBase orig) throws IOException {
+    public RemoteFileObject createDataImpl(String name, String ext, RemoteFileObjectBase orig) throws IOException {
         throw new IOException("Plain file can not have children"); // NOI18N
     }
 
     @Override
-    public FileObject createFolderImpl(String name, RemoteFileObjectBase orig) throws IOException {
+    public RemoteFileObject createFolderImpl(String name, RemoteFileObjectBase orig) throws IOException {
         throw new IOException("Plain file can not have children"); // NOI18N
     }
 

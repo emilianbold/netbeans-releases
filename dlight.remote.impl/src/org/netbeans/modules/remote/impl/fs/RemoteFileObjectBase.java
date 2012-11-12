@@ -250,13 +250,13 @@ public abstract class RemoteFileObjectBase {
         return createDataImpl(name, ext, this);
     }
 
-    abstract protected FileObject createDataImpl(String name, String ext, RemoteFileObjectBase orig) throws IOException;
+    abstract protected RemoteFileObject createDataImpl(String name, String ext, RemoteFileObjectBase orig) throws IOException;
 
     public final FileObject createFolder(String name) throws IOException {
         return createFolderImpl(name, this);
     }
 
-    abstract protected FileObject createFolderImpl(String name, RemoteFileObjectBase orig) throws IOException;
+    abstract protected RemoteFileObject createFolderImpl(String name, RemoteFileObjectBase orig) throws IOException;
 
     protected abstract boolean deleteImpl(FileLock lock) throws IOException;
 
