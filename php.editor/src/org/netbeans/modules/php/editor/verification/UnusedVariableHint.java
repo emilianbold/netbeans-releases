@@ -86,9 +86,11 @@ public class UnusedVariableHint extends AbstractHint implements PHPRuleWithPrefe
             return;
         }
         FileObject fileObject = phpParseResult.getSnapshot().getSource().getFileObject();
-        CheckVisitor checkVisitor = new CheckVisitor(fileObject);
-        phpParseResult.getProgram().accept(checkVisitor);
-        hints.addAll(checkVisitor.getHints());
+        if (fileObject != null) {
+            CheckVisitor checkVisitor = new CheckVisitor(fileObject);
+            phpParseResult.getProgram().accept(checkVisitor);
+            hints.addAll(checkVisitor.getHints());
+        }
     }
 
     private class CheckVisitor extends DefaultVisitor {

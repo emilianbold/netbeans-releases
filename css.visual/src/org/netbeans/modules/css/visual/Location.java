@@ -73,9 +73,8 @@ public class Location {
 
     @Override
     public int hashCode() {
-        int hash = 3;
-        hash = 17 * hash + (this.file != null ? this.file.hashCode() : 0);
-        hash = 17 * hash + this.offset;
+        int hash = 5;
+        hash = 97 * hash + (this.file != null ? this.file.hashCode() : 0);
         return hash;
     }
 
@@ -91,10 +90,8 @@ public class Location {
         if (this.file != other.file && (this.file == null || !this.file.equals(other.file))) {
             return false;
         }
-        if (this.offset != other.offset) {
-            return false;
-        }
         return true;
     }
-    
+
+   
 }
