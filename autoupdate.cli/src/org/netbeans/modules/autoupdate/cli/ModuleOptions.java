@@ -242,7 +242,7 @@ public class ModuleOptions extends OptionProcessor {
         "# {0} - plugin name",
         "MSG_Download=Downloading {0}",
         "# {0} - plugin name",
-        "MSG_Install=Installing {0}",
+        "MSG_Install=Installing {0}"
     })
     private void updateModules(final Env env, String... pattern) throws CommandException {
         if (! initialized()) {
