@@ -106,7 +106,11 @@ public abstract class C2CQuery {
     private OwnerInfo info;
     
     public static C2CQuery createNew(C2CRepository repository) {
-        return new CustomQuery(repository, null);
+        return new CustomQuery(repository);
+    }
+    
+    public static C2CQuery createNew(C2CRepository repository, Criteria criteria) {
+        return new CustomQuery(repository, criteria);
     }
     
     public static C2CQuery createSaved(C2CRepository repository, SavedTaskQuery stq) {
@@ -405,10 +409,22 @@ public abstract class C2CQuery {
 
         private IRepositoryQuery repositoryQuery;
         private SavedTaskQuery savedQuery;
+        private Criteria criteria;
                 
+        public CustomQuery(C2CRepository repository) {
+            this(repository, (SavedTaskQuery) null);
+        }
+        
         public CustomQuery(C2CRepository repository, SavedTaskQuery savedQuery) {
             super(repository, savedQuery != null ? savedQuery.getName() : null);
             this.savedQuery = savedQuery;
+            this.criteria = null;
+        }
+        
+        public CustomQuery(C2CRepository repository, Criteria criteria) {
+            super(repository, null);
+            this.savedQuery = null;
+            this.criteria = criteria;
         }
 
         @Override
@@ -422,7 +438,7 @@ public abstract class C2CQuery {
 
         @Override
         protected Criteria getCriteria() { 
-            return savedQuery != null ? savedQuery.getQueryCriteria() : null;
+            return savedQuery != null ? savedQuery.getQueryCriteria() : criteria;
         }
 
         @Override
@@ -532,7 +548,6 @@ public abstract class C2CQuery {
         }
     }
 
-    
     private static class PredefinedQuery extends C2CQuery {
         private final IRepositoryQuery repositoryQuery;
 

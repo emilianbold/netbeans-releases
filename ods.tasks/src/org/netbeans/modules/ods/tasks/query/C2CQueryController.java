@@ -44,6 +44,7 @@ package org.netbeans.modules.ods.tasks.query;
 
 import com.tasktop.c2c.server.common.service.domain.criteria.Criteria;
 import com.tasktop.c2c.server.common.service.domain.criteria.CriteriaBuilder;
+import com.tasktop.c2c.server.common.service.domain.criteria.CriteriaParser;
 import com.tasktop.c2c.server.tasks.domain.Milestone;
 import com.tasktop.c2c.server.tasks.domain.Product;
 import org.netbeans.modules.bugtracking.util.SaveQueryPanel;
@@ -326,6 +327,12 @@ public class C2CQueryController extends QueryController implements ItemListener,
                                 parameters.getListParameter(QueryParameters.Column.KEYWORDS).populate(clientData.getKeywords());
                                 
                                 parameters.getByPeopleParameter().populatePeople(clientData.getUsers());
+                                
+                                synchronized(CRITERIA_LOCK) {
+                                    if(criteria != null) {
+                                        parameters.setCriteriaValues(criteria);
+                                    }
+                                }
                             } finally {
                                 logPopulate("Finnished populate query controller {0}"); // NOI18N
                             }
@@ -795,9 +802,10 @@ public class C2CQueryController extends QueryController implements ItemListener,
     }
 
     private void onCloneQuery() {
-//        String p = getUrlParameters(false);
-//        C2CQuery q = new C2CQuery(null, getRepository(), p, false, false, true);
-//        C2CUtil.openQuery(q);
+        String queryString = getQueryString();
+        Criteria c = queryString != null ? CriteriaParser.parse(queryString) : null;
+        C2CQuery q = C2CQuery.createNew(repository, c);
+        C2CUtil.openQuery(q);
     }
 
     protected void logAutoRefreshEvent(boolean autoRefresh) {
