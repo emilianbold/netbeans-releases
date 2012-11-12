@@ -257,7 +257,7 @@ public abstract class RemoteLinkBase extends RemoteFileObjectBase implements Fil
     }
     
     @Override
-    protected FileObject createFolderImpl(String name, RemoteFileObjectBase orig) throws IOException {
+    protected RemoteFileObject createFolderImpl(String name, RemoteFileObjectBase orig) throws IOException {
         RemoteFileObjectBase delegate = getDelegate();
         if (delegate != null) {
             // TODO return right object
@@ -268,7 +268,7 @@ public abstract class RemoteLinkBase extends RemoteFileObjectBase implements Fil
     }
 
     @Override
-    protected FileObject createDataImpl(String name, String ext, RemoteFileObjectBase orig) throws IOException {
+    protected RemoteFileObject createDataImpl(String name, String ext, RemoteFileObjectBase orig) throws IOException {
         RemoteFileObjectBase delegate = getDelegate();
         if (delegate != null) {
             // TODO return right object
