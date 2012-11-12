@@ -46,6 +46,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.StyleConstants;
 import org.netbeans.api.editor.settings.AttributesUtilities;
@@ -382,7 +383,7 @@ public final class SemanticEntitiesProvider {
         @ServiceProvider(service = SemanticEntity.class, position=800)
     })
     public static final class UnusedVariablesCodeProvider extends AbstractSemanticEntity {
-        private Map<String, AttributeSet> unusedToolTipColors= new HashMap<String, AttributeSet>();
+        private final ConcurrentHashMap<String, AttributeSet> unusedToolTipColors= new ConcurrentHashMap<String, AttributeSet>();
         private final AttributeSet UNUSED_TOOLTIP = AttributesUtilities.createImmutable(
                     EditorStyleConstants.Tooltip,
                     NbBundle.getMessage(SemanticEntitiesProvider.class, "UNUSED_VARIABLE_TOOLTIP")); // NOI18N
@@ -436,7 +437,7 @@ public final class SemanticEntitiesProvider {
     
     private static abstract class AbstractSemanticEntity extends SemanticEntity {
 
-        private Map<String, AttributeSet> color = new HashMap<String, AttributeSet>();
+        private final ConcurrentHashMap<String, AttributeSet> color = new ConcurrentHashMap<String, AttributeSet>();
         private final FontColorProvider.Entity entity;
         private static final AttributeSet cleanUp = AttributesUtilities.createImmutable(
                 StyleConstants.Underline, null,

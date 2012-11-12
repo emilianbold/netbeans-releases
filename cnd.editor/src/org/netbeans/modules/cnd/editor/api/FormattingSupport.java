@@ -49,6 +49,7 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.StyledDocument;
 import org.netbeans.editor.BaseDocument;
+import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 import org.netbeans.modules.cnd.editor.indent.CppIndentTask;
 import org.netbeans.modules.cnd.utils.MIMEExtensions;
 import org.netbeans.modules.cnd.utils.MIMENames;
@@ -83,7 +84,7 @@ public final class FormattingSupport {
             System.err.println("original document is not specified for getFormattedText");
             return textToFormat;
         }
-        String mimeType = (String) doc.getProperty(BaseDocument.MIME_TYPE_PROP);
+        String mimeType = DocumentUtilities.getMimeType(doc);
         if (!MIMENames.isHeaderOrCppOrC(mimeType)) {
             System.err.println("Unsupported MIME type of document " + doc);
             return textToFormat;
