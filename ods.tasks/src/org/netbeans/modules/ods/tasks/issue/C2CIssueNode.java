@@ -43,6 +43,8 @@
 package org.netbeans.modules.ods.tasks.issue;
 
 import com.tasktop.c2c.server.tasks.domain.TaskSeverity;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import org.netbeans.modules.bugtracking.issuetable.IssueNode;
 import org.netbeans.modules.ods.tasks.C2C;
 import org.netbeans.modules.ods.tasks.spi.C2CData;
@@ -177,6 +179,7 @@ public class C2CIssueNode extends IssueNode<C2CIssue> {
     }
 
     private class ModificationProperty extends IssueNode<C2CIssue>.IssueProperty<String> {
+        private SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm");
         public ModificationProperty() {
             super(C2CIssue.LABEL_NAME_MODIFIED,
                   String.class,
@@ -185,7 +188,8 @@ public class C2CIssueNode extends IssueNode<C2CIssue> {
         }
         @Override
         public String getValue() {
-            return getC2CIssue().getFieldValue(IssueField.MODIFIED);
+            Date date = getC2CIssue().getLastModifyDate();
+            return date != null ? dateFormat.format(date) : ""; // NOI18N
         }
         @Override
         public int compareTo(IssueNode<C2CIssue>.IssueProperty<String> p) {
