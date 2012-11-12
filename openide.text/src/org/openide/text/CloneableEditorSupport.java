@@ -1155,6 +1155,11 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
             myDoc.putProperty("beforeSaveEnd", saveToMemory);
             // Perform beforeSaveStart then before-save-tasks then beforeSaveEnd under atomic lock
             beforeSaveRunnable.run();
+            
+            // Fallback in case the document would not process "beforeSaveStart" and "beforeSaveEnd" runnables
+            if (memoryOutputStream[0] == null) {
+                myDoc.render(saveToMemory);
+            }
 
         } else { // No on-save tasks
             myDoc.render(saveToMemory); // Run under doc's readlock
