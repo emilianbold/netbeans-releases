@@ -44,35 +44,18 @@ package org.netbeans.modules.css.visual;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
-import java.awt.EventQueue;
-import java.awt.Insets;
 import java.awt.dnd.DnDConstants;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
-import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 import javax.swing.Action;
-import javax.swing.GroupLayout;
-import javax.swing.JButton;
 import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JTextField;
 import javax.swing.JTree;
-import javax.swing.SwingConstants;
-import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
-import javax.swing.border.EmptyBorder;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.tree.DefaultTreeCellRenderer;
@@ -94,11 +77,8 @@ import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.ExplorerUtils;
 import org.openide.explorer.view.BeanTreeView;
 import org.openide.filesystems.FileObject;
-import org.openide.nodes.AbstractNode;
-import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
-import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.Lookup.Result;
 import org.openide.util.LookupEvent;
@@ -132,28 +112,19 @@ public class DocumentViewPanel extends javax.swing.JPanel implements ExplorerMan
      */
     private Filter filter = new Filter();
     private DocumentViewModel documentModel;
-
+    private DocumentNode documentNode;
     private final CreateRuleAction createRuleAction;
-    
-    private final ChangeListener DOCUMENT_VIEW_MODEL_LISTENER = new ChangeListener() {
-        @Override
-        public void stateChanged(ChangeEvent ce) {
-            updateContent();
-        }
-    };
-    
     private final PropertyChangeListener RULE_EDITOR_CONTROLLER_LISTENER = new PropertyChangeListener() {
-
         @Override
         public void propertyChange(PropertyChangeEvent pce) {
-            if(RuleEditorController.PropertyNames.RULE_SET.name().equals(pce.getPropertyName())) {
-                final Rule rule = (Rule)pce.getNewValue();
-                if(rule == null) {
+            if (RuleEditorController.PropertyNames.RULE_SET.name().equals(pce.getPropertyName())) {
+                final Rule rule = (Rule) pce.getNewValue();
+                if (rule == null) {
+                    setSelectedStyleSheet();
                     return ;
                 }
                 final Model model = rule.getModel();
                 model.runReadTask(new Model.ModelTask() {
-
                     @Override
                     public void run(StyleSheet styleSheet) {
                         setSelectedRule(RuleHandle.createRuleHandle(rule));
@@ -162,6 +133,7 @@ public class DocumentViewPanel extends javax.swing.JPanel implements ExplorerMan
             }
         }
     };
+
     /**
      * Creates new form DocumentViewPanel
      */
@@ -169,7 +141,7 @@ public class DocumentViewPanel extends javax.swing.JPanel implements ExplorerMan
         this.cssStylesLookup = cssStylesLookup;
 
         createRuleAction = new CreateRuleAction();
-        
+
         Result<FileObject> result = cssStylesLookup.lookupResult(FileObject.class);
         result.addLookupListener(new LookupListener() {
             @Override
@@ -178,7 +150,7 @@ public class DocumentViewPanel extends javax.swing.JPanel implements ExplorerMan
                 contextChanged();
             }
         });
-        
+
         //listen on selected rule in the rule editor and set selected rule in the 
         //document view accordingly
         RuleEditorController controller = cssStylesLookup.lookup(RuleEditorController.class);
@@ -199,10 +171,10 @@ public class DocumentViewPanel extends javax.swing.JPanel implements ExplorerMan
                         CssStylesListenerSupport.fireRuleSelected(ruleHandle.getRule());
                     }
                     Location location = selected.getLookup().lookup(Location.class);
-                    if(location != null) {
+                    if (location != null) {
                         createRuleAction.setStyleSheet(location.getFile());
                     }
-                    
+
                 }
             }
         });
@@ -210,22 +182,21 @@ public class DocumentViewPanel extends javax.swing.JPanel implements ExplorerMan
         initComponents();
 
         initTreeView();
-        
+
         //create toolbar
         CustomToolbar toolbar = new CustomToolbar();
         toolbar.addButton(filterToggleButton);
         toolbar.addLineSeparator();
         toolbar.addButton(createRuleToggleButton);
-        
+
         northPanel.add(toolbar, BorderLayout.EAST);
-        
-          //add document listener to the filter text field 
+
+        //add document listener to the filter text field 
         filterTextField.getDocument().addDocumentListener(new DocumentListener() {
- 
             private void contentChanged() {
                 filter.setPattern(filterTextField.getText());
             }
-            
+
             @Override
             public void insertUpdate(DocumentEvent e) {
                 contentChanged();
@@ -240,33 +211,45 @@ public class DocumentViewPanel extends javax.swing.JPanel implements ExplorerMan
             public void changedUpdate(DocumentEvent e) {
             }
         });
-        
+
         setFilterVisible(true);
         filterToggleButton.setSelected(true);
-        
+
+        initializeNodes();
+
         contextChanged();
     }
-    
+
     /**
-     * Select corresponding node in the document view tree upon change of the 
+     * Select corresponding node in the document view tree upon change of the
      * rule editor's content.
-     * 
+     *
      * A. The RuleNode holds instances of Rule-s from the model instance which
-     *    was created as setContext(file) was called on the view panel.
-     * B. The 'rule' argument here is from an up-to-date model.
-     * 
+     * was created as setContext(file) was called on the view panel. B. The
+     * 'rule' argument here is from an up-to-date model.
+     *
      */
     private void setSelectedRule(RuleHandle handle) {
-        Node foundRuleNode = findRule(manager.getRootContext(), handle);
-        if(foundRuleNode != null) {
-            try {
-                manager.setSelectedNodes(new Node[]{foundRuleNode});
-            } catch (PropertyVetoException ex) {
-                //no-op
-            }
+        try {
+            Node foundRuleNode = findLocation(manager.getRootContext(), handle);
+            Node[] toSelect = foundRuleNode != null ? new Node[]{foundRuleNode} : new Node[0];
+            manager.setSelectedNodes(toSelect);
+        } catch (PropertyVetoException ex) {
+            //no-op
         }
     }
-    
+
+    private void setSelectedStyleSheet() {
+        try {
+            Node styleSheetNode = findLocation(manager.getRootContext(), new Location(getContext()));
+            //assert styleSheetNode != null;
+            Node[] toSelect = styleSheetNode != null ? new Node[]{styleSheetNode} : new Node[0];
+            manager.setSelectedNodes(toSelect);
+        } catch (PropertyVetoException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+    }
+
     /**
      * Select rule in rule editor upon user action in the document view.
      */
@@ -274,7 +257,7 @@ public class DocumentViewPanel extends javax.swing.JPanel implements ExplorerMan
         RuleEditorController rec = cssStylesLookup.lookup(RuleEditorController.class);
         final Rule rule = handle.getRule();
         final AtomicReference<Rule> matched_rule_ref = new AtomicReference<Rule>();
-        
+
         FileObject file = handle.getFile();
         Source source = Source.create(file);
         try {
@@ -302,7 +285,7 @@ public class DocumentViewPanel extends javax.swing.JPanel implements ExplorerMan
         }
 
         Rule match = matched_rule_ref.get();
-        if(match != null) {
+        if (match != null) {
             rec.setModel(match.getModel());
             rec.setRule(match);
         }
@@ -322,13 +305,12 @@ public class DocumentViewPanel extends javax.swing.JPanel implements ExplorerMan
      */
     private void contextChanged() {
         final FileObject context = getContext();
-        
+
         //update the action context
         createRuleAction.setStyleSheet(context);
 
         //dispose old model
         if (documentModel != null) {
-            documentModel.removeChangeListener(DOCUMENT_VIEW_MODEL_LISTENER);
             documentModel.dispose();
         }
 
@@ -336,10 +318,15 @@ public class DocumentViewPanel extends javax.swing.JPanel implements ExplorerMan
             documentModel = null;
         } else {
             documentModel = new DocumentViewModel(context);
-            documentModel.addChangeListener(DOCUMENT_VIEW_MODEL_LISTENER);
         }
 
-        updateContent();
+        RP.post(new Runnable() {
+            @Override
+            public void run() {
+                documentNode.setModel(documentModel);
+                setSelectedStyleSheet();
+            }
+        });
 
     }
 
@@ -390,43 +377,25 @@ public class DocumentViewPanel extends javax.swing.JPanel implements ExplorerMan
         add(treeView, BorderLayout.CENTER);
     }
 
-    final void updateContent() {
-        final Node root;
-        if (documentModel == null) {
-            // Using dummy node as the root to release the old root
-            root = new AbstractNode(Children.LEAF);
-        } else {
-            filter.removePropertyChangeListeners();
-            DocumentNode documentNode = new DocumentNode(documentModel, filter);
-            root = new FakeRootNode<DocumentNode>(documentNode,
-                    new Action[]{});
-        }
-        final Node[] oldSelection = manager.getSelectedNodes();
+//    private void refreshNodes() {
+//        refresh(manager.getRootContext());
+//    }
+//    
+//    private void refresh(Node node) {
+//        Children children = node.getChildren();
+//        if(children instanceof Refreshable) {
+//            ((Refreshable)children).refreshKeys();
+//        }
+//        for(Node child : children.getNodes()) {
+//            refresh(child);
+//        }
+//    }
+    private void initializeNodes() {
+        documentNode = new DocumentNode(documentModel, filter);
+        Node root = new FakeRootNode<DocumentNode>(documentNode,
+                new Action[]{});
         manager.setRootContext(root);
         treeView.expandAll();
-
-        //keep selection
-        EventQueue.invokeLater(new Runnable() {
-            @Override
-            public void run() {
-                List<Node> selection = new ArrayList<Node>(oldSelection.length);
-                for (Node oldSelected : oldSelection) {
-                    Location location = oldSelected.getLookup().lookup(Location.class);
-                    if (location != null) {
-                        Node newSelected = findRule(root, location);
-                        if (newSelected != null) {
-                            selection.add(newSelected);
-                        }
-                    }
-                }
-                try {
-                    manager.setSelectedNodes(selection.toArray(new Node[selection.size()]));
-                } catch (PropertyVetoException pvex) {
-                    //no-op
-                }
-            }
-        });
-
     }
 
     /**
@@ -437,13 +406,13 @@ public class DocumentViewPanel extends javax.swing.JPanel implements ExplorerMan
      * @param rule rule to find.
      * @return node that represents the rule or {@code null}.
      */
-    public static Node findRule(Node root, Location location) {
+    public static Node findLocation(Node root, Location location) {
         Location candidate = root.getLookup().lookup(Location.class);
         if (candidate != null && location.equals(candidate)) {
             return root;
         }
         for (Node node : root.getChildren().getNodes()) {
-            Node result = findRule(node, location);
+            Node result = findLocation(node, location);
             if (result != null) {
                 return result;
             }
@@ -552,9 +521,9 @@ public class DocumentViewPanel extends javax.swing.JPanel implements ExplorerMan
         };
     }
 
-     private void setFilterVisible(boolean visible) {
+    private void setFilterVisible(boolean visible) {
         northPanel.remove(filterTextField);
-        if(visible) {
+        if (visible) {
             //update the UI
             northPanel.add(filterTextField, BorderLayout.CENTER);
             //set the filter text to the node
@@ -569,8 +538,7 @@ public class DocumentViewPanel extends javax.swing.JPanel implements ExplorerMan
         northPanel.revalidate();
         northPanel.repaint();
     }
-    
-    
+
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -622,7 +590,6 @@ public class DocumentViewPanel extends javax.swing.JPanel implements ExplorerMan
     private void createRuleToggleButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_createRuleToggleButtonActionPerformed
         createRuleToggleButton.setSelected(false); //disable selected as it's a toggle button
     }//GEN-LAST:event_createRuleToggleButtonActionPerformed
-
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JToggleButton createRuleToggleButton;
     private javax.swing.JTextField filterTextField;
