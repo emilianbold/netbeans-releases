@@ -196,6 +196,11 @@ public class CreateRulePanel extends javax.swing.JPanel {
         //create css model for the selected stylesheet
         updateCssModel(context);
         
+        if(selectedStyleSheetModel == null) {
+            //no css code to perform on
+            return ;
+        }
+        
         //update at rules model
         updateAtRulesModel();
     }
@@ -210,10 +215,14 @@ public class CreateRulePanel extends javax.swing.JPanel {
             CssIndex index = CssIndex.create(project);
             for(FileObject file : index.getAllIndexedFiles()) {
                 if("text/css".equals(file.getMIMEType())) {
-                    STYLESHEETS_MODEL.addElement(file);                    
+                    STYLESHEETS_MODEL.addElement(file);
                 }
             }
-            STYLESHEETS_MODEL.setSelectedItem(context);
+
+            if(STYLESHEETS_MODEL.getIndexOf(context) != -1) {
+                //the context may be the html file itself
+                STYLESHEETS_MODEL.setSelectedItem(context);
+            }
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
         }
@@ -256,6 +265,7 @@ public class CreateRulePanel extends javax.swing.JPanel {
             }
         });
 
+        atRuleCB.setEnabled(AT_RULES_MODEL.getSize() > 1);
     }
     
     /**
@@ -389,7 +399,19 @@ public class CreateRulePanel extends javax.swing.JPanel {
             @Override
             public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
                 Component c = super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
-                setText(((FileObject) value).getNameExt());
+                FileObject file = (FileObject)value;
+                String fileNameExt = file.getNameExt();
+                setText(fileNameExt);
+                
+//                if(file.equals(context)) {
+//                    StringBuilder sb = new StringBuilder();
+//                    sb.append("<html><body><b>"); //NOI18N
+//                    sb.append(fileNameExt);
+//                    sb.append("</b></body></html>"); //NOI18N
+//                    setText(sb.toString());
+//                } else {
+//                    setText(fileNameExt);
+//                }
                 return c;
             }
         };
@@ -463,6 +485,11 @@ public class CreateRulePanel extends javax.swing.JPanel {
 
         styleSheetCB.setModel(STYLESHEETS_MODEL);
         styleSheetCB.setRenderer(createStylesheetsRenderer());
+        styleSheetCB.addItemListener(new java.awt.event.ItemListener() {
+            public void itemStateChanged(java.awt.event.ItemEvent evt) {
+                styleSheetCBItemStateChanged(evt);
+            }
+        });
 
         atRuleCB.setModel(AT_RULES_MODEL);
         atRuleCB.setRenderer(createAtRulesRenderer());
@@ -517,6 +544,15 @@ public class CreateRulePanel extends javax.swing.JPanel {
                 .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
+
+    private void styleSheetCBItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_styleSheetCBItemStateChanged
+        FileObject file = (FileObject)STYLESHEETS_MODEL.getSelectedItem();
+        //create css model for the selected stylesheet
+        updateCssModel(file);
+        //update at rules model
+        updateAtRulesModel();
+    }//GEN-LAST:event_styleSheetCBItemStateChanged
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JComboBox atRuleCB;
     private javax.swing.JTextPane descriptionPane;
