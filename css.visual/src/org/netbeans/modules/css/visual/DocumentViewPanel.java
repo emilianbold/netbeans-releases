@@ -49,8 +49,11 @@ import java.awt.Insets;
 import java.awt.dnd.DnDConstants;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -139,6 +142,26 @@ public class DocumentViewPanel extends javax.swing.JPanel implements ExplorerMan
         }
     };
     
+    private final PropertyChangeListener RULE_EDITOR_CONTROLLER_LISTENER = new PropertyChangeListener() {
+
+        @Override
+        public void propertyChange(PropertyChangeEvent pce) {
+            if(RuleEditorController.PropertyNames.RULE_SET.name().equals(pce.getPropertyName())) {
+                final Rule rule = (Rule)pce.getNewValue();
+                if(rule == null) {
+                    return ;
+                }
+                final Model model = rule.getModel();
+                model.runReadTask(new Model.ModelTask() {
+
+                    @Override
+                    public void run(StyleSheet styleSheet) {
+                        setSelectedRule(RuleHandle.createRuleHandle(rule));
+                    }
+                });
+            }
+        }
+    };
     /**
      * Creates new form DocumentViewPanel
      */
@@ -155,6 +178,11 @@ public class DocumentViewPanel extends javax.swing.JPanel implements ExplorerMan
                 contextChanged();
             }
         });
+        
+        //listen on selected rule in the rule editor and set selected rule in the 
+        //document view accordingly
+        RuleEditorController controller = cssStylesLookup.lookup(RuleEditorController.class);
+        controller.addRuleEditorListener(RULE_EDITOR_CONTROLLER_LISTENER);
 
         lookup = ExplorerUtils.createLookup(getExplorerManager(), getActionMap());
         Result<Node> lookupResult = lookup.lookupResult(Node.class);
@@ -218,12 +246,32 @@ public class DocumentViewPanel extends javax.swing.JPanel implements ExplorerMan
         
         contextChanged();
     }
-
+    
+    /**
+     * Select corresponding node in the document view tree upon change of the 
+     * rule editor's content.
+     * 
+     * A. The RuleNode holds instances of Rule-s from the model instance which
+     *    was created as setContext(file) was called on the view panel.
+     * B. The 'rule' argument here is from an up-to-date model.
+     * 
+     */
+    private void setSelectedRule(RuleHandle handle) {
+        Node foundRuleNode = findRule(manager.getRootContext(), handle);
+        if(foundRuleNode != null) {
+            try {
+                manager.setSelectedNodes(new Node[]{foundRuleNode});
+            } catch (PropertyVetoException ex) {
+                //no-op
+            }
+        }
+    }
+    
+    /**
+     * Select rule in rule editor upon user action in the document view.
+     */
     private void selectRuleInRuleEditor(RuleHandle handle) {
         RuleEditorController rec = cssStylesLookup.lookup(RuleEditorController.class);
-        if (rec == null) {
-            return;
-        }
         final Rule rule = handle.getRule();
         final AtomicReference<Rule> matched_rule_ref = new AtomicReference<Rule>();
         
@@ -340,74 +388,6 @@ public class DocumentViewPanel extends javax.swing.JPanel implements ExplorerMan
         treeView.setAllowedDropActions(DnDConstants.ACTION_NONE);
         treeView.setRootVisible(false);
         add(treeView, BorderLayout.CENTER);
-    }
-
-    /**
-     * Initializes the filter section of this panel.
-     */
-    private JPanel getFilterPanel() {
-        JPanel panel = new JPanel();
-        Color background;
-        if(CssStylesPanel.AQUA) {
-            background = UIManager.getColor("NbExplorerView.background"); //NOI18N
-        } else {
-            background = treeView.getViewport().getView().getBackground();
-        }
-        panel.setBackground(background);
-
-        // "Find" label
-        JLabel label = new JLabel(ImageUtilities.loadImageIcon(
-                "org/netbeans/modules/css/visual/resources/find.png", true)); // NOI18N
-        label.setVerticalAlignment(SwingConstants.CENTER);
-
-        // Pattern text field
-        final JTextField field = new JTextField();
-        field.getDocument().addDocumentListener(new DocumentListener() {
-            @Override
-            public void insertUpdate(DocumentEvent e) {
-                changedUpdate(e);
-            }
-
-            @Override
-            public void removeUpdate(DocumentEvent e) {
-                changedUpdate(e);
-            }
-
-            @Override
-            public void changedUpdate(DocumentEvent e) {
-                filter.setPattern(field.getText());
-            }
-        });
-
-        // Clear pattern button
-        JButton button = new JButton(ImageUtilities.loadImageIcon(
-                "org/netbeans/modules/css/visual/resources/cancel.png", true)); // NOI18N
-        button.setBackground(background);
-        button.setBorderPainted(false);
-        button.setFocusPainted(false);
-        button.setMargin(new Insets(0, 0, 0, 0));
-        button.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                field.setText(""); // NOI18N
-            }
-        });
-
-        // Layout
-        GroupLayout layout = new GroupLayout(panel);
-        panel.setLayout(layout);
-        layout.setHorizontalGroup(layout.createSequentialGroup()
-                .addGap(2)
-                .addComponent(label)
-                .addComponent(field)
-                .addComponent(button)
-                .addGap(2));
-        layout.setVerticalGroup(layout.createSequentialGroup()
-                .addGroup(layout.createParallelGroup(GroupLayout.Alignment.CENTER)
-                .addComponent(label)
-                .addComponent(field)
-                .addComponent(button)));
-        return panel;
     }
 
     final void updateContent() {
@@ -627,6 +607,7 @@ public class DocumentViewPanel extends javax.swing.JPanel implements ExplorerMan
         });
 
         filterTextField.setText(org.openide.util.NbBundle.getMessage(DocumentViewPanel.class, "DocumentViewPanel.filterTextField.text")); // NOI18N
+        filterTextField.setToolTipText(org.openide.util.NbBundle.getMessage(DocumentViewPanel.class, "DocumentViewPanel.filterToggleButton.toolTipText")); // NOI18N
 
         setLayout(new java.awt.BorderLayout());
 

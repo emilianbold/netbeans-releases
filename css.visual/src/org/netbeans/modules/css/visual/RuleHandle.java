@@ -41,8 +41,11 @@
  */
 package org.netbeans.modules.css.visual;
 
+import org.netbeans.modules.css.model.api.Model;
 import org.netbeans.modules.css.model.api.Rule;
+import org.netbeans.modules.parsing.api.Snapshot;
 import org.openide.filesystems.FileObject;
+import org.openide.util.Lookup;
 
 /**
  *
@@ -50,13 +53,27 @@ import org.openide.filesystems.FileObject;
  */
 public class RuleHandle extends Location {
     
-    private String displayName;
+    private String selectorsImage;
     private Rule rule;
 
-    RuleHandle(FileObject styleSheet, Rule rule, int offset, String displayName) {
+    /**
+     * Must be called under model's read lock!
+     */
+    static RuleHandle createRuleHandle(Rule rule) {
+        Model model = rule.getModel();
+        Lookup lookup = model.getLookup();
+        Snapshot snapshot = lookup.lookup(Snapshot.class);
+        FileObject file = lookup.lookup(FileObject.class);
+        String img = model.getElementSource(rule.getSelectorsGroup()).toString();
+        int offset = snapshot.getOriginalOffset(rule.getStartOffset());
+        
+        return new RuleHandle(file, rule, offset, img);
+    }
+    
+    private RuleHandle(FileObject styleSheet, Rule rule, int offset, String selectorsImage) {
         super(styleSheet, offset);
         this.rule = rule;
-        this.displayName = displayName;
+        this.selectorsImage = selectorsImage;
     }
 
     public Rule getRule() {
@@ -64,7 +81,31 @@ public class RuleHandle extends Location {
     }
     
     public String getDisplayName() {
-        return displayName;
+        return selectorsImage;
     }
-    
+
+    @Override
+    public int hashCode() {
+        int hash = 7;
+        hash = 43 * hash + (this.selectorsImage != null ? this.selectorsImage.hashCode() : 0);
+        hash = 43 * hash + super.hashCode();
+        return hash;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final RuleHandle other = (RuleHandle) obj;
+        if ((this.selectorsImage == null) ? (other.selectorsImage != null) : !this.selectorsImage.equals(other.selectorsImage)) {
+            return false;
+        }
+        return super.equals(obj);
+    }
+  
+ 
 }
