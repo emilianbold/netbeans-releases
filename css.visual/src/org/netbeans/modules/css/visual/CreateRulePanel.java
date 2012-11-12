@@ -51,12 +51,14 @@ import java.util.Collections;
 import java.util.List;
 import java.util.TreeSet;
 import java.util.concurrent.atomic.AtomicInteger;
+import javax.swing.AbstractListModel;
 import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.JEditorPane;
 import javax.swing.JList;
 import javax.swing.ListCellRenderer;
+import javax.swing.ListModel;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import org.netbeans.api.project.FileOwnerQuery;
@@ -98,11 +100,16 @@ import org.openide.util.NbBundle;
  * @author marekfukala
  */
 @NbBundle.Messages({
+    "selector.type.class=Class",
+    "selector.type.id=Id",
+    "selector.type.element=Element",
+    "selector.type.compound=Compound",
+    "selector.rule.postfix= Rule",
     "none.item=<html><font color=\"777777\">&lt;none&gt;</font></html>",
     "class.selector.descr=Applies to all elements with this style class assigned.\n\nThe selector name starts with dot.",
     "id.selector.descr=Applies just to one single element with this id set.\n\nThe selector name starts with hash sign.",
     "element.selector.descr=Applies to html elements with the selector name.",
-    "compound.selector.descr="
+    "compound.selector.descr=The Compound selector is used to create styles for a combination of tags or tags that are nested in other tags."
 })
 public class CreateRulePanel extends javax.swing.JPanel {
 
@@ -117,6 +124,7 @@ public class CreateRulePanel extends javax.swing.JPanel {
      * Models for stylesheets and at rules comboboxes.
      */
     private DefaultComboBoxModel STYLESHEETS_MODEL, AT_RULES_MODEL, SELECTORS_MODEL;
+    private ListModel SELECTORS_LIST_MODEL;
     /**
      * Context of the create rule panel.
      */
@@ -129,6 +137,29 @@ public class CreateRulePanel extends javax.swing.JPanel {
     private Collection<String> TAG_NAMES;
     
     public CreateRulePanel() {
+        SELECTORS_LIST_MODEL = new AbstractListModel() {
+            @Override
+            public int getSize() {
+                return 4;
+            }
+
+            @Override
+            public Object getElementAt(int i) {
+                switch(i) {
+                    case 0:
+                        return Bundle.selector_type_class();
+                    case 1:
+                        return Bundle.selector_type_id();
+                    case 2:
+                        return Bundle.selector_type_element();
+                    case 3:
+                        return Bundle.selector_type_compound();
+                    default:
+                        throw new IllegalStateException();
+                }
+            }
+        };
+        
         STYLESHEETS_MODEL = new DefaultComboBoxModel();
         AT_RULES_MODEL = new DefaultComboBoxModel();
         SELECTORS_MODEL = new DefaultComboBoxModel();
@@ -144,6 +175,9 @@ public class CreateRulePanel extends javax.swing.JPanel {
 
                 //disable editing mode for html elements
                 selectorCB.setEditable(index != 2);
+                
+                //update the separator's title
+                selectorTypeLabel.setText(selectorTypeList.getSelectedValue().toString() + Bundle.selector_rule_postfix());
                 
                 updateSelectorsModel();
 
@@ -488,17 +522,15 @@ public class CreateRulePanel extends javax.swing.JPanel {
         atRuleCB = new javax.swing.JComboBox();
         jLabel4 = new javax.swing.JLabel();
         selectorCB = new javax.swing.JComboBox();
+        jSeparator1 = new javax.swing.JSeparator();
+        selectorTypeLabel = new javax.swing.JLabel();
 
         org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(CreateRulePanel.class, "CreateRulePanel.jLabel1.text")); // NOI18N
 
         jSplitPane1.setDividerLocation(140);
         jSplitPane1.setDividerSize(4);
 
-        selectorTypeList.setModel(new javax.swing.AbstractListModel() {
-            String[] strings = { "Class", "ID", "Element Type", "Compound" };
-            public int getSize() { return strings.length; }
-            public Object getElementAt(int i) { return strings[i]; }
-        });
+        selectorTypeList.setModel(SELECTORS_LIST_MODEL);
         selectorTypeList.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
         jScrollPane1.setViewportView(selectorTypeList);
 
@@ -530,6 +562,8 @@ public class CreateRulePanel extends javax.swing.JPanel {
         selectorCB.setEditable(true);
         selectorCB.setModel(SELECTORS_MODEL);
 
+        org.openide.awt.Mnemonics.setLocalizedText(selectorTypeLabel, null);
+
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -550,7 +584,11 @@ public class CreateRulePanel extends javax.swing.JPanel {
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                             .add(styleSheetCB, 0, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                             .add(atRuleCB, 0, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .add(selectorCB, 0, 366, Short.MAX_VALUE))))
+                            .add(selectorCB, 0, 427, Short.MAX_VALUE)))
+                    .add(layout.createSequentialGroup()
+                        .add(selectorTypeLabel)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(jSeparator1)))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -560,6 +598,10 @@ public class CreateRulePanel extends javax.swing.JPanel {
                 .add(jLabel1)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(jSplitPane1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 88, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
+                    .add(jSeparator1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 10, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(selectorTypeLabel))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(jLabel4)
@@ -592,8 +634,10 @@ public class CreateRulePanel extends javax.swing.JPanel {
     private javax.swing.JLabel jLabel4;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
+    private javax.swing.JSeparator jSeparator1;
     private javax.swing.JSplitPane jSplitPane1;
     private javax.swing.JComboBox selectorCB;
+    private javax.swing.JLabel selectorTypeLabel;
     private javax.swing.JList selectorTypeList;
     private javax.swing.JComboBox styleSheetCB;
     // End of variables declaration//GEN-END:variables
