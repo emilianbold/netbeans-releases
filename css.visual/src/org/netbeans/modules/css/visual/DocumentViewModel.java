@@ -185,10 +185,7 @@ public class DocumentViewModel implements ChangeListener {
                                 final ModelVisitor visitor = new ModelVisitor.Adapter() {
                                     @Override
                                     public void visitRule(Rule rule) {
-                                        String image = model.getElementSource(rule.getSelectorsGroup()).toString();
-                                        int offset = result.getSnapshot().getOriginalOffset(rule.getStartOffset());
-                                        RuleHandle handle = new RuleHandle(related, rule, offset, image );
-                                        rules.add(handle);
+                                        rules.add(RuleHandle.createRuleHandle(rule));
                                     }
                                 };
                                 model.runReadTask(new Model.ModelTask() {

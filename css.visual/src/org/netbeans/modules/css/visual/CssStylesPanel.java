@@ -234,12 +234,12 @@ public class CssStylesPanel extends javax.swing.JPanel {
     public void setContext(FileObject file) {
         this.context = file;
         
-        updateToolbar(file);
-        
         InstanceContent ic = new InstanceContent();
         ic.add(context);
         ic.add(getRuleEditorController());
         providersLookup.updateLookup(new AbstractLookup(ic));
+        
+        updateToolbar(file);
     }
     
     private void setActiveProvider(CssStylesPanelProvider provider) {
