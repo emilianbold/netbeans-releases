@@ -377,19 +377,6 @@ public class DocumentViewPanel extends javax.swing.JPanel implements ExplorerMan
         add(treeView, BorderLayout.CENTER);
     }
 
-//    private void refreshNodes() {
-//        refresh(manager.getRootContext());
-//    }
-//    
-//    private void refresh(Node node) {
-//        Children children = node.getChildren();
-//        if(children instanceof Refreshable) {
-//            ((Refreshable)children).refreshKeys();
-//        }
-//        for(Node child : children.getNodes()) {
-//            refresh(child);
-//        }
-//    }
     private void initializeNodes() {
         documentNode = new DocumentNode(documentModel, filter);
         Node root = new FakeRootNode<DocumentNode>(documentNode,
