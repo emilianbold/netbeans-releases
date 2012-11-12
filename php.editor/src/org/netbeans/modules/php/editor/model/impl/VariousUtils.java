@@ -1023,7 +1023,8 @@ public class VariousUtils {
                         metaAll.insert(0, PRE_OPERATION_TYPE_DELIMITER + VariousUtils.FUNCTION_TYPE_PREFIX);
                     }
                     break;
-                } else if (state.equals(State.PARAMS) && !possibleClassName.isEmpty() && token.id() != null && PHPTokenId.PHP_NEW.equals(token.id()) && (rightBraces - 1 == leftBraces)) {
+                } else if (state.equals(State.PARAMS) && !possibleClassName.isEmpty() && token.id() != null && PHPTokenId.PHP_NEW.equals(token.id()) && (rightBraces - 1 == leftBraces)
+                        && isPossibleAnonymousObjectCall(tokenSequence)) {
                     state = State.STOP;
                     metaAll.insert(0, PRE_OPERATION_TYPE_DELIMITER + VariousUtils.CONSTRUCTOR_TYPE_PREFIX + possibleClassName);
                     break;
@@ -1037,6 +1038,22 @@ public class VariousUtils {
             }
         }
         return null;
+    }
+
+    private static boolean isPossibleAnonymousObjectCall(final TokenSequence<PHPTokenId> tokenSequence) {
+        boolean result = true;
+        boolean skippedOpenParenthesis = tokenSequence.movePrevious();
+        if (skippedOpenParenthesis) {
+            boolean posibleMethodTokenNameExists = tokenSequence.movePrevious();
+            if (posibleMethodTokenNameExists) {
+                if (isString(tokenSequence.token())) {
+                    result = false;
+                }
+                tokenSequence.moveNext();
+            }
+            tokenSequence.moveNext();
+        }
+        return result;
     }
 
     private static boolean isVarTypeComment(final Token<PHPTokenId> token) {
