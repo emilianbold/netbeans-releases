@@ -561,10 +561,12 @@ public class ClipboardHandler {
                 @Override public void run() {
                     int offset = jtc.getSelectionStart();
                     TokenSequence<JavaTokenId> ts = SourceUtils.getJavaTokenSequence(TokenHierarchy.get(doc), offset);
-                    if (ts == null || !ts.moveNext() && !ts.movePrevious() || offset == ts.offset())
+                    if (ts == null || !ts.moveNext() && !ts.movePrevious() || offset == ts.offset()) {
                         result[0] = false;
-                    EnumSet tokenIds = EnumSet.of(first, rest);
-                    result[0] = tokenIds.contains(ts.token().id());
+                    } else {
+                        EnumSet tokenIds = EnumSet.of(first, rest);
+                        result[0] = tokenIds.contains(ts.token().id());
+                    }
                 }
             });
             

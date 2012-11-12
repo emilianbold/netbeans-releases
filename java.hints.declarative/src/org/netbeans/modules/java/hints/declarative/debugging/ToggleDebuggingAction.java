@@ -87,8 +87,6 @@ public class ToggleDebuggingAction extends BaseAction implements Presenter.Toolb
         this.pane = pane;
         actions.add(this);
         updateState();
-        
-        System.err.println("pane=" + pane);
     }
 
     private void updateState() {
