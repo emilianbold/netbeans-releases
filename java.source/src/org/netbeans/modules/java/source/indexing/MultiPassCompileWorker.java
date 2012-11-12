@@ -294,11 +294,14 @@ final class MultiPassCompileWorker extends CompileWorker {
                         previous.modifiedTypes.addAll(aTypes);
                     }
                     ExecutableFilesIndex.DEFAULT.setMainClass(context.getRoot().getURL(), active.indexable.getURL(), main[0]);
-                    for (JavaFileObject generated : jt.generate(types)) {
-                        if (generated instanceof FileObjects.FileBase) {
-                            previous.createdFiles.add(((FileObjects.FileBase) generated).getFile());
-                        } else {
-                            // presumably should not happen
+                    Iterable<? extends JavaFileObject> generatedFiles = jt.generate(types);
+                    if (!active.virtual) {
+                        for (JavaFileObject generated : generatedFiles) {
+                            if (generated instanceof FileObjects.FileBase) {
+                                previous.createdFiles.add(((FileObjects.FileBase) generated).getFile());
+                            } else {
+                                // presumably should not happen
+                            }
                         }
                     }
                     JavaCustomIndexer.setErrors(context, active, diagnosticListener);
