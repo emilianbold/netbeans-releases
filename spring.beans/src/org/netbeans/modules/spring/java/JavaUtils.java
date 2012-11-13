@@ -51,6 +51,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.Future;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.lang.model.element.Element;
@@ -81,6 +82,7 @@ import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.ui.ElementOpen;
 import org.netbeans.api.java.source.ui.ScanDialog;
+import org.netbeans.api.progress.ProgressUtils;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
@@ -91,6 +93,7 @@ import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.awt.StatusDisplayer;
 import org.openide.filesystems.FileObject;
+import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
 
 /**
@@ -324,7 +327,7 @@ public final class JavaUtils {
         }
     }
 
-    @NbBundle.Messages("JavaUtils.title.class.searching=Searching Class")
+    @NbBundle.Messages("JavaUtils.title.class.searching=Searching Class...")
     public static void findAndOpenJavaClass(final String classBinaryName, FileObject fileObject) {
         if (classBinaryName == null || fileObject == null) {
             return;
@@ -332,10 +335,17 @@ public final class JavaUtils {
 
         final JavaSource js = JavaUtils.getJavaSource(fileObject);
         if (js != null) {
-            ClassFinder classFinder = new ClassFinder(js, classBinaryName);
-            classFinder.runAsUserTask();
-            if (!classFinder.wasElementFound() && SourceUtils.isScanInProgress()) {
-                ScanDialog.runWhenScanFinished(classFinder, Bundle.JavaUtils_title_class_searching());
+            final AtomicBoolean cancel = new AtomicBoolean(false);
+            final ClassFinder classFinder = new ClassFinder(js, classBinaryName, cancel);
+            if (SourceUtils.isScanInProgress()) {
+                ScanDialog.runWhenScanFinished(new Runnable() {
+                    @Override
+                    public void run() {
+                        ProgressUtils.runOffEventDispatchThread(classFinder, Bundle.JavaUtils_title_class_searching(), cancel, false);
+                    }
+                }, Bundle.JavaUtils_title_class_searching());
+            } else {
+                ProgressUtils.runOffEventDispatchThread(classFinder, Bundle.JavaUtils_title_class_searching(), cancel, false);
             }
         }
     }
@@ -343,14 +353,17 @@ public final class JavaUtils {
     private static final class ClassFinder extends ElementSeekerTask {
 
         private final String classBinaryName;
+        private final AtomicBoolean cancel;
 
-        public ClassFinder(JavaSource javaSource, String classBinaryName) {
+        public ClassFinder(JavaSource javaSource, String classBinaryName, AtomicBoolean cancel) {
             super(javaSource);
             this.classBinaryName = classBinaryName;
+            this.cancel = cancel;
         }
 
         @Override
         public void run(CompilationController controller) throws Exception {
+            if (cancel.get()) { return; }
             boolean opened = false;
             if (classBinaryName == null) {
                 return;
@@ -358,6 +371,7 @@ public final class JavaUtils {
             TypeElement element = JavaUtils.findClassElementByBinaryName(classBinaryName, controller);
             if (element != null) {
                 elementFound.set(true);
+                if (cancel.get()) { return; }
                 opened = ElementOpen.open(javaSource.getClasspathInfo(), element);
             }
             if (!opened) {
