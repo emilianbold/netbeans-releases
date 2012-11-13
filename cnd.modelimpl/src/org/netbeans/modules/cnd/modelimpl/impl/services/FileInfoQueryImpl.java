@@ -231,7 +231,7 @@ public final class FileInfoQueryImpl extends CsmFileInfoQuery {
         if (file instanceof FileImpl) {
             FileImpl impl = (FileImpl) file;
             FileBuffer buffer = impl.getBuffer();
-            return buffer instanceof FileBufferDoc;
+            return !buffer.isFileBased();
         }
         return false;
     }
