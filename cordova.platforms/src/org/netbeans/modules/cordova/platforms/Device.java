@@ -39,33 +39,34 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.cordova.platforms.ios;
+package org.netbeans.modules.cordova.platforms;
+
+import java.util.Properties;
+import org.netbeans.api.project.Project;
+import org.netbeans.modules.web.clientproject.spi.platform.ProjectConfigurationCustomizer;
+import org.netbeans.spi.project.ActionProvider;
 
 /**
  *
  * @author Jan Becicka
  */
-public enum Device {
+public interface Device {
     
-    IPHONE("iPhone", "--family iphone"), //NOI18N
-    IPHONE_RETINA("iPhone (Retina)", "--family iphone --retina"), //NOI18N
-    IPAD("iPad", "--family ipad"), //NOI18N
-    IPAD_RETINA("iPad (Retina)", "--family ipad --retina"); //NOI18N
+    public static String EMULATOR = "emulator";
+    public static String DEVICE_PROP = "device";
+    public static String DEVICE = "device";
+    public static String VIRTUAL_DEVICE_PROP = "vd";
+
+    public boolean isEmulator();
+
+    public MobilePlatform getPlatform();
     
-    String displayName;
-    String args;
+    public void addProperties(Properties props);
 
-    Device(String name, String args) {
-        this.displayName = name;
-        this.args = args;
-    }
+    public ActionProvider getActionProvider(Project p);
 
-    public String getDisplayName() {
-        return displayName;
-    }
+    public ProjectConfigurationCustomizer getProjectConfigurationCustomizer(Project project, PropertyProvider aThis);
 
-    public String getArgs() {
-        return args;
-    }
-
+    void openUrl(String url);
+    
 }

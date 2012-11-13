@@ -88,10 +88,7 @@
                     </run-dependency>
                 </dependency>
             </module-dependencies>
-            <friend-packages>
-                <friend>org.netbeans.modules.cordova</friend>
-                <package>org.netbeans.modules.cordova.platforms.ios</package>
-            </friend-packages>
+            <public-packages/>
         </data>
     </configuration>
 </project>
