@@ -60,6 +60,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.EnumMap;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.logging.Level;
@@ -212,16 +213,36 @@ public class QueryParameters {
         for (Parameter p : getAll()) {
             p.clearValues();
         }
-        setCriteriaValues(crit, null);
+        List<ParamCriteria> criterias = getCriterias(crit, null);
+        ParamCriteria productCrit = null;
+        
+        Iterator<ParamCriteria> it = criterias.iterator();
+        while(it.hasNext()) {
+            ParamCriteria pc = it.next();
+            if(pc.p == getListParameter(Column.PRODUCT)) {
+                productCrit = pc;
+                it.remove();
+                break;
+            }
+        }
+        // set product first -> any change in the list triggers
+        // iteration and component repopulate
+        if(productCrit != null) {
+            productCrit.p.addCriteriaValue(productCrit.op, productCrit.cc);
+        }
+        for (ParamCriteria pc : criterias) {
+            pc.p.addCriteriaValue(pc.op, pc.cc);
+        }
     }
     
-    private void setCriteriaValues(Criteria crit, Operator op) {
+    private List<ParamCriteria> getCriterias(Criteria crit, Operator op) {
+        List<ParamCriteria> criterias = new LinkedList<ParamCriteria>();
         if(crit instanceof ColumnCriteria) {
             ColumnCriteria cc = (ColumnCriteria) crit;
             Parameter p = map.get(Column.forColumnName(cc.getColumnName()));
             assert p != null : "Missing parameter for ColumnCriteria [" + cc + "]"; // NOI18N
             if(p != null) {
-                p.addCriteriaValue(op, cc);
+                criterias.add(new ParamCriteria(p, op, cc));
             } else {
                 C2C.LOG.log(Level.WARNING, "Missing parameter for ColumnCriteria [{0}]", cc); // NOI18N
             }
@@ -229,14 +250,26 @@ public class QueryParameters {
             NaryCriteria nc = (NaryCriteria)crit;
             List<Criteria> subCrit = (nc).getSubCriteria();
             for (Criteria c : subCrit) {
-                setCriteriaValues(c, nc.getOperator());
+                criterias.addAll(getCriterias(c, nc.getOperator()));
             }
         } else {
             assert false : "Unexpected Criteria type : " + crit.getClass().getName(); // NOI18N
             C2C.LOG.log(Level.WARNING, "Unexpected Criteria type : {0}", crit.getClass().getName()); // NOI18N
         }
+        return criterias;
     }
 
+    private class ParamCriteria {
+        final Parameter p;
+        final Operator op;
+        final ColumnCriteria cc;
+        public ParamCriteria(Parameter p, Operator op, ColumnCriteria cc) {
+            this.p = p;
+            this.op = op;
+            this.cc = cc;
+        }
+    }
+    
     static interface Parameter {
         void setEnabled(boolean b);
         Criteria getCriteria();
