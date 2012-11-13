@@ -142,7 +142,6 @@ Other names may be trademarks of their respective owners.
 <mapID target="text.javascript" url="javascript/js_basics.html" />
 <mapID target="js.refactoring" url="javascript/refactoring.html" />
 <mapID target="js.quickfixes" url="javascript/quickfixes.html" />
-<mapID target="javascript_debugger_advanced_options" url="javascript/options.html" />
 
 <!-- Create HTML file topic -->
 <mapID target="html_create" url="web/create/html/html_create.html"/>
