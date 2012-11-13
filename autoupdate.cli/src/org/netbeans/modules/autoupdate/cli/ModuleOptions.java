@@ -250,7 +250,7 @@ public class ModuleOptions extends OptionProcessor {
         }
         Pattern[] pats = findMatcher(env, pattern);
         
-        List<UpdateUnit> units = UpdateManager.getDefault().getUpdateUnits();
+        List<UpdateUnit> units = UpdateManager.getDefault().getUpdateUnits(UpdateManager.TYPE.MODULE);
         OperationContainer<InstallSupport> operate = OperationContainer.createForUpdate();
         for (UpdateUnit uu : units) {
             if (uu.getInstalled() == null) {
@@ -286,34 +286,33 @@ public class ModuleOptions extends OptionProcessor {
             return;
         }
         try {
-            ProgressHandle downloadHandle = ProgressHandleFactory.createHandle ("downloading-updates");
+            env.getOutputStream().println("updates=" + operate.listAll().size()); // NOI18N
+            ProgressHandle downloadHandle = ProgressHandleFactory.createHandle("downloading-updates"); // NOI18N
             downloadHandle.setInitialDelay(0);
-            JLabel downloadDetailLabel = ProgressHandleFactory.createDetailLabelComponent (downloadHandle);
-            downloadDetailLabel.addPropertyChangeListener(new PropertyChangeListener () {
-
+            JLabel downloadDetailLabel = ProgressHandleFactory.createDetailLabelComponent(downloadHandle);
+            downloadDetailLabel.addPropertyChangeListener(new PropertyChangeListener() {
                 @Override
                 public void propertyChange(PropertyChangeEvent evt) {
-                    if ("text".equals(evt.getPropertyName())) {
+                    if ("text".equals(evt.getPropertyName())) { // NOI18N
                         env.getOutputStream().println(
-                            Bundle.MSG_Download(evt.getNewValue()));
+                                Bundle.MSG_Download(evt.getNewValue()));
                         LOG.fine("  ... downloading update " + evt.getNewValue());
                     }
                 }
             });
             final Validator res1 = support.doDownload(downloadHandle, null, false);
-            
-            Installer res2 = support.doValidate(res1, null);
-            
-            ProgressHandle installHandle = ProgressHandleFactory.createHandle ("installing-updates");
-            installHandle.setInitialDelay(0);
-            JLabel installDetailLabel = ProgressHandleFactory.createDetailLabelComponent (installHandle);
-            installDetailLabel.addPropertyChangeListener(new PropertyChangeListener () {
 
+            Installer res2 = support.doValidate(res1, null);
+
+            ProgressHandle installHandle = ProgressHandleFactory.createHandle("installing-updates"); // NOI18N
+            installHandle.setInitialDelay(0);
+            JLabel installDetailLabel = ProgressHandleFactory.createDetailLabelComponent(installHandle);
+            installDetailLabel.addPropertyChangeListener(new PropertyChangeListener() {
                 @Override
                 public void propertyChange(PropertyChangeEvent evt) {
                     if ("text".equals(evt.getPropertyName())) {
                         env.getOutputStream().println(
-                            Bundle.MSG_Download(evt.getNewValue()));
+                                Bundle.MSG_Download(evt.getNewValue()));
                         LOG.fine("  ... installing update " + evt.getNewValue());
                     }
                 }
@@ -392,34 +391,33 @@ public class ModuleOptions extends OptionProcessor {
             return;
         }
         try {
-            ProgressHandle downloadHandle = ProgressHandleFactory.createHandle ("downloading-updates");
+            env.getOutputStream().println("modules=" + operate.listAll().size()); // NOI18N
+            ProgressHandle downloadHandle = ProgressHandleFactory.createHandle("downloading-modules"); // NOI18N
             downloadHandle.setInitialDelay(0);
-            JLabel downloadDetailLabel = ProgressHandleFactory.createDetailLabelComponent (downloadHandle);
-            downloadDetailLabel.addPropertyChangeListener(new PropertyChangeListener () {
-
+            JLabel downloadDetailLabel = ProgressHandleFactory.createDetailLabelComponent(downloadHandle);
+            downloadDetailLabel.addPropertyChangeListener(new PropertyChangeListener() {
                 @Override
                 public void propertyChange(PropertyChangeEvent evt) {
-                    if ("text".equals(evt.getPropertyName())) {
+                    if ("text".equals(evt.getPropertyName())) { // NOI18N
                         env.getOutputStream().println(
-                            Bundle.MSG_Download(evt.getNewValue()));
+                                Bundle.MSG_Download(evt.getNewValue()));
                         LOG.fine("  ... downloading module " + evt.getNewValue());
                     }
                 }
             });
             final Validator res1 = support.doDownload(null, null, false);
-            
-            Installer res2 = support.doValidate(res1, null);
-            
-            ProgressHandle installHandle = ProgressHandleFactory.createHandle ("installing-updates");
-            installHandle.setInitialDelay(0);
-            JLabel installDetailLabel = ProgressHandleFactory.createDetailLabelComponent (installHandle);
-            installDetailLabel.addPropertyChangeListener(new PropertyChangeListener () {
 
+            Installer res2 = support.doValidate(res1, null);
+
+            ProgressHandle installHandle = ProgressHandleFactory.createHandle("installing-modules"); // NOI18N
+            installHandle.setInitialDelay(0);
+            JLabel installDetailLabel = ProgressHandleFactory.createDetailLabelComponent(installHandle);
+            installDetailLabel.addPropertyChangeListener(new PropertyChangeListener() {
                 @Override
                 public void propertyChange(PropertyChangeEvent evt) {
                     if ("text".equals(evt.getPropertyName())) {
                         env.getOutputStream().println(
-                            Bundle.MSG_Download(evt.getNewValue()));
+                                Bundle.MSG_Download(evt.getNewValue()));
                         LOG.fine("  ... installing module " + evt.getNewValue());
                     }
                 }
