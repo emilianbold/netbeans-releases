@@ -51,4 +51,6 @@ public interface PropertyProvider {
 
     String putProperty(String prop, String value);
     
+    Device getDevice();
+    
 }

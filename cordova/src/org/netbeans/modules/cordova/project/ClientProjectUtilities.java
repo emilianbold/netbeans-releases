@@ -39,54 +39,44 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.cordova.platforms.ios;
+package org.netbeans.modules.cordova.project;
 
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.cordova.platforms.BuildPerformer;
-import org.netbeans.modules.cordova.platforms.PlatformManager;
-import org.netbeans.spi.project.ActionProvider;
-import org.openide.util.Lookup;
+import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.api.project.SourceGroup;
+import org.netbeans.api.project.Sources;
+import org.netbeans.modules.web.clientproject.api.WebClientProjectConstants;
+import org.netbeans.spi.project.ProjectConfigurationProvider;
+import org.openide.filesystems.FileObject;
 
 /**
  *
  * @author Jan Becicka
  */
-public class IOSActionProvider implements ActionProvider {
-    private final Project p;
-
-    public IOSActionProvider(Project p) {
-        this.p = p;
+public class ClientProjectUtilities {
+    
+    public static FileObject getSiteRoot(Project project) {
+        Sources sources = ProjectUtils.getSources(project);
+        SourceGroup[] sourceGroups = sources.getSourceGroups(WebClientProjectConstants.SOURCES_TYPE_HTML5);
+        assert sourceGroups.length == 1;
+        return sourceGroups[0].getRootFolder();
     }
     
-    @Override
-    public String[] getSupportedActions() {
-        return new String[]{
-                    COMMAND_BUILD,
-                    COMMAND_CLEAN,
-                    COMMAND_RUN
-                };
+    public static FileObject getStartFile(Project project) {
+        return getSiteRoot(project).getFileObject("index.html");
     }
 
-    @Override
-    public void invokeAction(String command, Lookup context) throws IllegalArgumentException {
-        BuildPerformer build = Lookup.getDefault().lookup(BuildPerformer.class);
-        assert build != null;
-        if (COMMAND_BUILD.equals(command)) {
-            build.perform(BuildPerformer.BUILD_IOS, p);
-        } else if (COMMAND_CLEAN.equals(command)) {
-            build.perform(build.CLEAN_IOS, p);
-        } else if (COMMAND_RUN.equals(command)) {
-            if (build.isPhoneGapBuild(p)) {
-                build.perform(build.RUN_IOS,p);
-            } else {
-                IOSDevice.IPHONE.openUrl(build.getUrl(p));
-            }
-        }
+    public static String getWebContextRoot(Project p) {
+        return "/" + ProjectUtils.getInformation(p).getName();
     }
 
-    @Override
-    public boolean isActionEnabled(String command, Lookup context) throws IllegalArgumentException {
+    public static boolean isUsingEmbeddedServer(Project p) {
         return true;
     }
     
+    public static String getProperty(Project p, String key) {
+        ProjectConfigurationProvider provider = p.getLookup().lookup(ProjectConfigurationProvider.class);
+        ClientProjectConfigurationImpl activeConfiguration = (ClientProjectConfigurationImpl) provider.getActiveConfiguration();
+        return activeConfiguration.getProperty(key);
+    }
 }
