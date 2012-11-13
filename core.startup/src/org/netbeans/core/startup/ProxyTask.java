@@ -41,47 +41,30 @@
  */
 package org.netbeans.core.startup;
 
-import java.awt.EventQueue;
-import java.util.concurrent.CountDownLatch;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import org.openide.util.lookup.ServiceProvider;
+import java.util.Collection;
+import org.openide.util.Task;
+import org.openide.util.TaskListener;
 
 /**
  *
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
-@ServiceProvider(service=Runnable.class, path="WarmUp")
-public class WarmUpSupportTask implements Runnable {
-    private static final Logger LOG = Logger.getLogger(WarmUpSupportTask.class.getName());
-    @Override
-    public void run() {
-        if (EventQueue.isDispatchThread()) {
-            System.setProperty("warmup.success", "in edt");
-            System.err.println("setting the property");
-            return;
+final class ProxyTask extends Task implements TaskListener {
+    private int cnt;
+
+    public ProxyTask(Collection<? extends Task> waitFor) {
+        super(null);
+        this.cnt = waitFor.size();
+        notifyRunning();
+        for (Task t : waitFor) {
+            t.addTaskListener(this);
         }
-        
-        int timeOut = Integer.getInteger("warmup.delay", -1);
-        if (timeOut > 0) {
-            LOG.log(Level.INFO, "Will timeout for {0} ms", timeOut);
-            ClassLoader l = Thread.currentThread().getContextClassLoader();
-            try {
-                Class<?> c = l.loadClass(WarmUpSupportTest.class.getName());
-                CountDownLatch in = (CountDownLatch) c.getDeclaredField("in").get(null);
-                System.setProperty("warmup.success", "notify count down");
-                in.countDown();
-                
-                Thread.sleep(timeOut);
-                
-                System.setProperty("warmup.success", "before invokeAndWait");
-                LOG.info("before invokeAndWait");
-                EventQueue.invokeAndWait(this);
-                LOG.info("after invokeAndWait");
-            } catch (Exception ex) {
-                System.setProperty("warmup.success", "exception " + ex.getMessage());
-                throw new IllegalStateException(ex);
-            }
+    }
+
+    @Override
+    public synchronized void taskFinished(Task task) {
+        if (--cnt == 0) {
+            notifyFinished();
         }
     }
 }

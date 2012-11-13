@@ -57,6 +57,8 @@ import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 import java.util.jar.Attributes;
 import java.util.jar.Manifest;
 import java.util.logging.Level;
@@ -71,6 +73,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.ModuleInfo;
+import org.openide.modules.OnStop;
 import org.openide.util.Exceptions;
 import org.openide.util.Utilities;
 
@@ -309,8 +312,29 @@ public final class ModuleSystem {
      * Some of them may refuse.
      */
     public boolean shutDown(final Runnable midHook) {
+        try {
+            return shutDownAsync(midHook).get();
+        } catch (InterruptedException ex) {
+            Exceptions.printStackTrace(ex);
+        } catch (ExecutionException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        return false;
+    }
+    /** Initializes the shutdown, asks modules to confirm shut down, if some
+     * of the refure, returns <code>false</code> immediately. If they
+     * agree, run midHook code and asks modules to really shut down.
+     * Returns even {@link OnStop} code may not have finished yet. One
+     * can wait for the returned future till all post clean up hooks are
+     * finished.
+     * 
+     * @since 1.44
+     * @param midHook the code to run when the shutdown is approved
+     * @return future for tracking final progress of shutdown and obtaining
+     *    the final value
+     */
+    public Future<Boolean> shutDownAsync(final Runnable midHook) {
         mgr.mutexPrivileged().enterWriteAccess();
-        boolean res;
         Runnable both = new Runnable() {
             @Override
             public void run() {
@@ -318,8 +342,9 @@ public final class ModuleSystem {
                 Stamps.getModulesJARs().shutdown();
             }
         };
+        Future<Boolean> res;
         try {
-            res = mgr.shutDown(both);
+            res = mgr.shutDownAsync(both);
         } finally {
             mgr.mutexPrivileged().exitWriteAccess();
         }
