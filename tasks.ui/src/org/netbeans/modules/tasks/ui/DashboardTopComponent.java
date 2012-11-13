@@ -71,6 +71,7 @@ import org.netbeans.modules.tasks.ui.settings.DashboardSettings;
 import org.netbeans.modules.tasks.ui.treelist.TreeListModelListener;
 import org.netbeans.modules.tasks.ui.treelist.TreeListNode;
 import org.netbeans.modules.tasks.ui.utils.DashboardRefresher;
+import org.openide.awt.ActionReferences;
 
 /**
  * Top component which displays something.
@@ -82,7 +83,10 @@ iconBase = "org/netbeans/modules/tasks/ui/resources/dashboard.png",
 persistenceType = TopComponent.PERSISTENCE_ALWAYS)
 @TopComponent.Registration(mode = "explorer", openAtStartup = true, position = 350)
 @ActionID(category = "Window", id = "org.netbeans.modules.tasks.ui.DashboardTopComponent")
-@ActionReference(path = "Menu/Window", position = 501)
+@ActionReferences({
+    @ActionReference(path = "Menu/Window", position = 551),
+    @ActionReference(path = "Shortcuts", name = "DS-6")        
+})
 @TopComponent.OpenActionRegistration(displayName = "#CTL_DashboardAction",
 preferredID = "DashboardTopComponent")
 @NbBundle.Messages({
