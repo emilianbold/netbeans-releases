@@ -110,7 +110,8 @@ public final class JsDocumentationSupport {
      */
     @NonNull
     public static SyntaxProvider getSyntaxProvider(JsParserResult parserResult) {
-        return parserResult.getDocumentationHolder().getProvider().getSyntaxProvider();
+        SyntaxProvider syntaxProvider = parserResult.getDocumentationHolder().getProvider().getSyntaxProvider();
+        return syntaxProvider != null ? syntaxProvider : new JsDocumentationFallbackSyntaxProvider();
     }
 
     /**
