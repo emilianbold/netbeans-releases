@@ -72,7 +72,7 @@ public class NBProjectGeneratorsWizardPanel implements WizardDescriptor.Panel,
     }
 
     public HelpCtx getHelp() {
-        return new HelpCtx(NBProjectGeneratorsWizardPanel.class);
+        return null;
     }
 
     public boolean isValid() {

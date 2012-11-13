@@ -72,7 +72,7 @@ public class GroovyJavaDemoWizardPanel implements WizardDescriptor.Panel,
     }
 
     public HelpCtx getHelp() {
-        return new HelpCtx(GroovyJavaDemoWizardPanel.class);
+        return null;
     }
 
     public boolean isValid() {
