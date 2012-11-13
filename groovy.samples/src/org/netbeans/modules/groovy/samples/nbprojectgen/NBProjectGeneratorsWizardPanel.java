@@ -44,6 +44,7 @@ package org.netbeans.modules.groovy.samples.nbprojectgen;
 import java.awt.Component;
 import java.util.HashSet;
 import java.util.Set;
+import javax.swing.JComponent;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.openide.WizardDescriptor;
@@ -67,6 +68,7 @@ public class NBProjectGeneratorsWizardPanel implements WizardDescriptor.Panel,
         if (component == null) {
             component = new NBProjectGeneratorsPanelVisual(this);
             component.setName(NbBundle.getMessage(NBProjectGeneratorsWizardPanel.class, "LBL_CreateProjectStep"));
+            component.putClientProperty("NewProjectWizard_Title", NbBundle.getMessage(NBProjectGeneratorsWizardPanel.class, "LBL_TXT_NBProjectGenerators"));
         }
         return component;
     }
@@ -107,11 +109,17 @@ public class NBProjectGeneratorsWizardPanel implements WizardDescriptor.Panel,
     public void readSettings(Object settings) {
         wizardDescriptor = (WizardDescriptor) settings;
         component.read(wizardDescriptor);
+
+        Object substitute = ((JComponent) component).getClientProperty("NewProjectWizard_Title"); // NOI18N
+        if (substitute != null) {
+            wizardDescriptor.putProperty("NewProjectWizard_Title", substitute); // NOI18N
+        }
     }
 
     public void storeSettings(Object settings) {
         WizardDescriptor d = (WizardDescriptor) settings;
         component.store(d);
+        d.putProperty("NewProjectWizard_Title", null); // NOI18N
     }
 
     public boolean isFinishPanel() {
