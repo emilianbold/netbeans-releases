@@ -42,18 +42,14 @@
 
 package org.netbeans.modules.cordova.project;
 
-import org.netbeans.modules.cordova.platforms.PropertyProvider;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.cordova.platforms.PlatformConstants;
-import org.netbeans.modules.cordova.platforms.android.AndroidActionProvider;
-import org.netbeans.modules.cordova.platforms.android.AndroidConfigurationPanel;
-import org.netbeans.modules.cordova.platforms.android.AndroidPlatform;
-import org.netbeans.modules.cordova.platforms.ios.IOSActionProvider;
-import org.netbeans.modules.cordova.platforms.ios.IOSConfigurationPanel;
-import org.netbeans.modules.cordova.platforms.ios.IOSPlatform;
+import org.netbeans.modules.cordova.platforms.Device;
+import org.netbeans.modules.cordova.platforms.MobilePlatform;
+import org.netbeans.modules.cordova.platforms.PlatformManager;
+import org.netbeans.modules.cordova.platforms.PropertyProvider;
 import org.netbeans.modules.web.clientproject.spi.platform.ClientProjectConfigurationImplementation;
 import org.netbeans.modules.web.clientproject.spi.platform.ProjectConfigurationCustomizer;
 import org.netbeans.modules.web.clientproject.spi.platform.RefreshOnSaveListener;
@@ -79,7 +75,6 @@ public class ClientProjectConfigurationImpl implements ClientProjectConfiguratio
         this.project = project;
         this.name = id;
         this.displayName = displayName;
-        assert type.equals(PlatformConstants.ANDROID_TYPE) || type.equals(PlatformConstants.IOS_TYPE);
         this.type = type;
         this.props = ep;
         this.file = kid;
@@ -116,6 +111,10 @@ public class ClientProjectConfigurationImpl implements ClientProjectConfiguratio
 
     public String getType() {
         return type;
+    }
+    
+    public Device getDevice() {
+        return PlatformManager.getPlatform(type).getDevice(name, props);
     }
 
     @Override
@@ -159,20 +158,12 @@ public class ClientProjectConfigurationImpl implements ClientProjectConfiguratio
 
     @Override
     public ActionProvider getActionProvider() {
-        if (type.equals(PlatformConstants.ANDROID_TYPE)) {
-            return new AndroidActionProvider(project);
-        } else {
-            return new IOSActionProvider(project);
-        }
+        return getDevice().getActionProvider(project);
     }
 
     @Override
     public ProjectConfigurationCustomizer getProjectConfigurationCustomizer() {
-        if (type.equals(PlatformConstants.ANDROID_TYPE)) {
-            return new AndroidConfigurationPanel.AndroidConfigurationCustomizer(project, this);
-        } else {
-            return new IOSConfigurationPanel.IOSConfigurationCustomizer(project, this);
-        }
+        return getDevice().getProjectConfigurationCustomizer(project, this);
     }
     
     @Override

@@ -49,21 +49,16 @@ import java.net.UnknownHostException;
 import java.util.Properties;
 import java.util.prefs.Preferences;
 import org.apache.tools.ant.module.api.support.ActionUtils;
-import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.cordova.platforms.BuildPerformer;
-import org.netbeans.modules.cordova.platforms.PlatformConstants;
-import org.netbeans.modules.cordova.platforms.android.AndroidPlatform;
-import org.netbeans.modules.cordova.platforms.ios.Device;
-import org.netbeans.modules.cordova.platforms.ios.IOSPlatform;
 import org.netbeans.modules.cordova.project.ClientProjectConfigurationImpl;
+import org.netbeans.modules.cordova.project.ClientProjectUtilities;
 import org.netbeans.modules.web.common.api.ServerURLMapping;
 import org.netbeans.modules.web.common.api.WebServer;
 import org.netbeans.spi.project.ProjectConfigurationProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.modules.InstalledFileLocator;
 import org.openide.util.*;
 import org.openide.util.lookup.ServiceProvider;
 
@@ -73,6 +68,7 @@ import org.openide.util.lookup.ServiceProvider;
  */
 @ServiceProvider(service=BuildPerformer.class)
 public class CordovaPerformer implements BuildPerformer {
+    
     
     @Override
     public void perform(String target, Project project) {
@@ -94,30 +90,20 @@ public class CordovaPerformer implements BuildPerformer {
         ProjectConfigurationProvider provider = p.getLookup().lookup(ProjectConfigurationProvider.class);
         ClientProjectConfigurationImpl activeConfiguration = (ClientProjectConfigurationImpl) provider.getActiveConfiguration();
         Properties props = new Properties();
-        props.put("cordova.home", CordovaPlatform.getDefault().getSdkLocation());//NOI18N
-        props.put("cordova.version", CordovaPlatform.getDefault().getVersion());//NOI18N
-        String debug = activeConfiguration.getProperty("debug.enable");//NOI18N
+        final CordovaPlatform phoneGap = CordovaPlatform.getDefault();
+        props.put("cordova.home", phoneGap.getSdkLocation());//NOI18N
+        props.put("cordova.version", phoneGap.getVersion());//NOI18N
+        props.put("site.root", org.netbeans.modules.cordova.project.ClientProjectUtilities.getSiteRoot(p).getPath());
+        props.put("start.file", org.netbeans.modules.cordova.project.ClientProjectUtilities.getStartFile(p).getPath());
+
+        String debug = ClientProjectUtilities.getProperty(p, "debug.enable");//NOI18N
         if (debug == null) {
             debug = "true";//NOI18N
         }
         props.put("debug.enable", debug);//NOI18N
         //workaround for some strange behavior of ant execution in netbeans
         props.put("env.DISPLAY", ":0.0");//NOI18N
-        if (activeConfiguration.getType().equals(PlatformConstants.ANDROID_TYPE)) {
-            props.put("android.build.target", AndroidPlatform.getDefault().getPrefferedTarget());//NOI18N
-            props.put("android.sdk.home", AndroidPlatform.getDefault().getSdkLocation());//NOI18N
-            props.put("android.target.device.arg", PlatformConstants.DEVICE.equals(activeConfiguration.getProperty(PlatformConstants.DEVICE_PROP))?"-d":"-e");//NOI18N
-        } else if (activeConfiguration.getType().equals(PlatformConstants.IOS_TYPE)) {
-            props.put("ios.sim.exec", InstalledFileLocator.getDefault().locate("bin/ios-sim", "org.netbeans.modules.cordova.platforms.ios", false).getPath());//NOI18N
-            String virtualDevice = activeConfiguration.getProperty(PlatformConstants.VIRTUAL_DEVICE_PROP);
-            if (virtualDevice!=null) {
-                Device dev = Device.valueOf(virtualDevice);
-                props.put("ios.device.args", dev.getArgs());//NOI18N
-            } else {
-                //default
-                props.put("ios.device.args", Device.IPHONE.getArgs());//NOI18N
-            }
-        }
+        activeConfiguration.getDevice().addProperties(props);
         return props;
     }
 
@@ -155,8 +141,6 @@ public class CordovaPerformer implements BuildPerformer {
             props.put("android.project.activity", ProjectUtils.getInformation(project).getDisplayName().replaceAll(" ", ""));//NOI18N
             props.put("android.project.package", "org.netbeans");//NOI18N
             props.put("android.project.package.folder", "org/netbeans");//NOI18N
-            props.put("site.root", org.netbeans.modules.cordova.project.Utilities.getSiteRoot(project));
-            props.put("start.file", org.netbeans.modules.cordova.project.Utilities.getStartFile(project));
             FileObject p = FileUtil.createData(project.getProjectDirectory(), nbprojectbuildproperties);
             OutputStream outputStream = p.getOutputStream();
             try {
@@ -171,13 +155,13 @@ public class CordovaPerformer implements BuildPerformer {
 
     @Override
     public String getUrl(Project p) {
-        if (org.netbeans.modules.cordova.project.Utilities.isUsingEmbeddedServer(p)) {
-            WebServer.getWebserver().start(p, org.netbeans.modules.cordova.project.Utilities.getStartFile(p), org.netbeans.modules.cordova.project.Utilities.getWebContextRoot(p));
+        if (org.netbeans.modules.cordova.project.ClientProjectUtilities.isUsingEmbeddedServer(p)) {
+            WebServer.getWebserver().start(p, org.netbeans.modules.cordova.project.ClientProjectUtilities.getStartFile(p), org.netbeans.modules.cordova.project.ClientProjectUtilities.getWebContextRoot(p));
         } else {
             WebServer.getWebserver().stop(p);
         }
         
-        FileObject fileObject = org.netbeans.modules.cordova.project.Utilities.getStartFile(p);
+        FileObject fileObject = org.netbeans.modules.cordova.project.ClientProjectUtilities.getStartFile(p);
         try {
             return ServerURLMapping.toServer(p, fileObject).toExternalForm().replace("localhost", InetAddress.getLocalHost().getHostAddress());
         } catch (UnknownHostException ex) {
@@ -191,4 +175,5 @@ public class CordovaPerformer implements BuildPerformer {
         Preferences preferences = ProjectUtils.getPreferences(p, CordovaPlatform.class, true);
         return Boolean.parseBoolean(preferences.get("phonegap", "false"));
     }
+
 }

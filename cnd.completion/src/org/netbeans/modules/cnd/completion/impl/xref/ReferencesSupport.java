@@ -161,7 +161,7 @@ public final class ReferencesSupport {
             return null;
         }
         DataObject dataObject = DataObject.find(fileObject);
-        EditorCookie cookie = dataObject.getCookie(EditorCookie.class);
+        EditorCookie cookie = dataObject.getLookup().lookup(EditorCookie.class);
         if (cookie == null) {
             throw new IllegalStateException("Given file (\"" + dataObject.getName() + // NOI18N
                                             "\", data object is instance of class " + dataObject.getClass().getName() + // NOI18N
@@ -234,18 +234,18 @@ public final class ReferencesSupport {
         }
 
         // if failed => ask declarations handler
-        if (csmItem == null) {
+        if (csmItem == null && jumpToken != null) {
             int key = jumpToken.offset();
             if (key < 0) {
                 key = offset;
             }
-            csmItem = getReferencedObject(csmFile, key, fileVersionOnStartResolving);
+            csmItem = getReferencedObject(csmFile, jumpToken, fileVersionOnStartResolving);
             if (csmItem == null) {
                 csmItem = findDeclaration(csmFile, doc, jumpToken, key, fileReferencesContext);
                 if (csmItem == null) {
-                    putReferencedObject(csmFile, key, ReferencesCache.UNRESOLVED, fileVersionOnStartResolving);
+                    putReferencedObject(csmFile, jumpToken, ReferencesCache.UNRESOLVED, fileVersionOnStartResolving);
                 } else {
-                    putReferencedObject(csmFile, key, csmItem, fileVersionOnStartResolving);
+                    putReferencedObject(csmFile, jumpToken, csmItem, fileVersionOnStartResolving);
                 }
             } else if (csmItem == ReferencesCache.UNRESOLVED) {
                 csmItem = null;
@@ -282,10 +282,9 @@ public final class ReferencesSupport {
             TokenItem<TokenId> tokenUnderOffset, final int offset, FileReferencesContext fileReferencesContext) {
 
         // fast check, if possible
-        CsmObject csmItem = null;
         // macros have max priority in file
         List<CsmReference> macroUsages = CsmFileInfoQuery.getDefault().getMacroUsages(csmFile);
-        csmItem = findMacro(macroUsages, offset);
+        CsmObject csmItem = findMacro(macroUsages, offset);
         if (csmItem != null) {
             return csmItem;
         }
@@ -656,11 +655,11 @@ public final class ReferencesSupport {
     private final CsmProgressListener progressListener;
     private final ReferencesCache cache = new ReferencesCache();
 
-    private CsmObject getReferencedObject(CsmFile file, int offset, long callTimeVersion) {
+    private CsmObject getReferencedObject(CsmFile file, TokenItem<TokenId> offset, long callTimeVersion) {
         return cache.getReferencedObject(file, offset, callTimeVersion);
     }
 
-    private void putReferencedObject(CsmFile file, int offset, CsmObject object, long fileVersionOnStartResolving) {
+    private void putReferencedObject(CsmFile file, TokenItem<TokenId> offset, CsmObject object, long fileVersionOnStartResolving) {
         cache.putReferencedObject(file, offset, object, fileVersionOnStartResolving);
     }
 
