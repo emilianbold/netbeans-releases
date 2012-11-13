@@ -386,6 +386,7 @@ public class OptionsPanel extends JPanel {
     
     private void clearSearchField() {
         searchTC.setText("");
+	clearAllinQS();
     }
     
     private void showHint (boolean showHint) {
@@ -708,7 +709,7 @@ public class OptionsPanel extends JPanel {
         @Override
         public void quickSearchConfirmed() {
             if (text2search.length() == 0) {
-                clearAll();
+                clearAllinQS();
                 showHint(true);
                 return;
             }
@@ -736,25 +737,25 @@ public class OptionsPanel extends JPanel {
 
         @Override
         public void quickSearchCanceled() {
-            clearAll();
+            clearAllinQS();
             showHint(true);
         }
+    }
 
-        private void clearAll() {
-            clearSearch = true;
-            for (String id : CategoryModel.getInstance().getCategoryIDs()) {
-                JTabbedPane pane = categoryid2tabbedpane.get(id);
-                if (categoryid2tabs.get(id) != null && pane != null) {
-                    for (int i = 0; i < pane.getTabCount(); i++) {
-                        pane.setEnabledAt(i, true);
-                    }
-                }
-                buttons.get(id).setEnabled(true);
-            }
-            setCurrentCategory(CategoryModel.getInstance().getCurrent(), null);
-            disabledCategories.clear();
-	    CategoryModel.getInstance().getCurrent().handleSuccessfulSearchInController(null, null);
-        }
+    private void clearAllinQS() {
+	clearSearch = true;
+	for (String id : CategoryModel.getInstance().getCategoryIDs()) {
+	    JTabbedPane pane = categoryid2tabbedpane.get(id);
+	    if (categoryid2tabs.get(id) != null && pane != null) {
+		for (int i = 0; i < pane.getTabCount(); i++) {
+		    pane.setEnabledAt(i, true);
+		}
+	    }
+	    buttons.get(id).setEnabled(true);
+	}
+	setCurrentCategory(CategoryModel.getInstance().getCurrent(), null);
+	disabledCategories.clear();
+	CategoryModel.getInstance().getCurrent().handleSuccessfulSearchInController(null, null);
     }
     
     private void initActions () {
