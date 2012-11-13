@@ -526,7 +526,9 @@ public class CSSStylesSelectionPanel extends JPanel {
                 }
             });
             hideTreeLines();
-            final Color bgColor = UIManager.getColor("Label.background"); // NOI18N
+            Color bgColor = UIManager.getColor("Label.background"); // NOI18N
+            treeTable.setBackground(bgColor);
+            treeTable.getParent().setBackground(bgColor);
             final TableCellRenderer defaultRenderer = HtmlRenderer.createRenderer();
             treeTable.setDefaultRenderer(Node.Property.class, new TableCellRenderer() {
                 // Text rendered in the first column of tree-table (i.e. in the tree)
@@ -553,10 +555,6 @@ public class CSSStylesSelectionPanel extends JPanel {
                         JComponent jcomponent = ((JComponent)component);
                         jcomponent.setBorder(border[column]);
                         jcomponent.setToolTipText(toolTip);
-                        if (!isSelected && (column == 1)) {
-                            jcomponent.setOpaque(true);
-                            jcomponent.setBackground(bgColor);
-                        }
                     }
                     return component;
                 }
@@ -567,8 +565,6 @@ public class CSSStylesSelectionPanel extends JPanel {
                     Component component = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
                     if (component instanceof JLabel) {
                         JLabel label = (JLabel)component;
-                        label.setOpaque(true);
-                        label.setBackground(bgColor);
                         label.setText("<html><b>"+label.getText()+"<b>"); // NOI18N
                         label.setBorder(BorderFactory.createCompoundBorder(
                             BorderFactory.createEtchedBorder(),

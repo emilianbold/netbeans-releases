@@ -169,11 +169,13 @@ public class DDDataObject extends  DDMultiViewDataObject
         ValidateXMLCookie validateCookie = new ValidateXMLSupport(in);
         getCookieSet().add(validateCookie);
 
-        Project project = FileOwnerQuery.getOwner (getPrimaryFile ());
-        if (project != null) {
-            Sources sources = ProjectUtils.getSources(project);
-            sources.addChangeListener (this);
-            refreshSourceFolders ( sources );
+        if (!FileUtil.isArchiveFile(getPrimaryFile())) {
+            Project project = FileOwnerQuery.getOwner (getPrimaryFile ());
+            if (project != null) {
+                Sources sources = ProjectUtils.getSources(project);
+                sources.addChangeListener (this);
+                refreshSourceFolders ( sources );
+            }
         }
         addPropertyChangeListener(this);
     }
