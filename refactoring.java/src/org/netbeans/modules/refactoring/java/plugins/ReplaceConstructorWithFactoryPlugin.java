@@ -46,6 +46,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import javax.lang.model.SourceVersion;
@@ -148,18 +149,39 @@ public class ReplaceConstructorWithFactoryPlugin extends JavaRefactoringPlugin {
                     }
                     EnumSet<Modifier> factoryMods = EnumSet.of(Modifier.STATIC);
                     factoryMods.addAll(constructor.getModifiers().getFlags());
-                    MethodTree factory = make.Method(make.Modifiers(factoryMods), refactoring.getFactoryName(), make.QualIdent(parent), Collections.<TypeParameterTree>emptyList(), constructor.getParameters(), Collections.<ExpressionTree>emptyList(), "{ return new " + parent.getSimpleName() + "(" + realParameters + "); }", null);
-                    parameter.rewrite(constrPath.getParentPath().getLeaf(), GeneratorUtilities.get(parameter).insertClassMember((ClassTree) constrPath.getParentPath().getLeaf(), factory));
+                    
+                    ClassTree parentTree = (ClassTree) constrPath.getParentPath().getLeaf();
+                    List<? extends TypeParameterTree> typeParameters = parentTree.getTypeParameters();
+                    
+                    List<ExpressionTree> arguments = new LinkedList<ExpressionTree>();
+                    for (VariableTree vt : constructor.getParameters()) {
+                        arguments.add(make.Identifier(vt.getName()));
+                    }
+                    
+                    List<ExpressionTree> typeArguments = new LinkedList<ExpressionTree>();
+                    for (TypeParameterTree vt : typeParameters) {
+                        typeArguments.add(make.Identifier(vt.getName()));
+                    }
+                    ExpressionTree ident = make.QualIdent(parent);
+                    if(!typeArguments.isEmpty()) {
+                        ident = (ExpressionTree) make.ParameterizedType(ident, typeArguments);
+                    }
+                    
+                    BlockTree body = make.Block(Collections.singletonList(make.Return(make.NewClass(null, Collections.EMPTY_LIST, ident, arguments, null))), false);
+                    
+                    MethodTree factory = make.Method(make.Modifiers(factoryMods), refactoring.getFactoryName(), ident, typeParameters, constructor.getParameters(), Collections.<ExpressionTree>emptyList(), body, null);
+                    parameter.rewrite(constrPath.getParentPath().getLeaf(), GeneratorUtilities.get(parameter).insertClassMember(parentTree, factory));
                     EnumSet<Modifier> constructorMods = EnumSet.of(Modifier.PRIVATE);
                     parameter.rewrite(constructor.getModifiers(), make.Modifiers(constructorMods));
                     StringBuilder rule = new StringBuilder();
-                    rule.append("new ").append(parent.getQualifiedName()).append("(").append(parameters).append(")");
+                    boolean hasTypeParams = !parent.getTypeParameters().isEmpty();
+                    rule.append("new ").append(parent.getQualifiedName()).append(hasTypeParams? "<$modifiers$>(" : "(").append(parameters).append(")");
                     if (constraints.length() > 0) {
                         rule.append(" :: ").append(constraints);
                     }
 //                    rule.append(" => ").append(parent.getQualifiedName()).append(".").append(replaceConstructorRefactoring.getFactoryName()).append("(").append(parameters).append(");;");
                     ruleCode[0] = rule.toString();
-                    toCode[0] = parent.getQualifiedName() + "." + refactoring.getFactoryName() + "(" + parameters + ")";
+                    toCode[0] = parent.getQualifiedName() + (hasTypeParams?".<$modifiers$>":".") + refactoring.getFactoryName() + "(" + parameters + ")";
                     toCode[0]+=";;";
                 }
             });
