@@ -486,7 +486,7 @@ public class RuleEditorPanel extends JPanel {
         CHANGE_SUPPORT.firePropertyChange(RuleEditorController.PropertyNames.MODEL_SET.name(), oldModel, this.model);
 
         //update the context in create rule action
-        addRuleAction.setStyleSheet(model.getLookup().lookup(FileObject.class));
+        addRuleAction.setContext(model.getLookup().lookup(FileObject.class));
         
         if (this.rule != null) {
             //resolve the old rule from the previous model to corresponding rule in the new model

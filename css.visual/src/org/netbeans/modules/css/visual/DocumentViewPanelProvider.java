@@ -78,7 +78,7 @@ public class DocumentViewPanelProvider implements CssStylesPanelProvider {
         }
         return panel;
     }
-
+    
     @Override
     public String getPanelID() {
         return DOCUMENT_PANEL_ID;
@@ -86,7 +86,7 @@ public class DocumentViewPanelProvider implements CssStylesPanelProvider {
 
     @Override
     public Lookup getLookup() {
-        return null;
+        return panel.getLookup();
     }
 
     @Override
