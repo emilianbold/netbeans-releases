@@ -567,7 +567,7 @@ public class ModelVisitor extends PathNodeVisitor {
                 fqName = getName((VarNode)lastVisited);
                 isDeclaredInParent = true;
                 JsObject declarationScope = modelBuilder.getCurrentDeclarationScope();
-                if (fqName.indexOf('.') == -1 &&! ModelUtils.isGlobal(declarationScope)) {
+                if (fqName.size() == 1 && !ModelUtils.isGlobal(declarationScope)) {
                     isPrivate = true;
                 }
             } else if (lastVisited instanceof PropertyNode) {
