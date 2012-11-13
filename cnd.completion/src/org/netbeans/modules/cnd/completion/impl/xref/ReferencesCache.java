@@ -42,10 +42,9 @@
 package org.netbeans.modules.cnd.completion.impl.xref;
 
 import java.io.PrintWriter;
-import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.SortedMap;
@@ -138,7 +137,14 @@ public class ReferencesCache {
     void clearFileReferences(CsmFile file) {
         synchronized (cacheLock) {
             if (file == null) {
-                cache.clear();
+                for (Map.Entry<CsmFile, Map<TokenItem<TokenId>, CacheEntry>> entry : cache.entrySet()) {
+                    CsmFile aFile = entry.getKey();
+                    if (CsmFileInfoQuery.getDefault().isDocumentBasedFile(aFile)) {
+                        clearUnresolved(aFile);
+                    } else {
+                        cache.remove(aFile);
+                    }
+                }
             } else {
                 if (CsmFileInfoQuery.getDefault().isDocumentBasedFile(file)) {
                     clearUnresolved(file);
@@ -152,15 +158,10 @@ public class ReferencesCache {
     private void clearUnresolved(CsmFile file) {
         Map<TokenItem<TokenId>, CacheEntry> entry = cache.get(file);
         if (entry != null) {
-            List<TokenItem<TokenId>> toDelete = new ArrayList<TokenItem<TokenId>>();
-            for (Map.Entry<TokenItem<TokenId>, CacheEntry> entry1 : entry.entrySet()) {
-                if (entry1.getValue().csmObject == UNRESOLVED) {
-                    toDelete.add(entry1.getKey());
-                }
-            }
-            if (toDelete.size() > 0) {
-                for(TokenItem<TokenId> token : toDelete) {
-                    entry.remove(token);
+            for (Iterator<Entry<TokenItem<TokenId>, CacheEntry>> it = entry.entrySet().iterator(); it.hasNext();) {
+                Entry<TokenItem<TokenId>, CacheEntry> next = it.next();
+                if (next.getValue().csmObject == UNRESOLVED) {
+                    it.remove();
                 }
             }
         }
