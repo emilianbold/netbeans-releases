@@ -45,32 +45,44 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Properties;
+import org.netbeans.modules.cordova.platforms.Device;
+import org.netbeans.modules.cordova.platforms.MobileDebugTransport;
+import org.netbeans.modules.cordova.platforms.MobilePlatform;
+import org.netbeans.modules.cordova.platforms.PlatformManager;
 import org.netbeans.modules.cordova.platforms.ProcessUtils;
 import org.openide.modules.InstalledFileLocator;
+import org.openide.util.EditableProperties;
 import org.openide.util.Exceptions;
+import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
  * @author Jan Becicka
  * 
  */
-public class IOSPlatform {
+@ServiceProvider(service=MobilePlatform.class)
+public class IOSPlatform implements MobilePlatform {
+
+    private transient final java.beans.PropertyChangeSupport propertyChangeSupport = new java.beans.PropertyChangeSupport(this);
+    private String sdkLocation;
     
-    private static IOSPlatform instance;
-    
-    private IOSPlatform() {
+    public String getType() {
+        return PlatformManager.IOS_TYPE;
     }
     
-    public static synchronized IOSPlatform getDefault() {
-        if (instance == null) {
-            instance = new IOSPlatform();
+    public IOSPlatform() {
+    }
+    
+    @Override
+    public Collection<org.netbeans.modules.cordova.platforms.SDK> getSDKs()  {
+        try {
+            String listSdks = ProcessUtils.callProcess("xcodebuild", true, "-showsdks"); //NOI18N
+            return IOSSDK.parse(listSdks);
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
         }
-        return instance;
-    }
-    
-    public Collection<SDK> getSDKs() throws IOException {
-        String listSdks = ProcessUtils.callProcess("xcodebuild", true, "-showsdks"); //NOI18N
-        return SDK.parse(listSdks);
+        return Collections.emptyList();
     }
     
     public void openUrl(Device device, String url) {
@@ -88,4 +100,74 @@ public class IOSPlatform {
         return f.exists();
     }
     
+    public String getSimulatorPath() {
+        return InstalledFileLocator.getDefault().locate("bin/ios-sim", "org.netbeans.modules.cordova.platforms.ios", false).getPath();
+    }
+
+    @Override
+    public Collection<org.netbeans.modules.cordova.platforms.Device> getConnectedDevices() throws IOException {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    public IOSSDK getPrefferedTarget() {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    public String getSdkLocation() {
+        return sdkLocation;
+    }
+
+
+    @Override
+    public void manageDevices() {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    /**
+     * Add PropertyChangeListener.
+     *
+     * @param listener
+     */
+    @Override
+    public void addPropertyChangeListener(java.beans.PropertyChangeListener listener ) {
+        propertyChangeSupport.addPropertyChangeListener( listener );
+    }
+
+    /**
+     * Remove PropertyChangeListener.
+     *
+     * @param listener
+     */
+    @Override
+    public void removePropertyChangeListener(java.beans.PropertyChangeListener listener ) {
+        propertyChangeSupport.removePropertyChangeListener( listener );
+    }
+    
+ 
+    @Override
+    public void setSdkLocation(String sdkLocation) {
+    }
+
+    @Override
+    public boolean waitEmulatorReady(int timeout) {
+        return true;
+    }
+
+    @Override
+    public MobileDebugTransport getDebugTransport() {
+        return new IOSDebugTransport();
+    }
+
+    @Override
+    public Device getDevice(String name, EditableProperties props) {
+        return IOSDevice.IPAD;
+    }
+
+    @Override
+    public Collection<Device> getVirtualDevices() throws IOException {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
 }
+

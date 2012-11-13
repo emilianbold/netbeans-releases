@@ -41,13 +41,11 @@
  */
 package org.netbeans.modules.cordova.platforms;
 
-import java.io.File;
 import java.io.IOException;
 import org.netbeans.modules.web.clientproject.spi.ClientProjectExtender;
 import org.openide.WizardDescriptor;
 import org.openide.WizardDescriptor.Panel;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 import org.openide.util.EditableProperties;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
@@ -83,20 +81,20 @@ public class MobileProjectExtender implements ClientProjectExtender {
     public static void createMobileConfigs(FileObject projectRoot) throws IOException {
         EditableProperties ios = new EditableProperties(true);
         ios.put("display.name", Bundle.LBL_iPhoneSimulator());//NOI18N
-        ios.put("type", PlatformConstants.IOS_TYPE);//NOI18N
-        ios.put(PlatformConstants.DEVICE_PROP, PlatformConstants.EMULATOR);//NOI18N
-        ConfigUtils.createConfigFile(projectRoot, "ios", ios);//NOI18N
+        ios.put("type", PlatformManager.IOS_TYPE);//NOI18N
+        ios.put(Device.DEVICE_PROP, Device.EMULATOR);//NOI18N
+        ConfigUtils.createConfigFile(projectRoot, PlatformManager.IOS_TYPE, ios);//NOI18N
 
         EditableProperties androide = new EditableProperties(true);
         androide.put("display.name", Bundle.LBL_AndroidEmulator());
-        androide.put("type", PlatformConstants.ANDROID_TYPE);//NOI18N
-        androide.put(PlatformConstants.DEVICE_PROP, PlatformConstants.EMULATOR);//NOI18N
-        ConfigUtils.createConfigFile(projectRoot, "android", androide);//NOI18N
+        androide.put("type", PlatformManager.ANDROID_TYPE);//NOI18N
+        androide.put(Device.DEVICE_PROP, Device.EMULATOR);//NOI18N
+        ConfigUtils.createConfigFile(projectRoot, PlatformManager.ANDROID_TYPE, androide);//NOI18N
 
         EditableProperties androidd = new EditableProperties(true);
         androidd.put("display.name", Bundle.LBL_AndroidDevice());
-        androidd.put("type", PlatformConstants.ANDROID_TYPE);//NOI18N
-        androidd.put(PlatformConstants.DEVICE_PROP, PlatformConstants.DEVICE);//NOI18N
-        ConfigUtils.createConfigFile(projectRoot, "android", androidd);//NOI18N
+        androidd.put("type", PlatformManager.ANDROID_TYPE);//NOI18N
+        androidd.put(Device.DEVICE_PROP, Device.DEVICE);//NOI18N
+        ConfigUtils.createConfigFile(projectRoot, PlatformManager.ANDROID_TYPE, androidd);//NOI18N
     }
 }

@@ -46,7 +46,6 @@ import java.io.IOException;
 import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.Properties;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -58,56 +57,58 @@ import org.netbeans.modules.cordova.platforms.ProcessUtils;
 import org.netbeans.modules.cordova.platforms.PropertyProvider;
 import org.netbeans.modules.web.clientproject.spi.platform.ProjectConfigurationCustomizer;
 import org.netbeans.spi.project.ActionProvider;
+import org.openide.util.EditableProperties;
 import org.openide.util.Exceptions;
 
 /**
  *
  * @author Jan Becicka
  */
-public class AVD implements Device {
-
-    private String name;
-    private HashMap<String, String> props;
-
-    private AVD() {
-        this.props = new HashMap();
-    }
+public class AndroidDevice implements Device {
     
-    public static Collection<Device> parse(String output) throws IOException {
+    public static Collection<org.netbeans.modules.cordova.platforms.Device> parse(String output) throws IOException {
         BufferedReader r = new BufferedReader(new StringReader(output));
-        
-        Pattern pattern = Pattern.compile(" *([\\w]*): (.*)"); //NOI18N
-        
-        ArrayList<Device> result = new ArrayList<Device>();
+
+        Pattern pattern = Pattern.compile("([-\\w]+)\\s+([\\w]+) *"); //NOI18N
+
+        ArrayList<org.netbeans.modules.cordova.platforms.Device> result = new ArrayList<org.netbeans.modules.cordova.platforms.Device>();
         //ignore first line
-        r.readLine();
-        
-        AVD current = new AVD();
-        String lastProp = null;
-        while (r.ready()) {
-            String line = r.readLine();
-            if (line == null) {
-                result.add(current);
-                break;
-            }
+
+        String line = r.readLine();
+
+        while (r.ready() && ((line = r.readLine()) != null)) {
             Matcher m = pattern.matcher(line);
             if (m.matches()) {
-                if ("Name".equals(m.group(1))) { //NOI18N
-                    current.name = m.group(2);
-                } else {
-                    current.props.put(m.group(1), m.group(2));
-                    lastProp = m.group(1);
-                }
-            } else {
-                if (line.contains("---------")) { //NOI18N
-                    result.add(current);
-                    current = new AVD();
-                } else {
-                    current.props.put(lastProp, current.props.get(lastProp) + line);
-                }
+                AndroidDevice device = new AndroidDevice(m.group(1));
+                result.add(device);
             }
         }
         return result;
+    }
+
+    @Override
+    public void openUrl(String url) {
+        try {
+            String s = ProcessUtils.callProcess(getPlatform().getSdkLocation() + "/platform-tools/adb", false, isEmulator()?"-d":"-e", "wait-for-device", "shell", "am", "start", "-a", "android.intent.action.VIEW", "-n", "com.android.browser/.BrowserActivity", url); //NOI18N
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+    }
+    
+    static Device get(String name, EditableProperties props) {
+        final String property = props.getProperty(Device.VIRTUAL_DEVICE_PROP);
+        final boolean b = Boolean.parseBoolean(property);
+        return new AndroidDevice(b ? "emulator" + name: name);
+    }
+    
+    private final String name;
+
+    private AndroidDevice(String name) {
+        this.name = name;
+    }
+    
+    public boolean isEmulator() {
+        return name.startsWith("emulator"); //NOI18N
     }
 
     public String getName() {
@@ -116,12 +117,7 @@ public class AVD implements Device {
 
     @Override
     public String toString() {
-        return "AVD{" + "name=" + name + ", props=" + props + '}'; //NOI18N
-    }
-
-    @Override
-    public boolean isEmulator() {
-        return true;
+        return "Device{" + "name=" + name + ", emulator: " + isEmulator() + '}'; //NOI18N
     }
 
     @Override
@@ -145,15 +141,6 @@ public class AVD implements Device {
     @Override
     public ProjectConfigurationCustomizer getProjectConfigurationCustomizer(Project project, PropertyProvider aThis) {
         return new AndroidConfigurationPanel.AndroidConfigurationCustomizer(project, aThis);
-    }
-    
-    @Override
-    public void openUrl(String url) {
-        try {
-            String s = ProcessUtils.callProcess(getPlatform().getSdkLocation() + "/platform-tools/adb", false, isEmulator()?"-d":"-e", "wait-for-device", "shell", "am", "start", "-a", "android.intent.action.VIEW", "-n", "com.android.browser/.BrowserActivity", url); //NOI18N
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
-        }
     }
     
 }

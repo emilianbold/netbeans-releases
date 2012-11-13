@@ -39,67 +39,106 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.cordova.platforms.ios;
+package org.netbeans.modules.cordova.platforms;
 
-import java.io.BufferedReader;
+import java.beans.PropertyChangeListener;
 import java.io.IOException;
-import java.io.StringReader;
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import org.openide.util.EditableProperties;
 
 /**
  *
  * @author Jan Becicka
  */
-public class SDK {
+public interface MobilePlatform {
+    
+    /**
+     * Getter for collection of connected devices
+     * @return
+     * @throws IOException 
+     */
+    Collection<Device> getConnectedDevices() throws IOException;
+    
+    /**
+     * Getter for collection of virtual devices
+     * @return
+     * @throws IOException 
+     */
+    Collection<Device> getVirtualDevices() throws IOException;
+    
+    /**
+     * Getter for device according given parameters.
+     * @param name
+     * @param props
+     * @return 
+     */
+    Device getDevice(String name, EditableProperties props);
 
-    private String name;
-    private final String identifier;
+    /**
+     * Get available SDKs
+     * @return
+     * @throws IOException 
+     */
+    Collection<SDK> getSDKs() throws IOException;
+    
+    /**
+     * Get prefferred SDK
+     * @return 
+     */
+    SDK getPrefferedTarget();
 
-    public static Collection<SDK> parse(String output) throws IOException {
-        BufferedReader r = new BufferedReader(new StringReader(output));
-        
-        Pattern pattern = Pattern.compile("(.*)-sdk(.*)"); //NOI18N
-        
-        ArrayList<SDK> result = new ArrayList<SDK>();
-        //ignore first line
-        
-        String line = null;
-        do {
-            line = r.readLine();
-        } while (!line.startsWith("iOS SDKs")); //NOI18N
-      
-        while (line !=null && r.ready()) {
-            Matcher m = pattern.matcher(line);
-            if (m.matches()) {
-                SDK sdk = new SDK(m.group(1).trim(), m.group(2).trim());
-                result.add(sdk);
-            } 
-            line = r.readLine();
-        }
-        return result;
-    }
+    /**
+     * Get sdk location
+     * @return 
+     */
+    String getSdkLocation();
 
-    private SDK(String name, String identifier) {
-        this.name = name;
-        this.identifier = identifier;
-    }
+    /**
+     * Is platform ready
+     * @return 
+     */
+    boolean isReady();
 
-    public String getName() {
-        return name;
-    }
+    /**
+     * Invokes Manage Devices UI
+     */
+    void manageDevices();
 
-    public String getIdentifier() {
-        return identifier;
-    }
+    /**
+     * Set SDK location
+     * @param sdkLocation 
+     */
+    void setSdkLocation(String sdkLocation);
+
+    /**
+     * Wait for emulator.
+     * @param timeout
+     * @return 
+     */
+    boolean waitEmulatorReady(int timeout);
     
     
+    /**
+     * Returns type
+     * @see PlatformManager#ANDROID_TYPE
+     * @see PlatformManager#IOS_TYPE
+     * @return 
+     */
+    String getType();
+    
+    /**
+     * Path for simulator
+     * @return 
+     */
+    String getSimulatorPath();
 
-    @Override
-    public String toString() {
-        return "SDK{" + "name=" + name + ", identifier=" + identifier + '}'; //NOI18N
-    }
+    /**
+     * Debugger transport
+     * @return 
+     */
+    public MobileDebugTransport getDebugTransport();
+
+    void removePropertyChangeListener(PropertyChangeListener listener);
+    
+    void addPropertyChangeListener(PropertyChangeListener listener);
 }
