@@ -44,6 +44,7 @@ package org.netbeans.modules.bugtracking.ui.search;
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Dimension;
+import java.util.logging.Level;
 import javax.swing.BorderFactory;
 import javax.swing.JLabel;
 import javax.swing.JList;
@@ -74,9 +75,10 @@ class SearchResultRenderer extends JLabel implements ListCellRenderer {
         configRenderer();
     }
 
+    @Override
     public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
         if (!(value instanceof PopupItem)) {
-            BugtrackingManager.LOG.warning("wrong search list item " + value); // NOI18N
+            BugtrackingManager.LOG.log(Level.WARNING, "wrong search list item {0}", value); // NOI18N
             return null;
         }
 

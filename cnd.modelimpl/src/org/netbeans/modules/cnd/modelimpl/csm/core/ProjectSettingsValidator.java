@@ -161,7 +161,7 @@ public class ProjectSettingsValidator {
 	data = (Data) RepositoryUtils.get(key);
         if( data == null ) {
             data = new Data();
-            DiagnosticExceptoins.register(new IllegalStateException("Can not get project settings validator data by the key " + key)); //NOI18N
+            DiagnosticExceptoins.registerIllegalRepositoryStateException("Can not get project settings validator data by the key ", key); //NOI18N
         }
     }
     

@@ -204,6 +204,7 @@ public final class XRefResultSet<T> {
         INLINED_METHOD,
         INLINED_CONSTRUCTOR,
         UNRESOLVED,
+        CHECK_POINT,
     };
 
     public enum DeclarationKind {
@@ -282,5 +283,28 @@ public final class XRefResultSet<T> {
             this.declarationIncludeLevel = declarationIncludeLevel;
             this.usageStatistics = usageStatistics;
         }
+
+        @Override
+        public String toString() {
+            String msg; 
+            if (this == RESOLVED) {
+                msg = "RESOLVED"; // NOI18N
+            } else if (this == UNRESOLVED_BUILTIN_BASED) {
+                msg = "UNRESOLVED_BUILTIN_BASED"; // NOI18N
+            } else if (this == UNRESOLVED_MACRO_BASED) {
+                msg = "UNRESOLVED_MACRO_BASED"; // NOI18N
+            } else if (this == UNRESOLVED_TEMPLATE_BASED) {
+                msg = "UNRESOLVED_TEMPLATE_BASED"; // NOI18N
+            } else if (this == UNRESOLVED_AFTER_UNRESOLVED) {
+                msg = "UNRESOLVED_AFTER_UNRESOLVED"; // NOI18N
+            } else if (this == UNRESOLVED) {
+                msg = "UNRESOLVED"; // NOI18N
+            } else {
+                msg = "ContextEntry{declaration=" + declaration + ", declarationScope=" + declarationScope + ", declarationIncludeLevel=" + declarationIncludeLevel + ", usageStatistics=" + usageStatistics + '}'; // NOI18N
+            }
+            return msg;
+        }
+
+        
     }
 }

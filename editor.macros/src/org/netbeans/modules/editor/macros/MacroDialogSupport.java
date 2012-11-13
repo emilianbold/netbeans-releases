@@ -124,6 +124,11 @@ public final class MacroDialogSupport {
     private static final MacroDescription findByShortcut(Map<String, MacroDescription> macros, KeyStroke... shortcut) {
         for(MacroDescription m : macros.values()) {
 outer:      for(MultiKeyBinding mkb : m.getShortcuts()) {
+                if (mkb == null) {
+                    // erroneous shortcut
+                    LOG.warning("Null shortcut in macro definition: " + m);
+                    continue;
+                }
                 if (mkb.getKeyStrokeCount() == shortcut.length) {
                     for(int i = 0; i < shortcut.length; i++) {
                         if (!mkb.getKeyStroke(i).equals(shortcut[i])) {

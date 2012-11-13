@@ -47,7 +47,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.util.List;
 import javax.swing.AbstractButton;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
@@ -59,7 +58,6 @@ import org.netbeans.modules.search.Manager;
 import org.netbeans.modules.search.ReplaceTask;
 import org.netbeans.modules.search.ResultModel;
 import org.netbeans.modules.search.ResultView;
-import org.openide.filesystems.FileObject;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
@@ -75,10 +73,9 @@ public class BasicReplaceResultsPanel extends BasicAbstractResultsPanel {
     private JButton replaceButton;
 
     public BasicReplaceResultsPanel(ResultModel resultModel,
-            BasicComposition composition, List<FileObject> rootFiles,
-            Node infoNode) {
-        super(resultModel, composition, true, rootFiles,
-                new ResultsOutlineSupport(true, true, resultModel, rootFiles,
+            BasicComposition composition, Node infoNode) {
+        super(resultModel, composition, true,
+                new ResultsOutlineSupport(true, true, resultModel, composition,
                 infoNode));
         init();
     }

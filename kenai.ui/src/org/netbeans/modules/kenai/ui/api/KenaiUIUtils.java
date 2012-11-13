@@ -193,8 +193,8 @@ public final class KenaiUIUtils {
         return result;
     }
 
-    public static ProjectHandle<KenaiProject>[] getDashboardProjects() {
-        return KenaiServer.getOpenProjects();
+    public static ProjectHandle<KenaiProject>[] getDashboardProjects(boolean onlyOpened) {
+        return KenaiServer.getDashboardProjects(onlyOpened);
     }
     
     public static void logKenaiUsage(Object... parameters) {

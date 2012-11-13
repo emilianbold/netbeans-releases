@@ -202,6 +202,8 @@ public class RefactoringPanel extends JPanel implements FiltersManagerImpl.Filte
         add(splitPane, BorderLayout.CENTER);
         if (!isQuery) {
             splitPane.setRightComponent(new JLabel(org.openide.util.NbBundle.getMessage(RefactoringPanel.class, "LBL_Preview_not_Available"), SwingConstants.CENTER));
+        } else {
+            splitPane.setDividerSize(0);
         }
         splitPane.setBorder(null);
         // add panel with buttons
@@ -794,15 +796,17 @@ public class RefactoringPanel extends JPanel implements FiltersManagerImpl.Filte
                                     if (cancelRequest.get()) {
                                         break;
                                     }
-                                    final boolean finished = APIAccessor.DEFAULT.isFinished(session);
+                                    final boolean finished = session!= null? APIAccessor.DEFAULT.isFinished(session) : true;
                                     final boolean last = !it.hasNext();
                                     if ((occurrences % 10 == 0 && !finished) || last) {
                                         SwingUtilities.invokeLater(new Runnable() {
                                             @Override
                                             public void run() {
-                                                root.setNodeLabel(description + getErrorDesc(0, occurrences, hiddenOccurrences, isQuery && sizeIsApproximate.get()));
-                                                if (last) {
-                                                    tree.repaint();
+                                                if (tree!=null) {
+                                                    root.setNodeLabel(description + getErrorDesc(0, occurrences, hiddenOccurrences, isQuery && sizeIsApproximate.get()));
+                                                    if (last) {
+                                                        tree.repaint();
+                                                    }
                                                 }
                                             }
                                         });
@@ -1258,6 +1262,8 @@ public class RefactoringPanel extends JPanel implements FiltersManagerImpl.Filte
         if (fuListener!=null) {
             stopSearch();
             ui.getRefactoring().removeProgressListener(fuListener);
+            fuListener.stop(null);
+            fuListener = null;
         }
         timeStamps.clear();
         //UndoWatcher.stopWatching(this);
@@ -1384,7 +1390,9 @@ public class RefactoringPanel extends JPanel implements FiltersManagerImpl.Filte
 
         @Override
         public void stop(final ProgressEvent event) {
-            handle.finish();
+            if (handle != null) {
+                handle.finish();
+            }
         }
 
         private String getMessage(ProgressEvent event) {

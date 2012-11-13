@@ -54,6 +54,8 @@ import java.util.logging.Logger;
 import javax.swing.Action;
 import javax.swing.Box;
 import javax.swing.Icon;
+import javax.swing.JCheckBoxMenuItem;
+import javax.swing.JPopupMenu;
 import javax.swing.JToggleButton;
 import javax.swing.JToolBar;
 import javax.swing.KeyStroke;
@@ -108,7 +110,6 @@ public class PageInspectorImpl extends PageInspector {
      * Creates a new {@code PageInspectorImpl}.
      */
     public PageInspectorImpl() {
-        propChangeSupport.addPropertyChangeListener(PageInspectionTCGroupManager.getInstance());
     }
 
     /**
@@ -141,7 +142,7 @@ public class PageInspectorImpl extends PageInspector {
                     messageListener = new InspectionMessageListener(pageModel, pageContext);
                     messageDispatcher.addMessageListener(messageListener);
                 }
-                initSelectionMode(pageContext.lookup(JToolBar.class), pageModel);
+                initSelectionMode(pageContext.lookup(JToolBar.class), pageContext.lookup(JPopupMenu.class), pageModel);
                 Project p = pageContext.lookup(Project.class);
                 if (p != null) {
                     pageInspectorCustomizer = p.getLookup().lookup(PageInspectorCustomizer.class);
@@ -204,9 +205,10 @@ public class PageInspectorImpl extends PageInspector {
      * Adds 'Selection Mode' toggle-button into the specified toolbar.
      *
      * @param toolBar toolbar to insert the toggle-button into (can be {@code null}).
+     * @param contextMenu popup menu to insert the toggle-button into (can be {@code null}).
      * @param pageModel mode that the inserted toggle-button should affect.
      */
-    private void initSelectionMode(JToolBar toolBar, final PageModel pageModel) {
+    private void initSelectionMode(JToolBar toolBar, JPopupMenu contextMenu, final PageModel pageModel) {
         if (toolBar != null) {
             Icon selectionModeIcon = ImageUtilities.loadImageIcon("org/netbeans/modules/web/inspect/resources/selectionMode.png", true); // NOI18N
             final JToggleButton selectionModeButton = new JToggleButton(selectionModeIcon);
@@ -217,10 +219,14 @@ public class PageInspectorImpl extends PageInspector {
             selectionModeButton.setToolTipText(selectionModeTooltip);
             selectionModeButton.setName(SELECTION_MODE_COMPONENT_NAME);
             selectionModeButton.setFocusPainted(false);
-            selectionModeButton.addItemListener( new ItemListener() {
+
+            final JCheckBoxMenuItem selectionModeMenu = new JCheckBoxMenuItem(NbBundle.getMessage(PageInspectorImpl.class, "PageInspectorImpl.selectionModeShort")); //NOI18N
+            selectionModeMenu.setAccelerator( ks );
+            selectionModeMenu.setIcon( selectionModeIcon );
+            ItemListener listener = new ItemListener() {
                 @Override
                 public void itemStateChanged( ItemEvent e ) {
-                    final boolean selectionMode = selectionModeButton.isSelected();
+                    final boolean selectionMode = e.getStateChange() == ItemEvent.SELECTED;
                     RP.post(new Runnable() {
                         @Override
                         public void run() {
@@ -228,7 +234,9 @@ public class PageInspectorImpl extends PageInspector {
                         }
                     });
                 }
-            });
+            };
+            selectionModeButton.addItemListener( listener );
+            selectionModeMenu.addItemListener( listener );
             pageModel.addPropertyChangeListener(new PropertyChangeListener() {
                 @Override
                 public void propertyChange(PropertyChangeEvent evt) {
@@ -239,6 +247,7 @@ public class PageInspectorImpl extends PageInspector {
                             @Override
                             public void run() {
                                 selectionModeButton.setSelected(selectionMode);
+                                selectionModeMenu.setSelected(selectionMode);
                             }
                         });
                     }
@@ -254,6 +263,12 @@ public class PageInspectorImpl extends PageInspector {
             toolBar.add(Box.createHorizontalStrut(gapSize));
             toolBar.add(selectionModeButton);
             selectionModeButton.setSelected(pageModel.isSelectionMode());
+            selectionModeMenu.setSelected(pageModel.isSelectionMode());
+
+            if( null != contextMenu ) {
+                contextMenu.addSeparator();
+                contextMenu.add( selectionModeMenu );
+            }
         }
     }
 

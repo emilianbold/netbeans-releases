@@ -396,6 +396,13 @@ public final class ModuleUpdater extends Thread {
                         long crc = UpdateTracking.getFileCRC(destFile);
                         version.addFileWithCrc("modules/" + osgiJar.getName(), Long.toString(crc));
                         //create config/Modules/cnb.xml
+                        File configDir = new File (new File (cluster, ModuleDeactivator.CONFIG), ModuleDeactivator.MODULES); // NOI18N
+                        String configFileName = symbolicName.replace ('.', '-') + ".xml";
+                        File configFile = new File(configDir, configFileName);
+                        if (configFile.exists()) {
+                            long configFileCRC = UpdateTracking.getFileCRC(configFile);
+                            version.addFileWithCrc("config/Modules/" + configFileName, Long.toString(configFileCRC));
+                        }
 
                         context.setProgressValue(bytesRead);
                         modtrack.setOSGi(true);

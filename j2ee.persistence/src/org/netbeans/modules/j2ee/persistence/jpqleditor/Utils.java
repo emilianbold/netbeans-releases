@@ -126,6 +126,8 @@ public class Utils {
             //we have no valid classpath entries from a project, it may be because it wasn't build at least once
             problems.add(NbBundle.getMessage(Utils.class, "NoValidClasspath"));//NOI18N
             //no need to continue in this case
+        } else if (pe.getLocation() == null || pe.getLocation().getFileObject("persistence.xml")==null) {
+            problems.add(NbBundle.getMessage(Utils.class, "NoValidPersistenceXml"));//NOI18N
         } else {
             localResourcesURLList.addAll(projectURLs);
             localResourcesURLList.add(pe.getLocation().getParent().toURL());

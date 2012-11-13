@@ -128,7 +128,7 @@ public class JavaBeanClass extends AbstractCodeGeneratorClass implements CodeGen
             genElementPositions();
         }
         if (beanElement.isRoot && config.isProcessDocType()) {
-            genProcessDocType();
+            genProcessDocType(config.isJava5());
         }
 
         if (!config.isMinFeatures()) {
@@ -376,7 +376,7 @@ public class JavaBeanClass extends AbstractCodeGeneratorClass implements CodeGen
                     }
                     jw.write(attr, ".add(",
                              JavaUtil.toObject(a.instanceOf()+"[i]", baseType,
-                                               config.isForME()));
+                                               config.isForME(), config.isJava5()));
                     jw.writeEol(")");
                     jw.end();
                     jw.end();
@@ -662,7 +662,7 @@ public class JavaBeanClass extends AbstractCodeGeneratorClass implements CodeGen
                     jw.beginFor("", "srcPos < value.length", "++srcPos");
                     jw.writeEol("insertElementByPosition(destPos++, ",
                                 JavaUtil.toObject("value[srcPos]", baseType,
-                                                  config.isForME()),
+                                                  config.isForME(), config.isJava5()),
                                 ", "+i+")");
                     jw.end();
                 }
@@ -680,7 +680,7 @@ public class JavaBeanClass extends AbstractCodeGeneratorClass implements CodeGen
                         genWhiteSpaceRestriction(ws, "value[i]", baseType);
                     jw.write(attr, ".add(");
                     String objectValue = JavaUtil.toObject("value[i]", baseType,
-                                                           config.isForME());
+                                                           config.isForME(), config.isJava5());
                     jw.writeEol(objectValue, ")");
                     jw.end();
                 }
@@ -703,7 +703,7 @@ public class JavaBeanClass extends AbstractCodeGeneratorClass implements CodeGen
                     jw.end();
                     jw.writeEol("elementsByPosition[pos] = ",
                                 JavaUtil.toObject("value", type,
-                                                  config.isForME()));
+                                                  config.isForME(), config.isJava5()));
                     if (!isScalar) {
                         jw.endElseBegin();
                         jw.beginIf("pos < elementCount");
@@ -796,14 +796,14 @@ public class JavaBeanClass extends AbstractCodeGeneratorClass implements CodeGen
                         jw.end();
                     }
                     jw.write(attr, ".set(index, ");
-                    jw.write(JavaUtil.toObject("value", baseType, config.isForME()));
+                    jw.write(JavaUtil.toObject("value", baseType, config.isForME(), config.isJava5()));
                     jw.writeEol(")");
                 }
                 if (config.isKeepElementPositions()) {
                     jw.writeEol("int pos = findElementType("+i+", index)");
                     jw.writeEol("elementsByPosition[pos] = ",
                                 JavaUtil.toObject("value", baseType,
-                                                  config.isForME()));
+                                                  config.isForME(), config.isJava5()));
                 }
                 genMadeChange();
                 end();
@@ -892,7 +892,7 @@ public class JavaBeanClass extends AbstractCodeGeneratorClass implements CodeGen
                     }
                     jw.writeEol(attr, ".add(",
                                 JavaUtil.toObject("value", baseType,
-                                                  config.isForME()),
+                                                  config.isForME(), config.isJava5()),
                                 ")");
                     if (config.isKeepElementPositions()) {
                         GraphLink gl = a.getGraphLink();
@@ -919,7 +919,7 @@ public class JavaBeanClass extends AbstractCodeGeneratorClass implements CodeGen
                         jw.writeEol("int pos = findLastOfElementType("+lastPropNum+")+1");
                         jw.writeEol("insertElementByPosition(pos, ",
                                     JavaUtil.toObject("value", baseType,
-                                                      config.isForME()),
+                                                      config.isForME(), config.isJava5()),
                                     ", "+i+")");
                     }
                     if (config.isGeneratePropertyEvents()) {
@@ -968,7 +968,7 @@ public class JavaBeanClass extends AbstractCodeGeneratorClass implements CodeGen
                     }
                     jw.writeEol("int pos = ", attr, ".indexOf(",
                                 JavaUtil.toObject("value", baseType,
-                                                  config.isForME())+")");
+                                                  config.isForME(), config.isJava5())+")");
                     gen("if (pos >= 0) ");
                     begin();
                     geneol(attr+".remove(pos)");
@@ -1927,10 +1927,11 @@ public class JavaBeanClass extends AbstractCodeGeneratorClass implements CodeGen
         if (beanElement.isRoot) {
             ++attrCount;
             jw.writeEol("String xsiPrefix = \"xsi\"");
-            jw.beginFor("java.util.Iterator it = namespacePrefixes.keySet().iterator()",
+            jw.beginFor("java.util.Iterator it = namespacePrefixes.entrySet().iterator()",
                         "it.hasNext()", "");
-            jw.writeEol("String prefix = (String) it.next()");
-            jw.writeEol("String ns = (String) namespacePrefixes.get(prefix)");
+            jw.writeEol("java.util.Map.Entry entry = (java.util.Map.Entry) it.next()");
+            jw.writeEol("String prefix = (String) entry.getKey()");
+            jw.writeEol("String ns = (String) entry.getValue()");
             jw.beginIf("\"http://www.w3.org/2001/XMLSchema-instance\".equals(ns)");
             jw.writeEol("xsiPrefix = prefix");
             jw.writeEol("break");
@@ -2090,7 +2091,7 @@ public class JavaBeanClass extends AbstractCodeGeneratorClass implements CodeGen
                 else if (a.type == Common.TYPE_COMMENT)
                     jw.write("childNode instanceof org.w3c.dom.Comment");
                 else
-                    jw.write("childNodeName == \""+a.dtdName+"\"");
+                    jw.write("\""+a.dtdName+"\".equals(childNodeName)");
                 jw.write(") ");
                 begin();
                 String var;
@@ -2179,7 +2180,7 @@ public class JavaBeanClass extends AbstractCodeGeneratorClass implements CodeGen
                 if (indexed && generatedSet)
                     jw.writeEol(attr, ".add(",
                                 JavaUtil.toObject(var, baseType,
-                                                  config.isForME()),
+                                                  config.isForME(), config.isJava5()),
                                 ")");
                 if (a.isNillable()) {
                     jw.endElseBegin();
@@ -2192,7 +2193,7 @@ public class JavaBeanClass extends AbstractCodeGeneratorClass implements CodeGen
                 if (hasDuplicateDtdNames)
                     jw.writeEol("readState.lastElementType = "+i);
                 if (config.isKeepElementPositions()) {
-                    jw.writeEol("elementsByPosition[readState.elementPosition] = "+JavaUtil.toObject(var, type, config.isForME()));
+                    jw.writeEol("elementsByPosition[readState.elementPosition] = "+JavaUtil.toObject(var, type, config.isForME(), config.isJava5()));
                     jw.writeEol("elementTypesByPosition[readState.elementPosition++] = "+i);
                 }
                 end();
@@ -3602,8 +3603,8 @@ public class JavaBeanClass extends AbstractCodeGeneratorClass implements CodeGen
         end();
         cr();
         jw.beginMethod("_setVetoableChangeSupport",
-                       "java.beans.VetoableChangeSupport vs", "void", null,
-                       jw.PACKAGE_LEVEL);
+                       "java.beans.VetoableChangeSupport vs", null,
+                       "void", jw.PACKAGE_LEVEL);
         geneol("vetos = vs");
         end();
         cr();
@@ -3720,7 +3721,7 @@ public class JavaBeanClass extends AbstractCodeGeneratorClass implements CodeGen
         jw.endMethod();
     }
 
-    protected void genProcessDocType() throws IOException {
+    protected void genProcessDocType(boolean java5) throws IOException {
         String fullDocTypeName;
         fullDocTypeName = fullClassName+".DocType";
         select(DECL_SECTION);
@@ -3801,36 +3802,40 @@ public class JavaBeanClass extends AbstractCodeGeneratorClass implements CodeGen
         jw.endMethod();
         jw.write("public String toString() ");
         jw.begin();
-        jw.writeEol("String result = \"<!DOCTYPE \"");
-        jw.writeEol("result += name");
+        if (java5) {
+            jw.writeEol("java.lang.StringBuilder result = new java.lang.StringBuilder(\"<!DOCTYPE \")");
+        } else {
+            jw.writeEol("java.lang.StringBuffer result = new java.lang.StringBuffer(\"<!DOCTYPE \")");
+        }
+        jw.writeEol("result.append(name)");
         jw.beginIf("publicId != null");
-        jw.writeEol("result += \" PUBLIC \\\"\"");
-        jw.writeEol("result += publicId");  // should be printXML
-        jw.writeEol("result += \"\\\"\"");
+        jw.writeEol("result.append(\" PUBLIC \\\"\")");
+        jw.writeEol("result.append(publicId)");  // should be printXML
+        jw.writeEol("result.append(\"\\\"\")");
         jw.beginIf("systemId == null");
         jw.writeEol("systemId = \"SYSTEM\"");
         jw.end();
         jw.end();
         jw.beginIf("systemId != null");
-        jw.writeEol("result += \" \\\"\"");
-        jw.writeEol("result += systemId");
-        jw.writeEol("result += \"\\\"\"");
+        jw.writeEol("result.append(\" \\\"\")");
+        jw.writeEol("result.append(systemId)");
+        jw.writeEol("result.append(\"\\\"\")");
         jw.end();
         jw.beginIf("entities != null");
         jw.writeEol("int length = entities.getLength()");
         jw.beginIf("length > 0");
-        jw.writeEol("result += \" [\"");
+        jw.writeEol("result.append(\" [\")");
         jw.beginFor("int i = 0", "i < length", "++i");
         jw.writeEol("org.w3c.dom.Node node = entities.item(i)");
-        jw.writeEol("result += \"<\"+node.getNodeName()+\">\"");
-        jw.writeEol("result += node.getNodeValue()");
-        jw.writeEol("result += \"</\"+node.getNodeName()+\">\"");
+        jw.writeEol("result.append(\"<\"+node.getNodeName()+\">\")");
+        jw.writeEol("result.append(node.getNodeValue())");
+        jw.writeEol("result.append(\"</\"+node.getNodeName()+\">\")");
         jw.end();
-        jw.writeEol("result += \"]\"");
+        jw.writeEol("result.append(\"]\")");
         jw.end();
         jw.end();
-        jw.writeEol("result += \">\"");
-        jw.writeEol("return result");
+        jw.writeEol("result.append(\">\")");
+        jw.writeEol("return result.toString()");
         jw.end();
 
         jw.endMethod();
@@ -3909,13 +3914,13 @@ public class JavaBeanClass extends AbstractCodeGeneratorClass implements CodeGen
             String type = a.getType();
             if (i > 0)
                 gen("else ");
-            gencr("if (name == \""+a.beanIntrospectorName()+"\")");
+            gencr("if (\""+a.beanIntrospectorName()+"\".equals(name))");
             tabIn();
             if (indexed) {
                 gen("add"+a.name);
                 geneol("("+JavaUtil.fromObject(type, "value")+")");
                 gen("else ");
-                gencr("if (name == \""+a.beanIntrospectorName()+"[]\")");
+                gencr("if (\""+a.beanIntrospectorName()+"[]\".equals(name))");
                 tabIn();
                 gen(a.getWriteMethod()+"(");
                 geneol("("+type+"[]) value)");
@@ -3943,17 +3948,17 @@ public class JavaBeanClass extends AbstractCodeGeneratorClass implements CodeGen
             Property a = (Property)attrList.get(i);
             boolean   	indexed = a.isIndexed();
             String type = a.getType();
-            gen("if (name == \""+a.beanIntrospectorName());
+            gen("if (\""+a.beanIntrospectorName());
             if (indexed)
                 gen("[]");
-            gencr("\")");
+            gencr("\".equals(name))");
             tabIn();
             jw.write("return ");
             if (indexed)
                 jw.writeEol(a.getReadMethod(false)+"()");
             else
                 jw.writeEol(JavaUtil.toObject(a.getReadMethod(false)+"()", type,
-                                              config.isForME()));
+                                              config.isForME(), config.isJava5()));
         }
         if (config.isRespectExtension() && beanElement.getExtension() != null) {
             jw.writeEol("return super.fetchPropertyByName(name)");
@@ -4337,6 +4342,7 @@ public class JavaBeanClass extends AbstractCodeGeneratorClass implements CodeGen
         }
         for (Iterator types = typeMap.keySet().iterator(); types.hasNext(); ) {
             String type = (String) types.next();
+            boolean isString = type != null && type.equals("java.lang.String"); // NOI18N
             jw.beginIf("childObj instanceof "+type);
             jw.writeEol(type, " child = (", type, ") childObj");
             boolean firstUseOfIndex = true;
@@ -4354,7 +4360,11 @@ public class JavaBeanClass extends AbstractCodeGeneratorClass implements CodeGen
                         jw.writeEol("index = 0");
                     }
                     beginAttrIterator(attr, prop, "element");
-                    jw.beginIf(childExpr+" == element");
+                    if (isString) {
+                        jw.beginIf(childExpr+".equals(element)");
+                    } else {
+                        jw.beginIf(childExpr+" == element");
+                    }
                     jw.beginIf("returnConstName");
                     jw.writeEol("return ", prop.constName);
                     if (prop.type != Common.TYPE_COMMENT) {
@@ -4374,7 +4384,11 @@ public class JavaBeanClass extends AbstractCodeGeneratorClass implements CodeGen
                     jw.writeEol("++index");
                     jw.end();
                 } else {
-                    jw.beginIf(childExpr+" == "+attr);
+                    if (isString) {
+                        jw.beginIf(childExpr+".equals("+attr+")");
+                    } else {
+                        jw.beginIf(childExpr+" == "+attr);
+                    }
                     jw.beginIf("returnConstName");
                     jw.writeEol("return ", prop.constName);
                     if (prop.type != Common.TYPE_COMMENT) {
@@ -4804,7 +4818,8 @@ public class JavaBeanClass extends AbstractCodeGeneratorClass implements CodeGen
                     else
                         jw.writeEol(JavaUtil.toObject(curProp.getReadMethod(false)+"()",
                                                       curProp.getType(),
-                                                      config.isForME()));
+                                                      config.isForME(),
+                                                      config.isJava5()));
                 }
             }.generate();
         jw.endMethod();
@@ -4819,7 +4834,8 @@ public class JavaBeanClass extends AbstractCodeGeneratorClass implements CodeGen
                     jw.write("return ");
                     jw.writeEol(JavaUtil.toObject(curProp.getReadMethod(true)+"(index)",
                                                   curProp.getType(),
-                                                  config.isForME()));
+                                                  config.isForME(),
+                                                  config.isJava5()));
                 }
 
                 public void postGenerate() throws IOException {}
@@ -4838,7 +4854,8 @@ public class JavaBeanClass extends AbstractCodeGeneratorClass implements CodeGen
                     jw.write("return ");
                     jw.writeEol(JavaUtil.toObject(curProp.getReadMethod(false)+"()",
                                                   curProp.getType(),
-                                                  config.isForME()));
+                                                  config.isForME(),
+                                                  config.isJava5()));
                 }
             }.generate();
         jw.endMethod();
@@ -4964,7 +4981,11 @@ public class JavaBeanClass extends AbstractCodeGeneratorClass implements CodeGen
             jw.bigComment("@deprecated");
             jw.beginMethod("write", "java.io.OutputStream out",
                            "java.io.IOException", "void", jw.PUBLIC | jw.IO);
-            jw.writeEol("java.io.PrintWriter pw = new java.io.PrintWriter(out)");
+            if (config.isJava5()) {
+                jw.writeEol("java.io.PrintWriter pw = new java.io.PrintWriter(new java.io.OutputStreamWriter(out, java.nio.charset.Charset.defaultCharset()))");
+            } else {
+                jw.writeEol("java.io.PrintWriter pw = new java.io.PrintWriter(out)");
+            }
             jw.writeEol("writeNode(pw)");
             jw.writeEol("pw.flush()");
             jw.endMethod();
@@ -5101,12 +5122,12 @@ public class JavaBeanClass extends AbstractCodeGeneratorClass implements CodeGen
         if ("null".equals(oldValue))
             jw.write("null");
         else
-            jw.write(JavaUtil.toObject(oldValue, type, config.isForME()));
+            jw.write(JavaUtil.toObject(oldValue, type, config.isForME(), config.isJava5()));
         jw.write(", ");
         if ("null".equals(newValue))
             jw.write("null");
         else
-            jw.write(JavaUtil.toObject(newValue, type, config.isForME()));
+            jw.write(JavaUtil.toObject(newValue, type, config.isForME(), config.isJava5()));
         jw.write(")");
     }
 

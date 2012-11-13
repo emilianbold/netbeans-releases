@@ -67,6 +67,8 @@ import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.TypeVariable;
 import javax.lang.model.type.WildcardType;
 import javax.lang.model.util.SimpleTypeVisitor6;
+import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.source.ClassIndex;
 import org.netbeans.api.java.source.ClasspathInfo;
@@ -90,7 +92,6 @@ import org.netbeans.spi.jumpto.support.NameMatcherFactory;
 import org.netbeans.spi.jumpto.symbol.SymbolProvider;
 import org.netbeans.spi.jumpto.type.SearchType;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.URLMapper;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
@@ -106,6 +107,7 @@ public class JavaSymbolProvider implements SymbolProvider {
     
     private static final String CAPTURED_WILDCARD = "<captured wildcard>"; //NOI18N
     private static final String UNKNOWN = "<unknown>"; //NOI18N
+    private static final String INIT = "<init>"; //NOI18N
     
     private volatile boolean canceled;
 
@@ -176,13 +178,8 @@ public class JavaSymbolProvider implements SymbolProvider {
                 for(FileObject root : roots) {
                     if (canceled) {
                         return;
-                    }
-                    URL rootUrl;
-                    try {
-                        rootUrl = root.getURL();
-                        rootUrls.add(rootUrl);
-                    } catch (FileStateInvalidException fsie) {
-                    }
+                    }                    
+                    rootUrls.add(root.toURL());
                 }
 
                 if (LOGGER.isLoggable(Level.FINE)) {
@@ -206,7 +203,7 @@ public class JavaSymbolProvider implements SymbolProvider {
                             }
 
                             final Project project = FileOwnerQuery.getOwner(root);
-                            final ClassIndexImpl impl = manager.getUsagesQuery(root.getURL(), true);
+                            final ClassIndexImpl impl = manager.getUsagesQuery(root.toURL(), true);
                             if (impl != null) {
                                 final Map<ElementHandle<TypeElement>,Set<String>> r = new HashMap<ElementHandle<TypeElement>,Set<String>>();
                                 for (String currentIdent : ident) {
@@ -222,26 +219,32 @@ public class JavaSymbolProvider implements SymbolProvider {
                                         final ClasspathInfo cpInfo = ClasspathInfoAccessor.getINSTANCE().create(root,null,true,true,false,false);
                                         final JavaSource js = JavaSource.create(cpInfo);
                                         js.runUserActionTask(new Task<CompilationController>() {
+                                            @Override
                                             public void run (final CompilationController controller) {
                                                 for (final Map.Entry<ElementHandle<TypeElement>,Set<String>> p : r.entrySet()) {
                                                     final ElementHandle<TypeElement> owner = p.getKey();
                                                     final TypeElement te = owner.resolve(controller);
                                                     final Set<String> idents = p.getValue();
                                                     if (te != null) {
-                                                        if (idents.contains(getSimpleName(te))) {
+                                                        if (idents.contains(getSimpleName(te, null))) {
                                                             result.addResult(new JavaSymbolDescriptor(te.getSimpleName().toString(), te.getKind(), te.getModifiers(), owner, ElementHandle.create(te), project, root));
                                                         }
                                                         for (Element ne : te.getEnclosedElements()) {
-                                                            if (idents.contains(getSimpleName(ne))) {
-                                                                result.addResult(new JavaSymbolDescriptor(getDisplayName(ne), ne.getKind(), ne.getModifiers(), owner, ElementHandle.create(ne), project, root));
+                                                            if (idents.contains(getSimpleName(ne, te))) {
+                                                                result.addResult(new JavaSymbolDescriptor(getDisplayName(ne, te), ne.getKind(), ne.getModifiers(), owner, ElementHandle.create(ne), project, root));
                                                             }
                                                         }
                                                     }
                                                 }
                                             }
 
-                                            private String getSimpleName (final Element element) {
+                                            private String getSimpleName (
+                                                    @NonNull final Element element,
+                                                    @NullAllowed final Element enclosingElement) {
                                                 String result = element.getSimpleName().toString();
+                                                if (enclosingElement != null && INIT.equals(result)) {
+                                                    result = enclosingElement.getSimpleName().toString();
+                                                }
                                                 if (!caseSensitive) {
                                                     result = result.toLowerCase();
                                                 }
@@ -270,11 +273,17 @@ public class JavaSymbolProvider implements SymbolProvider {
     }
     
     
-    private static String getDisplayName (final Element e) {
+    private static String getDisplayName (
+            @NonNull final Element e,
+            @NonNull final Element enclosingElement) {
         assert e != null;
         if (e.getKind() == ElementKind.METHOD || e.getKind() == ElementKind.CONSTRUCTOR) {
             StringBuilder sb = new StringBuilder();
-            sb.append(e.getSimpleName());
+            if (e.getKind() == ElementKind.CONSTRUCTOR) {
+                sb.append(enclosingElement.getSimpleName());
+            } else {
+                sb.append(e.getSimpleName());
+            }
             sb.append('('); //NOI18N
             ExecutableElement ee = (ExecutableElement) e;
             final List<? extends VariableElement> vl = ee.getParameters();

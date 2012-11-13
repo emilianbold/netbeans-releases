@@ -212,9 +212,13 @@ public class SwingLayoutBuilder {
     }
 
     public static boolean isRelevantContainer(Container cont) {
-        LayoutManager layoutManager = cont.getLayout();
-        String name = (layoutManager == null) ? null : layoutManager.getClass().getName();
-        return "org.jdesktop.layout.GroupLayout".equals(name) || "javax.swing.GroupLayout".equals(name); // NOI18N
+        LayoutManager layout = cont.getLayout();
+        return layout != null ? isRelevantLayoutManager(layout.getClass().getName()) : false;
+    }
+
+    public static boolean isRelevantLayoutManager(String layoutClassName) {
+        return "org.jdesktop.layout.GroupLayout".equals(layoutClassName) // NOI18N
+               || "javax.swing.GroupLayout".equals(layoutClassName); // NOI18N
     }
 
     // -----

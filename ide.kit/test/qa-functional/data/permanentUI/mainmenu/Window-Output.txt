@@ -1,9 +1,10 @@
 Output                  > Output                O
                           Search Results        S
                           Find Usages Results   F
-                          JUnit Test Results    J
-                          Ruby Test Results     T
+                          Inspector
+                          Test Results          T
                           Versioning Output     V
                           Refactoring Preview   R
                           Analyzer              A
                           Call Graph            C
+                          Terminal              E

@@ -456,14 +456,19 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
             return;
         }
 
+        boolean toolColectionChanged = false;
         // Check compiler collection. Fire if different (IZ 131825)
         if (!oldMConf.getCompilerSet().getName().equals(newMConf.getCompilerSet().getName())
                 || !oldMConf.getDevelopmentHost().getExecutionEnvironment().equals(newMConf.getDevelopmentHost().getExecutionEnvironment())) {
-            fireFilesPropertiesChanged(); // firePropertiesChanged(getAllFiles(), true);
             MakeLogicalViewProvider.checkForChangedViewItemNodes(proj, null, null);
             if (!oldMConf.getDevelopmentHost().getExecutionEnvironment().equals(newMConf.getDevelopmentHost().getExecutionEnvironment())) {
                 MakeLogicalViewProvider.checkForChangedName(proj);
             }
+            toolColectionChanged = true;
+        }
+        
+        if (toolColectionChanged && newConf.getName().equals(oldConf.getName())) {
+            fireFilesPropertiesChanged();
             return;
         }
 
@@ -490,9 +495,6 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
                     added.add(items[i]);
                 }
                 MakeLogicalViewProvider.checkForChangedViewItemNodes(proj, null, items[i]);
-            }
-
-            if (newItemConf.getExcluded().getValue()) {
                 continue;
             }
 
@@ -515,8 +517,7 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
                     list.add(items[i]);
                     continue;
                 }
-            }
-            if (newItemConf.getTool() == PredefinedToolKind.CCCompiler) {
+            } else if (newItemConf.getTool() == PredefinedToolKind.CCCompiler) {
                 if (oldItemConf.getTool() != PredefinedToolKind.CCCompiler) {
                     list.add(items[i]);
                     continue;
@@ -540,7 +541,10 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
         fireFilesRemoved(deleted);
         fireFilesAdded(added);
         if (!list.isEmpty()) {
-            this.fireFilesPropertiesChanged(list);
+            fireFilesPropertiesChanged(list);
+        }
+        if (toolColectionChanged) {
+            fireFilesPropertiesChanged();
         }
     }
 

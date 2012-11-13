@@ -338,6 +338,7 @@ public final class AppClientProject implements Project, FileChangeListener {
             new RecommendedTemplatesImpl(this.updateHelper),
             ProjectClassPathModifier.extenderForModifier(cpMod),
             cpMod,
+            cpMod.getClassPathModifier(),
             libMod,
             buildExtender,
             AppClientProject.this, // never cast an externally obtained Project to AppClientProject - use lookup instead

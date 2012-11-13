@@ -45,7 +45,9 @@ import java.awt.*;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.logging.Level;
 import javax.swing.*;
 import org.netbeans.modules.bugtracking.api.Issue;
 import org.netbeans.modules.bugtracking.api.Query;
@@ -86,7 +88,7 @@ public class QueryNode extends TaskContainerNode implements Comparable<QueryNode
             updateNodes();
             setRefresh(false);
         }
-        return new ArrayList<Issue>(query.getIssues());
+        return getTasks();
     }
 
     @Override
@@ -108,7 +110,13 @@ public class QueryNode extends TaskContainerNode implements Comparable<QueryNode
 
     @Override
     List<Issue> getTasks() {
-        return new ArrayList<Issue>(query.getIssues());
+        List<Issue> tasks = Collections.emptyList();
+        try {
+            tasks = new ArrayList<Issue>(query.getIssues());
+        } catch (Exception ex) {
+            handleError(ex.getMessage());
+        }
+        return tasks;
     }
 
     @Override
@@ -129,6 +137,10 @@ public class QueryNode extends TaskContainerNode implements Comparable<QueryNode
 
     @Override
     protected JComponent createComponent(List<Issue> data) {
+        if (isError()) {
+            setError(false);
+            return null;
+        }
         panel = new JPanel(new GridBagLayout());
         panel.setOpaque(false);
         synchronized (LOCK) {

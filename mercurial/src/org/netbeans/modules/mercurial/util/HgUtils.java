@@ -1390,6 +1390,10 @@ itor tabs #66700).
         return locks != null && Arrays.asList(locks).contains("wlock"); //NOI18N
     }
 
+    public static boolean contains (Collection<File> roots, File file) {
+        return contains(roots.toArray(new File[roots.size()]), file);
+    }
+
     public static boolean contains (File[] roots, File file) {
         for (File root : roots) {
             if (Utils.isAncestorOrEqual(root, file)) {

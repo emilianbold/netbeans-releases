@@ -68,6 +68,8 @@ public abstract class PageModel {
     public static final String PROP_SELECTED_RULE = "selectedRule"; // NOI18N
     /** Name of the property that is fired when a rule is highlighted. */
     public static final String PROP_HIGHLIGHTED_RULE = "highlightedRule"; // NOI18N
+    /** Name of the property that is fired when nodes selection changes in the browser. */
+    public static final String PROP_BROWSER_SELECTED_NODES = "browserSelectedNodes"; // NOI18N
     /** Property change support. */
     private PropertyChangeSupport propChangeSupport = new PropertyChangeSupport(this);
 
@@ -77,6 +79,13 @@ public abstract class PageModel {
      * @return document node.
      */
     public abstract Node getDocumentNode();
+
+    /**
+     * Removes the specified node from the document.
+     *
+     * @param node node to remove.
+     */
+    public abstract void removeNode(Node node);
 
     /**
      * Returns the document URL.

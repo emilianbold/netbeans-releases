@@ -55,7 +55,7 @@ import org.openide.util.Lookup;
 
 @OptionsPanelController.SubRegistration(
         location=UiUtils.OPTIONS_PATH,
-        id=ComposerOptionsPanelController.OPTIONS_SUBPATH,
+	id=ComposerOptionsPanelController.OPTIONS_SUBPATH,
         displayName="#Options.name",
         // toolTip="#LBL_OptionsTooltip"
         position=180

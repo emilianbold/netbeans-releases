@@ -774,7 +774,7 @@ public class ProjectLibraryProvider implements ArealLibraryProvider<ProjectLibra
         }
 
         public void setDescription(String text) {
-            throw new UnsupportedOperationException(); // XXX will anyone call this?
+            //NOP - dsescriptions are not supported
         }
 
         public void setContent(String volumeType, List<URL> path) throws IllegalArgumentException {

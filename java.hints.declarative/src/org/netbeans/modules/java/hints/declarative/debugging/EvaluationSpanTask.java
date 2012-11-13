@@ -149,7 +149,9 @@ public class EvaluationSpanTask extends JavaParserResultTask<Result> {
             return ;//??
         }
 
-        for (final Document doc : ToggleDebuggingAction.debuggingEnabled) {
+        Document[] documents = ToggleDebuggingAction.debuggingEnabled.toArray(new Document[0]);
+        
+        for (final Document doc : documents) {
             assert doc != null;
 
             List<int[]> passed = new LinkedList<int[]>();

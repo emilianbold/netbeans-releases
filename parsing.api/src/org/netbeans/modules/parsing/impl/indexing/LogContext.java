@@ -427,15 +427,19 @@ import org.openide.util.Utilities;
         return this;
     }
     
-    public synchronized LogContext addPaths(Collection<? extends ClassPath> paths) {
+    public LogContext addPaths(Collection<? extends ClassPath> paths) {
         if (paths == null || paths.isEmpty()) {
             return this;
         }
-        if (classPathsChanged.isEmpty()) {
-            classPathsChanged = new HashSet<String>(paths.size());
-        }
+        final Set<String> toAdd = new HashSet<String>();
         for (ClassPath cp : paths) {
-            classPathsChanged.add(cp.toString());
+            toAdd.add(cp.toString());
+        }
+        synchronized (this) {
+            if (classPathsChanged.isEmpty()) {
+                classPathsChanged = new HashSet<String>(paths.size());
+            }
+            classPathsChanged.addAll(toAdd);
         }
         return this;
     }

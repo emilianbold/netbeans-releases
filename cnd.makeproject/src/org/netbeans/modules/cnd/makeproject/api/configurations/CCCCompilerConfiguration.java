@@ -276,7 +276,7 @@ public abstract class CCCCompilerConfiguration extends BasicCompilerConfiguratio
     }
 
     // Sheet
-    protected Sheet.Set getSet() {
+    protected Sheet.Set getSet(final Project project, final Folder folder, final Item item) {
         CCCCompilerConfiguration master;
         OptionToString visitor = new OptionToString(null, null);
 
@@ -300,13 +300,14 @@ public abstract class CCCCompilerConfiguration extends BasicCompilerConfiguratio
             inheritedValues.append(list.get(i).getIncludeDirectories().toString(visitor, "\n")); //NOI18N
         }
         set1.put(new VectorNodeProp(getIncludeDirectories(), getMaster() != null ? getInheritIncludes() : null, owner.getBaseFSPath(), new String[]{"IncludeDirectories", getString("IncludeDirectoriesTxt"), getString("IncludeDirectoriesHint"), inheritedValues.toString()}, true, new HelpCtx("AddtlIncludeDirectories")){// NOI18N
+            private final TokenizerFactory.Converter converter = TokenizerFactory.getPathConverter(project, folder, item);
             @Override
             protected List<String> convertToList(String text) {
-                return TokenizerFactory.INCLUDE_PATH_CONVERTER.convertToList(text);
+                return converter.convertToList(text);
             }
             @Override
             protected String convertToString(List<String> list) {
-                return TokenizerFactory.INCLUDE_PATH_CONVERTER.convertToString(list);
+                return converter.convertToString(list);
             }
         }); 
         // Preprocessor Macros
@@ -389,7 +390,7 @@ public abstract class CCCCompilerConfiguration extends BasicCompilerConfiguratio
     // Sheet
     protected Sheet getSheet(Project project) {
         Sheet sheet = new Sheet();
-        sheet.put(getSet());
+        sheet.put(getSet(project, null, null));
         return sheet;
     }
 

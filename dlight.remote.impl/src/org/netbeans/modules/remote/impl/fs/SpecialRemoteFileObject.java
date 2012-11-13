@@ -106,7 +106,7 @@ public class SpecialRemoteFileObject extends RemoteFileObjectBase {
     }
 
     @Override
-    protected FileObject createDataImpl(String name, String ext, RemoteFileObjectBase orig) throws IOException {
+    protected RemoteFileObject createDataImpl(String name, String ext, RemoteFileObjectBase orig) throws IOException {
         throw new IOException("Unsupported file can not have children"); // NOI18N
     }
 

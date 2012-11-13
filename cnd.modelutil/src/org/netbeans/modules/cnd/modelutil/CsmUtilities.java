@@ -60,6 +60,7 @@ import java.util.regex.Pattern;
 import javax.swing.JEditorPane;
 import javax.swing.SwingUtilities;
 import javax.swing.text.*;
+import org.netbeans.api.editor.EditorRegistry;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.lexer.InputAttributes;
 import org.netbeans.api.lexer.Language;
@@ -67,6 +68,7 @@ import org.netbeans.api.lexer.LanguagePath;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.JumpList;
 import org.netbeans.editor.Utilities;
+import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 import org.netbeans.modules.cnd.api.model.*;
 import org.netbeans.modules.cnd.api.model.deep.CsmStatement;
 import org.netbeans.modules.cnd.api.model.services.CsmClassifierResolver;
@@ -79,7 +81,6 @@ import org.netbeans.modules.cnd.modelutil.spi.FileObjectRedirector;
 import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.FSPath;
-import org.netbeans.modules.editor.NbEditorDocument;
 import org.netbeans.modules.editor.NbEditorUtilities;
 import org.openide.awt.StatusDisplayer;
 import org.openide.cookies.EditorCookie;
@@ -246,6 +247,34 @@ public class CsmUtilities {
         return getCsmFile(node.getLookup().lookup(DataObject.class), waitParsing, false);
     }
 
+    public static DataObject getDataObject(JTextComponent component) {
+        if (component == null) {
+            return null;
+        }
+        Document doc = component.getDocument();
+        return (DataObject) doc.getProperty(Document.StreamDescriptionProperty);
+    }
+    
+    public static JTextComponent findOpenedEditor(DataObject dob) {
+        if (dob == null) {
+            return null;
+        }
+        List<? extends JTextComponent> componentList = EditorRegistry.componentList();
+        for (JTextComponent comp : componentList) {
+            if (comp instanceof JEditorPane) {
+                DataObject dobj = getDataObject(comp);
+                if (dob.equals(dobj)) {
+                    return (JEditorPane) comp;
+                }
+            }
+        }
+        return null;
+    }
+    
+    /*
+     * redirected into EDT => can block
+     * if interested in opened editor => try findRecentEditor method
+     */
     public static JEditorPane findRecentEditorPaneInEQ(final EditorCookie ec) {
         assert ec != null;
         final JEditorPane[] panes = {null};
@@ -316,7 +345,7 @@ public class CsmUtilities {
                     csmFile = getCsmFile(NbEditorUtilities.getDataObject(bDoc), waitParsing, snapShot);
                 }
                 if (csmFile == null) {
-                    String mimeType = (String) bDoc.getProperty(NbEditorDocument.MIME_TYPE_PROP);
+                    String mimeType = DocumentUtilities.getMimeType(bDoc);
                     if ("text/x-dialog-binding".equals(mimeType)) { // NOI18N
                         // this is context from dialog
                         InputAttributes inputAttributes = (InputAttributes) bDoc.getProperty(InputAttributes.class);
@@ -362,7 +391,7 @@ public class CsmUtilities {
         Collection<CsmProject> out = new ArrayList<CsmProject>();
         if (fo != null && fo.isValid()) {
             String path = fo.getPath();
-            FileSystem fileSystem = null;
+            FileSystem fileSystem;
             try {
                 fileSystem = fo.getFileSystem();
             } catch (FileStateInvalidException ex) {
@@ -536,10 +565,15 @@ public class CsmUtilities {
     public static FileObject getFileObject(Document doc) {
         FileObject fo = (FileObject)doc.getProperty(FileObject.class);
         if(fo == null) {
-            CsmFile csmFile = getCsmFile(doc, false, false);
-            if(csmFile != null) {
-                fo = getFileObject(csmFile);
-            }
+            DataObject dobj = NbEditorUtilities.getDataObject(doc);
+            if (dobj != null) {
+                fo = dobj.getPrimaryFile();
+            } else {
+                CsmFile csmFile = getCsmFile(doc, false, false);
+                if (csmFile != null) {
+                    fo = getFileObject(csmFile);
+                }
+            }            
         }
         return fo;
     }
@@ -564,7 +598,7 @@ public class CsmUtilities {
             try {
                 DataObject dob = DataObject.find(fo);
                 if (dob != null && dob.isValid()) {
-                    EditorCookie ec = dob.getCookie(EditorCookie.class);
+                    EditorCookie ec = dob.getLookup().lookup(EditorCookie.class);
                     if (ec != null) {
                         return ec.getDocument();
                     }
@@ -606,11 +640,11 @@ public class CsmUtilities {
         if (dob == null) {
             return null;
         }
-        Object obj = dob.getCookie(org.openide.cookies.OpenCookie.class);
+        Object obj = dob.getLookup().lookup(org.openide.cookies.OpenCookie.class);
         if (obj instanceof CloneableEditorSupport) {
             return (CloneableEditorSupport) obj;
         }
-        obj = dob.getCookie(org.openide.cookies.EditorCookie.class);
+        obj = dob.getLookup().lookup(org.openide.cookies.EditorCookie.class);
         if (obj instanceof CloneableEditorSupport) {
             return (CloneableEditorSupport) obj;
         }
@@ -786,7 +820,7 @@ public class CsmUtilities {
     private static boolean openAtElement(final DataObject orig, final PointOrOffsetable element) {
         final DataObject dob = redirect(orig);
         if (dob != null) {
-            final EditorCookie.Observable ec = dob.getCookie(EditorCookie.Observable.class);
+            final EditorCookie.Observable ec = dob.getLookup().lookup(EditorCookie.Observable.class);
             if (ec != null) {
                 SwingUtilities.invokeLater(new Runnable() {
 
@@ -794,15 +828,12 @@ public class CsmUtilities {
                     public void run() {
                         JumpList.checkAddEntry();
                         JEditorPane pane = findRecentEditorPaneInEQ(ec);
-                        boolean opened;
                         if (pane != null) {
                             //editor already opened, so just select
-                            opened = true;
-                            selectElementInPane(pane, element, !opened);
+                            selectElementInPane(pane, element, false);
                         } else {
                             // editor not yet opened, attach listener and open from there
                             ec.addPropertyChangeListener(new PropertyChangeListenerImpl(ec, element));
-                            opened = false;
                             ec.open();
                         }
                     }

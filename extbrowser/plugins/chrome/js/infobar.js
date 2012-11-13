@@ -92,7 +92,7 @@ NetBeans_Infobar._showPresets = function() {
     // clean
     this._container.innerHTML = '';
     // add buttons
-    for (p in this._presets) {
+    for (var p in this._presets) {
         var preset = this._presets[p];
         if (!preset.showInToolbar) {
             continue;
@@ -101,7 +101,12 @@ NetBeans_Infobar._showPresets = function() {
         button.setAttribute('href', '#');
         button.setAttribute('class', 'button');
         button.setAttribute('title', preset.displayName + ' (' + preset.width + ' x ' + preset.height + ')');
-        button.setAttribute('onclick', 'NetBeans.resizePage(' + p + '); return false;');
+        // wrap function to another function so current index is copied (otherwise, the last index will be always used)
+        button.addEventListener('click', function(presetIndex) {
+            return function() {
+                NetBeans.resizePage(presetIndex);
+            }
+        } (p), false);
         button.appendChild(document.createTextNode(preset.displayName));
         this._container.appendChild(button);
     }

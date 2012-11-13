@@ -44,8 +44,13 @@ package org.netbeans.modules.javafx2.editor.parser.processors;
 import java.util.Iterator;
 import java.util.Set;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.type.DeclaredType;
+import javax.lang.model.type.PrimitiveType;
+import javax.lang.model.type.TypeKind;
+import javax.lang.model.type.TypeMirror;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.ElementHandle;
+import org.netbeans.api.java.source.TypeMirrorHandle;
 import org.netbeans.modules.javafx2.editor.completion.beans.FxBean;
 import org.netbeans.modules.javafx2.editor.ErrorMark;
 import org.netbeans.modules.javafx2.editor.JavaFXEditorUtils;
@@ -98,14 +103,26 @@ public class TypeResolver extends FxNodeVisitor.ModelTreeTraversal implements Mo
     })
     @Override
     public void visitInstance(FxNewInstance decl) {
-        String sourceName = decl.getSourceName();
+        String sourceName = decl.getTypeName();
         // try to resolve the sourceName, may be a full classname
         TypeElement el = env.getCompilationInfo().getElements().getTypeElement(sourceName);
         FxBean bean;
         ElementHandle<TypeElement> handle;
         
         if (el == null) {
-            int start = env.getTreeUtilities().positions(decl).getStart() + 1; // skip ">"
+            int start;
+            
+            if (decl.isCustomRoot()) {
+                int[] pos = env.getTreeUtilities().findAttributePos(decl, null, FxXmlSymbols.FX_ATTR_TYPE, true);
+                if (pos == null) {
+                    super.visitInstance(decl);
+                    return;
+                } else {
+                    start = pos[0];
+                }
+            } else {
+                start = env.getTreeUtilities().positions(decl).getStart() + 1; // skip ">"
+            }
             handle = resolveClassname(sourceName, decl, start);
 
             String fqn;
@@ -114,31 +131,85 @@ public class TypeResolver extends FxNodeVisitor.ModelTreeTraversal implements Mo
             } else {
                 fqn = null;
             }
-            env.getAccessor().resolve(decl, handle, null, null, bean = env.getBeanInfo(fqn));
         } else {
             handle = ElementHandle.create(el);
-            env.getAccessor().resolve(decl, handle, null, null, bean = env.getBeanInfo(handle.getQualifiedName()));
         }
         // if handle == null, the unresolved err was reported already
         if (handle != null) {
-            int start = env.getTreeUtilities().positions(decl).getStart() + 1; // skip ">"
+            bean = env.getBeanInfo(handle.getQualifiedName());
             if (bean == null) {
+                int start = env.getTreeUtilities().positions(decl).getStart() + 1; // skip ">"
                 env.addError(new ErrorMark(
                     start, sourceName.length(),
                     "unable-analyze-class",
                     ERR_unableAnalyseClass(handle.getQualifiedName().toString()),
                     handle
                 ));
-            } else if (!bean.isFxInstance() && bean.getBuilder() == null) {
-                env.addError(new ErrorMark(
-                    start, sourceName.length(),
-                    "class-not-fx-instance",
-                    ERR_notFxInstance(handle.getQualifiedName().toString()),
-                    handle
-                ));
+            } else {
+                FxBean bean2 = checkBeanInstance(decl, bean);
+                if (bean2 != null) {
+                    handle = bean2.getJavaType();
+                    bean = bean2;
+                }
             }
+            env.getAccessor().resolve(decl, handle, null, null, bean);
         }
         super.visitInstance(decl);
+    }
+    
+    @NbBundle.Messages({
+        "# {0} - factory name",
+        "# {1} - factory class name",
+        "ERR_factoryTypeNotFound=Factory produces unknown type: {1}.{0}"
+    })
+    FxBean checkBeanInstance(FxNewInstance decl, FxBean beanInfo) {
+        String fM = decl.getFactoryMethod();
+        int start = env.getTreeUtilities().positions(decl).getStart() + 1; // skip ">"
+        if (fM == null) {
+            if (beanInfo.isFxInstance() || beanInfo.getBuilder() != null || decl.isCustomRoot()) {
+                return beanInfo;
+            }
+            env.addError(new ErrorMark(
+                start, decl.getTypeName().length(),
+                "class-not-fx-instance",
+                ERR_notFxInstance(beanInfo.getJavaType().getQualifiedName().toString()),
+                beanInfo.getJavaType()
+            ));
+            return beanInfo;
+        }
+        TypeMirrorHandle h = beanInfo.getFactoryType(fM);
+        TypeMirror tm = h.resolve(env.getCompilationInfo());
+        if (tm == null) {
+            env.addError(new ErrorMark(
+                start, decl.getTypeName().length(),
+                "returned-factory-type-not-found",
+                ERR_factoryTypeNotFound(fM, beanInfo.getJavaType().getQualifiedName().toString()),
+                beanInfo
+            ));
+            return beanInfo;
+            // error
+        }
+        TypeElement productType;
+        
+        switch (tm.getKind()) {
+            case BOOLEAN:
+            case BYTE:
+            case CHAR:
+            case DOUBLE:
+            case FLOAT:
+            case INT:
+            case LONG:
+            case SHORT:
+                productType = env.getCompilationInfo().getTypes().boxedClass((PrimitiveType)tm);
+                break;
+            case DECLARED:
+                productType = (TypeElement)((DeclaredType)(env.getCompilationInfo().getTypes().erasure((DeclaredType)tm))).asElement();
+                break;
+                
+            default:
+                return null;
+        }
+        return env.getBeanInfo(productType.getQualifiedName().toString());
     }
     
     @NbBundle.Messages({

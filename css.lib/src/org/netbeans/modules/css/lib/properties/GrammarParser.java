@@ -67,19 +67,17 @@ public class GrammarParser {
      * @return 
      */
     public static GroupGrammarElement parse(String expresssion) {
-        return parse(null, expresssion, null);
+        return parse(expresssion, null);
     }
 
-    public static GroupGrammarElement parse(FileObject context, String expression, String propertyName) {
-        return new GrammarParser(context, expression, propertyName).parse();
+    public static GroupGrammarElement parse(String expression, String propertyName) {
+        return new GrammarParser(expression, propertyName).parse();
     }
     
-    private FileObject context;
     private String propertyName;
     private String expression;
 
-    public GrammarParser(FileObject context, String expression, String propertyName) {
-        this.context = context;
+    public GrammarParser(String expression, String propertyName) {
         this.expression = expression;
         this.propertyName = propertyName;
     }
@@ -160,7 +158,7 @@ public class GrammarParser {
 
                     //resolve reference
                     String referredElementName = buf.toString();
-                    PropertyDefinition property = Properties.getPropertyDefinition(context, referredElementName, true);
+                    PropertyDefinition property = Properties.getPropertyDefinition(referredElementName, true);
                     if (property == null) {
                         throw new IllegalStateException(
                                 String.format("Property '%s' parsing error: No referred element '%s' found. "

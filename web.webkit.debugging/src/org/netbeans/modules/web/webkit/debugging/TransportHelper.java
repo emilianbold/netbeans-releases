@@ -53,6 +53,7 @@ import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.modules.web.webkit.debugging.api.TransportStateException;
 import org.netbeans.modules.web.webkit.debugging.spi.Command;
 import org.netbeans.modules.web.webkit.debugging.spi.Response;
 import org.netbeans.modules.web.webkit.debugging.spi.ResponseCallback;
@@ -93,7 +94,11 @@ public class TransportHelper {
     public void sendCommand(Command command) {
         assert !EventQueue.isDispatchThread();
         log("send "+command.toString()); // NOI18N
-        impl.sendCommand(command);
+        try {
+            impl.sendCommand(command);
+        } catch (TransportStateException tsex) {
+            log("transport failed for "+command.toString()); // NOI18N
+        }
     }
     
     public boolean isVersionUnknownBeforeRequestChildNodes() {
@@ -108,7 +113,11 @@ public class TransportHelper {
         assert !EventQueue.isDispatchThread();
         log("blocking send "+command.toString()); // NOI18N
         Handle handle = createSynchronizationHandle(command);
-        impl.sendCommand(command);
+        try {
+            impl.sendCommand(command);
+        } catch (TransportStateException tsex) {
+            return new Response(tsex);
+        }
         boolean res = handle.waitForResponse();
         if (res) {
             return handle.getResponse();
@@ -123,7 +132,11 @@ public class TransportHelper {
         assert !EventQueue.isDispatchThread();
         log("callback send "+command.toString()); // NOI18N
         createCallbackHandle(command, callback);
-        impl.sendCommand(command);
+        try {
+            impl.sendCommand(command);
+        } catch (TransportStateException tsex) {
+            callback.handleResponse(new Response(tsex));
+        }
     }
     
     public void addListener(ResponseCallback l) {
@@ -177,7 +190,12 @@ public class TransportHelper {
                 semaphore.release();
             }
             if (callback != null) {
-                transport.log("response "+response.getResponse().toJSONString()); // NOI18N
+                TransportStateException transportException = response.getException();
+                if (transportException != null) {
+                    transport.log("response "+transport.toString()); // NOI18N
+                } else {
+                    transport.log("response "+response.getResponse().toJSONString()); // NOI18N
+                }
                 callback.handleResponse(response);
             }
         }

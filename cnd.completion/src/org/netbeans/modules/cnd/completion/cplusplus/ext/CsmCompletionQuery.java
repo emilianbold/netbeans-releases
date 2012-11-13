@@ -117,6 +117,7 @@ import org.netbeans.modules.cnd.api.model.xref.CsmTemplateBasedReferencedObject;
 import org.netbeans.modules.cnd.completion.cplusplus.NbCsmCompletionQuery.NbCsmItemFactory;
 import org.netbeans.modules.cnd.completion.cplusplus.ext.CsmCompletion.BaseType;
 import org.netbeans.modules.cnd.completion.cplusplus.ext.CsmResultItem.TemplateParameterResultItem;
+import org.netbeans.modules.cnd.completion.cplusplus.ext.CsmResultItem.VariableResultItem;
 import org.netbeans.modules.cnd.completion.csm.CompletionResolver;
 import org.netbeans.modules.cnd.completion.csm.CompletionResolver.Result;
 import org.netbeans.modules.cnd.completion.impl.xref.FileReferencesContext;
@@ -378,6 +379,7 @@ abstract public class CsmCompletionQuery {
                 CsmCompletionExpression exp = null;
                 if(!tooltip) {
                     exp = tp.getResultExp();
+                    ret = getResult(component, doc, openingSource, offset, exp, sort, isInIncludeDirective(doc, offset), instantiateTypes);
                 } else {
                     List<CsmCompletionExpression> stack = tp.getStack();
                     for (int i = stack.size() - 1; i >= 0; i--) {
@@ -385,14 +387,47 @@ abstract public class CsmCompletionQuery {
                         if(e.getExpID() == CsmCompletionExpression.METHOD_OPEN) {
                             exp = e;
                             break;
+                        } else if(e.getExpID() == CsmCompletionExpression.SCOPE) {
+                            if(e.getParameterCount() > 1 && 
+                                    e.getParameter(e.getParameterCount() - 1).getExpID() == CsmCompletionExpression.METHOD_OPEN) {
+                                exp = e;
+                                break;
+                            }
                         }
                     }
                     exp = (exp != null) ? exp : tp.getResultExp();
+                    ret = getResult(component, doc, openingSource, offset, exp, sort, isInIncludeDirective(doc, offset), instantiateTypes);
+                    if(ret == null && exp != null && exp.getParameterCount() >= 1 && exp.getParameter(0).getExpID() == CsmCompletionExpression.VARIABLE) {
+                        ret = getResult(component, doc, openingSource, offset, exp.getParameter(0), sort, isInIncludeDirective(doc, offset), instantiateTypes);
+                        if(ret != null && !ret.getItems().isEmpty()) {
+                            if(ret.getItems().get(0) instanceof CsmResultItem.VariableResultItem) {
+                                VariableResultItem item = (CsmResultItem.VariableResultItem)ret.getItems().get(0);
+                                if(item.getAssociatedObject() instanceof CsmObject && CsmKindUtilities.isVariable((CsmObject)item.getAssociatedObject())) {
+                                    CsmVariable var = (CsmVariable)item.getAssociatedObject();
+                                    if(var.getType() != null) {
+                                        CsmClassifier cls = (CsmClassifier) var.getType().getClassifier();
+                                        cls = CsmBaseUtilities.getOriginalClassifier(cls, getFinder().getCsmFile());
+                                        if(CsmKindUtilities.isClass(cls)) {
+                                            List<CsmMember> items = new ArrayList<CsmMember>();
+                                            for (CsmMember member : ((CsmClass)cls).getMembers()) {
+                                                if(CsmKindUtilities.isConstructor(member)) {
+                                                    items.add(member);
+                                                }
+                                            }
+                                            if(!items.isEmpty()) {
+                                                CsmOffsetableDeclaration context = sup.getDefinition(getCsmFile(), offset, getFileReferencesContext());
+                                                ret = new CsmCompletionResult(component, doc, items, cls.getName().toString(), exp, offset, 0, 0, isProjectBeeingParsed(openingSource), context, instantiateTypes);
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
                 }
                 if (TRACE_COMPLETION) {
                     System.err.println("expression " + exp);
                 }
-                ret = getResult(component, doc, openingSource, offset, exp, sort, isInIncludeDirective(doc, offset), instantiateTypes);
             } else if (TRACE_COMPLETION) {
                 System.err.println("Error expression " + tp.getResultExp());
             }
@@ -2318,7 +2353,7 @@ abstract public class CsmCompletionQuery {
                                         lastNamespace = CsmCompletion.getProjectNamespace(getCsmProject(), csmNamespace);
                                         break;
                                     }
-                                    List<CsmObject> elems = finder.findNamespaceElements(curNs, mtdName, openingSource, false, false); // matching classes
+                                    List<CsmObject> elems = finder.findNamespaceElements(curNs, mtdName, openingSource, true, false); // matching classes
 //                                    elems.addAll(finder.findStaticNamespaceElements(lastNamespace, mtdName, openingSource)); // matching static elements
                                     for (CsmObject obj: elems) {
                                         if (CsmKindUtilities.isFunction(obj)) {

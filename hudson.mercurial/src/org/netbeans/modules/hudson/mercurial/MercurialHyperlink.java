@@ -75,6 +75,8 @@ import org.openide.windows.OutputListener;
 class MercurialHyperlink implements OutputListener {
 
     private static final Logger LOG = Logger.getLogger(MercurialHyperlink.class.getName());
+    private static final RequestProcessor RP =
+            new RequestProcessor(MercurialHyperlink.class);
 
     private final URI repo;
     private final String node;
@@ -88,7 +90,7 @@ class MercurialHyperlink implements OutputListener {
 
     public void outputLineAction(OutputEvent ev) {
         Helper.noteWillShowDiff(file.getName());
-        RequestProcessor.getDefault().post(new Runnable() {
+        RP.post(new Runnable() {
             public void run() {
                 try {
                     final StreamSource before = makeSource(false);

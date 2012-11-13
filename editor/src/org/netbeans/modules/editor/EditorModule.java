@@ -79,6 +79,7 @@ import org.netbeans.editor.LocaleSupport;
 import org.netbeans.modules.editor.impl.actions.clipboardhistory.ClipboardHistory;
 import org.netbeans.modules.editor.indent.api.Reformat;
 import org.netbeans.modules.editor.lib.EditorPackageAccessor;
+import org.netbeans.modules.editor.lib2.actions.EditorRegistryWatcher;
 import org.netbeans.modules.editor.lib2.document.ReadWriteUtils;
 import org.netbeans.modules.editor.lib2.search.EditorFindSupport;
 import org.netbeans.modules.editor.options.AnnotationTypesFolder;
@@ -126,6 +127,7 @@ public class EditorModule extends ModuleInstall {
     }
     private PropertyChangeListener searchSelectedPatternListener;
     private PropertyChangeListener editorHistoryChangeListener;
+    private PropertyChangeListener topComponentRegistryListener;
 
     /** Module installed again. */
     public @Override void restored () {
@@ -263,6 +265,17 @@ public class EditorModule extends ModuleInstall {
 
         SearchHistory.getDefault().addPropertyChangeListener(searchSelectedPatternListener);
         EditorFindSupport.getInstance().addPropertyChangeListener(editorHistoryChangeListener);
+        if (topComponentRegistryListener == null) {
+            topComponentRegistryListener = new PropertyChangeListener() {
+                @Override
+                public void propertyChange(PropertyChangeEvent evt) {
+                    if (TopComponent.Registry.PROP_ACTIVATED.equals(evt.getPropertyName())) {
+                        EditorRegistryWatcher.get().notifyActiveTopComponentChanged(TopComponent.getRegistry().getActivated());
+                    }
+                }
+            };
+            TopComponent.getRegistry().addPropertyChangeListener(topComponentRegistryListener);
+        }
             
          if (GraphicsEnvironment.isHeadless()) {
              return;
@@ -314,6 +327,10 @@ public class EditorModule extends ModuleInstall {
         }
         */
          
+        if (topComponentRegistryListener != null) {
+            TopComponent.getRegistry().removePropertyChangeListener(topComponentRegistryListener);
+        }
+
         // unregister our registry
         try {
             Field keyField = JEditorPane.class.getDeclaredField("kitRegistryKey");  // NOI18N

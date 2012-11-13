@@ -75,13 +75,22 @@ public class ChromiumManagerAccessor implements ExtensionManagerAccessor {
                 String localAppData = System.getenv("LOCALAPPDATA");                // NOI18N
                 if (localAppData != null) {
                     result.add(localAppData+"\\Chromium\\User Data");
+                } else {
+                    localAppData = Utils.getLOCALAPPDATAonWinXP();
+                    if (localAppData != null) {
+                        result.add(localAppData+"\\Chromium\\User Data");
+                    }
                 }
+                
                 String appData = System.getenv("APPDATA");                // NOI18N
                 if (appData != null) {
                     // we are in C:\Documents and Settings\<username>\Application Data\ on XP
                     File f = new File(appData);
                     if (f.exists()) {
                         String fName = f.getName();
+                        // #219824 - below code will not work on some localized WinXP where
+                        //    "Local Settings" name might be "Lokale Einstellungen";
+                        //     no harm if we try though:
                         f = new File(f.getParentFile(),"Local Settings");
                         f = new File(f, fName);
                         if (f.exists())

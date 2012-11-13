@@ -23,7 +23,9 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JDialog;
@@ -44,9 +46,9 @@ import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 
 /**
- * Test of OK and Store listeners of ProjectCustomzier dialog
+ * Test of OK, Store and Close listeners of ProjectCustomzier dialog
  * 
- * @author Milan Kubec
+ * @author Milan Kubec, Petr Somol
  */
 public class ProjectCustomizerListenersTest extends NbTestCase {
     
@@ -55,7 +57,7 @@ public class ProjectCustomizerListenersTest extends NbTestCase {
     }
 
     private List<EventRecord> events = new ArrayList<EventRecord>();
-    private enum LType { OK, STORE };
+    private enum LType { OK, STORE, CLOSE };
     
     public ProjectCustomizerListenersTest(String name) {
         super(name);
@@ -68,7 +70,7 @@ public class ProjectCustomizerListenersTest extends NbTestCase {
         events.clear();
     }
     
-    public void testOKAndStoreListeners() {
+    public void testAllListeners() {
         
         Category testCat1 = Category.create("test1", "test1", null);
         final Category testCat2 = Category.create("test2", "test2", null, testCat1);
@@ -76,20 +78,27 @@ public class ProjectCustomizerListenersTest extends NbTestCase {
         
         testCat1.setOkButtonListener(new Listener(LType.OK, "testCat1", true));
         testCat1.setStoreListener(new Listener(LType.STORE, "testCat1", false));
+        testCat1.setCloseListener(new Listener(LType.CLOSE, "testCat1", true));
         testCat2.setOkButtonListener(new Listener(LType.OK, "testCat2", true));
         testCat2.setStoreListener(new Listener(LType.STORE, "testCat2", false));
+        testCat2.setCloseListener(new Listener(LType.CLOSE, "testCat2", true));
         testCat3.setOkButtonListener(new Listener(LType.OK, "testCat3", true));
         testCat3.setStoreListener(new Listener(LType.STORE, "testCat3", false));
+        testCat3.setCloseListener(new Listener(LType.CLOSE, "testCat3", true));
         
         final Listener mainOKListener = new Listener(LType.OK, "Properties", true);
         final Listener mainStoreListener = new Listener(LType.STORE, "Properties", false);
         
         try {
             SwingUtilities.invokeAndWait(new Runnable() {
+                @Override
                 public void run() {
-                    ProjectCustomizer.createCustomizerDialog(new Category[]{ testCat2, testCat3 }, 
+                    Dialog dialog = ProjectCustomizer.createCustomizerDialog(new Category[]{ testCat2, testCat3 }, 
                         new CategoryComponentProviderImpl(), null, mainOKListener, mainStoreListener, 
                         HelpCtx.DEFAULT_HELP);
+                    dialog.pack();
+                    dialog.setVisible(true);
+                    dialog.dispose();
                 }
             });
         } catch (InterruptedException ex) {
@@ -109,16 +118,39 @@ public class ProjectCustomizerListenersTest extends NbTestCase {
 //            System.out.println(er);
 //        }
         
-        assertEquals(8, events.size());
+        assertEquals(14, events.size());
         assertEquals(new EventRecord(LType.OK, "Properties", 0), events.get(0));
         assertEquals(new EventRecord(LType.OK, "testCat2", 0), events.get(1));
         assertEquals(new EventRecord(LType.OK, "testCat1", 0), events.get(2));
         assertEquals(new EventRecord(LType.OK, "testCat3", 0), events.get(3));
-        assertEquals(new EventRecord(LType.STORE, "Properties", 0), events.get(4));
-        assertEquals(new EventRecord(LType.STORE, "testCat2", 0), events.get(5));
-        assertEquals(new EventRecord(LType.STORE, "testCat1", 0), events.get(6));
-        assertEquals(new EventRecord(LType.STORE, "testCat3", 0), events.get(7));
-        
+        // CLOSE and STORE events can theoretically be intermixed
+        Map<String, Integer> event = new HashMap<String, Integer>();
+        for(int i = 4; i < 14; i++) {
+            EventRecord er = events.get(i);
+            assertNotNull(er);
+            assertTrue(er.getType() != LType.OK);
+            Integer count = event.get(er.getTypeAndId());
+            if(count == null) {
+                event.put(er.getTypeAndId(), 1);
+            } else {
+                event.put(er.getTypeAndId(), count + 1);
+            }
+        }
+        assertEquals(7, event.size());
+        assertNotNull(event.get((new EventRecord(LType.STORE, "Properties", 0)).getTypeAndId()));
+        assertNotNull(event.get((new EventRecord(LType.STORE, "testCat2", 0)).getTypeAndId()));
+        assertNotNull(event.get((new EventRecord(LType.STORE, "testCat1", 0)).getTypeAndId()));
+        assertNotNull(event.get((new EventRecord(LType.STORE, "testCat3", 0)).getTypeAndId()));
+        assertNotNull(event.get((new EventRecord(LType.CLOSE, "testCat2", 0)).getTypeAndId()));
+        assertNotNull(event.get((new EventRecord(LType.CLOSE, "testCat1", 0)).getTypeAndId()));
+        assertNotNull(event.get((new EventRecord(LType.CLOSE, "testCat3", 0)).getTypeAndId()));
+        assertEquals(1, event.get((new EventRecord(LType.STORE, "Properties", 0)).getTypeAndId()).intValue());
+        assertEquals(1, event.get((new EventRecord(LType.STORE, "testCat2", 0)).getTypeAndId()).intValue());
+        assertEquals(1, event.get((new EventRecord(LType.STORE, "testCat1", 0)).getTypeAndId()).intValue());
+        assertEquals(1, event.get((new EventRecord(LType.STORE, "testCat3", 0)).getTypeAndId()).intValue());
+        assertEquals(2, event.get((new EventRecord(LType.CLOSE, "testCat2", 0)).getTypeAndId()).intValue());
+        assertEquals(2, event.get((new EventRecord(LType.CLOSE, "testCat1", 0)).getTypeAndId()).intValue());
+        assertEquals(2, event.get((new EventRecord(LType.CLOSE, "testCat3", 0)).getTypeAndId()).intValue());
     }
     
     public void testOKListener() {
@@ -135,6 +167,7 @@ public class ProjectCustomizerListenersTest extends NbTestCase {
         
         try {
             SwingUtilities.invokeAndWait(new Runnable() {
+                @Override
                 public void run() {
                     ProjectCustomizer.createCustomizerDialog(new Category[]{ testCat2, testCat3 }, 
                         new CategoryComponentProviderImpl(), null, mainOKListener, 
@@ -225,6 +258,22 @@ public class ProjectCustomizerListenersTest extends NbTestCase {
             this.when = when;
         }
         
+        public LType getType() {
+            return type;
+        }
+        
+        public String getId() {
+            return id;
+        }
+
+        public long getWhen() {
+            return when;
+        }
+
+        public String getTypeAndId() {
+            return type + ", " + id;
+        }
+
         @Override
         public String toString() {
             return type + ", " + id + ", " + when;

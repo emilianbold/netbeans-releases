@@ -257,7 +257,9 @@ implements PropertyChangeListener, ChangeListener, FileChangeListener {
     @Override
     public Node[] getNodes(boolean optimalResult) {
         Node[] arr;
-        for (;;) {
+        Level previous = null;
+        final int limit = 1000;
+        for (int round = 0; ; round++) {
             if (optimalResult) {
                 waitOptimalResult();
             }
@@ -267,16 +269,87 @@ implements PropertyChangeListener, ChangeListener, FileChangeListener {
                 if (n instanceof DelayedNode) {
                     DelayedNode dn = (DelayedNode)n;
                     if (checkChildrenMutex() && dn.waitFinished()) {
+                        err.log(Level.FINE, "Waiting for delayed node {0}", dn);
                         stop = false;
+                        if (round > 600) {
+                            err.log(Level.WARNING, "Scheduling additional refresh for {0}", dn);
+                            dn.scheduleRefresh();
+                        }
                     }
                 }
             }
             if (stop) {
                 break;
             }
+            if (round == 500) {
+                err.warning("getNodes takes ages, turning on logging");
+                previous = err.getLevel();
+                err.setLevel(Level.FINE);
+            }
+            if (round == limit) {
+                err.warning(threadDump());
+                err.setLevel(previous);
+                boolean thrw = false;
+                assert thrw = true;
+                if (thrw) {
+                    throw new IllegalStateException("Too many repetitions in getNodes(true). Giving up.");
+                }
+                break;
+            }
+        }
+        if (previous != null) {
+            err.setLevel(previous);
         }
         return arr;
     }
+    
+    private static void appendThread(StringBuffer sb, String indent, Thread t, java.util.Map<Thread,StackTraceElement[]> data) {
+        sb.append(indent).append("Thread ").append(t.getName()).append('\n');
+        indent = indent.concat("  ");
+        StackTraceElement[] stack = data.get(t);
+        if (stack != null) {
+        for (StackTraceElement e : stack) {
+            sb.append("\tat ").append(e.getClassName()).append('.').append(e.getMethodName())
+                    .append('(').append(e.getFileName()).append(':').append(e.getLineNumber()).append(")\n");
+        }
+        }
+    }
+    
+    private static void appendGroup(StringBuffer sb, String indent, ThreadGroup tg, java.util.Map<Thread,StackTraceElement[]> data) {
+        sb.append(indent).append("Group ").append(tg.getName()).append('\n');
+        indent = indent.concat("  ");
+
+        int groups = tg.activeGroupCount();
+        ThreadGroup[] chg = new ThreadGroup[groups];
+        tg.enumerate(chg, false);
+        for (ThreadGroup inner : chg) {
+            if (inner != null) {
+                appendGroup(sb, indent, inner, data);
+            }
+        }
+
+        int threads = tg.activeCount();
+        Thread[] cht= new Thread[threads];
+        tg.enumerate(cht, false);
+        for (Thread t : cht) {
+            if (t != null) {
+                appendThread(sb, indent, t, data);
+            }
+        }
+    }
+    
+    private static String threadDump() {
+        java.util.Map<Thread,StackTraceElement[]> all = Thread.getAllStackTraces();
+        ThreadGroup root = Thread.currentThread().getThreadGroup();
+        while (root.getParent() != null) {
+            root = root.getParent();
+        }
+
+        StringBuffer sb = new StringBuffer();
+        appendGroup(sb, "", root, all);
+        return sb.toString();
+    }
+    
 
     @Override
     public Node findChild(String name) {
@@ -396,19 +469,18 @@ implements PropertyChangeListener, ChangeListener, FileChangeListener {
         refreshChildren(RefreshMode.SHALLOW);
     }
     
-    private final class DelayedNode extends FilterNode 
-    implements Runnable, InstanceContent.Convertor<DelayedNode,DataObject>{
-        private final FolderChildrenPair pair;
+    private final class DelayedNode extends FilterNode implements Runnable {
+        final FolderChildrenPair pair;
         private volatile RequestProcessor.Task task;
 
         public DelayedNode(FolderChildrenPair pair) {
-            this(pair, new InstanceContent());
+            this(pair, new DelayedLkp(new InstanceContent()));
         }
         
-        private DelayedNode(FolderChildrenPair pair, InstanceContent ic) {
-            this(pair, new AbstractNode(Children.LEAF, new AbstractLookup(ic)));
-            ic.add(pair.primaryFile);
-            ic.add(this, this);
+        private DelayedNode(FolderChildrenPair pair, DelayedLkp lkp) {
+            this(pair, new AbstractNode(Children.LEAF, lkp));
+            lkp.ic.add(pair.primaryFile);
+            lkp.node = this;
         }
         
         private DelayedNode(FolderChildrenPair pair, AbstractNode an) {
@@ -416,8 +488,7 @@ implements PropertyChangeListener, ChangeListener, FileChangeListener {
             this.pair = pair;
             an.setName(pair.primaryFile.getNameExt());
             an.setIconBaseWithExtension("org/openide/loaders/unknown.gif"); // NOI18N
-            
-            task = DataNodeUtils.reqProcessor().post(this);
+            scheduleRefresh();
         }
         
         @Override
@@ -429,6 +500,7 @@ implements PropertyChangeListener, ChangeListener, FileChangeListener {
                 refreshKey(pair);
             }
             task = null;
+            err.log(Level.FINE, "delayed node refreshed {0} original: {1}", new Object[]{this, n});
         }
         
         /* @return true if there was some change in the node while waiting */
@@ -437,12 +509,37 @@ implements PropertyChangeListener, ChangeListener, FileChangeListener {
             if (t == null) {
                 return false;
             }
+            err.log(Level.FINE, "original before wait: {0}", getOriginal());
             t.waitFinished();
+            err.log(Level.FINE, "original after wait: {0}", getOriginal());
+            err.log(Level.FINE, "task after waitFinished {0}", task);
             return true;
         }
 
+        final void scheduleRefresh() {
+            task = DataNodeUtils.reqProcessor().post(this);
+        }
+    }
+    
+    private final class DelayedLkp extends AbstractLookup {
+        DelayedNode node;
+        final InstanceContent ic;
+        
+        public DelayedLkp(InstanceContent content) {
+            super(content);
+            ic = content;
+        }
+        
         @Override
+        protected void beforeLookup(Template<?> template) {
+            Class<?> type = template.getType();
+            if (DataObject.class.isAssignableFrom(type)) {
+                ic.add(convert(node));
+            }
+        }
+        
         public DataObject convert(DelayedNode obj) {
+            final FolderChildrenPair pair = obj.pair;
             if (EventQueue.isDispatchThread()) {
                 err.log(Level.WARNING, "Attempt to obtain DataObject for {0} from EDT", pair.primaryFile);
                 boolean assertsOn = false;
@@ -457,21 +554,6 @@ implements PropertyChangeListener, ChangeListener, FileChangeListener {
                 err.log(Level.INFO, "Cannot convert " + pair.primaryFile, ex);
                 return null;
             }
-        }
-
-        @Override
-        public Class<? extends DataObject> type(DelayedNode obj) {
-            return DataObject.class;
-        }
-
-        @Override
-        public String id(DelayedNode obj) {
-            return type(obj).getName();
-        }
-
-        @Override
-        public String displayName(DelayedNode obj) {
-            return id(obj);
         }
     }
 }

@@ -57,5 +57,4 @@ window.addEventListener('load', function() {
     // main buttons
     I18n.elementAttribute('presetCustomizerOk', 'title');
     I18n.elementAttribute('presetCustomizerCancel', 'title');
-    I18n.elementAttribute('presetCustomizerHelp', 'title');
 }, false);

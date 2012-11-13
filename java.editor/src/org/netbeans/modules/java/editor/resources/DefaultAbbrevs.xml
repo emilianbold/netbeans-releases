@@ -207,7 +207,7 @@ made subject to such option by the copyright holder.
     </codetemplate>
     <codetemplate abbreviation="whilen" contexts="BLOCK,CASE,LABELED_STATEMENT,DO_WHILE_LOOP,ENHANCED_FOR_LOOP,FOR_LOOP,IF,WHILE_LOOP">
         <code>
-<![CDATA[while(${ENUM instanceof="java.util.Enumeration" default="en"}.hasMoreElements()) {
+<![CDATA[while (${ENUM instanceof="java.util.Enumeration" default="en"}.hasMoreElements()) {
    ${TYPE rightSideType default="Object"} ${ELEM newVarName default="elem"} = ${TYPE_CAST cast default="" editable=false} ${ENUM}.nextElement();
    ${selection}${cursor}
 }
@@ -216,7 +216,7 @@ made subject to such option by the copyright holder.
     </codetemplate>
     <codetemplate abbreviation="whileit" contexts="BLOCK,CASE,LABELED_STATEMENT,DO_WHILE_LOOP,ENHANCED_FOR_LOOP,FOR_LOOP,IF,WHILE_LOOP">
         <code>
-<![CDATA[while(${IT instanceof="java.util.Iterator" default="it"}.hasNext()) {
+<![CDATA[while (${IT instanceof="java.util.Iterator" default="it"}.hasNext()) {
    ${TYPE rightSideType default="Object"} ${ELEM newVarName default="elem"} = ${TYPE_CAST cast default="" editable=false} ${IT}.next();
    ${selection}${cursor}
 }
@@ -225,7 +225,7 @@ made subject to such option by the copyright holder.
     </codetemplate>
     <codetemplate abbreviation="iff" contexts="BLOCK,CASE,LABELED_STATEMENT,DO_WHILE_LOOP,ENHANCED_FOR_LOOP,FOR_LOOP,IF,WHILE_LOOP" descriptionId="CT_iff">
         <code>
-<![CDATA[if (${EXP instanceof="boolean" default="exp"}) {
+<![CDATA[if (${EXP instanceof="boolean" default="true"}) {
    ${selection}${cursor}
 }
 ]]>
@@ -233,7 +233,7 @@ made subject to such option by the copyright holder.
     </codetemplate>
     <codetemplate abbreviation="ifelse" contexts="BLOCK,CASE,LABELED_STATEMENT,DO_WHILE_LOOP,ENHANCED_FOR_LOOP,FOR_LOOP,IF,WHILE_LOOP" descriptionId="CT_ifelse">
         <code>
-<![CDATA[if (${EXP instanceof="boolean" default="exp"}) {
+<![CDATA[if (${EXP instanceof="boolean" default="true"}) {
    ${selection}${cursor}
 } else {
 }
@@ -242,7 +242,7 @@ made subject to such option by the copyright holder.
     </codetemplate>
     <codetemplate abbreviation="whilexp" contexts="BLOCK,CASE,LABELED_STATEMENT,DO_WHILE_LOOP,ENHANCED_FOR_LOOP,FOR_LOOP,IF,WHILE_LOOP">
         <code>
-<![CDATA[while (${EXP instanceof="boolean" default="exp"}) { 
+<![CDATA[while (${EXP instanceof="boolean" default="true"}) { 
    ${selection}${cursor}
 }
 ]]>
@@ -252,7 +252,7 @@ made subject to such option by the copyright holder.
         <code>
 <![CDATA[do { 
    ${selection}${cursor}
-} while (${EXP instanceof="boolean" default="exp"});
+} while (${EXP instanceof="boolean" default="true"});
 ]]>
         </code>
     </codetemplate>
@@ -309,7 +309,7 @@ ${selection}${cursor}
     <!-- Arrays and List conversion and sorting -->
     <codetemplate abbreviation="2ar" contexts="BLOCK,CASE,LABELED_STATEMENT">
          <code>
- <![CDATA[${clazz}[] ${var newVarName default="arr"} = (${clazz}[]) ${coll instanceof="java.util.Collection"}.toArray(new ${clazz}[${coll}.size()]);
+ <![CDATA[${clazz}[] ${var newVarName default="arr"} = ${typeCast cast default="" editable=false} ${coll instanceof="java.util.Collection"}.toArray(new ${clazz}[${coll}.size()]);
  ]]>
          </code>
      </codetemplate>
@@ -461,7 +461,7 @@ ${cursor}]]></code></codetemplate>
     <codetemplate abbreviation="if" contexts="BLOCK,CASE,LABELED_STATEMENT,DO_WHILE_LOOP,ENHANCED_FOR_LOOP,FOR_LOOP,IF,WHILE_LOOP" descriptionId="CT_iff">
         <code>
 <![CDATA[if (${EXP instanceof="boolean" default="true"}) {
-   ${selection}${cursor}
+   ${cursor}
 }
 ]]>
         </code>
@@ -469,7 +469,7 @@ ${cursor}]]></code></codetemplate>
     <codetemplate abbreviation="ife" contexts="BLOCK,CASE,LABELED_STATEMENT,DO_WHILE_LOOP,ENHANCED_FOR_LOOP,FOR_LOOP,IF,WHILE_LOOP" descriptionId="CT_ifelse">
         <code>
 <![CDATA[if (${EXP instanceof="boolean" default="true"}) {
-   ${selection}${cursor}
+   ${cursor}
 } else {
 }
 ]]>

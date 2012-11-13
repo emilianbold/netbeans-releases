@@ -80,12 +80,15 @@ public class JsStructureScanner implements StructureScanner {
     
     @Override
     public List<? extends StructureItem> scan(ParserResult info) {
-        final List<StructureItem> items = new ArrayList<StructureItem>();        
+        final List<StructureItem> items = new ArrayList<StructureItem>();
+        long start = System.currentTimeMillis();
         JsParserResult result = (JsParserResult) info;
         final Model model = result.getModel();
         JsObject globalObject = model.getGlobalObject();
         
         getEmbededItems(result, globalObject, items);
+        long end = System.currentTimeMillis();
+        LOGGER.log(Level.FINE, "Creating structure took {0} ms", new Object[]{(end - start)});
         return items;
     }
     
@@ -97,8 +100,8 @@ public class JsStructureScanner implements StructureScanner {
         
         for (JsObject child : properties) {
             List<StructureItem> children = new ArrayList<StructureItem>();
-            if (countFunctionChild &&  !child.getModifiers().contains(Modifier.STATIC)) {
-                // don't count children for functions and methods
+            if ((countFunctionChild && !child.getModifiers().contains(Modifier.STATIC)) || child.getJSKind() == JsElement.Kind.ANONYMOUS_OBJECT) {
+                // don't count children for functions and methods and anonyms
                 continue;
             }
             children = getEmbededItems(result, child, children);
@@ -254,7 +257,7 @@ public class JsStructureScanner implements StructureScanner {
                 JsStructureItem item = (JsStructureItem) obj;
                 if (item.getName() != null && this.getName() != null) {
                     thesame = item.modelElement.getName().equals(modelElement.getName()) 
-                            && item.modelElement.getOffsetRange() == modelElement.getOffsetRange();
+                            && item.modelElement.getOffsetRange().equals(modelElement.getOffsetRange());
                 }
             }
             return thesame;

@@ -263,16 +263,19 @@ public class JWSProjectProperties /*implements TableModelListener*/ {
 
     /** Factory method 
      * This is to prevent reuse of the same instance after the properties dialog
-     * has been cancelled. Called by each FX category provider at the time
+     * has been cancelled. Called by each WS category provider at the time
      * when properties dialog is opened, it checks/stores category-specific marker strings. 
      * Previous existence of marker string indicates that properties dialog had been opened
      * before and ended by Cancel, otherwise this instance would not exist (OK would
-     * cause properties to be saved and the instance deleted by a call to JFXProjectProperties.cleanup()).
+     * cause properties to be saved and the instance deleted by a call to JWSProjectProperties.cleanup()).
      * (Note that this is a workaround to avoid adding listener to properties dialog close event.)
      * 
      * @param category marker string to indicate which category provider is calling this
-     * @return instance of JFXProjectProperties shared among category panels in the current Project Properties dialog only
+     * @return instance of JWSProjectProperties shared among category panels in the current Project Properties dialog only
+     * 
+     * @deprecated handle cleanup using ProjectCustomizer.Category.setCloseListener instead
      */
+    @Deprecated
     public static JWSProjectProperties getInstancePerSession(Lookup context, String category) {
         Project proj = context.lookup(Project.class);
         String projDir = proj.getProjectDirectory().getPath();
@@ -1025,24 +1028,23 @@ public class JWSProjectProperties /*implements TableModelListener*/ {
         final File prjDir = FileUtil.toFile(prj.getProjectDirectory());
         final File bcDir = bc == null ? null : PropertyUtils.resolveFile(prjDir, bc);
         final List<File> lazyFileList = new ArrayList<File>();
-        String[] paths;
         if (lz != null) {
-            paths = PropertyUtils.tokenizePath(lz);            
-            for (String p : paths) {
+            for (String p : PropertyUtils.tokenizePath(lz)) {
                 lazyFileList.add(PropertyUtils.resolveFile(prjDir, p));
             }
         }
-        paths = PropertyUtils.tokenizePath(rcp);
-        final List<File> resFileList = new ArrayList<File>(paths.length);
-        for (String p : paths) {
-            if (p.startsWith("${") && p.endsWith("}")) {    //NOI18N
-                continue;
-            }
-            final File f = PropertyUtils.resolveFile(prjDir, p);
-            if (bc == null || !bcDir.equals(f)) {
-                resFileList.add(f);
-                if (isTrue(eval.getProperty(String.format(JNLP_LAZY_FORMAT, f.getName())))) {
-                    lazyFileList.add(f);
+        final List<File> resFileList = new ArrayList<File>();
+        if(rcp != null) {
+            for (String p : PropertyUtils.tokenizePath(rcp)) {
+                if (p.startsWith("${") && p.endsWith("}")) {    //NOI18N
+                    continue;
+                }
+                final File f = PropertyUtils.resolveFile(prjDir, p);
+                if (bc == null || !bcDir.equals(f)) {
+                    resFileList.add(f);
+                    if (isTrue(eval.getProperty(String.format(JNLP_LAZY_FORMAT, f.getName())))) {
+                        lazyFileList.add(f);
+                    }
                 }
             }
         }

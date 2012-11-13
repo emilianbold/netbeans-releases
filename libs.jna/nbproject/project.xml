@@ -72,6 +72,7 @@ made subject to such option by the copyright holder.
                 <friend>org.netbeans.core.browser.xulrunner</friend>
                 <friend>org.netbeans.core.nativeaccess</friend>
                 <friend>org.netbeans.modules.dlight.nativeexecution</friend>
+                <friend>org.netbeans.modules.extbrowser</friend>
                 <friend>org.netbeans.modules.extexecution.impl</friend>
                 <friend>org.netbeans.modules.keyring.impl</friend>
                 <friend>org.netbeans.modules.masterfs.windows</friend>

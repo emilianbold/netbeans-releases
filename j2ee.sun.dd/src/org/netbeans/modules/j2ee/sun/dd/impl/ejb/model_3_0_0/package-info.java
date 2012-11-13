@@ -48,8 +48,10 @@
     docRoot="sun-ejb-jar",
     useInterfaces=true,
     validate=false,
-    attrProp=true
+    attrProp=true,
+    java5=true
 )
+@org.netbeans.api.annotations.common.SuppressWarnings("NM_SAME_SIMPLE_NAME_AS_INTERFACE") // justification="Generated implementation classes"
 package org.netbeans.modules.j2ee.sun.dd.impl.ejb.model_3_0_0;
 
 import org.netbeans.modules.schema2beans.Schema2Beans;

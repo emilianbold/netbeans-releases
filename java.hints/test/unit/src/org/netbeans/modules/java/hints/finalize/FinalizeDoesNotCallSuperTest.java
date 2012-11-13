@@ -108,8 +108,11 @@ public class FinalizeDoesNotCallSuperTest extends NbTestCase {
                 .assertOutput("package test;\n" +
                               "public class Test {\n" +
                               "    protected final void finalize() throws Throwable {\n" +
-                              "        super.finalize();" +
-                              "        int a = 10;" +
+                              "        try {" +
+                              "            int a = 10;" +
+                              "        } finally {" +
+                              "            super.finalize();" +
+                              "        }" +
                               "    }\n" +
                               "}");
     }
@@ -124,4 +127,69 @@ public class FinalizeDoesNotCallSuperTest extends NbTestCase {
                 .run(FinalizeDoesNotCallSuper.class)
                 .assertWarnings();
     }
+
+    public void testUseTryBlockIfAvailable() throws Exception {
+        HintTest
+                .create()
+                .input("package test;\n" +
+                       "public class Test {\n" +
+                       "    protected final void finalize() throws Throwable {\n" +
+                       "        try {" +
+                       "            throw new IllegalStateException(\"\");" +
+                       "        } catch (Exception ex) {" +
+                       "        }" +
+                       "    }\n" +
+                       "}")
+                .run(FinalizeDoesNotCallSuper.class)
+                .findWarning("2:25-2:33:verifier:finalize() does not call super.finalize()")
+                .applyFix("Add super.finalize()")
+                .assertCompilable()
+                .assertOutput("package test;\n" +
+                              "public class Test {\n" +
+                              "    protected final void finalize() throws Throwable {\n" +
+                              "        try {" +
+                              "            throw new IllegalStateException(\"\");" +
+                              "        } catch (Exception ex) {" +
+                              "        } finally {" +
+                              "            super.finalize();" +
+                              "        }" +
+                              "    }\n" +
+                              "}");
+    }
+    
+    public void testDoNotChangeExistingFinally() throws Exception {
+        HintTest
+                .create()
+                .input("package test;\n" +
+                       "public class Test {\n" +
+                       "    protected final void finalize() throws Throwable {\n" +
+                       "        try {\n" +
+                       "            throw new IllegalStateException(\"\");\n" +
+                       "        } catch (Exception ex) {\n" +
+                       "        } finally {\n" +
+                       "            System.err.println(\"\");\n" +
+                       "        }\n" +
+                       "    }\n" +
+                       "}")
+                .run(FinalizeDoesNotCallSuper.class)
+                .findWarning("2:25-2:33:verifier:finalize() does not call super.finalize()")
+                .applyFix("Add super.finalize()")
+                .assertCompilable()
+                .assertOutput("package test;\n" +
+                              "public class Test {\n" +
+                              "    protected final void finalize() throws Throwable {\n" +
+                              "        try {" +
+                              "            try {" +
+                              "                throw new IllegalStateException(\"\");" +
+                              "            } catch (Exception ex) {" +
+                              "            } finally {" +
+                              "                System.err.println(\"\");" +
+                              "            }" +
+                              "        } finally {" +
+                              "            super.finalize();" +
+                              "        }" +
+                              "    }\n" +
+                              "}");
+    }
+    
 }

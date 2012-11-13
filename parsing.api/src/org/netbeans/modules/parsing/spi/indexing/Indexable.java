@@ -301,7 +301,7 @@ public final class Indexable {
                 @NonNull final Context context,
                 @NonNull final String propName) {
             return context.getProperty(propName);
-        }
+        }        
     }
 
 }

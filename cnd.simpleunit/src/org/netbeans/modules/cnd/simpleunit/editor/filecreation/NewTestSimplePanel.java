@@ -47,6 +47,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.cnd.editor.filecreation.CndPanel;
 import org.netbeans.modules.cnd.editor.filecreation.NewCndFileChooserPanel;
+import org.netbeans.modules.cnd.simpleunit.utils.MakefileUtils;
 import org.netbeans.modules.cnd.utils.MIMEExtensions;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
@@ -131,6 +132,11 @@ public class NewTestSimplePanel extends CndPanel {
             return false;
         }
 
+        if (MakefileUtils.getMakefile(project) == null) {
+            setInfoMessage( NbBundle.getMessage(NewTestSimplePanel.class, "MSG_Missing_Makefile") );
+            return false;
+        }
+        
         return true;
     }
 

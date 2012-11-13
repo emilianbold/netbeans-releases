@@ -41,13 +41,15 @@
  */
 package org.netbeans.modules.cordova;
 
+import org.netbeans.modules.cordova.platforms.MobileDebugTransport;
 import java.awt.event.ActionEvent;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.cordova.android.AndroidDebugTransport;
-import org.netbeans.modules.cordova.ios.IOSDebugTransport;
-import org.netbeans.modules.cordova.ios.IOSPlatform;
+import org.netbeans.modules.cordova.platforms.PlatformConstants;
+import org.netbeans.modules.cordova.platforms.android.AndroidDebugTransport;
+import org.netbeans.modules.cordova.platforms.ios.IOSDebugTransport;
+import org.netbeans.modules.cordova.platforms.ios.IOSPlatform;
 import org.netbeans.modules.cordova.project.ClientProjectConfigurationImpl;
 import org.netbeans.modules.web.browser.api.PageInspector;
 import org.netbeans.modules.web.webkit.debugging.api.WebKitDebugging;
@@ -65,9 +67,9 @@ import org.openide.util.RequestProcessor;
 import org.openide.util.lookup.Lookups;
 
 @Messages("CTL_DebugAction=Attach Debugger")
-    @ActionID(id = "org.netbeans.modules.cordova.ios.DebugAction", category = "Project")
-    @ActionRegistration(displayName = "#CTL_DebugAction", lazy=false)
-    @ActionReference(position = 650, path = "Projects/org.netbeans.modules.web.clientproject/Actions")
+//    @ActionID(id = "org.netbeans.modules.cordova.ios.DebugAction", category = "Project")
+//    @ActionRegistration(displayName = "#CTL_DebugAction", lazy=false)
+//    @ActionReference(position = 650, path = "Projects/org-netbeans-modules-web-clientproject/Actions")
 public final class DebugAction extends AbstractAction implements ContextAwareAction {
 
     private Project p;
@@ -92,7 +94,7 @@ public final class DebugAction extends AbstractAction implements ContextAwareAct
         ProjectConfiguration activeConfiguration = provider.getActiveConfiguration();
         final MobileDebugTransport transport;
         if (activeConfiguration instanceof ClientProjectConfigurationImpl) {
-            transport = ((ClientProjectConfigurationImpl)activeConfiguration).getType().equals(IOSPlatform.TYPE)?new IOSDebugTransport():new AndroidDebugTransport();
+            transport = ((ClientProjectConfigurationImpl)activeConfiguration).getType().equals(PlatformConstants.IOS_TYPE)?new IOSDebugTransport():new AndroidDebugTransport();
         } else {
             return;
         }

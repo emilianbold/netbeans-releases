@@ -1812,49 +1812,52 @@ class OccurenceBuilder {
             return;
         }
         final VariableScope ctxVarScope = (VariableScope) ctxScope;
-        final ElementFilter nameFilter = ElementFilter.forName(NameKind.exact(nodeCtxInfo.getName()));
-        final Set<VariableName> vars = nameFilter.filter(new HashSet<VariableName>(ctxVarScope.getDeclaredVariables()));
-        final VariableName var = (vars.size() == 1) ? vars.iterator().next() : null;
-        if (var != null) {
-            for (Entry<ASTNodeInfo<Variable>, Scope> entry : variables.entrySet()) {
-                ASTNodeInfo<Variable> nodeInfo = entry.getKey();
-                boolean addOccurence = false;
-                if (NameKind.exact(nodeInfo.getName()).matchesName(PhpElementKind.VARIABLE, nodeCtxInfo.getName())) {
-                    if (!var.isGloballyVisible()) {
-                        Scope nextScope = entry.getValue();
-                        if (var.representsThis() && nextScope.getInScope() instanceof TypeScope) {
-                            final Scope inScope = ctxVarScope instanceof MethodScope ? ctxVarScope.getInScope() : ctxVarScope;
-                            if (nextScope.getInScope().equals(inScope)) {
-                                addOccurence = true;
+        String nodeName = nodeCtxInfo.getName();
+        if (StringUtils.hasText(nodeName)) {
+            final ElementFilter nameFilter = ElementFilter.forName(NameKind.exact(nodeName));
+            final Set<VariableName> vars = nameFilter.filter(new HashSet<VariableName>(ctxVarScope.getDeclaredVariables()));
+            final VariableName var = (vars.size() == 1) ? vars.iterator().next() : null;
+            if (var != null) {
+                for (Entry<ASTNodeInfo<Variable>, Scope> entry : variables.entrySet()) {
+                    ASTNodeInfo<Variable> nodeInfo = entry.getKey();
+                    boolean addOccurence = false;
+                    if (NameKind.exact(nodeInfo.getName()).matchesName(PhpElementKind.VARIABLE, nodeName)) {
+                        if (!var.isGloballyVisible()) {
+                            Scope nextScope = entry.getValue();
+                            if (var.representsThis() && nextScope.getInScope() instanceof TypeScope) {
+                                final Scope inScope = ctxVarScope instanceof MethodScope ? ctxVarScope.getInScope() : ctxVarScope;
+                                if (nextScope.getInScope().equals(inScope)) {
+                                    addOccurence = true;
+                                }
+                            } else {
+                                if (ctxVarScope.equals(nextScope)) {
+                                    addOccurence = true;
+                                }
                             }
                         } else {
-                            if (ctxVarScope.equals(nextScope)) {
-                                addOccurence = true;
-                            }
-                        }
-                    } else {
-                        Scope nextScope = entry.getValue();
-                        if (nextScope instanceof VariableScope) {
-                            final Set<VariableName> nextVars = nameFilter.filter(new HashSet<VariableName>(((VariableScope) nextScope).getDeclaredVariables()));
-                            final VariableName nextVar = (nextVars.size() == 1) ? nextVars.iterator().next() : null;
-                            if (nextVar != null && nextVar.isGloballyVisible()) {
-                                addOccurence = true;
+                            Scope nextScope = entry.getValue();
+                            if (nextScope instanceof VariableScope) {
+                                final Set<VariableName> nextVars = nameFilter.filter(new HashSet<VariableName>(((VariableScope) nextScope).getDeclaredVariables()));
+                                final VariableName nextVar = (nextVars.size() == 1) ? nextVars.iterator().next() : null;
+                                if (nextVar != null && nextVar.isGloballyVisible()) {
+                                    addOccurence = true;
+                                }
                             }
                         }
                     }
-                }
-                if (addOccurence) {
-                    if ((var instanceof VariableNameImpl) && (((VariableNameImpl) var).indexedElement instanceof PhpElement)) {
-                        final VariableNameImpl nameImpl = (VariableNameImpl) var;
-                        occurences.add(new OccurenceImpl(var, nodeInfo.getRange()) {
+                    if (addOccurence) {
+                        if ((var instanceof VariableNameImpl) && (((VariableNameImpl) var).indexedElement instanceof PhpElement)) {
+                            final VariableNameImpl nameImpl = (VariableNameImpl) var;
+                            occurences.add(new OccurenceImpl(var, nodeInfo.getRange()) {
 
-                            @Override
-                            public Collection<? extends PhpElement> gotoDeclarations() {
-                                return Collections.singleton((PhpElement) nameImpl.indexedElement);
-                            }
-                        });
-                    } else {
-                        occurences.add(new OccurenceImpl(var, nodeInfo.getRange()));
+                                @Override
+                                public Collection<? extends PhpElement> gotoDeclarations() {
+                                    return Collections.singleton((PhpElement) nameImpl.indexedElement);
+                                }
+                            });
+                        } else {
+                            occurences.add(new OccurenceImpl(var, nodeInfo.getRange()));
+                        }
                     }
                 }
             }

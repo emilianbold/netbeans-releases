@@ -57,9 +57,9 @@ import org.netbeans.modules.j2ee.dd.api.web.WebAppMetadata;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleImplementation2;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
-
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
@@ -75,11 +75,7 @@ public class NonProjectJ2eeModule implements J2eeModuleImplementation2 {
     private static final String EJB = "ejb"; //NOI18N
     private String moduleVersion;
     private Artifact artifact;
-    private String url;
 
-    private MetadataModel<EjbJarMetadata> ejbJarMetadataModel;
-    private MetadataModel<WebAppMetadata> webAppAnnMetadataModel;
-    
 
     public NonProjectJ2eeModule(Artifact art, String modVer) {
         artifact = art;
@@ -88,14 +84,12 @@ public class NonProjectJ2eeModule implements J2eeModuleImplementation2 {
     
     @Override
     public String getModuleVersion() {
-//        System.out.println("NPJM: get Version=" + moduleVersion);
         return moduleVersion;
     }
     
     @Override
     public J2eeModule.Type getModuleType() {
         String type = artifact.getType();
-//        System.out.println("NPJM: get type=" + type);
         if (WAR.equals(type)) {
             return J2eeModule.Type.WAR;
         }
@@ -111,23 +105,17 @@ public class NonProjectJ2eeModule implements J2eeModuleImplementation2 {
     
     @Override
     public String getUrl() {
-        //TODO url should be probably based on application.xml??
-        String ret = url == null ? artifact.getFile().getName() : url;
-//        System.out.println("NPJM: get url=" + ret);
-        return ret;
+        return artifact.getFile().getName();
     }
     
     @Override
     public FileObject getArchive() throws IOException {
-//        System.out.println("NPJM: get archive=" + artifact.getFile());
         return FileUtil.toFileObject(FileUtil.normalizeFile(artifact.getFile()));
     }
     
     @Override
     public Iterator<J2eeModule.RootedEntry> getArchiveContents() throws IOException {
-//        System.out.println("NPJM: get archive content..");
-        FileObject fo = getArchive();
-        return new ContentIterator(FileUtil.getArchiveRoot(fo));
+        return new ContentIterator(FileUtil.getArchiveRoot(getArchive()));
     }
     
     @Override
@@ -136,7 +124,6 @@ public class NonProjectJ2eeModule implements J2eeModuleImplementation2 {
     }
     
     public RootInterface getDeploymentDescriptor(String location) {
-//        System.out.println("NPJM: get DD =" + location);
         if ("application.xml".equals(location)) { //NOI18N
             location = J2eeModule.APP_XML;
         }
@@ -146,46 +133,54 @@ public class NonProjectJ2eeModule implements J2eeModuleImplementation2 {
         if ("web.xml".equals(location)) { //NOI18N
             location = J2eeModule.WEB_XML;
         }
+
+        InputStream str = null;
         try {
             JarFile fil = new JarFile(artifact.getFile());
             ZipEntry entry = fil.getEntry(location);
             if (entry != null) {
-                InputStream str = fil.getInputStream(entry);
+                str = fil.getInputStream(entry);
                 return readBaseBean(str);
             }
         } catch (IOException ex) {
-            ex.printStackTrace();
+            Exceptions.printStackTrace(ex);
+        } finally {
+            if (str != null) {
+                try {
+                    str.close();
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
         }
         return null;
     }
     
     
     private RootInterface readBaseBean(InputStream str) {
-//        System.out.println("NPJM:   read base bean");
         String type = artifact.getType();
         if (WAR.equals(type)) {
             try {
                 FileObject root = FileUtil.getArchiveRoot(getArchive());
-//                System.out.println("NPJM:root=" + root);
                 return org.netbeans.modules.j2ee.dd.api.web.DDProvider.getDefault().getDDRoot(root.getFileObject(J2eeModule.WEB_XML));
             } catch (IOException ex) {
-                ex.printStackTrace();
+                Exceptions.printStackTrace(ex);
             }
         } else if (EJB.equals(type)) {
                 try {
                     return org.netbeans.modules.j2ee.dd.api.ejb.DDProvider.getDefault().getDDRoot(new InputSource(str));
                 } catch (SAXException ex) {
-                    ex.printStackTrace();
+                    Exceptions.printStackTrace(ex);
                 } catch (IOException ex) {
-                    ex.printStackTrace();
+                    Exceptions.printStackTrace(ex);
                 }
         } else if (EAR.equals(type)) {
             try {
                 return org.netbeans.modules.j2ee.dd.api.application.DDProvider.getDefault().getDDRoot(new InputSource(str));
             } catch (SAXException ex) {
-                ex.printStackTrace();
+                Exceptions.printStackTrace(ex);
             } catch (IOException ex) {
-                ex.printStackTrace();
+                Exceptions.printStackTrace(ex);
             }
             
         }
@@ -222,19 +217,7 @@ public class NonProjectJ2eeModule implements J2eeModuleImplementation2 {
     }
 
     public synchronized MetadataModel<EjbJarMetadata> getMetadataModel() {
-//TODO        if (ejbJarMetadataModel == null) {
-//            FileObject ddFO = getDeploymentDescriptor();
-//            File ddFile = ddFO != null ? FileUtil.toFile(ddFO) : null;
-//            ClassPathProviderImpl cpProvider = project.getLookup().lookup(ClassPathProviderImpl.class);
-//            MetadataUnit metadataUnit = MetadataUnit.create(
-//                cpProvider.getProjectSourcesClassPath(ClassPath.BOOT),
-//                cpProvider.getProjectSourcesClassPath(ClassPath.COMPILE),
-//                cpProvider.getProjectSourcesClassPath(ClassPath.SOURCE),
-//                // XXX: add listening on deplymentDescriptor
-//                ddFile);
-//            ejbJarMetadataModel = EjbJarMetadataModelFactory.createMetadataModel(metadataUnit);
-//        }
-        return ejbJarMetadataModel;
+        return null;
     }
 
     @Override
@@ -264,20 +247,7 @@ public class NonProjectJ2eeModule implements J2eeModuleImplementation2 {
      * in all models.
      */
     public synchronized MetadataModel<WebAppMetadata> getAnnotationMetadataModel() {
-        if (webAppAnnMetadataModel == null) {
-//TODO            FileObject ddFO = getDeploymentDescriptor();
-//            File ddFile = ddFO != null ? FileUtil.toFile(ddFO) : null;
-//            ClassPathProviderImpl cpProvider = project.getLookup().lookup(ClassPathProviderImpl.class);
-//            
-//            MetadataUnit metadataUnit = MetadataUnit.create(
-//                cpProvider.getProjectSourcesClassPath(ClassPath.BOOT),
-//                cpProvider.getProjectSourcesClassPath(ClassPath.COMPILE),
-//                cpProvider.getProjectSourcesClassPath(ClassPath.SOURCE),
-//                // XXX: add listening on deplymentDescriptor
-//                ddFile);
-//            webAppAnnMetadataModel = WebAppMetadataModelFactory.createMetadataModel(metadataUnit, false);
-        }
-        return webAppAnnMetadataModel;
+        return null;
     }
     
     

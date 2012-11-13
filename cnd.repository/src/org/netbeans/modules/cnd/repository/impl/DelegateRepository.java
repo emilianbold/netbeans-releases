@@ -200,6 +200,17 @@ public final class DelegateRepository implements Repository {
             delegate.debugDistribution();
         }
     }
+    
+    @Override
+    public void debugDump(Key key) {
+        assert key != null;
+        BaseRepository delegate = getDelegate(key.getUnitId());
+        if (delegate == null) {
+            System.err.printf("=== Repository debug dump for key=%s. Delegate not found.", key); //NOI18N
+        } else {
+            delegate.debugDump(key);
+        }
+    }
 
     @Override
     public DatabaseTable getDatabaseTable(Key unitKey, String tableID) {
@@ -292,6 +303,10 @@ public final class DelegateRepository implements Repository {
 
         @Override
         public void debugDistribution() {
+        }
+
+        @Override
+        public void debugDump(Key key) {            
         }
 
         @Override

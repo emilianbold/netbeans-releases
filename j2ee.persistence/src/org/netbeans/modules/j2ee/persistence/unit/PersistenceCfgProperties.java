@@ -135,6 +135,7 @@ public class PersistenceCfgProperties {
         possiblePropertyValues.get(ProviderUtil.ECLIPSELINK_PROVIDER).put(PersistenceUnitProperties.DROP_JDBC_DDL_FILE, null);
         possiblePropertyValues.get(ProviderUtil.ECLIPSELINK_PROVIDER).put(PersistenceUnitProperties.DDL_GENERATION_MODE, EL_DDL_GEN_MODE);
         possiblePropertyValues.get(ProviderUtil.ECLIPSELINK_PROVIDER).put(PersistenceUnitProperties.WEAVING_CHANGE_TRACKING, TRUE_FALSE);
+        possiblePropertyValues.get(ProviderUtil.ECLIPSELINK_PROVIDER).put(PersistenceUnitProperties.UPPERCASE_COLUMN_NAMES, TRUE_FALSE);
         possiblePropertyValues.get(ProviderUtil.ECLIPSELINK_PROVIDER).put("eclipselink.canonicalmodel.prefix", null);//NOI18N
         possiblePropertyValues.get(ProviderUtil.ECLIPSELINK_PROVIDER).put("eclipselink.canonicalmodel.suffix", null);//NOI18N
         possiblePropertyValues.get(ProviderUtil.ECLIPSELINK_PROVIDER).put("eclipselink.canonicalmodel.subpackage", null);//NOI18N
@@ -222,7 +223,10 @@ public class PersistenceCfgProperties {
             ret.addAll(possiblePropertyValues.get(null).keySet());
         }
         if(provider !=null ) {
-            ret.addAll(possiblePropertyValues.get(provider).keySet());
+            Map<String, String[]> props = possiblePropertyValues.get(provider);
+            if(props!=null) {
+                ret.addAll(props.keySet());
+            }
         }
         return ret;
     }

@@ -100,7 +100,8 @@ public class HighlightingNameFormatter {
 
     private static final String COLOR_FORMAT_PATTERN = "<font style=\"background-color:%s; font-weight:bold; color:%s; white-space:nowrap\">%s</font>"; //NOI18N
     private static final String BOLD_FORMAT_PATTERN = "<b>%s</b>";    //NOI18N
-    private String formatPattern;
+    private static final String BASE_COLOR_FORMAT_PATTERN = "<font color=\"#%s\">%s</font>";    //NOI18N
+    private final String formatPattern;
 
     private HighlightingNameFormatter(
             @NonNull final String pattern) {
@@ -153,6 +154,19 @@ public class HighlightingNameFormatter {
             }
         }
         return formattedTypeName.toString();
+    }
+
+    @NonNull
+    public String formatName(
+            @NonNull final String name,
+            @NonNull final String textToFind,
+            final boolean caseSensitive,
+            @NonNull final Color baseColor) {
+        final String res = formatName(name, textToFind, caseSensitive);
+        return String.format(
+            BASE_COLOR_FORMAT_PATTERN,
+            Integer.toHexString(baseColor.getRGB()).substring(2),
+            res);
     }
 
     private List<String> splitByCamelCaseAndWildcards(String searchText) {

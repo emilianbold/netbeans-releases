@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.web.clientproject;
 
+import org.netbeans.api.project.ui.ProjectProblems;
 import org.netbeans.modules.web.clientproject.spi.platform.ClientProjectConfigurationImplementation;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.ui.support.DefaultProjectOperations;
@@ -48,6 +49,7 @@ import org.openide.DialogDisplayer;
 import org.openide.LifecycleManager;
 import org.openide.NotifyDescriptor;
 import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -110,6 +112,10 @@ public class ClientSideProjectActionProvider implements ActionProvider {
         }
         ActionProvider ap = getActionProvider();
         if (ap != null) {
+            // #217362 and possibly others
+            if (!checkSiteRoot()) {
+                return;
+            }
             ap.invokeAction(command, context);
             return;
         }
@@ -145,6 +151,22 @@ public class ClientSideProjectActionProvider implements ActionProvider {
 
     private void deleteProject() {
         DefaultProjectOperations.performDefaultDeleteOperation(project);
+    }
+
+    @NbBundle.Messages({
+        "# {0} - project name",
+        "ClientSideProjectActionProvider.error.invalidSiteRoot=<html>Project <b>{0}</b> has invalid Site Root, resolve project problems first."
+    })
+    private boolean checkSiteRoot() {
+        if (project.getSiteRootFolder() == null) {
+            // broken project, do not run any action
+            NotifyDescriptor descriptor = new NotifyDescriptor.Message(
+                    Bundle.ClientSideProjectActionProvider_error_invalidSiteRoot(project.getName()), NotifyDescriptor.WARNING_MESSAGE);
+            DialogDisplayer.getDefault().notify(descriptor);
+            ProjectProblems.showCustomizer(project);
+            return false;
+        }
+        return true;
     }
 
 }

@@ -151,6 +151,7 @@ public interface Unit {
      * @return true if maintenance was finished by timeout and needs more time to be completed
      */
     public boolean maintenance(long timeout)  throws IOException;
-    
-    
+
+    public void debugDump(Key key);
+
 }

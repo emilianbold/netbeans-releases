@@ -93,6 +93,8 @@ public final class ExternalBrowserPlugin {
     }
 
     private static final ExternalBrowserPlugin INSTANCE = new ExternalBrowserPlugin();
+    
+    private static RequestProcessor RP = new RequestProcessor("ExternalBrowserPlugin", 5); // NOI18N
 
     private ExternalBrowserPlugin() {
         try {
@@ -135,7 +137,7 @@ public final class ExternalBrowserPlugin {
      * Show URL in browser in given browser tab.
      */
     public void showURLInTab(final BrowserTabDescriptor tab, final URL url) {
-        RequestProcessor.getDefault().post(new Runnable() {
+        RP.post(new Runnable() {
             @Override
             public void run() {
                 tab.init();
@@ -215,6 +217,15 @@ public final class ExternalBrowserPlugin {
                 if (key != null) {
                     server.sendMessage(key, message);
                 }
+            }
+        }
+    }
+    
+    private void closeOtherDebuggingSessionsWithPageInspector(int tabId) {
+        for(Iterator<BrowserTabDescriptor> iterator = knownBrowserTabs.iterator() ; iterator.hasNext() ; ) {
+            BrowserTabDescriptor browserTab = iterator.next();
+            if ( tabId != browserTab.tabID && browserTab.isPageInspectorActive()) {
+                close(browserTab, false);
             }
         }
     }
@@ -313,6 +324,10 @@ public final class ExternalBrowserPlugin {
         }
         
         private Pair getAwaitingPair(String url) {
+            if (url.startsWith("chrome")) {
+                // ignore internal chrome URLs:
+                return null;
+            }
             URL u = null;
             try {
                 u = new URL(url);
@@ -447,7 +462,7 @@ public final class ExternalBrowserPlugin {
                     executor.activate();
                 }
                 // Do not block WebSocket thread
-                RequestProcessor.getDefault().post(new Runnable() {
+                RP.post(new Runnable() {
                     @Override
                     public void run() {
                         inspector.inspectPage(new ProxyLookup(context, projectContext));
@@ -692,6 +707,11 @@ public final class ExternalBrowserPlugin {
 
             PageInspector inspector = PageInspector.getDefault();
             if (inspector != null && !browserImpl.isDisablePageInspector()) {
+                
+                // #219241 - "Web inspection is broken when switching 2 projects with different configuration"
+                // a solution is to close previous debugging sessions:
+                ExternalBrowserPlugin.getInstance().closeOtherDebuggingSessionsWithPageInspector(tabID);
+                
                 inspector.inspectPage(new ProxyLookup(browserImpl.getLookup(), browserImpl.getProjectContext()));
             }
         }
@@ -721,6 +741,11 @@ public final class ExternalBrowserPlugin {
             if (dispatcher != null) {
                 dispatcher.dispatchMessage(PageInspector.MESSAGE_DISPATCHER_FEATURE_ID, null);
             }
+        }
+        
+        public boolean isPageInspectorActive() {
+            return PageInspector.getDefault() != null && 
+                !browserImpl.isDisablePageInspector();
         }
 
     }

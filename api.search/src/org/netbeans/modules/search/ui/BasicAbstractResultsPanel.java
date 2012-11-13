@@ -46,7 +46,6 @@ import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyVetoException;
-import java.util.List;
 import java.util.ResourceBundle;
 import javax.accessibility.AccessibleContext;
 import javax.swing.JButton;
@@ -63,7 +62,6 @@ import org.netbeans.modules.search.ResultModel;
 import org.netbeans.modules.search.ResultView;
 import org.netbeans.modules.search.TextDetail;
 import org.openide.explorer.view.OutlineView;
-import org.openide.filesystems.FileObject;
 import org.openide.nodes.Node;
 import org.openide.nodes.NodeAdapter;
 import org.openide.nodes.NodeListener;
@@ -104,7 +102,6 @@ public abstract class BasicAbstractResultsPanel
 
     public BasicAbstractResultsPanel(ResultModel resultModel,
             BasicComposition composition, boolean details,
-            List<FileObject> rootFiles,
             ResultsOutlineSupport resultsOutlineSupport) {
 
         super(composition, composition.getSearchProviderPresenter());

@@ -332,7 +332,7 @@ public class DependenciesNode extends AbstractNode {
             RP.post(new Runnable() {
                 @Override
                 public void run() {
-                    Node[] nds = getChildren().getNodes();
+                    Node[] nds = getChildren().getNodes(true);
                     ProgressContributor[] contribs = new ProgressContributor[nds.length];
                     for (int i = 0; i < nds.length; i++) {
                         contribs[i] = AggregateProgressFactory.createProgressContributor("multi-" + i); //NOI18N

@@ -116,11 +116,11 @@ public class ColorsModule extends ExtCssEditorModule implements CssModule {
     }
 
     @Override
-    public PropertyDefinition getPropertyDefinition(FileObject context, String propertyName) {
+    public PropertyDefinition getPropertyDefinition(String propertyName) {
         if(COLOR_LIST_PROPERTY_NAME.equals(propertyName)) {
             return colorsListPropertyDescriptor;
         } else {
-            return super.getPropertyDefinition(context, propertyName);
+            return super.getPropertyDefinition(propertyName);
         }
     }
     

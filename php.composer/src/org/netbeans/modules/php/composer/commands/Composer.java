@@ -84,6 +84,7 @@ public final class Composer {
     private static final String NAME_PARAM = "--name=%s"; // NOI18N
     private static final String AUTHOR_PARAM = "--author=%s <%s>"; // NOI18N
     private static final String DESCRIPTION_PARAM = "--description=%s"; // NOI18N
+    private static final String DEV_PARAM = "--dev"; // NOI18N
 
     private final String composerPath;
 
@@ -146,9 +147,19 @@ public final class Composer {
         runCommand(phpModule, INSTALL_COMMAND, Bundle.Composer_run_install());
     }
 
+    @NbBundle.Messages("Composer.run.installDev=Composer (install dev)")
+    public void installDev(PhpModule phpModule) {
+        runCommand(phpModule, INSTALL_COMMAND, Bundle.Composer_run_installDev(), Collections.singletonList(DEV_PARAM));
+    }
+
     @NbBundle.Messages("Composer.run.update=Composer (update)")
     public void update(PhpModule phpModule) {
         runCommand(phpModule, UPDATE_COMMAND, Bundle.Composer_run_update());
+    }
+
+    @NbBundle.Messages("Composer.run.updateDev=Composer (update dev)")
+    public void updateDev(PhpModule phpModule) {
+        runCommand(phpModule, UPDATE_COMMAND, Bundle.Composer_run_updateDev(), Collections.singletonList(DEV_PARAM));
     }
 
     @NbBundle.Messages("Composer.run.validate=Composer (validate)")

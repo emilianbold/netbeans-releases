@@ -42,16 +42,18 @@
 
 package org.netbeans.modules.cordova.project;
 
+import org.netbeans.modules.cordova.platforms.PropertyProvider;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.cordova.android.AndroidActionProvider;
-import org.netbeans.modules.cordova.android.AndroidConfigurationPanel;
-import org.netbeans.modules.cordova.android.AndroidPlatform;
-import org.netbeans.modules.cordova.ios.IOSActionProvider;
-import org.netbeans.modules.cordova.ios.IOSConfigurationPanel;
-import org.netbeans.modules.cordova.ios.IOSPlatform;
+import org.netbeans.modules.cordova.platforms.PlatformConstants;
+import org.netbeans.modules.cordova.platforms.android.AndroidActionProvider;
+import org.netbeans.modules.cordova.platforms.android.AndroidConfigurationPanel;
+import org.netbeans.modules.cordova.platforms.android.AndroidPlatform;
+import org.netbeans.modules.cordova.platforms.ios.IOSActionProvider;
+import org.netbeans.modules.cordova.platforms.ios.IOSConfigurationPanel;
+import org.netbeans.modules.cordova.platforms.ios.IOSPlatform;
 import org.netbeans.modules.web.clientproject.spi.platform.ClientProjectConfigurationImplementation;
 import org.netbeans.modules.web.clientproject.spi.platform.ProjectConfigurationCustomizer;
 import org.netbeans.modules.web.clientproject.spi.platform.RefreshOnSaveListener;
@@ -63,7 +65,7 @@ import org.openide.util.Exceptions;
 /**
  *
  */
-public class ClientProjectConfigurationImpl implements ClientProjectConfigurationImplementation {
+public class ClientProjectConfigurationImpl implements ClientProjectConfigurationImplementation, PropertyProvider {
 
     final private Project project;
     //final private ClientProjectPlatformImpl platform;
@@ -77,7 +79,7 @@ public class ClientProjectConfigurationImpl implements ClientProjectConfiguratio
         this.project = project;
         this.name = id;
         this.displayName = displayName;
-        assert type.equals(AndroidPlatform.TYPE) || type.equals(IOSPlatform.TYPE);
+        assert type.equals(PlatformConstants.ANDROID_TYPE) || type.equals(PlatformConstants.IOS_TYPE);
         this.type = type;
         this.props = ep;
         this.file = kid;
@@ -116,10 +118,12 @@ public class ClientProjectConfigurationImpl implements ClientProjectConfiguratio
         return type;
     }
 
+    @Override
     public String getProperty(String prop) {
         return props.getProperty(prop);
     }
     
+    @Override
     public String putProperty(String prop, String value) {
         return props.put(prop, value);
     }
@@ -133,7 +137,7 @@ public class ClientProjectConfigurationImpl implements ClientProjectConfiguratio
                 p.load(is);
                 String id = configFile.getName();
                 String label = p.getProperty("display.name"); // NOI18N
-                String type = p.getProperty("type");
+                String type = p.getProperty("type"); //NOI18N
                 return new ClientProjectConfigurationImpl(proj, configFile, id, label != null ? label : id, type, p);
             } finally {
                 is.close();
@@ -155,7 +159,7 @@ public class ClientProjectConfigurationImpl implements ClientProjectConfiguratio
 
     @Override
     public ActionProvider getActionProvider() {
-        if (type.equals(AndroidPlatform.TYPE)) {
+        if (type.equals(PlatformConstants.ANDROID_TYPE)) {
             return new AndroidActionProvider(project);
         } else {
             return new IOSActionProvider(project);
@@ -164,7 +168,7 @@ public class ClientProjectConfigurationImpl implements ClientProjectConfiguratio
 
     @Override
     public ProjectConfigurationCustomizer getProjectConfigurationCustomizer() {
-        if (type.equals(AndroidPlatform.TYPE)) {
+        if (type.equals(PlatformConstants.ANDROID_TYPE)) {
             return new AndroidConfigurationPanel.AndroidConfigurationCustomizer(project, this);
         } else {
             return new IOSConfigurationPanel.IOSConfigurationCustomizer(project, this);

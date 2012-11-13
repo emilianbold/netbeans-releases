@@ -180,6 +180,11 @@ public class JsCodeCompletionGeneralTest extends JsCodeComplationBase {
     public void testIssue220088_07() throws Exception {
         checkCompletion("testfiles/completion/general/issue220088.js", "issue220088.modal.m^odalBody;", false);
     }
+
+    public void testIssue218525_01() throws Exception {
+        checkCompletion("testfiles/completion/general/issue218525.html", "<li style=\"cursor: pointer\" onclick=\"operator.r^emoveMe(this);\">Remove me (breakpoint on node removal + breakpoint on nonDOM line)</li>", false);
+    }
+
     @Override
     protected Map<String, ClassPath> createClassPathsForTest() {
         return Collections.singletonMap(

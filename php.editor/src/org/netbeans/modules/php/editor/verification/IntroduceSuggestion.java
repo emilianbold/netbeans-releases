@@ -748,27 +748,32 @@ public class IntroduceSuggestion extends AbstractSuggestion {
 
     private static int getOffsetAfterBlockCloseCurly(BaseDocument doc, int offset) throws BadLocationException {
         int retval = offset;
-        TokenSequence<? extends PHPTokenId> ts = LexUtilities.getPHPTokenSequence(doc, retval);
-        if (ts != null) {
-            ts.move(retval);
-            int curlyMatch = 0;
-            while (ts.moveNext()) {
-                Token t = ts.token();
-                if (t.id() == PHPTokenId.PHP_CURLY_OPEN || t.id() == PHPTokenId.PHP_CURLY_CLOSE) {
-                    if (t.id() == PHPTokenId.PHP_CURLY_OPEN) {
-                        curlyMatch++;
-                    } else if (t.id() == PHPTokenId.PHP_CURLY_CLOSE) {
-                        curlyMatch--;
+        doc.readLock();
+        try {
+            TokenSequence<? extends PHPTokenId> ts = LexUtilities.getPHPTokenSequence(doc, retval);
+            if (ts != null) {
+                ts.move(retval);
+                int curlyMatch = 0;
+                while (ts.moveNext()) {
+                    Token t = ts.token();
+                    if (t.id() == PHPTokenId.PHP_CURLY_OPEN || t.id() == PHPTokenId.PHP_CURLY_CLOSE) {
+                        if (t.id() == PHPTokenId.PHP_CURLY_OPEN) {
+                            curlyMatch++;
+                        } else if (t.id() == PHPTokenId.PHP_CURLY_CLOSE) {
+                            curlyMatch--;
+                        }
+                        if (curlyMatch == 0) {
+                            ts.moveNext();
+                            retval = ts.offset();
+                            break;
+                        }
+                    } else {
+                        continue;
                     }
-                    if (curlyMatch == 0) {
-                        ts.moveNext();
-                        retval = ts.offset();
-                        break;
-                    }
-                } else {
-                    continue;
                 }
             }
+        } finally {
+            doc.readUnlock();
         }
         return retval;
     }
@@ -783,17 +788,22 @@ public class IntroduceSuggestion extends AbstractSuggestion {
 
     private static int getOffsetAfterNextTokenId(BaseDocument doc, int offset, PHPTokenId tokenId) throws BadLocationException {
         int retval = offset;
-        TokenSequence<? extends PHPTokenId> ts = LexUtilities.getPHPTokenSequence(doc, retval);
-        if (ts != null) {
-            ts.move(retval);
-            while (ts.moveNext()) {
-                Token t = ts.token();
-                if (t.id() == tokenId) {
-                    ts.moveNext();
-                    retval = ts.offset();
-                    break;
+        doc.readLock();
+        try {
+            TokenSequence<? extends PHPTokenId> ts = LexUtilities.getPHPTokenSequence(doc, retval);
+            if (ts != null) {
+                ts.move(retval);
+                while (ts.moveNext()) {
+                    Token t = ts.token();
+                    if (t.id() == tokenId) {
+                        ts.moveNext();
+                        retval = ts.offset();
+                        break;
+                    }
                 }
             }
+        } finally {
+            doc.readUnlock();
         }
         return retval;
     }

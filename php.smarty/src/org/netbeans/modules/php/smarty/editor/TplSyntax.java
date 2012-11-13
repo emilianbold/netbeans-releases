@@ -101,9 +101,9 @@ public class TplSyntax {
     public static boolean isBlockCommand(String tag) {
         Parameters.notNull("tag", tag); //NOI18N
         String tokenText = tag.toLowerCase();
-        return BLOCK_TAGS.contains(tokenText)
+        return !tag.isEmpty() && (BLOCK_TAGS.contains(tokenText)
                 || BLOCK_TAGS.contains(tokenText.substring(1))
-                || ELSE_TAGS.contains(tokenText);
+                || ELSE_TAGS.contains(tokenText));
     }
 
     /**
@@ -115,7 +115,7 @@ public class TplSyntax {
     public static boolean isElseSmartyCommand(String tag) {
         Parameters.notNull("tag", tag); //NOI18N
         String tokenText = tag.toLowerCase();
-        return ELSE_TAGS.contains(tokenText);
+        return !tag.isEmpty() && ELSE_TAGS.contains(tokenText);
     }
 
     /**

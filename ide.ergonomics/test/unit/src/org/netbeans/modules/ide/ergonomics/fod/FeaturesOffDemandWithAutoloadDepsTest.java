@@ -195,7 +195,7 @@ public class FeaturesOffDemandWithAutoloadDepsTest extends NbTestCase implements
         assertEquals("Integer", Integer.class, cnt.getClass());
         assertEquals("Set to zero", Integer.valueOf(0), cnt);
 
-        Long modified = sub.lastModified().getTime();
+        Long modified = FeaturesOffDemandWithDepsTest.findLastModified(sub);
         assertEquals("enabled attribute is same as modification day", when, modified);
         final String middleState = sub.asText("UTF-8");
         if (origContent.equals(middleState)) {

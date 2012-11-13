@@ -73,7 +73,7 @@ public final class QueryImpl<Q, I>  {
         this.repository = repository;
     }
     
-    public Query getQuery() {
+    public synchronized Query getQuery() {
         if(query == null) {
             query = APIAccessor.IMPL.createQuery(this);
         }

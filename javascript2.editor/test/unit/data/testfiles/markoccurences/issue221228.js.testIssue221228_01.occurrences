@@ -1,0 +1,2 @@
+        formatter.println(|>MARK_OCCURRENCES:msg<|);
+    var |>MARK_OCCURRENCES:ms^g<| = ""; // rename here

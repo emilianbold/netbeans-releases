@@ -75,6 +75,7 @@ import javax.lang.model.util.*;
 import javax.swing.text.AbstractDocument;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
+import org.netbeans.api.annotations.common.NonNull;
 
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.settings.SimpleValueNames;
@@ -900,7 +901,7 @@ public final class Utilities {
     /**
      * @since 2.12
      */
-    public static List<ExecutableElement> fuzzyResolveMethodInvocation(CompilationInfo info, TreePath path, List<TypeMirror> proposed, int[] index) {
+    public static @NonNull List<ExecutableElement> fuzzyResolveMethodInvocation(CompilationInfo info, TreePath path, List<TypeMirror> proposed, int[] index) {
         assert path.getLeaf().getKind() == Kind.METHOD_INVOCATION || path.getLeaf().getKind() == Kind.NEW_CLASS;
         
         if (path.getLeaf().getKind() == Kind.METHOD_INVOCATION) {
@@ -949,13 +950,13 @@ public final class Utilities {
             TypeMirror on = info.getTrees().getTypeMirror(new TreePath(path, nct.getIdentifier()));
             
             if (on == null || on.getKind() != TypeKind.DECLARED) {
-                return null;
+                return Collections.emptyList();
             }
             
             return resolveMethod(info, actualTypes, (DeclaredType) on, false, true, null, proposed, index);
         }
         
-        return null;
+        return Collections.emptyList();
     }
 
     private static Iterable<ExecutableElement> execsIn(CompilationInfo info, TypeElement e, boolean constr, String name) {

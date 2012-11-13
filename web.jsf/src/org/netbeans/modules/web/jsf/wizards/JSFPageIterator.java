@@ -46,9 +46,10 @@ package org.netbeans.modules.web.jsf.wizards;
 
 import java.io.IOException;
 import java.util.Set;
+import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.jsf.JSFConfigUtilities;
-import org.netbeans.modules.web.wizards.PageIterator;
 import org.netbeans.modules.web.wizards.FileType;
+import org.netbeans.modules.web.wizards.PageIterator;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.TemplateWizard;
@@ -59,6 +60,9 @@ import org.openide.loaders.TemplateWizard;
  */
 
 public class JSFPageIterator extends PageIterator {
+
+    private static final long serialVersionUID = 1L;
+
     public JSFPageIterator(FileType fileType) {
         super(fileType);
     }
@@ -77,8 +81,12 @@ public class JSFPageIterator extends PageIterator {
 
         // Add JSF framework here
         FileObject fileObject = ((DataObject) dobj.toArray()[0]).getPrimaryFile();
-        if (!JSFConfigUtilities.hasJsfFramework(fileObject)) {
-            JSFConfigUtilities.extendJsfFramework(fileObject, false);
+        WebModule webModule = WebModule.getWebModule(fileObject);
+        // issue #221464 - do not try to extend project if it's not Web Project
+        if (webModule != null) {
+            if (!JSFConfigUtilities.hasJsfFramework(fileObject)) {
+                JSFConfigUtilities.extendJsfFramework(fileObject, false);
+            }
         }
 
         return dobj;

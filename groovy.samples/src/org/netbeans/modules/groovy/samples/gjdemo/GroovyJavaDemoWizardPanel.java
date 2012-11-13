@@ -44,6 +44,7 @@ package org.netbeans.modules.groovy.samples.gjdemo;
 import java.awt.Component;
 import java.util.HashSet;
 import java.util.Set;
+import javax.swing.JComponent;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.openide.WizardDescriptor;
@@ -67,12 +68,13 @@ public class GroovyJavaDemoWizardPanel implements WizardDescriptor.Panel,
         if (component == null) {
             component = new GroovyJavaDemoPanelVisual(this);
             component.setName(NbBundle.getMessage(GroovyJavaDemoWizardPanel.class, "LBL_CreateProjectStep"));
+            component.putClientProperty("NewProjectWizard_Title", NbBundle.getMessage(GroovyJavaDemoWizardPanel.class, "LBL_TXT_NewGroovyJavaSample"));
         }
         return component;
     }
 
     public HelpCtx getHelp() {
-        return new HelpCtx(GroovyJavaDemoWizardPanel.class);
+        return null;
     }
 
     public boolean isValid() {
@@ -107,11 +109,17 @@ public class GroovyJavaDemoWizardPanel implements WizardDescriptor.Panel,
     public void readSettings(Object settings) {
         wizardDescriptor = (WizardDescriptor) settings;
         component.read(wizardDescriptor);
+
+        Object substitute = ((JComponent) component).getClientProperty("NewProjectWizard_Title"); // NOI18N
+        if (substitute != null) {
+            wizardDescriptor.putProperty("NewProjectWizard_Title", substitute); // NOI18N
+        }
     }
 
     public void storeSettings(Object settings) {
         WizardDescriptor d = (WizardDescriptor) settings;
         component.store(d);
+        d.putProperty("NewProjectWizard_Title", null); // NOI18N
     }
 
     public boolean isFinishPanel() {

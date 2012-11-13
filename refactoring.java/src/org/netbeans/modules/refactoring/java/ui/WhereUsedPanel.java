@@ -117,9 +117,8 @@ public class WhereUsedPanel extends JPanel implements CustomRefactoringPanel {
     }
     
     public Scope getCustomScope() {
-        FileObject file = WhereUsedPanel.this.element.getFileObject();
-        
         if(!enableScope) {
+            FileObject file = WhereUsedPanel.this.element.getFileObject();
             return Scope.create(null, null, Arrays.asList(file));
         }
 

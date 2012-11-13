@@ -68,6 +68,7 @@ import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.Mutex;
 import org.openide.util.MutexException;
 import org.openide.util.NbBundle;
@@ -349,9 +350,12 @@ public final class ClientSideProjectProperties {
         this.jsLibFolder = jsLibFolder;
     }
 
-    @CheckForNull
     public File getResolvedSiteRootFolder() {
-        return resolveFile(getSiteRootFolder());
+        File resolvedFile = resolveFile(getSiteRootFolder());
+        if (resolvedFile != null) {
+            return resolvedFile;
+        }
+        return FileUtil.toFile(project.getProjectDirectory());
     }
 
     private static void errorOccured(String message) {

@@ -65,6 +65,10 @@ public class HashMapRepository extends BaseRepository {
     }
 
     @Override
+    public void debugDump(Key key) {
+    }
+
+    @Override
     public DatabaseTable getDatabaseTable(Key unitKey, String tableID) {
         return null;
     }

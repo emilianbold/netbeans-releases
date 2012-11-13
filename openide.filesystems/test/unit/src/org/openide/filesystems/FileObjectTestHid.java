@@ -3459,6 +3459,43 @@ public class FileObjectTestHid extends TestBaseHid {
         fileChangedAssert("expected FileChangeListener: ", 1);        
     }
     
+    public void testClosingTheStreamReleasesLockFirst() throws java.io.FileNotFoundException, IOException {
+        checkSetUp();
+
+        final FileObject fo1 = getTestFile1 (root);
+        class Teaser extends FileChangeAdapter {
+            private FileLock lock;
+            private IOException ex;
+
+            @Override
+            public void fileChanged(FileEvent fe) {
+                try {
+                    lock = fo1.lock();
+                } catch (IOException e) {
+                    this.ex = e;
+                }
+            }
+        }
+        Teaser t = new Teaser();
+        try {
+            fo1.addFileChangeListener(t);
+            
+            OutputStream os = fo1.getOutputStream();
+            String txt = "Ahoj\nJak\nSe\nMas";
+            os.write(txt.getBytes("UTF-8"));
+            os.close();
+
+            
+        } catch (IOException iex) {
+            fsAssert  ("Expected that FS provides InputStream ",fo1.getSize () == 0);
+        } finally {
+            fo1.removeFileChangeListener(t);
+        }
+        if (t.ex != null) {
+            throw t.ex;
+        }
+    }
+    
     protected String[] getResources(String testName) {
         if (res == null ) {
             res = new HashSet(Arrays.asList(resources));

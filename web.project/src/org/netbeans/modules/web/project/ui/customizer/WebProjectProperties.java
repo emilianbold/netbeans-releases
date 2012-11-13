@@ -62,7 +62,6 @@ import javax.swing.ComboBoxModel;
 import javax.swing.DefaultListModel;
 import javax.swing.JToggleButton;
 import javax.swing.ListCellRenderer;
-import javax.swing.SwingUtilities;
 
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableCellRenderer;
@@ -95,8 +94,6 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.InstanceRemovedException;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.api.j2ee.core.Profile;
-import org.netbeans.api.progress.ProgressHandle;
-import org.netbeans.api.progress.ProgressRunnable;
 import org.netbeans.api.progress.ProgressUtils;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.java.api.common.SourceRoots;
@@ -218,6 +215,7 @@ final public class WebProjectProperties {
     public static final String ANT_DEPLOY_BUILD_SCRIPT = "nbproject/ant-deploy.xml"; // NOI18N
     
     private static Logger LOGGER = Logger.getLogger(WebProjectProperties.class.getName());
+    private static RequestProcessor RP = new RequestProcessor("WebProjectProperties", 5);
 
     public ClassPathSupport cs;
 
@@ -489,7 +487,7 @@ final public class WebProjectProperties {
         } catch (BadLocationException exc) {
             //ignore
         }
-        loadingFrameworksTask = RequestProcessor.getDefault().post(new Runnable() {
+        loadingFrameworksTask = RP.post(new Runnable() {
                 public void run() {
                     loadCurrentFrameworks();
                 }
@@ -1038,7 +1036,7 @@ final public class WebProjectProperties {
     private void handleExtenders(final List newExtenders, final List<WebModuleExtender> existingExtenders) {
         if (newExtenders != null && !newExtenders.isEmpty()) {
             // in case that new extenders should be included
-            RequestProcessor.getDefault().post(new Runnable() {
+            RP.post(new Runnable() {
                 @Override
                 public void run() {
                     // it mostly results into lenghty opperation, show progress dialog
@@ -1061,7 +1059,7 @@ final public class WebProjectProperties {
             });
         } else if (existingExtenders != null && !existingExtenders.isEmpty()) {
             // in case that webModule contains some extenders which should be saved
-            RequestProcessor.getDefault().post(new Runnable() {
+            RP.post(new Runnable() {
 
                 @Override
                 public void run() {
@@ -1076,7 +1074,7 @@ final public class WebProjectProperties {
                     });
                     try {
                         // start the extenders saving task
-                        RequestProcessor.getDefault().post(future);
+                        RP.post(future);
                         // When the task doesn't finish shortly, run it with progress dialog to inform user
                         // that lenghty opperation is happening. BTW, initial waiting time is used to prevent
                         // dialogs flickering.

@@ -5,7 +5,7 @@
     
     <target name="get-cdnjs-jar">
         <get src="https://github.com/cdnjs/cdnjs/zipball/master" dest="build/cdnjs-temp.zip"/>        
-        <zip destfile="src/org/netbeans/modules/web/clientproject/resources/cdnjs.zip">
+        <zip destfile="src/org/netbeans/modules/web/clientproject/libraries/resources/cdnjs.zip">
             <zipfileset src="build/cdnjs-temp.zip" excludes="**/*.js"/>
         </zip>
     </target>

@@ -59,7 +59,7 @@ import org.netbeans.spi.options.OptionsPanelController;
 @OptionsPanelController.Keywords(keywords={"#LBL_VisualDebugging",
                                            "#CategoryPanelVisual.kw1",
                                            "#CategoryPanelVisual.kw2"},
-                                 location=JavaOptions.JAVA, tabTitle="#LBL_JavaDebugger")
+                                 location=JavaOptions.JAVA, tabTitle="#LBL_JavaDebuggerVisual")
 public class CategoryPanelVisual extends StorablePanel {
 
     /** Creates new form CategoryPanelVisual */

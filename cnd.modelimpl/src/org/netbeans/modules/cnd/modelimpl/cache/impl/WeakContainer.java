@@ -96,7 +96,7 @@ public final class WeakContainer<T> {
                         postfix = " second attempt OK";// NOI18N
                     }
                 }
-                DiagnosticExceptoins.register(new IllegalStateException("Failed to get container sorage by key " + storageKey + postfix)); // NOI18N
+                DiagnosticExceptoins.registerIllegalRepositoryStateException("Failed to get container sorage by key " + postfix, storageKey); // NOI18N
                 preventMultiplyDiagnosticExceptionsSorage++;
 //            } else{
 //                System.err.printf("OK %s\n", storageKey);

@@ -396,6 +396,10 @@ public class DetectorTest extends TestBase {
     public void testUnary220003() throws Exception {
         performTest("Unary220003");
     }
+    
+    public void testConstructorParamIsUsed220117() throws Exception {
+        performTest("ConstructorParamIsUsed");
+    }
 
     //Support for exotic identifiers has been removed 6999438
     public void REMOVEDtestExoticIdentifiers() throws Exception {

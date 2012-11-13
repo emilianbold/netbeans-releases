@@ -40,6 +40,7 @@ package org.netbeans.modules.java.editor.imports;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.IdentifierTree;
 import com.sun.source.tree.MemberSelectTree;
+import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.Scope;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.VariableTree;
@@ -393,8 +394,13 @@ public class ClipboardHandler {
                                     javax.lang.model.element.Element el = parameter.getTrees().getElement(getCurrentPath());
 
                                     if (s >= start && e >= start && e <= end && el != null && (el.getKind().isClass() || el.getKind().isInterface())) {
-                                        simple2ImportFQN.put(el.getSimpleName().toString(), ((TypeElement) el).getQualifiedName().toString());
-                                        spans.add(new int[] {s - start, e - start});
+                                        TreePath parentPath = getCurrentPath().getParentPath();
+                                        if (parentPath == null || parentPath.getLeaf().getKind() != Tree.Kind.NEW_CLASS
+                                                || ((NewClassTree)parentPath.getLeaf()).getEnclosingExpression() == null
+                                                || ((NewClassTree)parentPath.getLeaf()).getIdentifier() != node) {
+                                            simple2ImportFQN.put(el.getSimpleName().toString(), ((TypeElement) el).getQualifiedName().toString());
+                                            spans.add(new int[] {s - start, e - start});
+                                        }
                                     }
                                     return super.visitIdentifier(node, p);
                                 }
@@ -547,13 +553,24 @@ public class ClipboardHandler {
             return delegate.importData(comp, t);
         }
         
-        private boolean insideToken(JTextComponent jtc, JavaTokenId first, JavaTokenId... rest) {
-            int offset = jtc.getSelectionStart();
-            TokenSequence<JavaTokenId> ts = SourceUtils.getJavaTokenSequence(TokenHierarchy.get(jtc.getDocument()), offset);
-            if (ts == null || !ts.moveNext() && !ts.movePrevious() || offset == ts.offset())
-                return false;
-            EnumSet tokenIds = EnumSet.of(first, rest);
-            return tokenIds.contains(ts.token().id());
+        private boolean insideToken(final JTextComponent jtc, final JavaTokenId first, final JavaTokenId... rest) {
+            final Document doc = jtc.getDocument();
+            final boolean[] result = new boolean[1];
+            
+            doc.render(new Runnable() {
+                @Override public void run() {
+                    int offset = jtc.getSelectionStart();
+                    TokenSequence<JavaTokenId> ts = SourceUtils.getJavaTokenSequence(TokenHierarchy.get(doc), offset);
+                    if (ts == null || !ts.moveNext() && !ts.movePrevious() || offset == ts.offset()) {
+                        result[0] = false;
+                    } else {
+                        EnumSet tokenIds = EnumSet.of(first, rest);
+                        result[0] = tokenIds.contains(ts.token().id());
+                    }
+                }
+            });
+            
+            return result[0];
         }
     }
 

@@ -49,6 +49,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.awt.event.KeyEvent;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
@@ -219,21 +220,27 @@ public class NbEditorKit extends ExtKit implements Callable {
         return declaredActions;
     }
 
-
     protected void addSystemActionMapping(String editorActionName, Class systemActionClass) {
         Action a = getActionByName(editorActionName);
         if (a != null) {
-            a.putValue(SYSTEM_ACTION_CLASS_NAME_PROPERTY, systemActionClass.getName());
+            a.putValue(SYSTEM_ACTION_CLASS_NAME_PROPERTY, systemActionClass.getName().replaceAll("\\.", "-"));
         }
         systemAction2editorAction.put(systemActionClass.getName(), editorActionName);
     }
     
+    private void addSystemActionMapping(String editorActionName, String systemActionId) {
+        Action a = getActionByName(editorActionName);
+        if (a != null) {
+            a.putValue(SYSTEM_ACTION_CLASS_NAME_PROPERTY, systemActionId.replaceAll("\\.", "-"));
+        }
+    }
+    
     protected @Override void updateActions() {
-        addSystemActionMapping(cutAction, org.openide.actions.CutAction.class);
-        addSystemActionMapping(copyAction, org.openide.actions.CopyAction.class);
-        addSystemActionMapping(pasteAction, org.openide.actions.PasteAction.class);
+        addSystemActionMapping(cutAction, javax.swing.text.DefaultEditorKit.cutAction);
+        addSystemActionMapping(copyAction, javax.swing.text.DefaultEditorKit.copyAction);
+        addSystemActionMapping(pasteAction, javax.swing.text.DefaultEditorKit.pasteAction);
         // #69077 - DeleteAction now delegates to deleteNextCharAction
-        addSystemActionMapping(deleteNextCharAction, org.openide.actions.DeleteAction.class);
+        addSystemActionMapping(deleteNextCharAction, "delete");
         addSystemActionMapping(showPopupMenuAction, org.openide.actions.PopupAction.class);
 
 //        addSystemActionMapping(SearchAndReplaceBarHandler.INCREMENTAL_SEARCH_FORWARD, org.openide.actions.FindAction.class);
@@ -403,6 +410,7 @@ public class NbEditorKit extends ExtKit implements Callable {
                 String actionNames = prefs.get(settingName, null);
 
                 if (actionNames != null) {
+                    l = new ArrayList();
                     for(StringTokenizer t = new StringTokenizer(actionNames, ","); t.hasMoreTokens(); ) { //NOI18N
                         String action = t.nextToken().trim();
                         l.add(action);
@@ -732,7 +740,9 @@ public class NbEditorKit extends ExtKit implements Callable {
             Action a = kit.getActionByName(actionName);
             if (a != null) {
                 JMenuItem item = null;
-                if (a instanceof BaseAction) {
+                if (a instanceof Presenter.Menu) {
+                    item = ((Presenter.Menu)a).getMenuPresenter();
+                } else if (a instanceof BaseAction) {
                     item = ((BaseAction)a).getPopupMenuItem(target);
                 }
                 if (item == null) {
@@ -742,7 +752,6 @@ public class NbEditorKit extends ExtKit implements Callable {
                         item.addActionListener(a);
                         Mnemonics.setLocalizedText(item, itemText);
                         addAcceleretors(a, item, target);
-                        item.setEnabled(a.isEnabled() && foldingEnabled);
                         Object helpID = a.getValue ("helpID"); // NOI18N
                         if (helpID != null && (helpID instanceof String))
                             item.putClientProperty ("HelpID", helpID); // NOI18N
@@ -750,6 +759,7 @@ public class NbEditorKit extends ExtKit implements Callable {
                 }
 
                 if (item != null) {
+                    item.setEnabled(a.isEnabled() && foldingEnabled);
                     menu.add(item);
                 }
 
@@ -985,6 +995,9 @@ public class NbEditorKit extends ExtKit implements Callable {
         // initialize popup menu actions providers (#174175)
         PopupMenuActionsProvider.getPopupMenuItems(getContentType());
 
+        // preinitialize keymap, see issue #203920
+        getKeymap();
+        
         return null;
     }
 }

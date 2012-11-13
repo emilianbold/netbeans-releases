@@ -383,24 +383,38 @@ public class WebUtils {
      * Converts given URL into a String with all values decoded.
      */
     public static String urlToString(URL url) {
+        return urlToString(url, false);
+    }
+    
+    static String urlToString(URL url, boolean pathOnly) {
         URI uri;
         try {
             uri = url.toURI();
         } catch (URISyntaxException ex) {
             // fallback:
             LOGGER.log(Level.FINE, "URL '"+url+"' cannot be converted to URI.");
-            return url.toExternalForm();
+            String res = url.toExternalForm();
+            int end = res.lastIndexOf('?');
+            if (end == -1) {
+                end = res.lastIndexOf('#');
+            }
+            if (pathOnly && end != -1) {
+                res = res.substring(0, end);
+            }
+            return res;
         }
         StringBuilder sb = new StringBuilder();
         sb.append(uri.getScheme());
         sb.append("://"); // NOI18N
-        sb.append(uri.getAuthority());
+        if (uri.getAuthority() != null) {
+            sb.append(uri.getAuthority());
+        }
         sb.append(uri.getPath());
-        if (uri.getQuery() != null) {
+        if (!pathOnly && uri.getQuery() != null) {
             sb.append("?"); // NOI18N
             sb.append(uri.getQuery());
         }
-        if (uri.getFragment() != null) {
+        if (!pathOnly && uri.getFragment() != null) {
             sb.append("#"); // NOI18N
             sb.append(uri.getFragment());
         }

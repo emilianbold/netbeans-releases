@@ -74,13 +74,13 @@ public class TestCC extends GeneralJavaScript {
                 "testAllCompletionMultipleFiles",
                 "testCallAndApply",
                 "testLearning",
-                "testSetterGetter").enableModules(".*").clusters(".*"));
+                "testSetterGetter").enableModules(".*").clusters(".*").honorAutoloadEager(true));
     }
 
     public void createApplication() {
         startTest();
-        this.name_iterator++;
-        createPhpApplication(TEST_BASE_NAME + name_iterator);
+        TestCC.NAME_ITERATOR++;
+        createPhpApplication(TEST_BASE_NAME + NAME_ITERATOR);
         endTest();
     }
 
@@ -88,7 +88,7 @@ public class TestCC extends GeneralJavaScript {
         startTest();
 
         TestCC.currentFile = "cc.js";
-        EditorOperator eo = createWebFile("cc", TEST_BASE_NAME + name_iterator, "JavaScript File");
+        EditorOperator eo = createWebFile("cc", TEST_BASE_NAME + NAME_ITERATOR, "JavaScript File");
         eo.setCaretPositionToLine(5);
         type(eo, "function Foo(){\n this.x=1; \n var foo = 2;");
         eo.setCaretPosition("}", false);
@@ -205,11 +205,8 @@ public class TestCC extends GeneralJavaScript {
         cleanFile(eo);
 
         eo.setCaretPositionToLine(1);
-        type(eo, "var person = {\n \n get name(){return this.myname;");
-        eo.setCaretPositionToEndOfLine(eo.getLineNumber());
-        type(eo, ",\n set name(n){this.myname=n;");
-        eo.setCaretPositionToEndOfLine(eo.getLineNumber()+1);
-        type(eo, ";\n person.");
+        type(eo, "var person = { get name(){return this.myname;}, set name(n){this.myname=n;}}; ");
+        type(eo, "person.");
         eo.typeKey(' ', InputEvent.CTRL_MASK);
         evt.waitNoEvent(100);
 
@@ -427,7 +424,7 @@ public class TestCC extends GeneralJavaScript {
     public void testAllCompletionMultipleFiles() {
         startTest();
         TestCC.currentFile = "other.js";
-        EditorOperator eo = createWebFile("other", TEST_BASE_NAME + name_iterator, "JavaScript File");
+        EditorOperator eo = createWebFile("other", TEST_BASE_NAME + NAME_ITERATOR, "JavaScript File");
         cleanFile(eo);
         eo.setCaretPositionToLine(1);
         type(eo, "var cc = 1; \nvar dd = 2;\n function AA(){\n");

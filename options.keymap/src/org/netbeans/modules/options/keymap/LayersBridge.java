@@ -44,7 +44,6 @@
 
 package org.netbeans.modules.options.keymap;
 
-import java.awt.event.ActionListener;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
@@ -73,7 +72,6 @@ import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataShadow;
 import org.openide.util.Exceptions;
-import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
 /**
@@ -315,7 +313,6 @@ public class LayersBridge extends KeymapManager {
     public synchronized Map<ShortcutAction, Set<String>> getDefaultKeymap (String profile) {
         if (!keymapDefaults.containsKey (profile)) {
             DataFolder root = getRootFolder (SHORTCUTS_FOLDER, null);
-            System.err.println(Arrays.asList(root.getChildren()));
             Map<ShortcutAction, Set<String>> m = readKeymap (root);
             root = getRootFolder (KEYMAPS_FOLDER, profile);
             overrideWithKeyMap(m, readKeymap(root), profile);
@@ -356,7 +353,7 @@ public class LayersBridge extends KeymapManager {
             String shortcut = dataObject.getPrimaryFile().getName();
             
             LOG.log(Level.FINEST, "Action {0}: {1}, by {2}", new Object[] {
-                action.getDisplayName(),
+                action.getId(),
                 shortcut,
                 dataObject.getPrimaryFile().getPath()
             });
@@ -555,7 +552,7 @@ public class LayersBridge extends KeymapManager {
 
     // hack: hardcoded OpenIDE impl class name + field
     private static final String OPENIDE_DELEGATE_ACTION = "org.openide.awt.GeneralAction$DelegateAction"; // NOI18N
-    private static Field KEY_FIELD;
+    private static volatile Field KEY_FIELD;
 
     /**
      * Hack, which allows to somehow extract actionId from OpenIDE actions. Public API
@@ -573,8 +570,10 @@ public class LayersBridge extends KeymapManager {
             if (a.getClass().getName().equals(OPENIDE_DELEGATE_ACTION)) {
                 if (KEY_FIELD == null) {
                     Class c = a.getClass();
-                    KEY_FIELD = c.getSuperclass().getDeclaredField("key"); // NOI18N
-                    KEY_FIELD.setAccessible(true);
+                    // #220683: the field must be first made accessible before assingment to global variable.
+                    Field f = c.getSuperclass().getDeclaredField("key"); // NOI18N
+                    f.setAccessible(true);
+                    KEY_FIELD = f;
                 }
                 String key = (String)KEY_FIELD.get(a);
                 if (key != null) {

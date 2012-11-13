@@ -169,7 +169,7 @@ public class NewCNDProjectNameLocationStepOperator extends NewProjectWizardOpera
         if ( _cbSetAsMainProject==null ) {
             _cbSetAsMainProject = new JCheckBoxOperator(this,
                                         Bundle.getStringTrimmed("org.netbeans.modules.cnd.makeproject.ui.wizards.Bundle",
-                                        "LBL_setAsMainCheckBox"));
+                                        "LBL_createMainfile"));
         }
         return _cbSetAsMainProject;    
     }

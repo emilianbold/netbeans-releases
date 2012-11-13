@@ -152,11 +152,39 @@ class WebAppFilterNode extends FilterNode {
         } 
         return retValue;
     }
-    
-    static class WebAppFilterChildren extends FilterNode.Children {
+
+    @Override
+    public int hashCode() {
+        int hash = 7;
+        hash = 67 * hash + (this.isTopLevelNode ? 1 : 0);
+        hash = 67 * hash + (this.file != null ? this.file.hashCode() : 0);
+        return hash;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final WebAppFilterNode other = (WebAppFilterNode) obj;
+        if (this.isTopLevelNode != other.isTopLevelNode) {
+            return false;
+        }
+        if (this.file != other.file && (this.file == null || !this.file.equals(other.file))) {
+            return false;
+        }
+        return true;
+    }
+
+    private static class WebAppFilterChildren extends FilterNode.Children {
+
         private File root;
         private Project project;
-        WebAppFilterChildren(Project proj, Node original, File rootpath) {
+
+        private WebAppFilterChildren(Project proj, Node original, File rootpath) {
             super(original);
             root = rootpath;
             project = proj;

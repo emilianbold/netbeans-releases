@@ -130,15 +130,16 @@ public final class ServerLibraryDependency {
     public boolean versionMatches(@NonNull ServerLibrary library) {
         Parameters.notNull("library", library);
 
+        String libraryName = library.getName();
         if (exactMatch) {
-            return (library.getName() != null && library.getName().equals(name))
+            return (libraryName != null && libraryName.equals(name))
                     && (specificationVersion == null
                             || specificationVersion.equals(library.getSpecificationVersion()))
                     && (implementationVersion == null
                             || implementationVersion.equals(library.getImplementationVersion()));
         }
 
-        return (library.getName() != null && library.getName().equals(name))
+        return (libraryName != null && libraryName.equals(name))
                 && (specificationVersion == null
                         || (library.getSpecificationVersion() != null && specificationVersion.isBelowOrEqual(library.getSpecificationVersion())))
                 && (implementationVersion == null

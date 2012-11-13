@@ -123,7 +123,7 @@ public class NamedQueryHyperlinkProvider implements HyperlinkProviderExt {
         
         Token<JavaTokenId> t = ts.token();
         FileObject fo = getFileObject(doc);
-        String name = t.toString();
+        String name = t.text().toString();
         name = name.substring(name.startsWith("\"") ? 1 : 0, name.endsWith("\"") ? name.length()-1 : name.length());
         String query = findNq(fo, name);
         if (query != null) {
@@ -145,7 +145,7 @@ public class NamedQueryHyperlinkProvider implements HyperlinkProviderExt {
         
         Token<JavaTokenId> t = ts.token();
         FileObject fo = getFileObject(doc);
-        String name = t.toString();
+        String name = t.text().toString();
         name = name.substring(name.startsWith("\"") ? 1 : 0, name.endsWith("\"") ? name.length()-1 : name.length());
         FileObject ent  = findEntity(fo, name);
         if (ent != null) {

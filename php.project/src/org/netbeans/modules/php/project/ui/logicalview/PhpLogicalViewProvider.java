@@ -50,6 +50,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
@@ -88,6 +89,7 @@ import org.openide.awt.DynamicMenuContent;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
@@ -101,6 +103,8 @@ import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.WeakListeners;
 import org.openide.util.actions.Presenter;
+import org.openide.util.lookup.AbstractLookup;
+import org.openide.util.lookup.InstanceContent;
 import org.openide.util.lookup.Lookups;
 
 /**
@@ -236,7 +240,7 @@ public class PhpLogicalViewProvider implements LogicalViewProvider {
 
 
         private PhpLogicalViewRootNode(PhpProject project) {
-            super(createChildren(project), Lookups.singleton(project));
+            super(createChildren(project), createLookup(project));
             this.project = project;
             projectInfo = ProjectUtils.getInformation(project);
             // ui
@@ -263,6 +267,64 @@ public class PhpLogicalViewProvider implements LogicalViewProvider {
         private void addListeners() {
             ProjectPropertiesSupport.addWeakProjectPropertyChangeListener(project, this);
             projectInfo.addPropertyChangeListener(WeakListeners.propertyChange(this, projectInfo));
+        }
+
+        private static Lookup createLookup(PhpProject project) {
+            final InstanceContent instanceContent = new InstanceContent();
+            instanceContent.add(project);
+            instanceContent.add(project, new InstanceContent.Convertor<PhpProject, FileObject>() {
+                @Override
+                public FileObject convert(PhpProject obj) {
+                    return obj.getProjectDirectory();
+                }
+
+                @Override
+                public Class<? extends FileObject> type(PhpProject obj) {
+                    return FileObject.class;
+                }
+
+                @Override
+                public String id(PhpProject obj) {
+                    final FileObject fo = obj.getProjectDirectory();
+                    return fo == null ? "" : fo.getPath();  // NOI18N
+                }
+
+                @Override
+                public String displayName(PhpProject obj) {
+                    return obj.toString();
+                }
+
+            });
+            instanceContent.add(project, new InstanceContent.Convertor<PhpProject, DataObject>() {
+                @Override
+                public DataObject convert(PhpProject obj) {
+                    try {
+                        final FileObject fo = obj.getProjectDirectory();
+                        return fo == null ? null : DataObject.find(fo);
+                    } catch (DataObjectNotFoundException ex) {
+                        LOGGER.log(Level.WARNING, null, ex);
+                        return null;
+                    }
+                }
+
+                @Override
+                public Class<? extends DataObject> type(PhpProject obj) {
+                    return DataObject.class;
+                }
+
+                @Override
+                public String id(PhpProject obj) {
+                    final FileObject fo = obj.getProjectDirectory();
+                    return fo == null ? "" : fo.getPath();  // NOI18N
+                }
+
+                @Override
+                public String displayName(PhpProject obj) {
+                    return obj.toString();
+                }
+
+            });
+            return new AbstractLookup(instanceContent);
         }
 
         private Image annotateImage(Image image) {

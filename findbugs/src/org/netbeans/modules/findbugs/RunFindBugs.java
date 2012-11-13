@@ -603,6 +603,17 @@ public class RunFindBugs {
         return lineOffsets;
     }
 
+    public static String computeFilterText(BugPattern bp) {
+        StringBuilder result = new StringBuilder();
+
+        result.append(bp.getShortDescription())
+              .append(bp.getLongDescription())
+              .append(bp.getCategory())
+              .append(bp.getDetailPlainText());
+
+        return result.toString();
+    }
+    
     interface SigFilesValidator {
         public boolean validate(Iterable<? extends FileObject> files);
     }

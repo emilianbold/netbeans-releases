@@ -117,4 +117,183 @@ public class InvertIfTest {
                 .run(InvertIf.class)
                 .assertWarnings();
     }
+    
+    @Test
+    public void testOptimizeNeg() throws Exception {
+        HintTest.create()
+                .setCaretMarker('|')
+                .input("package test;\n" +
+                       "public class Test {\n" +
+                       "    public static void main(String[] args) {\n" +
+                       "        i|f (!args[0].isEmpty()) {\n" +
+                       "            System.err.println(\"1\");\n" +
+                       "        } else {\n" +
+                       "            System.err.println(\"2\");\n" +
+                       "        }\n" +
+                       "    }\n" +
+                       "}\n")
+                .run(InvertIf.class)
+                .findWarning("3:9-3:9:verifier:" + Bundle.ERR_InvertIf())
+                .applyFix()
+                .assertCompilable()
+                .assertOutput("package test;\n" +
+                              "public class Test {\n" +
+                              "    public static void main(String[] args) {\n" +
+                              "        if (args[0].isEmpty()) {\n" +
+                              "            System.err.println(\"2\");\n" +
+                              "        } else {\n" +
+                              "            System.err.println(\"1\");\n" +
+                              "        }\n" +
+                              "    }\n" +
+                              "}\n");
+    }
+    
+    @Test
+    public void testOptimizeNegParenthesized() throws Exception {
+        HintTest.create()
+                .setCaretMarker('|')
+                .input("package test;\n" +
+                       "public class Test {\n" +
+                       "    public static void main(String[] args) {\n" +
+                       "        i|f (!(args.length == 0)) {\n" +
+                       "            System.err.println(\"1\");\n" +
+                       "        } else {\n" +
+                       "            System.err.println(\"2\");\n" +
+                       "        }\n" +
+                       "    }\n" +
+                       "}\n")
+                .run(InvertIf.class)
+                .findWarning("3:9-3:9:verifier:" + Bundle.ERR_InvertIf())
+                .applyFix()
+                .assertCompilable()
+                .assertOutput("package test;\n" +
+                              "public class Test {\n" +
+                              "    public static void main(String[] args) {\n" +
+                              "        if (args.length == 0) {\n" +
+                              "            System.err.println(\"2\");\n" +
+                              "        } else {\n" +
+                              "            System.err.println(\"1\");\n" +
+                              "        }\n" +
+                              "    }\n" +
+                              "}\n");
+    }
+    
+    @Test
+    public void testOptimizeEquals() throws Exception {
+        HintTest.create()
+                .setCaretMarker('|')
+                .input("package test;\n" +
+                       "public class Test {\n" +
+                       "    public static void main(String[] args) {\n" +
+                       "        i|f (args.length == 0) {\n" +
+                       "            System.err.println(\"1\");\n" +
+                       "        } else {\n" +
+                       "            System.err.println(\"2\");\n" +
+                       "        }\n" +
+                       "    }\n" +
+                       "}\n")
+                .run(InvertIf.class)
+                .findWarning("3:9-3:9:verifier:" + Bundle.ERR_InvertIf())
+                .applyFix()
+                .assertCompilable()
+                .assertOutput("package test;\n" +
+                              "public class Test {\n" +
+                              "    public static void main(String[] args) {\n" +
+                              "        if (args.length != 0) {\n" +
+                              "            System.err.println(\"2\");\n" +
+                              "        } else {\n" +
+                              "            System.err.println(\"1\");\n" +
+                              "        }\n" +
+                              "    }\n" +
+                              "}\n");
+    }
+    
+    @Test
+    public void testOptimizeNotEquals() throws Exception {
+        HintTest.create()
+                .setCaretMarker('|')
+                .input("package test;\n" +
+                       "public class Test {\n" +
+                       "    public static void main(String[] args) {\n" +
+                       "        i|f (args.length != 0) {\n" +
+                       "            System.err.println(\"1\");\n" +
+                       "        } else {\n" +
+                       "            System.err.println(\"2\");\n" +
+                       "        }\n" +
+                       "    }\n" +
+                       "}\n")
+                .run(InvertIf.class)
+                .findWarning("3:9-3:9:verifier:" + Bundle.ERR_InvertIf())
+                .applyFix()
+                .assertCompilable()
+                .assertOutput("package test;\n" +
+                              "public class Test {\n" +
+                              "    public static void main(String[] args) {\n" +
+                              "        if (args.length == 0) {\n" +
+                              "            System.err.println(\"2\");\n" +
+                              "        } else {\n" +
+                              "            System.err.println(\"1\");\n" +
+                              "        }\n" +
+                              "    }\n" +
+                              "}\n");
+    }
+    
+    @Test
+    public void testTrue() throws Exception {
+        HintTest.create()
+                .setCaretMarker('|')
+                .input("package test;\n" +
+                       "public class Test {\n" +
+                       "    public static void main(String[] args) {\n" +
+                       "        i|f (true) {\n" +
+                       "            System.err.println(\"1\");\n" +
+                       "        } else {\n" +
+                       "            System.err.println(\"2\");\n" +
+                       "        }\n" +
+                       "    }\n" +
+                       "}\n")
+                .run(InvertIf.class)
+                .findWarning("3:9-3:9:verifier:" + Bundle.ERR_InvertIf())
+                .applyFix()
+                .assertCompilable()
+                .assertOutput("package test;\n" +
+                              "public class Test {\n" +
+                              "    public static void main(String[] args) {\n" +
+                              "        if (false) {\n" +
+                              "            System.err.println(\"2\");\n" +
+                              "        } else {\n" +
+                              "            System.err.println(\"1\");\n" +
+                              "        }\n" +
+                              "    }\n" +
+                              "}\n");
+    }
+    @Test
+    public void testFalse() throws Exception {
+        HintTest.create()
+                .setCaretMarker('|')
+                .input("package test;\n" +
+                       "public class Test {\n" +
+                       "    public static void main(String[] args) {\n" +
+                       "        i|f (false) {\n" +
+                       "            System.err.println(\"1\");\n" +
+                       "        } else {\n" +
+                       "            System.err.println(\"2\");\n" +
+                       "        }\n" +
+                       "    }\n" +
+                       "}\n")
+                .run(InvertIf.class)
+                .findWarning("3:9-3:9:verifier:" + Bundle.ERR_InvertIf())
+                .applyFix()
+                .assertCompilable()
+                .assertOutput("package test;\n" +
+                              "public class Test {\n" +
+                              "    public static void main(String[] args) {\n" +
+                              "        if (true) {\n" +
+                              "            System.err.println(\"2\");\n" +
+                              "        } else {\n" +
+                              "            System.err.println(\"1\");\n" +
+                              "        }\n" +
+                              "    }\n" +
+                              "}\n");
+    }
 }

@@ -23,7 +23,7 @@
                   <Component id="jPanel2" alignment="0" max="32767" attributes="0"/>
                   <Group type="102" alignment="0" attributes="0">
                       <Component id="lblTitle" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace max="32767" attributes="0"/>
+                      <EmptySpace pref="173" max="32767" attributes="0"/>
                       <Component id="btnRestore" min="-2" max="-2" attributes="0"/>
                   </Group>
               </Group>
@@ -42,7 +42,7 @@
               <EmptySpace max="-2" attributes="0"/>
               <Component id="jPanel2" min="-2" max="-2" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
-              <Component id="previewPanel" pref="101" max="32767" attributes="0"/>
+              <Component id="previewPanel" pref="81" max="32767" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
           </Group>
       </Group>
@@ -64,7 +64,18 @@
               <Group type="102" attributes="0">
                   <EmptySpace max="-2" attributes="0"/>
                   <Group type="103" groupAlignment="0" attributes="0">
-                      <Group type="102" attributes="0">
+                      <Group type="102" alignment="0" attributes="0">
+                          <Group type="103" groupAlignment="0" attributes="0">
+                              <Component id="lblErrorColor" alignment="0" min="-2" max="-2" attributes="0"/>
+                              <Component id="lblStandardColor" alignment="0" min="-2" max="-2" attributes="0"/>
+                          </Group>
+                          <EmptySpace min="-2" pref="104" max="-2" attributes="0"/>
+                          <Group type="103" groupAlignment="0" attributes="0">
+                              <Component id="cmbErrorColor" max="32767" attributes="0"/>
+                              <Component id="cmbStandardColor" max="32767" attributes="0"/>
+                          </Group>
+                      </Group>
+                      <Group type="102" alignment="0" attributes="0">
                           <Group type="103" groupAlignment="0" attributes="0">
                               <Component id="lblLinkColor" alignment="0" min="-2" max="-2" attributes="0"/>
                               <Component id="lblFontFamily" alignment="0" min="-2" max="-2" attributes="0"/>
@@ -82,23 +93,15 @@
                                   <EmptySpace max="-2" attributes="0"/>
                                   <Component id="btnSelectFont" min="-2" max="-2" attributes="0"/>
                               </Group>
-                              <Group type="102" attributes="0">
-                                  <Component id="spnFontSize" min="-2" pref="71" max="-2" attributes="0"/>
-                                  <EmptySpace min="0" pref="46" max="32767" attributes="0"/>
-                              </Group>
                               <Component id="cmbImportantLinkColor" max="32767" attributes="0"/>
                               <Component id="cmbBackgroundColor" alignment="0" max="32767" attributes="0"/>
-                          </Group>
-                      </Group>
-                      <Group type="102" alignment="0" attributes="0">
-                          <Group type="103" groupAlignment="0" attributes="0">
-                              <Component id="lblErrorColor" alignment="0" min="-2" max="-2" attributes="0"/>
-                              <Component id="lblStandardColor" alignment="0" min="-2" max="-2" attributes="0"/>
-                          </Group>
-                          <EmptySpace min="-2" pref="104" max="-2" attributes="0"/>
-                          <Group type="103" groupAlignment="0" attributes="0">
-                              <Component id="cmbErrorColor" max="32767" attributes="0"/>
-                              <Component id="cmbStandardColor" max="32767" attributes="0"/>
+                              <Group type="102" attributes="0">
+                                  <Group type="103" groupAlignment="0" attributes="0">
+                                      <Component id="lblUnwrappedOnly" min="-2" max="-2" attributes="0"/>
+                                      <Component id="spnFontSize" min="-2" pref="71" max="-2" attributes="0"/>
+                                  </Group>
+                                  <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
+                              </Group>
                           </Group>
                       </Group>
                   </Group>
@@ -115,7 +118,9 @@
                       <Component id="btnSelectFont" alignment="3" min="-2" max="-2" attributes="0"/>
                       <Component id="fldFontFamily" alignment="3" min="-2" max="-2" attributes="0"/>
                   </Group>
-                  <EmptySpace max="-2" attributes="0"/>
+                  <EmptySpace min="-2" pref="1" max="-2" attributes="0"/>
+                  <Component id="lblUnwrappedOnly" min="-2" max="-2" attributes="0"/>
+                  <EmptySpace type="unrelated" max="-2" attributes="0"/>
                   <Group type="103" groupAlignment="3" attributes="0">
                       <Component id="lblFontSize" alignment="3" min="-2" max="-2" attributes="0"/>
                       <Component id="spnFontSize" alignment="3" min="-2" max="-2" attributes="0"/>
@@ -360,6 +365,13 @@
             </Property>
             <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
               <ResourceString bundle="org/netbeans/core/output2/options/Bundle.properties" key="OutputSettingsPanel.jLabel1.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+            </Property>
+          </Properties>
+        </Component>
+        <Component class="javax.swing.JLabel" name="lblUnwrappedOnly">
+          <Properties>
+            <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+              <ResourceString bundle="org/netbeans/core/output2/options/Bundle.properties" key="OutputSettingsPanel.lblUnwrappedOnly.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
             </Property>
           </Properties>
         </Component>

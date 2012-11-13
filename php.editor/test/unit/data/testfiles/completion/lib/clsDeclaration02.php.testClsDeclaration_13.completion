@@ -180,6 +180,7 @@ CLASS      Foooo                           [PUBLIC]   test204104_02.php
 CLASS      ForClsCtxCodeCompletion         [PUBLIC]   insideClass3.php
 CLASS      ForbiddenRequestException       [PUBLIC]   Nette\Application
 CLASS      FrontendBookTable               [PUBLIC]   Test_03
+CLASS      God                             [PUBLIC]   test221725.php
 CLASS      HTML                            [PUBLIC]   html.php
 CLASS      HTMLbase                        [PUBLIC]   htmlbase.php
 CLASS      Hello146648                     [PUBLIC]   issue146648.php
@@ -226,6 +227,7 @@ CLASS      Presenter                       [PUBLIC]   Nette\Application\UI
 CLASS      PresenterComponent              [PUBLIC]   Nette\Application\UI
 CLASS      Request                         [PUBLIC]   Brite\Base
 CLASS      SecuredPresenter                [PUBLIC]   AdminModule
+CLASS      SetFoo                          [PUBLIC]   test221725.php
 CLASS      SimpleObject                    [PUBLIC,   issue159970.php
 CLASS      SmartCompletion                 [PUBLIC]   issue201032.php
 CLASS      Strings                         [PUBLIC]   Nette\Utils

@@ -68,7 +68,7 @@ class CustomizerGeneral extends javax.swing.JPanel {
 
     private static final long serialVersionUID = 748111929912200475L;
     
-    private final WLDeploymentManager manager;
+    private final transient WLDeploymentManager manager;
     
     private final transient WLJpa2SwitchSupport support;
     

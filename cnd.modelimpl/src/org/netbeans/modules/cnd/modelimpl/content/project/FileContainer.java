@@ -77,6 +77,7 @@ import org.netbeans.modules.cnd.modelimpl.repository.FileContainerKey;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
 import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
 import org.netbeans.modules.cnd.modelimpl.textcache.DefaultCache;
+import org.netbeans.modules.cnd.modelimpl.uid.KeyBasedUID;
 import org.netbeans.modules.cnd.modelimpl.uid.LazyCsmCollection;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
@@ -218,7 +219,9 @@ public class FileContainer extends ProjectComponent implements Persistent, SelfP
                     postfix = " second attempt OK"; // NOI18N
                 }
             }
-            DiagnosticExceptoins.register(new IllegalStateException("no file for UID " + fileUID + postfix)); // NOI18N
+            if (fileUID instanceof KeyBasedUID) {
+                DiagnosticExceptoins.registerIllegalRepositoryStateException("no file for UID " + postfix, fileUID); // NOI18N
+            }
         }
         return impl;
     }
