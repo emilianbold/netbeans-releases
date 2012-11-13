@@ -61,7 +61,8 @@ import org.openide.util.RequestProcessor;
 public class LoginPanelSupportImpl implements LoginPanelSupport {
     private final CloudServer server;
     private LoginPanelDetails component;
-
+    private RequestProcessor rp;
+    
     public LoginPanelSupportImpl (CloudServer server) {
         this.server = server;
     }
@@ -71,8 +72,7 @@ public class LoginPanelSupportImpl implements LoginPanelSupport {
     public void startLogin (final LoginPanelCallback loginPanelCallback) {
         final LoginPanelDetails loginPanel = (LoginPanelDetails) getLoginPanelComponent();
         loginPanel.setChildrenEnabled(false);
-        RequestProcessor.getDefault().post(new Runnable() {
-
+        getRequestProcessor().post(new Runnable() {
             @Override
             public void run() {
                 try {
@@ -118,6 +118,13 @@ public class LoginPanelSupportImpl implements LoginPanelSupport {
             component.initialize();
         }
         return component;
+    }
+
+    private synchronized RequestProcessor getRequestProcessor() {
+        if(rp == null) {
+            rp = new RequestProcessor("ODCS Login"); // NOI18N
+        }
+        return rp;
     }
     
 }
