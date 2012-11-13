@@ -45,7 +45,6 @@ import java.io.File;
 import java.io.IOException;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
-
 import javax.swing.JPanel;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -62,6 +61,8 @@ import org.openide.util.NbBundle;
 class SampleVisualPanel extends JPanel {
 
     private static final long serialVersionUID = 6783546871135477L;
+    private List<ChangeListener> listeners;
+    
 
     public SampleVisualPanel(WizardDescriptor descriptor) {
         initComponents();
@@ -135,7 +136,7 @@ class SampleVisualPanel extends JPanel {
     private String validateProjectName() {
         String projectName = getProjectName();
         if (projectName.isEmpty()) {
-            return NbBundle.getMessage(SampleVisualPanel.class, "ERR_NameMissing");//NOI18n
+            return NbBundle.getMessage(SampleVisualPanel.class, "ERR_NameMissing"); //NOI18N
         }
         return null;
     }
@@ -143,14 +144,13 @@ class SampleVisualPanel extends JPanel {
     private String validateProjectLocation() {
         File projectLocation = FileUtil.normalizeFile(new File(getProjectLocation()).getAbsoluteFile());
         if (!projectLocation.isDirectory()) {
-            return NbBundle.getMessage(SampleVisualPanel.class,"ERR_LocationInvalid");// NOI18N
+            return NbBundle.getMessage(SampleVisualPanel.class, "ERR_LocationInvalid"); // NOI18N
         }
         final File destFolder = getProjectDirectory();
         try {
             destFolder.getCanonicalPath();
-        }
-        catch(IOException e ){
-            return NbBundle.getMessage(SampleVisualPanel.class,"ERR_LocationNotWritable");// NOI18N
+        } catch (IOException e) {
+            return NbBundle.getMessage(SampleVisualPanel.class, "ERR_LocationNotWritable"); // NOI18N
         }
 
         File projLoc = destFolder;
@@ -158,16 +158,16 @@ class SampleVisualPanel extends JPanel {
             projLoc = projLoc.getParentFile();
         }
         if (projLoc == null || !projLoc.canWrite()) {
-            return NbBundle.getMessage(SampleVisualPanel.class,"ERR_LocationNotWritable");// NOI18N
+            return NbBundle.getMessage(SampleVisualPanel.class, "ERR_LocationNotWritable"); // NOI18N
         }
 
         if (FileUtil.toFileObject(projLoc) == null) {
-            return NbBundle.getMessage(SampleVisualPanel.class,"ERR_LocationInvalid");// NOI18N
+            return NbBundle.getMessage(SampleVisualPanel.class, "ERR_LocationInvalid"); // NOI18N
         }
 
         File[] kids = destFolder.listFiles();
         if (destFolder.exists() && kids != null && kids.length > 0) {
-            return NbBundle.getMessage(SampleVisualPanel.class,"ERR_LocationNotEmpty");// NOI18N
+            return NbBundle.getMessage(SampleVisualPanel.class, "ERR_LocationNotEmpty"); // NOI18N
         }
         return null;
     }
@@ -177,7 +177,7 @@ class SampleVisualPanel extends JPanel {
     }
 
     private void fireChange() {
-        for(ChangeListener listener:listeners){
+        for (ChangeListener listener : listeners) {
             listener.stateChanged(new ChangeEvent(this));
         }
     }
@@ -315,7 +315,4 @@ class SampleVisualPanel extends JPanel {
         }
 
     }
-    
-    private List<ChangeListener> listeners;
-
 }

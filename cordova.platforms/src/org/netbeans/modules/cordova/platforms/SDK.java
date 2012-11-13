@@ -39,62 +39,16 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.cordova.platforms.android;
-
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.StringReader;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-import org.openide.util.Exceptions;
+package org.netbeans.modules.cordova.platforms;
 
 /**
  *
  * @author Jan Becicka
  */
-public class Device {
+public interface SDK {
 
-    public static Collection<Device> parse(String output) throws IOException {
-        BufferedReader r = new BufferedReader(new StringReader(output));
+    public static String SDK_PROP = "sdk";
 
-        Pattern pattern = Pattern.compile("([-\\w]+)\\s+([\\w]+) *"); //NOI18N
-
-        ArrayList<Device> result = new ArrayList<Device>();
-        //ignore first line
-
-        String line = r.readLine();
-
-        while (r.ready() && ((line = r.readLine()) != null)) {
-            Matcher m = pattern.matcher(line);
-            if (m.matches()) {
-                Device device = new Device(m.group(1));
-                result.add(device);
-            }
-        }
-        return result;
-    }
-    
-    private final String name;
-
-    private Device(String name) {
-        this.name = name;
-    }
-    
-    public boolean isEmulator() {
-        return name.startsWith("emulator"); //NOI18N
-    }
-
-    public String getName() {
-        return name;
-    }
-    
-    
-
-    @Override
-    public String toString() {
-        return "Device{" + "name=" + name + ", emulator: " + isEmulator() + '}'; //NOI18N
-    }
+    public String getName();
     
 }

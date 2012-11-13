@@ -39,37 +39,67 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.cordova.project;
+package org.netbeans.modules.cordova.platforms.ios;
 
-import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectUtils;
-import org.netbeans.api.project.SourceGroup;
-import org.netbeans.api.project.Sources;
-import org.netbeans.modules.web.clientproject.api.WebClientProjectConstants;
-import org.openide.filesystems.FileObject;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.StringReader;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import org.netbeans.modules.cordova.platforms.SDK;
 
 /**
  *
  * @author Jan Becicka
  */
-public class Utilities {
-    
-    public static FileObject getSiteRoot(Project project) {
-        Sources sources = ProjectUtils.getSources(project);
-        SourceGroup[] sourceGroups = sources.getSourceGroups(WebClientProjectConstants.SOURCES_TYPE_HTML5);
-        assert sourceGroups.length == 1;
-        return sourceGroups[0].getRootFolder();
-    }
-    
-    public static FileObject getStartFile(Project project) {
-        return getSiteRoot(project).getFileObject("index.html");
+public class IOSSDK implements SDK {
+
+    private String name;
+    private final String identifier;
+
+    public static Collection<SDK> parse(String output) throws IOException {
+        BufferedReader r = new BufferedReader(new StringReader(output));
+        
+        Pattern pattern = Pattern.compile("(.*)-sdk(.*)"); //NOI18N
+        
+        ArrayList<SDK> result = new ArrayList<SDK>();
+        //ignore first line
+        
+        String line = null;
+        do {
+            line = r.readLine();
+        } while (!line.startsWith("iOS SDKs")); //NOI18N
+      
+        while (line !=null && r.ready()) {
+            Matcher m = pattern.matcher(line);
+            if (m.matches()) {
+                IOSSDK sdk = new IOSSDK(m.group(1).trim(), m.group(2).trim());
+                result.add(sdk);
+            } 
+            line = r.readLine();
+        }
+        return result;
     }
 
-    public static String getWebContextRoot(Project p) {
-        return "/" + ProjectUtils.getInformation(p).getName();
+    private IOSSDK(String name, String identifier) {
+        this.name = name;
+        this.identifier = identifier;
     }
 
-    public static boolean isUsingEmbeddedServer(Project p) {
-        return true;
+    public String getName() {
+        return name;
+    }
+
+    public String getIdentifier() {
+        return identifier;
+    }
+    
+    
+
+    @Override
+    public String toString() {
+        return "SDK{" + "name=" + name + ", identifier=" + identifier + '}'; //NOI18N
     }
 }

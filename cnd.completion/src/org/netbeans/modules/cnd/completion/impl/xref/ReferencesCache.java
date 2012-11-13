@@ -42,8 +42,10 @@
 package org.netbeans.modules.cnd.completion.impl.xref;
 
 import java.io.PrintWriter;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.SortedMap;
@@ -73,23 +75,24 @@ public class ReferencesCache {
     };
     private static final int MAX_CACHE_SIZE = 10;
     private final Object cacheLock = new CacheLock();
+
     private final static class CacheLock {};
 
-    private LinkedHashMap<CsmFile, Map<Integer, CacheEntry>> cache = new LinkedHashMap<CsmFile, Map<Integer, CacheEntry>>();
+    private LinkedHashMap<CsmFile, Map<TokenItem<TokenId>, CacheEntry>> cache = new LinkedHashMap<CsmFile, Map<TokenItem<TokenId> , CacheEntry>>();
 
-    CsmObject getReferencedObject(CsmFile file, int offset, long callTimeVersion) {
+    CsmObject getReferencedObject(CsmFile file, TokenItem<TokenId> token, long callTimeVersion) {
         synchronized (cacheLock) {
-            Map<Integer, CacheEntry> entry = cache.get(file);
+            Map<TokenItem<TokenId> , CacheEntry> entry = cache.get(file);
             CsmObject out = null;
             if (entry != null) {
-                CacheEntry cacheEntry = entry.get(offset);
+                CacheEntry cacheEntry = entry.get(token);
                 if (cacheEntry != null) {
                     out = cacheEntry.csmObject;
                     if (out == UNRESOLVED) {
                         long storedVersion = cacheEntry.fileVersion;
                         long fileVersion = CsmFileInfoQuery.getDefault().getFileVersion(file);
                         if (fileVersion != storedVersion) {
-                            entry.put(offset, null);
+                            entry.put(token, null);
                             out = null;
                         }
                     }
@@ -99,21 +102,21 @@ public class ReferencesCache {
         }
     }
 
-    void putReferencedObject(CsmFile file, int offset, CsmObject object, long fileVersionOnStartResolving) {
+    void putReferencedObject(CsmFile file, TokenItem<TokenId> token, CsmObject object, long fileVersionOnStartResolving) {
         synchronized (cacheLock) {
-            Map<Integer, CacheEntry> entry = cache.get(file);
+            Map<TokenItem<TokenId>, CacheEntry> entry = cache.get(file);
             if (entry == null) {
                 if (cache.size() > MAX_CACHE_SIZE) {
-                    Entry<CsmFile, Map<Integer, CacheEntry>> next = cache.entrySet().iterator().next();
+                    Entry<CsmFile, Map<TokenItem<TokenId>, CacheEntry>> next = cache.entrySet().iterator().next();
                     cache.remove(next.getKey());
                 }
-                entry = new HashMap<Integer, CacheEntry>();
+                entry = new HashMap<TokenItem<TokenId>, CacheEntry>();
                 cache.put(file, entry);
             }
-            CacheEntry cacheEntry = entry.get(offset);
+            CacheEntry cacheEntry = entry.get(token);
             if (cacheEntry == null) {
                 cacheEntry = new CacheEntry(fileVersionOnStartResolving, object);
-                entry.put(offset, cacheEntry);
+                entry.put(token, cacheEntry);
             } else {
                 if (object == UNRESOLVED) {
                     long currentFileVersion = CsmFileInfoQuery.getDefault().getFileVersion(file);
@@ -126,7 +129,7 @@ public class ReferencesCache {
                 // replace only by newer version of resolved object
                 if (cacheEntry.fileVersion < fileVersionOnStartResolving) {
                     cacheEntry = new CacheEntry(fileVersionOnStartResolving, object);
-                    entry.put(offset, cacheEntry);
+                    entry.put(token, cacheEntry);
                 }
             }
         }
@@ -137,7 +140,28 @@ public class ReferencesCache {
             if (file == null) {
                 cache.clear();
             } else {
-                cache.remove(file);
+                if (CsmFileInfoQuery.getDefault().isDocumentBasedFile(file)) {
+                    clearUnresolved(file);
+                } else {
+                    cache.remove(file);
+                }
+            }
+        }
+    }
+    
+    private void clearUnresolved(CsmFile file) {
+        Map<TokenItem<TokenId>, CacheEntry> entry = cache.get(file);
+        if (entry != null) {
+            List<TokenItem<TokenId>> toDelete = new ArrayList<TokenItem<TokenId>>();
+            for (Map.Entry<TokenItem<TokenId>, CacheEntry> entry1 : entry.entrySet()) {
+                if (entry1.getValue().csmObject == UNRESOLVED) {
+                    toDelete.add(entry1.getKey());
+                }
+            }
+            if (toDelete.size() > 0) {
+                for(TokenItem<TokenId> token : toDelete) {
+                    entry.remove(token);
+                }
             }
         }
     }
@@ -145,12 +169,12 @@ public class ReferencesCache {
     void dumpInfo(PrintWriter printOut) {
         synchronized (cacheLock) {
             printOut.printf("cache of size %d\n", cache.size()); // NOI18N
-            for (Map.Entry<CsmFile, Map<Integer, CacheEntry>> entry : cache.entrySet()) {
+            for (Map.Entry<CsmFile, Map<TokenItem<TokenId>, CacheEntry>> entry : cache.entrySet()) {
                 final CsmFile file = entry.getKey();
                 printOut.printf("-----------------------\n"); // NOI18N
                 printOut.printf("file %s version=%d, class=%s\n", file.getAbsolutePath(), CsmFileInfoQuery.getDefault().getFileVersion(file), file.getClass().getName()); // NOI18N
-                SortedMap<Integer, CacheEntry> unresolved = new TreeMap<Integer, CacheEntry>();
-                for (Map.Entry<Integer, CacheEntry> entry1 : entry.getValue().entrySet()) {
+                SortedMap<TokenItem<TokenId>, CacheEntry> unresolved = new TreeMap<TokenItem<TokenId>, CacheEntry>();
+                for (Map.Entry<TokenItem<TokenId>, CacheEntry> entry1 : entry.getValue().entrySet()) {
                     if (entry1.getValue().csmObject == UNRESOLVED) {
                         unresolved.put(entry1.getKey(), entry1.getValue());
                     }
@@ -158,9 +182,9 @@ public class ReferencesCache {
                 if (unresolved.isEmpty()) {
                     printOut.printf("no UNRESOLVED \n");// NOI18N
                 } else {
-                    for (Map.Entry<Integer, CacheEntry> entry1 : unresolved.entrySet()) {
+                    for (Map.Entry<TokenItem<TokenId>, CacheEntry> entry1 : unresolved.entrySet()) {
                         printOut.printf("UNRESOLVED [%s] version=%d\n", getPosition(entry1.getKey(), file), entry1.getValue().fileVersion);// NOI18N
-                        CsmObject checkAgain = ReferencesSupport.findDeclaration(file, ReferencesSupport.getDocument(file), null, entry1.getKey().intValue());
+                        CsmObject checkAgain = ReferencesSupport.findDeclaration(file, ReferencesSupport.getDocument(file), entry1.getKey(), entry1.getKey().offset());
                         if (checkAgain != null) {
                             printOut.printf("\t ERROR: resolved as [%s]\n", checkAgain);// NOI18N
                         }
@@ -171,19 +195,19 @@ public class ReferencesCache {
         }
     }
 
-    private String getPosition(int offset, CsmFile file) {
+    private String getPosition(TokenItem<TokenId> offset, CsmFile file) {
         BaseDocument document = ReferencesSupport.getDocument(file);
         StringBuilder out = new StringBuilder();
-        out.append("offset=").append(offset); // NOI18N
+        out.append("offset=").append(offset.offset()); // NOI18N
         if (document instanceof StyledDocument) {
-            int line = NbDocument.findLineNumber((StyledDocument) document, offset) + 1;
+            int line = NbDocument.findLineNumber((StyledDocument) document, offset.offset()) + 1;
             out.append(", line=").append(line); // NOI18N
-            int col = NbDocument.findLineColumn((StyledDocument) document, offset) + 1;
+            int col = NbDocument.findLineColumn((StyledDocument) document, offset.offset()) + 1;
             out.append(", column=").append(col); // NOI18N
             TokenItem<TokenId> jumpToken;
             document.readLock();
             try {
-                jumpToken = CndTokenUtilities.getTokenCheckPrev(document, offset);
+                jumpToken = CndTokenUtilities.getTokenCheckPrev(document, offset.offset());
             } finally {
                 document.readUnlock();
             }

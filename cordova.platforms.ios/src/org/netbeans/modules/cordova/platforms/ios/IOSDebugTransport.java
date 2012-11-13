@@ -44,7 +44,6 @@ package org.netbeans.modules.cordova.platforms.ios;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import org.netbeans.modules.cordova.*;
 import org.netbeans.modules.cordova.platforms.MobileDebugTransport;
 import org.netbeans.modules.netserver.api.ProtocolDraft;
 import org.netbeans.modules.netserver.api.WebSocketClient;

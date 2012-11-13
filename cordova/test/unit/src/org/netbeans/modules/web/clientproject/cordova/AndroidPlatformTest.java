@@ -43,31 +43,22 @@ package org.netbeans.modules.web.clientproject.cordova;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
-import org.netbeans.modules.cordova.platforms.android.AndroidPlatform;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
-import java.io.OutputStreamWriter;
-import java.io.PrintWriter;
-import java.io.StringReader;
 import java.net.URI;
 import java.nio.channels.SelectionKey;
-import java.util.ArrayList;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import org.junit.*;
 import static org.junit.Assert.*;
 import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.cordova.platforms.ProcessUtils;
-import org.netbeans.modules.cordova.platforms.android.AVD;
-import org.netbeans.modules.cordova.platforms.android.Device;
-import org.netbeans.modules.cordova.platforms.android.Target;
-import org.netbeans.modules.cordova.platforms.ios.IOSPlatform;
-import org.netbeans.modules.cordova.platforms.ios.SDK;
+import org.netbeans.modules.cordova.platforms.Device;
+import org.netbeans.modules.cordova.platforms.MobilePlatform;
+import org.netbeans.modules.cordova.platforms.PlatformManager;
+import org.netbeans.modules.cordova.platforms.SDK;
 import org.netbeans.modules.netserver.api.ProtocolDraft;
 import org.netbeans.modules.netserver.websocket.WebSocketClientImpl;
 import org.netbeans.modules.netserver.api.WebSocketReadHandler;
@@ -121,27 +112,27 @@ public class AndroidPlatformTest extends NbTestCase {
      */
     @Test
     public void testGetAvds() throws Exception {
-        AndroidPlatform instance = AndroidPlatform.getDefault();
+        MobilePlatform instance = org.netbeans.modules.cordova.platforms.PlatformManager.getPlatform(PlatformManager.ANDROID_TYPE);
         instance.setSdkLocation("/Users/beci/android-sdk-macosx");
-        for (AVD avd: instance.getAVDs()) {
+        for (Device avd: instance.getVirtualDevices()) {
             System.out.println(avd);
         }
     }
     
     @Test
     public void testGetDevices() throws Exception {
-        AndroidPlatform instance = AndroidPlatform.getDefault();
+        MobilePlatform instance = org.netbeans.modules.cordova.platforms.PlatformManager.getPlatform(PlatformManager.ANDROID_TYPE);
         instance.setSdkLocation("/Users/beci/android-sdk-macosx");
-        for (Device avd: instance.getDevices()) {
+        for (Device avd: instance.getVirtualDevices()) {
             System.out.println(avd);
         }
     }
     
     @Test
     public void testGetTargets() throws Exception {
-        AndroidPlatform instance = AndroidPlatform.getDefault();
+        MobilePlatform instance = org.netbeans.modules.cordova.platforms.PlatformManager.getPlatform(PlatformManager.ANDROID_TYPE);
         instance.setSdkLocation("/Users/beci/android-sdk-macosx");
-        for (Target target: instance.getTargets()) {
+        for (SDK target: instance.getSDKs()) {
             System.out.println(target);
         }
     }
@@ -211,7 +202,7 @@ public SyncPipe(InputStream istrm, OutputStream ostrm) {
      */
     @Test
     public void testListSdks() throws Exception {
-        IOSPlatform instance = IOSPlatform.getDefault();
+        MobilePlatform instance = org.netbeans.modules.cordova.platforms.PlatformManager.getPlatform(PlatformManager.IOS_TYPE);
         for (SDK sdks: instance.getSDKs()) {
             System.out.println(sdks);
         }
@@ -222,7 +213,7 @@ public SyncPipe(InputStream istrm, OutputStream ostrm) {
      */
     @Test
     public void testWaitEmulatorReady() throws Exception {
-        AndroidPlatform instance = AndroidPlatform.getDefault();
+        MobilePlatform instance = org.netbeans.modules.cordova.platforms.PlatformManager.getPlatform(PlatformManager.ANDROID_TYPE);
         instance.setSdkLocation("/Users/beci/android-sdk-macosx");
         System.out.println(instance.waitEmulatorReady(10000));
     }

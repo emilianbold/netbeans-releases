@@ -43,9 +43,7 @@
 package org.netbeans.modules.web.client.samples.ui;
 
 import java.io.File;
-
 import javax.swing.event.ChangeListener;
-
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.WizardDescriptor;
 import org.openide.WizardDescriptor.Panel;
@@ -59,42 +57,29 @@ import org.openide.util.HelpCtx;
  *
  */
 class SamplePanel implements Panel<WizardDescriptor> {
-    
-    
+
     SamplePanel(WizardDescriptor descriptor) {
         myDescriptor = descriptor;
     }
 
-    /* (non-Javadoc)
-     * @see org.openide.WizardDescriptor.Panel#addChangeListener(javax.swing.event.ChangeListener)
-     */
     @Override
-    public void addChangeListener( ChangeListener listener ) {
+    public void addChangeListener(ChangeListener listener) {
         getComponent().addChangeListener(listener);
     }
 
-    /* (non-Javadoc)
-     * @see org.openide.WizardDescriptor.Panel#getComponent()
-     */
     @Override
     public SampleVisualPanel getComponent() {
-        if ( myPanel == null ){
+        if (myPanel == null) {
             myPanel = new SampleVisualPanel(myDescriptor);
         }
         return myPanel;
     }
 
-    /* (non-Javadoc)
-     * @see org.openide.WizardDescriptor.Panel#getHelp()
-     */
     @Override
     public HelpCtx getHelp() {
         return new HelpCtx(SampleWizardIterator.HELP_CTX);
     }
 
-    /* (non-Javadoc)
-     * @see org.openide.WizardDescriptor.Panel#isValid()
-     */
     @Override
     public boolean isValid() {
         String error = getComponent().getErrorMessage();
@@ -103,22 +88,16 @@ class SamplePanel implements Panel<WizardDescriptor> {
             return false;
         }
         // everything ok
-        setErrorMessage(null); 
+        setErrorMessage(null);
         return true;
     }
 
-    /* (non-Javadoc)
-     * @see org.openide.WizardDescriptor.Panel#readSettings(java.lang.Object)
-     */
     @Override
-    public void readSettings( WizardDescriptor descriptor ) {
+    public void readSettings(WizardDescriptor descriptor) {
     }
 
-    /* (non-Javadoc)
-     * @see org.openide.WizardDescriptor.Panel#removeChangeListener(javax.swing.event.ChangeListener)
-     */
     @Override
-    public void removeChangeListener( ChangeListener listener ) {
+    public void removeChangeListener(ChangeListener listener) {
         getComponent().removeChangeListener(listener);
     }
 
@@ -126,17 +105,17 @@ class SamplePanel implements Panel<WizardDescriptor> {
      * @see org.openide.WizardDescriptor.Panel#storeSettings(java.lang.Object)
      */
     @Override
-    public void storeSettings( WizardDescriptor descriptor ) {
+    public void storeSettings(WizardDescriptor descriptor) {
         File projectLocation = new File(getComponent().getProjectLocation());
-        FileObject directory = FileUtil.toFileObject( FileUtil.normalizeFile(projectLocation));
+        FileObject directory = FileUtil.toFileObject(FileUtil.normalizeFile(projectLocation));
         Templates.setTargetFolder(myDescriptor, directory);
         Templates.setTargetName(myDescriptor, getComponent().getProjectName());
     }
-    
+
     private void setErrorMessage(String message) {
         myDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, message);
     }
-    
+
     private SampleVisualPanel myPanel;
     private WizardDescriptor myDescriptor;
 }

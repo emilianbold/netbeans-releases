@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.cordova.platforms.android;
 
+import org.netbeans.modules.cordova.platforms.MobilePlatform;
 import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
@@ -48,42 +49,41 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Properties;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import javax.swing.SwingUtilities;
 import org.apache.tools.ant.module.api.support.ActionUtils;
+import org.netbeans.modules.cordova.platforms.Device;
+import org.netbeans.modules.cordova.platforms.MobileDebugTransport;
+import org.netbeans.modules.cordova.platforms.PlatformManager;
 import org.netbeans.modules.cordova.platforms.ProcessUtils;
+import org.netbeans.modules.cordova.platforms.SDK;
 import org.openide.execution.ExecutorTask;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.EditableProperties;
 import org.openide.util.Exceptions;
 import org.openide.util.NbPreferences;
 import org.openide.util.RequestProcessor;
+import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
  * @author Jan Becicka
  */
-public class AndroidPlatform {
-    
-    private static AndroidPlatform instance;
+@ServiceProvider(service=MobilePlatform.class)
+public class AndroidPlatform implements MobilePlatform {
     
     private static String ANDROID_SDK_ROOT_PREF = "android.sdk.home"; //NOI18N
 
     private transient final java.beans.PropertyChangeSupport propertyChangeSupport = new java.beans.PropertyChangeSupport(this);
     
-    private AndroidPlatform() {
+    public AndroidPlatform() {
     }
 
-    public static synchronized AndroidPlatform getDefault() {
-        if (instance == null) {
-            instance = new AndroidPlatform();
-        }
-        return instance;
-    }
-    
 //    public void createProject(File dir, String targetId, String projectName, String activityName, String packageName) throws IOException {
 //        ProcessBuilder pb = ProcessBuilder.getLocal();
 //        pb.setExecutable(getSdkLocation() + "/tools/android");
@@ -115,14 +115,16 @@ public class AndroidPlatform {
 //        }
 //    }
     
-    public Collection<AVD> getAVDs() throws IOException {
+    @Override
+    public Collection<Device> getVirtualDevices() throws IOException {
         assert !SwingUtilities.isEventDispatchThread();
         String avdString = ProcessUtils.callProcess(getSdkLocation() + "/tools/android", true, "list", "avd"); //NOI18N
         return AVD.parse(avdString);
     }
     
 
-    public List<Target> getTargets() throws IOException {
+    @Override
+    public Collection<SDK> getSDKs() throws IOException {
         //assert !SwingUtilities.isEventDispatchThread();
         String avdString = ProcessUtils.callProcess(getSdkLocation() + "/tools/android", true, "list", "targets");//NOI18N
         return Target.parse(avdString);
@@ -141,15 +143,18 @@ public class AndroidPlatform {
             "android-16"})); //NOI18N
     
     
-    public String getPrefferedTarget() {
+    @Override
+    public SDK getPrefferedTarget() {
         try {
-            final List<Target> targets1 = getTargets();
-            for (Target t: targets1) {
+            final Collection<SDK> targets1 = getSDKs();
+            for (SDK t: targets1) {
                 if (targets.contains(t.getName())) {
-                    return t.getName();
+                    return t;
                 }
             }
-            return targets1.get(targets.size()-1).getName();
+            //TODO: uncomment!
+            //return targets1.get(targets.size()-1).getName();
+            return null;
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
         }
@@ -157,17 +162,18 @@ public class AndroidPlatform {
     }
     
     
-    public Collection<Device> getDevices() throws IOException {
+    @Override
+    public Collection<org.netbeans.modules.cordova.platforms.Device> getConnectedDevices() throws IOException {
         //assert !SwingUtilities.isEventDispatchThread();
         String avdString = ProcessUtils.callProcess(getSdkLocation() + "/platform-tools/adb", true, "devices"); //NOI18N
-        Collection<Device> devices = Device.parse(avdString);
+        Collection<org.netbeans.modules.cordova.platforms.Device> devices = AndroidDevice.parse(avdString);
         if (devices.isEmpty()) {
             //maybe adb is just down. try to restart adb
             ProcessUtils.callProcess(getSdkLocation() + "/platform-tools/adb", true, "kill-server"); //NOI18N
             ProcessUtils.callProcess(getSdkLocation() + "/platform-tools/adb", true, "start-server"); //NOI18N
         }
         avdString = ProcessUtils.callProcess(getSdkLocation() + "/platform-tools/adb", true, "devices"); //NOI18N
-        devices = Device.parse(avdString);
+        devices = AndroidDevice.parse(avdString);
         return devices;
     }
     
@@ -187,15 +193,18 @@ public class AndroidPlatform {
         FileUtil.toFileObject(dir).delete();
     }
 
+    @Override
     public String getSdkLocation() {
         return NbPreferences.forModule(AndroidPlatform.class).get(ANDROID_SDK_ROOT_PREF, null);
     }
 
+    @Override
     public void setSdkLocation(String sdkLocation) {
         NbPreferences.forModule(AndroidPlatform.class).put(ANDROID_SDK_ROOT_PREF, sdkLocation);
         propertyChangeSupport.firePropertyChange("SDK", null, sdkLocation);//NOI18N
     }
     
+    @Override
     public boolean waitEmulatorReady(int timeout) {
         try {
             return RequestProcessor.getDefault().invokeAny(Collections.singleton(new Callable<Boolean>() {
@@ -235,7 +244,8 @@ public class AndroidPlatform {
         
     }
 
-    public void manageAVDs() {
+    @Override
+    public void manageDevices() {
         assert !SwingUtilities.isEventDispatchThread();
         try {
             ProcessUtils.callProcess(getSdkLocation() + "/tools/android", true, "avd"); //NOI18N
@@ -244,16 +254,9 @@ public class AndroidPlatform {
         }
     }
 
+    @Override
     public boolean isReady() {
         return getSdkLocation() != null;
-    }
-    
-    public void openUrl(boolean device, String url) {
-        try {
-            String s = ProcessUtils.callProcess(getSdkLocation() + "/platform-tools/adb", false, device?"-d":"-e", "wait-for-device", "shell", "am", "start", "-a", "android.intent.action.VIEW", "-n", "com.android.browser/.BrowserActivity", url); //NOI18N
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
-        }
     }
     
     /**
@@ -261,6 +264,7 @@ public class AndroidPlatform {
      *
      * @param listener
      */
+    @Override
     public void addPropertyChangeListener(java.beans.PropertyChangeListener listener ) {
         propertyChangeSupport.addPropertyChangeListener( listener );
     }
@@ -270,8 +274,30 @@ public class AndroidPlatform {
      *
      * @param listener
      */
+    @Override
     public void removePropertyChangeListener(java.beans.PropertyChangeListener listener ) {
         propertyChangeSupport.removePropertyChangeListener( listener );
+    }
+
+
+    @Override
+    public String getType() {
+        return PlatformManager.ANDROID_TYPE;
+    }
+
+    @Override
+    public String getSimulatorPath() {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    @Override
+    public MobileDebugTransport getDebugTransport() {
+        return new AndroidDebugTransport();
+    }
+
+    @Override
+    public Device getDevice(String name, EditableProperties props) {
+        return AndroidDevice.get(name, props);
     }
     
     

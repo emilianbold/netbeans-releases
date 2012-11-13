@@ -57,10 +57,8 @@ import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
-
 import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
-
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
@@ -79,57 +77,39 @@ import org.openide.util.NbBundle;
  *
  */
 public class SampleWizardIterator implements ProgressInstantiatingIterator<WizardDescriptor> {
-    
+
     public static final String HELP_CTX = "html5.samples";      // NOI18N
 
-    /* (non-Javadoc)
-     * @see org.openide.WizardDescriptor.Iterator#addChangeListener(javax.swing.event.ChangeListener)
-     */
     @Override
-    public void addChangeListener( ChangeListener listener ) {
+    public void addChangeListener(ChangeListener listener) {
     }
 
-    /* (non-Javadoc)
-     * @see org.openide.WizardDescriptor.Iterator#current()
-     */
     @Override
     public Panel<WizardDescriptor> current() {
         return myPanels[myIndex];
     }
 
-    /* (non-Javadoc)
-     * @see org.openide.WizardDescriptor.Iterator#hasNext()
-     */
     @Override
     public boolean hasNext() {
         return myIndex < myPanels.length - 1;
     }
 
-    /* (non-Javadoc)
-     * @see org.openide.WizardDescriptor.Iterator#hasPrevious()
-     */
     @Override
     public boolean hasPrevious() {
-        return myIndex >0 ;
+        return myIndex > 0;
     }
 
-    /* (non-Javadoc)
-     * @see org.openide.WizardDescriptor.Iterator#name()
-     */
     @Override
     public String name() {
         return null;
     }
 
-    /* (non-Javadoc)
-     * @see org.openide.WizardDescriptor.Iterator#nextPanel()
-     */
     @Override
     public void nextPanel() {
-        if (! hasNext()) {
+        if (!hasNext()) {
             throw new NoSuchElementException();
         }
-        myIndex++;        
+        myIndex++;
     }
 
     /* (non-Javadoc)
@@ -140,99 +120,80 @@ public class SampleWizardIterator implements ProgressInstantiatingIterator<Wizar
         if (!hasPrevious()) {
             throw new NoSuchElementException();
         }
-        myIndex--;       
+        myIndex--;
     }
 
-    /* (non-Javadoc)
-     * @see org.openide.WizardDescriptor.Iterator#removeChangeListener(javax.swing.event.ChangeListener)
-     */
     @Override
-    public void removeChangeListener( ChangeListener listener ) {
+    public void removeChangeListener(ChangeListener listener) {
     }
 
-    /* (non-Javadoc)
-     * @see org.openide.WizardDescriptor.InstantiatingIterator#initialize(org.openide.WizardDescriptor)
-     */
     @Override
-    public void initialize( WizardDescriptor descriptor ) {
+    public void initialize(WizardDescriptor descriptor) {
         myDescriptor = descriptor;
         myPanels = new Panel[1];
-        myPanels[0]=new SamplePanel(descriptor);
-        
+        myPanels[0] = new SamplePanel(descriptor);
+
         String[] steps = createSteps();
-        for (int i=0; i < myPanels.length; i++) {
+        for (int i = 0; i < myPanels.length; i++) {
             Component c = myPanels[i].getComponent();
             if (c instanceof JComponent) { // assume Swing components
                 JComponent jc = (JComponent) c;
                 // Step #.
-                jc.putClientProperty(WizardDescriptor.PROP_CONTENT_SELECTED_INDEX, 
-                        Integer.valueOf(i));
+                jc.putClientProperty(WizardDescriptor.PROP_CONTENT_SELECTED_INDEX, Integer.valueOf(i));
                 // Step name (actually the whole list for reference).
                 jc.putClientProperty(WizardDescriptor.PROP_CONTENT_DATA, steps);
             }
         }
     }
 
-    /* (non-Javadoc)
-     * @see org.openide.WizardDescriptor.InstantiatingIterator#instantiate()
-     */
     @Override
     public Set<?> instantiate() throws IOException {
         assert false;
         return null;
     }
 
-    /* (non-Javadoc)
-     * @see org.openide.WizardDescriptor.ProgressInstantiatingIterator#instantiate(org.netbeans.api.progress.ProgressHandle)
-     */
     @Override
-    public Set<?> instantiate( ProgressHandle handle ) throws IOException {
+    public Set<?> instantiate(ProgressHandle handle) throws IOException {
         FileObject targetFolder = Templates.getTargetFolder(myDescriptor);
-        
+
         String targetName = Templates.getTargetName(myDescriptor);
         FileUtil.toFile(targetFolder).mkdirs();
         FileObject projectFolder = targetFolder.createFolder(targetName);
-        
+
         FileObject template = Templates.getTemplate(myDescriptor);
         unZipFile(template.getInputStream(), projectFolder);
         ProjectManager.getDefault().clearNonProjectCache();
-        
-        Map<String,String> map = new HashMap<String, String>();
+
+        Map<String, String> map = new HashMap<String, String>();
         map.put("${project.name}", targetName);                             // NOI18N
         replaceTokens(projectFolder, map , "nbproject/project.properties"); // NOI18N
-        
+
         ProjectChooser.setProjectsFolder(FileUtil.toFile(targetFolder));
-        return Collections.singleton( projectFolder);
+        return Collections.singleton(projectFolder);
     }
-    
-    /* (non-Javadoc)
-     * @see org.openide.WizardDescriptor.InstantiatingIterator#uninitialize(org.openide.WizardDescriptor)
-     */
+
     @Override
-    public void uninitialize( WizardDescriptor descriptor ) {
+    public void uninitialize(WizardDescriptor descriptor) {
         myPanels = null;
     }
-    
-    protected void replaceTokens(FileObject dir, Map<String,String> map,
-            String... files) throws IOException 
-    {
-        for(String file: files) {
-            replaceToken(dir.getFileObject(file), map); 
-        }     
+
+    protected void replaceTokens(FileObject dir, Map<String, String> map, String ... files) throws IOException {
+        for (String file : files) {
+            replaceToken(dir.getFileObject(file), map);
+        }
     }
-    
-    protected void replaceToken(FileObject fo, Map<String,String> map) 
-            throws IOException 
-    {
-        if(fo == null)
+
+    protected void replaceToken(FileObject fo, Map<String, String> map) throws IOException {
+        if (fo == null) {
             return;
+        }
         FileLock lock = fo.lock();
         try {
             BufferedReader reader = new BufferedReader(new FileReader(FileUtil.toFile(fo)));
             String line;
-            StringBuffer sb = new StringBuffer();
+            StringBuilder sb = new StringBuilder();
             while ((line = reader.readLine()) != null) {
-                for(Entry<String, String> entry : map.entrySet()){
+                for (Entry<String, String> entry : map.entrySet()) {
                     line = line.replace(entry.getKey(), entry.getValue());
                 }
                 sb.append(line);
@@ -242,17 +203,15 @@ public class SampleWizardIterator implements ProgressInstantiatingIterator<Wizar
                     fo.getOutputStream(lock), "UTF-8");         // NOI18N
             try {
                 writer.write(sb.toString());
-            } 
-            finally {
+            } finally {
                 writer.close();
                 reader.close();
             }
-        } 
-        finally {
+        } finally {
             lock.releaseLock();
-        }        
+        }
     }
-    
+
     static void unZipFile(InputStream source, FileObject rootFolder) throws IOException {
         try {
             ZipInputStream str = new ZipInputStream(source);
@@ -279,9 +238,9 @@ public class SampleWizardIterator implements ProgressInstantiatingIterator<Wizar
             source.close();
         }
     }
-    
+
     private String[] createSteps() {
-        return new String[]{NbBundle.getMessage(SamplePanel.class, "LBL_NameNLocation")};// NOI18N
+        return new String[] {NbBundle.getMessage(SamplePanel.class, "LBL_NameNLocation")}; // NOI18N
     }
 
     private transient WizardDescriptor.Panel[] myPanels;
