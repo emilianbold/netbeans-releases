@@ -147,7 +147,11 @@ public class DocumentViewPanel extends javax.swing.JPanel implements ExplorerMan
             @Override
             public void resultChanged(LookupEvent ev) {
                 //current stylesheet changed
-                contextChanged();
+                try {
+                    contextChanged();
+                } catch(Throwable t) {
+                    Exceptions.printStackTrace(t);
+                }
             }
         });
 
@@ -172,7 +176,7 @@ public class DocumentViewPanel extends javax.swing.JPanel implements ExplorerMan
                     }
                     Location location = selected.getLookup().lookup(Location.class);
                     if (location != null) {
-                        createRuleAction.setStyleSheet(location.getFile());
+                        createRuleAction.setContext(location.getFile());
                     }
 
                 }
@@ -220,6 +224,10 @@ public class DocumentViewPanel extends javax.swing.JPanel implements ExplorerMan
         contextChanged();
     }
 
+    public Lookup getLookup() {
+        return lookup;
+    }
+    
     /**
      * Select corresponding node in the document view tree upon change of the
      * rule editor's content.
@@ -307,7 +315,7 @@ public class DocumentViewPanel extends javax.swing.JPanel implements ExplorerMan
         final FileObject context = getContext();
 
         //update the action context
-        createRuleAction.setStyleSheet(context);
+        createRuleAction.setContext(context);
 
         //dispose old model
         if (documentModel != null) {
