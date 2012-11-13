@@ -89,7 +89,7 @@ import org.openide.util.NbBundle;
 public abstract class AbstractGroovyActionProvider implements ActionProvider {
 
     // from J2SEProjectProperties
-    public static final String BUILD_SCRIPT ="buildfile";               // NOI18N
+    public static final String BUILD_SCRIPT = "buildfile";               // NOI18N
     // from J2SEConfigurationProvider
     public static final String PROP_CONFIG = "config";                  // NOI18N
     /** Map from commands to groovy targets */
@@ -138,7 +138,7 @@ public abstract class AbstractGroovyActionProvider implements ActionProvider {
     }
 
     @Override
-    public boolean isActionEnabled(String command, Lookup context) throws IllegalArgumentException {
+    public boolean isActionEnabled(String command, Lookup context) {
         if (supportedActions.keySet().contains(command)) {
             if (COMMAND_TEST.equals(command)) {
                 return true;
@@ -164,10 +164,10 @@ public abstract class AbstractGroovyActionProvider implements ActionProvider {
     }
 
     @Override
-    public void invokeAction(final String command, final Lookup context) throws IllegalArgumentException {
-        final Runnable action = new Runnable () {
+    public void invokeAction(final String command, final Lookup context) {
+        final Runnable action = new Runnable() {
             @Override
-            public void run () {
+            public void run() {
                 Properties p = new Properties();
                 String[] targetNames = getTargetNames(command, context, p);
 
@@ -184,25 +184,23 @@ public abstract class AbstractGroovyActionProvider implements ActionProvider {
                         NotifyDescriptor nd = new NotifyDescriptor.Message(NbBundle.getMessage(AbstractGroovyActionProvider.class,
                                 "LBL_No_Build_XML_Found"), NotifyDescriptor.WARNING_MESSAGE);
                         DialogDisplayer.getDefault().notify(nd);
-                    }
-                    else {
+                    } else {
                         ActionUtils.runTarget(buildFo, targetNames, p);
                     }
-                }
-                catch (IOException e) {
+                } catch (IOException e) {
                     ErrorManager.getDefault().notify(e);
                 }
             }
         };
 
         if (supportedActions.containsKey(command)) {
-            ScanDialog.runWhenScanFinished(action, NbBundle.getMessage (AbstractGroovyActionProvider.class,"ACTION_"+command));   //NOI18N
+            ScanDialog.runWhenScanFinished(action, NbBundle.getMessage(AbstractGroovyActionProvider.class,"ACTION_"+command));   //NOI18N
         } else {
             action.run();
         }
     }
 
-    private String[] getTargetNames(String command, Lookup context, Properties p) throws IllegalArgumentException {
+    private String[] getTargetNames(String command, Lookup context, Properties p) {
         if (supportedActions.keySet().contains(command)) {
             if (command.equals(COMMAND_TEST)) {
                 return setupTestAll(p);
@@ -252,7 +250,7 @@ public abstract class AbstractGroovyActionProvider implements ActionProvider {
         }
     }
 
-    private FileObject getRoot (SourceGroup[] groups, FileObject file) {
+    private FileObject getRoot(SourceGroup[] groups, FileObject file) {
         assert file != null : "File can't be null";   //NOI18N
         FileObject srcDir = null;
         for (SourceGroup sourceGroup : groups) {
@@ -266,7 +264,7 @@ public abstract class AbstractGroovyActionProvider implements ActionProvider {
         return srcDir;
     }
 
-    private FileObject getRoot (FileObject[] groups, FileObject file) {
+    private FileObject getRoot(FileObject[] groups, FileObject file) {
         assert file != null : "File can't be null";   //NOI18N
         FileObject srcDir = null;
         for (FileObject root : groups) {
@@ -306,7 +304,7 @@ public abstract class AbstractGroovyActionProvider implements ActionProvider {
         return getBuildXml(project);
     }
 
-    public static String getBuildXmlName (final Project project) {
+    public static String getBuildXmlName(final Project project) {
         assert project != null;
         String buildScriptPath = evaluateProperty(project, BUILD_SCRIPT);
         if (buildScriptPath == null) {
@@ -315,8 +313,8 @@ public abstract class AbstractGroovyActionProvider implements ActionProvider {
         return buildScriptPath;
     }
 
-    public static FileObject getBuildXml (final Project project) {
-        return project.getProjectDirectory().getFileObject (getBuildXmlName(project));
+    public static FileObject getBuildXml(final Project project) {
+        return project.getProjectDirectory().getFileObject(getBuildXmlName(project));
     }
 
     private static FileObject[] getTestSourceRoots(Project project) {
@@ -396,8 +394,8 @@ public abstract class AbstractGroovyActionProvider implements ActionProvider {
 
     // loads targets for specific commands from shared config property file
     // returns map; key=command name; value=array of targets for given command
-    private HashMap<String,String[]> loadTargetsFromConfig() {
-        HashMap<String,String[]> targets = new HashMap<String,String[]>(6);
+    private HashMap<String, String[]> loadTargetsFromConfig() {
+        HashMap<String, String[]> targets = new HashMap<String, String[]>(6);
         String config = evaluateProperty(project, PROP_CONFIG);
         // load targets from shared config
         FileObject propFO = project.getProjectDirectory().getFileObject("nbproject/configs/" + config + ".properties");

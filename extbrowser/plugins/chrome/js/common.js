@@ -53,6 +53,8 @@ NetBeans.serverURL = function() {
 NetBeans.DEBUG = true;
 NetBeans.INFOBAR = false;
 
+NetBeans.VERSION = "1.7.3";
+
 NetBeans.managedTabs = new Object();
 
 NetBeans.STATUS_NEW = 0;
@@ -138,7 +140,8 @@ NetBeans.sendInitMessage = function(tab) {
     this.sendMessage({
         message: 'init',
         url: tab.url,
-        tabId: tab.id
+        tabId: tab.id,
+        version: this.VERSION
     });
 };
 

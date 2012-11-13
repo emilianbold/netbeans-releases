@@ -51,8 +51,11 @@ import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.cordova.platforms.PlatformConstants;
+import org.netbeans.modules.cordova.platforms.Device;
+import org.netbeans.modules.cordova.platforms.MobilePlatform;
+import org.netbeans.modules.cordova.platforms.PlatformManager;
 import org.netbeans.modules.cordova.platforms.PropertyProvider;
+import org.netbeans.modules.cordova.platforms.SDK;
 import org.netbeans.modules.web.clientproject.spi.platform.ProjectConfigurationCustomizer;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
@@ -69,31 +72,31 @@ public class IOSConfigurationPanel extends javax.swing.JPanel {
     final RequestProcessor RP = new RequestProcessor(IOSConfigurationPanel.class);
     
     private void refreshDeviceCombo(Collection sdKs) {
-        final SDK[] sdks = (SDK[]) sdKs.toArray(new SDK[sdKs.size()]);
+        final IOSSDK[] sdks = (IOSSDK[]) sdKs.toArray(new IOSSDK[sdKs.size()]);
         sdkCombo.setEnabled(true);
         sdkCombo.setRenderer(new SDKRenderer());
         sdkCombo.setModel(new DefaultComboBoxModel(sdks));
-        for (SDK sdk : sdks) {
-            final String sdkProp = config.getProperty(PlatformConstants.SDK_PROP);
+        for (IOSSDK sdk : sdks) {
+            final String sdkProp = config.getProperty(SDK.SDK_PROP);
             if (sdk.getName().equals(sdkProp)) {
                 sdkCombo.setSelectedItem(sdk);
                 break;
             }
         }
-        final String deviceProp = config.getProperty(PlatformConstants.VIRTUAL_DEVICE_PROP); //NOI18N
+        final String deviceProp = config.getProperty(Device.VIRTUAL_DEVICE_PROP); //NOI18N
         if (deviceProp !=null)
-            virtualDeviceCombo.setSelectedItem(Device.valueOf(deviceProp));
+            virtualDeviceCombo.setSelectedItem(IOSDevice.valueOf(deviceProp));
     }
 
     private void initControls(PropertyProvider config) {
         initComponents();
-        virtualDeviceCombo.setModel(new DefaultComboBoxModel(new Object[]{Device.IPHONE, Device.IPHONE_RETINA, Device.IPAD, Device.IPAD_RETINA}));
+        virtualDeviceCombo.setModel(new DefaultComboBoxModel(new Object[]{IOSDevice.IPHONE, IOSDevice.IPHONE_RETINA, IOSDevice.IPAD, IOSDevice.IPAD_RETINA}));
         virtualDeviceCombo.setRenderer(new DeviceRenderer());
-        String device = config.getProperty(PlatformConstants.DEVICE_PROP); //NOI18N
-        if (PlatformConstants.DEVICE.equals(device)) { //NOI18N
-            deviceCombo.setSelectedIndex(PlatformConstants.DEVICE.equals(device)?1:0); //NOI18N
+        String device = config.getProperty(Device.DEVICE_PROP); //NOI18N
+        if (Device.DEVICE.equals(device)) { //NOI18N
+            deviceCombo.setSelectedIndex(Device.DEVICE.equals(device)?1:0); //NOI18N
         }
-        setCombosVisible(!PlatformConstants.DEVICE.equals(device)); //NOI18N
+        setCombosVisible(!Device.DEVICE.equals(device)); //NOI18N
         debuggerCheckBox.setVisible(false);
         deviceCombo.setVisible(false);
         deviceLabel.setVisible(false);
@@ -123,8 +126,8 @@ public class IOSConfigurationPanel extends javax.swing.JPanel {
         @Override
         public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
             super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
-            if (value instanceof SDK) {
-                setText(((SDK) value).getName());
+            if (value instanceof IOSSDK) {
+                setText(((IOSSDK) value).getName());
             }
             return this;
         }
@@ -135,8 +138,8 @@ public class IOSConfigurationPanel extends javax.swing.JPanel {
         @Override
         public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
             super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
-            if (value instanceof Device) {
-                setText(((Device) value).getDisplayName());
+            if (value instanceof IOSDevice) {
+                setText(((IOSDevice) value).getDisplayName());
             }
             return this;
         }
@@ -155,7 +158,7 @@ public class IOSConfigurationPanel extends javax.swing.JPanel {
             setLayout(new BorderLayout());
             add(new JLabel(Bundle.LBL_NoMac()));
             validate();
-        } else if (!IOSPlatform.getDefault().isReady()) {
+        } else if (!org.netbeans.modules.cordova.platforms.PlatformManager.getPlatform(PlatformManager.IOS_TYPE).isReady()) {
             setLayout(new BorderLayout());
             add(new JLabel(Bundle.LBL_NoXcode()));
             validate();
@@ -173,7 +176,7 @@ public class IOSConfigurationPanel extends javax.swing.JPanel {
             @Override
             public void run() {
                 try {
-                    final Collection<SDK> sdKs = IOSPlatform.getDefault().getSDKs();
+                    final Collection<org.netbeans.modules.cordova.platforms.SDK> sdKs = org.netbeans.modules.cordova.platforms.PlatformManager.getPlatform(PlatformManager.IOS_TYPE).getSDKs();
                     refreshDeviceCombo(sdKs);
                 } catch (IOException ex) {
                     Exceptions.printStackTrace(ex);
@@ -281,21 +284,21 @@ public class IOSConfigurationPanel extends javax.swing.JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
     private void sdkComboActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_sdkComboActionPerformed
-        config.putProperty(PlatformConstants.SDK_PROP, ((SDK)sdkCombo.getSelectedItem()).getName());
+        config.putProperty(SDK.SDK_PROP, ((IOSSDK)sdkCombo.getSelectedItem()).getName());
     }//GEN-LAST:event_sdkComboActionPerformed
 
     private void virtualDeviceComboActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_virtualDeviceComboActionPerformed
-        final Device val = (Device)virtualDeviceCombo.getSelectedItem();
+        final IOSDevice val = (IOSDevice)virtualDeviceCombo.getSelectedItem();
         if (val != null)
-            config.putProperty(PlatformConstants.VIRTUAL_DEVICE_PROP, val.name()); //NOI18N
+            config.putProperty(Device.VIRTUAL_DEVICE_PROP, val.name()); //NOI18N
     }//GEN-LAST:event_virtualDeviceComboActionPerformed
 
     private void deviceComboActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_deviceComboActionPerformed
         if (deviceCombo.getSelectedIndex() == 0) {
-            config.putProperty(PlatformConstants.DEVICE_PROP, PlatformConstants.EMULATOR); //NOI18N
+            config.putProperty(Device.DEVICE_PROP, Device.EMULATOR); //NOI18N
             setCombosVisible(true);
         } else {
-            config.putProperty(PlatformConstants.DEVICE_PROP, PlatformConstants.DEVICE); //NOI18N
+            config.putProperty(Device.DEVICE_PROP, Device.DEVICE); //NOI18N
             setCombosVisible(false);
         }
     }//GEN-LAST:event_deviceComboActionPerformed
