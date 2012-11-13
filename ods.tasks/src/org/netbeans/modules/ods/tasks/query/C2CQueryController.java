@@ -78,6 +78,7 @@ import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.bugtracking.api.Util;
 import org.netbeans.modules.bugtracking.issuetable.Filter;
 import org.netbeans.modules.bugtracking.issuetable.IssueTable;
+import org.netbeans.modules.bugtracking.issuetable.QueryTableCellRenderer;
 import org.netbeans.modules.bugtracking.kenai.spi.KenaiProject;
 import org.netbeans.modules.bugtracking.spi.QueryController;
 import org.netbeans.modules.bugtracking.spi.QueryController.QueryMode;
@@ -133,7 +134,7 @@ public class C2CQueryController extends QueryController implements ItemListener,
         this.criteria = criteria;
         
         issueTable = new IssueTable<C2CQuery>(C2CUtil.getRepository(repository), query, query.getColumnDescriptors(), false);
-//      setupRenderer(issueTable);
+        setupRenderer(issueTable);
         panel = new QueryPanel(issueTable.getComponent());
 
         panel.productList.addListSelectionListener(this);
@@ -199,11 +200,10 @@ public class C2CQueryController extends QueryController implements ItemListener,
         }
     }
 
-    // probably will need a redenderer like in jira to show parent - subtask relation
-//    private void setupRenderer(IssueTable issueTable) {
-//        C2CQueryCellRenderer renderer = new C2CQueryCellRenderer((QueryTableCellRenderer)issueTable.getRenderer());
-//        issueTable.setRenderer(renderer);
-//    }
+    private void setupRenderer(IssueTable issueTable) {
+        QueryCellRenderer renderer = new QueryCellRenderer(query, issueTable, (QueryTableCellRenderer)issueTable.getRenderer());
+        issueTable.setRenderer(renderer);
+    }
 
     @Override
     public void opened() {

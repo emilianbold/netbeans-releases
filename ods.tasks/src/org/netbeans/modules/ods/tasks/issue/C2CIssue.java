@@ -644,7 +644,21 @@ public class C2CIssue {
     }
 
     public String[] getSubtasks() {
-        return new String[0]; // XXX implement me
+        List<String> l = getFieldValues(IssueField.SUBTASK);
+        return l.toArray(new String[l.size()]);
+    }
+    
+    public boolean isSubtask() {
+        String value = getFieldValue(IssueField.PARENT);
+        return value != null && !value.trim().isEmpty();
+    }
+
+    public boolean hasSubtasks() {
+        return getSubtasks().length > 0;
+    }
+
+    public String getParentId() {
+        return getFieldValue(IssueField.PARENT);
     }
     
     public synchronized void addPropertyChangeListener(PropertyChangeListener listener) {
