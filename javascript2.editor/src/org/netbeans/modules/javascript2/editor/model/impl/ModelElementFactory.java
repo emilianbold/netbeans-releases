@@ -109,7 +109,9 @@ class ModelElementFactory {
             }
         }
         JsDocumentationHolder docHolder = parserResult.getDocumentationHolder();
-        result.setDocumentation(docHolder.getDocumentation(functionNode));
+        if (docHolder != null) {
+            result.setDocumentation(docHolder.getDocumentation(functionNode));
+        }
         result.setAnonymous(isAnnonymous);
         return result;
     }
