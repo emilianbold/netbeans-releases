@@ -869,8 +869,11 @@ public class RefactoringUtils {
         LocalVarScanner lookup = new LocalVarScanner(info, newName);
         TreePath scopeBlok = tp;
         EnumSet set = EnumSet.of(Tree.Kind.BLOCK, Tree.Kind.FOR_LOOP, Tree.Kind.METHOD);
-        while (!set.contains(scopeBlok.getLeaf().getKind())) {
+        while (scopeBlok != null && !set.contains(scopeBlok.getLeaf().getKind())) {
             scopeBlok = scopeBlok.getParentPath();
+        }
+        if(scopeBlok == null) {
+            return null;
         }
         Element var = info.getTrees().getElement(tp);
         lookup.scan(scopeBlok, var);
