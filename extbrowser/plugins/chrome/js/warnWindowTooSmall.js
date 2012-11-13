@@ -53,17 +53,17 @@ NetBeans_WindowTooSmallWarning.init = function() {
     }
     NetBeans_WindowTooSmallWarning._okButton = document.getElementById('okButton');
     this._registerEvents();
-}
+};
 // register events
 NetBeans_WindowTooSmallWarning._registerEvents = function() {
     var that = this;
     this._okButton.addEventListener('click', function() {
         that._close();
     }, false);
-}
+};
 NetBeans_WindowTooSmallWarning._close = function() {
     window.close();
-}
+};
 
 // run!
 window.addEventListener('load', function() {

@@ -57,7 +57,7 @@ NetBeans_DebuggerDetachedWarning.init = function() {
     NetBeans_DebuggerDetachedWarning._okButton = document.getElementById('okButton');
     NetBeans_DebuggerDetachedWarning._chromeIssueLink = document.getElementById('chromeIssueLink');
     this._registerEvents();
-}
+};
 // register events
 NetBeans_DebuggerDetachedWarning._registerEvents = function() {
     var that = this;
@@ -67,15 +67,15 @@ NetBeans_DebuggerDetachedWarning._registerEvents = function() {
     this._chromeIssueLink.addEventListener('click', function() {
         that._openChromeIssueInMainWindow();
     }, false);
-}
+};
 NetBeans_DebuggerDetachedWarning._close = function() {
     window.close();
-}
+};
 NetBeans_DebuggerDetachedWarning._openChromeIssueInMainWindow = function() {
     this._chromeIssueLink.setAttribute('href', NetBeans_DebuggerDetachedWarning.CHROME_ISSUE_LINK);
     this._chromeIssueLink.setAttribute('target', '_blank');
     this._close();
-}
+};
 
 // run!
 window.addEventListener('load', function() {
