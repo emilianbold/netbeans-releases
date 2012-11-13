@@ -51,7 +51,9 @@ import java.io.File;
 import org.netbeans.testjunit.AskForOrgOpenideUtilEnumClass;
 import java.util.Properties;
 import java.util.Set;
+import java.util.logging.Logger;
 import junit.framework.Test;
+import junit.framework.TestCase;
 import test.pkg.not.in.junit.NbModuleSuiteClusters;
 import test.pkg.not.in.junit.NbModuleSuiteTUserDir;
 
@@ -59,8 +61,7 @@ import test.pkg.not.in.junit.NbModuleSuiteTUserDir;
  *
  * @author Jaroslav Tulach <jaroslav.tulach@netbeans.org>
  */
-@RandomlyFails  // until #221034 is fixed
-public class NbModuleSuiteTest extends NbTestCase {
+public class NbModuleSuiteTest extends TestCase {
 
     public NbModuleSuiteTest(String testName) {
         super(testName);
