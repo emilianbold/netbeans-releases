@@ -104,6 +104,10 @@ public class OpenTagCompletionProvider extends CompletionModelProvider{
         if ( resource != null ) {
             FileObject ownerRoot = cp.findOwnerRoot(resource);
             String version = findVersion(ownerRoot);
+            if (version == null) {
+                LOGGER.log(Level.WARNING, "Unknown version of Spring jars: ownerRoot={0}", ownerRoot);
+                return Collections.<CompletionModel>emptyList();
+            }
             LOGGER.log(Level.FINE, "Spring jars version="+version); //NOI18N
 
             if (declaredNamespaces == null)
