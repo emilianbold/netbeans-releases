@@ -95,7 +95,7 @@ public class ChildNodeFactory extends ChildFactory<Lookup> {
             return new Node[] {  };
         }
         else {
-            return new Node[] { childNode };
+            return new Node[]{childNode.cloneNode()}; // clone - see #221817
         }
     }
 
