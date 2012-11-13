@@ -131,7 +131,7 @@ public class OQLCompletionProvider implements CompletionProvider {
                     return;
                 }
 
-                String tokentext = currentToken.toString();
+                String tokentext = currentToken.text().toString();
                 switch (currentToken.id()) {
                     case UNKNOWN: {
                         if ("instanceof".startsWith(tokentext.trim())) { // NOI18N
@@ -169,7 +169,7 @@ public class OQLCompletionProvider implements CompletionProvider {
                         int backout = 0;
                         if (ts.movePrevious()) backout++;
                         if (ts.movePrevious()) backout++; // check for "heap.somet[...]"
-                        isHeap = ts.token().toString().trim().toLowerCase().equals("heap"); // NOI18N
+                        isHeap = ts.token().text().toString().trim().toLowerCase().equals("heap"); // NOI18N
                         // get to the current token
                         for(int i=backout;i>0;i--) {
                             ts.moveNext();
@@ -182,11 +182,11 @@ public class OQLCompletionProvider implements CompletionProvider {
                             }
                         }
                         if ("heap".startsWith(tokentext.trim())) { // NOI18N
-                            resultSet.addItem(new KeywordCompletionItem("00", "heap", ts.offset() + tokentext.trim().length(), tokentext.trim().length())); // NOI18N
+                            resultSet.addItem(new KeywordCompletionItem("00", "heap", ts.offset() + tokentext.trim().length() + wsPosDiff, tokentext.trim().length())); // NOI18N
                         }
 
                         if (isHeap) {
-                            tokentext = currentToken.toString().trim();
+                            tokentext = currentToken.text().toString().trim();
                             for(String method : heapMethods) {
                                 if (tokentext.length() == 0 || method.startsWith(tokentext)) {
                                     resultSet.addItem(new FunctionCompletionItem("00", method, ts.offset() + tokentext.trim().length(), tokentext.trim().length())); // NOI18N
@@ -220,7 +220,7 @@ public class OQLCompletionProvider implements CompletionProvider {
                     }
                     case DOT: {
                         ts.movePrevious();
-                        if (ts.token().toString().trim().toLowerCase().equals("heap")) { // NOI18N
+                        if (ts.token().text().toString().trim().toLowerCase().equals("heap")) { // NOI18N
                             ts.moveNext();
 
                             for(String method : heapMethods) {
