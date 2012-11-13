@@ -391,7 +391,8 @@ public class FormatVisitor extends NodeVisitor {
 
                 if (functionNode.isStatement()) {
                     FormatToken rightBrace = getPreviousToken(getFinish(functionNode),
-                            JsTokenId.BRACKET_RIGHT_CURLY, leftBrace.getOffset());
+                            JsTokenId.BRACKET_RIGHT_CURLY,
+                            leftBrace != null ? leftBrace.getOffset() : start);
                     if (rightBrace != null) {
                         appendToken(rightBrace, FormatToken.forFormat(
                                 FormatToken.Kind.AFTER_STATEMENT));
