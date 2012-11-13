@@ -62,6 +62,8 @@ import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
 import org.openide.windows.WindowManager;
 import java.util.List;
+import javax.swing.AbstractAction;
+import javax.swing.Action;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
@@ -71,6 +73,7 @@ import org.netbeans.modules.tasks.ui.settings.DashboardSettings;
 import org.netbeans.modules.tasks.ui.treelist.TreeListModelListener;
 import org.netbeans.modules.tasks.ui.treelist.TreeListNode;
 import org.netbeans.modules.tasks.ui.utils.DashboardRefresher;
+import org.netbeans.modules.tasks.ui.utils.Utils;
 import org.openide.awt.ActionReferences;
 
 /**
@@ -130,6 +133,16 @@ public final class DashboardTopComponent extends TopComponent {
                 }
             }
         };
+        
+        Action filterAction = new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if (filterPanel != null) {
+                    filterPanel.handleFilterShortcut();
+                }
+            }
+        };
+        this.getActionMap().put(Utils.getFindActionMapKey(), filterAction);
     }
 
     public static synchronized DashboardTopComponent getDefault() {

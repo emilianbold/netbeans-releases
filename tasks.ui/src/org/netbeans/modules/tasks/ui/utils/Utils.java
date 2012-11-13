@@ -43,13 +43,20 @@ package org.netbeans.modules.tasks.ui.utils;
 
 import java.awt.Font;
 import java.awt.FontMetrics;
+import java.awt.event.InputEvent;
+import java.awt.event.KeyEvent;
+import javax.swing.Action;
 import javax.swing.JComponent;
+import javax.swing.KeyStroke;
 import org.netbeans.modules.bugtracking.api.Issue;
 import org.netbeans.modules.bugtracking.api.Issue.Status;
 import org.netbeans.modules.tasks.ui.DashboardTopComponent;
 import org.netbeans.modules.tasks.ui.dashboard.CategoryNode;
 import org.netbeans.modules.tasks.ui.dashboard.DashboardViewer;
 import org.netbeans.modules.tasks.ui.dashboard.RepositoryNode;
+import org.openide.actions.FindAction;
+import org.openide.util.SharedClassObject;
+import org.openide.util.Utilities;
 
 /**
  *
@@ -170,5 +177,9 @@ public class Utils {
 
     private static String removeSpaces(String name) {
         return name.replace(" ", "&nbsp;"); //NOI18N
+    }
+    
+    public static String getFindActionMapKey(){
+        return SharedClassObject.findObject(FindAction.class, true).getActionMapKey().toString();
     }
 }

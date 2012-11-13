@@ -55,6 +55,7 @@ import org.netbeans.modules.tasks.ui.filter.OpenedTaskFilter;
 import org.netbeans.modules.tasks.ui.settings.DashboardSettings;
 import org.netbeans.modules.tasks.ui.treelist.ColorManager;
 import org.netbeans.modules.tasks.ui.treelist.TreeLabel;
+import org.netbeans.modules.tasks.ui.utils.Utils;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 
@@ -108,6 +109,16 @@ public class FilterPanel extends javax.swing.JPanel {
                 }
             }
 
+        });
+        textFilter.addFocusListener(new FocusListener() {
+            @Override
+            public void focusGained(FocusEvent e) {
+                focusChanged(true);
+            }
+
+            @Override
+            public void focusLost(FocusEvent e) {
+            }
         });
         textFilter.setMinimumSize(new java.awt.Dimension(150, 20));
         textFilter.setPreferredSize(new java.awt.Dimension(150, 20));
@@ -188,6 +199,16 @@ public class FilterPanel extends javax.swing.JPanel {
     void clear() {
         lblCount.setText("");
         lblCount.setVisible(false);
+    }
+
+    void handleFilterShortcut(){
+        textFilter.requestFocusInWindow();
+    }
+
+    private void focusChanged (boolean hasFocus) {
+        if (hasFocus) {
+            textFilter.selectAll();
+        }
     }
 
     private JPopupMenu createFilterPopup() {
