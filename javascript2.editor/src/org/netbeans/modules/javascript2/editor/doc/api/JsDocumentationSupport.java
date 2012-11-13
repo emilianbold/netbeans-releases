@@ -71,15 +71,26 @@ public final class JsDocumentationSupport {
      * <p>
      * <b>Obtained {@code JsDocumentationProvider} should be cached in callers place.</b>
      * @param result {@code JsParserResult}
-     * @return {@code JsDocumentationProvider} for given {@code JsParserResult}
+     * @return {@code JsDocumentationProvider} for given {@code JsParserResult}, never {@code null}
      */
     public static synchronized JsDocumentationHolder getDocumentationHolder(JsParserResult result) {
-        if (!providers.containsKey(result) || providers.get(result).get() == null) {
-            // XXX - complete caching of documentation tool provider
-            JsDocumentationProvider provider = getDocumentationProvider(result);
-            providers.put(result, new WeakReference(provider.createDocumentationHolder(result.getSnapshot())));
+        if (!providers.containsKey(result)) {
+            JsDocumentationHolder holder = createDocumentationHolder(result);
+            providers.put(result, new WeakReference(holder));
+            return holder;
+        } else {
+            JsDocumentationHolder holder = providers.get(result).get();
+            if (holder == null) {
+                holder = createDocumentationHolder(result);
+                providers.put(result, new WeakReference(holder));
+            }
+            return holder;
         }
-        return providers.get(result).get();
+    }
+
+    private static JsDocumentationHolder createDocumentationHolder(JsParserResult result) {
+        JsDocumentationProvider provider = getDocumentationProvider(result);
+        return provider.createDocumentationHolder(result.getSnapshot());
     }
 
     public static JsDocumentationProvider getDocumentationProvider(JsParserResult result) {
