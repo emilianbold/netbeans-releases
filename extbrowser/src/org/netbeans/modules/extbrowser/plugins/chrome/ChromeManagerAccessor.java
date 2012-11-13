@@ -352,7 +352,9 @@ public class ChromeManagerAccessor implements ExtensionManagerAccessor {
                 File extensionFile ) throws IOException
         {
             JButton continueButton = new JButton(NbBundle.getMessage(
-                    ChromeExtensionManager.class, "LBL_Continue"));                // NOI18N
+                    ChromeExtensionManager.class,
+                    currentStatus == ExtensionManager.ExtensitionStatus.NEEDS_UPGRADE ?
+                    "LBL_ContinueUpdate" : "LBL_Continue"));                // NOI18N
             continueButton.getAccessibleContext().setAccessibleName(NbBundle.
                     getMessage(ChromeExtensionManager.class, "ACSN_Continue"));    // NOI18N
             continueButton.getAccessibleContext().setAccessibleDescription(NbBundle.
@@ -361,7 +363,8 @@ public class ChromeManagerAccessor implements ExtensionManagerAccessor {
                     new ChromeInfoPanel(extensionFile.getCanonicalPath(), 
                             loader, currentStatus), 
                     NbBundle.getMessage(ChromeExtensionManager.class, 
-                            "TTL_InstallExtension"), true, 
+                            currentStatus == ExtensionManager.ExtensitionStatus.NEEDS_UPGRADE ?
+                    "TTL_UpdateExtension" : "TTL_InstallExtension"), true,
                     new Object[]{continueButton, 
                             DialogDescriptor.CANCEL_OPTION}, continueButton, 
                             DialogDescriptor.DEFAULT_ALIGN, null, null);
