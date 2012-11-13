@@ -279,7 +279,7 @@ NetBeans._checkUnexpectedDetach = function(tabId) {
             NetBeans.openPopup('html/warnDebuggerDetached.html');
         }
     }, 100);
-}
+};
 
 NetBeans.openPopup = function(url) {
     chrome.windows.create({
@@ -288,7 +288,7 @@ NetBeans.openPopup = function(url) {
         width: 600,
         height: 250
     });
-}
+};
 
 chrome.debugger.onEvent.addListener(function(source, method, params) {
     NetBeans.sendDebuggingResponse(source.tabId, {method : method, params : params});

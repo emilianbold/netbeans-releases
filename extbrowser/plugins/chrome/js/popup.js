@@ -124,7 +124,7 @@ NetBeans_PresetMenu._putPresets = function() {
         item.addEventListener('click', function(presetIndex) {
             return function() {
                 NetBeans_PresetMenu.resizePage(presetIndex);
-            }
+            };
         } (p), false);
         if (activePreset) {
             item.setAttribute('class', 'active');
