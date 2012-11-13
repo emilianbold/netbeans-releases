@@ -59,7 +59,6 @@ import test.pkg.not.in.junit.NbModuleSuiteTUserDir;
  *
  * @author Jaroslav Tulach <jaroslav.tulach@netbeans.org>
  */
-@RandomlyFails  // until #221034 is fixed
 public class NbModuleSuiteTest extends NbTestCase {
 
     public NbModuleSuiteTest(String testName) {
