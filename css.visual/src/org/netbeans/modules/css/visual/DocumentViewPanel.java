@@ -107,6 +107,13 @@ public class DocumentViewPanel extends javax.swing.JPanel implements ExplorerMan
      */
     private final Lookup lookup;
     private final Lookup cssStylesLookup;
+    
+    /**
+     * A strong reference to the Lookup.Result must be kept! 
+     * See {@link Result#addLookupListener(org.openide.util.LookupListener)}.
+     */
+    private Result<FileObject> lookupFileObjectResult; 
+    
     /**
      * Filter for the tree displayed in this panel.
      */
@@ -114,6 +121,7 @@ public class DocumentViewPanel extends javax.swing.JPanel implements ExplorerMan
     private DocumentViewModel documentModel;
     private DocumentNode documentNode;
     private final CreateRuleAction createRuleAction;
+    
     private final PropertyChangeListener RULE_EDITOR_CONTROLLER_LISTENER = new PropertyChangeListener() {
         @Override
         public void propertyChange(PropertyChangeEvent pce) {
@@ -142,8 +150,8 @@ public class DocumentViewPanel extends javax.swing.JPanel implements ExplorerMan
 
         createRuleAction = new CreateRuleAction();
 
-        Result<FileObject> result = cssStylesLookup.lookupResult(FileObject.class);
-        result.addLookupListener(new LookupListener() {
+        lookupFileObjectResult = cssStylesLookup.lookupResult(FileObject.class);
+        lookupFileObjectResult.addLookupListener(new LookupListener() {
             @Override
             public void resultChanged(LookupEvent ev) {
                 //current stylesheet changed
