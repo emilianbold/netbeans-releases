@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.0//EN" "http://www.netbeans.org/dtds/filesystem-1_0.dtd">
+<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.2//EN" "http://www.netbeans.org/dtds/filesystem-1_2.dtd">
 <!--
 DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
@@ -49,18 +49,18 @@ made subject to such option by the copyright holder.
         <folder name="Project">
             <folder name="Samples">
                 <folder name="HTML5">
-                	<attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.client.samples.ui.Bundle"/>
-                	<attr name="position" intvalue="210"/>
-                	 <file name="EaselDemo" url="Easel.zip">
+                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.client.samples.ui.Bundle"/>
+                    <attr name="position" intvalue="210"/>
+                    <file name="EaselDemo" url="Easel.zip">
+                        <attr name="displayName" bundlevalue="org.netbeans.modules.web.client.samples.ui.Bundle#Templates/Project/Samples/HTML5/EaselDemo"/>
                         <attr name="position" intvalue="100"/>
-                        <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/web/clientproject/ui/resources/projecticon.png"/>
-                        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.client.samples.ui.Bundle"/>
-                        <attr name="instantiatingIterator"  newvalue="org.netbeans.modules.web.client.samples.ui.SampleWizardIterator"/>
+                        <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/web/client/samples/ui/resources/HTML5_project_icon.png"/>
+                        <attr name="instantiatingIterator" newvalue="org.netbeans.modules.web.client.samples.ui.SampleWizardIterator"/>
                         <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/web/client/samples/Easel.html"/>
                         <attr name="template" boolvalue="true"/>
                     </file>
                  </folder>
-			</folder>
+            </folder>
         </folder>
     </folder>
 </filesystem>

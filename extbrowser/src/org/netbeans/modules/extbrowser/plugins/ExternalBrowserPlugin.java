@@ -231,7 +231,8 @@ public final class ExternalBrowserPlugin {
     }
 
     class BrowserPluginHandler implements WebSocketReadHandler {
-
+        /** Name of the attribute of the INIT message that holds the version information. */
+        private static final String VERSION = "version"; // NOI18N
         private static final String URL = "url";        // NOI18N
 
         /* (non-Javadoc)
@@ -285,12 +286,18 @@ public final class ExternalBrowserPlugin {
         }
 
         private void handleInit( Message message , SelectionKey key ){
+            String version = (String)message.getValue().get(VERSION);
             String url = (String)message.getValue().get(URL);
             int tabId = message.getTabId();
-            if ( url == null || tabId == -1 ){
+            if (version == null || url == null || tabId == -1) {
                 return;
             }
-            final Pair p = getAwaitingPair(url);
+            final Pair p;
+            if (isSupportedVersion(version)) {
+                p = getAwaitingPair(url);
+            } else {
+                p = null;
+            }
             ExtBrowserImpl browserImpl = p != null ? p.impl : null;
             if (browserImpl == null) {
                 Map map = new HashMap();
@@ -313,6 +320,18 @@ public final class ExternalBrowserPlugin {
                 assert p.realURL != null;
                 showURLInTab(tab, p.realURL);
             }
+        }
+
+        /**
+         * Determines whether the specified version of the INIT message/protocol
+         * is supported or not.
+         * 
+         * @param version version to check.
+         * @return {@code true} when the version is supported,
+         * returns {@code false} otherwise.
+         */
+        private boolean isSupportedVersion(String version) {
+            return version.startsWith("1."); // NOI18N
         }
 
         private void handleDebuggerDetached(Message message) {

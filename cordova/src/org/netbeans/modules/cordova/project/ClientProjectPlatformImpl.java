@@ -55,7 +55,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cordova.platforms.ConfigUtils;
-import org.netbeans.modules.cordova.platforms.PlatformConstants;
+import org.netbeans.modules.cordova.platforms.PlatformManager;
 import org.netbeans.modules.web.clientproject.spi.platform.ClientProjectConfigurationImplementation;
 import org.netbeans.modules.web.clientproject.spi.platform.ClientProjectPlatformImplementation;
 import org.openide.filesystems.FileChangeAdapter;
@@ -177,7 +177,7 @@ public class ClientProjectPlatformImpl implements ClientProjectPlatformImplement
 
     @Override
     public List<String> getNewConfigurationTypes() {
-        return Arrays.asList(new String[]{PlatformConstants.ANDROID_TYPE, PlatformConstants.IOS_TYPE});
+        return Arrays.asList(new String[]{PlatformManager.ANDROID_TYPE, PlatformManager.IOS_TYPE});
     }
 
     @Override

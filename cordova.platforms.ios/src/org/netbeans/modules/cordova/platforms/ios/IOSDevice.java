@@ -39,17 +39,10 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.cordova.platforms.android;
+package org.netbeans.modules.cordova.platforms.ios;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.StringReader;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
 import java.util.Properties;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cordova.platforms.Device;
 import org.netbeans.modules.cordova.platforms.MobilePlatform;
@@ -58,65 +51,35 @@ import org.netbeans.modules.cordova.platforms.ProcessUtils;
 import org.netbeans.modules.cordova.platforms.PropertyProvider;
 import org.netbeans.modules.web.clientproject.spi.platform.ProjectConfigurationCustomizer;
 import org.netbeans.spi.project.ActionProvider;
+import org.openide.modules.InstalledFileLocator;
 import org.openide.util.Exceptions;
+import org.openide.util.Lookup;
 
 /**
  *
  * @author Jan Becicka
  */
-public class AVD implements Device {
-
-    private String name;
-    private HashMap<String, String> props;
-
-    private AVD() {
-        this.props = new HashMap();
-    }
+public enum IOSDevice implements Device {
     
-    public static Collection<Device> parse(String output) throws IOException {
-        BufferedReader r = new BufferedReader(new StringReader(output));
-        
-        Pattern pattern = Pattern.compile(" *([\\w]*): (.*)"); //NOI18N
-        
-        ArrayList<Device> result = new ArrayList<Device>();
-        //ignore first line
-        r.readLine();
-        
-        AVD current = new AVD();
-        String lastProp = null;
-        while (r.ready()) {
-            String line = r.readLine();
-            if (line == null) {
-                result.add(current);
-                break;
-            }
-            Matcher m = pattern.matcher(line);
-            if (m.matches()) {
-                if ("Name".equals(m.group(1))) { //NOI18N
-                    current.name = m.group(2);
-                } else {
-                    current.props.put(m.group(1), m.group(2));
-                    lastProp = m.group(1);
-                }
-            } else {
-                if (line.contains("---------")) { //NOI18N
-                    result.add(current);
-                    current = new AVD();
-                } else {
-                    current.props.put(lastProp, current.props.get(lastProp) + line);
-                }
-            }
-        }
-        return result;
+    IPHONE("iPhone", "--family iphone"), //NOI18N
+    IPHONE_RETINA("iPhone (Retina)", "--family iphone --retina"), //NOI18N
+    IPAD("iPad", "--family ipad"), //NOI18N
+    IPAD_RETINA("iPad (Retina)", "--family ipad --retina"); //NOI18N
+    
+    String displayName;
+    String args;
+
+    IOSDevice(String name, String args) {
+        this.displayName = name;
+        this.args = args;
     }
 
-    public String getName() {
-        return name;
+    public String getDisplayName() {
+        return displayName;
     }
 
-    @Override
-    public String toString() {
-        return "AVD{" + "name=" + name + ", props=" + props + '}'; //NOI18N
+    public String getArgs() {
+        return args;
     }
 
     @Override
@@ -126,34 +89,37 @@ public class AVD implements Device {
 
     @Override
     public MobilePlatform getPlatform() {
-        return PlatformManager.getPlatform(PlatformManager.ANDROID_TYPE);
+        return PlatformManager.getPlatform(PlatformManager.IOS_TYPE);
     }
 
     @Override
     public void addProperties(Properties props) {
-        final MobilePlatform android = getPlatform();
-        props.put("android.build.target", android.getPrefferedTarget());//NOI18N
-        props.put("android.sdk.home", android.getSdkLocation());//NOI18N
-        props.put("android.target.device.arg", isEmulator() ? "-e" : "-d");//NOI18N
+        props.put("ios.sim.exec", getPlatform().getSimulatorPath());//NOI18N
+        props.put("ios.device.args", getArgs());//NOI18N
     }
 
     @Override
     public ActionProvider getActionProvider(Project p) {
-        return new AndroidActionProvider(p);
+        return new IOSActionProvider(p);
     }
 
     @Override
     public ProjectConfigurationCustomizer getProjectConfigurationCustomizer(Project project, PropertyProvider aThis) {
-        return new AndroidConfigurationPanel.AndroidConfigurationCustomizer(project, aThis);
+        return new IOSConfigurationPanel.IOSConfigurationCustomizer(project, aThis);
     }
     
     @Override
     public void openUrl(String url) {
         try {
-            String s = ProcessUtils.callProcess(getPlatform().getSdkLocation() + "/platform-tools/adb", false, isEmulator()?"-d":"-e", "wait-for-device", "shell", "am", "start", "-a", "android.intent.action.VIEW", "-n", "com.android.browser/.BrowserActivity", url); //NOI18N
+            String sim = InstalledFileLocator.getDefault().locate("bin/ios-sim", "org.netbeans.modules.cordova.platforms.ios", false).getPath();
+            String a = ProcessUtils.callProcess(sim, false, "launch", "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator6.0.sdk/Applications/MobileSafari.app", "--args", "-u", url); //NOI18N
+            System.out.println(a);
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
         }
     }
     
+
+    
+
 }

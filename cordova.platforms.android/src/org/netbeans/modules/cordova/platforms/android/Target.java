@@ -50,12 +50,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import org.netbeans.modules.cordova.platforms.SDK;
 
 /**
  *
  * @author Jan Becicka
  */
-public class Target {
+public class Target implements SDK {
 
     private String name;
     private HashMap<String, String> props;
@@ -65,12 +66,12 @@ public class Target {
         this.props = new HashMap();
     }
     
-    public static List<Target> parse(String output) throws IOException {
+    public static Collection<SDK> parse(String output) throws IOException {
         BufferedReader r = new BufferedReader(new StringReader(output));
         
         Pattern pattern = Pattern.compile("id: ([\\d]*) or \"([^\"]+)\" *"); //NOI18N
         
-        ArrayList<Target> result = new ArrayList<Target>();
+        ArrayList<SDK> result = new ArrayList<SDK>();
         //ignore first 2 lines
         r.readLine();
         r.readLine();
