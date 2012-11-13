@@ -806,10 +806,11 @@ public class OptionsPanel extends JPanel {
                 : new CategoryButton(category);
 
         // add shortcut
-        KeyStroke keyStroke = KeyStroke.getKeyStroke 
-            (button.getDisplayedMnemonic (), KeyEvent.ALT_MASK);
-        getInputMap (JComponent.WHEN_IN_FOCUSED_WINDOW).put (keyStroke, button);
-        getActionMap ().put (button, new SelectAction (category));
+	if (!isMac) {
+	    KeyStroke keyStroke = KeyStroke.getKeyStroke(button.getDisplayedMnemonic(), KeyEvent.ALT_MASK);
+	    getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(keyStroke, button);
+	    getActionMap().put(button, new SelectAction(category));
+	}
 
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.anchor = GridBagConstraints.NORTHWEST;
