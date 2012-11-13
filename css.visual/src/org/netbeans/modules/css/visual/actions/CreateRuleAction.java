@@ -63,20 +63,25 @@ public class CreateRuleAction extends AbstractAction {
 
     private static final String HELP_ID = "css_visual_CreateRulePanel"; //NOI18N
     
-    private FileObject stylesheet;
+    private FileObject context;
+    private FileObject targetLocation;
 
     public CreateRuleAction() {
         super(Bundle.label_create_rule());
     }
     
-    public void setStyleSheet(FileObject stylesheet) {
-        this.stylesheet = stylesheet;
+    public void setContext(FileObject context) {
+        this.context = context;
+    }
+    
+    public void setTargetLocation(FileObject stylesheet) {
+        this.targetLocation = stylesheet;
     }
 
     @Override
     public void actionPerformed(ActionEvent e) {
         final CreateRulePanel panel = new CreateRulePanel();
-        panel.setContext(stylesheet);
+        panel.setContext(context);
         
         DialogDescriptor descriptor = new DialogDescriptor(
                 panel,

@@ -259,7 +259,7 @@ public class CreateRulePanel extends javax.swing.JPanel {
                 }
             }
 
-            if (STYLESHEETS_MODEL.getIndexOf(context) != -1) {
+            if (STYLESHEETS_MODEL.getIndexOf(context) >= 0) {
                 //the context may be the html file itself
                 STYLESHEETS_MODEL.setSelectedItem(context);
             }
@@ -464,6 +464,10 @@ public class CreateRulePanel extends javax.swing.JPanel {
             @Override
             public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
                 Component c = super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+                if(value == null) {
+                    //empty model
+                    return c;
+                }                
                 FileObject file = (FileObject) value;
                 String fileNameExt = file.getNameExt();
                 setText(fileNameExt);
