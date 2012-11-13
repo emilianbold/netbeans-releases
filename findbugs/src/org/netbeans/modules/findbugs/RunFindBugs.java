@@ -557,6 +557,7 @@ public class RunFindBugs {
                     case '\n':
                         if (wascr) {
                             wascr = false;
+                            currentOffset--;
                             break;
                         }
                         lineLengthsTemp.add(currentOffset);
