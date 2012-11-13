@@ -129,7 +129,7 @@ import org.openide.util.Utilities;
  */
 public class JavaCustomIndexer extends CustomIndexer {
 
-            static final boolean NO_ONE_PASS_COMPILE_WORKER = Boolean.getBoolean(JavaCustomIndexer.class.getName() + ".no.one.pass.compile.worker");
+            static       boolean NO_ONE_PASS_COMPILE_WORKER = Boolean.getBoolean(JavaCustomIndexer.class.getName() + ".no.one.pass.compile.worker");
     private static final String SOURCE_PATH = "sourcePath"; //NOI18N
     private static final Pattern ANONYMOUS = Pattern.compile("\\$[0-9]"); //NOI18N
     private static final ClassPath EMPTY = ClassPathSupport.createClassPath(new URL[0]);
