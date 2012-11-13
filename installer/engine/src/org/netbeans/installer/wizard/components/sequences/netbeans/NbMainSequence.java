@@ -123,10 +123,14 @@ public class NbMainSequence extends WizardSequence {
         CompositeProgress compositeProgress;
         private CountdownProgress countdownProgress;
         private int sizeOfUpdates = 0;
+        private int sizeOfModules = 0;
         private int whatUpdate = 0;
         private String whatUpdateName = null;
         private boolean downloadIsRunning = false;
         private int currentPercentage = 0;
+        
+        private static final String[] PREFIX_FOR_PROGRESS = new String[] {"FINE [org.netbeans.updater]: 780: ", "INFO: 780: "};
+        
         public PopulateCacheAction(Product nbBase, Product nbJavaSE) {
             this.nbBase = nbBase;
             this.nbJavaSE = nbJavaSE;
@@ -166,7 +170,6 @@ public class NbMainSequence extends WizardSequence {
             List<String> commandsBase = new ArrayList(Arrays.asList(runIDE,
                     "-J-Dnetbeans.close=true",
                     "--nosplash",
-                    "-J-Dorg.netbeans.modules.autoupdate.cli.level=FINEST",
                     "-J-Dorg.netbeans.core.WindowSystem.show=false",
                     "--userdir",
                     tmpUserDir.getPath()));
@@ -177,14 +180,22 @@ public class NbMainSequence extends WizardSequence {
             
             ExecutionResults executeResult;
             boolean start = true;
-            currentPercentage+=20;
+            currentPercentage+=40;
             while (start) {
                 try {
                     compositeProgress.addProgressListener(new ProgressListener() {
 
                         @Override
                         public void progressUpdated(Progress progress) {
-                            if (! downloadIsRunning && progress.getDetail().startsWith(SIZE_UPDATES_PATTERN)) {
+                            if (progress.getDetail().startsWith(SIZE_MODULES_PATTERN)) {
+                                String size = progress.getDetail().substring(SIZE_UPDATES_PATTERN.length());
+                                progress.setDetail("");
+                                try {
+                                    sizeOfModules = Integer.valueOf(size);
+                                } catch (NumberFormatException nfe) {
+                                    LogManager.log(nfe);
+                                }
+                            } else if (! downloadIsRunning && progress.getDetail().startsWith(SIZE_UPDATES_PATTERN)) {
                                 String size = progress.getDetail().substring(SIZE_UPDATES_PATTERN.length());
                                 progress.setDetail("");
                                 downloadIsRunning = true;
@@ -198,11 +209,12 @@ public class NbMainSequence extends WizardSequence {
                                 } catch (NumberFormatException nfe) {
                                     LogManager.log(nfe);
                                 }
+                            } else if (progress.getDetail().startsWith(SIZE_UPDATES_PATTERN)) {
+                                progress.setDetail("");
                             } else if (downloadIsRunning && ! whatUpdateName.equals(progress.getDetail())) {
                                 whatUpdateName = progress.getDetail();
-//                                System.out.println("###: setPercentage(currentPercentage? " + currentPercentage +
-//                                        " | whatUpdate? " + whatUpdate + " | result? " + (currentPercentage + 20 * whatUpdate++ / sizeOfUpdates) + ")");
-                                compositeProgress.setPercentage(currentPercentage + 20 * whatUpdate++ / sizeOfUpdates);
+//                                System.out.println("###: setPercentage(currentPercentage? " + currentPercentage + ", whatUpdate? + " + whatUpdate + ", sizeOfUpdates? " + sizeOfUpdates + "): " + (currentPercentage + Math.min(20, 20 * whatUpdate++ / (sizeOfUpdates * 2))));
+                                compositeProgress.setPercentage(currentPercentage + Math.min(20, 20 * whatUpdate++ / (sizeOfUpdates * 2)));
                             }
                         }
                     });
@@ -239,11 +251,14 @@ public class NbMainSequence extends WizardSequence {
                         LogManager.log("    .... success ");
                         String msg = "";
                         if (installJUnitOrig && checkForUpdate) {
-                            msg = sizeOfUpdates == 0 ?
-                                    ResourceUtils.getString(NbMainSequence.class, "NBMS.CACHE.SuccessBoth") : // NOI18N
-                                    ResourceUtils.getString(NbMainSequence.class, "NBMS.CACHE.SuccessInstallBoth", sizeOfUpdates); // NOI18N
+                            msg = sizeOfUpdates == 0 && sizeOfModules == 0 ?
+                                    ResourceUtils.getString(NbMainSequence.class, "NBMS.CACHE.UpdatesJunitNotFound") : // NOI18N
+                                    sizeOfModules > 0 ? ResourceUtils.getString(NbMainSequence.class, "NBMS.CACHE.SuccessBoth") :
+                                                        ResourceUtils.getString(NbMainSequence.class, "NBMS.CACHE.SuccessInstallBoth", sizeOfUpdates); // NOI18N
                         } else if (installJUnitOrig) {
-                            msg = ResourceUtils.getString(NbMainSequence.class, "NBMS.CACHE.SuccessInstallJunit"); // NOI18N
+                            msg = sizeOfModules == 0 ? 
+                                    ResourceUtils.getString(NbMainSequence.class, "NBMS.CACHE.JunitNotFound") : // NOI18N
+                                    ResourceUtils.getString(NbMainSequence.class, "NBMS.CACHE.SuccessInstallJunit"); // NOI18N
                         } else if (checkForUpdate) {
                             msg = sizeOfUpdates == 0 ?
                                     ResourceUtils.getString(NbMainSequence.class, "NBMS.CACHE.SuccessCheckForUpdates") : // NOI18N
@@ -421,10 +436,10 @@ public class NbMainSequence extends WizardSequence {
             }
             LogManager.log("    Run " + commands);
 
-            countdownProgress = new CountdownProgress(compositeProgress, 25*1000, 20, title);
+            countdownProgress = new CountdownProgress(compositeProgress, 35*1000, 40, title);
             countdownProgress.countdown();
             try {
-                return SystemUtils.executeCommand(compositeProgress, nbInstallLocation, commands.toArray(new String[commands.size()]));
+                return SystemUtils.executeCommand(compositeProgress, PREFIX_FOR_PROGRESS, nbInstallLocation, commands.toArray(new String[commands.size()]));
             } finally {
                 countdownProgress.stop();
             }

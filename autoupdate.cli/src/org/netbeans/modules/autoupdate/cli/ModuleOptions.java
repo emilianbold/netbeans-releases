@@ -283,6 +283,7 @@ public class ModuleOptions extends OptionProcessor {
         final InstallSupport support = operate.getSupport();
         if (support == null) {
             env.getOutputStream().println(pats == null || pats.length == 0 ? Bundle.MSG_UpdateNotFound() : Bundle.MSG_UpdateNoMatchPattern(Arrays.asList(pats)));
+            env.getOutputStream().println("updates=0"); // NOI18N
             return;
         }
         try {
