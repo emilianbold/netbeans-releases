@@ -120,21 +120,31 @@ public class JsIndex {
     }
 
     private Collection<IndexedElement> allGlobalItems = new ArrayList<IndexedElement>();
+    private static final Object LOCK = new Object();
 
     public Collection <IndexedElement> getGlobalVar(String prefix) {
         if (isIndexChanged.get()) {
-            allGlobalItems = new ArrayList<IndexedElement>();
-
-            Collection<? extends IndexResult> globalObjects = query(
-                    JsIndex.FIELD_IS_GLOBAL, "1", QuerySupport.Kind.EXACT, TERMS_BASIC_INFO); //NOI18N
-            for (IndexResult indexResult : globalObjects) {
-                IndexedElement indexedElement = IndexedElement.create(indexResult);
-                allGlobalItems.add(indexedElement);
+            synchronized(LOCK) {
+                if (isIndexChanged.get()) {
+                    ArrayList<IndexedElement> globals = new ArrayList<IndexedElement>();
+                    Collection<? extends IndexResult> globalObjects = query(
+                            JsIndex.FIELD_IS_GLOBAL, "1", QuerySupport.Kind.EXACT, TERMS_BASIC_INFO); //NOI18N
+                    for (IndexResult indexResult : globalObjects) {
+                        IndexedElement indexedElement = IndexedElement.create(indexResult);
+                        globals.add(indexedElement);
+                    }
+                    allGlobalItems.clear();
+                    allGlobalItems.addAll(globals);
+                    isIndexChanged.set(false);
+                }
             }
-            isIndexChanged.set(false);
         }
         prefix = prefix == null ? "" : prefix; //NOI18N
-        return getElementsByPrefix(prefix, allGlobalItems);
+        Collection<IndexedElement>sortedItems;
+        synchronized(LOCK) {
+            sortedItems = getElementsByPrefix(prefix, allGlobalItems);
+        }
+        return sortedItems;
     }
 
     private static Collection<IndexedElement> getElementsByPrefix(String prefix, Collection<IndexedElement> items) {
