@@ -346,17 +346,45 @@ public final class LibrariesNode extends AbstractNode {
                         key.getEntryId(), webModuleElementName, cs, refHelper)};
                     break;
                 case Key.TYPE_LIBRARY:
-                    result = new Node[] {ActionFilterNode.forLibrary(PackageView.createPackageView(key.getSourceGroup()),
-                        helper, key.getClassPathId(), key.getEntryId(), webModuleElementName, cs, refHelper)};
+                {
+                    final Node afn = ActionFilterNode.forLibrary(
+                        PackageView.createPackageView(key.getSourceGroup()),
+                        helper,
+                        key.getClassPathId(),
+                        key.getEntryId(),
+                        webModuleElementName,
+                        cs,
+                        refHelper);
+                    result = afn == null ? new Node[0] : new Node[] {afn};
                     break;
+                }
                 case Key.TYPE_FILE_REFERENCE:
-                    result = new Node[] {ActionFilterNode.forArchive(PackageView.createPackageView(key.getSourceGroup()),
-                        helper, eval, key.getClassPathId(), key.getEntryId(), webModuleElementName, cs, refHelper)};
+                {
+                    final Node afn = ActionFilterNode.forArchive(
+                        PackageView.createPackageView(key.getSourceGroup()),
+                        helper,
+                        eval,
+                        key.getClassPathId(),
+                        key.getEntryId(),
+                        webModuleElementName,
+                        cs,
+                        refHelper);
+                    result = afn == null ? new Node[0] : new Node[] {afn};
                     break;
+                }
                 case Key.TYPE_FILE:
-                    result = new Node[] {ActionFilterNode.forRoot(PackageView.createPackageView(key.getSourceGroup()),
-                        helper, key.getClassPathId(), key.getEntryId(), webModuleElementName, cs, refHelper)};
+                {
+                    final Node afn = ActionFilterNode.forRoot(
+                        PackageView.createPackageView(key.getSourceGroup()),
+                        helper,
+                        key.getClassPathId(),
+                        key.getEntryId(),
+                        webModuleElementName,
+                        cs,
+                        refHelper);
+                    result = afn == null ? new Node[0] : new Node[] {afn};
                     break;
+                }
                 case Key.TYPE_OTHER:
                     result = extraKeys.createNodes(key);
                     break;
