@@ -311,8 +311,7 @@ public class ModuleOptions extends OptionProcessor {
                 @Override
                 public void propertyChange(PropertyChangeEvent evt) {
                     if ("text".equals(evt.getPropertyName())) {
-                        env.getOutputStream().println(
-                                Bundle.MSG_Download(evt.getNewValue()));
+                        env.getOutputStream().println(evt.getNewValue());
                         LOG.fine("  ... installing update " + evt.getNewValue());
                     }
                 }
@@ -405,7 +404,7 @@ public class ModuleOptions extends OptionProcessor {
                     }
                 }
             });
-            final Validator res1 = support.doDownload(null, null, false);
+            final Validator res1 = support.doDownload(downloadHandle, null, false);
 
             Installer res2 = support.doValidate(res1, null);
 
@@ -415,9 +414,8 @@ public class ModuleOptions extends OptionProcessor {
             installDetailLabel.addPropertyChangeListener(new PropertyChangeListener() {
                 @Override
                 public void propertyChange(PropertyChangeEvent evt) {
-                    if ("text".equals(evt.getPropertyName())) {
-                        env.getOutputStream().println(
-                                Bundle.MSG_Download(evt.getNewValue()));
+                    if ("text".equals(evt.getPropertyName())) { // NOI18N
+                        env.getOutputStream().println(evt.getNewValue());
                         LOG.fine("  ... installing module " + evt.getNewValue());
                     }
                 }

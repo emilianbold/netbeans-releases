@@ -166,6 +166,7 @@ public class NbMainSequence extends WizardSequence {
             List<String> commandsBase = new ArrayList(Arrays.asList(runIDE,
                     "-J-Dnetbeans.close=true",
                     "--nosplash",
+                    "-J-Dorg.netbeans.modules.autoupdate.cli.level=FINEST",
                     "-J-Dorg.netbeans.core.WindowSystem.show=false",
                     "--userdir",
                     tmpUserDir.getPath()));
@@ -185,6 +186,7 @@ public class NbMainSequence extends WizardSequence {
                         public void progressUpdated(Progress progress) {
                             if (! downloadIsRunning && progress.getDetail().startsWith(SIZE_UPDATES_PATTERN)) {
                                 String size = progress.getDetail().substring(SIZE_UPDATES_PATTERN.length());
+                                progress.setDetail("");
                                 downloadIsRunning = true;
                                 try {
                                     sizeOfUpdates = Integer.valueOf(size);
@@ -227,7 +229,7 @@ public class NbMainSequence extends WizardSequence {
                                 msg = ResourceUtils.getString(NbMainSequence.class, "NBMS.CACHE.ProblemInstallUpdates", sizeOfUpdates); // NOI18N
                                 break;
                             case 34: // timeout loading JUnit
-                                LogManager.log("    Run again " + commandsBase);
+                                LogManager.log("    ... timeout loading JUnit - run it again ");
                                 start = true;
                                 installJUnit = false;
                                 break;

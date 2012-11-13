@@ -328,6 +328,7 @@ public final class ModuleUpdater extends Thread {
                 UpdateTracking.Version version;
                 UpdateTracking.Module modtrack;
                 
+                context.setLabel( Localization.getBrandedString("CTL_UnpackingFile") + "  " + nbm.getName() ); //NOI18N
                 context.unpackingIsRunning ();
                 
                 ModuleUpdate mu;
