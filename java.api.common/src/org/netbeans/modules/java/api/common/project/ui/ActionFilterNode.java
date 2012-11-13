@@ -176,6 +176,7 @@ final class ActionFilterNode extends FilterNode {
      * @param entryId ant property name of this classpath root
      * @return ActionFilterNode
      */
+    @CheckForNull
     static FilterNode forRoot (
             final @NonNull Node original,
             final @NonNull UpdateHelper helper,
@@ -192,11 +193,14 @@ final class ActionFilterNode extends FilterNode {
         Parameters.notNull("rh", rh);       //NOI18N
 
         final FileObject root =  getFolder(original);
-        return new ActionFilterNode (original, Mode.ROOT, root, createLookup(original,
+        return root == null ?
+            null :
+            new ActionFilterNode (original, Mode.ROOT, root, createLookup(original,
                 new Removable (helper, classPathId, entryId, webModuleElementName, cs, rh),
                 new JavadocProvider(root,root)));
     }
 
+    @CheckForNull
     static FilterNode forLibrary(
             final @NonNull Node original,
             final @NonNull UpdateHelper helper,
@@ -213,12 +217,15 @@ final class ActionFilterNode extends FilterNode {
         Parameters.notNull("rh", rh);       //NOI18N
 
         final FileObject root =  getFolder(original);
-        return new ActionFilterNode (original, Mode.EDITABLE_ROOT, root, createLookup(original,
+        return root == null ?
+            null :
+            new ActionFilterNode (original, Mode.EDITABLE_ROOT, root, createLookup(original,
                 new Removable (helper, classPathId, entryId, webModuleElementName, cs, rh),
                 new LibraryEditable(entryId, rh),
                 new JavadocProvider(root,root)));
     }
 
+    @CheckForNull
     static FilterNode forArchive(
             final @NonNull Node original,
             final @NonNull UpdateHelper helper,
@@ -237,24 +244,28 @@ final class ActionFilterNode extends FilterNode {
         Parameters.notNull("rh", rh);       //NOI18N
 
         final FileObject root =  getFolder(original);
-        return new ActionFilterNode (original, Mode.EDITABLE_ROOT, root, createLookup(original,
+        return root == null ?
+            null :
+            new ActionFilterNode (original, Mode.EDITABLE_ROOT, root, createLookup(original,
                 new Removable (helper, classPathId, entryId, webModuleElementName, cs, rh),
                 new ArchiveEditable(entryId, helper, eval, rh),
                 new JavadocProvider(root,root)));
     }
 
+    @CheckForNull
     static FilterNode forPackage(final @NonNull Node original) {
         Parameters.notNull("original", original);   //NOI18N
-
         final FileObject root = getFolder(original);
-        return new ActionFilterNode (original, Mode.PACKAGE, root, createLookup(original,
+        return root == null ?
+            null :
+            new ActionFilterNode (original, Mode.PACKAGE, root, createLookup(original,
                 new JavadocProvider(root,root)));
     }
 
+    @CheckForNull
     private static FileObject getFolder(final Node original) {
-        final DataObject dobj = original.getLookup().lookup(DataObject.class);
-        assert dobj != null;
-        return dobj.getPrimaryFile();
+        final DataObject dobj = original.getLookup().lookup(DataObject.class);        
+        return dobj == null ? null : dobj.getPrimaryFile();
     }
 
     private static Lookup createLookup(final Node original, Object... toAdd) {
