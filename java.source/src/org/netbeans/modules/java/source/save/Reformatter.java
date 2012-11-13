@@ -3395,6 +3395,7 @@ public class Reformatter implements ReformatTask {
                 boolean afterText = false;
                 boolean insideTag = false;
                 int nestedParenCnt = 0;
+                StringBuilder cseq = null;
                 Pair<Integer, Integer> toAdd = null;
                 while (javadocTokens.moveNext()) {
                     switch (javadocTokens.token().id()) {
@@ -3446,9 +3447,39 @@ public class Reformatter implements ReformatTask {
                             lastWSOffset = currWSOffset = -1;
                             afterText = true;
                             break;
+                        case HTML_TAG:
+                            if (toAdd != null) {
+                                marks.add(toAdd);
+                                toAdd = null;
+                            }
+                            tokenText = javadocTokens.token().text().toString();
+                            if (tokenText.endsWith(">")) { //NOI18N
+                                if (P_TAG.equalsIgnoreCase(tokenText)) {
+                                    if (currWSOffset >= 0) {
+                                        marks.add(Pair.of(currWSOffset, 1));
+                                    }
+                                    marks.add(Pair.of(javadocTokens.offset() + javadocTokens.token().length() - offset, 1));
+                                    afterText = false;
+                                } else if (PRE_TAG.equalsIgnoreCase(tokenText)
+                                        || CODE_TAG.equalsIgnoreCase(tokenText)) {
+                                    if (currWSOffset >= 0 && state == 0) {
+                                        marks.add(Pair.of(currWSOffset, 1));
+                                    }
+                                    marks.add(Pair.of(javadocTokens.offset() - offset, 5));
+                                } else if (PRE_END_TAG.equalsIgnoreCase(tokenText)
+                                        || CODE_END_TAG.equalsIgnoreCase(tokenText)) {
+                                    marks.add(Pair.of(currWSOffset >= 0 ? currWSOffset : javadocTokens.offset() - offset, 6));
+                                }
+                            } else {
+                                cseq = new StringBuilder(tokenText);
+                            }
+                            lastWSOffset = currWSOffset = -1;
+                            break;
                         case OTHER_TEXT:
                             lastWSOffset = currWSOffset = -1;
-                            CharSequence cseq = javadocTokens.token().text();
+                            if (cseq == null)
+                                cseq = new StringBuilder();                                        
+                            cseq.append(javadocTokens.token().text());
                             int nlNum = 1;
                             int insideTagEndOffset = -1;
                             boolean addNow = false;
@@ -3521,33 +3552,10 @@ public class Reformatter implements ReformatTask {
                             }
                             if (insideTagEndOffset >= 0)
                                 marks.add(Pair.of(insideTagEndOffset, 6));
-                            break;
-                        case HTML_TAG:
-                            if (toAdd != null) {
-                                marks.add(toAdd);
-                                toAdd = null;
-                            }
-                            tokenText = javadocTokens.token().text().toString();
-                            if (P_TAG.equalsIgnoreCase(tokenText)) {
-                                if (currWSOffset >= 0) {
-                                    marks.add(Pair.of(currWSOffset, 1));
-                                }
-                                marks.add(Pair.of(javadocTokens.offset() + javadocTokens.token().length() - offset, 1));
-                                afterText = false;
-                            } else if (PRE_TAG.equalsIgnoreCase(tokenText)
-                                    || CODE_TAG.equalsIgnoreCase(tokenText)) {
-                                if (currWSOffset >= 0 && state == 0) {
-                                    marks.add(Pair.of(currWSOffset, 1));
-                                }
-                                marks.add(Pair.of(javadocTokens.offset() - offset, 5));
-                            } else if (PRE_END_TAG.equalsIgnoreCase(tokenText)
-                                    || CODE_END_TAG.equalsIgnoreCase(tokenText)) {
-                                marks.add(Pair.of(currWSOffset >= 0 ? currWSOffset : javadocTokens.offset() - offset, 6));
-                            }
-                            lastWSOffset = currWSOffset = -1;
+                            cseq = null;
                             break;
                         default:
-                           if (toAdd != null) {
+                            if (toAdd != null) {
                                 marks.add(toAdd);
                                 toAdd = null;
                             }
