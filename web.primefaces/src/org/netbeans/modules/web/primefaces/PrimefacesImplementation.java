@@ -161,11 +161,14 @@ public class PrimefacesImplementation implements JsfComponentImplementation {
     @Override
     public void remove(WebModule webModule) {
         try {
-            List<Library> allRegisteredPrimefaces = getAllRegisteredPrimefaces();
-            ProjectClassPathModifier.removeLibraries(
-                    allRegisteredPrimefaces.toArray(new Library[allRegisteredPrimefaces.size()]),
-                    webModule.getJavaSources()[0],
-                    ClassPath.COMPILE);
+            List<Library> primefacesLibraries;
+            if (JsfComponentUtils.isMavenBased(webModule)) {
+                primefacesLibraries = Arrays.asList(getMavenLibrary());
+            } else {
+                primefacesLibraries = getAllRegisteredPrimefaces();
+            }
+            ProjectClassPathModifier.removeLibraries(primefacesLibraries.toArray(
+                    new Library[primefacesLibraries.size()]), webModule.getJavaSources()[0], ClassPath.COMPILE);
         } catch (IOException ex) {
             LOGGER.log(Level.WARNING, "Exception during removing JSF suite from an web project", ex); //NOI18N
         } catch (UnsupportedOperationException ex) {
@@ -177,10 +180,7 @@ public class PrimefacesImplementation implements JsfComponentImplementation {
         try {
             Library primefacesLibrary;
             if (JsfComponentUtils.isMavenBased(webModule)) {
-                primefacesLibrary = JsfComponentUtils.createMavenDependencyLibrary(
-                        PRIMEFACES_NAME + "-maven-lib", //NOI18N
-                        new String[]{MAVEN_DEP},
-                        new String[]{MAVEN_REPO});
+                primefacesLibrary = getMavenLibrary();
             } else {
                 primefacesLibrary = getPreferredLibrary(jsfComponentCustomizer);
                 if (primefacesLibrary == null) {
@@ -197,6 +197,13 @@ public class PrimefacesImplementation implements JsfComponentImplementation {
         } catch (UnsupportedOperationException ex) {
             LOGGER.log(Level.WARNING, "Exception during extending an web project", ex); //NOI18N
         }
+    }
+
+    private static Library getMavenLibrary() {
+        return JsfComponentUtils.createMavenDependencyLibrary(
+                PRIMEFACES_NAME + "-maven-lib", //NOI18N
+                new String[]{MAVEN_DEP},
+                new String[]{MAVEN_REPO});
     }
 
      /**
