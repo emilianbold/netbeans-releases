@@ -137,12 +137,13 @@ public class ReferencesCache {
     void clearFileReferences(CsmFile file) {
         synchronized (cacheLock) {
             if (file == null) {
-                for (Map.Entry<CsmFile, Map<TokenItem<TokenId>, CacheEntry>> entry : cache.entrySet()) {
+                for (Iterator<Entry<CsmFile, Map<TokenItem<TokenId>, CacheEntry>>> it = cache.entrySet().iterator(); it.hasNext();) {
+                    Entry<CsmFile, Map<TokenItem<TokenId>, CacheEntry>> entry = it.next();
                     CsmFile aFile = entry.getKey();
                     if (CsmFileInfoQuery.getDefault().isDocumentBasedFile(aFile)) {
                         clearUnresolved(aFile);
                     } else {
-                        cache.remove(aFile);
+                        it.remove();
                     }
                 }
             } else {
