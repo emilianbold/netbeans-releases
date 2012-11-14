@@ -118,18 +118,21 @@ public final class ClientSideProjectWizardIterator implements WizardDescriptor.P
         return new ClientSideProjectWizardIterator(new ExistingProjectWizard());
     }
 
-    @NbBundle.Messages("ClientSideProjectWizardIterator.progress.creatingProject=Creating project")
+    @NbBundle.Messages({
+        "ClientSideProjectWizardIterator.progress.creatingProject=Creating project",
+        "ClientSideProjectWizardIterator.error.noSiteRoot=<html>Site Root folder cannot be created.<br><br>Use <i>Resolve Project Problems...</i> action to repair the project."
+    })
     @Override
     public Set<FileObject> instantiate(ProgressHandle handle) throws IOException {
         handle.start();
         handle.progress(Bundle.ClientSideProjectWizardIterator_progress_creatingProject());
         Set<FileObject> files = new LinkedHashSet<FileObject>();
-        File dirF = FileUtil.normalizeFile((File) wizardDescriptor.getProperty(Wizard.PROJECT_DIRECTORY));
+        File projectDirectory = FileUtil.normalizeFile((File) wizardDescriptor.getProperty(Wizard.PROJECT_DIRECTORY));
         String name = (String) wizardDescriptor.getProperty(Wizard.NAME);
-        if (!dirF.isDirectory() && !dirF.mkdirs()) {
+        if (!projectDirectory.isDirectory() && !projectDirectory.mkdirs()) {
             throw new IOException("Cannot create project directory"); //NOI18N
         }
-        FileObject dir = FileUtil.toFileObject(dirF);
+        FileObject dir = FileUtil.toFileObject(projectDirectory);
         AntProjectHelper projectHelper = ClientSideProjectUtilities.setupProject(dir, name);
         // Always open top dir as a project:
         files.add(dir);
@@ -137,13 +140,18 @@ public final class ClientSideProjectWizardIterator implements WizardDescriptor.P
         ClientSideProject project = (ClientSideProject) FileOwnerQuery.getOwner(projectHelper.getProjectDirectory());
         FileObject siteRoot = wizard.instantiate(files, handle, wizardDescriptor, project);
 
-        // index file
-        FileObject indexFile = siteRoot.getFileObject("index", "html"); // NOI18N
-        if (indexFile != null) {
-            files.add(indexFile);
+        // #221550
+        if (siteRoot != null) {
+            // index file
+            FileObject indexFile = siteRoot.getFileObject("index", "html"); // NOI18N
+            if (indexFile != null) {
+                files.add(indexFile);
+            }
+        } else {
+            errorOccured(Bundle.ClientSideProjectWizardIterator_error_noSiteRoot());
         }
 
-        File parent = dirF.getParentFile();
+        File parent = projectDirectory.getParentFile();
         if (parent != null && parent.exists()) {
             ProjectChooser.setProjectsFolder(parent);
         }
@@ -274,7 +282,11 @@ public final class ClientSideProjectWizardIterator implements WizardDescriptor.P
     public void removeChangeListener(ChangeListener l) {
         // noop
     }
-    
+
+    static void errorOccured(final String message) {
+        DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(message, NotifyDescriptor.ERROR_MESSAGE));
+    }
+
     //~ Inner classes
 
     public interface Wizard {
@@ -340,10 +352,12 @@ public final class ClientSideProjectWizardIterator implements WizardDescriptor.P
                 // init standard project
                 initProject(project, projectProperties);
             }
-            
-            // get application dir:
+
             FileObject siteRootDir = project.getSiteRootFolder();
-            assert siteRootDir != null;
+            if (siteRootDir == null) {
+                // #221550
+                return null;
+            }
 
             // js libs
             FileObject jsLibs = (FileObject) wizardDescriptor.getProperty(LIBRARIES_FOLDER);
@@ -408,10 +422,6 @@ public final class ClientSideProjectWizardIterator implements WizardDescriptor.P
                 LOGGER.log(Level.INFO, null, ex);
                 errorOccured(Bundle.ClientSideProjectWizardIterator_error_applyingSiteTemplate(templateName));
             }
-        }
-
-        private void errorOccured(String message) {
-            DialogDisplayer.getDefault().notifyLater(new NotifyDescriptor.Message(message, NotifyDescriptor.ERROR_MESSAGE));
         }
 
         private void createIndexFile(FileObject siteRoot) throws IOException {
