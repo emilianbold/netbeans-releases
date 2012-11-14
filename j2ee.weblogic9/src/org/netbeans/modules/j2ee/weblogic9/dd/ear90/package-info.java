@@ -49,8 +49,10 @@
     attrProp=true,
     removeUnreferencedNodes=true,
     docRoot="weblogic-application",
-    mddFile="../../resources/weblogic-application_9_0.mdd"
+    mddFile="../../resources/weblogic-application_9_0.mdd",
+    java5=true
 )
+@org.netbeans.api.annotations.common.SuppressWarnings("NM_SAME_SIMPLE_NAME_AS_INTERFACE") // justification="Generated implementation classes"
 package org.netbeans.modules.j2ee.weblogic9.dd.ear90;
 
 import org.netbeans.modules.schema2beans.Schema2Beans;

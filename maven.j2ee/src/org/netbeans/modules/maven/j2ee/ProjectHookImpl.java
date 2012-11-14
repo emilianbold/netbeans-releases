@@ -42,22 +42,21 @@
 
 package org.netbeans.modules.maven.j2ee;
 
-import org.netbeans.modules.maven.j2ee.utils.LoggingUtils;
-import org.netbeans.modules.maven.j2ee.utils.MavenProjectSupport;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.api.ejbjar.Ear;
 import org.netbeans.modules.j2ee.api.ejbjar.EjbJar;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
+import org.netbeans.modules.maven.api.NbMavenProject;
+import org.netbeans.modules.maven.j2ee.utils.LoggingUtils;
+import org.netbeans.modules.maven.j2ee.utils.MavenProjectSupport;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.spi.project.ProjectServiceProvider;
 import org.netbeans.spi.project.ui.ProjectOpenedHook;
-import org.openide.filesystems.FileStateInvalidException;
-import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 
 @ProjectServiceProvider(service = {ProjectOpenedHook.class}, projectType={
     "org-netbeans-modules-maven/" + NbMavenProject.TYPE_WAR,
@@ -67,7 +66,8 @@ import org.openide.util.NbBundle;
     "org-netbeans-modules-maven/" + NbMavenProject.TYPE_OSGI
 })
 public class ProjectHookImpl extends ProjectOpenedHook {
-    
+
+    private final static RequestProcessor RP = new RequestProcessor(ProjectHookImpl.class);
     private final Project project;
     private PropertyChangeListener refreshListener;
     private J2eeModuleProvider lastJ2eeProvider;
@@ -80,6 +80,12 @@ public class ProjectHookImpl extends ProjectOpenedHook {
     @Override
     protected void projectOpened() {
         MavenProjectSupport.changeServer(project, false);
+
+        final CopyOnSave copyOnSave = project.getLookup().lookup(CopyOnSave.class);
+        if (copyOnSave != null) {
+            copyOnSave.initialize();
+        }
+
         if (refreshListener == null) {
             //#121148 when the user edits the file we need to reset the server instance
             NbMavenProject watcher = project.getLookup().lookup(NbMavenProject.class);
@@ -93,8 +99,13 @@ public class ProjectHookImpl extends ProjectOpenedHook {
             };
             watcher.addPropertyChangeListener(refreshListener);
         }
-        
-        LoggingUtils.logUsage(ExecutionChecker.class, "USG_PROJECT_OPEN_MAVEN_EE", new Object[] { getServerName(), getEEversion() }, "maven"); //NOI18N
+
+        RP.post(new Runnable() {
+            @Override
+            public void run() {
+                LoggingUtils.logUsage(ExecutionChecker.class, "USG_PROJECT_OPEN_MAVEN_EE", new Object[] { getServerName(), getEEversion() }, "maven"); //NOI18N
+            }
+        });
     }
     
     @Override
@@ -111,11 +122,7 @@ public class ProjectHookImpl extends ProjectOpenedHook {
         }
         CopyOnSave copyOnSave = project.getLookup().lookup(CopyOnSave.class);
         if (copyOnSave != null) {
-            try {
-                copyOnSave.cleanup();
-            } catch (FileStateInvalidException ex) {
-                Exceptions.printStackTrace(ex);
-            }
+            copyOnSave.cleanup();
         }
     }
     

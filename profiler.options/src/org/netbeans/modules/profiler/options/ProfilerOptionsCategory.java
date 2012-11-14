@@ -55,7 +55,6 @@ import org.netbeans.modules.options.java.api.JavaOptions;
 
 @OptionsPanelController.SubRegistration(
     location=JavaOptions.JAVA,
-    id="Profiler",
     displayName="#ProfilerOptionsCategory_Title",
     keywords="#KW_ProfilerOptions",
     keywordsCategory=JavaOptions.JAVA + "/Profiler")

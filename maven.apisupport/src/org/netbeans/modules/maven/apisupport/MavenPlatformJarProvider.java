@@ -149,6 +149,11 @@ public class MavenPlatformJarProvider implements PlatformJarProvider {
                     }
                     try {
                         online.resolve(art, remoteRepos, online.getLocalRepository());
+                    } catch (ThreadDeath td) {
+                    } catch (IllegalStateException ise) { //download interrupted in dependent thread. #213812
+                        if (!(ise.getCause() instanceof ThreadDeath)) {
+                            throw ise;
+                        }
                     } catch (AbstractArtifactResolutionException x) {
                         throw new IOException(x);
                     }

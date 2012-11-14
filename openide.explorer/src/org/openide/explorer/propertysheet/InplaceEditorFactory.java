@@ -59,6 +59,7 @@ import java.beans.PropertyEditor;
 
 import javax.swing.BorderFactory;
 import javax.swing.JComponent;
+import javax.swing.UIManager;
 import org.openide.util.WeakListeners;
 
 /** Factory providing inplace editor implementations.  Provides appropriate
@@ -78,6 +79,9 @@ final class InplaceEditorFactory implements PropertyChangeListener {
     int radioButtonMax = -1;
     private boolean useLabels = false;
     private boolean useRadioBoolean = PropUtils.forceRadioButtons;
+
+    private static final boolean isAqua = "Aqua".equals(UIManager.getLookAndFeel().getID()); //NOI18N
+    private static final boolean isMetal = "Metal".equals(UIManager.getLookAndFeel().getID()); //NOI18N
 
     InplaceEditorFactory(boolean tableUI, ReusablePropertyEnv env) {
         this.tableUI = tableUI;
@@ -137,7 +141,7 @@ final class InplaceEditorFactory implements PropertyChangeListener {
 
     /**Lazily create (or create a new instance of) the combo box editor */
     private InplaceEditor getComboBoxEditor(boolean newInstance) {
-        if (newInstance) {
+        if (newInstance || isAqua || isMetal) { //#220163
             return new ComboInplaceEditor(tableUI);
         }
 

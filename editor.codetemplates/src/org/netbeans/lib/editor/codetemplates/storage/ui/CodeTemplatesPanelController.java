@@ -46,6 +46,7 @@ package org.netbeans.lib.editor.codetemplates.storage.ui;
 
 import java.beans.PropertyChangeListener;
 import javax.swing.JComponent;
+import org.netbeans.api.options.OptionsDisplayer;
 import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;

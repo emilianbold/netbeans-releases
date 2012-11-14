@@ -88,7 +88,7 @@ public class KeymapListRenderer extends DefaultTreeCellRenderer {
                 text.append (((ShortcutAction) value).getId ());
                 text.append ("> ");
             }
-            String[] shortcuts = keymapViewModel.getShortcuts ((ShortcutAction) value);
+            String[] shortcuts = keymapViewModel.getMutableModel().getShortcuts ((ShortcutAction) value);
             if (shortcuts.length == 1)
                 text.append ("  [").append (shortcuts [0]).append ("]");
             else 

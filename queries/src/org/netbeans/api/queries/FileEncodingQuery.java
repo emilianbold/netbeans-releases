@@ -88,7 +88,9 @@ public class FileEncodingQuery {
      * @throws IllegalArgumentException if file parameter is null.
      */
     public static Charset getEncoding (FileObject file) {
-        if (file == null) throw new IllegalArgumentException();
+        if (file == null) {
+            throw new IllegalArgumentException();
+        }
         List<Charset> delegates = new ArrayList<Charset>();
         for (FileEncodingQueryImplementation impl : Lookup.getDefault().lookupAll(FileEncodingQueryImplementation.class)) {
             Charset encoding = impl.getEncoding(file);
@@ -135,7 +137,9 @@ public class FileEncodingQuery {
      *
      */
     public static void setDefaultEncoding (final Charset encoding) {
-        if (encoding == null) throw new IllegalArgumentException();
+        if (encoding == null) {
+            throw new IllegalArgumentException();
+        }
         Preferences prefs = NbPreferences.forModule(FileEncodingQuery.class);
         prefs.put(DEFAULT_ENCODING, encoding.name());
     }
@@ -152,14 +156,17 @@ public class FileEncodingQuery {
             this.delegates = delegates;
         }
 
+        @Override
         public boolean contains(Charset charset) {
             return this.delegates.get(0).contains(charset);
         }
 
+        @Override
         public CharsetDecoder newDecoder() {
             return new ProxyDecoder (delegates.get(0).newDecoder());
         }
 
+        @Override
         public CharsetEncoder newEncoder() {
             return new ProxyEncoder (delegates.get(0).newEncoder());
         }
@@ -181,6 +188,7 @@ public class FileEncodingQuery {
                 initialized = true;
             }
 
+            @Override
             protected CoderResult decodeLoop(ByteBuffer in, CharBuffer out) {
                 lastCharBuffer = out;
                 if (buffer == null) {
@@ -339,6 +347,7 @@ public class FileEncodingQuery {
                 this.initialized = true;
             }
 
+            @Override
             protected CoderResult encodeLoop(CharBuffer in, ByteBuffer out) {
                 lastByteBuffer = out;
                 if (buffer == null) {

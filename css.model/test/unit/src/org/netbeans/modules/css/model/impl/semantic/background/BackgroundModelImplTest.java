@@ -73,7 +73,7 @@ public class BackgroundModelImplTest extends CssTestBase {
     }
 
     public void testBackground_Color() {
-        PropertyDefinition background = Properties.getPropertyDefinition(null, "background-color");
+        PropertyDefinition background = Properties.getPropertyDefinition( "background-color");
         assertNotNull(background);
         
         ResolvedProperty resolved = ResolvedProperty.resolve(null, background, "red");
@@ -99,7 +99,7 @@ public class BackgroundModelImplTest extends CssTestBase {
     }
     
     public void testBackgroundImageInBackgroundProperty() {
-        PropertyDefinition background = Properties.getPropertyDefinition(null, "background");
+        PropertyDefinition background = Properties.getPropertyDefinition( "background");
         assertNotNull(background);
         
 //        GrammarResolver.setLogging(GrammarResolver.Log.DEFAULT, true);
@@ -153,7 +153,7 @@ public class BackgroundModelImplTest extends CssTestBase {
     }
     
     public void testBackgroundImageInBackgroundImageProperty() {
-        PropertyDefinition background = Properties.getPropertyDefinition(null, "background-image");
+        PropertyDefinition background = Properties.getPropertyDefinition( "background-image");
         assertNotNull(background);
         
 //        GrammarResolver.setLogging(GrammarResolver.Log.DEFAULT, true);
@@ -208,7 +208,7 @@ public class BackgroundModelImplTest extends CssTestBase {
     
     public void testBackgroundPositionInBackgroundPositionProperty() {
         
-        PropertyDefinition background = Properties.getPropertyDefinition(null, "background-position");
+        PropertyDefinition background = Properties.getPropertyDefinition( "background-position");
         assertNotNull(background);
         
         assertBackgroundPosition(ResolvedProperty.resolve(null, background, "20px"), 
@@ -279,7 +279,7 @@ public class BackgroundModelImplTest extends CssTestBase {
     
     public void testRepeatStyle() {
 
-        PropertyDefinition property = Properties.getPropertyDefinition(null, "background-repeat");
+        PropertyDefinition property = Properties.getPropertyDefinition( "background-repeat");
         assertNotNull(property);
         
         assertRepeatStyle(ResolvedProperty.resolve(null, property, "repeat-x"), 
@@ -311,7 +311,7 @@ public class BackgroundModelImplTest extends CssTestBase {
         
         //in background aggregated property
         
-        property = Properties.getPropertyDefinition(null, "background");
+        property = Properties.getPropertyDefinition( "background");
         assertNotNull(property);
         
         assertRepeatStyle(ResolvedProperty.resolve(null, property, "repeat-x"), 
@@ -374,7 +374,7 @@ public class BackgroundModelImplTest extends CssTestBase {
     
     public void testBackgroundPositionInBackgroundProperty() {
         
-        PropertyDefinition background = Properties.getPropertyDefinition(null, "background");
+        PropertyDefinition background = Properties.getPropertyDefinition( "background");
         assertNotNull(background);
         
         assertBackgroundPosition(ResolvedProperty.resolve(null, background, "20px"), 
@@ -473,7 +473,7 @@ public class BackgroundModelImplTest extends CssTestBase {
     
       public void testBackgroundAttachment() {
 
-        PropertyDefinition property = Properties.getPropertyDefinition(null, "background-attachment");
+        PropertyDefinition property = Properties.getPropertyDefinition( "background-attachment");
         assertNotNull(property);
         
         assertAttachment(ResolvedProperty.resolve(null, property, "fixed"), 
@@ -483,7 +483,7 @@ public class BackgroundModelImplTest extends CssTestBase {
         assertAttachment(ResolvedProperty.resolve(null, property, "scroll"), 
                 Attachment.SCROLL);
        
-        property = Properties.getPropertyDefinition(null, "background");
+        property = Properties.getPropertyDefinition( "background");
         assertNotNull(property);
         
         assertAttachment(ResolvedProperty.resolve(null, property, "fixed"), 
@@ -516,7 +516,7 @@ public class BackgroundModelImplTest extends CssTestBase {
     
       public void testBackgroundClip() {
 
-        PropertyDefinition property = Properties.getPropertyDefinition(null, "background-clip");
+        PropertyDefinition property = Properties.getPropertyDefinition( "background-clip");
         assertNotNull(property);
         
         assertClip(ResolvedProperty.resolve(null, property, "border-box"), 
@@ -526,7 +526,7 @@ public class BackgroundModelImplTest extends CssTestBase {
         assertClip(ResolvedProperty.resolve(null, property, "content-box"), 
                 Box.CONTENT_BOX);
 
-        property = Properties.getPropertyDefinition(null, "background");
+        property = Properties.getPropertyDefinition( "background");
         assertNotNull(property);
         
         assertClip(ResolvedProperty.resolve(null, property, "border-box"), 
@@ -559,7 +559,7 @@ public class BackgroundModelImplTest extends CssTestBase {
      
     public void testBackgroundOrigin() {
 
-        PropertyDefinition property = Properties.getPropertyDefinition(null, "background-origin");
+        PropertyDefinition property = Properties.getPropertyDefinition( "background-origin");
         assertNotNull(property);
         
         assertOrigin(ResolvedProperty.resolve(null, property, "border-box"), 
@@ -569,7 +569,7 @@ public class BackgroundModelImplTest extends CssTestBase {
         assertOrigin(ResolvedProperty.resolve(null, property, "content-box"), 
                 Box.CONTENT_BOX);
 
-        property = Properties.getPropertyDefinition(null, "background");
+        property = Properties.getPropertyDefinition( "background");
         assertNotNull(property);
         
         assertOrigin(ResolvedProperty.resolve(null, property, "border-box"), 
@@ -584,7 +584,7 @@ public class BackgroundModelImplTest extends CssTestBase {
     
     public void testBackgroundOriginVsClip() {
 
-        PropertyDefinition property = Properties.getPropertyDefinition(null, "background");
+        PropertyDefinition property = Properties.getPropertyDefinition( "background");
         assertNotNull(property);
         
         assertClip(ResolvedProperty.resolve(null, property, "border-box padding-box"), 
@@ -620,7 +620,7 @@ public class BackgroundModelImplTest extends CssTestBase {
      
       public void testBackgroundSizeInBackgroundSizeProperty() {
 
-        PropertyDefinition property = Properties.getPropertyDefinition(null, "background-size");
+        PropertyDefinition property = Properties.getPropertyDefinition( "background-size");
         assertNotNull(property);
         
         assertSize(ResolvedProperty.resolve(null, property, "cover"), 
@@ -677,7 +677,7 @@ public class BackgroundModelImplTest extends CssTestBase {
       
       public void testBackgroundSizeInBackgroundProperty() {
           
-        PropertyDefinition property = Properties.getPropertyDefinition(null, "background");
+        PropertyDefinition property = Properties.getPropertyDefinition( "background");
         assertNotNull(property);
         
         assertSize(ResolvedProperty.resolve(null, property, "center / cover"), 

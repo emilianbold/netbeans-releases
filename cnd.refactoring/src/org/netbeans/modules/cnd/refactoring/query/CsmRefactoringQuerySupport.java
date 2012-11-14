@@ -43,11 +43,14 @@ package org.netbeans.modules.cnd.refactoring.query;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.services.CsmFileInfoQuery;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
 import org.netbeans.modules.cnd.api.model.xref.CsmReferenceResolver;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
+import org.netbeans.modules.cnd.refactoring.api.WhereUsedQueryConstants;
 import org.netbeans.modules.cnd.refactoring.plugins.CsmWhereUsedQueryPlugin;
 import org.netbeans.modules.refactoring.spi.RefactoringElementImplementation;
 import org.openide.filesystems.FileObject;
@@ -81,6 +84,12 @@ public final class CsmRefactoringQuerySupport {
         return out;
     }
     
+    // Default params for find usages
+    private static final Map<Object, Boolean> DEFAULT_PARAMS = new HashMap<Object, Boolean>();
+    static {
+        DEFAULT_PARAMS.put(WhereUsedQueryConstants.SEARCH_FROM_BASECLASS, true);
+    }
+    
     /**
      * 
      * @param fo file
@@ -96,7 +105,7 @@ public final class CsmRefactoringQuerySupport {
             if (offset >= 0) {
                 CsmReference ref = CsmReferenceResolver.getDefault().findReference(csmFile, (int)offset);
                 if (ref != null) {
-                    out = CsmWhereUsedQueryPlugin.getWhereUsed(ref, Collections.<Object, Boolean>emptyMap());
+                    out = CsmWhereUsedQueryPlugin.getWhereUsed(ref, DEFAULT_PARAMS);
                 }
             }
         }

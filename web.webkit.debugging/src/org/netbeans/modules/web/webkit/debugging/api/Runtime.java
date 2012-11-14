@@ -84,6 +84,11 @@ public class Runtime {
                     ", remote object was: "+remoteObject.toString() + " and owning property :"+remoteObject.getOwningProperty()); // NOI18N
             return Collections.emptyList();
         }
+        if (properties.getException() != null) {
+            LOG.log(Level.WARNING, "transport exception from command: "+"Runtime.getProperties "+params.toJSONString() + // NOI18N
+                    ", remote object was: "+remoteObject.toString() + " and owning property :"+remoteObject.getOwningProperty()); // NOI18N
+            return Collections.emptyList();
+        }
         JSONObject response = properties.getResponse(); // NOI18N
         JSONObject result = (JSONObject)response.get("result"); // NOI18N
         if (result == null) {

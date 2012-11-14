@@ -41,10 +41,14 @@
  */
 package org.netbeans.modules.javafx2.editor.parser;
 
+import org.netbeans.modules.javafx2.editor.completion.model.FxInstance;
+import org.netbeans.modules.javafx2.editor.completion.model.FxInstanceCopy;
 import org.netbeans.modules.javafx2.editor.completion.model.FxTreeUtilities;
 import org.netbeans.modules.javafx2.editor.completion.model.FxNewInstance;
 import org.netbeans.modules.javafx2.editor.completion.model.FxNode;
 import org.netbeans.modules.javafx2.editor.completion.model.FxNodeVisitor;
+import org.netbeans.modules.javafx2.editor.completion.model.FxReference;
+import org.netbeans.modules.javafx2.editor.completion.model.FxScriptFragment;
 import org.netbeans.modules.javafx2.editor.completion.model.ImportDecl;
 import org.netbeans.modules.javafx2.editor.completion.model.LanguageDecl;
 import org.netbeans.modules.javafx2.editor.completion.model.MapProperty;
@@ -85,8 +89,20 @@ public class PrintVisitor extends FxNodeVisitor.ModelTraversal {
     }
 
     @Override
+    public void visitCopy(FxInstanceCopy decl) {
+        i().append(String.format("copy: source=%s, id=%s\n", decl.getBlueprintId(), decl.getId()));
+        super.visitCopy(decl); 
+    }
+
+    @Override
+    public void visitReference(FxReference decl) {
+        i().append(String.format("reference: source=%s\n", decl.getTargetId()));
+        super.visitReference(decl); 
+    }
+
+    @Override
     public void visitInstance(FxNewInstance decl) {
-        i().append(String.format("instance: id=%s, className=%s\n", decl.getId(), decl.getSourceName()));
+        i().append(String.format("instance: id=%s, className=%s\n", decl.getId(), decl.getTypeName()));
         super.visitInstance(decl);
     }
 
@@ -118,6 +134,10 @@ public class PrintVisitor extends FxNodeVisitor.ModelTraversal {
     public void visitStaticProperty(StaticProperty p) {
         i().append(String.format("attached: name=%s, source=%s, content=%s\n", p.getPropertyName(), p.getSourceClassName(), p.getContent()));
         super.visitStaticProperty(p);
+    }
+    
+    public void visitScript(FxScriptFragment f) {
+        i().append(String.format("script: src=%s, len=%d", f.getSourcePath(), (f.hasContent() ? f.getContent().length() : -1)));
     }
     
     private static final String PADDING = "                ";

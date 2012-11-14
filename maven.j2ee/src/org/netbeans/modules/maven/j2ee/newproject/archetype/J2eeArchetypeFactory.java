@@ -104,7 +104,7 @@ public class J2eeArchetypeFactory {
         return getProvider(projectType).getArchetypeMap();
     } 
     
-    private class AppClientArchetypes extends BaseJ2eeArchetypeProvider {
+    private static class AppClientArchetypes extends BaseJ2eeArchetypeProvider {
         @Override
         protected void setUpProjectArchetypes() {
             addMojoArchetype(Profile.JAVA_EE_6_FULL, "1.0", "appclient-javaee6"); //NOI18N
@@ -113,14 +113,14 @@ public class J2eeArchetypeFactory {
         }
     }
     
-    private class EaArchetypes extends BaseJ2eeArchetypeProvider {
+    private static class EaArchetypes extends BaseJ2eeArchetypeProvider {
         @Override
         protected void setUpProjectArchetypes() {
             addMojoArchetype(Profile.JAVA_EE_6_FULL, "1.1", "pom-root"); //NOI18N
         }
     }
     
-    private class EarArchetypes extends BaseJ2eeArchetypeProvider {
+    private static class EarArchetypes extends BaseJ2eeArchetypeProvider {
         @Override
         protected void setUpProjectArchetypes() {
             addMojoArchetype(Profile.JAVA_EE_6_FULL, "1.5", "ear-javaee6"); //NOI18N
@@ -129,7 +129,7 @@ public class J2eeArchetypeFactory {
         }
     }
     
-    private class EjbArchetypes extends BaseJ2eeArchetypeProvider {
+    private static class EjbArchetypes extends BaseJ2eeArchetypeProvider {
         @Override
         protected void setUpProjectArchetypes() {
             addMojoArchetype(Profile.JAVA_EE_6_FULL, "1.5", "ejb-javaee6"); //NOI18N
@@ -138,7 +138,7 @@ public class J2eeArchetypeFactory {
         }
     }
     
-    private class WebArchetypes extends BaseJ2eeArchetypeProvider {
+    private static class WebArchetypes extends BaseJ2eeArchetypeProvider {
         @Override
         protected void setUpProjectArchetypes() {
             addMojoArchetype(Profile.JAVA_EE_6_WEB, "1.5", "webapp-javaee6"); //NOI18N

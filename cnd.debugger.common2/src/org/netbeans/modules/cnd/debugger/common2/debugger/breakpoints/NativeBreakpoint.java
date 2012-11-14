@@ -65,6 +65,8 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.logging.Level;
 import javax.swing.SwingUtilities;
+import org.netbeans.api.debugger.DebuggerEngine;
+import org.netbeans.api.project.Project;
 
 import org.xml.sax.Attributes;
 
@@ -95,6 +97,7 @@ import org.netbeans.modules.cnd.debugger.common2.debugger.breakpoints.types.Inst
 import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 
 import org.netbeans.spi.debugger.ContextAwareSupport;
+import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 
 
@@ -1804,14 +1807,26 @@ public abstract class NativeBreakpoint
      * Register a new bpt glyph with this Handler
      */
 
-    public void addAnnotation(String filename, int line, long addr) {
-	Line l = null;
-
-	if (line != 0) {
-	    l = EditorBridge.getLine(filename, line, currentDebugger());
+    public void addAnnotation(final String filename, final int line, final long addr) {
+        NativeDebuggerManager.getRequestProcessor().submit(new Runnable() {
+            @Override
+            public void run() {
+                final Line l = getLine(filename, line);
+                SwingUtilities.invokeLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        addAnnotation(l, addr);
+                    }
+                });
+            }
+        });
+    }
+    
+    protected Line getLine(String filename, int line) {
+        if (line != 0) {
+            return EditorBridge.getLine(filename, line, currentDebugger());
         }
-	//if (l != null)
-	addAnnotation(l, addr);
+        return null;
     }
 
     /**
@@ -3062,5 +3077,42 @@ public abstract class NativeBreakpoint
             }
         }
         return res;
+    }
+
+    @Override
+    public GroupProperties getGroupProperties() {
+        return new NativeGroupProperties();
+    }
+    
+    protected class NativeGroupProperties extends GroupProperties {
+        @Override
+        public String getType() {
+            return getBreakpointType().getTypeDisplayName();
+        }
+        
+        @Override
+        public String getLanguage() {
+            return "C/C++"; //NOI18N
+        }
+
+        @Override
+        public FileObject[] getFiles() {
+            return null;
+        }
+
+        @Override
+        public Project[] getProjects() {
+            return null;
+        }
+
+        @Override
+        public DebuggerEngine[] getEngines() {
+            return null;
+        }
+
+        @Override
+        public boolean isHidden() {
+            return false;
+        }
     }
 }

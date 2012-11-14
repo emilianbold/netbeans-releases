@@ -93,7 +93,7 @@ public abstract class BoxTestBase extends CssTestBase {
     protected void assertBox(String propertyName, CharSequence value, BoxType boxType, 
             String top, String right, String bottom, String left) {
         
-        PropertyDefinition model = Properties.getPropertyDefinition(null, propertyName);
+        PropertyDefinition model = Properties.getPropertyDefinition( propertyName);
         ResolvedProperty val = new ResolvedProperty(model, value);
 
         Node root = val.getParseTree();

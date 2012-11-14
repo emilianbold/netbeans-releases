@@ -79,7 +79,8 @@ public final class NbLocalNativeProcess extends NbNativeProcess {
         if (process == null) {
             return -1;
         }
-
-        return process.waitFor();
+        int rc = process.waitFor();
+        finishing();
+        return rc;
     }
 }

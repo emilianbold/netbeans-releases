@@ -112,6 +112,10 @@ public abstract class NativeProcess extends Process {
          */
         RUNNING,
         /**
+         * Native process exited, but exit status is not available yet.
+         */
+        FINISHING,
+        /**
          * Native process exited.
          */
         FINISHED,

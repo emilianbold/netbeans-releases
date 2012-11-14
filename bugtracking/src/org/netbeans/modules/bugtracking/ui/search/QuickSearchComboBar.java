@@ -184,6 +184,7 @@ public class QuickSearchComboBar extends javax.swing.JPanel {
         JList list = displayer.getList();
         if (list.getModel().getSize() > 0) {
             SwingUtilities.invokeLater(new Runnable() {
+                @Override
                 public void run() {
                     JList l = displayer.getList();
                     if (l.getSelectedIndex() == -1) { // Issue 161447
@@ -261,12 +262,15 @@ public class QuickSearchComboBar extends javax.swing.JPanel {
             this.delegate = delegate;
             editor = (JTextField) delegate.getEditorComponent();
             editor.getDocument().addDocumentListener(new DocumentListener() {
+                @Override
                 public void insertUpdate(DocumentEvent arg0) {
                     textChanged();
                 }
+                @Override
                 public void removeUpdate(DocumentEvent arg0) {
                     textChanged();
                 }
+                @Override
                 public void changedUpdate(DocumentEvent arg0) {
                     textChanged();
                 }
@@ -291,6 +295,7 @@ public class QuickSearchComboBar extends javax.swing.JPanel {
             });
         }
 
+        @Override
         public Component getEditorComponent() {
             return editor;
         }
@@ -301,7 +306,7 @@ public class QuickSearchComboBar extends javax.swing.JPanel {
             if(anObject == null) {
                 issue = null;
                 if(!keepText) {
-                    editor.setText("");
+                    editor.setText(""); // NOI18N
                 }
             } else if(anObject instanceof IssueImpl) {
                 newIssue = (IssueImpl) anObject;
@@ -321,22 +326,27 @@ public class QuickSearchComboBar extends javax.swing.JPanel {
             }
         }
 
+        @Override
         public void setItem(Object anObject) {
             setItem(anObject, false);
         }
 
+        @Override
         public Object getItem() {
             return issue;
         }
 
+        @Override
         public void selectAll() {
             delegate.selectAll();
         }
 
+        @Override
         public void addActionListener(ActionListener l) {
             delegate.addActionListener(l);
         }
 
+        @Override
         public void removeActionListener(ActionListener l) {
             delegate.removeActionListener(l);
         }

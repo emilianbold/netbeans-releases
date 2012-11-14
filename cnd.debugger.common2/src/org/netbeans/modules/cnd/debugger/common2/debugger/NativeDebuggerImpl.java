@@ -666,7 +666,7 @@ public abstract class NativeDebuggerImpl implements NativeDebugger, BreakpointPr
         NativeWatch[] watchesToRestore = wb.getWatches();
         for (int i = 0; i < watchesToRestore.length; i++) {
             NativeWatch template = watchesToRestore[i];
-	    if (template != null) {
+	    if (template != null && template.isEnabled()) {
 		restoreWatch(template);
             }
         }

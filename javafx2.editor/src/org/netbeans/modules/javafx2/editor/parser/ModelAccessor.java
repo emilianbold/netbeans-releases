@@ -42,6 +42,7 @@
 package org.netbeans.modules.javafx2.editor.parser;
 
 import java.net.URL;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import javax.lang.model.element.TypeElement;
@@ -55,11 +56,14 @@ import org.netbeans.modules.javafx2.editor.completion.model.FxNewInstance;
 import org.netbeans.modules.javafx2.editor.completion.model.FxModel;
 import org.netbeans.modules.javafx2.editor.completion.model.FxNode;
 import org.netbeans.modules.javafx2.editor.completion.model.FxObjectBase;
+import org.netbeans.modules.javafx2.editor.completion.model.FxScriptFragment;
 import org.netbeans.modules.javafx2.editor.completion.model.HasContent;
+import org.netbeans.modules.javafx2.editor.completion.model.HasResource;
 import org.netbeans.modules.javafx2.editor.completion.model.ImportDecl;
 import org.netbeans.modules.javafx2.editor.completion.model.LanguageDecl;
 import org.netbeans.modules.javafx2.editor.completion.model.MapProperty;
 import org.netbeans.modules.javafx2.editor.completion.model.PropertySetter;
+import org.netbeans.modules.javafx2.editor.completion.model.PropertyValue;
 import org.netbeans.modules.javafx2.editor.completion.model.StaticProperty;
 
 /**
@@ -97,8 +101,9 @@ public abstract class ModelAccessor {
     public abstract FxModel    newModel(URL baseURL, List<ImportDecl> imports, List<FxNewInstance> defs);
     public abstract ImportDecl createImport(String imported, boolean wildcard);
     public abstract LanguageDecl createLanguage(String lang);
-    public abstract FxInclude createInclude(String included);
-    public abstract FxNewInstance createInstance(String sourceName, CharSequence value, String factory, String id);
+    public abstract FxInclude createInclude(String included, String id);
+    public abstract FxNewInstance createInstance(String sourceName, CharSequence value, boolean constant, String factory, String id);
+    public abstract FxNewInstance createCustomRoot(String sourceName, String id);
     public abstract FxObjectBase createCopyReference(boolean copy, String targetName);
     public abstract PropertySetter createProperty(String name, boolean implicit);
     public abstract StaticProperty createStaticProperty(String name, String sourceName);
@@ -108,7 +113,7 @@ public abstract class ModelAccessor {
     
     public abstract FxNode createElement(String localName);
     public abstract FxNode createErrorElement(String localName);
-    
+    public abstract FxScriptFragment createScript(String sourceRef);
     public abstract EventHandler asMethodRef(EventHandler h);
     
     public abstract void initModel(FxModel model, String controller, FxInstance rootInstance, LanguageDecl language);
@@ -132,14 +137,18 @@ public abstract class ModelAccessor {
      */
     public abstract void addChild(FxNode parent, FxNode child) throws IllegalArgumentException;
     
-    public abstract void resolveResource(FxInclude decl, URL resolved);
+    public abstract void resolveResource(HasResource decl, URL resolved);
     
     public abstract NodeInfo i(FxNode n);
     public abstract <T extends FxNode> T makeBroken(T n);
+    
+    public abstract void addDefinitions(FxModel model, Collection<FxNewInstance> definitions);
     
     public abstract void setNamedInstances(FxModel model, Map<String, FxInstance> instances);
     
     public abstract void resolveReference(FxObjectBase copyOrReference, FxInstance original);
     
     public abstract void attach(FxNode node, FxModel model);
+
+    public abstract void rename(FxInstance instance, PropertyValue pv, String newName);
 }

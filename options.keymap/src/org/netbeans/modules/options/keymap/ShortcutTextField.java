@@ -223,17 +223,17 @@ public class ShortcutTextField extends JTextField {
             vec.add(NbBundle.getMessage(ShortcutTextField.class, "No_Free_Shortcut", prefix)); // NOI18N
         return vec;
     }
-
+    
     /**
      * @return set of all, system specific, currently unoccupied shortcuts
      */
     private Set<String> getAllFreeShortcuts() {
         // I know that the next line is not the smartest code on earth:
-        KeymapViewModel model = ((KeymapPanel)
-                getParent().getParent().getParent().
-                getParent().getParent()).getModel();
+        KeymapViewModel model = 
+                ((KeymapPanel)SwingUtilities.getAncestorOfClass(KeymapPanel.class, this))
+                .getModel();
         //get shortcut cache (used shortcuts in current profile)
-        Set<String> allCurrentlyUsedShortcuts = model.getAllCurrentlyUsedShortcuts();
+        Set<String> allCurrentlyUsedShortcuts = model.getMutableModel().getAllCurrentlyUsedShortcuts();
 
         //substract the cache from all possible shortcut set
         Set<String> result = new LinkedHashSet<String>();

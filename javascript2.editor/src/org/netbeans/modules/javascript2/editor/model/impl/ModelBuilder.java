@@ -79,7 +79,7 @@ public final class ModelBuilder {
     }
     
     DeclarationScopeImpl getCurrentDeclarationScope() {
-        return functionStack.isEmpty() ? null : functionStack.peek();
+        return functionStack.isEmpty() ? globalObject : functionStack.peek();
     }
     
     /**

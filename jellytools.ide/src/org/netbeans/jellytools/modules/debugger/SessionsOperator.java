@@ -48,6 +48,7 @@ import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.TopComponentOperator;
 import org.netbeans.jellytools.TreeTableOperator;
 import org.netbeans.jellytools.modules.debugger.actions.FinishAllAction;
+import org.netbeans.jellytools.modules.debugger.actions.FinishDebuggerAction;
 import org.netbeans.jellytools.modules.debugger.actions.SessionsAction;
 import org.netbeans.jemmy.ComponentChooser;
 import org.netbeans.jemmy.TimeoutExpiredException;
@@ -105,9 +106,11 @@ public class SessionsOperator extends TopComponentOperator {
         try {
             faa.perform(this);
         } catch (TimeoutExpiredException tee) {
-            // try it once more because it randomly fails for no apparent reason
-            close();
-            faa.perform(invoke());
+            // try to close sessions one by one because it randomly fails for no apparent reason
+            FinishDebuggerAction finishDebuggerAction = new FinishDebuggerAction();
+            do {
+                finishDebuggerAction.perform();
+            } while (finishDebuggerAction.isEnabled());
         }
     }
 

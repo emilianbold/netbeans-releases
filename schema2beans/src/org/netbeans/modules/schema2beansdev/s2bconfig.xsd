@@ -360,6 +360,14 @@ Regeneration is an explicit step, since there's a circular dependency here.
 			</appinfo>
 		  </annotation>
 		</element>
+		<element name="java5" type="boolean" minOccurs="0">
+		  <annotation>
+			<appinfo>
+			  <s2b:switch>java5</s2b:switch>
+			  <s2b:switchHelp>Generate code for use on Java 5 and newer.</s2b:switchHelp>
+			</appinfo>
+		  </annotation>
+		</element>
 		<element name="generateTagsFile" type="boolean" minOccurs="0">
 		  <annotation>
 			<appinfo>

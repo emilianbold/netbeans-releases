@@ -51,7 +51,16 @@ import org.netbeans.spi.project.ui.RecommendedTemplates;
  * 
  * @author Martin Janicek
  */
-@ProjectServiceProvider(service={RecommendedTemplates.class, PrivilegedTemplates.class}, projectType={"org-netbeans-modules-maven/" + NbMavenProject.TYPE_EAR})
+@org.netbeans.api.annotations.common.SuppressWarnings("EI_EXPOSE_REP")
+@ProjectServiceProvider(
+    service = {
+        RecommendedTemplates.class,
+        PrivilegedTemplates.class
+    },
+    projectType = {
+        "org-netbeans-modules-maven/" + NbMavenProject.TYPE_EAR
+    }
+)
 public class EarRecoPrivTemplates implements RecommendedTemplates, PrivilegedTemplates {
     
     private static final String[] EAR_RECOMMENDED_TYPES = new String[] {

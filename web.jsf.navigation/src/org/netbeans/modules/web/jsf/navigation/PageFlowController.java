@@ -108,6 +108,7 @@ public class PageFlowController {
     private static final String NO_WEB_FOLDER_WARNING = NbBundle.getMessage(PageFlowController.class, "MSG_NoWebFolder");
     private static final String NO_WEB_FOLDER_TITLE = NbBundle.getMessage(PageFlowController.class, "TLE_NoWebFolder");
     private volatile FileObject webFolder;
+    private AtomicBoolean isListenerRegistered = new AtomicBoolean(false);
 
     /** Creates a new instance of PageFlowController
      * @param context
@@ -200,13 +201,22 @@ public class PageFlowController {
     private PropertyChangeListener pcl;
     private FileChangeListener fcl;
 
+    public synchronized boolean isListenerRegistered() {
+        return isListenerRegistered.get();
+    }
+
     //    private ComponentListener cl;
-    public void registerListeners() {
-        if (pcl == null) {
+    public synchronized void registerListeners() {
+        if (isListenerRegistered.get()) {
+            return;
+        }
+
+        if (pcl == null && configModel != null) {
             pcl = new FacesModelPropertyChangeListener(this);
-            if (configModel != null) {
-                configModel.addPropertyChangeListener(pcl);
-            }
+            configModel.addPropertyChangeListener(pcl);
+            isListenerRegistered.set(true);
+        } else {
+            return;
         }
 
         FileObject myWebFolder = getWebFolder();

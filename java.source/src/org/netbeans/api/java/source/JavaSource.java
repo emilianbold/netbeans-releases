@@ -51,11 +51,11 @@ import java.io.IOException;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -344,8 +344,8 @@ public final class JavaSource {
     private JavaSource (final ClasspathInfo cpInfo,
                         final @NonNull Collection<? extends FileObject> files) throws IOException {
         boolean multipleSources = files.size() > 1;
-        final List<Source> sources = new LinkedList<Source>();
-        final List<FileObject> fl = new LinkedList<FileObject>();
+        final List<Source> sources = new ArrayList<Source>(files.size());
+        final List<FileObject> fl = new ArrayList<FileObject>(files.size());
         for (Iterator<? extends FileObject> it = files.iterator(); it.hasNext();) {
             FileObject file = it.next();
             Logger.getLogger("TIMER").log(Level.FINE, "JavaSource",
@@ -510,7 +510,7 @@ public final class JavaSource {
         }
 
         private Parser.Result findEmbeddedJava (final ResultIterator theMess) throws ParseException {
-            final Collection<Embedding> todo = new LinkedList<Embedding>();
+            final Collection<Embedding> todo = new ArrayList<Embedding>();
             //BFS should perform better than DFS in this dark.
             for (Embedding embedding : theMess.getEmbeddings()) {
                 if (JavacParser.MIME_TYPE.equals(embedding.getMimeType())) {

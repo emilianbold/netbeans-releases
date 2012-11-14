@@ -58,10 +58,10 @@ import org.netbeans.modules.csl.api.Error;
 import org.netbeans.modules.csl.api.test.CslTestBase;
 import org.netbeans.modules.csl.spi.DefaultLanguageConfig;
 import org.netbeans.modules.csl.spi.ParserResult;
-import org.netbeans.modules.css.editor.api.CssCslParserResult;
 import org.netbeans.modules.css.editor.csl.CssLanguage;
 import org.netbeans.modules.css.editor.module.CssModuleSupport;
 import org.netbeans.modules.css.editor.module.spi.CssEditorModule;
+import org.netbeans.modules.css.lib.api.CssParserResult;
 import org.netbeans.modules.css.lib.api.NodeUtil;
 import org.netbeans.modules.css.lib.api.properties.GroupGrammarElement;
 import org.netbeans.modules.css.lib.api.properties.Node;
@@ -95,8 +95,8 @@ public class CssModuleTestBase extends CslTestBase {
             public void run(ResultIterator resultIterator) throws Exception {
                 Result result = resultIterator.getParserResult();
                 assertNotNull(result);
-                assertTrue(result instanceof CssCslParserResult);
-                CssCslParserResult cssresult = (CssCslParserResult) result;
+                assertTrue(result instanceof CssParserResult);
+                CssParserResult cssresult = (CssParserResult) result;
                 Collection<? extends Error> errors = cssresult.getDiagnostics();
                 if(errors.size() > 0) {
                     StringBuilder sb = new StringBuilder();
@@ -295,7 +295,7 @@ public class CssModuleTestBase extends CslTestBase {
 
     protected void assertPropertyValues(String propertyName, String... values) {
 
-        PropertyDefinition model = Properties.getPropertyDefinition(null, propertyName);
+        PropertyDefinition model = Properties.getPropertyDefinition( propertyName);
         assertNotNull(String.format("Cannot find property %s", propertyName), model);
 
         for (String val : values) {
@@ -328,9 +328,9 @@ public class CssModuleTestBase extends CslTestBase {
             public void run(ResultIterator resultIterator) throws Exception {
                 Result result = resultIterator.getParserResult();
                 assertNotNull(result);
-                assertTrue(result instanceof CssCslParserResult);
+                assertTrue(result instanceof CssParserResult);
 
-                CssCslParserResult cssresult = (CssCslParserResult) result;
+                CssParserResult cssresult = (CssParserResult) result;
 
 
                 CodeCompletionHandler cc = getPreferredLanguage().getCompletionHandler();
@@ -376,9 +376,9 @@ public class CssModuleTestBase extends CslTestBase {
             public void run(ResultIterator resultIterator) throws Exception {
                 Result result = resultIterator.getParserResult();
                 assertNotNull(result);
-                assertTrue(result instanceof CssCslParserResult);
+                assertTrue(result instanceof CssParserResult);
 
-                CssCslParserResult cssresult = (CssCslParserResult) result;
+                CssParserResult cssresult = (CssParserResult) result;
 
                 CodeCompletionHandler cc = getPreferredLanguage().getCompletionHandler();
                 String prefix = cc.getPrefix(cssresult, pipeOffset, false);

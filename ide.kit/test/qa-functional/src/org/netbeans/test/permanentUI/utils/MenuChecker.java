@@ -54,6 +54,8 @@ import javax.swing.JSeparator;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import javax.swing.JComponent;
 import org.netbeans.jemmy.operators.JMenuBarOperator;
@@ -177,6 +179,9 @@ public class MenuChecker {
                     list.add(mitem);
                 } else if (menuElement instanceof JMenuItem) //if()
                 {
+                    if (!((JMenuItem) menuElement).isVisible()) {
+                        continue;
+                    }
                     NbMenuItem item = new NbMenuItem((JMenuItem) menuElement);
                     item.setName(item.getName());
                     list.add(item);
@@ -222,95 +227,69 @@ public class MenuChecker {
     }
 
     public static String checkMnemonicCollision() {
-        return checkMnemonicCollision(getMenuBarArrayList(MainWindowOperator.getDefault().getJMenuBar())).toString();
+        return checkMnemonicCollision(getMenuBarArrayList(MainWindowOperator.getDefault().getJMenuBar()), "").toString();
     }
 
     /** Check mnemonics in menu structure.
      * @param list
      * @return  
      */
-    private static StringBuffer checkCollision(ArrayList list, boolean checkShortCuts) {
+    private static StringBuffer checkMnemonicCollision(List<NbMenuItem> list, String menuName) {
         StringBuffer collisions = new StringBuffer("");
-        Iterator it = list.iterator();
+        HashMap<Character, List<NbMenuItem>> mnemoMap = new HashMap<Character, List<NbMenuItem>>();
+        List<NbMenuItem> noMnemoList = new ArrayList<NbMenuItem>();
+        boolean printHeader = false;
+        String title = menuName.isEmpty() ? "Main Menu" : menuName;
 
-        HashMap check = new HashMap();
-
-        while (it.hasNext()) {
-            Object o = it.next();
-
-            if (o instanceof NbMenuItem) {
-                NbMenuItem item = (NbMenuItem) o;
-
-                if (checkShortCuts) {
-                    if (item.getMnemo() != 0) {
-                        Integer mnemonic = new Integer(item.getMnemo());
-                        //stream.println("checking : " + item.name + " - " + item.mnemo);
-                        if (check.containsKey(mnemonic)) {
-                            char k = (char) item.getMnemo();
-                            collisions.append("\n !!!!!! Collision! mnemonic='" + k + "' : " + item.getName() + " is in collision with " + check.get(mnemonic));
-                        } else {
-                            check.put(mnemonic, item.getName());
-                        }
-
-                    }
-                } else {
-                    if (item.getMnemo() != 0) {
-                        Integer mnemonic = new Integer(item.getMnemo());
-                        //stream.println("checking : " + item.name + " - " + item.mnemo);
-                        if (check.containsKey(mnemonic)) {
-                            char k = (char) item.getMnemo();
-                            collisions.append("\n !!!!!! Collision! mnemonic='" + k + "' : " + item.getName() + " is in collision with " + check.get(mnemonic));
-                        } else {
-                            check.put(mnemonic, item.getName());
-                        }
-
-                    }
+        for (NbMenuItem item : list) {
+            if (item.getMnemo() != 0) {
+                Character mnemonic = new Character(item.getMnemo());
+                List<NbMenuItem> collisionList = mnemoMap.get(mnemonic);
+                if (collisionList == null) {
+                    collisionList = new ArrayList<NbMenuItem>();
                 }
+                collisionList.add(item);
+                mnemoMap.put(mnemonic, collisionList);
+            } else {
+                noMnemoList.add(item);
             }
-
-            if (o instanceof ArrayList) {
-                collisions.append(checkMnemonicCollision((ArrayList) o));
-            }
-
         }
 
-        return collisions;
-    }
-
-    /** Check mnemonics in menu structure.
-     * @param list
-     * @return  
-     */
-    private static StringBuffer checkMnemonicCollision(ArrayList list) {
-        StringBuffer collisions = new StringBuffer("");
-        Iterator it = list.iterator();
-
-        HashMap check = new HashMap();
-
-        while (it.hasNext()) {
-            Object o = it.next();
-
-            if (o instanceof NbMenuItem) {
-                NbMenuItem item = (NbMenuItem) o;
-                if (item.getMnemo() != 0) {
-                    Integer mnemonic = new Integer(item.getMnemo());
-                    //stream.println("checking : " + item.name + " - " + item.mnemo);
-                    if (check.containsKey(mnemonic)) {
-                        char k = (char) item.getMnemo();
-                        collisions.append("\n !!!!!! Collision! mnemonic='" + k + "' : " + item.getName() + " is in collision with " + check.get(mnemonic));
-                    } else {
-                        check.put(mnemonic, item.getName());
+        for (Map.Entry<Character, List<NbMenuItem>> entry : mnemoMap.entrySet()) {
+            List<NbMenuItem> collisionList = entry.getValue();
+            if (collisionList.size() > 1) {
+                printHeader = true;
+                collisions.append("\n\n Mnemonic Collision in " + title + " menu - mnemonic = " + entry.getKey());
+                collisions.append("\n Menu items: ");
+                for (NbMenuItem nbMenuItem : collisionList) {
+                    collisions.append(menuName + "/" + nbMenuItem.getName());
+                    if (nbMenuItem != collisionList.get(collisionList.size() - 1)) {
+                        collisions.append(", ");
                     }
+                }
 
+            }
+        }
+        if (!noMnemoList.isEmpty()) {
+            printHeader = true;
+            collisions.append("\n\n No Mnemonic set for: " );
+            for (NbMenuItem nbMenuItem : noMnemoList) {
+                collisions.append(menuName + "/" + nbMenuItem.getName());
+                if (nbMenuItem != noMnemoList.get(noMnemoList.size() - 1)) {
+                    collisions.append(", ");
                 }
             }
-
-            if (o instanceof ArrayList) {
-                collisions.append(checkMnemonicCollision((ArrayList) o));
-            }
-
+        }
+        if (printHeader) {
+            collisions.insert(0, "\n #################### " + title + " menu mnemonic test ####################");
+            collisions.insert(0, "\n\n ==============================================================================");
         }
 
+        for (NbMenuItem nbMenuItem : list) {
+            if (nbMenuItem.getSubmenu() != null && !nbMenuItem.getSubmenu().isEmpty() && nbMenuItem.isEnabled()) {
+                collisions.append(checkMnemonicCollision(nbMenuItem.getSubmenu(), (menuName.isEmpty() ? "" : menuName + "/")  + nbMenuItem.getName()));
+            }
+        }
         return collisions;
     }
 

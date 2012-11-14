@@ -57,11 +57,14 @@ import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.JDialog;
 import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.EditorOperator;
+import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.actions.SaveAllAction;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jemmy.JemmyProperties;
+import org.netbeans.jemmy.operators.JDialogOperator;
 import org.netbeans.modules.ws.qaf.WebServicesTestBase;
 import org.netbeans.modules.ws.qaf.utilities.ContentComparator;
 import org.netbeans.modules.ws.qaf.utilities.FilteringLineDiff;
@@ -88,6 +91,7 @@ public abstract class RestTestBase extends WebServicesTestBase {
     private Connection connection;
     private static boolean CREATE_GOLDEN_FILES = Boolean.getBoolean("golden");
     private static final Logger LOGGER = Logger.getLogger(RestTestBase.class.getName());
+    private static List<String> resourceConfDialogClosed = new ArrayList<String>();
 
     /**
      * Enum type to hold supported Mime Types
@@ -399,5 +403,32 @@ public abstract class RestTestBase extends WebServicesTestBase {
         }
         File jar = FileUtil.toFile(targetFolder.getFileObject("derbyclient", "jar")); //NOI18N
         LOGGER.log(Level.INFO, "JDBC Driver was copied to: {0}", jar.getAbsolutePath()); //NOI18N
+    }
+    
+    protected void closeResourcesConfDialog() {
+        if (!resourceConfDialogClosed.contains(getProjectName()) && getJavaEEversion().equals(JavaEEVersion.JAVAEE5)) {
+            new Thread("Close REST Resources Configuration dialog") {
+                private boolean found = false;
+                private static final String dlgLbl = "REST Resources Configuration";
+
+                @Override
+                public void run() {
+                    System.out.println("\n\nTHREAD STARTED\n\n");
+                    while (!found) {
+                        try {
+                            sleep(300);
+                        } catch (InterruptedException ex) {
+                            // ignore
+                        }
+                        JDialog dlg = JDialogOperator.findJDialog(dlgLbl, true, true);
+                        if (null != dlg) {
+                            found = true;
+                            new NbDialogOperator(dlg).ok();
+                            resourceConfDialogClosed.add(getProjectName());
+                        }
+                    }
+                }
+            }.start();
+        }
     }
 }

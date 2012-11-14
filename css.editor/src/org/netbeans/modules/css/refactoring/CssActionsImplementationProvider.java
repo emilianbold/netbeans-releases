@@ -52,7 +52,7 @@ import javax.swing.JOptionPane;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import org.netbeans.modules.css.editor.csl.CssLanguage;
-import org.netbeans.modules.css.editor.api.CssCslParserResult;
+import org.netbeans.modules.css.lib.api.CssParserResult;
 import org.netbeans.modules.css.lib.api.CssTokenId;
 import org.netbeans.modules.parsing.api.Embedding;
 import org.netbeans.modules.parsing.api.ParserManager;
@@ -244,11 +244,11 @@ public class CssActionsImplementationProvider extends ActionsImplementationProvi
 
 	@Override
 	public void run(ResultIterator resultIterator) throws Exception {
-	    Collection<CssCslParserResult> results = new ArrayList<CssCslParserResult>();
+	    Collection<CssParserResult> results = new ArrayList<CssParserResult>();
 	    Snapshot snapshot = resultIterator.getSnapshot();
 	    try {
-		if (CssLanguage.CSS_MIME_TYPE.equals(snapshot.getMimeType())) {
-		    results.add((CssCslParserResult) resultIterator.getParserResult());
+		if ("text/css".equals(snapshot.getMimeType())) { //NOI18N
+		    results.add((CssParserResult) resultIterator.getParserResult());
 		    return;
 		}
 		for (Embedding e : resultIterator.getEmbeddings()) {
@@ -307,11 +307,11 @@ public class CssActionsImplementationProvider extends ActionsImplementationProvi
 	    ResultIterator cssri = WebUtils.getResultIterator(ri, CssLanguage.CSS_MIME_TYPE);
 
 	    if (cssri != null) {
-		CssCslParserResult result = (CssCslParserResult) cssri.getParserResult();
+		CssParserResult result = (CssParserResult) cssri.getParserResult();
                 if(result.getParseTree() != null) {
                     //the parser result seems to be quite ok,
                     //in case of serious parse issue the parse root is null
-                    CssElementContext context = new CssElementContext.Editor(result.getWrappedCssParserResult(), topLevelSnapshot, caretOffset, selectionStart, selectionEnd);
+                    CssElementContext context = new CssElementContext.Editor(result, topLevelSnapshot, caretOffset, selectionStart, selectionEnd);
                     ui = context.isRefactoringAllowed() ? createRefactoringUI(context) : null;
                 }
 	    }

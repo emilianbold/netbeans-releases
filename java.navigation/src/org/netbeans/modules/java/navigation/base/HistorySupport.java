@@ -114,7 +114,7 @@ public class HistorySupport {
 
     @NonNull
     public synchronized List<? extends Pair<URI, ElementHandle<TypeElement>>> getHistory() {
-        final SortedSet<Pair<URI, ElementHandle<TypeElement>>> sorted = new TreeSet<Pair<URI, ElementHandle<TypeElement>>>(new SimpleNameComparator());
+        final SortedSet<Pair<URI, ElementHandle<TypeElement>>> sorted = new TreeSet<Pair<URI, ElementHandle<TypeElement>>>(new SimpleNameAndPackageComparator());
         for (Pair<URI,ElementHandle<TypeElement>> p : history) {
             sorted.add(p);
         }
@@ -156,23 +156,39 @@ public class HistorySupport {
 
 
     private static String getSimpleName(@NonNull final String fqn) {
+        final int sepIndex = splitIndex(fqn);
+        return sepIndex >= 0 ?
+            fqn.substring(sepIndex+1):
+            fqn;
+    }
+
+    private static String getEnclosing(@NonNull final String fqn) {
+        final int sepIndex = splitIndex(fqn);
+        return sepIndex >= 0 ?
+            fqn.substring(0, sepIndex) :
+            ""; //NOI18N
+    }
+
+    private static int splitIndex(String fqn) {
         int sepIndex = fqn.lastIndexOf('$');   //NOI18N
         if (sepIndex == -1) {
             sepIndex = fqn.lastIndexOf('.');   //NOI18N
         }
-        return sepIndex >= 0?
-            fqn.substring(sepIndex+1):
-            fqn;
+        return sepIndex;
     }
 
     private static class HistoryRenderer extends DefaultListCellRenderer {
         @Override
         public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+            String toolTipText = null;
             if (value instanceof Pair && ((Pair)value).second instanceof ElementHandle) {
                 final String fqn =  ((ElementHandle)((Pair)value).second).getQualifiedName();
                 value = getSimpleName(fqn);
+                toolTipText = fqn;
             }
-            return super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+            final Component c = super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+            setToolTipText(toolTipText);
+            return c;
         }
     }
 
@@ -271,13 +287,21 @@ public class HistorySupport {
 
     }
 
-    private static class SimpleNameComparator implements Comparator<Pair<URI,ElementHandle<TypeElement>>> {
+    private static class SimpleNameAndPackageComparator implements Comparator<Pair<URI,ElementHandle<TypeElement>>> {
 
         @Override
         public int compare(Pair<URI, ElementHandle<TypeElement>> o1, Pair<URI, ElementHandle<TypeElement>> o2) {
-            final String simpleName1 = getSimpleName(o1.second.getQualifiedName());
-            final String simpleName2 = getSimpleName(o2.second.getQualifiedName());
-            return simpleName1.compareTo(simpleName2);
+            final String q1 = o1.second.getQualifiedName();
+            final String q2 = o2.second.getQualifiedName();
+            final String simpleName1 = getSimpleName(q1);
+            final String simpleName2 = getSimpleName(q2);
+            int res = simpleName1.compareTo(simpleName2);
+            if (res != 0) {
+                return res;
+            }
+            final String pkg1 = getEnclosing(q1);
+            final String pkg2 = getEnclosing(q2);
+            return pkg1.compareTo(pkg2);
         }
 
     }

@@ -45,5 +45,6 @@ chrome.extension.sendMessage({
     width: window.innerWidth,
     height: window.innerHeight,
     marginWidth: window.outerWidth - window.innerWidth,
-    marginHeight: window.outerHeight - window.innerHeight
+    marginHeight: window.outerHeight - window.innerHeight,
+    isMac: navigator.platform.toUpperCase().indexOf('MAC') !== -1
 });

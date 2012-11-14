@@ -46,6 +46,7 @@ import java.awt.EventQueue;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -117,18 +118,21 @@ public final class ClientSideProjectWizardIterator implements WizardDescriptor.P
         return new ClientSideProjectWizardIterator(new ExistingProjectWizard());
     }
 
-    @NbBundle.Messages("ClientSideProjectWizardIterator.progress.creatingProject=Creating project")
+    @NbBundle.Messages({
+        "ClientSideProjectWizardIterator.progress.creatingProject=Creating project",
+        "ClientSideProjectWizardIterator.error.noSiteRoot=<html>Site Root folder cannot be created.<br><br>Use <i>Resolve Project Problems...</i> action to repair the project."
+    })
     @Override
     public Set<FileObject> instantiate(ProgressHandle handle) throws IOException {
         handle.start();
         handle.progress(Bundle.ClientSideProjectWizardIterator_progress_creatingProject());
         Set<FileObject> files = new LinkedHashSet<FileObject>();
-        File dirF = FileUtil.normalizeFile((File) wizardDescriptor.getProperty(Wizard.PROJECT_DIRECTORY));
+        File projectDirectory = FileUtil.normalizeFile((File) wizardDescriptor.getProperty(Wizard.PROJECT_DIRECTORY));
         String name = (String) wizardDescriptor.getProperty(Wizard.NAME);
-        if (!dirF.isDirectory() && !dirF.mkdirs()) {
+        if (!projectDirectory.isDirectory() && !projectDirectory.mkdirs()) {
             throw new IOException("Cannot create project directory"); //NOI18N
         }
-        FileObject dir = FileUtil.toFileObject(dirF);
+        FileObject dir = FileUtil.toFileObject(projectDirectory);
         AntProjectHelper projectHelper = ClientSideProjectUtilities.setupProject(dir, name);
         // Always open top dir as a project:
         files.add(dir);
@@ -136,13 +140,18 @@ public final class ClientSideProjectWizardIterator implements WizardDescriptor.P
         ClientSideProject project = (ClientSideProject) FileOwnerQuery.getOwner(projectHelper.getProjectDirectory());
         FileObject siteRoot = wizard.instantiate(files, handle, wizardDescriptor, project);
 
-        // index file
-        FileObject indexFile = siteRoot.getFileObject("index", "html"); // NOI18N
-        if (indexFile != null) {
-            files.add(indexFile);
+        // #221550
+        if (siteRoot != null) {
+            // index file
+            FileObject indexFile = siteRoot.getFileObject("index", "html"); // NOI18N
+            if (indexFile != null) {
+                files.add(indexFile);
+            }
+        } else {
+            errorOccured(Bundle.ClientSideProjectWizardIterator_error_noSiteRoot());
         }
 
-        File parent = dirF.getParentFile();
+        File parent = projectDirectory.getParentFile();
         if (parent != null && parent.exists()) {
             ProjectChooser.setProjectsFolder(parent);
         }
@@ -162,33 +171,51 @@ public final class ClientSideProjectWizardIterator implements WizardDescriptor.P
         index = 0;
         extenders = Lookup.getDefault().lookupAll(ClientProjectExtender.class);
         panels = wizard.createPanels();
+        
         // Make sure list of steps is accurate.
-        String[] steps = wizard.createSteps();
+        ArrayList<String> steps = new ArrayList<String>();
+        steps.addAll(Arrays.asList(wizard.createSteps()));
+
+
+        //Compute steps from extenders
+        ArrayList<Panel<? extends WizardDescriptor>> extenderPanelsCol = new ArrayList();
+        for (ClientProjectExtender extender: extenders) {
+            for (Panel<WizardDescriptor> panel: extender.createWizardPanels()) {
+                extenderPanelsCol.add(panel);
+                steps.add(panel.getComponent().getName());
+            }
+        }
+        
+        extenderPanels = extenderPanelsCol.toArray(new Panel[0]);
+       
+        //Regular panels
         int i = 0;
         for (; i < panels.length; i++) {
             Component c = panels[i].getComponent();
-            assert steps[i] != null : "Missing name for step: " + i; //NOI18N
+            assert steps.get(i) != null : "Missing name for step: " + i; //NOI18N
             if (c instanceof JComponent) { // assume Swing components
                 JComponent jc = (JComponent) c;
                 // Step #.
                 jc.putClientProperty(WizardDescriptor.PROP_CONTENT_SELECTED_INDEX, Integer.valueOf(i));
                 // Step name (actually the whole list for reference).
-                jc.putClientProperty(WizardDescriptor.PROP_CONTENT_DATA, steps);
+                jc.putClientProperty(WizardDescriptor.PROP_CONTENT_DATA, steps.toArray(new String[0]));
             }
         }
-        extenderPanels = new Panel[extenders.size()];
-        String steps2[] = Arrays.copyOf(steps, steps.length + 1);
-        for (ClientProjectExtender extender: extenders) {
-            extenderPanels[i-panels.length] = extender.createWizardPanel();
-            JComponent component = (JComponent) extenderPanels[i-panels.length].getComponent();
 
-            steps2[i] = component.getName();
-            // Step #.
-            component.putClientProperty(WizardDescriptor.PROP_CONTENT_SELECTED_INDEX, Integer.valueOf(i));
-            // Step name (actually the whole list for reference).
-            component.putClientProperty(WizardDescriptor.PROP_CONTENT_DATA, steps2);
-            i++;
+        
+        //Extenders
+        for (; i < extenderPanels.length + panels.length; i++) {
+            Component c = extenderPanels[i-panels.length].getComponent();
+            assert steps.get(i) != null : "Missing name for step: " + i; //NOI18N
+            if (c instanceof JComponent) { // assume Swing components
+                JComponent jc = (JComponent) c;
+                // Step #.
+                jc.putClientProperty(WizardDescriptor.PROP_CONTENT_SELECTED_INDEX, Integer.valueOf(i));
+                // Step name (actually the whole list for reference).
+                jc.putClientProperty(WizardDescriptor.PROP_CONTENT_DATA, steps.toArray());
+            }
         }
+        
     }
 
     @Override
@@ -213,7 +240,7 @@ public final class ClientSideProjectWizardIterator implements WizardDescriptor.P
 
     @Override
     public boolean hasNext() {
-        return index < panels.length + enabledExtenders(wizardDescriptor).size() -1;
+        return index < panels.length + extenderPanels.length -1;
     }
 
     @Override
@@ -255,10 +282,9 @@ public final class ClientSideProjectWizardIterator implements WizardDescriptor.P
     public void removeChangeListener(ChangeListener l) {
         // noop
     }
-    
-    private static Collection<? extends ClientProjectExtender> enabledExtenders(WizardDescriptor wizardDescriptor) {
-        final Collection<? extends ClientProjectExtender> prop = (Collection<? extends ClientProjectExtender>)wizardDescriptor.getProperty(Wizard.EXTENDERS);
-        return prop==null?(Collection<? extends ClientProjectExtender>)Collections.EMPTY_LIST:prop;
+
+    static void errorOccured(final String message) {
+        DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(message, NotifyDescriptor.ERROR_MESSAGE));
     }
 
     //~ Inner classes
@@ -266,7 +292,6 @@ public final class ClientSideProjectWizardIterator implements WizardDescriptor.P
     public interface Wizard {
         String PROJECT_DIRECTORY = "PROJECT_DIRECTORY"; // NOI18N
         String NAME = "NAME"; // NOI18N
-        String EXTENDERS = "EXTENDERS";
 
         WizardDescriptor.Panel<WizardDescriptor>[] createPanels();
         String[] createSteps();
@@ -327,10 +352,12 @@ public final class ClientSideProjectWizardIterator implements WizardDescriptor.P
                 // init standard project
                 initProject(project, projectProperties);
             }
-            
-            // get application dir:
+
             FileObject siteRootDir = project.getSiteRootFolder();
-            assert siteRootDir != null;
+            if (siteRootDir == null) {
+                // #221550
+                return null;
+            }
 
             // js libs
             FileObject jsLibs = (FileObject) wizardDescriptor.getProperty(LIBRARIES_FOLDER);
@@ -353,7 +380,7 @@ public final class ClientSideProjectWizardIterator implements WizardDescriptor.P
             }
 
             // apply extenders
-            for (ClientProjectExtender extender : enabledExtenders(wizardDescriptor)) {
+            for (ClientProjectExtender extender : Lookup.getDefault().lookupAll(ClientProjectExtender.class)) {
                 extender.apply(project.getProjectDirectory(), siteRootDir, (String) wizardDescriptor.getProperty(LIBRARIES_PATH));
             }
 
@@ -395,10 +422,6 @@ public final class ClientSideProjectWizardIterator implements WizardDescriptor.P
                 LOGGER.log(Level.INFO, null, ex);
                 errorOccured(Bundle.ClientSideProjectWizardIterator_error_applyingSiteTemplate(templateName));
             }
-        }
-
-        private void errorOccured(String message) {
-            DialogDisplayer.getDefault().notifyLater(new NotifyDescriptor.Message(message, NotifyDescriptor.ERROR_MESSAGE));
         }
 
         private void createIndexFile(FileObject siteRoot) throws IOException {

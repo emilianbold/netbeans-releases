@@ -366,7 +366,7 @@ public class WebAppProxy implements WebApp {
     }
 
     public org.netbeans.modules.j2ee.dd.api.common.ResourceEnvRef[] getResourceEnvRef() {
-        return webApp==null?null:webApp==null?new org.netbeans.modules.j2ee.dd.api.common.ResourceEnvRef[0]:webApp.getResourceEnvRef();
+        return webApp==null?new org.netbeans.modules.j2ee.dd.api.common.ResourceEnvRef[0]:webApp.getResourceEnvRef();
     }
 
     public org.netbeans.modules.j2ee.dd.api.common.ResourceEnvRef getResourceEnvRef(int index) {

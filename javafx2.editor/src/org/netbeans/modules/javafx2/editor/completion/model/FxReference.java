@@ -67,7 +67,7 @@ public final class FxReference extends FxObjectBase {
         if (target == null) {
             return null;
         }
-        return target.getSourceName();
+        return target.getTypeName();
     }
     
     @Override

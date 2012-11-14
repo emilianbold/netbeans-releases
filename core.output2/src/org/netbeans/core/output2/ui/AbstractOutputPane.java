@@ -252,7 +252,7 @@ public abstract class AbstractOutputPane extends JScrollPane implements Document
         addMouseListener(this);
 
         getCaret().addChangeListener(this);
-        textView.setFont(isWrapped() ? Controller.getDefault().getCurrentFontMS() : Controller.getDefault().getCurrentFont()); //NOI18N
+        textView.setFont(OutputOptions.getDefault().getFont(isWrapped()));
         setBorder (BorderFactory.createEmptyBorder());
         setViewportBorder (BorderFactory.createEmptyBorder());
         
@@ -600,7 +600,7 @@ public abstract class AbstractOutputPane extends JScrollPane implements Document
         if (e.isAltDown() || e.isAltGraphDown() || e.isControlDown()
                 && SwingUtilities.isMiddleMouseButton(e)) {
             int currentSize = getViewFont().getSize();
-            int defaultSize = OutputOptions.getDefault().getFont().getSize();
+            int defaultSize = OutputOptions.getDefaultFont().getSize();
             changeFontSizeBy(defaultSize - currentSize);
         }
     }

@@ -977,14 +977,15 @@ public abstract class CsmResultItem implements CompletionItem {
                     continue;
                 }
                 CsmType type = prm.getType();
+                String paramValue = (prm.getInitialValue() != null) ? " = " + prm.getInitialValue().getText().toString() : ""; // NOI18N
                 if (type == null) {
                     // only var args parameters could have null types
                     assert (((CsmParameter) prm).isVarArgs()) : " non var arg " + prm + " of class " + prm.getClass().getName();
-                    params.add(new ParamStr("", "", ((CsmParameter) prm).getName().toString(), prm.getText().toString(), true, LFCustoms.shiftColor(KEYWORD_COLOR))); //NOI18N
+                    params.add(new ParamStr("", "", ((CsmParameter) prm).getName().toString(), prm.getText().toString() + paramValue, true, LFCustoms.shiftColor(KEYWORD_COLOR))); //NOI18N
                     varArgIndex = i;
                 } else {
                     String typeName = getTypeName(type, instantiateTypes);
-                    params.add(new ParamStr(typeName, typeName, ((CsmParameter) prm).getName().toString(), prm.getText().toString(), false, LFCustoms.getTextFgColor() /*getTypeColor(type.getClassifier())*/));
+                    params.add(new ParamStr(typeName, typeName, ((CsmParameter) prm).getName().toString(), prm.getText().toString() + paramValue, false, LFCustoms.getTextFgColor() /*getTypeColor(type.getClassifier())*/));
                 }
                 i++;
             }

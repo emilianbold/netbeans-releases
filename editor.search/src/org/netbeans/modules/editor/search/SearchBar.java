@@ -170,11 +170,7 @@ public final class SearchBar extends JPanel implements PropertyChangeListener {
         incSearchTextField.addFocusListener(new FocusAdapter() {
             @Override
             public void focusGained(FocusEvent e) {
-                if (ReplaceBar.getInstance(SearchBar.getInstance()).isVisible()) {
-                    ReplaceBar.getInstance(SearchBar.getInstance()).getReplaceTextField().select(0, 0);
-                }
                 hadFocusOnIncSearchTextField = true;
-                incSearchTextField.selectAll();
             }
         });
 
@@ -348,7 +344,7 @@ public final class SearchBar extends JPanel implements PropertyChangeListener {
                         String actionName = (String) action.getValue(Action.NAME);
                         if (actionName == null) {
                             LOG.log(Level.WARNING, "SearchBar: Null Action.NAME property of action: {0}\n", action); //NOI18N
-                        } else if (actionName.equals(SearchNbEditorKit.INCREMENTAL_SEARCH_FORWARD) || actionName.equals(BaseKit.findNextAction)) {
+                        } else if (actionName.equals(BaseKit.findNextAction)) {
                             keystrokeForSearchAction(multiKeymap, action,
                                     new AbstractAction() {
 
@@ -357,7 +353,7 @@ public final class SearchBar extends JPanel implements PropertyChangeListener {
                                             findNext();
                                         }
                                     });
-                        } else if (actionName.equals(SearchNbEditorKit.INCREMENTAL_SEARCH_BACKWARD) || actionName.equals(BaseKit.findPreviousAction)) {
+                        } else if (actionName.equals(BaseKit.findPreviousAction)) {
                             keystrokeForSearchAction(multiKeymap, action,
                                     new AbstractAction() {
 
@@ -580,7 +576,7 @@ public final class SearchBar extends JPanel implements PropertyChangeListener {
      * we don't want to introduce the dependency between this module and Editor
      * Setting Storage module.
      */
-    private String getCurrentKeyMapProfile() {
+    public static String getCurrentKeyMapProfile() {
         String currentKeyMapProfile = null;
         FileObject fo = FileUtil.getConfigFile(KEYMAPS_FOLDER);
         if (fo != null) {
@@ -862,6 +858,7 @@ public final class SearchBar extends JPanel implements PropertyChangeListener {
                         selText = selText.substring(0, n);
                     }
                     incSearchTextField.setText(selText);
+                    searchProps.setProperty(EditorFindSupport.FIND_WHAT, selText);
                 } else {
                     if (isClosingSearchType()) {
                         String findWhat = (String) EditorFindSupport.getInstance().getFindProperty(EditorFindSupport.FIND_WHAT);

@@ -42,9 +42,13 @@
 
 package org.netbeans.modules.web.clientproject;
 
+import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.spi.java.classpath.ClassPathImplementation;
 import org.netbeans.spi.java.classpath.ClassPathProvider;
@@ -53,6 +57,7 @@ import org.netbeans.spi.java.classpath.PathResourceImplementation;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.ChangeSupport;
 
 /**
  *
@@ -69,8 +74,16 @@ public class ClassPathProviderImpl implements ClassPathProvider {
 
     @Override
     public ClassPath findClassPath(FileObject file, String type) {
-        if (SOURCE_CP.equals(type) && FileUtil.isParentOf(project.getProjectDirectory(), file)) {
-            return project.getSourceClassPath();
+        if (SOURCE_CP.equals(type)) {
+            FileObject siteRootFolder = project.getSiteRootFolder();
+            if (siteRootFolder == null) {
+                // broken project
+                return null;
+            }
+            if (FileUtil.isParentOf(siteRootFolder, file) ||
+                    (project.getTestsFolder() != null && FileUtil.isParentOf(project.getTestsFolder(), file))) {
+                return project.getSourceClassPath();
+            }
         }
         return null;
     }
@@ -81,10 +94,21 @@ public class ClassPathProviderImpl implements ClassPathProvider {
     
     private static class PathImpl implements FilteringPathResourceImplementation {
 
-        private ClientSideProject project;
+        private final ClientSideProject project;
+        private final PropertyChangeSupport support = new PropertyChangeSupport(this);
 
         public PathImpl(ClientSideProject project) {
             this.project = project;
+            this.project.getEvaluator().addPropertyChangeListener(new PropertyChangeListener() {
+                @Override
+                public void propertyChange(PropertyChangeEvent evt) {
+                    if (ClientSideProjectConstants.PROJECT_SITE_ROOT_FOLDER.equals(evt.getPropertyName()) ||
+                        ClientSideProjectConstants.PROJECT_TEST_FOLDER.equals(evt.getPropertyName()) ||
+                        evt.getPropertyName().startsWith("file.reference.")) {
+                        support.firePropertyChange(PathResourceImplementation.PROP_ROOTS, null, null);
+                    }
+                }
+            });
         }
         
         @Override
@@ -94,7 +118,16 @@ public class ClassPathProviderImpl implements ClassPathProvider {
 
         @Override
         public URL[] getRoots() {
-            return new URL[]{project.getProjectDirectory().toURL()};
+            List<URL> l = new ArrayList<URL>(2);
+            FileObject sourcesFolder = project.getSiteRootFolder();
+            if (sourcesFolder != null) {
+                l.add(sourcesFolder.toURL());
+            }
+            FileObject testsFolder = project.getTestsFolder();
+            if (testsFolder != null) {
+                l.add(testsFolder.toURL());
+            }
+            return l.toArray(new URL[l.size()]);
         }
 
         @Override
@@ -104,10 +137,12 @@ public class ClassPathProviderImpl implements ClassPathProvider {
 
         @Override
         public void addPropertyChangeListener(PropertyChangeListener listener) {
+            support.addPropertyChangeListener(listener);
         }
 
         @Override
         public void removePropertyChangeListener(PropertyChangeListener listener) {
+            support.removePropertyChangeListener(listener);
         }
         
     }

@@ -201,11 +201,16 @@ public class JsConventionRule extends JsAstRule {
                 if (id == JsTokenId.STRING_END && ts.moveNext()) {
                     id = ts.token().id();
                 }
-                if ((id == JsTokenId.EOL || id == JsTokenId.LINE_COMMENT) && ts.movePrevious()) {
+                if ((id == JsTokenId.EOL || id == JsTokenId.BRACKET_RIGHT_CURLY) && ts.movePrevious()) {
                     id = ts.token().id();
                 }
+                if (id == JsTokenId.BLOCK_COMMENT || id == JsTokenId.LINE_COMMENT) {
+                    //try to find ; or , after
+                    Token<? extends JsTokenId> next = LexUtilities.findNext(ts, Arrays.asList(JsTokenId.WHITESPACE, JsTokenId.EOL, JsTokenId.BLOCK_COMMENT, JsTokenId.LINE_COMMENT));
+                    id = next.id();
+                }
                 if (id != JsTokenId.OPERATOR_SEMICOLON && id != JsTokenId.OPERATOR_COMMA) {
-                    Token<? extends JsTokenId> previous = LexUtilities.findPrevious(ts, Arrays.asList(JsTokenId.WHITESPACE));
+                    Token<? extends JsTokenId> previous = LexUtilities.findPrevious(ts, Arrays.asList(JsTokenId.WHITESPACE, JsTokenId.BLOCK_COMMENT));
                     id = previous.id();
                     // check again whether there is not semicolon and it is not generated
                     if (id != JsTokenId.OPERATOR_SEMICOLON && id != JsTokenId.OPERATOR_COMMA

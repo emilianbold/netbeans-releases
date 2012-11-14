@@ -53,12 +53,12 @@ import java.beans.PropertyChangeSupport;
 import java.io.File;
 import java.util.*;
 import java.util.List;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.versioning.util.VCSHyperlinkSupport;
 import org.netbeans.modules.versioning.util.VCSKenaiAccessor.KenaiUser;
 import org.openide.util.Mutex;
 import org.openide.util.WeakListeners;
+import org.openide.windows.WindowManager;
 
 /**
  * @author Maros Sandor
@@ -321,10 +321,20 @@ public abstract class AbstractSummaryView implements MouseListener, MouseMotionL
     }
 
     void showRemainingFiles (RevisionItem item) {
-        item.allEventsExpanded = !item.allEventsExpanded;
-        ((SummaryListModel) resultsList.getModel()).refreshModel();
-        if (resultsList.getSelectedIndices().length == 1) {
-            resultsList.ensureIndexIsVisible(resultsList.getSelectedIndices()[0]);
+        assert EventQueue.isDispatchThread();
+        JFrame mainWindow = (JFrame) WindowManager.getDefault().getMainWindow();
+        Cursor cursor = mainWindow.getCursor();
+        try {
+            item.allEventsExpanded = !item.allEventsExpanded;
+            mainWindow.getGlassPane().setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+            mainWindow.getGlassPane().setVisible(true);
+            ((SummaryListModel) resultsList.getModel()).refreshModel();
+            if (resultsList.getSelectedIndices().length == 1) {
+                resultsList.ensureIndexIsVisible(resultsList.getSelectedIndices()[0]);
+            }
+        } finally {
+            mainWindow.getGlassPane().setCursor(cursor);
+            mainWindow.getGlassPane().setVisible(false);
         }
     }
 

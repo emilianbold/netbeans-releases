@@ -73,6 +73,7 @@ public class ModelVisitor extends PathNodeVisitor {
     private final JsParserResult parserResult;
 
     private JsObjectImpl fromAN = null;
+    private boolean inVarNode = false;
 
     public ModelVisitor(JsParserResult parserResult) {
         FileObject fileObject = parserResult.getSnapshot().getSource().getFileObject();
@@ -157,6 +158,7 @@ public class ModelVisitor extends PathNodeVisitor {
                         CallNode cNode = (CallNode)getPath().get(pathSize - 2);
                         if (!cNode.getArgs().contains(accessNode)) {
                             property = ModelElementFactory.createVirtualFunction(parserResult, fromAN, name, cNode.getArgs().size());
+                            //property.addOccurrence(name.getOffsetRange());
                         } else {
                             property = new JsObjectImpl(fromAN, name, name.getOffsetRange());
                         }
@@ -557,12 +559,17 @@ public class ModelVisitor extends PathNodeVisitor {
             List<Identifier> fqName = null;
             int pathSize = getPath().size();
             boolean isDeclaredInParent = false;
+            boolean isPrivate = false;
             Node lastVisited = getPath().get(pathSize - 1);
             VarNode varNode = null;
 
             if ( lastVisited instanceof VarNode) {
                 fqName = getName((VarNode)lastVisited);
                 isDeclaredInParent = true;
+                JsObject declarationScope = modelBuilder.getCurrentDeclarationScope();
+                if (fqName.size() == 1 && !ModelUtils.isGlobal(declarationScope)) {
+                    isPrivate = true;
+                }
             } else if (lastVisited instanceof PropertyNode) {
                 fqName = getName((PropertyNode) lastVisited);
                 isDeclaredInParent = true;
@@ -592,8 +599,13 @@ public class ModelVisitor extends PathNodeVisitor {
             if (objectScope != null) {
                 objectScope.setJsKind(JsElement.Kind.OBJECT_LITERAL);
                 modelBuilder.setCurrentObject(objectScope);
+                if(isPrivate) {
+                    objectScope.getModifiers().remove(Modifier.PUBLIC);
+                    objectScope.getModifiers().add(Modifier.PRIVATE);
+                }
             }
         }
+
         return super.enter(objectNode);
     }
 
@@ -715,16 +727,17 @@ public class ModelVisitor extends PathNodeVisitor {
             Node lastNode = getPath().get(getPath().size() -1);
             if (unaryNode.rhs() instanceof CallNode
                     && ((CallNode)unaryNode.rhs()).getFunction() instanceof IdentNode
-                    && !(lastNode instanceof PropertyNode)) {
-                int start = LexUtilities.getLexerOffset(parserResult, unaryNode.getStart());
-                if (getPath().get(getPath().size() - 1) instanceof VarNode) {
-                    start = LexUtilities.getLexerOffset(parserResult, ((VarNode)getPath().get(getPath().size() - 1)).getName().getFinish());
+                    && !(lastNode instanceof PropertyNode) && !inVarNode) {
+                if (modelBuilder.getCurrentObject() != null) {
+                    int start = LexUtilities.getLexerOffset(parserResult, unaryNode.getStart());
+                    if (getPath().get(getPath().size() - 1) instanceof VarNode) {
+                        start = LexUtilities.getLexerOffset(parserResult, ((VarNode)getPath().get(getPath().size() - 1)).getName().getFinish());
+                    }
+                    Collection<TypeUsage> types = ModelUtils.resolveSemiTypeOfExpression(parserResult, unaryNode);
+                    for (TypeUsage type : types) {
+                        modelBuilder.getCurrentObject().addAssignment(type, start);
+                    }
                 }
-                Collection<TypeUsage> types = ModelUtils.resolveSemiTypeOfExpression(parserResult, unaryNode);
-                for (TypeUsage type : types) {
-                    modelBuilder.getCurrentObject().addAssignment(type, start);
-                }
-
             }
         } else {
             if (unaryNode.rhs() instanceof IdentNode) {
@@ -755,19 +768,25 @@ public class ModelVisitor extends PathNodeVisitor {
                 } else {
                     // the variable was probably created as temporary before, now we
                     // need to replace it with the real one
-
                     JsObjectImpl newVariable = new JsObjectImpl(parent, name, name.getOffsetRange(), true);
+                    for(String propertyName: variable.getProperties().keySet()) {
+                        JsObject property = variable.getProperty(propertyName);
+                        if (property instanceof JsObjectImpl) {
+                            ((JsObjectImpl)property).setParent(newVariable);
+                        }
+                        newVariable.addProperty(propertyName, property);
+                    }
                     if (parent.getJSKind() != JsElement.Kind.FILE) {
                         newVariable.getModifiers().remove(Modifier.PUBLIC);
                         newVariable.getModifiers().add(Modifier.PRIVATE);
                     }
-                    parent.addProperty(name.getName(), newVariable);
                     for(TypeUsage type : variable.getAssignments()) {
                         newVariable.addAssignment(type, type.getOffset());
                     }
                     for(Occurrence occurrence: variable.getOccurrences()){
                         newVariable.addOccurrence(occurrence.getOffsetRange());
                     }
+                    parent.addProperty(name.getName(), newVariable);
                     variable = newVariable;
                 }
                 JsDocumentationHolder docHolder = parserResult.getDocumentationHolder();
@@ -778,6 +797,7 @@ public class ModelVisitor extends PathNodeVisitor {
                 }
                 if (!(varNode.getInit() instanceof UnaryNode &&
                         Token.descType(((UnaryNode)varNode.getInit()).getToken()) == TokenType.NEW)) {
+                    inVarNode = true;
                     Collection<TypeUsage> types = ModelUtils.resolveSemiTypeOfExpression(parserResult, varNode.getInit());
                     for (TypeUsage type : types) {
                         variable.addAssignment(type, LexUtilities.getLexerOffset(parserResult, varNode.getName().getFinish()));
@@ -801,6 +821,7 @@ public class ModelVisitor extends PathNodeVisitor {
                 && ModelElementFactory.create(parserResult, varNode.getName()) != null) {
             modelBuilder.reset();
         }
+        inVarNode = false;
         return super.leave(varNode);
     }
 
@@ -1001,13 +1022,14 @@ public class ModelVisitor extends PathNodeVisitor {
             // it's a new global variable?
             IdentifierImpl name = ModelElementFactory.create(parserResult, iNode);
             if (name != null) {
-                JsObject newObject;
+                JsObjectImpl newObject;
                 if (!isFunction) {
                     newObject = new JsObjectImpl(modelBuilder.getGlobal(), name, name.getOffsetRange(), leftSite);
                 } else {
                     FileObject fo = parserResult.getSnapshot().getSource().getFileObject();
                     newObject = new JsFunctionImpl(fo, modelBuilder.getGlobal(), name, Collections.EMPTY_LIST);
                 }
+                newObject.addOccurrence(name.getOffsetRange());
                 modelBuilder.getGlobal().addProperty(name.getName(), newObject);
             }
         }

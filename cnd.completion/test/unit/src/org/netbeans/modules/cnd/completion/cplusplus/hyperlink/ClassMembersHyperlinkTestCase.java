@@ -474,8 +474,8 @@ public class ClassMembersHyperlinkTestCase extends HyperlinkBaseTestCase {
 
     public void testIncludes() throws Exception {
         // check #include "ClassA.h" hyperlinks
-        performTest("main.cc", 2, 12, "ClassA.h", -1, -1); // start of file ClassA.h
-        performTest("ClassA.cc", 2, 12, "ClassA.h", -1, -1); // start of file ClassA.h
+        performTest("main.cc", 2, 12, "ClassA.h", 1, 1); // start of file ClassA.h
+        performTest("ClassA.cc", 2, 12, "ClassA.h", 1, 1); // start of file ClassA.h
     }
 
     public void testOperators() throws Exception {
@@ -1053,6 +1053,11 @@ public class ClassMembersHyperlinkTestCase extends HyperlinkBaseTestCase {
         // Bug 211033 - code model incorrectly resolves forward class declarations in case of external class definitions
         performTest("bug211033.cpp", 41, 13, "bug211033.cpp", 31, 5);
         performTest("bug211033.cpp", 46, 13, "bug211033.cpp", 36, 5);
+    }    
+
+    public void testBug217994() throws Exception {
+        // Bug 217994 - default method parameter construct isn't handled properly
+        performTest("bug217994.cpp", 17, 32, "bug217994.cpp", 3, 5);
     }    
     
     public static class Failed extends HyperlinkBaseTestCase {

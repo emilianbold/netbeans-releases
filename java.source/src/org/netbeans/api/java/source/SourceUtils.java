@@ -44,8 +44,6 @@
 
 package org.netbeans.api.java.source;
 
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -73,6 +71,7 @@ import com.sun.tools.javac.code.Scope.ImportScope;
 import com.sun.tools.javac.code.Symbol;
 import com.sun.tools.javac.code.Symbol.*;
 import com.sun.tools.javac.code.Type;
+import com.sun.tools.javac.code.Type.TypeVar;
 import com.sun.tools.javac.code.Types;
 import com.sun.tools.javac.comp.Check;
 import com.sun.tools.javac.model.JavacElements;
@@ -180,6 +179,12 @@ public class SourceUtils {
     
     public static boolean checkTypesAssignable(CompilationInfo info, TypeMirror from, TypeMirror to) {
         Context c = ((JavacTaskImpl) info.impl.getJavacTask()).getContext();
+        if (from.getKind() == TypeKind.TYPEVAR) {
+            Types types = Types.instance(c);
+            TypeVar t = types.substBound((TypeVar)from, com.sun.tools.javac.util.List.of((Type)from), com.sun.tools.javac.util.List.of(types.boxedTypeOrType((Type)to)));
+            return info.getTypes().isAssignable(t.getUpperBound(), to)
+                    || info.getTypes().isAssignable(to, t.getUpperBound());
+        }
         if (from.getKind() == TypeKind.WILDCARD) {
             from = Types.instance(c).upperBound((Type)from);
         }

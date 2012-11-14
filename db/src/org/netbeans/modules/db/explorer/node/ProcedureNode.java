@@ -312,8 +312,13 @@ public class ProcedureNode extends BaseNode {
         private void updateProcedureProperties() {
             PropertySupport.Name ps = new PropertySupport.Name(this);
             addProperty(ps);
-            
-            switch (provider.getType(getName())) {
+            Type type = provider.getType(getName());
+            if (type == null) {
+                Logger.getLogger(ProcedureNode.class.getName()).log(
+                        Level.WARNING, "Unknown type of object " + getName(), new Exception()); //NOI18N
+                return;
+            }
+            switch (type) {
                 case Function:
                     addProperty(TYPE, TYPEDESC, String.class, false, NbBundle.getMessage (ProcedureNode.class, "StoredFunction")); // NOI18N
                     break;

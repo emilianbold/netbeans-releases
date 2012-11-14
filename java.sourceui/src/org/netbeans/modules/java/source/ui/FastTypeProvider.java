@@ -50,6 +50,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.lang.model.element.ElementKind;
 import javax.swing.Icon;
+import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.java.ui.Icons;
@@ -170,6 +171,9 @@ public final class FastTypeProvider implements TypeProvider {
                     LOG.fine("Search canceled");
                     return;
                 }
+                if (m.start() == m.end()) {
+                    continue;
+                }
                 CharSequence f = fileIndex.getFilename(m.start(), m.end());
                 CharSequence pkg = fileIndex.findPath(m.start());
                 SimpleDescriptor desc = new SimpleDescriptor(p, root, f, pkg);
@@ -209,6 +213,7 @@ public final class FastTypeProvider implements TypeProvider {
         }
 
         @Override
+        @CheckForNull
         public FileObject getFileObject() {
             String s = simpleName;
             
@@ -268,20 +273,23 @@ public final class FastTypeProvider implements TypeProvider {
 
         @Override
         public void open() {
-            DataObject d;
+            boolean success = false;
             try {
-                d = DataObject.find(getFileObject());
+                final FileObject fo = getFileObject();
+                if (fo != null) {
+                    final DataObject d = DataObject.find(fo);
+                    final EditCookie cake = d.getCookie(EditCookie.class);
+                    if (cake != null) {
+                        cake.edit();
+                        success = true;
+                    }
+                }
             } catch (DataObjectNotFoundException ex) {
                 Exceptions.printStackTrace(ex);
-                Toolkit.getDefaultToolkit().beep();
-                return;
             }
-            EditCookie cake = d.getCookie(EditCookie.class);
-            if (cake == null) {
+            if (!success) {
                 Toolkit.getDefaultToolkit().beep();
-                return;
             }
-            cake.edit();
         }
         
         

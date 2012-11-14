@@ -385,6 +385,8 @@ public final class CodeTemplateManagerOperation
 
         List<CodeTemplate> byText = new ArrayList<CodeTemplate>(map.values());
         Collections.sort(byText, CodeTemplateComparator.BY_PARAMETRIZED_TEXT_IGNORE_CASE);
+        
+        Collections.sort(templatesWithSelection, CodeTemplateComparator.BY_PARAMETRIZED_TEXT_IGNORE_CASE);
 
         boolean fire = false;
 

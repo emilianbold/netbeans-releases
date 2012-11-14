@@ -68,12 +68,14 @@ implements FileChangeListener, Runnable, Callable<Boolean>, FileFilter {
     private final Callable<Boolean> stop;
     private final FileFilter filter;
     private static List<DeepListener> keep = new ArrayList<DeepListener>();
+    private final int hash;
 
     DeepListener(FileChangeListener listener, File path, FileFilter ff, Callable<Boolean> stop) {
         super(listener, Utilities.activeReferenceQueue());
         this.path = path;
         this.stop = stop;
         this.filter = ff;
+        this.hash = 11 * listener.hashCode() + 7 * path.hashCode();
     }
     
     final void init() {
@@ -204,9 +206,6 @@ implements FileChangeListener, Runnable, Callable<Boolean>, FileFilter {
 
     @Override
     public int hashCode() {
-        FileChangeListener thisListener = get();
-        int hash = 7;
-        hash = 11 * hash + (thisListener != null ? thisListener.hashCode() : 0);
         return hash;
     }
 
@@ -234,5 +233,10 @@ implements FileChangeListener, Runnable, Callable<Boolean>, FileFilter {
     @Override
     public boolean accept(File pathname) {
         return filter == null || filter.accept(pathname);
+    }
+
+    @Override
+    public String toString() {
+        return "DeepListener{" + get() + "@" + path + '}';
     }
 }

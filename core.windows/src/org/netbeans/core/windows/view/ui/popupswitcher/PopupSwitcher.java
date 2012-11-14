@@ -146,6 +146,8 @@ class PopupSwitcher extends JPanel {
     }
 
     private void updateDescription() {
+        if( !lblDescription.isShowing() )
+            return;
         if( !lblDescription.isValid() ) {
             SwingUtilities.invokeLater( new Runnable() {
                 @Override

@@ -116,7 +116,7 @@ abstract class OnlineSites implements SiteTemplateImplementation {
 
     @Override
     public Collection<String> supportedLibraries() {
-        return FileUtilities.listJsFilenamesFromZipFile(libFile);
+        return SiteHelper.stripRootFolder(FileUtilities.listJsFilesFromZipFile(libFile));
     }
 
     //~ Inner classes

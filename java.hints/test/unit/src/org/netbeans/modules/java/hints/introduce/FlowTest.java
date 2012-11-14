@@ -820,6 +820,21 @@ public class FlowTest extends NbTestCase {
                     "false",
                     "true");
     }
+    
+    public void testStayContinue219270() throws Exception {
+        performTest("package test;\n" +
+                    "import java.util.Collection;\n" +
+                    "import java.util.Iterator;\n" +
+                    "public class Test {\n" +
+                    "    public void f() {\n" +
+                    "        boolean empty = false;\n" +
+                    "        System.err.println(emp`ty);\n" +
+                    "        T: { continue T; }\n" +
+                    "    }\n" +
+                    "}\n",
+                    true,
+                    "false");
+    }
 
     public void testDeadBranch207514() throws Exception {
         performDeadBranchTest("package test;\n" +

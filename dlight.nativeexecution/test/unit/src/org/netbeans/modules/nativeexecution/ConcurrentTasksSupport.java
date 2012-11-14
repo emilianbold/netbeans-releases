@@ -48,7 +48,6 @@ import java.util.TreeMap;
 import java.util.concurrent.BrokenBarrierException;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.CyclicBarrier;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
@@ -65,12 +64,12 @@ public final class ConcurrentTasksSupport {
     final int concurrentTasks;
     final ArrayList<TaskFactory> factories = new ArrayList<TaskFactory>();
     final CyclicBarrier startSignal;
-    final CountDownLatch doneSignal;
+    final Thread[] threads;
 
     public ConcurrentTasksSupport(int concurrentTasks) {
         this.concurrentTasks = concurrentTasks;
         startSignal = new CyclicBarrier(concurrentTasks + 1);
-        doneSignal = new CountDownLatch(concurrentTasks);
+        threads = new Thread[concurrentTasks];
     }
 
     public void addFactory(TaskFactory taskFactory) {
@@ -78,7 +77,6 @@ public final class ConcurrentTasksSupport {
     }
 
     public void init() {
-        Thread[] threads = new Thread[concurrentTasks];
         final AtomicInteger counter = new AtomicInteger(0);
         final Random r = new Random();
         final AtomicInteger idx = new AtomicInteger(0);
@@ -120,8 +118,6 @@ public final class ConcurrentTasksSupport {
                         task.run();
                     } catch (Throwable th) {
                         log.log(Level.INFO, "Exception in task {0}", th.toString());
-                    } finally {
-                        doneSignal.countDown();
                     }
                 }
             });
@@ -140,10 +136,12 @@ public final class ConcurrentTasksSupport {
     }
 
     public void waitCompletion() {
-        try {
-            doneSignal.await();
-        } catch (InterruptedException ex) {
-            log.info("InterruptedException while waiting doneSignal"); // NOI18N
+        for (Thread thread : threads) {
+            try {
+                thread.join();
+            } catch (InterruptedException ex) {
+                log.info("InterruptedException while waiting doneSignal"); // NOI18N
+            }
         }
     }
 

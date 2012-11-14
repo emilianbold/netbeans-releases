@@ -85,6 +85,8 @@ import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.StyledDocument;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeCellRenderer;
 import javax.swing.tree.DefaultTreeModel;
@@ -118,6 +120,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.text.CloneableEditorSupport;
+import org.openide.text.NbDocument;
 import org.openide.util.NbBundle.Messages;
 import org.openide.util.RequestProcessor;
 
@@ -714,6 +717,9 @@ public final class HintsPanel extends javax.swing.JPanel   {
         }
 }//GEN-LAST:event_newButtonActionPerformed
 
+    private String customHintCodeBeforeEditing;
+    private boolean wasModified;
+    
     private void editScriptButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_editScriptButtonActionPerformed
         descriptionScrollPane.setVisible(false);
         scriptScrollPane.setVisible(true);
@@ -724,7 +730,19 @@ public final class HintsPanel extends javax.swing.JPanel   {
         DataObject dob = getDataObject(getSelectedHint());
         EditorCookie ec = dob.getCookie(EditorCookie.class);
         try {
-            scriptTextArea.setDocument(ec.openDocument());
+            final StyledDocument doc = ec.openDocument();
+            doc.render(new Runnable() {
+                @Override public void run() {
+                    try {
+                        customHintCodeBeforeEditing = doc.getText(0, doc.getLength());
+                    } catch (BadLocationException ex) {
+                        Exceptions.printStackTrace(ex);
+                        customHintCodeBeforeEditing = null;
+                    }
+                }
+            });
+            wasModified = DataObject.getRegistry().getModifiedSet().contains(dob);
+            scriptTextArea.setDocument(doc);
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
         }
@@ -745,6 +763,28 @@ public final class HintsPanel extends javax.swing.JPanel   {
         editingButtons.setVisible(false);
         editScriptButton.setVisible(true);
         org.openide.awt.Mnemonics.setLocalizedText(descriptionLabel, org.openide.util.NbBundle.getMessage(HintsPanel.class, "CTL_Description_Border"));
+
+        if (customHintCodeBeforeEditing != null) {
+            DataObject dob = getDataObject(getSelectedHint());
+            EditorCookie ec = dob.getCookie(EditorCookie.class);
+            try {
+                final StyledDocument doc = ec.openDocument();
+                NbDocument.runAtomic(doc, new Runnable() {
+                    @Override public void run() {
+                        try {
+                            doc.remove(0, doc.getLength());
+                            doc.insertString(0, customHintCodeBeforeEditing, null);
+                        } catch (BadLocationException ex) {
+                            Exceptions.printStackTrace(ex);
+                        }
+                    }
+                });
+                customHintCodeBeforeEditing = null;
+                if (!wasModified) ec.saveDocument();
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
 
         okButton.setEnabled(true);
         newButton.setEnabled(true);

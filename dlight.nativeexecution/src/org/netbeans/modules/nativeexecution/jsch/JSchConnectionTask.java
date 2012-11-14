@@ -44,7 +44,11 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.net.SocketAddress;
-import java.util.concurrent.*;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.logging.Level;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.jsch.JSchConnectionTask.Problem;
@@ -107,7 +111,11 @@ public final class JSchConnectionTask implements Cancellable {
             }
 
             if (!isReachable()) {
-                return new Result(null, new Problem(ProblemType.HOST_UNREACHABLE));
+                if (cancelled) {
+                    return new Result(null, new Problem(ProblemType.CONNECTION_CANCELLED));
+                } else {
+                    return new Result(null, new Problem(ProblemType.HOST_UNREACHABLE));
+                }
             }
 
             if (cancelled) {

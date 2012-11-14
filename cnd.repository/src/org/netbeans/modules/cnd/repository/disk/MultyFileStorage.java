@@ -115,4 +115,10 @@ public class MultyFileStorage implements Storage {
     public int getFragmentationPercentage() {
         return 0;
     }
+    
+    @Override
+    public void debugDump(Key key) {
+        assert key != null;
+        theFilesHelper.debugDump(key);
+    }
 }

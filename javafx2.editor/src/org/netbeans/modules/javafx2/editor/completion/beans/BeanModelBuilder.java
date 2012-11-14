@@ -51,6 +51,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
@@ -61,6 +62,7 @@ import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.ArrayType;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.ExecutableType;
+import javax.lang.model.type.PrimitiveType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.WildcardType;
@@ -109,9 +111,11 @@ public final class BeanModelBuilder {
     /**
      * Names of factory methods usable to create the bean instance
      */
-    private Set<String> factoryMethods = Collections.emptySet();
+    private Map<String, TypeMirrorHandle> factoryMethods = Collections.emptyMap();
     
     private FxBean  resultInfo;
+    
+    private Set<String> constants = Collections.emptySet();
     
     /**
      * Type element for the class.
@@ -160,6 +164,7 @@ public final class BeanModelBuilder {
         classElement = compilationInfo.getElements().getTypeElement(className);
         TypeElement builderEl = compilationInfo.getElements().getTypeElement("javafx.util.Builder"); // NOI18N
         TypeElement mapEl = compilationInfo.getElements().getTypeElement("java.util.Map"); // NOI18N
+        TypeElement collectionEl = compilationInfo.getElements().getTypeElement("java.util.Collection"); // NOI18N
         
         if (classElement == null) {
             return resultInfo = null;
@@ -205,6 +210,13 @@ public final class BeanModelBuilder {
                 resultInfo.makeMap();
             }
         }
+        if (collectionEl != null) {
+            Types t = compilationInfo.getTypes();
+            if (t.isAssignable(
+                    t.erasure(classElement.asType()), t.erasure(collectionEl.asType()))) {
+                resultInfo.makeCollection();
+            }
+        }
         inspectMembers();
         
         // try to find default property
@@ -212,7 +224,8 @@ public final class BeanModelBuilder {
         resultInfo.setSimpleProperties(simpleProperties);
         resultInfo.setAttachedProperties(staticProperties);
         resultInfo.setEvents(events);
-        resultInfo.setFactoryNames(factoryMethods);
+        resultInfo.setFactories(factoryMethods);
+        resultInfo.setConstants(constants);
         String defaultProperty = FxClassUtils.getDefaultProperty(classElement);
         resultInfo.setDefaultPropertyName(defaultProperty);
         
@@ -221,10 +234,7 @@ public final class BeanModelBuilder {
         merge.setValueOf(resultInfo.hasValueOf());
         merge.setFxInstance(resultInfo.isFxInstance());
         merge.setDeclaredInfo(resultInfo);
-        if (resultInfo.isMap()) {
-            merge.makeMap();
-        }
-        
+        merge.setFactories(factoryMethods);
         resultInfo = merge;
 
         // try to find the builder
@@ -235,6 +245,8 @@ public final class BeanModelBuilder {
         }
         resultInfo.setParentBeanInfo(superBi);
         resultInfo.merge(declared);
+        // constants are not merged, apply to just the single type
+        resultInfo.setConstants(constants);
 
         
         // add to the bean cache:
@@ -546,16 +558,12 @@ public final class BeanModelBuilder {
         if (!m.getParameters().isEmpty()) {
             return;
         }
-        // the method must return the type itself:
-        if (!compilationInfo.getTypes().isSameType(
-                m.getReturnType(), classElement.asType())) {
-            return;
-        }
+        TypeMirrorHandle returnType = TypeMirrorHandle.create(m.getReturnType());
         
         if (factoryMethods.isEmpty()) {
-            factoryMethods = new HashSet<String>();
+            factoryMethods = new HashMap<String, TypeMirrorHandle>();
         }
-        factoryMethods.add(m.getSimpleName().toString());
+        factoryMethods.put(m.getSimpleName().toString(), returnType);
         consumed = true;
     }
     
@@ -568,7 +576,7 @@ public final class BeanModelBuilder {
          return m.getModifiers().contains(Modifier.STATIC);
     }
     
-    private boolean isAccessible(ExecutableElement m) {
+    private boolean isAccessible(Element m) {
         if (!m.getModifiers().contains(Modifier.PUBLIC)) {
             for (AnnotationMirror am : m.getAnnotationMirrors()) {
                 String atype = ((TypeElement)am.getAnnotationType().asElement()).getQualifiedName().toString();
@@ -711,6 +719,15 @@ public final class BeanModelBuilder {
         
         // generate property changes from existing properties
         generatePropertyChanges();
+        
+        List<VariableElement> vars =  ElementFilter.fieldsIn(classElement.getEnclosedElements());
+        for (VariableElement v : vars) {
+            if (!isAccessible(v)) {
+                continue;
+            }
+            consumed = false;
+            addConstant(v);
+        }
     }
 
    void setBeanCache(FxBeanCache beanCache) {
@@ -743,5 +760,41 @@ public final class BeanModelBuilder {
             superBi = provider.getBeanInfo(fqn);
         }
         resultInfo.merge(superBi);
+    }
+    
+    private void addConstant(VariableElement v) {
+        Set<Modifier> mods = v.getModifiers();
+        if (!(mods.contains(Modifier.FINAL) && mods.contains(Modifier.STATIC))) {
+            return;
+        }
+        
+        boolean ok = false;
+        
+        // check that the return type is the same as this class' type
+        if (!compilationInfo.getTypes().isSameType(
+                v.asType(), classElement.asType())) {
+            // the constant may be primitive & our type the wrapper
+            TypeMirror t = v.asType();
+            if (t instanceof PrimitiveType) {
+                PrimitiveType p = (PrimitiveType)t;
+                if (compilationInfo.getTypes().isSameType(
+                        compilationInfo.getTypes().boxedClass(p).asType(),
+                        classElement.asType())) {
+                    ok = true;
+                }
+            } 
+            if (!ok) {
+                return;
+            }
+        }
+        
+        addConstant(v.getSimpleName().toString());
+    }
+    
+    private void addConstant(String s) {
+        if (constants.isEmpty()) {
+            constants = new HashSet<String>();
+        }
+        constants.add(s);
     }
 }

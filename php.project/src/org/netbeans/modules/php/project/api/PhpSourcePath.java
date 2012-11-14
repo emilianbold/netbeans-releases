@@ -97,12 +97,18 @@ public final class PhpSourcePath {
     public static FileType getFileType(FileObject file) {
         Parameters.notNull("file", file);
 
-        // classpath performance is bad so first, check internal files
+        // #221482, #165738
+        // check internal files (perhaps the most common use case)
         if (isInternalFile(file)) {
             return FileType.INTERNAL;
         }
-        // check classpath
-        FileType fileType = getFileTypeFromClassPath(file);
+        // then, check sources (typical use-case)
+        PhpSourcePathImplementation phpSourcePath = getPhpSourcePathForProjectFile(file);
+        if (phpSourcePath != null) {
+            return phpSourcePath.getFileType(file);
+        }
+        // lastly, check classpath for project's specific include path (known to be very slow)
+        FileType fileType = getFileTypeFromIncludeClassPath(file);
         if (fileType != null) {
             return fileType;
         }
@@ -194,20 +200,9 @@ public final class PhpSourcePath {
         return phpSourcePath;
     }
 
-    private static FileType getFileTypeFromClassPath(FileObject file) {
-        // first, check source CP
-        ClassPath classPath = ClassPath.getClassPath(file, SOURCE_CP);
-        if (classPath != null && classPath.contains(file)) {
-            // it is a source file
-            PhpSourcePathImplementation phpSourcePath = getPhpSourcePathForProjectFile(file);
-            if (phpSourcePath != null) {
-                return phpSourcePath.getFileType(file);
-            }
-            // happens at least in tests
-            return FileType.UNKNOWN;
-        }
+    private static FileType getFileTypeFromIncludeClassPath(FileObject file) {
         // now, check include path of opened projects
-        classPath = IncludePathClassPathProvider.findProjectIncludePath(file);
+        ClassPath classPath = IncludePathClassPathProvider.findProjectIncludePath(file);
         if (classPath != null && classPath.contains(file)) {
             // internal?
             if (isInternalFile(file)) {

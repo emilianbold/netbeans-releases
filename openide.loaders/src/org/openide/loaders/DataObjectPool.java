@@ -366,7 +366,7 @@ implements ChangeListener {
     public DataObject find (FileObject fo) {
         synchronized (this) {
             Item doh = map.get(fo);
-            if (doh == null) {
+            if (doh == null || !fo.isValid()) {
                 return null;
             }
             
@@ -459,7 +459,7 @@ implements ChangeListener {
      * @param obj the object that was created
     */
     public void notifyCreation (DataObject obj) {
-        notifyCreation (obj.item);
+        notifyCreation (obj.item());
     }
 
     private static final DataLoaderPool lp = DataLoaderPool.getDefault();
@@ -521,11 +521,12 @@ implements ChangeListener {
                     }
 
                     Collection<Item> l = FIND.get ();
-                    if (l != null && l.contains (obj.item)) {
+                    final Item item = obj.item();
+                    if (l != null && l.contains (item)) {
                         return;
                     }
 
-                    if (!toNotify.contains (obj.item)) {
+                    if (!toNotify.contains (item)) {
                         return;
                     }
 
@@ -857,16 +858,21 @@ implements ChangeListener {
     * @param item the item to change
     * @param newFile new primary file to set
     */
-    private synchronized void changePrimaryFile (
+    private synchronized Item changePrimaryFile (
         Item item, FileObject newFile
     ) {
         if (item.primaryFile == newFile) {
-            return;
+            return item;
         }
-        map.remove (item.primaryFile);
-        item.primaryFile = newFile;
-        map.put (newFile, item);
+        Item prev = map.remove(item.primaryFile);
+        if (prev == null && item.getDataObjectOrNull() == null) {
+            return item;
+        }
+        assert prev == item : "Item: " + item;
+        final Item ni = new Item(item, newFile);
+        map.put (newFile, ni);
         countRegistration(newFile);
+        return ni;
     }
 
     /** When the loader pool is changed, then all objects are rescanned.
@@ -908,44 +914,40 @@ implements ChangeListener {
         /** initial value of obj field. */
         private static final Reference<DataObject> REFERENCE_NOT_SET = new WeakReference<DataObject>(null);
 
-        /** weak reference data object with this primary file */
-        private Reference<DataObject> obj = REFERENCE_NOT_SET;
+        /** weak reference data object with this primary file 
+         * @GuardedBy("DataObjectPool.getPOOL()")
+         */
+        private Reference<DataObject> obj;
         
-        /** primary file */
-        FileObject primaryFile;
+        /** immutable primary file */
+        final FileObject primaryFile;
         
-        // [PENDING] hack to check the stack when the DataObject has been created
-        //    private Exception stack;
-
         /** @param fo primary file
         * @param pool object pool
         */
         public Item (FileObject fo) {
+            assert Thread.holdsLock(DataObjectPool.getPOOL());
             this.primaryFile = fo;
-
-            // [PENDING] // stores stack
-            /*      java.io.StringWriter sw = new java.io.StringWriter ();
-                  stack = new Exception ();
-                }
-
-                // [PENDING] toString returns original stack
-                public String toString () {
-                  return stack.toString ();*/
+            this.obj = REFERENCE_NOT_SET;
+        }
+        
+        private Item(Item clone, FileObject newFo) {
+            assert Thread.holdsLock(DataObjectPool.getPOOL());
+            this.primaryFile = newFo;
+            this.obj = clone.obj;
         }
 
-        /** Setter for the data object. Called immediatelly as possible.
-        * @param obj the data object for this item
+        /** Setter for the data object. Called immediately as possible.
+        * @param dobj the data object for this item
         */
-        public void setDataObject (DataObject obj) {
-            this.obj = new ItemReference (obj, this);
-            
-            if (obj != null && !obj.getPrimaryFile ().isValid ()) {
-                // if the primary file is already invalid => mark the object as invalid
-                DataObjectPool.getPOOL().countRegistration(obj.getPrimaryFile());
-                deregister (false);
-            }
-            
+        public void setDataObject (DataObject dobj) {
             synchronized (DataObjectPool.getPOOL()) {
+                this.obj = new ItemReference (dobj, this);
+                if (dobj != null && !dobj.getPrimaryFile ().isValid()) {
+                    // if the primary file is already invalid => mark the object as invalid
+                    DataObjectPool.getPOOL().countRegistration(dobj.getPrimaryFile());
+                    deregister (false);
+                }
                 DataObjectPool.getPOOL().notifyAll();
             }
         }
@@ -962,9 +964,8 @@ implements ChangeListener {
                     catch (InterruptedException exc) {
                     }
                 }
+                return this.obj.get();
             }
-            
-            return this.obj == null ? null : this.obj.get();
         }
         
         /** Getter for the data object.
@@ -990,8 +991,8 @@ implements ChangeListener {
         /** Changes the primary file to new one.
         * @param newFile new primary file to set
         */
-        public void changePrimaryFile (FileObject newFile) {
-            getPOOL().changePrimaryFile (this, newFile);
+        public Item changePrimaryFile (FileObject newFile) {
+            return getPOOL().changePrimaryFile (this, newFile);
         }
 
         /** Is the item valid?
@@ -1007,11 +1008,13 @@ implements ChangeListener {
         
         @Override
         public String toString () {
-            DataObject o = this.obj.get ();
-            if (o == null) {
-                return "nothing[" + primaryFile + "]"; // NOI18N
+            synchronized (DataObjectPool.getPOOL()) {
+                DataObject o = this.obj.get ();
+                if (o == null) {
+                    return "nothing[" + primaryFile + "]"; // NOI18N
+                }
+                return o.toString ();
             }
-            return o.toString ();
         }
     }
 

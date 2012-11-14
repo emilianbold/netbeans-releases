@@ -138,7 +138,8 @@ public class FastImportAction extends BaseAction {
                 FileType fileType = PhpSourcePath.getFileType(includedFo);
                 String relativizeFile = PropertyUtils.relativizeFile(baseFolder, includedFile);
                 StringBuilder sb = new StringBuilder();
-                sb.append("\"").append(relativizeFile).append("\";");//NOI18N
+                String properRelativePath = (relativizeFile != null && relativizeFile.startsWith(".")) ? relativizeFile : "./" + relativizeFile; //NOI18N
+                sb.append("\"").append(properRelativePath).append("\";"); //NOI18N
                 LinkedHashSet<String> list;
                 if (fileType.equals(FileType.INTERNAL)) {
                     //list = denied;

@@ -596,7 +596,12 @@ public class CasualDiff {
             copyTo(localPointer, restypeBounds[0]);
             localPointer = diffTree(oldT.restype, newT.restype, restypeBounds);
             copyTo(localPointer, localPointer = restypeBounds[1]);
+        } else if(oldT.restype == null && newT.restype != null) {
+            copyTo(localPointer, localPointer = oldT.pos);
+            printer.print(newT.restype);
+            printer.print(" "); // print the space after return type
         }
+        
         int posHint;
         if (oldT.typarams.isEmpty()) {
             posHint = oldT.restype != null ? oldT.restype.getStartPosition() : oldT.getStartPosition();
@@ -1790,6 +1795,7 @@ public class CasualDiff {
         }
         JCTree oldBound = oldT.kind.kind != BoundKind.UNBOUND ? oldT.inner : null;
         JCTree newBound = newT.kind.kind != BoundKind.UNBOUND ? newT.inner : null;
+        if (oldBound == newBound && oldBound == null) return localPointer;
         int[] innerBounds = getBounds(oldBound);
         copyTo(localPointer, innerBounds[0]);
         localPointer = diffTree(oldBound, newBound, innerBounds);
@@ -1920,7 +1926,7 @@ public class CasualDiff {
             }
             copyTo(localPointer, startPos);
             PositionEstimator est = EstimatorFactory.annotations(oldAnnotations,newAnnotations, diffContext, parameterPrint);
-            localPointer = diffList(oldAnnotations, newAnnotations, startPos, est, Measure.DEFAULT, printer);
+            localPointer = diffList(oldAnnotations, newAnnotations, startPos, est, Measure.ARGUMENT, printer);
         }
 
         return localPointer;
@@ -3697,6 +3703,8 @@ public class CasualDiff {
         copyTo(from, to, printer);
     }
 
+    public static boolean noInvalidCopyTos = false;
+    
     public void copyTo(int from, int to, VeryPretty loc) {
         if (from == to) {
             return;
@@ -3705,6 +3713,8 @@ public class CasualDiff {
             LOG.log(INFO, "-----\n" + origText + "-----\n");
             LOG.log(INFO, "Illegal values: from = " + from + "; to = " + to + "." +
                 "Please, attach your messages.log to new issue!");
+            if (noInvalidCopyTos)
+                throw new IllegalStateException("Illegal values: from = " + from + "; to = " + to + ".");
             if (to >= 0)
                 printer.eatChars(from-to);
             return;

@@ -147,9 +147,6 @@ public final class SourceAnalyzerFactory {
                     uv.scan(cu,usages);
                     mainMethod[0] |= uv.mainMethod;
                     if (uv.rsList != null && uv.rsList.size()>0) {
-                        final int index = uv.sourceName.lastIndexOf('.');              //NOI18N
-                        final String pkg = index == -1 ? "" : uv.sourceName.substring(0,index);    //NOI18N
-                        final String simpleName = index == -1 ? uv.sourceName : uv.sourceName.substring(index+1);
                         String ext;
                         if (tuple.virtual) {
                             ext = FileObjects.getExtension(tuple.indexable.getURL().getPath()) +'.'+ FileObjects.RX;    //NOI18N
@@ -157,8 +154,8 @@ public final class SourceAnalyzerFactory {
                         else {
                             ext = FileObjects.RS;
                         }
-                        final String rsName = simpleName + '.' + ext;   //NOI18N
-                        javax.tools.FileObject fo = manager.getFileForOutput(StandardLocation.CLASS_OUTPUT, pkg, rsName, tuple.jfo);
+                        String relativePath = tuple.indexable.getRelativePath();
+                        javax.tools.FileObject fo = manager.getFileForOutput(StandardLocation.CLASS_OUTPUT, "", FileObjects.stripExtension(relativePath) + '.' + ext, tuple.jfo);
                         assert fo != null;
                         try {
                             BufferedReader in = new BufferedReader ( new InputStreamReader (fo.openInputStream(), "UTF-8"));

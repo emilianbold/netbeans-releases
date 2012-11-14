@@ -113,6 +113,33 @@ public abstract class CssEditorModule {
 
     /**
      * Gets a collection of property names which are applicable in the given context.
+     * 
+     * <b>Rules:</b> (provider == implementor of the {@link CssEditorModule})
+     * 
+     * 1. provider can define new visible and invisible properties
+     * 
+     * 2. the property definitions can depend on property definitions provided by
+     *    other provider. Care must be taken here as generally various properties
+     *    can be available for different contexts. It is highly recommended to depend
+     *    only on the "core css" properties as these context free properties are
+     *    always available.
+     * 
+     * 3. provider can NOT override existing properties provided by the other providers
+     *    (in fact such duplicity may happen, warning will be logged, and the first 
+     *    property definition from the provider with highest priority will be used)
+     * 
+     *    Note: possibly if one really needs it we can add such support at least
+     *          for  visible properties which no one depends on. If this was 
+     *          supported for all properties the caching would be much more complicated.
+     * 
+     * 4. if a provider returns a property name for the given context file,
+     *    it is mandatory that subsequent call to getPropertyDefinition() 
+     *    must return non-null value.
+     * 
+     * 5. <b>the provider itself is responsible for caching of the returned property definitions!</b>
+     * 
+     * 6. the behavior if the context is null is undefined as this typically won't happen
+     * 
      * @param file context file, may be null!
      */
     public Collection<String> getPropertyNames(FileObject file) {
@@ -120,16 +147,14 @@ public abstract class CssEditorModule {
     }
     
      /**
-     * Gets an instance of {@link PropertyDefinition} for the give property name 
-     * within the given context.
+     * Gets an instance of {@link PropertyDefinition} for the give property name.
      * 
      * The module must return a non-null instance only if it also returns the property name
      * in {@link #getPropertyNames(org.openide.filesystems.FileObject)!
      * 
-     * @param file context file, may be null!
      * @param propertyName name of the property
      */
-    public PropertyDefinition getPropertyDefinition(FileObject file, String propertyName) {
+    public PropertyDefinition getPropertyDefinition(String propertyName) {
         return null;
     }
     

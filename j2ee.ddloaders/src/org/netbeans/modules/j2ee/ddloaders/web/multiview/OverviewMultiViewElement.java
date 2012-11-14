@@ -207,7 +207,7 @@ public class OverviewMultiViewElement extends ToolBarMultiViewElement implements
         }
     }
     
-    private class OverviewNode extends org.openide.nodes.AbstractNode {
+    private static class OverviewNode extends org.openide.nodes.AbstractNode {
         OverviewNode() {
             super(org.openide.nodes.Children.LEAF);
             setDisplayName(NbBundle.getMessage(PagesMultiViewElement.class,"TTL_Overview"));
@@ -219,7 +219,7 @@ public class OverviewMultiViewElement extends ToolBarMultiViewElement implements
         }
     }
 
-    private class AbsoluteOrderingNode extends org.openide.nodes.AbstractNode {
+    private static class AbsoluteOrderingNode extends org.openide.nodes.AbstractNode {
         AbsoluteOrderingNode() {
             super(org.openide.nodes.Children.LEAF);
             setDisplayName(NbBundle.getMessage(PagesMultiViewElement.class,"TTL_Ordering"));
@@ -231,7 +231,7 @@ public class OverviewMultiViewElement extends ToolBarMultiViewElement implements
         }
     }
 
-    private class RelativeOrderingNode extends org.openide.nodes.AbstractNode {
+    private static class RelativeOrderingNode extends org.openide.nodes.AbstractNode {
         RelativeOrderingNode() {
             super(org.openide.nodes.Children.LEAF);
             setDisplayName(NbBundle.getMessage(PagesMultiViewElement.class,"TTL_Ordering"));
@@ -243,7 +243,7 @@ public class OverviewMultiViewElement extends ToolBarMultiViewElement implements
         }
     }
     
-    private class ContextParamsNode extends org.openide.nodes.AbstractNode {
+    private static class ContextParamsNode extends org.openide.nodes.AbstractNode {
         ContextParamsNode() {
             super(org.openide.nodes.Children.LEAF);
             setDisplayName(NbBundle.getMessage(PagesMultiViewElement.class,"TTL_ContextParams"));
@@ -255,7 +255,7 @@ public class OverviewMultiViewElement extends ToolBarMultiViewElement implements
         }
     }
     
-    private class ListenersNode extends org.openide.nodes.AbstractNode {
+    private static class ListenersNode extends org.openide.nodes.AbstractNode {
         ListenersNode() {
             super(org.openide.nodes.Children.LEAF);
             setDisplayName(NbBundle.getMessage(PagesMultiViewElement.class,"TTL_Listeners"));

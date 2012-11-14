@@ -92,6 +92,7 @@ import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager.CancellationException;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.netbeans.modules.remote.api.ui.FileChooserBuilder;
+import org.openide.awt.StatusDisplayer;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -615,32 +616,31 @@ final class DebugCorePanel extends javax.swing.JPanel {
         }
         final String startF = startFolder;
         RP.post(new Runnable() {
+            @Override
             public void run() {
-                try {
-                    Host host = Host.byName(hostname);
-                    final ExecutionEnvironment exEnv = host.executionEnvironment();
-                    ConnectionManager.getInstance().connectTo(exEnv);
-
-                    FileChooserBuilder fcb = new FileChooserBuilder(exEnv);
-                    final JFileChooser fileChooser = fcb.createFileChooser(startF);
-                    fileChooser.setDialogTitle(getString("SelectExecutable"));
-                    fileChooser.setApproveButtonText(getString("CHOOSER_BUTTON"));
-                    fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
-                    fileChooser.addChoosableFileFilter(FileFilterFactory.getElfExecutableFileFilter());
-                    SwingUtilities.invokeLater(new Runnable() {
-                        public void run() {
-                            int ret = fileChooser.showOpenDialog(DebugCorePanel.this);
-                            if (ret == JFileChooser.CANCEL_OPTION) {
-                                return;
-                            }
-                            ((JTextField)executableComboBox.getEditor().getEditorComponent()).setText(fileChooser.getSelectedFile().getPath());
-                        }
-                    });
-                } catch (IOException ex) {
-                    Exceptions.printStackTrace(ex);
-                } catch (CancellationException ex) {
-                    // do nothing
+                Host host = Host.byName(hostname);
+                final ExecutionEnvironment exEnv = host.executionEnvironment();
+                if (!ConnectionManager.getInstance().connect(exEnv)) {
+                    return;
                 }
+
+                FileChooserBuilder fcb = new FileChooserBuilder(exEnv);
+                final JFileChooser fileChooser = fcb.createFileChooser(startF);
+                fileChooser.setDialogTitle(getString("SelectExecutable"));
+                fileChooser.setApproveButtonText(getString("CHOOSER_BUTTON"));
+                fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
+                fileChooser.addChoosableFileFilter(FileFilterFactory.getElfExecutableFileFilter());
+                SwingUtilities.invokeLater(new Runnable() {
+
+                    @Override
+                    public void run() {
+                        int ret = fileChooser.showOpenDialog(DebugCorePanel.this);
+                        if (ret == JFileChooser.CANCEL_OPTION) {
+                            return;
+                        }
+                        ((JTextField) executableComboBox.getEditor().getEditorComponent()).setText(fileChooser.getSelectedFile().getPath());
+                    }
+                });
             }
         });
     }//GEN-LAST:event_executableBrowseButtonActionPerformed
@@ -660,32 +660,31 @@ final class DebugCorePanel extends javax.swing.JPanel {
         }
         final String startF = startFolder;
         RP.post(new Runnable() {
+            @Override
             public void run() {
-                try {
-                    Host host = Host.byName(hostname);
-                    final ExecutionEnvironment exEnv = host.executionEnvironment();
-                    ConnectionManager.getInstance().connectTo(exEnv);
-
-                    FileChooserBuilder fcb = new FileChooserBuilder(exEnv);
-                    final JFileChooser fileChooser = fcb.createFileChooser(startF);
-                    fileChooser.setDialogTitle(getString("CorefileChooser"));
-                    fileChooser.setApproveButtonText(getString("CHOOSER_BUTTON"));
-                    fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
-                    fileChooser.addChoosableFileFilter(FileFilterFactory.getCoreFileFilter());
-                    SwingUtilities.invokeLater(new Runnable() {
-                        public void run() {
-                            int ret = fileChooser.showOpenDialog(DebugCorePanel.this);
-                            if (ret == JFileChooser.CANCEL_OPTION) {
-                                return;
-                            }
-                            corefileTextField.setText(fileChooser.getSelectedFile().getPath());
-                        }
-                    });
-                } catch (IOException ex) {
-                    Exceptions.printStackTrace(ex);
-                } catch (CancellationException ex) {
-                    // do nothing
+                Host host = Host.byName(hostname);
+                final ExecutionEnvironment exEnv = host.executionEnvironment();
+                if (!ConnectionManager.getInstance().connect(exEnv)) {
+                    return;
                 }
+
+                FileChooserBuilder fcb = new FileChooserBuilder(exEnv);
+                final JFileChooser fileChooser = fcb.createFileChooser(startF);
+                fileChooser.setDialogTitle(getString("CorefileChooser"));
+                fileChooser.setApproveButtonText(getString("CHOOSER_BUTTON"));
+                fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
+                fileChooser.addChoosableFileFilter(FileFilterFactory.getCoreFileFilter());
+                SwingUtilities.invokeLater(new Runnable() {
+
+                    @Override
+                    public void run() {
+                        int ret = fileChooser.showOpenDialog(DebugCorePanel.this);
+                        if (ret == JFileChooser.CANCEL_OPTION) {
+                            return;
+                        }
+                        corefileTextField.setText(fileChooser.getSelectedFile().getPath());
+                    }
+                });
             }
         });
     }//GEN-LAST:event_corefileBrowseButtonActionPerformed

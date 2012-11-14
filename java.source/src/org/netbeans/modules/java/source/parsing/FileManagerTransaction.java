@@ -193,7 +193,8 @@ public abstract class FileManagerTransaction extends TransactionContext.Service 
 
         @Override
         protected void rollBack() throws IOException {
-            throw new UnsupportedOperationException("RollBack is unsupported"); //NOI18N
+            //generally rollBack is not supported
+            //but for initial scan followed by other one is NOP OK.
         }
 
         @Override

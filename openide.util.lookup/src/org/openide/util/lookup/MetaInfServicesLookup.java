@@ -263,7 +263,7 @@ final class MetaInfServicesLookup extends AbstractLookup {
                         // is it position attribute?
                         if (line.startsWith("#position=")) {
                             if (currentItem == null) {
-                                LOGGER.log(Level.WARNING, "Found line '{0}' in {1} but there is no item to associate it with", new Object[] {line, url});
+                                LOGGER.log(Level.INFO, "Found line '{0}' in {1} but there is no item to associate it with", new Object[] {line, url});
                                 continue;
                             }
 
@@ -353,9 +353,9 @@ final class MetaInfServicesLookup extends AbstractLookup {
                     is.close();
                 }
             } catch (ClassNotFoundException ex) {
-                LOGGER.log(Level.WARNING, null, ex);
+                LOGGER.log(Level.INFO, null, ex);
             } catch (IOException ex) {
-                LOGGER.log(Level.WARNING, null, ex);
+                LOGGER.log(Level.INFO, null, ex);
             }
         }
 
@@ -374,7 +374,11 @@ final class MetaInfServicesLookup extends AbstractLookup {
         }
     }
     private static String clazzToString(Class<?> clazz) {
-        return clazz.getName() + "@" + clazz.getClassLoader() + ":" + clazz.getProtectionDomain().getCodeSource().getLocation(); // NOI18N
+        URL loc = null;
+        if (clazz.getProtectionDomain() != null && clazz.getProtectionDomain().getCodeSource() != null) {
+            loc = clazz.getProtectionDomain().getCodeSource().getLocation();
+        }
+        return clazz.getName() + "@" + clazz.getClassLoader() + ":" + loc; // NOI18N
     }
 
     /**
@@ -499,11 +503,11 @@ final class MetaInfServicesLookup extends AbstractLookup {
                         // could see and return immediately.
                         object = o;
                     } catch (Exception ex) {
-                        LOGGER.log(Level.WARNING, "Cannot create " + object, ex);
+                        LOGGER.log(Level.INFO, "Cannot create " + object, ex);
                         object = new CantInstantiate(c);
                         return null;
                     } catch (LinkageError x) { // #174055 + NoClassDefFoundError
-                        LOGGER.log(Level.WARNING, "Cannot create " + object, x);
+                        LOGGER.log(Level.INFO, "Cannot create " + object, x);
                         object = new CantInstantiate(c);
                         return null;
                     }

@@ -75,7 +75,7 @@ public class BasicBoxModelModuleTest extends CssModuleTestBase {
     }
     
     public void testMargin_Model() {
-        PropertyDefinition margin = Properties.getPropertyDefinition(null, "margin");
+        PropertyDefinition margin = Properties.getPropertyDefinition( "margin");
         ResolvedProperty eval = new ResolvedProperty(margin, "1px 2px 3px");
         List<ResolvedToken> resolved = eval.getResolvedTokens();
         for(ResolvedToken token : resolved) {

@@ -41,7 +41,7 @@
  */
 package org.netbeans.modules.favorites;
 
-import java.io.IOException;
+import java.util.concurrent.CountDownLatch;
 import org.netbeans.junit.NbTestCase;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -49,6 +49,7 @@ import org.openide.loaders.DataFolder;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
+import org.openide.util.Exceptions;
 import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
 
@@ -58,22 +59,36 @@ public class FavoritesNodeTest extends NbTestCase {
         super(n);
     }
 
-    public void testCreateNodeAndChangeDataObject() throws IOException {
+    public void testCreateNodeAndChangeDataObject() throws Exception {
         FileObject fo = FileUtil.toFileObject(getWorkDir());
         final DataFolder folder = DataFolder.findFolder(fo);
         
         final InstanceContent ic = new InstanceContent();
-        AbstractNode node = new AbstractNode(Children.LEAF, new AbstractLookup(ic)) {
-            @Override
-            public void setExpert(boolean b) {
-                ic.add(folder);
-                setChildren(new Children.Array());
-            }
-        };
+        ic.add(folder);
+        AbstractNode node = new AbstractNode(Children.LEAF, new AbstractLookup(ic));
         
+        final CountDownLatch l = new CountDownLatch(1);
+        FavoritesNode.RP.post(new Runnable() {
+            @Override
+            public void run () {
+                try {
+                    l.await();
+                } catch (InterruptedException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+        });
         Node res = FavoritesNode.createFilterNode(node);
         assertTrue("No children", res.isLeaf());
-        node.setExpert(true);
+        l.countDown();
+        final CountDownLatch l2 = new CountDownLatch(1);
+        FavoritesNode.RP.post(new Runnable() {
+            @Override
+            public void run () {
+                l2.countDown();
+            }
+        });
+        l2.await();
         assertFalse("Now it has children", res.isLeaf());
     }
 }

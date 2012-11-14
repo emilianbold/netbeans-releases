@@ -89,6 +89,7 @@ import org.netbeans.modules.git.ui.commit.CommitAction;
 import org.netbeans.modules.git.ui.commit.GitFileNode;
 import org.netbeans.modules.versioning.util.status.VCSStatusTableModel;
 import org.netbeans.modules.git.ui.status.StatusAction;
+import org.netbeans.modules.git.utils.GitUtils;
 import org.netbeans.modules.versioning.util.status.VCSStatusTable;
 import org.netbeans.modules.versioning.diff.DiffLookup;
 import org.netbeans.modules.versioning.diff.DiffUtils;
@@ -627,6 +628,7 @@ public class MultiDiffPanelController implements ActionListener, PropertyChangeL
 
     private void applyChange (FileStatusCache.ChangedEvent event) {
         if (context != null) {
+            LOG.log(Level.FINE, "Planning refresh for {0}", event.getFile());
             synchronized (changes) {
                 changes.put(event.getFile(), event);
             }
@@ -638,7 +640,13 @@ public class MultiDiffPanelController implements ActionListener, PropertyChangeL
     public void propertyChange (PropertyChangeEvent evt) {
         if (FileStatusCache.PROP_FILE_STATUS_CHANGED.equals(evt.getPropertyName())) {
             FileStatusCache.ChangedEvent changedEvent = (FileStatusCache.ChangedEvent) evt.getNewValue();
-            if (affectsView((FileStatusCache.ChangedEvent) evt.getNewValue())) {
+            if (LOG.isLoggable(Level.FINE)) {
+                LOG.log(Level.FINE, "File status for file {0} changed from {1} to {2}", new Object[] { 
+                    changedEvent.getFile(), 
+                    changedEvent.getOldInfo(),
+                    changedEvent.getNewInfo() } );
+            }
+            if (affectsView(changedEvent)) {
                 applyChange(changedEvent);
             }
         } else if (DiffController.PROP_DIFFERENCES.equals(evt.getPropertyName())) {
@@ -664,7 +672,7 @@ public class MultiDiffPanelController implements ActionListener, PropertyChangeL
         } else {
             if (!oldInfo.containsStatus(displayStatuses) && !newInfo.containsStatus(displayStatuses)) return false;
         }
-        return context == null ? false: context.contains(file);
+        return context == null ? false : GitUtils.contains(context.getRootFiles(), file);
     }
 
     private void initPanelMode () {
@@ -854,7 +862,7 @@ public class MultiDiffPanelController implements ActionListener, PropertyChangeL
             for (Iterator<FileStatusCache.ChangedEvent> it = events.iterator(); it.hasNext();) {
                 FileStatusCache.ChangedEvent evt = it.next();
                 if (!affectsView(evt)) {
-                    it.remove();
+                    LOG.log(Level.FINE, "ApplyChanges: file {0} does not affect view", evt.getFile());
                 }
             }
             Git git = Git.getInstance();
@@ -874,14 +882,18 @@ public class MultiDiffPanelController implements ActionListener, PropertyChangeL
                 if (newInfo.containsStatus(displayStatuses)) {
                     if (node != null) {
                         toRefresh.add(node);
+                        LOG.log(Level.FINE, "ApplyChanges: refreshing node {0}", node);
                     } else {
                         File root = git.getRepositoryRoot(evt.getFile());
                         if (root != null) {
-                            toAdd.add(new DiffNode(new GitFileNode(root, evt.getFile()), mode));
+                            DiffNode toAddNode = new DiffNode(new GitFileNode(root, evt.getFile()), mode);
+                            toAdd.add(toAddNode);
+                            LOG.log(Level.FINE, "ApplyChanges: adding node {0}", toAddNode);
                         }
                     }
                 } else if (node != null) {
                     toRemove.add(node);
+                    LOG.log(Level.FINE, "ApplyChanges: removing node {0}", node);
                 }
             }
 

@@ -78,6 +78,7 @@ import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -111,6 +112,7 @@ import org.openide.awt.QuickSearch;
 import org.openide.awt.StatusDisplayer;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
@@ -347,6 +349,9 @@ public class OptionsPanel extends JPanel {
                     searchTC.requestFocusInWindow();
                 } else {
                     clearSearch = false;
+		    if(e.getOppositeComponent() != null && e.getOppositeComponent().equals(quickSearch)) {
+			pOptions.requestFocusInWindow();
+		    }
                 }
             }
         });
@@ -381,6 +386,7 @@ public class OptionsPanel extends JPanel {
     
     private void clearSearchField() {
         searchTC.setText("");
+	clearAllinQS();
     }
     
     private void showHint (boolean showHint) {
@@ -426,7 +432,14 @@ public class OptionsPanel extends JPanel {
         int tabIndex = pane == null ? -1 : pane.indexOfTab(tabTitle);
 
         Set<String> keywords = new HashSet<String>();
-        keywords.addAll(Arrays.asList(keywordsFO.getAttribute("keywords").toString().split(","))); //NOI18N
+	Enumeration<String> attributes = keywordsFO.getAttributes();
+	while(attributes.hasMoreElements()) {
+	    String attribute = attributes.nextElement();
+	    if(attribute.startsWith("keywords")) {
+		String word = keywordsFO.getAttribute(attribute).toString();
+		keywords.add(word.toUpperCase());
+	    }
+	}
 
         ArrayList<String> words = categoryid2words.get(location);
         if (words == null) {
@@ -565,6 +578,30 @@ public class OptionsPanel extends JPanel {
             }
             return false;
         }
+
+	private ArrayList<String> getAllMatchedKeywords(ArrayList<String> keywords, Collection<String> stWords) {
+	    ArrayList<String> allMatched = new ArrayList<String>();
+	    Iterator<String> e = stWords.iterator();
+            while (e.hasNext()) {
+		allMatched.addAll(getMatchedKeywords(keywords, e.next(), allMatched));
+            }
+	    return allMatched;
+	}
+
+	private ArrayList<String> getMatchedKeywords(ArrayList<String> keywords, String stWord, ArrayList<String> allMatched) {
+	    ArrayList<String> matched = new ArrayList<String>();
+	    Iterator<String> e = keywords.iterator();
+            while (e.hasNext()) {
+		String next = e.next();
+		for (String s : next.split(",")) {
+		    s = s.trim();
+		    if (s.contains(stWord) && !allMatched.contains(s) && !matched.contains(s)) {
+			matched.add(s);
+		    }
+		}
+            }
+	    return matched;
+	}
         
         private void handleSearch(String searchText) {
             List<String> stWords = Arrays.asList(searchText.toUpperCase().split(" "));
@@ -603,7 +640,7 @@ public class OptionsPanel extends JPanel {
                                         if (exactTabIndex == tabIndex) {
                                             pane.setSelectedIndex(tabIndex);
                                         }
-					matchedKeywords = tabWords;
+					matchedKeywords = getAllMatchedKeywords(tabWords, stWords);
 					CategoryModel.getInstance().getCurrent().handleSuccessfulSearchInController(searchText, matchedKeywords);
                                     } else {
                                         pane.setEnabledAt(tabIndex, false);
@@ -615,6 +652,8 @@ public class OptionsPanel extends JPanel {
                                     setCurrentCategory(CategoryModel.getInstance().getCategory(id), null);
                                     if(tabsInfo.size() == 1) {
                                         foundInNoTab = false;
+					matchedKeywords = getAllMatchedKeywords(entry, stWords);
+					CategoryModel.getInstance().getCurrent().handleSuccessfulSearchInController(searchText, matchedKeywords);
                                     }
                                 }
                             }
@@ -623,7 +662,7 @@ public class OptionsPanel extends JPanel {
                             }
                         } else {
                             setCurrentCategory(CategoryModel.getInstance().getCategory(id), null);
-			    matchedKeywords = entry;
+			    matchedKeywords = getAllMatchedKeywords(entry, stWords);
 			    CategoryModel.getInstance().getCurrent().handleSuccessfulSearchInController(searchText, matchedKeywords);
                         }
                     } else {
@@ -670,7 +709,7 @@ public class OptionsPanel extends JPanel {
         @Override
         public void quickSearchConfirmed() {
             if (text2search.length() == 0) {
-                clearAll();
+                clearAllinQS();
                 showHint(true);
                 return;
             }
@@ -698,24 +737,25 @@ public class OptionsPanel extends JPanel {
 
         @Override
         public void quickSearchCanceled() {
-            clearAll();
+            clearAllinQS();
             showHint(true);
         }
+    }
 
-        private void clearAll() {
-            clearSearch = true;
-            for (String id : CategoryModel.getInstance().getCategoryIDs()) {
-                JTabbedPane pane = categoryid2tabbedpane.get(id);
-                if (categoryid2tabs.get(id) != null && pane != null) {
-                    for (int i = 0; i < pane.getTabCount(); i++) {
-                        pane.setEnabledAt(i, true);
-                    }
-                }
-                buttons.get(id).setEnabled(true);
-            }
-            setCurrentCategory(CategoryModel.getInstance().getCurrent(), null);
-            disabledCategories.clear();
-        }
+    private void clearAllinQS() {
+	clearSearch = true;
+	for (String id : CategoryModel.getInstance().getCategoryIDs()) {
+	    JTabbedPane pane = categoryid2tabbedpane.get(id);
+	    if (categoryid2tabs.get(id) != null && pane != null) {
+		for (int i = 0; i < pane.getTabCount(); i++) {
+		    pane.setEnabledAt(i, true);
+		}
+	    }
+	    buttons.get(id).setEnabled(true);
+	}
+	setCurrentCategory(CategoryModel.getInstance().getCurrent(), null);
+	disabledCategories.clear();
+	CategoryModel.getInstance().getCurrent().handleSuccessfulSearchInController(null, null);
     }
     
     private void initActions () {
@@ -767,10 +807,11 @@ public class OptionsPanel extends JPanel {
                 : new CategoryButton(category);
 
         // add shortcut
-        KeyStroke keyStroke = KeyStroke.getKeyStroke 
-            (button.getDisplayedMnemonic (), KeyEvent.ALT_MASK);
-        getInputMap (JComponent.WHEN_IN_FOCUSED_WINDOW).put (keyStroke, button);
-        getActionMap ().put (button, new SelectAction (category));
+	if (!isMac) {
+	    KeyStroke keyStroke = KeyStroke.getKeyStroke(button.getDisplayedMnemonic(), KeyEvent.ALT_MASK);
+	    getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(keyStroke, button);
+	    getActionMap().put(button, new SelectAction(category));
+	}
 
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.anchor = GridBagConstraints.NORTHWEST;

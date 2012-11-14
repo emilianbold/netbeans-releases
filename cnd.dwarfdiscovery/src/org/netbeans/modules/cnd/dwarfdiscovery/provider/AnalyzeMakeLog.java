@@ -194,42 +194,44 @@ public class AnalyzeMakeLog extends BaseDwarfProvider {
     
     private String detectMakeLog(ProjectProxy project){
         String root = project.getSourceRoot();
-        int i = root.indexOf("/usr/src/"); // NOI18N
-        if (i < 0 && root.endsWith("/usr/src")){ // NOI18N
-            i = root.indexOf("/usr/src"); // NOI18N
-        }
-        if (i > 0) {
-            String latest = null;
-            String logfolder = root.substring(0, i) + "/log"; // NOI18N
-            File log = new File(logfolder);
-            if (log.exists() && log.isDirectory() && log.canRead()) {
-                File[] ff = log.listFiles();
-                if (ff != null) {
-                    for (File when : ff) {
-                        if (when.exists() && when.isDirectory() && when.canRead()) {
-                            File[] ww = when.listFiles();
-                            if (ww != null) {
-                                for (File l : ww) {
-                                    String current = l.getAbsolutePath();
-                                    if (current.endsWith("/nightly.log")) { // NOI18N
-                                        if (latest == null) {
-                                            latest = current;
-                                        } else {
-                                            String folder1 = latest.substring(0, latest.lastIndexOf("/nightly.log")); // NOI18N
-                                            String folder2 = current.substring(0, current.lastIndexOf("/nightly.log")); // NOI18N
-                                            if (folder1.compareTo(folder2) < 0) {
+        if (root != null && root.length() > 1) {
+            int i = root.indexOf("/usr/src/"); // NOI18N
+            if (i < 0 && root.endsWith("/usr/src")){ // NOI18N
+                i = root.indexOf("/usr/src"); // NOI18N
+            }
+            if (i > 0) {
+                String latest = null;
+                String logfolder = root.substring(0, i) + "/log"; // NOI18N
+                File log = new File(logfolder);
+                if (log.exists() && log.isDirectory() && log.canRead()) {
+                    File[] ff = log.listFiles();
+                    if (ff != null) {
+                        for (File when : ff) {
+                            if (when.exists() && when.isDirectory() && when.canRead()) {
+                                File[] ww = when.listFiles();
+                                if (ww != null) {
+                                    for (File l : ww) {
+                                        String current = l.getAbsolutePath();
+                                        if (current.endsWith("/nightly.log")) { // NOI18N
+                                            if (latest == null) {
                                                 latest = current;
+                                            } else {
+                                                String folder1 = latest.substring(0, latest.lastIndexOf("/nightly.log")); // NOI18N
+                                                String folder2 = current.substring(0, current.lastIndexOf("/nightly.log")); // NOI18N
+                                                if (folder1.compareTo(folder2) < 0) {
+                                                    latest = current;
+                                                }
                                             }
+                                            break;
                                         }
-                                        break;
                                     }
                                 }
                             }
                         }
                     }
                 }
+                return latest;
             }
-            return latest;
         }
         return null;
     }

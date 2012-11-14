@@ -42,13 +42,6 @@
 
 package org.netbeans.modules.php.editor.lexer;
 
-
-import java.io.File;
-import java.util.ArrayList;
-import java.util.List;
-import org.netbeans.api.lexer.TokenSequence;
-import org.netbeans.junit.NbTestCase;
-
 /**
  *
  * @author Petr Pisl
@@ -69,56 +62,179 @@ public class PHP53FeaturesTest extends PHPLexerTestBase {
         super.tearDown();
     }
 
-    public void testGoto() throws Exception {
+    public void testGoto_01() throws Exception {
         performTest("jump01");
+    }
+
+    public void testGoto_02() throws Exception {
         performTest("jump02");
+    }
+
+    public void testGoto_03() throws Exception {
         performTest("jump03");
+    }
+
+    public void testGoto_04() throws Exception {
         performTest("jump04");
+    }
+
+    public void testGoto_05() throws Exception {
         performTest("jump05");
+    }
+
+    public void testGoto_06() throws Exception {
         performTest("jump06");
+    }
+
+    public void testGoto_07() throws Exception {
         performTest("jump07");
+    }
+
+    public void testGoto_08() throws Exception {
         performTest("jump08");
+    }
+
+    public void testGoto_09() throws Exception {
         performTest("jump09");
+    }
+
+    public void testGoto_10() throws Exception {
         performTest("jump10");
+    }
+
+    public void testGoto_11() throws Exception {
         performTest("jump11");
+    }
+
+    public void testGoto_12() throws Exception {
         performTest("jump12");
+    }
+
+    public void testGoto_13() throws Exception {
         performTest("jump13");
     }
 
-    public void testNowDoc() throws Exception {
+    public void testNowDoc_00() throws Exception {
         performTest("nowdoc_000");
+    }
+
+    public void testNowDoc_01() throws Exception {
         performTest("nowdoc_001");
+    }
+
+    public void testNowDoc_02() throws Exception {
         performTest("nowdoc_002");
+    }
+
+    public void testNowDoc_03() throws Exception {
         performTest("nowdoc_003");
+    }
+
+    public void testNowDoc_04() throws Exception {
         performTest("nowdoc_004");
+    }
+
+    public void testNowDoc_05() throws Exception {
         performTest("nowdoc_005");
+    }
+
+    public void testNowDoc_06() throws Exception {
         performTest("nowdoc_006");
+    }
+
+    public void testNowDoc_07() throws Exception {
         performTest("nowdoc_007");
+    }
+
+    public void testNowDoc_08() throws Exception {
         performTest("nowdoc_008");
+    }
+
+    public void testNowDoc_09() throws Exception {
         performTest("nowdoc_009");
+    }
+
+    public void testNowDoc_10() throws Exception {
         performTest("nowdoc_010");
+    }
+
+    public void testNowDoc_11() throws Exception {
         performTest("nowdoc_011");
+    }
+
+    public void testNowDoc_12() throws Exception {
         performTest("nowdoc_012");
+    }
+
+    public void testNowDoc_13() throws Exception {
         performTest("nowdoc_013");
+    }
+
+    public void testNowDoc_14() throws Exception {
         performTest("nowdoc_014");
+    }
+
+    public void testNowDoc_15() throws Exception {
         performTest("nowdoc_015");
     }
 
-    public void testHereDoc53() throws Exception {
+    public void testHereDoc53_01() throws Exception {
         performTest("heredoc_001");
+    }
+
+    public void testHereDoc53_02() throws Exception {
         performTest("heredoc_002");
+    }
+
+    public void testHereDoc53_03() throws Exception {
         performTest("heredoc_003");
+    }
+
+    public void testHereDoc53_04() throws Exception {
         performTest("heredoc_004");
+    }
+
+    public void testHereDoc53_05() throws Exception {
         performTest("heredoc_005");
+    }
+
+    public void testHereDoc53_06() throws Exception {
         performTest("heredoc_006");
+    }
+
+    public void testHereDoc53_07() throws Exception {
         performTest("heredoc_007");
+    }
+
+    public void testHereDoc53_08() throws Exception {
         performTest("heredoc_008");
+    }
+
+    public void testHereDoc53_09() throws Exception {
         performTest("heredoc_009");
+    }
+
+    public void testHereDoc53_10() throws Exception {
         performTest("heredoc_010");
+    }
+
+    public void testHereDoc53_11() throws Exception {
         performTest("heredoc_011");
+    }
+
+    public void testHereDoc53_12() throws Exception {
         performTest("heredoc_012");
+    }
+
+    public void testHereDoc53_13() throws Exception {
         performTest("heredoc_013");
+    }
+
+    public void testHereDoc53_14() throws Exception {
         performTest("heredoc_014");
+    }
+
+    public void testHereDoc53_15() throws Exception {
         performTest("heredoc_015");
     }
 }

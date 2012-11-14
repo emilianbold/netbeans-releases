@@ -258,7 +258,7 @@ public class WebAppMetadataImpl implements WebAppMetadata {
                                         for (FileObject fileObject : oldRoots) {
                                             myRootToFragment.remove( fileObject );
                                         }
-                                        rootsSet.remove(intersection);
+                                        rootsSet.removeAll(intersection);
                                         for (FileObject fileObject : rootsSet)
                                         {
                                             addFragmentRec(fileObject);

@@ -76,8 +76,8 @@ final class WarmUpSupport implements Runnable {
         return TASK;
     }
     
-    static void waitFinished() {
-        TASK.waitFinished();
+    static Task waitTask() {
+        return TASK;
     }
 
     // -------

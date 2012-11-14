@@ -80,7 +80,7 @@ public class NbmWizardIterator implements WizardDescriptor.BackgroundInstantiati
 
     public static final String NBM_ARTIFACTID = "nbm_artifactId";
     
-    static final Archetype NB_MODULE_ARCH, NB_APP_ARCH, NB_SUITE_ARCH;
+    static final Archetype NB_MODULE_ARCH, NB_APP_ARCH;
     static {
         NB_MODULE_ARCH = new Archetype();
         NB_MODULE_ARCH.setGroupId("org.codehaus.mojo.archetypes"); //NOI18N
@@ -92,10 +92,6 @@ public class NbmWizardIterator implements WizardDescriptor.BackgroundInstantiati
         NB_APP_ARCH.setVersion("1.12"); //NOI18N
         NB_APP_ARCH.setArtifactId("netbeans-platform-app-archetype"); //NOI18N
 
-        NB_SUITE_ARCH = new Archetype();
-        NB_SUITE_ARCH.setGroupId("org.codehaus.mojo.archetypes"); //NOI18N
-        NB_SUITE_ARCH.setVersion("1.8"); //NOI18N
-        NB_SUITE_ARCH.setArtifactId("nbm-suite-root"); //NOI18N
     }
 
     static final String OSGIDEPENDENCIES = "osgi.dependencies";
@@ -122,12 +118,6 @@ public class NbmWizardIterator implements WizardDescriptor.BackgroundInstantiati
         return new NbmWizardIterator(NB_APP_ARCH);
     }
 
-    @TemplateRegistration(folder=ArchetypeWizards.TEMPLATE_FOLDER, position=500, displayName="#template.suite", iconBase="org/netbeans/modules/maven/apisupport/suiteicon.png", description="NbSuiteDescription.html")
-    @Messages("template.suite=NetBeans Module Suite")
-    public static NbmWizardIterator createNbSuiteIterator() {
-        return new NbmWizardIterator(NB_SUITE_ARCH);
-    }
-    
     @SuppressWarnings({"unchecked", "rawtypes"}) // XXX until rewrite panel storage
     private WizardDescriptor.Panel<WizardDescriptor>[] createPanels(ValidationGroup vg) {
             return new WizardDescriptor.Panel[] {

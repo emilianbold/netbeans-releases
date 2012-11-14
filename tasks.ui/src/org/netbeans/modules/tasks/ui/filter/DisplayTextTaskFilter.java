@@ -57,7 +57,7 @@ public class DisplayTextTaskFilter implements DashboardFilter<Issue> {
 
     @Override
     public boolean isInFilter(Issue task) {
-        return task.getDisplayName().toLowerCase().contains(summaryParam.toLowerCase());
+        return task.getDisplayName().toLowerCase().contains(summaryParam.toLowerCase().trim());
     }
 
     @Override

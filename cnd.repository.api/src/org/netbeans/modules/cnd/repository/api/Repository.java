@@ -102,6 +102,11 @@ public interface Repository {
     void debugDistribution();
 
     /**
+     * Dumps diagnostics info. To be called when unexpected null returned, etc
+     */
+    void debugDump(Key key);
+    
+    /**
      * Prepare repository and tells the version of the persistent mechanism
      * @param verison 
      */

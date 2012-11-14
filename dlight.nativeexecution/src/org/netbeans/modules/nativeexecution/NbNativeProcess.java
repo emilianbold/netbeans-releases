@@ -112,7 +112,7 @@ public abstract class NbNativeProcess extends AbstractNativeProcess {
             }
         }
 
-        if (info.isUnbuffer()) {
+        if (!info.isPtyMode() && info.isUnbuffer()) {
             try {
                 UnbufferSupport.initUnbuffer(info.getExecutionEnvironment(), info.getEnvironment());
             } catch (IOException ex) {
@@ -156,7 +156,7 @@ public abstract class NbNativeProcess extends AbstractNativeProcess {
         if (info.isCommandLineDefined()) {
             command.add(hostInfo.getShell());
             command.add("-c"); // NOI18N
-            command.add(info.getCommandLineForShell()); // NOI18N
+            command.add("exec " + info.getCommandLineForShell()); // NOI18N
         } else {
             command.add(fixForWindows(info.getExecutable()));
             command.addAll(info.getArguments());
@@ -171,7 +171,17 @@ public abstract class NbNativeProcess extends AbstractNativeProcess {
             addProcessInfo(line);
         }
 
-        setPID(Integer.parseInt(getProcessInfo("PID"))); // NOI18N    
+        String pidProperty = getProcessInfo("PID"); // NOI18N
+
+        if (pidProperty == null) {
+            InputStream error = getErrorStream();
+            while (!(line = readLine(error).trim()).isEmpty()) {
+                LOG.info(line);
+            }
+            throw new InternalError("Failed to get process PID"); // NOI18N
+        }
+
+        setPID(Integer.parseInt(pidProperty)); // NOI18N    
     }
 
     @Override

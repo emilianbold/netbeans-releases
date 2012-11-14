@@ -49,6 +49,23 @@ made subject to such option by the copyright holder.
         <apidef name="filesystems">Filesystems API</apidef>
     </apidefs>
     <changes>
+        <change id="FileChooserBuilder-setAcceptAllFileFilterUsed">
+            <api name="filesystems"/>
+            <summary>New method FileChooserBuilder.setAcceptAllFileFilterUsed.</summary>
+            <version major="8" minor="3"/>
+            <date year="2012" month="10" day="30"/>
+            <author login="tmysik"/>
+            <compatibility addition="yes" deprecation="no"/>
+            <description>
+                <p>
+                    Added <a href="@TOP@org/openide/filesystems/FileChooserBuilder.html#setAcceptAllFileFilterUsed(boolean)">
+                    new method</a> to <code>FileChooserBuilder</code> that determines whether the <code>AcceptAll FileFilter</code>
+                    should be used in the created file chooser.
+                </p>
+            </description>
+            <class package="org.openide.filesystems" name="FileChooserBuilder"/>
+            <issue number="220401"/>
+        </change>
         <change id="FileChooserBuilder-addDefaultFileFilters">
             <api name="filesystems"/>
             <summary>New method FileChooserBuilder.addDefaultFileFilters and accompanying annotations.</summary>

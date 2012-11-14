@@ -69,9 +69,9 @@ public class HintsTest extends GeneralJavaScript {
 
     public void createApplication() {
         startTest();
-        this.name_iterator++;
-        createPhpApplication(TEST_BASE_NAME + "ht_" + name_iterator);
-        EditorOperator eo = createWebFile("ht", TEST_BASE_NAME + "ht_" + name_iterator, "JavaScript File");
+        HintsTest.NAME_ITERATOR++;
+        createPhpApplication(TEST_BASE_NAME + "ht_" + NAME_ITERATOR);
+        EditorOperator eo = createWebFile("ht", TEST_BASE_NAME + "ht_" + NAME_ITERATOR, "JavaScript File");
         HintsTest.currentFile = "ht.js";
         try {
             waitScanFinished();

@@ -44,7 +44,6 @@
 package org.netbeans.modules.profiler.stp;
 
 import org.netbeans.lib.profiler.common.ProfilingSettings;
-import org.netbeans.lib.profiler.ui.components.JExtendedSpinner;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import java.awt.Color;
@@ -55,11 +54,8 @@ import java.awt.Insets;
 import javax.swing.ButtonGroup;
 import javax.swing.JCheckBox;
 import javax.swing.JFrame;
-import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
-import javax.swing.JSpinner;
-import javax.swing.SpinnerNumberModel;
 import javax.swing.UIManager;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -134,6 +130,7 @@ public class MemorySettingsBasicPanel extends DefaultSettingsPanel implements He
         sampleAppRadio.setSelected(profilingType == ProfilingSettings.PROFILE_MEMORY_SAMPLING);
         profileAppRadio.setSelected(profilingType == ProfilingSettings.PROFILE_MEMORY_ALLOCATIONS ||
                                     profilingType == ProfilingSettings.PROFILE_MEMORY_LIVENESS);
+        fullDataCheckbox.setSelected(profilingType == ProfilingSettings.PROFILE_MEMORY_LIVENESS);
     }
 
     public int getProfilingType() {

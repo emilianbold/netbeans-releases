@@ -45,6 +45,8 @@
 package org.netbeans.modules.autoupdate.services;
 
 import java.io.*;
+import java.lang.ref.Reference;
+import java.lang.ref.WeakReference;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
@@ -556,7 +558,6 @@ public class Utilities {
                     brokenDependencies.addAll (moreBroken);
                     break;
                 }
-                tmp = new HashSet<ModuleInfo> ();
                 for (UpdateElement e : more) {
                     //infos.addAll (Trampoline.API.impl (el).getModuleInfos ());
                     tmp.add (((ModuleUpdateElementImpl) Trampoline.API.impl (e)).getModuleInfo ());
@@ -585,73 +586,109 @@ public class Utilities {
         return retval;
     }
     
+    private static Reference<Map<ModuleInfo, Set<UpdateElement>>> cachedInfo2RequestedReference = null;            
+    
+    public static Set<UpdateElement> handleBackwardCompatability4ModuleInfo (ModuleInfo mi, Set<ModuleInfo> forInstall, Set<Dependency> brokenDependencies, boolean aggressive) {
+        if (cachedInfo2RequestedReference != null && cachedInfo2RequestedReference.get() != null) {
+            Set<UpdateElement> requested = cachedInfo2RequestedReference.get().get(mi);
+            if (requested != null) {
+                return requested;
+            }
+        }
+        UpdateUnit u = UpdateManagerImpl.getInstance().getUpdateUnit(mi.getCodeNameBase());
+        Set<UpdateElement> moreRequested = new HashSet<UpdateElement>();
+        // invalid codenamebase (in unit tests)
+        if (u == null) {
+            return moreRequested;
+        }
+        // not installed, not need to handle backward compatability
+        UpdateElement i = u.getInstalled();
+        if (i == null) {
+            return moreRequested;
+        }
+
+        // Dependency.TYPE_MODULE
+        Collection<Dependency> dependencies = new HashSet<Dependency>();
+        dependencies.addAll(Dependency.create(Dependency.TYPE_MODULE, mi.getCodeName()));
+
+        SortedSet<String> newTokens = new TreeSet<String>(Arrays.asList(mi.getProvides()));
+        SortedSet<String> oldTokens = new TreeSet<String>(Arrays.asList(((ModuleUpdateElementImpl) Trampoline.API.impl(i)).getModuleInfo().getProvides()));
+        oldTokens.removeAll(newTokens);
+        // handle diff
+        for (String tok : oldTokens) {
+            // don't care about provider of platform dependency here
+            if (tok.startsWith("org.openide.modules.os")) { // NOI18N
+                continue;
+            }
+            dependencies.addAll(Dependency.create(Dependency.TYPE_REQUIRES, tok));
+            dependencies.addAll(Dependency.create(Dependency.TYPE_NEEDS, tok));
+        }
+
+        for (Dependency d : dependencies) {
+            DependencyAggregator deco = DependencyAggregator.getAggregator(d);
+            int type = d.getType();
+            String name = d.getName();
+            for (Iterator<ModuleInfo> it = deco.getDependening().iterator(); it.hasNext();) {
+                ModuleInfo depMI = it.next();
+                Module depM = getModuleInstance(depMI.getCodeNameBase(), depMI.getSpecificationVersion());
+                if (depM == null) {
+                    continue;
+                }
+                if (!depM.getProblems().isEmpty()) {
+                    // skip this module because it has own problems already
+                    continue;
+                }
+                for (Dependency toTry : depM.getDependencies()) {
+                    // check only relevant deps
+                    if (type == toTry.getType() && name.equals(toTry.getName())
+                            && !DependencyChecker.checkDependencyModule(toTry, mi)) {
+                        UpdateUnit tryUU = UpdateManagerImpl.getInstance().getUpdateUnit(depM.getCodeNameBase());
+                        if (!tryUU.getAvailableUpdates().isEmpty()) {
+                            UpdateElement tryUE = tryUU.getAvailableUpdates().get(0);
+
+                            ModuleInfo tryUpdated = ((ModuleUpdateElementImpl) Trampoline.API.impl(tryUE)).getModuleInfo();
+                            Set<Dependency> deps = new HashSet<Dependency>(tryUpdated.getDependencies());
+                            Set<ModuleInfo> availableInfos = new HashSet<ModuleInfo>(forInstall);
+                            Set<Dependency> newones;
+                            while (!(newones = processDependencies(deps, moreRequested, availableInfos, brokenDependencies, tryUE, aggressive, null, false)).isEmpty()) {
+                                deps = newones;
+                            }
+                            moreRequested.add(tryUE);
+                        }
+                    }
+                }
+            }
+        }
+
+        if (cachedInfo2RequestedReference == null || cachedInfo2RequestedReference.get() == null) {
+            cachedInfo2RequestedReference = new WeakReference<Map<ModuleInfo, Set<UpdateElement>>>
+                    (new HashMap<ModuleInfo, Set<UpdateElement>>());
+        }
+        cachedInfo2RequestedReference.get().put(mi, moreRequested);
+
+        return moreRequested;
+    }
+    
+    
+    private static Reference<Set<ModuleInfo>> cachedInfosReference = null;            
+    private static Reference<Set<UpdateElement>> cachedResultReference = null;
+    
     public static Set<UpdateElement> handleBackwardCompatability (Set<ModuleInfo> forInstall, Set<Dependency> brokenDependencies, boolean aggressive) {
+        if (cachedInfosReference != null && cachedInfosReference.get() != null && cachedInfosReference.get().equals(forInstall)) {
+            if (cachedResultReference != null && cachedResultReference.get() != null) {
+                return cachedResultReference.get();
+            }
+        }
+        cachedInfosReference = new WeakReference<Set<ModuleInfo>>(forInstall);
+        err.finest("calling handleBackwardCompatability(size: " + forInstall.size() + ")");
+        
         Set<UpdateElement> moreRequested = new HashSet<UpdateElement> ();
         // backward compatibility
         for (ModuleInfo mi : forInstall) {
-            UpdateUnit u = UpdateManagerImpl.getInstance ().getUpdateUnit (mi.getCodeNameBase ());
-            // invalid codenamebase (in unit tests)
-            if (u == null) {
-                continue;
-            }
-            // not installed, not need to handle backward compatability
-            UpdateElement i = u.getInstalled ();
-            if (i == null) {
-                continue;
-            }
-
-            // Dependency.TYPE_MODULE
-            Collection<Dependency> dependencies = new HashSet<Dependency> ();
-            dependencies.addAll(Dependency.create (Dependency.TYPE_MODULE, mi.getCodeName ()));
-
-            SortedSet<String> newTokens = new TreeSet<String> (Arrays.asList (mi.getProvides ()));
-            SortedSet<String> oldTokens = new TreeSet<String> (Arrays.asList (((ModuleUpdateElementImpl) Trampoline.API.impl (i)).getModuleInfo ().getProvides ()));
-            oldTokens.removeAll (newTokens);
-            // handle diff
-            for (String tok : oldTokens) {
-                // don't care about provider of platform dependency here
-                if (tok.startsWith ("org.openide.modules.os")) { // NOI18N
-                    continue;
-                }
-                dependencies.addAll (Dependency.create (Dependency.TYPE_REQUIRES, tok));
-                dependencies.addAll (Dependency.create (Dependency.TYPE_NEEDS, tok));
-            }
-
-            for (Dependency d : dependencies) {
-                DependencyAggregator deco = DependencyAggregator.getAggregator (d);
-                int type = d.getType();
-                String name = d.getName();
-                for (ModuleInfo depMI : deco.getDependening ()) {
-                        Module depM = getModuleInstance(depMI.getCodeNameBase(), depMI.getSpecificationVersion());
-                        if (depM == null) {
-                            continue;
-                        }
-                        if (! depM.getProblems ().isEmpty ()) {
-                            // skip this module because it has own problems already
-                            continue;
-                        }
-                        for (Dependency toTry : depM.getDependencies ()) {
-                            // check only relevant deps
-                            if (type == toTry.getType() && name.equals(toTry.getName()) &&
-                                    ! DependencyChecker.checkDependencyModule (toTry, mi)) {
-                                UpdateUnit tryUU = UpdateManagerImpl.getInstance ().getUpdateUnit (depM.getCodeNameBase ());
-                                if (! tryUU.getAvailableUpdates ().isEmpty ()) {
-                                    UpdateElement tryUE = tryUU.getAvailableUpdates ().get (0);
-                                    
-                                    ModuleInfo tryUpdated = ((ModuleUpdateElementImpl) Trampoline.API.impl (tryUE)).getModuleInfo ();
-                                    Set<Dependency> deps = new HashSet<Dependency> (tryUpdated.getDependencies ());
-                                    Set<ModuleInfo> availableInfos = new HashSet<ModuleInfo> (forInstall);
-                                    Set<Dependency> newones;
-                                    while (! (newones = processDependencies (deps, moreRequested, availableInfos, brokenDependencies, tryUE, aggressive, null, false)).isEmpty ()) {
-                                        deps = newones;
-                                    }
-                                    moreRequested.add (tryUE);
-                                }
-                            }
-                        }
-                    }
-            }
+            moreRequested.addAll(handleBackwardCompatability4ModuleInfo(mi, forInstall, brokenDependencies, aggressive));
         }
+        cachedResultReference = new WeakReference<Set<UpdateElement>>(moreRequested);
+
         return moreRequested;
     }
 

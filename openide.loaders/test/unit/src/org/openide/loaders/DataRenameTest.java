@@ -40,7 +40,6 @@ import java.util.Enumeration;
 import java.util.logging.Logger;
 import org.netbeans.junit.*;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.LocalFileSystem;
 
 /** Test things about node delegates.
  * Note: if you mess with file status changes in this test, you may effectively

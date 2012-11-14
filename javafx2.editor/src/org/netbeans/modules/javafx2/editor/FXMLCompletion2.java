@@ -191,11 +191,14 @@ public class FXMLCompletion2 implements CompletionProvider {
                 if (doc instanceof AbstractDocument) {
                     ((AbstractDocument)doc).readLock();
                 }
-                TokenHierarchy<?> th = TokenHierarchy.get(doc);
                 // bug in parsing API: snapshot source not modified just after modification to the source file
-                ctx.init(th, ci, fxmlResult); 
-                if (doc instanceof AbstractDocument) {
-                    ((AbstractDocument)doc).readUnlock();
+                try {
+                    TokenHierarchy<?> th = TokenHierarchy.get(doc);
+                    ctx.init(th, ci, fxmlResult); 
+                } finally {
+                    if (doc instanceof AbstractDocument) {
+                        ((AbstractDocument)doc).readUnlock();
+                    }
                 }
 
                 items = new ArrayList<CompletionItem>();

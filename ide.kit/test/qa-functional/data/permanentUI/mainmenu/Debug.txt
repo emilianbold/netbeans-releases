@@ -4,8 +4,13 @@ Debug Project               D   - Debug Project (project-name) - Debug Main Proj
 Debug File                  g
 Debug Test File             l
 Attach Debugger...          A
-Finish Debugger Session     F
+Debug Core File...          O
 =========================
+Finish Debugger Session     F
+Terminate Process           E
+Detach Debugger             D
+=========================
+Restart                     R
 Pause                       P
 Continue                    C
 =========================
@@ -15,8 +20,10 @@ Step Into                   I
 Step Into Next Method       N
 Step Out                    O
 Run to Cursor               u
+Step Into Last Function
 =========================
 Apply Code Changes          y
+Take GUI Snapshot
 =========================
 Set Current Thread...       h
 Stack                   >   S

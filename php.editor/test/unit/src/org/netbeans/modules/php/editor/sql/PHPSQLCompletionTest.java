@@ -62,7 +62,7 @@ public class PHPSQLCompletionTest extends ParserTestBase {
     public void testBasic_001() {
         checkPHPSQLStatement("<?php echo \"SELECT ab|cde\" ?>", " SELECT abcde ");
     }
-    
+
     public void testBasic_002() {
         checkPHPSQLStatement("<?php echo \"SELECT * FROM foo WHERE x='abc' AND |\" ?>",
                 " SELECT * FROM foo WHERE x='abc' AND  ");
@@ -122,7 +122,7 @@ public class PHPSQLCompletionTest extends ParserTestBase {
     }
 
     public void testIncompleteString_003() {
-        checkPHPSQLStatement("<?php echo <<<HERE\nSELECT | FROM ?>", "SELECT  FROM ?>\n");
+        checkPHPSQLStatement("<?php echo <<<HERE\nSELECT | FROM ?>", "SELECT  FROM ?>");
     }
 
     public void testIncompleteString_004() {
@@ -216,9 +216,9 @@ public class PHPSQLCompletionTest extends ParserTestBase {
     }
 
     private void checkPHPSQLStatement(String testString, String resultString) {
-        int caretOffset = testString.indexOf('|');        
+        int caretOffset = testString.indexOf('|');
         testString = testString.replace("|", "");
-        
+
         Document document = getDocument(testString, FileUtils.PHP_MIME_TYPE, PHPTokenId.language());
 
         PHPSQLStatement stmt = PHPSQLStatement.computeSQLStatement(document, caretOffset);
@@ -228,7 +228,7 @@ public class PHPSQLCompletionTest extends ParserTestBase {
         } else {
             assertNotNull(stmt);
         }
-        
+
         assertEquals(resultString, stmt.getStatement());
 
         int virtualOffset = stmt.sourceToGeneratedPos(caretOffset);
@@ -236,7 +236,7 @@ public class PHPSQLCompletionTest extends ParserTestBase {
         int sourceOffset = stmt.generatedToSourcePos(virtualOffset);
         assertEquals(caretOffset, sourceOffset);
     }
-    
+
     @Override
     protected String getTestResult(String filename) throws Exception {
         return null;

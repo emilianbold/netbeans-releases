@@ -72,6 +72,7 @@ import org.netbeans.spi.search.SearchInfoDefinition;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
@@ -124,19 +125,71 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
         InstanceContent ic = new InstanceContent();
         Folder logicalFolders = configurationDescriptor.getLogicalFolders();
         ic.add(logicalFolders);
-        ic.add(getProject());
-        SearchInfoDefinition searchInfo = project.getLookup().lookup(SearchInfoDefinition.class);
-        ic.add(searchInfo);
+        addLookup(ic);
         projectRootNode = new MakeLogicalViewRootNode(logicalFolders, this, ic);
     }
 
     private void createLoadingRoot() {
         InstanceContent ic = new InstanceContent();
+        addLookup(ic);
+        projectRootNode = new MakeLogicalViewRootNode(null, this, ic);
+    }
+    
+    private void addLookup(InstanceContent ic) {
         ic.add(getProject());
         SearchInfoDefinition searchInfo = project.getLookup().lookup(SearchInfoDefinition.class);
         ic.add(searchInfo);
-        projectRootNode = new MakeLogicalViewRootNode(null, this, ic);
+        ic.add(project, new InstanceContent.Convertor<MakeProject, FileObject>() {
+            @Override
+            public FileObject convert(MakeProject obj) {
+                return obj.getProjectDirectory();
+            }
+
+            @Override
+            public Class<? extends FileObject> type(MakeProject obj) {
+                return FileObject.class;
+            }
+
+            @Override
+            public String id(MakeProject obj) {
+                final FileObject fo = obj.getProjectDirectory();
+                return fo == null ? "" : fo.getPath();  //NOI18N
+            }
+
+            @Override
+            public String displayName(MakeProject obj) {
+                return obj.toString();
+            }
+        });
+        ic.add(project, new InstanceContent.Convertor<MakeProject, DataObject>() {
+            @Override
+            public DataObject convert(MakeProject obj) {
+                try {
+                    final FileObject fo = obj.getProjectDirectory();
+                    return fo == null ? null : DataObject.find(fo);
+                } catch (DataObjectNotFoundException ex) {
+                    return null;
+                }
+            }
+
+            @Override
+            public Class<? extends DataObject> type(MakeProject obj) {
+                return DataObject.class;
+            }
+
+            @Override
+            public String id(MakeProject obj) {
+                final FileObject fo = obj.getProjectDirectory();
+                return fo == null ? "" : fo.getPath();  //NOI18N
+            }
+
+            @Override
+            public String displayName(MakeProject obj) {
+                return obj.toString();
+            }
+        });
     }
+    
     private final AtomicBoolean findPathMode = new AtomicBoolean(false);
 
     boolean isFindPathMode() {

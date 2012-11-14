@@ -48,23 +48,15 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.netbeans.CLIHandler;
-import org.netbeans.TopSecurityManager;
-import org.netbeans.core.startup.CLIOptions;
 import org.netbeans.core.startup.ModuleLifecycleManager;
-import org.netbeans.core.startup.layers.SessionManager;
 import org.openide.DialogDisplayer;
 import org.openide.LifecycleManager;
 import org.openide.NotifyDescriptor;
 import org.openide.awt.StatusDisplayer;
 import org.openide.cookies.SaveCookie;
 import org.openide.loaders.DataObject;
-import org.openide.util.Exceptions;
-import org.openide.util.Lookup;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
-import org.openide.util.RequestProcessor;
-import org.openide.util.Task;
 import org.openide.util.lookup.ServiceProvider;
 
 /**
@@ -73,7 +65,7 @@ import org.openide.util.lookup.ServiceProvider;
  */
 @ServiceProvider(service=LifecycleManager.class, supersedes="org.netbeans.core.startup.ModuleLifecycleManager")
 public final class NbLifecycleManager extends LifecycleManager {
-
+    @Override
     public void saveAll() {
         ArrayList<DataObject> bad = new ArrayList<DataObject>();
         DataObject[] modifs = DataObject.getRegistry().getModified();
@@ -105,115 +97,25 @@ public final class NbLifecycleManager extends LifecycleManager {
         StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(NbLifecycleManager.class, "MSG_AllSaved"));
     }
 
+    @Override
     public void exit() {
         // #37160 So there is avoided potential clash between hiding GUI in AWT
         // and accessing AWTTreeLock from saving routines (winsys).
-        Mutex.EVENT.readAccess(DO_EXIT);
+        exit(0);
     }
 
+    @Override
     public void exit(int status) {
-        ExitActions action = new ExitActions(0, status);
+        NbLifeExit action = new NbLifeExit(0, status);
         Mutex.EVENT.readAccess(action);
     }
-
-    private static class ExitActions implements Runnable {
-        private final int type;
-        private final int status;
-        ExitActions(int type) {
-            this.type = type;
-            this.status = 0;
-        }
-
-        ExitActions(int type, int status) {
-            this.type = type;
-            this.status = status;
-        }
-
-        public void run() {
-            switch (type) {
-                case 0:
-                    doExit(status);
-                    break;
-                case 1:
-                    CLIHandler.stopServer();
-                    final WindowSystem windowSystem = Lookup.getDefault().lookup(WindowSystem.class);
-                    boolean gui = CLIOptions.isGui();
-                    if (windowSystem != null && gui) {
-                        windowSystem.hide();
-                        windowSystem.save();
-                    }
-                    if (Boolean.getBoolean("netbeans.close.when.invisible")) {
-                        // hook to permit perf testing of time to *apparently* shut down
-                        TopSecurityManager.exit(status);
-                    }
-                    break;
-                case 2:
-                    if (!Boolean.getBoolean("netbeans.close.no.exit")) { // NOI18N
-                        TopSecurityManager.exit(status);
-                    }
-                    break;
-                default:
-                    throw new IllegalStateException("Type: " + type); // NOI18N
-            }
-        }
-    } // end of ExitActions
-
-    private static boolean doingExit=false;
-    private static final Runnable DO_EXIT = new ExitActions(0);
-
-    /**
-     * @return True if the IDE is shutting down.
-     */
+    
     public static boolean isExiting() {
-        return doingExit;
-    }
-
-    private static void doExit(int status) {
-        if (doingExit) {
-            return ;
-        }
-        doingExit = true;
-        // save all open files
-        try {
-            if ( System.getProperty ("netbeans.close") != null || ExitDialog.showDialog() ) {
-                if (org.netbeans.core.startup.Main.getModuleSystem().shutDown(new ExitActions(1, status))) {
-                    try {
-                        try {
-                            NbLoaderPool.store();
-                        } catch (IOException ioe) {
-                            Logger.getLogger(NbLifecycleManager.class.getName()).log(Level.WARNING, null, ioe);
-                        }
-//#46940 -saving just once..
-//                        // save window system, [PENDING] remove this after the winsys will
-//                        // persist its state automaticaly
-//                        if (windowSystem != null) {
-//                            windowSystem.save();
-//                        }
-                        SessionManager.getDefault().close();
-                    } catch (ThreadDeath td) {
-                        throw td;
-                    } catch (Throwable t) {
-                        // Do not let problems here prevent system shutdown. The module
-                        // system is down; the IDE cannot be used further.
-                        Exceptions.printStackTrace(t);
-                    }
-                    // #37231 Someone (e.g. Jemmy) can install its own EventQueue and then
-                    // exit is dispatched through that proprietary queue and it
-                    // can be refused by security check. So, we need to replan
-                    // to RequestProcessor to avoid security problems.
-                    Task exitTask = new Task(new ExitActions(2, status));
-                    RequestProcessor.getDefault().post(exitTask);
-                    exitTask.waitFinished();
-                }
-            }
-        } finally {
-            doingExit = false;
-        }
+        return NbLifeExit.isExiting();
     }
 
     @Override
     public void markForRestart() throws UnsupportedOperationException {
         new ModuleLifecycleManager().markForRestart();
     }
-
 }

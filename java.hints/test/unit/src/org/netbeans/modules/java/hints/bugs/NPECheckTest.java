@@ -526,6 +526,47 @@ public class NPECheckTest extends NbTestCase {
                 .assertWarnings();
     }
     
+    public void testNull2NonNullReturnValue() throws Exception {
+        HintTest.create()
+                .input("package test;\n" +
+                       "import javax.swing.tree.TreePath;\n" +
+                       "class Test {\n" +
+                       "    public @NonNull String t() {\n" +
+                       "        return null;\n" +
+                       "    }\n" +
+                       "    @interface NonNull {}\n" +
+                       "}")
+                .run(NPECheck.class)
+                .assertWarnings("4:15-4:19:verifier:ERR_ReturningNullFromNonNull");
+    }
+    
+    public void testPossibleNull2NonNullReturnValue() throws Exception {
+        HintTest.create()
+                .input("package test;\n" +
+                       "import javax.swing.tree.TreePath;\n" +
+                       "class Test {\n" +
+                       "    public @NonNull String t(@NullAllowed String str) {\n" +
+                       "        return str;\n" +
+                       "    }\n" +
+                       "    @interface NonNull {}\n" +
+                       "    @interface NullAllowed {}\n" +
+                       "}")
+                .run(NPECheck.class)
+                .assertWarnings("4:15-4:18:verifier:ERR_ReturningPossibleNullFromNonNull");
+    }
+    
+    public void testTernaryWithMultipartCondition() throws Exception {
+        HintTest.create()
+                .input("package test;\n" +
+                       "class Test {\n" +
+                       "    public String t(Object obj) {\n" +
+                       "        return (obj == null || obj.hashCode() == 0) ? null : obj.toString();\n" +
+                       "    }\n" +
+                       "}")
+                .run(NPECheck.class)
+                .assertWarnings();
+    }
+    
     private void performAnalysisTest(String fileName, String code, String... golden) throws Exception {
         HintTest.create()
                 .input(fileName, code)
