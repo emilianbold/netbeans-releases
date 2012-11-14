@@ -60,16 +60,16 @@ import org.openide.util.Exceptions;
  *
  * @author Petr Pisl
  */
-@EditorActionRegistration(name = ExtKit.toggleCommentAction, mimeType = PHP_MIME_TYPE)
 public class ToggleBlockCommentAction extends BaseAction {
+    
+    @EditorActionRegistration(name = ExtKit.toggleCommentAction, mimeType = PHP_MIME_TYPE)
+    public static ToggleBlockCommentAction create(Map<String, ?> attrs) {
+        return new ToggleBlockCommentAction(attrs);
+    }
 
     static final long serialVersionUID = -1L;
     private static final String FORCE_COMMENT = "force-comment"; //NOI18N
     private static final String FORCE_UNCOMMENT = "force-uncomment"; //NOI18N
-
-    public ToggleBlockCommentAction() {
-        super(ExtKit.toggleCommentAction);
-    }
 
     public ToggleBlockCommentAction(Map<String, ?> attrs) {
         super(null);

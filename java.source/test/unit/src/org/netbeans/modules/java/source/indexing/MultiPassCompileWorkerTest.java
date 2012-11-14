@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,29 +37,29 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.editor.impl.actions;
+package org.netbeans.modules.java.source.indexing;
 
-import org.netbeans.spi.editor.AbstractEditorAction;
-import java.awt.event.ActionEvent;
-import javax.swing.text.JTextComponent;
-import org.netbeans.api.editor.EditorActionRegistration;
-import org.netbeans.modules.editor.impl.actions.clipboardhistory.CompletionLayoutPopup;
+import java.util.Collection;
+import org.netbeans.modules.java.source.indexing.CompileWorker.ParsingOutput;
+import org.netbeans.modules.java.source.indexing.JavaCustomIndexer.CompileTuple;
+import org.netbeans.modules.parsing.spi.indexing.Context;
 
-@EditorActionRegistration(
-        name = "clipboard-history",
-        menuPath = "Edit",
-        menuPosition = 1350)
-public final class ClipboardHistoryAction extends AbstractEditorAction {
-
-    private static final long serialVersionUID = 1L;
+/**
+ *
+ * @author lahvac
+ */
+public class MultiPassCompileWorkerTest extends CompileWorkerTestBase {
+    
+    public MultiPassCompileWorkerTest(String name) {
+        super(name);
+    }
 
     @Override
-    public void actionPerformed(ActionEvent evt, JTextComponent target) {
-        if (target != null && target.isEditable()) {
-            CompletionLayoutPopup.CompletionPopup completionPopup = CompletionLayoutPopup.CompletionPopup.getInstance();
-            completionPopup.show(target, -1);
-        }
+    protected ParsingOutput runCompileWorker(Context context, JavaParsingContext javaContext, Collection<? extends CompileTuple> files) throws Exception {
+        JavaCustomIndexer.NO_ONE_PASS_COMPILE_WORKER = true;
+        ParsingOutput fromOnePass = new OnePassCompileWorker().compile(null, context, javaContext, files);
+        return new MultiPassCompileWorker().compile(fromOnePass, context, javaContext, files);
     }
 }
