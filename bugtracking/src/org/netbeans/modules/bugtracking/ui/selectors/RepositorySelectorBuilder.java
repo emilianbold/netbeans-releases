@@ -450,11 +450,13 @@ public final class RepositorySelectorBuilder implements ItemListener,
             return null;
         }
 
-        NewRepositoryInfo[] result = new NewRepositoryInfo[connectors.length];
+        List<NewRepositoryInfo> result = new ArrayList<NewRepositoryInfo>(connectors.length);
         for (int i = 0; i < connectors.length; i++) {
-            result[i] = new NewRepositoryInfo(connectors[i]);
+            if(connectors[i].providesRepositoryManagement()) {
+                result.add(new NewRepositoryInfo(connectors[i]));
+            }
         }
-        return result;
+        return result.toArray(new NewRepositoryInfo[result.size()]);
     }
 
     public RepositoryImpl getSelectedRepository() {
