@@ -48,11 +48,13 @@ import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.StringTokenizer;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
 import java.util.regex.Pattern;
@@ -251,32 +253,67 @@ public class ModuleOptions extends OptionProcessor {
         Pattern[] pats = findMatcher(env, pattern);
         
         List<UpdateUnit> units = UpdateManager.getDefault().getUpdateUnits(UpdateManager.TYPE.MODULE);
+        final Collection <String> firstClass = getFirstClassModules();
+        boolean firstClassHasUpdates = false;
         OperationContainer<InstallSupport> operate = OperationContainer.createForUpdate();
-        for (UpdateUnit uu : units) {
-            if (uu.getInstalled() == null) {
-                continue;
+        if (! firstClass.isEmpty() && pattern.length == 0) {
+            for (UpdateUnit uu : units) {
+                if (uu.getInstalled() == null) {
+                    continue;
+                }
+                if (! uu.getInstalled().isEnabled()) {
+                    continue;
+                }
+                final List<UpdateElement> updates = uu.getAvailableUpdates();
+                if (updates.isEmpty()) {
+                    continue;
+                }
+                if (! firstClass.contains (uu.getCodeName ())) {
+                    continue;
+                }
+                final UpdateElement ue = updates.get(0);
+                env.getOutputStream().println(
+                    Bundle.MSG_Update(uu.getCodeName(), uu.getInstalled().getSpecificationVersion(), ue.getSpecificationVersion()
+                ));
+                if (operate.canBeAdded(uu, ue)) {
+                    LOG.fine("  ... update " + uu.getInstalled() + " -> " + ue);
+                    firstClassHasUpdates = true;
+                    OperationInfo<InstallSupport> info = operate.add(ue);
+                    if (info != null) {
+                        Set<UpdateElement> requiredElements = info.getRequiredElements();
+                        LOG.fine("      ... add required elements: " + requiredElements);
+                        operate.add(requiredElements);
+                    }
+                }
             }
-            if (! uu.getInstalled().isEnabled()) {
-                continue;
-            }
-            final List<UpdateElement> updates = uu.getAvailableUpdates();
-            if (updates.isEmpty()) {
-                continue;
-            }
-            if (pattern.length > 0 && !matches(uu.getCodeName(), pats)) {
-                continue;
-            }
-            final UpdateElement ue = updates.get(0);
-            env.getOutputStream().println(
-                Bundle.MSG_Update(uu.getCodeName(), uu.getInstalled().getSpecificationVersion(), ue.getSpecificationVersion()
-            ));
-            if (operate.canBeAdded(uu, ue)) {
-                LOG.fine("  ... update " + uu.getInstalled() + " -> " + ue);
-                OperationInfo<InstallSupport> info = operate.add(ue);
-                if (info != null) {
-                    Set<UpdateElement> requiredElements = info.getRequiredElements();
-                    LOG.fine("      ... add required elements: " + requiredElements);
-                    operate.add(requiredElements);
+        } 
+        if (! firstClassHasUpdates) {
+            for (UpdateUnit uu : units) {
+                if (uu.getInstalled() == null) {
+                    continue;
+                }
+                if (! uu.getInstalled().isEnabled()) {
+                    continue;
+                }
+                final List<UpdateElement> updates = uu.getAvailableUpdates();
+                if (updates.isEmpty()) {
+                    continue;
+                }
+                if (pattern.length > 0 && !matches(uu.getCodeName(), pats)) {
+                    continue;
+                }
+                final UpdateElement ue = updates.get(0);
+                env.getOutputStream().println(
+                    Bundle.MSG_Update(uu.getCodeName(), uu.getInstalled().getSpecificationVersion(), ue.getSpecificationVersion()
+                ));
+                if (operate.canBeAdded(uu, ue)) {
+                    LOG.fine("  ... update " + uu.getInstalled() + " -> " + ue);
+                    OperationInfo<InstallSupport> info = operate.add(ue);
+                    if (info != null) {
+                        Set<UpdateElement> requiredElements = info.getRequiredElements();
+                        LOG.fine("      ... add required elements: " + requiredElements);
+                        operate.add(requiredElements);
+                    }
                 }
             }
         }
@@ -446,5 +483,18 @@ public class ModuleOptions extends OptionProcessor {
         long last = pref.getLong("lastCheckTime", -1);
         return last != -1;
     }    
+
+    private static final String PLUGIN_MANAGER_FIRST_CLASS_MODULES = "plugin.manager.first.class.modules"; // NOI18N
+    
+    private Collection<String> getFirstClassModules() {
+        Preferences p = NbPreferences.root().node("/org/netbeans/modules/autoupdate"); // NOI18N
+        String names = p.get(PLUGIN_MANAGER_FIRST_CLASS_MODULES, "");
+        Set<String> res = new HashSet<String> ();
+        StringTokenizer en = new StringTokenizer (names, ","); // NOI18N
+        while (en.hasMoreTokens ()) {
+            res.add (en.nextToken ().trim ());
+        }
+        return res;
+    }
     
 }
