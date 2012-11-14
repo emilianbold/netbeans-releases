@@ -118,6 +118,13 @@ public class ProxyAutoConfigTest extends NbTestCase {
             proxies = NbProxySelector.getDefault().select(new URI("http://netbeans.org"));
             assertTrue(pacFileLoc + ": " + proxies.get(0).toString(), proxies.get(0).toString().startsWith("HTTP @ www-proxy.us.oracle.com/"));
             
+            proxies = pac.findProxyForURL(new URI("https://netbeans.org"));
+            assertEquals(1, proxies.size());
+            assertTrue(pacFileLoc + ": " + proxies.get(0).toString(), proxies.get(0).toString().startsWith("HTTP @ www-proxy.us.oracle.com/"));
+            System.setProperty("netbeans.system_http_proxy", "PAC " + pacFileLoc);
+            proxies = NbProxySelector.getDefault().select(new URI("https://netbeans.org"));
+            assertTrue(pacFileLoc + ": " + proxies.get(0).toString(), proxies.get(0).toString().startsWith("HTTP @ www-proxy.us.oracle.com/"));
+            
             proxies = pac.findProxyForURL(new URI("http://localhost"));
             assertEquals(1, proxies.size());
             assertEquals(pacFileLoc + ": " + proxies.get(0).toString(), "DIRECT", proxies.get(0).toString());
