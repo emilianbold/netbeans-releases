@@ -219,7 +219,7 @@ public final class DashboardViewer implements PropertyChangeListener {
                     titleRepositoryNode.setProgressVisible(true);
                     Collection<Repository> addedRepositories = (Collection<Repository>) evt.getNewValue();
                     Collection<Repository> removedRepositories = (Collection<Repository>) evt.getOldValue();
-                    if(addedRepositories == null && removedRepositories == null) {
+                    if (addedRepositories == null && removedRepositories == null) {
                         updateRepositories(RepositoryManager.getInstance().getRepositories());
                     } else {
                         updateRepositories(addedRepositories, removedRepositories);
@@ -227,14 +227,14 @@ public final class DashboardViewer implements PropertyChangeListener {
                     titleRepositoryNode.setProgressVisible(false);
                 }
             });
-        } else if (evt.getPropertyName().equals(DashboardSettings.TASKS_LIMIT_SETTINGS_CHANGED)){
+        } else if (evt.getPropertyName().equals(DashboardSettings.TASKS_LIMIT_SETTINGS_CHANGED)) {
             requestProcessor.post(new Runnable() {
                 @Override
                 public void run() {
                     updateContent();
                 }
             });
-        } else if (evt.getPropertyName().equals(DashboardSettings.AUTO_SYNC_SETTINGS_CHANGED)){
+        } else if (evt.getPropertyName().equals(DashboardSettings.AUTO_SYNC_SETTINGS_CHANGED)) {
             DashboardRefresher.getInstance().setupDashboardRefresh();
         }
     }
@@ -896,24 +896,24 @@ public final class DashboardViewer implements PropertyChangeListener {
         List<RepositoryNode> toAdd = new ArrayList<RepositoryNode>();
         List<RepositoryNode> toRemove = new ArrayList<RepositoryNode>();
 
-        if(removedRepositories != null) {
+        if (removedRepositories != null) {
             for (RepositoryNode oldRepository : repositoryNodes) {
                 if (removedRepositories.contains(oldRepository.getRepository())) {
                     toRemove.add(oldRepository);
                 }
             }
         }
-        if(addedRepositories != null) {
+        if (addedRepositories != null) {
             List<Repository> oldValue = getRepositories(false);
             for (Repository addedRepository : addedRepositories) {
                 if (!oldValue.contains(addedRepository)) {
                     toAdd.add(new RepositoryNode(addedRepository, false));
                 }
             }
-        } 
+        }
         updateRepositories(toRemove, toAdd);
     }
-    
+
     private void updateRepositories(Collection<Repository> repositories) {
         List<RepositoryNode> toAdd = new ArrayList<RepositoryNode>();
         List<RepositoryNode> toRemove = new ArrayList<RepositoryNode>();
@@ -986,7 +986,7 @@ public final class DashboardViewer implements PropertyChangeListener {
             } else {
                 setRepositories(repoNodes);
             }
-        } catch(Exception ex) {
+        } catch (Exception ex) {
             LOG.log(Level.WARNING, "Repositories loading failed due to: {0}", ex.getMessage());
             showRepositoriesError();
         }
@@ -1108,7 +1108,7 @@ public final class DashboardViewer implements PropertyChangeListener {
         treeList.getActionMap().put("org.netbeans.modules.tasks.ui.action.Action.UniversalDeleteAction", new Actions.UniversalDeleteAction());//NOI18N
     }
 
-    private boolean confirmDelete(String title, String message) {        
+    private boolean confirmDelete(String title, String message) {
         NotifyDescriptor nd = new NotifyDescriptor(
                 message,
                 title,

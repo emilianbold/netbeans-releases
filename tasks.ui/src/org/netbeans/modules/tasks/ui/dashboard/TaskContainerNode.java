@@ -200,7 +200,7 @@ public abstract class TaskContainerNode extends AsynchronousNode<List<Issue>> {
     final void updateNodes() {
         updateNodes(getTasks());
     }
-    
+
     final void updateNodes(List<Issue> issues) {
         synchronized (LOCK) {
             DashboardViewer dashboard = DashboardViewer.getInstance();
@@ -255,7 +255,7 @@ public abstract class TaskContainerNode extends AsynchronousNode<List<Issue>> {
         }
     }
 
-    final void showAdditionalPage(){
+    final void showAdditionalPage() {
         pageCountShown++;
         updateContent();
     }
@@ -280,7 +280,7 @@ public abstract class TaskContainerNode extends AsynchronousNode<List<Issue>> {
         return children;
     }
 
-    private int getTaskCountToShow(){
+    private int getTaskCountToShow() {
         return pageSize * pageCountShown;
     }
 
@@ -290,7 +290,7 @@ public abstract class TaskContainerNode extends AsynchronousNode<List<Issue>> {
     }
 
     private void disposeTaskNodes() {
-        synchronized(LOCK) {
+        synchronized (LOCK) {
             if (taskNodes != null) {
                 for (TaskNode taskNode : taskNodes) {
                     taskNode.dispose();
@@ -298,7 +298,7 @@ public abstract class TaskContainerNode extends AsynchronousNode<List<Issue>> {
             }
         }
     }
-    
+
     final void handleError(String message) {
         DashboardViewer.LOG.log(Level.WARNING, "Tasks loading failed due to: {0}", message); //NOI18N
         setRefresh(true);
