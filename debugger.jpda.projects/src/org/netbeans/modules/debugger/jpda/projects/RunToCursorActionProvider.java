@@ -96,10 +96,12 @@ public class RunToCursorActionProvider extends ActionsProviderSupport {
         );
     }
     
+    @Override
     public Set getActions () {
         return Collections.singleton (ActionsManager.ACTION_RUN_TO_CURSOR);
     }
     
+    @Override
     public void doAction (Object action) {
         
         // 1) set breakpoint
@@ -113,18 +115,21 @@ public class RunToCursorActionProvider extends ActionsProviderSupport {
         invokeAction();
     }
     
+    @Override
     public void postAction(Object action, final Runnable actionPerformedNotifier) {
         final LineBreakpoint newBreakpoint = LineBreakpoint.create (
             editorContext.getCurrentURLAsString(),
             editorContext.getCurrentLineNumber ()
         );
         RequestProcessor.getDefault().post(new Runnable() {
+            @Override
             public void run() {
                 // 1) set breakpoint
                 removeBreakpoint ();
                 createBreakpoint (newBreakpoint);
                 try {
                     SwingUtilities.invokeAndWait(new Runnable() {
+                        @Override
                         public void run() {
                             invokeAction();
                         }
@@ -152,22 +157,34 @@ public class RunToCursorActionProvider extends ActionsProviderSupport {
     }
 
     private boolean shouldBeEnabled () {
-        if (editorContext.getCurrentLineNumber () < 0) return false;
+        if (editorContext.getCurrentLineNumber () < 0) {
+            return false;
+        }
         FileObject fo = editorContext.getCurrentFile();
-        if (fo == null || !fo.hasExt("java")) return false;
+        if (fo == null || !fo.hasExt("java")) {
+            return false;
+        }
         
         // check if current project supports this action
         Project p = MainProjectManager.getDefault ().getMainProject ();
-        if (p == null) return false;
+        if (p == null) {
+            return false;
+        }
         ActionProvider actionProvider = (ActionProvider) p.getLookup ().
             lookup (ActionProvider.class);
-        if (actionProvider == null) return false;
+        if (actionProvider == null) {
+            return false;
+        }
         String[] sa = actionProvider.getSupportedActions ();
         int i, k = sa.length;
-        for (i = 0; i < k; i++)
-            if (ActionProvider.COMMAND_DEBUG.equals (sa [i]))
+        for (i = 0; i < k; i++) {
+            if (ActionProvider.COMMAND_DEBUG.equals (sa [i])) {
                 break;
-        if (i == k) return false;
+            }
+        }
+        if (i == k) {
+            return false;
+        }
 
         // check if this action should be enabled
         return actionProvider.isActionEnabled (
@@ -190,12 +207,15 @@ public class RunToCursorActionProvider extends ActionsProviderSupport {
     }
     
     private class Listener extends DebuggerManagerAdapter {
+        @Override
         public void propertyChange (PropertyChangeEvent e) {
             if (e.getPropertyName () == JPDADebugger.PROP_STATE) {
                 int state = ((Integer) e.getNewValue ()).intValue ();
                 if ( (state == JPDADebugger.STATE_DISCONNECTED) ||
                      (state == JPDADebugger.STATE_STOPPED)
-                ) removeBreakpoint ();
+                ) {
+                    removeBreakpoint ();
+                }
                 return;
             }
             setEnabled (
@@ -204,18 +224,24 @@ public class RunToCursorActionProvider extends ActionsProviderSupport {
             );
         }
         
+        @Override
         public void engineAdded (DebuggerEngine engine) {
             JPDADebugger debugger = engine.lookupFirst(null, JPDADebugger.class);
-            if (debugger == null) return;
+            if (debugger == null) {
+                return;
+            }
             debugger.addPropertyChangeListener (
                 JPDADebugger.PROP_STATE,
                 this
             );
         }
         
+        @Override
         public void engineRemoved (DebuggerEngine engine) {
             JPDADebugger debugger = engine.lookupFirst(null, JPDADebugger.class);
-            if (debugger == null) return;
+            if (debugger == null) {
+                return;
+            }
             debugger.removePropertyChangeListener (
                 JPDADebugger.PROP_STATE,
                 this
