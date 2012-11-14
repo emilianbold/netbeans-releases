@@ -107,6 +107,8 @@ import org.netbeans.modules.maven.model.pom.POMModel;
 import org.netbeans.spi.project.ui.PathFinder;
 import static org.netbeans.modules.maven.nodes.Bundle.*;
 import org.netbeans.modules.maven.queries.MavenFileOwnerQueryImpl;
+import org.netbeans.modules.maven.queries.RepositoryForBinaryQueryImpl;
+import org.netbeans.modules.maven.queries.RepositoryForBinaryQueryImpl.Coordinates;
 import org.netbeans.spi.java.project.support.ui.PackageView;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -500,24 +502,38 @@ public class DependencyNode extends AbstractNode implements PreferenceChangeList
             return;
         }
         try {
+            String classifier;
+            String bundleName;
             if (isjavadoc) {
-                Artifact javadoc = project.getEmbedder().createArtifactWithClassifier(
-                    art.getGroupId(),
-                    art.getArtifactId(),
-                    art.getVersion(),
-                    art.getType(),
-                    (art.getClassifier() != null ? art.getClassifier() + "-" : "") + "javadoc"); //NOI18N
-                progress.progress(org.openide.util.NbBundle.getMessage(DependencyNode.class, "MSG_Checking_Javadoc", art.getId()), 1);
-                online.resolve(javadoc, project.getOriginalMavenProject().getRemoteArtifactRepositories(), project.getEmbedder().getLocalRepository());
+                classifier = "javadoc";
+                bundleName = "MSG_Checking_Javadoc";
             } else {
-                Artifact sources = project.getEmbedder().createArtifactWithClassifier(
-                    art.getGroupId(),
-                    art.getArtifactId(),
-                    art.getVersion(),
-                    art.getType(),
-                    (art.getClassifier() != null ? art.getClassifier() + "-" : "") + "sources"); //NOI18N
-                progress.progress(org.openide.util.NbBundle.getMessage(DependencyNode.class, "MSG_Checking_Sources",art.getId()), 1);
-                online.resolve(sources, project.getOriginalMavenProject().getRemoteArtifactRepositories(), project.getEmbedder().getLocalRepository());
+                classifier = "sources";
+                bundleName = "MSG_Checking_Sources";
+            }
+                
+            Artifact sources = project.getEmbedder().createArtifactWithClassifier(
+                art.getGroupId(),
+                art.getArtifactId(),
+                art.getVersion(),
+                art.getType(),
+                (art.getClassifier() != null ? art.getClassifier() + "-" : "") + classifier); 
+            progress.progress(org.openide.util.NbBundle.getMessage(DependencyNode.class, bundleName,art.getId()), 1);
+            online.resolve(sources, project.getOriginalMavenProject().getRemoteArtifactRepositories(), project.getEmbedder().getLocalRepository());
+            if (art.getFile() != null && art.getFile().exists()) {
+                List<Coordinates> coordinates = RepositoryForBinaryQueryImpl.getShadedCoordinates(art.getFile());
+                if (coordinates != null) {
+                    for (Coordinates coordinate : coordinates) {
+                        sources = project.getEmbedder().createArtifactWithClassifier(
+                            coordinate.groupId,
+                            coordinate.artifactId,
+                            coordinate.version,
+                            "jar",
+                            classifier);
+                        progress.progress(org.openide.util.NbBundle.getMessage(DependencyNode.class, bundleName, art.getId()), 1);
+                        online.resolve(sources, project.getOriginalMavenProject().getRemoteArtifactRepositories(), project.getEmbedder().getLocalRepository());
+                    }
+                }
             }
         } catch (ArtifactNotFoundException ex) {
             // just ignore..ex.printStackTrace();
