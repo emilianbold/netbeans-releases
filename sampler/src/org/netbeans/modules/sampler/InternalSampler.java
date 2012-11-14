@@ -70,7 +70,6 @@ import static org.netbeans.modules.sampler.Bundle.*;
  */
 final class InternalSampler extends Sampler {
     private static final String SAMPLER_NAME = "selfsampler";  // NOI18N
-    private static final String FILE_NAME = SAMPLER_NAME+SamplesOutputStream.FILE_EXT;
     private static final String UNKNOW_MIME_TYPE = "content/unknown"; // NOI18N
     private static final String DEBUG_ARG = "-Xdebug"; // NOI18N
     private static final Logger LOGGER = Logger.getLogger(InternalSampler.class.getName());
@@ -142,20 +141,21 @@ final class InternalSampler extends Sampler {
         SelfSampleVFS fs;
         
         outFile = FileUtil.normalizeFile(outFile);
+        String outString = outFile.getAbsolutePath();
         writeToFile(outFile, arr);
         if (userDir != null) {
             gestures = new File(new File(new File(userDir, "var"), "log"), "uigestures"); // NOI18N
         }
         if (gestures != null && gestures.exists()) {
-            fs = new SelfSampleVFS(new String[]{FILE_NAME, SAMPLER_NAME+".log"}, new File[]{outFile, gestures});  // NOI18N
+            fs = new SelfSampleVFS(new String[]{outString, outString+".log"}, new File[]{outFile, gestures});  // NOI18N
         } else {
-            fs = new SelfSampleVFS(new String[]{FILE_NAME}, new File[]{outFile});
+            fs = new SelfSampleVFS(new String[]{outString}, new File[]{outFile});
         }
         // open snapshot
-        FileObject fo = fs.findResource(FILE_NAME);
+        FileObject fo = fs.findResource(outString);
         // test for DefaultDataObject
         if (UNKNOW_MIME_TYPE.equals(fo.getMIMEType())) {
-            String msg = SelfSamplerAction_SavedFile(outFile.getAbsolutePath());
+            String msg = SelfSamplerAction_SavedFile(outString);
             DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(msg));
         } else {
             DataObject dobj = DataObject.find(fo);
