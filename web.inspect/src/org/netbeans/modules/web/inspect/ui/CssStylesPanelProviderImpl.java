@@ -312,15 +312,20 @@ public abstract class CssStylesPanelProviderImpl extends JPanel implements CssSt
             result.addLookupListener(new LookupListener() {
                 @Override
                 public void resultChanged(LookupEvent ev) {
-                    Collection<? extends FileObject> fobs = result.allInstances();
-                    FileObject fob = null;
-                    if (!fobs.isEmpty()) {
-                        fob = fobs.iterator().next();
-                    }
-                    update(fob);
+                    update(result);
                 }
             });
+            update(result);
             return this;
+        }
+
+        void update(Lookup.Result<FileObject> result) {
+            Collection<? extends FileObject> fobs = result.allInstances();
+            FileObject fob = null;
+            if (!fobs.isEmpty()) {
+                fob = fobs.iterator().next();
+            }
+            update(fob);
         }
 
         @Override
