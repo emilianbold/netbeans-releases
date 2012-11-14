@@ -67,8 +67,8 @@ import javax.swing.tree.TreeCellRenderer;
 import javax.swing.tree.TreePath;
 import org.netbeans.modules.options.editor.spi.PreferencesCustomizer;
 import org.netbeans.modules.php.editor.indent.FmtOptions;
-import org.openide.util.NbBundle;
 import static org.netbeans.modules.php.editor.indent.FmtOptions.*;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -252,86 +252,77 @@ public class FmtSpaces extends JPanel implements TreeCellRenderer, MouseListener
 
         Item[] categories = new Item[] {
             new Item("BeforeKeywords",                          // NOI18N
-                new Item(spaceBeforeWhile),
-                new Item(spaceBeforeElse),
-                new Item(spaceBeforeCatch)),
+                new Item(SPACE_BEFORE_WHILE),
+                new Item(SPACE_BEFORE_ELSE),
+                new Item(SPACE_BEFORE_CATCH)),
 
             new Item("BeforeParentheses",                       // NOI18N
-                new Item(spaceBeforeMethodDeclParen),
-                new Item(spaceBeforeMethodCallParen),
-                new Item(spaceBeforeIfParen),
-                new Item(spaceBeforeForParen),
-                new Item(spaceBeforeWhileParen),
-                new Item(spaceBeforeCatchParen),
-                new Item(spaceBeforeSwitchParen),
-		new Item(spaceBeforeArrayDeclParen)
+                new Item(SPACE_BEFORE_METHOD_DECL_PAREN),
+                new Item(SPACE_BEFORE_METHOD_CALL_PAREN),
+                new Item(SPACE_BEFORE_IF_PAREN),
+                new Item(SPACE_BEFORE_FOR_PAREN),
+                new Item(SPACE_BEFORE_WHILE_PAREN),
+                new Item(SPACE_BEFORE_CATCH_PAREN),
+                new Item(SPACE_BEFORE_SWITCH_PAREN),
+                new Item(SPACE_BEFORE_ARRAY_DECL_PAREN)
                 ),
 
             new Item("AroundOperators",                         // NOI18N
-                new Item(spaceAroundUnaryOps),
-                new Item(spaceAroundBinaryOps),
-                new Item(spaceAroundTernaryOps),
-		new Item(spaceAroundStringConcatOps),
-		new Item(spaceAroundKeyValueOps),
-                new Item(spaceAroundAssignOps),
-		new Item(spaceAroundObjectOps)),
+                new Item(SPACE_AROUND_UNARY_OPS),
+                new Item(SPACE_AROUND_BINARY_OPS),
+                new Item(SPACE_AROUND_TERNARY_OPS),
+                new Item(SPACE_AROUND_STRING_CONCAT_OPS),
+                new Item(SPACE_AROUND_KEY_VALUE_OPS),
+                new Item(SPACE_AROUND_ASSIGN_OPS),
+                new Item(SPACE_AROUND_OBJECT_OPS)),
 
             new Item("BeforeLeftBraces",                        // NOI18N
-                new Item(spaceBeforeClassDeclLeftBrace),
-                new Item(spaceBeforeMethodDeclLeftBrace),
-                new Item(spaceBeforeIfLeftBrace),
-                new Item(spaceBeforeElseLeftBrace),
-                new Item(spaceBeforeWhileLeftBrace),
-                new Item(spaceBeforeForLeftBrace),
-                new Item(spaceBeforeDoLeftBrace),
-                new Item(spaceBeforeSwitchLeftBrace),
-                new Item(spaceBeforeTryLeftBrace),
-                new Item(spaceBeforeCatchLeftBrace),
-                new Item(spaceBeforeUseTraitBodyLeftBrace)
-//                new Item(spaceBeforeSynchronizedLeftBrace),
-//                new Item(spaceBeforeStaticInitLeftBrace),
-//                new Item(spaceBeforeArrayInitLeftBrace) ),
+                new Item(SPACE_BEFORE_CLASS_DECL_LEFT_BRACE),
+                new Item(SPACE_BEFORE_METHOD_DECL_LEFT_BRACE),
+                new Item(SPACE_BEFORE_IF_LEFT_BRACE),
+                new Item(SPACE_BEFORE_ELSE_LEFT_BRACE),
+                new Item(SPACE_BEFORE_WHILE_LEFT_BRACE),
+                new Item(SPACE_BEFORE_FOR_LEFT_BRACE),
+                new Item(SPACE_BEFORE_DO_LEFT_BRACE),
+                new Item(SPACE_BEFORE_SWITCH_LEFT_BRACE),
+                new Item(SPACE_BEFORE_TRY_LEFT_BRACE),
+                new Item(SPACE_BEFORE_CATCH_LEFT_BRACE),
+                new Item(SPACE_BEFORE_USE_TRAIT_BODY_LEFT_BRACE)
                 ),
 
             new Item("WithinParentheses",                       // NOI18N
-//                new Item(spaceWithinParens),
-                new Item(spaceWithinMethodDeclParens),
-                new Item(spaceWithinMethodCallParens),
-                new Item(spaceWithinIfParens),
-                new Item(spaceWithinForParens),
-                new Item(spaceWithinWhileParens),
-                new Item(spaceWithinSwitchParens),
-                new Item(spaceWithinCatchParens),
-//                new Item(spaceWithinSynchronizedParens),
-		new Item(spaceWithinArrayDeclParens),
-                new Item(spaceWithinTypeCastParens),
-//                new Item(spaceWithinAnnotationParens),
-//                new Item(spaceWithinBraces),
-                new Item(spaceWithinArrayBrackets)
-		),
+                new Item(SPACE_WITHIN_METHOD_DECL_PARENS),
+                new Item(SPACE_WITHIN_METHOD_CALL_PARENS),
+                new Item(SPACE_WITHIN_IF_PARENS),
+                new Item(SPACE_WITHIN_FOR_PARENS),
+                new Item(SPACE_WITHIN_WHILE_PARENS),
+                new Item(SPACE_WITHIN_SWITCH_PARENS),
+                new Item(SPACE_WITHIN_CATCH_PARENS),
+                new Item(SPACE_WITHIN_ARRAY_DECL_PARENS),
+                new Item(SPACE_WITHIN_TYPE_CAST_PARENS),
+                new Item(SPACE_WITHIN_ARRAY_BRACKETS)
+            ),
 
 
              new Item("Other",                                  // NOI18N
-                new Item(spaceBeforeComma),
-                new Item(spaceAfterComma),
-                new Item(spaceBeforeSemi),
-                new Item(spaceAfterSemi),
-//                new Item(spaceBeforeColon),
-//                new Item(spaceAfterColon),
-                new Item(spaceAfterTypeCast),
-		new Item(spaceCheckAfterKeywords),
-                new Item(spaceAfterShortPHPTag),
-		new Item(spaceBeforeClosePHPTag))
+                new Item(SPACE_BEFORE_COMMA),
+                new Item(SPACE_AFTER_COMMA),
+                new Item(SPACE_BEFORE_SEMI),
+                new Item(SPACE_AFTER_SEMI),
+                new Item(SPACE_AFTER_TYPE_CAST),
+                new Item(SPACE_CHECK_AFTER_KEYWORDS),
+                new Item(SPACE_AFTER_SHORT_PHP_TAG),
+                new Item(SPACE_BEFORE_CLOSE_PHP_TAG))
 
         };
 
 
         DefaultMutableTreeNode root = new DefaultMutableTreeNode("root", true); // NOI18N
-        DefaultTreeModel dtm = new DefaultTreeModel( root );
+        DefaultTreeModel dtm = new DefaultTreeModel(root);
 
 
-        for( Item item : categories ) {
-            DefaultMutableTreeNode cn = new DefaultMutableTreeNode( item, true );
+        for (Item item : categories) {
+            DefaultMutableTreeNode cn = new DefaultMutableTreeNode(item, true);
             root.add(cn);
             for ( Item si : item.items ) {
                 DefaultMutableTreeNode in = new DefaultMutableTreeNode( si, false );

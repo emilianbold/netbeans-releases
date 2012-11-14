@@ -74,8 +74,8 @@ import org.netbeans.modules.php.editor.nav.InstantRenamerImpl;
 import org.netbeans.modules.php.editor.nav.OccurrencesFinderImpl;
 import org.netbeans.modules.php.editor.nav.OverridingMethodsImpl;
 import org.netbeans.modules.php.editor.nav.PHPTypeSearcher;
-import org.netbeans.modules.php.editor.parser.GSFPHPParser;
 import org.netbeans.modules.php.editor.nav.PhpStructureScanner;
+import org.netbeans.modules.php.editor.parser.GSFPHPParser;
 import org.netbeans.modules.php.editor.parser.SemanticAnalysis;
 import org.netbeans.modules.php.editor.verification.PHPHintsProvider;
 import org.netbeans.modules.php.project.api.PhpSourcePath;
@@ -85,6 +85,7 @@ import org.openide.awt.ActionReferences;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.windows.TopComponent;
+
 /**
  *
  * @author Petr Pisl
@@ -119,7 +120,7 @@ public class PHPLanguage extends DefaultLanguageConfig {
     public static MultiViewEditorElement createMultiViewEditorElement(Lookup context) {
         return new MultiViewEditorElement(context);
     }
-    public static final String ACTIONS = "Loaders/"+PHP_MIME_TYPE+"/Actions";
+    public static final String ACTIONS = "Loaders/" + PHP_MIME_TYPE + "/Actions";
     public static final String LINE_COMMENT_PREFIX = "//"; // NOI18N
 
     @Override
@@ -129,7 +130,7 @@ public class PHPLanguage extends DefaultLanguageConfig {
 
     @Override
     public boolean isIdentifierChar(char c) {
-        return Character.isJavaIdentifierPart(c) || (c == '$') || (c == '@') || (c == '\\');//NOI18N
+        return Character.isJavaIdentifierPart(c) || (c == '$') || (c == '@') || (c == '\\'); //NOI18N
     }
 
     @Override

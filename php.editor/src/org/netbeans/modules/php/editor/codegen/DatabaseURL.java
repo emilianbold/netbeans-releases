@@ -52,7 +52,6 @@ import java.util.regex.Pattern;
 public abstract class DatabaseURL {
 
     public enum Server {
-
         MYSQL
     }
 
@@ -74,14 +73,11 @@ public abstract class DatabaseURL {
     private static final class MySQLURL extends DatabaseURL {
 
         private static final Pattern PATTERN = Pattern.compile("jdbc:mysql://([^/]+)(/(.*))?"); // NOI18N
-
-        private final String url;
         private final Matcher matcher;
         private String host;
         private String port;
 
         public MySQLURL(String url) {
-            this.url = url;
             matcher = PATTERN.matcher(url);
         }
 

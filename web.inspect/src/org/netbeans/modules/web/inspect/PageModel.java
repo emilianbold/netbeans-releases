@@ -45,6 +45,7 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.util.List;
 import javax.swing.JComponent;
+import org.netbeans.modules.web.browser.api.Page;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
 
@@ -53,13 +54,7 @@ import org.openide.util.Lookup;
  *
  * @author Jan Stola
  */
-public abstract class PageModel {
-    /** Name of the property that is fired when a new document is loaded into the inspected browser pane. */
-    public static final String PROP_DOCUMENT = "document"; // NOI18N
-    /** Name of the property that is fired when the set of selected elements is changed. */
-    public static final String PROP_SELECTED_NODES = "selectedNodes"; // NOI18N
-    /** Name of the property that is fired when the set of highlighted nodes is changed. */
-    public static final String PROP_HIGHLIGHTED_NODES = "highlightedNodes"; // NOI18N
+public abstract class PageModel extends Page {
     /** Name of the property that is fired when the selection mode is switched on/off. */
     public static final String PROP_SELECTION_MODE = "selectionMode"; // NOI18N
     /** Name of the property that is fired when the synchronization of the selection is switched on/off. */
@@ -68,8 +63,6 @@ public abstract class PageModel {
     public static final String PROP_SELECTED_RULE = "selectedRule"; // NOI18N
     /** Name of the property that is fired when a rule is highlighted. */
     public static final String PROP_HIGHLIGHTED_RULE = "highlightedRule"; // NOI18N
-    /** Name of the property that is fired when nodes selection changes in the browser. */
-    public static final String PROP_BROWSER_SELECTED_NODES = "browserSelectedNodes"; // NOI18N
     /** Property change support. */
     private PropertyChangeSupport propChangeSupport = new PropertyChangeSupport(this);
 
@@ -86,34 +79,6 @@ public abstract class PageModel {
      * @param node node to remove.
      */
     public abstract void removeNode(Node node);
-
-    /**
-     * Returns the document URL.
-     * 
-     * @return document URL.
-     */
-    public abstract String getDocumentURL();
-
-    /**
-     * Sets the selected nodes.
-     * 
-     * @param nodes nodes to select in the page.
-     */
-    public abstract void setSelectedNodes(List<? extends Node> nodes);
-
-    /**
-     * Returns selected nodes.
-     * 
-     * @return selected nodes.
-     */
-    public abstract List<? extends Node> getSelectedNodes();
-
-    /**
-     * Sets the highlighted nodes.
-     * 
-     * @param nodes highlighted nodes.
-     */
-    public abstract void setHighlightedNodes(List<? extends Node> nodes);
 
     /**
      * Sets (the selector of) the selected rule.
@@ -188,13 +153,6 @@ public abstract class PageModel {
      * returns {@code false} otherwise.
      */
     public abstract boolean isSynchronizeSelection();
-
-    /**
-     * Returns highlighted nodes.
-     * 
-     * @return highlighted nodes.
-     */
-    public abstract List<? extends Node> getHighlightedNodes();
 
     /**
      * Returns CSS Styles view for this page.

@@ -398,7 +398,7 @@ public class JavaElementFoldManager extends JavaFoldManager {
                                 int end   = currentNew.end.getOffset();
 
                                 if (end > start &&
-                                        (end - start) > (currentNew.template.getStartGuardedLength() + currentNew.template.getEndGuardedLength())) {
+                                        (end - start) >= (currentNew.template.getStartGuardedLength() + currentNew.template.getEndGuardedLength())) {
                                     Fold f = operation.addToHierarchy(currentNew.template.getType(),
                                             currentNew.template.getDescription(),
                                             mergeSpecialFoldState(currentNew),

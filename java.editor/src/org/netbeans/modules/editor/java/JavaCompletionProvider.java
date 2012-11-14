@@ -4497,8 +4497,6 @@ public class JavaCompletionProvider implements CompletionProvider {
                         pos = (int)env.getSourcePositions().getEndPosition(env.getRoot(), bt.getLeftOperand());
                         if (offset <= pos)
                             break;
-                    case PREFIX_INCREMENT:
-                    case PREFIX_DECREMENT:
                     case BITWISE_COMPLEMENT:
                         ret = new HashSet<TypeMirror>();
                         types = controller.getTypes();
@@ -4517,6 +4515,8 @@ public class JavaCompletionProvider implements CompletionProvider {
                     case LOGICAL_COMPLEMENT:
                         return Collections.singleton(controller.getTypes().getPrimitiveType(TypeKind.BOOLEAN));
                     case PLUS:
+                    case EQUAL_TO:
+                    case NOT_EQUAL_TO:
                         bt = (BinaryTree)tree;
                         pos = (int)env.getSourcePositions().getEndPosition(env.getRoot(), bt.getLeftOperand());
                         if (offset <= pos)
@@ -4576,18 +4576,18 @@ public class JavaCompletionProvider implements CompletionProvider {
                         ret.add(types.getPrimitiveType(TypeKind.SHORT));
                         return ret;
                     case DIVIDE:
-                    case EQUAL_TO:
                     case GREATER_THAN:
                     case GREATER_THAN_EQUAL:
                     case LESS_THAN:
                     case LESS_THAN_EQUAL:
                     case MINUS:
                     case MULTIPLY:
-                    case NOT_EQUAL_TO:
                         bt = (BinaryTree)tree;
                         pos = (int)env.getSourcePositions().getEndPosition(env.getRoot(), bt.getLeftOperand());
                         if (offset <= pos)
                             break;
+                    case PREFIX_INCREMENT:
+                    case PREFIX_DECREMENT:
                     case UNARY_PLUS:
                     case UNARY_MINUS:
                         ret = new HashSet<TypeMirror>();

@@ -44,8 +44,10 @@
 
 package org.netbeans.core;
 
+import java.awt.EventQueue;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.concurrent.CountDownLatch;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.core.startup.ModuleLifecycleManager;
@@ -55,6 +57,7 @@ import org.openide.NotifyDescriptor;
 import org.openide.awt.StatusDisplayer;
 import org.openide.cookies.SaveCookie;
 import org.openide.loaders.DataObject;
+import org.openide.util.Exceptions;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
 import org.openide.util.lookup.ServiceProvider;
@@ -65,6 +68,8 @@ import org.openide.util.lookup.ServiceProvider;
  */
 @ServiceProvider(service=LifecycleManager.class, supersedes="org.netbeans.core.startup.ModuleLifecycleManager")
 public final class NbLifecycleManager extends LifecycleManager {
+    private final CountDownLatch onExit = new CountDownLatch(1);
+    
     @Override
     public void saveAll() {
         ArrayList<DataObject> bad = new ArrayList<DataObject>();
@@ -106,8 +111,15 @@ public final class NbLifecycleManager extends LifecycleManager {
 
     @Override
     public void exit(int status) {
-        NbLifeExit action = new NbLifeExit(0, status);
+        NbLifeExit action = new NbLifeExit(0, status, onExit);
         Mutex.EVENT.readAccess(action);
+        if (!EventQueue.isDispatchThread()) {
+            try {
+                onExit.await();
+            } catch (InterruptedException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
     }
     
     public static boolean isExiting() {

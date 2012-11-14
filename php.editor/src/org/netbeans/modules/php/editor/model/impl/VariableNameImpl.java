@@ -100,11 +100,17 @@ class VariableNameImpl extends ScopeImpl implements VariableName {
     VariableNameImpl(Scope inScope, VariableElement indexedVariable) {
         this(inScope, indexedVariable.getName(),
                 Union2.<String/*url*/, FileObject>createFirst(indexedVariable.getFilenameUrl()),
-                new OffsetRange(indexedVariable.getOffset(),indexedVariable.getOffset()+indexedVariable.getName().length()), true);
+                new OffsetRange(indexedVariable.getOffset(), indexedVariable.getOffset() + indexedVariable.getName().length()), true);
         indexedElement = indexedVariable;
     }
-    VarAssignmentImpl createAssignment(Scope scope, boolean conditionalBlock,OffsetRange blockRange, OffsetRange nameRange, Assignment assignment, Map<String, AssignmentImpl> allAssignments) {
-        VarAssignmentImpl retval = new VarAssignmentImpl(this, scope, conditionalBlock, blockRange, nameRange,assignment, allAssignments);
+    VarAssignmentImpl createAssignment(
+            Scope scope,
+            boolean conditionalBlock,
+            OffsetRange blockRange,
+            OffsetRange nameRange,
+            Assignment assignment,
+            Map<String, AssignmentImpl> allAssignments) {
+        VarAssignmentImpl retval = new VarAssignmentImpl(this, scope, conditionalBlock, blockRange, nameRange, assignment, allAssignments);
         return retval;
     }
 
@@ -137,7 +143,6 @@ class VariableNameImpl extends ScopeImpl implements VariableName {
 
     static OffsetRange toOffsetRange(Variable node) {
         Expression name = node.getName();
-        //TODO: dangerous never ending loop
         while ((name instanceof Variable)) {
             while (name instanceof ArrayAccess) {
                 ArrayAccess access = (ArrayAccess) name;
@@ -214,10 +219,10 @@ class VariableNameImpl extends ScopeImpl implements VariableName {
         return retval;
     }
 
-    AssignmentImpl findAssignment(int offset, boolean varAssignment,FieldElement expectedField) {
+    AssignmentImpl findAssignment(int offset, boolean varAssignment, FieldElement expectedField) {
         AssignmentImpl retval = null;
-        Collection<? extends AssignmentImpl> assignments = varAssignment ?
-            getVarAssignments() : getFieldAssignments();
+        Collection<? extends AssignmentImpl> assignments = varAssignment
+                ? getVarAssignments() : getFieldAssignments();
         if (assignments.size() == 1) {
             AssignmentImpl assign = assignments.iterator().next();
             if (expectedField == null || expectedField.equals(assign.getContainer())) {
@@ -235,12 +240,12 @@ class VariableNameImpl extends ScopeImpl implements VariableName {
                     }
                 }
                 if (inScope instanceof VariableScope) {
-                    VariableScope varScope = (VariableScope)inScope;
+                    VariableScope varScope = (VariableScope) inScope;
                     List<? extends VariableName> variables = ModelUtils.filter(varScope.getDeclaredVariables(), getName());
                     if (!variables.isEmpty()) {
                         VariableName varName = ModelUtils.getFirst(variables);
                         if (varName instanceof VariableNameImpl) {
-                            return ((VariableNameImpl)varName).findAssignment(offset, true, null);
+                            return ((VariableNameImpl) varName).findAssignment(offset, true, null);
                         }
                     }
                 }
@@ -264,12 +269,12 @@ class VariableNameImpl extends ScopeImpl implements VariableName {
     @Override
     public String getNormalizedName() {
         Scope inScope = getInScope();
-        if (inScope instanceof MethodScope ) {
-            String methodName = representsThis() ? "" : inScope.getName();//NOI18N
+        if (inScope instanceof MethodScope) {
+            String methodName = representsThis() ? "" : inScope.getName(); //NOI18N
             inScope = inScope.getInScope();
-            return (inScope != null && !isGloballyVisible()) ? inScope.getName()+methodName+getName() : getName();
+            return (inScope != null && !isGloballyVisible()) ? inScope.getName() + methodName + getName() : getName();
         }
-        return (inScope != null && !isGloballyVisible()) ? inScope.getName()+getName() : getName();
+        return (inScope != null && !isGloballyVisible()) ? inScope.getName() + getName() : getName();
     }
 
     @Override
@@ -292,7 +297,7 @@ class VariableNameImpl extends ScopeImpl implements VariableName {
     private Collection<? extends String> getTypeNamesImpl(int offset, boolean arrayAccess) {
         Collection<String> retval = new ArrayList<String>();
         if (!arrayAccess && getIndexedElement() instanceof TypedInstanceElement /*&& indexedElement.getFileObject() != getFileObject()*/) {
-            TypedInstanceElement typedInstanceElement = (TypedInstanceElement)getIndexedElement();
+            TypedInstanceElement typedInstanceElement = (TypedInstanceElement) getIndexedElement();
             Set<TypeResolver> instanceTypes = typedInstanceElement.getInstanceTypes();
             for (TypeResolver typeResolver : instanceTypes) {
                 if (typeResolver.isResolved()) {
@@ -309,8 +314,7 @@ class VariableNameImpl extends ScopeImpl implements VariableName {
             ClassScope classScope = (ClassScope) getInScope();
             return Collections.singletonList(classScope.getName());
         }
-        TypeResolutionKind useTypeResolutionKind = arrayAccess ?
-            TypeResolutionKind.MERGE_ASSIGNMENTS : typeResolutionKind;
+        TypeResolutionKind useTypeResolutionKind = arrayAccess ? TypeResolutionKind.MERGE_ASSIGNMENTS : typeResolutionKind;
         if (useTypeResolutionKind.equals(TypeResolutionKind.LAST_ASSIGNMENT)) {
             AssignmentImpl assignment = findVarAssignment(offset);
             while (assignment != null) {
@@ -353,8 +357,7 @@ class VariableNameImpl extends ScopeImpl implements VariableName {
             ClassScope classScope = (ClassScope) getInScope();
             return Collections.singletonList(classScope);
         }
-        TypeResolutionKind useTypeResolutionKind = arrayAccess ?
-            TypeResolutionKind.MERGE_ASSIGNMENTS : typeResolutionKind;
+        TypeResolutionKind useTypeResolutionKind = arrayAccess ? TypeResolutionKind.MERGE_ASSIGNMENTS : typeResolutionKind;
         if (useTypeResolutionKind.equals(TypeResolutionKind.LAST_ASSIGNMENT)) {
             AssignmentImpl assignment = findVarAssignment(offset);
             while (assignment != null) {
@@ -408,7 +411,7 @@ class VariableNameImpl extends ScopeImpl implements VariableName {
     @Override
     public boolean representsThis() {
         Scope inScope = getInScope();
-        if (inScope instanceof ClassScope && getName().equals("$this")) {//NOI18N
+        if (inScope instanceof ClassScope && getName().equals("$this")) { //NOI18N
             return true;
         }
         return false;
@@ -467,7 +470,7 @@ class VariableNameImpl extends ScopeImpl implements VariableName {
         }
     }
 
-    private class LazyFieldAssignment {
+    private final class LazyFieldAssignment {
         private final String typeName;
         private final String fldName;
         private final OffsetRange range;

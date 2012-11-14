@@ -43,7 +43,12 @@
  */
 package org.netbeans.modules.php.editor.indent;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Set;
 import javax.swing.SwingUtilities;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Caret;
@@ -122,13 +127,13 @@ public class PHPBracketCompleter implements KeystrokeHandler {
     // XXX: this should made it to options and be supported in java for example
     /**
      * When true, continue comments if you press return in a line comment (that
-     * does not also have code on the same line
+     * does not also have code on the same line).
      */
     static final boolean CONTINUE_COMMENTS = Boolean.getBoolean("php.cont.comment"); // NOI18N
     /**
      * Tokens which indicate that we're within a literal string
      */
-    private final static PHPTokenId[] STRING_TOKENS = {
+    private static final PHPTokenId[] STRING_TOKENS = {
         PHPTokenId.PHP_CONSTANT_ENCAPSED_STRING,
         PHPTokenId.PHP_ENCAPSED_AND_WHITESPACE
     };
@@ -757,7 +762,7 @@ public class PHPBracketCompleter implements KeystrokeHandler {
     public static enum LineBalance {
 
         PLAIN,
-        UP_FIRST,// } keyword {
+        UP_FIRST, // } keyword {
         DOWN_FIRST
     };
 
@@ -809,12 +814,12 @@ public class PHPBracketCompleter implements KeystrokeHandler {
 
         Token<? extends PHPTokenId> token = ts.token();
         int balance = 1;
-        boolean EOF = false;
+        boolean endOfFile = false;
         if (insertingEnd == PHPTokenId.PHP_CURLY_CLOSE) {
             while ((token.id() == PHPTokenId.PHP_CURLY_OPEN
                     || token.id() == PHPTokenId.PHP_CURLY_CLOSE
                     || token.id() == PHPTokenId.WHITESPACE)
-                    && !EOF) {
+                    && !endOfFile) {
                 if (token.id() == PHPTokenId.PHP_CURLY_OPEN) {
                     balance++;
                 } else if (token.id() == PHPTokenId.PHP_CURLY_CLOSE) {
@@ -823,11 +828,11 @@ public class PHPBracketCompleter implements KeystrokeHandler {
                 if (ts.moveNext()) {
                     token = ts.token();
                 } else {
-                    EOF = true;
+                    endOfFile = true;
                 }
             }
 
-            if (EOF) {
+            if (endOfFile) {
                 if (balance == 1) {
                     return true;
                 }
@@ -1042,7 +1047,7 @@ public class PHPBracketCompleter implements KeystrokeHandler {
             case ')':
             case ']':
             case '(':
-            case '[': {
+            case '[':
                 if (!isInsertMatchingEnabled(doc)) {
                     return false;
                 }
@@ -1055,9 +1060,9 @@ public class PHPBracketCompleter implements KeystrokeHandler {
                 if (((id == PHPTokenId.PHP_VARIABLE) && (token.length() == 1))
                         || (LexUtilities.textEquals(token.text(), '[')) || (LexUtilities.textEquals(token.text(), ']'))
                         || (LexUtilities.textEquals(token.text(), '(')) || (LexUtilities.textEquals(token.text(), ')'))) {
-                    if (ch == ']' || ch == ')') { // || ch == '}'
+                    if (ch == ']' || ch == ')') {
                         skipClosingBracket(doc, caret, ch);
-                    } else if ((ch == '[') || (ch == '(')) {//  || (ch == '{')
+                    } else if ((ch == '[') || (ch == '(')) {
                         completeOpeningBracket(doc, dotPos, caret, ch);
                     }
                 } else if (id == PHPTokenId.PHP_CASTING && ch == ')') {
@@ -1071,8 +1076,7 @@ public class PHPBracketCompleter implements KeystrokeHandler {
                 } else if (ch == '{') {
                     reindent(doc, dotPos, PHPTokenId.PHP_CURLY_OPEN, caret);
                 }
-            }
-            break;
+                break;
             default:
             //no-op
         }
@@ -1134,7 +1138,7 @@ public class PHPBracketCompleter implements KeystrokeHandler {
     }
 
     /**
-     * Replaced by PHPBracesMatcher
+     * Replaced by PHPBracesMatcher.
      */
     @Override
     public OffsetRange findMatching(Document document, int offset /*, boolean simpleSearch*/) {
@@ -1157,7 +1161,7 @@ public class PHPBracketCompleter implements KeystrokeHandler {
         BaseDocument doc = (BaseDocument) document;
 
         switch (ch) {
-            case ' ': {
+            case ' ':
                 // Backspacing over "# " ? Delete the "#" too!
                 TokenSequence<? extends PHPTokenId> ts = LexUtilities.getPHPTokenSequence(doc, dotPos);
                 if (ts != null) {
@@ -1169,11 +1173,9 @@ public class PHPBracketCompleter implements KeystrokeHandler {
                     }
                 }
                 break;
-            }
-
             case '{':
             case '(':
-            case '[': {
+            case '[':
                 char tokenAtDot = LexUtilities.getTokenChar(doc, dotPos);
                 if (((tokenAtDot == ']')
                         && (LexUtilities.getTokenBalance(doc, '[', ']', dotPos) != 0))
@@ -1184,15 +1186,13 @@ public class PHPBracketCompleter implements KeystrokeHandler {
                     doc.remove(dotPos, 1);
                 }
                 break;
-            }
             case '\"':
-            case '\'': {
+            case '\'':
                 char[] match = doc.getChars(dotPos, 1);
                 if ((match != null) && (match[0] == ch)) {
                     doc.remove(dotPos, 1);
                 }
                 break;
-            }
             default:
             //no-op
         }

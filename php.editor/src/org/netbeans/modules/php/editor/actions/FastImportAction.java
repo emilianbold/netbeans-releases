@@ -86,7 +86,7 @@ public class FastImportAction extends BaseAction {
 
     private static final String ACTION_NAME = "fast-import";
 
-    /** Creates a new instance of FastImportAction */
+    /** Creates a new instance of FastImportAction. */
     public FastImportAction() {
         super(ACTION_NAME);
     }
@@ -143,23 +143,23 @@ public class FastImportAction extends BaseAction {
                 LinkedHashSet<String> list;
                 if (fileType.equals(FileType.INTERNAL)) {
                     //list = denied;
-                    String elementInfo = declaration.getPhpElementKind()+" " + declaration.getName();//NOI18N
+                    String elementInfo = declaration.getPhpElementKind() + " " + declaration.getName(); //NOI18N
                     StatusDisplayer.getDefault().setStatusText(
-                            NbBundle.getMessage(FastImportAction.class, "MSG_NO_IMPORTS_FOR_PLATFORM",elementInfo));//NOI18N
+                            NbBundle.getMessage(FastImportAction.class, "MSG_NO_IMPORTS_FOR_PLATFORM", elementInfo)); //NOI18N
                     continue;
                 } else if (baseFo == includedFo) {
-                    String elementInfo = declaration.getPhpElementKind()+" " + declaration.getName();//NOI18N
+                    String elementInfo = declaration.getPhpElementKind() + " " + declaration.getName(); //NOI18N
                     StatusDisplayer.getDefault().setStatusText(
                             NbBundle.getMessage(FastImportAction.class,
-                            "MSG_NO_IMPORTS_FOR_CURRENT_FILE",elementInfo, baseFile.getAbsolutePath()));//NOI18N
+                            "MSG_NO_IMPORTS_FOR_CURRENT_FILE", elementInfo, baseFile.getAbsolutePath())); //NOI18N
                     continue;
                 } else {
                     list = privileged;
                 }
-                list.add("require_once " + sb.toString());//NOI18N
-                list.add("require " + sb.toString());//NOI18N
-                list.add("include " + sb.toString());//NOI18N
-                list.add("include_once " + sb.toString());//NOI18N
+                list.add("require_once " + sb.toString()); //NOI18N
+                list.add("require " + sb.toString()); //NOI18N
+                list.add("include " + sb.toString()); //NOI18N
+                list.add("include_once " + sb.toString()); //NOI18N
             }
             if (privileged.size() > 0 || denied.size() > 0) {
                 SwingUtilities.invokeLater(new Runnable() {

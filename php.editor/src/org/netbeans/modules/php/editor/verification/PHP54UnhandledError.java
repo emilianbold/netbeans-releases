@@ -73,7 +73,7 @@ public class PHP54UnhandledError extends AbstractUnhandledError {
     }
 
     public static  boolean appliesTo(FileObject fobj) {
-        return !CodeUtils.isPhp_54(fobj);
+        return !CodeUtils.isPhp54(fobj);
     }
 
     private static class CheckVisitor extends DefaultVisitor {

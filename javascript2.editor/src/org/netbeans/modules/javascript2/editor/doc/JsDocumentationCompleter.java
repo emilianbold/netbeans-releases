@@ -109,26 +109,28 @@ public class JsDocumentationCompleter {
                 ParserManager.parse(Collections.singleton(Source.create(doc)), new UserTask() {
                     @Override
                     public void run(ResultIterator resultIterator) throws Exception {
-                        ParserResult parserResult = (ParserResult) resultIterator.getParserResult();
+                        ParserResult parserResult = (ParserResult) resultIterator.getParserResult(offset);
                         if (parserResult != null && parserResult instanceof JsParserResult) {
                             final JsParserResult jsParserResult = (JsParserResult) parserResult;
                             if (jsParserResult.getRoot() == null) {
                                 // broken source
                                 return;
                             }
-                            Node nearestNode = getNearestNode(jsParserResult, offset);
+                            int embeddedOffset = parserResult.getSnapshot().getEmbeddedOffset(offset);
+                            Node nearestNode = getNearestNode(jsParserResult, embeddedOffset);
                             if (nearestNode == null) {
                                 // no non-doc node found in the file
                                 return;
                             }
                             int examinedOffset = nearestNode instanceof VarNode ? nearestNode.getStart() : nearestNode.getFinish();
-                            JsObject jsObject = findJsObjectFunctionVariable(jsParserResult.getModel().getGlobalObject(), examinedOffset);
+                            int originalExaminedOffset = parserResult.getSnapshot().getOriginalOffset(examinedOffset);
+                            JsObject jsObject = findJsObjectFunctionVariable(jsParserResult.getModel().getGlobalObject(), originalExaminedOffset);
                             assert jsObject != null;
                             if (jsObject.getJSKind() == Kind.FILE || isWrapperObject(jsParserResult, jsObject, nearestNode)) {
                                 String fqn = getFqnName(jsParserResult, nearestNode);
                                 jsObject = ModelUtils.findJsObjectByName(jsParserResult.getModel(), fqn);
                             }
-                            JsObject wrapperScope = getWrapperScope(jsParserResult, jsObject, nearestNode, examinedOffset);
+                            JsObject wrapperScope = getWrapperScope(jsParserResult, jsObject, nearestNode, originalExaminedOffset);
                             if (wrapperScope != null) {
                                 jsObject = wrapperScope;
                             }

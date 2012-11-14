@@ -58,6 +58,21 @@ public class ReplaceConstructorWithFactoryTest extends RefTestBase {
     public ReplaceConstructorWithFactoryTest(String name) {
         super(name);
     }
+    
+    public void testReplaceGenericWithFactory() throws Exception {
+        writeFilesAndWaitForScan(src,
+                                 new File("test/Test.java", "package test;\n public class Test<T> {\n public Test(int i, java.util.List<String> aa) {}\n private void t() {\n Test<String> t = new Test<String>(1, null);\n }\n }\n"),
+                                 new File("test/Use.java", "package test; public class Use { private void t(java.util.List<String> ll) { Test<Boolean> t = new Test<Boolean>(-1, ll); } }")
+                                 );
+
+        performTest("create");
+
+        assertContent(src,
+                      new File("test/Test.java", "package test; public class Test<T> { public static <T> Test<T> create(int i, java.util.List<String> aa) { return new Test<T>(i, aa); } private Test(int i, java.util.List<String> aa) {} private void t() { Test<String> t = Test.<String>create(1, null); } } "),
+                      new File("test/Use.java", "package test; public class Use { private void t(java.util.List<String> ll) { Test<Boolean> t = Test.<Boolean>create(-1, ll); } }")
+                      //new File("META-INF/upgrade/test.Test.hint", "new test.Test($1, $2) :: $1 instanceof int && $2 instanceof java.util.List<java.lang.String> => test.Test.create($1, $2);;")
+                     );
+    }
 
     public void testReplaceWithFactory() throws Exception {
         writeFilesAndWaitForScan(src,

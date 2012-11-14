@@ -84,9 +84,9 @@ import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.spi.ParseException;
+import org.netbeans.modules.web.browser.api.Page;
+import org.netbeans.modules.web.browser.api.PageInspector;
 import org.netbeans.modules.web.common.api.ServerURLMapping;
-import org.netbeans.modules.web.inspect.PageInspectorImpl;
-import org.netbeans.modules.web.inspect.PageModel;
 import org.openide.cookies.EditorCookie;
 import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.ExplorerUtils;
@@ -127,7 +127,7 @@ public class HtmlNavigatorPanelUI extends JPanel implements ExplorerManager.Prov
     
     private Lookup lookup;
     
-    private PageModel pageModel;
+    private Page pageModel;
     
     /**
      * FileObject inspected by pageInspector
@@ -153,8 +153,8 @@ public class HtmlNavigatorPanelUI extends JPanel implements ExplorerManager.Prov
         @Override
         public void propertyChange(PropertyChangeEvent evt) {
             String propName = evt.getPropertyName();
-            if (PageInspectorImpl.PROP_MODEL.equals(propName)) {
-                final PageModel page = PageInspectorImpl.getDefault().getPage();
+            if (PageInspector.PROP_MODEL.equals(propName)) {
+                final Page page = PageInspector.getDefault().getPage();
                 setPageModel(page);
                 refreshDOM();
             }
@@ -165,13 +165,13 @@ public class HtmlNavigatorPanelUI extends JPanel implements ExplorerManager.Prov
         @Override
         public void propertyChange(PropertyChangeEvent evt) {
             String propName = evt.getPropertyName();
-            if (PageModel.PROP_DOCUMENT.equals(propName)) {
+            if (Page.PROP_DOCUMENT.equals(propName)) {
                 pageModelDocumentChanged();
-            } else if (PageModel.PROP_SELECTED_NODES.equals(propName)) {
+            } else if (Page.PROP_SELECTED_NODES.equals(propName)) {
                 updateSelection();
-            } else if (PageModel.PROP_HIGHLIGHTED_NODES.equals(propName)) {
+            } else if (Page.PROP_HIGHLIGHTED_NODES.equals(propName)) {
                 updateHighlight();
-            } else if (PageModel.PROP_BROWSER_SELECTED_NODES.equals(propName)) {
+            } else if (Page.PROP_BROWSER_SELECTED_NODES.equals(propName)) {
                 updateEditor();
             }
         }
@@ -196,18 +196,21 @@ public class HtmlNavigatorPanelUI extends JPanel implements ExplorerManager.Prov
         panelActions = new Action[]{};
 
         lookup = ExplorerUtils.createLookup(manager, getActionMap());
+        final PageInspector pageInspector = PageInspector.getDefault();
 
         //listen on the page inspector
-        PageInspectorImpl.getDefault().addPropertyChangeListener(pageInspectorListener);
+        if (pageInspector!=null)
+            pageInspector.addPropertyChangeListener(pageInspectorListener);
+        
         manager.addPropertyChangeListener(createSelectedNodesListener());
     }
 
     /** 
-     * Set a new PageModel.
+     * Set a new Page.
      * It will install a new PropertyChangeListener for 
-     * the PageModel changes
+     * the Page changes
      */ 
-    private synchronized void setPageModel(PageModel model) {
+    private synchronized void setPageModel(Page model) {
         if (this.pageModel == model) {
             return;
         }
@@ -239,11 +242,15 @@ public class HtmlNavigatorPanelUI extends JPanel implements ExplorerManager.Prov
         inspectedFileObject = getInspectedFile(this.pageModel);
         inspectedFileChanged();
         
-        //refresh selection
-        if (pageModel != null) {
-            List nodes = translate(manager.getSelectedNodes());
-            pageModel.setSelectedNodes(nodes);
-        }
+        RP.post(new Runnable() {
+            public void run() {
+                //refresh selection
+                if (pageModel != null) {
+                    List nodes = translate(manager.getSelectedNodes());
+                    pageModel.setSelectedNodes(nodes);
+                }
+            }
+        });
     }
     
     private void inspectedFileChanged() {
@@ -262,7 +269,7 @@ public class HtmlNavigatorPanelUI extends JPanel implements ExplorerManager.Prov
      * Find corresponding FileObject for given pageModel.
      */
     @CheckForNull
-    private FileObject getInspectedFile(PageModel pageModel) {
+    private FileObject getInspectedFile(Page pageModel) {
         if (pageModel == null) {
             return null;
         }
@@ -352,7 +359,7 @@ public class HtmlNavigatorPanelUI extends JPanel implements ExplorerManager.Prov
         LOGGER.fine("root.refreshDOMStatus() called");
     }
 
-    public PageModel getPageModel() {
+    public Page getPageModel() {
         return pageModel;
     }
 
@@ -397,7 +404,12 @@ public class HtmlNavigatorPanelUI extends JPanel implements ExplorerManager.Prov
                 return;
             }
 
-            setPageModel(PageInspectorImpl.getDefault().getPage());
+            final PageInspector pageInspector = PageInspector.getDefault();
+            if (pageInspector==null) {
+                setPageModel(null);
+            } else {
+                setPageModel(pageInspector.getPage());
+            }
 
             Source source = Source.create(fo);
             if (source == null || !"text/html".equals(source.getMimeType())) {
@@ -421,7 +433,12 @@ public class HtmlNavigatorPanelUI extends JPanel implements ExplorerManager.Prov
             }
         } else {
             showWaitNode();
-            setPageModel(PageInspectorImpl.getDefault().getPage());
+            final PageInspector pageInspector = PageInspector.getDefault();
+            if (pageInspector==null) {
+                setPageModel(null);
+            } else {
+                setPageModel(pageInspector.getPage());
+            }
             setSourceDescription((SourceDescription)SourceDescription.empty(SourceDescription.SOURCE));
             refreshDOM();
         }

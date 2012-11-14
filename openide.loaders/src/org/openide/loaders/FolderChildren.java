@@ -273,7 +273,7 @@ implements PropertyChangeListener, ChangeListener, FileChangeListener {
                         stop = false;
                         if (round > 600) {
                             err.log(Level.WARNING, "Scheduling additional refresh for {0}", dn);
-                            dn.scheduleRefresh();
+                            dn.scheduleRefresh("fallback"); // NOI18N
                         }
                     }
                 }
@@ -305,7 +305,6 @@ implements PropertyChangeListener, ChangeListener, FileChangeListener {
     
     private static void appendThread(StringBuffer sb, String indent, Thread t, java.util.Map<Thread,StackTraceElement[]> data) {
         sb.append(indent).append("Thread ").append(t.getName()).append('\n');
-        indent = indent.concat("  ");
         StackTraceElement[] stack = data.get(t);
         if (stack != null) {
         for (StackTraceElement e : stack) {
@@ -488,7 +487,7 @@ implements PropertyChangeListener, ChangeListener, FileChangeListener {
             this.pair = pair;
             an.setName(pair.primaryFile.getNameExt());
             an.setIconBaseWithExtension("org/openide/loaders/unknown.gif"); // NOI18N
-            scheduleRefresh();
+            scheduleRefresh("constructor"); // NOI18N
         }
         
         @Override
@@ -516,8 +515,9 @@ implements PropertyChangeListener, ChangeListener, FileChangeListener {
             return true;
         }
 
-        final void scheduleRefresh() {
+        final void scheduleRefresh(String by) {
             task = DataNodeUtils.reqProcessor().post(this);
+            err.log(Level.FINE, "Task initialized by {0} to {1} for {2}", new Object[] { by, task, this });
         }
     }
     

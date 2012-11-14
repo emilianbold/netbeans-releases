@@ -46,6 +46,10 @@ import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.Tree;
 import com.sun.tools.javac.api.JavacTaskImpl;
 import com.sun.tools.javac.code.Symbol.ClassSymbol;
+import com.sun.tools.javac.code.Symbol.TypeSymbol;
+import com.sun.tools.javac.comp.AttrContext;
+import com.sun.tools.javac.comp.Enter;
+import com.sun.tools.javac.comp.Env;
 import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.JCTree.JCClassDecl;
 import org.netbeans.lib.nbjavac.services.CancelAbort;
@@ -57,6 +61,7 @@ import com.sun.tools.javac.util.MissingPlatformError;
 import java.io.File;
 import java.io.IOException;
 import java.util.*;
+import java.util.Map.Entry;
 import java.util.logging.Level;
 import javax.annotation.processing.Processor;
 import javax.lang.model.element.TypeElement;
@@ -73,7 +78,6 @@ import org.netbeans.modules.java.source.parsing.OutputFileManager;
 import org.netbeans.modules.java.source.usages.ClassNamesForFileOraculumImpl;
 import org.netbeans.modules.java.source.usages.ClasspathInfoAccessor;
 import org.netbeans.modules.java.source.usages.ExecutableFilesIndex;
-import org.netbeans.modules.java.source.usages.Pair;
 import org.netbeans.modules.parsing.lucene.support.LowMemoryWatcher;
 import org.netbeans.modules.parsing.spi.indexing.Context;
 import org.netbeans.modules.parsing.spi.indexing.Indexable;
@@ -105,7 +109,7 @@ final class SuperOnePassCompileWorker extends CompileWorker {
         final LowMemoryWatcher mem = LowMemoryWatcher.getInstance();
         final DiagnosticListenerImpl dc = new DiagnosticListenerImpl();
         final LinkedList<CompilationUnitTree> trees = new LinkedList<CompilationUnitTree>();
-        LinkedList<Pair<CompilationUnitTree, CompileTuple>> units = new LinkedList<Pair<CompilationUnitTree, CompileTuple>>();
+        Map<CompilationUnitTree, CompileTuple> units = new IdentityHashMap<CompilationUnitTree, CompileTuple>();
         JavacTaskImpl jt = null;
 
         boolean nop = true;
@@ -137,8 +141,7 @@ final class SuperOnePassCompileWorker extends CompileWorker {
                             for (CompilationUnitTree cut : jt.parse(tuple.jfo)) { //TODO: should be exactly one
                                 trees.add(cut);
                                 if (units != null) {
-                                    Pair<CompilationUnitTree, CompileTuple> unit = Pair.<CompilationUnitTree, CompileTuple>of(cut, tuple);
-                                    units.add(unit);
+                                    units.put(cut, tuple);
                                 }
                                 computeFQNs(file2FQNs, cut, tuple);
                             }
@@ -209,6 +212,16 @@ final class SuperOnePassCompileWorker extends CompileWorker {
                 mem.free();
                 return ParsingOutput.lowMemory(file2FQNs, addedTypes, createdFiles, finished, modifiedTypes, aptGenerated);
             }
+            Map<TypeElement, CompileTuple> clazz2Tuple = new IdentityHashMap<TypeElement, CompileTuple>();
+            Enter enter = Enter.instance(jt.getContext());
+            for (TypeElement type : types) {
+                Env<AttrContext> typeEnv = enter.getEnv((TypeSymbol) type);
+                if (typeEnv == null) {
+                    JavaIndex.LOG.log(Level.FINE, "No Env for: {0}", type.getQualifiedName());
+                    continue;
+                }
+                clazz2Tuple.put(type, units.get(typeEnv.toplevel));
+            }
             jt.analyze(types);
             if (context.isCancelled()) {
                 return null;
@@ -218,13 +231,13 @@ final class SuperOnePassCompileWorker extends CompileWorker {
                 mem.free();
                 return ParsingOutput.lowMemory(file2FQNs, addedTypes, createdFiles, finished, modifiedTypes, aptGenerated);
             }
-            for (Pair<CompilationUnitTree, CompileTuple> unit : units) {
-                CompileTuple active = unit.second;
+            for (Entry<CompilationUnitTree, CompileTuple> unit : units.entrySet()) {
+                CompileTuple active = unit.getValue();
                 if (aptEnabled) {
                     JavaCustomIndexer.addAptGenerated(context, javaContext, active, aptGenerated);
                 }
                 List<TypeElement> activeTypes = new ArrayList<TypeElement>();
-                for (Tree tree : unit.first.getTypeDecls()) {
+                for (Tree tree : unit.getKey().getTypeDecls()) {
                     if (tree instanceof JCTree && ((JCTree)tree).getTag() == JCTree.CLASSDEF) {
                         ClassSymbol sym = ((JCClassDecl)tree).sym;
                         if (sym != null)
@@ -234,10 +247,10 @@ final class SuperOnePassCompileWorker extends CompileWorker {
                 javaContext.getFQNs().set(activeTypes, active.indexable.getURL());
                 boolean[] main = new boolean[1];
                 if (javaContext.getCheckSums().checkAndSet(active.indexable.getURL(), activeTypes, jt.getElements()) || context.isSupplementaryFilesIndexing()) {
-                    javaContext.analyze(Collections.singleton(unit.first), jt, fileManager, unit.second, addedTypes, main);
+                    javaContext.analyze(Collections.singleton(unit.getKey()), jt, fileManager, unit.getValue(), addedTypes, main);
                 } else {
                     final Set<ElementHandle<TypeElement>> aTypes = new HashSet<ElementHandle<TypeElement>>();
-                    javaContext.analyze(Collections.singleton(unit.first), jt, fileManager, unit.second, aTypes, main);
+                    javaContext.analyze(Collections.singleton(unit.getKey()), jt, fileManager, unit.getValue(), aTypes, main);
                     addedTypes.addAll(aTypes);
                     modifiedTypes.addAll(aTypes);
                 }
@@ -251,15 +264,21 @@ final class SuperOnePassCompileWorker extends CompileWorker {
                 mem.free();
                 return ParsingOutput.lowMemory(file2FQNs, addedTypes, createdFiles, finished, modifiedTypes, aptGenerated);
             }
-            for (JavaFileObject generated : jt.generate(types)) {
-                if (generated instanceof FileObjects.FileBase) {
-                    createdFiles.add(((FileObjects.FileBase) generated).getFile());
-                } else {
-                    // presumably should not happen
+            for (TypeElement type : types) {
+                Iterable<? extends JavaFileObject> generatedFiles = jt.generate(Collections.singletonList(type));
+                CompileTuple unit = clazz2Tuple.get(type);
+                if (unit == null || !unit.virtual) {
+                    for (JavaFileObject generated : generatedFiles) {
+                        if (generated instanceof FileObjects.FileBase) {
+                            createdFiles.add(((FileObjects.FileBase) generated).getFile());
+                        } else {
+                            // presumably should not happen
+                        }
+                    }
                 }
             }
-            for (Pair<CompilationUnitTree, CompileTuple> unit : units) {
-                CompileTuple active = unit.second;
+            for (Entry<CompilationUnitTree, CompileTuple> unit : units.entrySet()) {
+                CompileTuple active = unit.getValue();
                 JavaCustomIndexer.setErrors(context, active, dc);
                 finished.add(active.indexable);
             }

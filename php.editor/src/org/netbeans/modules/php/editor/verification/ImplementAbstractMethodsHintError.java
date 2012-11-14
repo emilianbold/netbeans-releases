@@ -133,7 +133,7 @@ public class ImplementAbstractMethodsHintError extends AbstractHintError {
                         }
                         NamespaceScope namespaceScope = ModelUtils.getNamespaceScope(fileScope, methodElement.getOffset());
                         List typeNameResolvers = new ArrayList<TypeNameResolver>();
-                        if (fileObject != null && CodeUtils.isPhp_52(fileObject)) {
+                        if (fileObject != null && CodeUtils.isPhp52(fileObject)) {
                             typeNameResolvers.add(TypeNameResolverImpl.forUnqualifiedName());
                         } else {
                             typeNameResolvers.add(TypeNameResolverImpl.forFullyQualifiedName(namespaceScope, methodElement.getOffset()));

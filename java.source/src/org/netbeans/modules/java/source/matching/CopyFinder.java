@@ -337,6 +337,13 @@ public class CopyFinder extends TreeScanner<Boolean, TreePath> {
             treeName = ((IdentifierTree) p.getLeaf()).getName().toString();
         } else if (p != null && p.getLeaf().getKind() == Kind.TYPE_PARAMETER && ((TypeParameterTree) p.getLeaf()).getBounds().isEmpty()) {
             treeName = ((TypeParameterTree) p.getLeaf()).getName().toString();
+        } else if (p != null && p.getLeaf().getKind() == Kind.PARAMETERIZED_TYPE && (node.getKind() == Kind.IDENTIFIER || node.getKind() == Kind.MEMBER_SELECT)) {
+            ParameterizedTypeTree ptt = (ParameterizedTypeTree) p.getLeaf();
+            
+            if (ptt.getTypeArguments().size() == 1 && isMultistatementWildcardTree(ptt.getTypeArguments().get(0))) {
+                p = new TreePath(p, ptt.getType());
+                bindState.multiVariables.put(getWildcardTreeName(ptt.getTypeArguments().get(0)).toString(), Collections.<TreePath>emptyList());
+            }
         }
         
         if (treeName != null) {

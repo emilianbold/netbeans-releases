@@ -45,7 +45,7 @@ package org.netbeans.modules.php.editor.codegen;
 import org.netbeans.modules.php.editor.api.PhpElementKind;
 
 /**
- *        Jul 20, 20082:13:40 PM
+ *
  * @author Petr Pisl
  */
 public class Property {

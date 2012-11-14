@@ -48,7 +48,7 @@ import org.netbeans.modules.php.editor.api.QualifiedName;
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
 public interface TypeNameResolver {
-    
+
     /**
      * Tries to resolve some type name from passed qualified name. E.g.
      * fully-qualified name from unqualified name, etc.

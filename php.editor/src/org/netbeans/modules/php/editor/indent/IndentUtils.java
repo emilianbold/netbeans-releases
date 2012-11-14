@@ -48,12 +48,12 @@ import org.netbeans.lib.editor.util.ArrayUtilities;
  * This class will be unnecessary when issue #192289 is fixed.
  * @author Petr Pisl
  */
-public class IndentUtils {
+public final class IndentUtils {
     private static final int MAX_CACHED_INDENT = 80;
 
-    private static final String[] cachedSpacesStrings = new String[MAX_CACHED_INDENT + 1];
+    private static final String[] CACHED_SPACES_STRINGS = new String[MAX_CACHED_INDENT + 1];
     static {
-        cachedSpacesStrings[0] = ""; //NOI18N
+        CACHED_SPACES_STRINGS[0] = ""; //NOI18N
     }
 
     private static final int MAX_CACHED_TAB_SIZE = 8; // Should mostly be <= 8
@@ -64,23 +64,26 @@ public class IndentUtils {
      * The cache does not contain indents smaller than the particular tabSize
      * since they are only spaces contained in cachedSpacesStrings.
      */
-    private static final String[][] cachedTabIndents = new String[MAX_CACHED_TAB_SIZE + 1][];
+    private static final String[][] CACHED_TAB_INDENTS = new String[MAX_CACHED_TAB_SIZE + 1][];
+
+    private IndentUtils() {
+    }
 
     static String cachedOrCreatedIndentString(int indent, boolean expandTabs, int tabSize) {
         String indentString;
         if (expandTabs || (indent < tabSize)) {
             if (indent <= MAX_CACHED_INDENT) {
-                synchronized (cachedSpacesStrings) {
-                    indentString = cachedSpacesStrings[indent];
+                synchronized (CACHED_SPACES_STRINGS) {
+                    indentString = CACHED_SPACES_STRINGS[indent];
                     if (indentString == null) {
                         // Create string with MAX_CACHED_SPACES spaces first if not cached yet
-                        indentString = cachedSpacesStrings[MAX_CACHED_INDENT];
+                        indentString = CACHED_SPACES_STRINGS[MAX_CACHED_INDENT];
                         if (indentString == null) {
                             indentString = createSpacesString(MAX_CACHED_INDENT);
-                            cachedSpacesStrings[MAX_CACHED_INDENT] = indentString;
+                            CACHED_SPACES_STRINGS[MAX_CACHED_INDENT] = indentString;
                         }
                         indentString = indentString.substring(0, indent);
-                        cachedSpacesStrings[indent] = indentString;
+                        CACHED_SPACES_STRINGS[indent] = indentString;
                     }
                 }
             } else {
@@ -89,12 +92,12 @@ public class IndentUtils {
 
         } else { // Do not expand tabs
             if (indent <= MAX_CACHED_INDENT && tabSize <= MAX_CACHED_TAB_SIZE) {
-                synchronized (cachedTabIndents) {
-                    String[] tabIndents = cachedTabIndents[tabSize];
+                synchronized (CACHED_TAB_INDENTS) {
+                    String[] tabIndents = CACHED_TAB_INDENTS[tabSize];
                     if (tabIndents == null) {
                         // Do not cache spaces-only strings
                         tabIndents = new String[MAX_CACHED_INDENT - tabSize + 1];
-                        cachedTabIndents[tabSize] = tabIndents;
+                        CACHED_TAB_INDENTS[tabSize] = tabIndents;
                     }
                     indentString = tabIndents[indent - tabSize];
                     if (indentString == null) {

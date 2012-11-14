@@ -55,7 +55,10 @@ import java.awt.datatransfer.UnsupportedFlavorException;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.InputEvent;
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.Reader;
+import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -545,6 +548,19 @@ public class ClipboardHandler {
                             s = s.replace("\"","\\\""); //NOI18N
                             s = s.replace("\n","\\n\" +\n\""); //NOI18N
                             data = s;
+                        } else if (data instanceof Reader) {
+                            BufferedReader br = new BufferedReader((Reader)data);
+                            StringBuilder sb = new StringBuilder();
+                            String line;
+                            while ((line = br.readLine()) != null) {
+                                line = line.replace("\\","\\\\"); //NOI18N
+                                line = line.replace("\"","\\\""); //NOI18N
+                                if (sb.length() > 0) {
+                                    sb.append("\\n\" +\n\""); //NOI18N
+                                }
+                                sb.append(line);
+                            }
+                            data = new StringReader(sb.toString());
                         }
                         return data;
                     }

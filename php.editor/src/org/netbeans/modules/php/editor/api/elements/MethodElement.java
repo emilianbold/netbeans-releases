@@ -48,8 +48,8 @@ import org.netbeans.modules.php.editor.api.PhpElementKind;
  * @author Radek Matous
  */
 public interface MethodElement extends TypeMemberElement, BaseFunctionElement {
-    public final static PhpElementKind KIND = PhpElementKind.METHOD;
-    public static final String CONSTRUCTOR_NAME = "__construct";//NOI18N
+    PhpElementKind KIND = PhpElementKind.METHOD;
+    String CONSTRUCTOR_NAME = "__construct"; //NOI18N
     boolean isConstructor();
     boolean isMagic();
 }

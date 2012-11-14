@@ -41,7 +41,12 @@
  */
 package org.netbeans.modules.php.editor.codegen;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Set;
 import javax.swing.text.JTextComponent;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.parsing.api.ParserManager;
@@ -53,13 +58,32 @@ import org.netbeans.modules.php.editor.api.ElementQuery.Index;
 import org.netbeans.modules.php.editor.api.ElementQueryFactory;
 import org.netbeans.modules.php.editor.api.NameKind;
 import org.netbeans.modules.php.editor.api.QualifiedName;
-import org.netbeans.modules.php.editor.api.elements.*;
+import org.netbeans.modules.php.editor.api.elements.ClassElement;
+import org.netbeans.modules.php.editor.api.elements.ElementFilter;
+import org.netbeans.modules.php.editor.api.elements.ElementTransformation;
+import org.netbeans.modules.php.editor.api.elements.MethodElement;
+import org.netbeans.modules.php.editor.api.elements.TreeElement;
+import org.netbeans.modules.php.editor.api.elements.TypeElement;
 import org.netbeans.modules.php.editor.codegen.CGSGenerator.GenWay;
 import org.netbeans.modules.php.editor.model.impl.VariousUtils;
 import org.netbeans.modules.php.editor.nav.NavUtils;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
 import org.netbeans.modules.php.editor.parser.api.Utils;
-import org.netbeans.modules.php.editor.parser.astnodes.*;
+import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
+import org.netbeans.modules.php.editor.parser.astnodes.Block;
+import org.netbeans.modules.php.editor.parser.astnodes.BodyDeclaration;
+import org.netbeans.modules.php.editor.parser.astnodes.ClassDeclaration;
+import org.netbeans.modules.php.editor.parser.astnodes.Comment;
+import org.netbeans.modules.php.editor.parser.astnodes.FieldsDeclaration;
+import org.netbeans.modules.php.editor.parser.astnodes.Identifier;
+import org.netbeans.modules.php.editor.parser.astnodes.MethodDeclaration;
+import org.netbeans.modules.php.editor.parser.astnodes.PHPDocBlock;
+import org.netbeans.modules.php.editor.parser.astnodes.PHPDocTag;
+import org.netbeans.modules.php.editor.parser.astnodes.PHPDocTypeNode;
+import org.netbeans.modules.php.editor.parser.astnodes.PHPDocTypeTag;
+import org.netbeans.modules.php.editor.parser.astnodes.Program;
+import org.netbeans.modules.php.editor.parser.astnodes.SingleFieldDeclaration;
+import org.netbeans.modules.php.editor.parser.astnodes.Variable;
 import org.netbeans.modules.php.editor.parser.astnodes.visitors.DefaultVisitor;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
@@ -68,17 +92,17 @@ import org.openide.util.Exceptions;
  *
  * @author Petr Pisl
  */
-public class CGSInfo {
+public final class CGSInfo {
 
     private String className;
     // cotain the class consructor?
     private boolean hasConstructor;
-    final private List<Property> properties;
-    final private List<Property> possibleGetters;
-    final private List<Property> possibleSetters;
-    final private List<Property> possibleGettersSetters;
-    final private List<MethodProperty> possibleMethods;
-    final private JTextComponent textComp;
+    private final List<Property> properties;
+    private final List<Property> possibleGetters;
+    private final List<Property> possibleSetters;
+    private final List<Property> possibleGettersSetters;
+    private final List<MethodProperty> possibleMethods;
+    private final JTextComponent textComp;
     /**
      * how to generate  getters and setters method name
      */
@@ -181,25 +205,30 @@ public class CGSInfo {
                                 FileObject fileObject = info.getSnapshot().getSource().getFileObject();
                                 Index index = ElementQueryFactory.getIndexQuery(info);
                                 final ElementFilter forFilesFilter = ElementFilter.forFiles(fileObject);
-                                QualifiedName fullyQualifiedName = VariousUtils.getFullyQualifiedName(QualifiedName.create(className), caretOffset, info.getModel().getVariableScope(caretOffset));
+                                QualifiedName fullyQualifiedName = VariousUtils.getFullyQualifiedName(
+                                        QualifiedName.create(className),
+                                        caretOffset,
+                                        info.getModel().getVariableScope(caretOffset));
                                 Set<ClassElement> classes = forFilesFilter.filter(index.getClasses(NameKind.exact(fullyQualifiedName)));
                                 for (ClassElement classElement : classes) {
                                     ElementFilter forNotDeclared = ElementFilter.forExcludedElements(index.getDeclaredMethods(classElement));
                                     final Set<MethodElement> accessibleMethods = new HashSet<MethodElement>();
                                     accessibleMethods.addAll(forNotDeclared.filter(index.getAccessibleMethods(classElement, classElement)));
-                                    accessibleMethods.addAll(ElementFilter.forExcludedElements(accessibleMethods).filter(forNotDeclared.filter(index.getConstructors(classElement))));
-                                    accessibleMethods.addAll(ElementFilter.forExcludedElements(accessibleMethods).filter(forNotDeclared.filter(index.getAccessibleMagicMethods(classElement))));
+                                    accessibleMethods.addAll(
+                                            ElementFilter.forExcludedElements(accessibleMethods).filter(forNotDeclared.filter(index.getConstructors(classElement))));
+                                    accessibleMethods.addAll(
+                                            ElementFilter.forExcludedElements(accessibleMethods).filter(forNotDeclared.filter(index.getAccessibleMagicMethods(classElement))));
                                     final Set<TypeElement> preferedTypes = forFilesFilter.prefer(ElementTransformation.toMemberTypes().transform(accessibleMethods));
                                     final TreeElement<TypeElement> enclosingType = index.getInheritedTypesAsTree(classElement, preferedTypes);
-                                    final List<MethodProperty> properties = new ArrayList<MethodProperty>();
+                                    final List<MethodProperty> methodProperties = new ArrayList<MethodProperty>();
                                     final Set<MethodElement> methods = ElementFilter.forMembersOfTypes(preferedTypes).filter(accessibleMethods);
                                     for (final MethodElement methodElement : methods) {
                                         if (!methodElement.isFinal()) {
-                                            properties.add(new MethodProperty(methodElement, enclosingType));
+                                            methodProperties.add(new MethodProperty(methodElement, enclosingType));
                                         }
                                     }
-                                    Collections.<MethodProperty>sort(properties, MethodProperty.getComparator());
-                                    getPossibleMethods().addAll(properties);
+                                    Collections.<MethodProperty>sort(methodProperties, MethodProperty.getComparator());
+                                    getPossibleMethods().addAll(methodProperties);
                                 }
                             }
 
@@ -323,8 +352,7 @@ public class CGSInfo {
                 } else if (name.startsWith(CGSGenerator.START_OF_SETTER)) {
                     possibleProperty = name.substring(CGSGenerator.START_OF_GETTER.length());
                     existingSetters.addAll(getAllPossibleProperties(possibleProperty));
-                }
-                else if (className!= null && (className.equals(name) || "__construct".equals(name))) { //NOI18N
+                } else if (className != null && (className.equals(name) || "__construct".equals(name))) { //NOI18N
                     hasConstructor = true;
                 }
             }

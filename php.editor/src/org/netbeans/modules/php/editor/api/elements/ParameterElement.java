@@ -51,8 +51,8 @@ import org.netbeans.modules.csl.api.OffsetRange;
  */
 public interface ParameterElement {
     String getName();
-    public String asString(OutputType outputType);
-    public String asString(OutputType outputType, TypeNameResolver typeNameResolver);
+    String asString(OutputType outputType);
+    String asString(OutputType outputType, TypeNameResolver typeNameResolver);
     boolean isReference();
     Set<TypeResolver> getTypes();
     @CheckForNull
@@ -67,17 +67,17 @@ public interface ParameterElement {
 
     enum OutputType {
         /**
-         * Represents: <code>array &$foo = VERY_SUPER_LONG_DEFAULT_VALUE</code>
+         * Represents: <code>array &$foo = VERY_SUPER_LONG_DEFAULT_VALUE</code>.
          */
         COMPLETE_DECLARATION,
 
         /**
-         * Represents: <code>array &$foo = ...</code>
+         * Represents: <code>array &$foo = ...</code>.
          */
         SHORTEN_DECLARATION,
 
         /**
-         * Represents: <code>$foo</code>
+         * Represents: <code>$foo</code>.
          */
         SIMPLE_NAME
     }

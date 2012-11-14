@@ -51,7 +51,12 @@ import java.beans.BeanInfo;
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
-import java.util.*;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Set;
 import javax.swing.ImageIcon;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
@@ -86,7 +91,7 @@ import org.openide.util.Exceptions;
 import org.openide.util.Utilities;
 
 /**
- * Base on code from contrib/editor.fscompletion
+ * Base on code from contrib/editor.fscompletion.
  * @author Jan Lahoda
  */
 public class FSCompletion implements CompletionProvider {
@@ -154,7 +159,7 @@ public class FSCompletion implements CompletionProvider {
                                 if (parent != null) {
                                     relativeTo.add(parent);
                                 }
-                                resultSet.addAllItems(computeRelativeItems(relativeTo, prefix, startOffset,filter));
+                                resultSet.addAllItems(computeRelativeItems(relativeTo, prefix, startOffset, filter));
                             }
                         });
                     } catch (ParseException ex) {
@@ -173,8 +178,12 @@ public class FSCompletion implements CompletionProvider {
     }
 
     @org.netbeans.api.annotations.common.SuppressWarnings({"DMI_HARDCODED_ABSOLUTE_FILENAME"})
-    private static List<? extends CompletionItem> computeRelativeItems(Collection<? extends FileObject> relativeTo, final String prefix, int anchor, FileObjectFilter filter) throws IOException {
-        final String GO_UP = "../";
+    private static List<? extends CompletionItem> computeRelativeItems(
+            Collection<? extends FileObject> relativeTo,
+            final String prefix,
+            int anchor,
+            FileObjectFilter filter) throws IOException {
+        final String goUp = "../";
         assert relativeTo != null;
 
         List<CompletionItem> result = new LinkedList<CompletionItem>();
@@ -193,9 +202,9 @@ public class FSCompletion implements CompletionProvider {
 
         Set<FileObject> directories = new HashSet<FileObject>();
         File prefixFile = null;
-        if (pathPrefix != null && !pathPrefix.startsWith(".")) {//NOI18N
+        if (pathPrefix != null && !pathPrefix.startsWith(".")) { //NOI18N
             if (pathPrefix.length() == 0 && prefix.startsWith("/")) {
-                prefixFile = new File("/");//NOI18N
+                prefixFile = new File("/"); //NOI18N
             } else {
                 prefixFile = new File(pathPrefix);
             }
@@ -238,18 +247,18 @@ public class FSCompletion implements CompletionProvider {
                 }
             }
         }
-        if (GO_UP.startsWith(filePrefix) && directories.size() == 1) {
+        if (goUp.startsWith(filePrefix) && directories.size() == 1) {
             final FileObject parent = directories.iterator().next();
             if (parent.getParent() != null && VisibilityQuery.getDefault().isVisible(parent.getParent()) && filter.accept(parent.getParent())) {
                 result.add(new FSCompletionItem(parent, "", anchor) {
                     @Override
                     public void render(Graphics g, Font defaultFont, Color defaultColor, Color backgroundColor, int width, int height, boolean selected) {
-                        CompletionUtilities.renderHtml(super.icon,GO_UP, null, g, defaultFont, defaultColor, width, height, selected);
+                        CompletionUtilities.renderHtml(super.icon, goUp, null, g, defaultFont, defaultColor, width, height, selected);
                     }
 
                     @Override
                     protected String getText() {
-                        return prefix + GO_UP;//NOI18N
+                        return prefix + goUp; //NOI18N
                     }
                 });
             }
@@ -267,7 +276,7 @@ public class FSCompletion implements CompletionProvider {
 
         @Override
         public boolean accept(FileObject file) {
-            if (file.equals(currentFile) || isNbProjectMetadata(file)){
+            if (file.equals(currentFile) || isNbProjectMetadata(file)) {
                 return false; //do not include self in the cc result
             }
 
@@ -281,9 +290,9 @@ public class FSCompletion implements CompletionProvider {
         }
 
         private static boolean isNbProjectMetadata(FileObject fo) {
-            final String metadataName = "nbproject";//NOI18N
+            final String metadataName = "nbproject"; //NOI18N
             if (fo.getPath().indexOf(metadataName) != -1) {
-                while(fo != null) {
+                while (fo != null) {
                     if (fo.isFolder()) {
                         if (metadataName.equals(fo.getNameExt())) {
                             return true;
@@ -418,7 +427,7 @@ public class FSCompletion implements CompletionProvider {
 
     interface FileObjectFilter {
 
-        public boolean accept(FileObject file);
+        boolean accept(FileObject file);
 
     }
 }

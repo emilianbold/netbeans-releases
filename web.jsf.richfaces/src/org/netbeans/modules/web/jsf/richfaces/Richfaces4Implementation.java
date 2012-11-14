@@ -121,11 +121,14 @@ public class Richfaces4Implementation implements JsfComponentImplementation {
     @Override
     public void remove(WebModule webModule) {
         try {
-            List<Library> allRegisteredRichfaces4 = Richfaces4Customizer.getRichfacesLibraries();
-            ProjectClassPathModifier.removeLibraries(
-                    allRegisteredRichfaces4.toArray(new Library[allRegisteredRichfaces4.size()]),
-                    webModule.getJavaSources()[0],
-                    ClassPath.COMPILE);
+            List<Library> richfacesLibraries;
+            if (JsfComponentUtils.isMavenBased(webModule)) {
+                richfacesLibraries = Arrays.asList(getMavenLibrary());
+            } else {
+                richfacesLibraries = Richfaces4Customizer.getRichfacesLibraries();
+            }
+            ProjectClassPathModifier.removeLibraries(richfacesLibraries.toArray(
+                    new Library[richfacesLibraries.size()]), webModule.getJavaSources()[0], ClassPath.COMPILE);
         } catch (IOException ex) {
             LOGGER.log(Level.WARNING, "Exception during removing JSF suite from an web project", ex); //NOI18N
         } catch (UnsupportedOperationException ex) {
@@ -154,10 +157,7 @@ public class Richfaces4Implementation implements JsfComponentImplementation {
             Library rfLibrary = null;
 
             if (JsfComponentUtils.isMavenBased(webModule)) {
-                rfLibrary = JsfComponentUtils.createMavenDependencyLibrary(
-                    RICHFACES_NAME + "-maven-lib", //NOI18N
-                    new String[]{MAVEN_DEP_CORE, MAVEN_DEP_UI},
-                    new String[]{MAVEN_REPO});
+                rfLibrary = getMavenLibrary();
             } else {
                 // get the RF library from customizer
                 if (jsfComponentCustomizer != null) {
@@ -193,6 +193,13 @@ public class Richfaces4Implementation implements JsfComponentImplementation {
         } catch (UnsupportedOperationException ex) {
             LOGGER.log(Level.WARNING, "Exception during extending an web project", ex); //NOI18N
         }
+    }
+
+    private static Library getMavenLibrary() {
+        return JsfComponentUtils.createMavenDependencyLibrary(
+                RICHFACES_NAME + "-maven-lib", //NOI18N
+                new String[]{MAVEN_DEP_CORE, MAVEN_DEP_UI},
+                new String[]{MAVEN_REPO});
     }
 
     private static FileObject generateWelcomePage(WebModule webModule) throws IOException {

@@ -55,29 +55,29 @@ public class PHPFormatterSpacesTest extends PHPFormatterTestBase {
 
     public void testSpacesBeforeAfterComma01() throws Exception {
         HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
-        options.put(FmtOptions.spaceBeforeComma, false);
-        options.put(FmtOptions.spaceAfterComma, true);
+        options.put(FmtOptions.SPACE_BEFORE_COMMA, false);
+        options.put(FmtOptions.SPACE_AFTER_COMMA, true);
         reformatFileContents("testfiles/formatting/spaces/spaceBeforeAfterComma01.php", options);
     }
 
     public void testSpacesBeforeAfterComma02() throws Exception {
         HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
-        options.put(FmtOptions.spaceBeforeComma, false);
-        options.put(FmtOptions.spaceAfterComma, false);
+        options.put(FmtOptions.SPACE_BEFORE_COMMA, false);
+        options.put(FmtOptions.SPACE_AFTER_COMMA, false);
         reformatFileContents("testfiles/formatting/spaces/spaceBeforeAfterComma02.php", options);
     }
 
     public void testSpacesBeforeAfterComma03() throws Exception {
         HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
-        options.put(FmtOptions.spaceBeforeComma, true);
-        options.put(FmtOptions.spaceAfterComma, true);
+        options.put(FmtOptions.SPACE_BEFORE_COMMA, true);
+        options.put(FmtOptions.SPACE_AFTER_COMMA, true);
         reformatFileContents("testfiles/formatting/spaces/spaceBeforeAfterComma03.php", options);
     }
 
     public void testSpacesBeforeAfterComma04() throws Exception {
         HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
-        options.put(FmtOptions.spaceBeforeComma, true);
-        options.put(FmtOptions.spaceAfterComma, false);
+        options.put(FmtOptions.SPACE_BEFORE_COMMA, true);
+        options.put(FmtOptions.SPACE_AFTER_COMMA, false);
         reformatFileContents("testfiles/formatting/spaces/spaceBeforeAfterComma04.php", options);
     }
 
@@ -88,14 +88,14 @@ public class PHPFormatterSpacesTest extends PHPFormatterTestBase {
 
     public void testSpacesBeforeUnaryOps02() throws Exception {
         HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
-        options.put(FmtOptions.spaceWithinIfParens, true);
+        options.put(FmtOptions.SPACE_WITHIN_IF_PARENS, true);
         reformatFileContents("testfiles/formatting/spaces/spaceAroundUnaryOps02.php", options);
     }
 
     public void testSpacesBeforeUnaryOps03() throws Exception {
         HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
-        options.put(FmtOptions.spaceWithinIfParens, true);
-        options.put(FmtOptions.spaceAroundUnaryOps, true);
+        options.put(FmtOptions.SPACE_WITHIN_IF_PARENS, true);
+        options.put(FmtOptions.SPACE_AROUND_UNARY_OPS, true);
         reformatFileContents("testfiles/formatting/spaces/spaceAroundUnaryOps03.php", options);
     }
 
@@ -131,120 +131,120 @@ public class PHPFormatterSpacesTest extends PHPFormatterTestBase {
 
     public void testSpacesBeforeKeywords01() throws Exception {
         HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
-        options.put(FmtOptions.spaceBeforeElse, true);
-        options.put(FmtOptions.spaceBeforeWhile, true);
-        options.put(FmtOptions.spaceBeforeCatch, true);
-        options.put(FmtOptions.placeElseOnNewLine, false);
-        options.put(FmtOptions.placeWhileOnNewLine, false);
-        options.put(FmtOptions.placeCatchOnNewLine, false);
+        options.put(FmtOptions.SPACE_BEFORE_ELSE, true);
+        options.put(FmtOptions.SPACE_BEFORE_WHILE, true);
+        options.put(FmtOptions.SPACE_BEFORE_CATCH, true);
+        options.put(FmtOptions.PLACE_ELSE_ON_NEW_LINE, false);
+        options.put(FmtOptions.PLACE_WHILE_ON_NEW_LINE, false);
+        options.put(FmtOptions.PLACE_CATCH_ON_NEW_LINE, false);
         reformatFileContents("testfiles/formatting/spaces/spaceBeforeKeywords01.php", options);
     }
 
     public void testSpacesBeforeKeywords02() throws Exception {
         HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
-        options.put(FmtOptions.spaceBeforeElse, true);
-        options.put(FmtOptions.spaceBeforeWhile, true);
-        options.put(FmtOptions.spaceBeforeCatch, true);
-        options.put(FmtOptions.placeElseOnNewLine, true);
-        options.put(FmtOptions.placeWhileOnNewLine, true);
-        options.put(FmtOptions.placeCatchOnNewLine, true);
+        options.put(FmtOptions.SPACE_BEFORE_ELSE, true);
+        options.put(FmtOptions.SPACE_BEFORE_WHILE, true);
+        options.put(FmtOptions.SPACE_BEFORE_CATCH, true);
+        options.put(FmtOptions.PLACE_ELSE_ON_NEW_LINE, true);
+        options.put(FmtOptions.PLACE_WHILE_ON_NEW_LINE, true);
+        options.put(FmtOptions.PLACE_CATCH_ON_NEW_LINE, true);
         reformatFileContents("testfiles/formatting/spaces/spaceBeforeKeywords02.php", options);
     }
 
     public void testSpacesBeforeKeywords03() throws Exception {
         HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
-        options.put(FmtOptions.spaceBeforeElse, false);
-        options.put(FmtOptions.spaceBeforeWhile, false);
-        options.put(FmtOptions.spaceBeforeCatch, false);
-        options.put(FmtOptions.placeElseOnNewLine, false);
-        options.put(FmtOptions.placeWhileOnNewLine, false);
-        options.put(FmtOptions.placeCatchOnNewLine, false);
+        options.put(FmtOptions.SPACE_BEFORE_ELSE, false);
+        options.put(FmtOptions.SPACE_BEFORE_WHILE, false);
+        options.put(FmtOptions.SPACE_BEFORE_CATCH, false);
+        options.put(FmtOptions.PLACE_ELSE_ON_NEW_LINE, false);
+        options.put(FmtOptions.PLACE_WHILE_ON_NEW_LINE, false);
+        options.put(FmtOptions.PLACE_CATCH_ON_NEW_LINE, false);
         reformatFileContents("testfiles/formatting/spaces/spaceBeforeKeywords03.php", options);
     }
 
     public void testSpacesBeforeKeywords04() throws Exception {
         HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
-        options.put(FmtOptions.spaceBeforeElse, true);
-        options.put(FmtOptions.spaceBeforeWhile, true);
-        options.put(FmtOptions.spaceBeforeCatch, true);
-        options.put(FmtOptions.placeElseOnNewLine, false);
-        options.put(FmtOptions.placeWhileOnNewLine, false);
-        options.put(FmtOptions.placeCatchOnNewLine, false);
+        options.put(FmtOptions.SPACE_BEFORE_ELSE, true);
+        options.put(FmtOptions.SPACE_BEFORE_WHILE, true);
+        options.put(FmtOptions.SPACE_BEFORE_CATCH, true);
+        options.put(FmtOptions.PLACE_ELSE_ON_NEW_LINE, false);
+        options.put(FmtOptions.PLACE_WHILE_ON_NEW_LINE, false);
+        options.put(FmtOptions.PLACE_CATCH_ON_NEW_LINE, false);
         reformatFileContents("testfiles/formatting/spaces/spaceBeforeKeywords04.php", options);
     }
 
     public void testIssue180859_01() throws Exception {
         HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
-        options.put(FmtOptions.spaceAroundBinaryOps, true);
+        options.put(FmtOptions.SPACE_AROUND_BINARY_OPS, true);
         reformatFileContents("testfiles/formatting/spaces/issue180859_01.php", options);
     }
 
     public void testIssue180859_02() throws Exception {
         HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
-        options.put(FmtOptions.spaceAroundBinaryOps, false);
+        options.put(FmtOptions.SPACE_AROUND_BINARY_OPS, false);
         reformatFileContents("testfiles/formatting/spaces/issue180859_02.php", options);
     }
 
     public void testSpaceAfterShortPHPTag_01() throws Exception {
         HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
-        options.put(FmtOptions.spaceAfterShortPHPTag, true);
-        options.put(FmtOptions.spaceBeforeClosePHPTag, true);
+        options.put(FmtOptions.SPACE_AFTER_SHORT_PHP_TAG, true);
+        options.put(FmtOptions.SPACE_BEFORE_CLOSE_PHP_TAG, true);
         reformatFileContents("testfiles/formatting/spaces/spaceAfterShortPHPTag01.php", options);
     }
 
     public void testSpaceAfterShortPHPTag_02() throws Exception {
         HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
-        options.put(FmtOptions.spaceAfterShortPHPTag, false);
-        options.put(FmtOptions.spaceBeforeClosePHPTag, false);
+        options.put(FmtOptions.SPACE_AFTER_SHORT_PHP_TAG, false);
+        options.put(FmtOptions.SPACE_BEFORE_CLOSE_PHP_TAG, false);
         reformatFileContents("testfiles/formatting/spaces/spaceAfterShortPHPTag02.php", options);
     }
 
     public void testSpacesBeforeAfterSemi01() throws Exception {
         HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
-        options.put(FmtOptions.spaceBeforeSemi, false);
-        options.put(FmtOptions.spaceAfterSemi, true);
+        options.put(FmtOptions.SPACE_BEFORE_SEMI, false);
+        options.put(FmtOptions.SPACE_AFTER_SEMI, true);
         reformatFileContents("testfiles/formatting/spaces/spaceBeforeAfterSemi01.php", options);
     }
 
     public void testSpacesBeforeAfterSemi02() throws Exception {
         HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
-        options.put(FmtOptions.spaceBeforeSemi, false);
-        options.put(FmtOptions.spaceAfterSemi, false);
+        options.put(FmtOptions.SPACE_BEFORE_SEMI, false);
+        options.put(FmtOptions.SPACE_AFTER_SEMI, false);
         reformatFileContents("testfiles/formatting/spaces/spaceBeforeAfterSemi02.php", options);
     }
 
     public void testSpacesBeforeAfterSemi03() throws Exception {
         HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
-        options.put(FmtOptions.spaceBeforeSemi, true);
-        options.put(FmtOptions.spaceAfterSemi, false);
+        options.put(FmtOptions.SPACE_BEFORE_SEMI, true);
+        options.put(FmtOptions.SPACE_AFTER_SEMI, false);
         reformatFileContents("testfiles/formatting/spaces/spaceBeforeAfterSemi03.php", options);
     }
 
     public void testSpacesBeforeAfterSemi04() throws Exception {
         HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
-        options.put(FmtOptions.spaceBeforeSemi, true);
-        options.put(FmtOptions.spaceAfterSemi, true);
+        options.put(FmtOptions.SPACE_BEFORE_SEMI, true);
+        options.put(FmtOptions.SPACE_AFTER_SEMI, true);
         reformatFileContents("testfiles/formatting/spaces/spaceBeforeAfterSemi04.php", options);
     }
 
     public void xxxtestSpacesCheckAfterKeywords01() throws Exception {
         HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
-        options.put(FmtOptions.spaceCheckAfterKeywords, true);
+        options.put(FmtOptions.SPACE_CHECK_AFTER_KEYWORDS, true);
         reformatFileContents("testfiles/formatting/spaces/spaceCheckAfterKeywords01.php", options);
     }
 
     public void xxxtestSpacesCheckAfterKeywords02() throws Exception {
         HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
-        options.put(FmtOptions.spaceCheckAfterKeywords, true);
+        options.put(FmtOptions.SPACE_CHECK_AFTER_KEYWORDS, true);
         reformatFileContents("testfiles/formatting/spaces/spaceCheckAfterKeywords02.php", options);
     }
 
     public void testIssue210617() throws Exception {
         HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
-        options.put(FmtOptions.groupAlignmentArrayInit, true);
-        options.put(FmtOptions.groupAlignmentAssignment, true);
-        options.put(FmtOptions.expandTabToSpaces, false);
-        options.put(FmtOptions.tabSize, 4);
+        options.put(FmtOptions.GROUP_ALIGNMENT_ARRAY_INIT, true);
+        options.put(FmtOptions.GROUP_ALIGNMENT_ASSIGNMENT, true);
+        options.put(FmtOptions.EXPAND_TAB_TO_SPACES, false);
+        options.put(FmtOptions.TAB_SIZE, 4);
         reformatFileContents("testfiles/formatting/alignment/issue210617.php", options);
     }
 
@@ -295,7 +295,7 @@ public class PHPFormatterSpacesTest extends PHPFormatterTestBase {
 
     public void testIssue195562() throws Exception {
         HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
-        options.put(FmtOptions.continuationIndentSize, 4);
+        options.put(FmtOptions.CONTINUATION_INDENT_SIZE, 4);
         reformatFileContents("testfiles/formatting/spaces/issue195562.php", options);
     }
 
@@ -306,514 +306,514 @@ public class PHPFormatterSpacesTest extends PHPFormatterTestBase {
 
     public void testTraitUsesSpaces_01() throws Exception {
         HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
-        options.put(FmtOptions.spaceBeforeUseTraitBodyLeftBrace, true);
+        options.put(FmtOptions.SPACE_BEFORE_USE_TRAIT_BODY_LEFT_BRACE, true);
         reformatFileContents("testfiles/formatting/spaces/TraitUses01.php", options);
     }
 
     public void testTraitUsesSpaces_02() throws Exception {
         HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
-        options.put(FmtOptions.spaceBeforeUseTraitBodyLeftBrace, false);
+        options.put(FmtOptions.SPACE_BEFORE_USE_TRAIT_BODY_LEFT_BRACE, false);
         reformatFileContents("testfiles/formatting/spaces/TraitUses02.php", options);
     }
 
     public void testIssue202940_01() throws Exception {
         HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
-        options.put(FmtOptions.catchBracePlacement, CodeStyle.BracePlacement.PRESERVE_EXISTING);
-        options.put(FmtOptions.classDeclBracePlacement, CodeStyle.BracePlacement.PRESERVE_EXISTING);
-        options.put(FmtOptions.forBracePlacement, CodeStyle.BracePlacement.PRESERVE_EXISTING);
-        options.put(FmtOptions.ifBracePlacement, CodeStyle.BracePlacement.PRESERVE_EXISTING);
-        options.put(FmtOptions.methodDeclBracePlacement, CodeStyle.BracePlacement.PRESERVE_EXISTING);
-        options.put(FmtOptions.otherBracePlacement, CodeStyle.BracePlacement.PRESERVE_EXISTING);
-        options.put(FmtOptions.switchBracePlacement, CodeStyle.BracePlacement.PRESERVE_EXISTING);
-        options.put(FmtOptions.useTraitBodyBracePlacement, CodeStyle.BracePlacement.PRESERVE_EXISTING);
-        options.put(FmtOptions.whileBracePlacement, CodeStyle.BracePlacement.PRESERVE_EXISTING);
+        options.put(FmtOptions.CATCH_BRACE_PLACEMENT, CodeStyle.BracePlacement.PRESERVE_EXISTING);
+        options.put(FmtOptions.CLASS_DECL_BRACE_PLACEMENT, CodeStyle.BracePlacement.PRESERVE_EXISTING);
+        options.put(FmtOptions.FOR_BRACE_PLACEMENT, CodeStyle.BracePlacement.PRESERVE_EXISTING);
+        options.put(FmtOptions.IF_BRACE_PLACEMENT, CodeStyle.BracePlacement.PRESERVE_EXISTING);
+        options.put(FmtOptions.METHOD_DECL_BRACE_PLACEMENT, CodeStyle.BracePlacement.PRESERVE_EXISTING);
+        options.put(FmtOptions.OTHER_BRACE_PLACEMENT, CodeStyle.BracePlacement.PRESERVE_EXISTING);
+        options.put(FmtOptions.SWITCH_BRACE_PLACEMENT, CodeStyle.BracePlacement.PRESERVE_EXISTING);
+        options.put(FmtOptions.USE_TRAIT_BODY_BRACE_PLACEMENT, CodeStyle.BracePlacement.PRESERVE_EXISTING);
+        options.put(FmtOptions.WHILE_BRACE_PLACEMENT, CodeStyle.BracePlacement.PRESERVE_EXISTING);
         reformatFileContents("testfiles/formatting/spaces/issue202940_01.php", options);
     }
 
     public void testIssue202940_02() throws Exception {
         HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
-        options.put(FmtOptions.catchBracePlacement, CodeStyle.BracePlacement.PRESERVE_EXISTING);
-        options.put(FmtOptions.classDeclBracePlacement, CodeStyle.BracePlacement.PRESERVE_EXISTING);
-        options.put(FmtOptions.forBracePlacement, CodeStyle.BracePlacement.PRESERVE_EXISTING);
-        options.put(FmtOptions.ifBracePlacement, CodeStyle.BracePlacement.PRESERVE_EXISTING);
-        options.put(FmtOptions.methodDeclBracePlacement, CodeStyle.BracePlacement.PRESERVE_EXISTING);
-        options.put(FmtOptions.otherBracePlacement, CodeStyle.BracePlacement.PRESERVE_EXISTING);
-        options.put(FmtOptions.switchBracePlacement, CodeStyle.BracePlacement.PRESERVE_EXISTING);
-        options.put(FmtOptions.useTraitBodyBracePlacement, CodeStyle.BracePlacement.PRESERVE_EXISTING);
-        options.put(FmtOptions.whileBracePlacement, CodeStyle.BracePlacement.PRESERVE_EXISTING);
+        options.put(FmtOptions.CATCH_BRACE_PLACEMENT, CodeStyle.BracePlacement.PRESERVE_EXISTING);
+        options.put(FmtOptions.CLASS_DECL_BRACE_PLACEMENT, CodeStyle.BracePlacement.PRESERVE_EXISTING);
+        options.put(FmtOptions.FOR_BRACE_PLACEMENT, CodeStyle.BracePlacement.PRESERVE_EXISTING);
+        options.put(FmtOptions.IF_BRACE_PLACEMENT, CodeStyle.BracePlacement.PRESERVE_EXISTING);
+        options.put(FmtOptions.METHOD_DECL_BRACE_PLACEMENT, CodeStyle.BracePlacement.PRESERVE_EXISTING);
+        options.put(FmtOptions.OTHER_BRACE_PLACEMENT, CodeStyle.BracePlacement.PRESERVE_EXISTING);
+        options.put(FmtOptions.SWITCH_BRACE_PLACEMENT, CodeStyle.BracePlacement.PRESERVE_EXISTING);
+        options.put(FmtOptions.USE_TRAIT_BODY_BRACE_PLACEMENT, CodeStyle.BracePlacement.PRESERVE_EXISTING);
+        options.put(FmtOptions.WHILE_BRACE_PLACEMENT, CodeStyle.BracePlacement.PRESERVE_EXISTING);
         reformatFileContents("testfiles/formatting/spaces/issue202940_02.php", options);
     }
 
     public void testIssue202940_03() throws Exception {
         HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
-        options.put(FmtOptions.catchBracePlacement, CodeStyle.BracePlacement.PRESERVE_EXISTING);
-        options.put(FmtOptions.classDeclBracePlacement, CodeStyle.BracePlacement.PRESERVE_EXISTING);
-        options.put(FmtOptions.forBracePlacement, CodeStyle.BracePlacement.PRESERVE_EXISTING);
-        options.put(FmtOptions.ifBracePlacement, CodeStyle.BracePlacement.PRESERVE_EXISTING);
-        options.put(FmtOptions.methodDeclBracePlacement, CodeStyle.BracePlacement.PRESERVE_EXISTING);
-        options.put(FmtOptions.otherBracePlacement, CodeStyle.BracePlacement.PRESERVE_EXISTING);
-        options.put(FmtOptions.switchBracePlacement, CodeStyle.BracePlacement.PRESERVE_EXISTING);
-        options.put(FmtOptions.useTraitBodyBracePlacement, CodeStyle.BracePlacement.PRESERVE_EXISTING);
-        options.put(FmtOptions.whileBracePlacement, CodeStyle.BracePlacement.PRESERVE_EXISTING);
+        options.put(FmtOptions.CATCH_BRACE_PLACEMENT, CodeStyle.BracePlacement.PRESERVE_EXISTING);
+        options.put(FmtOptions.CLASS_DECL_BRACE_PLACEMENT, CodeStyle.BracePlacement.PRESERVE_EXISTING);
+        options.put(FmtOptions.FOR_BRACE_PLACEMENT, CodeStyle.BracePlacement.PRESERVE_EXISTING);
+        options.put(FmtOptions.IF_BRACE_PLACEMENT, CodeStyle.BracePlacement.PRESERVE_EXISTING);
+        options.put(FmtOptions.METHOD_DECL_BRACE_PLACEMENT, CodeStyle.BracePlacement.PRESERVE_EXISTING);
+        options.put(FmtOptions.OTHER_BRACE_PLACEMENT, CodeStyle.BracePlacement.PRESERVE_EXISTING);
+        options.put(FmtOptions.SWITCH_BRACE_PLACEMENT, CodeStyle.BracePlacement.PRESERVE_EXISTING);
+        options.put(FmtOptions.USE_TRAIT_BODY_BRACE_PLACEMENT, CodeStyle.BracePlacement.PRESERVE_EXISTING);
+        options.put(FmtOptions.WHILE_BRACE_PLACEMENT, CodeStyle.BracePlacement.PRESERVE_EXISTING);
         reformatFileContents("testfiles/formatting/spaces/issue202940_03.php", options);
     }
 
     public void testIssue202940_04() throws Exception {
         HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
-        options.put(FmtOptions.catchBracePlacement, CodeStyle.BracePlacement.PRESERVE_EXISTING);
-        options.put(FmtOptions.classDeclBracePlacement, CodeStyle.BracePlacement.PRESERVE_EXISTING);
-        options.put(FmtOptions.forBracePlacement, CodeStyle.BracePlacement.PRESERVE_EXISTING);
-        options.put(FmtOptions.ifBracePlacement, CodeStyle.BracePlacement.PRESERVE_EXISTING);
-        options.put(FmtOptions.methodDeclBracePlacement, CodeStyle.BracePlacement.PRESERVE_EXISTING);
-        options.put(FmtOptions.otherBracePlacement, CodeStyle.BracePlacement.PRESERVE_EXISTING);
-        options.put(FmtOptions.switchBracePlacement, CodeStyle.BracePlacement.PRESERVE_EXISTING);
-        options.put(FmtOptions.useTraitBodyBracePlacement, CodeStyle.BracePlacement.PRESERVE_EXISTING);
-        options.put(FmtOptions.whileBracePlacement, CodeStyle.BracePlacement.PRESERVE_EXISTING);
+        options.put(FmtOptions.CATCH_BRACE_PLACEMENT, CodeStyle.BracePlacement.PRESERVE_EXISTING);
+        options.put(FmtOptions.CLASS_DECL_BRACE_PLACEMENT, CodeStyle.BracePlacement.PRESERVE_EXISTING);
+        options.put(FmtOptions.FOR_BRACE_PLACEMENT, CodeStyle.BracePlacement.PRESERVE_EXISTING);
+        options.put(FmtOptions.IF_BRACE_PLACEMENT, CodeStyle.BracePlacement.PRESERVE_EXISTING);
+        options.put(FmtOptions.METHOD_DECL_BRACE_PLACEMENT, CodeStyle.BracePlacement.PRESERVE_EXISTING);
+        options.put(FmtOptions.OTHER_BRACE_PLACEMENT, CodeStyle.BracePlacement.PRESERVE_EXISTING);
+        options.put(FmtOptions.SWITCH_BRACE_PLACEMENT, CodeStyle.BracePlacement.PRESERVE_EXISTING);
+        options.put(FmtOptions.USE_TRAIT_BODY_BRACE_PLACEMENT, CodeStyle.BracePlacement.PRESERVE_EXISTING);
+        options.put(FmtOptions.WHILE_BRACE_PLACEMENT, CodeStyle.BracePlacement.PRESERVE_EXISTING);
         reformatFileContents("testfiles/formatting/spaces/issue202940_04.php", options);
     }
 
     public void testIssue202940_05() throws Exception {
         HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
-        options.put(FmtOptions.catchBracePlacement, CodeStyle.BracePlacement.PRESERVE_EXISTING);
-        options.put(FmtOptions.classDeclBracePlacement, CodeStyle.BracePlacement.PRESERVE_EXISTING);
-        options.put(FmtOptions.forBracePlacement, CodeStyle.BracePlacement.PRESERVE_EXISTING);
-        options.put(FmtOptions.ifBracePlacement, CodeStyle.BracePlacement.PRESERVE_EXISTING);
-        options.put(FmtOptions.methodDeclBracePlacement, CodeStyle.BracePlacement.PRESERVE_EXISTING);
-        options.put(FmtOptions.otherBracePlacement, CodeStyle.BracePlacement.PRESERVE_EXISTING);
-        options.put(FmtOptions.switchBracePlacement, CodeStyle.BracePlacement.PRESERVE_EXISTING);
-        options.put(FmtOptions.useTraitBodyBracePlacement, CodeStyle.BracePlacement.PRESERVE_EXISTING);
-        options.put(FmtOptions.whileBracePlacement, CodeStyle.BracePlacement.PRESERVE_EXISTING);
+        options.put(FmtOptions.CATCH_BRACE_PLACEMENT, CodeStyle.BracePlacement.PRESERVE_EXISTING);
+        options.put(FmtOptions.CLASS_DECL_BRACE_PLACEMENT, CodeStyle.BracePlacement.PRESERVE_EXISTING);
+        options.put(FmtOptions.FOR_BRACE_PLACEMENT, CodeStyle.BracePlacement.PRESERVE_EXISTING);
+        options.put(FmtOptions.IF_BRACE_PLACEMENT, CodeStyle.BracePlacement.PRESERVE_EXISTING);
+        options.put(FmtOptions.METHOD_DECL_BRACE_PLACEMENT, CodeStyle.BracePlacement.PRESERVE_EXISTING);
+        options.put(FmtOptions.OTHER_BRACE_PLACEMENT, CodeStyle.BracePlacement.PRESERVE_EXISTING);
+        options.put(FmtOptions.SWITCH_BRACE_PLACEMENT, CodeStyle.BracePlacement.PRESERVE_EXISTING);
+        options.put(FmtOptions.USE_TRAIT_BODY_BRACE_PLACEMENT, CodeStyle.BracePlacement.PRESERVE_EXISTING);
+        options.put(FmtOptions.WHILE_BRACE_PLACEMENT, CodeStyle.BracePlacement.PRESERVE_EXISTING);
         reformatFileContents("testfiles/formatting/spaces/issue202940_05.php", options);
     }
 
     public void testSpacesBeforeClassDecLeftBrace01() throws Exception {
         HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
-        options.put(FmtOptions.spaceBeforeClassDeclLeftBrace, true);
+        options.put(FmtOptions.SPACE_BEFORE_CLASS_DECL_LEFT_BRACE, true);
         reformatFileContents("testfiles/formatting/spaces/spaceBeforeClassDecLeftBrace01.php", options);
     }
 
     public void testSpacesBeforeClassDecLeftBrace02() throws Exception {
         HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
-        options.put(FmtOptions.spaceBeforeClassDeclLeftBrace, true);
+        options.put(FmtOptions.SPACE_BEFORE_CLASS_DECL_LEFT_BRACE, true);
         reformatFileContents("testfiles/formatting/spaces/spaceBeforeClassDecLeftBrace02.php", options);
     }
 
     public void testSpacesBeforeClassDecLeftBrace03() throws Exception {
         HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
-        options.put(FmtOptions.spaceBeforeClassDeclLeftBrace, false);
+        options.put(FmtOptions.SPACE_BEFORE_CLASS_DECL_LEFT_BRACE, false);
         reformatFileContents("testfiles/formatting/spaces/spaceBeforeClassDecLeftBrace03.php", options);
     }
 
     public void testSpacesBeforeMethodDeclLeftBrace01() throws Exception {
         HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
-        options.put(FmtOptions.spaceBeforeMethodDeclLeftBrace, true);
+        options.put(FmtOptions.SPACE_BEFORE_METHOD_DECL_LEFT_BRACE, true);
         reformatFileContents("testfiles/formatting/spaces/spaceBeforeMethodDeclLeftBrace01.php", options);
     }
 
     public void testSpacesBeforeMethodDeclLeftBrace02() throws Exception {
         HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
-        options.put(FmtOptions.spaceBeforeMethodDeclLeftBrace, false);
+        options.put(FmtOptions.SPACE_BEFORE_METHOD_DECL_LEFT_BRACE, false);
         reformatFileContents("testfiles/formatting/spaces/spaceBeforeMethodDeclLeftBrace02.php", options);
     }
 
     public void testSpacesBeforeMethodDeclLeftBrace03() throws Exception {
         HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
-        options.put(FmtOptions.spaceBeforeMethodDeclLeftBrace, true);
-        options.put(FmtOptions.classDeclBracePlacement, CodeStyle.BracePlacement.NEW_LINE);
-        options.put(FmtOptions.methodDeclBracePlacement, CodeStyle.BracePlacement.NEW_LINE);
-        options.put(FmtOptions.otherBracePlacement, CodeStyle.BracePlacement.NEW_LINE);
+        options.put(FmtOptions.SPACE_BEFORE_METHOD_DECL_LEFT_BRACE, true);
+        options.put(FmtOptions.CLASS_DECL_BRACE_PLACEMENT, CodeStyle.BracePlacement.NEW_LINE);
+        options.put(FmtOptions.METHOD_DECL_BRACE_PLACEMENT, CodeStyle.BracePlacement.NEW_LINE);
+        options.put(FmtOptions.OTHER_BRACE_PLACEMENT, CodeStyle.BracePlacement.NEW_LINE);
         reformatFileContents("testfiles/formatting/spaces/spaceBeforeMethodDeclLeftBrace03.php", options);
     }
 
     public void testSpacesBeforeIfElseIfLeftBrace01() throws Exception {
         HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
-        options.put(FmtOptions.spaceBeforeClassDeclLeftBrace, false);
-        options.put(FmtOptions.spaceBeforeMethodDeclLeftBrace, false);
-        options.put(FmtOptions.spaceBeforeIfLeftBrace, true);
-        options.put(FmtOptions.spaceBeforeElseLeftBrace, false);
-        options.put(FmtOptions.spaceBeforeWhileLeftBrace, false);
-        options.put(FmtOptions.spaceBeforeDoLeftBrace, false);
-        options.put(FmtOptions.spaceBeforeForLeftBrace, false);
-        options.put(FmtOptions.spaceBeforeSwitchLeftBrace, false);
-        options.put(FmtOptions.spaceBeforeTryLeftBrace, false);
-        options.put(FmtOptions.spaceBeforeCatchLeftBrace, false);
+        options.put(FmtOptions.SPACE_BEFORE_CLASS_DECL_LEFT_BRACE, false);
+        options.put(FmtOptions.SPACE_BEFORE_METHOD_DECL_LEFT_BRACE, false);
+        options.put(FmtOptions.SPACE_BEFORE_IF_LEFT_BRACE, true);
+        options.put(FmtOptions.SPACE_BEFORE_ELSE_LEFT_BRACE, false);
+        options.put(FmtOptions.SPACE_BEFORE_WHILE_LEFT_BRACE, false);
+        options.put(FmtOptions.SPACE_BEFORE_DO_LEFT_BRACE, false);
+        options.put(FmtOptions.SPACE_BEFORE_FOR_LEFT_BRACE, false);
+        options.put(FmtOptions.SPACE_BEFORE_SWITCH_LEFT_BRACE, false);
+        options.put(FmtOptions.SPACE_BEFORE_TRY_LEFT_BRACE, false);
+        options.put(FmtOptions.SPACE_BEFORE_CATCH_LEFT_BRACE, false);
         reformatFileContents("testfiles/formatting/spaces/spaceBeforeIfElseIfLeftBrace01.php", options);
     }
 
     public void testSpacesBeforeElseLeftBrace01() throws Exception {
         HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
-        options.put(FmtOptions.spaceBeforeClassDeclLeftBrace, false);
-        options.put(FmtOptions.spaceBeforeMethodDeclLeftBrace, false);
-        options.put(FmtOptions.spaceBeforeIfLeftBrace, false);
-        options.put(FmtOptions.spaceBeforeElseLeftBrace, true);
-        options.put(FmtOptions.spaceBeforeWhileLeftBrace, false);
-        options.put(FmtOptions.spaceBeforeDoLeftBrace, false);
-        options.put(FmtOptions.spaceBeforeForLeftBrace, false);
-        options.put(FmtOptions.spaceBeforeSwitchLeftBrace, false);
-        options.put(FmtOptions.spaceBeforeTryLeftBrace, false);
-        options.put(FmtOptions.spaceBeforeCatchLeftBrace, false);
+        options.put(FmtOptions.SPACE_BEFORE_CLASS_DECL_LEFT_BRACE, false);
+        options.put(FmtOptions.SPACE_BEFORE_METHOD_DECL_LEFT_BRACE, false);
+        options.put(FmtOptions.SPACE_BEFORE_IF_LEFT_BRACE, false);
+        options.put(FmtOptions.SPACE_BEFORE_ELSE_LEFT_BRACE, true);
+        options.put(FmtOptions.SPACE_BEFORE_WHILE_LEFT_BRACE, false);
+        options.put(FmtOptions.SPACE_BEFORE_DO_LEFT_BRACE, false);
+        options.put(FmtOptions.SPACE_BEFORE_FOR_LEFT_BRACE, false);
+        options.put(FmtOptions.SPACE_BEFORE_SWITCH_LEFT_BRACE, false);
+        options.put(FmtOptions.SPACE_BEFORE_TRY_LEFT_BRACE, false);
+        options.put(FmtOptions.SPACE_BEFORE_CATCH_LEFT_BRACE, false);
         reformatFileContents("testfiles/formatting/spaces/spaceBeforeElseLeftBrace01.php", options);
     }
 
     public void testSpacesBeforeWhileLeftBrace01() throws Exception {
         HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
-        options.put(FmtOptions.spaceBeforeClassDeclLeftBrace, false);
-        options.put(FmtOptions.spaceBeforeMethodDeclLeftBrace, false);
-        options.put(FmtOptions.spaceBeforeIfLeftBrace, false);
-        options.put(FmtOptions.spaceBeforeElseLeftBrace, false);
-        options.put(FmtOptions.spaceBeforeWhileLeftBrace, true);
-        options.put(FmtOptions.spaceBeforeDoLeftBrace, false);
-        options.put(FmtOptions.spaceBeforeForLeftBrace, false);
-        options.put(FmtOptions.spaceBeforeSwitchLeftBrace, false);
-        options.put(FmtOptions.spaceBeforeTryLeftBrace, false);
-        options.put(FmtOptions.spaceBeforeCatchLeftBrace, false);
+        options.put(FmtOptions.SPACE_BEFORE_CLASS_DECL_LEFT_BRACE, false);
+        options.put(FmtOptions.SPACE_BEFORE_METHOD_DECL_LEFT_BRACE, false);
+        options.put(FmtOptions.SPACE_BEFORE_IF_LEFT_BRACE, false);
+        options.put(FmtOptions.SPACE_BEFORE_ELSE_LEFT_BRACE, false);
+        options.put(FmtOptions.SPACE_BEFORE_WHILE_LEFT_BRACE, true);
+        options.put(FmtOptions.SPACE_BEFORE_DO_LEFT_BRACE, false);
+        options.put(FmtOptions.SPACE_BEFORE_FOR_LEFT_BRACE, false);
+        options.put(FmtOptions.SPACE_BEFORE_SWITCH_LEFT_BRACE, false);
+        options.put(FmtOptions.SPACE_BEFORE_TRY_LEFT_BRACE, false);
+        options.put(FmtOptions.SPACE_BEFORE_CATCH_LEFT_BRACE, false);
         reformatFileContents("testfiles/formatting/spaces/spaceBeforeWhileLeftBrace01.php", options);
     }
 
     public void testSpacesBeforeDoLeftBrace01() throws Exception {
         HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
-        options.put(FmtOptions.spaceBeforeClassDeclLeftBrace, false);
-        options.put(FmtOptions.spaceBeforeMethodDeclLeftBrace, false);
-        options.put(FmtOptions.spaceBeforeIfLeftBrace, false);
-        options.put(FmtOptions.spaceBeforeElseLeftBrace, false);
-        options.put(FmtOptions.spaceBeforeWhileLeftBrace, false);
-        options.put(FmtOptions.spaceBeforeDoLeftBrace, true);
-        options.put(FmtOptions.spaceBeforeForLeftBrace, false);
-        options.put(FmtOptions.spaceBeforeSwitchLeftBrace, false);
-        options.put(FmtOptions.spaceBeforeTryLeftBrace, false);
-        options.put(FmtOptions.spaceBeforeCatchLeftBrace, false);
+        options.put(FmtOptions.SPACE_BEFORE_CLASS_DECL_LEFT_BRACE, false);
+        options.put(FmtOptions.SPACE_BEFORE_METHOD_DECL_LEFT_BRACE, false);
+        options.put(FmtOptions.SPACE_BEFORE_IF_LEFT_BRACE, false);
+        options.put(FmtOptions.SPACE_BEFORE_ELSE_LEFT_BRACE, false);
+        options.put(FmtOptions.SPACE_BEFORE_WHILE_LEFT_BRACE, false);
+        options.put(FmtOptions.SPACE_BEFORE_DO_LEFT_BRACE, true);
+        options.put(FmtOptions.SPACE_BEFORE_FOR_LEFT_BRACE, false);
+        options.put(FmtOptions.SPACE_BEFORE_SWITCH_LEFT_BRACE, false);
+        options.put(FmtOptions.SPACE_BEFORE_TRY_LEFT_BRACE, false);
+        options.put(FmtOptions.SPACE_BEFORE_CATCH_LEFT_BRACE, false);
         reformatFileContents("testfiles/formatting/spaces/spaceBeforeDoLeftBrace01.php", options);
     }
 
     public void testSpacesBeforeForLeftBrace01() throws Exception {
         HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
-        options.put(FmtOptions.spaceBeforeClassDeclLeftBrace, false);
-        options.put(FmtOptions.spaceBeforeMethodDeclLeftBrace, false);
-        options.put(FmtOptions.spaceBeforeIfLeftBrace, false);
-        options.put(FmtOptions.spaceBeforeElseLeftBrace, false);
-        options.put(FmtOptions.spaceBeforeWhileLeftBrace, false);
-        options.put(FmtOptions.spaceBeforeDoLeftBrace, false);
-        options.put(FmtOptions.spaceBeforeForLeftBrace, true);
-        options.put(FmtOptions.spaceBeforeSwitchLeftBrace, false);
-        options.put(FmtOptions.spaceBeforeTryLeftBrace, false);
-        options.put(FmtOptions.spaceBeforeCatchLeftBrace, false);
+        options.put(FmtOptions.SPACE_BEFORE_CLASS_DECL_LEFT_BRACE, false);
+        options.put(FmtOptions.SPACE_BEFORE_METHOD_DECL_LEFT_BRACE, false);
+        options.put(FmtOptions.SPACE_BEFORE_IF_LEFT_BRACE, false);
+        options.put(FmtOptions.SPACE_BEFORE_ELSE_LEFT_BRACE, false);
+        options.put(FmtOptions.SPACE_BEFORE_WHILE_LEFT_BRACE, false);
+        options.put(FmtOptions.SPACE_BEFORE_DO_LEFT_BRACE, false);
+        options.put(FmtOptions.SPACE_BEFORE_FOR_LEFT_BRACE, true);
+        options.put(FmtOptions.SPACE_BEFORE_SWITCH_LEFT_BRACE, false);
+        options.put(FmtOptions.SPACE_BEFORE_TRY_LEFT_BRACE, false);
+        options.put(FmtOptions.SPACE_BEFORE_CATCH_LEFT_BRACE, false);
         reformatFileContents("testfiles/formatting/spaces/spaceBeforeForLeftBrace01.php", options);
     }
 
     public void testSpacesBeforeSwitchLeftBrace01() throws Exception {
         HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
-        options.put(FmtOptions.spaceBeforeClassDeclLeftBrace, false);
-        options.put(FmtOptions.spaceBeforeMethodDeclLeftBrace, false);
-        options.put(FmtOptions.spaceBeforeIfLeftBrace, false);
-        options.put(FmtOptions.spaceBeforeElseLeftBrace, false);
-        options.put(FmtOptions.spaceBeforeWhileLeftBrace, false);
-        options.put(FmtOptions.spaceBeforeDoLeftBrace, false);
-        options.put(FmtOptions.spaceBeforeForLeftBrace, false);
-        options.put(FmtOptions.spaceBeforeSwitchLeftBrace, true);
-        options.put(FmtOptions.spaceBeforeTryLeftBrace, false);
-        options.put(FmtOptions.spaceBeforeCatchLeftBrace, false);
+        options.put(FmtOptions.SPACE_BEFORE_CLASS_DECL_LEFT_BRACE, false);
+        options.put(FmtOptions.SPACE_BEFORE_METHOD_DECL_LEFT_BRACE, false);
+        options.put(FmtOptions.SPACE_BEFORE_IF_LEFT_BRACE, false);
+        options.put(FmtOptions.SPACE_BEFORE_ELSE_LEFT_BRACE, false);
+        options.put(FmtOptions.SPACE_BEFORE_WHILE_LEFT_BRACE, false);
+        options.put(FmtOptions.SPACE_BEFORE_DO_LEFT_BRACE, false);
+        options.put(FmtOptions.SPACE_BEFORE_FOR_LEFT_BRACE, false);
+        options.put(FmtOptions.SPACE_BEFORE_SWITCH_LEFT_BRACE, true);
+        options.put(FmtOptions.SPACE_BEFORE_TRY_LEFT_BRACE, false);
+        options.put(FmtOptions.SPACE_BEFORE_CATCH_LEFT_BRACE, false);
         reformatFileContents("testfiles/formatting/spaces/spaceBeforeSwitchLeftBrace01.php", options);
     }
 
     public void testSpacesBeforeTryLeftBrace01() throws Exception {
         HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
-        options.put(FmtOptions.spaceBeforeClassDeclLeftBrace, false);
-        options.put(FmtOptions.spaceBeforeMethodDeclLeftBrace, false);
-        options.put(FmtOptions.spaceBeforeIfLeftBrace, false);
-        options.put(FmtOptions.spaceBeforeElseLeftBrace, false);
-        options.put(FmtOptions.spaceBeforeWhileLeftBrace, false);
-        options.put(FmtOptions.spaceBeforeDoLeftBrace, false);
-        options.put(FmtOptions.spaceBeforeForLeftBrace, false);
-        options.put(FmtOptions.spaceBeforeSwitchLeftBrace, false);
-        options.put(FmtOptions.spaceBeforeTryLeftBrace, true);
-        options.put(FmtOptions.spaceBeforeCatchLeftBrace, false);
+        options.put(FmtOptions.SPACE_BEFORE_CLASS_DECL_LEFT_BRACE, false);
+        options.put(FmtOptions.SPACE_BEFORE_METHOD_DECL_LEFT_BRACE, false);
+        options.put(FmtOptions.SPACE_BEFORE_IF_LEFT_BRACE, false);
+        options.put(FmtOptions.SPACE_BEFORE_ELSE_LEFT_BRACE, false);
+        options.put(FmtOptions.SPACE_BEFORE_WHILE_LEFT_BRACE, false);
+        options.put(FmtOptions.SPACE_BEFORE_DO_LEFT_BRACE, false);
+        options.put(FmtOptions.SPACE_BEFORE_FOR_LEFT_BRACE, false);
+        options.put(FmtOptions.SPACE_BEFORE_SWITCH_LEFT_BRACE, false);
+        options.put(FmtOptions.SPACE_BEFORE_TRY_LEFT_BRACE, true);
+        options.put(FmtOptions.SPACE_BEFORE_CATCH_LEFT_BRACE, false);
         reformatFileContents("testfiles/formatting/spaces/spaceBeforeTryLeftBrace01.php", options);
     }
 
     public void testSpacesBeforeCatchLeftBrace01() throws Exception {
         HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
-        options.put(FmtOptions.spaceBeforeClassDeclLeftBrace, false);
-        options.put(FmtOptions.spaceBeforeMethodDeclLeftBrace, false);
-        options.put(FmtOptions.spaceBeforeIfLeftBrace, false);
-        options.put(FmtOptions.spaceBeforeElseLeftBrace, false);
-        options.put(FmtOptions.spaceBeforeWhileLeftBrace, false);
-        options.put(FmtOptions.spaceBeforeDoLeftBrace, false);
-        options.put(FmtOptions.spaceBeforeForLeftBrace, false);
-        options.put(FmtOptions.spaceBeforeSwitchLeftBrace, false);
-        options.put(FmtOptions.spaceBeforeTryLeftBrace, false);
-        options.put(FmtOptions.spaceBeforeCatchLeftBrace, true);
+        options.put(FmtOptions.SPACE_BEFORE_CLASS_DECL_LEFT_BRACE, false);
+        options.put(FmtOptions.SPACE_BEFORE_METHOD_DECL_LEFT_BRACE, false);
+        options.put(FmtOptions.SPACE_BEFORE_IF_LEFT_BRACE, false);
+        options.put(FmtOptions.SPACE_BEFORE_ELSE_LEFT_BRACE, false);
+        options.put(FmtOptions.SPACE_BEFORE_WHILE_LEFT_BRACE, false);
+        options.put(FmtOptions.SPACE_BEFORE_DO_LEFT_BRACE, false);
+        options.put(FmtOptions.SPACE_BEFORE_FOR_LEFT_BRACE, false);
+        options.put(FmtOptions.SPACE_BEFORE_SWITCH_LEFT_BRACE, false);
+        options.put(FmtOptions.SPACE_BEFORE_TRY_LEFT_BRACE, false);
+        options.put(FmtOptions.SPACE_BEFORE_CATCH_LEFT_BRACE, true);
         reformatFileContents("testfiles/formatting/spaces/spaceBeforeCatchLeftBrace01.php", options);
     }
 
     public void testSpacesBeforeWhile01() throws Exception {
         HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
-        options.put(FmtOptions.spaceBeforeWhile, true);
-        options.put(FmtOptions.classDeclBracePlacement, CodeStyle.BracePlacement.SAME_LINE);
-        options.put(FmtOptions.methodDeclBracePlacement, CodeStyle.BracePlacement.SAME_LINE);
-        options.put(FmtOptions.otherBracePlacement, CodeStyle.BracePlacement.SAME_LINE);
+        options.put(FmtOptions.SPACE_BEFORE_WHILE, true);
+        options.put(FmtOptions.CLASS_DECL_BRACE_PLACEMENT, CodeStyle.BracePlacement.SAME_LINE);
+        options.put(FmtOptions.METHOD_DECL_BRACE_PLACEMENT, CodeStyle.BracePlacement.SAME_LINE);
+        options.put(FmtOptions.OTHER_BRACE_PLACEMENT, CodeStyle.BracePlacement.SAME_LINE);
         reformatFileContents("testfiles/formatting/spaces/spaceBeforeWhile01.php", options);
     }
 
     public void testSpacesBeforeWhile02() throws Exception {
         HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
-        options.put(FmtOptions.spaceBeforeWhile, true);
+        options.put(FmtOptions.SPACE_BEFORE_WHILE, true);
         reformatFileContents("testfiles/formatting/spaces/spaceBeforeWhile02.php", options);
     }
 
     public void testSpacesBeforeWhile03() throws Exception {
         HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
-        options.put(FmtOptions.spaceBeforeWhile, false);
+        options.put(FmtOptions.SPACE_BEFORE_WHILE, false);
         reformatFileContents("testfiles/formatting/spaces/spaceBeforeWhile03.php", options);
     }
 
     public void testSpacesBeforeElse01() throws Exception {
         HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
-        options.put(FmtOptions.spaceBeforeElse, true);
-        options.put(FmtOptions.classDeclBracePlacement, CodeStyle.BracePlacement.PRESERVE_EXISTING);
-        options.put(FmtOptions.methodDeclBracePlacement, CodeStyle.BracePlacement.PRESERVE_EXISTING);
-        options.put(FmtOptions.otherBracePlacement, CodeStyle.BracePlacement.PRESERVE_EXISTING);
+        options.put(FmtOptions.SPACE_BEFORE_ELSE, true);
+        options.put(FmtOptions.CLASS_DECL_BRACE_PLACEMENT, CodeStyle.BracePlacement.PRESERVE_EXISTING);
+        options.put(FmtOptions.METHOD_DECL_BRACE_PLACEMENT, CodeStyle.BracePlacement.PRESERVE_EXISTING);
+        options.put(FmtOptions.OTHER_BRACE_PLACEMENT, CodeStyle.BracePlacement.PRESERVE_EXISTING);
         reformatFileContents("testfiles/formatting/spaces/spaceBeforeElse01.php", options);
     }
 
     public void testSpacesBeforeElse02() throws Exception {
         HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
-        options.put(FmtOptions.spaceBeforeElse, true);
-        options.put(FmtOptions.classDeclBracePlacement, CodeStyle.BracePlacement.PRESERVE_EXISTING);
-        options.put(FmtOptions.methodDeclBracePlacement, CodeStyle.BracePlacement.PRESERVE_EXISTING);
-        options.put(FmtOptions.otherBracePlacement, CodeStyle.BracePlacement.PRESERVE_EXISTING);
+        options.put(FmtOptions.SPACE_BEFORE_ELSE, true);
+        options.put(FmtOptions.CLASS_DECL_BRACE_PLACEMENT, CodeStyle.BracePlacement.PRESERVE_EXISTING);
+        options.put(FmtOptions.METHOD_DECL_BRACE_PLACEMENT, CodeStyle.BracePlacement.PRESERVE_EXISTING);
+        options.put(FmtOptions.OTHER_BRACE_PLACEMENT, CodeStyle.BracePlacement.PRESERVE_EXISTING);
         reformatFileContents("testfiles/formatting/spaces/spaceBeforeElse02.php", options);
     }
 
     public void testSpacesBeforeElse03() throws Exception {
         HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
-        options.put(FmtOptions.spaceBeforeElse, false);
-        options.put(FmtOptions.classDeclBracePlacement, CodeStyle.BracePlacement.PRESERVE_EXISTING);
-        options.put(FmtOptions.methodDeclBracePlacement, CodeStyle.BracePlacement.PRESERVE_EXISTING);
-        options.put(FmtOptions.otherBracePlacement, CodeStyle.BracePlacement.PRESERVE_EXISTING);
+        options.put(FmtOptions.SPACE_BEFORE_ELSE, false);
+        options.put(FmtOptions.CLASS_DECL_BRACE_PLACEMENT, CodeStyle.BracePlacement.PRESERVE_EXISTING);
+        options.put(FmtOptions.METHOD_DECL_BRACE_PLACEMENT, CodeStyle.BracePlacement.PRESERVE_EXISTING);
+        options.put(FmtOptions.OTHER_BRACE_PLACEMENT, CodeStyle.BracePlacement.PRESERVE_EXISTING);
         reformatFileContents("testfiles/formatting/spaces/spaceBeforeElse03.php", options);
     }
 
     public void testSpacesBeforeElse04() throws Exception {
         HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
-        options.put(FmtOptions.spaceBeforeElse, true);
-        options.put(FmtOptions.classDeclBracePlacement, CodeStyle.BracePlacement.PRESERVE_EXISTING);
-        options.put(FmtOptions.methodDeclBracePlacement, CodeStyle.BracePlacement.PRESERVE_EXISTING);
-        options.put(FmtOptions.otherBracePlacement, CodeStyle.BracePlacement.PRESERVE_EXISTING);
+        options.put(FmtOptions.SPACE_BEFORE_ELSE, true);
+        options.put(FmtOptions.CLASS_DECL_BRACE_PLACEMENT, CodeStyle.BracePlacement.PRESERVE_EXISTING);
+        options.put(FmtOptions.METHOD_DECL_BRACE_PLACEMENT, CodeStyle.BracePlacement.PRESERVE_EXISTING);
+        options.put(FmtOptions.OTHER_BRACE_PLACEMENT, CodeStyle.BracePlacement.PRESERVE_EXISTING);
         reformatFileContents("testfiles/formatting/spaces/spaceBeforeElse04.php", options);
     }
 
     public void testSpacesBeforeCatch01() throws Exception {
         HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
-        options.put(FmtOptions.spaceBeforeCatch, true);
-        options.put(FmtOptions.classDeclBracePlacement, CodeStyle.BracePlacement.PRESERVE_EXISTING);
-        options.put(FmtOptions.methodDeclBracePlacement, CodeStyle.BracePlacement.PRESERVE_EXISTING);
-        options.put(FmtOptions.otherBracePlacement, CodeStyle.BracePlacement.PRESERVE_EXISTING);
+        options.put(FmtOptions.SPACE_BEFORE_CATCH, true);
+        options.put(FmtOptions.CLASS_DECL_BRACE_PLACEMENT, CodeStyle.BracePlacement.PRESERVE_EXISTING);
+        options.put(FmtOptions.METHOD_DECL_BRACE_PLACEMENT, CodeStyle.BracePlacement.PRESERVE_EXISTING);
+        options.put(FmtOptions.OTHER_BRACE_PLACEMENT, CodeStyle.BracePlacement.PRESERVE_EXISTING);
         reformatFileContents("testfiles/formatting/spaces/spaceBeforeCatch01.php", options);
     }
 
     public void testSpacesBeforeCatch02() throws Exception {
         HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
-        options.put(FmtOptions.spaceBeforeCatch, false);
-        options.put(FmtOptions.classDeclBracePlacement, CodeStyle.BracePlacement.PRESERVE_EXISTING);
-        options.put(FmtOptions.methodDeclBracePlacement, CodeStyle.BracePlacement.PRESERVE_EXISTING);
-        options.put(FmtOptions.otherBracePlacement, CodeStyle.BracePlacement.PRESERVE_EXISTING);
+        options.put(FmtOptions.SPACE_BEFORE_CATCH, false);
+        options.put(FmtOptions.CLASS_DECL_BRACE_PLACEMENT, CodeStyle.BracePlacement.PRESERVE_EXISTING);
+        options.put(FmtOptions.METHOD_DECL_BRACE_PLACEMENT, CodeStyle.BracePlacement.PRESERVE_EXISTING);
+        options.put(FmtOptions.OTHER_BRACE_PLACEMENT, CodeStyle.BracePlacement.PRESERVE_EXISTING);
         reformatFileContents("testfiles/formatting/spaces/spaceBeforeCatch02.php", options);
     }
 
     public void testSpacesBeforeMethodCallParen01() throws Exception {
         HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
-        options.put(FmtOptions.spaceBeforeMethodCallParen, true);
-        options.put(FmtOptions.spaceBeforeClassDeclLeftBrace, true);
-        options.put(FmtOptions.classDeclBracePlacement, CodeStyle.BracePlacement.PRESERVE_EXISTING);
-        options.put(FmtOptions.methodDeclBracePlacement, CodeStyle.BracePlacement.PRESERVE_EXISTING);
-        options.put(FmtOptions.otherBracePlacement, CodeStyle.BracePlacement.PRESERVE_EXISTING);
+        options.put(FmtOptions.SPACE_BEFORE_METHOD_CALL_PAREN, true);
+        options.put(FmtOptions.SPACE_BEFORE_CLASS_DECL_LEFT_BRACE, true);
+        options.put(FmtOptions.CLASS_DECL_BRACE_PLACEMENT, CodeStyle.BracePlacement.PRESERVE_EXISTING);
+        options.put(FmtOptions.METHOD_DECL_BRACE_PLACEMENT, CodeStyle.BracePlacement.PRESERVE_EXISTING);
+        options.put(FmtOptions.OTHER_BRACE_PLACEMENT, CodeStyle.BracePlacement.PRESERVE_EXISTING);
         reformatFileContents("testfiles/formatting/spaces/spaceBeforeMethodCallParen01.php", options);
     }
 
     public void testSpacesBeforeMethodCallParen02() throws Exception {
         HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
-        options.put(FmtOptions.spaceBeforeMethodCallParen, false);
-        options.put(FmtOptions.classDeclBracePlacement, CodeStyle.BracePlacement.PRESERVE_EXISTING);
-        options.put(FmtOptions.methodDeclBracePlacement, CodeStyle.BracePlacement.PRESERVE_EXISTING);
-        options.put(FmtOptions.otherBracePlacement, CodeStyle.BracePlacement.PRESERVE_EXISTING);
+        options.put(FmtOptions.SPACE_BEFORE_METHOD_CALL_PAREN, false);
+        options.put(FmtOptions.CLASS_DECL_BRACE_PLACEMENT, CodeStyle.BracePlacement.PRESERVE_EXISTING);
+        options.put(FmtOptions.METHOD_DECL_BRACE_PLACEMENT, CodeStyle.BracePlacement.PRESERVE_EXISTING);
+        options.put(FmtOptions.OTHER_BRACE_PLACEMENT, CodeStyle.BracePlacement.PRESERVE_EXISTING);
         reformatFileContents("testfiles/formatting/spaces/spaceBeforeMethodCallParen02.php", options);
     }
 
     public void testSpacesBeforeMethodDeclParen01() throws Exception {
         HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
-        options.put(FmtOptions.spaceBeforeMethodDeclParen, true);
-        options.put(FmtOptions.classDeclBracePlacement, CodeStyle.BracePlacement.PRESERVE_EXISTING);
-        options.put(FmtOptions.methodDeclBracePlacement, CodeStyle.BracePlacement.PRESERVE_EXISTING);
-        options.put(FmtOptions.otherBracePlacement, CodeStyle.BracePlacement.PRESERVE_EXISTING);
+        options.put(FmtOptions.SPACE_BEFORE_METHOD_DECL_PAREN, true);
+        options.put(FmtOptions.CLASS_DECL_BRACE_PLACEMENT, CodeStyle.BracePlacement.PRESERVE_EXISTING);
+        options.put(FmtOptions.METHOD_DECL_BRACE_PLACEMENT, CodeStyle.BracePlacement.PRESERVE_EXISTING);
+        options.put(FmtOptions.OTHER_BRACE_PLACEMENT, CodeStyle.BracePlacement.PRESERVE_EXISTING);
         reformatFileContents("testfiles/formatting/spaces/spaceBeforeMethodDeclParen01.php", options);
     }
 
     public void testSpacesBeforeMethodDeclParen02() throws Exception {
         HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
-        options.put(FmtOptions.spaceBeforeMethodDeclParen, false);
-        options.put(FmtOptions.classDeclBracePlacement, CodeStyle.BracePlacement.PRESERVE_EXISTING);
-        options.put(FmtOptions.methodDeclBracePlacement, CodeStyle.BracePlacement.PRESERVE_EXISTING);
-        options.put(FmtOptions.otherBracePlacement, CodeStyle.BracePlacement.PRESERVE_EXISTING);
+        options.put(FmtOptions.SPACE_BEFORE_METHOD_DECL_PAREN, false);
+        options.put(FmtOptions.CLASS_DECL_BRACE_PLACEMENT, CodeStyle.BracePlacement.PRESERVE_EXISTING);
+        options.put(FmtOptions.METHOD_DECL_BRACE_PLACEMENT, CodeStyle.BracePlacement.PRESERVE_EXISTING);
+        options.put(FmtOptions.OTHER_BRACE_PLACEMENT, CodeStyle.BracePlacement.PRESERVE_EXISTING);
         reformatFileContents("testfiles/formatting/spaces/spaceBeforeMethodDeclParen02.php", options);
     }
 
     public void testSpacesBeforeIfParen01() throws Exception {
         HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
-        options.put(FmtOptions.spaceBeforeIfParen, true);
-        options.put(FmtOptions.classDeclBracePlacement, CodeStyle.BracePlacement.PRESERVE_EXISTING);
-        options.put(FmtOptions.methodDeclBracePlacement, CodeStyle.BracePlacement.PRESERVE_EXISTING);
-        options.put(FmtOptions.otherBracePlacement, CodeStyle.BracePlacement.PRESERVE_EXISTING);
+        options.put(FmtOptions.SPACE_BEFORE_IF_PAREN, true);
+        options.put(FmtOptions.CLASS_DECL_BRACE_PLACEMENT, CodeStyle.BracePlacement.PRESERVE_EXISTING);
+        options.put(FmtOptions.METHOD_DECL_BRACE_PLACEMENT, CodeStyle.BracePlacement.PRESERVE_EXISTING);
+        options.put(FmtOptions.OTHER_BRACE_PLACEMENT, CodeStyle.BracePlacement.PRESERVE_EXISTING);
         reformatFileContents("testfiles/formatting/spaces/spaceBeforeIfParen01.php", options);
     }
 
     public void testSpacesBeforeIfParen02() throws Exception {
         HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
-        options.put(FmtOptions.spaceBeforeIfParen, false);
-        options.put(FmtOptions.classDeclBracePlacement, CodeStyle.BracePlacement.PRESERVE_EXISTING);
-        options.put(FmtOptions.methodDeclBracePlacement, CodeStyle.BracePlacement.PRESERVE_EXISTING);
-        options.put(FmtOptions.otherBracePlacement, CodeStyle.BracePlacement.PRESERVE_EXISTING);
+        options.put(FmtOptions.SPACE_BEFORE_IF_PAREN, false);
+        options.put(FmtOptions.CLASS_DECL_BRACE_PLACEMENT, CodeStyle.BracePlacement.PRESERVE_EXISTING);
+        options.put(FmtOptions.METHOD_DECL_BRACE_PLACEMENT, CodeStyle.BracePlacement.PRESERVE_EXISTING);
+        options.put(FmtOptions.OTHER_BRACE_PLACEMENT, CodeStyle.BracePlacement.PRESERVE_EXISTING);
         reformatFileContents("testfiles/formatting/spaces/spaceBeforeIfParen02.php", options);
     }
 
     public void testSpacesBeforeForParen01() throws Exception {
         HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
-        options.put(FmtOptions.spaceBeforeForParen, true);
-        options.put(FmtOptions.classDeclBracePlacement, CodeStyle.BracePlacement.PRESERVE_EXISTING);
-        options.put(FmtOptions.methodDeclBracePlacement, CodeStyle.BracePlacement.PRESERVE_EXISTING);
-        options.put(FmtOptions.otherBracePlacement, CodeStyle.BracePlacement.PRESERVE_EXISTING);
+        options.put(FmtOptions.SPACE_BEFORE_FOR_PAREN, true);
+        options.put(FmtOptions.CLASS_DECL_BRACE_PLACEMENT, CodeStyle.BracePlacement.PRESERVE_EXISTING);
+        options.put(FmtOptions.METHOD_DECL_BRACE_PLACEMENT, CodeStyle.BracePlacement.PRESERVE_EXISTING);
+        options.put(FmtOptions.OTHER_BRACE_PLACEMENT, CodeStyle.BracePlacement.PRESERVE_EXISTING);
         reformatFileContents("testfiles/formatting/spaces/spaceBeforeForParen01.php", options);
     }
 
     public void testSpacesBeforeForParen02() throws Exception {
         HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
-        options.put(FmtOptions.spaceBeforeForParen, false);
-        options.put(FmtOptions.classDeclBracePlacement, CodeStyle.BracePlacement.PRESERVE_EXISTING);
-        options.put(FmtOptions.methodDeclBracePlacement, CodeStyle.BracePlacement.PRESERVE_EXISTING);
-        options.put(FmtOptions.otherBracePlacement, CodeStyle.BracePlacement.PRESERVE_EXISTING);
+        options.put(FmtOptions.SPACE_BEFORE_FOR_PAREN, false);
+        options.put(FmtOptions.CLASS_DECL_BRACE_PLACEMENT, CodeStyle.BracePlacement.PRESERVE_EXISTING);
+        options.put(FmtOptions.METHOD_DECL_BRACE_PLACEMENT, CodeStyle.BracePlacement.PRESERVE_EXISTING);
+        options.put(FmtOptions.OTHER_BRACE_PLACEMENT, CodeStyle.BracePlacement.PRESERVE_EXISTING);
         reformatFileContents("testfiles/formatting/spaces/spaceBeforeForParen02.php", options);
     }
 
     public void testSpacesBeforeWhileParen01() throws Exception {
         HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
-        options.put(FmtOptions.spaceBeforeWhileParen, true);
-        options.put(FmtOptions.classDeclBracePlacement, CodeStyle.BracePlacement.PRESERVE_EXISTING);
-        options.put(FmtOptions.methodDeclBracePlacement, CodeStyle.BracePlacement.PRESERVE_EXISTING);
-        options.put(FmtOptions.otherBracePlacement, CodeStyle.BracePlacement.PRESERVE_EXISTING);
+        options.put(FmtOptions.SPACE_BEFORE_WHILE_PAREN, true);
+        options.put(FmtOptions.CLASS_DECL_BRACE_PLACEMENT, CodeStyle.BracePlacement.PRESERVE_EXISTING);
+        options.put(FmtOptions.METHOD_DECL_BRACE_PLACEMENT, CodeStyle.BracePlacement.PRESERVE_EXISTING);
+        options.put(FmtOptions.OTHER_BRACE_PLACEMENT, CodeStyle.BracePlacement.PRESERVE_EXISTING);
         reformatFileContents("testfiles/formatting/spaces/spaceBeforeWhileParen01.php", options);
     }
 
     public void testSpacesBeforeWhileParen02() throws Exception {
         HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
-        options.put(FmtOptions.spaceBeforeWhileParen, false);
-        options.put(FmtOptions.classDeclBracePlacement, CodeStyle.BracePlacement.PRESERVE_EXISTING);
-        options.put(FmtOptions.methodDeclBracePlacement, CodeStyle.BracePlacement.PRESERVE_EXISTING);
-        options.put(FmtOptions.otherBracePlacement, CodeStyle.BracePlacement.PRESERVE_EXISTING);
+        options.put(FmtOptions.SPACE_BEFORE_WHILE_PAREN, false);
+        options.put(FmtOptions.CLASS_DECL_BRACE_PLACEMENT, CodeStyle.BracePlacement.PRESERVE_EXISTING);
+        options.put(FmtOptions.METHOD_DECL_BRACE_PLACEMENT, CodeStyle.BracePlacement.PRESERVE_EXISTING);
+        options.put(FmtOptions.OTHER_BRACE_PLACEMENT, CodeStyle.BracePlacement.PRESERVE_EXISTING);
         reformatFileContents("testfiles/formatting/spaces/spaceBeforeWhileParen02.php", options);
     }
 
     public void testSpacesBeforeCatchParen01() throws Exception {
         HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
-        options.put(FmtOptions.spaceBeforeCatchParen, true);
-        options.put(FmtOptions.classDeclBracePlacement, CodeStyle.BracePlacement.PRESERVE_EXISTING);
-        options.put(FmtOptions.methodDeclBracePlacement, CodeStyle.BracePlacement.PRESERVE_EXISTING);
-        options.put(FmtOptions.otherBracePlacement, CodeStyle.BracePlacement.PRESERVE_EXISTING);
+        options.put(FmtOptions.SPACE_BEFORE_CATCH_PAREN, true);
+        options.put(FmtOptions.CLASS_DECL_BRACE_PLACEMENT, CodeStyle.BracePlacement.PRESERVE_EXISTING);
+        options.put(FmtOptions.METHOD_DECL_BRACE_PLACEMENT, CodeStyle.BracePlacement.PRESERVE_EXISTING);
+        options.put(FmtOptions.OTHER_BRACE_PLACEMENT, CodeStyle.BracePlacement.PRESERVE_EXISTING);
         reformatFileContents("testfiles/formatting/spaces/spaceBeforeCatchParen01.php", options);
     }
 
     public void testSpacesBeforeCatchParen02() throws Exception {
         HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
-        options.put(FmtOptions.spaceBeforeCatchParen, false);
-        options.put(FmtOptions.classDeclBracePlacement, CodeStyle.BracePlacement.PRESERVE_EXISTING);
-        options.put(FmtOptions.methodDeclBracePlacement, CodeStyle.BracePlacement.PRESERVE_EXISTING);
-        options.put(FmtOptions.otherBracePlacement, CodeStyle.BracePlacement.PRESERVE_EXISTING);
+        options.put(FmtOptions.SPACE_BEFORE_CATCH_PAREN, false);
+        options.put(FmtOptions.CLASS_DECL_BRACE_PLACEMENT, CodeStyle.BracePlacement.PRESERVE_EXISTING);
+        options.put(FmtOptions.METHOD_DECL_BRACE_PLACEMENT, CodeStyle.BracePlacement.PRESERVE_EXISTING);
+        options.put(FmtOptions.OTHER_BRACE_PLACEMENT, CodeStyle.BracePlacement.PRESERVE_EXISTING);
         reformatFileContents("testfiles/formatting/spaces/spaceBeforeCatchParen02.php", options);
     }
 
     public void testSpacesBeforeSwitchParen01() throws Exception {
         HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
-        options.put(FmtOptions.spaceBeforeSwitchParen, true);
-        options.put(FmtOptions.classDeclBracePlacement, CodeStyle.BracePlacement.PRESERVE_EXISTING);
-        options.put(FmtOptions.methodDeclBracePlacement, CodeStyle.BracePlacement.PRESERVE_EXISTING);
-        options.put(FmtOptions.otherBracePlacement, CodeStyle.BracePlacement.PRESERVE_EXISTING);
+        options.put(FmtOptions.SPACE_BEFORE_SWITCH_PAREN, true);
+        options.put(FmtOptions.CLASS_DECL_BRACE_PLACEMENT, CodeStyle.BracePlacement.PRESERVE_EXISTING);
+        options.put(FmtOptions.METHOD_DECL_BRACE_PLACEMENT, CodeStyle.BracePlacement.PRESERVE_EXISTING);
+        options.put(FmtOptions.OTHER_BRACE_PLACEMENT, CodeStyle.BracePlacement.PRESERVE_EXISTING);
         reformatFileContents("testfiles/formatting/spaces/spaceBeforeSwitchParen01.php", options);
     }
 
     public void testSpacesBeforeSwitchParen02() throws Exception {
         HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
-        options.put(FmtOptions.spaceBeforeSwitchParen, false);
-        options.put(FmtOptions.classDeclBracePlacement, CodeStyle.BracePlacement.PRESERVE_EXISTING);
-        options.put(FmtOptions.methodDeclBracePlacement, CodeStyle.BracePlacement.PRESERVE_EXISTING);
-        options.put(FmtOptions.otherBracePlacement, CodeStyle.BracePlacement.PRESERVE_EXISTING);
+        options.put(FmtOptions.SPACE_BEFORE_SWITCH_PAREN, false);
+        options.put(FmtOptions.CLASS_DECL_BRACE_PLACEMENT, CodeStyle.BracePlacement.PRESERVE_EXISTING);
+        options.put(FmtOptions.METHOD_DECL_BRACE_PLACEMENT, CodeStyle.BracePlacement.PRESERVE_EXISTING);
+        options.put(FmtOptions.OTHER_BRACE_PLACEMENT, CodeStyle.BracePlacement.PRESERVE_EXISTING);
         reformatFileContents("testfiles/formatting/spaces/spaceBeforeSwitchParen02.php", options);
     }
 
     public void testSpacesAroundStringConcat01() throws Exception {
         HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
-        options.put(FmtOptions.spaceBeforeSwitchParen, true);
-        options.put(FmtOptions.spaceAroundStringConcatOps, false);
-        options.put(FmtOptions.classDeclBracePlacement, CodeStyle.BracePlacement.SAME_LINE);
-        options.put(FmtOptions.methodDeclBracePlacement, CodeStyle.BracePlacement.SAME_LINE);
-        options.put(FmtOptions.otherBracePlacement, CodeStyle.BracePlacement.SAME_LINE);
+        options.put(FmtOptions.SPACE_BEFORE_SWITCH_PAREN, true);
+        options.put(FmtOptions.SPACE_AROUND_STRING_CONCAT_OPS, false);
+        options.put(FmtOptions.CLASS_DECL_BRACE_PLACEMENT, CodeStyle.BracePlacement.SAME_LINE);
+        options.put(FmtOptions.METHOD_DECL_BRACE_PLACEMENT, CodeStyle.BracePlacement.SAME_LINE);
+        options.put(FmtOptions.OTHER_BRACE_PLACEMENT, CodeStyle.BracePlacement.SAME_LINE);
         reformatFileContents("testfiles/formatting/spaces/spaceAroundStringConcat01.php", options);
     }
 
     public void testSpacesAroundTernaryOp01() throws Exception {
         HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
-        options.put(FmtOptions.spaceAroundTernaryOps, false);
+        options.put(FmtOptions.SPACE_AROUND_TERNARY_OPS, false);
         reformatFileContents("testfiles/formatting/spaces/spaceAroundTernaryOp01.php", options);
     }
 
     public void testSpacesAroundTernaryOp02() throws Exception {
         HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
-        options.put(FmtOptions.spaceAroundTernaryOps, false);
+        options.put(FmtOptions.SPACE_AROUND_TERNARY_OPS, false);
         reformatFileContents("testfiles/formatting/spaces/spaceAroundTernaryOp02.php", options);
     }
 
     public void testSpacesAroundTernaryOp03() throws Exception {
         HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
-        options.put(FmtOptions.spaceAroundTernaryOps, true);
+        options.put(FmtOptions.SPACE_AROUND_TERNARY_OPS, true);
         reformatFileContents("testfiles/formatting/spaces/spaceAroundTernaryOp03.php", options);
     }
 
     public void testSpacesAroundKeyValue01() throws Exception {
         HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
-        options.put(FmtOptions.spaceAroundKeyValueOps, false);
+        options.put(FmtOptions.SPACE_AROUND_KEY_VALUE_OPS, false);
         reformatFileContents("testfiles/formatting/spaces/spaceAroundKeyValueOp01.php", options);
     }
 
     public void testSpacesAroundKeyValue02() throws Exception {
         HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
-        options.put(FmtOptions.spaceAroundKeyValueOps, true);
+        options.put(FmtOptions.SPACE_AROUND_KEY_VALUE_OPS, true);
         reformatFileContents("testfiles/formatting/spaces/spaceAroundKeyValueOp02.php", options);
     }
 
     public void testSpacesWithinIfParens01() throws Exception {
         HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
-        options.put(FmtOptions.spaceWithinIfParens, true);
+        options.put(FmtOptions.SPACE_WITHIN_IF_PARENS, true);
         reformatFileContents("testfiles/formatting/spaces/spaceWithinParens01.php", options);
     }
 
     public void testSpacesWithinForParens01() throws Exception {
         HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
-        options.put(FmtOptions.spaceWithinForParens, true);
+        options.put(FmtOptions.SPACE_WITHIN_FOR_PARENS, true);
         reformatFileContents("testfiles/formatting/spaces/spaceWithinParens02.php", options);
     }
 
     public void testSpacesWithinWhileParens01() throws Exception {
         HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
-        options.put(FmtOptions.spaceWithinWhileParens, true);
+        options.put(FmtOptions.SPACE_WITHIN_WHILE_PARENS, true);
         reformatFileContents("testfiles/formatting/spaces/spaceWithinParens03.php", options);
     }
 
     public void testSpacesWithinSwitchParens01() throws Exception {
         HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
-        options.put(FmtOptions.spaceWithinSwitchParens, true);
+        options.put(FmtOptions.SPACE_WITHIN_SWITCH_PARENS, true);
         reformatFileContents("testfiles/formatting/spaces/spaceWithinParens04.php", options);
     }
 
     public void testSpacesWithinCatchParens01() throws Exception {
         HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
-        options.put(FmtOptions.spaceWithinCatchParens, true);
+        options.put(FmtOptions.SPACE_WITHIN_CATCH_PARENS, true);
         reformatFileContents("testfiles/formatting/spaces/spaceWithinParens05.php", options);
     }
 
@@ -824,87 +824,87 @@ public class PHPFormatterSpacesTest extends PHPFormatterTestBase {
 
     public void testSpacesWithinMethodDeclParens01() throws Exception {
         HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
-        options.put(FmtOptions.spaceWithinMethodDeclParens, true);
+        options.put(FmtOptions.SPACE_WITHIN_METHOD_DECL_PARENS, true);
         reformatFileContents("testfiles/formatting/spaces/spaceWithinParens07.php", options);
     }
 
     public void testSpacesWithinMethodCallParens01() throws Exception {
         HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
-        options.put(FmtOptions.spaceWithinMethodCallParens, true);
+        options.put(FmtOptions.SPACE_WITHIN_METHOD_CALL_PARENS, true);
         reformatFileContents("testfiles/formatting/spaces/spaceWithinParens08.php", options);
     }
 
     public void testSpacesWithinMethodDeclParens02() throws Exception {
         HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
-        options.put(FmtOptions.spaceWithinMethodDeclParens, true);
-        options.put(FmtOptions.spaceWithinMethodCallParens, true);
+        options.put(FmtOptions.SPACE_WITHIN_METHOD_DECL_PARENS, true);
+        options.put(FmtOptions.SPACE_WITHIN_METHOD_CALL_PARENS, true);
         reformatFileContents("testfiles/formatting/spaces/spaceWithinMethodDecl01.php", options);
     }
 
     public void testSpacesWithinMethodDeclParens03() throws Exception {
         HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
-        options.put(FmtOptions.spaceWithinMethodDeclParens, false);
-        options.put(FmtOptions.spaceWithinMethodCallParens, false);
+        options.put(FmtOptions.SPACE_WITHIN_METHOD_DECL_PARENS, false);
+        options.put(FmtOptions.SPACE_WITHIN_METHOD_CALL_PARENS, false);
         reformatFileContents("testfiles/formatting/spaces/spaceWithinMethodDecl02.php", options);
     }
 
     public void testSpacesWithinTypeCastParens01() throws Exception {
         HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
-        options.put(FmtOptions.spaceWithinTypeCastParens, false);
+        options.put(FmtOptions.SPACE_WITHIN_TYPE_CAST_PARENS, false);
         reformatFileContents("testfiles/formatting/spaces/spaceWithinTypeCastParens01.php", options);
     }
 
     public void testSpacesWithinTypeCastParens02() throws Exception {
         HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
-        options.put(FmtOptions.spaceWithinTypeCastParens, true);
+        options.put(FmtOptions.SPACE_WITHIN_TYPE_CAST_PARENS, true);
         reformatFileContents("testfiles/formatting/spaces/spaceWithinTypeCastParens02.php", options);
     }
 
     public void testSpacesWithinArrayDeclParens01() throws Exception {
         HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
-        options.put(FmtOptions.spaceWithinArrayDeclParens, false);
+        options.put(FmtOptions.SPACE_WITHIN_ARRAY_DECL_PARENS, false);
         reformatFileContents("testfiles/formatting/spaces/spaceWithinArrayDeclParens01.php", options);
     }
 
     public void testSpacesWithinArrayDeclParens02() throws Exception {
         HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
-        options.put(FmtOptions.spaceWithinArrayDeclParens, true);
+        options.put(FmtOptions.SPACE_WITHIN_ARRAY_DECL_PARENS, true);
         reformatFileContents("testfiles/formatting/spaces/spaceWithinArrayDeclParens02.php", options);
     }
 
     public void testSpacesWithinArrayBrackets01() throws Exception {
         HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
-        options.put(FmtOptions.spaceWithinArrayBrackets, false);
+        options.put(FmtOptions.SPACE_WITHIN_ARRAY_BRACKETS, false);
         reformatFileContents("testfiles/formatting/spaces/spaceWithinArrayBrackets01.php", options);
     }
 
     public void testSpacesWithinArrayBrackets02() throws Exception {
         HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
-        options.put(FmtOptions.spaceWithinArrayBrackets, true);
+        options.put(FmtOptions.SPACE_WITHIN_ARRAY_BRACKETS, true);
         reformatFileContents("testfiles/formatting/spaces/spaceWithinArrayBrackets02.php", options);
     }
 
     public void testSpacesWithinArrayBrackets03() throws Exception {
         HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
-        options.put(FmtOptions.spaceWithinArrayBrackets, true);
+        options.put(FmtOptions.SPACE_WITHIN_ARRAY_BRACKETS, true);
         reformatFileContents("testfiles/formatting/spaces/spaceWithinArrayBrackets03.php", options);
     }
 
     public void testSpacesWithinArrayBrackets04() throws Exception {
         HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
-        options.put(FmtOptions.spaceWithinArrayBrackets, true);
+        options.put(FmtOptions.SPACE_WITHIN_ARRAY_BRACKETS, true);
         reformatFileContents("testfiles/formatting/spaces/spaceWithinArrayBrackets04.php", options);
     }
 
     public void testSpacesAfterTypeCast01() throws Exception {
         HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
-        options.put(FmtOptions.spaceAfterTypeCast, false);
+        options.put(FmtOptions.SPACE_AFTER_TYPE_CAST, false);
         reformatFileContents("testfiles/formatting/spaces/spaceAfterTypeCast01.php", options);
     }
 
     public void testSpacesAfterTypeCast02() throws Exception {
         HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
-        options.put(FmtOptions.spaceAfterTypeCast, true);
+        options.put(FmtOptions.SPACE_AFTER_TYPE_CAST, true);
         reformatFileContents("testfiles/formatting/spaces/spaceAfterTypeCast02.php", options);
     }
 }
