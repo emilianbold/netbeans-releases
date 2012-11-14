@@ -46,8 +46,6 @@ import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionAdapter;
-import java.io.IOException;
-import javax.swing.Action;
 import javax.swing.JTable;
 import javax.swing.KeyStroke;
 import javax.swing.ListSelectionModel;
@@ -56,14 +54,7 @@ import javax.swing.table.JTableHeader;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableColumnModel;
 import org.netbeans.swing.etable.ETable;
-import org.openide.actions.DeleteAction;
-import org.openide.nodes.Node;
-import org.openide.nodes.NodeOp;
-import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
-import org.openide.util.actions.ActionPerformer;
-import org.openide.util.actions.SystemAction;
 
 /**
  * Table displaying bookmarks.
