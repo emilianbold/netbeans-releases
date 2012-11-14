@@ -74,26 +74,25 @@ public final class ParameterElementImpl implements ParameterElement {
             final boolean isReference) {
         this.name = name;
         this.isMandatory = isMandatory;
-        this.defaultValue = (!isMandatory && defaultValue != null) ? decode(defaultValue) : "";//NOI18N
+        this.defaultValue = (!isMandatory && defaultValue != null) ? decode(defaultValue) : ""; //NOI18N
         this.offset = offset;
         this.types = types;
         this.isRawType = isRawType;
         this.isReference = isReference;
-
     }
 
     static List<ParameterElement> parseParameters(final String signature) {
         List<ParameterElement> retval = new ArrayList<ParameterElement>();
         if (signature != null && signature.length() > 0) {
-            final String regexp = String.format("\\%s", Separator.COMMA.toString());//NOI18N
+            final String regexp = String.format("\\%s", Separator.COMMA.toString()); //NOI18N
             for (String sign : signature.split(regexp)) {
                 try {
                     final ParameterElement param = parseOneParameter(sign);
                     if (param != null) {
                         retval.add(param);
                     }
-                } catch(NumberFormatException originalException) {
-                    final String message = String.format("%s [for signature: %s]", originalException.getMessage(), signature);//NOI18N
+                } catch (NumberFormatException originalException) {
+                    final String message = String.format("%s [for signature: %s]", originalException.getMessage(), signature); //NOI18N
                     final NumberFormatException formatException = new NumberFormatException(message);
                     formatException.initCause(originalException);
                     throw formatException;
@@ -103,9 +102,9 @@ public final class ParameterElementImpl implements ParameterElement {
         return retval;
     }
 
-    private static ParameterElement parseOneParameter(String sig) throws NumberFormatException {
+    private static ParameterElement parseOneParameter(String sig) {
         ParameterElement retval = null;
-        final String regexp = String.format("\\%s", Separator.COLON.toString());//NOI18N
+        final String regexp = String.format("\\%s", Separator.COLON.toString()); //NOI18N
         String[] parts = sig.split(regexp);
         if (parts.length > 0) {
             String paramName = parts[0];
@@ -135,49 +134,49 @@ public final class ParameterElementImpl implements ParameterElement {
         }
         String typeSignatures = typeBuilder.toString().trim();
         sb.append(typeSignatures);
-        sb.append(Separator.COLON);//NOI18N
+        sb.append(Separator.COLON); //NOI18N
         sb.append(isRawType ? 1 : 0);
-        sb.append(Separator.COLON);//NOI18N
+        sb.append(Separator.COLON); //NOI18N
         if (!isMandatory()) {
             final String defVal = getDefaultValue();
             assert defVal != null;
             sb.append(encode(defVal));
         }
-        sb.append(Separator.COLON);//NOI18N
+        sb.append(Separator.COLON); //NOI18N
         sb.append(isMandatory ? 1 : 0);
-        sb.append(Separator.COLON);//NOI18N
+        sb.append(Separator.COLON); //NOI18N
         sb.append(isReference ? 1 : 0);
         checkSignature(sb);
         return sb.toString();
     }
 
     @Override
-    public final int getOffset() {
+    public int getOffset() {
         return offset;
     }
 
     @Override
-    public final String getName() {
+    public String getName() {
         return name;
     }
 
     @Override
-    public final Set<TypeResolver> getTypes() {
+    public Set<TypeResolver> getTypes() {
         return types;
     }
 
     @Override
-    public final String getDefaultValue() {
+    public String getDefaultValue() {
         return defaultValue;
     }
 
     @Override
-    public final boolean hasDeclaredType() {
+    public boolean hasDeclaredType() {
         return isRawType;
     }
 
     @Override
-    public final boolean isMandatory() {
+    public boolean isMandatory() {
         return isMandatory;
     }
 
@@ -271,7 +270,7 @@ public final class ParameterElementImpl implements ParameterElement {
                 assert isMandatory() == parsedParameter.isMandatory() : signature;
                 assert isReference() == parsedParameter.isReference() : signature;
             } catch (NumberFormatException originalException) {
-                final String message = String.format("%s [for signature: %s]", originalException.getMessage(), signature);//NOI18N
+                final String message = String.format("%s [for signature: %s]", originalException.getMessage(), signature); //NOI18N
                 final NumberFormatException formatException = new NumberFormatException(message);
                 formatException.initCause(originalException);
                 throw formatException;
@@ -280,7 +279,7 @@ public final class ParameterElementImpl implements ParameterElement {
     }
 
     @Override
-    public final OffsetRange getOffsetRange() {
+    public OffsetRange getOffsetRange() {
         int endOffset = getOffset() + getName().length();
         return new OffsetRange(offset, endOffset);
     }
@@ -314,7 +313,7 @@ public final class ParameterElementImpl implements ParameterElement {
         if (forDeclaration) {
             String defVal = getDefaultValue();
             if (!isMandatory()) {
-                sb.append(" = ");//NOI18N
+                sb.append(" = "); //NOI18N
                 if (defVal != null) {
                     if (outputType.equals(OutputType.COMPLETE_DECLARATION)) {
                         sb.append(defVal);

@@ -55,7 +55,7 @@ import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
- * Inspired by org.netbeans.modules.java.editor.codegen.InsertSemicolonAction
+ * Inspired by org.netbeans.modules.java.editor.codegen.InsertSemicolonAction.
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */

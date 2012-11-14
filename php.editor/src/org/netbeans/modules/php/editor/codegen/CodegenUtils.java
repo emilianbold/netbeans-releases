@@ -47,14 +47,18 @@ import org.netbeans.modules.php.editor.CodeUtils;
 import org.netbeans.modules.php.editor.api.elements.PhpElement;
 import org.netbeans.modules.php.editor.api.elements.TypeNameResolver;
 import org.netbeans.modules.php.editor.elements.TypeNameResolverImpl;
-import org.netbeans.modules.php.editor.model.*;
+import org.netbeans.modules.php.editor.model.FileScope;
+import org.netbeans.modules.php.editor.model.Model;
+import org.netbeans.modules.php.editor.model.ModelUtils;
+import org.netbeans.modules.php.editor.model.NamespaceScope;
+import org.netbeans.modules.php.editor.model.VariableScope;
 import org.openide.filesystems.FileObject;
 
 /**
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public class CodegenUtils {
+public final class CodegenUtils {
 
     private CodegenUtils() {
     }
@@ -79,7 +83,7 @@ public class CodegenUtils {
         if (fileScope != null) {
             FileObject fileObject = fileScope.getFileObject();
             if (fileObject != null) {
-                if (CodeUtils.isPhp_52(fileObject)) {
+                if (CodeUtils.isPhp52(fileObject)) {
                     typeNameResolvers.add(TypeNameResolverImpl.forUnqualifiedName());
                 } else {
                     NamespaceScope namespaceScope = ModelUtils.getNamespaceScope(fileScope, originalElement.getOffset());

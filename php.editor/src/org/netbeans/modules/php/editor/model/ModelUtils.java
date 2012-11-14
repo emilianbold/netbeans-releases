@@ -41,8 +41,18 @@
  */
 package org.netbeans.modules.php.editor.model;
 
-import java.util.*;
-import java.util.concurrent.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.EnumSet;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
@@ -68,14 +78,18 @@ import org.netbeans.modules.php.editor.model.impl.VariousUtils;
 import org.netbeans.modules.php.editor.model.nodes.ASTNodeInfo;
 import org.netbeans.modules.php.editor.model.nodes.NamespaceDeclarationInfo;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
-import org.netbeans.modules.php.editor.parser.astnodes.*;
+import org.netbeans.modules.php.editor.parser.astnodes.Assignment;
+import org.netbeans.modules.php.editor.parser.astnodes.Expression;
+import org.netbeans.modules.php.editor.parser.astnodes.NamespaceDeclaration;
+import org.netbeans.modules.php.editor.parser.astnodes.StaticDispatch;
+import org.netbeans.modules.php.editor.parser.astnodes.VariableBase;
 import org.openide.filesystems.FileObject;
 import org.openide.util.RequestProcessor;
 
 /**
  * @author Radek Matous
  */
-public class ModelUtils {
+public final class ModelUtils {
 
     private static final Logger LOGGER = Logger.getLogger(ModelUtils.class.getName());
     private static final RequestProcessor RP = new RequestProcessor(ModelUtils.class);
@@ -100,7 +114,9 @@ public class ModelUtils {
 
     public static NamespaceScope getNamespaceScope(NamespaceDeclaration currenNamespace, FileScope fileScope) {
         NamespaceDeclarationInfo ndi = currenNamespace != null ? NamespaceDeclarationInfo.create(currenNamespace) : null;
-        NamespaceScope currentScope = ndi != null ? ModelUtils.getFirst(ModelUtils.filter(fileScope.getDeclaredNamespaces(), ndi.getName())) : fileScope.getDefaultDeclaredNamespace();
+        NamespaceScope currentScope = ndi != null
+                ? ModelUtils.getFirst(ModelUtils.filter(fileScope.getDeclaredNamespaces(), ndi.getName()))
+                : fileScope.getDefaultDeclaredNamespace();
         return currentScope;
     }
 
@@ -210,7 +226,7 @@ public class ModelUtils {
             if (vartype == null) {
                 final Expression rightHandSide = varBase.getRightHandSide();
                 if (rightHandSide instanceof VariableBase) {
-                    vartype = VariousUtils.extractTypeFroVariableBase((VariableBase)rightHandSide);
+                    vartype = VariousUtils.extractTypeFroVariableBase((VariableBase) rightHandSide);
                     if (vartype != null) {
                         return VariousUtils.getType(scp, vartype, varBase.getStartOffset(), false);
                     }
@@ -239,7 +255,7 @@ public class ModelUtils {
         if (scp != null) {
                 String semiType = VariousUtils.getSemiType(tokenSequence, VariousUtils.State.START, scp);
                 if (semiType != null) {
-                    return VariousUtils.getType( scp, semiType, offset, true);
+                    return VariousUtils.getType(scp, semiType, offset, true);
                 }
 
         }
@@ -249,14 +265,14 @@ public class ModelUtils {
     @CheckForNull
     public static <T> T getFirst(Collection<? extends T> all) {
         if (all instanceof List) {
-            return all.size() > 0 ? ((List<T>)all).get(0) : null;
+            return all.size() > 0 ? ((List<T>) all).get(0) : null;
         }
         return all.size() > 0 ? all.iterator().next() : null;
     }
 
     @CheckForNull
     public static <T extends ModelElement> T getLast(List<? extends T> all) {
-        return all.size() > 0 ? all.get(all.size()-1) : null;
+        return all.size() > 0 ? all.get(all.size() - 1) : null;
     }
 
     @NonNull
@@ -276,6 +292,8 @@ public class ModelUtils {
                             return true;
                         case FULLYQUALIFIED:
                             return nameKindMatch(element.getNamespaceName().toString(), nameKind, namespaceName);
+                        default:
+                            assert false : kind;
                     }
                 }
                 return false;
@@ -358,11 +376,9 @@ public class ModelUtils {
         return retval;
     }
 
-
-    //TODO: put it directly to ModelElement
     @CheckForNull
     public static FileScope getFileScope(ModelElement element) {
-        FileScope retval = (element instanceof FileScope) ? (FileScope)element : null;
+        FileScope retval = (element instanceof FileScope) ? (FileScope) element : null;
         while (retval == null && element != null) {
             element = element.getInScope();
             retval = (FileScope) ((element instanceof FileScope) ? element : null);
@@ -372,7 +388,7 @@ public class ModelUtils {
 
     @CheckForNull
     public static NamespaceScope getNamespaceScope(ModelElement element) {
-        NamespaceScope retval = (element instanceof NamespaceScope) ? (NamespaceScope)element : null;
+        NamespaceScope retval = (element instanceof NamespaceScope) ? (NamespaceScope) element : null;
         while (retval == null && element != null) {
             element = element.getInScope();
             retval = (NamespaceScope) ((element instanceof NamespaceScope) ? element : null);
@@ -397,7 +413,7 @@ public class ModelUtils {
 
     @CheckForNull
     public static TypeScope getTypeScope(ModelElement element) {
-        TypeScope retval = (element instanceof TypeScope) ? (TypeScope)element : null;
+        TypeScope retval = (element instanceof TypeScope) ? (TypeScope) element : null;
         while (retval == null && element != null) {
             element = element.getInScope();
             retval = (TypeScope) ((element instanceof TypeScope) ? element : null);
@@ -406,7 +422,7 @@ public class ModelUtils {
     }
     @CheckForNull
     public static ClassScope getClassScope(ModelElement element) {
-        ClassScope retval = (element instanceof ClassScope) ? (ClassScope)element : null;
+        ClassScope retval = (element instanceof ClassScope) ? (ClassScope) element : null;
         while (retval == null && element != null) {
             element = element.getInScope();
             retval = (ClassScope) ((element instanceof ClassScope) ? element : null);
@@ -415,7 +431,7 @@ public class ModelUtils {
     }
     @NonNull
     public static IndexScope getIndexScope(ModelElement element) {
-        IndexScope retval = (element instanceof IndexScope) ? (IndexScope)element : null;
+        IndexScope retval = (element instanceof IndexScope) ? (IndexScope) element : null;
         ModelElement tmpElement = element;
         while (retval == null && tmpElement != null) {
             tmpElement = tmpElement.getInScope();
@@ -440,7 +456,7 @@ public class ModelUtils {
         return retval;
     }
 
-    public static interface ElementFilter<T extends ModelElement> {
+    public interface ElementFilter<T extends ModelElement> {
         boolean isAccepted(T element);
     }
 

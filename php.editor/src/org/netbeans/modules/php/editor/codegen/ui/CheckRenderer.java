@@ -62,19 +62,20 @@ public class CheckRenderer extends JPanel implements ListCellRenderer {
     private final JLabel label;
 
     public CheckRenderer() {
-        setLayout(new BorderLayout() );
+        setLayout(new BorderLayout());
         setOpaque(true);
 
         this.checkBox = new JCheckBox();
         this.label = new JLabel();
 
-        add(checkBox, BorderLayout.WEST );
-        add(label, BorderLayout.CENTER );
+        add(checkBox, BorderLayout.WEST);
+        add(label, BorderLayout.CENTER);
 
         checkBox.setOpaque(false);
         label.setOpaque(false);
     }
 
+    @Override
     public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
         String text;
         boolean checked = false;
@@ -91,8 +92,7 @@ public class CheckRenderer extends JPanel implements ListCellRenderer {
             label.setForeground(LIST_FOR_COLORS.getSelectionForeground());
             setOpaque(true);
             setBackground(LIST_FOR_COLORS.getSelectionBackground());
-        }
-        else {
+        } else {
             label.setForeground(list.getForeground());
             setOpaque(false);
         }

@@ -55,25 +55,25 @@ public class PHPFormatterBrokenTest extends PHPFormatterTestBase {
 
     public void testIssue197074_01() throws Exception {
         HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
-        options.put(FmtOptions.continuationIndentSize, 4);
+        options.put(FmtOptions.CONTINUATION_INDENT_SIZE, 4);
         reformatFileContents("testfiles/formatting/broken/issue197074_01.php", options);
     }
 
     public void testIssue197074_02() throws Exception {
         HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
-        options.put(FmtOptions.continuationIndentSize, 4);
+        options.put(FmtOptions.CONTINUATION_INDENT_SIZE, 4);
         reformatFileContents("testfiles/formatting/broken/issue197074_02.php", options);
     }
 
     public void testIssue197074_03() throws Exception {
         HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
-        options.put(FmtOptions.continuationIndentSize, 4);
+        options.put(FmtOptions.CONTINUATION_INDENT_SIZE, 4);
         reformatFileContents("testfiles/formatting/broken/issue197074_03.php", options);
     }
 
     public void testIssue197074_04() throws Exception {
         HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
-        options.put(FmtOptions.continuationIndentSize, 4);
+        options.put(FmtOptions.CONTINUATION_INDENT_SIZE, 4);
         reformatFileContents("testfiles/formatting/broken/issue197074_04.php", options);
     }
 }

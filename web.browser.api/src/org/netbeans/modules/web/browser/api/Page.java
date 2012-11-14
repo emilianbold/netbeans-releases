@@ -42,40 +42,23 @@
 package org.netbeans.modules.web.browser.api;
 
 import java.beans.PropertyChangeListener;
-import org.openide.util.Lookup;
+import java.util.List;
+import org.openide.nodes.Node;
 
 /**
- * Web-page inspector.
- *
- * @author Jan Stola
+ * Model of web page.
  */
-public abstract class PageInspector {
-    /** Feature ID used by page-inspection when it sends messages through {@code MessageDispatcher}. */
-    public static final String MESSAGE_DISPATCHER_FEATURE_ID = "inspect"; // NOI18N
-    /** Default {@code PageInspector}. */
-    private static PageInspector DEFAULT = Lookup.getDefault().lookup(PageInspector.class);
-    
-    /** Name of the property that is fired when the page model changes. */
-    public static final String PROP_MODEL = "model"; // NOI18N
+public abstract class Page {
 
-    /**
-     * Returns the default {@code PageInspector}.
-     * 
-     * @return default {@code PageInspector}.
-     */
-    public static PageInspector getDefault() {
-        return DEFAULT;
-    }
+    /** Name of the property that is fired when a new document is loaded into the inspected browser pane. */
+    public static final String PROP_DOCUMENT = "document"; // NOI18N
+    /** Name of the property that is fired when the set of selected elements is changed. */
+    public static final String PROP_SELECTED_NODES = "selectedNodes"; // NOI18N
+    /** Name of the property that is fired when the set of highlighted nodes is changed. */
+    public static final String PROP_HIGHLIGHTED_NODES = "highlightedNodes"; // NOI18N
+    /** Name of the property that is fired when nodes selection changes in the browser. */
+    public static final String PROP_BROWSER_SELECTED_NODES = "browserSelectedNodes"; // NOI18N
 
-    /**
-     * Starts the inspection of the web-page described by the given context.
-     * 
-     * @param pageContext tools for accessing the data about the web-page
-     * (it is usually equal to {@code HtmlBrowser.Impl.getLookup()} of
-     * the web-browser pane that displays the web-page).
-     */
-    public abstract void inspectPage(Lookup pageContext);
-    
     /**
      * Adds a property change listener.
      * 
@@ -89,11 +72,47 @@ public abstract class PageInspector {
      * @param listener listener to remove.
      */
     public abstract void removePropertyChangeListener(PropertyChangeListener listener);
+    
+    /**
+     * Returns highlighted nodes.
+     * 
+     * @return highlighted nodes.
+     */
+    public abstract List<? extends Node> getHighlightedNodes();
+    
+    /**
+     * Returns the document URL.
+     * 
+     * @return document URL.
+     */
+    public abstract String getDocumentURL();
 
     /**
-     * Getter for current page model.
-     * @return 
+     * Sets the selected nodes.
+     * 
+     * @param nodes nodes to select in the page.
      */
-    public abstract Page getPage();
+    public abstract void setSelectedNodes(List<? extends Node> nodes);
+
+    /**
+     * Returns selected nodes.
+     * 
+     * @return selected nodes.
+     */
+    public abstract List<? extends Node> getSelectedNodes();
+
+    /**
+     * Sets the highlighted nodes.
+     * 
+     * @param nodes highlighted nodes.
+     */
+    public abstract void setHighlightedNodes(List<? extends Node> nodes);
+
+    /**
+     * Returns the document node.
+     * 
+     * @return document node.
+     */
+    public abstract Node getDocumentNode();
     
 }

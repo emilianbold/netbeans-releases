@@ -234,7 +234,7 @@ public abstract class ElementFilter {
             public boolean isAccepted(PhpElement element) {
                 if (element instanceof ClassElement) {
                     final QualifiedName nextSuperName = ((ClassElement) element).getSuperClassName();
-                    return nextSuperName != null ? superNameKind.matchesName(PhpElementKind.CLASS, nextSuperName): false;
+                    return nextSuperName != null ? superNameKind.matchesName(PhpElementKind.CLASS, nextSuperName) : false;
                 }
                 return true;
             }
@@ -490,7 +490,7 @@ public abstract class ElementFilter {
                     filters.add(ElementFilter.forName(NameKind.exact(baseElement.getName())));
                 }
                 if (baseElement instanceof TypeMemberElement) {
-                    TypeMemberElement member = (TypeMemberElement)baseElement;
+                    TypeMemberElement member = (TypeMemberElement) baseElement;
                     filters.add(ElementFilter.forMembersOfTypeName(member.getType()));
                 }
                 accepted.put(baseElement, ElementFilter.allOf(filters));

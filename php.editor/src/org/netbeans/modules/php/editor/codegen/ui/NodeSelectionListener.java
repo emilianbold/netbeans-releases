@@ -62,6 +62,7 @@ class NodeSelectionListener implements MouseListener, KeyListener {
     }
 
 
+    @Override
     public void mouseClicked(MouseEvent e) {
         int x = e.getX();
         int y = e.getY();
@@ -78,22 +79,28 @@ class NodeSelectionListener implements MouseListener, KeyListener {
         }
     }
 
+    @Override
     public void mousePressed(MouseEvent e) {
     }
 
+    @Override
     public void mouseReleased(MouseEvent e) {
     }
 
+    @Override
     public void mouseEntered(MouseEvent e) {
     }
 
+    @Override
     public void mouseExited(MouseEvent e) {
     }
 
+    @Override
     public void keyTyped(KeyEvent e) {
     }
 
     // Key Listener --------------------------------------------------------
+    @Override
     public void keyPressed(KeyEvent e) {
         if (e.getKeyCode() == KeyEvent.VK_SPACE) {
 
@@ -113,6 +120,7 @@ class NodeSelectionListener implements MouseListener, KeyListener {
         }
     }
 
+    @Override
     public void keyReleased(KeyEvent e) {
     }
 }

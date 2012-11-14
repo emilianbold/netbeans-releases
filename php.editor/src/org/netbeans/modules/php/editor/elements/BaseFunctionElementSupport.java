@@ -93,14 +93,14 @@ public class BaseFunctionElementSupport  {
             case DeclarationWithoutBody:
                 final String modifiers = element.getPhpModifiers().toString();
                 if (modifiers.length() > 0) {
-                    template.append(modifiers).append(" ");//NOI18N
+                    template.append(modifiers).append(" "); //NOI18N
                 }
-                template.append("function");//NOI18N
+                template.append("function"); //NOI18N
                 template.append(asString(PrintAs.NameAndParamsDeclaration, element, typeNameResolver));
                 break;
             case DeclarationWithEmptyBody:
                 template.append(asString(PrintAs.DeclarationWithoutBody, element, typeNameResolver));
-                template.append("{\n}");//NOI18N
+                template.append("{\n}"); //NOI18N
                 break;
             case DeclarationWithParentCallInBody:
                 template.append(asString(PrintAs.DeclarationWithoutBody, element, typeNameResolver));
@@ -110,9 +110,9 @@ public class BaseFunctionElementSupport  {
                     methdodInvocation = methdodInvocation.substring(1);
                 }
                 if (returns.size() > 0) {
-                    template.append(String.format("{%nreturn parent::%s;%n}", methdodInvocation));//NOI18N
+                    template.append(String.format("{%nreturn parent::%s;%n}", methdodInvocation)); //NOI18N
                 } else {
-                    template.append(String.format("{%nparent::%s;%n}", methdodInvocation));//NOI18N
+                    template.append(String.format("{%nparent::%s;%n}", methdodInvocation)); //NOI18N
                 }
                 break;
             case ReturnSemiTypes:
@@ -149,6 +149,8 @@ public class BaseFunctionElementSupport  {
                     }
                 }
                 break;
+            default:
+                assert false : as;
         }
         return template.toString();
     }
