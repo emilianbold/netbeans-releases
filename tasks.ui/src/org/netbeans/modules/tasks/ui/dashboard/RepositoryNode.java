@@ -331,10 +331,7 @@ public class RepositoryNode extends AsynchronousNode<Collection<Query>> implemen
 
     public void refreshContent() {
         refresh = true;
-        if (!isExpanded()) {
-            setExpanded(true);
-        }
-        updateContent();
+        refresh();
     }
 
     public void attachListener() {
