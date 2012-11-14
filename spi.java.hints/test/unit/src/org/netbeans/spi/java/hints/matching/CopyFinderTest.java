@@ -1155,6 +1155,34 @@ public class CopyFinderTest extends NbTestCase {
                              true);
     }
     
+    public void testNewClassTypeParams222066a() throws Exception {
+        performVariablesTest("package test; public class Test { private Object aa() { return new java.util.ArrayList(1); } }",
+                             "new java.util.ArrayList<$whatever$>($param)",
+                             new Pair[] {
+                                 new Pair<String, int[]>("$param", new int[] {87, 88})
+                             },
+                             new Pair[] {
+                                 new Pair<String, int[]>("$whatever$", new int[0])
+                             },
+                             new Pair[0],
+                             false,
+                             false);
+    }
+    
+    public void testNewClassTypeParams222066b() throws Exception {
+        performVariablesTest("package test; import java.util.ArrayList; public class Test { private Object aa() { return new ArrayList(1); } }",
+                             "new java.util.ArrayList<$whatever$>($param)",
+                             new Pair[] {
+                                 new Pair<String, int[]>("$param", new int[] {105, 106})
+                             },
+                             new Pair[] {
+                                 new Pair<String, int[]>("$whatever$", new int[0])
+                             },
+                             new Pair[0],
+                             false,
+                             false);
+    }
+    
     protected void prepareTest(String code) throws Exception {
         prepareTest(code, -1);
     }
