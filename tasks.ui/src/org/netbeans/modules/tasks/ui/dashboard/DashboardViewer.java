@@ -576,7 +576,7 @@ public final class DashboardViewer implements PropertyChangeListener {
             //add repository to the model - sorted
             RepositoryNode repositoryNode = new RepositoryNode(repository, false);
             repositoryNodes.add(repositoryNode);
-            addRepositoryToModel(repositoryNode, true);
+            addRepositoryToModel(repositoryNode);
         }
     }
 
@@ -624,7 +624,7 @@ public final class DashboardViewer implements PropertyChangeListener {
             }
             repositoryNodes.add(newNode);
             if (isRepositoryInFilter(newNode)) {
-                addRepositoryToModel(newNode, newNode.isOpened());
+                addRepositoryToModel(newNode);
             }
             storeClosedRepositories();
         }
@@ -648,7 +648,7 @@ public final class DashboardViewer implements PropertyChangeListener {
         }
     }
 
-    private void addRepositoryToModel(final RepositoryNode repositoryNode, boolean expand) {
+    private void addRepositoryToModel(final RepositoryNode repositoryNode) {
         int index = model.getRootNodes().indexOf(titleRepositoryNode) + 1;
         int size = model.getRootNodes().size();
         boolean added = false;
@@ -670,17 +670,6 @@ public final class DashboardViewer implements PropertyChangeListener {
         }
         if (!added) {
             addRootToModel(-1, repositoryNode);
-        }
-
-        if (expand) {
-            SwingUtilities.invokeLater(new Runnable() {
-                @Override
-                public void run() {
-                    if (repositoryNode.isOpened()) {
-                        repositoryNode.setExpanded(true);
-                    }
-                }
-            });
         }
     }
 
@@ -955,7 +944,7 @@ public final class DashboardViewer implements PropertyChangeListener {
             for (RepositoryNode newRepository : toAdd) {
                 repositoryNodes.add(newRepository);
                 if (isRepositoryInFilter(newRepository)) {
-                    addRepositoryToModel(newRepository, newRepository.isOpened());
+                    addRepositoryToModel(newRepository);
                 }
             }
         }
@@ -1089,18 +1078,6 @@ public final class DashboardViewer implements PropertyChangeListener {
                 }
             }
         }
-        SwingUtilities.invokeLater(new Runnable() {
-            @Override
-            public void run() {
-                synchronized (LOCK_REPOSITORIES) {
-                    for (RepositoryNode repositoryNode : repositoryNodes) {
-                        if (repositoryNode.isOpened()) {
-                            repositoryNode.setExpanded(true);
-                        }
-                    }
-                }
-            }
-        });
     }
 
     private boolean isCategoryInFilter(CategoryNode categoryNode) {
@@ -1131,11 +1108,7 @@ public final class DashboardViewer implements PropertyChangeListener {
         treeList.getActionMap().put("org.netbeans.modules.tasks.ui.action.Action.UniversalDeleteAction", new Actions.UniversalDeleteAction());//NOI18N
     }
 
-    private boolean confirmDelete(String title, String message) {
-        String names = "";
-        for (CategoryNode categoryNode : categoryNodes) {
-            names += categoryNode.getCategory().getName() + " ";
-        }
+    private boolean confirmDelete(String title, String message) {        
         NotifyDescriptor nd = new NotifyDescriptor(
                 message,
                 title,

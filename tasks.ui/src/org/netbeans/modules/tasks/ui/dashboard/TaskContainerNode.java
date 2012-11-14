@@ -96,6 +96,17 @@ public abstract class TaskContainerNode extends AsynchronousNode<List<Issue>> {
 
     abstract boolean isTaskLimited();
 
+    abstract void refreshTaskContainer();
+
+    @Override
+    protected List<Issue> load() {
+        if (refresh) {
+            refreshTaskContainer();
+            refresh = false;
+        }
+        return getTasks();
+    }
+
     @Override
     protected void childrenLoadingFinished() {
         SwingUtilities.invokeLater(new Runnable() {
@@ -185,12 +196,15 @@ public abstract class TaskContainerNode extends AsynchronousNode<List<Issue>> {
             return filteredTaskNodes != null ? filteredTaskNodes.size() : 0;
         }
     }
-    
+
     final void updateNodes() {
+        updateNodes(getTasks());
+    }
+    
+    final void updateNodes(List<Issue> issues) {
         synchronized (LOCK) {
             DashboardViewer dashboard = DashboardViewer.getInstance();
             AppliedFilters appliedFilters = dashboard.getAppliedTaskFilters();
-            List<Issue> issues = getTasks();
             disposeTaskNodes();
             removeTaskListeners();
             if (taskListener == null) {
