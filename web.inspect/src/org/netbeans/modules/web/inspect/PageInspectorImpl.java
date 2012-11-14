@@ -85,8 +85,6 @@ import org.openide.util.lookup.ServiceProvider;
  */
 @ServiceProvider(service=PageInspector.class)
 public class PageInspectorImpl extends PageInspector {
-    /** Name of the property that is fired when the page model changes. */
-    public static final String PROP_MODEL = "model"; // NOI18N
     /** Name of the toolbar component responsible for selection mode switching. */
     private static final String SELECTION_MODE_COMPONENT_NAME = "selectionModeSwitch"; // NOI18N
     /** Request processor for this class. */
