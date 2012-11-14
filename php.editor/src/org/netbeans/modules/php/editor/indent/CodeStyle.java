@@ -508,7 +508,8 @@ public final class CodeStyle {
     }
 
     public boolean alignMultilineArrayInit() {
-        return preferences.getBoolean(alignMultilineArrayInit, getDefaultAsBoolean(alignMultilineArrayInit));
+        //return preferences.getBoolean(alignMultilineArrayInit, getDefaultAsBoolean(alignMultilineArrayInit));
+        return false;
     }
 
     public boolean placeElseOnNewLine() {
