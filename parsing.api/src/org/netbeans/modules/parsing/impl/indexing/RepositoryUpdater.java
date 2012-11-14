@@ -2365,7 +2365,7 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
         }
 
         protected final void delete (
-            @NonNull final Collection<IndexableImpl> deleted,
+            @NonNull final List<Indexable> deleted,
             @NonNull final Map<Pair<String,Integer>,Pair<SourceIndexerFactory,Context>> contexts,
             @NonNull final UsedIndexables usedIterables) throws IOException {
             if (deleted == null || deleted.isEmpty()) {
@@ -2389,8 +2389,8 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
         }
 
         protected final boolean index(
-                final Collection<IndexableImpl> resources, // out-of-date (new/modified) files
-                final Collection<IndexableImpl> allResources, // all files
+                final List<Indexable> resources, // out-of-date (new/modified) files
+                final List<Indexable> allResources, // all files
                 final URL root,
                 final boolean sourceForBinaryRoot,
                 final SourceIndexers indexers,
@@ -2406,8 +2406,8 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
         }
 
         private boolean doIndex(
-                Collection<IndexableImpl> resources, // out-of-date (new/modified) files
-                Collection<IndexableImpl> allResources, // all files
+                List<Indexable> resources, // out-of-date (new/modified) files
+                List<Indexable> allResources, // all files
                 final URL root,
                 final boolean sourceForBinaryRoot,
                 SourceIndexers indexers,
@@ -2607,12 +2607,10 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
                 }
         }
 
-        protected void invalidateSources (final Iterable<? extends IndexableImpl> toInvalidate) {
+        protected void invalidateSources (final Iterable<? extends Indexable> toInvalidate) {
             final long st = System.currentTimeMillis();
-            for (IndexableImpl indexable : toInvalidate) {
-                final FileObject cheapFo = indexable instanceof FileObjectProvider ?
-                    ((FileObjectProvider)indexable).getFileObject() :
-                    URLMapper.findFileObject(indexable.getURL());
+            for (Indexable indexable : toInvalidate) {
+                final FileObject cheapFo = SPIAccessor.getInstance().getFileObject(indexable);
                 if (cheapFo != null) {
                     final Source src = SourceAccessor.getINSTANCE().get(cheapFo);
                     if (src != null) {
@@ -2887,7 +2885,7 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
                         lctx.noteRootScanning(root);
                     }
                     long t = System.currentTimeMillis();
-                    final Collection<IndexableImpl> resources = crawler.getResources();
+                    final List<Indexable> resources = crawler.getResources();
                     if (crawler.isFinished()) {
                         
                         logCrawlerTime(crawler, t);
@@ -3346,7 +3344,7 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
         }
 
         @Override
-        protected void invalidateSources(Iterable<? extends IndexableImpl> toInvalidate) {
+        protected void invalidateSources(Iterable<? extends Indexable> toInvalidate) {
             if (shouldRefresh()) {
                 super.invalidateSources(toInvalidate);
             }
@@ -3421,9 +3419,9 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
                 lctx.noteRootScanning(root);
             }
             try {
-                final List<IndexableImpl> indexables = new LinkedList<IndexableImpl>();
+                final List<Indexable> indexables = new ArrayList<Indexable>();
                 for(String path : relativePaths) {
-                    indexables.add(new DeletedIndexable (root, path));
+                    indexables.add(SPIAccessor.getInstance().create(new DeletedIndexable (root, path)));
                 }
                 final Map<SourceIndexerFactory,Boolean> votes = new HashMap<SourceIndexerFactory, Boolean>();
                 final Map<Pair<String,Integer>,Pair<SourceIndexerFactory,Context>> contexts = new HashMap<Pair<String,Integer>,Pair<SourceIndexerFactory,Context>>();
@@ -3531,8 +3529,8 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
                         boolean sourceForBinaryRoot = sourcesForBinaryRoots.contains(root);
                         final ClassPath.Entry entry = sourceForBinaryRoot ? null : getClassPathEntry(rootFo);
                         Crawler crawler = new FileObjectCrawler(rootFo, EnumSet.of(Crawler.TimeStampAction.UPDATE), entry, getCancelRequest(), getSuspendStatus());
-                        final Collection<IndexableImpl> resources = crawler.getResources();
-                        final Collection<IndexableImpl> deleted = crawler.getDeletedResources();
+                        final List<Indexable> resources = crawler.getResources();
+                        final List<Indexable> deleted = crawler.getDeletedResources();
 
                         logCrawlerTime(crawler, time);
                         if (crawler.isFinished()) {
@@ -3698,8 +3696,8 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
                         boolean sourceForBinaryRoot = sourcesForBinaryRoots.contains(root);
                         final ClassPath.Entry entry = sourceForBinaryRoot ? null : getClassPathEntry(rootFo);
                         Crawler crawler = new FileObjectCrawler(rootFo, EnumSet.of(Crawler.TimeStampAction.UPDATE), entry, getCancelRequest(), getSuspendStatus());
-                        final Collection<IndexableImpl> resources = crawler.getResources();
-                        final Collection<IndexableImpl> deleted = crawler.getDeletedResources();
+                        final List<Indexable> resources = crawler.getResources();
+                        final List<Indexable> deleted = crawler.getDeletedResources();
 
                         logCrawlerTime(crawler, t);
                         if (crawler.isFinished()) {
@@ -4868,9 +4866,9 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
                         checkTimeStamps.add(Crawler.TimeStampAction.CHECK);
                     }
                     final Crawler crawler = new FileObjectCrawler(rootFo, checkTimeStamps, entry, getCancelRequest(), getSuspendStatus());
-                    final Collection<IndexableImpl> resources = crawler.getResources();
-                    final Collection<IndexableImpl> allResources = crawler.getAllResources();
-                    final Collection<IndexableImpl> deleted = crawler.getDeletedResources();
+                    final List<Indexable> resources = crawler.getResources();
+                    final List<Indexable> allResources = crawler.getAllResources();
+                    final List<Indexable> deleted = crawler.getDeletedResources();
 
                     logCrawlerTime(crawler, t);
                     if (crawler.isFinished()) {

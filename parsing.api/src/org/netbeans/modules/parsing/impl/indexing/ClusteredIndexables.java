@@ -42,81 +42,120 @@
 
 package org.netbeans.modules.parsing.impl.indexing;
 
-import java.util.Collection;
+import java.util.BitSet;
+import java.util.Collections;
 import java.util.HashMap;
-import java.util.LinkedList;
+import java.util.Iterator;
 import java.util.List;
-import java.util.ListIterator;
 import java.util.Map;
+import java.util.NoSuchElementException;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.modules.parsing.spi.indexing.Indexable;
 import org.openide.util.Parameters;
 
 /**
  *
  * @author vita
+ * @author Tomas Zezula
  */
+//@NotThreadSafe
 public final class ClusteredIndexables {
 
     // -----------------------------------------------------------------------
     // Public implementation
     // -----------------------------------------------------------------------
 
-    public ClusteredIndexables(Collection<IndexableImpl> indexables) {
+    /**
+     * Creates new ClusteredIndexables
+     * @param indexables, requires a list with fast {@link List#get(int)} as it heavily calls it.
+     */
+    public ClusteredIndexables(List<Indexable> indexables) {
         Parameters.notNull("indexables", indexables); //NOI18N  
-        this.indexables = new LinkedList<IndexableImpl>(indexables);
+        this.indexables = indexables;        
+        this.sorted = new BitSet(indexables.size());
     }
 
     public Iterable<Indexable> getIndexablesFor(String mimeType) {
-        synchronized (mimeTypeClusters) {
             if (mimeType == null) {
                 mimeType = ALL_MIME_TYPES;
             }
-            
-            List<Indexable> cluster = mimeTypeClusters.get(mimeType);
-            if (cluster == null) {
-                cluster = new LinkedList<Indexable>();
-                
-                if (mimeType.length() == 0) {
-                    // add all the remaining indexables to the ALL_MIME_TYPES cluster
-                    for(IndexableImpl iimpl : indexables) {
-                        cluster.add(SPIAccessor.getInstance().create(iimpl));
-                    }
-                } else {
-                    // pick the indexables with the given mime type and add them to the cluster
-                    boolean resolved = false;
-                    
-                    for(ListIterator<IndexableImpl> it = indexables.listIterator(); it.hasNext(); ) {
-                        IndexableImpl iimpl = it.next();
-                        if (iimpl.isTypeOf(mimeType)) {
-                            it.remove();
-                            cluster.add(SPIAccessor.getInstance().create(iimpl));
-                            resolved = true;
-                        }
-                    }
-
-                    if (resolved) {
-                        // if we picked some indexables remove the cached ALL_MIME_TYPES cluster,
-                        // because its content is now different
-                        mimeTypeClusters.remove(ALL_MIME_TYPES);
-                    }
-                }
-
-                mimeTypeClusters.put(mimeType, cluster);
-            }
 
             if (mimeType.length() == 0) {
-                return new ProxyIterable<Indexable>(mimeTypeClusters.values());
-            } else {
-                return cluster;
+                return Collections.unmodifiableList(indexables);
             }
-        }
+            
+            BitSet cluster = mimeTypeClusters.get(mimeType);
+            if (cluster == null) {                
+                cluster = new BitSet();
+                // pick the indexables with the given mime type and add them to the cluster
+                for (int i = sorted.nextClearBit(0); i < indexables.size(); i = sorted.nextClearBit(i+1)) {
+                    final Indexable indexable = indexables.get(i);
+                    if (SPIAccessor.getInstance().isTypeOf(indexable, mimeType)) {
+                        cluster.set(i);
+                        sorted.set(i);
+                    }
+                }
+                mimeTypeClusters.put(mimeType, cluster);
+            }
+            
+            return new BitSetIterable(cluster);
     }
 
     // -----------------------------------------------------------------------
     // Private implementation
     // -----------------------------------------------------------------------
 
-    private final List<IndexableImpl> indexables;
-    private final Map<String, List<Indexable>> mimeTypeClusters = new HashMap<String, List<Indexable>>();
+    private final List<Indexable> indexables;
+    private final BitSet sorted;
+
+    private final Map<String, BitSet> mimeTypeClusters = new HashMap<String, BitSet>();
     private static final String ALL_MIME_TYPES = ""; //NOI18N
+
+
+    private class BitSetIterator implements Iterator<Indexable> {
+
+        private final BitSet bs;
+        private int index;
+
+        BitSetIterator(@NonNull final BitSet bs) {
+            this.bs = bs;
+            this.index = 0;
+        }
+
+        @Override
+        public boolean hasNext() {
+            return bs.nextSetBit(index) >= 0;
+        }
+
+        @Override
+        public Indexable next() {
+            int tmp = bs.nextSetBit(index);
+            if (tmp < 0) {
+                throw new NoSuchElementException();
+            }
+            index = tmp + 1;
+            return indexables.get(tmp);
+        }
+
+        @Override
+        public void remove() {
+            throw new UnsupportedOperationException("Immutable type"); //NOI18N
+        }
+
+    }
+
+    private class BitSetIterable implements Iterable<Indexable> {
+
+        private final BitSet bs;
+
+        BitSetIterable(@NonNull final BitSet bs) {
+            this.bs = bs;
+        }
+
+        @Override
+        public Iterator<Indexable> iterator() {
+            return new BitSetIterator(bs);
+        }
+
+    }
 }
