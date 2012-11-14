@@ -41,11 +41,20 @@
  */
 package org.netbeans.modules.php.editor;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
-import org.netbeans.api.project.*;
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.api.project.SourceGroup;
+import org.netbeans.api.project.Sources;
 import org.netbeans.modules.csl.api.ElementHandle;
 import org.netbeans.modules.csl.api.ElementKind;
 import org.netbeans.modules.csl.spi.ParserResult;
@@ -60,12 +69,30 @@ import org.netbeans.modules.php.editor.api.ElementQuery.Index;
 import org.netbeans.modules.php.editor.api.ElementQueryFactory;
 import org.netbeans.modules.php.editor.api.NameKind;
 import org.netbeans.modules.php.editor.api.QuerySupportFactory;
-import org.netbeans.modules.php.editor.api.elements.*;
+import org.netbeans.modules.php.editor.api.elements.ConstantElement;
+import org.netbeans.modules.php.editor.api.elements.ElementFilter;
+import org.netbeans.modules.php.editor.api.elements.MethodElement;
+import org.netbeans.modules.php.editor.api.elements.PhpElement;
+import org.netbeans.modules.php.editor.api.elements.TypeConstantElement;
+import org.netbeans.modules.php.editor.api.elements.TypeElement;
+import org.netbeans.modules.php.editor.api.elements.TypeMemberElement;
 import org.netbeans.modules.php.editor.index.PHPDOCTagElement;
 import org.netbeans.modules.php.editor.index.PredefinedSymbolElement;
 import org.netbeans.modules.php.editor.parser.annotation.LinkParsedLine;
 import org.netbeans.modules.php.editor.parser.api.Utils;
-import org.netbeans.modules.php.editor.parser.astnodes.*;
+import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
+import org.netbeans.modules.php.editor.parser.astnodes.Comment;
+import org.netbeans.modules.php.editor.parser.astnodes.FormalParameter;
+import org.netbeans.modules.php.editor.parser.astnodes.FunctionDeclaration;
+import org.netbeans.modules.php.editor.parser.astnodes.Identifier;
+import org.netbeans.modules.php.editor.parser.astnodes.PHPDocBlock;
+import org.netbeans.modules.php.editor.parser.astnodes.PHPDocMethodTag;
+import org.netbeans.modules.php.editor.parser.astnodes.PHPDocTag;
+import org.netbeans.modules.php.editor.parser.astnodes.PHPDocTypeNode;
+import org.netbeans.modules.php.editor.parser.astnodes.PHPDocTypeTag;
+import org.netbeans.modules.php.editor.parser.astnodes.PHPDocVarTypeTag;
+import org.netbeans.modules.php.editor.parser.astnodes.Program;
+import org.netbeans.modules.php.editor.parser.astnodes.Scalar;
 import org.netbeans.modules.php.spi.annotation.AnnotationParsedLine;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -127,7 +154,8 @@ class DocRenderer {
                     for (Iterator<TypeElement> typeIt = inheritedTypes.iterator(); phpDoc.length() == 0 && typeIt.hasNext();) {
                         final Set<MethodElement> inheritedMethods = forName.filter(index.getDeclaredMethods(typeIt.next()));
                         for (Iterator<MethodElement> methodIt = inheritedMethods.iterator(); phpDoc.length() == 0 && methodIt.hasNext();) {
-                            getPhpDoc(methodIt.next(), header = new CCDocHtmlFormatter(), phpDoc);
+                            header = new CCDocHtmlFormatter();
+                            getPhpDoc(methodIt.next(), header, phpDoc);
                         }
                     }
                 }
@@ -198,7 +226,8 @@ class DocRenderer {
         // http://manual.phpdoc.org/HTMLSmartyConverter/HandS/phpDocumentor/tutorial_phpDocumentor.howto.pkg.html#basics.desc
         // + table (table, tr, th, td)
 
-        private static final Pattern KEEP_TAGS_PATTERN = Pattern.compile("<(?!(/|b|code|br|i|kbd|li|ol|p|pre|samp|ul|var|table|tr|th|td)(\\b|\\s))", Pattern.CASE_INSENSITIVE); // NOI18N
+        private static final Pattern KEEP_TAGS_PATTERN
+                = Pattern.compile("<(?!(/|b|code|br|i|kbd|li|ol|p|pre|samp|ul|var|table|tr|th|td)(\\b|\\s))", Pattern.CASE_INSENSITIVE); // NOI18N
         private static final Pattern REPLACE_NEWLINE_PATTERN = Pattern.compile("(\r?\n){2,}"); // NOI18N
         // #183594
         private static final Pattern LIST_PATTERN = Pattern.compile("(\r?\n)(?=([-+#o]\\s|\\d\\.?\\s))"); // NOI18N
@@ -315,8 +344,12 @@ class DocRenderer {
                 }
             }
 
-            phpDoc.append(composeFunctionDoc(processDescription(processPhpDoc(pHPDocBlock.getDescription())), params.toString(), returnValue.toString(), links.toString(), others.toString()));
-
+            phpDoc.append(composeFunctionDoc(processDescription(
+                    processPhpDoc(pHPDocBlock.getDescription())),
+                    params.toString(),
+                    returnValue.toString(),
+                    links.toString(),
+                    others.toString()));
         }
 
         protected String processDescription(String text) {
@@ -456,11 +489,12 @@ class DocRenderer {
                     ASTNode node = Utils.getNodeAtOffset(program, indexedElement.getOffset());
 
                     if (node == null) { // issue #118222
-                        LOGGER.log(Level.WARNING, "Could not find AST node for element {0} defined in {1}", new Object[]{indexedElement.getName(), indexedElement.getFilenameUrl()});
+                        LOGGER.log(
+                                Level.WARNING,
+                                "Could not find AST node for element {0} defined in {1}",
+                                new Object[]{indexedElement.getName(), indexedElement.getFilenameUrl()});
                         return;
                     }
-                    //header.appendHtml("<br/>"); //NOI18N
-
                     if (node instanceof FunctionDeclaration) {
                         doFunctionDeclaration((FunctionDeclaration) node);
                     } else {
@@ -476,7 +510,7 @@ class DocRenderer {
                             value = constant.getValue();
                         }
                         if (value != null) {
-                            header.appendText(" = ");//NOI18N
+                            header.appendText(" = "); //NOI18N
                             header.appendText(value);
                         }
                     }

@@ -44,24 +44,29 @@ package org.netbeans.modules.php.editor.api;
 
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
-import org.netbeans.modules.php.editor.parser.astnodes.visitors.PhpElementVisitor;
 import org.netbeans.modules.php.editor.elements.IndexQueryImpl;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
+import org.netbeans.modules.php.editor.parser.astnodes.visitors.PhpElementVisitor;
 
 /**
  * @author Radek Matous
  */
 public final class ElementQueryFactory {
-    private ElementQueryFactory() {};
+
+    private ElementQueryFactory() {
+    }
+
     public static ElementQuery.Index createIndexQuery(final QuerySupport querySupport)  {
         return IndexQueryImpl.create(querySupport);
     }
+
     public static ElementQuery.Index getIndexQuery(final ParserResult parseResult)  {
-        return (parseResult instanceof PHPParseResult) ? getIndexQuery((PHPParseResult)parseResult) :
-            createIndexQuery(QuerySupportFactory.get(parseResult));
+        return (parseResult instanceof PHPParseResult) ? getIndexQuery((PHPParseResult) parseResult)
+                : createIndexQuery(QuerySupportFactory.get(parseResult));
     }
+
     /**
-     * shared, cached by model
+     * shared, cached by model.
      */
     public static ElementQuery.Index getIndexQuery(final PHPParseResult parseResult)  {
         return IndexQueryImpl.getModelInstance(parseResult);

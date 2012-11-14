@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.web.browser.api;
 
+import java.beans.PropertyChangeListener;
 import org.openide.util.Lookup;
 
 /**
@@ -53,6 +54,9 @@ public abstract class PageInspector {
     public static final String MESSAGE_DISPATCHER_FEATURE_ID = "inspect"; // NOI18N
     /** Default {@code PageInspector}. */
     private static PageInspector DEFAULT = Lookup.getDefault().lookup(PageInspector.class);
+    
+    /** Name of the property that is fired when the page model changes. */
+    public static final String PROP_MODEL = "model"; // NOI18N
 
     /**
      * Returns the default {@code PageInspector}.
@@ -71,5 +75,25 @@ public abstract class PageInspector {
      * the web-browser pane that displays the web-page).
      */
     public abstract void inspectPage(Lookup pageContext);
+    
+    /**
+     * Adds a property change listener.
+     * 
+     * @param listener listener to add.
+     */
+    public abstract void addPropertyChangeListener(PropertyChangeListener listener);
 
+    /**
+     * Removes a property change listener.
+     * 
+     * @param listener listener to remove.
+     */
+    public abstract void removePropertyChangeListener(PropertyChangeListener listener);
+
+    /**
+     * Getter for current page model.
+     * @return 
+     */
+    public abstract Page getPage();
+    
 }

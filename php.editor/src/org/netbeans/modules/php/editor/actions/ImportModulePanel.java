@@ -86,7 +86,7 @@ public class ImportModulePanel extends javax.swing.JPanel {
     private DefaultListModel model;
     private final int position;
 
-    /** Creates new form ImportClassPanel */
+    /** Creates new form ImportClassPanel. */
     @SuppressWarnings("deprecation")
     public ImportModulePanel(List</*TypeElement*/String> priviledged,
             List</*TypeElement*/String> denied, Font font, ParserResult info, int position) {
@@ -219,8 +219,8 @@ public class ImportModulePanel extends javax.swing.JPanel {
 
     private void listKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_listKeyReleased
         KeyStroke ks = KeyStroke.getKeyStrokeForEvent(evt);
-        if (ks.getKeyCode() == KeyEvent.VK_ENTER ||
-                ks.getKeyCode() == KeyEvent.VK_SPACE) {
+        if (ks.getKeyCode() == KeyEvent.VK_ENTER
+                || ks.getKeyCode() == KeyEvent.VK_SPACE) {
             boolean packageImport = (evt.getModifiers() & InputEvent.ALT_MASK) > 0;
             boolean useFqn = (evt.getModifiers() & InputEvent.SHIFT_MASK) > 0;
             importModule(getSelected(), packageImport, useFqn);
@@ -230,7 +230,7 @@ public class ImportModulePanel extends javax.swing.JPanel {
     private void updatePreview(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_updatePreview
         Object selected = jList1.getSelectedValue();
         if (selected != null) {
-            String preview = "<html><code><b>" + ((TypeDescription)selected).qualifiedName + "</b></code></html>"; // NOI18N
+            String preview = "<html><code><b>" + ((TypeDescription) selected).qualifiedName + "</b></code></html>"; // NOI18N
             importPreviewLabel.setText(preview);
         }
     }//GEN-LAST:event_updatePreview
@@ -294,12 +294,11 @@ public class ImportModulePanel extends javax.swing.JPanel {
         if (basePosition != -1) {
             EditList edits = new EditList(document);
             try {
-                int rowEnd = importInPreviousLine ? Utilities.getRowStart(document, position) :
-                    Utilities.getRowEnd(document, basePosition);
+                int rowEnd = importInPreviousLine ? Utilities.getRowStart(document, position) : Utilities.getRowEnd(document, basePosition);
                 if (importInPreviousLine) {
-                    importCode = importCode +"\n";//NOI18N
+                    importCode = importCode + "\n"; //NOI18N
                 } else {
-                    importCode = "\n" + importCode;//NOI18N
+                    importCode = "\n" + importCode; //NOI18N
                 }
                 edits.replace(rowEnd, 0, importCode, true, 0);
                 edits.setFormatAll(true);

@@ -70,8 +70,8 @@ import org.openide.util.Parameters;
  * @author Radek Matous
  */
 public class VariableElementImpl extends PhpElementImpl implements VariableElement {
-    public static final String DOLLAR_PREFIX = "$";//NOI18N
-    public static final String REFERENCE_PREFIX = "&";//NOI18N
+    public static final String DOLLAR_PREFIX = "$"; //NOI18N
+    public static final String REFERENCE_PREFIX = "&"; //NOI18N
     public static final String IDX_FIELD = PHPIndexer.FIELD_VAR;
 
     private final Set<TypeResolver> instanceTypes;
@@ -103,7 +103,7 @@ public class VariableElementImpl extends PhpElementImpl implements VariableEleme
             final FileObject fo,
             final ElementQuery elementQuery,
             final Set<TypeResolver> instanceTypes) {
-        return new VariableElementImpl(variableName, offset, (String)null, elementQuery, instanceTypes, instanceTypes) {
+        return new VariableElementImpl(variableName, offset, null, elementQuery, instanceTypes, instanceTypes) {
             @Override
             public synchronized FileObject getFileObject() {
                 return fo;
@@ -162,7 +162,7 @@ public class VariableElementImpl extends PhpElementImpl implements VariableEleme
     }
 
     private static boolean matchesQuery(final NameKind query, VariableSignatureParser signParser) {
-        Parameters.notNull("query", query);//NOI18N
+        Parameters.notNull("query", query); //NOI18N
         return (query instanceof NameKind.Empty)
                 || query.matchesName(VariableElement.KIND, signParser.getVariableName());
     }
@@ -175,17 +175,17 @@ public class VariableElementImpl extends PhpElementImpl implements VariableEleme
         if (startsWithDollar == dollared) {
             return name;
         }
-        return dollared ? String.format("%s%s", DOLLAR_PREFIX, name) : name.substring(1);//NOI18N
+        return dollared ? String.format("%s%s", DOLLAR_PREFIX, name) : name.substring(1); //NOI18N
     }
 
     @Override
     public String getSignature() {
         StringBuilder sb = new StringBuilder();
         final String varName = getName();
-        sb.append(varName.toLowerCase()).append(Separator.SEMICOLON);//NOI18N
-        sb.append(varName).append(Separator.SEMICOLON);//NOI18N
-        sb.append(Separator.SEMICOLON);//NOI18N
-        sb.append(getOffset()).append(Separator.SEMICOLON);//NOI18N
+        sb.append(varName.toLowerCase()).append(Separator.SEMICOLON); //NOI18N
+        sb.append(varName).append(Separator.SEMICOLON); //NOI18N
+        sb.append(Separator.SEMICOLON); //NOI18N
+        sb.append(getOffset()).append(Separator.SEMICOLON); //NOI18N
         checkSignature(sb);
         return sb.toString();
     }

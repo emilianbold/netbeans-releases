@@ -60,7 +60,15 @@ import java.util.logging.Logger;
 import java.util.prefs.AbstractPreferences;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
-import javax.swing.*;
+import javax.swing.ComboBoxModel;
+import javax.swing.DefaultComboBoxModel;
+import javax.swing.JCheckBox;
+import javax.swing.JComboBox;
+import javax.swing.JComponent;
+import javax.swing.JEditorPane;
+import javax.swing.JPanel;
+import javax.swing.JRadioButton;
+import javax.swing.JTextField;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.BadLocationException;
@@ -81,131 +89,131 @@ import org.openide.util.NbBundle;
  * @author phrebejk
  *
  */
-public class FmtOptions {
+public final class FmtOptions {
 
     private static final Logger LOGGER = Logger.getLogger(FmtOptions.class.getName());
-    public static final String expandTabToSpaces = SimpleValueNames.EXPAND_TABS;
-    public static final String tabSize = SimpleValueNames.TAB_SIZE;
-    public static final String spacesPerTab = SimpleValueNames.SPACES_PER_TAB;
-    public static final String indentSize = SimpleValueNames.INDENT_SHIFT_WIDTH;
-    public static final String continuationIndentSize = "continuationIndentSize"; //NOI18N
-    public static final String itemsInArrayDeclarationIndentSize = "itemsInArrayDeclarationIndentSize"; //NOI18N
-    public static final String reformatComments = "reformatComments"; //NOI18N
-    public static final String indentHtml = "indentHtml"; //NOI18N
-    public static final String rightMargin = SimpleValueNames.TEXT_LIMIT_WIDTH;
-    public static final String initialIndent = "init.indent"; //NOI18N
-    public static final String classDeclBracePlacement = "classDeclBracePlacement"; //NOI18N
-    public static final String methodDeclBracePlacement = "methodDeclBracePlacement"; //NOI18N
-    public static final String ifBracePlacement = "ifBracePlacement"; //NOI18N
-    public static final String forBracePlacement = "forBracePlacement"; //NOI18N
-    public static final String whileBracePlacement = "whileBracePlacement"; //NOI18N
-    public static final String switchBracePlacement = "switchBracePlacement"; //NOI18N
-    public static final String catchBracePlacement = "catchBracePlacement"; //NOI18N
-    public static final String useTraitBodyBracePlacement = "useTraitBodyBracePlacement"; //NOI18N
-    public static final String otherBracePlacement = "otherBracePlacement"; //NOI18N
-    public static final String blankLinesBeforeNamespace = "blankLinesBeforeNamespace"; //NOI18N
-    public static final String blankLinesAfterNamespace = "blankLinesAfterNamespace"; //NOI18N
-    public static final String blankLinesBeforeUse = "blankLinesBeforeUse"; //NOI18N
-    public static final String blankLinesBeforeUseTrait = "blankLinesBeforeUseTrait"; //NOI18N
-    public static final String blankLinesAfterUse = "blankLinesAfterUse"; //NOI18N
-    public static final String blankLinesBeforeClass = "blankLinesBeforeClass"; //NOI18N
-    public static final String blankLinesBeforeClassEnd = "blankLinesBeforeClassEnd"; //NOI18N
-    public static final String blankLinesAfterClass = "blankLinesAfterClass"; //NOI18N
-    public static final String blankLinesAfterClassHeader = "blankLinesAfterClassHeader"; //NOI18N
-    public static final String blankLinesBeforeFields = "blankLinesBeforeField"; //NOI18N
-    public static final String blankLinesBetweenFields = "blankLinesBetweenField"; //NOI18N
-    public static final String blankLinesAfterFields = "blankLinesAfterField"; //NOI18N
-    public static final String blankLinesGroupFieldsWithoutDoc = "blankLinesGroupFieldsWithoutDoc"; //NOI18N
-    public static final String blankLinesBeforeFunction = "blankLinesBeforeFunction"; //NOI18N
-    public static final String blankLinesAfterFunction = "blankLinesAfterFunction"; //NOI18N
-    public static final String blankLinesBeforeFunctionEnd = "blankLinesBeforeFunctionEnd"; //NOI18N
-    public static final String blankLinesAfterOpenPHPTag = "blankLinesAfterOpenPHPTag"; //NOI18N
-    public static final String blankLinesAfterOpenPHPTagInHTML = "blankLinesAfterOpenPHPTagInHTML"; //NOI18N
-    public static final String blankLinesBeforeClosePHPTag = "blankLinesBeforeClosePHPTag"; //NOI18N
-    public static final String spaceBeforeWhile = "spaceBeforeWhile"; //NOI18N
-    public static final String spaceBeforeElse = "spaceBeforeElse"; //NOI18N
-    public static final String spaceBeforeCatch = "spaceBeforeCatch"; //NOI18N
-    public static final String spaceBeforeMethodDeclParen = "spaceBeforeMethodDeclParen"; //NOI18N
-    public static final String spaceBeforeMethodCallParen = "spaceBeforeMethodCallParen"; //NOI18N
-    public static final String spaceBeforeIfParen = "spaceBeforeIfParen"; //NOI18N
-    public static final String spaceBeforeForParen = "spaceBeforeForParen"; //NOI18N
-    public static final String spaceBeforeWhileParen = "spaceBeforeWhileParen"; //NOI18N
-    public static final String spaceBeforeCatchParen = "spaceBeforeCatchParen"; //NOI18N
-    public static final String spaceBeforeSwitchParen = "spaceBeforeSwitchParen"; //NOI18N
-    public static final String spaceBeforeArrayDeclParen = "spaceBeforeArrayDeclParen"; //NOI18N
-    public static final String spaceAroundUnaryOps = "spaceAroundUnaryOps"; //NOI18N
-    public static final String spaceAroundBinaryOps = "spaceAroundBinaryOps"; //NOI18N
-    public static final String spaceAroundTernaryOps = "spaceAroundTernaryOps"; //NOI18N
-    public static final String spaceAroundStringConcatOps = "spaceAroundStringConcatOps"; //NOI18N
-    public static final String spaceAroundAssignOps = "spaceAroundAssignOps"; //NOI18N
-    public static final String spaceAroundKeyValueOps = "spaceAroundKeyValueOps"; //NOI18N
-    public static final String spaceAroundObjectOps = "spaceAroundObjectOps"; //NOI18N
-    public static final String spaceBeforeClassDeclLeftBrace = "spaceBeforeClassDeclLeftBrace"; //NOI18N
-    public static final String spaceBeforeMethodDeclLeftBrace = "spaceBeforeMethodDeclLeftBrace"; //NOI18N
-    public static final String spaceBeforeIfLeftBrace = "spaceBeforeIfLeftBrace"; //NOI18N
-    public static final String spaceBeforeElseLeftBrace = "spaceBeforeElseLeftBrace"; //NOI18N
-    public static final String spaceBeforeWhileLeftBrace = "spaceBeforeWhileLeftBrace"; //NOI18N
-    public static final String spaceBeforeForLeftBrace = "spaceBeforeForLeftBrace"; //NOI18N
-    public static final String spaceBeforeDoLeftBrace = "spaceBeforeDoLeftBrace"; //NOI18N
-    public static final String spaceBeforeSwitchLeftBrace = "spaceBeforeSwitchLeftBrace"; //NOI18N
-    public static final String spaceBeforeTryLeftBrace = "spaceBeforeTryLeftBrace"; //NOI18N
-    public static final String spaceBeforeCatchLeftBrace = "spaceBeforeCatchLeftBrace"; //NOI18N
-    public static final String spaceBeforeUseTraitBodyLeftBrace = "spaceBeforeUseTraitBodyLeftBrace"; //NOI18N
-    public static final String spaceWithinArrayDeclParens = "spaceWithinArrayDeclParens"; //NOI18N
-    public static final String spaceWithinMethodDeclParens = "spaceWithinMethodDeclParens"; //NOI18N
-    public static final String spaceWithinMethodCallParens = "spaceWithinMethodCallParens"; //NOI18N
-    public static final String spaceWithinIfParens = "spaceWithinIfParens"; //NOI18N
-    public static final String spaceWithinForParens = "spaceWithinForParens"; //NOI18N
-    public static final String spaceWithinWhileParens = "spaceWithinWhileParens"; //NOI18N
-    public static final String spaceWithinSwitchParens = "spaceWithinSwitchParens"; //NOI18N
-    public static final String spaceWithinCatchParens = "spaceWithinCatchParens"; //NOI18N
-    public static final String spaceWithinTypeCastParens = "spaceWithinTypeCastParens"; //NOI18N
-    public static final String spaceWithinArrayBrackets = "spaceWithinArrayBrackets"; //NOI18N
-    public static final String spaceBeforeComma = "spaceBeforeComma"; //NOI18N
-    public static final String spaceAfterComma = "spaceAfterComma"; //NOI18N
-    public static final String spaceBeforeSemi = "spaceBeforeSemi"; //NOI18N
-    public static final String spaceAfterSemi = "spaceAfterSemi"; //NOI18N
-    public static final String spaceAfterTypeCast = "spaceAfterTypeCast"; //NOI18N
-    public static final String spaceCheckAfterKeywords = "spaceCheckAfterKeywords"; //NOI18N
-    public static final String spaceAfterShortPHPTag = "spaceAfterShortPHPTag"; //NOI18N
-    public static final String spaceBeforeClosePHPTag = "spaceBeforeClosePHPTag"; //NOI18N
-    public static final String placeElseOnNewLine = "placeElseOnNewLine"; //NOI18N
-    public static final String placeWhileOnNewLine = "placeWhileOnNewLine"; //NOI18N
-    public static final String placeCatchOnNewLine = "placeCatchOnNewLine"; //NOI18N
-    public static final String placeNewLineAfterModifiers = "placeNewLineAfterModifiers"; //NOI18N
-    public static final String alignMultilineMethodParams = "alignMultilineMethodParams"; //NOI18N
-    public static final String alignMultilineCallArgs = "alignMultilineCallArgs"; //NOI18N
-    public static final String alignMultilineImplements = "alignMultilineImplements"; //NOI18N
-    public static final String alignMultilineParenthesized = "alignMultilineParenthesized"; //NOI18N
-    public static final String alignMultilineBinaryOp = "alignMultilineBinaryOp"; //NOI18N
-    public static final String alignMultilineTernaryOp = "alignMultilineTernaryOp"; //NOI18N
-    public static final String alignMultilineAssignment = "alignMultilineAssignment"; //NOI18N
-    public static final String alignMultilineFor = "alignMultilineFor"; //NOI18N
-    public static final String alignMultilineArrayInit = "alignMultilineArrayInit"; //NOI18N
-    public static final String groupAlignmentAssignment = "groupAlignmentAssignment"; //NOI18N
-    public static final String groupAlignmentArrayInit = "groupAlignmentArrayInit"; //NOI18N
-    public static final String wrapExtendsImplementsKeyword = "wrapExtendsImplementsKeyword"; //NOI18N
-    public static final String wrapExtendsImplementsList = "wrapExtendsImplementsList"; //NOI18N
-    public static final String wrapMethodParams = "wrapMethodParams"; //NOI18N
-    public static final String wrapMethodCallArgs = "wrapMethodCallArgs"; //NOI18N
-    public static final String wrapChainedMethodCalls = "wrapChainedMethodCalls"; //NOI18N
-    public static final String wrapArrayInit = "wrapArrayInit"; //NOI18N
-    public static final String wrapFor = "wrapFor"; //NOI18N
-    public static final String wrapForStatement = "wrapForStatement"; //NOI18N
-    public static final String wrapIfStatement = "wrapIfStatement"; //NOI18N
-    public static final String wrapWhileStatement = "wrapWhileStatement"; //NOI18N
-    public static final String wrapDoWhileStatement = "wrapDoWhileStatement"; //NOI18N
-    public static final String wrapBinaryOps = "wrapBinaryOps"; //NOI18N
-    public static final String wrapTernaryOps = "wrapTernaryOps"; //NOI18N
-    public static final String wrapAssignOps = "wrapAssignOps"; //NOI18N
-    public static final String wrapBlockBraces = "wrapBlockBraces";  //NOI18N
-    public static final String wrapStatementsOnTheLine = "wrapStateMentsOnTheLine"; // NOI18N
-    public static final String wrapAfterBinOps = "wrapAfterBinOps"; // NOI18N
-    public static final String wrapAfterAssignOps = "wrapAfterAssignOps"; // NOI18N
-    public static final String preferFullyQualifiedNames = "preferFullyQualifiedNames"; //NOI18N
-    public static final String preferMultipleUseStatementsCombined = "preferMultipleUseStatementsCombined"; //NOI18N
-    public static final String startUseWithNamespaceSeparator = "startUseWithNamespaceSeparator"; //NOI18N
-    public static final String aliasesCapitalsOfNamespaces = "aliasesCapitalsOfNamespacesNames"; //NOI18N
+    public static final String EXPAND_TAB_TO_SPACES = SimpleValueNames.EXPAND_TABS;
+    public static final String TAB_SIZE = SimpleValueNames.TAB_SIZE;
+    public static final String SPACES_PER_TAB = SimpleValueNames.SPACES_PER_TAB;
+    public static final String INDENT_SIZE = SimpleValueNames.INDENT_SHIFT_WIDTH;
+    public static final String CONTINUATION_INDENT_SIZE = "continuationIndentSize"; //NOI18N
+    public static final String ITEMS_IN_ARRAY_DECLARATION_INDENT_SIZE = "itemsInArrayDeclarationIndentSize"; //NOI18N
+    public static final String REFORMAT_COMMENTS = "reformatComments"; //NOI18N
+    public static final String INDENT_HTML = "indentHtml"; //NOI18N
+    public static final String RIGHT_MARGIN = SimpleValueNames.TEXT_LIMIT_WIDTH;
+    public static final String INITIAL_INDENT = "init.indent"; //NOI18N
+    public static final String CLASS_DECL_BRACE_PLACEMENT = "classDeclBracePlacement"; //NOI18N
+    public static final String METHOD_DECL_BRACE_PLACEMENT = "methodDeclBracePlacement"; //NOI18N
+    public static final String IF_BRACE_PLACEMENT = "ifBracePlacement"; //NOI18N
+    public static final String FOR_BRACE_PLACEMENT = "forBracePlacement"; //NOI18N
+    public static final String WHILE_BRACE_PLACEMENT = "whileBracePlacement"; //NOI18N
+    public static final String SWITCH_BRACE_PLACEMENT = "switchBracePlacement"; //NOI18N
+    public static final String CATCH_BRACE_PLACEMENT = "catchBracePlacement"; //NOI18N
+    public static final String USE_TRAIT_BODY_BRACE_PLACEMENT = "useTraitBodyBracePlacement"; //NOI18N
+    public static final String OTHER_BRACE_PLACEMENT = "otherBracePlacement"; //NOI18N
+    public static final String BLANK_LINES_BEFORE_NAMESPACE = "blankLinesBeforeNamespace"; //NOI18N
+    public static final String BLANK_LINES_AFTER_NAMESPACE = "blankLinesAfterNamespace"; //NOI18N
+    public static final String BLANK_LINES_BEFORE_USE = "blankLinesBeforeUse"; //NOI18N
+    public static final String BLANK_LINES_BEFORE_USE_TRAIT = "blankLinesBeforeUseTrait"; //NOI18N
+    public static final String BLANK_LINES_AFTER_USE = "blankLinesAfterUse"; //NOI18N
+    public static final String BLANK_LINES_BEFORE_CLASS = "blankLinesBeforeClass"; //NOI18N
+    public static final String BLANK_LINES_BEFORE_CLASS_END = "blankLinesBeforeClassEnd"; //NOI18N
+    public static final String BLANK_LINES_AFTER_CLASS = "blankLinesAfterClass"; //NOI18N
+    public static final String BLANK_LINES_AFTER_CLASS_HEADER = "blankLinesAfterClassHeader"; //NOI18N
+    public static final String BLANK_LINES_BEFORE_FIELDS = "blankLinesBeforeField"; //NOI18N
+    public static final String BLANK_LINES_BETWEEN_FIELDS = "blankLinesBetweenField"; //NOI18N
+    public static final String BLANK_LINES_AFTER_FIELDS = "blankLinesAfterField"; //NOI18N
+    public static final String BLANK_LINES_GROUP_FIELDS_WITHOUT_DOC = "blankLinesGroupFieldsWithoutDoc"; //NOI18N
+    public static final String BLANK_LINES_BEFORE_FUNCTION = "blankLinesBeforeFunction"; //NOI18N
+    public static final String BLANK_LINES_AFTER_FUNCTION = "blankLinesAfterFunction"; //NOI18N
+    public static final String BLANK_LINES_BEFORE_FUNCTION_END = "blankLinesBeforeFunctionEnd"; //NOI18N
+    public static final String BLANK_LINES_AFTER_OPEN_PHP_TAG = "blankLinesAfterOpenPHPTag"; //NOI18N
+    public static final String BLANK_LINES_AFTER_OPEN_PHP_TAG_IN_HTML = "blankLinesAfterOpenPHPTagInHTML"; //NOI18N
+    public static final String BLANK_LINES_BEFORE_CLOSE_PHP_TAG = "blankLinesBeforeClosePHPTag"; //NOI18N
+    public static final String SPACE_BEFORE_WHILE = "spaceBeforeWhile"; //NOI18N
+    public static final String SPACE_BEFORE_ELSE = "spaceBeforeElse"; //NOI18N
+    public static final String SPACE_BEFORE_CATCH = "spaceBeforeCatch"; //NOI18N
+    public static final String SPACE_BEFORE_METHOD_DECL_PAREN = "spaceBeforeMethodDeclParen"; //NOI18N
+    public static final String SPACE_BEFORE_METHOD_CALL_PAREN = "spaceBeforeMethodCallParen"; //NOI18N
+    public static final String SPACE_BEFORE_IF_PAREN = "spaceBeforeIfParen"; //NOI18N
+    public static final String SPACE_BEFORE_FOR_PAREN = "spaceBeforeForParen"; //NOI18N
+    public static final String SPACE_BEFORE_WHILE_PAREN = "spaceBeforeWhileParen"; //NOI18N
+    public static final String SPACE_BEFORE_CATCH_PAREN = "spaceBeforeCatchParen"; //NOI18N
+    public static final String SPACE_BEFORE_SWITCH_PAREN = "spaceBeforeSwitchParen"; //NOI18N
+    public static final String SPACE_BEFORE_ARRAY_DECL_PAREN = "spaceBeforeArrayDeclParen"; //NOI18N
+    public static final String SPACE_AROUND_UNARY_OPS = "spaceAroundUnaryOps"; //NOI18N
+    public static final String SPACE_AROUND_BINARY_OPS = "spaceAroundBinaryOps"; //NOI18N
+    public static final String SPACE_AROUND_TERNARY_OPS = "spaceAroundTernaryOps"; //NOI18N
+    public static final String SPACE_AROUND_STRING_CONCAT_OPS = "spaceAroundStringConcatOps"; //NOI18N
+    public static final String SPACE_AROUND_ASSIGN_OPS = "spaceAroundAssignOps"; //NOI18N
+    public static final String SPACE_AROUND_KEY_VALUE_OPS = "spaceAroundKeyValueOps"; //NOI18N
+    public static final String SPACE_AROUND_OBJECT_OPS = "spaceAroundObjectOps"; //NOI18N
+    public static final String SPACE_BEFORE_CLASS_DECL_LEFT_BRACE = "spaceBeforeClassDeclLeftBrace"; //NOI18N
+    public static final String SPACE_BEFORE_METHOD_DECL_LEFT_BRACE = "spaceBeforeMethodDeclLeftBrace"; //NOI18N
+    public static final String SPACE_BEFORE_IF_LEFT_BRACE = "spaceBeforeIfLeftBrace"; //NOI18N
+    public static final String SPACE_BEFORE_ELSE_LEFT_BRACE = "spaceBeforeElseLeftBrace"; //NOI18N
+    public static final String SPACE_BEFORE_WHILE_LEFT_BRACE = "spaceBeforeWhileLeftBrace"; //NOI18N
+    public static final String SPACE_BEFORE_FOR_LEFT_BRACE = "spaceBeforeForLeftBrace"; //NOI18N
+    public static final String SPACE_BEFORE_DO_LEFT_BRACE = "spaceBeforeDoLeftBrace"; //NOI18N
+    public static final String SPACE_BEFORE_SWITCH_LEFT_BRACE = "spaceBeforeSwitchLeftBrace"; //NOI18N
+    public static final String SPACE_BEFORE_TRY_LEFT_BRACE = "spaceBeforeTryLeftBrace"; //NOI18N
+    public static final String SPACE_BEFORE_CATCH_LEFT_BRACE = "spaceBeforeCatchLeftBrace"; //NOI18N
+    public static final String SPACE_BEFORE_USE_TRAIT_BODY_LEFT_BRACE = "spaceBeforeUseTraitBodyLeftBrace"; //NOI18N
+    public static final String SPACE_WITHIN_ARRAY_DECL_PARENS = "spaceWithinArrayDeclParens"; //NOI18N
+    public static final String SPACE_WITHIN_METHOD_DECL_PARENS = "spaceWithinMethodDeclParens"; //NOI18N
+    public static final String SPACE_WITHIN_METHOD_CALL_PARENS = "spaceWithinMethodCallParens"; //NOI18N
+    public static final String SPACE_WITHIN_IF_PARENS = "spaceWithinIfParens"; //NOI18N
+    public static final String SPACE_WITHIN_FOR_PARENS = "spaceWithinForParens"; //NOI18N
+    public static final String SPACE_WITHIN_WHILE_PARENS = "spaceWithinWhileParens"; //NOI18N
+    public static final String SPACE_WITHIN_SWITCH_PARENS = "spaceWithinSwitchParens"; //NOI18N
+    public static final String SPACE_WITHIN_CATCH_PARENS = "spaceWithinCatchParens"; //NOI18N
+    public static final String SPACE_WITHIN_TYPE_CAST_PARENS = "spaceWithinTypeCastParens"; //NOI18N
+    public static final String SPACE_WITHIN_ARRAY_BRACKETS = "spaceWithinArrayBrackets"; //NOI18N
+    public static final String SPACE_BEFORE_COMMA = "spaceBeforeComma"; //NOI18N
+    public static final String SPACE_AFTER_COMMA = "spaceAfterComma"; //NOI18N
+    public static final String SPACE_BEFORE_SEMI = "spaceBeforeSemi"; //NOI18N
+    public static final String SPACE_AFTER_SEMI = "spaceAfterSemi"; //NOI18N
+    public static final String SPACE_AFTER_TYPE_CAST = "spaceAfterTypeCast"; //NOI18N
+    public static final String SPACE_CHECK_AFTER_KEYWORDS = "spaceCheckAfterKeywords"; //NOI18N
+    public static final String SPACE_AFTER_SHORT_PHP_TAG = "spaceAfterShortPHPTag"; //NOI18N
+    public static final String SPACE_BEFORE_CLOSE_PHP_TAG = "spaceBeforeClosePHPTag"; //NOI18N
+    public static final String PLACE_ELSE_ON_NEW_LINE = "placeElseOnNewLine"; //NOI18N
+    public static final String PLACE_WHILE_ON_NEW_LINE = "placeWhileOnNewLine"; //NOI18N
+    public static final String PLACE_CATCH_ON_NEW_LINE = "placeCatchOnNewLine"; //NOI18N
+    public static final String PLACE_NEW_LINE_AFTER_MODIFIERS = "placeNewLineAfterModifiers"; //NOI18N
+    public static final String ALIGN_MULTILINE_METHOD_PARAMS = "alignMultilineMethodParams"; //NOI18N
+    public static final String ALIGN_MULTILINE_CALL_ARGS = "alignMultilineCallArgs"; //NOI18N
+    public static final String ALIGN_MULTILINE_IMPLEMENTS = "alignMultilineImplements"; //NOI18N
+    public static final String ALIGN_MULTILINE_PARENTHESIZED = "alignMultilineParenthesized"; //NOI18N
+    public static final String ALIGN_MULTILINE_BINARY_OP = "alignMultilineBinaryOp"; //NOI18N
+    public static final String ALIGN_MULTILINE_TERNARY_OP = "alignMultilineTernaryOp"; //NOI18N
+    public static final String ALIGN_MULTILINE_ASSIGNMENT = "alignMultilineAssignment"; //NOI18N
+    public static final String ALIGN_MULTILINE_FOR = "alignMultilineFor"; //NOI18N
+    public static final String ALIGN_MULTILINE_ARRAY_INIT = "alignMultilineArrayInit"; //NOI18N
+    public static final String GROUP_ALIGNMENT_ASSIGNMENT = "groupAlignmentAssignment"; //NOI18N
+    public static final String GROUP_ALIGNMENT_ARRAY_INIT = "groupAlignmentArrayInit"; //NOI18N
+    public static final String WRAP_EXTENDS_IMPLEMENTS_KEYWORD = "wrapExtendsImplementsKeyword"; //NOI18N
+    public static final String WRAP_EXTENDS_IMPLEMENTS_LIST = "wrapExtendsImplementsList"; //NOI18N
+    public static final String WRAP_METHOD_PARAMS = "wrapMethodParams"; //NOI18N
+    public static final String WRAP_METHOD_CALL_ARGS = "wrapMethodCallArgs"; //NOI18N
+    public static final String WRAP_CHAINED_METHOD_CALLS = "wrapChainedMethodCalls"; //NOI18N
+    public static final String WRAP_ARRAY_INIT = "wrapArrayInit"; //NOI18N
+    public static final String WRAP_FOR = "wrapFor"; //NOI18N
+    public static final String WRAP_FOR_STATEMENT = "wrapForStatement"; //NOI18N
+    public static final String WRAP_IF_STATEMENT = "wrapIfStatement"; //NOI18N
+    public static final String WRAP_WHILE_STATEMENT = "wrapWhileStatement"; //NOI18N
+    public static final String WRAP_DO_WHILE_STATEMENT = "wrapDoWhileStatement"; //NOI18N
+    public static final String WRAP_BINARY_OPS = "wrapBinaryOps"; //NOI18N
+    public static final String WRAP_TERNARY_OPS = "wrapTernaryOps"; //NOI18N
+    public static final String WRAP_ASSIGN_OPS = "wrapAssignOps"; //NOI18N
+    public static final String WRAP_BLOCK_BRACES = "wrapBlockBraces";  //NOI18N
+    public static final String WRAP_STATEMENTS_ON_THE_LINE = "wrapStateMentsOnTheLine"; // NOI18N
+    public static final String WRAP_AFTER_BIN_OPS = "wrapAfterBinOps"; // NOI18N
+    public static final String WRAP_AFTER_ASSIGN_OPS = "wrapAfterAssignOps"; // NOI18N
+    public static final String PREFER_FULLY_QUALIFIED_NAMES = "preferFullyQualifiedNames"; //NOI18N
+    public static final String PREFER_MULTIPLE_USE_STATEMENTS_COMBINED = "preferMultipleUseStatementsCombined"; //NOI18N
+    public static final String START_USE_WITH_NAMESPACE_SEPARATOR = "startUseWithNamespaceSeparator"; //NOI18N
+    public static final String ALIASES_CAPITALS_OF_NAMESPACES = "aliasesCapitalsOfNamespacesNames"; //NOI18N
     public static CodeStyleProducer codeStyleProducer;
 
     private FmtOptions() {
@@ -240,131 +248,131 @@ public class FmtOptions {
     }
 
     private static void createDefaults() {
-        String defaultValues[][] = {
-            {expandTabToSpaces, TRUE}, //NOI18N
-            {tabSize, "8"}, //NOI18N
-            {indentSize, "4"}, //NOI18N
-            {continuationIndentSize, "8"}, //NOI18N
-            {itemsInArrayDeclarationIndentSize, "4"}, // NOI18N
-            {reformatComments, FALSE}, //NOI18N
-            {indentHtml, TRUE}, //NOI18N
-            {rightMargin, "80"}, //NOI18N
-            {initialIndent, "0"}, //NOI18N
+        String[][] defaultValues = {
+            {EXPAND_TAB_TO_SPACES, TRUE}, //NOI18N
+            {TAB_SIZE, "8"}, //NOI18N
+            {INDENT_SIZE, "4"}, //NOI18N
+            {CONTINUATION_INDENT_SIZE, "8"}, //NOI18N
+            {ITEMS_IN_ARRAY_DECLARATION_INDENT_SIZE, "4"}, // NOI18N
+            {REFORMAT_COMMENTS, FALSE}, //NOI18N
+            {INDENT_HTML, TRUE}, //NOI18N
+            {RIGHT_MARGIN, "80"}, //NOI18N
+            {INITIAL_INDENT, "0"}, //NOI18N
 
-            {classDeclBracePlacement, OBRACE_SAMELINE},
-            {methodDeclBracePlacement, OBRACE_SAMELINE},
-            {ifBracePlacement, OBRACE_SAMELINE},
-            {forBracePlacement, OBRACE_SAMELINE},
-            {whileBracePlacement, OBRACE_SAMELINE},
-            {switchBracePlacement, OBRACE_SAMELINE},
-            {catchBracePlacement, OBRACE_SAMELINE},
-            {useTraitBodyBracePlacement, OBRACE_SAMELINE},
-            {otherBracePlacement, OBRACE_SAMELINE},
-            {blankLinesBeforeNamespace, "1"}, //NOI18N
-            {blankLinesAfterNamespace, "1"}, //NOI18N
-            {blankLinesBeforeUse, "1"}, //NOI18N
-            {blankLinesBeforeUseTrait, "1"}, //NOI18N
-            {blankLinesAfterUse, "1"}, //NOI18N
-            {blankLinesBeforeClass, "1"}, //NOI18N
-            {blankLinesAfterClass, "1"}, //NOI18N
-            {blankLinesAfterClassHeader, "0"}, //NOI18N
-            {blankLinesBeforeClassEnd, "0"}, //NOI18N
-            {blankLinesBeforeFields, "1"}, //NOI18N
-            {blankLinesGroupFieldsWithoutDoc, TRUE}, //NOI18N
-            {blankLinesBetweenFields, "1"}, //NOI18N
-            {blankLinesAfterFields, "1"}, //NOI18N
-            {blankLinesBeforeFunction, "1"}, //NOI18N
-            {blankLinesAfterFunction, "1"}, //NOI18N
-            {blankLinesBeforeFunctionEnd, "0"}, //NOI18N
-            {blankLinesAfterOpenPHPTag, "1"}, //NOI18N
-            {blankLinesAfterOpenPHPTagInHTML, "0"}, //NOI18N
-            {blankLinesBeforeClosePHPTag, "0"}, //NOI18N
+            {CLASS_DECL_BRACE_PLACEMENT, OBRACE_SAMELINE},
+            {METHOD_DECL_BRACE_PLACEMENT, OBRACE_SAMELINE},
+            {IF_BRACE_PLACEMENT, OBRACE_SAMELINE},
+            {FOR_BRACE_PLACEMENT, OBRACE_SAMELINE},
+            {WHILE_BRACE_PLACEMENT, OBRACE_SAMELINE},
+            {SWITCH_BRACE_PLACEMENT, OBRACE_SAMELINE},
+            {CATCH_BRACE_PLACEMENT, OBRACE_SAMELINE},
+            {USE_TRAIT_BODY_BRACE_PLACEMENT, OBRACE_SAMELINE},
+            {OTHER_BRACE_PLACEMENT, OBRACE_SAMELINE},
+            {BLANK_LINES_BEFORE_NAMESPACE, "1"}, //NOI18N
+            {BLANK_LINES_AFTER_NAMESPACE, "1"}, //NOI18N
+            {BLANK_LINES_BEFORE_USE, "1"}, //NOI18N
+            {BLANK_LINES_BEFORE_USE_TRAIT, "1"}, //NOI18N
+            {BLANK_LINES_AFTER_USE, "1"}, //NOI18N
+            {BLANK_LINES_BEFORE_CLASS, "1"}, //NOI18N
+            {BLANK_LINES_AFTER_CLASS, "1"}, //NOI18N
+            {BLANK_LINES_AFTER_CLASS_HEADER, "0"}, //NOI18N
+            {BLANK_LINES_BEFORE_CLASS_END, "0"}, //NOI18N
+            {BLANK_LINES_BEFORE_FIELDS, "1"}, //NOI18N
+            {BLANK_LINES_GROUP_FIELDS_WITHOUT_DOC, TRUE}, //NOI18N
+            {BLANK_LINES_BETWEEN_FIELDS, "1"}, //NOI18N
+            {BLANK_LINES_AFTER_FIELDS, "1"}, //NOI18N
+            {BLANK_LINES_BEFORE_FUNCTION, "1"}, //NOI18N
+            {BLANK_LINES_AFTER_FUNCTION, "1"}, //NOI18N
+            {BLANK_LINES_BEFORE_FUNCTION_END, "0"}, //NOI18N
+            {BLANK_LINES_AFTER_OPEN_PHP_TAG, "1"}, //NOI18N
+            {BLANK_LINES_AFTER_OPEN_PHP_TAG_IN_HTML, "0"}, //NOI18N
+            {BLANK_LINES_BEFORE_CLOSE_PHP_TAG, "0"}, //NOI18N
 
-            {spaceBeforeWhile, TRUE},
-            {spaceBeforeElse, TRUE},
-            {spaceBeforeCatch, TRUE},
-            {spaceBeforeMethodDeclParen, FALSE},
-            {spaceBeforeMethodCallParen, FALSE},
-            {spaceBeforeIfParen, TRUE},
-            {spaceBeforeForParen, TRUE},
-            {spaceBeforeWhileParen, TRUE},
-            {spaceBeforeCatchParen, TRUE},
-            {spaceBeforeSwitchParen, TRUE},
-            {spaceBeforeArrayDeclParen, FALSE},
-            {spaceAroundUnaryOps, FALSE},
-            {spaceAroundBinaryOps, TRUE},
-            {spaceAroundTernaryOps, TRUE},
-            {spaceAroundStringConcatOps, TRUE},
-            {spaceAroundKeyValueOps, TRUE},
-            {spaceAroundAssignOps, TRUE},
-            {spaceAroundObjectOps, FALSE},
-            {spaceBeforeClassDeclLeftBrace, TRUE},
-            {spaceBeforeMethodDeclLeftBrace, TRUE},
-            {spaceBeforeIfLeftBrace, TRUE},
-            {spaceBeforeElseLeftBrace, TRUE},
-            {spaceBeforeWhileLeftBrace, TRUE},
-            {spaceBeforeForLeftBrace, TRUE},
-            {spaceBeforeDoLeftBrace, TRUE},
-            {spaceBeforeSwitchLeftBrace, TRUE},
-            {spaceBeforeTryLeftBrace, TRUE},
-            {spaceBeforeCatchLeftBrace, TRUE},
-            {spaceBeforeUseTraitBodyLeftBrace, TRUE},
-            {spaceWithinArrayDeclParens, FALSE},
-            {spaceWithinMethodDeclParens, FALSE},
-            {spaceWithinMethodCallParens, FALSE},
-            {spaceWithinIfParens, FALSE},
-            {spaceWithinForParens, FALSE},
-            {spaceWithinWhileParens, FALSE},
-            {spaceWithinSwitchParens, FALSE},
-            {spaceWithinCatchParens, FALSE},
-            {spaceWithinTypeCastParens, FALSE},
-            {spaceWithinArrayBrackets, FALSE},
-            {spaceBeforeComma, FALSE},
-            {spaceAfterComma, TRUE},
-            {spaceBeforeSemi, FALSE},
-            {spaceAfterSemi, TRUE},
-            {spaceAfterTypeCast, TRUE},
-            {spaceCheckAfterKeywords, TRUE},
-            {spaceAfterShortPHPTag, TRUE},
-            {spaceBeforeClosePHPTag, TRUE},
-            {alignMultilineMethodParams, FALSE}, //NOI18N
-            {alignMultilineCallArgs, FALSE}, //NOI18N
-            {alignMultilineImplements, FALSE}, //NOI18N
-            {alignMultilineParenthesized, FALSE}, //NOI18N
-            {alignMultilineBinaryOp, FALSE}, //NOI18N
-            {alignMultilineTernaryOp, FALSE}, //NOI18N
-            {alignMultilineAssignment, FALSE}, //NOI18N
-            {alignMultilineFor, FALSE}, //NOI18N
-            {alignMultilineArrayInit, FALSE}, //NOI18N
-            {placeElseOnNewLine, FALSE}, //NOI18N
-            {placeWhileOnNewLine, FALSE}, //NOI18N
-            {placeCatchOnNewLine, FALSE}, //NOI18N
-            {placeNewLineAfterModifiers, FALSE}, //NOI18N
+            {SPACE_BEFORE_WHILE, TRUE},
+            {SPACE_BEFORE_ELSE, TRUE},
+            {SPACE_BEFORE_CATCH, TRUE},
+            {SPACE_BEFORE_METHOD_DECL_PAREN, FALSE},
+            {SPACE_BEFORE_METHOD_CALL_PAREN, FALSE},
+            {SPACE_BEFORE_IF_PAREN, TRUE},
+            {SPACE_BEFORE_FOR_PAREN, TRUE},
+            {SPACE_BEFORE_WHILE_PAREN, TRUE},
+            {SPACE_BEFORE_CATCH_PAREN, TRUE},
+            {SPACE_BEFORE_SWITCH_PAREN, TRUE},
+            {SPACE_BEFORE_ARRAY_DECL_PAREN, FALSE},
+            {SPACE_AROUND_UNARY_OPS, FALSE},
+            {SPACE_AROUND_BINARY_OPS, TRUE},
+            {SPACE_AROUND_TERNARY_OPS, TRUE},
+            {SPACE_AROUND_STRING_CONCAT_OPS, TRUE},
+            {SPACE_AROUND_KEY_VALUE_OPS, TRUE},
+            {SPACE_AROUND_ASSIGN_OPS, TRUE},
+            {SPACE_AROUND_OBJECT_OPS, FALSE},
+            {SPACE_BEFORE_CLASS_DECL_LEFT_BRACE, TRUE},
+            {SPACE_BEFORE_METHOD_DECL_LEFT_BRACE, TRUE},
+            {SPACE_BEFORE_IF_LEFT_BRACE, TRUE},
+            {SPACE_BEFORE_ELSE_LEFT_BRACE, TRUE},
+            {SPACE_BEFORE_WHILE_LEFT_BRACE, TRUE},
+            {SPACE_BEFORE_FOR_LEFT_BRACE, TRUE},
+            {SPACE_BEFORE_DO_LEFT_BRACE, TRUE},
+            {SPACE_BEFORE_SWITCH_LEFT_BRACE, TRUE},
+            {SPACE_BEFORE_TRY_LEFT_BRACE, TRUE},
+            {SPACE_BEFORE_CATCH_LEFT_BRACE, TRUE},
+            {SPACE_BEFORE_USE_TRAIT_BODY_LEFT_BRACE, TRUE},
+            {SPACE_WITHIN_ARRAY_DECL_PARENS, FALSE},
+            {SPACE_WITHIN_METHOD_DECL_PARENS, FALSE},
+            {SPACE_WITHIN_METHOD_CALL_PARENS, FALSE},
+            {SPACE_WITHIN_IF_PARENS, FALSE},
+            {SPACE_WITHIN_FOR_PARENS, FALSE},
+            {SPACE_WITHIN_WHILE_PARENS, FALSE},
+            {SPACE_WITHIN_SWITCH_PARENS, FALSE},
+            {SPACE_WITHIN_CATCH_PARENS, FALSE},
+            {SPACE_WITHIN_TYPE_CAST_PARENS, FALSE},
+            {SPACE_WITHIN_ARRAY_BRACKETS, FALSE},
+            {SPACE_BEFORE_COMMA, FALSE},
+            {SPACE_AFTER_COMMA, TRUE},
+            {SPACE_BEFORE_SEMI, FALSE},
+            {SPACE_AFTER_SEMI, TRUE},
+            {SPACE_AFTER_TYPE_CAST, TRUE},
+            {SPACE_CHECK_AFTER_KEYWORDS, TRUE},
+            {SPACE_AFTER_SHORT_PHP_TAG, TRUE},
+            {SPACE_BEFORE_CLOSE_PHP_TAG, TRUE},
+            {ALIGN_MULTILINE_METHOD_PARAMS, FALSE}, //NOI18N
+            {ALIGN_MULTILINE_CALL_ARGS, FALSE}, //NOI18N
+            {ALIGN_MULTILINE_IMPLEMENTS, FALSE}, //NOI18N
+            {ALIGN_MULTILINE_PARENTHESIZED, FALSE}, //NOI18N
+            {ALIGN_MULTILINE_BINARY_OP, FALSE}, //NOI18N
+            {ALIGN_MULTILINE_TERNARY_OP, FALSE}, //NOI18N
+            {ALIGN_MULTILINE_ASSIGNMENT, FALSE}, //NOI18N
+            {ALIGN_MULTILINE_FOR, FALSE}, //NOI18N
+            {ALIGN_MULTILINE_ARRAY_INIT, FALSE}, //NOI18N
+            {PLACE_ELSE_ON_NEW_LINE, FALSE}, //NOI18N
+            {PLACE_WHILE_ON_NEW_LINE, FALSE}, //NOI18N
+            {PLACE_CATCH_ON_NEW_LINE, FALSE}, //NOI18N
+            {PLACE_NEW_LINE_AFTER_MODIFIERS, FALSE}, //NOI18N
 
-            {groupAlignmentArrayInit, FALSE},
-            {groupAlignmentAssignment, FALSE},
-            {wrapExtendsImplementsKeyword, WRAP_NEVER}, //NOI18N
-            {wrapExtendsImplementsList, WRAP_NEVER}, //NOI18N
-            {wrapMethodParams, WRAP_NEVER}, //NOI18N
-            {wrapMethodCallArgs, WRAP_NEVER}, //NOI18N
-            {wrapChainedMethodCalls, WRAP_NEVER}, //NOI18N
-            {wrapArrayInit, WRAP_NEVER}, //NOI18N
-            {wrapFor, WRAP_NEVER}, //NOI18N
-            {wrapForStatement, WRAP_ALWAYS}, //NOI18N
-            {wrapIfStatement, WRAP_ALWAYS}, //NOI18N
-            {wrapWhileStatement, WRAP_ALWAYS}, //NOI18N
-            {wrapDoWhileStatement, WRAP_ALWAYS}, //NOI18N
-            {wrapBinaryOps, WRAP_NEVER}, //NOI18N
-            {wrapTernaryOps, WRAP_NEVER},
-            {wrapAssignOps, WRAP_NEVER},
-            {wrapBlockBraces, TRUE},
-            {wrapStatementsOnTheLine, TRUE},
-            {wrapAfterBinOps, FALSE},
-            {wrapAfterAssignOps, FALSE},
-            {preferFullyQualifiedNames, FALSE},
-            {preferMultipleUseStatementsCombined, FALSE},
-            {startUseWithNamespaceSeparator, FALSE},
-            {aliasesCapitalsOfNamespaces, FALSE}
+            {GROUP_ALIGNMENT_ARRAY_INIT, FALSE},
+            {GROUP_ALIGNMENT_ASSIGNMENT, FALSE},
+            {WRAP_EXTENDS_IMPLEMENTS_KEYWORD, WRAP_NEVER}, //NOI18N
+            {WRAP_EXTENDS_IMPLEMENTS_LIST, WRAP_NEVER}, //NOI18N
+            {WRAP_METHOD_PARAMS, WRAP_NEVER}, //NOI18N
+            {WRAP_METHOD_CALL_ARGS, WRAP_NEVER}, //NOI18N
+            {WRAP_CHAINED_METHOD_CALLS, WRAP_NEVER}, //NOI18N
+            {WRAP_ARRAY_INIT, WRAP_NEVER}, //NOI18N
+            {WRAP_FOR, WRAP_NEVER}, //NOI18N
+            {WRAP_FOR_STATEMENT, WRAP_ALWAYS}, //NOI18N
+            {WRAP_IF_STATEMENT, WRAP_ALWAYS}, //NOI18N
+            {WRAP_WHILE_STATEMENT, WRAP_ALWAYS}, //NOI18N
+            {WRAP_DO_WHILE_STATEMENT, WRAP_ALWAYS}, //NOI18N
+            {WRAP_BINARY_OPS, WRAP_NEVER}, //NOI18N
+            {WRAP_TERNARY_OPS, WRAP_NEVER},
+            {WRAP_ASSIGN_OPS, WRAP_NEVER},
+            {WRAP_BLOCK_BRACES, TRUE},
+            {WRAP_STATEMENTS_ON_THE_LINE, TRUE},
+            {WRAP_AFTER_BIN_OPS, FALSE},
+            {WRAP_AFTER_ASSIGN_OPS, FALSE},
+            {PREFER_FULLY_QUALIFIED_NAMES, FALSE},
+            {PREFER_MULTIPLE_USE_STATEMENTS_COMBINED, FALSE},
+            {START_USE_WITH_NAMESPACE_SEPARATOR, FALSE},
+            {ALIASES_CAPITALS_OF_NAMESPACES, FALSE}
         };
 
         defaults = new HashMap<String, String>();
@@ -389,13 +397,13 @@ public class FmtOptions {
         }
 
         public static final String OPTION_ID = "org.netbeans.modules.php.editor.indent.FormatingOptions.ID";
-        private static final ComboItem bracePlacement[] = new ComboItem[]{
+        private static final ComboItem[] BRACE_PLACEMENT = new ComboItem[]{
             new ComboItem(OBRACE_NEWLINE, "LBL_bp_NEWLINE"), // NOI18N
             new ComboItem(OBRACE_NEWLINE_INDENTED, "LBL_bp_NEWLINE_INDENTED"), // NOI18N
             new ComboItem(OBRACE_SAMELINE, "LBL_bp_SAMELINE"), // NOI18N
             new ComboItem(OBRACE_PRESERVE, "LBL_bp_PRESERVE"), // NOI18N
         };
-        private static final ComboItem wrap[] = new ComboItem[]{
+        private static final ComboItem[] WRAP = new ComboItem[]{
             new ComboItem(WrapStyle.WRAP_ALWAYS.name(), "LBL_wrp_WRAP_ALWAYS"), // NOI18N
             new ComboItem(WrapStyle.WRAP_IF_LONG.name(), "LBL_wrp_WRAP_IF_LONG"), // NOI18N
             new ComboItem(WrapStyle.WRAP_NEVER.name(), "LBL_wrp_WRAP_NEVER") // NOI18N
@@ -485,7 +493,7 @@ public class FmtOptions {
         public void refreshPreview() {
             JEditorPane pane = (JEditorPane) getPreviewComponent();
             try {
-                int rm = previewPrefs.getInt(rightMargin, getDefaultAsInt(rightMargin));
+                int rm = previewPrefs.getInt(RIGHT_MARGIN, getDefaultAsInt(RIGHT_MARGIN));
                 pane.putClientProperty("TextLimitLine", rm); //NOI18N
             } catch (NumberFormatException e) {
                 // Ignore it
@@ -582,6 +590,8 @@ public class FmtOptions {
                 case ADD_LISTENERS:
                     addListener(jc);
                     break;
+                default:
+                    assert false : operation;
             }
         }
 
@@ -662,8 +672,8 @@ public class FmtOptions {
                 // which is why we must not remove them. Proper solution would be to
                 // store formatting preferences to MimeLookup and not use NbPreferences.
                 // The problem currently is that MimeLookup based Preferences do not support subnodes.
-                if (!optionID.equals(tabSize)
-                        && !optionID.equals(spacesPerTab) && !optionID.equals(indentSize)
+                if (!optionID.equals(TAB_SIZE)
+                        && !optionID.equals(SPACES_PER_TAB) && !optionID.equals(INDENT_SIZE)
                         && getDefaultAsString(optionID).equals(text)) {
                     node.remove(optionID);
                 } else {
@@ -671,7 +681,7 @@ public class FmtOptions {
                 }
             } else if (jc instanceof JCheckBox) {
                 JCheckBox checkBox = (JCheckBox) jc;
-                if (!optionID.equals(expandTabToSpaces) && getDefaultAsBoolean(optionID) == checkBox.isSelected()) {
+                if (!optionID.equals(EXPAND_TAB_TO_SPACES) && getDefaultAsBoolean(optionID) == checkBox.isSelected()) {
                     node.remove(optionID);
                 } else {
                     node.putBoolean(optionID, checkBox.isSelected());
@@ -706,16 +716,16 @@ public class FmtOptions {
         private ComboBoxModel createModel(String value) {
 
             // is it braces placement?
-            for (ComboItem comboItem : bracePlacement) {
+            for (ComboItem comboItem : BRACE_PLACEMENT) {
                 if (value.equals(comboItem.value)) {
-                    return new DefaultComboBoxModel(bracePlacement);
+                    return new DefaultComboBoxModel(BRACE_PLACEMENT);
                 }
             }
 
             // is it wrap
-            for (ComboItem comboItem : wrap) {
+            for (ComboItem comboItem : WRAP) {
                 if (value.equals(comboItem.value)) {
-                    return new DefaultComboBoxModel(wrap);
+                    return new DefaultComboBoxModel(WRAP);
                 }
             }
 
@@ -780,7 +790,7 @@ public class FmtOptions {
 
         @Override
         protected String[] keysSpi() throws BackingStoreException {
-            String array[] = new String[map.keySet().size()];
+            String[] array = new String[map.keySet().size()];
             return map.keySet().toArray(array);
         }
 
@@ -871,9 +881,9 @@ public class FmtOptions {
         }
     } // End of ProxyPreferences class
 
-    public static interface CodeStyleProducer {
+    public interface CodeStyleProducer {
 
-        public CodeStyle create(Preferences preferences);
+        CodeStyle create(Preferences preferences);
     }
 
     public static boolean isInteger(String optionID) {

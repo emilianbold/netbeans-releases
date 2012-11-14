@@ -285,15 +285,14 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
             @Override
             public Set<Entity> run(EntityMappingsMetadata metadata) {
                 Set<Entity> result = new HashSet<Entity>();
-                for (Entity entity : metadata.getRoot().getEntity()) {
-                    result.add(entity);
-                }
+                result.addAll(Arrays.asList(metadata.getRoot().getEntity()));
                 return result;
             }
         });
 
         readHelper.addChangeListener(new ChangeListener() {
 
+            @Override
             public void stateChanged(ChangeEvent e) {
                 if (readHelper.getState() == State.FINISHED) {
                     try {
@@ -449,6 +448,7 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
                         }
                         entity.delete();
                         entity = null;
+                        //fall through is expected
                     case NEW: {
                         generatedEntityClasses.add(entityClassName);
 
@@ -527,9 +527,7 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
                     String newMessage = ((message == null)
                             ? NbBundle.getMessage(JavaPersistenceGenerator.class, "ERR_GeneratingClass_NoExceptionMessage", entityClassName)
                             : NbBundle.getMessage(JavaPersistenceGenerator.class, "ERR_GeneratingClass", entityClassName, message));
-                    IOException wrappedException = new IOException(newMessage);
-                    wrappedException.initCause(e);
-                    throw wrappedException;
+                    throw new IOException(newMessage, e);
                 }
 
             }
@@ -577,9 +575,7 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
                     String newMessage = ((message == null)
                             ? NbBundle.getMessage(JavaPersistenceGenerator.class, "ERR_GeneratingClass_NoExceptionMessage", entityClassName)
                             : NbBundle.getMessage(JavaPersistenceGenerator.class, "ERR_GeneratingClass", entityClassName, message));
-                    IOException wrappedException = new IOException(newMessage);
-                    wrappedException.initCause(e);
-                    throw wrappedException;
+                    throw new IOException(newMessage, e);
                 }
 
             }
@@ -668,7 +664,7 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
             }
 
             private String createFieldNameImpl(String fieldName, boolean capitalized) {
-                StringBuffer sb = new StringBuffer(fieldName);
+                StringBuilder sb = new StringBuilder(fieldName);
                 char firstChar = sb.charAt(0);
                 sb.setCharAt(0, capitalized ? Character.toUpperCase(firstChar) : Character.toLowerCase(firstChar));
                 return sb.toString();
@@ -948,7 +944,7 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
                                 "javax.xml.bind.annotation.XmlTransient"); //NOI18N
                         TypeElement jsonIgnore = copy.getElements().getTypeElement(
                             "org.codehaus.jackson.annotate.JsonIgnore");    // NOI18N
-                        List<AnnotationTree> annotationTrees = null;
+                        List<AnnotationTree> annotationTrees;
                         if ( jsonIgnore == null ){
                             annotationTrees = Collections.singletonList(xmlTransientAn);
                         }
@@ -1089,7 +1085,7 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
 
                     // UniqueConstraint annotations for the table
                     if (regenTablesAttrs && entityClass.getUniqueConstraints() != null
-                            && entityClass.getUniqueConstraints().size() != 0) {
+                            && !entityClass.getUniqueConstraints().isEmpty()) {
                         List<ExpressionTree> uniqueConstraintAnnotations = new ArrayList<ExpressionTree>();
                         for (List<String> constraintCols : entityClass.getUniqueConstraints()) {
 
@@ -1105,7 +1101,9 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
                         tableAnnArgs.add(genUtils.createAnnotationArgument("uniqueConstraints", uniqueConstraintAnnotations)); // NOI18N
                     }
 
-                    if(!useDefaults || !tableAnnArgs.isEmpty()) newClassTree = genUtils.addAnnotation(newClassTree, genUtils.createAnnotation("javax.persistence.Table", tableAnnArgs));
+                    if(!useDefaults || !tableAnnArgs.isEmpty()) {
+                        newClassTree = genUtils.addAnnotation(newClassTree, genUtils.createAnnotation("javax.persistence.Table", tableAnnArgs));
+                    }
 
                     if (generateJAXBAnnotations) {
                         newClassTree = genUtils.addAnnotation(newClassTree, genUtils.createAnnotation("javax.xml.bind.annotation.XmlRootElement"));
@@ -1270,16 +1268,18 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
             @Override
             protected void generateMember(EntityMember m) throws IOException {
                 //skip generating already exist members for UPDATE type
-                Tree existingTree = updateType.UPDATE.equals(updateType) ? existingColumns.get(m.getColumnName()) : null;//don't need to care if it's not update
+                Tree existingTree = UpdateType.UPDATE.equals(updateType) ? existingColumns.get(m.getColumnName()) : null;//don't need to care if it's not update
                 String memberName = m.getMemberName();
                 boolean isPKMember = m.isPrimaryKey();
                 Property property = null;
                 if (isPKMember) {
                     //do not support pk class/pk class member update yet
-                    if(existingTree!=null)return;
+                    if(existingTree!=null) {
+                        return;
+                    }
                     //
                     if (needsPKClass) {
-                        if (!updateType.UPDATE.equals(updateType)) {
+                        if (!UpdateType.UPDATE.equals(updateType)) {
                             pkClassVariables.add(createVariable(m));
                         } else {
                             //TODO: support update for pk
@@ -1418,7 +1418,9 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
                         String inType = fieldTypeStr.substring(collectionType.className().length());
                         for(CollectionType ct:CollectionType.values()){
                             aTree = (AssignmentTree) existingMappings.get(ct.className()+inType);
-                            if(aTree != null)break;
+                            if(aTree != null) {
+                                break;
+                            }
                         }                        
                     }
                     if (aTree != null) {
@@ -1676,12 +1678,15 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
                 properties.add(property);
             }
 
+            @Override
             protected void afterMembersGenerated() {
             }
 
+            @Override
             protected void generateRelationship(RelationshipRole relationship) {
             }
 
+            @Override
             protected void finish() {
                 // add a constructor which takes the fields of the primary key class as arguments
                 List<VariableTree> parameters = new ArrayList<VariableTree>(properties.size());

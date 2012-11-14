@@ -108,8 +108,8 @@ public abstract class PHPFormatterTestBase extends PHPCodeCompletionTestBase {
         setupDocumentIndentation(doc, preferences);
 
         Preferences prefs = CodeStylePreferences.get(doc).getPreferences();
-        prefs.putInt(FmtOptions.initialIndent, initialIndent);
-        prefs.putInt(FmtOptions.continuationIndentSize, 4);
+        prefs.putInt(FmtOptions.INITIAL_INDENT, initialIndent);
+        prefs.putInt(FmtOptions.CONTINUATION_INDENT_SIZE, 4);
 
         format(doc, formatter, formatStart, formatEnd, false);
 

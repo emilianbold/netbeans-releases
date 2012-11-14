@@ -67,7 +67,7 @@ public final class PhpModifiers extends Modifier {
         return this;
     }
 
-    public PhpModifiers setPrivate(){
+    public PhpModifiers setPrivate() {
         mod |= Modifier.PRIVATE;
         return this;
     }
@@ -127,7 +127,7 @@ public final class PhpModifiers extends Modifier {
         return Modifier.isPublic(mod);
     }
 
-    public boolean isPrivate(){
+    public boolean isPrivate() {
         return Modifier.isPrivate(mod);
     }
 
@@ -154,8 +154,7 @@ public final class PhpModifiers extends Modifier {
 
     @Override
     public boolean equals(Object obj) {
-        return (obj instanceof PhpModifiers) ?
-            ((PhpModifiers)obj).mod == mod : false;
+        return (obj instanceof PhpModifiers) ? ((PhpModifiers) obj).mod == mod : false;
     }
 
     @Override

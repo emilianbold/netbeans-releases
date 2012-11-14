@@ -45,6 +45,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
@@ -57,7 +58,7 @@ import org.netbeans.modules.parsing.spi.TaskFactory;
 import org.netbeans.modules.php.editor.lexer.PHPTokenId;
 
 /**
- * Provides model for html code
+ * Provides model for html code.
  *
  * @author Marek Fukala
  */
@@ -71,12 +72,11 @@ public class PhpEmbeddingProvider extends EmbeddingProvider {
         TokenSequence<PHPTokenId> sequence = th.tokenSequence(PHPTokenId.language());
 
         //issue #159775 logging >>>
-        if(sequence == null) {
-            Logger.getLogger("PhpEmbeddingProvider").warning(
-                    "TokenHierarchy.tokenSequence(PhpTokenId.language()) == null " +
-                    "for static immutable PHP TokenHierarchy!\nFile = '"+
-                    snapshot.getSource().getFileObject().getPath() +
-                    "' ;snapshot mimepath='" + snapshot.getMimePath() + "'");
+        if (sequence == null) {
+            Logger.getLogger("PhpEmbeddingProvider").log(
+                    Level.WARNING,
+                    "TokenHierarchy.tokenSequence(PhpTokenId.language()) == null " + "for static immutable PHP TokenHierarchy!\nFile = ''{0}'' ;snapshot mimepath=''{1}''",
+                    new Object[]{snapshot.getSource().getFileObject().getPath(), snapshot.getMimePath()});
 
             return Collections.emptyList();
         }
@@ -93,12 +93,12 @@ public class PhpEmbeddingProvider extends EmbeddingProvider {
         while (sequence.moveNext()) {
             Token t = sequence.token();
             if (t.id() == PHPTokenId.T_INLINE_HTML) {
-                if(from < 0) {
+                if (from < 0) {
                     from = sequence.offset();
                 }
                 len += t.length();
             } else {
-                if(from >= 0) {
+                if (from >= 0) {
                     //lets suppose the text is always html :-(
                     embeddings.add(snapshot.create(from, len, "text/html")); //NOI18N
                     //add only one virtual generated token for a sequence of PHP tokens
@@ -110,7 +110,7 @@ public class PhpEmbeddingProvider extends EmbeddingProvider {
             }
         }
 
-        if(from >= 0) {
+        if (from >= 0) {
             embeddings.add(snapshot.create(from, len, "text/html")); //NOI18N
         }
 

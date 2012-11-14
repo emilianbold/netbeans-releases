@@ -51,14 +51,14 @@ import org.netbeans.api.annotations.common.NonNull;
  *
  * @author Marek Fukala
  */
-public class Signature {
+public final class Signature {
         public static final char ITEM_DELIMITER = ';';
         public static final String ITEM_DELIMITER_ALTERNATIVE = "**NB_SEMI**"; //NOI18N
         private static final Logger LOGGER = Logger.getLogger(Signature.class.getName());
         //shared array for better performance,
         //access is supposed from one thread so perf
         //shouldn't degrade due to synchronization
-        private static int[] SHARED;
+        private static final int[] SHARED;
         static {
             SHARED = new int[50]; //hopefully noone will use more items in the signature
             SHARED[0] = 0;
@@ -84,7 +84,7 @@ public class Signature {
 
         public int integer(int index) {
             String item = string(index);
-            if(item != null && item.length() > 0) {
+            if (item != null && item.length() > 0) {
                 try {
                     return Integer.parseInt(item);
                 } catch (NumberFormatException ex) {
@@ -97,10 +97,10 @@ public class Signature {
         }
 
         private static int[] parseSignature(String signature) {
-            synchronized(SHARED) {
+            synchronized (SHARED) {
                 int count = 0;
                 for (int i = 0; i < signature.length(); i++) {
-                    if(signature.charAt(i) == ITEM_DELIMITER) {
+                    if (signature.charAt(i) == ITEM_DELIMITER) {
                         SHARED[++count] = i + 1;
                     }
                 }

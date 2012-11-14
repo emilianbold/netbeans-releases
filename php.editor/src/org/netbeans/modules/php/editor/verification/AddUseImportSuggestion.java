@@ -117,7 +117,7 @@ public class AddUseImportSuggestion extends AbstractSuggestion {
         if (phpParseResult.getProgram() == null) {
             return;
         }
-        if (CodeUtils.isPhp_52(phpParseResult.getSnapshot().getSource().getFileObject())) {
+        if (CodeUtils.isPhp52(phpParseResult.getSnapshot().getSource().getFileObject())) {
             return;
         }
 

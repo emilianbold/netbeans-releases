@@ -66,7 +66,7 @@ import org.openide.util.Parameters;
 /**
  * @author Radek Matous
  */
-public class ClassElementImpl extends TypeElementImpl implements ClassElement {
+public final class ClassElementImpl extends TypeElementImpl implements ClassElement {
     public static final String IDX_FIELD = PHPIndexer.FIELD_CLASS;
 
     private final QualifiedName superClass;
@@ -97,8 +97,7 @@ public class ClassElementImpl extends TypeElementImpl implements ClassElement {
     public static Set<ClassElement> fromSignature(final NameKind query,
             final IndexQueryImpl indexScopeQuery, final IndexResult indexResult) {
         String[] values = indexResult.getValues(IDX_FIELD);
-        Set<ClassElement> retval = values.length > 0 ?
-            new HashSet<ClassElement>() : Collections.<ClassElement> emptySet();
+        Set<ClassElement> retval = values.length > 0 ? new HashSet<ClassElement>() : Collections.<ClassElement>emptySet();
 
         for (String val : values) {
             final ClassElement clz = fromSignature(query, indexScopeQuery, indexResult, Signature.get(val));
@@ -127,8 +126,7 @@ public class ClassElementImpl extends TypeElementImpl implements ClassElement {
         Parameters.notNull("node", node);
         Parameters.notNull("fileQuery", fileQuery);
         ClassDeclarationInfo info = ClassDeclarationInfo.create(node);
-        final QualifiedName fullyQualifiedName = namespace != null ?
-            namespace.getFullyQualifiedName() : QualifiedName.createForDefaultNamespaceName();
+        final QualifiedName fullyQualifiedName = namespace != null ? namespace.getFullyQualifiedName() : QualifiedName.createForDefaultNamespaceName();
         return new ClassElementImpl(
                 fullyQualifiedName.append(info.getName()), info.getRange().getStart(),
                 info.getSuperClassName(), Collections.<QualifiedName>emptySet(), info.getInterfaceNames(),
@@ -149,17 +147,16 @@ public class ClassElementImpl extends TypeElementImpl implements ClassElement {
 
     private static boolean matchesQuery(final NameKind query, ClassSignatureParser signParser) {
         Parameters.notNull("query", query);
-        return (query instanceof NameKind.Empty) ||
-                query.matchesName(ClassElement.KIND, signParser.getQualifiedName());
+        return (query instanceof NameKind.Empty) || query.matchesName(ClassElement.KIND, signParser.getQualifiedName());
     }
 
     @Override
-    public final PhpElementKind getPhpElementKind() {
+    public PhpElementKind getPhpElementKind() {
         return KIND;
     }
 
     @Override
-    public final QualifiedName getSuperClassName() {
+    public QualifiedName getSuperClassName() {
         return superClass;
     }
 
@@ -171,9 +168,9 @@ public class ClassElementImpl extends TypeElementImpl implements ClassElement {
     @Override
     public String getSignature() {
         StringBuilder sb = new StringBuilder();
-        sb.append(getName().toLowerCase()).append(Separator.SEMICOLON);//NOI18N
-        sb.append(getName()).append(Separator.SEMICOLON);//NOI18N
-        sb.append(getOffset()).append(Separator.SEMICOLON);//NOI18N
+        sb.append(getName().toLowerCase()).append(Separator.SEMICOLON); //NOI18N
+        sb.append(getName()).append(Separator.SEMICOLON); //NOI18N
+        sb.append(getOffset()).append(Separator.SEMICOLON); //NOI18N
         QualifiedName superClassName = getSuperClassName();
         if (superClassName != null) {
             sb.append(superClassName.toString());
@@ -188,18 +185,18 @@ public class ClassElementImpl extends TypeElementImpl implements ClassElement {
                 sb.append(qualifiedName.toString());
             }
         }
-        sb.append(Separator.SEMICOLON);//NOI18N
+        sb.append(Separator.SEMICOLON); //NOI18N
         QualifiedName namespaceName = getNamespaceName();
-        sb.append(namespaceName.toString()).append(Separator.SEMICOLON);//NOI18N
+        sb.append(namespaceName.toString()).append(Separator.SEMICOLON); //NOI18N
         StringBuilder ifaceSb = new StringBuilder();
         for (QualifiedName ifaceName : getSuperInterfaces()) {
             if (ifaceSb.length() > 0) {
-                ifaceSb.append(Separator.COMMA);//NOI18N
+                ifaceSb.append(Separator.COMMA); //NOI18N
             }
-            ifaceSb.append(ifaceName.toString());//NOI18N
+            ifaceSb.append(ifaceName.toString()); //NOI18N
         }
         sb.append(ifaceSb);
-        sb.append(Separator.SEMICOLON);//NOI18N
+        sb.append(Separator.SEMICOLON); //NOI18N
         sb.append(getPhpModifiers().toFlags()).append(Separator.SEMICOLON);
         if (!usedTraits.isEmpty()) {
             StringBuilder traitSb = new StringBuilder();
@@ -228,6 +225,8 @@ public class ClassElementImpl extends TypeElementImpl implements ClassElement {
             case SuperTypes:
                 printAsSuperTypes(retval);
                 break;
+            default:
+                assert false : as;
         }
         return retval.toString();
     }
@@ -235,17 +234,17 @@ public class ClassElementImpl extends TypeElementImpl implements ClassElement {
     private void printAsSuperTypes(StringBuilder sb) {
         QualifiedName superClassName = getSuperClassName();
         if (superClassName != null) {
-            sb.append(" extends  ");//NOI18N
+            sb.append(" extends  "); //NOI18N
             sb.append(superClassName.getName());
         }
         Set<QualifiedName> superIfaces = getSuperInterfaces();
         if (!superIfaces.isEmpty()) {
-            sb.append(" implements ");//NOI18N
+            sb.append(" implements "); //NOI18N
         }
         StringBuilder ifacesBuffer = new StringBuilder();
         for (QualifiedName qualifiedName : superIfaces) {
             if (ifacesBuffer.length() > 0) {
-                ifacesBuffer.append(", ");//NOI18N
+                ifacesBuffer.append(", "); //NOI18N
             }
             ifacesBuffer.append(qualifiedName.getName());
         }
@@ -300,23 +299,27 @@ public class ClassElementImpl extends TypeElementImpl implements ClassElement {
         @CheckForNull
         QualifiedName getSuperClassName() {
             String name = signature.string(3);
-            int index = 0;
-            if (name != null && (index = name.indexOf('|')) > 0) {
-                name = name.substring(0, index);
+            if (name != null) {
+                int index = name.indexOf('|');
+                if (index > 0) {
+                    name = name.substring(0, index);
+                }
             }
             return name.trim().length() == 0 ? null : QualifiedName.create(name);
         }
 
-        Collection<QualifiedName> getPossibleFQSuperClassName(){
+        Collection<QualifiedName> getPossibleFQSuperClassName() {
             String field = signature.string(3);
             Collection<QualifiedName> retval = Collections.emptyList();
-            int index = 0;
-            if (field != null && (index = field.indexOf('|')) > 0) {
-                field = field.substring(index + 1);
-                retval = new ArrayList<QualifiedName>();
-                for (StringTokenizer st = new StringTokenizer(field, ","); st.hasMoreTokens();) {
-                    String token = st.nextToken();
-                    retval.add(QualifiedName.create(token));
+            if (field != null) {
+                int index = field.indexOf('|');
+                if (index > 0) {
+                    field = field.substring(index + 1);
+                    retval = new ArrayList<QualifiedName>();
+                    for (StringTokenizer st = new StringTokenizer(field, ","); st.hasMoreTokens();) {
+                        String token = st.nextToken();
+                        retval.add(QualifiedName.create(token));
+                    }
                 }
             }
             return retval;
@@ -325,13 +328,15 @@ public class ClassElementImpl extends TypeElementImpl implements ClassElement {
         public Set<QualifiedName> getSuperInterfaces() {
             Set<QualifiedName> ifaces = Collections.emptySet();
             String separatedIfaces = signature.string(5);
-            int index = 0;
-            if (separatedIfaces != null && separatedIfaces.length() > 0 && (index = separatedIfaces.indexOf('|')) > 0) { //NOI18N
-                String field = separatedIfaces.substring(0, index);
-                ifaces = new HashSet<QualifiedName>();
-                final String[] ifaceNames = field.split(Separator.COMMA.toString());
-                for (String ifName : ifaceNames) {
-                    ifaces.add(QualifiedName.create(ifName));
+            if (separatedIfaces != null && separatedIfaces.length() > 0) {
+                int index = separatedIfaces.indexOf('|');
+                if (index > 0) {
+                    String field = separatedIfaces.substring(0, index);
+                    ifaces = new HashSet<QualifiedName>();
+                    final String[] ifaceNames = field.split(Separator.COMMA.toString());
+                    for (String ifName : ifaceNames) {
+                        ifaces.add(QualifiedName.create(ifName));
+                    }
                 }
             }
             return ifaces;
@@ -340,13 +345,15 @@ public class ClassElementImpl extends TypeElementImpl implements ClassElement {
         public Collection<QualifiedName> getFQSuperInterfaces() {
             Collection<QualifiedName> retval = Collections.<QualifiedName>emptySet();
             String separatedIfaces = signature.string(5);
-            int index = 0;
-            if (separatedIfaces != null && (index = separatedIfaces.indexOf('|')) > 0) { //NOI18N
-                String field = separatedIfaces.substring(index + 1);
-                retval = new ArrayList<QualifiedName>();
-                for (StringTokenizer st = new StringTokenizer(field, ","); st.hasMoreTokens();) { //NOI18N
-                    String token = st.nextToken();
-                    retval.add(QualifiedName.create(token));
+            if (separatedIfaces != null) {
+                int index = separatedIfaces.indexOf('|');
+                if (index > 0) {
+                    String field = separatedIfaces.substring(index + 1);
+                    retval = new ArrayList<QualifiedName>();
+                    for (StringTokenizer st = new StringTokenizer(field, ","); st.hasMoreTokens();) { //NOI18N
+                        String token = st.nextToken();
+                        retval.add(QualifiedName.create(token));
+                    }
                 }
             }
             return retval;

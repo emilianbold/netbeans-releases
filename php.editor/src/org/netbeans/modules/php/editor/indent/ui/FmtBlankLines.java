@@ -59,25 +59,25 @@ public class FmtBlankLines extends javax.swing.JPanel {
     public FmtBlankLines() {
         initComponents();
 
-        bNamespaceField.putClientProperty(OPTION_ID, blankLinesBeforeNamespace);
-        aNamespaceField.putClientProperty(OPTION_ID, blankLinesAfterNamespace);
-        bUseField.putClientProperty(OPTION_ID, blankLinesBeforeUse);
-        aUseField.putClientProperty(OPTION_ID, blankLinesAfterUse);
-        bUseTraitField.putClientProperty(OPTION_ID, blankLinesBeforeUseTrait);
-        bClassField.putClientProperty(OPTION_ID, blankLinesBeforeClass);
-        aClassField.putClientProperty(OPTION_ID, blankLinesAfterClass);
-        aClassHeaderField.putClientProperty(OPTION_ID, blankLinesAfterClassHeader);
-        bFieldsField.putClientProperty(OPTION_ID, blankLinesBeforeFields);
-	betweenFields.putClientProperty(OPTION_ID, blankLinesBetweenFields);
-	cbGroupFields.putClientProperty(OPTION_ID, blankLinesGroupFieldsWithoutDoc);
-        aFieldsField.putClientProperty(OPTION_ID, blankLinesAfterFields);
-        bMethodsField.putClientProperty(OPTION_ID, blankLinesBeforeFunction );
-        aMethodsField.putClientProperty(OPTION_ID, blankLinesAfterFunction);
-        bFunctionEndField.putClientProperty(OPTION_ID, blankLinesBeforeFunctionEnd);
-        bClassEndField.putClientProperty(OPTION_ID, blankLinesBeforeClassEnd);
-	aOpenPHPTagField.putClientProperty(OPTION_ID, blankLinesAfterOpenPHPTag);
-	aOpenPHPTagHTMLField.putClientProperty(OPTION_ID, blankLinesAfterOpenPHPTagInHTML);
-	bClosePHPTagField.putClientProperty(OPTION_ID, blankLinesBeforeClosePHPTag);
+        bNamespaceField.putClientProperty(OPTION_ID, BLANK_LINES_BEFORE_NAMESPACE);
+        aNamespaceField.putClientProperty(OPTION_ID, BLANK_LINES_AFTER_NAMESPACE);
+        bUseField.putClientProperty(OPTION_ID, BLANK_LINES_BEFORE_USE);
+        aUseField.putClientProperty(OPTION_ID, BLANK_LINES_AFTER_USE);
+        bUseTraitField.putClientProperty(OPTION_ID, BLANK_LINES_BEFORE_USE_TRAIT);
+        bClassField.putClientProperty(OPTION_ID, BLANK_LINES_BEFORE_CLASS);
+        aClassField.putClientProperty(OPTION_ID, BLANK_LINES_AFTER_CLASS);
+        aClassHeaderField.putClientProperty(OPTION_ID, BLANK_LINES_AFTER_CLASS_HEADER);
+        bFieldsField.putClientProperty(OPTION_ID, BLANK_LINES_BEFORE_FIELDS);
+	betweenFields.putClientProperty(OPTION_ID, BLANK_LINES_BETWEEN_FIELDS);
+	cbGroupFields.putClientProperty(OPTION_ID, BLANK_LINES_GROUP_FIELDS_WITHOUT_DOC);
+        aFieldsField.putClientProperty(OPTION_ID, BLANK_LINES_AFTER_FIELDS);
+        bMethodsField.putClientProperty(OPTION_ID, BLANK_LINES_BEFORE_FUNCTION );
+        aMethodsField.putClientProperty(OPTION_ID, BLANK_LINES_AFTER_FUNCTION);
+        bFunctionEndField.putClientProperty(OPTION_ID, BLANK_LINES_BEFORE_FUNCTION_END);
+        bClassEndField.putClientProperty(OPTION_ID, BLANK_LINES_BEFORE_CLASS_END);
+	aOpenPHPTagField.putClientProperty(OPTION_ID, BLANK_LINES_AFTER_OPEN_PHP_TAG);
+	aOpenPHPTagHTMLField.putClientProperty(OPTION_ID, BLANK_LINES_AFTER_OPEN_PHP_TAG_IN_HTML);
+	bClosePHPTagField.putClientProperty(OPTION_ID, BLANK_LINES_BEFORE_CLOSE_PHP_TAG);
 
         bNamespaceField.addKeyListener(new NumericKeyListener());
         aNamespaceField.addKeyListener(new NumericKeyListener());

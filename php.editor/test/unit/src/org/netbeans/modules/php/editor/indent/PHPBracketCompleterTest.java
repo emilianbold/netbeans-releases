@@ -226,7 +226,7 @@ public class PHPBracketCompleterTest extends PHPCodeCompletionTestBase {
 
 
         Preferences prefs = CodeStylePreferences.get(doc).getPreferences();
-        prefs.putInt(FmtOptions.initialIndent, initialIndent);
+        prefs.putInt(FmtOptions.INITIAL_INDENT, initialIndent);
 
         runKitAction(ta, DefaultEditorKit.insertBreakAction, "\n");
 
@@ -858,7 +858,7 @@ public class PHPBracketCompleterTest extends PHPCodeCompletionTestBase {
                 "            || $b == 11\n" +
                 "            || $a == $b)\n" +
                 "    {^";
-        HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());        options.put(FmtOptions.classDeclBracePlacement, CodeStyle.BracePlacement.NEW_LINE_INDENTED);
+        HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());        options.put(FmtOptions.CLASS_DECL_BRACE_PLACEMENT, CodeStyle.BracePlacement.NEW_LINE_INDENTED);
         insertChar(testString, '{', result, null, false, options);
     }
 
@@ -935,7 +935,7 @@ public class PHPBracketCompleterTest extends PHPCodeCompletionTestBase {
         String result  = "class Name\n" +
                 "    {^";
         HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
-        options.put(FmtOptions.classDeclBracePlacement, CodeStyle.BracePlacement.NEW_LINE_INDENTED);
+        options.put(FmtOptions.CLASS_DECL_BRACE_PLACEMENT, CodeStyle.BracePlacement.NEW_LINE_INDENTED);
         insertChar(testString, '{', result, null, false, options);
     }
 

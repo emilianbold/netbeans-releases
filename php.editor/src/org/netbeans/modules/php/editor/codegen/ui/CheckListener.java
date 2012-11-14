@@ -70,8 +70,9 @@ public class CheckListener extends MouseAdapter implements KeyListener {
         toggle(list.getModel().getElementAt(index));
     }
 
+    @Override
     public void keyPressed(KeyEvent e) {
-        if (e.getKeyCode() != KeyEvent.VK_SPACE ) {
+        if (e.getKeyCode() != KeyEvent.VK_SPACE) {
             return;
         }
         if (!(e.getSource() instanceof JList)) {
@@ -86,9 +87,11 @@ public class CheckListener extends MouseAdapter implements KeyListener {
         e.consume();
     }
 
+    @Override
     public void keyTyped(KeyEvent e) {
     }
 
+    @Override
     public void keyReleased(KeyEvent e) {
     }
 
