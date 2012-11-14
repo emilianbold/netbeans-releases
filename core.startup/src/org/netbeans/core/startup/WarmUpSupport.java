@@ -47,7 +47,6 @@ package org.netbeans.core.startup;
 import java.util.Collection;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.JDialog;
 import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Task;
@@ -77,31 +76,8 @@ final class WarmUpSupport implements Runnable {
         return TASK;
     }
     
-    static void waitFinished() {
-        for (;;) {
-            try {
-                if (TASK.waitFinished(5000)) {
-                    return;
-                }
-            } catch (InterruptedException ex) {
-                err.log(Level.WARNING, null, ex);
-            }
-            createInnerEDTForAWhile();
-        }
-    }
-
-    private static void createInnerEDTForAWhile() {
-        final JDialog jd = new JDialog();
-        jd.setBounds(100000, 10000, 0, 0);
-        jd.setModal(true);
-        RequestProcessor.getDefault().post(new Runnable() {
-            @Override
-            public void run() {
-                jd.setVisible(false);
-            }
-        }, 1000);
-        jd.setVisible(true);
-        jd.dispose();
+    static Task waitTask() {
+        return TASK;
     }
 
     // -------

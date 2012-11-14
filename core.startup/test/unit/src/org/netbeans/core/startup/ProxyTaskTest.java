@@ -41,60 +41,50 @@
  */
 package org.netbeans.core.startup;
 
-import java.awt.EventQueue;
-import java.util.concurrent.CountDownLatch;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import junit.framework.Test;
-import org.netbeans.junit.NbModuleSuite;
-import org.netbeans.junit.NbTestCase;
-import org.netbeans.junit.NbTestSuite;
+import java.util.ArrayList;
+import java.util.List;
+import org.junit.Test;
+import static org.junit.Assert.*;
+import org.openide.util.Task;
 
 /**
  *
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
-public class WarmUpSupportTest extends NbTestCase {
-    private static final Logger LOG = Logger.getLogger(WarmUpSupportTest.class.getName());
-    public static final CountDownLatch in = new CountDownLatch(1);
+public class ProxyTaskTest {
     
-    public WarmUpSupportTest(String s) {
-        super(s);
+    public ProxyTaskTest() {
     }
 
-    @Override
-    protected int timeOut() {
-        return 30000;
+    @Test
+    public void testSomeMethod() throws Exception {
+        T t1 = new T();
+        T t2 = new T();
+        
+        List<Task> l = new ArrayList<Task>();
+        l.add(t1);
+        l.add(Task.EMPTY);
+        l.add(t2);
+        
+        Task p = new ProxyTask(l);
+        
+        assertFalse("Not finished yet", p.waitFinished(100));
+        
+        t2.done();
+        
+        assertFalse("Still not finished yet", p.waitFinished(100));
+        
+        t1.done();
+        p.waitFinished();
     }
     
-    public static Test suite() {
-        System.setProperty("warmup.delay", "6000");
-        System.setProperty("warmup.success", "not yet");
-        NbTestSuite s = new NbTestSuite();
-        s.addTest(NbModuleSuite.emptyConfiguration().addTest(WarmUpSupportTest.class, "testEmpty").
-            gui(true).suite()
-        );
-        s.addTest(new WarmUpSupportTest("testVerifyProperty"));
-        return s;
-    }
-
-    public void testEmpty() throws Exception {
-        in.await();
-    }
-    
-    public void testVerifyProperty() throws Exception {
-        LOG.info("testVerifyProperty");
-        for (int i = 0; i < 10 && !"in edt".equals(System.getProperty("warmup.success")); i++) {
-            LOG.log(Level.INFO, "Jump to EDT, round {0}", i);
-            EventQueue.invokeAndWait(new Runnable() {
-                @Override
-                public void run() {
-                }
-            });
-            LOG.info("Wait a second");
-            Thread.sleep(1000);
-            LOG.info("Wait is over");
+    class T extends Task {
+        public T() {
+            notifyRunning();
         }
-        assertEquals("The WarmUpSupportTask was executed", "in edt", System.getProperty("warmup.success"));
+        public void done() {
+            notifyFinished();
+        }
     }
+    
 }

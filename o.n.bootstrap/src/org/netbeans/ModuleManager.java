@@ -75,18 +75,25 @@ import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.TreeSet;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.jar.Manifest;
 import java.util.logging.Level;
 import org.openide.LifecycleManager;
 import org.openide.modules.Dependency;
 import org.openide.modules.ModuleInfo;
 import org.openide.modules.Modules;
+import org.openide.modules.OnStop;
 import org.openide.modules.Places;
 import org.openide.modules.SpecificationVersion;
 import org.openide.util.Enumerations;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
+import org.openide.util.Task;
 import org.openide.util.TopologicalSortException;
 import org.openide.util.Union2;
 import org.openide.util.Utilities;
@@ -1913,6 +1920,31 @@ public final class ModuleManager extends Modules {
      * @since org.netbeans.core/1 1.11
      */
     public boolean shutDown(Runnable midHook) {
+        try {
+            return shutDownAsync(midHook).get();
+        } catch (InterruptedException ex) {
+            Exceptions.printStackTrace(ex);
+        } catch (ExecutionException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        return false;
+    }
+    /** Partially asynchronous support for shutdown of the system. 
+    * First all modules are asked if they wish to close, in the proper order.
+     * Assuming they say yes, a hook is run, then they are informed of the close.
+     * If they did not agree to close, the hook is not run.
+     * All {@link OnStop} runnables are executed in asynchronously and
+     * one can wait for the result of such execution by observing the 
+     * returned {@link Future}.
+     * 
+     * @param midHook a hook to run before closing modules if they agree to close
+     * @return a future with final result. true if modules agreed the shutdown.
+     *   <code>false</code> when they didn't.
+     *   As soon as the <code>get()</code> method returns <code>true</code> 
+     *   the module system is properly shut down.
+     * @since 2.56
+     */
+    public Future<Boolean> shutDownAsync(Runnable midHook) {
         assertWritable();
         Set<Module> unorderedModules = getEnabledModules();
         Map<String, Set<Module>> providersMap = new HashMap<String, Set<Module>>();
@@ -1929,10 +1961,10 @@ public final class ModuleManager extends Modules {
                 Util.err.log(Level.WARNING, null, ex);
             }
             Util.err.warning("Cyclic module dependencies, will not shut down cleanly: " + deps); // NOI18N
-            return true;
+            return new TaskFuture(true, Task.EMPTY);
         }
         if (!TopSecurityManager.officialExit && !installer.closing(sortedModules)) {
-            return false;
+            return new TaskFuture(false, Task.EMPTY);
         }
         if (midHook != null) {
             try {
@@ -1944,8 +1976,8 @@ public final class ModuleManager extends Modules {
             }
         }
         netigso.shutdownFramework();
-        installer.close(sortedModules);
-        return true;
+        Task task = installer.closeAsync(sortedModules);
+        return new TaskFuture(true, task);
     }
     static {
         Runtime.getRuntime().addShutdownHook(new Thread("close modules") { // NOI18N
