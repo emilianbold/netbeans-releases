@@ -316,4 +316,12 @@ public class PHPLexerTest extends PHPLexerTestBase {
     public void testHereDoc_04() throws Exception {
         performTest("heredoc_04");
     }
+
+    public void testIssue222092_01() throws Exception {
+        performTest("issue222092_01");
+    }
+
+    public void testIssue222092_02() throws Exception {
+        performTest("issue222092_02");
+    }
 }
