@@ -950,7 +950,7 @@ final class OutputTab extends AbstractOutputTab implements IOContainer.CallBacks
                             "select-all", null);                        //NOI18N
                 case FIND:
                     return KeyStrokeUtils.getKeyStrokesForAction(
-                            "incremental-search-forward", null);        //NOI18N
+                            "find", null);                              //NOI18N
                 case FIND_NEXT:
                     return KeyStrokeUtils.getKeyStrokesForAction(
                             "find-next", null);                         //NOI18N

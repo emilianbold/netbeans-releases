@@ -1,5 +1,5 @@
 Name: Subversion Java-HL bindings
-Version: 1.7.2
+Version: 1.7.6
 Description: Java bindings library for subversion client
 License: Subversion
 OSR: 9185
