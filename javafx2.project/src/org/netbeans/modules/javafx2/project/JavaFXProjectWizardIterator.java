@@ -261,7 +261,7 @@ public class JavaFXProjectWizardIterator implements WizardDescriptor.ProgressIns
                         }
                     }
                     
-                    FileObject controller = sourcesRoot.getFileObject(pName + fxmlName + ".java"); // NOI18N
+                    FileObject controller = sourcesRoot.getFileObject(pName + fxmlName + NbBundle.getMessage(JFXProjectGenerator.class, "TXT_FileNameControllerPostfix") + ".java"); // NOI18N
                     if (controller != null) {
                         resultSet.add(controller);
                     }

@@ -262,12 +262,15 @@ public class LinkerConfiguration implements AllOptionsProvider, Cloneable {
         return clone;
     }
 
-    public String getOptions() {
-        String options = getCommandLineConfiguration().getValue() + " "; // NOI18N
-        options += getBasicOptions() + " "; // NOI18N
+    public String getOutputOptions(){
+        String options = ""; // NOI18N
+        CompilerSet cs = getMakeConfiguration().getCompilerSet().getCompilerSet();
+        if (cs != null) {
+            options += cs.getCompilerFlavor().getToolchainDescriptor().getLinker().getOutputFileFlag() + getOutputValue() + " "; // NOI18N
+        }
         return CppUtils.reformatWhitespaces(options);
     }
-
+    
     public String getBasicOptions() {
         String options = ""; // NOI18N
         CompilerSet cs = getMakeConfiguration().getCompilerSet().getCompilerSet();
@@ -284,9 +287,6 @@ public class LinkerConfiguration implements AllOptionsProvider, Cloneable {
                     options += libName + " "; // NOI18N
                 }
             }
-        }
-        if (cs != null) {
-            options += cs.getCompilerFlavor().getToolchainDescriptor().getLinker().getOutputFileFlag() + getOutputValue() + " "; // NOI18N
         }
         if (cs != null && getStripOption().getValue()) {
             options += cs.getCompilerFlavor().getToolchainDescriptor().getLinker().getStripFlag() + " "; // NOI18N
@@ -337,8 +337,10 @@ public class LinkerConfiguration implements AllOptionsProvider, Cloneable {
     // Interface OptionsProvider
     @Override
     public String getAllOptions(Tool tool) {
-        String options = getBasicOptions() + " "; // NOI18N
+        String options = getOutputOptions() + " "; // NOI18N
         options += getLibraryItems() + " "; // NOI18N
+        options += getCommandLineConfiguration().getValue() + " "; // NOI18N
+        options += getBasicOptions() + " "; // NOI18N
         return CppUtils.reformatWhitespaces(options);
     }
 

@@ -46,6 +46,8 @@ import java.io.File;
 import java.net.URL;
 import java.util.Arrays;
 import java.util.Collections;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import org.netbeans.api.java.queries.SourceForBinaryQuery;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
@@ -137,8 +139,23 @@ public class MavenForBinaryQueryImplTest extends NbTestCase {
         root = FileUtil.getArchiveRoot(Utilities.toURI(art).toURL());
         p = ProjectManager.getDefault().findProject(d.getFileObject("b"));
         FileOwnerQuery.markExternalOwner(Utilities.toURI(art), p, FileOwnerQuery.EXTERNAL_ALGORITHM_TRANSIENT);
+        final Object LOCK = new Object();
+        final Boolean[] fired = new Boolean[] {Boolean.FALSE};
+        r.addChangeListener(new ChangeListener() {
+            @Override
+            public void stateChanged(ChangeEvent e) {
+                synchronized (LOCK) {
+                    fired[0] = Boolean.TRUE;
+                    LOCK.notifyAll();
+                }
+            }
+        });
         MavenFileOwnerQueryImpl.getInstance().registerCoordinates("grp", "art", "0", d.getFileObject("b").toURL(), true);
-        Thread.sleep(2000); //i'm just lazy to fine tune the test for the current case where the Result object listens to changes in MFOQI and recomputes and fires async
+        synchronized (LOCK) {
+            if (!fired[0]) {
+                LOCK.wait(20000);
+            }
+        }
         r = SourceForBinaryQuery.findSourceRoots2(root);
         assertEquals(Collections.singletonList(src), Arrays.asList(r.getRoots()));
         assertFalse(r.preferSources());

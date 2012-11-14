@@ -123,6 +123,12 @@ class FilesystemHandler extends VCSInterceptor {
         if (!SvnUtils.isPartOfSubversionMetadata(file)) {
             try {
                 SvnClient client = Subversion.getInstance().getClient(false);
+                try {
+                    client.remove(new File [] { file }, true); // delete all files recursively
+                    return;
+                } catch (SVNClientException ex) {
+                    // not interested, will continue and ask isVersioned()
+                }
                 /**
                  * Copy a folder, it becames svn added/copied.
                  * Revert its parent and check 'Delete new files', the folder becomes unversioned.

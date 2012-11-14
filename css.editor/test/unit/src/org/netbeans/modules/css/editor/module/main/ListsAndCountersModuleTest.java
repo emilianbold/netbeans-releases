@@ -63,7 +63,7 @@ public class ListsAndCountersModuleTest extends CssModuleTestBase {
     }
     
     public void testListStyleCompletion() {
-        PropertyDefinition p = Properties.getPropertyDefinition(null, "list-style");
+        PropertyDefinition p = Properties.getPropertyDefinition( "list-style");
         assertAlternatives(p.getGrammarElement(null), "",
                 "repeating-linear-gradient","lower-latin","lower-greek",
                 "repeating-radial-gradient","disc","lower-alpha","lower-roman",
@@ -82,7 +82,7 @@ public class ListsAndCountersModuleTest extends CssModuleTestBase {
     }
     
     public void testListStyleTypeCompletion() {
-        PropertyDefinition p = Properties.getPropertyDefinition(null, "list-style-type");
+        PropertyDefinition p = Properties.getPropertyDefinition( "list-style-type");
         assertAlternatives(p.getGrammarElement(null), "",
                 "georgian","armenian","upper-alpha","upper-latin","!string","lower-latin",
                 "circle","lower-greek","decimal","upper-roman","disc","lower-alpha",

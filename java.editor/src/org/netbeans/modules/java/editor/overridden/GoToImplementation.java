@@ -41,6 +41,10 @@
  */
 package org.netbeans.modules.java.editor.overridden;
 
+import com.sun.source.tree.ClassTree;
+import com.sun.source.tree.MethodTree;
+import com.sun.source.tree.Tree.Kind;
+import com.sun.source.util.TreePath;
 import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.io.IOException;
@@ -60,6 +64,7 @@ import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.editor.EditorActionRegistration;
 import org.netbeans.api.java.source.CompilationController;
+import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
@@ -115,15 +120,13 @@ public final class GoToImplementation extends BaseAction {
                             return ;
                         parameter.toPhase(Phase.RESOLVED);
 
-                        Context context = GoToSupport.resolveContext(parameter, doc, caretPos, false);
-
-                        if (context == null || !SUPPORTED_ELEMENTS.contains(context.resolved.getKind())) {
+                        Element el = resolveTarget(parameter, doc, caretPos);
+                        
+                        if (el == null) {
                             StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(GoToImplementation.class, "LBL_NoMethod"));
                             return ;
                         }
-
-                        Element el = context.resolved;
-
+                        
                         TypeElement type = el.getKind() == ElementKind.METHOD ? (TypeElement) el.getEnclosingElement() : (TypeElement) el;
                         final ExecutableElement method = el.getKind() == ElementKind.METHOD ? (ExecutableElement) el : null;
 
@@ -155,6 +158,38 @@ public final class GoToImplementation extends BaseAction {
             }
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
+        }
+    }
+    
+    static Element resolveTarget(CompilationInfo info, Document doc, int caretPos) {
+        Context context = GoToSupport.resolveContext(info, doc, caretPos, false);
+
+        if (context == null) {
+            TreePath tp = info.getTreeUtilities().pathFor(caretPos);
+            
+            if (tp.getLeaf().getKind() == Kind.MODIFIERS) tp = tp.getParentPath();
+            
+            int[] elementNameSpan = null;
+            switch (tp.getLeaf().getKind()) {
+                case ANNOTATION_TYPE:
+                case CLASS:
+                case ENUM:
+                case INTERFACE:
+                    elementNameSpan = info.getTreeUtilities().findNameSpan((ClassTree) tp.getLeaf());
+                    break;
+                case METHOD:
+                    elementNameSpan = info.getTreeUtilities().findNameSpan((MethodTree) tp.getLeaf());
+                    break;
+            }
+            
+            if (elementNameSpan != null && caretPos <= elementNameSpan[1]) {
+                return info.getTrees().getElement(tp);
+            }
+            return null;
+        } else if (!SUPPORTED_ELEMENTS.contains(context.resolved.getKind())) {
+            return null;
+        } else {
+            return context.resolved;
         }
     }
 

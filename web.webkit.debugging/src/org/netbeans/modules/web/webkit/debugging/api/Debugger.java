@@ -326,6 +326,10 @@ public final class Debugger {
         params.put("columnNumber", columnNumber);
         Response resp = transport.sendBlockingCommand(new Command("Debugger.setBreakpointByUrl", params));
         if (resp != null) {
+            if (resp.getException() != null) {
+                // transport is broken
+                return null;
+            }
             JSONObject result = (JSONObject) resp.getResponse().get("result");
             if (result != null) {
                 Breakpoint b = APIFactory.createBreakpoint(result, webkit);
@@ -351,6 +355,10 @@ public final class Debugger {
         params.put("type", type);
         Response resp = transport.sendBlockingCommand(new Command("DOMDebugger.setDOMBreakpoint", params));
         if (resp != null) {
+            if (resp.getException() != null) {
+                // transport is broken
+                return null;
+            }
             JSONObject result = (JSONObject) resp.getResponse().get("result");
             if (result != null) {
                 Breakpoint b = APIFactory.createBreakpoint(result, webkit);
@@ -375,6 +383,10 @@ public final class Debugger {
         params.put("url", urlSubstring);
         Response resp = transport.sendBlockingCommand(new Command("DOMDebugger.setXHRBreakpoint", params));
         if (resp != null) {
+            if (resp.getException() != null) {
+                // transport is broken
+                return null;
+            }
             JSONObject result = (JSONObject) resp.getResponse().get("result");
             if (result != null) {
                 Breakpoint b = APIFactory.createBreakpoint(result, webkit);
@@ -402,6 +414,10 @@ public final class Debugger {
         params.put("eventName", event);
         Response resp = transport.sendBlockingCommand(new Command("DOMDebugger.setEventListenerBreakpoint", params));
         if (resp != null) {
+            if (resp.getException() != null) {
+                // transport is broken
+                return null;
+            }
             JSONObject result = (JSONObject) resp.getResponse().get("result");
             if (result != null) {
                 Breakpoint b = APIFactory.createBreakpoint(result, webkit);

@@ -172,12 +172,13 @@ final class UndoRedoManager extends UndoRedo.Manager {
      *   <li>redone when edit right after savepoint is undone.</li>
      * </ul>
      */
-    private UndoableEdit saveActionsEdit;
+    private CompoundEdit onSaveTasksEdit;
     
     /**
-     * Set to true when a next edit delivered to addEdit() will come from performed save actions.
+     * Set to true when undo manager would add all edits to be delivered to addEdit()
+     * to onSaveTasksEdit (compound edit) because they come from performed save actions.
      */
-    private boolean nextEditIsSaveActions;
+    private boolean awaitingOnSaveTasks;
     
     /**
      * Flag to check whether support.notifyUnmodified() should be called
@@ -212,13 +213,20 @@ final class UndoRedoManager extends UndoRedo.Manager {
     }
 
 
-    void markNextEditAsSaveActions() {
+    void startOnSaveTasks() {
         commitUndoGroup();
-        clearSaveActionsEdit();
-        nextEditIsSaveActions = true;
+        clearSaveActionsEdit(); // saveActionsEdit is now null
+        awaitingOnSaveTasks = true;
         if (LOG.isLoggable(Level.FINE)) {
-            LOG.fine("markNextEditAsSaveActions() called.\n"); // NOI18N
+            LOG.fine("startSaveActions() called.\n"); // NOI18N
         }
+    }
+    
+    void endOnSaveTasks() {
+        if (onSaveTasksEdit != null) {
+            onSaveTasksEdit.end();
+        }
+        checkLogOp("    endSaveActions(): saveActionsEdit", onSaveTasksEdit); // NOI18N
     }
     
     void markSavepoint() {
@@ -245,14 +253,14 @@ final class UndoRedoManager extends UndoRedo.Manager {
     }
 
     void mergeSaveActionsToLastEdit(WrapUndoEdit lastWrapEdit) {
-        if (saveActionsEdit != null) {
+        if (onSaveTasksEdit != null) {
             checkLogOp("    mergeSaveActionsToLastEdit-lastWrapEdit", lastWrapEdit); // NOI18N
             StableCompoundEdit compoundEdit = new StableCompoundEdit();
             compoundEdit.addEdit(lastWrapEdit.delegate());
-            compoundEdit.addEdit(saveActionsEdit);
+            compoundEdit.addEdit(onSaveTasksEdit);
             compoundEdit.end();
             lastWrapEdit.setDelegate(compoundEdit);
-            saveActionsEdit = null;
+            onSaveTasksEdit = null;
             checkLogOp("    compoundEdit", compoundEdit); // NOI18N
             // Note that there may be no edits present in UM.edits (e.g.
             // when discardAllEdits() was called). If the savepoint
@@ -263,14 +271,14 @@ final class UndoRedoManager extends UndoRedo.Manager {
     }
 
     void beforeUndoAtSavepoint(WrapUndoEdit edit) {
-        checkLogOp("beforeUndoAtSavepoint", edit); // NOI18N
+        checkLogOp("beforeUndoAtSavepoint: undoSaveActions()", edit); // NOI18N
         undoSaveActions();
     }
         
     private void undoSaveActions() {
-        if (saveActionsEdit != null) {
-            checkLogOp("    saveActionsEdit.undo()", saveActionsEdit); // NOI18N
-            saveActionsEdit.undo();
+        if (onSaveTasksEdit != null) {
+            checkLogOp("    saveActionsEdit.undo()", onSaveTasksEdit); // NOI18N
+            onSaveTasksEdit.undo();
         }
     }
 
@@ -280,9 +288,9 @@ final class UndoRedoManager extends UndoRedo.Manager {
     }
         
     private void redoSaveActions() {   
-        if (saveActionsEdit != null) {
-            checkLogOp("    saveActionsEdit.redo()", saveActionsEdit); // NOI18N
-            saveActionsEdit.redo();
+        if (onSaveTasksEdit != null) {
+            checkLogOp("    saveActionsEdit.redo()", onSaveTasksEdit); // NOI18N
+            onSaveTasksEdit.redo();
         }
     }
 
@@ -294,9 +302,9 @@ final class UndoRedoManager extends UndoRedo.Manager {
             savepointEdit = edit;
 
         } else if (savepointEdit == edit) { // Undone to savepoint
-            if (saveActionsEdit != null) {
-                checkLogOp("    saveActionsEdit.redo()", saveActionsEdit); // NOI18N
-                saveActionsEdit.redo();
+            if (onSaveTasksEdit != null) {
+                checkLogOp("    saveActionsEdit.redo()", onSaveTasksEdit); // NOI18N
+                onSaveTasksEdit.redo();
             }
             checkLogOp("afterUndoCheck-becomesSavepoint-markUnmodified", edit); // NOI18N
             assert (!beforeSavepoint) : "Expected to be behind savepoint"; // NOI18N
@@ -322,9 +330,9 @@ final class UndoRedoManager extends UndoRedo.Manager {
             savepointEdit = edit;
 
         } else if (savepointEdit == edit) { // Redone to savepoint
-            if (saveActionsEdit != null) {
-                checkLogOp("    saveActionsEdit.redo()", saveActionsEdit); // NOI18N
-                saveActionsEdit.redo();
+            if (onSaveTasksEdit != null) {
+                checkLogOp("    saveActionsEdit.redo()", onSaveTasksEdit); // NOI18N
+                onSaveTasksEdit.redo();
             }
             checkLogOp("afterRedoCheck-becomesSavepoint", edit); // NOI18N
             assert (beforeSavepoint) : "Expected to be before savepoint"; // NOI18N
@@ -367,7 +375,7 @@ final class UndoRedoManager extends UndoRedo.Manager {
             commitUndoGroup();
         }
 
-        if (buildUndoGroup > 0) {
+        if (!awaitingOnSaveTasks && buildUndoGroup > 0) {
             if (undoGroup == null) {
                 undoGroup = new CompoundEdit();
             }
@@ -380,10 +388,13 @@ final class UndoRedoManager extends UndoRedo.Manager {
     private boolean addEditImpl(UndoableEdit edit) {
         // This should already be called under document's lock so DocLockedRun not necessary
         assert (edit != null) : "Cannot add null edit"; // NOI18N
-        if (nextEditIsSaveActions) {
-            nextEditIsSaveActions = false;
-            checkLogOp("addEdit: captured saveActionsEdit", edit); // NOI18N
-            saveActionsEdit = edit;
+        if (awaitingOnSaveTasks) {
+            awaitingOnSaveTasks = false;
+            checkLogOp("addEdit-inSaveActions", edit); // NOI18N
+            if (onSaveTasksEdit == null) {
+                onSaveTasksEdit = new CompoundEdit();
+            }
+            assert onSaveTasksEdit.addEdit(edit) : "Cannot add to saveActionsEdit"; // NOI18N
             return true;
         }
         WrapUndoEdit wrapEdit = new WrapUndoEdit(this, edit); // Wrap the edit
@@ -448,10 +459,10 @@ final class UndoRedoManager extends UndoRedo.Manager {
     }
     
     private void clearSaveActionsEdit() {
-        if (saveActionsEdit != null) {
-            checkLogOp("    saveActionsEdit-die", saveActionsEdit); // NOI18N
-            saveActionsEdit.die();
-            saveActionsEdit = null;
+        if (onSaveTasksEdit != null) {
+            checkLogOp("    saveActionsEdit-die", onSaveTasksEdit); // NOI18N
+            onSaveTasksEdit.die();
+            onSaveTasksEdit = null;
         }
     }
 
@@ -580,7 +591,12 @@ final class UndoRedoManager extends UndoRedo.Manager {
     
     void checkLogOp(String op, UndoableEdit edit) {
         if (LOG.isLoggable(Level.FINE)) {
-            LOG.fine(thisToString() + "->" + op + ": " + editToString(edit) + '\n'); // NOI18N
+            String msg = thisToString() + "->" + op + ": " + editToString(edit) + '\n'; // NOI18N
+            if (LOG.isLoggable(Level.FINEST)) {
+                LOG.log(Level.FINEST, msg.substring(0, msg.length() - 1), new Exception());
+            } else {
+                LOG.fine(msg);
+            }
         }
     }
     

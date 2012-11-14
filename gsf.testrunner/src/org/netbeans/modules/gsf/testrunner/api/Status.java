@@ -81,6 +81,13 @@ public enum Status {
         return FAILED.equals(status) || ERROR.equals(status);
     }
 
+    /**
+     * @return true if the given status represents a skipped test.
+     */
+    static boolean isSkipped(Status status) {
+        return SKIPPED.equals(status);
+    }
+
     boolean isMaskApplied(int mask){
         return (mask & getBitMask()) != 0;
     }

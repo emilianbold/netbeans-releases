@@ -127,7 +127,7 @@ public class InstallSupportImpl {
         support = installSupport;
     }
     
-    public boolean doDownload (final ProgressHandle progress/*or null*/, Boolean isGlobal, boolean useUserdirAsFallback) throws OperationException {
+    public boolean doDownload (final ProgressHandle progress/*or null*/, final Boolean isGlobal, final boolean useUserdirAsFallback) throws OperationException {
         this.isGlobal = isGlobal;
         this.useUserdirAsFallback = useUserdirAsFallback;
         Callable<Boolean> downloadCallable = new Callable<Boolean>() {
@@ -165,9 +165,12 @@ public class InstallSupportImpl {
                 }
                 infos = newInfos;
                 
+                // check write permissions before started download and then sum download size
                 int size = 0;
                 for (OperationInfo info : infos) {
-                    size += info.getUpdateElement().getDownloadSize();
+                    UpdateElement ue = info.getUpdateElement();
+                    InstallManager.findTargetDirectory(ue.getUpdateUnit().getInstalled(), Trampoline.API.impl(ue), isGlobal, useUserdirAsFallback);
+                    size += ue.getDownloadSize();
                 }
                 
                 // start progress

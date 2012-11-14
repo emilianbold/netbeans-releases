@@ -41,8 +41,10 @@
             </module-dependencies>
             <friend-packages>
                 <friend>org.cakephp.netbeans</friend>
+                <friend>org.nbphpcouncil.modules.php.yii</friend>
                 <friend>org.netbeans.modules.php.api.framework</friend>
                 <friend>org.netbeans.modules.php.editor</friend>
+                <friend>org.netbeans.modules.php.fuel</friend>
                 <friend>org.netbeans.modules.php.project</friend>
                 <friend>org.netbeans.modules.php.symfony</friend>
                 <friend>org.netbeans.modules.php.zend</friend>

@@ -173,28 +173,4 @@ public class NetigsoLayerTest extends SetupHid {
             mgr.mutexPrivileged().exitWriteAccess();
         }
     }
-    
-    private File changeManifest(File orig, String manifest) throws IOException {
-        File f = new File(getWorkDir(), orig.getName());
-        Manifest mf = new Manifest(new ByteArrayInputStream(manifest.getBytes("utf-8")));
-        mf.getMainAttributes().putValue("Manifest-Version", "1.0");
-        JarOutputStream os = new JarOutputStream(new FileOutputStream(f), mf);
-        JarFile jf = new JarFile(orig);
-        Enumeration<JarEntry> en = jf.entries();
-        InputStream is;
-        while (en.hasMoreElements()) {
-            JarEntry e = en.nextElement();
-            if (e.getName().equals("META-INF/MANIFEST.MF")) {
-                continue;
-            }
-            os.putNextEntry(e);
-            is = jf.getInputStream(e);
-            FileUtil.copy(is, os);
-            is.close();
-            os.closeEntry();
-        }
-        os.close();
-
-        return f;
-    }
 }

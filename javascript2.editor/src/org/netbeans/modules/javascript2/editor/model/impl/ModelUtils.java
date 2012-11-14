@@ -47,7 +47,6 @@ import com.oracle.nashorn.parser.TokenType;
 import java.util.*;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenSequence;
-import org.netbeans.editor.ActionFactory;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.javascript2.editor.embedding.JsEmbeddingProvider;
 import org.netbeans.modules.javascript2.editor.index.IndexedElement;
@@ -56,7 +55,6 @@ import org.netbeans.modules.javascript2.editor.jquery.JQueryModel;
 import org.netbeans.modules.javascript2.editor.lexer.JsTokenId;
 import org.netbeans.modules.javascript2.editor.lexer.LexUtilities;
 import org.netbeans.modules.javascript2.editor.model.*;
-import org.netbeans.modules.javascript2.editor.model.JsElement.Kind;
 import org.netbeans.modules.javascript2.editor.parser.JsParserResult;
 import org.netbeans.modules.parsing.spi.indexing.support.IndexResult;
 
@@ -145,11 +143,19 @@ public class ModelUtils {
     
     public static JsObject findJsObjectByName(JsObject global, String fqName) {
         JsObject result = global;
+        JsObject property = result;
         for (StringTokenizer stringTokenizer = new StringTokenizer(fqName, "."); stringTokenizer.hasMoreTokens() && result != null;) {
             String token = stringTokenizer.nextToken();
-            result = result.getProperty(token);
-            if (result == null) {
-                break;
+            property = result.getProperty(token);
+            if (property == null) {
+                result = (result instanceof JsFunction)
+                        ? ((JsFunction)result).getParameter(token)
+                        : null;
+                if (result == null) {
+                    break;
+                }
+            } else {
+                result = property;
             }
         }
         return result;
@@ -372,7 +378,7 @@ public class ModelUtils {
             String name = type.getType().substring(5);
             JsFunction declarationScope = (JsFunction)getDeclarationScope(object);
 
-            //if(parent != null && parent.getJSKind().isFunction()) {
+            if (declarationScope != null) {
                 Collection<? extends JsObject> parameters = declarationScope.getParameters();
                 boolean isParameter = false;
                 for (JsObject parameter : parameters) {
@@ -386,9 +392,7 @@ public class ModelUtils {
                 if (!isParameter) {
                     result.add(new TypeUsageImpl(name, type.getOffset(), false));
                 }
-//            } else {
-//                result.add(new TypeUsageImpl(name, type.getOffset(), false));
-//            }
+            }
         } else if(type.getType().startsWith("@param;")) {   //NOI18N
             String functionName = type.getType().substring(7);
             int index = functionName.indexOf(":");

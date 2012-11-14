@@ -112,15 +112,20 @@ NetBeans_PresetMenu._putPresets = function() {
     var menu = document.getElementById('menuPresets');
     // clean
     menu.innerHTML = '';
-    for (p in this._presets) {
+    for (var p in this._presets) {
         var preset = this._presets[p];
-        var activePreset = NetBeans_ViewPort.width === preset.width && NetBeans_ViewPort.height === preset.height;
+        var activePreset = NetBeans_ViewPort.width == preset.width && NetBeans_ViewPort.height == preset.height;
         // item
         var item = document.createElement('a');
         item.setAttribute('href', '#');
         item.setAttribute('tabindex', '-1');
         item.setAttribute('title', I18n.message('_PresetTitle', [preset.displayName, preset.width, preset.height]));
-        item.setAttribute('onclick', 'NetBeans_PresetMenu.resizePage(' + p + ');');
+        // wrap function to another function so current index is copied (otherwise, the last index will be always used)
+        item.addEventListener('click', function(presetIndex) {
+            return function() {
+                NetBeans_PresetMenu.resizePage(presetIndex);
+            };
+        } (p), false);
         if (activePreset) {
             item.setAttribute('class', 'active');
         }

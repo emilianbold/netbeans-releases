@@ -62,6 +62,7 @@ import java.util.regex.Pattern;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.api.remote.PathMap;
 import org.netbeans.modules.cnd.api.remote.RemoteSyncSupport;
+import org.netbeans.modules.cnd.api.toolchain.PredefinedToolKind;
 import org.netbeans.modules.cnd.discovery.api.DiscoveryUtils;
 import org.netbeans.modules.cnd.discovery.api.ItemProperties;
 import org.netbeans.modules.cnd.discovery.api.Progress;
@@ -79,6 +80,9 @@ import org.netbeans.modules.cnd.utils.MIMESupport;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
+import org.netbeans.modules.nativeexecution.api.HostInfo;
+import org.netbeans.modules.nativeexecution.api.util.ConnectionManager.CancellationException;
+import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.util.Utilities;
@@ -100,6 +104,10 @@ public class LogReader {
     private final RelocatablePathMapper localMapper;
     private final FileSystem fileSystem;
     private final Map<String,String> alreadyConverted = new HashMap<String,String>();
+    private final Set<String> C_NAMES;
+    private final Set<String> CPP_NAMES;
+    private final Set<String> FORTRAN_NAMES;
+    private boolean isWindows = false;
 
     public LogReader(String fileName, String root, ProjectProxy project, RelocatablePathMapper relocatablePathMapper, FileSystem fileSystem) {
         if (root.length()>0) {
@@ -113,9 +121,9 @@ public class LogReader {
         this.compilerSettings = new CompilerSettings(project);
         this.localMapper = relocatablePathMapper;
         this.fileSystem = fileSystem;
-
-        // XXX
-        setWorkingDir(root);
+        C_NAMES = DiscoveryUtils.getCompilerNames(project, PredefinedToolKind.CCompiler);
+        CPP_NAMES = DiscoveryUtils.getCompilerNames(project, PredefinedToolKind.CCCompiler);
+        FORTRAN_NAMES = DiscoveryUtils.getCompilerNames(project, PredefinedToolKind.FortranCompiler);
     }
 
     private String convertPath(String path){
@@ -198,10 +206,12 @@ public class LogReader {
     }
 
     private PathMap getPathMapper(ProjectProxy project) {
-        Project p = project.getProject();
-        if (p != null) {
-            // it won't now return null for local environment
-            return RemoteSyncSupport.getPathMap(p);
+        if (project != null) {
+            Project p = project.getProject();
+            if (p != null) {
+                // it won't now return null for local environment
+                return RemoteSyncSupport.getPathMap(p);
+            }
         }
         return null;
     }
@@ -240,7 +250,16 @@ public class LogReader {
         if (file.exists() && file.canRead()){
             try {
                 MakeConfiguration conf = getConfiguration(this.project);
-                PkgConfig pkgConfig = PkgConfigManager.getDefault().getPkgConfig(getExecutionEnvironment(conf));
+                ExecutionEnvironment executionEnvironment = getExecutionEnvironment(conf);
+                try {
+                    HostInfo hostInfo = HostInfoUtils.getHostInfo(executionEnvironment);
+                    if (hostInfo.getOSFamily() == HostInfo.OSFamily.WINDOWS) {
+                        isWindows = true;
+                    }
+                } catch (CancellationException ex) {
+                    ex.printStackTrace(System.err);
+                }
+                PkgConfig pkgConfig = PkgConfigManager.getDefault().getPkgConfig(executionEnvironment);
                 BufferedReader in = new BufferedReader(new FileReader(file));
                 long length = file.length();
                 long read = 0;
@@ -274,7 +293,7 @@ public class LogReader {
 
                         String[] cmds = pattern.split(line);
                         for (int i = 0; i < cmds.length; i++) {
-                            if (parseLine(cmds[i], storage)){
+                            if (parseLine(cmds[i].trim(), storage)){
                                 nFoundFiles++;
                             }
                         }
@@ -303,6 +322,8 @@ public class LogReader {
 
     public List<SourceFileProperties> getResults(Progress progress, AtomicBoolean isStoped, CompileLineStorage storage) {
         if (result == null) {
+            // XXX
+            setWorkingDir(root);
             run(progress, isStoped, storage);
             if (subFolders != null) {
                 subFolders.clear();
@@ -618,202 +639,79 @@ public class LogReader {
     }
 
     private static final String LABEL_CD        = "cd "; //NOI18N
-    private static final String INVOKE_GNU_C    = "gcc "; //NOI18N
-    private static final String INVOKE_GNU_C2   = "gcc.exe "; //NOI18N
-    private static final String INVOKE_CLANG_C  = "clang "; //NOI18N
-    private static final String INVOKE_CLANG_C2 = "clang.exe "; //NOI18N
-    private static final String INVOKE_INTEL_C  = "icc "; //NOI18N
-    private static final String INVOKE_SUN_C    = "cc "; //NOI18N
-    //private static final String INVOKE_GNU_XC = "xgcc "; //NOI18N
-    private static final String INVOKE_GNU_Cpp  = "g++ "; //NOI18N
-    private static final String INVOKE_GNU_Cpp2 = "g++.exe "; //NOI18N
-    private static final String INVOKE_GNU_Cpp3 = "c++ "; //NOI18N
-    private static final String INVOKE_GNU_Cpp4 = "c++.exe "; //NOI18N
-    private static final String INVOKE_CLANG_Cpp  = "clang++ "; //NOI18N
-    private static final String INVOKE_CLANG_Cpp2 = "clang++.exe "; //NOI18N
-    private static final String INVOKE_INTEL_Cpp  = "icpc "; //NOI18N
-    private static final String INVOKE_SUN_Cpp  = "CC "; //NOI18N
-    private static final String INVOKE_MSVC_Cpp = "cl "; //NOI18N
-    private static final String INVOKE_MSVC_Cpp2= "cl.exe "; //NOI18N
-
-// Gnu: gfortran,g95,g90,g77
-    private static final String INVOKE_GNU_Fortran1 = "gfortran "; //NOI18N
-    private static final String INVOKE_GNU_Fortran2 = "gfortran.exe "; //NOI18N
-    private static final String INVOKE_GNU_Fortran3 = "g95.exe "; //NOI18N
-    private static final String INVOKE_GNU_Fortran4 = "g90.exe "; //NOI18N
-    private static final String INVOKE_GNU_Fortran5 = "g77.exe "; //NOI18N
-    private static final String INVOKE_INTEL_Fortran= "ifort "; //NOI18N
-// common for gnu and sun ? prefer gnu family 
-    private static final String INVOKE_GNU_Fortran6 = "g95 "; //NOI18N
-    private static final String INVOKE_GNU_Fortran7 = "g90 "; //NOI18N
-    private static final String INVOKE_GNU_Fortran8 = "g77 "; //NOI18N
-// Sun: ffortran,f95,f90,f77
-    private static final String INVOKE_SUN_Fortran  = "ffortran "; //NOI18N
-    private static final String INVOKE_SUN_Fortran1 = "f95 "; //NOI18N
-    private static final String INVOKE_SUN_Fortran2 = "f90 "; //NOI18N
-    private static final String INVOKE_SUN_Fortran3 = "f77 "; //NOI18N
     private static final String MAKE_DELIMITER  = ";"; //NOI18N
 
-    private static int[] foundCompiler(String line, String ... patterns){
+    private String findCompiler(String line, Set<String> patterns, boolean checkExe){
         for(String pattern : patterns)    {
-            int start = line.indexOf(pattern);
-            if (start >=0) {
-                char prev = ' ';
-                if (start > 0) {
-                    prev = line.charAt(start-1);
-                }
-                if (prev == ' ' || prev == '\t' || prev == '/' || prev == '\\' || prev == '-') {
-                    // '-' to support any king of arm-elf-gcc
-                    int end = start + pattern.length();
-                    return new int[]{start,end};
+            int[] find = find(line, pattern);
+            if (find != null) {
+                return pattern;
+            }
+            if (checkExe) {
+                find = find(line, pattern+".exe"); //NOI18N
+                if (find != null) {
+                    return pattern;
                 }
             }
         }
         return null;
     }
+    
+    private int[] find(String line, String pattern) {
+        int fromIndex = 0;
+        while(true) {
+            int start = line.indexOf(pattern, fromIndex);
+            if (start < 0) {
+                return null;
+            }
+            fromIndex = start + 1;
+            char prev = ' ';
+            if (start > 0) {
+                prev = line.charAt(start-1);
+            }
+            if (prev == ' ' || prev == '\t' || prev == '/' || prev == '\\') {
+                if (start + pattern.length() >= line.length()) {
+                    continue;
+                }
+                char next = line.charAt(start+pattern.length());
+                if (next == ' ' || next == '\t') {
+                    if (prev == '/' || prev == '\\') {
+                        char first = prev;
+                        for(int i = start - 2; i >= 0; i--) {
+                            char c = line.charAt(i);
+                            if (c == ' ' || c == '\t') {
+                                break;
+                            }
+                            first = c;
+                        }
+                        if (first == '-') {
+                            continue;
+                        }
+                    }
+                    int end = start + pattern.length();
+                    return new int[]{start,end};
+                }
+            }
+        }
+    }
 
-    /*package-local*/ static LineInfo testCompilerInvocation(String line) {
+    /*package-local*/ LineInfo testCompilerInvocation(String line) {
         LineInfo li = new LineInfo(line);
-        int start = 0, end = -1;
-        if (li.compilerType == CompilerType.UNKNOWN) {
-            //TODO: can fail on gcc calls with -shared-libgcc
-            int[] res = foundCompiler(line, INVOKE_GNU_C, INVOKE_GNU_C2 /*, INVOKE_GNU_XC*/);
-            if (res != null) {
-                start = res[0];
-                end = res[1];
-                li.compilerType = CompilerType.C;
-                li.compiler = "gcc"; // NOI18N
-            }
-        }
-        if (li.compilerType == CompilerType.UNKNOWN) {
-            //TODO: can fail on gcc calls with -shared-libgcc
-            int[] res = foundCompiler(line, INVOKE_CLANG_C, INVOKE_CLANG_C2);
-            if (res != null) {
-                start = res[0];
-                end = res[1];
-                li.compilerType = CompilerType.C;
-                li.compiler = "clang"; // NOI18N
-            }
-        }
-        if (li.compilerType == CompilerType.UNKNOWN) {
-            //TODO: can fail on gcc calls with -shared-libgcc
-            int[] res = foundCompiler(line, INVOKE_INTEL_C);
-            if (res != null) {
-                start = res[0];
-                end = res[1];
-                li.compilerType = CompilerType.C;
-                li.compiler = "icc"; // NOI18N
-            }
-        }
-        if (li.compilerType == CompilerType.UNKNOWN) {
-            int[] res = foundCompiler(line, INVOKE_GNU_Cpp,INVOKE_GNU_Cpp2,INVOKE_GNU_Cpp3,INVOKE_GNU_Cpp4);
-            if (res != null) {
-                start = res[0];
-                end = res[1];
+        String compiler = findCompiler(line, C_NAMES, isWindows);
+        if (compiler != null) {
+            li.compilerType = CompilerType.C;
+            li.compiler = compiler;
+        } else {
+            compiler = findCompiler(line, CPP_NAMES, isWindows);
+            if (compiler != null) {
                 li.compilerType = CompilerType.CPP;
-                li.compiler = "g++"; // NOI18N
-            }
-        }
-        if (li.compilerType == CompilerType.UNKNOWN) {
-            int[] res = foundCompiler(line, INVOKE_CLANG_Cpp, INVOKE_CLANG_Cpp2);
-            if (res != null) {
-                start = res[0];
-                end = res[1];
-                li.compilerType = CompilerType.CPP;
-                li.compiler = "clang++"; // NOI18N
-            }
-        }
-        if (li.compilerType == CompilerType.UNKNOWN) {
-            int[] res = foundCompiler(line, INVOKE_INTEL_Cpp);
-            if (res != null) {
-                start = res[0];
-                end = res[1];
-                li.compilerType = CompilerType.CPP;
-                li.compiler = "icpc"; // NOI18N
-            }
-        }
-        if (li.compilerType == CompilerType.UNKNOWN) {
-            int[] res = foundCompiler(line, INVOKE_SUN_C);
-            if (res != null) {
-                start = res[0];
-                end = res[1];
-                li.compilerType = CompilerType.C;
-                li.compiler = "cc"; // NOI18N
-            }
-        }
-        if (li.compilerType == CompilerType.UNKNOWN) {
-            int[] res = foundCompiler(line, INVOKE_SUN_Cpp);
-            if (res != null) {
-                start = res[0];
-                end = res[1];
-                li.compilerType = CompilerType.CPP;
-                li.compiler = "CC"; // NOI18N
-            }
-        }
-        if (li.compilerType == CompilerType.UNKNOWN) {
-            int[] res = foundCompiler(line, INVOKE_GNU_Fortran1,INVOKE_GNU_Fortran2,INVOKE_GNU_Fortran3,INVOKE_GNU_Fortran4,INVOKE_GNU_Fortran5,INVOKE_GNU_Fortran6,INVOKE_GNU_Fortran7,INVOKE_GNU_Fortran8);
-            if (res != null) {
-                start = res[0];
-                end = res[1];
-                li.compilerType = CompilerType.FORTRAN;
-                li.compiler = "gfortran"; // NOI18N
-            }
-        }
-        if (li.compilerType == CompilerType.UNKNOWN) {
-            int[] res = foundCompiler(line, INVOKE_SUN_Fortran,INVOKE_SUN_Fortran1,INVOKE_SUN_Fortran2,INVOKE_SUN_Fortran3);
-            if (res != null) {
-                start = res[0];
-                end = res[1];
-                li.compilerType = CompilerType.FORTRAN;
-                li.compiler = "ffortran"; // NOI18N
-            }
-        }
-        if (li.compilerType == CompilerType.UNKNOWN) {
-            int[] res = foundCompiler(line, INVOKE_INTEL_Fortran);
-            if (res != null) {
-                start = res[0];
-                end = res[1];
-                li.compilerType = CompilerType.FORTRAN;
-                li.compiler = "ifort"; // NOI18N
-            }
-        }
-        if (li.compilerType == CompilerType.UNKNOWN) {
-            int[] res = foundCompiler(line, INVOKE_MSVC_Cpp, INVOKE_MSVC_Cpp2);
-            if (res != null) {
-                start = res[0];
-                end = res[1];
-                li.compilerType = CompilerType.CPP;
-                li.compiler = "cl"; // NOI18N
-            }
-        }
-
-        if (li.compilerType != CompilerType.UNKNOWN) {
-            li.compileLine = line.substring(start);
-            while(end < line.length() && (line.charAt(end) == ' ' || line.charAt(end) == '\t')){
-                end++;
-            }
-            if (end >= line.length()) {
-                // suspected compiler invocation has no options or a part of a path?? -- noway
-                li.compilerType =  CompilerType.UNKNOWN;
-            } else if (line.charAt(end)!='-') {
-                // suspected compiler invocation has no options or a part of a path?? -- noway
-                // gcc source.c -c
-//                li.compilerType =  CompilerType.UNKNOWN;
-//            } else if (start > 0 && line.charAt(start-1)!='/') {
-//                // suspected compiler invocation is not first command in line?? -- noway
-//                String prefix = line.substring(0, start - 1).trim();
-//                // wait! maybe it's called in condition?
-//                if (!(line.charAt(start - 1) == ' ' &&
-//                        ( prefix.equals("if") || prefix.equals("then") || prefix.equals("else") ))) { //NOI18N
-//                    // or it's a lib compiled by libtool?
-//                    int ltStart = line.substring(0, start).indexOf("libtool"); //NOI18N
-//                        if (!(ltStart >= 0 && line.substring(ltStart, start).indexOf("compile") >= 0)) { //NOI18N
-//                            // no, it's not a compile line
-//                            li.compilerType = CompilerType.UNKNOWN;
-//                            // I hope
-//                            if (TRACE) {System.err.println("Suspicious line: " + line);}
-//                        }
-//                    }
+                li.compiler = compiler;
+            } else {
+                compiler = findCompiler(line, FORTRAN_NAMES, isWindows);
+                if (compiler != null) {
+                    li.compilerType = CompilerType.FORTRAN;
+                    li.compiler = compiler;
+                }
             }
         }
         return li;
@@ -1044,8 +942,7 @@ public class LogReader {
                             language = ItemProperties.LanguageKind.C;
                         }
                     }
-                } else if (language == LanguageKind.C &&
-                          (li.compiler.equals("gcc") || li.compiler.equals("clang") || li.compiler.equals("icc"))) { // NOI18N
+                } else if (language == LanguageKind.C && !li.compiler.equals("cc")) { // NOI18N
                     String mime =MIMESupport.getKnownSourceFileMIMETypeByExtension(sourcePath);
                     if (MIMENames.CPLUSPLUS_MIME_TYPE.equals(mime)) {
                         language = ItemProperties.LanguageKind.CPP;

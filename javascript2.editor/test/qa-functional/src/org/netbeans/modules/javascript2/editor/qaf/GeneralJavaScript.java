@@ -65,13 +65,13 @@ import org.openide.util.Exceptions;
  */
 public class GeneralJavaScript extends JellyTestCase {
 
-    static final String PHP_CATEGORY_NAME = "PHP";
-    static final String PHP_PROJECT_NAME = "PHP Application";
-    static final String OTHER_CATEGORY_NAME = "Other";
+    public static final String PHP_CATEGORY_NAME = "PHP";
+    public static final String PHP_PROJECT_NAME = "PHP Application";
+    public static final String OTHER_CATEGORY_NAME = "Other";
     protected EventTool evt;
     public static String currentFile = "";
     public final String TEST_BASE_NAME = "js2_";
-    public int name_iterator = 0;
+    public static int NAME_ITERATOR = 0;
 
     public GeneralJavaScript(String arg0) {
         super(arg0);
@@ -154,7 +154,7 @@ public class GeneralJavaScript extends JellyTestCase {
 //        long lBack = t.getTimeout("JTextComponentOperator.TypeTextTimeout");
 //        t.setTimeout("JTextComponentOperator.TypeTextTimeout", 30000);
 //        jcPath.setTimeouts(t);
-
+        evt.waitNoEvent(1000);
         jcPath.getTextField().setText(sProjectPath);
 
 //        t.setTimeout("JTextComponentOperator.TypeTextTimeout", lBack);

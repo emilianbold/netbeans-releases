@@ -70,6 +70,7 @@ public class JPAAttribute {
     private String name;
     private PersistentObject parent;
     private TypeElement typeElement;
+    private Class<?> cl;
     private String typeName;
     
     public JPAAttribute(PersistentObject parent, ManyToMany attr){
@@ -157,6 +158,13 @@ public class JPAAttribute {
         return typeName;
     }
     
+    public Class<?> getClass1() {
+        if(cl == null){
+            buildType();
+        }
+        return cl;
+    }
+    
     private void buildType(){
             TypeMirror tm = null;
             VariableElement var = Utils.getField(parent.getTypeElement(), name);
@@ -171,24 +179,40 @@ public class JPAAttribute {
             if( tm!=null ){
                 if(tm.getKind() == TypeKind.DECLARED){
                     DeclaredType declaredType = (DeclaredType) tm;
+                    if(declaredType.getTypeArguments()!=null && declaredType.getTypeArguments().size()>0) {//it's some generic type
+                        if(mType == IMappingType.ONE_TO_MANY || mType == IMappingType.MANY_TO_MANY) {//we suppose it should be for relationship mapping only
+                            tm = declaredType.getTypeArguments().get(0);
+                            if(tm.getKind() == TypeKind.DECLARED){
+                                declaredType = (DeclaredType) tm;
+                            }
+                        }
+                    }
                     typeElement =  (TypeElement) declaredType.asElement();
                     typeName = typeElement.getQualifiedName().toString();
                 } else if (TypeKind.BOOLEAN == tm.getKind()) {
                     typeName = ("boolean");//NOI18N
+                    cl = boolean.class;
                 } else if (TypeKind.BYTE == tm.getKind()) {
                     typeName = "byte";//NOI18N
+                    cl = byte.class;
                 } else if (TypeKind.CHAR == tm.getKind()) {
                     typeName = "char";//NOI18N
+                    cl = char.class;
                 } else if (TypeKind.DOUBLE == tm.getKind()) {
                     typeName = "double";//NOI18N
+                    cl = double.class;
                 } else if (TypeKind.FLOAT == tm.getKind()) {
                     typeName = "float";//NOI18N
+                    cl = float.class;
                 } else if (TypeKind.INT == tm.getKind()) {
                     typeName = "int";//NOI18N
+                    cl = int.class;
                 } else if (TypeKind.LONG == tm.getKind()) {
                     typeName = "long";//NOI18N
+                    cl = long.class;
                 } else if (TypeKind.SHORT == tm.getKind()) {
                     typeName = "short";//NOI18N
+                    cl = short.class;
                 }
             }        
     }

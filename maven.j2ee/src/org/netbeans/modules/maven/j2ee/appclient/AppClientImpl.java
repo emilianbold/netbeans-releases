@@ -93,10 +93,6 @@ public class AppClientImpl extends BaseEEModuleImpl {
         if (version != null) {
             return Profile.fromPropertiesString(version);
         }
-        String ver = getModuleVersion();
-//        if (AppClient.VERSION_6_0.equals(ver)) {
-//            return Profile.JAVA_EE_6_FULL;
-//        }
         return Profile.JAVA_EE_6_FULL;
     }
     

@@ -44,6 +44,7 @@ package org.netbeans.modules.web.inspect.webkit.ui;
 import java.lang.reflect.InvocationTargetException;
 import javax.swing.Action;
 import org.netbeans.modules.web.inspect.actions.Resource;
+import org.netbeans.modules.web.inspect.webkit.Utilities;
 import org.netbeans.modules.web.inspect.webkit.actions.GoToRuleSourceAction;
 import org.netbeans.modules.web.webkit.debugging.api.css.Rule;
 import org.openide.nodes.AbstractNode;
@@ -79,7 +80,20 @@ public class MatchedRuleNode extends AbstractNode {
     MatchedRuleNode(Node node, Rule rule, Resource ruleOrigin, RuleInfo ruleInfo) {
         super(Children.LEAF, Lookups.fixed(rule, ruleOrigin, ruleInfo));
         this.node = node;
-        setDisplayName(rule.getSelector());
+        String stylesheet = Utilities.relativeResourceName(rule.getSourceURL(), ruleOrigin.getProject());
+        String description = NbBundle.getMessage(MatchedRuleNode.class,
+            "MatchedRuleNode.description", stylesheet); // NOI18N
+        setShortDescription(description);
+    }
+
+    @Override
+    public String getHtmlDisplayName() {
+        return node.getHtmlDisplayName();
+    }
+
+    @Override
+    public String getDisplayName() {
+        return node.getDisplayName();
     }
 
     @Override

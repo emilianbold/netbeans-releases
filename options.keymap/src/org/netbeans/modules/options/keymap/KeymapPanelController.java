@@ -46,6 +46,7 @@ package org.netbeans.modules.options.keymap;
 
 import java.beans.PropertyChangeListener;
 import javax.swing.JComponent;
+import org.netbeans.api.options.OptionsDisplayer;
 import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
@@ -58,7 +59,7 @@ import org.openide.util.lookup.Lookups;
  * @author Jan Jancura
  */
 @OptionsPanelController.TopLevelRegistration(
-    id="Keymaps",
+    id=OptionsDisplayer.KEYMAPS,
     categoryName="#CTL_Keymap_Options",
     iconBase="org/netbeans/modules/options/keymap/keymap.png",
     keywords="#KW_KeymapOptions",

@@ -453,7 +453,12 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
                         generatedEntityClasses.add(entityClassName);
 
                         // XXX Javadoc
-                        entity = GenerationUtils.createClass(packageFileObject, entityClassName, NbBundle.getMessage(JavaPersistenceGenerator.class, "MSG_Javadoc_Class"));
+                        try {
+                            entity = GenerationUtils.createClass(packageFileObject, entityClassName, NbBundle.getMessage(JavaPersistenceGenerator.class, "MSG_Javadoc_Class"));
+                        } catch (RuntimeException ex) {
+                            Logger.getLogger(JavaPersistenceGenerator.class.getName()).log(Level.WARNING, "Can't create class {0} from template in package {1} with package fileobject validity {2}.", new Object[]{entityClassName, packageFileObject.getPath(), packageFileObject.isValid()});//NOI18N
+                            throw ex;
+                        }
                         generatedEntityFOs.add(entity);
                         generatedFOs.add(entity);
 
@@ -514,6 +519,7 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
                     javaSource.runModificationTask(new Task<WorkingCopy>() {
                         @Override
                         public void run(WorkingCopy copy) throws IOException {
+                            copy.toPhase(Phase.RESOLVED);
                         }
                     }).commit();
                 } catch (IOException e) {
@@ -1378,6 +1384,19 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
                 // are not all generated to the same package - fixed in issue 139804
                 String typeName = getRelationshipFieldType(role, entityClass.getPackage());
                 TypeElement typeEl = copy.getElements().getTypeElement(typeName);
+                //need some extended logging if null, see issue # 217461
+                if(typeEl == null) {
+                     Logger.getLogger(JavaPersistenceGenerator.class.getName()).log(Level.WARNING, "Null typeelement for {0}", typeName); //NOI18N
+                    //1: need to know if it was generated
+                    for(FileObject fo : generatedFOs){
+                        Logger.getLogger(JavaPersistenceGenerator.class.getName()).log(Level.WARNING, "Next FileObject was generated: {0}", fo!=null?fo.getName():"null"); //NOI18N
+                    }
+                    //2: 
+                     Logger.getLogger(JavaPersistenceGenerator.class.getName()).log(Level.WARNING, "Member name {0}", memberName); //NOI18N
+                     Logger.getLogger(JavaPersistenceGenerator.class.getName()).log(Level.WARNING, "Table name {0}", entityClass.getTableName()); //NOI18N
+                     Logger.getLogger(JavaPersistenceGenerator.class.getName()).log(Level.WARNING, "Update type {0}", entityClass.getUpdateType()); //NOI18N
+                }
+                //
                 assert typeEl != null : "null TypeElement for \"" + typeName + "\"";
                 TypeMirror fieldType = typeEl.asType();
                 if (role.isToMany()) {

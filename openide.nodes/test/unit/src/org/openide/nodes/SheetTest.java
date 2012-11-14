@@ -47,7 +47,10 @@ package org.openide.nodes;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.*;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.atomic.AtomicBoolean;
 import org.netbeans.junit.NbTestCase;
+import org.openide.nodes.Node.PropertySet;
 
 
 
@@ -128,6 +131,53 @@ public class SheetTest extends NbTestCase {
         sl.assertEvents( "No events fired", new PropertyChangeEvent[] {} ); 
     }
     
+
+    public void testIncorrectSynchronization() {
+        final CountDownLatch cont = new CountDownLatch(1);
+        final CountDownLatch finish = new CountDownLatch(1);
+        final AtomicBoolean testStarted = new AtomicBoolean();
+        final Thread[] dontBlock = { null };
+        final Sheet test = new Sheet(new ArrayList<Sheet.Set>() {
+            @Override
+            public <T> T[] toArray(T[] a) {
+                if (testStarted.get() && dontBlock[0] != Thread.currentThread()) {
+                    cont.countDown();
+                    try {
+                        finish.await();
+                    } catch (InterruptedException ex) {
+                        throw new IllegalStateException(ex);
+                    }
+                }
+                return super.toArray(a);
+            }
+        });
+        
+        test.put(new Sheet.Set());
+        
+        final boolean[] wasNull = new boolean[1];
+        
+        final Thread t = new Thread() {
+            @Override public void run() {
+                try {
+                    cont.await();
+                    for (PropertySet set : test.toArray()) {
+                        wasNull[0] |= set == null;
+                    }
+                } catch (InterruptedException ex) {
+                    throw new IllegalStateException(ex);
+                }
+                finish.countDown();
+            }
+        };
+        dontBlock[0] = t;
+        t.start();
+
+        testStarted.set(true);
+        
+        test.toArray();
+        
+        assertFalse("No JavaNode in sight, and still returns a null property set?", wasNull[0]);
+    }    
     
     private static class SheetListener implements PropertyChangeListener {
         

@@ -201,5 +201,8 @@
                 <package>org.netbeans.modules.glassfish.spi</package>
             </friend-packages>
         </data>
+        <spellchecker-wordlist xmlns="http://www.netbeans.org/ns/spellchecker-wordlist/1">
+            <word>admin</word>
+        </spellchecker-wordlist>
     </configuration>
 </project>

@@ -346,7 +346,59 @@ public class RemoteLinksTestCase extends RemoteFileTestBase {
             removeRemoteDirIfNotNull(baseDir);
         }        
     }
-    
+
+    @ForAllEnvironments
+    public void testCreateDataAndFolder() throws Exception {
+                
+        String baseDir = null;
+        try {
+            baseDir = mkTempAndRefreshParent(true);
+
+            String realDir = baseDir + "/real_dir";
+            String linkDirName = "link_dir";
+            String linkDir = baseDir + '/' + linkDirName;
+
+            String script = 
+                    "cd " + baseDir + "; " +
+                    "mkdir -p " + realDir + "; " +
+                    "ln -s " + realDir + ' ' + linkDirName;
+
+            ProcessUtils.ExitStatus res = ProcessUtils.execute(execEnv, "sh", "-c", script);
+            assertEquals("Error executing script \"" + script + "\": " + res.error, 0, res.exitCode);
+           
+            FileObject linkDirFO = getFileObject(linkDir);
+
+            {
+                FileObject childData = linkDirFO.createData("child_data");
+                assertNotNull(childData);
+                assertTrue(childData.isValid());
+                assertTrue(childData.isData());
+                assertEquals(childData.getParent(), linkDirFO);
+                assertTrue(childData.getNameExt().equals("child_data"));
+            }
+            {
+                FileObject childFolder = linkDirFO.createFolder("child_folder");
+                assertNotNull(childFolder);
+                assertTrue(childFolder.isValid());
+                assertTrue(childFolder.isFolder());
+                assertEquals(childFolder.getParent(), linkDirFO);
+                assertTrue(childFolder.getNameExt().equals("child_folder"));
+            }
+            {
+                FileObject tempFile = rootFO.getFileSystem().createTempFile(linkDirFO, "out", ".tmp", true);
+                assertNotNull(tempFile);
+                assertTrue(tempFile.isValid());
+                assertTrue(tempFile.isData());
+                assertEquals(tempFile.getParent(), linkDirFO);
+                assertEquals(linkDirFO.getFileSystem(), tempFile.getFileSystem());
+                assertTrue(tempFile.getNameExt().startsWith("out"));
+                assertTrue(tempFile.getNameExt().endsWith(".tmp"));
+            }
+        } finally {
+            removeRemoteDirIfNotNull(baseDir);
+        }
+    }
+
     public static Test suite() {
         return RemoteApiTest.createSuite(RemoteLinksTestCase.class);
     }

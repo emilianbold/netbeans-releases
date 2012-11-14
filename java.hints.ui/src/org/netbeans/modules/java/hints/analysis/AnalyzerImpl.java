@@ -54,6 +54,7 @@ import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.modules.analysis.spi.Analyzer;
 import org.netbeans.modules.java.hints.providers.spi.HintDescription;
 import org.netbeans.modules.java.hints.providers.spi.HintMetadata;
+import org.netbeans.modules.java.hints.providers.spi.HintMetadata.Options;
 import org.netbeans.modules.java.hints.spiimpl.MessageImpl;
 import org.netbeans.modules.java.hints.spiimpl.batch.BatchSearch;
 import org.netbeans.modules.java.hints.spiimpl.batch.BatchSearch.BatchResult;
@@ -160,6 +161,7 @@ public class AnalyzerImpl implements Analyzer {
             List<WarningDescription> result = new ArrayList<WarningDescription>();
 
             for (Entry<? extends HintMetadata, ? extends Collection<? extends HintDescription>> e : Utilities.getBatchSupportedHints(new ClassPathBasedHintWrapper()).entrySet()) {
+                if (e.getKey().options.contains(Options.NON_GUI)) continue;
                 String displayName = e.getKey().displayName;
                 String category = e.getKey().category;
                 FileObject catFO = FileUtil.getConfigFile(HINTS_FOLDER + category);

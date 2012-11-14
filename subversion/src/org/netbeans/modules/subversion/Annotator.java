@@ -70,8 +70,6 @@ import java.util.regex.Pattern;
 import java.text.MessageFormat;
 import java.io.File;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.util.logging.Level;
 import org.netbeans.modules.subversion.ui.properties.SvnPropertiesAction;
 import org.netbeans.modules.subversion.ui.relocate.RelocateAction;
@@ -426,12 +424,15 @@ public class Annotator {
      * will act on currently activated nodes.
      */
     public static Action [] getActions(VCSContext ctx, VCSAnnotator.ActionDestination destination) {
-        if (!Subversion.getInstance().getStatusCache().ready()) {
-            return new Action[] { new DummyAction() };
-        }
         List<Action> actions = new ArrayList<Action>(20);
         File[] files = ctx.getRootFiles().toArray(new File[ctx.getRootFiles().size()]);
-        boolean noneVersioned = isNothingVersioned(files);
+        boolean noneVersioned;
+        if (!Subversion.getInstance().getStatusCache().ready()) {
+            noneVersioned = true;
+            Subversion.LOG.log(Level.INFO, "Cache not yet initialized, showing default actions"); //NOI18N
+        } else {
+            noneVersioned = isNothingVersioned(files);
+        }
         if (destination == VCSAnnotator.ActionDestination.MainMenu) {
             // XXX use Actions.forID
             Action a = Utils.getAcceleratedAction("Actions/Subversion/org-netbeans-modules-subversion-ui-checkout-CheckoutAction.instance");
@@ -747,24 +748,5 @@ public class Annotator {
             lockString = "O"; //NOI18N
         }
         return lockString;
-    }
-
-    private static class DummyAction extends AbstractAction {
-
-        @NbBundle.Messages("CTL_MenuItem_Initializing=Initializing...")
-        public DummyAction () {
-            super(Bundle.CTL_MenuItem_Initializing());
-        }
-        
-        @Override
-        public void actionPerformed (ActionEvent e) {
-            
-        }
-
-        @Override
-        public boolean isEnabled () {
-            return false;
-        }
-        
     }
 }

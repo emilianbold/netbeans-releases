@@ -57,6 +57,7 @@ import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.parsing.spi.SchedulerTask;
 import org.netbeans.modules.parsing.spi.TaskFactory;
 import org.openide.filesystems.FileObject;
+import org.openide.util.Utilities;
 
 /**
  *
@@ -200,6 +201,11 @@ public class WebUtilsTest extends CslTestBase {
         // #219686
         u = WebUtils.stringToUrl("localhost:1234/some-path");
         assertEquals("http://localhost:1234/some-path", u.toExternalForm());
+
+        // #221878
+        URL original = Utilities.toURI(getDataDir()).toURL();
+        u = WebUtils.stringToUrl(WebUtils.urlToString(original));
+        assertEquals(original, u);
     }
     
     public void testUrlToString() throws Exception {

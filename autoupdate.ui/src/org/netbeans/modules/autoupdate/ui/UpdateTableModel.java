@@ -220,8 +220,9 @@ public class UpdateTableModel extends UnitCategoryTableModel {
         infos.addAll (containerCustom.listAll ());
         Set<UpdateElement> elements = new HashSet<UpdateElement> ();
         for (OperationInfo info : infos) {
-            elements.add (info.getUpdateElement ());
-            elements.addAll (info.getRequiredElements ());
+            if (elements.add (info.getUpdateElement ())) {
+                elements.addAll (info.getRequiredElements ());
+            }
         }
         for (UpdateElement el : elements) {
             res += el.getDownloadSize ();

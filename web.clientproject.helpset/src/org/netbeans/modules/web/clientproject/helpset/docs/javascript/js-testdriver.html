@@ -1,0 +1,71 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!--       
+*     Copyright © 1997, 2011, Oracle and/or its affiliates. All rights reserved. 
+*     Use is subject to license terms.
+-->
+<html>
+<head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+<title>Running Unit Tests on JavaScript Files</title>
+<link rel="stylesheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
+</head>
+<body>
+
+<h2>Running Unit Tests on JavaScript Files</h2>
+<p> <small><a href="#seealso">See Also</a>&nbsp; </small>
+
+   
+<p>The IDE enables you to run unit tests on JavaScript files using JsTestDriver.
+The test driver will run the unit tests in each of the browsers that you specify when
+you configure the test driver.</p>
+
+<p>After you create the unit tests for your JavaScript files, you can run the unit tests
+by performing the following steps.</p>
+
+<ol>
+    <li>Download the js-test-driver JAR.</li>
+    <li>In the Services window, right-click the JS Test Driver node and choose Configure in the popup menu.</li>
+    <li>In the Configure JSTestDriver dialog box, select the browsers that you want to run the test against.
+        <p>Only browsers that are installed on your local system are displayed in the list.</p>
+    Click OK to close the dialog box.</li>
+    <li>Right-click the JS Test Driver node and choose Start to start the js-test-driver server.
+        <p>When you choose Start, each of the browsers that you specified will open a window 
+        and will wait to run the unit tests. You can see the status of the the js-test-driver server 
+        in the Output window.</p></li>
+    <li>Choose New &gt; New File to open the New File wizard.</li>
+    <li>Select JsTestDriver Configuration File in the Unit Tests category in the New File wizard.</li>
+    <li>Supply a name and location for the file. Click Finish.
+        <p>When you click Finish the IDE creates the <tt>jsTestDriver.conf</tt> file and opens the file in the editor.
+        In the Projects window you can see the file under the Configuration Files node.</p></li>
+    <li>Edit <tt>jsTestDriver.conf</tt> to specify the location of the JavaScript source files and test files.</li>
+    <li>Right-click the project node and choose Test in the popup menu.</li>
+</ol>
+
+<p>When you click Test the IDE runs the unit tests.
+You can open the Test Results window to view the results.
+You can see details about the specific tests in the Output window. </p>
+    
+<ul class="note">
+    <li>To use JS Test Driver in the IDE you need to download the JS Test Driver JAR that is available from the following location.
+<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+    <param name="content" value="http://code.google.com/p/js-test-driver/">
+    <param name="text" value="<html><u>JS Test Driver homepage</u></html>">
+    <param name="textFontSize" value="medium">
+    <param name="textColor" value="blue">
+</object>
+    <p>The JS Test Driver site also provides documentation and details about using JS Test Driver.</p>
+</li>
+</ul>
+
+<dl>
+<dt><a name="seealso">See Also</a></dt>
+<dd><a href="js-debug.html">About Debugging JavaScript Files</a></dd>
+<dd><a href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/javascript/js_basics.html">About Editing JavaScript Files</a></dd>
+</dl>
+
+<hr><small><a href="../credits.html">Legal Notices</a></small>
+
+<table border="0" cellpadding="50">
+<tr><td>&nbsp;</td></tr>
+</table></body>
+</html>

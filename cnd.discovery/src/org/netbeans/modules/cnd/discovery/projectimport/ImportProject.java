@@ -74,6 +74,7 @@ import org.netbeans.modules.cnd.actions.ShellRunAction;
 import org.netbeans.modules.cnd.api.model.CsmListeners;
 import org.netbeans.modules.cnd.api.model.CsmModel;
 import org.netbeans.modules.cnd.api.model.CsmModelAccessor;
+import org.netbeans.modules.cnd.api.model.CsmModelState;
 import org.netbeans.modules.cnd.api.model.CsmProgressAdapter;
 import org.netbeans.modules.cnd.api.model.CsmProgressListener;
 import org.netbeans.modules.cnd.api.model.CsmProject;
@@ -1279,6 +1280,12 @@ public class ImportProject implements PropertyChangeListener {
     }
 
     private boolean isModelAvaliable(){
+        if (CsmModelAccessor.getModelState() != CsmModelState.ON) {
+            if (TRACE) {
+                logger.log(Level.INFO, "#model is not ON: {0}", CsmModelAccessor.getModelState()); // NOI18N
+            }
+            return false;
+        }
         CsmModel model = CsmModelAccessor.getModel();
         if (model != null && makeProject != null) {
             return CsmModelAccessor.getModel().getProject(makeProject) != null;

@@ -65,14 +65,21 @@ public final class NbRemoteNativeProcess extends NbNativeProcess {
         StringBuilder sb = new StringBuilder();
 
         for (String arg : command) {
-            sb.append('"').append(arg).append('"').append(' '); // NOI18N
+            sb.append('\'').append(arg).append('\'').append(' '); // NOI18N
         }
 
         streams = JschSupport.startCommand(info.getExecutionEnvironment(), sb.toString(), params); // NOI18N
         setErrorStream(streams.err);
         setInputStream(streams.out);
         setOutputStream(streams.in);
-        streams.in.flush();
+    }
+
+    public boolean isAlive() {
+        if (streams == null || streams.channel == null) {
+            return false;
+        }
+
+        return streams.channel.isConnected();
     }
 
     @Override
@@ -85,6 +92,8 @@ public final class NbRemoteNativeProcess extends NbNativeProcess {
             while (streams.channel.isConnected()) {
                 Thread.sleep(200);
             }
+            
+            finishing();
 
             return streams.channel.getExitStatus();
         } finally {

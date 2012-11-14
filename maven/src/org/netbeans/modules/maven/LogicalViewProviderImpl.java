@@ -95,7 +95,7 @@ public class LogicalViewProviderImpl implements LogicalViewProvider {
             return Lookups.fixed(project);
         }
         DataFolder rootFolder = DataFolder.findFolder( project.getProjectDirectory() );
-        return Lookups.fixed(project, rootFolder);
+        return Lookups.fixed(project, rootFolder, project.getProjectDirectory());
     }
     
     /**

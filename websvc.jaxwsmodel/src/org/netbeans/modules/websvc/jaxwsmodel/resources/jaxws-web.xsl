@@ -50,6 +50,7 @@ made subject to such option by the copyright holder.
                 xmlns:jaxws="http://www.netbeans.org/ns/jax-ws/1">
     <xsl:output method="xml" indent="yes" encoding="UTF-8" xalan:indent-amount="4"/>
     <xsl:param name="jaxwsversion">jaxws21lib</xsl:param>
+    <xsl:param name="xjcencoding">false</xsl:param>
     <xsl:template match="/">
 
         <xsl:comment><![CDATA[
@@ -89,33 +90,21 @@ made subject to such option by the copyright holder.
                             <copy todir="${{build.classes.dir}}/META-INF">
                                 <fileset dir="${{webinf.dir}}" includes="wsit-{$seiclass}.xml"/>
                             </copy>
-                            <xsl:choose>
-                                <xsl:when test="$jaxwsversion='jaxws21lib'">
-                                    <wsgen
-                                        sourcedestdir="${{build.generated.sources.dir}}/jax-ws"
-                                        resourcedestdir="${{build.generated.sources.dir}}/jax-ws/resources/"
-                                        destdir="${{build.generated.sources.dir}}/jax-ws"
-                                        verbose="true"
-                                        xendorsed = "true"
-                                        keep="true"
-                                        genwsdl="true"
-                                        sei="{$seiclass}">
+                            <wsgen 
+                            	sourcedestdir="${{build.generated.sources.dir}}/jax-ws"
+                            	resourcedestdir="${{build.generated.sources.dir}}/jax-ws/resources/"
+                                destdir="${{build.generated.sources.dir}}/jax-ws"
+                                 verbose="true"
+                                 keep="true"
+                                 genwsdl="true"
+                                 sei="{$seiclass}">
+                                <xsl:if test="$jaxwsversion='jaxws21lib'">
+                                	<xsl:attribute name="xendorsed">
+                                		<xsl:text>true</xsl:text>
+                                	</xsl:attribute>
+                                 </xsl:if>
                                         <classpath path="${{java.home}}/../lib/tools.jar:${{build.classes.dir}}:${{j2ee.platform.wsgen.classpath}}:${{javac.classpath}}"/>
-                                    </wsgen>
-                                </xsl:when>
-                                <xsl:otherwise>
-                                    <wsgen
-                                        sourcedestdir="${{build.generated.sources.dir}}/jax-ws"
-                                        resourcedestdir="${{build.generated.sources.dir}}/jax-ws/resources/"
-                                        destdir="${{build.generated.sources.dir}}/jax-ws"
-                                        verbose="true"
-                                        keep="true"
-                                        genwsdl="true"
-                                        sei="{$seiclass}">
-                                        <classpath path="${{java.home}}/../lib/tools.jar:${{build.classes.dir}}:${{j2ee.platform.wsgen.classpath}}:${{javac.classpath}}"/>
-                                    </wsgen>
-                                </xsl:otherwise>
-                            </xsl:choose>
+                             </wsgen>
                         </target>
                     </xsl:if>
                 </xsl:for-each>
@@ -289,6 +278,11 @@ made subject to such option by the copyright holder.
             <xsl:attribute name="destdir">${build.generated.dir}/jax-wsCache/<xsl:value-of select="$cacheDir"/><xsl:value-of select="$wsName"/></xsl:attribute>
             <xsl:attribute name="wsdl">${basedir}/${conf-dir}xml-resources/<xsl:value-of select="$wsDir"/>/<xsl:value-of select="$wsName"/>/wsdl/<xsl:value-of select="$wsdlUrl"/></xsl:attribute>
             <xsl:attribute name="catalog"><xsl:value-of select="$Catalog" /></xsl:attribute>
+            <xsl:if test="$xjcencoding='true'">
+					<xsl:attribute name="encoding">
+						<xsl:text>${source.encoding}</xsl:text>
+                     </xsl:attribute>
+             </xsl:if>
             <xsl:if test="$wsimportoptions">
                 <xsl:for-each select="$wsimportoptions/jaxws:wsimport-option">
                     <xsl:variable name="wsoptionname" select="jaxws:wsimport-option-name"/>

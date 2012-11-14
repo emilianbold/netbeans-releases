@@ -72,6 +72,7 @@ class RestConfigurationTask implements CancellableTask<CompilationInfo> {
         RestScanTask scanTask = new RestScanTask(factory, fileObject, info );
         task.set(scanTask);
         scanTask.run();
+        task.compareAndSet(scanTask, null);
         HintsController.setErrors(fileObject, "REST Configuration",         // NOI18N 
                 scanTask.getHints()); 
     }
@@ -81,7 +82,7 @@ class RestConfigurationTask implements CancellableTask<CompilationInfo> {
      */
     @Override
     public void cancel() {
-        RestScanTask scanTask = task.get();
+        RestScanTask scanTask = task.getAndSet(null);
         if ( scanTask != null ){
             scanTask.stop();
         }

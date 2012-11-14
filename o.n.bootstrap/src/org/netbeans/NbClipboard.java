@@ -235,15 +235,17 @@ implements LookupListener, FlavorListener, AWTEventListener
 
             synchronized (this) {
                 if (log.isLoggable (Level.FINE)) {
-                    log.log (Level.FINE, "getContents by " + requestor); // NOI18N
+                    log.log (Level.FINE, "getContents by {0}", requestor); // NOI18N
                     logFlavors (prev, Level.FINE, log.isLoggable(Level.FINEST));
                 }
-                if (prev == null)  // if system clipboard has no contents
+                if (prev == null) {
+                    // if system clipboard has no contents
                     return null;
+                }
 
                 Transferable res = convert (prev);
                 if (log.isLoggable (Level.FINE)) {
-                    log.log (Level.FINE, "getContents by " + requestor); // NOI18N
+                    log.log (Level.FINE, "getContents by {0}", requestor); // NOI18N
                     logFlavors (res, Level.FINE, log.isLoggable(Level.FINEST));
 
                     res = new LoggableTransferable (res);
@@ -265,6 +267,19 @@ implements LookupListener, FlavorListener, AWTEventListener
     public  FlavorListener[] getFlavorListeners() {
         return new FlavorListener[0];
     }
+
+    @Override
+    public synchronized void addFlavorListener(FlavorListener listener) {
+        Boolean prev = FIRING.get();
+        try {
+            FIRING.set(true);
+            super.addFlavorListener(listener); 
+        } finally {
+            FIRING.set(prev);
+        }
+    }
+    
+    
 
     private void scheduleSetContents(final Transferable cnts, final ClipboardOwner ownr, int delay) {
         setContentsTask = RP.post(new SetContents(cnts, ownr), delay);
@@ -292,8 +307,9 @@ implements LookupListener, FlavorListener, AWTEventListener
     }
     
     private void logFlavors (Transferable trans, Level level, boolean content) {
-        if (trans == null)
+        if (trans == null) {
             log.log (level, "  no clipboard contents");
+        }
         else {
             java.awt.datatransfer.DataFlavor[] arr = trans.getTransferDataFlavors();
             StringBuilder sb = new StringBuilder();
@@ -303,9 +319,9 @@ implements LookupListener, FlavorListener, AWTEventListener
                     try {
                         sb.append(" contains: ").append(trans.getTransferData(arr[i]));
                     } catch (UnsupportedFlavorException ex) {
-                        Exceptions.printStackTrace(ex);
+                        log.log(level, "Can't convert to " + arr[i], ex);
                     } catch (IOException ex) {
-                        Exceptions.printStackTrace(ex);
+                        log.log(level, "Can't convert to " + arr[i], ex);
                     }
                 }
                 sb.append("\n");

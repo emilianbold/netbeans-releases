@@ -43,9 +43,11 @@
 package org.netbeans.spi.jumpto.symbol;
 
 import java.util.List;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.jumpto.symbol.SymbolProviderAccessor;
 import org.netbeans.spi.jumpto.type.SearchType;
+import org.openide.util.Parameters;
 
 /**
  * 
@@ -191,7 +193,14 @@ public interface SymbolProvider {
         private String[] message;
         private int retry;
 
-        Result(List<? super SymbolDescriptor> result, String[] message) {
+        Result(
+                @NonNull final List<? super SymbolDescriptor> result,
+                @NonNull final String[] message) {
+            Parameters.notNull("result", result);    //NOI18N
+            Parameters.notNull("message", message);  //NOI18N
+            if (message.length != 1) {
+                throw new IllegalArgumentException("message.length != 1");  //NOI18N
+            }
             this.result = result;
             this.message = message;
         }

@@ -41,12 +41,15 @@
  */
 package org.netbeans.modules.java.hints.suggestions;
 
+import com.sun.source.tree.ParenthesizedTree;
+import com.sun.source.tree.Tree.Kind;
 import com.sun.source.util.TreePath;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.java.hints.ErrorDescriptionFactory;
 import org.netbeans.spi.java.hints.Hint;
 import org.netbeans.spi.java.hints.HintContext;
 import org.netbeans.spi.java.hints.JavaFixUtilities;
+import org.netbeans.spi.java.hints.MatcherUtilities;
 import org.netbeans.spi.java.hints.TriggerPattern;
 import org.openide.util.NbBundle.Messages;
 
@@ -64,7 +67,27 @@ public class InvertIf {
         TreePath cond = ctx.getVariables().get("$cond");
         long conditionEnd = ctx.getInfo().getTrees().getSourcePositions().getEndPosition(cond.getCompilationUnit(), cond.getParentPath().getLeaf());
         if (ctx.getCaretLocation() > conditionEnd) return null;
-        return ErrorDescriptionFactory.forName(ctx, ctx.getPath(), Bundle.ERR_InvertIf(), JavaFixUtilities.rewriteFix(ctx, Bundle.FIX_InvertIf(), ctx.getPath(), "if (!$cond) $else; else $then;"));
+        String target = "if (!$cond) $else; else $then;";
+        
+        //TODO: should be done automatically:
+        if (MatcherUtilities.matches(ctx, cond, "!$neg", true)) {
+            TreePath neg = ctx.getVariables().get("$neg");
+            while (neg.getLeaf().getKind() == Kind.PARENTHESIZED) {
+                neg = new TreePath(neg, ((ParenthesizedTree) neg.getLeaf()).getExpression());
+            }
+            ctx.getVariables().put("$neg", neg); //XXX
+            target = "if ($neg) $else; else $then;";
+        } else if (MatcherUtilities.matches(ctx, cond, "$left == $right", true)) {
+            target = "if ($left != $right) $else; else $then;";
+        } else if (MatcherUtilities.matches(ctx, cond, "$left != $right", true)) {
+            target = "if ($left == $right) $else; else $then;";
+        } else if (MatcherUtilities.matches(ctx, cond, "true", true)) {
+            target = "if (false) $else; else $then;";
+        } else if (MatcherUtilities.matches(ctx, cond, "false", true)) {
+            target = "if (true) $else; else $then;";
+        }
+        
+        return ErrorDescriptionFactory.forName(ctx, ctx.getPath(), Bundle.ERR_InvertIf(), JavaFixUtilities.rewriteFix(ctx, Bundle.FIX_InvertIf(), ctx.getPath(), target));
     }
 
 }

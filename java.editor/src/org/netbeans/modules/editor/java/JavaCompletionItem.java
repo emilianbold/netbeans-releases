@@ -394,11 +394,11 @@ public abstract class JavaCompletionItem implements CompletionItem {
         if (postfix != null) {
             toAdd.append(postfix);
         }
-        if (selector != '\0' && (toAdd.length() == 0 || (selector != toAdd.charAt(0) && selector != toAdd.charAt(toAdd.length() - 1)))) {
+        if (selector != '\0' && (toAdd.length() == 0 || (selector != toAdd.charAt(0) && selector != toAdd.charAt(toAdd.length() - 1) && ';' != toAdd.charAt(toAdd.length() - 1)))) {
             toAdd.append(selector);
-        }
-        if ('[' == selector && TypingCompletion.isCompletionSettingEnabled()) {
-            toAdd.append(']');
+            if ('[' == selector && TypingCompletion.isCompletionSettingEnabled()) {
+                toAdd.append(']');
+            }
         }
         int caretOffset = c.getSelectionEnd();
         Position assignToVarStartPos = null;
@@ -432,18 +432,37 @@ public abstract class JavaCompletionItem implements CompletionItem {
         int length = j - substitutionOffset;
         if (toAdd.length() > 0) {
             boolean partialMatch = false;
+            int taNL = -1;
+            int docNL = -1;
             while (true) {
                 char taChar = '\0';
-                while (i < toAdd.length() && (taChar = toAdd.charAt(i++)) <= ' ');
+                while (i < toAdd.length() && (taChar = toAdd.charAt(i++)) <= ' ') {
+                    if (taChar == '\n' && taNL < 0) {
+                        taNL = i - 1;
+                    }
+                }
                 char docChar = '\0';
-                while (j < docText.length() && (docChar = docText.charAt(j++)) <= ' ' && docChar != '\n');
+                while (j < docText.length() && (docChar = docText.charAt(j++)) <= ' ') {
+                    if (docChar == '\n') {
+                        if (taNL < 0) {
+                            break;
+                        } else if (docNL < 0) {
+                            docNL = j - 1;
+                        }
+                    }
+                }
                 if (taChar <= ' ' || docChar == '\n') {
                     length = j - substitutionOffset - (j <= docText.length() ? 1 : 0);
                     break;
                 } else if (taChar != docChar) {
                     if (partialMatch) {
-                        toAdd.delete(i - 1, toAdd.length());
-                        length = j - substitutionOffset - (j <= docText.length() ? 1 : 0);
+                        if (docNL < 0) {
+                            toAdd.delete(i - 1, toAdd.length());
+                            length = j - substitutionOffset - (j <= docText.length() ? 1 : 0);
+                        } else {
+                            toAdd.delete(taNL, toAdd.length());
+                            length = docNL - substitutionOffset;
+                        }
                     }
                     break;
                 } else {
@@ -1006,6 +1025,9 @@ public abstract class JavaCompletionItem implements CompletionItem {
                                 StringBuilder sb = new StringBuilder();
                                 if (addSimpleName || enclName == null) {
                                     sb.append(elem.getSimpleName());
+                                } else if (!"text/x-java".equals(controller.getSnapshot().getMimePath().getPath())) { //NOI18N
+                                    TreePath tp = controller.getTreeUtilities().pathFor(controller.getSnapshot().getEmbeddedOffset(offset));
+                                    sb.append(AutoImport.resolveImport(controller, tp, controller.getTypes().getDeclaredType(elem)));
                                 } else {
                                     sb.append("${PAR#0"); //NOI18N
                                     if ((type == null || type.getKind() != TypeKind.ERROR) &&
@@ -1644,37 +1666,31 @@ public abstract class JavaCompletionItem implements CompletionItem {
             final BaseDocument doc = (BaseDocument)c.getDocument();
             StringBuilder sb = new StringBuilder();
             if (toAdd != null) {
-                CharSequence cs = getInsertPostfix(c);
-                if (cs != null) {
-                    int postfixLen = cs.length();
-                    int toAddLen = toAdd.length();
-                    if (toAddLen >= postfixLen) {
-                        if (!inImport && !params.isEmpty()) {
-                            if (CodeStyle.getDefault(doc).spaceBeforeMethodCallParen()) {
-                                sb.append(' '); //NOI18N
+                String toAddText = toAdd.toString();
+                int idx = toAddText.indexOf(')');
+                if (idx > 0) {
+                    if (!params.isEmpty()) {
+                        if (CodeStyle.getDefault(doc).spaceBeforeMethodCallParen()) {
+                            sb.append(' '); //NOI18N
+                        }
+                        sb.append('('); //NOI18N
+                        boolean guessArgs = Utilities.guessMethodArguments();
+                        for (Iterator<ParamDesc> it = params.iterator(); it.hasNext();) {
+                            ParamDesc paramDesc = it.next();
+                            sb.append("${"); //NOI18N
+                            sb.append(paramDesc.name);
+                            if (guessArgs) {
+                                sb.append(" named instanceof="); //NOI18N
+                                sb.append(paramDesc.fullTypeName);
                             }
-                            sb.append('('); //NOI18N
-                            boolean guessArgs = Utilities.guessMethodArguments();
-                            for (Iterator<ParamDesc> it = params.iterator(); it.hasNext();) {
-                                ParamDesc paramDesc = it.next();
-                                sb.append("${"); //NOI18N
-                                sb.append(paramDesc.name);
-                                if (guessArgs) {
-                                    sb.append(" named instanceof="); //NOI18N
-                                    sb.append(paramDesc.fullTypeName);
-                                }
-                                sb.append('}'); //NOI18N
-                                if (it.hasNext()) {
-                                    sb.append(", "); //NOI18N
-                                }
+                            sb.append('}'); //NOI18N
+                            if (it.hasNext()) {
+                                sb.append(", "); //NOI18N
                             }
-                            sb.append(')');//NOI18N
-                            if (addSemicolon) {
-                                sb.append(';');
-                            }
-                            if (toAddLen > postfixLen) {
-                                sb.append(toAdd.subSequence(postfixLen, toAdd.length()));
-                            }
+                        }
+                        sb.append(')');//NOI18N
+                        if (toAddText.length() > idx + 1) {
+                            sb.append(toAddText.substring(idx + 1));
                         }
                     }
                 }
@@ -1815,18 +1831,10 @@ public abstract class JavaCompletionItem implements CompletionItem {
                             if (Utilities.inAnonymousOrLocalClass(tp)) {
                                 copy.toPhase(Phase.RESOLVED);
                             }
-                            int idx = 0;
-                            for (Tree tree : ((ClassTree)tp.getLeaf()).getMembers()) {
-                                if (copy.getTrees().getSourcePositions().getStartPosition(tp.getCompilationUnit(), tree) < embeddedOffset) {
-                                    idx++;
-                                } else {
-                                    break;
-                                }
-                            }
                             if (implement) {
-                                GeneratorUtils.generateAbstractMethodImplementation(copy, tp, ee, idx);
+                                GeneratorUtils.generateAbstractMethodImplementation(copy, tp, ee, embeddedOffset);
                             } else {
-                                GeneratorUtils.generateMethodOverride(copy, tp, ee, idx);
+                                GeneratorUtils.generateMethodOverride(copy, tp, ee, embeddedOffset);
                             }
                         }
                     }
@@ -1986,19 +1994,11 @@ public abstract class JavaCompletionItem implements CompletionItem {
                             if (Utilities.inAnonymousOrLocalClass(tp)) {
                                 copy.toPhase(Phase.RESOLVED);
                             }
-                            int idx = 0;
-                            for (Tree tree : ((ClassTree)tp.getLeaf()).getMembers()) {
-                                if (copy.getTrees().getSourcePositions().getStartPosition(tp.getCompilationUnit(), tree) < embeddedOffset) {
-                                    idx++;
-                                } else {
-                                    break;
-                                }
-                            }
                             TypeElement te = (TypeElement)copy.getTrees().getElement(tp);
                             if (te != null) {
                                 GeneratorUtilities gu = GeneratorUtilities.get(copy);
                                 MethodTree method = setter ? gu.createSetter(te, ve) : gu.createGetter(te, ve);
-                                ClassTree decl = copy.getTreeMaker().insertClassMember((ClassTree)tp.getLeaf(), idx, method);
+                                ClassTree decl = GeneratorUtils.insertClassMember(copy, (ClassTree)tp.getLeaf(), method, embeddedOffset);
                                 copy.rewrite(tp.getLeaf(), decl);
                             }
                         }
@@ -2177,9 +2177,8 @@ public abstract class JavaCompletionItem implements CompletionItem {
             sb.append(CodeStyle.getDefault(c.getDocument()).spaceBeforeMethodCallParen() ? " ()" : "()"); //NOI18N
             if ("this".equals(simpleName) || "super".equals(simpleName)) { //NOI18N
                 sb.append(';');
-            }
-            if (isAbstract) {
-                sb.append(" {}"); //NOI18N
+            } else if (isAbstract) {
+                sb.append(" {\n}"); //NOI18N
             }
             return sb;
         }
@@ -2187,17 +2186,18 @@ public abstract class JavaCompletionItem implements CompletionItem {
         @Override
         protected CharSequence substituteText(final JTextComponent c, final int offset, final int length, final CharSequence text, final CharSequence toAdd) {
             BaseDocument doc = (BaseDocument) c.getDocument();
+            boolean inPlace = offset == c.getCaretPosition();
             Position startPos;
             Position endPos;
             try {
-                startPos = doc.createPosition(offset + (insertName ? 0 : length), Bias.Backward);
+                startPos = doc.createPosition(insertName || inPlace ? offset : offset + text.length(), Bias.Backward);
                 endPos = doc.createPosition(offset + length);
             } catch (BadLocationException ex) {
                 return null; // Invalid offset -> do nothing
             }
             CharSequence cs = insertName
                     ? super.substituteText(c, startPos.getOffset(), length, text, toAdd)
-                    : super.substituteText(c, startPos.getOffset(), 0, null, toAdd);
+                    : super.substituteText(c, startPos.getOffset(), inPlace ? length : length - text.length(), null, toAdd);
             StringBuilder sb = new StringBuilder();
             if (toAdd != null) {
                 CharSequence postfix = getInsertPostfix(c);
@@ -2344,7 +2344,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
                 sb.append(';');
             }
             if (isAbstract) {
-                sb.append(" {}"); //NOI18N
+                sb.append(" {\n}"); //NOI18N
             }
             return sb;
         }
@@ -2352,13 +2352,14 @@ public abstract class JavaCompletionItem implements CompletionItem {
         @Override
         protected CharSequence substituteText(final JTextComponent c, final int offset, final int length, final CharSequence text, final CharSequence toAdd) {
             BaseDocument doc = (BaseDocument) c.getDocument();
+            boolean inPlace = offset == c.getCaretPosition();
             Position startPos;
             try {
-                startPos = doc.createPosition(offset + length, Bias.Backward);
+                startPos = doc.createPosition(offset + (inPlace ? 0 : text.length()), Bias.Backward);
             } catch (BadLocationException ex) {
                 return null; // Invalid offset -> do nothing
             }
-            CharSequence cs = super.substituteText(c, offset, 0, null, toAdd);
+            CharSequence cs = super.substituteText(c, startPos.getOffset(), inPlace ? length : length - text.length(), null, toAdd);
             if (toAdd != null) {
                 CharSequence postfix = getInsertPostfix(c);
                 if (postfix != null) {
@@ -3302,19 +3303,10 @@ public abstract class JavaCompletionItem implements CompletionItem {
                             for (ElementHandle<? extends Element> handle : fieldHandles) {
                                 fieldElements.add((VariableElement)handle.resolve(copy));
                             }
-                            int idx = 0;
-                            for (Tree tree : ((ClassTree)tp.getLeaf()).getMembers()) {
-                                if (copy.getTrees().getSourcePositions().getStartPosition(tp.getCompilationUnit(), tree) < embeddedOffset) {
-                                    idx++;
-                                } else {
-                                    break;
-                                }
-                            }
                             ExecutableElement superConstructor = superConstructorHandle != null ? superConstructorHandle.resolve(copy) : null;
-                            TreeMaker make = copy.getTreeMaker();
                             ClassTree clazz = (ClassTree) tp.getLeaf();
                             GeneratorUtilities gu = GeneratorUtilities.get(copy);
-                            ClassTree decl = make.insertClassMember(clazz, idx, gu.createConstructor(parent, fieldElements, superConstructor)); //NOI18N
+                            ClassTree decl = GeneratorUtils.insertClassMember(copy, clazz, gu.createConstructor(parent, fieldElements, superConstructor), embeddedOffset);
                             copy.rewrite(clazz, decl);
                         }
                     }
@@ -3402,18 +3394,25 @@ public abstract class JavaCompletionItem implements CompletionItem {
                             final int embeddedOffset = controller.getSnapshot().getEmbeddedOffset(offset);
                             Tree t = null;
                             TreePath tp = controller.getTreeUtilities().pathFor(embeddedOffset);
-                            while (t == null && tp != null) {
+                            boolean cont = true;
+                            while (cont && tp != null) {
                                 switch(tp.getLeaf().getKind()) {
                                     case EXPRESSION_STATEMENT:
                                     case VARIABLE:
                                     case IMPORT:
                                         t = tp.getLeaf();
+                                        cont = false;
                                         break;
                                     case RETURN:
                                         t = ((ReturnTree)tp.getLeaf()).getExpression();
+                                        cont = false;
                                         break;
                                     case THROW:
                                         t = ((ThrowTree)tp.getLeaf()).getExpression();
+                                        cont = false;
+                                        break;
+                                    case MEMBER_SELECT:
+                                        cont = false;
                                         break;
                                 }
                                 tp = tp.getParentPath();

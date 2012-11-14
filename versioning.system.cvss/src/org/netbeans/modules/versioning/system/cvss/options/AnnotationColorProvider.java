@@ -45,10 +45,12 @@ package org.netbeans.modules.versioning.system.cvss.options;
 import java.awt.Color;
 import java.text.MessageFormat;
 import java.util.Collection;
+import org.netbeans.api.options.OptionsDisplayer;
 import org.netbeans.modules.versioning.system.cvss.Annotator;
 import org.netbeans.modules.versioning.system.cvss.CvsModuleConfig;
 import org.netbeans.modules.versioning.system.cvss.CvsVersioningSystem;
 import org.netbeans.modules.versioning.util.OptionsPanelColorProvider;
+import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -60,6 +62,8 @@ import org.openide.util.lookup.ServiceProviders;
  * @author ondra
  */
 @ServiceProviders({@ServiceProvider(service=OptionsPanelColorProvider.class), @ServiceProvider(service=AnnotationColorProvider.class)})
+@OptionsPanelController.Keywords(keywords={"cvs", "#KW_Colors"}, location=OptionsDisplayer.FONTSANDCOLORS, tabTitle="#CTL_AnnotationColorsPanel.title")
+@NbBundle.Messages("CTL_AnnotationColorsPanel.title=Versioning")
 public class AnnotationColorProvider extends OptionsPanelColorProvider {
 
     private static String name;

@@ -1,3 +1,4 @@
 Navigating              > Navigator       N
-                          Inspector       I
+                          Bookmarks       B
+                          DOM Tree
                           Hierarchy       H

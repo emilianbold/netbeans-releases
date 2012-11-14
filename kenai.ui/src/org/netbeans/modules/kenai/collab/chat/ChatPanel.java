@@ -53,6 +53,8 @@ import java.net.URL;
 import java.text.DateFormat;
 import java.util.*;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.swing.*;
@@ -87,7 +89,6 @@ import org.netbeans.modules.kenai.api.KenaiNotification;
 import org.netbeans.modules.kenai.api.KenaiProject;
 import org.netbeans.modules.kenai.api.KenaiService;
 import org.netbeans.modules.kenai.api.KenaiService.Type;
-import org.netbeans.modules.kenai.ui.ProjectHandleImpl;
 import org.netbeans.modules.kenai.ui.spi.KenaiIssueAccessor;
 import org.netbeans.modules.kenai.ui.spi.KenaiIssueAccessor.IssueHandle;
 import org.netbeans.modules.kenai.ui.api.KenaiUserUI;
@@ -1040,12 +1041,18 @@ public class ChatPanel extends javax.swing.JPanel {
             return body;
         }
 
-        String id = n.getModifications().get(0).getId();
+        String id;
+        if (n.getModifications().isEmpty()) {
+            Logger.getLogger(ChatPanel.class.getName()).log(Level.INFO, "empty modifications: {0}", n.getUri());
+            id = ""; //NOI18N
+        } else {
+            id = n.getModifications().get(0).getId();
+        }
         String projectName = StringUtils.parseName(m.getFrom());
         if (projectName.contains("@")) { // NOI18N
             projectName = StringUtils.parseName(projectName);
         }
-        String url = kenai.getUrl().toString()+ "/projects/" + projectName + "/sources/" + (n.getFeatureName()!=null?n.getFeatureName():n.getServiceName()) + "/revision/" + id; // NOI18N
+        String url = kenai.getUrl().toString()+ "/projects/" + projectName + "/sources/" + (n.getFeatureName()!=null?n.getFeatureName():n.getServiceName()) + (id.isEmpty() ? "/show" : "/revision/" + id); //NOI18N
         return body + "\n" + url; // NOI18N
     }
 

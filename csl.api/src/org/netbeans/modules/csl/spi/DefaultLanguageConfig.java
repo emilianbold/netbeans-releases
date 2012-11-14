@@ -77,30 +77,38 @@ public abstract class DefaultLanguageConfig implements GsfLanguage {
         return null;
     }
 
+    @Override
     public String getLineCommentPrefix() {
         return null;
     }
 
+    @Override
     public boolean isIdentifierChar(char c) {
         return Character.isJavaIdentifierPart(c);
     }
 
+    @Override
     public abstract Language getLexerLanguage();
 
+    @Override
     public abstract String getDisplayName();
 
+    @Override
     public String getPreferredExtension() {
         return null;
     }
 
+    @Override
     public Set<String> getBinaryLibraryPathIds() {
         return null;
     }
 
+    @Override
     public Set<String> getLibraryPathIds() {
         return null;
     }
 
+    @Override
     public Set<String> getSourcePathIds() {
         return null;
     }

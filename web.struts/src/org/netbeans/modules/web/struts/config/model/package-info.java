@@ -46,7 +46,8 @@
     mddFile="../../resources/struts-config_1_2.mdd",
     outputType=OutputType.TRADITIONAL_BASEBEAN,
     validate=false,
-    removeUnreferencedNodes=true
+    removeUnreferencedNodes=true,
+    java5=true
 )
 package org.netbeans.modules.web.struts.config.model;
 

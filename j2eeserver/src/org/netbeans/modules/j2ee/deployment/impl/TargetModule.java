@@ -113,14 +113,19 @@ public class TargetModule implements TargetModuleID, java.io.Serializable {
     }
     
     public static class List implements java.io.Serializable {
+
         private static final long serialVersionUID = 69446832514L;
-        private TargetModule [] targetModules;
+
+        private final TargetModule [] targetModules;
+        
         public List(TargetModule[] targetModules) {
-            this.targetModules = targetModules;
+            this.targetModules = targetModules.clone();
         }
+        
         public List(TargetModule tm) {
-            this.targetModules = new TargetModule[] { tm };
+            this.targetModules = new TargetModule[] {tm};
         }
+
         public TargetModule[] getTargetModules() {
             return targetModules;
         }

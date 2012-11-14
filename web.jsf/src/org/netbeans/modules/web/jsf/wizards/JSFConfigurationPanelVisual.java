@@ -361,14 +361,12 @@ public class JSFConfigurationPanelVisual extends javax.swing.JPanel implements H
                                 }
                             }
                         } catch (IOException exception) {
-                            Exceptions.printStackTrace(exception);
+                            LOG.log(Level.INFO, "", exception);
                         }
                     }
 
                     // if maven, exclude user defined libraries
-                    Properties properties = panel.getController().getProperties();
-                    Boolean isMaven = (Boolean) properties.getProperty("maven");
-                    if (isMaven != null && isMaven.booleanValue()) {
+                    if (panel.isMaven()) {
                         removeUserDefinedLibraries(registeredItems);
                     }
 
@@ -506,7 +504,7 @@ public class JSFConfigurationPanelVisual extends javax.swing.JPanel implements H
                     serverJsfLibraries.add(new ServerLibraryItem(null, jsfVersion));
                 }
             } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
+                LOG.log(Level.INFO, "", ex);
             }
 
             setServerLibraryModel(serverJsfLibraries);
@@ -1097,19 +1095,33 @@ private void serverLibrariesActionPerformed(java.awt.event.ActionEvent evt) {//G
             setInfoMessage(NbBundle.getMessage(JSFConfigurationPanelVisual.class, "ERR_MissingTargetServer")); //NOI18N
         }
 
-        // check all enabled JSF component libraries
-        for (JsfComponentImplementation jsfComponentDescriptor : getActivedJsfDescriptors()) {
-            if (jsfComponentDescriptor.createJsfComponentCustomizer(null) != null
-                    && !jsfComponentDescriptor.createJsfComponentCustomizer(null).isValid()) {
-                String error = NbBundle.getMessage(JSFConfigurationPanelVisual.class,
-                        "LBL_JsfComponentNotValid", jsfComponentDescriptor.getName()); //NOI18N
-                setErrorMessage(error);
-                return false;
+        // no libraries validation necessary in case of Maven projects
+        if (!panel.isMaven()) {
+            // check all enabled JSF component libraries
+            for (JsfComponentImplementation jsfComponentDescriptor : getActivedJsfDescriptors()) {
+                JsfComponentCustomizer componentCustomizer = jsfComponentDescriptor.createJsfComponentCustomizer(null);
+                if (componentCustomizer != null && !componentCustomizer.isValid()) {
+                    setErrorMessage(getFormatedJsfSuiteErrorMessage(
+                            jsfComponentDescriptor.getDisplayName(), componentCustomizer.getErrorMessage()));
+                    return false;
+                }
             }
         }
 
         controller.setErrorMessage(null);
         return true;
+    }
+
+    private String getFormatedJsfSuiteErrorMessage(String suiteName, String suiteErrorMessage) {
+        StringBuilder errorMessage = new StringBuilder();
+        String suiteError = suiteErrorMessage == null ? "" : suiteErrorMessage; //NOI18N
+        String localizedError = NbBundle.getMessage(JSFConfigurationPanelVisual.class, "LBL_JsfComponentNotValid", suiteName); //NOI18N
+        if (!customizer) {
+            errorMessage.append("<html><b>").append(localizedError).append("</b><br>").append(suiteError).append("</html>"); //NOI18N
+        } else {
+            errorMessage.append(localizedError).append("\n").append(suiteError); //NOI18N
+        }
+        return errorMessage.toString();
     }
 
     /**
@@ -1180,8 +1192,7 @@ private void serverLibrariesActionPerformed(java.awt.event.ActionEvent evt) {//G
         String j2eeLevel = (String)properties.getProperty("j2eeLevel"); // NOI18N
         Profile prof = j2eeLevel == null ? Profile.JAVA_EE_6_FULL : Profile.fromPropertiesString(j2eeLevel);
         serverInstanceID = (String)properties.getProperty("serverInstanceID"); //NOI18N
-        Boolean isMaven = (Boolean) properties.getProperty("maven");
-        if (isMaven != null && isMaven.booleanValue()) {
+        if (panel.isMaven()) {
             setNewLibraryOptionVisible(false);
             if (!isServerRegistered(serverInstanceID)) {
                 cbPackageJars.setVisible(true);
@@ -1614,7 +1625,9 @@ private void serverLibrariesActionPerformed(java.awt.event.ActionEvent evt) {//G
         table.setShowVerticalLines(false);
 
         table.getColumnModel().getColumn(0).setMaxWidth(30);
-        table.getColumnModel().getColumn(2).setMaxWidth(100);
+        if (!panel.isMaven()) {
+            table.getColumnModel().getColumn(2).setMaxWidth(100);
+        }
 
     }
 
@@ -1642,7 +1655,7 @@ private void serverLibrariesActionPerformed(java.awt.event.ActionEvent evt) {//G
         public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
             if (value instanceof JsfComponentImplementation) {
                 JsfComponentImplementation item = (JsfComponentImplementation) value;
-                Component comp = super.getTableCellRendererComponent(table, item.getName(), isSelected, false, row, column);
+                Component comp = super.getTableCellRendererComponent(table, item.getDisplayName(), isSelected, false, row, column);
                 if (comp instanceof JComponent) {
                     ((JComponent)comp).setOpaque(isSelected);
                 }
@@ -1731,7 +1744,11 @@ private void serverLibrariesActionPerformed(java.awt.event.ActionEvent evt) {//G
         }
 
         public int getColumnCount() {
-            return COLUMN_TYPES.length;
+            if (panel.isMaven()) {
+                return 2;
+            } else {
+                return COLUMN_TYPES.length;
+            }
         }
 
         public int getRowCount() {
@@ -1791,52 +1808,48 @@ private void serverLibrariesActionPerformed(java.awt.event.ActionEvent evt) {//G
 
     private final class JSFComponentModelActionListener implements ActionListener {
 
-        private JsfComponentImplementation jsfDescriptor;
-        private JSFComponentWindowChangeListener listener;
+        private final JsfComponentImplementation jsfDescriptor;
+        private final JSFComponentWindowChangeListener listener;
+        private final JsfComponentCustomizer jsfCustomizer;
+        private final DialogDescriptor dialogDescriptor;
 
         public JSFComponentModelActionListener(JsfComponentImplementation jsfDescriptor) {
             this.jsfDescriptor = jsfDescriptor;
             listener = new JSFComponentWindowChangeListener();
+            jsfCustomizer = jsfDescriptor.createJsfComponentCustomizer(null);
+            dialogDescriptor = new DialogDescriptor(jsfCustomizer.getComponent(), jsfDescriptor.getDisplayName(), true, null);
+            initDialog();
+        }
+
+        private void initDialog() {
+            jsfCustomizer.addChangeListener(listener);
+            dialogDescriptor.createNotificationLineSupport();
+            dialogDescriptor.setHelpCtx(jsfCustomizer.getHelpCtx());
+            dialogDescriptor.setButtonListener(new ButtonsListener());
+            listener.setJsfComponentExtender(jsfCustomizer);
+            listener.setDialogDescriptor(dialogDescriptor);
         }
 
         @Override
         public void actionPerformed(ActionEvent e) {
-            final JsfComponentCustomizer jsfCustomizer = jsfDescriptor.createJsfComponentCustomizer(null);
-            jsfCustomizer.addChangeListener(listener);
-
-            final DialogDescriptor dialogDescriptor = new DialogDescriptor(
-                    jsfCustomizer.getComponent(),
-                    jsfDescriptor.getName(),
-                    true,
-                    null);
-            dialogDescriptor.createNotificationLineSupport();
-            // append help
-            dialogDescriptor.setHelpCtx(jsfCustomizer.getHelpCtx());
-
-            listener.setDialogDescriptor(dialogDescriptor);
-            listener.setJsfComponentExtender(jsfCustomizer);
-
-            // OK button will save JSF extender configuration
-            ActionListener buttonsListener = new ActionListener() {
-
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    if (e.getSource().equals(DialogDescriptor.OK_OPTION)) {
-                        addJsfComponentCustomizer(jsfDescriptor.getName(), jsfCustomizer);
-                        jsfCustomizer.saveConfiguration();
-                    }
-                    panel.fireChangeEvent();
-                }
-            };
-            dialogDescriptor.setButtonListener(buttonsListener);
             // set appropriate state of opened dialog - issue #206424
             fireJsfDialogUpdate(jsfCustomizer, dialogDescriptor);
             DialogDisplayer.getDefault().notify(dialogDescriptor);
         }
 
+        private final class ButtonsListener implements ActionListener {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if (e.getSource().equals(DialogDescriptor.OK_OPTION)) {
+                    addJsfComponentCustomizer(jsfDescriptor.getName(), jsfCustomizer);
+                    jsfCustomizer.saveConfiguration();
+                }
+                panel.fireChangeEvent();
+            }
+        }
     }
 
-    private static final class JSFComponentWindowChangeListener implements ChangeListener {
+    private final class JSFComponentWindowChangeListener implements ChangeListener {
 
         private DialogDescriptor dialogDescriptor;
         private JsfComponentCustomizer jsfComponentExtender;
@@ -1853,6 +1866,7 @@ private void serverLibrariesActionPerformed(java.awt.event.ActionEvent evt) {//G
         public void stateChanged(ChangeEvent e) {
             assert dialogDescriptor != null && jsfComponentExtender != null;
             fireJsfDialogUpdate(jsfComponentExtender, dialogDescriptor);
+            panel.fireChangeEvent();
         }
 
     }

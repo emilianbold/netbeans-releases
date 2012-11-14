@@ -66,6 +66,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.FocusEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import java.beans.FeatureDescriptor;
 import java.beans.PropertyEditor;
 import java.io.IOException;
@@ -80,8 +81,10 @@ import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.ActionMap;
 import javax.swing.BorderFactory;
+import javax.swing.DefaultCellEditor;
 import javax.swing.DefaultListSelectionModel;
 import javax.swing.InputMap;
+import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
@@ -279,6 +282,51 @@ final class SheetTable extends BaseTable implements PropertySetModelListener, Cu
         return sheetCellEditor;
     }
 
+    private TableCellRenderer getCustomRenderer( int row ) {
+        FeatureDescriptor fd = getPropertySetModel().getFeatureDescriptor(row);
+
+        if (fd instanceof PropertySet)
+            return null;
+
+        Object res = fd.getValue( "custom.cell.renderer"); //NOI18N
+        if( res instanceof TableCellRenderer ) {
+            prepareCustomEditor( res );
+            return ( TableCellRenderer ) res;
+        }
+        return null;
+    }
+
+    private TableCellEditor getCustomEditor( int row ) {
+        FeatureDescriptor fd = getPropertySetModel().getFeatureDescriptor(row);
+
+        if (fd instanceof PropertySet)
+            return null;
+
+        Object res = fd.getValue( "custom.cell.editor"); //NOI18N
+        if( res instanceof TableCellEditor ) {
+            prepareCustomEditor( res );
+            return ( TableCellEditor ) res;
+        }
+        return null;
+    }
+
+    private void prepareCustomEditor( Object customEditorObj ) {
+        JComboBox comboBox = null;
+        if( customEditorObj instanceof DefaultCellEditor ) {
+            if( ((DefaultCellEditor)customEditorObj).getComponent() instanceof JComboBox ) {
+                comboBox = ( JComboBox ) ((DefaultCellEditor)customEditorObj).getComponent();
+            }
+        } else if( customEditorObj instanceof JComboBox ) {
+            comboBox = ( JComboBox ) customEditorObj;
+        }
+        if( null != comboBox ) {
+            if( !(comboBox.getUI() instanceof CleanComboUI) ) {
+                comboBox.setUI( new CleanComboUI( true ) );
+                ComboBoxAutoCompleteSupport.install( comboBox );
+            }
+        }
+    }
+
     /****************Bean getters/setters*****************************************
 
         /** Implement's Rochelle's suggestion of including the display name
@@ -299,6 +347,12 @@ final class SheetTable extends BaseTable implements PropertySetModelListener, Cu
      * of SheetTable */
     @Override
     public TableCellEditor getCellEditor(int row, int column) {
+        if( 0 == column ) {
+            TableCellEditor res = getCustomEditor( row );
+            if( null != res )
+                return res;
+        }
+
         return getEditor();
     }
 
@@ -306,6 +360,11 @@ final class SheetTable extends BaseTable implements PropertySetModelListener, Cu
      * of SheetTable */
     @Override
     public TableCellRenderer getCellRenderer(int row, int column) {
+        if( 0 == column ) {
+            TableCellRenderer res = getCustomRenderer( row );
+            if( null != res )
+                return res;
+        }
         return getRenderer();
     }
 
@@ -727,31 +786,47 @@ final class SheetTable extends BaseTable implements PropertySetModelListener, Cu
      * to the table, but will not initiate the custom editor dialog */
     @Override
     public void processMouseEvent(MouseEvent me) {
-        if (me.getID() == me.MOUSE_PRESSED && SwingUtilities.isLeftMouseButton(me) &&
-                onCustomEditorButton(me) && !hasFocus()) {
-            if (PropUtils.psCommitOnFocusLoss && isEditing()) {
-                getEditor().stopCellEditing();
-                
-                // #54211: it can happen that PropertySheet window is closed
-                // when previous property editing is finished (e.g. Form
-                // event properties) If this is the case don't try to edit
-                // newly selected property.
-                if (isGoingToBeClosed()) {
-                    return;
+        if (me.getID() == me.MOUSE_PRESSED && SwingUtilities.isLeftMouseButton(me) ) {
+            if( me.getClickCount() > 1 ) {
+                //#220256 - some properties want to handle double-click on their property name cell
+                int row = rowAtPoint(me.getPoint());
+                int col = columnAtPoint(me.getPoint());
+                if( col == 0 ) {
+                    FeatureDescriptor fd = getPropertySetModel().getFeatureDescriptor( row );
+                    if( null != fd ) {
+                        Object mouseListener = fd.getValue( "nb.propertysheet.mouse.doubleclick.listener" ); //NOI18N
+                        if( mouseListener instanceof MouseListener ) {
+                            ((MouseListener)mouseListener).mouseClicked( me );
+                            return;
+                        }
+                    }
                 }
             }
-            
-            int row = rowAtPoint(me.getPoint());
-            int col = columnAtPoint(me.getPoint());
-            
-            if ((row != -1) && (col != -1)) {
-                changeSelection(row, col, false, false);
-                getCustomEditorAction().actionPerformed(
-                        new ActionEvent(this, ActionEvent.ACTION_PERFORMED, ACTION_CUSTOM_EDITOR)
-                        );
-                me.consume();
-                
-                return;
+            if( onCustomEditorButton(me) && !hasFocus()) {
+                if (PropUtils.psCommitOnFocusLoss && isEditing()) {
+                    getEditor().stopCellEditing();
+
+                    // #54211: it can happen that PropertySheet window is closed
+                    // when previous property editing is finished (e.g. Form
+                    // event properties) If this is the case don't try to edit
+                    // newly selected property.
+                    if (isGoingToBeClosed()) {
+                        return;
+                    }
+                }
+
+                int row = rowAtPoint(me.getPoint());
+                int col = columnAtPoint(me.getPoint());
+
+                if ((row != -1) && (col != -1)) {
+                    changeSelection(row, col, false, false);
+                    getCustomEditorAction().actionPerformed(
+                            new ActionEvent(this, ActionEvent.ACTION_PERFORMED, ACTION_CUSTOM_EDITOR)
+                            );
+                    me.consume();
+
+                    return;
+                }
             }
         }
         
@@ -1140,7 +1215,7 @@ final class SheetTable extends BaseTable implements PropertySetModelListener, Cu
     @Override
     public boolean isCellEditable(int row, int column) {
         if (column == 0) {
-            return false;
+            return null != getCustomEditor( row );
         }
 
         FeatureDescriptor fd = getPropertySetModel().getFeatureDescriptor(row);
@@ -1283,12 +1358,14 @@ final class SheetTable extends BaseTable implements PropertySetModelListener, Cu
             return null;
         }
 
+        if( 1 == col ) {
         //Usually result == ine, but custom impls may not be
         InplaceEditor ine = getEditor().getInplaceEditor();
 
         if (ine.supportsTextEntry()) {
             result.setBackground(PropUtils.getTextFieldBackground());
             result.setForeground(PropUtils.getTextFieldForeground());
+        }
         }
 
         if (result instanceof JComponent) {

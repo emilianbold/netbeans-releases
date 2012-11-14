@@ -577,6 +577,19 @@ public class MenuBar extends JMenuBar implements Externalizable {
             if (Thread.holdsLock(getTreeLock())) {
                 return;
             }
+            if( "Aqua".equals(UIManager.getLookAndFeel().getID()) ) { //NOI18N
+                //#211284 - don't initialize menu items when the component tree is being refreshed on main wnd (de)activation
+                for( StackTraceElement ste : Thread.currentThread().getStackTrace() ) {
+                    if( "com.apple.laf.AquaRootPaneUI".equals(ste.getClassName()) ) { //NOI18N
+                        if( "windowDeactivated".equals(ste.getMethodName()) ) { //NOI18N
+                            break;
+                        }
+                        if( "windowActivated".equals(ste.getMethodName()) ) { //NOI18N
+                            break;
+                        }
+                    }
+                }
+            }
             doInitialize();
         }
         

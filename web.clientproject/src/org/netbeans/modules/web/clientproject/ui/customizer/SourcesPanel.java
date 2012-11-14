@@ -49,8 +49,11 @@ import javax.swing.JPanel;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.netbeans.modules.web.clientproject.ClientSideProject;
+import org.netbeans.modules.web.clientproject.validation.ProjectFoldersValidator;
+import org.netbeans.modules.web.clientproject.validation.ValidationResult;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
 import org.openide.filesystems.FileChooserBuilder;
+import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -85,10 +88,25 @@ public class SourcesPanel extends JPanel implements HelpCtx.Provider {
 
     private void init() {
         jProjectFolderTextField.setText(FileUtil.getFileDisplayName(project.getProjectDirectory()));
-        jSiteRootFolderTextField.setText(uiProperties.getSiteRootFolder());
+        jSiteRootFolderTextField.setText(getSiteRootPath());
         jTestFolderTextField.setText(uiProperties.getTestFolder());
         jEncodingComboBox.setModel(ProjectCustomizer.encodingModel(uiProperties.getEncoding()));
         jEncodingComboBox.setRenderer(ProjectCustomizer.encodingRenderer());
+    }
+
+    private String getSiteRootPath() {
+        String siteRootPath = null;
+        File siteRoot = uiProperties.getResolvedSiteRootFolder();
+        if (siteRoot.exists()) {
+            FileObject siteRootFO = FileUtil.toFileObject(siteRoot);
+            if (siteRootFO != null) {
+                siteRootPath = FileUtil.getRelativePath(project.getProjectDirectory(), siteRootFO);
+            }
+        }
+        if (siteRootPath == null) {
+            siteRootPath = uiProperties.getSiteRootFolder();
+        }
+        return siteRootPath;
     }
 
     private void initListeners() {
@@ -109,18 +127,19 @@ public class SourcesPanel extends JPanel implements HelpCtx.Provider {
     }
 
     private void validateData() {
-        // site root
-        String error = validateSiteRoot();
-        if (error != null) {
-            category.setErrorMessage(error);
+        ProjectFoldersValidator validator = new ProjectFoldersValidator();
+        validator.validate(FileUtil.toFile(project.getProjectDirectory()), getSiteRootFolder(), getTestFolder());
+        ValidationResult result = validator.getResult();
+        // errors
+        if (result.hasErrors()) {
+            category.setErrorMessage(result.getErrors().get(0).getMessage());
             category.setValid(false);
             return;
         }
-        // test
-        error = validateTest();
-        if (error != null) {
-            category.setErrorMessage(error);
-            category.setValid(false);
+        // warnings
+        if (result.hasWarnings()) {
+            category.setErrorMessage(result.getWarnings().get(0).getMessage());
+            category.setValid(true);
             return;
         }
         // all ok
@@ -128,44 +147,21 @@ public class SourcesPanel extends JPanel implements HelpCtx.Provider {
         category.setValid(true);
     }
 
-    @NbBundle.Messages("SourcesPanel.error.siteRoot.invalid=Site Root must be a valid directory.")
-    private String validateSiteRoot() {
-        File siteRootFolder = getSiteRootFolder();
-        if (siteRootFolder == null || !siteRootFolder.isDirectory()) {
-            return Bundle.SourcesPanel_error_siteRoot_invalid();
-        }
-        return null;
-    }
-
-    @NbBundle.Messages({
-        "SourcesPanel.error.test.invalid=Unit Tests must be a valid directory.",
-        "SourcesPanel.error.test.notUnderProjectDir=Unit Tests must be underneath project directory."
-    })
-    private String validateTest() {
-        File testFolder = getTestFolder();
-        if (testFolder == null) {
-            // can be empty
-            return null;
-        }
-        if (!testFolder.isDirectory()) {
-            return Bundle.SourcesPanel_error_test_invalid();
-        }
-        if (!FileUtil.isParentOf(project.getProjectDirectory(), FileUtil.toFileObject(testFolder))) {
-            return Bundle.SourcesPanel_error_test_notUnderProjectDir();
-        }
-        return null;
-    }
-
     private void storeData() {
         File siteRootFolder = getSiteRootFolder();
-        uiProperties.setSiteRootFolder(siteRootFolder != null ? siteRootFolder.getAbsolutePath() : ""); // NOI18N
+        uiProperties.setSiteRootFolder(siteRootFolder.getAbsolutePath());
         File testFolder = getTestFolder();
         uiProperties.setTestFolder(testFolder != null ? testFolder.getAbsolutePath() : ""); // NOI18N
         uiProperties.setEncoding(getEncoding().name());
     }
 
     private File getSiteRootFolder() {
-        return resolveFile(jSiteRootFolderTextField.getText());
+        File resolved = resolveFile(jSiteRootFolderTextField.getText());
+        if (resolved != null) {
+            return resolved;
+        }
+        // return project dir
+        return FileUtil.toFile(project.getProjectDirectory());
     }
 
     private File getTestFolder() {
@@ -270,10 +266,10 @@ public class SourcesPanel extends JPanel implements HelpCtx.Provider {
                     .addComponent(jLabel4))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jProjectFolderTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 1, Short.MAX_VALUE)
+                    .addComponent(jProjectFolderTextField)
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                            .addComponent(jEncodingComboBox, javax.swing.GroupLayout.Alignment.LEADING, 0, 195, Short.MAX_VALUE)
+                            .addComponent(jEncodingComboBox, javax.swing.GroupLayout.Alignment.LEADING, 0, 159, Short.MAX_VALUE)
                             .addComponent(jTestFolderTextField)
                             .addComponent(jSiteRootFolderTextField))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -297,11 +293,11 @@ public class SourcesPanel extends JPanel implements HelpCtx.Provider {
                     .addComponent(jLabel3)
                     .addComponent(jTestFolderTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jBrowseTestButton))
-                .addGap(18, 18, 18)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel4)
                     .addComponent(jEncodingComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGap(0, 146, Short.MAX_VALUE))
+                .addGap(0, 148, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
 

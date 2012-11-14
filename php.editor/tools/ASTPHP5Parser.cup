@@ -44,7 +44,6 @@ package org.netbeans.modules.php.editor.parser;
 import java.util.*;
 import org.netbeans.modules.php.editor.parser.astnodes.*;
 
-@org.netbeans.api.annotations.common.SuppressWarnings({"DM_NUMBER_CTOR", "EI_EXPOSE_REP", "MS_PKGPROTECT"})
 parser code {:
     private static short[][] getActionTable() {}
 
@@ -636,11 +635,6 @@ statement:statement
 | class_declaration_statement:statement
 {:
 	RESULT = statement;
-:}
-
-| T_HALT_COMPILER:halt
-{:
-    RESULT = new HaltCompiler(haltleft, haltright);
 :}
 ;
 
@@ -1823,7 +1817,7 @@ ppp_modifiers:modifier
 {:
     RESULT = modifier;
 :}
-Integer.valueOf(modifier.intValue())
+
 | static_modifier:modifier
 {:
     RESULT = modifier;

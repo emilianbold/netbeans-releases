@@ -57,6 +57,21 @@ public enum DeclarationInfo {
     
     /**
      * Flags inactive declaration.
+     * 
+     * CSS rule that affects an element can either match the element or may match one
+     * of its parents (and be inherited). Moreover, not all properties (only those
+     * marked as inherited by the corresponding CSS spec.) from an inherited rule
+     * affect the element. Hence, I am marking properties (from an inherited rule)
+     * that are not inherited by DeclarationInfo.INACTIVE to emphasize that they are
+     * not affecting the selected element. In summary, a property marked by this flag
+     * is not inherited property from an inherited rule.
+     * 
+     * For the sake of completeness I have to add that I mark by this flag also
+     * another group of properties (but I don't think that this must be covered by the
+     * tooltip): the ones that use star or underscore CSS hack to affect some versions
+     * of Internet Explorer only. These properties also do not affect the rendered
+     * element because the inspected page runs in Chrome or in WebView (i.e. not in
+     * IE). 
      */
     INACTIVE,
     

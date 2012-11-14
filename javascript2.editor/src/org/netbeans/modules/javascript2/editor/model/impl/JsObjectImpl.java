@@ -54,7 +54,7 @@ public class JsObjectImpl extends JsElementImpl implements JsObject {
 
     final private HashMap<String, JsObject> properties;
     final private Identifier declarationName;
-    final private JsObject parent;
+    private JsObject parent;
     final private List<Occurrence> occurrences;
     final private Map<Integer, Collection<TypeUsage>> assignments;
     final private boolean hasName;
@@ -175,7 +175,11 @@ public class JsObjectImpl extends JsElementImpl implements JsObject {
     public JsObject getParent() {
         return parent;
     }
-    
+
+    public void setParent(JsObject newParent) {
+        this.parent = newParent;
+    }
+
     @Override
     public int getOffset() {
         return declarationName.getOffsetRange().getStart();

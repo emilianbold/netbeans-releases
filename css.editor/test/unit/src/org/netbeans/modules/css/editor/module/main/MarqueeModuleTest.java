@@ -59,13 +59,13 @@ public class MarqueeModuleTest extends CslTestBase {
     }
     
     public void testProperties() {
-        PropertyDefinition p = Properties.getPropertyDefinition(null, "marquee-direction");
+        PropertyDefinition p = Properties.getPropertyDefinition( "marquee-direction");
         assertTrue(new ResolvedProperty(p, "reverse").isResolved());
         assertTrue(new ResolvedProperty(p, "forward").isResolved());
     }
     
     public void testMarqueePlayCount() {
-        PropertyDefinition p = Properties.getPropertyDefinition(null, "marquee-play-count");
+        PropertyDefinition p = Properties.getPropertyDefinition( "marquee-play-count");
         assertTrue(new ResolvedProperty(p, "1").isResolved());
         assertFalse(new ResolvedProperty(p, "-1").isResolved()); //negative not allowed
         

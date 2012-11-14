@@ -57,6 +57,23 @@ made subject to such option by the copyright holder.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
     <changes>
+        <change id="visible-ancestor">
+            <api name="general"/>
+            <summary>Find a visible ancestor of UpdateUnit</summary>
+            <version major="1" minor="37"/>
+            <date day="31" month="10" year="2012"/>
+            <author login="jrechtacek"/>
+            <compatibility addition="yes" binary="compatible" deletion="no" deprecation="no" semantic="compatible" source="compatible"/>
+            <description>
+                <p>
+                    Added a method {@link org.netbeans.api.autoupdate.UpdateUnit#getVisibleAncestor} which returns a visible plugin
+                    which depending upon this unit. Returns a unit if this unit is installed in the system and some of visible
+                    units depending upon this one, otherwise returns null.
+                </p>
+            </description>
+            <class package="org.netbeans.api.autoupdate" name="UpdateUnit"/>
+            <issue number="190246"/>
+        </change>
         <change id="preffered-update">
             <api name="general"/>
             <summary>Mark an update as preferred just if needed</summary>

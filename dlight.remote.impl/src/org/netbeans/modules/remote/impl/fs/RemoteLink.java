@@ -64,14 +64,15 @@ public final class RemoteLink extends RemoteLinkBase {
     }
 
     private static String normalize(String link, RemoteFileObjectBase parent) {
-        if (link.startsWith("/")) { // NOI18N
-            return link;
+        String path = link;
+        if (!path.startsWith("/")) { // NOI18N
+            String parentPath = parent.getPath();
+            if (!parentPath.startsWith("/")) { // NOI18N
+                parentPath = "/" + parentPath; // NOI18N
+            }            
+            path = parentPath + '/' + link;
         }
-        String parentPath = parent.getPath();
-        if (!parentPath.startsWith("/")) { // NOI18N
-            parentPath = "/" + parentPath; // NOI18N
-        }
-        return PathUtilities.normalizeUnixPath(parentPath + '/' + link);
+        return PathUtilities.normalizeUnixPath(path);
     }
 
     @Override

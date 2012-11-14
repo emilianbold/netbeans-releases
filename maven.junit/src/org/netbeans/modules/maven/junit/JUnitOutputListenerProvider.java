@@ -48,6 +48,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
@@ -98,6 +99,7 @@ public class JUnitOutputListenerProvider implements OutputProcessor {
     private File outputDir;
     String runningTestClass;
     private final Set<String> usedNames;
+    private final long startTimeStamp;
     
     private static final Logger LOG = Logger.getLogger(JUnitOutputListenerProvider.class.getName());
     private RunConfig config;
@@ -108,6 +110,7 @@ public class JUnitOutputListenerProvider implements OutputProcessor {
         outDirPattern2 = Pattern.compile("Setting reports dir\\: (.*)", Pattern.DOTALL); //NOI18N
         this.config = config;
         usedNames = new HashSet<String>();
+        startTimeStamp = System.currentTimeMillis();
     }
 
 
@@ -344,7 +347,7 @@ public class JUnitOutputListenerProvider implements OutputProcessor {
             suffix = "-" + suffix;
         }
         File report = new File(outputDir, "TEST-" + runningTestClass + suffix + ".xml");
-        if (!report.isFile()) {
+        if (!report.isFile() || report.lastModified() < startTimeStamp) { //#219097 ignore results from previous invokation.
             return;
         }
         try {
@@ -388,7 +391,8 @@ public class JUnitOutputListenerProvider implements OutputProcessor {
                 }
                 String time = testcase.getAttributeValue("time");
                 if (time != null) {
-                    float fl = NumberFormat.getNumberInstance().parse(time).floatValue();
+                    // the surefire plugin does not print out localised numbers, so use the english format
+                    float fl = NumberFormat.getNumberInstance(Locale.ENGLISH).parse(time).floatValue();
                     test.setTimeMillis((long)(fl * 1000));
                 }
                 String classname = testcase.getAttributeValue("classname");
@@ -403,7 +407,8 @@ public class JUnitOutputListenerProvider implements OutputProcessor {
                 session.addTestCase(test);
             }
             String time = testSuite.getAttributeValue("time");
-            float fl = NumberFormat.getNumberInstance().parse(time).floatValue();
+            // the surefire plugin does not print out localised numbers, so use the english format
+            float fl = NumberFormat.getNumberInstance(Locale.ENGLISH).parse(time).floatValue();
             long timeinmilis = (long)(fl * 1000);
             Manager.getInstance().displayReport(session, session.getReport(timeinmilis));
             File output = new File(outputDir, runningTestClass + suffix + "-output.txt");

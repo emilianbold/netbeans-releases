@@ -168,6 +168,9 @@ public final class NativeDebuggerManager extends DebuggerManagerAdapter {
 
     // Keep a strong reference to 'changeListener' so it doesn't get GC'ed
     private ChangeListener changeListener;
+    
+    // request processor for various Native Debugger needs
+    private static final RequestProcessor RP = new RequestProcessor("Native Debugger Request Processor", 10); //NOI18N
 
     private NativeDebuggerManager() {
 
@@ -206,6 +209,10 @@ public final class NativeDebuggerManager extends DebuggerManagerAdapter {
             get().shutDown();
             get().saveGlobalState();
         }
+    }
+    
+    public static RequestProcessor getRequestProcessor() {
+        return RP;
     }
     
     /**
@@ -389,27 +396,32 @@ public final class NativeDebuggerManager extends DebuggerManagerAdapter {
     /**
      * Convert Set to List of String filenames and call notifyUnsavedFiles()
      */
-    private void notifyUnsavedFiles(NativeDebugger debugger, Set<DataObject> set) {
-        List<String> filesNames = new ArrayList<String>();
-        for (DataObject dao : set) {
-            FileObject fo = dao.getPrimaryFile();
-            if (fo != null) {
-                File f = FileUtil.toFile(fo);
-                if (f != null) { // can be for memoryFS files
-                    try {
-                        filesNames.add(f.getCanonicalPath());
-                    // DEBUG System.out.println("\t" + f.getCanonicalPath());
-                    } catch (Exception ex) {
-                        filesNames.add(f.getPath());
-                    // DEBUG System.out.println("\t" + f.getPath());
+    private void notifyUnsavedFiles(final NativeDebugger debugger, final Set<DataObject> set) {
+        RP.submit(new Runnable() {
+            @Override
+            public void run() {
+                List<String> filesNames = new ArrayList<String>();
+                for (DataObject dao : set) {
+                    FileObject fo = dao.getPrimaryFile();
+                    if (fo != null) {
+                        File f = FileUtil.toFile(fo);
+                        if (f != null) { // can be for memoryFS files
+                            try {
+                                filesNames.add(f.getCanonicalPath());
+                                // DEBUG System.out.println("\t" + f.getCanonicalPath());
+                            } catch (Exception ex) {
+                                filesNames.add(f.getPath());
+                                // DEBUG System.out.println("\t" + f.getPath());
+                            }
+                        }
+                    } else {
+                        // DEBUG System.out.println("\tno FO");
                     }
                 }
-            } else {
-                // DEBUG System.out.println("\tno FO");
+                // DEBUG System.out.println();
+                notifyUnsavedFiles(debugger, filesNames);
             }
-        }
-        // DEBUG System.out.println();
-        notifyUnsavedFiles(debugger, filesNames);
+        });
     }
 
     /**

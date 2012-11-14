@@ -110,8 +110,6 @@ public final class ReplaceBar extends JPanel {
             @Override
             public void focusGained(FocusEvent e) {
                 getSearchBar().lostFocusOnTextField();
-                getSearchBar().getIncSearchTextField().select(0, 0);
-                replaceTextField.selectAll();
             }
         });
         addEnterKeystrokeReplaceTo(replaceTextField);
@@ -275,10 +273,6 @@ public final class ReplaceBar extends JPanel {
 
             }
         });
-    }
-
-    public JTextComponent getReplaceTextField() {
-        return replaceTextField;
     }
 
     void updateReplaceComboBoxHistory(String incrementalSearchText) {

@@ -148,7 +148,7 @@ public final class TeamServerTopComponent extends TopComponent {
 
     @Messages("LBL_Server=Team Server:")
     Component getServerSwitcher() {
-        combo = new TeamServerCombo(false);
+        combo = new TeamServerCombo(true);
         Object k = Utilities.getLastTeamServer();
         if (k!=null) {
             combo.setSelectedItem(k);

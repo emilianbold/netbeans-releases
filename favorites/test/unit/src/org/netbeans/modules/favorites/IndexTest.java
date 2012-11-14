@@ -45,6 +45,7 @@
 package org.netbeans.modules.favorites;
 
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.junit.RandomlyFails;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataFolder;
@@ -73,6 +74,7 @@ public class IndexTest extends NbTestCase {
     /**
      * Test basic functionality of Index on FavoritesNode node.
      */
+    @RandomlyFails
     public void testReorder () throws Exception {
         FileObject folder = FileUtil.createFolder (
             FileUtil.getConfigRoot(),

@@ -147,7 +147,8 @@ final class OutputTab extends AbstractOutputTab implements IOContainer.CallBacks
                     opts.getColorLinkImportant());
             Color bg = io.getOptions().getColorBackground();
             getOutputPane().getTextView().setBackground(bg);
-            getOutputPane().setViewFont(io.getOptions().getFont());
+            getOutputPane().setViewFont(
+                    io.getOptions().getFont(getOutputPane().isWrapped()));
         }
     }
 
@@ -667,23 +668,6 @@ final class OutputTab extends AbstractOutputTab implements IOContainer.CallBacks
         action(PREV_ERROR).setEnabled(hasErrors);
     }
 
-    private void showFontChooser() {
-        PropertyEditor pe = PropertyEditorManager.findEditor(Font.class);
-        if (pe != null) {
-            pe.setValue(getOutputPane().getViewFont());
-            DialogDescriptor dd = new DialogDescriptor(pe.getCustomEditor(), NbBundle.getMessage(OutputTab.class, "LBL_Font_Chooser_Title"));  // NOI18N
-            String defaultFont = NbBundle.getMessage(OutputTab.class, "BTN_Defaul_Font");
-            dd.setOptions(new Object[]{DialogDescriptor.OK_OPTION, defaultFont, DialogDescriptor.CANCEL_OPTION});  // NOI18N
-            DialogDisplayer.getDefault().createDialog(dd).setVisible(true);
-            if (dd.getValue() == DialogDescriptor.OK_OPTION) {
-                Font f = (Font) pe.getValue();
-                Controller.getDefault().changeFont(f);
-            } else if (dd.getValue() == defaultFont) {
-                Controller.getDefault().changeFont(null);
-            }
-        }
-    }
-
     FilteredOutput filtOut;
     AbstractOutputPane origPane;
 
@@ -771,16 +755,13 @@ final class OutputTab extends AbstractOutputTab implements IOContainer.CallBacks
             Color bg = opts.getColorBackground();
             getOutputPane().getTextView().setBackground(bg);
         } else if (OutputOptions.PROP_FONT.equals(pn)) {
-            Font font = opts.getFont();
-            if (getOutputPane().isWrapped()
-                    && getIO().getIOContainer() == IOContainer.getDefault()) {
-                Font dfltFont = OutputOptions.getDefaultFont();
-                if (!font.getFamily().equals(dfltFont.getFamily())
-                        || font.getStyle() != dfltFont.getStyle()) {
-                    font = Controller.getDefault().getCurrentFontMS();
-                }
+            if (!getOutputPane().isWrapped()) {
+                getOutputPane().setViewFont(opts.getFont());
             }
-            getOutputPane().setViewFont(font);
+        } else if (OutputOptions.PROP_FONT_SIZE_WRAP.equals(pn)) {
+            if (getOutputPane().isWrapped()) {
+                getOutputPane().setViewFont(opts.getFontForWrappedMode());
+            }
         }
     }
 
@@ -969,7 +950,7 @@ final class OutputTab extends AbstractOutputTab implements IOContainer.CallBacks
                             "select-all", null);                        //NOI18N
                 case FIND:
                     return KeyStrokeUtils.getKeyStrokesForAction(
-                            "incremental-search-forward", null);        //NOI18N
+                            "find", null);                              //NOI18N
                 case FIND_NEXT:
                     return KeyStrokeUtils.getKeyStrokesForAction(
                             "find-next", null);                         //NOI18N

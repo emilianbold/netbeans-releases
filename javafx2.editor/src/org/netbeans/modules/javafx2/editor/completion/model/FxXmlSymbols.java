@@ -41,6 +41,8 @@
  */
 package org.netbeans.modules.javafx2.editor.completion.model;
 
+import java.util.HashSet;
+import java.util.Set;
 import java.util.StringTokenizer;
 import org.openide.util.Utilities;
 
@@ -76,6 +78,14 @@ public final class FxXmlSymbols {
     public static final String FX_LANGUAGE = "language";
     
     public static final String FX_ATTR_REFERENCE_SOURCE = "source";
+    
+    public static final String FX_ATTR_TYPE = "type";
+    
+    public static final String FX_ATTR_CONSTANT = "constant";
+    
+    public static final String FX_SCRIPT = "script";
+    
+    public static final String FX_ROOT = "root";
     
     /**
      * The fx:value attribute
@@ -188,5 +198,37 @@ public final class FxXmlSymbols {
             }
         }
         return true;
+    }
+    
+    private static final Set<String> fxReservedAttributes;
+    
+    static {
+        Set<String> h = new HashSet<String>();
+        h.add(FX_ATTR_CONSTANT);
+        h.add(FX_ATTR_ID);
+        h.add(FX_VALUE);
+        h.add(FX_FACTORY);
+        h.add(FX_CONTROLLER);
+        
+        fxReservedAttributes = h;
+    }
+    
+    /**
+     * Checks if the attribute is a FX-reserved attribute name, assuming
+     * the attribute comes from FX namespace.
+     * <p/>
+     * The reserved names are:
+     * <ul>
+     * <li>id
+     * <li>controller
+     * <li>value
+     * <li>factory
+     * <li>constant
+     * </ul>
+     * @param fxLocalName
+     * @return 
+     */
+    public static boolean isFxReservedAttribute(String fxLocalName) {
+        return fxReservedAttributes.contains(fxLocalName);
     }
 }

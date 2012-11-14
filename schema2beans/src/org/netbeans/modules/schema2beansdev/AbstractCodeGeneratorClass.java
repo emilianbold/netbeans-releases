@@ -968,7 +968,7 @@ public abstract class AbstractCodeGeneratorClass {
     protected void gentab(int n) {for(int i=0; i<n; i++) tabIn();}
     
     protected void genSetValue(boolean isScalar, String classType) {
-        gen(JavaUtil.toObject("value", classType, config.isForME()));
+        gen(JavaUtil.toObject("value", classType, config.isForME(), config.isJava5()));
         gen(")");
     }
 
@@ -1028,8 +1028,11 @@ public abstract class AbstractCodeGeneratorClass {
 
         config.messageOut.println("Generating class " + filename);  // NOI18N
         OutputStream out = new FileOutputStream(filename);
-        generate(out, mdd);
-        out.close();
+        try {
+            generate(out, mdd);
+        } finally {
+            out.close();
+        }
     }
 
     public abstract void generate(OutputStream out, MetaDD mdd) throws IOException;
@@ -1085,21 +1088,25 @@ public abstract class AbstractCodeGeneratorClass {
      * Send the schema to the current output channel.
      */
     protected void printSchema() throws IOException {
-        if (config.getFilename() == null)
+        if (config.getFilename() == null) {
             return;
-	    File f = config.getFilename();
-	    if (f.length() < 16384L) {
+        }
+	File f = config.getFilename();
+        if (f.length() < 16384L) {
             FileInputStream fi = new FileInputStream(f);
-            byte[] r = new byte[(int)f.length()];
-            fi.read(r);
-            cr(); gencr("/*"); gentab(2);
-            gencr("The following schema file has been used for generation:");
-            cr();
-            gen(new String(r));
-            fi.close();
-            cr();
-            gencr("*/");
-	    }
+            try {
+                byte[] r = new byte[(int)f.length()];
+                fi.read(r);
+                cr(); gencr("/*"); gentab(2);
+                gencr("The following schema file has been used for generation:");
+                cr();
+                gen(new String(r));
+                cr();
+                gencr("*/");
+            } finally {
+                fi.close();
+            }
+        }
     }
 
     protected void printComment(String indent) throws IOException {
@@ -2049,7 +2056,7 @@ public abstract class AbstractCodeGeneratorClass {
                         // So for the actual validation we need to convert the string to the
                         // restriction's type so that we can compare
                         jw.beginTry();
-                        typeAttr = "("+JavaUtil.genParseText(type, attr)+")";
+                        typeAttr = "("+JavaUtil.genParseText(type, attr, config.isJava5())+")";
                     }
                     dtr.genRestriction(jw, typeAttr, type, "restrictionFailure", false);
                     if (isUnion) {
@@ -2198,7 +2205,7 @@ public abstract class AbstractCodeGeneratorClass {
             else
                 writeMethod = a.getWriteMethod();
             //jw.comment("a.name="+a.name+" sw="+sw+" sd.help="+sd.getHelp()+" mandatory="+sd.isMandatory());
-            jw.beginIf("arg == "+JavaUtil.instanceFrom("String", "-"+sw));
+            jw.beginIf(JavaUtil.instanceFrom("String", "-"+sw) + ".equals(arg)");
             boolean isBoolean = (type == "boolean" || type == "Boolean" || type == "java.lang.Boolean");
             helpParams.append(" ");
             if (!sd.isMandatory())
@@ -2236,7 +2243,7 @@ public abstract class AbstractCodeGeneratorClass {
             }
             helpText.append('\n');
             if (isBoolean) {
-                jw.beginIf("arg == "+JavaUtil.instanceFrom("String", "-no"+sw));
+                jw.beginIf(JavaUtil.instanceFrom("String", "-no"+sw) + ".equals(arg)");
                 jw.writeEol(writeMethod+"(false)");
                 jw.writeEol("continue");
                 jw.end();

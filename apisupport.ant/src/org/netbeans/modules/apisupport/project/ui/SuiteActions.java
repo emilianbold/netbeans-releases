@@ -44,6 +44,7 @@
 
 package org.netbeans.modules.apisupport.project.ui;
 
+import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -90,6 +91,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.util.ContextAwareAction;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle.Messages;
+import org.openide.util.RequestProcessor;
 import org.openide.util.Task;
 import org.openide.util.TaskListener;
 import org.openide.util.actions.Presenter;
@@ -120,6 +122,7 @@ public final class SuiteActions implements ActionProvider, ExecProject {
     private static final String SUITE_JNLP_ACTIONS_PATH = "Projects/" + SUITE_JNLP_ACTIONS_TYPE + "/Actions";
     private static final String SUITE_OSGI_ACTIONS_TYPE = SUITE_ACTIONS_TYPE + "-osgi";
     private static final String SUITE_OSGI_ACTIONS_PATH = "Projects/" + SUITE_OSGI_ACTIONS_TYPE + "/Actions";
+    private static final RequestProcessor RP = new RequestProcessor(SuiteActions.class);
 
     @Override
     public Task execute(String... args) throws IOException {
@@ -369,9 +372,24 @@ public final class SuiteActions implements ActionProvider, ExecProject {
         } else if (ActionProvider.COMMAND_MOVE.equals(command)) {
             DefaultProjectOperations.performDefaultMoveOperation(project);
         } else if (COMMAND_BRANDING.equals(command)) {
-            SuiteProperties properties = new SuiteProperties(project, project.getHelper(), project.getEvaluator(), SuiteUtils.getSubProjects(project));
-            BrandingModel model = properties.getBrandingModel();
-            BrandingUtils.openBrandingEditor(Title_BrandingEditor(properties.getProjectDisplayName()), project, model);
+            final ActionProgress listener = ActionProgress.start(context);
+            Runnable runnable = new Runnable() {
+                @Override public void run() {
+                    try {
+                        final SuiteProperties properties = new SuiteProperties(project, project.getHelper(), project.getEvaluator(), SuiteUtils.getSubProjects(project));
+                        final BrandingModel model = properties.getBrandingModel();
+                        EventQueue.invokeLater(new Runnable() {
+                            @Override
+                            public void run () {
+                                BrandingUtils.openBrandingEditor(Title_BrandingEditor(properties.getProjectDisplayName()), project, model);
+                            }
+                        });
+                    } finally {
+                        listener.finished(true);
+                    }
+                }
+            };
+            RP.post(runnable);
         } else {
             NbPlatform plaf = project.getPlatform(false);
             if (plaf != null) {

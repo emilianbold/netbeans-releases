@@ -50,6 +50,8 @@ import org.netbeans.modules.tasks.ui.DashboardTopComponent;
 import org.netbeans.modules.tasks.ui.dashboard.CategoryNode;
 import org.netbeans.modules.tasks.ui.dashboard.DashboardViewer;
 import org.netbeans.modules.tasks.ui.dashboard.RepositoryNode;
+import org.openide.actions.FindAction;
+import org.openide.util.SharedClassObject;
 
 /**
  *
@@ -92,8 +94,7 @@ public class Utils {
     public static String getTaskDisplayString(Issue task, JComponent component, int maxWidth, boolean active, boolean hasFocus) {
         String displayName;
         String fitText = computeFitText(component, maxWidth, task.getID() + " - " + task.getSummary(), active); //NOI18N
-        //replace spaces to prevent line breaking
-        fitText = removeSpaces(fitText);
+        
         String activeText = active ? "<b>" + fitText + "</b>" : getFilterBoldText(fitText); //NOI18N
 
         if (task.isFinished()) {
@@ -107,6 +108,8 @@ public class Utils {
         } else {
             displayName = "<html>" + activeText + "</html>"; //NOI18N
         }
+        //replace spaces to prevent line breaking
+        displayName = removeSpaces(displayName);
         return displayName;
     }
 
@@ -169,5 +172,9 @@ public class Utils {
 
     private static String removeSpaces(String name) {
         return name.replace(" ", "&nbsp;"); //NOI18N
+    }
+    
+    public static String getFindActionMapKey(){
+        return SharedClassObject.findObject(FindAction.class, true).getActionMapKey().toString();
     }
 }

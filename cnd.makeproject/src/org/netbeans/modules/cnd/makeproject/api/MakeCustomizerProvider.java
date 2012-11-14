@@ -78,8 +78,8 @@ import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
-/** Customization of Make project
- * shows dialog
+/**
+ * Customization of Make project shows dialog
  */
 public class MakeCustomizerProvider implements CustomizerProvider {
 
@@ -128,7 +128,6 @@ public class MakeCustomizerProvider implements CustomizerProvider {
             return;
         }
         RP.post(new Runnable() {
-
             @Override
             public void run() {
                 showCustomizerWorker(preselectedNodeName, item, folder);
@@ -240,7 +239,9 @@ public class MakeCustomizerProvider implements CustomizerProvider {
         }
     }
 
-    /** Listens to the actions on the Customizer's option buttons */
+    /**
+     * Listens to the actions on the Customizer's option buttons
+     */
     private final class OptionListener implements ActionListener {
 
         private Project project;
@@ -264,64 +265,74 @@ public class MakeCustomizerProvider implements CustomizerProvider {
             currentCommand = e.getActionCommand();
 
             if (currentCommand.equals(COMMAND_OK) || currentCommand.equals(COMMAND_APPLY)) {
-                int previousVersion = projectDescriptor.getVersion();
-                int currentVersion = CommonConfigurationXMLCodec.CURRENT_VERSION;
-                if (previousVersion < currentVersion) {
-                    // Check
-                    boolean issueRequiredProjectBuildWarning = false;
-                    if (previousVersion < 76) {
-                        for (Configuration configuration : projectDescriptor.getConfs().getConfigurations()) {
-                            MakeConfiguration makeConfiguration = (MakeConfiguration) configuration;
-                            if (!makeConfiguration.isMakefileConfiguration()) {
-                                continue;
-                            }
-                            List<ProjectItem> projectLinkItems = makeConfiguration.getRequiredProjectsConfiguration().getValue();
-                            for (ProjectItem projectItem : projectLinkItems) {
-                                if (projectItem.getMakeArtifact().getBuild()) {
-                                    issueRequiredProjectBuildWarning = true;
-                                    break;
+                //non UI actions such as as update of MakeConfiguration accessing filesystem should be invoked from non EDT
+                RP.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        int previousVersion = projectDescriptor.getVersion();
+                        int currentVersion = CommonConfigurationXMLCodec.CURRENT_VERSION;
+                        if (previousVersion < currentVersion) {
+                            // Check
+                            boolean issueRequiredProjectBuildWarning = false;
+                            if (previousVersion < 76) {
+                                for (Configuration configuration : projectDescriptor.getConfs().getConfigurations()) {
+                                    MakeConfiguration makeConfiguration = (MakeConfiguration) configuration;
+                                    if (!makeConfiguration.isMakefileConfiguration()) {
+                                        continue;
+                                    }
+                                    List<ProjectItem> projectLinkItems = makeConfiguration.getRequiredProjectsConfiguration().getValue();
+                                    for (ProjectItem projectItem : projectLinkItems) {
+                                        if (projectItem.getMakeArtifact().getBuild()) {
+                                            issueRequiredProjectBuildWarning = true;
+                                            break;
+                                        }
+                                    }
                                 }
                             }
+
+                            String txt;
+
+                            if (issueRequiredProjectBuildWarning) {
+                                txt = getString("UPGRADE_RQ_TXT");
+                            } else {
+                                txt = getString("UPGRADE_TXT");
+                            }
+                            NotifyDescriptor d = new NotifyDescriptor.Confirmation(txt, getString("UPGRADE_DIALOG_TITLE"), NotifyDescriptor.YES_NO_OPTION); // NOI18N
+                            if (DialogDisplayer.getDefault().notify(d) != NotifyDescriptor.YES_OPTION) {
+                                return;
+                            }
+                            projectDescriptor.setVersion(currentVersion);
                         }
+
+                        //projectDescriptor.copyFromProjectDescriptor(clonedProjectdescriptor);
+                        makeCustomizer.save();
+
+                        List<String> oldSourceRoots = ((MakeConfigurationDescriptor) projectDescriptor).getSourceRoots();
+                        List<String> newSourceRoots = ((MakeConfigurationDescriptor) clonedProjectdescriptor).getSourceRoots();
+                        List<String> oldTestRoots = ((MakeConfigurationDescriptor) projectDescriptor).getTestRoots();
+                        List<String> newTestRoots = ((MakeConfigurationDescriptor) clonedProjectdescriptor).getTestRoots();
+                        Configuration oldActive = projectDescriptor.getConfs().getActive();
+                        if (oldActive != null) {
+                            oldActive = oldActive.cloneConf();
+                        }
+                        Configuration newActive = clonedProjectdescriptor.getConfs().getActive();
+
+                        projectDescriptor.assign(clonedProjectdescriptor);
+                        projectDescriptor.setModified();
+                        projectDescriptor.save(); // IZ 133606
+
+                        // IZ#179995
+                        MakeSharabilityQuery query = project.getLookup().lookup(MakeSharabilityQuery.class);
+                        if (query != null) {
+                            query.update();
+                        }
+                        ((MakeConfigurationDescriptor) projectDescriptor).checkForChangedItems(project, folder, item);
+                        ((MakeConfigurationDescriptor) projectDescriptor).checkForChangedSourceRoots(oldSourceRoots, newSourceRoots);
+                        ((MakeConfigurationDescriptor) projectDescriptor).checkForChangedTestRoots(oldTestRoots, newTestRoots);
+                        ((MakeConfigurationDescriptor) projectDescriptor).checkConfigurations(oldActive, newActive);
                     }
+                });
 
-                    String txt;
-
-                    if (issueRequiredProjectBuildWarning) {
-                        txt = getString("UPGRADE_RQ_TXT");
-                    } else {
-                        txt = getString("UPGRADE_TXT");
-                    }
-                    NotifyDescriptor d = new NotifyDescriptor.Confirmation(txt, getString("UPGRADE_DIALOG_TITLE"), NotifyDescriptor.YES_NO_OPTION); // NOI18N
-                    if (DialogDisplayer.getDefault().notify(d) != NotifyDescriptor.YES_OPTION) {
-                        return;
-                    }
-                    projectDescriptor.setVersion(currentVersion);
-                }
-
-                //projectDescriptor.copyFromProjectDescriptor(clonedProjectdescriptor);
-                makeCustomizer.save();
-
-                List<String> oldSourceRoots = ((MakeConfigurationDescriptor) projectDescriptor).getSourceRoots();
-                List<String> newSourceRoots = ((MakeConfigurationDescriptor) clonedProjectdescriptor).getSourceRoots();
-                List<String> oldTestRoots = ((MakeConfigurationDescriptor) projectDescriptor).getTestRoots();
-                List<String> newTestRoots = ((MakeConfigurationDescriptor) clonedProjectdescriptor).getTestRoots();
-                Configuration oldActive = projectDescriptor.getConfs().getActive();
-                Configuration newActive = clonedProjectdescriptor.getConfs().getActive();
-
-                projectDescriptor.assign(clonedProjectdescriptor);
-                projectDescriptor.setModified();
-                projectDescriptor.save(); // IZ 133606
-
-                // IZ#179995
-                MakeSharabilityQuery query = project.getLookup().lookup(MakeSharabilityQuery.class);
-                if (query != null) {
-                    query.update();
-                }
-                ((MakeConfigurationDescriptor) projectDescriptor).checkForChangedItems(project, folder, item);
-                ((MakeConfigurationDescriptor) projectDescriptor).checkForChangedSourceRoots(oldSourceRoots, newSourceRoots);
-                ((MakeConfigurationDescriptor) projectDescriptor).checkForChangedTestRoots(oldTestRoots, newTestRoots);
-                ((MakeConfigurationDescriptor) projectDescriptor).checkConfigurations(oldActive, newActive);
             }
             if (!currentCommand.equals(COMMAND_CANCEL)) {
                 fireActionEvent(new ActionEvent(project, 0, currentCommand));
@@ -329,7 +340,7 @@ public class MakeCustomizerProvider implements CustomizerProvider {
             if (currentCommand.equals(COMMAND_APPLY)) {
                 makeCustomizer.refresh();
             }
-            
+
         }
     }
 
@@ -356,7 +367,9 @@ public class MakeCustomizerProvider implements CustomizerProvider {
         }
     }
 
-    /** Look up i18n strings here */
+    /**
+     * Look up i18n strings here
+     */
     private static String getString(String s) {
         return NbBundle.getMessage(MakeCustomizerProvider.class, s);
     }

@@ -93,7 +93,9 @@ public final class ComposerActionsFactory extends AbstractAction implements Pres
             super(Bundle.ComposerActionsFactory_name());
             add(new InitAction());
             add(new InstallAction());
+            add(new InstallDevAction());
             add(new UpdateAction());
+            add(new UpdateDevAction());
             add(new ValidateAction());
             addSeparator();
             add(new SelfUpdateAction());

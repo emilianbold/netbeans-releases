@@ -197,4 +197,18 @@ public class TraitScopeImpl extends TypeScopeImpl implements TraitScope {
         return result;
     }
 
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        sb.append(super.toString());
+        Collection<? extends TraitScope> traits = getTraits();
+        if (traits.size() > 0) {
+            sb.append(" uses "); //NOI18N
+            for (TraitScope traitScope : traits) {
+                sb.append(traitScope.getName()).append(" ");
+            }
+        }
+        return sb.toString();
+    }
+
 }

@@ -189,6 +189,10 @@ public class SelectModePanel extends javax.swing.JPanel {
         simpleMode.setEnabled(enable);
     }
 
+    boolean isSimpleMode() {
+        return simpleMode.isSelected();
+    }
+    
     boolean isApplicable(final DiscoveryDescriptor wizardDescriptor){
         boolean applicable = true;
         if (simpleMode.isSelected()) {

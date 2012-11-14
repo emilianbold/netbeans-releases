@@ -1,5 +1,5 @@
 functionVar:VARIABLE:[PRIVATE]:ESCAPED{functionVar}<font color="#999999">ESCAPED{ : }String</font>:
-jQuery:CLASS:[PUBLIC]:ESCAPED{jQuery}:
+jQuery:CLASS:[PRIVATE]:ESCAPED{jQuery}:
   event:CLASS:[PUBLIC]:ESCAPED{event}:
     customEvent:CLASS:[PUBLIC]:ESCAPED{customEvent}:
       changeData:FIELD:[PUBLIC]:ESCAPED{changeData}<font color="#999999">ESCAPED{ : }Boolean</font>:

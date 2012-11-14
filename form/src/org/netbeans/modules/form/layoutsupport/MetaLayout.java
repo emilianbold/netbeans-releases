@@ -107,4 +107,9 @@ class MetaLayout extends RADComponent {
         // a regular RADComponent (properties have a special meaning)
         return null;
     }
+
+    @Override
+    protected BeanInfo createBeanInfo(Class cls) throws IntrospectionException {
+        return super.createBeanInfo(abstLayoutDelegate.getSupportedClass());
+    }
 }

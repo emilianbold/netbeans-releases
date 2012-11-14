@@ -61,6 +61,7 @@ import org.netbeans.api.whitelist.WhiteListQuery.Result;
 import org.netbeans.api.xml.lexer.XMLTokenId;
 import org.netbeans.modules.javafx2.editor.completion.beans.FxBean;
 import org.netbeans.modules.javafx2.editor.completion.beans.FxProperty;
+import org.netbeans.modules.javafx2.editor.completion.model.CompoundCharSequence;
 import org.netbeans.modules.javafx2.editor.completion.model.FxInstance;
 import org.netbeans.modules.javafx2.editor.completion.model.FxModel;
 import org.netbeans.modules.javafx2.editor.completion.model.FxNode;
@@ -1111,9 +1112,30 @@ public final class CompletionContext {
                     break;
                 case VALUE:
                     if (argName != null) {
+                        int len = t.length();
+                        CharSequence val = t.text();
+                        StringBuilder compound = null;
+                        while (seq.moveNext()) {
+                            Token<XMLTokenId> nt = seq.token();
+                            if (nt.id() != XMLTokenId.CHARACTER &&
+                                nt.id() != XMLTokenId.VALUE) {
+                                seq.movePrevious();
+                                break;
+                            }
+                            if (compound == null) {
+                                compound = new StringBuilder();
+                                compound.append(val);
+                            }
+                            compound.append(nt.text());
+                            len += nt.length();
+                        }
                         attributes.put(argName, new ArgumentInfo(argStart, 
-                                seq.offset(), seq.offset() + t.length(), 
-                                stripQuotes(t.text()).toString()));
+                                seq.offset(), seq.offset() + len, 
+                                stripQuotes(
+                                    compound == null ?
+                                        t.text() :
+                                        compound
+                                ).toString()));
                     }
                     break;
                 case OPERATOR:
@@ -1390,7 +1412,7 @@ public final class CompletionContext {
             } else if (ts.offset() < caretOffset) {
                 // assume preceding token
                 
-                prefix = t.toString();
+                prefix = t.text().toString();
             }
         }
         if (startOffset == -1) {

@@ -45,6 +45,7 @@ package org.netbeans.modules.java.hints.infrastructure;
 
 import com.sun.source.util.TreePath;
 import java.io.File;
+import java.net.URL;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.LinkedList;
@@ -67,7 +68,9 @@ import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.editor.java.JavaKit;
 import org.netbeans.modules.java.JavaDataLoader;
 import org.netbeans.modules.java.source.indexing.JavaCustomIndexer;
+import org.netbeans.modules.java.source.indexing.TransactionContext;
 import org.netbeans.modules.java.source.parsing.JavacParserFactory;
+import org.netbeans.modules.java.source.usages.ClassIndexManager;
 import org.netbeans.modules.java.source.usages.IndexUtil;
 import org.netbeans.modules.parsing.api.indexing.IndexingManager;
 import org.netbeans.spi.editor.hints.Fix;
@@ -139,6 +142,19 @@ public abstract class ErrorHintsTestBase extends NbTestCase {
         }
         
         Main.initializeURLFactory();
+    }
+
+    @Override
+    protected void tearDown() throws Exception {
+        for (URL bootCP : SourceUtilsTestUtil.getBootClassPath()) {
+            TransactionContext ctx = TransactionContext.beginStandardTransaction(bootCP, false, false);
+            try {
+                ClassIndexManager.getDefault().removeRoot(bootCP);
+            } finally {
+                ctx.commit();
+            }
+        }
+        super.tearDown();
     }
 
     protected final void prepareTest(String fileName, String code) throws Exception {

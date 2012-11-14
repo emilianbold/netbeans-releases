@@ -424,6 +424,17 @@ public class DiskRepositoryManager extends BaseRepository implements RepositoryW
         }
     }
 
+    @Override
+    public void debugDump(Key key) {
+        assert key != null;
+        Unit unit = units.get(key.getUnitId());
+        if (unit == null) {
+            System.err.printf("=== Repository debug dump for key=%s. Unit not found.", key); //NOI18N
+        } else {
+            unit.debugDump(key);
+        }
+    }
+
     static private class RemovedPersistent implements Persistent {
     }
 

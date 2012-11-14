@@ -42,15 +42,20 @@
 package org.netbeans.modules.nativeexecution.api.util;
 
 import com.jcraft.jsch.ChannelSftp;
+import com.jcraft.jsch.SftpATTRS;
 import com.jcraft.jsch.SftpException;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.nio.channels.FileChannel;
 import java.text.ParseException;
 import java.util.HashMap;
 import java.util.MissingResourceException;
 import java.util.logging.Level;
 import org.netbeans.modules.nativeexecution.ConnectionManagerAccessor;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.nativeexecution.api.HostInfo;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager.CancellationException;
 import org.netbeans.modules.nativeexecution.api.util.MacroExpanderFactory.MacroExpander;
@@ -107,20 +112,34 @@ public class HelperUtility {
 
             if (result == null) {
                 try {
-                    String localFile = getLocalFileLocationFor(hinfo);
+                    File localFile = getLocalFile(hinfo);
 
                     if (localFile == null) {
-                        localFile = getLocalFileLocationFor(env);
+                        localFile = getLocalFile(env);
                     }
 
+                    final String fileName = localFile.getName();
+                    // Construct destination: {tmpbase}/{hash}/{name}
+                    HostInfo localHostInfo = env.isLocal() ? hinfo
+                            : HostInfoUtils.getHostInfo(ExecutionEnvironmentFactory.getLocal());
+                    File localTmpBase = localHostInfo.getTempDirFile();
+                    // hash - a string unique to pair: 
+                    //        local file location and env
+                    String key = localFile.getAbsolutePath().concat(env.getDisplayName());
+                    String hash = Integer.toString(key.hashCode()).replace('-', '0');
+                    File safeLocalDir = new File(localTmpBase, hash);
+                    safeLocalDir.mkdirs();
+
+                    File safeLocalFile = new File(safeLocalDir, fileName);
+                    copyFile(localFile, safeLocalFile);
+
                     if (env.isLocal()) {
-                        result = localFile;
+                        result = safeLocalFile.getAbsolutePath();
                     } else {
                         Logger.assertNonUiThread("Potentially long method " + getClass().getName() + ".getPath() is invoked in AWT thread"); // NOI18N
 
-                        final String fileName = new File(localFile).getName();
-                        final String remoteFile = hinfo.getTempDir() + '/' + fileName;
-
+                        final String remoteDir = hinfo.getTempDir() + '/' + hash;
+                        final String remoteFile = remoteDir + '/' + fileName;
                         // Helper utility could be needed at the early stages
                         // Should not use NPB here
                         ConnectionManagerAccessor cmAccess = ConnectionManagerAccessor.getDefault();
@@ -128,15 +147,46 @@ public class HelperUtility {
                         if (channel == null) {
                             return null;
                         }
+                        Object activityID = RemoteStatistics.stratChannelActivity("UploadHelperUtility", channel, localFile.getAbsolutePath()); // NOI18N
+                        long remoteSize = -1;
                         try {
                             channel.connect();
-                            channel.put(localFile, remoteFile);
-                            channel.chmod(0700, remoteFile);
+                            // md5sum checking is not used for HelperUtilities
+                            // it is assumed that comparing sizes is enough in
+                            // this case
+                            long localSize = safeLocalFile.length();
+                            try {
+                                SftpATTRS rstat = channel.stat(remoteFile);
+                                remoteSize = rstat.getSize();
+                            } catch (SftpException ex) {
+                                // No such file ...
+                            }
+
+                            if (remoteSize >= 0 && localSize != remoteSize) {
+                                // Remote file exists, but it has different size
+                                // Remove it first (otherwise channel.put() will
+                                // fail if this file is opened for reading.
+                                // (Any better idea?)
+                                channel.rm(remoteFile);
+                                remoteSize = -1;
+                            }
+                            if (remoteSize < 0) {
+                                channel.mkdir(remoteDir);
+                                channel.put(safeLocalFile.getAbsolutePath(), remoteFile);
+                                channel.chmod(0700, remoteFile);
+                            }
                             result = remoteFile;
                         } catch (SftpException ex) {
                             log.log(Level.WARNING, "Failed to upload {0}", fileName); // NOI18N
+                            if (remoteSize >= 0) {
+                                log.log(Level.WARNING, "File {0} exists, but cannot be updated. Used by other process?", remoteFile); // NOI18N
+                            } else {
+                                log.log(Level.WARNING, "File {0} doesn't exist, and cannot be uploaded. Do you have enough privileges?", remoteFile); // NOI18N
+                            }
+                            log.log(Level.WARNING, "You could try to use -J-Dcnd.tmpbase=<other base location> to re-define default one."); // NOI18N
                             Exceptions.printStackTrace(ex);
                         } finally {
+                            RemoteStatistics.stopChannelActivity(activityID);
                             cmAccess.closeAndReleaseChannel(env, channel);
                         }
                     }
@@ -157,11 +207,11 @@ public class HelperUtility {
         return result;
     }
 
-    protected String getLocalFileLocationFor(final HostInfo hinfo) throws MissingResourceException {
+    protected File getLocalFile(final HostInfo hinfo) throws MissingResourceException {
         return null;
     }
 
-    protected String getLocalFileLocationFor(final ExecutionEnvironment env)
+    protected File getLocalFile(final ExecutionEnvironment env)
             throws ParseException, MissingResourceException {
 
         InstalledFileLocator fl = InstalledFileLocatorProvider.getDefault();
@@ -174,6 +224,32 @@ public class HelperUtility {
             throw new MissingResourceException(path, null, null); //NOI18N
         }
 
-        return file.getAbsolutePath();
+        return file;
+    }
+
+    private static void copyFile(final File srcFile, final File dstFile) throws IOException {
+        if (dstFile.exists()) {
+            dstFile.delete();
+        }
+
+        dstFile.getParentFile().mkdirs();
+        dstFile.createNewFile();
+
+        FileChannel source = null;
+        FileChannel destination = null;
+
+        try {
+            source = new FileInputStream(srcFile).getChannel();
+            destination = new FileOutputStream(dstFile).getChannel();
+            destination.transferFrom(source, 0, source.size());
+            dstFile.setExecutable(true);
+        } finally {
+            if (source != null) {
+                source.close();
+            }
+            if (destination != null) {
+                destination.close();
+            }
+        }
     }
 }

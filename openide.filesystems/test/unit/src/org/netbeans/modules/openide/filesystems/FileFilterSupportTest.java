@@ -60,7 +60,7 @@ import org.openide.util.NbBundle;
 @MIMEResolver.Registration(
     displayName = "#RESOLVER",
 resource = "mime-resolver-filechooser.xml",
-showInFileChooser = "#FILECHOOSER")
+showInFileChooser = "#FILECHOOSER", position=543543)
 public class FileFilterSupportTest extends NbTestCase {
 
     public FileFilterSupportTest(String name) {

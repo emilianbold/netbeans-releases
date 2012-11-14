@@ -183,20 +183,20 @@ public class CaretListeningTask implements CancellableTask<CompilationInfo> {
             case ENUM_CONSTANT:
                 lastEh = ElementHandle.create(element);
                 // Different element clear data
-                setJavadoc(null); // NOI18N
+                setJavadoc(null, null); // NOI18N
                 break;
             case PARAMETER:
                 element = element.getEnclosingElement(); // Take the enclosing method
                 lastEh = ElementHandle.create(element);
-                setJavadoc(null); // NOI18N
+                setJavadoc(null, null); // NOI18N
                 break;
             case LOCAL_VARIABLE:
                 lastEh = null; // ElementHandle not supported 
-                setJavadoc(null); // NOI18N
+                setJavadoc(null, null); // NOI18N
                 return;
             default:
                 // clear
-                setJavadoc(null); // NOI18N
+                setJavadoc(null, null); // NOI18N
                 return;
             }
         }
@@ -214,12 +214,12 @@ public class CaretListeningTask implements CancellableTask<CompilationInfo> {
         
     }
         
-    private void setJavadoc(final ElementJavadoc javadoc) {
+    private void setJavadoc(final FileObject owner, final ElementJavadoc javadoc) {
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
                 JavadocTopComponent javadocTopComponent = JavadocTopComponent.findInstance();
                 if (javadocTopComponent != null && javadocTopComponent.isOpened()) {
-                    javadocTopComponent.setJavadoc(javadoc);
+                    javadocTopComponent.setJavadoc(owner, javadoc);
                 }
             }
         });
@@ -247,7 +247,7 @@ public class CaretListeningTask implements CancellableTask<CompilationInfo> {
         if (isCancelled()) {
             return;
         }
-        setJavadoc(ElementJavadoc.create(compilationInfo, element));
+        setJavadoc(compilationInfo.getFileObject(), ElementJavadoc.create(compilationInfo, element));
     }
     
     private void updateNavigatorSelection(CompilationInfo ci, TreePath tp) throws Exception {

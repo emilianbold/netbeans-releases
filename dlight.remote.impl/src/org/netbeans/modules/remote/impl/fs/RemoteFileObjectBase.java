@@ -64,7 +64,6 @@ import java.util.concurrent.ExecutionException;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.netbeans.modules.nativeexecution.api.util.FileInfoProvider.StatInfo.FileType;
-import org.netbeans.modules.remote.api.ui.FileObjectBasedFile;
 import org.netbeans.modules.remote.impl.RemoteLogger;
 import org.netbeans.modules.remote.impl.fileoperations.spi.FilesystemInterceptorProvider;
 import org.netbeans.modules.remote.impl.fileoperations.spi.FilesystemInterceptorProvider.FileProxyI;
@@ -104,8 +103,6 @@ public abstract class RemoteFileObjectBase {
     private static final byte BEING_UPLOADED = 4;
     protected static final byte CONNECTION_ISSUES = 8;
     
-    /*package*/ static final boolean RETURN_JAVA_IO_FILE = Boolean.getBoolean("remote.java.io.file");
-
     protected RemoteFileObjectBase(RemoteFileObject wrapper, RemoteFileSystem fileSystem, ExecutionEnvironment execEnv,
             RemoteFileObjectBase parent, String remotePath, File cache) {
         RemoteLogger.assertTrue(execEnv.isRemote());        
@@ -253,13 +250,13 @@ public abstract class RemoteFileObjectBase {
         return createDataImpl(name, ext, this);
     }
 
-    abstract protected FileObject createDataImpl(String name, String ext, RemoteFileObjectBase orig) throws IOException;
+    abstract protected RemoteFileObject createDataImpl(String name, String ext, RemoteFileObjectBase orig) throws IOException;
 
     public final FileObject createFolder(String name) throws IOException {
         return createFolderImpl(name, this);
     }
 
-    abstract protected FileObject createFolderImpl(String name, RemoteFileObjectBase orig) throws IOException;
+    abstract protected RemoteFileObject createFolderImpl(String name, RemoteFileObjectBase orig) throws IOException;
 
     protected abstract boolean deleteImpl(FileLock lock) throws IOException;
 
@@ -764,24 +761,6 @@ public abstract class RemoteFileObjectBase {
     }
     
     public Object getAttribute(String attrName) {
-        if (attrName.equals(FileObject.DEFAULT_LINE_SEPARATOR_ATTR)) {
-            return "\n"; // NOI18N
-        }
-        if (attrName.equals("isRemoteAndSlow")) { // NOI18N
-            return Boolean.TRUE;
-        }
-        if (RETURN_JAVA_IO_FILE && attrName.equals("java.io.File")) { // NOI18N
-            return new FileObjectBasedFile(getExecutionEnvironment(), this.getOwnerFileObject());
-        }
-        if (attrName.startsWith("ProvidedExtensions")) {  //NOI18N
-            // #158600 - delegate to ProvidedExtensions if attrName starts with ProvidedExtensions prefix
-            if (USE_VCS) {
-                FilesystemInterceptor interceptor = FilesystemInterceptorProvider.getDefault().getFilesystemInterceptor(fileSystem);
-                if (interceptor != null) {
-                    return interceptor.getAttribute(FilesystemInterceptorProvider.toFileProxy(this.getOwnerFileObject()), attrName);
-                }
-            }
-        }
         return getFileSystem().getAttribute(this, attrName);
     }
 

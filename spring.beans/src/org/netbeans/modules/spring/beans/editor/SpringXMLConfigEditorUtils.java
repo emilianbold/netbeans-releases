@@ -304,7 +304,8 @@ public final class SpringXMLConfigEditorUtils {
             return logicalBean;
         }
 
-        return getMergedBean(logicalBean, fileObject);
+        SpringBean mergedBean = getMergedBean(logicalBean, fileObject);
+        return mergedBean != null ? mergedBean : logicalBean;
     }
 
     private static SpringBean getMergedBean(MutableSpringBean startBean, FileObject fileObject) {

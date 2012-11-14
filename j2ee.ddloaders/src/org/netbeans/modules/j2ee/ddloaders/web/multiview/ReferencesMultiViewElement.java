@@ -216,7 +216,7 @@ public class ReferencesMultiViewElement extends ToolBarMultiViewElement implemen
         }
     }
     
-    private class EnvEntriesNode extends org.openide.nodes.AbstractNode {
+    private static class EnvEntriesNode extends org.openide.nodes.AbstractNode {
         EnvEntriesNode() {
             super(org.openide.nodes.Children.LEAF);
             setDisplayName(NbBundle.getMessage(ReferencesMultiViewElement.class,"TTL_EnvEntries"));
@@ -228,7 +228,7 @@ public class ReferencesMultiViewElement extends ToolBarMultiViewElement implemen
         }
     }
     
-    private class ResRefsNode extends org.openide.nodes.AbstractNode {
+    private static class ResRefsNode extends org.openide.nodes.AbstractNode {
         ResRefsNode() {
             super(org.openide.nodes.Children.LEAF);
             setDisplayName(NbBundle.getMessage(ReferencesMultiViewElement.class,"TTL_ResRefs"));
@@ -240,7 +240,7 @@ public class ReferencesMultiViewElement extends ToolBarMultiViewElement implemen
         }
     }
     
-    private class ResEnvRefsNode extends org.openide.nodes.AbstractNode {
+    private static class ResEnvRefsNode extends org.openide.nodes.AbstractNode {
         ResEnvRefsNode() {
             super(org.openide.nodes.Children.LEAF);
             setDisplayName(NbBundle.getMessage(ReferencesMultiViewElement.class,"TTL_ResEnvRefs"));
@@ -252,7 +252,7 @@ public class ReferencesMultiViewElement extends ToolBarMultiViewElement implemen
         }
     }
     
-    private class EjbRefsNode extends org.openide.nodes.AbstractNode {
+    private static class EjbRefsNode extends org.openide.nodes.AbstractNode {
         EjbRefsNode() {
             super(org.openide.nodes.Children.LEAF);
             setDisplayName(NbBundle.getMessage(ReferencesMultiViewElement.class,"TTL_EjbRefs"));
@@ -264,7 +264,7 @@ public class ReferencesMultiViewElement extends ToolBarMultiViewElement implemen
         }
     }
     
-    private class MessageDestRefsNode extends org.openide.nodes.AbstractNode {
+    private static class MessageDestRefsNode extends org.openide.nodes.AbstractNode {
         MessageDestRefsNode() {
             super(org.openide.nodes.Children.LEAF);
             setDisplayName(NbBundle.getMessage(ReferencesMultiViewElement.class,"TTL_MessageDestRefs"));

@@ -112,7 +112,7 @@ public class StandardPropertiesHelpResolverTest extends NbTestCase {
     
     private String assertPropertyHelp(String propertyName) {
         StandardPropertiesHelpResolver instance = new StandardPropertiesHelpResolver();
-        PropertyDefinition property = Properties.getPropertyDefinition(null, propertyName);
+        PropertyDefinition property = Properties.getPropertyDefinition( propertyName);
         assertNotNull(property);
         String helpContent = instance.getHelp(null, property);
 //        System.out.println(helpContent);

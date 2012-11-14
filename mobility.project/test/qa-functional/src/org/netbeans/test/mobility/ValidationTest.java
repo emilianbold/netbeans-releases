@@ -91,7 +91,10 @@ public class ValidationTest extends JellyTestCase {
 
     public static junit.framework.Test suite() {
         return NbModuleSuite.create(
-                NbModuleSuite.createConfiguration(ValidationTest.class).addTest(tests).clusters(".*").enableModules(".*").gui(true));
+                NbModuleSuite.createConfiguration(ValidationTest.class)
+                             .addTest(tests).clusters(".*")
+                             .enableModules(".*").gui(true)
+                             .honorAutoloadEager(true));
     }
 
     private void locateEmulator() {
@@ -126,7 +129,7 @@ public class ValidationTest extends JellyTestCase {
         ajpw.stepsWaitSelectedValue("Select platform type");
         //System.out.println("current step: " + ajpw.stepsGetSelectedIndex() + " - " + ajpw.stepsGetSelectedValue());
 
-        new JRadioButtonOperator(ajpw, "Java ME MIDP Platform Emulator").clickMouse();
+        new JRadioButtonOperator(ajpw, "Java ME CLDC Platform Emulator").clickMouse();
 
         ajpw.next();
         ajpw.stepsWaitSelectedValue("Platform Folders");

@@ -349,6 +349,32 @@ public class IntroduceHintTest extends NbTestCase {
                        4, 0);
     }
 
+    public void testSwitchCase219714() throws Exception {
+        performFixTest("package test;\n" +
+                       "public class Test {\n" +
+                       "    public String method(String... args) {\n" +
+                       "        switch (args.length) {\n" +
+                       "            case 1:\n" +
+                       "                return |args[0]|;\n" +
+                       "        }\n" +
+                       "        return null;\n" +
+                       "    }\n" +
+                       "}\n",
+                       ("package test;\n" +
+                        "public class Test {\n" +
+                        "    public String method(String... args) {\n" +
+                        "        switch (args.length) {\n" +
+                        "            case 1:\n" +
+                        "                String name = args[0];\n" +
+                        "                return name;\n" +
+                        "        }\n" +
+                        "        return null;\n" +
+                        "    }\n" +
+                        "}\n").replaceAll("[ \t\n]+", " "),
+                       new DialogDisplayerImpl("name", true, false, true),
+                       4, 0);
+    }
+    
 //    public void testFix121420() throws Exception {
 //        performFixTest("package test; public class Test {public void test1() {|System.getProperty(\"\")|;} }",
 //                       "package test; public class Test {public void test1() { String name = System.getProperty(\"\");} }",
@@ -2009,6 +2035,69 @@ public class IntroduceHintTest extends NbTestCase {
                         "}\n").replaceAll("[ \t\n]+", " "),
                        new DialogDisplayerImpl("ZZ", true, true, true, EnumSet.of(Modifier.PRIVATE)),
                        5, 1);
+    }
+    
+    public void testConstantFix219771a() throws Exception {
+        performFixTest("package test;\n" +
+                       "public class Test {\n" +
+                       "    public void method() {\n" +
+                       "        System.out.println(\"C0 = \" + |C1 * 5|);\n" +
+                       "    }\n" +
+                       "    public static final int C1 = 100;\n" +
+                       "}\n",
+                       ("package test;\n" +
+                        "public class Test {\n" +
+                        "    public void method() {\n" +
+                        "        System.out.println(\"C0 = \" + C0);\n" +
+                        "    }\n" +
+                        "    public static final int C1 = 100;\n" +
+                        "    public static final int C0 = C1 * 5;\n" +
+                        "}\n").replaceAll("[ \t\n]+", " "),
+                       new DialogDisplayerImpl("C0", true, true, true, EnumSet.of(Modifier.PUBLIC)),
+                       5, 1);
+    }
+    
+    public void testConstantFix219771b() throws Exception {
+        performFixTest("package test;\n" +
+                       "public class Test {\n" +
+                       "    public void method() {\n" +
+                       "        System.out.println(\"C0 = \" + |C1 * 5|);\n" +
+                       "    }\n" +
+                       "    public final int C1 = 100;\n" +
+                       "}\n",
+                       ("package test;\n" +
+                        "public class Test {\n" +
+                        "    public void method() {\n" +
+                        "        System.out.println(\"C0 = \" + C0);\n" +
+                        "    }\n" +
+                        "    public final int C1 = 100;\n" +
+                        "    public final int C0 = C1 * 5;\n" +
+                        "}\n").replaceAll("[ \t\n]+", " "),
+                       new DialogDisplayerImpl2("C0", IntroduceFieldPanel.INIT_FIELD, true, EnumSet.of(Modifier.PUBLIC), true, true),
+                       4, 1);
+    }
+    
+    public void testConstantFix219771c() throws Exception {
+        Preferences prefs = CodeStylePreferences.get((FileObject) null, JavacParser.MIME_TYPE).getPreferences();
+        prefs.put("classMembersOrder", "STATIC_INIT;FIELD;STATIC METHOD;INSTANCE_INIT;CONSTRUCTOR;METHOD;STATIC CLASS;CLASS;STATIC FIELD");
+        prefs.put("classMemberInsertionPoint", "LAST_IN_CATEGORY");
+        performFixTest("package test;\n" +
+                       "public class Test {\n" +
+                       "    public void method() {\n" +
+                       "        System.out.println(\"C0 = \" + |C1 * 5|);\n" +
+                       "    }\n" +
+                       "    public static final int C1 = 100;\n" +
+                       "}\n",
+                       ("package test;\n" +
+                        "public class Test {\n" +
+                        "    public final int C0 = C1 * 5;\n" +
+                        "    public void method() {\n" +
+                        "        System.out.println(\"C0 = \" + C0);\n" +
+                        "    }\n" +
+                        "    public static final int C1 = 100;\n" +
+                        "}\n").replaceAll("[ \t\n]+", " "),
+                       new DialogDisplayerImpl2("C0", IntroduceFieldPanel.INIT_FIELD, true, EnumSet.of(Modifier.PUBLIC), true, true),
+                       5, 2);
     }
     
     public void testFieldFix208072d() throws Exception {

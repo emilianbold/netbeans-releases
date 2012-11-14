@@ -41,7 +41,6 @@
  */
 package org.netbeans.modules.css.editor.module;
 
-import java.util.Collection;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.css.lib.api.properties.Properties;
 import org.netbeans.modules.css.lib.api.properties.PropertyDefinition;
@@ -58,12 +57,12 @@ public class CssModuleSupportTest extends NbTestCase {
 
     
     public void testGetProperty() {
-        PropertyDefinition p = Properties.getPropertyDefinition(null, "perspective");
+        PropertyDefinition p = Properties.getPropertyDefinition( "perspective");
         assertNotNull(p);
         assertEquals("perspective", p.getName());
         
         //get refered(invisible) property of the same name
-        p = Properties.getPropertyDefinition(null, "perspective", true);
+        p = Properties.getPropertyDefinition( "perspective", true);
         assertNotNull(p);
         assertEquals("@perspective", p.getName());
     }

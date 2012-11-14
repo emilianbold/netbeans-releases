@@ -327,7 +327,12 @@ public final class Util {
         } else {
             Set<Module> s = new HashSet<Module>();
             for (Dependency dep : m.getDependenciesArray()) {
-                if (dep.getType() == Dependency.TYPE_REQUIRES || considerNeeds && dep.getType() == Dependency.TYPE_NEEDS) {
+                boolean needsProvider = dep.getType() == Dependency.TYPE_REQUIRES || 
+                    considerNeeds && dep.getType() == Dependency.TYPE_NEEDS;
+                if (m instanceof NetigsoModule && dep.getType() == Dependency.TYPE_RECOMMENDS) {
+                    needsProvider = true;
+                }
+                if (needsProvider) {
                     Set<Module> providers = providersOf.get(dep.getName());
                     if (providers != null) {
                         s.addAll(providers);

@@ -58,7 +58,7 @@ import org.openide.modules.InstalledFileLocator;
  */
 public class NbStartUtility extends HelperUtility {
 
-    private static final boolean ENABLED = Boolean.getBoolean("enable.nbstart"); // NOI18N
+    private static final boolean ENABLED = Boolean.parseBoolean(System.getProperty("enable.nbstart", "true")); // NOI18N
     private final static NbStartUtility instance = new NbStartUtility();
 
     public NbStartUtility() {
@@ -70,7 +70,7 @@ public class NbStartUtility extends HelperUtility {
     }
 
     @Override
-    protected String getLocalFileLocationFor(final HostInfo hostInfo)  throws MissingResourceException {
+    protected File getLocalFile(final HostInfo hostInfo) throws MissingResourceException {
         String osname = hostInfo.getOS().getFamily().cname();
         String platform = hostInfo.getCpuFamily().name().toLowerCase();
         String bitness = hostInfo.getOS().getBitness() == HostInfo.Bitness._64 ? "_64" : ""; // NOI18N
@@ -87,7 +87,7 @@ public class NbStartUtility extends HelperUtility {
             throw new MissingResourceException(path.toString(), null, null);
         }
 
-        return file.getAbsolutePath();
+        return file;
     }
 
     public boolean isSupported(ExecutionEnvironment executionEnvironment) {

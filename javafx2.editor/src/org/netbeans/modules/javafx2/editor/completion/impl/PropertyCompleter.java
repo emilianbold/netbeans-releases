@@ -55,6 +55,7 @@ import org.netbeans.modules.javafx2.editor.completion.beans.FxDefinitionKind;
 import org.netbeans.modules.javafx2.editor.completion.beans.FxProperty;
 import org.netbeans.modules.javafx2.editor.completion.model.FxClassUtils;
 import org.netbeans.modules.javafx2.editor.completion.model.FxInstance;
+import org.netbeans.modules.javafx2.editor.completion.model.FxNewInstance;
 import org.netbeans.modules.javafx2.editor.completion.model.FxXmlSymbols;
 import org.netbeans.modules.javafx2.editor.completion.model.PropertyValue;
 import org.netbeans.spi.editor.completion.CompletionItem;
@@ -182,7 +183,10 @@ public class PropertyCompleter extends InstanceCompleter {
     @Override
     public List<CompletionItem> complete() {
         init();
-        
+
+        if (getBeanInfo() == null) {
+            return null;
+        }
         Set<String> names = new HashSet<String>();
         if (ctx.getCompletionType() == CompletionProvider.COMPLETION_QUERY_TYPE) {
             addImportantProperties();
@@ -222,6 +226,24 @@ public class PropertyCompleter extends InstanceCompleter {
                     pi.setNamespaceCreator(CompletionUtils.makeFxNamespaceCreator(ctx));
                     pi.setPropertyType("Class"); // NOI18N
                     resultItems.add(pi);
+                }
+            }
+            if (instance instanceof FxNewInstance) {
+                FxNewInstance newInst = (FxNewInstance)instance;
+                if (newInst.getFactoryMethod() == null &&
+                    newInst.getInitValue() == null) {
+                    // check that the instance's definition has some constants to suggest
+                    if (!newInst.getDefinition().getConstants().isEmpty()) {
+                        // suggest fx:constant
+                        PropertyElementItem pi = new PropertyElementItem(ctx, "fx:constant", // NOI18N
+                                true);
+                        pi.setPrimitive(true);
+                        pi.setInherited(false);
+                        pi.setSystem(true);
+                        pi.setNamespaceCreator(CompletionUtils.makeFxNamespaceCreator(ctx));
+                        pi.setPropertyType(newInst.getDefinition().getClassName()); // NOI18N
+                        resultItems.add(pi);
+                    }
                 }
             }
         }

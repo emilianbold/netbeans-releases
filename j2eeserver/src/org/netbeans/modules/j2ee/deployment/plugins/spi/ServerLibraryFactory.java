@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.j2ee.deployment.plugins.spi;
 
+import org.netbeans.modules.j2ee.deployment.impl.ServerLibraryAccessor;
 import org.netbeans.modules.j2ee.deployment.plugins.api.ServerLibrary;
 
 /**
@@ -63,35 +64,6 @@ public final class ServerLibraryFactory {
      * @return the API server instance representation
      */
     public static ServerLibrary createServerLibrary(ServerLibraryImplementation impl) {
-        return Accessor.DEFAULT.createServerLibrary(impl);
-    }
-    
-    /**
-     * The accessor pattern class.
-     */
-    public abstract static class Accessor {
-
-        /** The default accessor. */
-        public static Accessor DEFAULT;
-
-        static {
-            // invokes static initializer of ServerLibrary.class
-            // that will assign value to the DEFAULT field above
-            Class c = ServerLibrary.class;
-            try {
-                Class.forName(c.getName(), true, c.getClassLoader());
-            } catch (ClassNotFoundException ex) {
-                assert false : ex;
-            }
-        }
-
-        /**
-         * Creates the API instance.
-         *
-         * @param impl the SPI instance
-         * @return the API instance
-         */
-        public abstract ServerLibrary createServerLibrary(ServerLibraryImplementation impl);
-
+        return ServerLibraryAccessor.getDefault().createServerLibrary(impl);
     }
 }

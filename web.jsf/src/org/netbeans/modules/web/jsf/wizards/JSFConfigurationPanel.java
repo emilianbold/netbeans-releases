@@ -225,6 +225,12 @@ public class JSFConfigurationPanel extends WebModuleExtender implements WebModul
         component.setServletName(name);
     }
 
+    protected boolean isMaven() {
+        ExtenderController.Properties properties = getController().getProperties();
+        Boolean isMaven = (Boolean) properties.getProperty("maven"); //NOI18N
+        return isMaven != null && isMaven;
+    }
+
     @Deprecated
     /*
      * Use getFacesMapping() instead
