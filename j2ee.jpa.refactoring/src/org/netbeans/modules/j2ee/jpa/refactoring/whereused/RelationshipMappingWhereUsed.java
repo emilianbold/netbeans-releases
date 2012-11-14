@@ -57,6 +57,8 @@ import com.sun.source.util.SourcePositions;
 import com.sun.source.util.TreePath;
 import java.io.IOException;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
@@ -79,7 +81,6 @@ import org.netbeans.modules.j2ee.jpa.refactoring.RefactoringUtil;
 import org.netbeans.modules.refactoring.api.WhereUsedQuery;
 import org.netbeans.modules.refactoring.spi.SimpleRefactoringElementImplementation;
 import org.openide.text.PositionBounds;
-import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;
 
@@ -90,6 +91,7 @@ import org.openide.util.lookup.Lookups;
 public final class RelationshipMappingWhereUsed implements JPARefactoring {
     
     private final WhereUsedQuery whereUsedQuery;
+    private final static Logger LOG = Logger.getLogger(RelationshipMappingWhereUsed.class.getName());
     
     public RelationshipMappingWhereUsed(WhereUsedQuery refactoring) {
         this.whereUsedQuery = refactoring;
@@ -107,7 +109,9 @@ public final class RelationshipMappingWhereUsed implements JPARefactoring {
             VariableElement var = (VariableElement) resElement;
             Element mainEntTmp = var.getEnclosingElement();
             TypeElement mainEnt = mainEntTmp instanceof TypeElement ? (TypeElement)mainEntTmp : null;
-            if(mainEnt == null)return null;
+            if(mainEnt == null) {
+                return null;
+            }
             List<? extends AnnotationMirror> ans = var.getAnnotationMirrors();
             boolean checkFoMappedBy = false;
             for(AnnotationMirror an:ans){
@@ -130,18 +134,20 @@ public final class RelationshipMappingWhereUsed implements JPARefactoring {
                                 for(ExecutableElement el : an.getElementValues().keySet()) {
                                     if(el.getSimpleName().toString().equals("mappedBy")) {
                                         if(an.getElementValues().get(el).getValue().toString().equals(var.getSimpleName().toString())) {
-                                            FileObject fo = null;
+                                            FileObject fo;
                                             try {
                                                 //it's usage
                                                  fo = RefactoringUtil.getTreePathHandle(field.getSimpleName().toString(), oppEntEl.toString(), handle.getFileObject()).getFileObject();
                                             } catch (IOException ex) {
-                                                
+                                                LOG.log(Level.INFO, "Can't get fileobject.", ex);//NOI18N
+                                                continue;
                                             }
-                                            TreePathHandle ph = null;
+                                            TreePathHandle ph;
                                             try {
                                                 ph = RefactoringUtil.getTreePathHandle(field.getSimpleName().toString(), oppEntEl.toString(), handle.getFileObject());
                                             } catch (IOException ex) {
-                                                Exceptions.printStackTrace(ex);
+                                                LOG.log(Level.INFO, "Can't get tree path handle.", ex);//NOI18N
+                                                continue;
                                             }
                                             CompilationInfo ci = RefactoringUtil.getCompilationInfo(ph, whereUsedQuery);
                                             TreePath tree = ph.resolve(ci);
@@ -155,14 +161,17 @@ public final class RelationshipMappingWhereUsed implements JPARefactoring {
                                                     if(et instanceof AssignmentTree)
                                                     {
                                                         AssignmentTree ast = ((AssignmentTree)et);
-                                                        if(ast.toString().startsWith("mappedBy"))//NOI18N
-                                                        t = ast.getExpression();
+                                                        if(ast.toString().startsWith("mappedBy")) {//NOI18N
+                                                            t = ast.getExpression();
+                                                        }
                                                     }
                                                 }
                                             }
                                             SourcePositions sp = ci.getTrees().getSourcePositions();
                                             sp.getStartPosition(unit, t);
-                                            if(fo!=null)refactoringElementsBag.add(whereUsedQuery, new RelationshipAnnotationWhereUsedRefactoringElement(fo, an, var.getSimpleName().toString(), (int)sp.getStartPosition(unit, t), (int)sp.getEndPosition(unit, t)));
+                                            if(fo!=null) {
+                                                refactoringElementsBag.add(whereUsedQuery, new RelationshipAnnotationWhereUsedRefactoringElement(fo, an, var.getSimpleName().toString(), (int)sp.getStartPosition(unit, t), (int)sp.getEndPosition(unit, t)));
+                                            }
                                         }
                                     }
                                 }
@@ -174,7 +183,7 @@ public final class RelationshipMappingWhereUsed implements JPARefactoring {
         }
         return result;
     }
-        @Override
+    @Override
     public Problem preCheck() {
         return null;
     }
@@ -225,7 +234,7 @@ public final class RelationshipMappingWhereUsed implements JPARefactoring {
             try {
                 DataObject dobj = DataObject.find(getParentFile());
                 if (dobj != null) {
-                    EditorCookie.Observable obs = (EditorCookie.Observable)dobj.getCookie(EditorCookie.Observable.class);
+                    EditorCookie.Observable obs = (EditorCookie.Observable)dobj.getLookup().lookup(EditorCookie.Observable.class);
                     if (obs != null && obs instanceof CloneableEditorSupport) {
                         CloneableEditorSupport supp = (CloneableEditorSupport)obs;
 
@@ -238,6 +247,7 @@ public final class RelationshipMappingWhereUsed implements JPARefactoring {
                 }
                 }
             } catch (DataObjectNotFoundException ex) {
+                LOG.log(Level.INFO, "Can't resolve", ex);//NOI18N
             }
             return null;
         }
