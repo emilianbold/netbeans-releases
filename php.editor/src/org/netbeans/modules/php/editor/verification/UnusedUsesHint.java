@@ -71,7 +71,7 @@ public class UnusedUsesHint extends AbstractHint {
             return;
         }
         FileObject fileObject = phpParseResult.getSnapshot().getSource().getFileObject();
-        if (CodeUtils.isPhp_52(fileObject)) {
+        if (CodeUtils.isPhp52(fileObject)) {
             return;
         }
         for (UnusedOffsetRanges unusedOffsetRanges : SemanticAnalysis.computeUnusedUsesOffsetRanges(phpParseResult)) {

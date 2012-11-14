@@ -60,30 +60,30 @@ public class PHPFormatterBlankLinesTest extends PHPFormatterTestBase {
 
     public void testIssue181003_02() throws Exception {
         HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
-        options.put(FmtOptions.classDeclBracePlacement, CodeStyle.BracePlacement.NEW_LINE);
-        options.put(FmtOptions.methodDeclBracePlacement, CodeStyle.BracePlacement.NEW_LINE);
+        options.put(FmtOptions.CLASS_DECL_BRACE_PLACEMENT, CodeStyle.BracePlacement.NEW_LINE);
+        options.put(FmtOptions.METHOD_DECL_BRACE_PLACEMENT, CodeStyle.BracePlacement.NEW_LINE);
         reformatFileContents("testfiles/formatting/blankLines/issue181003_02.php", options);
     }
 
     public void testIssue181003_03() throws Exception {
         HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
-        options.put(FmtOptions.classDeclBracePlacement, CodeStyle.BracePlacement.NEW_LINE);
-        options.put(FmtOptions.methodDeclBracePlacement, CodeStyle.BracePlacement.NEW_LINE);
-        options.put(FmtOptions.blankLinesAfterClassHeader, 0);
-        options.put(FmtOptions.blankLinesBeforeClassEnd, 0);
-        options.put(FmtOptions.blankLinesBeforeFunction, 0);
-        options.put(FmtOptions.blankLinesAfterFunction, 0);
-        options.put(FmtOptions.blankLinesBeforeFunctionEnd, 0);
+        options.put(FmtOptions.CLASS_DECL_BRACE_PLACEMENT, CodeStyle.BracePlacement.NEW_LINE);
+        options.put(FmtOptions.METHOD_DECL_BRACE_PLACEMENT, CodeStyle.BracePlacement.NEW_LINE);
+        options.put(FmtOptions.BLANK_LINES_AFTER_CLASS_HEADER, 0);
+        options.put(FmtOptions.BLANK_LINES_BEFORE_CLASS_END, 0);
+        options.put(FmtOptions.BLANK_LINES_BEFORE_FUNCTION, 0);
+        options.put(FmtOptions.BLANK_LINES_AFTER_FUNCTION, 0);
+        options.put(FmtOptions.BLANK_LINES_BEFORE_FUNCTION_END, 0);
         reformatFileContents("testfiles/formatting/blankLines/issue181003_03.php", options);
     }
 
     public void testIssue181003_04() throws Exception {
         HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
-        options.put(FmtOptions.blankLinesAfterClassHeader, 0);
-        options.put(FmtOptions.blankLinesBeforeClassEnd, 0);
-        options.put(FmtOptions.blankLinesBeforeFunction, 0);
-        options.put(FmtOptions.blankLinesAfterFunction, 0);
-        options.put(FmtOptions.blankLinesBeforeFunctionEnd, 0);
+        options.put(FmtOptions.BLANK_LINES_AFTER_CLASS_HEADER, 0);
+        options.put(FmtOptions.BLANK_LINES_BEFORE_CLASS_END, 0);
+        options.put(FmtOptions.BLANK_LINES_BEFORE_FUNCTION, 0);
+        options.put(FmtOptions.BLANK_LINES_AFTER_FUNCTION, 0);
+        options.put(FmtOptions.BLANK_LINES_BEFORE_FUNCTION_END, 0);
         reformatFileContents("testfiles/formatting/blankLines/issue181003_04.php", options);
     }
 
@@ -119,52 +119,52 @@ public class PHPFormatterBlankLinesTest extends PHPFormatterTestBase {
 
     public void testTraitUsesBlankLines_01() throws Exception {
         HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
-        options.put(FmtOptions.blankLinesBeforeUseTrait, 0);
+        options.put(FmtOptions.BLANK_LINES_BEFORE_USE_TRAIT, 0);
         reformatFileContents("testfiles/formatting/blankLines/TraitUses01.php", options);
     }
 
     public void testTraitUsesBlankLines_02() throws Exception {
         HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
-        options.put(FmtOptions.blankLinesBeforeUseTrait, 1);
+        options.put(FmtOptions.BLANK_LINES_BEFORE_USE_TRAIT, 1);
         reformatFileContents("testfiles/formatting/blankLines/TraitUses02.php", options);
     }
 
     public void testBracePlacement01() throws Exception {
         HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
-        options.put(FmtOptions.classDeclBracePlacement, CodeStyle.BracePlacement.NEW_LINE);
-        options.put(FmtOptions.methodDeclBracePlacement, CodeStyle.BracePlacement.NEW_LINE);
-        options.put(FmtOptions.ifBracePlacement, CodeStyle.BracePlacement.NEW_LINE);
-        options.put(FmtOptions.forBracePlacement, CodeStyle.BracePlacement.NEW_LINE);
-        options.put(FmtOptions.whileBracePlacement, CodeStyle.BracePlacement.NEW_LINE);
-        options.put(FmtOptions.switchBracePlacement, CodeStyle.BracePlacement.NEW_LINE);
-        options.put(FmtOptions.catchBracePlacement, CodeStyle.BracePlacement.NEW_LINE);
-        options.put(FmtOptions.otherBracePlacement, CodeStyle.BracePlacement.NEW_LINE);
+        options.put(FmtOptions.CLASS_DECL_BRACE_PLACEMENT, CodeStyle.BracePlacement.NEW_LINE);
+        options.put(FmtOptions.METHOD_DECL_BRACE_PLACEMENT, CodeStyle.BracePlacement.NEW_LINE);
+        options.put(FmtOptions.IF_BRACE_PLACEMENT, CodeStyle.BracePlacement.NEW_LINE);
+        options.put(FmtOptions.FOR_BRACE_PLACEMENT, CodeStyle.BracePlacement.NEW_LINE);
+        options.put(FmtOptions.WHILE_BRACE_PLACEMENT, CodeStyle.BracePlacement.NEW_LINE);
+        options.put(FmtOptions.SWITCH_BRACE_PLACEMENT, CodeStyle.BracePlacement.NEW_LINE);
+        options.put(FmtOptions.CATCH_BRACE_PLACEMENT, CodeStyle.BracePlacement.NEW_LINE);
+        options.put(FmtOptions.OTHER_BRACE_PLACEMENT, CodeStyle.BracePlacement.NEW_LINE);
         reformatFileContents("testfiles/formatting/blankLines/BracePlacement01.php", options);
     }
 
     public void testBracePlacement02() throws Exception {
         HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
-        options.put(FmtOptions.classDeclBracePlacement, CodeStyle.BracePlacement.NEW_LINE_INDENTED);
-        options.put(FmtOptions.methodDeclBracePlacement, CodeStyle.BracePlacement.NEW_LINE_INDENTED);
-        options.put(FmtOptions.ifBracePlacement, CodeStyle.BracePlacement.NEW_LINE_INDENTED);
-        options.put(FmtOptions.forBracePlacement, CodeStyle.BracePlacement.NEW_LINE_INDENTED);
-        options.put(FmtOptions.whileBracePlacement, CodeStyle.BracePlacement.NEW_LINE_INDENTED);
-        options.put(FmtOptions.switchBracePlacement, CodeStyle.BracePlacement.NEW_LINE_INDENTED);
-        options.put(FmtOptions.catchBracePlacement, CodeStyle.BracePlacement.NEW_LINE_INDENTED);
-        options.put(FmtOptions.otherBracePlacement, CodeStyle.BracePlacement.NEW_LINE_INDENTED);
+        options.put(FmtOptions.CLASS_DECL_BRACE_PLACEMENT, CodeStyle.BracePlacement.NEW_LINE_INDENTED);
+        options.put(FmtOptions.METHOD_DECL_BRACE_PLACEMENT, CodeStyle.BracePlacement.NEW_LINE_INDENTED);
+        options.put(FmtOptions.IF_BRACE_PLACEMENT, CodeStyle.BracePlacement.NEW_LINE_INDENTED);
+        options.put(FmtOptions.FOR_BRACE_PLACEMENT, CodeStyle.BracePlacement.NEW_LINE_INDENTED);
+        options.put(FmtOptions.WHILE_BRACE_PLACEMENT, CodeStyle.BracePlacement.NEW_LINE_INDENTED);
+        options.put(FmtOptions.SWITCH_BRACE_PLACEMENT, CodeStyle.BracePlacement.NEW_LINE_INDENTED);
+        options.put(FmtOptions.CATCH_BRACE_PLACEMENT, CodeStyle.BracePlacement.NEW_LINE_INDENTED);
+        options.put(FmtOptions.OTHER_BRACE_PLACEMENT, CodeStyle.BracePlacement.NEW_LINE_INDENTED);
         reformatFileContents("testfiles/formatting/blankLines/BracePlacement02.php", options);
     }
 
     public void testBracePlacement03() throws Exception {
         HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
-        options.put(FmtOptions.classDeclBracePlacement, CodeStyle.BracePlacement.SAME_LINE);
-        options.put(FmtOptions.methodDeclBracePlacement, CodeStyle.BracePlacement.SAME_LINE);
-        options.put(FmtOptions.ifBracePlacement, CodeStyle.BracePlacement.SAME_LINE);
-        options.put(FmtOptions.forBracePlacement, CodeStyle.BracePlacement.SAME_LINE);
-        options.put(FmtOptions.whileBracePlacement, CodeStyle.BracePlacement.SAME_LINE);
-        options.put(FmtOptions.switchBracePlacement, CodeStyle.BracePlacement.SAME_LINE);
-        options.put(FmtOptions.catchBracePlacement, CodeStyle.BracePlacement.SAME_LINE);
-        options.put(FmtOptions.otherBracePlacement, CodeStyle.BracePlacement.SAME_LINE);
+        options.put(FmtOptions.CLASS_DECL_BRACE_PLACEMENT, CodeStyle.BracePlacement.SAME_LINE);
+        options.put(FmtOptions.METHOD_DECL_BRACE_PLACEMENT, CodeStyle.BracePlacement.SAME_LINE);
+        options.put(FmtOptions.IF_BRACE_PLACEMENT, CodeStyle.BracePlacement.SAME_LINE);
+        options.put(FmtOptions.FOR_BRACE_PLACEMENT, CodeStyle.BracePlacement.SAME_LINE);
+        options.put(FmtOptions.WHILE_BRACE_PLACEMENT, CodeStyle.BracePlacement.SAME_LINE);
+        options.put(FmtOptions.SWITCH_BRACE_PLACEMENT, CodeStyle.BracePlacement.SAME_LINE);
+        options.put(FmtOptions.CATCH_BRACE_PLACEMENT, CodeStyle.BracePlacement.SAME_LINE);
+        options.put(FmtOptions.OTHER_BRACE_PLACEMENT, CodeStyle.BracePlacement.SAME_LINE);
         reformatFileContents("testfiles/formatting/blankLines/BracePlacement03.php", options);
     }
 
@@ -176,99 +176,99 @@ public class PHPFormatterBlankLinesTest extends PHPFormatterTestBase {
     // blank lines
     public void testBLClass01() throws Exception {
         HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
-        options.put(FmtOptions.initialIndent, 0);
+        options.put(FmtOptions.INITIAL_INDENT, 0);
         reformatFileContents("testfiles/formatting/blankLines/Class01.php", options);
     }
 
     public void testBLTrait01() throws Exception {
         HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
-        options.put(FmtOptions.initialIndent, 0);
+        options.put(FmtOptions.INITIAL_INDENT, 0);
         reformatFileContents("testfiles/formatting/blankLines/Trait01.php", options);
     }
 
     public void testBLClass02() throws Exception {
         HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
-        options.put(FmtOptions.initialIndent, 0);
-        options.put(FmtOptions.classDeclBracePlacement, CodeStyle.BracePlacement.PRESERVE_EXISTING);
-        options.put(FmtOptions.methodDeclBracePlacement, CodeStyle.BracePlacement.PRESERVE_EXISTING);
-        options.put(FmtOptions.otherBracePlacement, CodeStyle.BracePlacement.PRESERVE_EXISTING);
-        options.put(FmtOptions.spaceBeforeClassDeclLeftBrace, false);
+        options.put(FmtOptions.INITIAL_INDENT, 0);
+        options.put(FmtOptions.CLASS_DECL_BRACE_PLACEMENT, CodeStyle.BracePlacement.PRESERVE_EXISTING);
+        options.put(FmtOptions.METHOD_DECL_BRACE_PLACEMENT, CodeStyle.BracePlacement.PRESERVE_EXISTING);
+        options.put(FmtOptions.OTHER_BRACE_PLACEMENT, CodeStyle.BracePlacement.PRESERVE_EXISTING);
+        options.put(FmtOptions.SPACE_BEFORE_CLASS_DECL_LEFT_BRACE, false);
         reformatFileContents("testfiles/formatting/blankLines/Class02.php", options);
     }
 
     public void testBLTrait02() throws Exception {
         HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
-        options.put(FmtOptions.initialIndent, 0);
-        options.put(FmtOptions.classDeclBracePlacement, CodeStyle.BracePlacement.PRESERVE_EXISTING);
-        options.put(FmtOptions.methodDeclBracePlacement, CodeStyle.BracePlacement.PRESERVE_EXISTING);
-        options.put(FmtOptions.otherBracePlacement, CodeStyle.BracePlacement.PRESERVE_EXISTING);
-        options.put(FmtOptions.spaceBeforeClassDeclLeftBrace, false);
+        options.put(FmtOptions.INITIAL_INDENT, 0);
+        options.put(FmtOptions.CLASS_DECL_BRACE_PLACEMENT, CodeStyle.BracePlacement.PRESERVE_EXISTING);
+        options.put(FmtOptions.METHOD_DECL_BRACE_PLACEMENT, CodeStyle.BracePlacement.PRESERVE_EXISTING);
+        options.put(FmtOptions.OTHER_BRACE_PLACEMENT, CodeStyle.BracePlacement.PRESERVE_EXISTING);
+        options.put(FmtOptions.SPACE_BEFORE_CLASS_DECL_LEFT_BRACE, false);
         reformatFileContents("testfiles/formatting/blankLines/Trait02.php", options);
     }
 
     public void testBLClass03() throws Exception {
         HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
-        options.put(FmtOptions.initialIndent, 0);
-        options.put(FmtOptions.classDeclBracePlacement, CodeStyle.BracePlacement.NEW_LINE);
-        options.put(FmtOptions.methodDeclBracePlacement, CodeStyle.BracePlacement.NEW_LINE);
-        options.put(FmtOptions.otherBracePlacement, CodeStyle.BracePlacement.SAME_LINE);
-        options.put(FmtOptions.spaceBeforeClassDeclLeftBrace, false);
+        options.put(FmtOptions.INITIAL_INDENT, 0);
+        options.put(FmtOptions.CLASS_DECL_BRACE_PLACEMENT, CodeStyle.BracePlacement.NEW_LINE);
+        options.put(FmtOptions.METHOD_DECL_BRACE_PLACEMENT, CodeStyle.BracePlacement.NEW_LINE);
+        options.put(FmtOptions.OTHER_BRACE_PLACEMENT, CodeStyle.BracePlacement.SAME_LINE);
+        options.put(FmtOptions.SPACE_BEFORE_CLASS_DECL_LEFT_BRACE, false);
         reformatFileContents("testfiles/formatting/blankLines/Class03.php", options);
     }
 
     public void testBLTrait03() throws Exception {
         HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
-        options.put(FmtOptions.initialIndent, 0);
-        options.put(FmtOptions.classDeclBracePlacement, CodeStyle.BracePlacement.NEW_LINE);
-        options.put(FmtOptions.methodDeclBracePlacement, CodeStyle.BracePlacement.NEW_LINE);
-        options.put(FmtOptions.otherBracePlacement, CodeStyle.BracePlacement.SAME_LINE);
-        options.put(FmtOptions.spaceBeforeClassDeclLeftBrace, false);
+        options.put(FmtOptions.INITIAL_INDENT, 0);
+        options.put(FmtOptions.CLASS_DECL_BRACE_PLACEMENT, CodeStyle.BracePlacement.NEW_LINE);
+        options.put(FmtOptions.METHOD_DECL_BRACE_PLACEMENT, CodeStyle.BracePlacement.NEW_LINE);
+        options.put(FmtOptions.OTHER_BRACE_PLACEMENT, CodeStyle.BracePlacement.SAME_LINE);
+        options.put(FmtOptions.SPACE_BEFORE_CLASS_DECL_LEFT_BRACE, false);
         reformatFileContents("testfiles/formatting/blankLines/Trait03.php", options);
     }
 
     public void testBLFields01() throws Exception {
         HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
-        options.put(FmtOptions.spaceBeforeClassDeclLeftBrace, true);
-        options.put(FmtOptions.classDeclBracePlacement, CodeStyle.BracePlacement.SAME_LINE);
-        options.put(FmtOptions.methodDeclBracePlacement, CodeStyle.BracePlacement.SAME_LINE);
-        options.put(FmtOptions.otherBracePlacement, CodeStyle.BracePlacement.SAME_LINE);
-        options.put(FmtOptions.initialIndent, 0);
+        options.put(FmtOptions.SPACE_BEFORE_CLASS_DECL_LEFT_BRACE, true);
+        options.put(FmtOptions.CLASS_DECL_BRACE_PLACEMENT, CodeStyle.BracePlacement.SAME_LINE);
+        options.put(FmtOptions.METHOD_DECL_BRACE_PLACEMENT, CodeStyle.BracePlacement.SAME_LINE);
+        options.put(FmtOptions.OTHER_BRACE_PLACEMENT, CodeStyle.BracePlacement.SAME_LINE);
+        options.put(FmtOptions.INITIAL_INDENT, 0);
         reformatFileContents("testfiles/formatting/blankLines/Fields01.php", options);
     }
 
     public void testBLFields02() throws Exception {
         HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
-        options.put(FmtOptions.initialIndent, 0);
+        options.put(FmtOptions.INITIAL_INDENT, 0);
         reformatFileContents("testfiles/formatting/blankLines/Fields02.php", options);
     }
 
     public void testBLFields03() throws Exception {
         HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
-        options.put(FmtOptions.initialIndent, 0);
+        options.put(FmtOptions.INITIAL_INDENT, 0);
         reformatFileContents("testfiles/formatting/blankLines/Fields03.php", options);
     }
 
     public void testBLFields04() throws Exception {
         HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
-        options.put(FmtOptions.initialIndent, 0);
+        options.put(FmtOptions.INITIAL_INDENT, 0);
         reformatFileContents("testfiles/formatting/blankLines/Fields04.php", options);
     }
 
     public void testBLFields05() throws Exception {
         HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
-        options.put(FmtOptions.initialIndent, 0);
+        options.put(FmtOptions.INITIAL_INDENT, 0);
         reformatFileContents("testfiles/formatting/blankLines/Fields05.php", options);
     }
 
     public void testBLFields06() throws Exception {
         HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
-        options.put(FmtOptions.initialIndent, 0);
+        options.put(FmtOptions.INITIAL_INDENT, 0);
         reformatFileContents("testfiles/formatting/blankLines/Fields06.php", options);
     }
 
     public void testBLFields07() throws Exception {
         HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
-        options.put(FmtOptions.blankLinesAfterFields, 3);
+        options.put(FmtOptions.BLANK_LINES_AFTER_FIELDS, 3);
         reformatFileContents("testfiles/formatting/blankLines/Fields07.php", options);
     }
 
@@ -289,220 +289,220 @@ public class PHPFormatterBlankLinesTest extends PHPFormatterTestBase {
 
     public void testBLFields11() throws Exception {
         HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
-        options.put(FmtOptions.blankLinesBetweenFields, 2);
-        options.put(FmtOptions.blankLinesGroupFieldsWithoutDoc, false);
+        options.put(FmtOptions.BLANK_LINES_BETWEEN_FIELDS, 2);
+        options.put(FmtOptions.BLANK_LINES_GROUP_FIELDS_WITHOUT_DOC, false);
         reformatFileContents("testfiles/formatting/blankLines/Fields11.php", options);
     }
 
     public void testBLFunction01() throws Exception {
         HashMap<String, Object> options = new HashMap<String, Object>();
-        options.put(FmtOptions.initialIndent, 0);
+        options.put(FmtOptions.INITIAL_INDENT, 0);
         reformatFileContents("testfiles/formatting/blankLines/Function01.php", options);
     }
 
     public void testBLFunction02() throws Exception {
         HashMap<String, Object> options = new HashMap<String, Object>();
-        options.put(FmtOptions.initialIndent, 0);
+        options.put(FmtOptions.INITIAL_INDENT, 0);
         reformatFileContents("testfiles/formatting/blankLines/Function02.php", options);
     }
 
     public void testBLFunction04() throws Exception {
         HashMap<String, Object> options = new HashMap<String, Object>();
-        options.put(FmtOptions.initialIndent, 0);
+        options.put(FmtOptions.INITIAL_INDENT, 0);
         reformatFileContents("testfiles/formatting/blankLines/Function04.php", options);
     }
 
     public void testBLNamespace01() throws Exception {
         HashMap<String, Object> options = new HashMap<String, Object>();
-        options.put(FmtOptions.initialIndent, 0);
+        options.put(FmtOptions.INITIAL_INDENT, 0);
         reformatFileContents("testfiles/formatting/blankLines/Namespace01.php", options);
     }
 
     public void testBLNamespace02() throws Exception {
         HashMap<String, Object> options = new HashMap<String, Object>();
-        options.put(FmtOptions.initialIndent, 0);
+        options.put(FmtOptions.INITIAL_INDENT, 0);
         reformatFileContents("testfiles/formatting/blankLines/Namespace02.php", options);
     }
 
     public void testBLNamespace03() throws Exception {
         HashMap<String, Object> options = new HashMap<String, Object>();
-        options.put(FmtOptions.initialIndent, 0);
+        options.put(FmtOptions.INITIAL_INDENT, 0);
         reformatFileContents("testfiles/formatting/blankLines/Namespace03.php", options);
     }
 
     public void testBLSimpleClass01() throws Exception {
         HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
-        options.put(FmtOptions.initialIndent, 0);
+        options.put(FmtOptions.INITIAL_INDENT, 0);
         reformatFileContents("testfiles/formatting/blankLines/SimpleClass01.php", options);
     }
 
     public void testBLSimpleClass02() throws Exception {
         HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
-        options.put(FmtOptions.initialIndent, 0);
+        options.put(FmtOptions.INITIAL_INDENT, 0);
         reformatFileContents("testfiles/formatting/blankLines/SimpleClass02.php", options);
     }
 
     public void testBLSimpleClass03() throws Exception {
         HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
-        options.put(FmtOptions.initialIndent, 0);
+        options.put(FmtOptions.INITIAL_INDENT, 0);
         reformatFileContents("testfiles/formatting/blankLines/SimpleClass03.php", options);
     }
 
     public void testBLSimpleClass04() throws Exception {
         HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
-        options.put(FmtOptions.initialIndent, 0);
+        options.put(FmtOptions.INITIAL_INDENT, 0);
         reformatFileContents("testfiles/formatting/blankLines/SimpleClass04.php", options);
     }
 
     public void testBLSimpleClass05() throws Exception {
         HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
-        options.put(FmtOptions.initialIndent, 0);
-        options.put(FmtOptions.blankLinesBeforeClass, 1);
-        options.put(FmtOptions.blankLinesAfterClassHeader, 0);
-        options.put(FmtOptions.blankLinesBeforeClassEnd, 0);
-        options.put(FmtOptions.blankLinesAfterClass, 0);
-        options.put(FmtOptions.blankLinesBeforeFunction, 0);
-        options.put(FmtOptions.blankLinesBeforeFunctionEnd, 0);
-        options.put(FmtOptions.blankLinesAfterFunction, 0);
-        options.put(FmtOptions.blankLinesBeforeFields, 0);
-        options.put(FmtOptions.blankLinesAfterFields, 0);
-        options.put(FmtOptions.blankLinesBeforeNamespace, 0);
-        options.put(FmtOptions.blankLinesAfterNamespace, 0);
-        options.put(FmtOptions.blankLinesBeforeUse, 0);
-        options.put(FmtOptions.blankLinesAfterUse, 0);
+        options.put(FmtOptions.INITIAL_INDENT, 0);
+        options.put(FmtOptions.BLANK_LINES_BEFORE_CLASS, 1);
+        options.put(FmtOptions.BLANK_LINES_AFTER_CLASS_HEADER, 0);
+        options.put(FmtOptions.BLANK_LINES_BEFORE_CLASS_END, 0);
+        options.put(FmtOptions.BLANK_LINES_AFTER_CLASS, 0);
+        options.put(FmtOptions.BLANK_LINES_BEFORE_FUNCTION, 0);
+        options.put(FmtOptions.BLANK_LINES_BEFORE_FUNCTION_END, 0);
+        options.put(FmtOptions.BLANK_LINES_AFTER_FUNCTION, 0);
+        options.put(FmtOptions.BLANK_LINES_BEFORE_FIELDS, 0);
+        options.put(FmtOptions.BLANK_LINES_AFTER_FIELDS, 0);
+        options.put(FmtOptions.BLANK_LINES_BEFORE_NAMESPACE, 0);
+        options.put(FmtOptions.BLANK_LINES_AFTER_NAMESPACE, 0);
+        options.put(FmtOptions.BLANK_LINES_BEFORE_USE, 0);
+        options.put(FmtOptions.BLANK_LINES_AFTER_USE, 0);
         reformatFileContents("testfiles/formatting/blankLines/SimpleClass05.php", options);
     }
 
     public void testBLSimpleClass06() throws Exception {
         HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
-        options.put(FmtOptions.initialIndent, 0);
-        options.put(FmtOptions.blankLinesBeforeClass, 0);
-        options.put(FmtOptions.blankLinesAfterClassHeader, 1);
-        options.put(FmtOptions.blankLinesBeforeClassEnd, 0);
-        options.put(FmtOptions.blankLinesAfterClass, 0);
-        options.put(FmtOptions.blankLinesBeforeFunction, 0);
-        options.put(FmtOptions.blankLinesBeforeFunctionEnd, 0);
-        options.put(FmtOptions.blankLinesAfterFunction, 0);
-        options.put(FmtOptions.blankLinesBeforeFields, 0);
-        options.put(FmtOptions.blankLinesAfterFields, 0);
-        options.put(FmtOptions.blankLinesBeforeNamespace, 0);
-        options.put(FmtOptions.blankLinesAfterNamespace, 0);
-        options.put(FmtOptions.blankLinesBeforeUse, 0);
-        options.put(FmtOptions.blankLinesAfterUse, 0);
+        options.put(FmtOptions.INITIAL_INDENT, 0);
+        options.put(FmtOptions.BLANK_LINES_BEFORE_CLASS, 0);
+        options.put(FmtOptions.BLANK_LINES_AFTER_CLASS_HEADER, 1);
+        options.put(FmtOptions.BLANK_LINES_BEFORE_CLASS_END, 0);
+        options.put(FmtOptions.BLANK_LINES_AFTER_CLASS, 0);
+        options.put(FmtOptions.BLANK_LINES_BEFORE_FUNCTION, 0);
+        options.put(FmtOptions.BLANK_LINES_BEFORE_FUNCTION_END, 0);
+        options.put(FmtOptions.BLANK_LINES_AFTER_FUNCTION, 0);
+        options.put(FmtOptions.BLANK_LINES_BEFORE_FIELDS, 0);
+        options.put(FmtOptions.BLANK_LINES_AFTER_FIELDS, 0);
+        options.put(FmtOptions.BLANK_LINES_BEFORE_NAMESPACE, 0);
+        options.put(FmtOptions.BLANK_LINES_AFTER_NAMESPACE, 0);
+        options.put(FmtOptions.BLANK_LINES_BEFORE_USE, 0);
+        options.put(FmtOptions.BLANK_LINES_AFTER_USE, 0);
         reformatFileContents("testfiles/formatting/blankLines/SimpleClass06.php", options);
     }
 
     public void testBLSimpleClass07() throws Exception {
         HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
-        options.put(FmtOptions.initialIndent, 0);
-        options.put(FmtOptions.blankLinesBeforeClass, 0);
-        options.put(FmtOptions.blankLinesAfterClassHeader, 0);
-        options.put(FmtOptions.blankLinesBeforeClassEnd, 1);
-        options.put(FmtOptions.blankLinesAfterClass, 0);
-        options.put(FmtOptions.blankLinesBeforeFunction, 0);
-        options.put(FmtOptions.blankLinesBeforeFunctionEnd, 0);
-        options.put(FmtOptions.blankLinesAfterFunction, 0);
-        options.put(FmtOptions.blankLinesBeforeFields, 0);
-        options.put(FmtOptions.blankLinesAfterFields, 0);
-        options.put(FmtOptions.blankLinesBeforeNamespace, 0);
-        options.put(FmtOptions.blankLinesAfterNamespace, 0);
-        options.put(FmtOptions.blankLinesBeforeUse, 0);
-        options.put(FmtOptions.blankLinesAfterUse, 0);
+        options.put(FmtOptions.INITIAL_INDENT, 0);
+        options.put(FmtOptions.BLANK_LINES_BEFORE_CLASS, 0);
+        options.put(FmtOptions.BLANK_LINES_AFTER_CLASS_HEADER, 0);
+        options.put(FmtOptions.BLANK_LINES_BEFORE_CLASS_END, 1);
+        options.put(FmtOptions.BLANK_LINES_AFTER_CLASS, 0);
+        options.put(FmtOptions.BLANK_LINES_BEFORE_FUNCTION, 0);
+        options.put(FmtOptions.BLANK_LINES_BEFORE_FUNCTION_END, 0);
+        options.put(FmtOptions.BLANK_LINES_AFTER_FUNCTION, 0);
+        options.put(FmtOptions.BLANK_LINES_BEFORE_FIELDS, 0);
+        options.put(FmtOptions.BLANK_LINES_AFTER_FIELDS, 0);
+        options.put(FmtOptions.BLANK_LINES_BEFORE_NAMESPACE, 0);
+        options.put(FmtOptions.BLANK_LINES_AFTER_NAMESPACE, 0);
+        options.put(FmtOptions.BLANK_LINES_BEFORE_USE, 0);
+        options.put(FmtOptions.BLANK_LINES_AFTER_USE, 0);
         reformatFileContents("testfiles/formatting/blankLines/SimpleClass07.php", options);
     }
 
     public void testBLSimpleClass08() throws Exception {
         HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
-        options.put(FmtOptions.initialIndent, 0);
-        options.put(FmtOptions.blankLinesBeforeClass, 0);
-        options.put(FmtOptions.blankLinesAfterClassHeader, 0);
-        options.put(FmtOptions.blankLinesBeforeClassEnd, 0);
-        options.put(FmtOptions.blankLinesAfterClass, 1);
-        options.put(FmtOptions.blankLinesBeforeFunction, 0);
-        options.put(FmtOptions.blankLinesBeforeFunctionEnd, 0);
-        options.put(FmtOptions.blankLinesAfterFunction, 0);
-        options.put(FmtOptions.blankLinesBeforeFields, 0);
-        options.put(FmtOptions.blankLinesAfterFields, 0);
-        options.put(FmtOptions.blankLinesBeforeNamespace, 0);
-        options.put(FmtOptions.blankLinesAfterNamespace, 0);
-        options.put(FmtOptions.blankLinesBeforeUse, 0);
-        options.put(FmtOptions.blankLinesAfterUse, 0);
+        options.put(FmtOptions.INITIAL_INDENT, 0);
+        options.put(FmtOptions.BLANK_LINES_BEFORE_CLASS, 0);
+        options.put(FmtOptions.BLANK_LINES_AFTER_CLASS_HEADER, 0);
+        options.put(FmtOptions.BLANK_LINES_BEFORE_CLASS_END, 0);
+        options.put(FmtOptions.BLANK_LINES_AFTER_CLASS, 1);
+        options.put(FmtOptions.BLANK_LINES_BEFORE_FUNCTION, 0);
+        options.put(FmtOptions.BLANK_LINES_BEFORE_FUNCTION_END, 0);
+        options.put(FmtOptions.BLANK_LINES_AFTER_FUNCTION, 0);
+        options.put(FmtOptions.BLANK_LINES_BEFORE_FIELDS, 0);
+        options.put(FmtOptions.BLANK_LINES_AFTER_FIELDS, 0);
+        options.put(FmtOptions.BLANK_LINES_BEFORE_NAMESPACE, 0);
+        options.put(FmtOptions.BLANK_LINES_AFTER_NAMESPACE, 0);
+        options.put(FmtOptions.BLANK_LINES_BEFORE_USE, 0);
+        options.put(FmtOptions.BLANK_LINES_AFTER_USE, 0);
         reformatFileContents("testfiles/formatting/blankLines/SimpleClass08.php", options);
     }
 
     public void testBLSimpleClass09() throws Exception {
         HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
-        options.put(FmtOptions.initialIndent, 0);
-        options.put(FmtOptions.blankLinesBeforeClass, 0);
-        options.put(FmtOptions.blankLinesAfterClassHeader, 0);
-        options.put(FmtOptions.blankLinesBeforeClassEnd, 0);
-        options.put(FmtOptions.blankLinesAfterClass, 0);
-        options.put(FmtOptions.blankLinesBeforeFunction, 1);
-        options.put(FmtOptions.blankLinesBeforeFunctionEnd, 0);
-        options.put(FmtOptions.blankLinesAfterFunction, 0);
-        options.put(FmtOptions.blankLinesBeforeFields, 0);
-        options.put(FmtOptions.blankLinesAfterFields, 0);
-        options.put(FmtOptions.blankLinesBeforeNamespace, 0);
-        options.put(FmtOptions.blankLinesAfterNamespace, 0);
-        options.put(FmtOptions.blankLinesBeforeUse, 0);
-        options.put(FmtOptions.blankLinesAfterUse, 0);
+        options.put(FmtOptions.INITIAL_INDENT, 0);
+        options.put(FmtOptions.BLANK_LINES_BEFORE_CLASS, 0);
+        options.put(FmtOptions.BLANK_LINES_AFTER_CLASS_HEADER, 0);
+        options.put(FmtOptions.BLANK_LINES_BEFORE_CLASS_END, 0);
+        options.put(FmtOptions.BLANK_LINES_AFTER_CLASS, 0);
+        options.put(FmtOptions.BLANK_LINES_BEFORE_FUNCTION, 1);
+        options.put(FmtOptions.BLANK_LINES_BEFORE_FUNCTION_END, 0);
+        options.put(FmtOptions.BLANK_LINES_AFTER_FUNCTION, 0);
+        options.put(FmtOptions.BLANK_LINES_BEFORE_FIELDS, 0);
+        options.put(FmtOptions.BLANK_LINES_AFTER_FIELDS, 0);
+        options.put(FmtOptions.BLANK_LINES_BEFORE_NAMESPACE, 0);
+        options.put(FmtOptions.BLANK_LINES_AFTER_NAMESPACE, 0);
+        options.put(FmtOptions.BLANK_LINES_BEFORE_USE, 0);
+        options.put(FmtOptions.BLANK_LINES_AFTER_USE, 0);
         reformatFileContents("testfiles/formatting/blankLines/SimpleClass09.php", options);
     }
 
     public void testBLSimpleClass10() throws Exception {
         HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
-        options.put(FmtOptions.initialIndent, 0);
-        options.put(FmtOptions.blankLinesBeforeClass, 0);
-        options.put(FmtOptions.blankLinesAfterClassHeader, 0);
-        options.put(FmtOptions.blankLinesBeforeClassEnd, 0);
-        options.put(FmtOptions.blankLinesAfterClass, 0);
-        options.put(FmtOptions.blankLinesBeforeFunction, 0);
-        options.put(FmtOptions.blankLinesBeforeFunctionEnd, 1);
-        options.put(FmtOptions.blankLinesAfterFunction, 0);
-        options.put(FmtOptions.blankLinesBeforeFields, 0);
-        options.put(FmtOptions.blankLinesAfterFields, 0);
-        options.put(FmtOptions.blankLinesBeforeNamespace, 0);
-        options.put(FmtOptions.blankLinesAfterNamespace, 0);
-        options.put(FmtOptions.blankLinesBeforeUse, 0);
-        options.put(FmtOptions.blankLinesAfterUse, 0);
+        options.put(FmtOptions.INITIAL_INDENT, 0);
+        options.put(FmtOptions.BLANK_LINES_BEFORE_CLASS, 0);
+        options.put(FmtOptions.BLANK_LINES_AFTER_CLASS_HEADER, 0);
+        options.put(FmtOptions.BLANK_LINES_BEFORE_CLASS_END, 0);
+        options.put(FmtOptions.BLANK_LINES_AFTER_CLASS, 0);
+        options.put(FmtOptions.BLANK_LINES_BEFORE_FUNCTION, 0);
+        options.put(FmtOptions.BLANK_LINES_BEFORE_FUNCTION_END, 1);
+        options.put(FmtOptions.BLANK_LINES_AFTER_FUNCTION, 0);
+        options.put(FmtOptions.BLANK_LINES_BEFORE_FIELDS, 0);
+        options.put(FmtOptions.BLANK_LINES_AFTER_FIELDS, 0);
+        options.put(FmtOptions.BLANK_LINES_BEFORE_NAMESPACE, 0);
+        options.put(FmtOptions.BLANK_LINES_AFTER_NAMESPACE, 0);
+        options.put(FmtOptions.BLANK_LINES_BEFORE_USE, 0);
+        options.put(FmtOptions.BLANK_LINES_AFTER_USE, 0);
         reformatFileContents("testfiles/formatting/blankLines/SimpleClass10.php", options);
     }
 
     public void testBLSimpleClass11() throws Exception {
         HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
-        options.put(FmtOptions.initialIndent, 0);
-        options.put(FmtOptions.blankLinesBeforeClass, 0);
-        options.put(FmtOptions.blankLinesAfterClassHeader, 0);
-        options.put(FmtOptions.blankLinesBeforeClassEnd, 0);
-        options.put(FmtOptions.blankLinesAfterClass, 0);
-        options.put(FmtOptions.blankLinesBeforeFunction, 0);
-        options.put(FmtOptions.blankLinesBeforeFunctionEnd, 0);
-        options.put(FmtOptions.blankLinesAfterFunction, 1);
-        options.put(FmtOptions.blankLinesBeforeFields, 0);
-        options.put(FmtOptions.blankLinesAfterFields, 0);
-        options.put(FmtOptions.blankLinesBeforeNamespace, 0);
-        options.put(FmtOptions.blankLinesAfterNamespace, 0);
-        options.put(FmtOptions.blankLinesBeforeUse, 0);
-        options.put(FmtOptions.blankLinesAfterUse, 0);
+        options.put(FmtOptions.INITIAL_INDENT, 0);
+        options.put(FmtOptions.BLANK_LINES_BEFORE_CLASS, 0);
+        options.put(FmtOptions.BLANK_LINES_AFTER_CLASS_HEADER, 0);
+        options.put(FmtOptions.BLANK_LINES_BEFORE_CLASS_END, 0);
+        options.put(FmtOptions.BLANK_LINES_AFTER_CLASS, 0);
+        options.put(FmtOptions.BLANK_LINES_BEFORE_FUNCTION, 0);
+        options.put(FmtOptions.BLANK_LINES_BEFORE_FUNCTION_END, 0);
+        options.put(FmtOptions.BLANK_LINES_AFTER_FUNCTION, 1);
+        options.put(FmtOptions.BLANK_LINES_BEFORE_FIELDS, 0);
+        options.put(FmtOptions.BLANK_LINES_AFTER_FIELDS, 0);
+        options.put(FmtOptions.BLANK_LINES_BEFORE_NAMESPACE, 0);
+        options.put(FmtOptions.BLANK_LINES_AFTER_NAMESPACE, 0);
+        options.put(FmtOptions.BLANK_LINES_BEFORE_USE, 0);
+        options.put(FmtOptions.BLANK_LINES_AFTER_USE, 0);
         reformatFileContents("testfiles/formatting/blankLines/SimpleClass11.php", options);
     }
 
     public void testBLSimpleClass12() throws Exception {
         HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
-        options.put(FmtOptions.initialIndent, 0);
-        options.put(FmtOptions.blankLinesBeforeClass, 0);
-        options.put(FmtOptions.blankLinesAfterClassHeader, 1);
-        options.put(FmtOptions.blankLinesBeforeClassEnd, 1);
-        options.put(FmtOptions.blankLinesAfterClass, 0);
-        options.put(FmtOptions.blankLinesBeforeFunction, 1);
-        options.put(FmtOptions.blankLinesBeforeFunctionEnd, 1);
-        options.put(FmtOptions.blankLinesAfterFunction, 1);
-        options.put(FmtOptions.blankLinesBeforeFields, 0);
-        options.put(FmtOptions.blankLinesAfterFields, 0);
-        options.put(FmtOptions.blankLinesBeforeNamespace, 0);
-        options.put(FmtOptions.blankLinesAfterNamespace, 0);
-        options.put(FmtOptions.blankLinesBeforeUse, 0);
-        options.put(FmtOptions.blankLinesAfterUse, 0);
+        options.put(FmtOptions.INITIAL_INDENT, 0);
+        options.put(FmtOptions.BLANK_LINES_BEFORE_CLASS, 0);
+        options.put(FmtOptions.BLANK_LINES_AFTER_CLASS_HEADER, 1);
+        options.put(FmtOptions.BLANK_LINES_BEFORE_CLASS_END, 1);
+        options.put(FmtOptions.BLANK_LINES_AFTER_CLASS, 0);
+        options.put(FmtOptions.BLANK_LINES_BEFORE_FUNCTION, 1);
+        options.put(FmtOptions.BLANK_LINES_BEFORE_FUNCTION_END, 1);
+        options.put(FmtOptions.BLANK_LINES_AFTER_FUNCTION, 1);
+        options.put(FmtOptions.BLANK_LINES_BEFORE_FIELDS, 0);
+        options.put(FmtOptions.BLANK_LINES_AFTER_FIELDS, 0);
+        options.put(FmtOptions.BLANK_LINES_BEFORE_NAMESPACE, 0);
+        options.put(FmtOptions.BLANK_LINES_AFTER_NAMESPACE, 0);
+        options.put(FmtOptions.BLANK_LINES_BEFORE_USE, 0);
+        options.put(FmtOptions.BLANK_LINES_AFTER_USE, 0);
         reformatFileContents("testfiles/formatting/blankLines/SimpleClass12.php", options);
     }
 
@@ -523,193 +523,193 @@ public class PHPFormatterBlankLinesTest extends PHPFormatterTestBase {
 
     public void testBLSimpleClass16() throws Exception {
         HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
-        options.put(FmtOptions.initialIndent, 0);
-        options.put(FmtOptions.classDeclBracePlacement, CodeStyle.BracePlacement.NEW_LINE_INDENTED);
-        options.put(FmtOptions.methodDeclBracePlacement, CodeStyle.BracePlacement.NEW_LINE_INDENTED);
+        options.put(FmtOptions.INITIAL_INDENT, 0);
+        options.put(FmtOptions.CLASS_DECL_BRACE_PLACEMENT, CodeStyle.BracePlacement.NEW_LINE_INDENTED);
+        options.put(FmtOptions.METHOD_DECL_BRACE_PLACEMENT, CodeStyle.BracePlacement.NEW_LINE_INDENTED);
         reformatFileContents("testfiles/formatting/blankLines/SimpleClass16.php", options);
     }
 
     public void testBLSimpleClass17() throws Exception {
         HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
-        options.put(FmtOptions.initialIndent, 4);
-        options.put(FmtOptions.classDeclBracePlacement, CodeStyle.BracePlacement.NEW_LINE_INDENTED);
-        options.put(FmtOptions.methodDeclBracePlacement, CodeStyle.BracePlacement.NEW_LINE_INDENTED);
+        options.put(FmtOptions.INITIAL_INDENT, 4);
+        options.put(FmtOptions.CLASS_DECL_BRACE_PLACEMENT, CodeStyle.BracePlacement.NEW_LINE_INDENTED);
+        options.put(FmtOptions.METHOD_DECL_BRACE_PLACEMENT, CodeStyle.BracePlacement.NEW_LINE_INDENTED);
         reformatFileContents("testfiles/formatting/blankLines/SimpleClass17.php", options);
     }
 
     public void testBLSimpleTrait01() throws Exception {
         HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
-        options.put(FmtOptions.initialIndent, 0);
+        options.put(FmtOptions.INITIAL_INDENT, 0);
         reformatFileContents("testfiles/formatting/blankLines/SimpleTrait01.php", options);
     }
 
     public void testBLSimpleTrait02() throws Exception {
         HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
-        options.put(FmtOptions.initialIndent, 0);
+        options.put(FmtOptions.INITIAL_INDENT, 0);
         reformatFileContents("testfiles/formatting/blankLines/SimpleTrait02.php", options);
     }
 
     public void testBLSimpleTrait03() throws Exception {
         HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
-        options.put(FmtOptions.initialIndent, 0);
+        options.put(FmtOptions.INITIAL_INDENT, 0);
         reformatFileContents("testfiles/formatting/blankLines/SimpleTrait03.php", options);
     }
 
     public void testBLSimpleTrait04() throws Exception {
         HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
-        options.put(FmtOptions.initialIndent, 0);
+        options.put(FmtOptions.INITIAL_INDENT, 0);
         reformatFileContents("testfiles/formatting/blankLines/SimpleTrait04.php", options);
     }
 
     public void testBLSimpleTrait05() throws Exception {
         HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
-        options.put(FmtOptions.initialIndent, 0);
-        options.put(FmtOptions.blankLinesBeforeClass, 1);
-        options.put(FmtOptions.blankLinesAfterClassHeader, 0);
-        options.put(FmtOptions.blankLinesBeforeClassEnd, 0);
-        options.put(FmtOptions.blankLinesAfterClass, 0);
-        options.put(FmtOptions.blankLinesBeforeFunction, 0);
-        options.put(FmtOptions.blankLinesBeforeFunctionEnd, 0);
-        options.put(FmtOptions.blankLinesAfterFunction, 0);
-        options.put(FmtOptions.blankLinesBeforeFields, 0);
-        options.put(FmtOptions.blankLinesAfterFields, 0);
-        options.put(FmtOptions.blankLinesBeforeNamespace, 0);
-        options.put(FmtOptions.blankLinesAfterNamespace, 0);
-        options.put(FmtOptions.blankLinesBeforeUse, 0);
-        options.put(FmtOptions.blankLinesAfterUse, 0);
+        options.put(FmtOptions.INITIAL_INDENT, 0);
+        options.put(FmtOptions.BLANK_LINES_BEFORE_CLASS, 1);
+        options.put(FmtOptions.BLANK_LINES_AFTER_CLASS_HEADER, 0);
+        options.put(FmtOptions.BLANK_LINES_BEFORE_CLASS_END, 0);
+        options.put(FmtOptions.BLANK_LINES_AFTER_CLASS, 0);
+        options.put(FmtOptions.BLANK_LINES_BEFORE_FUNCTION, 0);
+        options.put(FmtOptions.BLANK_LINES_BEFORE_FUNCTION_END, 0);
+        options.put(FmtOptions.BLANK_LINES_AFTER_FUNCTION, 0);
+        options.put(FmtOptions.BLANK_LINES_BEFORE_FIELDS, 0);
+        options.put(FmtOptions.BLANK_LINES_AFTER_FIELDS, 0);
+        options.put(FmtOptions.BLANK_LINES_BEFORE_NAMESPACE, 0);
+        options.put(FmtOptions.BLANK_LINES_AFTER_NAMESPACE, 0);
+        options.put(FmtOptions.BLANK_LINES_BEFORE_USE, 0);
+        options.put(FmtOptions.BLANK_LINES_AFTER_USE, 0);
         reformatFileContents("testfiles/formatting/blankLines/SimpleTrait05.php", options);
     }
 
     public void testBLSimpleTrait06() throws Exception {
         HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
-        options.put(FmtOptions.initialIndent, 0);
-        options.put(FmtOptions.blankLinesBeforeClass, 0);
-        options.put(FmtOptions.blankLinesAfterClassHeader, 1);
-        options.put(FmtOptions.blankLinesBeforeClassEnd, 0);
-        options.put(FmtOptions.blankLinesAfterClass, 0);
-        options.put(FmtOptions.blankLinesBeforeFunction, 0);
-        options.put(FmtOptions.blankLinesBeforeFunctionEnd, 0);
-        options.put(FmtOptions.blankLinesAfterFunction, 0);
-        options.put(FmtOptions.blankLinesBeforeFields, 0);
-        options.put(FmtOptions.blankLinesAfterFields, 0);
-        options.put(FmtOptions.blankLinesBeforeNamespace, 0);
-        options.put(FmtOptions.blankLinesAfterNamespace, 0);
-        options.put(FmtOptions.blankLinesBeforeUse, 0);
-        options.put(FmtOptions.blankLinesAfterUse, 0);
+        options.put(FmtOptions.INITIAL_INDENT, 0);
+        options.put(FmtOptions.BLANK_LINES_BEFORE_CLASS, 0);
+        options.put(FmtOptions.BLANK_LINES_AFTER_CLASS_HEADER, 1);
+        options.put(FmtOptions.BLANK_LINES_BEFORE_CLASS_END, 0);
+        options.put(FmtOptions.BLANK_LINES_AFTER_CLASS, 0);
+        options.put(FmtOptions.BLANK_LINES_BEFORE_FUNCTION, 0);
+        options.put(FmtOptions.BLANK_LINES_BEFORE_FUNCTION_END, 0);
+        options.put(FmtOptions.BLANK_LINES_AFTER_FUNCTION, 0);
+        options.put(FmtOptions.BLANK_LINES_BEFORE_FIELDS, 0);
+        options.put(FmtOptions.BLANK_LINES_AFTER_FIELDS, 0);
+        options.put(FmtOptions.BLANK_LINES_BEFORE_NAMESPACE, 0);
+        options.put(FmtOptions.BLANK_LINES_AFTER_NAMESPACE, 0);
+        options.put(FmtOptions.BLANK_LINES_BEFORE_USE, 0);
+        options.put(FmtOptions.BLANK_LINES_AFTER_USE, 0);
         reformatFileContents("testfiles/formatting/blankLines/SimpleTrait06.php", options);
     }
 
     public void testBLSimpleTrait07() throws Exception {
         HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
-        options.put(FmtOptions.initialIndent, 0);
-        options.put(FmtOptions.blankLinesBeforeClass, 0);
-        options.put(FmtOptions.blankLinesAfterClassHeader, 0);
-        options.put(FmtOptions.blankLinesBeforeClassEnd, 1);
-        options.put(FmtOptions.blankLinesAfterClass, 0);
-        options.put(FmtOptions.blankLinesBeforeFunction, 0);
-        options.put(FmtOptions.blankLinesBeforeFunctionEnd, 0);
-        options.put(FmtOptions.blankLinesAfterFunction, 0);
-        options.put(FmtOptions.blankLinesBeforeFields, 0);
-        options.put(FmtOptions.blankLinesAfterFields, 0);
-        options.put(FmtOptions.blankLinesBeforeNamespace, 0);
-        options.put(FmtOptions.blankLinesAfterNamespace, 0);
-        options.put(FmtOptions.blankLinesBeforeUse, 0);
-        options.put(FmtOptions.blankLinesAfterUse, 0);
+        options.put(FmtOptions.INITIAL_INDENT, 0);
+        options.put(FmtOptions.BLANK_LINES_BEFORE_CLASS, 0);
+        options.put(FmtOptions.BLANK_LINES_AFTER_CLASS_HEADER, 0);
+        options.put(FmtOptions.BLANK_LINES_BEFORE_CLASS_END, 1);
+        options.put(FmtOptions.BLANK_LINES_AFTER_CLASS, 0);
+        options.put(FmtOptions.BLANK_LINES_BEFORE_FUNCTION, 0);
+        options.put(FmtOptions.BLANK_LINES_BEFORE_FUNCTION_END, 0);
+        options.put(FmtOptions.BLANK_LINES_AFTER_FUNCTION, 0);
+        options.put(FmtOptions.BLANK_LINES_BEFORE_FIELDS, 0);
+        options.put(FmtOptions.BLANK_LINES_AFTER_FIELDS, 0);
+        options.put(FmtOptions.BLANK_LINES_BEFORE_NAMESPACE, 0);
+        options.put(FmtOptions.BLANK_LINES_AFTER_NAMESPACE, 0);
+        options.put(FmtOptions.BLANK_LINES_BEFORE_USE, 0);
+        options.put(FmtOptions.BLANK_LINES_AFTER_USE, 0);
         reformatFileContents("testfiles/formatting/blankLines/SimpleTrait07.php", options);
     }
 
     public void testBLSimpleTrait08() throws Exception {
         HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
-        options.put(FmtOptions.initialIndent, 0);
-        options.put(FmtOptions.blankLinesBeforeClass, 0);
-        options.put(FmtOptions.blankLinesAfterClassHeader, 0);
-        options.put(FmtOptions.blankLinesBeforeClassEnd, 0);
-        options.put(FmtOptions.blankLinesAfterClass, 1);
-        options.put(FmtOptions.blankLinesBeforeFunction, 0);
-        options.put(FmtOptions.blankLinesBeforeFunctionEnd, 0);
-        options.put(FmtOptions.blankLinesAfterFunction, 0);
-        options.put(FmtOptions.blankLinesBeforeFields, 0);
-        options.put(FmtOptions.blankLinesAfterFields, 0);
-        options.put(FmtOptions.blankLinesBeforeNamespace, 0);
-        options.put(FmtOptions.blankLinesAfterNamespace, 0);
-        options.put(FmtOptions.blankLinesBeforeUse, 0);
-        options.put(FmtOptions.blankLinesAfterUse, 0);
+        options.put(FmtOptions.INITIAL_INDENT, 0);
+        options.put(FmtOptions.BLANK_LINES_BEFORE_CLASS, 0);
+        options.put(FmtOptions.BLANK_LINES_AFTER_CLASS_HEADER, 0);
+        options.put(FmtOptions.BLANK_LINES_BEFORE_CLASS_END, 0);
+        options.put(FmtOptions.BLANK_LINES_AFTER_CLASS, 1);
+        options.put(FmtOptions.BLANK_LINES_BEFORE_FUNCTION, 0);
+        options.put(FmtOptions.BLANK_LINES_BEFORE_FUNCTION_END, 0);
+        options.put(FmtOptions.BLANK_LINES_AFTER_FUNCTION, 0);
+        options.put(FmtOptions.BLANK_LINES_BEFORE_FIELDS, 0);
+        options.put(FmtOptions.BLANK_LINES_AFTER_FIELDS, 0);
+        options.put(FmtOptions.BLANK_LINES_BEFORE_NAMESPACE, 0);
+        options.put(FmtOptions.BLANK_LINES_AFTER_NAMESPACE, 0);
+        options.put(FmtOptions.BLANK_LINES_BEFORE_USE, 0);
+        options.put(FmtOptions.BLANK_LINES_AFTER_USE, 0);
         reformatFileContents("testfiles/formatting/blankLines/SimpleTrait08.php", options);
     }
 
     public void testBLSimpleTrait09() throws Exception {
         HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
-        options.put(FmtOptions.initialIndent, 0);
-        options.put(FmtOptions.blankLinesBeforeClass, 0);
-        options.put(FmtOptions.blankLinesAfterClassHeader, 0);
-        options.put(FmtOptions.blankLinesBeforeClassEnd, 0);
-        options.put(FmtOptions.blankLinesAfterClass, 0);
-        options.put(FmtOptions.blankLinesBeforeFunction, 1);
-        options.put(FmtOptions.blankLinesBeforeFunctionEnd, 0);
-        options.put(FmtOptions.blankLinesAfterFunction, 0);
-        options.put(FmtOptions.blankLinesBeforeFields, 0);
-        options.put(FmtOptions.blankLinesAfterFields, 0);
-        options.put(FmtOptions.blankLinesBeforeNamespace, 0);
-        options.put(FmtOptions.blankLinesAfterNamespace, 0);
-        options.put(FmtOptions.blankLinesBeforeUse, 0);
-        options.put(FmtOptions.blankLinesAfterUse, 0);
+        options.put(FmtOptions.INITIAL_INDENT, 0);
+        options.put(FmtOptions.BLANK_LINES_BEFORE_CLASS, 0);
+        options.put(FmtOptions.BLANK_LINES_AFTER_CLASS_HEADER, 0);
+        options.put(FmtOptions.BLANK_LINES_BEFORE_CLASS_END, 0);
+        options.put(FmtOptions.BLANK_LINES_AFTER_CLASS, 0);
+        options.put(FmtOptions.BLANK_LINES_BEFORE_FUNCTION, 1);
+        options.put(FmtOptions.BLANK_LINES_BEFORE_FUNCTION_END, 0);
+        options.put(FmtOptions.BLANK_LINES_AFTER_FUNCTION, 0);
+        options.put(FmtOptions.BLANK_LINES_BEFORE_FIELDS, 0);
+        options.put(FmtOptions.BLANK_LINES_AFTER_FIELDS, 0);
+        options.put(FmtOptions.BLANK_LINES_BEFORE_NAMESPACE, 0);
+        options.put(FmtOptions.BLANK_LINES_AFTER_NAMESPACE, 0);
+        options.put(FmtOptions.BLANK_LINES_BEFORE_USE, 0);
+        options.put(FmtOptions.BLANK_LINES_AFTER_USE, 0);
         reformatFileContents("testfiles/formatting/blankLines/SimpleTrait09.php", options);
     }
 
     public void testBLSimpleTrait10() throws Exception {
         HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
-        options.put(FmtOptions.initialIndent, 0);
-        options.put(FmtOptions.blankLinesBeforeClass, 0);
-        options.put(FmtOptions.blankLinesAfterClassHeader, 0);
-        options.put(FmtOptions.blankLinesBeforeClassEnd, 0);
-        options.put(FmtOptions.blankLinesAfterClass, 0);
-        options.put(FmtOptions.blankLinesBeforeFunction, 0);
-        options.put(FmtOptions.blankLinesBeforeFunctionEnd, 1);
-        options.put(FmtOptions.blankLinesAfterFunction, 0);
-        options.put(FmtOptions.blankLinesBeforeFields, 0);
-        options.put(FmtOptions.blankLinesAfterFields, 0);
-        options.put(FmtOptions.blankLinesBeforeNamespace, 0);
-        options.put(FmtOptions.blankLinesAfterNamespace, 0);
-        options.put(FmtOptions.blankLinesBeforeUse, 0);
-        options.put(FmtOptions.blankLinesAfterUse, 0);
+        options.put(FmtOptions.INITIAL_INDENT, 0);
+        options.put(FmtOptions.BLANK_LINES_BEFORE_CLASS, 0);
+        options.put(FmtOptions.BLANK_LINES_AFTER_CLASS_HEADER, 0);
+        options.put(FmtOptions.BLANK_LINES_BEFORE_CLASS_END, 0);
+        options.put(FmtOptions.BLANK_LINES_AFTER_CLASS, 0);
+        options.put(FmtOptions.BLANK_LINES_BEFORE_FUNCTION, 0);
+        options.put(FmtOptions.BLANK_LINES_BEFORE_FUNCTION_END, 1);
+        options.put(FmtOptions.BLANK_LINES_AFTER_FUNCTION, 0);
+        options.put(FmtOptions.BLANK_LINES_BEFORE_FIELDS, 0);
+        options.put(FmtOptions.BLANK_LINES_AFTER_FIELDS, 0);
+        options.put(FmtOptions.BLANK_LINES_BEFORE_NAMESPACE, 0);
+        options.put(FmtOptions.BLANK_LINES_AFTER_NAMESPACE, 0);
+        options.put(FmtOptions.BLANK_LINES_BEFORE_USE, 0);
+        options.put(FmtOptions.BLANK_LINES_AFTER_USE, 0);
         reformatFileContents("testfiles/formatting/blankLines/SimpleTrait10.php", options);
     }
 
     public void testBLSimpleTrait11() throws Exception {
         HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
-        options.put(FmtOptions.initialIndent, 0);
-        options.put(FmtOptions.blankLinesBeforeClass, 0);
-        options.put(FmtOptions.blankLinesAfterClassHeader, 0);
-        options.put(FmtOptions.blankLinesBeforeClassEnd, 0);
-        options.put(FmtOptions.blankLinesAfterClass, 0);
-        options.put(FmtOptions.blankLinesBeforeFunction, 0);
-        options.put(FmtOptions.blankLinesBeforeFunctionEnd, 0);
-        options.put(FmtOptions.blankLinesAfterFunction, 1);
-        options.put(FmtOptions.blankLinesBeforeFields, 0);
-        options.put(FmtOptions.blankLinesAfterFields, 0);
-        options.put(FmtOptions.blankLinesBeforeNamespace, 0);
-        options.put(FmtOptions.blankLinesAfterNamespace, 0);
-        options.put(FmtOptions.blankLinesBeforeUse, 0);
-        options.put(FmtOptions.blankLinesAfterUse, 0);
+        options.put(FmtOptions.INITIAL_INDENT, 0);
+        options.put(FmtOptions.BLANK_LINES_BEFORE_CLASS, 0);
+        options.put(FmtOptions.BLANK_LINES_AFTER_CLASS_HEADER, 0);
+        options.put(FmtOptions.BLANK_LINES_BEFORE_CLASS_END, 0);
+        options.put(FmtOptions.BLANK_LINES_AFTER_CLASS, 0);
+        options.put(FmtOptions.BLANK_LINES_BEFORE_FUNCTION, 0);
+        options.put(FmtOptions.BLANK_LINES_BEFORE_FUNCTION_END, 0);
+        options.put(FmtOptions.BLANK_LINES_AFTER_FUNCTION, 1);
+        options.put(FmtOptions.BLANK_LINES_BEFORE_FIELDS, 0);
+        options.put(FmtOptions.BLANK_LINES_AFTER_FIELDS, 0);
+        options.put(FmtOptions.BLANK_LINES_BEFORE_NAMESPACE, 0);
+        options.put(FmtOptions.BLANK_LINES_AFTER_NAMESPACE, 0);
+        options.put(FmtOptions.BLANK_LINES_BEFORE_USE, 0);
+        options.put(FmtOptions.BLANK_LINES_AFTER_USE, 0);
         reformatFileContents("testfiles/formatting/blankLines/SimpleTrait11.php", options);
     }
 
     public void testBLSimpleTrait12() throws Exception {
         HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
-        options.put(FmtOptions.initialIndent, 0);
-        options.put(FmtOptions.blankLinesBeforeClass, 0);
-        options.put(FmtOptions.blankLinesAfterClassHeader, 1);
-        options.put(FmtOptions.blankLinesBeforeClassEnd, 1);
-        options.put(FmtOptions.blankLinesAfterClass, 0);
-        options.put(FmtOptions.blankLinesBeforeFunction, 1);
-        options.put(FmtOptions.blankLinesBeforeFunctionEnd, 1);
-        options.put(FmtOptions.blankLinesAfterFunction, 1);
-        options.put(FmtOptions.blankLinesBeforeFields, 0);
-        options.put(FmtOptions.blankLinesAfterFields, 0);
-        options.put(FmtOptions.blankLinesBeforeNamespace, 0);
-        options.put(FmtOptions.blankLinesAfterNamespace, 0);
-        options.put(FmtOptions.blankLinesBeforeUse, 0);
-        options.put(FmtOptions.blankLinesAfterUse, 0);
+        options.put(FmtOptions.INITIAL_INDENT, 0);
+        options.put(FmtOptions.BLANK_LINES_BEFORE_CLASS, 0);
+        options.put(FmtOptions.BLANK_LINES_AFTER_CLASS_HEADER, 1);
+        options.put(FmtOptions.BLANK_LINES_BEFORE_CLASS_END, 1);
+        options.put(FmtOptions.BLANK_LINES_AFTER_CLASS, 0);
+        options.put(FmtOptions.BLANK_LINES_BEFORE_FUNCTION, 1);
+        options.put(FmtOptions.BLANK_LINES_BEFORE_FUNCTION_END, 1);
+        options.put(FmtOptions.BLANK_LINES_AFTER_FUNCTION, 1);
+        options.put(FmtOptions.BLANK_LINES_BEFORE_FIELDS, 0);
+        options.put(FmtOptions.BLANK_LINES_AFTER_FIELDS, 0);
+        options.put(FmtOptions.BLANK_LINES_BEFORE_NAMESPACE, 0);
+        options.put(FmtOptions.BLANK_LINES_AFTER_NAMESPACE, 0);
+        options.put(FmtOptions.BLANK_LINES_BEFORE_USE, 0);
+        options.put(FmtOptions.BLANK_LINES_AFTER_USE, 0);
         reformatFileContents("testfiles/formatting/blankLines/SimpleTrait12.php", options);
     }
 
@@ -730,41 +730,41 @@ public class PHPFormatterBlankLinesTest extends PHPFormatterTestBase {
 
     public void testBLSimpleTrait16() throws Exception {
         HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
-        options.put(FmtOptions.initialIndent, 0);
-        options.put(FmtOptions.classDeclBracePlacement, CodeStyle.BracePlacement.NEW_LINE_INDENTED);
-        options.put(FmtOptions.methodDeclBracePlacement, CodeStyle.BracePlacement.NEW_LINE_INDENTED);
+        options.put(FmtOptions.INITIAL_INDENT, 0);
+        options.put(FmtOptions.CLASS_DECL_BRACE_PLACEMENT, CodeStyle.BracePlacement.NEW_LINE_INDENTED);
+        options.put(FmtOptions.METHOD_DECL_BRACE_PLACEMENT, CodeStyle.BracePlacement.NEW_LINE_INDENTED);
         reformatFileContents("testfiles/formatting/blankLines/SimpleTrait16.php", options);
     }
 
     public void testBLSimpleTrait17() throws Exception {
         HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
-        options.put(FmtOptions.initialIndent, 4);
-        options.put(FmtOptions.classDeclBracePlacement, CodeStyle.BracePlacement.NEW_LINE_INDENTED);
-        options.put(FmtOptions.methodDeclBracePlacement, CodeStyle.BracePlacement.NEW_LINE_INDENTED);
+        options.put(FmtOptions.INITIAL_INDENT, 4);
+        options.put(FmtOptions.CLASS_DECL_BRACE_PLACEMENT, CodeStyle.BracePlacement.NEW_LINE_INDENTED);
+        options.put(FmtOptions.METHOD_DECL_BRACE_PLACEMENT, CodeStyle.BracePlacement.NEW_LINE_INDENTED);
         reformatFileContents("testfiles/formatting/blankLines/SimpleTrait17.php", options);
     }
 
     public void testBLSimpleUse01() throws Exception {
         HashMap<String, Object> options = new HashMap<String, Object>();
-        options.put(FmtOptions.initialIndent, 0);
+        options.put(FmtOptions.INITIAL_INDENT, 0);
         reformatFileContents("testfiles/formatting/blankLines/Use01.php", options);
     }
 
     public void testBLSimpleUse02() throws Exception {
         HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
-        options.put(FmtOptions.initialIndent, 0);
+        options.put(FmtOptions.INITIAL_INDENT, 0);
         reformatFileContents("testfiles/formatting/blankLines/Use02.php", options);
     }
 
     public void testBLSimpleUse03() throws Exception {
         HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
-        options.put(FmtOptions.initialIndent, 0);
+        options.put(FmtOptions.INITIAL_INDENT, 0);
         reformatFileContents("testfiles/formatting/blankLines/Use03.php", options);
     }
 
     public void testBLSimpleUse04() throws Exception {
         HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
-        options.put(FmtOptions.initialIndent, 0);
+        options.put(FmtOptions.INITIAL_INDENT, 0);
         reformatFileContents("testfiles/formatting/blankLines/Use04.php", options);
     }
 
@@ -780,19 +780,19 @@ public class PHPFormatterBlankLinesTest extends PHPFormatterTestBase {
 
     public void testOpenClosePHPTag03() throws Exception {
         HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
-        options.put(FmtOptions.initialIndent, 4);
+        options.put(FmtOptions.INITIAL_INDENT, 4);
         reformatFileContents("testfiles/formatting/blankLines/OpenClosePHPTag03.php", options);
     }
 
     public void testOpenClosePHPTag04() throws Exception {
         HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
-        options.put(FmtOptions.initialIndent, 4);
+        options.put(FmtOptions.INITIAL_INDENT, 4);
         reformatFileContents("testfiles/formatting/blankLines/OpenClosePHPTag04.php", options);
     }
 
     public void testOpenClosePHPTag05() throws Exception {
         HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
-        options.put(FmtOptions.initialIndent, 4);
+        options.put(FmtOptions.INITIAL_INDENT, 4);
         reformatFileContents("testfiles/formatting/blankLines/OpenClosePHPTag05.php", options);
     }
 }

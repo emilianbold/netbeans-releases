@@ -79,7 +79,7 @@ public abstract class ElementTransformation<S extends PhpElement> {
     }
 
     /**
-     * intended for frameworks
+     * intended for frameworks.
      * @return
      */
     public static ElementTransformation<VariableElement> fieldsToVariables() {
