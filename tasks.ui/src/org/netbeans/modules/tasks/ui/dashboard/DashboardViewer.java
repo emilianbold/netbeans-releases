@@ -893,44 +893,48 @@ public final class DashboardViewer implements PropertyChangeListener {
     }
 
     private void updateRepositories(Collection<Repository> addedRepositories, Collection<Repository> removedRepositories) {
-        List<RepositoryNode> toAdd = new ArrayList<RepositoryNode>();
-        List<RepositoryNode> toRemove = new ArrayList<RepositoryNode>();
+        synchronized (LOCK_REPOSITORIES) {
+            List<RepositoryNode> toAdd = new ArrayList<RepositoryNode>();
+            List<RepositoryNode> toRemove = new ArrayList<RepositoryNode>();
 
-        if (removedRepositories != null) {
-            for (RepositoryNode oldRepository : repositoryNodes) {
-                if (removedRepositories.contains(oldRepository.getRepository())) {
-                    toRemove.add(oldRepository);
+            if (removedRepositories != null) {
+                for (RepositoryNode oldRepository : repositoryNodes) {
+                    if (removedRepositories.contains(oldRepository.getRepository())) {
+                        toRemove.add(oldRepository);
+                    }
                 }
             }
-        }
-        if (addedRepositories != null) {
-            List<Repository> oldValue = getRepositories(false);
-            for (Repository addedRepository : addedRepositories) {
-                if (!oldValue.contains(addedRepository)) {
-                    toAdd.add(new RepositoryNode(addedRepository, false));
+            if (addedRepositories != null) {
+                List<Repository> oldValue = getRepositories(false);
+                for (Repository addedRepository : addedRepositories) {
+                    if (!oldValue.contains(addedRepository)) {
+                        toAdd.add(new RepositoryNode(addedRepository, false));
+                    }
                 }
             }
+            updateRepositories(toRemove, toAdd);
         }
-        updateRepositories(toRemove, toAdd);
     }
 
     private void updateRepositories(Collection<Repository> repositories) {
-        List<RepositoryNode> toAdd = new ArrayList<RepositoryNode>();
-        List<RepositoryNode> toRemove = new ArrayList<RepositoryNode>();
+        synchronized (LOCK_REPOSITORIES) {
+            List<RepositoryNode> toAdd = new ArrayList<RepositoryNode>();
+            List<RepositoryNode> toRemove = new ArrayList<RepositoryNode>();
 
-        for (RepositoryNode oldRepository : repositoryNodes) {
-            if (!repositories.contains(oldRepository.getRepository())) {
-                toRemove.add(oldRepository);
+            for (RepositoryNode oldRepository : repositoryNodes) {
+                if (!repositories.contains(oldRepository.getRepository())) {
+                    toRemove.add(oldRepository);
+                }
             }
-        }
 
-        List<Repository> oldValue = getRepositories(false);
-        for (Repository newRepository : repositories) {
-            if (!oldValue.contains(newRepository)) {
-                toAdd.add(new RepositoryNode(newRepository, false));
+            List<Repository> oldValue = getRepositories(false);
+            for (Repository newRepository : repositories) {
+                if (!oldValue.contains(newRepository)) {
+                    toAdd.add(new RepositoryNode(newRepository, false));
+                }
             }
+            updateRepositories(toRemove, toAdd);
         }
-        updateRepositories(toRemove, toAdd);
     }
 
     private void updateRepositories(List<RepositoryNode> toRemove, List<RepositoryNode> toAdd) {
