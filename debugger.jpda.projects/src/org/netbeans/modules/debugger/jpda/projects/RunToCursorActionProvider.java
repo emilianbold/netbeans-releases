@@ -77,6 +77,7 @@ public class RunToCursorActionProvider extends ActionsProviderSupport {
     
     private EditorContextDispatcher editorContext;
     private LineBreakpoint          breakpoint;
+    private static RequestProcessor RP = new RequestProcessor(RunToCursorActionProvider.class.getName());
     
     {
         editorContext = EditorContextDispatcher.getDefault();
@@ -121,7 +122,7 @@ public class RunToCursorActionProvider extends ActionsProviderSupport {
             editorContext.getCurrentURLAsString(),
             editorContext.getCurrentLineNumber ()
         );
-        RequestProcessor.getDefault().post(new Runnable() {
+        RP.post(new Runnable() {
             @Override
             public void run() {
                 // 1) set breakpoint
