@@ -159,7 +159,7 @@ public class AntSanityTest extends JellyTestCase {
         eo.setCaretPositionToLine(280);
         new ToggleBreakpointAction().perform();
         JTableOperator jTableOperator = new JTableOperator(new TopComponentOperator(Utilities.breakpointsViewTitle));
-        assertEquals("Line MemoryView.java:280", jTableOperator.getValueAt(1, 0).toString());
+        jTableOperator.waitCell("Line MemoryView.java:280", 1, 0);
         new JPopupMenuOperator(jTableOperator.callPopupOnCell(1, 0)).pushMenu("Disable");
         MainWindowOperator.StatusTextTracer stt = MainWindowOperator.getDefault().getStatusTextTracer();
         stt.start();
