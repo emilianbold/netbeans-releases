@@ -97,6 +97,8 @@ public class NbMainSequence extends WizardSequence {
     
     private static final String SIZE_UPDATES_PATTERN = "updates="; // NOI18N
     private static final String SIZE_MODULES_PATTERN = "modules="; // NOI18N
+    private static final int INSTALL_STEP = 15;
+    private static final int STARTUP_STEP = 20;
 
     public NbMainSequence() {
         downloadConfigurationLogicAction = new DownloadConfigurationLogicAction();
@@ -122,12 +124,13 @@ public class NbMainSequence extends WizardSequence {
         private final Product nbJavaSE;
         CompositeProgress compositeProgress;
         private CountdownProgress countdownProgress;
-        private int sizeOfUpdates = 0;
         private int sizeOfModules = 0;
-        private int whatUpdate = 0;
-        private String whatUpdateName = null;
+        private int sumOfModules = 0;
+        private int sumOfUpdates = 0;
+        private int loop = 0;
+        private String oldDetail = null;
         private boolean downloadIsRunning = false;
-        private int currentPercentage = 0;
+        private int spendPercentage = 0;
         
         private static final String[] PREFIX_FOR_PROGRESS = new String[] {"FINE [org.netbeans.updater]: 780: ", "INFO: 780: "};
         
@@ -151,10 +154,7 @@ public class NbMainSequence extends WizardSequence {
             LogManager.log("running headless NetBeans IDE : ");
             getWizardUi().setProgress(compositeProgress);
             compositeProgress.setTitle(ResourceUtils.getString(NbMainSequence.class, "NBMS.CACHE.title")); // NOI18N
-            Progress initProgress = new Progress();
-            compositeProgress.addChild(initProgress, 5);
-            initProgress.setPercentage(Progress.COMPLETE);
-            
+
             File nbInstallLocation = nbBase.getInstallationLocation();
             LogManager.log("    nbLocation = " + nbInstallLocation);
             
@@ -180,46 +180,53 @@ public class NbMainSequence extends WizardSequence {
             
             ExecutionResults executeResult;
             boolean start = true;
-            currentPercentage+=40;
+            System.out.println("###: spendPercentage BEFORE START " + spendPercentage);
             while (start) {
+                System.out.println("==================================== START ======================");
                 try {
                     compositeProgress.addProgressListener(new ProgressListener() {
 
                         @Override
                         public void progressUpdated(Progress progress) {
-                            if (progress.getDetail().startsWith(SIZE_MODULES_PATTERN)) {
-                                String size = progress.getDetail().substring(SIZE_UPDATES_PATTERN.length());
-                                progress.setDetail("");
-                                try {
-                                    sizeOfModules = Integer.valueOf(size);
-                                } catch (NumberFormatException nfe) {
-                                    LogManager.log(nfe);
-                                }
-                            } else if (! downloadIsRunning && progress.getDetail().startsWith(SIZE_UPDATES_PATTERN)) {
-                                String size = progress.getDetail().substring(SIZE_UPDATES_PATTERN.length());
-                                progress.setDetail("");
-                                downloadIsRunning = true;
-                                try {
-                                    sizeOfUpdates = Integer.valueOf(size);
-                                    whatUpdate = 0;
-                                    whatUpdateName = "";
+                            if (oldDetail != null && oldDetail.equals(progress.getDetail())) {
+                                return ;
+                            }
+                            oldDetail = progress.getDetail();
+                            if (progress.getDetail().startsWith(SIZE_UPDATES_PATTERN)
+                                    || progress.getDetail().startsWith(SIZE_MODULES_PATTERN)) {
+                                if (! downloadIsRunning) {
+                                    downloadIsRunning = true;
                                     if (countdownProgress != null) {
                                         countdownProgress.detach();
+                                    }
+                                }
+                                boolean modOrUpdate = progress.getDetail().startsWith(SIZE_MODULES_PATTERN);
+                                String size = modOrUpdate ?
+                                        progress.getDetail().substring(SIZE_MODULES_PATTERN.length()) :
+                                        progress.getDetail().substring(SIZE_UPDATES_PATTERN.length());
+                                try {
+                                    sizeOfModules = Integer.valueOf(size);
+                                    if (sizeOfModules > 0) {
+                                        spendPercentage = spendPercentage + INSTALL_STEP;
+                                        System.out.println("###(progressUpdated): spendPercentage INCREASED by " + INSTALL_STEP + " TO " + spendPercentage);
+                                    }
+                                    loop = 0;
+                                    if (modOrUpdate) {
+                                        sumOfModules = sumOfModules + sizeOfModules;
+                                    } else {
+                                        sumOfUpdates = sumOfUpdates + sizeOfModules;
                                     }
                                 } catch (NumberFormatException nfe) {
                                     LogManager.log(nfe);
                                 }
-                            } else if (progress.getDetail().startsWith(SIZE_UPDATES_PATTERN)) {
                                 progress.setDetail("");
-                            } else if (downloadIsRunning && ! whatUpdateName.equals(progress.getDetail())) {
-                                whatUpdateName = progress.getDetail();
-//                                System.out.println("###: setPercentage(currentPercentage? " + currentPercentage + ", whatUpdate? + " + whatUpdate + ", sizeOfUpdates? " + sizeOfUpdates + "): " + (currentPercentage + Math.min(20, 20 * whatUpdate++ / (sizeOfUpdates * 2))));
-                                compositeProgress.setPercentage(currentPercentage + Math.min(20, 20 * whatUpdate++ / (sizeOfUpdates * 2)));
+                            } else if (downloadIsRunning && sizeOfModules > 0) {
+                                System.out.println("###: setPercentage(spendPercentage? " + spendPercentage + ", loop? + " + loop + ", sizeOfModules? " + sizeOfModules + "): " + (spendPercentage - INSTALL_STEP + Math.min(INSTALL_STEP, INSTALL_STEP * (loop+1) / (sizeOfModules * 2))));
+                                compositeProgress.setPercentage(spendPercentage - INSTALL_STEP + Math.min(INSTALL_STEP, INSTALL_STEP * loop++ / (sizeOfModules * 2)));
                             }
                         }
                     });
                     executeResult = runIDE(commandsBase, nbInstallLocation, installJUnit, checkForUpdate, compositeProgress);
-                    currentPercentage=+20;
                     start = false;
                     if (executeResult.getErrorCode() > 0) {
                         LogManager.log("    .... exit code: " + executeResult.getErrorCode());
@@ -238,31 +245,47 @@ public class NbMainSequence extends WizardSequence {
                                 msg = ResourceUtils.getString(NbMainSequence.class, "NBMS.CACHE.ProblemInstallJUnit"); // NOI18N
                                 break;
                             case 33: // update problem
-                                msg = ResourceUtils.getString(NbMainSequence.class, "NBMS.CACHE.ProblemInstallUpdates", sizeOfUpdates); // NOI18N
+                                msg = ResourceUtils.getString(NbMainSequence.class, "NBMS.CACHE.ProblemInstallUpdates", sumOfUpdates); // NOI18N
                                 break;
                             case 34: // timeout loading JUnit
                                 LogManager.log("    ... timeout loading JUnit - run it again ");
                                 start = true;
                                 installJUnit = false;
+                                downloadIsRunning = false;
                                 break;
                         }
                         nbBase.setProperty(NbPostInstallSummaryPanel.NETBEANS_SUMMARY_MESSAGE_TEXT_PROPERTY, msg);
                     } else {
                         LogManager.log("    .... success ");
+                        LogManager.log("    ...... installed " + sumOfModules + " new modules");
+                        LogManager.log("    ...... installed " + sumOfUpdates + " updates");
                         String msg = "";
                         if (installJUnitOrig && checkForUpdate) {
-                            msg = sizeOfUpdates == 0 && sizeOfModules == 0 ?
-                                    ResourceUtils.getString(NbMainSequence.class, "NBMS.CACHE.UpdatesJunitNotFound") : // NOI18N
-                                    sizeOfModules > 0 ? ResourceUtils.getString(NbMainSequence.class, "NBMS.CACHE.SuccessBoth") :
-                                                        ResourceUtils.getString(NbMainSequence.class, "NBMS.CACHE.SuccessInstallBoth", sizeOfUpdates); // NOI18N
+                            if (sumOfUpdates > 0 && sumOfModules > 0) {
+                                // installed JUnit and updates
+                                msg = ResourceUtils.getString(NbMainSequence.class, "NBMS.CACHE.SuccessIfBoth_JUnitInstalled_UpdatesInstalled", sumOfUpdates);
+                            } else if (sumOfModules > 0) {
+                                // installed JUnit and IDE is up-to-date (no updates)
+                                msg = ResourceUtils.getString(NbMainSequence.class, "NBMS.CACHE.SuccessIfBoth_JUnitInstalled_NoUpdates");
+                            } else if (sumOfUpdates > 0) {
+                                // JUnit not found and some updates was installed
+                                msg = ResourceUtils.getString(NbMainSequence.class, "NBMS.CACHE.SuccessIfBoth_JUnitNotFound_UpdatesInstalled", sumOfUpdates);
+                            } else {
+                                // JUnit not found and IDE is up-to-date (no updates)
+                                msg = ResourceUtils.getString(NbMainSequence.class, "NBMS.CACHE.SuccessIfBoth_JUnitNotFound_NoUpdates");
+                            }
                         } else if (installJUnitOrig) {
-                            msg = sizeOfModules == 0 ? 
-                                    ResourceUtils.getString(NbMainSequence.class, "NBMS.CACHE.JunitNotFound") : // NOI18N
-                                    ResourceUtils.getString(NbMainSequence.class, "NBMS.CACHE.SuccessInstallJunit"); // NOI18N
+                            msg = sizeOfModules > 0 ? 
+                                    // JUnit installed
+                                    ResourceUtils.getString(NbMainSequence.class, "NBMS.CACHE.SuccessIfJunit_JUnitInstalled") : // NOI18N
+                                    // JUnit not found
+                                    ResourceUtils.getString(NbMainSequence.class, "NNBMS.CACHE.SuccessIfJunit_JUnitNotFound"); // NOI18N
                         } else if (checkForUpdate) {
-                            msg = sizeOfUpdates == 0 ?
-                                    ResourceUtils.getString(NbMainSequence.class, "NBMS.CACHE.SuccessCheckForUpdates") : // NOI18N
-                                    ResourceUtils.getString(NbMainSequence.class, "NBMS.CACHE.SuccessInstallUpdates", sizeOfUpdates); // NOI18N
+                            msg = sumOfUpdates > 0 ?
+                                    // Updates installed
+                                    ResourceUtils.getString(NbMainSequence.class, "NBMS.CACHE.SuccessIfCheck_UpdatesInstalled") : // NOI18N
+                                    // No updates
+                                    ResourceUtils.getString(NbMainSequence.class, "NBMS.CACHE.SuccessIfCheck_NoUpdates", sumOfModules); // NOI18N
                         }
                         nbBase.setProperty(NbPostInstallSummaryPanel.NETBEANS_SUMMARY_MESSAGE_TEXT_PROPERTY, msg);
                     }
@@ -436,7 +459,11 @@ public class NbMainSequence extends WizardSequence {
             }
             LogManager.log("    Run " + commands);
 
-            countdownProgress = new CountdownProgress(compositeProgress, 35*1000, 40, title);
+            countdownProgress = new CountdownProgress(compositeProgress, 25*1000, STARTUP_STEP ,title);
+            spendPercentage = spendPercentage + STARTUP_STEP;
+            System.out.println("###(runIDE): spendPercentage INCREASED by " + STARTUP_STEP + " TO " + spendPercentage);
+            loop = 0;
+            sizeOfModules = 0;
             countdownProgress.countdown();
             try {
                 return SystemUtils.executeCommand(compositeProgress, PREFIX_FOR_PROGRESS, nbInstallLocation, commands.toArray(new String[commands.size()]));
@@ -476,7 +503,7 @@ public class NbMainSequence extends WizardSequence {
 
                 @Override
                 public void run() {
-                    countdown.setPercentage(current++);
+                    countdown.setPercentage(++current);
                 }
             };
             ticTac = scheduler.scheduleAtFixedRate(tic, 0, time / 100, TimeUnit.MILLISECONDS);
