@@ -321,14 +321,18 @@ public abstract class NbPreferences extends AbstractPreferences implements  Chan
             } catch (IOException ex) {
                 Exceptions.printStackTrace(ex);
             } finally {
+		ArrayList<String> entries2remove = new ArrayList<String>();
                 for(String key : keyEntries) {
                     if (!entries2add.contains(key)) {
                         if (super.isRemoved()) {
                             continue;
                         }
-                        remove(key);
+			entries2remove.add(key);
                     }
                 }
+		for(String key : entries2remove) {
+		    remove(key);
+		}
                 keyEntries.clear();
                 keyEntries.addAll(entries2add);
                 localThread.set(previewState);
