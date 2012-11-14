@@ -46,6 +46,8 @@ import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.modules.bugtracking.IssueImpl;
 import org.netbeans.modules.bugtracking.QueryImpl;
 import org.netbeans.modules.bugtracking.RepositoryImpl;
@@ -71,6 +73,7 @@ public final class Repository {
     public static final String ATTRIBUTE_URL = "repository.attribute.url"; //NOI18N
     public static final String ATTRIBUTE_DISPLAY_NAME = "repository.attribute.displayName"; //NOI18N
 
+    private final static Logger LOG = Logger.getLogger("org.netbeans.modules.bugtracking.Repository"); // NOI18N
     
     static {
         APIAccessorImpl.createAccesor();
@@ -80,6 +83,9 @@ public final class Repository {
 
     <R, Q, I> Repository(RepositoryImpl<R, Q, I> impl) {
         this.impl = impl;
+        if(LOG.isLoggable(Level.FINE)) {
+            LOG.log(Level.FINE, "created repository {0} - repository: {1} - impl: {2}", new Object[]{getDisplayName(), this, impl}); // NOI18N
+        }
     }
 
     /**
