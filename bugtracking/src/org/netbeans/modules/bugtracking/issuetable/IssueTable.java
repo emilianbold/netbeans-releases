@@ -184,6 +184,7 @@ public class IssueTable<Q> implements MouseListener, AncestorListener, KeyListen
             new ActionListener() {
                 public void actionPerformed(ActionEvent evt) {
                     if(tableModel.selectVisibleColumns()) {
+                        setDefaultColumnSizes();
                         storeColumnsTask.schedule(1000);
                     }
                 }
