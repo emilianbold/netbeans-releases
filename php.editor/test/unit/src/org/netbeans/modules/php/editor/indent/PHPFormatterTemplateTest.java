@@ -121,40 +121,40 @@ public class PHPFormatterTemplateTest extends PHPFormatterTestBase {
     //The testing file can not be edited in NetBeans due to trailing spaces. It's important to keep spaces on the empty lines.
     public void testFore_02() throws Exception {
         HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
-        options.put(FmtOptions.spaceWithinForParens, true);
+        options.put(FmtOptions.SPACE_WITHIN_FOR_PARENS, true);
         reformatFileContents("testfiles/formatting/templates/fore_02.php", options, true);
     }
 
     //The testing file can not be edited in NetBeans due to trailing spaces. It's important to keep spaces on the empty lines.
     public void testFore_03() throws Exception {
         HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
-        options.put(FmtOptions.spaceWithinForParens, true);
-        options.put(FmtOptions.forBracePlacement, CodeStyle.BracePlacement.NEW_LINE);
+        options.put(FmtOptions.SPACE_WITHIN_FOR_PARENS, true);
+        options.put(FmtOptions.FOR_BRACE_PLACEMENT, CodeStyle.BracePlacement.NEW_LINE);
         reformatFileContents("testfiles/formatting/templates/fore_03.php", options, true);
     }
 
     //The testing file can not be edited in NetBeans due to trailing spaces. It's important to keep spaces on the empty lines.
     public void testFore_04() throws Exception {
         HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
-        options.put(FmtOptions.spaceWithinForParens, true);
-        options.put(FmtOptions.forBracePlacement, CodeStyle.BracePlacement.NEW_LINE);
+        options.put(FmtOptions.SPACE_WITHIN_FOR_PARENS, true);
+        options.put(FmtOptions.FOR_BRACE_PLACEMENT, CodeStyle.BracePlacement.NEW_LINE);
         reformatFileContents("testfiles/formatting/templates/fore_04.php", options, true);
     }
 
     //The testing file can not be edited in NetBeans due to trailing spaces. It's important to keep spaces on the empty lines.
     public void testFore_05() throws Exception {
         HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
-        options.put(FmtOptions.spaceWithinForParens, true);
-        options.put(FmtOptions.forBracePlacement, CodeStyle.BracePlacement.NEW_LINE);
+        options.put(FmtOptions.SPACE_WITHIN_FOR_PARENS, true);
+        options.put(FmtOptions.FOR_BRACE_PLACEMENT, CodeStyle.BracePlacement.NEW_LINE);
         reformatFileContents("testfiles/formatting/templates/fore_05.php", options, true);
     }
 
     //The testing file can not be edited in NetBeans due to trailing spaces. It's important to keep spaces on the empty lines.
     public void testFore_06() throws Exception {
         HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
-        options.put(FmtOptions.spaceWithinForParens, true);
-        options.put(FmtOptions.forBracePlacement, CodeStyle.BracePlacement.NEW_LINE);
-        options.put(FmtOptions.initialIndent, 4);
+        options.put(FmtOptions.SPACE_WITHIN_FOR_PARENS, true);
+        options.put(FmtOptions.FOR_BRACE_PLACEMENT, CodeStyle.BracePlacement.NEW_LINE);
+        options.put(FmtOptions.INITIAL_INDENT, 4);
         reformatFileContents("testfiles/formatting/templates/fore_06.php", options, true);
     }
 
@@ -194,45 +194,45 @@ public class PHPFormatterTemplateTest extends PHPFormatterTestBase {
 
     public void testPrivate_01() throws Exception {
         HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
-        options.put(FmtOptions.initialIndent, 4);
+        options.put(FmtOptions.INITIAL_INDENT, 4);
         reformatFileContents("testfiles/formatting/templates/private_01.php", options, true);
     }
 
     public void testPrivate_02() throws Exception {
         HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
-        options.put(FmtOptions.initialIndent, 4);
+        options.put(FmtOptions.INITIAL_INDENT, 4);
         reformatFileContents("testfiles/formatting/templates/private_02.php", options, true);
     }
 
     public void testFncTemplate_01() throws Exception {
         HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
-        options.put(FmtOptions.initialIndent, 4);
+        options.put(FmtOptions.INITIAL_INDENT, 4);
         reformatFileContents("testfiles/formatting/templates/function_01.php", options, true);
     }
 
     public void testImplementsOverwriteTemplate_01() throws Exception {
         HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
-        options.put(FmtOptions.initialIndent, 4);
+        options.put(FmtOptions.INITIAL_INDENT, 4);
         reformatFileContents("testfiles/formatting/templates/implementsOverwrite_01.php", options, true);
     }
 
     public void testImplementsOverwriteTemplate_02() throws Exception {
         HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
-        options.put(FmtOptions.initialIndent, 4);
-        options.put(FmtOptions.methodDeclBracePlacement, CodeStyle.BracePlacement.NEW_LINE);
+        options.put(FmtOptions.INITIAL_INDENT, 4);
+        options.put(FmtOptions.METHOD_DECL_BRACE_PLACEMENT, CodeStyle.BracePlacement.NEW_LINE);
         reformatFileContents("testfiles/formatting/templates/implementsOverwrite_02.php", options, true);
     }
 
     public void testImplementsOverwriteTemplate_03() throws Exception {
         HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
-        options.put(FmtOptions.initialIndent, 4);
-        options.put(FmtOptions.methodDeclBracePlacement, CodeStyle.BracePlacement.NEW_LINE_INDENTED);
+        options.put(FmtOptions.INITIAL_INDENT, 4);
+        options.put(FmtOptions.METHOD_DECL_BRACE_PLACEMENT, CodeStyle.BracePlacement.NEW_LINE_INDENTED);
         reformatFileContents("testfiles/formatting/templates/implementsOverwrite_03.php", options, true);
     }
 
     public void testIssue184141() throws Exception {
         HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
-        options.put(FmtOptions.initialIndent, 4);
+        options.put(FmtOptions.INITIAL_INDENT, 4);
         reformatFileContents("testfiles/formatting/templates/issue184141.php", options, true);
     }
 
@@ -240,7 +240,7 @@ public class PHPFormatterTemplateTest extends PHPFormatterTestBase {
     // Don't edit the test file in NetBeans!!!
     public void testIssue185435_01() throws Exception {
         HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
-        options.put(FmtOptions.expandTabToSpaces, true);
+        options.put(FmtOptions.EXPAND_TAB_TO_SPACES, true);
         reformatFileContents("testfiles/formatting/templates/issue185435_01.php", options, true);
     }
 
@@ -255,7 +255,7 @@ public class PHPFormatterTemplateTest extends PHPFormatterTestBase {
     // Don't edit the test file in NetBeans!!!
     public void testIssue185435_03() throws Exception {
         HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
-        options.put(FmtOptions.expandTabToSpaces, false);
+        options.put(FmtOptions.EXPAND_TAB_TO_SPACES, false);
         reformatFileContents("testfiles/formatting/templates/issue185435_03.php", options, true);
     }
 
@@ -263,8 +263,8 @@ public class PHPFormatterTemplateTest extends PHPFormatterTestBase {
     // Don't edit the test file in NetBeans!!!
     public void testIssue185435_04() throws Exception {
         HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
-        options.put(FmtOptions.expandTabToSpaces, false);
-        options.put(FmtOptions.tabSize, 3);
+        options.put(FmtOptions.EXPAND_TAB_TO_SPACES, false);
+        options.put(FmtOptions.TAB_SIZE, 3);
         reformatFileContents("testfiles/formatting/templates/issue185435_04.php", options, true);
     }
 
@@ -272,8 +272,8 @@ public class PHPFormatterTemplateTest extends PHPFormatterTestBase {
     // Don't edit the test file in NetBeans!!!
     public void testIssue185435_05() throws Exception {
         HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
-        options.put(FmtOptions.expandTabToSpaces, false);
-        options.put(FmtOptions.tabSize, 3);
+        options.put(FmtOptions.EXPAND_TAB_TO_SPACES, false);
+        options.put(FmtOptions.TAB_SIZE, 3);
         reformatFileContents("testfiles/formatting/templates/issue185435_05.php", options, true);
     }
 
@@ -334,76 +334,76 @@ public class PHPFormatterTemplateTest extends PHPFormatterTestBase {
 
     public void testIssue188656_04() throws Exception {
         HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
-        options.put(FmtOptions.tabSize, 4);
-        options.put(FmtOptions.expandTabToSpaces, true);
-        options.put(FmtOptions.continuationIndentSize, 4);
-        options.put(FmtOptions.indentSize, 4);
-        options.put(FmtOptions.initialIndent, 4);
-        options.put(FmtOptions.spacesPerTab, 4);
+        options.put(FmtOptions.TAB_SIZE, 4);
+        options.put(FmtOptions.EXPAND_TAB_TO_SPACES, true);
+        options.put(FmtOptions.CONTINUATION_INDENT_SIZE, 4);
+        options.put(FmtOptions.INDENT_SIZE, 4);
+        options.put(FmtOptions.INITIAL_INDENT, 4);
+        options.put(FmtOptions.SPACES_PER_TAB, 4);
         reformatFileContents("testfiles/formatting/templates/issue188656_04.php", options, true);
     }
 
     public void testIssue188656_05() throws Exception {
         HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
-        options.put(FmtOptions.tabSize, 4);
-        options.put(FmtOptions.expandTabToSpaces, true);
-        options.put(FmtOptions.continuationIndentSize, 4);
-        options.put(FmtOptions.indentSize, 4);
-        options.put(FmtOptions.initialIndent, 4);
-        options.put(FmtOptions.spacesPerTab, 4);
+        options.put(FmtOptions.TAB_SIZE, 4);
+        options.put(FmtOptions.EXPAND_TAB_TO_SPACES, true);
+        options.put(FmtOptions.CONTINUATION_INDENT_SIZE, 4);
+        options.put(FmtOptions.INDENT_SIZE, 4);
+        options.put(FmtOptions.INITIAL_INDENT, 4);
+        options.put(FmtOptions.SPACES_PER_TAB, 4);
         reformatFileContents("testfiles/formatting/templates/issue188656_05.php", options, true);
     }
 
     public void testIssue188656_06() throws Exception {
         HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
-        options.put(FmtOptions.tabSize, 4);
-        options.put(FmtOptions.expandTabToSpaces, true);
-        options.put(FmtOptions.continuationIndentSize, 4);
-        options.put(FmtOptions.indentSize, 4);
-        options.put(FmtOptions.initialIndent, 4);
-        options.put(FmtOptions.spacesPerTab, 4);
+        options.put(FmtOptions.TAB_SIZE, 4);
+        options.put(FmtOptions.EXPAND_TAB_TO_SPACES, true);
+        options.put(FmtOptions.CONTINUATION_INDENT_SIZE, 4);
+        options.put(FmtOptions.INDENT_SIZE, 4);
+        options.put(FmtOptions.INITIAL_INDENT, 4);
+        options.put(FmtOptions.SPACES_PER_TAB, 4);
         reformatFileContents("testfiles/formatting/templates/issue188656_06.php", options, true);
     }
 
     public void testIssue188656_07() throws Exception {
         HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
-        options.put(FmtOptions.tabSize, 4);
-        options.put(FmtOptions.expandTabToSpaces, true);
-        options.put(FmtOptions.continuationIndentSize, 4);
-        options.put(FmtOptions.indentSize, 4);
-        options.put(FmtOptions.initialIndent, 4);
-        options.put(FmtOptions.spacesPerTab, 4);
+        options.put(FmtOptions.TAB_SIZE, 4);
+        options.put(FmtOptions.EXPAND_TAB_TO_SPACES, true);
+        options.put(FmtOptions.CONTINUATION_INDENT_SIZE, 4);
+        options.put(FmtOptions.INDENT_SIZE, 4);
+        options.put(FmtOptions.INITIAL_INDENT, 4);
+        options.put(FmtOptions.SPACES_PER_TAB, 4);
         reformatFileContents("testfiles/formatting/templates/issue188656_07.php", options, true);
     }
 
     public void testIssue188656_08() throws Exception {
         HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
-        options.put(FmtOptions.tabSize, 4);
-        options.put(FmtOptions.expandTabToSpaces, true);
-        options.put(FmtOptions.continuationIndentSize, 4);
-        options.put(FmtOptions.indentSize, 4);
-        options.put(FmtOptions.initialIndent, 4);
-        options.put(FmtOptions.spacesPerTab, 4);
+        options.put(FmtOptions.TAB_SIZE, 4);
+        options.put(FmtOptions.EXPAND_TAB_TO_SPACES, true);
+        options.put(FmtOptions.CONTINUATION_INDENT_SIZE, 4);
+        options.put(FmtOptions.INDENT_SIZE, 4);
+        options.put(FmtOptions.INITIAL_INDENT, 4);
+        options.put(FmtOptions.SPACES_PER_TAB, 4);
         reformatFileContents("testfiles/formatting/templates/issue188656_08.php", options, true);
     }
 
     public void testIssue188656_09() throws Exception {
         HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
-        options.put(FmtOptions.tabSize, 4);
-        options.put(FmtOptions.expandTabToSpaces, true);
-        options.put(FmtOptions.continuationIndentSize, 4);
-        options.put(FmtOptions.indentSize, 4);
-        options.put(FmtOptions.initialIndent, 4);
-        options.put(FmtOptions.spacesPerTab, 4);
+        options.put(FmtOptions.TAB_SIZE, 4);
+        options.put(FmtOptions.EXPAND_TAB_TO_SPACES, true);
+        options.put(FmtOptions.CONTINUATION_INDENT_SIZE, 4);
+        options.put(FmtOptions.INDENT_SIZE, 4);
+        options.put(FmtOptions.INITIAL_INDENT, 4);
+        options.put(FmtOptions.SPACES_PER_TAB, 4);
         reformatFileContents("testfiles/formatting/templates/issue188656_09.php", options, true);
     }
 
     public void testIssue191565_01() throws Exception {
         HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
-        options.put(FmtOptions.tabSize, 4);
-        options.put(FmtOptions.expandTabToSpaces, false);
-        options.put(FmtOptions.continuationIndentSize, 4);
-        options.put(FmtOptions.spacesPerTab, 4);
+        options.put(FmtOptions.TAB_SIZE, 4);
+        options.put(FmtOptions.EXPAND_TAB_TO_SPACES, false);
+        options.put(FmtOptions.CONTINUATION_INDENT_SIZE, 4);
+        options.put(FmtOptions.SPACES_PER_TAB, 4);
         reformatFileContents("testfiles/formatting/templates/issue191565_01.php", options, true);
     }
 
@@ -414,8 +414,8 @@ public class PHPFormatterTemplateTest extends PHPFormatterTestBase {
 
     public void testIssue198616() throws Exception {
         HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
-        options.put(FmtOptions.classDeclBracePlacement, CodeStyle.BracePlacement.NEW_LINE);
-        options.put(FmtOptions.methodDeclBracePlacement, CodeStyle.BracePlacement.NEW_LINE);
+        options.put(FmtOptions.CLASS_DECL_BRACE_PLACEMENT, CodeStyle.BracePlacement.NEW_LINE);
+        options.put(FmtOptions.METHOD_DECL_BRACE_PLACEMENT, CodeStyle.BracePlacement.NEW_LINE);
         reformatFileContents("testfiles/formatting/templates/issue198616.php", options, true);
     }
 

@@ -264,7 +264,7 @@ public class FormatToken {
 
     /**
      * This class remember length of an identifier that is placed before = or =>
-     * to allow group alignment
+     * to allow group alignment.
      */
     public static class AssignmentAnchorToken extends FormatToken {
 

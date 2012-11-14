@@ -41,13 +41,22 @@
  */
 package org.netbeans.modules.php.editor.elements;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 import org.netbeans.modules.parsing.spi.indexing.support.IndexResult;
 import org.netbeans.modules.php.editor.api.ElementQuery;
 import org.netbeans.modules.php.editor.api.NameKind;
 import org.netbeans.modules.php.editor.api.PhpElementKind;
 import org.netbeans.modules.php.editor.api.QualifiedName;
-import org.netbeans.modules.php.editor.api.elements.*;
+import org.netbeans.modules.php.editor.api.elements.BaseFunctionElement.PrintAs;
+import org.netbeans.modules.php.editor.api.elements.FunctionElement;
+import org.netbeans.modules.php.editor.api.elements.NamespaceElement;
+import org.netbeans.modules.php.editor.api.elements.ParameterElement;
+import org.netbeans.modules.php.editor.api.elements.TypeNameResolver;
+import org.netbeans.modules.php.editor.api.elements.TypeResolver;
 import org.netbeans.modules.php.editor.index.PHPIndexer;
 import org.netbeans.modules.php.editor.index.Signature;
 import org.netbeans.modules.php.editor.model.impl.VariousUtils;
@@ -77,11 +86,11 @@ public final class FunctionElementImpl extends FullyQualifiedElementImpl impleme
     public static Set<FunctionElement> fromSignature(final IndexQueryImpl indexQuery, final IndexResult indexResult) {
         return fromSignature(NameKind.empty(), indexQuery, indexResult);
     }
+
     public static Set<FunctionElement> fromSignature(
             final NameKind query, final IndexQueryImpl indexQuery, final IndexResult indexResult) {
         String[] values = indexResult.getValues(IDX_FIELD);
-        Set<FunctionElement> retval = values.length > 0 ?
-            new HashSet<FunctionElement>() : Collections.<FunctionElement> emptySet();
+        Set<FunctionElement> retval = values.length > 0 ? new HashSet<FunctionElement>() : Collections.<FunctionElement>emptySet();
 
         for (String val : values) {
             final FunctionElement fnc = fromSignature(query, indexQuery, indexResult, Signature.get(val));
@@ -108,8 +117,7 @@ public final class FunctionElementImpl extends FullyQualifiedElementImpl impleme
         Parameters.notNull("node", node);
         Parameters.notNull("fileQuery", fileQuery);
         FunctionDeclarationInfo info = FunctionDeclarationInfo.create(node);
-        final QualifiedName fullyQualifiedName = namespace != null ?
-            namespace.getFullyQualifiedName() : QualifiedName.createForDefaultNamespaceName();
+        final QualifiedName fullyQualifiedName = namespace != null ? namespace.getFullyQualifiedName() : QualifiedName.createForDefaultNamespaceName();
         return new FunctionElementImpl(
                 fullyQualifiedName.append(info.getName()), info.getRange().getStart(),
                 fileQuery.getURL().toExternalForm(), fileQuery, info.getParameters(),
@@ -118,8 +126,7 @@ public final class FunctionElementImpl extends FullyQualifiedElementImpl impleme
 
     private static boolean matchesQuery(final NameKind query, FunctionSignatureParser signParser) {
         Parameters.notNull("NameKind query: can't be null", query);
-        return (query instanceof NameKind.Empty) ||
-                query.matchesName(FunctionElement.KIND, signParser.getQualifiedName());
+        return (query instanceof NameKind.Empty) || query.matchesName(FunctionElement.KIND, signParser.getQualifiedName());
     }
 
     @Override
@@ -130,8 +137,8 @@ public final class FunctionElementImpl extends FullyQualifiedElementImpl impleme
     @Override
     public String getSignature() {
         StringBuilder sb = new StringBuilder();
-        sb.append(getName().toLowerCase()).append(Separator.SEMICOLON);//NOI18N
-        sb.append(getName()).append(Separator.SEMICOLON);//NOI18N
+        sb.append(getName().toLowerCase()).append(Separator.SEMICOLON); //NOI18N
+        sb.append(getName()).append(Separator.SEMICOLON); //NOI18N
         sb.append(getSignatureLastPart());
 
         checkFunctionSignature(sb);

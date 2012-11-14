@@ -61,13 +61,13 @@ public class PHPFormatterHtmlTest extends PHPFormatterTestBase {
 
     public void testHtml02() throws Exception {
         HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
-        options.put(FmtOptions.initialIndent, 4);
+        options.put(FmtOptions.INITIAL_INDENT, 4);
         reformatFileContents("testfiles/formatting/html/html02.php", options);
     }
 
     public void testHtml03() throws Exception {
         HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
-        options.put(FmtOptions.initialIndent, 4);
+        options.put(FmtOptions.INITIAL_INDENT, 4);
         reformatFileContents("testfiles/formatting/html/html03.php", options);
     }
 

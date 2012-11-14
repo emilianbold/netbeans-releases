@@ -48,5 +48,5 @@ import org.netbeans.modules.php.editor.api.PhpElementKind;
  * @author Radek Matous
  */
 public interface InterfaceElement extends TypeElement {
-    public final static PhpElementKind KIND = PhpElementKind.IFACE;
+    PhpElementKind KIND = PhpElementKind.IFACE;
 }

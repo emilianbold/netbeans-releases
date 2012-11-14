@@ -70,7 +70,6 @@ public class ConstructorPanel extends JPanel {
     protected final List<? extends Property> properties;
     protected final CGSInfo cgsInfo;
 
-    /** Creates new form ConstructorPanel */
     public ConstructorPanel(CGSGenerator.GenType genType, CGSInfo cgsInfo) {
         initComponents();
         this.className = cgsInfo.getClassName();
@@ -96,7 +95,7 @@ public class ConstructorPanel extends JPanel {
         if (genType.equals(CGSGenerator.GenType.METHODS)) {
             customizeMethodGeneration = false;
             Dimension preferredSize = getPreferredSize();
-            setPreferredSize(new Dimension((int)(preferredSize.getWidth()*1.3), (int)(preferredSize.getHeight()*1.3)));
+            setPreferredSize(new Dimension((int) (preferredSize.getWidth() * 1.3), (int) (preferredSize.getHeight() * 1.3)));
         }
         this.label.setText(genType.getPanelTitle());
         this.pGSCustomize.setVisible(customizeMethodGeneration);
@@ -121,7 +120,7 @@ public class ConstructorPanel extends JPanel {
         fluentSetterCheckBox.setSelected(cgsInfo.isFluentSetter());
     }
 
-    private void initTree(){
+    private void initTree() {
         JTree tree = new JTree(getRootNode());
         tree.setCellRenderer(new CheckBoxTreeRenderer());
         tree.getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);

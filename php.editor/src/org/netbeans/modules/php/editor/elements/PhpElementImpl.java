@@ -92,7 +92,7 @@ public abstract class PhpElementImpl implements PhpElement {
             return value;
         }
     }
-    
+
     private static final String CLUSTER_URL = "cluster:"; // NOI18N
     private static String clusterUrl = null;
     private final String name;
@@ -108,7 +108,7 @@ public abstract class PhpElementImpl implements PhpElement {
 
             @Override
             public String getSignature() {
-                return "";//NOI18N
+                return ""; //NOI18N
             }
 
             @Override
@@ -130,8 +130,8 @@ public abstract class PhpElementImpl implements PhpElement {
         this.in = in;
         this.fileUrl = fileUrl == null ? "" : fileUrl;
         this.offset = offset;
-        if (fileUrl != null && fileUrl.contains(" ")) {//NOI18N
-            throw new IllegalArgumentException("fileURL may not contain spaces!");//NOI18N
+        if (fileUrl != null && fileUrl.contains(" ")) { //NOI18N
+            throw new IllegalArgumentException("fileURL may not contain spaces!"); //NOI18N
         }
         this.elementQuery = elementQuery;
     }
@@ -188,7 +188,7 @@ public abstract class PhpElementImpl implements PhpElement {
         return toFileObject(url);
     }
 
-    /** Get the FileObject corresponding to a URL returned from the index */
+    /** Get the FileObject corresponding to a URL returned from the index. */
     public static FileObject toFileObject(String urlStr) {
         try {
             URL url = new URL(urlStr);
@@ -305,9 +305,9 @@ public abstract class PhpElementImpl implements PhpElement {
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
-        sb.append(getPhpElementKind().toString()).append(" ");//NOI18N
+        sb.append(getPhpElementKind().toString()).append(" "); //NOI18N
         if (this instanceof FullyQualifiedElement) {
-            sb.append(((FullyQualifiedElement)this).getFullyQualifiedName().toString());
+            sb.append(((FullyQualifiedElement) this).getFullyQualifiedName().toString());
         } else {
             sb.append(getName());
         }

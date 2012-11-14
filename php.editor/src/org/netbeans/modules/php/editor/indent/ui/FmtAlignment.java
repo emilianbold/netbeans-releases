@@ -62,29 +62,29 @@ public class FmtAlignment extends javax.swing.JPanel {
     /** Creates new form FmtAlignment */
     public FmtAlignment() {
         initComponents();
-        nlElseCheckBox.putClientProperty(OPTION_ID, placeElseOnNewLine);
-        nlWhileCheckBox.putClientProperty(OPTION_ID, placeWhileOnNewLine);
-        nlCatchCheckBox.putClientProperty(OPTION_ID, placeCatchOnNewLine);
-        nlModifiersCheckBox.putClientProperty(OPTION_ID, placeNewLineAfterModifiers);
-        amMethodParamsCheckBox.putClientProperty(OPTION_ID, alignMultilineMethodParams);
-        amCallArgsCheckBox.putClientProperty(OPTION_ID, alignMultilineCallArgs);
-        amImplementsCheckBox1.putClientProperty(OPTION_ID, alignMultilineImplements);
+        nlElseCheckBox.putClientProperty(OPTION_ID, PLACE_ELSE_ON_NEW_LINE);
+        nlWhileCheckBox.putClientProperty(OPTION_ID, PLACE_WHILE_ON_NEW_LINE);
+        nlCatchCheckBox.putClientProperty(OPTION_ID, PLACE_CATCH_ON_NEW_LINE);
+        nlModifiersCheckBox.putClientProperty(OPTION_ID, PLACE_NEW_LINE_AFTER_MODIFIERS);
+        amMethodParamsCheckBox.putClientProperty(OPTION_ID, ALIGN_MULTILINE_METHOD_PARAMS);
+        amCallArgsCheckBox.putClientProperty(OPTION_ID, ALIGN_MULTILINE_CALL_ARGS);
+        amImplementsCheckBox1.putClientProperty(OPTION_ID, ALIGN_MULTILINE_IMPLEMENTS);
 
-        amArrayInitCheckBox1.putClientProperty(OPTION_ID, alignMultilineArrayInit);
+        amArrayInitCheckBox1.putClientProperty(OPTION_ID, ALIGN_MULTILINE_ARRAY_INIT);
         amArrayInitCheckBox1.setVisible(false);
-        amAssignCheckBox1.putClientProperty(OPTION_ID, alignMultilineAssignment);
+        amAssignCheckBox1.putClientProperty(OPTION_ID, ALIGN_MULTILINE_ASSIGNMENT);
         amAssignCheckBox1.setVisible(false);
-        amBinaryOpCheckBox1.putClientProperty(OPTION_ID, alignMultilineBinaryOp);
+        amBinaryOpCheckBox1.putClientProperty(OPTION_ID, ALIGN_MULTILINE_BINARY_OP);
         amBinaryOpCheckBox1.setVisible(false);
-        amForCheckBox1.putClientProperty(OPTION_ID, alignMultilineFor);
+        amForCheckBox1.putClientProperty(OPTION_ID, ALIGN_MULTILINE_FOR);
         amForCheckBox1.setVisible(false);
-        amParenthesizedCheckBox1.putClientProperty(OPTION_ID, alignMultilineParenthesized);
+        amParenthesizedCheckBox1.putClientProperty(OPTION_ID, ALIGN_MULTILINE_PARENTHESIZED);
         amParenthesizedCheckBox1.setVisible(false);
-        amTernaryOpCheckBox1.putClientProperty(OPTION_ID, alignMultilineTernaryOp);
+        amTernaryOpCheckBox1.putClientProperty(OPTION_ID, ALIGN_MULTILINE_TERNARY_OP);
         amTernaryOpCheckBox1.setVisible(false);
 
-        gmlAssignmentCheckBox.putClientProperty(OPTION_ID, groupAlignmentAssignment);
-        gmlArrayInitializerCheckBox.putClientProperty(OPTION_ID, groupAlignmentArrayInit);
+        gmlAssignmentCheckBox.putClientProperty(OPTION_ID, GROUP_ALIGNMENT_ASSIGNMENT);
+        gmlArrayInitializerCheckBox.putClientProperty(OPTION_ID, GROUP_ALIGNMENT_ARRAY_INIT);
     }
 
     public static PreferencesCustomizer.Factory getController() {

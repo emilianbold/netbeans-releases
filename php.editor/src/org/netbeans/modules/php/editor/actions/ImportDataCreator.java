@@ -42,7 +42,14 @@
 package org.netbeans.modules.php.editor.actions;
 
 import java.io.Serializable;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
 import org.netbeans.modules.php.editor.actions.FixUsesAction.Options;
 import org.netbeans.modules.php.editor.actions.ImportData.DataItem;
 import org.netbeans.modules.php.editor.actions.ImportData.ItemVariant;
@@ -193,7 +200,7 @@ public class ImportDataCreator {
 
     private interface PossibleItem {
 
-        public void insertData(ImportData data);
+        void insertData(ImportData data);
 
     }
 
@@ -213,7 +220,7 @@ public class ImportDataCreator {
 
     }
 
-    private class ValidItem implements PossibleItem {
+    private final class ValidItem implements PossibleItem {
         private final Collection<TypeElement> filteredTypeElements;
         private final String typeName;
 
@@ -229,7 +236,10 @@ public class ImportDataCreator {
             ItemVariant defaultValue = null;
             boolean isFirst = true;
             for (TypeElement typeElement : sortedTypeElements) {
-                ItemVariant itemVariant = new ItemVariant(typeElement.getFullyQualifiedName().toString(), ItemVariant.UsagePolicy.CAN_BE_USED, IconsUtils.getElementIcon(typeElement.getPhpElementKind()));
+                ItemVariant itemVariant = new ItemVariant(
+                        typeElement.getFullyQualifiedName().toString(),
+                        ItemVariant.UsagePolicy.CAN_BE_USED,
+                        IconsUtils.getElementIcon(typeElement.getPhpElementKind()));
                 variants.add(itemVariant);
                 if (isFirst) {
                     defaultValue = itemVariant;

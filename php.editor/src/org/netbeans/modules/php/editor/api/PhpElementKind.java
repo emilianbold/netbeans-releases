@@ -53,26 +53,38 @@ public enum PhpElementKind {
     TRAIT, TRAIT_CONFLICT_RESOLUTION, TRAIT_METHOD_ALIAS, EMPTY;
 
     public final ElementKind getElementKind() {
+        ElementKind result;
         switch (this) {
             case CLASS:
-                return ElementKind.CLASS;
+                result = ElementKind.CLASS;
+                break;
             case TYPE_CONSTANT:
-                return ElementKind.CONSTANT;
+                result = ElementKind.CONSTANT;
+                break;
             case CONSTANT:
-                return ElementKind.CONSTANT;
+                result = ElementKind.CONSTANT;
+                break;
             case FIELD:
-                return ElementKind.FIELD;
+                result = ElementKind.FIELD;
+                break;
             case FUNCTION:
-                return ElementKind.METHOD;
+                result = ElementKind.METHOD;
+                break;
             case IFACE:
-                return ElementKind.INTERFACE;
+                result = ElementKind.INTERFACE;
+                break;
             case METHOD:
-                return ElementKind.METHOD;
+                result = ElementKind.METHOD;
+                break;
             case VARIABLE:
-                return ElementKind.VARIABLE;
+                result = ElementKind.VARIABLE;
+                break;
             case NAMESPACE_DECLARATION:
-                return ElementKind.PACKAGE;
+                result = ElementKind.PACKAGE;
+                break;
+            default:
+                result = ElementKind.OTHER;
         }
-        return ElementKind.OTHER;
+        return result;
     }
 }
