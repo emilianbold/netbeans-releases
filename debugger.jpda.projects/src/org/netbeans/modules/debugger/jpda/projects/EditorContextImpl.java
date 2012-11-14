@@ -172,8 +172,8 @@ public class EditorContextImpl extends EditorContext {
     private Map                     annotationToURL = new HashMap ();
     private PropertyChangeListener  dispatchListener;
     private EditorContextDispatcher contextDispatcher;
-    private final Map<JavaSource, JavaSourceUtil.Handle> sourceHandles = new WeakHashMap<JavaSource, JavaSourceUtil.Handle>();
-    private final Map<JavaSource, Date> sourceModifStamps = new WeakHashMap<JavaSource, Date>();
+    private final Map<JavaSource, JavaSourceUtil.Handle> sourceHandles = new WeakHashMapActive<JavaSource, JavaSourceUtil.Handle>();
+    private final Map<JavaSource, Date> sourceModifStamps = new WeakHashMapActive<JavaSource, Date>();
     private DebuggerManagerListener sessionsListener; // cleans up sourceHandles
 
 
