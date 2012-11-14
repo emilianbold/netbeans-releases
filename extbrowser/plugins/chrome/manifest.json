@@ -3,7 +3,7 @@
   "description": "__MSG__pluginDescription__",
   "manifest_version": 2,
 
-  "version": "0.6.4",
+  "version": "0.6.6",
 
   "homepage_url": "https://chrome.google.com/webstore/detail/netbeans-connector/hafdlehgocfcodbgjnpecfajgkeejnaa",
 

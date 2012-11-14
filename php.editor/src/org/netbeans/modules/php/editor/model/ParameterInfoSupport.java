@@ -407,7 +407,7 @@ public class ParameterInfoSupport {
                         }
                     }
                 }
-                return null;
+                return ParameterInfo.NONE;
             }
         };
         Program root = Utils.getRoot(info);

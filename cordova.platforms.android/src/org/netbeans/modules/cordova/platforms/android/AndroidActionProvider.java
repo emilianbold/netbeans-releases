@@ -47,7 +47,8 @@ import org.netbeans.api.options.OptionsDisplayer;
 import org.netbeans.api.progress.ProgressUtils;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cordova.platforms.BuildPerformer;
-import org.netbeans.modules.cordova.platforms.PlatformConstants;
+import org.netbeans.modules.cordova.platforms.Device;
+import org.netbeans.modules.cordova.platforms.PlatformManager;
 import org.netbeans.modules.cordova.platforms.PropertyProvider;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.ProjectConfigurationProvider;
@@ -129,9 +130,7 @@ public class AndroidActionProvider implements ActionProvider {
                         build.perform(build.RUN_ANDROID, p);
                     } else {
                         PropertyProvider config = (PropertyProvider) p.getLookup().lookup(ProjectConfigurationProvider.class).getActiveConfiguration();
-                        AndroidPlatform.getDefault().openUrl(
-                                PlatformConstants.DEVICE.equals(config.getProperty(PlatformConstants.DEVICE_PROP)),
-                                build.getUrl(p));
+                        config.getDevice().openUrl(build.getUrl(p));
                     }
 
                 }
@@ -151,15 +150,15 @@ public class AndroidActionProvider implements ActionProvider {
     private String checkDevices(Project p) {
         PropertyProvider config = (PropertyProvider) p.getLookup().lookup(ProjectConfigurationProvider.class).getActiveConfiguration();
         try {
-            if (PlatformConstants.DEVICE.equals(config.getProperty(PlatformConstants.DEVICE_PROP))) { //NOI18N
-                for (Device dev : AndroidPlatform.getDefault().getDevices()) {
+            if (Device.DEVICE.equals(config.getProperty(Device.DEVICE_PROP))) { //NOI18N
+                for (Device dev : PlatformManager.getPlatform(PlatformManager.ANDROID_TYPE).getConnectedDevices()) {
                     if (!dev.isEmulator()) {
                         return null;
                     }
                 }
                 return Bundle.ERR_ConnectAndroidDevice();
             } else {
-                for (Device dev : AndroidPlatform.getDefault().getDevices()) {
+                for (Device dev : PlatformManager.getPlatform(PlatformManager.ANDROID_TYPE).getConnectedDevices()) {
                     if (dev.isEmulator()) {
                         return null;
                     }
@@ -174,7 +173,7 @@ public class AndroidActionProvider implements ActionProvider {
     
     @NbBundle.Messages("ERR_AndroidNotConfigured=Android Platform is not configured.\nConfigure?")
     private String checkAndroid() {
-        if (!AndroidPlatform.getDefault().isReady()) {
+        if (!PlatformManager.getPlatform(PlatformManager.ANDROID_TYPE).isReady()) {
             return Bundle.ERR_AndroidNotConfigured();
         }
         return null;

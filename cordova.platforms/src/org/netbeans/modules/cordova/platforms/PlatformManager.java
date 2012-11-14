@@ -39,37 +39,36 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.cordova.project;
+package org.netbeans.modules.cordova.platforms;
 
-import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectUtils;
-import org.netbeans.api.project.SourceGroup;
-import org.netbeans.api.project.Sources;
-import org.netbeans.modules.web.clientproject.api.WebClientProjectConstants;
-import org.openide.filesystems.FileObject;
+import java.util.Collection;
+import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.api.annotations.common.NonNull;
+import org.openide.util.Lookup;
 
 /**
  *
  * @author Jan Becicka
  */
-public class Utilities {
+public class PlatformManager {
     
-    public static FileObject getSiteRoot(Project project) {
-        Sources sources = ProjectUtils.getSources(project);
-        SourceGroup[] sourceGroups = sources.getSourceGroups(WebClientProjectConstants.SOURCES_TYPE_HTML5);
-        assert sourceGroups.length == 1;
-        return sourceGroups[0].getRootFolder();
+    public static final String IOS_TYPE = "ios"; //NOI18N
+    public static final String ANDROID_TYPE = "android"; //NOI18N
+    
+    @CheckForNull
+    public static MobilePlatform getPlatform(@NonNull String type) {
+        for (MobilePlatform pl: getPlatforms()) {
+            if (type.equals(pl.getType())) {
+                return pl;
+            }
+        }
+        return null;
     }
     
-    public static FileObject getStartFile(Project project) {
-        return getSiteRoot(project).getFileObject("index.html");
+    
+    @NonNull
+    public static Collection<? extends MobilePlatform> getPlatforms() {
+        return Lookup.getDefault().lookupAll(MobilePlatform.class);
     }
-
-    public static String getWebContextRoot(Project p) {
-        return "/" + ProjectUtils.getInformation(p).getName();
-    }
-
-    public static boolean isUsingEmbeddedServer(Project p) {
-        return true;
-    }
+    
 }

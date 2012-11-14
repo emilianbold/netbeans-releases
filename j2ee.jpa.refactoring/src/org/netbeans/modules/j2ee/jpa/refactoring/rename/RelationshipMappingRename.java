@@ -59,9 +59,9 @@ import com.sun.source.util.TreePath;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.lang.model.element.AnnotationMirror;
-import javax.lang.model.element.AnnotationValue;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
@@ -98,6 +98,7 @@ import org.openide.util.lookup.Lookups;
 public final class RelationshipMappingRename implements JPARefactoring {
     
     private final RenameRefactoring rename;
+    private final static Logger LOG = Logger.getLogger(RelationshipMappingRename.class.getName());
     
     public RelationshipMappingRename(RenameRefactoring rename) {
         this.rename = rename;
@@ -115,7 +116,9 @@ public final class RelationshipMappingRename implements JPARefactoring {
             VariableElement var = (VariableElement) resElement;
             Element mainEntTmp = var.getEnclosingElement();
             TypeElement mainEnt = mainEntTmp instanceof TypeElement ? (TypeElement)mainEntTmp : null;
-            if(mainEnt == null)return null;
+            if(mainEnt == null) {
+                return null;
+            }
             List<? extends AnnotationMirror> ans = var.getAnnotationMirrors();
             boolean checkFoMappedBy = false;
             for(AnnotationMirror an:ans){
@@ -138,18 +141,20 @@ public final class RelationshipMappingRename implements JPARefactoring {
                                 for(ExecutableElement el : an.getElementValues().keySet()) {
                                     if(el.getSimpleName().toString().equals("mappedBy")) {
                                         if(an.getElementValues().get(el).getValue().toString().equals(var.getSimpleName().toString())) {
-                                            FileObject fo = null;
+                                            FileObject fo;
                                             try {
                                                 //it's usage
                                                  fo = RefactoringUtil.getTreePathHandle(field.getSimpleName().toString(), oppEntEl.toString(), handle.getFileObject()).getFileObject();
                                             } catch (IOException ex) {
-                                                
+                                                LOG.log(Level.INFO, "Can't get fileobject.", ex);//NOI18N
+                                                continue;
                                             }
-                                            TreePathHandle ph = null;
+                                            TreePathHandle ph;
                                             try {
                                                 ph = RefactoringUtil.getTreePathHandle(field.getSimpleName().toString(), oppEntEl.toString(), handle.getFileObject());
                                             } catch (IOException ex) {
-                                                Exceptions.printStackTrace(ex);
+                                                LOG.log(Level.INFO, "Can't get tree path handle.", ex);//NOI18N
+                                                continue;
                                             }
                                             CompilationInfo ci = RefactoringUtil.getCompilationInfo(ph, rename);
                                             TreePath tree = ph.resolve(ci);
@@ -174,7 +179,9 @@ public final class RelationshipMappingRename implements JPARefactoring {
                                             }
                                             SourcePositions sp = ci.getTrees().getSourcePositions();
                                             sp.getStartPosition(unit, t);
-                                            if(fo!=null)refactoringElementsBag.add(rename, new RelationshipAnnotationRenameRefactoringElement(fo, field, at0, an, var.getSimpleName().toString(), (int)sp.getStartPosition(unit, t), (int)sp.getEndPosition(unit, t)));
+                                            if(fo!=null) {
+                                                refactoringElementsBag.add(rename, new RelationshipAnnotationRenameRefactoringElement(fo, field, at0, an, var.getSimpleName().toString(), (int)sp.getStartPosition(unit, t), (int)sp.getEndPosition(unit, t)));
+                                            }
                                         }
                                     }
                                 }
@@ -289,7 +296,7 @@ public final class RelationshipMappingRename implements JPARefactoring {
             try {
                 DataObject dobj = DataObject.find(getParentFile());
                 if (dobj != null) {
-                    EditorCookie.Observable obs = (EditorCookie.Observable)dobj.getCookie(EditorCookie.Observable.class);
+                    EditorCookie.Observable obs = (EditorCookie.Observable)dobj.getLookup().lookup(EditorCookie.Observable.class);
                     if (obs != null && obs instanceof CloneableEditorSupport) {
                         CloneableEditorSupport supp = (CloneableEditorSupport)obs;
 
@@ -302,7 +309,7 @@ public final class RelationshipMappingRename implements JPARefactoring {
                 }
                 }
             } catch (DataObjectNotFoundException ex) {
-                ex.printStackTrace();
+                LOG.log(Level.INFO, "Can't resolve", ex);//NOI18N
             }
             return null;
         }

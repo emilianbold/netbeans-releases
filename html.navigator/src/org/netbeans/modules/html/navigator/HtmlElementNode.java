@@ -462,7 +462,7 @@ public class HtmlElementNode extends AbstractNode {
                     long start = sd.getFrom();
                     if (start <= offset) {
                         long end = sd.getTo();
-                        if (end >= offset) {
+                        if (end > offset) {
                             return c.getNodeForOffset(offset);
                         }
                     }

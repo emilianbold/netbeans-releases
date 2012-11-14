@@ -105,7 +105,7 @@ NetBeans_Infobar._showPresets = function() {
         button.addEventListener('click', function(presetIndex) {
             return function() {
                 NetBeans.resizePage(presetIndex);
-            }
+            };
         } (p), false);
         button.appendChild(document.createTextNode(preset.displayName));
         this._container.appendChild(button);

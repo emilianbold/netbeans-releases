@@ -46,8 +46,8 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
-import org.netbeans.modules.cordova.platforms.android.AndroidPlatform;
 import org.netbeans.modules.cordova.CordovaPlatform;
+import org.netbeans.modules.cordova.platforms.PlatformManager;
 import org.openide.awt.HtmlBrowser.URLDisplayer;
 import org.openide.filesystems.FileChooserBuilder;
 import org.openide.util.Exceptions;
@@ -252,7 +252,7 @@ final class MobilePlatformsPanel extends javax.swing.JPanel {
             androidSdkField.getDocument().removeDocumentListener(documentL);
             cordovaSdkField.getDocument().removeDocumentListener(documentL);
         }
-        androidSdkField.setText(AndroidPlatform.getDefault().getSdkLocation());
+        androidSdkField.setText(PlatformManager.getPlatform(PlatformManager.ANDROID_TYPE).getSdkLocation());
         cordovaSdkField.setText(CordovaPlatform.getDefault().getSdkLocation());
         
         androidSdkField.getDocument().addDocumentListener(documentL);
@@ -260,7 +260,7 @@ final class MobilePlatformsPanel extends javax.swing.JPanel {
     }
 
     void store() {
-        AndroidPlatform.getDefault().setSdkLocation(androidSdkField.getText());
+        PlatformManager.getPlatform(PlatformManager.ANDROID_TYPE).setSdkLocation(androidSdkField.getText());
         CordovaPlatform.getDefault().setSdkLocation(cordovaSdkField.getText());
     }
 

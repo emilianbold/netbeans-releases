@@ -39,7 +39,7 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.cordova.platforms.android;
+package org.netbeans.modules.cordova.platforms.ios;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -48,53 +48,58 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import org.openide.util.Exceptions;
+import org.netbeans.modules.cordova.platforms.SDK;
 
 /**
  *
  * @author Jan Becicka
  */
-public class Device {
+public class IOSSDK implements SDK {
 
-    public static Collection<Device> parse(String output) throws IOException {
+    private String name;
+    private final String identifier;
+
+    public static Collection<SDK> parse(String output) throws IOException {
         BufferedReader r = new BufferedReader(new StringReader(output));
-
-        Pattern pattern = Pattern.compile("([-\\w]+)\\s+([\\w]+) *"); //NOI18N
-
-        ArrayList<Device> result = new ArrayList<Device>();
+        
+        Pattern pattern = Pattern.compile("(.*)-sdk(.*)"); //NOI18N
+        
+        ArrayList<SDK> result = new ArrayList<SDK>();
         //ignore first line
-
-        String line = r.readLine();
-
-        while (r.ready() && ((line = r.readLine()) != null)) {
+        
+        String line = null;
+        do {
+            line = r.readLine();
+        } while (!line.startsWith("iOS SDKs")); //NOI18N
+      
+        while (line !=null && r.ready()) {
             Matcher m = pattern.matcher(line);
             if (m.matches()) {
-                Device device = new Device(m.group(1));
-                result.add(device);
-            }
+                IOSSDK sdk = new IOSSDK(m.group(1).trim(), m.group(2).trim());
+                result.add(sdk);
+            } 
+            line = r.readLine();
         }
         return result;
     }
-    
-    private final String name;
 
-    private Device(String name) {
+    private IOSSDK(String name, String identifier) {
         this.name = name;
-    }
-    
-    public boolean isEmulator() {
-        return name.startsWith("emulator"); //NOI18N
+        this.identifier = identifier;
     }
 
     public String getName() {
         return name;
+    }
+
+    public String getIdentifier() {
+        return identifier;
     }
     
     
 
     @Override
     public String toString() {
-        return "Device{" + "name=" + name + ", emulator: " + isEmulator() + '}'; //NOI18N
+        return "SDK{" + "name=" + name + ", identifier=" + identifier + '}'; //NOI18N
     }
-    
 }

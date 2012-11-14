@@ -567,7 +567,7 @@ public class ModelVisitor extends PathNodeVisitor {
                 fqName = getName((VarNode)lastVisited);
                 isDeclaredInParent = true;
                 JsObject declarationScope = modelBuilder.getCurrentDeclarationScope();
-                if (fqName.indexOf('.') == -1 &&! ModelUtils.isGlobal(declarationScope)) {
+                if (fqName.size() == 1 && !ModelUtils.isGlobal(declarationScope)) {
                     isPrivate = true;
                 }
             } else if (lastVisited instanceof PropertyNode) {
@@ -728,15 +728,16 @@ public class ModelVisitor extends PathNodeVisitor {
             if (unaryNode.rhs() instanceof CallNode
                     && ((CallNode)unaryNode.rhs()).getFunction() instanceof IdentNode
                     && !(lastNode instanceof PropertyNode) && !inVarNode) {
-                int start = LexUtilities.getLexerOffset(parserResult, unaryNode.getStart());
-                if (getPath().get(getPath().size() - 1) instanceof VarNode) {
-                    start = LexUtilities.getLexerOffset(parserResult, ((VarNode)getPath().get(getPath().size() - 1)).getName().getFinish());
+                if (modelBuilder.getCurrentObject() != null) {
+                    int start = LexUtilities.getLexerOffset(parserResult, unaryNode.getStart());
+                    if (getPath().get(getPath().size() - 1) instanceof VarNode) {
+                        start = LexUtilities.getLexerOffset(parserResult, ((VarNode)getPath().get(getPath().size() - 1)).getName().getFinish());
+                    }
+                    Collection<TypeUsage> types = ModelUtils.resolveSemiTypeOfExpression(parserResult, unaryNode);
+                    for (TypeUsage type : types) {
+                        modelBuilder.getCurrentObject().addAssignment(type, start);
+                    }
                 }
-                Collection<TypeUsage> types = ModelUtils.resolveSemiTypeOfExpression(parserResult, unaryNode);
-                for (TypeUsage type : types) {
-                    modelBuilder.getCurrentObject().addAssignment(type, start);
-                }
-
             }
         } else {
             if (unaryNode.rhs() instanceof IdentNode) {

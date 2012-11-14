@@ -43,6 +43,7 @@ package org.netbeans.modules.cordova.platforms.ios;
 
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cordova.platforms.BuildPerformer;
+import org.netbeans.modules.cordova.platforms.PlatformManager;
 import org.netbeans.spi.project.ActionProvider;
 import org.openide.util.Lookup;
 
@@ -78,7 +79,7 @@ public class IOSActionProvider implements ActionProvider {
             if (build.isPhoneGapBuild(p)) {
                 build.perform(build.RUN_IOS,p);
             } else {
-                IOSPlatform.getDefault().openUrl(Device.IPHONE, build.getUrl(p));
+                IOSDevice.IPHONE.openUrl(build.getUrl(p));
             }
         }
     }

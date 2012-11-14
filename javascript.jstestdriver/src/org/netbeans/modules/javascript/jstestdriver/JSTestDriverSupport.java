@@ -163,8 +163,10 @@ public class JSTestDriverSupport {
         assert testDriver != null;
         testDriver.stopServer();
         TestDriverServiceNode.getInstance().refresh();
-        for (WebBrowserPane wbp : integratedBrowserPanes) {
-            wbp.close(true);
+        if (integratedBrowserPanes != null) {
+            for (WebBrowserPane wbp : integratedBrowserPanes) {
+                wbp.close(true);
+            }
         }
     }
 

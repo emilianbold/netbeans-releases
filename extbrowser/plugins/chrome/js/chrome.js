@@ -279,7 +279,7 @@ NetBeans._checkUnexpectedDetach = function(tabId) {
             NetBeans.openPopup('html/warnDebuggerDetached.html');
         }
     }, 100);
-}
+};
 
 NetBeans.openPopup = function(url) {
     chrome.windows.create({
@@ -288,7 +288,7 @@ NetBeans.openPopup = function(url) {
         width: 600,
         height: 250
     });
-}
+};
 
 chrome.debugger.onEvent.addListener(function(source, method, params) {
     NetBeans.sendDebuggingResponse(source.tabId, {method : method, params : params});
@@ -348,7 +348,7 @@ chrome.windows.getAll({populate: true}, function(windows) {
     }
 });
 
-chrome.windows.onFocusChanged.addListener(function(windowId) {
+NetBeans.windowFocused = function(windowId) {
     if (NetBeans.debuggedTab !== null) {
         var active = (windowId === NetBeans.windowWithDebuggedTab);
         var script = 'if (typeof(NetBeans) === "object") { NetBeans.setWindowActive('+active+'); }';
@@ -356,5 +356,16 @@ chrome.windows.onFocusChanged.addListener(function(windowId) {
             {tabId : NetBeans.debuggedTab},
             'Runtime.evaluate',
             {expression: script});
+    }
+};
+
+chrome.windows.onFocusChanged.addListener(NetBeans.windowFocused);
+
+chrome.tabs.onAttached.addListener(function(tabId, attachInfo) {
+    if (NetBeans.debuggedTab === tabId) {
+        // Debugger tab moved into a different window
+        var windowId = attachInfo.newWindowId;
+        NetBeans.windowWithDebuggedTab = windowId;
+        NetBeans.windowFocused(windowId);
     }
 });

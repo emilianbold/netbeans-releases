@@ -39,22 +39,44 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.cordova.platforms;
+package org.netbeans.modules.cordova.project;
+
+import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.api.project.SourceGroup;
+import org.netbeans.api.project.Sources;
+import org.netbeans.modules.web.clientproject.api.WebClientProjectConstants;
+import org.netbeans.spi.project.ProjectConfigurationProvider;
+import org.openide.filesystems.FileObject;
 
 /**
  *
  * @author Jan Becicka
  */
-public class PlatformConstants {
+public class ClientProjectUtilities {
     
-    public static String DEVICE_PROP = "device";
-    public static String DEVICE = "device";
-    public static String EMULATOR = "emulator";
+    public static FileObject getSiteRoot(Project project) {
+        Sources sources = ProjectUtils.getSources(project);
+        SourceGroup[] sourceGroups = sources.getSourceGroups(WebClientProjectConstants.SOURCES_TYPE_HTML5);
+        assert sourceGroups.length == 1;
+        return sourceGroups[0].getRootFolder();
+    }
     
-    public static String SDK_PROP = "sdk";
-    public static String VIRTUAL_DEVICE_PROP = "vd";
+    public static FileObject getStartFile(Project project) {
+        return getSiteRoot(project).getFileObject("index.html");
+    }
+
+    public static String getWebContextRoot(Project p) {
+        return "/" + ProjectUtils.getInformation(p).getName();
+    }
+
+    public static boolean isUsingEmbeddedServer(Project p) {
+        return true;
+    }
     
-    public static final String IOS_TYPE = "ios"; //NOI18N
-    public static final String ANDROID_TYPE = "android"; //NOI18N
-    
+    public static String getProperty(Project p, String key) {
+        ProjectConfigurationProvider provider = p.getLookup().lookup(ProjectConfigurationProvider.class);
+        ClientProjectConfigurationImpl activeConfiguration = (ClientProjectConfigurationImpl) provider.getActiveConfiguration();
+        return activeConfiguration.getProperty(key);
+    }
 }
