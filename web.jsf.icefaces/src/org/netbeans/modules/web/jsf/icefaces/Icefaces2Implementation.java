@@ -164,10 +164,7 @@ public class Icefaces2Implementation implements JsfComponentImplementation {
 
             // maven based projects
             if (JsfComponentUtils.isMavenBased(webModule)) {
-                ifLibrary = JsfComponentUtils.createMavenDependencyLibrary(
-                    ICEFACES_NAME + "-maven-lib", //NOI18N
-                    new String[]{MAVEN_DEP},
-                    new String[0]);
+                ifLibrary = getMavenLibrary();
             } else {
                 // get the ICEfaces library from customizer
                 if (jsfComponentCustomizer != null) {
@@ -205,6 +202,13 @@ public class Icefaces2Implementation implements JsfComponentImplementation {
         } catch (UnsupportedOperationException ex) {
             LOGGER.log(Level.WARNING, "Exception during extending an web project", ex); //NOI18N
         }
+    }
+
+    private static Library getMavenLibrary() {
+        return JsfComponentUtils.createMavenDependencyLibrary(
+                ICEFACES_NAME + "-maven-lib", //NOI18N
+                new String[]{MAVEN_DEP},
+                new String[0]);
     }
 
     private static FileObject generateWelcomePage(WebModule webModule) throws IOException {
@@ -255,11 +259,14 @@ public class Icefaces2Implementation implements JsfComponentImplementation {
     @Override
     public void remove(WebModule webModule) {
         try {
-            List<Library> allRegisteredIcefaces2 = Icefaces2Customizer.getIcefacesLibraries();
-            ProjectClassPathModifier.removeLibraries(
-                    allRegisteredIcefaces2.toArray(new Library[allRegisteredIcefaces2.size()]),
-                    webModule.getJavaSources()[0],
-                    ClassPath.COMPILE);
+            List<Library> icefacesLibraries;
+            if (JsfComponentUtils.isMavenBased(webModule)) {
+                icefacesLibraries = Arrays.asList(getMavenLibrary());
+            } else {
+                icefacesLibraries = Icefaces2Customizer.getIcefacesLibraries();
+            }
+             ProjectClassPathModifier.removeLibraries(icefacesLibraries.toArray(
+                     new Library[icefacesLibraries.size()]), webModule.getJavaSources()[0], ClassPath.COMPILE);
         } catch (IOException ex) {
             LOGGER.log(Level.WARNING, "Exception during removing JSF suite from an web project", ex); //NOI18N
         } catch (UnsupportedOperationException ex) {
