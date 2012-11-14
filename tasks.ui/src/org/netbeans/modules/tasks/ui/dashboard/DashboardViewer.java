@@ -1092,9 +1092,11 @@ public final class DashboardViewer implements PropertyChangeListener {
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
-                for (RepositoryNode repositoryNode : repositoryNodes) {
-                    if (repositoryNode.isOpened()) {
-                        repositoryNode.setExpanded(true);
+                synchronized (LOCK_REPOSITORIES) {
+                    for (RepositoryNode repositoryNode : repositoryNodes) {
+                        if (repositoryNode.isOpened()) {
+                            repositoryNode.setExpanded(true);
+                        }
                     }
                 }
             }
