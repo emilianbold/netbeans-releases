@@ -110,6 +110,22 @@ is the proper place.
 <!-- ACTUAL CHANGES BEGIN HERE: -->
 
   <changes>
+  <change id="DocumentIndexCache">
+    <api name="LuceneSupport"/>
+    <summary>Added <code>DocumentIndexCache</code> class to allow custom caching strategy in DocumentIndex.</summary>
+    <version major="2" minor="18"/>
+    <date day="14" month="11" year="2012"/>
+    <author login="tzezula"/>
+    <compatibility source="compatible" binary="compatible" addition="yes"/>
+    <description>
+        <p>
+            Added <code>DocumentIndexCache</code> class to allow custom caching strategy for added removed
+            documents in DocumentIndex. The default strategy uses <code>SoftReference</code> to detect flush point.
+        </p>
+    </description>
+    <class package="org.netbeans.modules.parsing.lucene.support" name="IndexManager"/>
+    <class package="org.netbeans.modules.parsing.lucene.support" name="DocumentIndexCache"/>
+  </change>
   <change id="WithTermFrequencies">
     <api name="LuceneSupport"/>
     <summary>Added <code>Index</code> with <code>Term</code> frequencies.</summary>

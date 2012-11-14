@@ -49,6 +49,7 @@ import org.apache.lucene.search.Query;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.modules.parsing.lucene.support.Convertor;
 import org.netbeans.modules.parsing.lucene.support.Index;
+import org.netbeans.modules.parsing.lucene.support.IndexDocument;
 import org.netbeans.modules.parsing.lucene.support.IndexReaderInjection;
 import org.netbeans.modules.parsing.lucene.support.StoppableConvertor;
 
@@ -64,7 +65,7 @@ class Convertors {
 
 
 
-    static Convertor<IndexDocumentImpl, Document> newIndexDocumentToDocumentConvertor() {
+    static Convertor<IndexDocument, Document> newIndexDocumentToDocumentConvertor() {
         return new AddConvertor();
     }
 
@@ -87,10 +88,10 @@ class Convertors {
     }
 
 
-    private static final class AddConvertor implements Convertor<IndexDocumentImpl, Document> {
+    private static final class AddConvertor implements Convertor<IndexDocument, Document> {
         @Override
-        public Document convert(IndexDocumentImpl p) {
-            return p.doc;
+        public Document convert(IndexDocument p) {
+            return ((IndexDocumentImpl)p).doc;
         }
     }
 

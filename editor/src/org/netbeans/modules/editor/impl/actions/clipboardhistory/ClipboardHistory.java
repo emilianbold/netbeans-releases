@@ -59,6 +59,7 @@ public final class ClipboardHistory implements ClipboardListener {
     private final ArrayList<ClipboardHistoryElement> data;
     private static ClipboardHistory instance;
     private static int MAXSIZE = 9;
+    private static final int MAX_ITEM_LENGTH = 5000000; //10MB
 
     private static Preferences prefs;
     /** Name of preferences node where we persist history */
@@ -91,7 +92,7 @@ public final class ClipboardHistory implements ClipboardListener {
     }
 
     private void addHistory(String text) {
-        if (text == null) {
+        if (text == null || text.length() > MAX_ITEM_LENGTH) {
             return;
         }
         ClipboardHistoryElement newHistory = new ClipboardHistoryElement(text);

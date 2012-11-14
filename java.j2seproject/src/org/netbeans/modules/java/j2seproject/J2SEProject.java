@@ -1001,17 +1001,19 @@ public final class J2SEProject implements Project {
                     FileObject container = null;
                     for (URL u : content) {
                         FileObject fo = toFile(u);
-                        canDelete &= fo.canWrite();
-                        if (container == null) {
-                            container = fo.getParent();
-                            canDelete &= container.canWrite();
-                            canDelete &= LIB_COPY_LIBS.equals(container.getName());
-                            canDelete &= libFolder.equals(container.getParent());
-                        } else {
-                            canDelete &= container.equals(fo.getParent());
+                        if (fo != null) {
+                            canDelete &= fo.canWrite();
+                            if (container == null) {
+                                container = fo.getParent();
+                                canDelete &= container.canWrite();
+                                canDelete &= LIB_COPY_LIBS.equals(container.getName());
+                                canDelete &= libFolder.equals(container.getParent());
+                            } else {
+                                canDelete &= container.equals(fo.getParent());
+                            }
                         }
                     }
-                    if (canDelete) {
+                    if (canDelete && container != null) {
                         container.delete();
                     }
                 }
