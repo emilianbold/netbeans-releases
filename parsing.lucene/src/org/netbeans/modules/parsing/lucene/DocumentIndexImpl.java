@@ -88,8 +88,8 @@ public final class DocumentIndexImpl implements DocumentIndex, Runnable {
     private static final Logger LOGGER = Logger.getLogger(DocumentIndexImpl.class.getName());
     
     //@GuardedBy (this)
-    private final List<IndexDocumentImpl> toAdd = new LinkedList<IndexDocumentImpl>();
-    private final List<String> toRemove = new LinkedList<String>();
+    private final List<IndexDocumentImpl> toAdd = new ArrayList<IndexDocumentImpl>();
+    private final List<String> toRemove = new ArrayList<String>();
     private final Set<String> dirtyKeys = new HashSet<String>();
     private Reference<List[]> dataRef;
 
