@@ -63,7 +63,7 @@ import org.openide.util.Parameters;
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public class TraitElementImpl extends TypeElementImpl implements TraitElement {
+public final class TraitElementImpl extends TypeElementImpl implements TraitElement {
     public static final String IDX_FIELD = PHPIndexer.FIELD_TRAIT;
     private Collection<QualifiedName> usedTraits;
 
@@ -82,7 +82,7 @@ public class TraitElementImpl extends TypeElementImpl implements TraitElement {
     }
 
     private static TraitElement fromSignature(NameKind query, IndexQueryImpl indexScopeQuery, IndexResult indexResult, Signature signature) {
-        Parameters.notNull("query", query);//NOI18N
+        Parameters.notNull("query", query); //NOI18N
         TraitSignatureParser signParser = new TraitSignatureParser(signature);
         TraitElement retval = null;
         if (matchesQuery(query, signParser)) {
@@ -93,7 +93,7 @@ public class TraitElementImpl extends TypeElementImpl implements TraitElement {
 
     public static Set<TraitElement> fromSignature(final NameKind query, final IndexQueryImpl indexScopeQuery, final IndexResult indexResult) {
         String[] values = indexResult.getValues(IDX_FIELD);
-        Set<TraitElement> retval = values.length > 0 ? new HashSet<TraitElement>() : Collections.<TraitElement> emptySet();
+        Set<TraitElement> retval = values.length > 0 ? new HashSet<TraitElement>() : Collections.<TraitElement>emptySet();
         for (String val : values) {
             final TraitElement trait = fromSignature(query, indexScopeQuery, indexResult, Signature.get(val));
             if (trait != null) {
@@ -107,8 +107,9 @@ public class TraitElementImpl extends TypeElementImpl implements TraitElement {
         Parameters.notNull("node", node);
         Parameters.notNull("fileQuery", fileQuery);
         TraitDeclarationInfo info = TraitDeclarationInfo.create(node);
-        final QualifiedName fullyQualifiedName = namespace != null ?
-            namespace.getFullyQualifiedName() : QualifiedName.createForDefaultNamespaceName();
+        final QualifiedName fullyQualifiedName = namespace != null
+                ? namespace.getFullyQualifiedName()
+                : QualifiedName.createForDefaultNamespaceName();
         return new TraitElementImpl(
                 fullyQualifiedName.append(info.getName()), info.getRange().getStart(),
                 info.getUsedTraits(), fileQuery.getURL().toExternalForm(), fileQuery);
@@ -116,8 +117,8 @@ public class TraitElementImpl extends TypeElementImpl implements TraitElement {
 
     private static boolean matchesQuery(final NameKind query, TraitSignatureParser signParser) {
         Parameters.notNull("query", query); //NOI18N
-        return (query instanceof NameKind.Empty) ||
-                query.matchesName(TraitElement.KIND, signParser.getQualifiedName());
+        return (query instanceof NameKind.Empty)
+                || query.matchesName(TraitElement.KIND, signParser.getQualifiedName());
     }
 
     @Override

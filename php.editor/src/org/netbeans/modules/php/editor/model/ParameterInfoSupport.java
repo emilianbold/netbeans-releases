@@ -201,7 +201,7 @@ public class ParameterInfoSupport {
                         if (isString(token)) {
                             metaAll.insert(0, token.text().toString());
                             if (anchor == -1) {
-                                anchor = tokenSequence.offset()+token.text().toString().length();
+                                anchor = tokenSequence.offset() + token.text().toString().length();
                             }
                             state = State.METHOD;
                         }
@@ -293,19 +293,19 @@ public class ParameterInfoSupport {
     }
 
     private static boolean isDolar(Token<PHPTokenId> token) {
-        return token.id().equals(PHPTokenId.PHP_TOKEN) && "$".contentEquals(token.text());//NOI18N
+        return token.id().equals(PHPTokenId.PHP_TOKEN) && "$".contentEquals(token.text()); //NOI18N
     }
 
     private static boolean isLeftBracket(Token<PHPTokenId> token) {
-        return token.id().equals(PHPTokenId.PHP_TOKEN) && "(".contentEquals(token.text());//NOI18N
+        return token.id().equals(PHPTokenId.PHP_TOKEN) && "(".contentEquals(token.text()); //NOI18N
     }
 
     private static boolean isRightBracket(Token<PHPTokenId> token) {
-        return token.id().equals(PHPTokenId.PHP_TOKEN) && ")".contentEquals(token.text());//NOI18N
+        return token.id().equals(PHPTokenId.PHP_TOKEN) && ")".contentEquals(token.text()); //NOI18N
     }
 
     private static boolean isComma(Token<PHPTokenId> token) {
-        return token.id().equals(PHPTokenId.PHP_TOKEN) && ",".contentEquals(token.text());//NOI18N
+        return token.id().equals(PHPTokenId.PHP_TOKEN) && ",".contentEquals(token.text()); //NOI18N
     }
 
     private static boolean isReference(Token<PHPTokenId> token) {
@@ -385,7 +385,7 @@ public class ParameterInfoSupport {
                             }
                         }
                     }
-                    final Model model = ((PHPParseResult)info).getModel();
+                    final Model model = ((PHPParseResult) info).getModel();
                     OccurencesSupport occurencesSupport = model.getOccurencesSupport((nodeInfo.getRange().getStart() + anchor) / 2);
                     Occurence occurence = occurencesSupport.getOccurence();
                     if (occurence != null) {
@@ -395,10 +395,10 @@ public class ParameterInfoSupport {
                             final boolean oneDeclaration = occurence.getAllDeclarations().size() == 1;
                             if (declaration instanceof FunctionScope && oneDeclaration) {
                                 List<String> paramNames = toParamNames((FunctionScope) declaration);
-                                return paramNames.isEmpty() ? ParameterInfo.NONE :new ParameterInfo(paramNames, idx, anchor);
+                                return paramNames.isEmpty() ? ParameterInfo.NONE : new ParameterInfo(paramNames, idx, anchor);
                             } else if (declaration instanceof BaseFunctionElement && oneDeclaration) {
                                 List<String> paramNames = toParamNames((BaseFunctionElement) declaration);
-                                return paramNames.isEmpty() ? ParameterInfo.NONE :new ParameterInfo(paramNames, idx, anchor);
+                                return paramNames.isEmpty() ? ParameterInfo.NONE : new ParameterInfo(paramNames, idx, anchor);
                             } else if (declaration instanceof ClassElement && oneDeclaration) {
                                 List<String> paramNames = toParamNames((ClassElement) declaration);
                                 return paramNames.isEmpty() ? ParameterInfo.NONE : new ParameterInfo(paramNames, idx, anchor);

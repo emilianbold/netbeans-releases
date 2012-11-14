@@ -42,6 +42,7 @@
 package org.netbeans.core;
 
 import java.io.IOException;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.logging.Level;
@@ -67,15 +68,17 @@ final class NbLifeExit implements Runnable {
     private final int type;
     private final int status;
     private final Future<Boolean> waitFor;
+    private final CountDownLatch onExit;
 
-    NbLifeExit(int type, int status) {
-        this(type, status, null);
+    NbLifeExit(int type, int status, CountDownLatch onExit) {
+        this(type, status, null, onExit);
     }
 
-    private NbLifeExit(int type, int status, Future<Boolean> waitFor) {
+    private NbLifeExit(int type, int status, Future<Boolean> waitFor, CountDownLatch onExit) {
         this.type = type;
         this.status = status;
         this.waitFor = waitFor;
+        this.onExit = onExit;
     }
 
     @Override
@@ -98,13 +101,14 @@ final class NbLifeExit implements Runnable {
                 } catch (ExecutionException ex) {
                     Exceptions.printStackTrace(ex);
                 }
-                Mutex.EVENT.readAccess(new NbLifeExit(s, status));
+                Mutex.EVENT.readAccess(new NbLifeExit(s, status, null, onExit));
                 break;
             case 3:
             case 4:
                 doApproved(type == 4, status);
                 break;
             case 5:
+                onExit.countDown();
                 if (!Boolean.getBoolean("netbeans.close.no.exit")) { // NOI18N
                     TopSecurityManager.exit(status);
                 }
@@ -114,7 +118,7 @@ final class NbLifeExit implements Runnable {
         }
     }
     private static boolean doingExit = false;
-
+    
     /**
      * @return True if the IDE is shutting down.
      */
@@ -122,23 +126,26 @@ final class NbLifeExit implements Runnable {
         return doingExit;
     }
 
-    private static void doExit(int status) {
+    private void doExit(int status) {
         if (doingExit) {
+            onExit.countDown();
             return;
         }
         doingExit = true;
         // save all open files
         try {
             if (System.getProperty("netbeans.close") != null || ExitDialog.showDialog()) { // NOI18N
-                Future<Boolean> res = Main.getModuleSystem().shutDownAsync(new NbLifeExit(1, status));
-                RP.post(new NbLifeExit(2, status, res));
+                Future<Boolean> res = Main.getModuleSystem().shutDownAsync(new NbLifeExit(1, status, null, onExit));
+                RP.post(new NbLifeExit(2, status, res, onExit));
+            } else {
+                onExit.countDown();
             }
         } finally {
             doingExit = false;
         }
     }
 
-    private static void doStopInfra(int status) {
+    private void doStopInfra(int status) {
         CLIHandler.stopServer();
         final WindowSystem windowSystem = Lookup.getDefault().lookup(WindowSystem.class);
         boolean gui = CLIOptions.isGui();
@@ -148,11 +155,13 @@ final class NbLifeExit implements Runnable {
         }
         if (Boolean.getBoolean("netbeans.close.when.invisible")) { // NOI18N
             // hook to permit perf testing of time to *apparently* shut down
+            onExit.countDown();
             TopSecurityManager.exit(status);
         }
+        
     }
 
-    private static void doApproved(boolean isApproved, int status) throws ThreadDeath {
+    private void doApproved(boolean isApproved, int status) throws ThreadDeath {
         if (isApproved) {
             try {
                 try {
@@ -178,9 +187,8 @@ final class NbLifeExit implements Runnable {
             // exit is dispatched through that proprietary queue and it
             // can be refused by security check. So, we need to replan
             // to RequestProcessor to avoid security problems.
-            Task exitTask = new Task(new NbLifeExit(5, status));
+            Task exitTask = new Task(new NbLifeExit(5, status, null, onExit));
             RP.post(exitTask);
-            exitTask.waitFinished();
         }
     }
     

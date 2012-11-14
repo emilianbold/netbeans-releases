@@ -182,7 +182,11 @@ public class FixUsesAction extends BaseAction {
         return importData;
     }
 
-    private static void performFixUses(final PHPParseResult parserResult, final ImportData importData, final List<ImportData.ItemVariant> selections, final boolean removeUnusedUses) {
+    private static void performFixUses(
+            final PHPParseResult parserResult,
+            final ImportData importData,
+            final List<ImportData.ItemVariant> selections,
+            final boolean removeUnusedUses) {
         new FixUsesPerformer(parserResult, importData, selections, removeUnusedUses, createOptions(parserResult)).perform();
     }
 
@@ -208,7 +212,7 @@ public class FixUsesAction extends BaseAction {
                 HelpCtx.DEFAULT_HELP, new ActionListener() {
                                           @Override
                                           public void actionPerformed(ActionEvent e) {}
-                                      }, true );
+                                      }, true);
         final Dialog d = DialogDisplayer.getDefault().createDialog(dd);
         ok.addActionListener(new ActionListener() {
             @Override
@@ -296,7 +300,11 @@ public class FixUsesAction extends BaseAction {
         private final boolean startUseWithNamespaceSeparator;
         private final boolean aliasesCapitalsOfNamespaces;
 
-        public Options(boolean preferFullyQualifiedNames, boolean preferMultipleUseStatementsCombined, boolean startUseWithNamespaceSeparator, boolean aliasesCapitalsOfNamespaces) {
+        public Options(
+                boolean preferFullyQualifiedNames,
+                boolean preferMultipleUseStatementsCombined,
+                boolean startUseWithNamespaceSeparator,
+                boolean aliasesCapitalsOfNamespaces) {
             this.preferFullyQualifiedNames = preferFullyQualifiedNames;
             this.preferMultipleUseStatementsCombined = preferMultipleUseStatementsCombined;
             this.startUseWithNamespaceSeparator = startUseWithNamespaceSeparator;

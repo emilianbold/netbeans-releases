@@ -295,7 +295,7 @@ HEREDOC_LABEL_NO_NEWLINE=({LABEL}([^a-zA-Z0-9_\x7f-\xff;$\n\r\\{]|(";"[^$\n\r\\{
 DOUBLE_QUOTES_CHARS=("{"*([^$\"\\{]|("\\"{ANY_CHAR}))|{DOUBLE_QUOTES_LITERAL_DOLLAR})
 BACKQUOTE_CHARS=("{"*([^$`\\{]|("\\"{ANY_CHAR}))|{BACKQUOTE_LITERAL_DOLLAR})
 
-HEREDOC_CHARS=([^$\"\\{]|("\\"{ANY_CHAR}))?({HEREDOC_LABEL_NO_NEWLINE} | {HEREDOC_NON_LABEL} | {LABEL})*
+HEREDOC_CHARS=([^$\"\\{]|("\\"{ANY_CHAR}))({HEREDOC_LABEL_NO_NEWLINE} | {HEREDOC_NON_LABEL} | {LABEL})*
 NOWDOC_CHARS=({NEWLINE}*(([^a-zA-Z_\x7f-\xff\n\r][^\n\r]*)|({LABEL}[^a-zA-Z0-9_\x7f-\xff;\n\r][^\n\r]*)|({LABEL}[;][^\n\r]+)))
 PHP_OPERATOR=       "=>"|"++"|"--"|"==="|"!=="|"=="|"!="|"<>"|"<="|">="|"+="|"-="|"*="|"/="|".="|"%="|"<<="|">>="|"&="|"|="|"^="|"||"|"&&"|"OR"|"AND"|"XOR"|"<<"|">>"
 
@@ -1099,9 +1099,20 @@ PHP_OPERATOR=       "=>"|"++"|"--"|"==="|"!=="|"=="|"!="|"<>"|"<="|">="|"+="|"-=
         return PHPTokenId.PHP_CONSTANT_ENCAPSED_STRING;
     }
 
-    {HEREDOC_CHARS}("{""{"*|"$""$"*) {
-        yypushback(1);
+    {HEREDOC_CHARS}("{$" | "${") {
+        yypushback(2);
         return PHPTokenId.PHP_ENCAPSED_AND_WHITESPACE;
+    }
+
+    {HEREDOC_CHARS}"$"{LABEL}"["? {
+        String text = yytext();
+        int lastIndexOfDollar = text.lastIndexOf('$');
+        yypushback(text.length() - lastIndexOfDollar);
+        return PHPTokenId.PHP_ENCAPSED_AND_WHITESPACE;
+    }
+
+    "$" | "{" {
+        return PHPTokenId.PHP_CONSTANT_ENCAPSED_STRING;
     }
 }
 

@@ -296,4 +296,184 @@ public class InvertIfTest {
                               "    }\n" +
                               "}\n");
     }
+
+    @Test
+    public void testDeMorganAnd() throws Exception {
+        HintTest.create()
+                .setCaretMarker('|')
+                .input("package test;\n" +
+                       "public class Test {\n" +
+                       "    public static void main(String[] args) {\n" +
+                       "        i|f (args.length != 0 && true) {\n" +
+                       "            System.err.println(\"1\");\n" +
+                       "        } else {\n" +
+                       "            System.err.println(\"2\");\n" +
+                       "        }\n" +
+                       "    }\n" +
+                       "}\n")
+                .run(InvertIf.class)
+                .findWarning("3:9-3:9:verifier:" + Bundle.ERR_InvertIf())
+                .applyFix()
+                .assertCompilable()
+                .assertOutput("package test;\n" +
+                              "public class Test {\n" +
+                              "    public static void main(String[] args) {\n" +
+                              "        if (args.length == 0 || false) {\n" +
+                              "            System.err.println(\"2\");\n" +
+                              "        } else {\n" +
+                              "            System.err.println(\"1\");\n" +
+                              "        }\n" +
+                              "    }\n" +
+                              "}\n");
+    }
+    
+    @Test
+    public void testDeMorganOr() throws Exception {
+        HintTest.create()
+                .setCaretMarker('^')
+                .input("package test;\n" +
+                       "public class Test {\n" +
+                       "    public static void main(String[] args) {\n" +
+                       "        i^f (args.length != 0 || false) {\n" +
+                       "            System.err.println(\"1\");\n" +
+                       "        } else {\n" +
+                       "            System.err.println(\"2\");\n" +
+                       "        }\n" +
+                       "    }\n" +
+                       "}\n")
+                .run(InvertIf.class)
+                .findWarning("3:9-3:9:verifier:" + Bundle.ERR_InvertIf())
+                .applyFix()
+                .assertCompilable()
+                .assertOutput("package test;\n" +
+                              "public class Test {\n" +
+                              "    public static void main(String[] args) {\n" +
+                              "        if (args.length == 0 && true) {\n" +
+                              "            System.err.println(\"2\");\n" +
+                              "        } else {\n" +
+                              "            System.err.println(\"1\");\n" +
+                              "        }\n" +
+                              "    }\n" +
+                              "}\n");
+    }
+    
+    @Test
+    public void testLess() throws Exception {
+        HintTest.create()
+                .setCaretMarker('^')
+                .input("package test;\n" +
+                       "public class Test {\n" +
+                       "    public static void main(String[] args) {\n" +
+                       "        i^f (args.length < 5) {\n" +
+                       "            System.err.println(\"too few\");\n" +
+                       "        } else {\n" +
+                       "            System.err.println(\"too many\");\n" +
+                       "        }\n" +
+                       "    }\n" +
+                       "}\n")
+                .run(InvertIf.class)
+                .findWarning("3:9-3:9:verifier:" + Bundle.ERR_InvertIf())
+                .applyFix()
+                .assertCompilable()
+                .assertOutput("package test;\n" +
+                              "public class Test {\n" +
+                              "    public static void main(String[] args) {\n" +
+                              "        if (args.length >= 5) {\n" +
+                              "            System.err.println(\"too many\");\n" +
+                              "        } else {\n" +
+                              "            System.err.println(\"too few\");\n" +
+                              "        }\n" +
+                              "    }\n" +
+                              "}\n");
+    }
+    
+    @Test
+    public void testLessEq() throws Exception {
+        HintTest.create()
+                .setCaretMarker('^')
+                .input("package test;\n" +
+                       "public class Test {\n" +
+                       "    public static void main(String[] args) {\n" +
+                       "        i^f (args.length <= 5) {\n" +
+                       "            System.err.println(\"too few\");\n" +
+                       "        } else {\n" +
+                       "            System.err.println(\"too many\");\n" +
+                       "        }\n" +
+                       "    }\n" +
+                       "}\n")
+                .run(InvertIf.class)
+                .findWarning("3:9-3:9:verifier:" + Bundle.ERR_InvertIf())
+                .applyFix()
+                .assertCompilable()
+                .assertOutput("package test;\n" +
+                              "public class Test {\n" +
+                              "    public static void main(String[] args) {\n" +
+                              "        if (args.length > 5) {\n" +
+                              "            System.err.println(\"too many\");\n" +
+                              "        } else {\n" +
+                              "            System.err.println(\"too few\");\n" +
+                              "        }\n" +
+                              "    }\n" +
+                              "}\n");
+    }
+    
+    @Test
+    public void testGreater() throws Exception {
+        HintTest.create()
+                .setCaretMarker('^')
+                .input("package test;\n" +
+                       "public class Test {\n" +
+                       "    public static void main(String[] args) {\n" +
+                       "        i^f (args.length > 5) {\n" +
+                       "            System.err.println(\"too many\");\n" +
+                       "        } else {\n" +
+                       "            System.err.println(\"too few\");\n" +
+                       "        }\n" +
+                       "    }\n" +
+                       "}\n")
+                .run(InvertIf.class)
+                .findWarning("3:9-3:9:verifier:" + Bundle.ERR_InvertIf())
+                .applyFix()
+                .assertCompilable()
+                .assertOutput("package test;\n" +
+                              "public class Test {\n" +
+                              "    public static void main(String[] args) {\n" +
+                              "        if (args.length <= 5) {\n" +
+                              "            System.err.println(\"too few\");\n" +
+                              "        } else {\n" +
+                              "            System.err.println(\"too many\");\n" +
+                              "        }\n" +
+                              "    }\n" +
+                              "}\n");
+    }
+    
+    @Test
+    public void testGreaterEq() throws Exception {
+        HintTest.create()
+                .setCaretMarker('^')
+                .input("package test;\n" +
+                       "public class Test {\n" +
+                       "    public static void main(String[] args) {\n" +
+                       "        i^f (args.length >= 5) {\n" +
+                       "            System.err.println(\"too many\");\n" +
+                       "        } else {\n" +
+                       "            System.err.println(\"too few\");\n" +
+                       "        }\n" +
+                       "    }\n" +
+                       "}\n")
+                .run(InvertIf.class)
+                .findWarning("3:9-3:9:verifier:" + Bundle.ERR_InvertIf())
+                .applyFix()
+                .assertCompilable()
+                .assertOutput("package test;\n" +
+                              "public class Test {\n" +
+                              "    public static void main(String[] args) {\n" +
+                              "        if (args.length < 5) {\n" +
+                              "            System.err.println(\"too few\");\n" +
+                              "        } else {\n" +
+                              "            System.err.println(\"too many\");\n" +
+                              "        }\n" +
+                              "    }\n" +
+                              "}\n");
+    }
 }

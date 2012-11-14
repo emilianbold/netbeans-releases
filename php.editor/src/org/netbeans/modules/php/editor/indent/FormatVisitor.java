@@ -57,7 +57,52 @@ import org.netbeans.modules.php.editor.indent.FormatToken.AssignmentAnchorToken;
 import org.netbeans.modules.php.editor.indent.TokenFormatter.DocumentOptions;
 import org.netbeans.modules.php.editor.lexer.LexUtilities;
 import org.netbeans.modules.php.editor.lexer.PHPTokenId;
-import org.netbeans.modules.php.editor.parser.astnodes.*;
+import org.netbeans.modules.php.editor.parser.astnodes.ASTError;
+import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
+import org.netbeans.modules.php.editor.parser.astnodes.ArrayCreation;
+import org.netbeans.modules.php.editor.parser.astnodes.ArrayElement;
+import org.netbeans.modules.php.editor.parser.astnodes.Assignment;
+import org.netbeans.modules.php.editor.parser.astnodes.Block;
+import org.netbeans.modules.php.editor.parser.astnodes.CastExpression;
+import org.netbeans.modules.php.editor.parser.astnodes.CatchClause;
+import org.netbeans.modules.php.editor.parser.astnodes.ClassDeclaration;
+import org.netbeans.modules.php.editor.parser.astnodes.ClassInstanceCreation;
+import org.netbeans.modules.php.editor.parser.astnodes.ConditionalExpression;
+import org.netbeans.modules.php.editor.parser.astnodes.ConstantDeclaration;
+import org.netbeans.modules.php.editor.parser.astnodes.DoStatement;
+import org.netbeans.modules.php.editor.parser.astnodes.Expression;
+import org.netbeans.modules.php.editor.parser.astnodes.ExpressionStatement;
+import org.netbeans.modules.php.editor.parser.astnodes.FieldAccess;
+import org.netbeans.modules.php.editor.parser.astnodes.FieldsDeclaration;
+import org.netbeans.modules.php.editor.parser.astnodes.ForEachStatement;
+import org.netbeans.modules.php.editor.parser.astnodes.ForStatement;
+import org.netbeans.modules.php.editor.parser.astnodes.FormalParameter;
+import org.netbeans.modules.php.editor.parser.astnodes.FunctionDeclaration;
+import org.netbeans.modules.php.editor.parser.astnodes.FunctionInvocation;
+import org.netbeans.modules.php.editor.parser.astnodes.IfStatement;
+import org.netbeans.modules.php.editor.parser.astnodes.InfixExpression;
+import org.netbeans.modules.php.editor.parser.astnodes.InterfaceDeclaration;
+import org.netbeans.modules.php.editor.parser.astnodes.MethodDeclaration;
+import org.netbeans.modules.php.editor.parser.astnodes.MethodInvocation;
+import org.netbeans.modules.php.editor.parser.astnodes.NamespaceDeclaration;
+import org.netbeans.modules.php.editor.parser.astnodes.Program;
+import org.netbeans.modules.php.editor.parser.astnodes.ReturnStatement;
+import org.netbeans.modules.php.editor.parser.astnodes.SingleFieldDeclaration;
+import org.netbeans.modules.php.editor.parser.astnodes.Statement;
+import org.netbeans.modules.php.editor.parser.astnodes.StaticMethodInvocation;
+import org.netbeans.modules.php.editor.parser.astnodes.SwitchCase;
+import org.netbeans.modules.php.editor.parser.astnodes.SwitchStatement;
+import org.netbeans.modules.php.editor.parser.astnodes.TraitConflictResolutionDeclaration;
+import org.netbeans.modules.php.editor.parser.astnodes.TraitDeclaration;
+import org.netbeans.modules.php.editor.parser.astnodes.TraitMethodAliasDeclaration;
+import org.netbeans.modules.php.editor.parser.astnodes.TryStatement;
+import org.netbeans.modules.php.editor.parser.astnodes.UseStatement;
+import org.netbeans.modules.php.editor.parser.astnodes.UseStatementPart;
+import org.netbeans.modules.php.editor.parser.astnodes.UseTraitStatement;
+import org.netbeans.modules.php.editor.parser.astnodes.UseTraitStatementPart;
+import org.netbeans.modules.php.editor.parser.astnodes.Variable;
+import org.netbeans.modules.php.editor.parser.astnodes.VariableBase;
+import org.netbeans.modules.php.editor.parser.astnodes.WhileStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.visitors.DefaultVisitor;
 import org.openide.util.Exceptions;
 
@@ -878,7 +923,9 @@ public class FormatVisitor extends DefaultVisitor {
         scan(node.getFunctionName());
         List<Expression> parameters = node.getParameters();
         if (parameters != null && parameters.size() > 0) {
-            boolean addIndentation = !(path.get(1) instanceof ReturnStatement || path.get(1) instanceof Assignment || (path.size() > 2 && path.get(1) instanceof MethodInvocation && path.get(2) instanceof Assignment));
+            boolean addIndentation = !(path.get(1) instanceof ReturnStatement
+                    || path.get(1) instanceof Assignment
+                    || (path.size() > 2 && path.get(1) instanceof MethodInvocation && path.get(2) instanceof Assignment));
             if (addIndentation) {
                 formatTokens.add(new FormatToken.IndentToken(node.getFunctionName().getEndOffset(), options.continualIndentSize));
             }
@@ -919,7 +966,8 @@ public class FormatVisitor extends DefaultVisitor {
         FormatToken.Kind whitespaceAfter = FormatToken.Kind.WHITESPACE_AFTER_BINARY_OP;
 
         if (node.getOperator() == InfixExpression.OperatorType.CONCAT) {
-            whitespaceBefore = whitespaceAfter = FormatToken.Kind.WHITESPACE_AROUND_CONCAT_OP;
+            whitespaceAfter = FormatToken.Kind.WHITESPACE_AROUND_CONCAT_OP;
+            whitespaceBefore = whitespaceAfter;
         }
 
         while (ts.moveNext() && ts.offset() < node.getRight().getStartOffset()
@@ -1280,23 +1328,21 @@ public class FormatVisitor extends DefaultVisitor {
     }
     private int lastIndex = -1;
 
-    private void showAssertionFor188809() {
-        boolean showAssertFor188809 = false;
-        assert showAssertFor188809 = true;
-        if (showAssertFor188809) {
-            try {
-                assert false : "The same token (index: " + ts.index() + " - " + ts.token().id() + ", format tokens: " + formatTokens.size() + ")  was precessed before.\nPlease report this to help fix issue 188809.\n\n" // sNOI18N
-                        + document.getText(0, document.getLength() - 1);
-            } catch (BadLocationException ex) {
-                Exceptions.printStackTrace(ex);
-            }
+    private String showAssertionFor188809() {
+        String result = "";
+        try {
+            result = "The same token (index: " + ts.index() + " - " + ts.token().id() + ", format tokens: " + formatTokens.size() //NOI18N
+                    + ")  was precessed before.\nPlease report this to help fix issue 188809.\n\n" //NOI18N
+                    + document.getText(0, document.getLength() - 1);
+        } catch (BadLocationException ex) {
+            Exceptions.printStackTrace(ex);
         }
-        assert false;
+        return result;
     }
 
     private void addFormatToken(List<FormatToken> tokens) {
         if (lastIndex == ts.index()) {
-            showAssertionFor188809();
+            assert false : showAssertionFor188809();
             ts.moveNext();
             return;
         }
@@ -1603,7 +1649,11 @@ public class FormatVisitor extends DefaultVisitor {
             result.add(new FormatToken(FormatToken.Kind.WHITESPACE_INDENT, tokenStartOffset, tokenText));
         } else {
             int tokenEndOffset = tokenStartOffset + ts.token().length();
-            if (GsfUtilities.isCodeTemplateEditing(document) && caretOffset > tokenStartOffset && caretOffset < tokenEndOffset && tokenStartOffset > startOffset && tokenEndOffset < endOffset) {
+            if (GsfUtilities.isCodeTemplateEditing(document)
+                    && caretOffset > tokenStartOffset
+                    && caretOffset < tokenEndOffset
+                    && tokenStartOffset > startOffset
+                    && tokenEndOffset < endOffset) {
                 int devideIndex = caretOffset - tokenStartOffset;
                 String firstTextPart = tokenText.substring(0, devideIndex);
                 result.add(new FormatToken(FormatToken.Kind.WHITESPACE, tokenStartOffset, firstTextPart));
@@ -1872,11 +1922,11 @@ public class FormatVisitor extends DefaultVisitor {
         groupAlignmentTokenHolders.push(new GroupAlignmentTokenHolderImpl());
     }
 
-    private static interface GroupAlignmentTokenHolder {
+    private interface GroupAlignmentTokenHolder {
 
-        public void setToken(FormatToken.AssignmentAnchorToken token);
+        void setToken(FormatToken.AssignmentAnchorToken token);
 
-        public FormatToken.AssignmentAnchorToken getToken();
+        FormatToken.AssignmentAnchorToken getToken();
     }
 
     private static class GroupAlignmentTokenHolderImpl implements GroupAlignmentTokenHolder {

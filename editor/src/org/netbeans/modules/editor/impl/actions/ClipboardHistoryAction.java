@@ -57,7 +57,7 @@ public final class ClipboardHistoryAction extends AbstractEditorAction {
 
     @Override
     public void actionPerformed(ActionEvent evt, JTextComponent target) {
-        if (target.isEditable()) {
+        if (target != null && target.isEditable()) {
             CompletionLayoutPopup.CompletionPopup completionPopup = CompletionLayoutPopup.CompletionPopup.getInstance();
             completionPopup.show(target, -1);
         }

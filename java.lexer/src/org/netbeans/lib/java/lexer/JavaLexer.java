@@ -356,6 +356,18 @@ public class JavaLexer implements Lexer<JavaTokenId> {
                                             : JavaTokenId.INT_LITERAL);
                             }
                         } // end of while(true)
+                    } else if (this.version >= 7 && (c == 'b' || c == 'B')) { // in binary literal
+                        while (true) {
+                            switch (input.read()) {
+                                case '0': case '1':
+                                    break;
+                                case 'l': case 'L':
+                                    return token(JavaTokenId.LONG_LITERAL);
+                                default:
+                                    input.backup(1);
+                                    return token(JavaTokenId.INT_LITERAL);
+                            }
+                        }
                     }
                     return finishNumberLiteral(c, false);
                     
