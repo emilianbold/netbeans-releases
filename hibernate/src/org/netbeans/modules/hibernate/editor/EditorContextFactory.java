@@ -53,15 +53,12 @@ import javax.swing.text.Document;
  * @author Rohan Ranade
  */
 public final class EditorContextFactory {
-    private static Map<Document, DocumentContext> contextCache = 
-            new WeakHashMap<Document, DocumentContext>();
+//    private static Map<Document, DocumentContext> contextCache = 
+//            new WeakHashMap<Document, DocumentContext>();
 
     public static DocumentContext getDocumentContext(Document document, int caretOffset) {
-        DocumentContext context = contextCache.get(document);
-        if(context == null) {
-            context = new DocumentContext(document);
-            contextCache.put(document, context);
-        }
+        //TODO, look if cache is useful and possible to iplemennt, see issue #221000
+        DocumentContext context = new DocumentContext(document);
         
         context.reset(caretOffset);
         

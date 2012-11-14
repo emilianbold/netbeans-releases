@@ -239,11 +239,15 @@ public class HtmlNavigatorPanelUI extends JPanel implements ExplorerManager.Prov
         inspectedFileObject = getInspectedFile(this.pageModel);
         inspectedFileChanged();
         
-        //refresh selection
-        if (pageModel != null) {
-            List nodes = translate(manager.getSelectedNodes());
-            pageModel.setSelectedNodes(nodes);
-        }
+        RP.post(new Runnable() {
+            public void run() {
+                //refresh selection
+                if (pageModel != null) {
+                    List nodes = translate(manager.getSelectedNodes());
+                    pageModel.setSelectedNodes(nodes);
+                }
+            }
+        });
     }
     
     private void inspectedFileChanged() {
