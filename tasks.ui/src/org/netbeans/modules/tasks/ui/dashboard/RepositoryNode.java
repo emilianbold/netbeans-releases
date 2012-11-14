@@ -69,7 +69,7 @@ import org.openide.util.NbBundle;
  *
  * @author jpeska
  */
-public class RepositoryNode extends AsynchronousNode<Collection<Query>> implements PropertyChangeListener, Comparable<RepositoryNode> {
+public class RepositoryNode extends AsynchronousNode<Collection<Query>> implements Comparable<RepositoryNode> {
 
     private final Repository repository;
     private List<QueryNode> queryNodes;
@@ -85,6 +85,7 @@ public class RepositoryNode extends AsynchronousNode<Collection<Query>> implemen
     private CloseRepositoryNodeAction closeRepositoryAction;
     private OpenRepositoryNodeAction openRepositoryAction;
     private Map<String, QueryNode> queryNodesMap;
+    private RepositoryListener repositoryListener;
 
     public RepositoryNode(Repository repository, boolean loaded) {
         this(repository, loaded, true);
@@ -96,7 +97,7 @@ public class RepositoryNode extends AsynchronousNode<Collection<Query>> implemen
         this.loaded = loaded;
         this.refresh = false;
         queryNodesMap = new HashMap<String, QueryNode>();
-        repository.addPropertyChangeListener(this);
+        repositoryListener = new RepositoryListener();
     }
 
     @Override
@@ -152,7 +153,7 @@ public class RepositoryNode extends AsynchronousNode<Collection<Query>> implemen
     @Override
     protected void dispose() {
         super.dispose();
-        getRepository().removePropertyChangeListener(this);
+        getRepository().removePropertyChangeListener(repositoryListener);
     }
 
     @Override
@@ -315,24 +316,6 @@ public class RepositoryNode extends AsynchronousNode<Collection<Query>> implemen
         return loaded;
     }
 
-    @Override
-    public void propertyChange(PropertyChangeEvent evt) {
-        if (evt.getPropertyName().equals(Repository.EVENT_QUERY_LIST_CHANGED)) {
-            updateContent();
-        } else if (evt.getPropertyName().equals(Repository.EVENT_ATTRIBUTES_CHANGED)) {
-            if (evt.getNewValue() instanceof Map) {
-                Map<String, String> attributes = (Map<String, String>) evt.getNewValue();
-                String displayName = attributes.get(Repository.ATTRIBUTE_DISPLAY_NAME);
-                if (displayName != null && !displayName.isEmpty()) {
-                    if (lblName != null) {
-                        lblName.setText(displayName);
-                        fireContentChanged();
-                    }
-                }
-            }
-        }
-    }
-
     void updateContent() {
         updateNodes();
         refreshChildren();
@@ -352,5 +335,30 @@ public class RepositoryNode extends AsynchronousNode<Collection<Query>> implemen
             setExpanded(true);
         }
         updateContent();
+    }
+
+    public void attachListener() {
+        repository.addPropertyChangeListener(repositoryListener);
+    }
+
+    private class RepositoryListener implements PropertyChangeListener {
+
+        @Override
+        public void propertyChange(PropertyChangeEvent evt) {
+            if (evt.getPropertyName().equals(Repository.EVENT_QUERY_LIST_CHANGED)) {
+                updateContent();
+            } else if (evt.getPropertyName().equals(Repository.EVENT_ATTRIBUTES_CHANGED)) {
+                if (evt.getNewValue() instanceof Map) {
+                    Map<String, String> attributes = (Map<String, String>) evt.getNewValue();
+                    String displayName = attributes.get(Repository.ATTRIBUTE_DISPLAY_NAME);
+                    if (displayName != null && !displayName.isEmpty()) {
+                        if (lblName != null) {
+                            lblName.setText(displayName);
+                            fireContentChanged();
+                        }
+                    }
+                }
+            }
+        }
     }
 }

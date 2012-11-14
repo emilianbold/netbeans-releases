@@ -1078,6 +1078,7 @@ public final class DashboardViewer implements PropertyChangeListener {
             for (RepositoryNode repositoryNode : repositoryNodes) {
                 if (isRepositoryInFilter(repositoryNode)) {
                     taskHits += repositoryNode.getFilterHits();
+                    repositoryNode.attachListener();
                     addRootToModel(index++, repositoryNode);
                 }
             }
