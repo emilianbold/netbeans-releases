@@ -421,7 +421,7 @@ public class JavaLexerBatchTest extends TestCase {
         assertFalse(ts.moveNext());
     }
 
-    public void testExoticIdentifiers() {
+    public void xtestExoticIdentifiers() {//Support for exotic identifiers has been removed 6999438
         String text = "a #\" \" #\"\\\"\"";
         InputAttributes attr = new InputAttributes();
         attr.setValue(JavaTokenId.language(), "version", Integer.valueOf(7), true);
@@ -445,4 +445,33 @@ public class JavaLexerBatchTest extends TestCase {
         LexerTestUtilities.assertNextTokenEquals(ts, JavaTokenId.STRING_LITERAL, "\" \"");
     }
 
+    public void testBinaryLiterals() {
+        String text = "0b101 0B101 0b101l 0b101L";
+        InputAttributes attr = new InputAttributes();
+        attr.setValue(JavaTokenId.language(), "version", Integer.valueOf(7), true);
+        TokenHierarchy<?> hi = TokenHierarchy.create(text, false, JavaTokenId.language(), EnumSet.of(JavaTokenId.WHITESPACE), attr);
+        TokenSequence<?> ts = hi.tokenSequence();
+
+        LexerTestUtilities.assertNextTokenEquals(ts, JavaTokenId.INT_LITERAL, "0b101");
+        LexerTestUtilities.assertNextTokenEquals(ts, JavaTokenId.INT_LITERAL, "0B101");
+        LexerTestUtilities.assertNextTokenEquals(ts, JavaTokenId.LONG_LITERAL, "0b101l");
+        LexerTestUtilities.assertNextTokenEquals(ts, JavaTokenId.LONG_LITERAL, "0b101L");
+    }
+
+    public void testNoBinaryLiterals() {
+        String text = "0b101 0B101 0b101l 0b101L";
+        InputAttributes attr = new InputAttributes();
+        attr.setValue(JavaTokenId.language(), "version", Integer.valueOf(5), true);
+        TokenHierarchy<?> hi = TokenHierarchy.create(text, false, JavaTokenId.language(), EnumSet.of(JavaTokenId.WHITESPACE), attr);
+        TokenSequence<?> ts = hi.tokenSequence();
+
+        LexerTestUtilities.assertNextTokenEquals(ts, JavaTokenId.INT_LITERAL, "0");
+        LexerTestUtilities.assertNextTokenEquals(ts, JavaTokenId.IDENTIFIER, "b101");
+        LexerTestUtilities.assertNextTokenEquals(ts, JavaTokenId.INT_LITERAL, "0");
+        LexerTestUtilities.assertNextTokenEquals(ts, JavaTokenId.IDENTIFIER, "B101");
+        LexerTestUtilities.assertNextTokenEquals(ts, JavaTokenId.INT_LITERAL, "0");
+        LexerTestUtilities.assertNextTokenEquals(ts, JavaTokenId.IDENTIFIER, "b101l");
+        LexerTestUtilities.assertNextTokenEquals(ts, JavaTokenId.INT_LITERAL, "0");
+        LexerTestUtilities.assertNextTokenEquals(ts, JavaTokenId.IDENTIFIER, "b101L");
+    }
 }
