@@ -166,12 +166,6 @@ public final class VCSFileProxy {
         return new VCSFileProxy(fileObject.getPath(), null);
     }
     
-    static VCSFileProxy createFileProxy(File file, boolean isDirectory) {
-        VCSFileProxy p = createFileProxy(file);
-        p.isDirectory = isDirectory;
-        return p;
-    }
-    
     /**
      * Determines this files path. Depending on its origin it will be either 
      * {@link FileObject#getPath()} or {@link File#getAbsoluteFile()}.

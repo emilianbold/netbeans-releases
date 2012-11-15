@@ -41,7 +41,6 @@
  */
 package org.netbeans.modules.versioning.core;
 
-import java.io.File;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.openide.filesystems.FileObject;
 
@@ -55,7 +54,6 @@ public abstract class APIAccessor {
     public abstract VCSFileProxy createFlatFileProxy(FileObject fo);
     public abstract boolean isFlat(VCSFileProxy file);
     public abstract VCSFileProxy createFileProxy(String path);
-    public abstract VCSFileProxy createFileProxy(File file, boolean isDirectory);
     public abstract VCSFileProxy createFileProxy(VCSFileProxy parent, String name, boolean isDirectory);
     public abstract boolean isLocalFile(VCSFileProxy file);
 }
