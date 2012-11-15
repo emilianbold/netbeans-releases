@@ -77,6 +77,7 @@ import org.netbeans.modules.cnd.makeproject.spi.configurations.PkgConfigManager.
 import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.modules.cnd.utils.MIMESupport;
+import org.netbeans.modules.cnd.utils.cache.CharSequenceUtils;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
@@ -127,7 +128,7 @@ public class LogReader {
     }
 
     private String convertPath(String path){
-        if (CndPathUtilitities.isPathAbsolute(path)) {
+        if (isPathAbsolute(path)) {
             String originalPath = path;
             String converted = alreadyConverted.get(path);
             if (converted != null) {
@@ -290,7 +291,6 @@ public class LogReader {
                             line = line.substring(0, line.length() - 1) + " " + oneMoreLine.trim(); //NOI18N
                         }
                         line = trimBackApostropheCalls(line, pkgConfig);
-
                         String[] cmds = pattern.split(line);
                         for (int i = 0; i < cmds.length; i++) {
                             if (parseLine(cmds[i].trim(), storage)){
@@ -751,6 +751,7 @@ public class LogReader {
 
     private static final String PKG_CONFIG_PATTERN = "pkg-config "; //NOI18N
     private static final String ECHO_PATTERN = "echo "; //NOI18N
+    private static final String CYGPATH_PATTERN = "cygpath "; //NOI18N
     /*package-local*/ static String trimBackApostropheCalls(String line, PkgConfig pkgConfig) {
         int i = line.indexOf('`'); //NOI18N
         if (line.lastIndexOf('`') == i) {  //NOI18N // do not trim unclosed `quotes`
@@ -798,6 +799,24 @@ public class LogReader {
                         out.append(" "); //NOI18N
                     }
                 }
+            } else if (pkg.startsWith(CYGPATH_PATTERN)) {
+                pkg = pkg.substring(CYGPATH_PATTERN.length());
+                int start = 0;
+                for(int i1 = 0; i1 < pkg.length(); i1++) {
+                    char c = pkg.charAt(i1);
+                    if (c == ' ' || c == '\t') {
+                        start = i1;
+                        if (i1 + 1 < pkg.length() && pkg.charAt(i1 + 1) != '-') {
+                            break;
+                        }
+                    }
+                }
+                pkg = pkg.substring(start).trim();
+                if (pkg.startsWith("'") && pkg.endsWith("'")) { //NOI18N
+                    out.append(pkg.substring(1, pkg.length()-1));
+                } else {
+                    out.append(pkg);
+                }
             } else if (pkg.startsWith(ECHO_PATTERN)) {
                 pkg = pkg.substring(ECHO_PATTERN.length());
                 if (pkg.startsWith("'") && pkg.endsWith("'")) { //NOI18N
@@ -842,8 +861,10 @@ public class LogReader {
                 continue;
             }
             String file;
-            if (what.startsWith("/")){  //NOI18N
+            boolean isRelative = true;
+            if (isPathAbsolute(what)){
                 what = convertWindowsRelativePath(what);
+                isRelative = false;
                 file = what;
             } else {
                 file = workingDir+"/"+what;  //NOI18N
@@ -869,6 +890,21 @@ public class LogReader {
                 result.add(new CommandLineSource(li, languageArtifacts, workingDir, what, userIncludesCached, userMacrosCached, undefinedMacros, storage));
                 continue;
             }
+            if (!isRelative) {
+                file = convertPath(what);
+                if (!file.equals(what)) {
+                    what = file;
+                    f = new File(file);
+                    if (f.exists() && f.isFile()) {
+                        if (DwarfSource.LOG.isLoggable(Level.FINE)) {
+                            DwarfSource.LOG.log(Level.FINE, "**** Gotcha: {0}", file);
+                        }
+                        result.add(new CommandLineSource(li, languageArtifacts, workingDir, what, userIncludesCached, userMacrosCached, undefinedMacros, storage));
+                        continue;
+                    }
+                }
+            }
+
             if (guessWorkingDir != null && !what.startsWith("/")) { //NOI18N
                 f = new File(guessWorkingDir+"/"+what);  //NOI18N
                 if (f.exists() && f.isFile()) {
@@ -907,6 +943,27 @@ public class LogReader {
                     DwarfSource.LOG.log(Level.FINE, "{0} [{1}]", new Object[]{line.length() > 120 ? line.substring(0,117) + ">>>" : line, what}); //NOI18N
                 }
             }
+        }
+    }
+    
+    //copy of CndPathUtilitities.isPathAbsolute(CharSequence)
+    // except checking on windows
+    private boolean isPathAbsolute(CharSequence path) {
+        if (path == null || path.length() == 0) {
+            return false;
+        } else if (path.charAt(0) == '/') {
+            return true;
+        } else if (path.charAt(0) == '\\') {
+            return true;
+        } else if (CharSequenceUtils.indexOf(path, ':') == 1) {
+            if (path.length()==2) {
+                return false;
+            } else if (path.charAt(2) == '\\' || path.charAt(2) == '/') {
+                return true;
+            }
+            return false;
+        } else {
+            return false;
         }
     }
 
