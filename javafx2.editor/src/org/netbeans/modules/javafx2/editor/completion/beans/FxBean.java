@@ -53,6 +53,7 @@ import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.ElementHandle;
+import org.netbeans.api.java.source.TypeMirrorHandle;
 
 /**
  * Provides a definition of a JavaFX bean. JavaFX bean features are used in
@@ -104,9 +105,14 @@ public final class FxBean extends FxDefinition {
     private Map<String, FxEvent>    events =  Collections.emptyMap();
 
     /**
-     * Names of factory methods
+     * Names of factory methods + types returned by the factories
      */
-    private Set<String> factoryNames = Collections.emptySet();
+    private Map<String, TypeMirrorHandle> factories = Collections.emptyMap();
+    
+    /**
+     * Constants declared at the bean
+     */
+    private Set<String> constants = Collections.emptySet();
 
     /**
      * Definition of the superclass' bean
@@ -132,6 +138,8 @@ public final class FxBean extends FxDefinition {
      * The class supports j.u.Map interface
      */
     private boolean map;
+    
+    private boolean collection;
     
     /**
      * Provides the default {@link FxBeanProvider} instance for the given {@link CompilationInfo}.
@@ -193,11 +201,15 @@ public final class FxBean extends FxDefinition {
      */
     @NonNull
     public Set<String> getFactoryNames() {
-        return Collections.unmodifiableSet(factoryNames);
+        return Collections.unmodifiableSet(factories.keySet());
+    }
+    
+    public TypeMirrorHandle getFactoryType(String fName) {
+        return factories.get(fName);
     }
 
-    void setFactoryNames(Set<String> factoryNames) {
-        this.factoryNames = factoryNames;
+    void setFactories(Map<String, TypeMirrorHandle> factories) {
+        this.factories = factories;
     }
     
     void setBuilder(FxBean builder) {
@@ -218,6 +230,14 @@ public final class FxBean extends FxDefinition {
     
     void makeMap() {
         this.map = true;
+    }
+    
+    void makeCollection() {
+        this.collection = true;
+    }
+    
+    public boolean isCollection() {
+        return collection;
     }
     
     public boolean isMap() {
@@ -415,6 +435,10 @@ public final class FxBean extends FxDefinition {
         this.superclassInfo = parent;
     }
     
+    void setConstants(Set<String> constants) {
+        this.constants = constants;
+    }
+    
     /**
      * Provides FxBean instance for the superclass.
      * Returns {@code null} for no superclass or j.l.Object, which does
@@ -425,6 +449,15 @@ public final class FxBean extends FxDefinition {
     @CheckForNull
     public FxBean getSuperclassInfo() {
         return superclassInfo;
+    }
+
+    /**
+     * Provides constant names for this Bean
+     * 
+     * @return 
+     */
+    public Set<String> getConstants() {
+        return Collections.unmodifiableSet(constants);
     }
     
     public String toString() {
@@ -478,6 +511,12 @@ public final class FxBean extends FxDefinition {
     void merge(FxBean superBi) {
         if (superBi == null) {
             return;
+        }
+        if (superBi.isMap()) {
+            makeMap();
+        }
+        if (superBi.isCollection()) {
+            makeCollection();
         }
         if (attachedProperties.isEmpty() && !superBi.getAttachedProperties().isEmpty()) {
             attachedProperties = new HashMap<String, FxProperty>(superBi.getAttachedProperties());

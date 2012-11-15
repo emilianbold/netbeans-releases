@@ -364,7 +364,13 @@ public final class CompletionSupport implements DocumentListener {
         for (CsmFunction m : methodList) {
             // Use constructor conversion to allow to use it too for the constructors
             CsmParameter[] methodParms = m.getParameters().toArray(new CsmParameter[m.getParameters().size()]);
-            if (methodParms.length == parmTypeCnt || (acceptMoreParameters && methodParms.length >= parmTypeCnt)) {
+            int minParamLenght = 0;
+            for (CsmParameter parameter : methodParms) {
+                if(parameter.getInitialValue() == null) {
+                    minParamLenght++;
+                }
+            }
+            if ((methodParms.length >= parmTypeCnt && minParamLenght <= parmTypeCnt) || (acceptMoreParameters && methodParms.length >= parmTypeCnt)) {
                 boolean accept = true;
                 boolean bestMatch = !acceptMoreParameters;
                 int matched = 0;

@@ -236,8 +236,7 @@ public class BasicInfoVisualPanel extends NewTemplateVisualPanel
             setInfo(NbBundle.getMessage(
                     BasicInfoVisualPanel.class, "MSG_NameCannotBeEmpty"), false);//NOI18N
         } else if (!nameValid.matcher(getNameValue()).matches()) {
-            setInfo(MSG_NameCannotBeInvalid(
-                    getNameValue()), false);
+            setError(MSG_NameCannotBeInvalid(getNameValue()));
         } else if ("".equals(getLocationValue())) {
             setInfo(NbBundle.getMessage(
                     BasicInfoVisualPanel.class, "MSG_LocationCannotBeEmpty"), false);//NOI18N

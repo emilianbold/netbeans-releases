@@ -228,7 +228,7 @@ public abstract class SourceAbstractDataLoader extends UniFileLoader {
 
             EditorKit kit = createEditorKit(mime);
             final Document doc = kit.createDefaultDocument();
-            doc.putProperty("mimeType", mime); //NOI18N
+            doc.putProperty(BaseDocument.MIME_TYPE_PROP, mime);
 
             String lsType = (String)doc.getProperty(DefaultEditorKit.EndOfLineStringProperty);
             if (lsType == null) {

@@ -164,4 +164,111 @@ public class JavaCompletionProvider15FeaturesTest extends CompletionTestBase {
         performTest("Generics", 78, null, "extendsAndImplementsKeywords.pass");
     }
 
+    public void testEmptyFileBeforeTypingFirstMethodTypeParam() throws Exception {
+        performTest("MethodStart", 40, "public <", "empty.pass");
+    }
+
+    public void testBeforeTypingFirstMethodTypeParam() throws Exception {
+        performTest("GenericsMethodNoTypeParams", 47, "<", "empty.pass");
+    }
+    
+    public void testBeforeFirstMethodTypeParam() throws Exception {
+        performTest("GenericsMethod", 48, null, "empty.pass");
+    }
+    
+    public void testEmptyFileTypingFirstMethodTypeParam() throws Exception {
+        performTest("MethodStart", 40, "public <X", "empty.pass");
+    }
+    
+    public void testTypingFirstMethodTypeParam() throws Exception {
+        performTest("GenericsMethodNoTypeParams", 47, "<X", "empty.pass");
+    }
+    
+    public void testOnFirstMethodTypeParam() throws Exception {
+        performTest("GenericsMethod", 49, null, "empty.pass");
+    }
+
+    public void testEmptyFileAfterTypingFirstMethodTypeParamAndSpace() throws Exception {
+        performTest("MethodStart", 40, "public <X ", "extendsKeyword.pass");
+    }
+    
+    public void testAfterTypingFirstMethodTypeParamAndSpace() throws Exception {
+        performTest("GenericsMethodNoTypeParams", 47, "<X ", "extendsKeyword.pass");
+    }
+    
+    public void testAfterFirstMethodTypeParamAndSpace() throws Exception {
+        performTest("GenericsMethod", 50, null, "extendsKeyword.pass");
+    }
+
+    public void testEmptyFileTypingExtendsInFirstMethodTypeParam() throws Exception {
+        performTest("MethodStart", 40, "public <X e", "extendsKeyword.pass");
+    }
+    
+    public void testTypingExtendsInFirstMethodTypeParam() throws Exception {
+        performTest("GenericsMethodNoTypeParams", 47, "<X e", "extendsKeyword.pass");
+    }
+    
+    public void testOnExtendsInFirstMethodTypeParam() throws Exception {
+        performTest("GenericsMethod", 51, null, "extendsKeyword.pass");
+    }
+
+    public void testEmptyFileAfterTypingExtendsInFirstMethodTypeParam() throws Exception {
+        performTest("MethodStart", 40, "public <X extends", "extendsKeyword.pass");
+    }
+    
+    public void testAfterTypingExtendsInFirstMethodTypeParam() throws Exception {
+        performTest("GenericsMethodNoTypeParams", 47, "<X extends", "extendsKeyword.pass");
+    }
+    
+    public void testAfterExtendsInFirstMethodTypeParam() throws Exception {
+        performTest("GenericsMethod", 57, null, "extendsKeyword.pass");
+    }
+
+    public void testEmptyFileAfterTypingExtendsAndSpaceInFirstMethodTypeParam() throws Exception {
+        performTest("MethodStart", 40, "public <X extends ", "javaLangContentAndTestClass.pass");
+    }
+    
+    public void testAfterTypingExtendsAndSpaceInFirstMethodTypeParam() throws Exception {
+        performTest("GenericsMethodNoTypeParams", 47, "<X extends ", "javaLangContentAndTestClass.pass");
+    }
+    
+    public void testAfterExtendsAndSpaceInFirstMethodTypeParam() throws Exception {
+        performTest("GenericsMethod", 58, null, "javaLangContentAndTestClass.pass");
+    }
+
+    public void testEmptyFileAfterTypingBoundedFirstMethodTypeParamAndSpace() throws Exception {
+        performTest("MethodStart", 40, "public <X extends Number ", "empty.pass");
+    }
+    
+    public void testAfterTypingBoundedFirstMethodTypeParamAndSpace() throws Exception {
+        performTest("GenericsMethodNoTypeParams", 47, "<X extends Number ", "empty.pass");
+    }
+    
+    public void testAfterBoundedFirstMethodTypeParamAndSpace() throws Exception {
+        performTest("Generics", 64, " ", "empty.pass");
+    }
+    
+    public void testEmptyFileAfterTypingFirstMethodTypeParam() throws Exception {
+        performTest("MethodStart", 40, "public <X extends Number,", "empty.pass");
+    }
+    
+    public void testAfterTypingFirstMethodTypeParam() throws Exception {
+        performTest("GenericsMethodNoTypeParams", 47, "<X extends Number,", "empty.pass");
+    }
+    
+    public void testAfterFirstMethodTypeParam() throws Exception {
+        performTest("GenericsMethod", 65, null, "empty.pass");
+    }
+    
+    public void testEmptyFileAfterTypingMethodTypeParams() throws Exception {
+        performTest("MethodStart", 40, "public <X extends Number, Y extends RuntimeException>", "returnTypes.pass");
+    }
+    
+    public void testAfterTypingMethodTypeParams() throws Exception {
+        performTest("GenericsMethodNoTypeParams", 47, "<X extends Number, Y extends RuntimeException>", "returnTypes.pass");
+    }
+    
+    public void testAfterMethodTypeParams() throws Exception {
+        performTest("GenericsMethod", 93, null, "returnTypes.pass");
+    }
 }

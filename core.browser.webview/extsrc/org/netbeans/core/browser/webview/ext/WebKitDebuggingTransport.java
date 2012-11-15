@@ -93,7 +93,9 @@ public class WebKitDebuggingTransport implements TransportImplementation {
         Platform.runLater(new Runnable() {
             @Override
             public void run() {
-                debugger.setEnabled(false);
+                if (debugger != null) {
+                    debugger.setEnabled(false);
+                }
             }
         });
         return true;

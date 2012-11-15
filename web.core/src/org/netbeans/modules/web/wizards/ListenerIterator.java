@@ -75,6 +75,7 @@ import org.netbeans.modules.j2ee.dd.api.web.Listener;
 import org.netbeans.modules.j2ee.dd.api.web.WebApp;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.spi.java.project.support.ui.templates.JavaTemplates;
+import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.TemplateWizard;
@@ -147,7 +148,11 @@ public class ListenerIterator implements TemplateWizard.AsynchronousInstantiatin
                 if (webAppFo == null) {
                     WebModule wm = WebModule.getWebModule(folder);
                     if (wm != null) {
-                        webAppFo = DDHelper.createWebXml(wm.getJ2eeProfile(), wm.getWebInf());
+                        FileObject webInfFolder = wm.getWebInf();
+                        if (webInfFolder == null) {
+                            webInfFolder = FileUtil.createFolder(folder, "WEB-INF"); //NOI18N
+                        }
+                        webAppFo = DDHelper.createWebXml(wm.getJ2eeProfile(), webInfFolder);
                     }
                 }
                 WebApp webApp=null;

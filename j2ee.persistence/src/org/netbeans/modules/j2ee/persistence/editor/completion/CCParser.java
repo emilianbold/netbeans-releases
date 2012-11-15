@@ -361,7 +361,6 @@ public class CCParser {
             NNAttr prevnn = null;
             for(NNAttr nnattr : getAttributesList()) {
                 if(nnattr.getValueOffset() >= offset) {
-                    prevnn = nnattr;
                     break;
                 }
                 prevnn = nnattr;

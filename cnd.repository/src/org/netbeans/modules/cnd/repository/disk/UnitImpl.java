@@ -54,6 +54,7 @@ import org.netbeans.modules.cnd.repository.sfs.FileStorage;
 import org.netbeans.modules.cnd.repository.spi.DatabaseStorage;
 import org.netbeans.modules.cnd.repository.spi.DatabaseStorage.Provider;
 import org.netbeans.modules.cnd.repository.spi.Key;
+import org.netbeans.modules.cnd.repository.spi.Key.Behavior;
 import org.netbeans.modules.cnd.repository.spi.Persistent;
 import org.netbeans.modules.cnd.repository.util.Pair;
 import org.netbeans.modules.cnd.utils.CndUtils;
@@ -236,6 +237,13 @@ public final class UnitImpl implements Unit {
     @Override
     public void debugDistribution() {
         cache.printDistribution();
+    }
+
+    @Override
+    public void debugDump(Key key) {
+        assert key != null;
+        System.err.printf("\n== Unit debug dump for key %s. Unit name: \"%s\" unit id: %d  \n", key, unitName, id); //NOI18N
+        getDiskStorage(key).debugDump(key);
     }
 
     private static void traceKey(String msg, Key key) {

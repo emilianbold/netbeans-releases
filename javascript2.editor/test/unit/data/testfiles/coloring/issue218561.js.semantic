@@ -1,6 +1,6 @@
 
 |>GLOBAL:Core<|.test(function() {
-    var |>CLASS:test<| = {
+    var |>CLASS,UNUSED:test<| = {
         /**
          *
          * @param {String} par1

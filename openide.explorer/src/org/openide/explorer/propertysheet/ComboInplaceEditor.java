@@ -47,16 +47,10 @@ import java.awt.*;
 import java.awt.event.*;
 import java.beans.PropertyEditor;
 import java.util.concurrent.atomic.AtomicReference;
-import javax.accessibility.Accessible;
 import javax.swing.*;
 import javax.swing.event.AncestorListener;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
 import javax.swing.plaf.ComboBoxUI;
-import javax.swing.plaf.basic.ComboPopup;
 import javax.swing.plaf.metal.MetalLookAndFeel;
-import javax.swing.text.BadLocationException;
-import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import org.openide.explorer.propertysheet.editors.EnhancedPropertyEditor;
 
@@ -95,8 +89,7 @@ class ComboInplaceEditor extends JComboBox implements InplaceEditor, FocusListen
     private boolean needLayout = false;
 
     private boolean suppressFireActionEvent = false;
-    private boolean ignoreSelectionEvents = false;
-    final boolean isAutoComplete;
+    private final boolean isAutoComplete;
     private boolean strictAutoCompleteMatching;
     
     /** Create a ComboInplaceEditor - the tableUI flag will tell it to use
@@ -122,14 +115,11 @@ class ComboInplaceEditor extends JComboBox implements InplaceEditor, FocusListen
         
         originalRenderer = getRenderer();
 
-        ComboBoxEditor comboEditor = getEditor();
-        if( comboEditor.getEditorComponent() instanceof JTextComponent ) {
-            JTextComponent textEditor = ( JTextComponent ) comboEditor.getEditorComponent();
-            isAutoComplete = true;
-            Document doc = textEditor.getDocument();
-            doc.addDocumentListener( new AutoComleteListener() );
-        } else {
-            isAutoComplete = false;
+        isAutoComplete = ComboBoxAutoCompleteSupport.install( this );
+        String lafId = UIManager.getLookAndFeel().getID();
+        if ("Aqua".equals(lafId) || "Metal".equals(lafId) ) { //NOI18N
+            //#220163
+            UIManager.put("PopupMenu.consumeEventOnClose", Boolean.TRUE); //NOI18N
         }
     }
 
@@ -321,7 +311,7 @@ class ComboInplaceEditor extends JComboBox implements InplaceEditor, FocusListen
             if( isAutoComplete ) {
                 Object editorItem = getEditor().getItem();
                 if( null != editorItem ) {
-                    int selItem = findMatch( editorItem.toString() );
+                    int selItem = ComboBoxAutoCompleteSupport.findMatch( this, editorItem.toString() );
                     if( selItem >= 0 && selItem < getItemCount() )
                         return getItemAt( selItem );
                     if( strictAutoCompleteMatching )
@@ -515,9 +505,9 @@ class ComboInplaceEditor extends JComboBox implements InplaceEditor, FocusListen
 
     @Override
     public void setValue(Object o) {
-        ignoreSelectionEvents = true;
+        ComboBoxAutoCompleteSupport.setIgnoreSelectionEvents( this, true );
         setSelectedItem(o);
-        ignoreSelectionEvents = false;
+        ComboBoxAutoCompleteSupport.setIgnoreSelectionEvents( this, false );
     }
 
     /** Returns true if the combo box is editable */
@@ -591,7 +581,7 @@ class ComboInplaceEditor extends JComboBox implements InplaceEditor, FocusListen
             }
         }
     }
-
+    
     /** Overridden to fire COMMAND_FAILURE on Escape */
     @Override
     public void processKeyEvent(KeyEvent ke) {
@@ -719,93 +709,4 @@ class ComboInplaceEditor extends JComboBox implements InplaceEditor, FocusListen
             }
         }
     }
-
-    private class AutoComleteListener implements DocumentListener {
-
-        @Override
-        public void insertUpdate( DocumentEvent e ) {
-            matchSelection( e );
         }
-
-        @Override
-        public void removeUpdate( DocumentEvent e ) {
-            matchSelection( e );
-        }
-
-        @Override
-        public void changedUpdate( DocumentEvent e ) {
-            matchSelection( e );
-        }
-    }
-
-    private void matchSelection( DocumentEvent e ) {
-        if( ignoreSelectionEvents || connecting )
-            return;
-        try {
-            ignoreSelectionEvents = true;
-            if( !isDisplayable() )
-                return;
-            String editorText;
-            try {
-                editorText = e.getDocument().getText( 0, e.getDocument().getLength() );
-            } catch( BadLocationException ex ) {
-                //ignore
-                return;
-            }
-
-            if( null != getSelectedItem() && getSelectedItem().toString().equals(editorText) )
-                return;
-
-            if( !isPopupVisible() ) {
-                showPopup();
-            }
-
-            JList list = getPopupList();
-            if( null == list )
-                return;
-
-            int matchIndex = findMatch( editorText );
-
-            if( matchIndex >= 0 ) {
-                list.setSelectedIndex( matchIndex );
-                Rectangle rect = list.getCellBounds(matchIndex, matchIndex);
-                if( null != rect )
-                    list.scrollRectToVisible( rect );
-            } else {
-                list.clearSelection();
-                list.scrollRectToVisible( new Rectangle( 1, 1 ) );
-            }
-        } finally {
-            ignoreSelectionEvents = false;
-        }
-    }
-
-    private int findMatch( String editorText ) {
-        if( null == editorText || editorText.isEmpty() )
-            return -1;
-        
-        for( int i=0; i<getItemCount(); i++ ) {
-            String item = getItemAt( i ).toString();
-            if( item.toLowerCase().compareTo( editorText ) == 0 ) {
-                return i;
-            }
-        }
-
-        for( int i=0; i<getItemCount(); i++ ) {
-            String item = getItemAt( i ).toString();
-            if( item.toLowerCase().startsWith( editorText ) ) {
-                return i;
-            }
-        }
-        return -1;
-    }
-
-    private JList getPopupList() {
-        Accessible a = getUI().getAccessibleChild(this, 0);
-
-        if( a instanceof ComboPopup ) {
-            return ((ComboPopup) a).getList();
-        }
-        return null;
-    }
-}

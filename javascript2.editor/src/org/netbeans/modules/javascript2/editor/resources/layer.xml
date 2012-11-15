@@ -8,7 +8,9 @@
         <folder name="text">
             <folder name="javascript">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.javascript2.editor.resources.Bundle"/>
-
+                <file name="org-netbeans-modules-javascript2-editor-index-JsIndexer$Factory.instance">
+                    <attr name="instanceOf" stringvalue="org.netbeans.modules.parsing.spi.indexing.EmbeddingIndexerFactory"/>
+                </file>
                 <!-- colors -->
                 <folder name="FontsColors">
                     <folder name="NetBeans">

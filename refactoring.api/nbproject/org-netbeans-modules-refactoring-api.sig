@@ -1,5 +1,5 @@
 #Signature file v4.1
-#Version 1.26.1
+#Version 1.28.2
 
 CLSS public abstract interface java.io.Serializable
 
@@ -231,10 +231,11 @@ meth public static org.netbeans.modules.refactoring.api.RefactoringSession creat
  anno 1 org.netbeans.api.annotations.common.NonNull()
 meth public void addProgressListener(org.netbeans.modules.refactoring.api.ProgressListener)
  anno 1 org.netbeans.api.annotations.common.NonNull()
+meth public void finished()
 meth public void removeProgressListener(org.netbeans.modules.refactoring.api.ProgressListener)
  anno 1 org.netbeans.api.annotations.common.NonNull()
 supr java.lang.Object
-hfds bag,description,finished,internalList,prepareStarted,progressSupport,realcommit,refactoringElements,undoManager
+hfds bag,description,finished,internalList,progressSupport,realcommit,refactoringElements,undoManager
 hcls ElementsCollection
 
 CLSS public final org.netbeans.modules.refactoring.api.RenameRefactoring

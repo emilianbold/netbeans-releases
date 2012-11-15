@@ -570,6 +570,7 @@ public class VersioningManager implements PropertyChangeListener, ChangeListener
     public void versionedRootsChanged(VersioningSystem owner) {
         flushFileOwnerCache();
         fireFileStatusChanged(null);
+        refreshAllAnnotations();
     }
     
     @Override

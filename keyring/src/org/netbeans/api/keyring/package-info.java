@@ -59,7 +59,7 @@
  * stored passwords using a single master password, as in e.g. Firefox. The user must
  * pick a master password, then enter it once per session if the keyring is accessed.
  * Java's {@code PBEWithSHA1AndDESede} algorithm (SHA-1 / 3-DES) is used to encrypt
- * passwords. It creates a random salt for the user using {@link java.util.UUID#randomUUID}.
+ * passwords. It creates a random salt for the user using {@link java.security.SecureRandom}.
  * In addition to the passwords you ask to save, a sample string is saved to
  * verify that an entered master password is correct: the sample must be
  * decryptable and the decrypted value must begin with a magic sequence (the

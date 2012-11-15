@@ -95,6 +95,11 @@ public class VariableRefactoringElement extends RefactoringElement {
         return variableName + " : " + variableType.getNameWithoutPackage(); // NOI18N
     }
 
+    @Override
+    public String getName() {
+        return getVariableName();
+    }
+
     public String getVariableName() {
         return variableName;
     }

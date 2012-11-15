@@ -186,7 +186,25 @@ public class HistoryDiffView implements PropertyChangeListener {
 
     private VCSFileProxy getFile(Node node, HistoryEntry entry) {
         Collection<? extends VCSFileProxy> proxies = node.getLookup().lookupAll(VCSFileProxy.class);
-        return proxies != null && proxies.size() == 1 ? proxies.iterator().next() : entry.getFiles()[0];
+        if(proxies != null && proxies.size() == 1) {
+            return proxies.iterator().next();
+        } else {
+            VCSFileProxy[] files = entry.getFiles();
+            // HACK ensure that for form files .java is returned as default
+            if(files.length == 2) {
+                if((files[0].getName().endsWith(".java") &&                     // NOI18N
+                    files[1].getName().endsWith(".form")))                      // NOI18N
+                {
+                    return files[0];
+                }
+                if((files[1].getName().endsWith(".java") &&                     // NOI18N
+                    files[0].getName().endsWith(".form")))                      // NOI18N
+                {
+                    return files[1];
+                }
+            } 
+            return files[0];
+        }
     }
 
     private boolean onSelectionLastDifference = false;
@@ -657,7 +675,10 @@ public class HistoryDiffView implements PropertyChangeListener {
             private JLabel label = new JLabel();
             private Component progressComponent;
             private ProgressHandle handle;
-            private final Timer timer = new Timer(0, this);;
+            
+            private final Timer timer = new Timer(0, this);
+            private final Object TIMER_LOCK = new Object();
+            
             public PreparingDiffHandler() {
                 label.setText(NbBundle.getMessage(HistoryDiffView.class, "LBL_PreparingDiff")); // NOI18N
                 this.setBackground(UIManager.getColor("TextArea.background")); // NOI18N
@@ -674,7 +695,7 @@ public class HistoryDiffView implements PropertyChangeListener {
                 if(isCancelled()) {
                     return;
                 }
-                synchronized(timer) {
+                synchronized(TIMER_LOCK) {
                     handle = ProgressHandleFactory.createHandle(NbBundle.getMessage(HistoryDiffView.class, "LBL_PreparingDiff")); // NOI18N
                     setProgressComponent(ProgressHandleFactory.createProgressComponent(handle));
                     handle.start();
@@ -685,14 +706,14 @@ public class HistoryDiffView implements PropertyChangeListener {
 
             void startPrepareProgress() {
                 History.LOG.fine("starting prepare diff handler"); // NOI18N
-                synchronized(timer) {
+                synchronized(TIMER_LOCK) {
                     timer.start();
                 }
             }
 
             void finishPrepareProgress() {
                 History.LOG.fine("finishing prepare diff handler"); // NOI18N
-                synchronized(timer) {
+                synchronized(TIMER_LOCK) {
                     timer.stop();
                     if(handle != null) {
                         handle.finish();

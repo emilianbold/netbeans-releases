@@ -51,6 +51,7 @@ import java.nio.charset.Charset;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import javax.swing.SwingUtilities;
 import javax.swing.event.HyperlinkEvent;
 import javax.swing.event.HyperlinkListener;
 import org.netbeans.api.extexecution.ExternalProcessBuilder;
@@ -109,18 +110,26 @@ class ChromeInfoPanel extends javax.swing.JPanel {
                     URL url = e.getURL();
                     if (url.getProtocol().equals("file")) { // NOI18N
                         // first, try java api
-                        Desktop desktop = Desktop.getDesktop();
-                        if (desktop.isSupported(Desktop.Action.OPEN)) {
-                            try {
+                        try {
+                            Desktop desktop = Desktop.getDesktop();
+                            if (desktop.isSupported(Desktop.Action.OPEN)) {
                                 desktop.open(Utilities.toFile(url.toURI()));
-                            } catch (IOException ex) {
-                                LOGGER.log(Level.FINE, null, ex);
-                                openNativeFileManager(url);
-                            } catch (URISyntaxException ex) {
-                                LOGGER.log(Level.WARNING, null, ex);
+                            }
+                            else {
                                 openNativeFileManager(url);
                             }
-                        } else {
+                        }
+                        catch (IOException ex) {
+                            LOGGER.log(Level.FINE, null, ex);
+                            openNativeFileManager(url);
+                        }
+                        // Fix for BZ#218782 - UnsupportedOperationException: Desktop API is not supported on the current platform
+                        catch (UnsupportedOperationException ex) {
+                            LOGGER.log(Level.FINE, null, ex);
+                            openNativeFileManager(url);
+                        }
+                        catch (URISyntaxException ex) {
+                            LOGGER.log(Level.WARNING, null, ex);
                             openNativeFileManager(url);
                         }
                     } else {
@@ -145,7 +154,7 @@ class ChromeInfoPanel extends javax.swing.JPanel {
                             .redirectErrorStream(true)
                             .call();
                     InputReaderTask task = InputReaderTask.newTask(InputReaders.forStream(process.getInputStream(), Charset.defaultCharset()), null);
-                    RequestProcessor.getDefault().post(task);
+                    getRequestProcessor().post(task);
                 } catch (URISyntaxException ex) {
                     LOGGER.log(Level.WARNING, null, ex);
                 } catch (IOException ex) {
@@ -154,6 +163,14 @@ class ChromeInfoPanel extends javax.swing.JPanel {
             }
         };
         myEditorPane.addHyperlinkListener(listener);
+    }
+    
+    private RequestProcessor getRequestProcessor(){
+        assert SwingUtilities.isEventDispatchThread();
+        if ( myProcessor == null ){
+            myProcessor = new RequestProcessor(ChromeInfoPanel.class);
+        }
+        return myProcessor;
     }
 
     /**
@@ -194,4 +211,6 @@ class ChromeInfoPanel extends javax.swing.JPanel {
     private javax.swing.JEditorPane myEditorPane;
     private javax.swing.JScrollPane myScrollPane;
     // End of variables declaration//GEN-END:variables
+    
+    private RequestProcessor myProcessor;
 }

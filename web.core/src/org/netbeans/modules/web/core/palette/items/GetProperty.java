@@ -153,9 +153,10 @@ public class GetProperty implements ActiveEditorDrop {
             res.add(new BeanDescr(id, fqcn));
         }
         PageInfo.BeanData[] bd = JspPaletteUtilities.getAllBeans(targetComponent);
-        for (int i = 0; i < bd.length; i++) {
-            BeanData beanData = bd[i];
-            res.add(new BeanDescr(beanData.getId(), beanData.getClassName()));
+        if (bd != null) {
+            for (BeanData beanData : bd) {
+                res.add(new BeanDescr(beanData.getId(), beanData.getClassName()));
+            }
         }
 
         return res;

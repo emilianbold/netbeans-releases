@@ -264,26 +264,28 @@ class TooltipWindow implements AWTEventListener, MouseMotionListener, MouseListe
                 doc.insertString(doc.getLength(), annotateLine.getRevision() + " - ", normalStyle);
                 
                 // author
-                String author = annotateLine.getAuthor();
-                StyledDocumentHyperlink l = linkerSupport.getLinker(AuthorLinker.class, 0);
-                if(master.isKenai()) {
-                    KenaiUser kenaiUser = master.getKenaiUser(author);
-                    if(kenaiUser != null) {
-                        l = new AuthorLinker(
-                                kenaiUser,
-                                authorStyle,
-                                doc,
-                                author, 
-                                KenaiUser.getChatLink(
+                {
+                    String author = annotateLine.getAuthor();
+                    StyledDocumentHyperlink l = linkerSupport.getLinker(AuthorLinker.class, 0);
+                    if (master.isKenai()) {
+                        KenaiUser kenaiUser = master.getKenaiUser(author);
+                        if (kenaiUser != null) {
+                            l = new AuthorLinker(
+                                    kenaiUser,
+                                    authorStyle,
+                                    doc,
+                                    author,
+                                    KenaiUser.getChatLink(
                                     master.getCurrentFileObject(),
                                     annotateLine.getLineNum()));
-                        linkerSupport.add(l, 0);
-                    }                    
-                }
-                if(l != null) {
-                    l.insertString(doc, authorStyle);
-                } else {
-                    doc.insertString(doc.getLength(), author, normalStyle);
+                            linkerSupport.add(l, 0);
+                        }
+                    }
+                    if (l != null) {
+                        l.insertString(doc, authorStyle);
+                    } else {
+                        doc.insertString(doc.getLength(), author, normalStyle);
+                    }
                 }
 
                 // date
@@ -292,19 +294,22 @@ class TooltipWindow implements AWTEventListener, MouseMotionListener, MouseListe
                 doc.insertString(doc.getLength(), "\n", normalStyle);
                 
                 // commit msg
-                String commitMessage = annotateLine.getCommitMessage();
-                List<VCSHyperlinkProvider> providers = Subversion.getInstance().getHyperlinkProviders();
-                for (VCSHyperlinkProvider hp : providers) {
-                    l = IssueLinker.create(hp, hyperlinkStyle, master.getFile(), doc, commitMessage);
-                    if (l != null) {
-                        linkerSupport.add(l, 0);
-                        break;
+                {
+                    StyledDocumentHyperlink l = null;
+                    String commitMessage = annotateLine.getCommitMessage();
+                    List<VCSHyperlinkProvider> providers = Subversion.getInstance().getHyperlinkProviders();
+                    for (VCSHyperlinkProvider hp : providers) {
+                        l = IssueLinker.create(hp, hyperlinkStyle, master.getFile(), doc, commitMessage);
+                        if (l != null) {
+                            linkerSupport.add(l, 0);
+                            break;
+                        }
                     }
-                }
-                if(l != null) {
-                    l.insertString(doc, normalStyle);
-                } else {
-                    doc.insertString(doc.getLength(), commitMessage, normalStyle);
+                    if (l != null) {
+                        l.insertString(doc, normalStyle);
+                    } else {
+                        doc.insertString(doc.getLength(), commitMessage, normalStyle);
+                    }
                 }
                 
                 textPane.setDocument(doc);

@@ -129,6 +129,14 @@ public class JsCommentGeneratorTest extends JsTestBase {
         insertBreak(getOriginalContent(), getExpectedContent());
     }
 
+    public void testIssue222094_1() throws Exception {
+        insertBreak(getOriginalContent("html"), getExpectedContent("html"));
+    }
+
+    public void testIssue222094_2() throws Exception {
+        insertBreak(getOriginalContent("html"), getExpectedContent("html"));
+    }
+
     @Override
     public void insertNewline(String source, String reformatted, IndentPrefs preferences) throws Exception {
         int sourcePos = source.indexOf('^');
@@ -173,12 +181,20 @@ public class JsCommentGeneratorTest extends JsTestBase {
     }
 
     private String getOriginalContent() throws IOException {
-        File f = new File(getDataDir(), getTestPath(false));
+        return getOriginalContent("js");
+    }
+
+    private String getOriginalContent(String ext) throws IOException {
+        File f = new File(getDataDir(), getTestPath(false, ext));
         return readFileAsString(f);
     }
 
     private String getExpectedContent() throws IOException {
-        File f = new File(getDataDir(), getTestPath(true));
+        return getExpectedContent("js");
+    }
+
+    private String getExpectedContent(String ext) throws IOException {
+        File f = new File(getDataDir(), getTestPath(true, ext));
         return readFileAsString(f);
     }
 
@@ -196,8 +212,8 @@ public class JsCommentGeneratorTest extends JsTestBase {
         return fileData.toString();
     }
 
-    private String getTestPath(boolean expected) {
-        return getTestFolderPath() + getTestName(expected) + ".js";//NOI18N
+    private String getTestPath(boolean expected, String ext) {
+        return getTestFolderPath() + getTestName(expected) + "." + ext;//NOI18N
     }
 
     private String getTestName(boolean expected) {

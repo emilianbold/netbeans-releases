@@ -42,7 +42,17 @@
 package org.netbeans.modules.php.editor.model.impl;
 
 import java.io.File;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.Stack;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenSequence;
@@ -52,12 +62,55 @@ import org.netbeans.modules.php.editor.api.PhpModifiers;
 import org.netbeans.modules.php.editor.api.QualifiedName;
 import org.netbeans.modules.php.editor.elements.TypeNameResolverImpl;
 import org.netbeans.modules.php.editor.lexer.PHPTokenId;
-import org.netbeans.modules.php.editor.model.*;
+import org.netbeans.modules.php.editor.model.ClassScope;
+import org.netbeans.modules.php.editor.model.FieldElement;
+import org.netbeans.modules.php.editor.model.FileScope;
+import org.netbeans.modules.php.editor.model.FunctionScope;
+import org.netbeans.modules.php.editor.model.IndexScope;
+import org.netbeans.modules.php.editor.model.InterfaceScope;
+import org.netbeans.modules.php.editor.model.MethodScope;
+import org.netbeans.modules.php.editor.model.ModelElement;
+import org.netbeans.modules.php.editor.model.ModelUtils;
+import org.netbeans.modules.php.editor.model.NamespaceScope;
+import org.netbeans.modules.php.editor.model.Scope;
+import org.netbeans.modules.php.editor.model.TraitScope;
+import org.netbeans.modules.php.editor.model.TypeScope;
+import org.netbeans.modules.php.editor.model.UseScope;
+import org.netbeans.modules.php.editor.model.VariableName;
+import org.netbeans.modules.php.editor.model.VariableScope;
 import org.netbeans.modules.php.editor.model.nodes.NamespaceDeclarationInfo;
 import org.netbeans.modules.php.editor.parser.api.Utils;
-import org.netbeans.modules.php.editor.parser.astnodes.*;
+import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
+import org.netbeans.modules.php.editor.parser.astnodes.ArrayCreation;
+import org.netbeans.modules.php.editor.parser.astnodes.Assignment;
+import org.netbeans.modules.php.editor.parser.astnodes.ClassInstanceCreation;
+import org.netbeans.modules.php.editor.parser.astnodes.ClassName;
+import org.netbeans.modules.php.editor.parser.astnodes.CloneExpression;
+import org.netbeans.modules.php.editor.parser.astnodes.Comment;
+import org.netbeans.modules.php.editor.parser.astnodes.Expression;
+import org.netbeans.modules.php.editor.parser.astnodes.FieldAccess;
+import org.netbeans.modules.php.editor.parser.astnodes.FunctionDeclaration;
+import org.netbeans.modules.php.editor.parser.astnodes.FunctionInvocation;
+import org.netbeans.modules.php.editor.parser.astnodes.Identifier;
+import org.netbeans.modules.php.editor.parser.astnodes.Include;
+import org.netbeans.modules.php.editor.parser.astnodes.InfixExpression;
 import org.netbeans.modules.php.editor.parser.astnodes.InfixExpression.OperatorType;
+import org.netbeans.modules.php.editor.parser.astnodes.MethodInvocation;
+import org.netbeans.modules.php.editor.parser.astnodes.NamespaceName;
+import org.netbeans.modules.php.editor.parser.astnodes.PHPDocBlock;
+import org.netbeans.modules.php.editor.parser.astnodes.PHPDocTag;
+import org.netbeans.modules.php.editor.parser.astnodes.PHPDocTypeNode;
+import org.netbeans.modules.php.editor.parser.astnodes.PHPDocVarTypeTag;
+import org.netbeans.modules.php.editor.parser.astnodes.ParenthesisExpression;
+import org.netbeans.modules.php.editor.parser.astnodes.Program;
+import org.netbeans.modules.php.editor.parser.astnodes.Reference;
+import org.netbeans.modules.php.editor.parser.astnodes.Scalar;
 import org.netbeans.modules.php.editor.parser.astnodes.Scalar.Type;
+import org.netbeans.modules.php.editor.parser.astnodes.SingleFieldDeclaration;
+import org.netbeans.modules.php.editor.parser.astnodes.StaticFieldAccess;
+import org.netbeans.modules.php.editor.parser.astnodes.StaticMethodInvocation;
+import org.netbeans.modules.php.editor.parser.astnodes.Variable;
+import org.netbeans.modules.php.editor.parser.astnodes.VariableBase;
 import org.netbeans.modules.php.project.api.PhpSourcePath;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -67,7 +120,7 @@ import org.openide.util.Parameters;
  *
  * @author Radek Matous
  */
-public class VariousUtils {
+public final class VariousUtils {
 
     public static final String PRE_OPERATION_TYPE_DELIMITER = "@"; //NOI18N
     public static final String POST_OPERATION_TYPE_DELIMITER = ":"; //NOI18N
@@ -98,25 +151,36 @@ public class VariousUtils {
         FIELD,
         STATIC_FIELD,
         VAR;
+
         @Override
         public String toString() {
+            String result;
             switch(this) {
                 case CONSTRUCTOR:
-                    return VariousUtils.CONSTRUCTOR_TYPE_PREFIX;
+                    result =  VariousUtils.CONSTRUCTOR_TYPE_PREFIX;
+                    break;
                 case FUNCTION:
-                    return VariousUtils.FUNCTION_TYPE_PREFIX;
+                    result =  VariousUtils.FUNCTION_TYPE_PREFIX;
+                    break;
                 case METHOD:
-                    return VariousUtils.METHOD_TYPE_PREFIX;
+                    result =  VariousUtils.METHOD_TYPE_PREFIX;
+                    break;
                 case STATIC_METHOD:
-                    return VariousUtils.STATIC_METHOD_TYPE_PREFIX;
+                    result =  VariousUtils.STATIC_METHOD_TYPE_PREFIX;
+                    break;
                 case FIELD:
-                    return VariousUtils.FIELD_TYPE_PREFIX;
+                    result =  VariousUtils.FIELD_TYPE_PREFIX;
+                    break;
                 case STATIC_FIELD:
-                    return VariousUtils.STATIC_FIELD_TYPE_PREFIX;
+                    result =  VariousUtils.STATIC_FIELD_TYPE_PREFIX;
+                    break;
                 case VAR:
-                    return VariousUtils.VAR_TYPE_PREFIX;
+                    result =  VariousUtils.VAR_TYPE_PREFIX;
+                    break;
+                default:
+                    result = super.toString();
             }
-            return super.toString();
+            return result;
         }
     };
 
@@ -164,8 +228,8 @@ public class VariousUtils {
     }
 
 
-    public static Map<String,List<QualifiedName>> getParamTypesFromPHPDoc(Program root, ASTNode node) {
-        Map<String,List<QualifiedName>> retval = new HashMap<String, List<QualifiedName>>();
+    public static Map<String, List<QualifiedName>> getParamTypesFromPHPDoc(Program root, ASTNode node) {
+        Map<String, List<QualifiedName>> retval = new HashMap<String, List<QualifiedName>>();
         Comment comment = Utils.getCommentForNode(root, node);
 
         if (comment instanceof PHPDocBlock) {
@@ -174,8 +238,8 @@ public class VariousUtils {
             for (PHPDocTag tag : phpDoc.getTags()) {
                 if (tag.getKind().equals(PHPDocTag.Type.PARAM)) {
                     List<QualifiedName> types = new ArrayList<QualifiedName>();
-                    PHPDocVarTypeTag paramTag = (PHPDocVarTypeTag)tag;
-                    for(PHPDocTypeNode type : paramTag.getTypes()) {
+                    PHPDocVarTypeTag paramTag = (PHPDocVarTypeTag) tag;
+                    for (PHPDocTypeNode type : paramTag.getTypes()) {
                         types.add(QualifiedName.create(type.getValue()));
                     }
                     retval.put(paramTag.getVariable().getValue(), types);
@@ -193,7 +257,7 @@ public class VariousUtils {
 
             for (PHPDocTag tag : phpDoc.getTags()) {
                 if (tag.getKind().equals(tagType)) {
-                    String parts[] = tag.getValue().trim().split("\\s+", 2); //NOI18N
+                    String[] parts = tag.getValue().trim().split("\\s+", 2); //NOI18N
 
                     if (parts.length > 0) {
                         String type = parts[0].split("\\;", 2)[0]; //NOI18N
@@ -240,10 +304,9 @@ public class VariousUtils {
             Scalar scalar = (Scalar) expression;
             Type scalarType = scalar.getScalarType();
             if (scalarType.equals(Scalar.Type.STRING)) {
-                // #174333 - TODO: probably would be better to fix it in parser
                 String stringValue = scalar.getStringValue().toLowerCase();
                 if (stringValue.equals("false") || stringValue.equals("true")) { //NOI18N
-                    return "boolean";//NOI18N
+                    return "boolean"; //NOI18N
                 }
                 if (stringValue.equals("null")) { //NOI18N
                     return "null"; //NOI18N
@@ -263,7 +326,7 @@ public class VariousUtils {
         return null;
     }
 
-    public static String replaceVarNames(String semiTypeName, Map<String,String> var2Type)  {
+    public static String replaceVarNames(String semiTypeName, Map<String, String> var2Type)  {
         StringBuilder retval = new StringBuilder();
         String[] fragments = semiTypeName.split("[" + PRE_OPERATION_TYPE_DELIMITER + POST_OPERATION_TYPE_DELIMITER + "]"); //NOI18N
         for (int i = 0; i < fragments.length; i++) {
@@ -272,7 +335,7 @@ public class VariousUtils {
                 continue;
             }
             if (VariousUtils.VAR_TYPE_PREFIX.startsWith(frag)) {
-                if (i+1 < fragments.length) {
+                if (i + 1 < fragments.length) {
                     String varName = fragments[++i];
                     String type = var2Type.get(varName);
                     if (type != null) {
@@ -309,7 +372,7 @@ public class VariousUtils {
                 continue;
             }
             if (VariousUtils.VAR_TYPE_PREFIX.startsWith(frag)) {
-                if (i+1 < fragments.length) {
+                if (i + 1 < fragments.length) {
                     String varName = fragments[++i];
                     VariableName var = varName != null ? ModelUtils.getFirst(varScope.getDeclaredVariables(), varName) : null;
                     if (var != null) {
@@ -323,7 +386,7 @@ public class VariousUtils {
         return retval;
     }
 
-    private static Set<String> recursionDetection = new HashSet<String>();//#168868
+    private static Set<String> recursionDetection = new HashSet<String>(); //#168868
     //TODO: needs to be improved to properly return more types
     public static Collection<? extends TypeScope> getType(final VariableScope varScope, String semiTypeName, int offset, boolean justDispatcher) throws IllegalStateException {
         Collection<? extends TypeScope> recentTypes = Collections.emptyList();
@@ -360,7 +423,7 @@ public class VariousUtils {
                 } else {
                     if (operation == null) {
                         assert i == 0 : frag;
-                        recentTypes = IndexScopeImpl.getTypes(QualifiedName.create(frag),varScope);
+                        recentTypes = IndexScopeImpl.getTypes(QualifiedName.create(frag), varScope);
                     } else if (operation.startsWith(VariousUtils.CONSTRUCTOR_TYPE_PREFIX)) {
                         //new FooImpl()-> not allowed in php
                         Set<TypeScope> newRecentTypes = new HashSet<TypeScope>();
@@ -426,7 +489,7 @@ public class VariousUtils {
                         String varName = frag;
                         VariableName var = ModelUtils.getFirst(varScope.getDeclaredVariables(), varName);
                         if (var != null) {
-                           if (i+2 < len && VariousUtils.FIELD_TYPE_PREFIX.startsWith(fragments[i+1])) {
+                           if (i + 2 < len && VariousUtils.FIELD_TYPE_PREFIX.startsWith(fragments[i + 1])) {
                             fldVarStack.push(var);
                            }
                             final String checkName = var.getName() + String.valueOf(offset);
@@ -446,9 +509,9 @@ public class VariousUtils {
                         }
 
                         if (newRecentTypes.isEmpty()) {
-                            if (varScope instanceof MethodScope) {//NOI18N
+                            if (varScope instanceof MethodScope) { //NOI18N
                                 MethodScope mScope = (MethodScope) varScope;
-                                if ((frag.equals("this") || frag.equals("$this"))) {//NOI18N
+                                if ((frag.equals("this") || frag.equals("$this"))) { //NOI18N
                                     final Scope inScope = mScope.getInScope();
                                     if (inScope instanceof ClassScope) {
                                         String clsName = ((ClassScope) inScope).getName();
@@ -464,8 +527,8 @@ public class VariousUtils {
                         VariableName var = fldVarStack.isEmpty() ? null : fldVarStack.pop();
                         Set<TypeScope> newRecentTypes = new HashSet<TypeScope>();
                         String fldName = frag;
-                        if (!fldName.startsWith("$")) {//NOI18N
-                            fldName = "$" + fldName;//NOI18N
+                        if (!fldName.startsWith("$")) { //NOI18N
+                            fldName = "$" + fldName; //NOI18N
                         }
                         for (TypeScope type : oldRecentTypes) {
                             Collection<? extends FieldElement> inheritedFields = IndexScopeImpl.getFields(type, fldName, varScope, PhpModifiers.ALL_FLAGS);
@@ -490,7 +553,7 @@ public class VariousUtils {
                     }
                 }
             }
-        } else if (semiTypeName != null ) {
+        } else if (semiTypeName != null) {
             QualifiedName qn = QualifiedName.create(semiTypeName);
             qn = qn.toNamespaceName().append(translateSpecialClassName(varScope, qn.getName()));
             if (semiTypeName.startsWith("\\")) { // NOI18N
@@ -636,7 +699,7 @@ public class VariousUtils {
                         if (cls == null) {
                             break;
                         } else {
-                            MethodScope meth = ModelUtils.getFirst(IndexScopeImpl.getMethods(cls, "__construct",topScope, PhpModifiers.ALL_FLAGS));//NOI18N
+                            MethodScope meth = ModelUtils.getFirst(IndexScopeImpl.getMethods(cls, "__construct", topScope, PhpModifiers.ALL_FLAGS)); //NOI18N
                             if (meth != null) {
                                 retval.push(meth);
                             } else {
@@ -656,8 +719,7 @@ public class VariousUtils {
                         if (cls == null) {
                             return emptyStack;
                         }
-                        MethodScope meth = ModelUtils.getFirst(IndexScopeImpl.getMethods(cls, frgs[1],topScope, PhpModifiers.ALL_FLAGS));
-                                //ModelUtils.getFirst(cls.getMethods(frgs[1], PhpModifiers.STATIC));
+                        MethodScope meth = ModelUtils.getFirst(IndexScopeImpl.getMethods(cls, frgs[1], topScope, PhpModifiers.ALL_FLAGS));
                         if (meth == null) {
                             return emptyStack;
                         } else {
@@ -672,9 +734,9 @@ public class VariousUtils {
                         operation = null;
                     } else if (operation.startsWith(VariousUtils.VAR_TYPE_PREFIX)) {
                         type = null;
-                        if (varScope instanceof MethodScope) {//NOI18N
+                        if (varScope instanceof MethodScope) { //NOI18N
                             MethodScope mScope = (MethodScope) varScope;
-                            if ((frag.equals("this") || frag.equals("$this"))) {//NOI18N
+                            if ((frag.equals("this") || frag.equals("$this"))) { //NOI18N
                                 type = (ClassScope) mScope.getInScope();
                             }
                             if (type != null) {
@@ -719,8 +781,8 @@ public class VariousUtils {
                         if (cls == null || !(cls instanceof ClassScope)) {
                             return emptyStack;
                         }
-                        FieldElement fieldElement = ModelUtils.getFirst(IndexScopeImpl.getFields((ClassScope)cls,
-                                !frag.startsWith("$") ? String.format("%s%s", "$",frag) : frag, topScope, PhpModifiers.ALL_FLAGS));//NOI18N
+                        FieldElement fieldElement = ModelUtils.getFirst(IndexScopeImpl.getFields((ClassScope) cls,
+                                !frag.startsWith("$") ? String.format("%s%s", "$", frag) : frag, topScope, PhpModifiers.ALL_FLAGS)); //NOI18N
                         if (fieldElement == null) {
                             return emptyStack;
                         } else {
@@ -813,7 +875,7 @@ public class VariousUtils {
 
             if (Type.STRING == s.getScalarType()) {
                 String fileName = s.getStringValue();
-                fileName = fileName.length() >= 2 ? fileName.substring(1, fileName.length() - 1) : fileName;//TODO: not nice
+                fileName = fileName.length() >= 2 ? fileName.substring(1, fileName.length() - 1) : fileName;
                 return fileName;
             }
         }
@@ -913,7 +975,7 @@ public class VariousUtils {
                             state = isArray ? State.ARRAY_FIELD : State.FIELD;
                         } else if (isVariable(token)) {
                             metaAll.insert(0, token.text().toString());
-                            state = isArray? State.ARRAY_VARIABLE : State.VARBASE;
+                            state = isArray ? State.ARRAY_VARIABLE : State.VARBASE;
                         }
                         break;
                     case STATIC_REFERENCE:
@@ -925,7 +987,6 @@ public class VariousUtils {
                         } else if (isSelf(token) || isParent(token) || isStatic(token)) {
                             metaAll.insert(0, PRE_OPERATION_TYPE_DELIMITER + VariousUtils.FIELD_TYPE_PREFIX);
                             metaAll.insert(0, translateSpecialClassName(varScope, token.text().toString()));
-                            //TODO: maybe rather introduce its own State
                             state = State.CLASSNAME;
                         }
                         break;
@@ -1023,7 +1084,8 @@ public class VariousUtils {
                         metaAll.insert(0, PRE_OPERATION_TYPE_DELIMITER + VariousUtils.FUNCTION_TYPE_PREFIX);
                     }
                     break;
-                } else if (state.equals(State.PARAMS) && !possibleClassName.isEmpty() && token.id() != null && PHPTokenId.PHP_NEW.equals(token.id()) && (rightBraces - 1 == leftBraces)) {
+                } else if (state.equals(State.PARAMS) && !possibleClassName.isEmpty() && token.id() != null
+                        && PHPTokenId.PHP_NEW.equals(token.id()) && (rightBraces - 1 == leftBraces) && isPossibleAnonymousObjectCall(tokenSequence)) {
                     state = State.STOP;
                     metaAll.insert(0, PRE_OPERATION_TYPE_DELIMITER + VariousUtils.CONSTRUCTOR_TYPE_PREFIX + possibleClassName);
                     break;
@@ -1037,6 +1099,22 @@ public class VariousUtils {
             }
         }
         return null;
+    }
+
+    private static boolean isPossibleAnonymousObjectCall(final TokenSequence<PHPTokenId> tokenSequence) {
+        boolean result = true;
+        boolean skippedOpenParenthesis = tokenSequence.movePrevious();
+        if (skippedOpenParenthesis) {
+            boolean posibleMethodTokenNameExists = tokenSequence.movePrevious();
+            if (posibleMethodTokenNameExists) {
+                if (isString(tokenSequence.token())) {
+                    result = false;
+                }
+                tokenSequence.moveNext();
+            }
+            tokenSequence.moveNext();
+        }
+        return result;
     }
 
     private static boolean isVarTypeComment(final Token<PHPTokenId> token) {
@@ -1100,7 +1178,7 @@ public class VariousUtils {
     private static String translateSpecialClassName(Scope scp, String clsName) {
         ClassScope classScope = null;
         if (scp instanceof ClassScope) {
-            classScope = (ClassScope)scp;
+            classScope = (ClassScope) scp;
         } else if (scp instanceof MethodScope) {
             MethodScope msi = (MethodScope) scp;
             Scope inScope = msi.getInScope();
@@ -1109,7 +1187,7 @@ public class VariousUtils {
             }
         }
         if (classScope != null) {
-            if ("self".equals(clsName) || "this".equals(clsName) || "static".equals(clsName)) {//NOI18N
+            if ("self".equals(clsName) || "this".equals(clsName) || "static".equals(clsName)) { //NOI18N
                 clsName = classScope.getName();
             } else if ("parent".equals(clsName)) { //NOI18N
                 QualifiedName fullyQualifiedName = ModelUtils.getFirst(classScope.getPossibleFQSuperClassNames());
@@ -1131,24 +1209,24 @@ public class VariousUtils {
     }
 
     private static boolean isDolar(Token<PHPTokenId> token) {
-        return token.id().equals(PHPTokenId.PHP_TOKEN) && "$".contentEquals(token.text());//NOI18N
+        return token.id().equals(PHPTokenId.PHP_TOKEN) && "$".contentEquals(token.text()); //NOI18N
     }
 
     private static boolean isLeftBracket(Token<PHPTokenId> token) {
-        return token.id().equals(PHPTokenId.PHP_TOKEN) && "(".contentEquals(token.text());//NOI18N
+        return token.id().equals(PHPTokenId.PHP_TOKEN) && "(".contentEquals(token.text()); //NOI18N
     }
 
     private static boolean isRightBracket(Token<PHPTokenId> token) {
-        return token.id().equals(PHPTokenId.PHP_TOKEN) && ")".contentEquals(token.text());//NOI18N
+        return token.id().equals(PHPTokenId.PHP_TOKEN) && ")".contentEquals(token.text()); //NOI18N
     }
     private static boolean isRightArryBracket(Token<PHPTokenId> token) {
-        return token.id().equals(PHPTokenId.PHP_TOKEN) && "]".contentEquals(token.text());//NOI18N
+        return token.id().equals(PHPTokenId.PHP_TOKEN) && "]".contentEquals(token.text()); //NOI18N
     }
     private static boolean isLeftArryBracket(Token<PHPTokenId> token) {
-        return token.id().equals(PHPTokenId.PHP_TOKEN) && "[".contentEquals(token.text());//NOI18N
+        return token.id().equals(PHPTokenId.PHP_TOKEN) && "[".contentEquals(token.text()); //NOI18N
     }
     private static boolean isComma(Token<PHPTokenId> token) {
-        return token.id().equals(PHPTokenId.PHP_TOKEN) && ",".contentEquals(token.text());//NOI18N
+        return token.id().equals(PHPTokenId.PHP_TOKEN) && ",".contentEquals(token.text()); //NOI18N
     }
 
     private static boolean isReference(Token<PHPTokenId> token) {
@@ -1197,13 +1275,13 @@ public class VariousUtils {
             }
         }
         if (inScope instanceof ClassScope || inScope instanceof InterfaceScope) {
-            csi = (TypeScope)inScope;
+            csi = (TypeScope) inScope;
         }
         if (csi != null) {
             if ("self".equals(staticTypeName)) { //NOI18N
                 return Collections.singletonList(csi);
-            } else if ( "parent".equals(staticTypeName) && (csi instanceof ClassScope)) { //NOI18N
-                return ((ClassScope)csi).getSuperClasses();
+            } else if ("parent".equals(staticTypeName) && (csi instanceof ClassScope)) { //NOI18N
+                return ((ClassScope) csi).getSuperClasses();
             }
         }
         return IndexScopeImpl.getTypes(QualifiedName.create(staticTypeName), inScope);
@@ -1239,7 +1317,7 @@ public class VariousUtils {
         }
         return namesProposals;
     }
-    public static Collection<QualifiedName> getRelativesToNamespace( NamespaceScope contextNamespace, QualifiedName fullName) {
+    public static Collection<QualifiedName> getRelativesToNamespace(NamespaceScope contextNamespace, QualifiedName fullName) {
         Set<QualifiedName> namesProposals = new HashSet<QualifiedName>();
         QualifiedName proposedName = QualifiedName.getSuffix(fullName, QualifiedName.create(contextNamespace), false);
         if (proposedName != null) {
@@ -1247,7 +1325,7 @@ public class VariousUtils {
         }
         return namesProposals;
     }
-    public static Collection<QualifiedName> getRelatives( NamespaceScope contextNamespace, QualifiedName fullName) {
+    public static Collection<QualifiedName> getRelatives(NamespaceScope contextNamespace, QualifiedName fullName) {
         Set<QualifiedName> namesProposals = new HashSet<QualifiedName>();
         namesProposals.addAll(getRelativesToNamespace(contextNamespace, fullName));
         namesProposals.addAll(getRelativesToUses(contextNamespace, fullName));
@@ -1320,7 +1398,7 @@ public class VariousUtils {
      * name space context. Usually the method returns just one, but it can return, if is not clear
      * whether the name belongs to the defined namespace or to the default one.
      */
-    public static Collection<QualifiedName> getPossibleFQN(QualifiedName name, int nameOffset, NamespaceScope contextNamespace){
+    public static Collection<QualifiedName> getPossibleFQN(QualifiedName name, int nameOffset, NamespaceScope contextNamespace) {
         Set<QualifiedName> namespaces = new HashSet<QualifiedName>();
         boolean resolved = false;
         if (name.getKind().isFullyQualified()) {
@@ -1329,7 +1407,7 @@ public class VariousUtils {
         } else {
             Collection<? extends UseScope> uses = contextNamespace.getDeclaredUses();
             if (uses.size() > 0) {
-                for(UseScope useDeclaration : contextNamespace.getDeclaredUses()) {
+                for (UseScope useDeclaration : contextNamespace.getDeclaredUses()) {
                     if (useDeclaration.getOffset() < nameOffset) {
                         String firstNameSegment = name.getSegments().getFirst();
                         QualifiedName returnName;
@@ -1366,7 +1444,7 @@ public class VariousUtils {
 
     public static boolean isAliased(final QualifiedName qualifiedName, final int offset, final Scope inScope) {
         boolean result = false;
-        if(!qualifiedName.getKind().isFullyQualified() && !isSpecialClassName(qualifiedName.getName())) {
+        if (!qualifiedName.getKind().isFullyQualified() && !isSpecialClassName(qualifiedName.getName())) {
             result = isAliasedClassName(qualifiedName.getSegments().getFirst(), offset, inScope);
         }
         return result;
@@ -1374,7 +1452,7 @@ public class VariousUtils {
 
     public static boolean isAlias(final QualifiedName unqualifiedName, final int offset, final Scope inScope) {
         boolean result = false;
-        if(unqualifiedName.getKind().isUnqualified() && !isSpecialClassName(unqualifiedName.getName())) {
+        if (unqualifiedName.getKind().isUnqualified() && !isSpecialClassName(unqualifiedName.getName())) {
             result = isAliasedClassName(unqualifiedName.getSegments().getFirst(), offset, inScope);
         }
         return result;
@@ -1411,7 +1489,7 @@ public class VariousUtils {
     @CheckForNull
     public static AliasedName getAliasedName(final QualifiedName qualifiedName, final int offset, final Scope inScope) {
         AliasedName result = null;
-        if(!qualifiedName.getKind().isFullyQualified() && !isSpecialClassName(qualifiedName.getName())) {
+        if (!qualifiedName.getKind().isFullyQualified() && !isSpecialClassName(qualifiedName.getName())) {
             Scope scope = inScope;
             while (scope != null && !(scope instanceof NamespaceScope)) {
                 scope = scope.getInScope();
@@ -1468,13 +1546,15 @@ public class VariousUtils {
                 for (String typeName : typeNames.split("\\" + typeSeparator)) { //NOI18N
                     if (!typeName.startsWith(NamespaceDeclarationInfo.NAMESPACE_SEPARATOR) && !VariousUtils.isPrimitiveType(typeName)) {
                         QualifiedName fullyQualifiedName = VariousUtils.getFullyQualifiedName(QualifiedName.create(typeName), offset, inScope);
-                        retval.append(fullyQualifiedName.toString().startsWith(NamespaceDeclarationInfo.NAMESPACE_SEPARATOR) ? "" : NamespaceDeclarationInfo.NAMESPACE_SEPARATOR); //NOI18N
+                        retval.append(fullyQualifiedName.toString().startsWith(NamespaceDeclarationInfo.NAMESPACE_SEPARATOR)
+                                ? ""
+                                : NamespaceDeclarationInfo.NAMESPACE_SEPARATOR); //NOI18N
                         retval.append(fullyQualifiedName.toString()).append(typeSeparator);
                     } else {
                         retval.append(typeName).append(typeSeparator);
                     }
                 }
-                assert retval.length() - typeSeparator.length() >= 0 : "retval:" + retval + "# typeNames:"+typeNames; //NOI18N
+                assert retval.length() - typeSeparator.length() >= 0 : "retval:" + retval + "# typeNames:" + typeNames; //NOI18N
                 retval = new StringBuilder(retval.toString().substring(0, retval.length() - typeSeparator.length()));
             }
         }

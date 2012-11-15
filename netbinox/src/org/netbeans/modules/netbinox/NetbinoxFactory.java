@@ -71,10 +71,10 @@ public class NetbinoxFactory implements FrameworkFactory {
     public Framework newFramework(Map map) {
         Map<String,Object> configMap = new HashMap<String,Object>();
         configMap.putAll(map);
-        configMap.put("osgi.hook.configurators.exclude", // NOI18N
-            "org.eclipse.core.runtime.internal.adaptor.EclipseLogHook" // NOI18N
-//            + ",org.eclipse.core.runtime.internal.adaptor.EclipseClassLoadingHook" // NOI18N
-        );
+//        configMap.put("osgi.hook.configurators.exclude", // NOI18N
+//            "org.eclipse.core.runtime.internal.adaptor.EclipseLogHook" // NOI18N
+////            + ",org.eclipse.core.runtime.internal.adaptor.EclipseClassLoadingHook" // NOI18N
+//        );
         configMap.put("osgi.hook.configurators.include", NetbinoxHooks.class.getName()); // NOI18N
         final String userArea = toFileURL(System.getProperty("netbeans.user"));
         configMap.put("osgi.user.area.default", userArea); // NOI18N

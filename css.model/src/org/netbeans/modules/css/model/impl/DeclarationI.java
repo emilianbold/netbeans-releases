@@ -143,7 +143,7 @@ public class DeclarationI extends ModelElement implements Declaration {
     public synchronized ResolvedProperty getResolvedProperty() {
         FileObject file = getModel().getLookup().lookup(FileObject.class);
         if (resolvedProperty == null) {
-            PropertyDefinition pmodel = Properties.getPropertyDefinition(file, getProperty().getContent().toString().trim());
+            PropertyDefinition pmodel = Properties.getPropertyDefinition(getProperty().getContent().toString().trim());
             if (pmodel != null) {
                 resolvedProperty = ResolvedProperty.resolve(file, pmodel, getPropertyValue().getExpression().getContent());
             }

@@ -42,7 +42,12 @@
 package org.netbeans.modules.php.editor.actions;
 
 import java.io.Serializable;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.LinkedList;
+import java.util.List;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import org.netbeans.api.lexer.TokenSequence;
@@ -93,7 +98,12 @@ public class FixUsesPerformer {
     private EditList editList;
     private BaseDocument baseDocument;
 
-    public FixUsesPerformer(final PHPParseResult parserResult, final ImportData importData, final List<ItemVariant> selections, final boolean removeUnusedUses, final Options options) {
+    public FixUsesPerformer(
+            final PHPParseResult parserResult,
+            final ImportData importData,
+            final List<ItemVariant> selections,
+            final boolean removeUnusedUses,
+            final Options options) {
         this.parserResult = parserResult;
         this.importData = importData;
         this.selections = selections;
@@ -254,14 +264,14 @@ public class FixUsesPerformer {
     }
 
     private interface AliasStrategy {
-        public String createAlias(final QualifiedName qualifiedName);
+        String createAlias(final QualifiedName qualifiedName);
     }
 
-    private static abstract class AliasStrategyImpl implements AliasStrategy {
+    private abstract static class AliasStrategyImpl implements AliasStrategy {
 
         private final int selectionIndex;
         private final List<String> existingUseParts;
-        private final List<ItemVariant>selections;
+        private final List<ItemVariant> selections;
 
         public AliasStrategyImpl(final int selectionIndex, final List<String> existingUseParts, final List<ItemVariant> selections) {
             this.selectionIndex = selectionIndex;
@@ -277,7 +287,8 @@ public class FixUsesPerformer {
             int i = 1;
             while (existSelectionWith(newAliasedName, selectionIndex) || existUseWith(newAliasedName)) {
                 i++;
-                result = newAliasedName = possibleAliasedName + i;
+                newAliasedName = possibleAliasedName + i;
+                result = newAliasedName;
             }
             return result.isEmpty() && mustHaveAlias(qualifiedName) ? possibleAliasedName : result;
         }

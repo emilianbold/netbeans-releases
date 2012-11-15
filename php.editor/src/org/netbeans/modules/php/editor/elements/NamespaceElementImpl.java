@@ -108,8 +108,8 @@ public class NamespaceElementImpl extends FullyQualifiedElementImpl implements N
     private static boolean matchesQuery(final NameKind query, NamespaceSignatureParser signParser) {
         Parameters.notNull("NameKind query: can't be null", query);
         final QualifiedName qualifiedName = signParser.getQualifiedName();
-        return (query instanceof NameKind.Empty) ||
-                (!qualifiedName.isDefaultNamespace() && query.matchesName(NamespaceElement.KIND, qualifiedName));
+        return (query instanceof NameKind.Empty)
+                || (!qualifiedName.isDefaultNamespace() && query.matchesName(NamespaceElement.KIND, qualifiedName));
     }
 
     @Override

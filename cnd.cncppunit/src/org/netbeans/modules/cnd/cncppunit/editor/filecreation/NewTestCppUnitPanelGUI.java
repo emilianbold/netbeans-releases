@@ -223,7 +223,10 @@ final class NewTestCppUnitPanelGUI extends CndPanelGUI implements ActionListener
         } else {
             modifiedFilesLabel.setVisible(true);
             modifiedFilesArea.setVisible(true);
-            modifiedFilesArea.setText(FileUtil.getFileDisplayName(MakefileUtils.getMakefile(project)));
+            FileObject makefile = MakefileUtils.getMakefile(project);
+            if(makefile != null) {
+                modifiedFilesArea.setText(FileUtil.getFileDisplayName(makefile));
+            }
         }
     }
 

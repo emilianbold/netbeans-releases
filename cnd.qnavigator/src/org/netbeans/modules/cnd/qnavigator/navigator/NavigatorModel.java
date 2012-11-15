@@ -267,18 +267,10 @@ public class NavigatorModel implements CsmProgressListener, CsmModelListener {
         }
     }
     
-    private DataObject getDataObject(JTextComponent component) {
-        if (component == null) {
-            return null;
-        }
-        Document doc = component.getDocument();
-        return (DataObject) doc.getProperty(Document.StreamDescriptionProperty);
-    }
-    
     private JEditorPane findCurrentJEditorPane() {
         if (cdo != null) {
             JTextComponent comp = EditorRegistry.lastFocusedComponent();
-            DataObject obj = getDataObject(comp);
+            DataObject obj = CsmUtilities.getDataObject(comp);
             if (cdo.equals(obj) && comp instanceof JEditorPane) {
                 return (JEditorPane) comp;
             }

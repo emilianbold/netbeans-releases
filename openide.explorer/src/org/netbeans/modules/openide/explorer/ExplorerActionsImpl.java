@@ -163,15 +163,6 @@ public final class ExplorerActionsImpl {
         // Sets action state updater and registers listening on manager and
         // exclipboard.
         actionStateUpdater = new ActionStateUpdater(manager);
-
-        Clipboard c = getClipboard();
-        if (c != null) {
-            c.addFlavorListener(
-                WeakListeners.create(
-                    FlavorListener.class, actionStateUpdater, c
-                )
-            );
-        }
         actionStateUpdater.schedule();
     }
 
@@ -207,11 +198,15 @@ public final class ExplorerActionsImpl {
      */
     final void updateActions(boolean updatePasteAction) {
         assert !EventQueue.isDispatchThread();
-        if (manager == null) {
+        ExplorerManager m;
+        synchronized (this) {
+            m = manager;
+        }
+        if (m == null) {
             return;
         }
 
-        Node[] path = manager.getSelectedNodes();
+        Node[] path = m.getSelectedNodes();
 
         int i;
         int k = (path != null) ? path.length : 0;
@@ -764,6 +759,7 @@ public final class ExplorerActionsImpl {
     private class ActionStateUpdater implements PropertyChangeListener, FlavorListener, Runnable {
         private final RequestProcessor.Task timer;
         private final PropertyChangeListener weakL;
+        private FlavorListener flavL;
         private Transferable trans;
 
         ActionStateUpdater(ExplorerManager m) {
@@ -795,9 +791,22 @@ public final class ExplorerActionsImpl {
             if (EventQueue.isDispatchThread()) {
                 syncActions();
             } else {
+                updateActions(false);
+                EventQueue.invokeLater(this);
+                registerListener();
                 updateTrans();
                 updateActions(true);
                 EventQueue.invokeLater(this);
+            }
+        }
+        
+        private void registerListener() {
+            if (flavL == null) {
+                Clipboard c = getClipboard();
+                if (c != null) {
+                    flavL = WeakListeners.create(FlavorListener.class, this, c);
+                    c.addFlavorListener(flavL);
+                }
             }
         }
 
@@ -818,7 +827,15 @@ public final class ExplorerActionsImpl {
 
         /** Updates actions states now if there is pending event. */
         public void update() {
-            timer.waitFinished();
+            if (EventQueue.isDispatchThread()) {
+                try {
+                    timer.waitFinished(100);
+                } catch (InterruptedException ex) {
+                    LOG.log(Level.FINE, null, ex);
+                }
+            } else {
+                timer.waitFinished();
+            }
         }
 
         private void schedule() {

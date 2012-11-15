@@ -45,44 +45,47 @@
 package org.netbeans.modules.php.editor.indent.ui;
 
 import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.modules.options.editor.spi.PreferencesCustomizer;
 import org.netbeans.modules.php.editor.indent.FmtOptions;
 import org.netbeans.modules.php.editor.indent.FmtOptions.CategorySupport;
-import static  org.netbeans.modules.php.editor.indent.FmtOptions.CategorySupport.OPTION_ID;
+import static org.netbeans.modules.php.editor.indent.FmtOptions.CategorySupport.OPTION_ID;
 
 /**
  *
  * @author  phrebejk
  */
 public class FmtTabsIndents extends javax.swing.JPanel {
-   
-    /** Creates new form FmtTabsIndents */
+
+    private static final Logger LOGGER = Logger.getLogger(FmtTabsIndents.class.getName());
+
     public FmtTabsIndents() {
         initComponents();
-        
+
 //        expandTabCheckBox.putClientProperty(OPTION_ID, expandTabToSpaces);
 //        tabSizeField.putClientProperty(OPTION_ID, tabSize);
 //        indentSizeField.putClientProperty(OPTION_ID, new String [] { indentSize, spacesPerTab });
 //        rightMarginField.putClientProperty(OPTION_ID, rightMargin);
-        continuationIndentSizeField.putClientProperty(OPTION_ID, FmtOptions.continuationIndentSize);
-        initialIndentSizeField.putClientProperty(OPTION_ID, FmtOptions.initialIndent);
-        arrayItemsIndentationField.putClientProperty(OPTION_ID, FmtOptions.itemsInArrayDeclarationIndentSize);
+        continuationIndentSizeField.putClientProperty(OPTION_ID, FmtOptions.CONTINUATION_INDENT_SIZE);
+        initialIndentSizeField.putClientProperty(OPTION_ID, FmtOptions.INITIAL_INDENT);
+        arrayItemsIndentationField.putClientProperty(OPTION_ID, FmtOptions.ITEMS_IN_ARRAY_DECLARATION_INDENT_SIZE);
     }
-    
+
     public static PreferencesCustomizer.Factory getController() {
         String preview = "";
         try {
             preview = Utils.loadPreviewText(FmtTabsIndents.class.getClassLoader().getResourceAsStream("org/netbeans/modules/php/editor/indent/ui/TabsIndents.php"));
         } catch (IOException ex) {
-            // TODO log it
+            LOGGER.log(Level.WARNING, null, ex);
         }
         return new CategorySupport.Factory(PreferencesCustomizer.TABS_AND_INDENTS_ID, FmtTabsIndents.class,
-                preview, 
-                new String[] { FmtOptions.rightMargin, "30" }, //NOI18N
-                new String[] { FmtOptions.initialIndent, "0" } //NOI18N
+                preview,
+                new String[] {FmtOptions.RIGHT_MARGIN, "30"}, //NOI18N
+                new String[] {FmtOptions.INITIAL_INDENT, "0"} //NOI18N
                 );
     }
-    
+
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -194,8 +197,8 @@ public class FmtTabsIndents extends javax.swing.JPanel {
         getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(FmtTabsIndents.class, "FmtTabsIndents.AccessibleContext.accessibleName")); // NOI18N
         getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FmtTabsIndents.class, "FmtTabsIndents.AccessibleContext.accessibleDescription")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
-    
-    
+
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JTextField arrayItemsIndentationField;
     private javax.swing.JLabel arrayItemsIndentationLabel;
@@ -204,5 +207,5 @@ public class FmtTabsIndents extends javax.swing.JPanel {
     private javax.swing.JLabel initialIndentLabel;
     private javax.swing.JTextField initialIndentSizeField;
     // End of variables declaration//GEN-END:variables
-    
+
 }

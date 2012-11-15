@@ -62,7 +62,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.prefs.PreferenceChangeEvent;
 import java.util.prefs.PreferenceChangeListener;
-import java.util.regex.Pattern;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.Icon;
@@ -83,7 +82,6 @@ import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.annotations.common.StaticResource;
 import org.netbeans.api.java.queries.JavadocForBinaryQuery;
-import org.netbeans.api.java.queries.SourceForBinaryQuery;
 import org.netbeans.api.progress.aggregate.AggregateProgressFactory;
 import org.netbeans.api.progress.aggregate.AggregateProgressHandle;
 import org.netbeans.api.progress.aggregate.ProgressContributor;
@@ -109,6 +107,8 @@ import org.netbeans.modules.maven.model.pom.POMModel;
 import org.netbeans.spi.project.ui.PathFinder;
 import static org.netbeans.modules.maven.nodes.Bundle.*;
 import org.netbeans.modules.maven.queries.MavenFileOwnerQueryImpl;
+import org.netbeans.modules.maven.queries.RepositoryForBinaryQueryImpl;
+import org.netbeans.modules.maven.queries.RepositoryForBinaryQueryImpl.Coordinates;
 import org.netbeans.spi.java.project.support.ui.PackageView;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -118,7 +118,6 @@ import org.openide.awt.StatusDisplayer;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
-import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
@@ -475,23 +474,17 @@ public class DependencyNode extends AbstractNode implements PreferenceChangeList
     }
 
     public File getJavadocFile() {
-        return getJavadocFile(art.getFile());
-    }
-
-    private static File getJavadocFile(File artifact) {
+        File artifact = art.getFile();
         String version = artifact.getParentFile().getName();
         String artifactId = artifact.getParentFile().getParentFile().getName();
-        return new File(artifact.getParentFile(), artifactId + "-" + version + "-javadoc.jar"); //NOI18N
+        return new File(artifact.getParentFile(), artifactId + "-" + version + (art.getClassifier() != null ? "-" + art.getClassifier() : "") + "-javadoc.jar"); //NOI18N
     }
 
     public File getSourceFile() {
-        return getSourceFile(art.getFile());
-    }
-
-    private static File getSourceFile(File artifact) {
+        File artifact = art.getFile();
         String version = artifact.getParentFile().getName();
         String artifactId = artifact.getParentFile().getParentFile().getName();
-        return new File(artifact.getParentFile(), artifactId + "-" + version + "-sources.jar"); //NOI18N
+        return new File(artifact.getParentFile(), artifactId + "-" + version + (art.getClassifier() != null ? "-" + art.getClassifier() : "") + "-sources.jar"); //NOI18N
     }
 
     public boolean hasSourceInRepository() {
@@ -509,24 +502,38 @@ public class DependencyNode extends AbstractNode implements PreferenceChangeList
             return;
         }
         try {
+            String classifier;
+            String bundleName;
             if (isjavadoc) {
-                Artifact javadoc = project.getEmbedder().createArtifactWithClassifier(
-                    art.getGroupId(),
-                    art.getArtifactId(),
-                    art.getVersion(),
-                    art.getType(),
-                    "javadoc"); //NOI18N
-                progress.progress(org.openide.util.NbBundle.getMessage(DependencyNode.class, "MSG_Checking_Javadoc", art.getId()), 1);
-                online.resolve(javadoc, project.getOriginalMavenProject().getRemoteArtifactRepositories(), project.getEmbedder().getLocalRepository());
+                classifier = "javadoc";
+                bundleName = "MSG_Checking_Javadoc";
             } else {
-                Artifact sources = project.getEmbedder().createArtifactWithClassifier(
-                    art.getGroupId(),
-                    art.getArtifactId(),
-                    art.getVersion(),
-                    art.getType(),
-                    "sources"); //NOI18N
-                progress.progress(org.openide.util.NbBundle.getMessage(DependencyNode.class, "MSG_Checking_Sources",art.getId()), 1);
-                online.resolve(sources, project.getOriginalMavenProject().getRemoteArtifactRepositories(), project.getEmbedder().getLocalRepository());
+                classifier = "sources";
+                bundleName = "MSG_Checking_Sources";
+            }
+                
+            Artifact sources = project.getEmbedder().createArtifactWithClassifier(
+                art.getGroupId(),
+                art.getArtifactId(),
+                art.getVersion(),
+                art.getType(),
+                (art.getClassifier() != null ? art.getClassifier() + "-" : "") + classifier); 
+            progress.progress(org.openide.util.NbBundle.getMessage(DependencyNode.class, bundleName,art.getId()), 1);
+            online.resolve(sources, project.getOriginalMavenProject().getRemoteArtifactRepositories(), project.getEmbedder().getLocalRepository());
+            if (art.getFile() != null && art.getFile().exists()) {
+                List<Coordinates> coordinates = RepositoryForBinaryQueryImpl.getShadedCoordinates(art.getFile());
+                if (coordinates != null) {
+                    for (Coordinates coordinate : coordinates) {
+                        sources = project.getEmbedder().createArtifactWithClassifier(
+                            coordinate.groupId,
+                            coordinate.artifactId,
+                            coordinate.version,
+                            "jar",
+                            classifier);
+                        progress.progress(org.openide.util.NbBundle.getMessage(DependencyNode.class, bundleName, art.getId()), 1);
+                        online.resolve(sources, project.getOriginalMavenProject().getRemoteArtifactRepositories(), project.getEmbedder().getLocalRepository());
+                    }
+                }
             }
         } catch (ArtifactNotFoundException ex) {
             // just ignore..ex.printStackTrace();

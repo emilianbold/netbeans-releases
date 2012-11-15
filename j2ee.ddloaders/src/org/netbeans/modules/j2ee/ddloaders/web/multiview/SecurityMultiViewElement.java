@@ -252,7 +252,7 @@ public class SecurityMultiViewElement extends ToolBarMultiViewElement
         }
     }
     
-    private class SecurityRolesNode extends AbstractNode {
+    private static class SecurityRolesNode extends AbstractNode {
         public SecurityRolesNode() {
             super(org.openide.nodes.Children.LEAF);
             setDisplayName(NbBundle.getMessage(SecurityMultiViewElement.class,"TTL_SecurityRoles"));
@@ -264,7 +264,7 @@ public class SecurityMultiViewElement extends ToolBarMultiViewElement
         }
     }
     
-    private class SecurityConstraintNode extends AbstractNode {
+    private static class SecurityConstraintNode extends AbstractNode {
         
         public SecurityConstraintNode(SecurityConstraint constraint) {
             super(org.openide.nodes.Children.LEAF);
@@ -277,7 +277,7 @@ public class SecurityMultiViewElement extends ToolBarMultiViewElement
         }
     }
     
-    private class LoginConfigNode extends AbstractNode {
+    private static class LoginConfigNode extends AbstractNode {
         public LoginConfigNode() {
             super(org.openide.nodes.Children.LEAF);
             setDisplayName(NbBundle.getMessage(SecurityMultiViewElement.class,"TTL_LoginConfig"));

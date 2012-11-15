@@ -80,6 +80,7 @@ import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
+import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
 import org.openide.util.WeakListeners;
 import org.openide.util.lookup.Lookups;
@@ -99,17 +100,33 @@ public class APTUtils implements ChangeListener, PropertyChangeListener {
     private static final Map<FileObject, Reference<APTUtils>> auxiliarySourceRootsMap = new WeakHashMap<FileObject, Reference<APTUtils>>();
     private static final Lookup HARDCODED_PROCESSORS = Lookups.forPath("Editors/text/x-java/AnnotationProcessors");
     private static final boolean DISABLE_CLASSLOADER_CACHE = Boolean.getBoolean("java.source.aptutils.disable.classloader.cache");
+    private static final int SLIDING_WINDOW = 1000; //1s
+    private static final RequestProcessor RP = new RequestProcessor(APTUtils.class);
     private final FileObject root;
     private final ClassPath processorPath;
     private final AnnotationProcessingQuery.Result aptOptions;
     private final SourceLevelQuery.Result sourceLevel;
+    private final RequestProcessor.Task slidingRefresh;
     private volatile ClassLoaderRef classLoaderCache;
 
-    private APTUtils(FileObject root, ClassPath preprocessorPath, AnnotationProcessingQuery.Result aptOptions, SourceLevelQuery.Result sourceLevel) {
+    private APTUtils(
+            @NonNull final FileObject root,
+            @NonNull final ClassPath preprocessorPath,
+            @NonNull final AnnotationProcessingQuery.Result aptOptions,
+            @NonNull final SourceLevelQuery.Result sourceLevel) {
         this.root = root;
         this.processorPath = preprocessorPath;
         this.aptOptions = aptOptions;
         this.sourceLevel = sourceLevel;
+        this.slidingRefresh = RP.create(new Runnable() {
+            @Override
+            public void run() {
+                IndexingManager.getDefault().refreshIndex(
+                    root.toURL(),
+                    Collections.<URL>emptyList(),
+                    false);
+            }
+        });
     }
 
     public static APTUtils get(final FileObject root) {
@@ -213,12 +230,8 @@ public class APTUtils implements ChangeListener, PropertyChangeListener {
 
     @Override
     public void stateChanged(ChangeEvent e) {
-        try {
-            if (verifyAttributes(root, true)) {
-                IndexingManager.getDefault().refreshIndex(root.getURL(), Collections.<URL>emptyList(), false);
-            }
-        } catch (FileStateInvalidException ex) {
-            Exceptions.printStackTrace(ex);
+        if (verifyAttributes(root, true)) {
+            slidingRefresh.schedule(SLIDING_WINDOW);
         }
     }
 
@@ -227,13 +240,10 @@ public class APTUtils implements ChangeListener, PropertyChangeListener {
         if (ClassPath.PROP_ROOTS.equals(evt.getPropertyName())) {
             classLoaderCache = null;
         }
-        try {
-            if (verifyAttributes(root, true)) {
-                IndexingManager.getDefault().refreshIndex(root.getURL(), Collections.<URL>emptyList(), false);
-            }
-        } catch (FileStateInvalidException ex) {
-            Exceptions.printStackTrace(ex);
-        }
+        if (verifyAttributes(root, true)) {
+            slidingRefresh.schedule(SLIDING_WINDOW);
+
+        }        
     }
 
     private Collection<Processor> lookupProcessors(ClassLoader cl, boolean onScan) {

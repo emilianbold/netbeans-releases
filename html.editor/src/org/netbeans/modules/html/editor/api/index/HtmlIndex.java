@@ -73,6 +73,9 @@ import org.openide.util.Exceptions;
 /**
  * An instance of the indexer which can be held until the source roots are valid.
  * 
+ * TODO: Release the cached value of html index once any of the underlying data 
+ * models changes (mainly the classpath).
+ * 
  * @author marekfukala
  */
 public class HtmlIndex {

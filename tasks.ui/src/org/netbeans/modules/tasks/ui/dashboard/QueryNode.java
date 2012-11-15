@@ -45,6 +45,7 @@ import java.awt.*;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import javax.swing.*;
 import org.netbeans.modules.bugtracking.api.Issue;
@@ -74,19 +75,18 @@ public class QueryNode extends TaskContainerNode implements Comparable<QueryNode
     public QueryNode(Query query, TreeListNode parent, boolean refresh) {
         super(refresh, true, parent, query.getDisplayName());
         this.query = query;
-        updateNodes();
         queryListener = new QueryListener();
-        query.addPropertyChangeListener(queryListener);
     }
 
     @Override
-    protected List<Issue> load() {
-        if (isRefresh()) {
-            query.refresh();
-            updateNodes();
-            setRefresh(false);
-        }
-        return new ArrayList<Issue>(query.getIssues());
+    void refreshTaskContainer() {
+        query.refresh();
+    }
+
+    @Override
+    protected void attach() {
+        super.attach();
+        query.addPropertyChangeListener(queryListener);
     }
 
     @Override
@@ -108,7 +108,13 @@ public class QueryNode extends TaskContainerNode implements Comparable<QueryNode
 
     @Override
     List<Issue> getTasks() {
-        return new ArrayList<Issue>(query.getIssues());
+        List<Issue> tasks = Collections.emptyList();
+        try {
+            tasks = new ArrayList<Issue>(query.getIssues());
+        } catch (Exception ex) {
+            handleError(ex.getMessage());
+        }
+        return tasks;
     }
 
     @Override
@@ -129,6 +135,11 @@ public class QueryNode extends TaskContainerNode implements Comparable<QueryNode
 
     @Override
     protected JComponent createComponent(List<Issue> data) {
+        if (isError()) {
+            setError(false);
+            return null;
+        }
+        updateNodes(data);
         panel = new JPanel(new GridBagLayout());
         panel.setOpaque(false);
         synchronized (LOCK) {

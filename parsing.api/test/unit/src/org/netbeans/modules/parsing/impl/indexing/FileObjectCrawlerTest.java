@@ -56,6 +56,7 @@ import java.util.Set;
 import java.util.regex.Pattern;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.parsing.spi.indexing.Indexable;
 import org.netbeans.spi.java.classpath.ClassPathImplementation;
 import org.netbeans.spi.java.classpath.FilteringPathResourceImplementation;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
@@ -267,7 +268,7 @@ public class FileObjectCrawlerTest extends NbTestCase {
             Boolean.TRUE);
         FileObjectCrawler.mockLinkTypes = linkMap;
         final FileObjectCrawler c = new FileObjectCrawler(rootWithCycle, EnumSet.<Crawler.TimeStampAction>of(Crawler.TimeStampAction.UPDATE), null, CR, SuspendSupport.NOP);
-        final Collection<IndexableImpl> indexables = c.getAllResources();
+        final Collection<Indexable> indexables = c.getAllResources();
         assertCollectedFiles("Wring collected files", indexables,
                 "folder1/data1.txt",
                 "folder1/infolder1/data2.txt",
@@ -295,16 +296,16 @@ public class FileObjectCrawlerTest extends NbTestCase {
             Boolean.TRUE);
         FileObjectCrawler.mockLinkTypes = linkMap;
         final FileObjectCrawler c = new FileObjectCrawler(rootWithCycle, EnumSet.<Crawler.TimeStampAction>of(Crawler.TimeStampAction.UPDATE), null, CR, SuspendSupport.NOP);
-        final Collection<IndexableImpl> indexables = c.getAllResources();
+        final Collection<Indexable> indexables = c.getAllResources();
         assertCollectedFiles("Wring collected files", indexables,
                 "folder1/data1.txt",
                 "folder1/infolder1/data2.txt",
                 "folder2/data3.txt");
     }
 
-    protected void assertCollectedFiles(String message, Collection<IndexableImpl> resources, String... expectedPaths) throws IOException {
+    protected void assertCollectedFiles(String message, Collection<Indexable> resources, String... expectedPaths) throws IOException {
         Set<String> collectedPaths = new HashSet<String>();
-        for(IndexableImpl ii : resources) {
+        for(Indexable ii : resources) {
             collectedPaths.add(ii.getRelativePath());
         }
         Set<String> expectedPathsFiltered = new HashSet<String>();

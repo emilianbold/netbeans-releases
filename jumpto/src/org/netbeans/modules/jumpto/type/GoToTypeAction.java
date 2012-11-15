@@ -287,8 +287,7 @@ public class GoToTypeAction extends AbstractAction implements GoToPanel.ContentP
         int wildcard = containsWildCard(text);
                 
         if (exact) {
-            //nameKind = panel.isCaseSensitive() ? SearchType.EXACT_NAME : SearchType.CASE_INSENSITIVE_EXACT_NAME;
-            nameKind = SearchType.EXACT_NAME;
+            nameKind = panel.isCaseSensitive() ? SearchType.EXACT_NAME : SearchType.CASE_INSENSITIVE_EXACT_NAME;
         }
         else if ((isAllUpper(text) && text.length() > 1) || isCamelCase(text)) {
             nameKind = SearchType.CAMEL_CASE;
@@ -301,7 +300,7 @@ public class GoToTypeAction extends AbstractAction implements GoToPanel.ContentP
         }
         
         // Compute in other thread        
-        running = new Worker( text );
+        running = new Worker( text , panel.isCaseSensitive());
         task = rp.post( running, 220);
         if ( panel.time != -1 ) {
             LOGGER.log( Level.FINE, "Worker posted after {0} ms.", System.currentTimeMillis() - panel.time ); //NOI18N
@@ -454,11 +453,14 @@ public class GoToTypeAction extends AbstractAction implements GoToPanel.ContentP
         private volatile boolean isCanceled = false;
         private volatile TypeProvider current;
         private final String text;
-        
+        private final boolean caseSensitive;        
         private final long createTime;
+
+        private int lastSize = -1;
         
-        public Worker( String text ) {
+        public Worker( String text, final boolean caseSensitive) {
             this.text = text;
+            this.caseSensitive = caseSensitive;
             this.createTime = System.currentTimeMillis();
             LOGGER.log( Level.FINE, "Worker for {0} - created after {1} ms.",   //NOI18N
                     new Object[]{
@@ -489,35 +491,41 @@ public class GoToTypeAction extends AbstractAction implements GoToPanel.ContentP
                                 });
                         return;
                     }
-                    ListModel model = Models.fromList(types);
-                    if (typeFilter != null) {
-                        model = LazyListModel.create(model, GoToTypeAction.this, 0.1, "Not computed yet");  
-                    }
-                    final ListModel fmodel = model;
-                    if ( isCanceled ) {
-                        LOGGER.log( Level.FINE, "Worker for {0} exited after cancel {1} ms.",   //NOI18N
-                                new Object[]{
-                                    text,
-                                    System.currentTimeMillis() - createTime
-                                });
-                        return;
-                    }
+                    final int newSize = types.size();
+                    //Optimistic the types just added, but safer is compare the collections.
+                    //Unfortunatelly no TypeDescriptor impl provides equals.
+                    if (lastSize != newSize) {
+                        lastSize = newSize;
+                        ListModel model = Models.fromList(types);
+                        if (typeFilter != null) {
+                            model = LazyListModel.create(model, GoToTypeAction.this, 0.1, "Not computed yet");
+                        }
+                        final ListModel fmodel = model;
+                        if ( isCanceled ) {
+                            LOGGER.log( Level.FINE, "Worker for {0} exited after cancel {1} ms.",   //NOI18N
+                                    new Object[]{
+                                        text,
+                                        System.currentTimeMillis() - createTime
+                                    });
+                            return;
+                        }
 
-                    if ( !isCanceled && fmodel != null ) {
-                        LOGGER.log( Level.FINE, "Worker for text {0} finished after {1} ms.",   //NOI18N
-                                new Object[]{
-                                    text,
-                                    System.currentTimeMillis() - createTime
-                                });
-                        SwingUtilities.invokeLater(new Runnable() {
-                            @Override
-                            public void run() {
-                                panel.setModel(fmodel);
-                                if (okButton != null && !types.isEmpty()) {
-                                    okButton.setEnabled (true);
+                        if ( !isCanceled && fmodel != null ) {
+                            LOGGER.log( Level.FINE, "Worker for text {0} finished after {1} ms.",   //NOI18N
+                                    new Object[]{
+                                        text,
+                                        System.currentTimeMillis() - createTime
+                                    });
+                            SwingUtilities.invokeLater(new Runnable() {
+                                @Override
+                                public void run() {
+                                    panel.setModel(fmodel);
+                                    if (okButton != null && !types.isEmpty()) {
+                                        okButton.setEnabled (true);
+                                    }
                                 }
-                            }
-                        });
+                            });
+                        }
                     }
                 } finally {
                     if (profile != null) {
@@ -594,7 +602,7 @@ public class GoToTypeAction extends AbstractAction implements GoToPanel.ContentP
             retry[0] = TypeProviderAccessor.DEFAULT.getRetry(result);
             if ( !isCanceled ) {   
                 //time = System.currentTimeMillis();
-                Collections.sort(items, new TypeComparator());
+                Collections.sort(items, new TypeComparator(caseSensitive));
                 panel.setWarning(message[0]);
                 //sort += System.currentTimeMillis() - time;
                 //LOGGER.fine("PERF - " + " GSS:  " + gss + " GSB " + gsb + " CP: " + cp + " SFB: " + sfb + " GTN: " + gtn + "  ADD: " + add + "  SORT: " + sort );
@@ -763,13 +771,13 @@ public class GoToTypeAction extends AbstractAction implements GoToPanel.ContentP
             if ( isSelected ) {
                 jlName.setForeground(fgSelectionColor);
                 jlPkg.setForeground(fgSelectionColor);
-                jlPrj.setForeground(fgSelectionColor);
+                jlPrj.setForeground(fgSelectionColor);                
                 rendererComponent.setBackground(bgSelectionColor);
             }
             else {
                 jlName.setForeground(fgColor);
                 jlPkg.setForeground(fgColorLighter);
-                jlPrj.setForeground(fgColor);                
+                jlPrj.setForeground(fgColor);
                 rendererComponent.setBackground( index % 2 == 0 ? bgColor : bgColorDarker );
             }
             
@@ -778,7 +786,11 @@ public class GoToTypeAction extends AbstractAction implements GoToPanel.ContentP
                 TypeDescriptor td = (TypeDescriptor)value;                
                 jlName.setIcon(td.getIcon());
                 //highlight matching search text patterns in type
-                final String formattedTypeName = typeNameFormatter.formatName(td.getTypeName(), searchText, caseSensitive);
+                final String formattedTypeName = typeNameFormatter.formatName(
+                        td.getTypeName(),
+                        searchText,
+                        caseSensitive,
+                        isSelected? fgSelectionColor : fgColor);
                 jlName.setText(formattedTypeName);
                 jlPkg.setText(td.getContextName());
                 setProjectName(jlPrj, td.getProjectName());

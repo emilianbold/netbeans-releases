@@ -45,6 +45,8 @@
 
 package org.openide.loaders;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.util.logging.Level;
 import java.util.*;
 import org.netbeans.junit.NbTestCase;
@@ -104,6 +106,16 @@ public class FolderListTest extends NbTestCase {
 
     public void testComputeChildrenListOrder() throws Exception {
         list.computeChildrenList(new L()).waitFinished();
+        
+        class PCL implements PropertyChangeListener {
+            @Override
+            public void propertyChange(PropertyChangeEvent evt) {
+                list.assertNullComparator();
+            }
+        }
+        PCL pcl = new PCL();
+        
+        list.addPropertyChangeListener(pcl);
         
         a.setAttribute("position", 300);
         b.setAttribute("position", 200);

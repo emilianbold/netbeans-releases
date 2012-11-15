@@ -495,7 +495,7 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
     
     private boolean containsFile (File file) {
         if (context != null) {
-            return context.contains(file);
+            return HgUtils.contains(context.getRootFiles(), file);
         } else if (roots != null) {
             return HgUtils.contains(roots, file);
         } else {

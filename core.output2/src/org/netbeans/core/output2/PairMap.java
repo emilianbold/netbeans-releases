@@ -91,9 +91,9 @@ class PairMap {
             weak = val;
             for (int i=0; i <= last; i++) {
                 if (weak) {
-                    vals[i] = new WeakReference(vals[i]);
+                    vals[i] = new WeakReference<Object>(vals[i]);
                 } else {
-                    vals[i] = ((WeakReference) vals[i]).get();
+                    vals[i] = ((WeakReference<?>) vals[i]).get();
                 }
             }
             if (!weak) {
@@ -189,7 +189,7 @@ class PairMap {
     
     public void setValue (int idx, NbIO value) {
         if (weak) {
-            vals[idx] = new WeakReference(value);
+            vals[idx] = new WeakReference<Object>(value);
         } else {
             vals[idx] = value;
         }

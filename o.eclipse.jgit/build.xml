@@ -1,5 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project name="o.eclipse.jgit" default="netbeans" basedir=".">
     <import file="../nbbuild/templates/projectized.xml"/>
-    <target name="jar" depends="release"/>
+    <target name="jar" depends="release">
+        <jar jarfile="${cluster}/${module.jar}">
+            <zipfileset src="external/org.eclipse.jgit-1.3.0.201202151440-r.jar"/>
+            <manifest>
+                <attribute name="Bundle-SymbolicName" value="org.eclipse.jgit"/>
+                <attribute name="Bundle-Version" value="1.3.0"/>
+                <attribute name="Require-Bundle" value="com.jcraft.jsch;bundle-version=&quot;[0.1.37,0.2.0)&quot;"/>
+                <attribute name="Export-Package" value="org.eclipse.jgit;version=&quot;1.3.0&quot;,org.eclipse.jgit.api;version=&quot;1.3.0&quot;,org.eclipse.jgit.api.errors;version=&quot;1.3.0&quot;,org.eclipse.jgit.blame;version=&quot;1.3.0&quot;,org.eclipse.jgit.diff;version=&quot;1.3.0&quot;,org.eclipse.jgit.dircache;version=&quot;1.3.0&quot;,org.eclipse.jgit.errors;version=&quot;1.3.0&quot;,org.eclipse.jgit.events;version=&quot;1.3.0&quot;,org.eclipse.jgit.fnmatch;version=&quot;1.3.0&quot;,org.eclipse.jgit.ignore;version=&quot;1.3.0&quot;,org.eclipse.jgit.lib;version=&quot;1.3.0&quot;,org.eclipse.jgit.merge;version=&quot;1.3.0&quot;,org.eclipse.jgit.nls;version=&quot;1.3.0&quot;,org.eclipse.jgit.notes;version=&quot;1.3.0&quot;,org.eclipse.jgit.patch;version=&quot;1.3.0&quot;,org.eclipse.jgit.revplot;version=&quot;1.3.0&quot;,org.eclipse.jgit.revwalk;version=&quot;1.3.0&quot;,org.eclipse.jgit.revwalk.filter;version=&quot;1.3.0&quot;,org.eclipse.jgit.storage.dfs;version=&quot;1.3.0&quot;,org.eclipse.jgit.storage.file;version=&quot;1.3.0&quot;,org.eclipse.jgit.storage.pack;version=&quot;1.3.0&quot;,org.eclipse.jgit.submodule;version=&quot;1.3.0&quot;,org.eclipse.jgit.transport;version=&quot;1.3.0&quot;,org.eclipse.jgit.transport.resolver;version=&quot;1.3.0&quot;,org.eclipse.jgit.treewalk;version=&quot;1.3.0&quot;,org.eclipse.jgit.treewalk.filter;version=&quot;1.3.0&quot;,org.eclipse.jgit.util;version=&quot;1.3.0&quot;,org.eclipse.jgit.util.io;version=&quot;1.3.0&quot;"/>
+                <attribute name="Import-Package" value="javax.net.ssl"/>
+                <attribute name="Eclipse-BuddyPolicy" value="registered"/>
+            </manifest>
+        </jar>
+    </target>
 </project>

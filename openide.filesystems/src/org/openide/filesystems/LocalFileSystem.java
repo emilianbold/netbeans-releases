@@ -285,6 +285,7 @@ public class LocalFileSystem extends AbstractFileSystem {
         }
 
         if (isError) {
+	    LOG.log(Level.INFO, "Trying to create new file {0}.", f.getPath());
             ExternalUtil.annotate(creationException, annotationMsg);
             throw creationException;
         }

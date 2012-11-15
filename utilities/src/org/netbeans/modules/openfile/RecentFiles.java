@@ -45,11 +45,6 @@
 package org.netbeans.modules.openfile;
 
 import java.beans.PropertyChangeEvent;
-import java.util.prefs.BackingStoreException;
-import org.netbeans.modules.openfile.RecentFiles.HistoryItem;
-import org.openide.loaders.DataObject;
-import org.openide.windows.CloneableTopComponent;
-import org.openide.windows.TopComponent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.util.ArrayList;
@@ -58,10 +53,15 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
+import org.netbeans.modules.openfile.RecentFiles.HistoryItem;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.loaders.DataObject;
 import org.openide.util.NbPreferences;
+import org.openide.windows.CloneableTopComponent;
+import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
 
 /**
@@ -82,6 +82,8 @@ public final class RecentFiles {
     private static final String PROP_URL_PREFIX = "RecentFilesURL."; //NOI18N
     /** Boundary for items count in history */
     static final int MAX_HISTORY_ITEMS = 15;
+
+    private static final String RECENT_FILE_KEY = "nb.recent.file.path"; // NOI18N
 
     private RecentFiles() {
     }
@@ -200,9 +202,7 @@ public final class RecentFiles {
      * if conditions are met.
      */
     private static void addFile(TopComponent tc) {
-        if (tc instanceof CloneableTopComponent) {
-            addFile(obtainPath(tc));
-        }
+        addFile(obtainPath(tc));
     }
 
     static void addFile(String path) {
@@ -228,26 +228,29 @@ public final class RecentFiles {
     /** Removes file represented by given TopComponent from the list */
     private static void removeFile(TopComponent tc) {
         historyProbablyValid = false;
-        if (tc instanceof CloneableTopComponent) {
-            String path = obtainPath(tc);
-            if (path != null) {
-                synchronized (HISTORY_LOCK) {
-                    HistoryItem hItem = findHistoryItem(path);
-                    if (hItem != null) {
-                        history.remove(hItem);
-                    }
-                    store();
+        String path = obtainPath(tc);
+        if (path != null) {
+            synchronized (HISTORY_LOCK) {
+                HistoryItem hItem = findHistoryItem(path);
+                if (hItem != null) {
+                    history.remove(hItem);
                 }
+                store();
             }
         }
     }
 
     private static String obtainPath(TopComponent tc) {
-        DataObject dObj = tc.getLookup().lookup(DataObject.class);
-        if (dObj != null) {
-            FileObject fo = dObj.getPrimaryFile();
-            if (fo != null) {
-                return convertFile2Path(fo);
+        Object file = tc.getClientProperty( RECENT_FILE_KEY );
+        if( file instanceof File )
+            return ((File)file).getPath();
+        if( tc instanceof CloneableTopComponent ) {
+            DataObject dObj = tc.getLookup().lookup(DataObject.class);
+            if (dObj != null) {
+                FileObject fo = dObj.getPrimaryFile();
+                if (fo != null) {
+                    return convertFile2Path(fo);
+                }
             }
         }
         return null;

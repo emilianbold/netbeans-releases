@@ -41,11 +41,23 @@
  */
 package org.netbeans.modules.java.hints.suggestions;
 
+import com.sun.source.tree.BinaryTree;
+import com.sun.source.tree.ExpressionTree;
+import com.sun.source.tree.IfTree;
+import com.sun.source.tree.LiteralTree;
+import com.sun.source.tree.ParenthesizedTree;
+import com.sun.source.tree.Tree;
+import com.sun.source.tree.Tree.Kind;
+import com.sun.source.tree.UnaryTree;
 import com.sun.source.util.TreePath;
+import org.netbeans.api.java.source.CompilationInfo;
+import org.netbeans.api.java.source.TreeMaker;
+import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.java.hints.ErrorDescriptionFactory;
 import org.netbeans.spi.java.hints.Hint;
 import org.netbeans.spi.java.hints.HintContext;
+import org.netbeans.spi.java.hints.JavaFix;
 import org.netbeans.spi.java.hints.JavaFixUtilities;
 import org.netbeans.spi.java.hints.TriggerPattern;
 import org.openide.util.NbBundle.Messages;
@@ -64,7 +76,92 @@ public class InvertIf {
         TreePath cond = ctx.getVariables().get("$cond");
         long conditionEnd = ctx.getInfo().getTrees().getSourcePositions().getEndPosition(cond.getCompilationUnit(), cond.getParentPath().getLeaf());
         if (ctx.getCaretLocation() > conditionEnd) return null;
-        return ErrorDescriptionFactory.forName(ctx, ctx.getPath(), Bundle.ERR_InvertIf(), JavaFixUtilities.rewriteFix(ctx, Bundle.FIX_InvertIf(), ctx.getPath(), "if (!$cond) $else; else $then;"));
+        
+        return ErrorDescriptionFactory.forName(ctx, ctx.getPath(), Bundle.ERR_InvertIf(), new FixImpl(ctx.getInfo(), ctx.getPath()).toEditorFix());
+    }
+    
+    private static final class FixImpl extends JavaFix {
+
+        public FixImpl(CompilationInfo info, TreePath tp) {
+            super(info, tp);
+        }
+
+        @Override
+        protected String getText() {
+            return Bundle.FIX_InvertIf();
+        }
+
+        @Override
+        protected void performRewrite(final TransformationContext ctx) throws Exception {
+            IfTree toRewrite = (IfTree) ctx.getPath().getLeaf();
+            
+            ctx.getWorkingCopy().rewrite(toRewrite, ctx.getWorkingCopy().getTreeMaker().If(toRewrite.getCondition(), toRewrite.getElseStatement(), toRewrite.getThenStatement()));
+            negate(ctx.getWorkingCopy(), toRewrite.getCondition(), toRewrite);
+        }
+        
+        //TODO: should be done automatically:
+        private void negate(WorkingCopy copy, ExpressionTree original, Tree parent) {
+            TreeMaker make = copy.getTreeMaker();
+            ExpressionTree newTree;
+            switch (original.getKind()) {
+                case PARENTHESIZED:
+                    ExpressionTree expr = ((ParenthesizedTree) original).getExpression();
+                    negate(copy, expr, original);
+                    return ;
+                case LOGICAL_COMPLEMENT:
+                    newTree = ((UnaryTree) original).getExpression();
+                    while (newTree.getKind() == Kind.PARENTHESIZED && !JavaFixUtilities.requiresParenthesis(((ParenthesizedTree) newTree).getExpression(), original, parent)) {
+                        newTree = ((ParenthesizedTree) newTree).getExpression();
+                    }
+                    break;
+                case NOT_EQUAL_TO:
+                    newTree = negateBinaryOperator(copy, original, Kind.EQUAL_TO, false);
+                    break;
+                case EQUAL_TO:
+                    newTree = negateBinaryOperator(copy, original, Kind.NOT_EQUAL_TO, false);
+                    break;
+                case BOOLEAN_LITERAL:
+                    newTree = make.Literal(!(Boolean) ((LiteralTree) original).getValue());
+                    break;
+                case CONDITIONAL_AND:
+                    newTree = negateBinaryOperator(copy, original, Kind.CONDITIONAL_OR, true);
+                    break;
+                case CONDITIONAL_OR:
+                    newTree = negateBinaryOperator(copy, original, Kind.CONDITIONAL_AND, true);
+                    break;
+                case LESS_THAN:
+                    newTree = negateBinaryOperator(copy, original, Kind.GREATER_THAN_EQUAL, false);
+                    break;
+                case LESS_THAN_EQUAL:
+                    newTree = negateBinaryOperator(copy, original, Kind.GREATER_THAN, false);
+                    break;
+                case GREATER_THAN:
+                    newTree = negateBinaryOperator(copy, original, Kind.LESS_THAN_EQUAL, false);
+                    break;
+                case GREATER_THAN_EQUAL:
+                    newTree = negateBinaryOperator(copy, original, Kind.LESS_THAN, false);
+                    break;
+                default:
+                    newTree = make.Unary(Kind.LOGICAL_COMPLEMENT, original);
+                    break;
+            }
+         
+            if (JavaFixUtilities.requiresParenthesis(newTree, original, parent)) {
+                newTree = make.Parenthesized(newTree);
+            }
+            
+            copy.rewrite(original, newTree);
+        }
+        
+        private ExpressionTree negateBinaryOperator(WorkingCopy copy, Tree original, Kind newKind, boolean negateOperands) {
+            BinaryTree bt = (BinaryTree) original;
+            if (negateOperands) {
+                negate(copy, bt.getLeftOperand(), original);
+                negate(copy, bt.getRightOperand(), original);
+            }
+            return copy.getTreeMaker().Binary(newKind, bt.getLeftOperand(), bt.getRightOperand());
+        }
+        
     }
 
 }

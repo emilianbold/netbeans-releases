@@ -412,7 +412,7 @@ public class JarClassLoader extends ProxyClassLoader {
                 if (f.isDirectory()) {
                     LOGGER.log(Level.INFO, "{0} is directory and contains: {1}", new Object[]{f, Arrays.toString(f.list())}); // NOI18N
                 } else {
-                    LOGGER.log(Level.INFO, "{0} isDirectory: {1}, isFile: {2}", new Object[]{f, f.isDirectory(), f.isFile()}); // NOI18N
+                    LOGGER.log(Level.INFO, "{0} isDirectory: {1}, isFile: {2} size: {3}", new Object[]{f, f.isDirectory(), f.isFile(), f.length()}); // NOI18N
                 }
                 break;
             }
@@ -504,7 +504,16 @@ public class JarClassLoader extends ProxyClassLoader {
                                 for (;;) {
                                     try {
                                         long now = System.currentTimeMillis();
-                                        JarFile ret = new JarFile(file, false);
+                                        JarFile ret;
+                                        try {
+                                            ret = new JarFile(file, false);
+                                        } catch (FileNotFoundException ex) {
+                                            if (ex.getMessage().contains("Too many open files")) {
+                                                throw (ZipException)new ZipException(ex.getMessage()).initCause(ex);
+                                            } else {
+                                                throw ex;
+                                            }
+                                        }
                                         long took = System.currentTimeMillis() - now;
                                         opened(JarClassLoader.JarSource.this, forWhat);
                                         if (took > 500) {
@@ -553,7 +562,12 @@ public class JarClassLoader extends ProxyClassLoader {
         
         @Override
         protected byte[] readClass(String path) throws IOException {
-            return archive.getData(this, path);
+            try {
+                return archive.getData(this, path);
+            } catch (ZipException ex) {
+                dumpFiles(file, -1);
+                throw ex;
+            }
         }
         
         @Override

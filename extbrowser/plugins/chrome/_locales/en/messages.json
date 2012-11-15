@@ -1,11 +1,12 @@
 {
 
-    // manifest
     "_pluginName": {
-        "message": "NetBeans IDE Support Plugin"
+        "message": "NetBeans Connector"
+    },
+    "_pluginDescription": {
+        "message": "The NetBeans Connector provides deep integration between the award winning NetBeans IDE and the Google Chrome browser."
     },
 
-    // general
     "_OK": {
         "message": "OK"
     },
@@ -18,14 +19,7 @@
     "_Remove": {
         "message": "Remove"
     },
-    "_Help": {
-        "message": "Help"
-    },
-    "_ShowHelp": {
-        "message": "Show Help"
-    },
 
-    // select mode
     "_StartSelectMode": {
         "message": "Start Inspect in NetBeans Mode (Ctrl+Shift+S)"
     },
@@ -33,7 +27,6 @@
         "message": "Stop Inspect in NetBeans Mode (Ctrl+Shift+S)"
     },
 
-    // presets
     "_Desktop": {
         "message": "Desktop"
     },
@@ -57,7 +50,6 @@
     },
 
 
-    // options
     "_CloseWithoutSaving": {
         "message": "Close without Saving"
     },
@@ -113,7 +105,7 @@
         "message": "New..."
     },
 
-    // popup
+
     "_ActualWindowSize": {
         "message": "Actual Window Size"
     },
@@ -156,6 +148,27 @@
                 "content": "$2"
             }
         }
+    },
+
+
+    "_BrokenNetBeansIntegration": {
+        "message": "Broken NetBeans Integration Detected"
+    },
+    "_BrokenNetBeansIntegrationInfo": {
+        "message": "NetBeans integration is broken because the debugger has been detached. Avoid closing or cancelling the <i>\"NetBeans Connector is debugging this tab.\"</i> infobar or opening <i>\"Chrome Developer Tools\"</i>."
+    },
+    "_BrokenNetBeansIntegrationRerun": {
+        "message": "To restore the NetBeans integration, <b>close the tab with your application and rerun it from the NetBeans IDE</b>."
+    },
+    "_BrokenNetBeansIntegrationChromeIssue": {
+        "message": "For more information please see this <a href=\"#\" id=\"chromeIssueLink\">Chrome issue</a>."
+    },
+
+    "_WindowTooSmall": {
+        "message": "Window cannot be resized properly"
+    },
+    "_WindowTooSmallInfo": {
+        "message": "Unfortunately, on Mac OS, the minimal width of the Chrome window is 400 pixels."
     }
 
 }

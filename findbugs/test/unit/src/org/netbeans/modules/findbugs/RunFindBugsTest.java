@@ -221,7 +221,7 @@ public class RunFindBugsTest extends NbTestCase {
         write(f, "line1\nline2\r   line3   \r\nline4\n\rline6".getBytes("UTF-8"));
         int[] lineMap = RunFindBugs.computeLineMap(f, Charset.forName("UTF-8"));
         
-        assertLineMap(lineMap, 0, 5, 6, 11, 15, 20, 25, 30, 31, 31, 32, 37);
+        assertLineMap(lineMap, 0, 5, 6, 11, 15, 20, 24, 29, 30, 30, 31, 36);
     }
     
     private static void assertLineMap(int[] actual, int... golden) {

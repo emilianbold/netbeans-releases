@@ -89,7 +89,7 @@ public class PersistenceLibrarySupport {
     public static final String VOLUME_TYPE_SRC = "src";       //NOI18N
     public static final String VOLUME_TYPE_JAVADOC = "javadoc";       //NOI18N
     public static final String LIBRARY_TYPE = "j2se";       //NOI18N
-    public static final String[] VOLUME_TYPES = new String[]{
+    static final String[] VOLUME_TYPES = new String[]{
         VOLUME_TYPE_CLASSPATH,
         VOLUME_TYPE_SRC,
         VOLUME_TYPE_JAVADOC,};

@@ -155,6 +155,12 @@ public class UtilitiesTest extends NbTestCase {
                 "public class Test {public void t() {Foo<? super Number> bar = null; bar.foo(|);}}",
                                 "test.Foo<? super java.lang.Number>");
     }
+    
+    public void testCapturedType206536() throws Exception {
+        performCapturedTypeTest("package test; interface Foo<T> {Foo<? extends ThreadLocal<? extends T>> foo();}" +
+                "public class Test {public void t() {Foo<? extends Number> bar = null; bar.foo(|);}}",
+                                "test.Foo<? extends java.lang.ThreadLocal<? extends java.lang.Number>>");
+    }
 
     public void testFieldGroup1() throws Exception {
         performResolveFieldGroupTest("package test; public class Test { |private int a, b, c;| }", 3);

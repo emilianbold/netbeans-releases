@@ -119,8 +119,8 @@ public class PHPFormatterTest extends PHPFormatterTestBase {
 
     public void testArrays4() throws Exception {
         HashMap<String, Object> options = new HashMap<String, Object>();
-        options.put(FmtOptions.initialIndent, 4);
-        options.put(FmtOptions.itemsInArrayDeclarationIndentSize, 6);
+        options.put(FmtOptions.INITIAL_INDENT, 4);
+        options.put(FmtOptions.ITEMS_IN_ARRAY_DECLARATION_INDENT_SIZE, 6);
         reformatFileContents("testfiles/formatting/arrays4.php", options);
     }
 
@@ -143,8 +143,8 @@ public class PHPFormatterTest extends PHPFormatterTestBase {
 
     public void testShortArrays4() throws Exception {
         HashMap<String, Object> options = new HashMap<String, Object>();
-        options.put(FmtOptions.initialIndent, 4);
-        options.put(FmtOptions.itemsInArrayDeclarationIndentSize, 6);
+        options.put(FmtOptions.INITIAL_INDENT, 4);
+        options.put(FmtOptions.ITEMS_IN_ARRAY_DECLARATION_INDENT_SIZE, 6);
         reformatFileContents("testfiles/formatting/shortArrays4.php", options);
     }
 
@@ -177,13 +177,13 @@ public class PHPFormatterTest extends PHPFormatterTestBase {
 
     public void testInitialIndent1() throws Exception {
         HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
-        options.put(FmtOptions.initialIndent, 5);
+        options.put(FmtOptions.INITIAL_INDENT, 5);
         reformatFileContents("testfiles/formatting/initial_indent1.php", options);
     }
 
     public void testInitialIndent01() throws Exception {
         HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
-        options.put(FmtOptions.initialIndent, 0);
+        options.put(FmtOptions.INITIAL_INDENT, 0);
         reformatFileContents("testfiles/formatting/initialIndent01.php", options);
     }
 
@@ -203,27 +203,27 @@ public class PHPFormatterTest extends PHPFormatterTestBase {
 
     public void testNamespaces03() throws Exception {
         HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
-        options.put(FmtOptions.classDeclBracePlacement, CodeStyle.BracePlacement.NEW_LINE);
-        options.put(FmtOptions.methodDeclBracePlacement, CodeStyle.BracePlacement.NEW_LINE);
-        options.put(FmtOptions.ifBracePlacement, CodeStyle.BracePlacement.NEW_LINE);
-        options.put(FmtOptions.forBracePlacement, CodeStyle.BracePlacement.NEW_LINE);
-        options.put(FmtOptions.whileBracePlacement, CodeStyle.BracePlacement.NEW_LINE);
-        options.put(FmtOptions.switchBracePlacement, CodeStyle.BracePlacement.NEW_LINE);
-        options.put(FmtOptions.catchBracePlacement, CodeStyle.BracePlacement.NEW_LINE);
-        options.put(FmtOptions.otherBracePlacement, CodeStyle.BracePlacement.NEW_LINE);
+        options.put(FmtOptions.CLASS_DECL_BRACE_PLACEMENT, CodeStyle.BracePlacement.NEW_LINE);
+        options.put(FmtOptions.METHOD_DECL_BRACE_PLACEMENT, CodeStyle.BracePlacement.NEW_LINE);
+        options.put(FmtOptions.IF_BRACE_PLACEMENT, CodeStyle.BracePlacement.NEW_LINE);
+        options.put(FmtOptions.FOR_BRACE_PLACEMENT, CodeStyle.BracePlacement.NEW_LINE);
+        options.put(FmtOptions.WHILE_BRACE_PLACEMENT, CodeStyle.BracePlacement.NEW_LINE);
+        options.put(FmtOptions.SWITCH_BRACE_PLACEMENT, CodeStyle.BracePlacement.NEW_LINE);
+        options.put(FmtOptions.CATCH_BRACE_PLACEMENT, CodeStyle.BracePlacement.NEW_LINE);
+        options.put(FmtOptions.OTHER_BRACE_PLACEMENT, CodeStyle.BracePlacement.NEW_LINE);
         reformatFileContents("testfiles/formatting/namespaces_03.php", options);
     }
 
     public void testNamespaces04() throws Exception {
         HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
-        options.put(FmtOptions.classDeclBracePlacement, CodeStyle.BracePlacement.NEW_LINE_INDENTED);
-        options.put(FmtOptions.methodDeclBracePlacement, CodeStyle.BracePlacement.NEW_LINE_INDENTED);
-        options.put(FmtOptions.ifBracePlacement, CodeStyle.BracePlacement.NEW_LINE_INDENTED);
-        options.put(FmtOptions.forBracePlacement, CodeStyle.BracePlacement.NEW_LINE_INDENTED);
-        options.put(FmtOptions.whileBracePlacement, CodeStyle.BracePlacement.NEW_LINE_INDENTED);
-        options.put(FmtOptions.switchBracePlacement, CodeStyle.BracePlacement.NEW_LINE_INDENTED);
-        options.put(FmtOptions.catchBracePlacement, CodeStyle.BracePlacement.NEW_LINE_INDENTED);
-        options.put(FmtOptions.otherBracePlacement, CodeStyle.BracePlacement.NEW_LINE_INDENTED);
+        options.put(FmtOptions.CLASS_DECL_BRACE_PLACEMENT, CodeStyle.BracePlacement.NEW_LINE_INDENTED);
+        options.put(FmtOptions.METHOD_DECL_BRACE_PLACEMENT, CodeStyle.BracePlacement.NEW_LINE_INDENTED);
+        options.put(FmtOptions.IF_BRACE_PLACEMENT, CodeStyle.BracePlacement.NEW_LINE_INDENTED);
+        options.put(FmtOptions.FOR_BRACE_PLACEMENT, CodeStyle.BracePlacement.NEW_LINE_INDENTED);
+        options.put(FmtOptions.WHILE_BRACE_PLACEMENT, CodeStyle.BracePlacement.NEW_LINE_INDENTED);
+        options.put(FmtOptions.SWITCH_BRACE_PLACEMENT, CodeStyle.BracePlacement.NEW_LINE_INDENTED);
+        options.put(FmtOptions.CATCH_BRACE_PLACEMENT, CodeStyle.BracePlacement.NEW_LINE_INDENTED);
+        options.put(FmtOptions.OTHER_BRACE_PLACEMENT, CodeStyle.BracePlacement.NEW_LINE_INDENTED);
         reformatFileContents("testfiles/formatting/namespaces_04.php", options);
     }
 
@@ -424,13 +424,13 @@ public class PHPFormatterTest extends PHPFormatterTestBase {
 
     public void testIssue184687_01() throws Exception {
         HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
-        options.put(FmtOptions.initialIndent, 4);
+        options.put(FmtOptions.INITIAL_INDENT, 4);
         reformatFileContents("testfiles/formatting/issue184687_01.php", options);
     }
 
     public void testIssue184687_02() throws Exception {
         HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
-        options.put(FmtOptions.initialIndent, 4);
+        options.put(FmtOptions.INITIAL_INDENT, 4);
         reformatFileContents("testfiles/formatting/issue184687_02.php", options);
     }
 
@@ -531,19 +531,19 @@ public class PHPFormatterTest extends PHPFormatterTestBase {
 
     public void testTraitUsesBracePlacement_01() throws Exception {
         HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
-        options.put(FmtOptions.useTraitBodyBracePlacement, CodeStyle.BracePlacement.NEW_LINE);
+        options.put(FmtOptions.USE_TRAIT_BODY_BRACE_PLACEMENT, CodeStyle.BracePlacement.NEW_LINE);
         reformatFileContents("testfiles/formatting/TraitUses01.php", options);
     }
 
     public void testTraitUsesBracePlacement_02() throws Exception {
         HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
-        options.put(FmtOptions.useTraitBodyBracePlacement, CodeStyle.BracePlacement.PRESERVE_EXISTING);
+        options.put(FmtOptions.USE_TRAIT_BODY_BRACE_PLACEMENT, CodeStyle.BracePlacement.PRESERVE_EXISTING);
         reformatFileContents("testfiles/formatting/TraitUses02.php", options);
     }
 
     public void testTraitUsesBracePlacement_03() throws Exception {
         HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
-        options.put(FmtOptions.useTraitBodyBracePlacement, CodeStyle.BracePlacement.SAME_LINE);
+        options.put(FmtOptions.USE_TRAIT_BODY_BRACE_PLACEMENT, CodeStyle.BracePlacement.SAME_LINE);
         reformatFileContents("testfiles/formatting/TraitUses03.php", options);
     }
 
@@ -556,7 +556,7 @@ public class PHPFormatterTest extends PHPFormatterTestBase {
         HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
         reformatFileContents("testfiles/formatting/issue218877.php", options);
     }
-    
+
     public void testIssue218013() throws Exception {
         HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
         reformatFileContents("testfiles/formatting/issue218013.php", options);

@@ -233,6 +233,8 @@ public final class EvaluationWindow extends TopComponent {
 
 	//exprList.setSelectedIndex(index);
         ta.append(result);
+        // fix for #218111 - always scroll on update
+        ta.setCaretPosition(ta.getDocument().getLength());
         updateWindow();
     }
 

@@ -45,25 +45,67 @@ import java.io.*;
 import java.util.ArrayList;
 import javax.swing.MenuElement;
 import javax.swing.JMenuItem;
-
 import junit.framework.Test;
 import org.netbeans.jellytools.JellyTestCase;
-import junit.textui.TestRunner;
 import org.netbeans.jellytools.MainWindowOperator;
 import org.netbeans.jemmy.operators.JMenuBarOperator;
 import org.netbeans.jemmy.operators.Operator.DefaultStringComparator;
+import org.netbeans.jemmy.util.PNGEncoder;
 import org.netbeans.junit.Manager;
 import org.netbeans.junit.NbModuleSuite;
-
 import org.netbeans.test.permanentUI.utils.NbMenuItem;
 import org.netbeans.test.permanentUI.utils.Utilities;
 import org.netbeans.test.permanentUI.utils.MenuChecker;
+import org.netbeans.test.permanentUI.utils.ProjectContext;
+import org.openide.util.Exceptions;
 
 /**
  *
- * @author Lukas Hasik
+ * @author Lukas Hasik, Jan Peska
  */
 public class MainMenuTest extends JellyTestCase {
+
+    // array of tests to be executed
+    public static final String[] ALL_TESTS = new String[]{
+        "testFileMenu",
+        "testEditMenu",
+        "testViewMenu",
+        "testNavigateMenu",
+        "testSourceMenu",
+        "testRefactorMenu",
+        "testDebugMenu",
+        "testRunMenu",
+        "testHelpMenu",
+        "testToolsMenu",
+        "testTeamMenu",
+        "testWindowMenu",
+        "testProfileMenu",
+
+        "testFile_ProjectGroupSubMenu",
+        "testFile_ImportProjectSubMenu",
+        "testFile_ExportProjectSubMenu",
+        "testNavigate_InspectSubMenu",
+        "testView_CodeFoldsSubMenu",
+        "testView_ToolbarsSubMenu",
+        "testProfile_AdvancedCommandsSubMenu",
+        "testDebug_StackSubMenu",
+        "testSource_PreprocessorBlocksSubMenu",
+        "testTools_InternationalizationSubMenu",
+        "testTools_PaletteSubMenu",
+        "testTeam_GitSubMenu",
+        "testTeam_MercurialSubMenu",
+        "testTeam_SubversionSubMenu",
+        "testWindow_DebuggingSubMenu",
+        "testWindow_NavigatingSubMenu",
+        "testWindow_OtherSubMenu",
+        "testWindow_OutputSubMenu",
+        "testWindow_ProfilingSubMenu",
+        "testWindow_VersioningSubMenu",
+        
+        "testMnemonicsCollision"};
+
+    protected boolean logging = false;
+    private static final boolean screen = false;
 
     /** Need to be defined because of JUnit */
     public MainMenuTest(String name) {
@@ -71,70 +113,37 @@ public class MainMenuTest extends JellyTestCase {
     }
 
     public static Test suite() {
-        NbModuleSuite.Configuration conf = NbModuleSuite.createConfiguration(
-                MainMenuTest.class).clusters(".*").enableModules(".*");
-
-          conf.addTest(
-                  "testFileMenu",
-                  "testEditMenu",
-                  "testViewMenu",
-                  "testNavigateMenu",
-                  "testSourceMenu",
-                  "testRefactorMenu",
-                  "testDebugMenu",
-                  "testRunMenu",
-                  "testHelpMenu",
-                  "testToolsMenu",
-                  "testVersioningMenu",
-                  "testWindowMenu",
-
-                  "testFile_ProjectGroupSubMenu",
-                  "testMnemonicsCollision",
-                  "testNavigate_InspectSubMenu",
-                  "testView_CodeFoldsSubMenu",
-                  "testView_ToolbarsSubMenu",
-                  "testProfile_AdvancedCommandsSubMenu",
-                  "testProfile_ProfileOtherSubMenu",
-                  "testRun_SetMainProjectSubMenu",
-                  "testDebug_StackSubMenu",
-                  "testSource_PreprocessorBlocksSubMenu",
-                  "testTools_InternationalizationSubMenu",
-                  "testTools_PaletteSubMenu",
-                  "testVersioning_CVSSubMenu",
-                  "testVersioning_CVS_BranchesSubMenu",
-                  "testVersioning_LocalHistorySubMenu",
-                  "testVersioning_Mercurial_MergeSubMenu",
-                  "testVersioning_Mercurial_RecoverSubMenu",
-                  "testVersioning_Mercurial_ShareSubMenu",
-                  "testVersioning_Mercurial_ShowSubMenu",
-                  "testWindow_DebuggingSubMenu",
-                  "testWindow_NavigatingSubMenu",
-                  "testWindow_OtherSubMenu",
-                  "testWindow_OutputSubMenu",
-                  "testWindow_ProfilingSubMenu",
-                  "testWindow_VersioningSubMenu"
-                  );
+        NbModuleSuite.Configuration conf = NbModuleSuite.createConfiguration(MainMenuTest.class).clusters(".*").enableModules(".*");
+        conf.addTest(ALL_TESTS);
         return conf.suite();
-    }
-
-    /** Use for execution inside IDE */
-    public static void main(java.lang.String[] args) {
-        // run whole suite
-        TestRunner.run(suite());
-    // run only selected test case
-    //junit.textui.TestRunner.run(new IDEValidation("testMainMenu"));
     }
 
     /** Setup called before every test case. */
     @Override
     public void setUp() {
-        System.out.println("########  " + getName() + "  #######");
+        System.out.println("########  " + getProjectContext().toString() + " CONTEXT - " + getName() + "  #######");
         try {
+            clearWorkDir();
             getWorkDir();
+            if (isInit()) {
+                openDataProjects("SampleProject");
+                setInit(false);
+                initSources();
+            }
         } catch (IOException ex) {
             ex.printStackTrace();
         }
+    }
 
+    protected void initSources() {
+        //no sorces needed - NONE context
+    }
+
+    public boolean isInit() {
+        return false;
+    }
+
+    public void setInit(boolean init) {
     }
 
     /** Tear down called after every test case. */
@@ -142,249 +151,155 @@ public class MainMenuTest extends JellyTestCase {
     public void tearDown() {
     }
 
-    /**
-     * Tests if *File* menu in main menu is same as permanent UI spec
-     * http://wiki.netbeans.org/MainMenu#section-MainMenu-File
-     */
     public void testFileMenu() {
         oneMenuTest("File");
     }
 
-    /**
-     * Tests if *Edit* menu in main menu is same as permanent UI spec
-     * http://wiki.netbeans.org/MainMenu#section-MainMenu-Edit
-     */
     public void testEditMenu() {
         oneMenuTest("Edit");
     }
 
-    /**
-     * Tests if *View* menu in main menu is same as permanent UI spec
-     * http://wiki.netbeans.org/MainMenu#section-MainMenu-View
-     */
     public void testViewMenu() {
         oneMenuTest("View");
     }
 
-    /**
-     * Tests if *Navigate* menu in main menu is same as permanent UI spec
-     * http://wiki.netbeans.org/MainMenu#section-MainMenu-Navigate
-     */
     public void testNavigateMenu() {
         oneMenuTest("Navigate");
     }
 
-    /**
-     * Tests if *Source* menu in main menu is same as permanent UI spec
-     * http://wiki.netbeans.org/MainMenu#section-MainMenu-Source
-     */
     public void testSourceMenu() {
         oneMenuTest("Source");
     }
 
-    /**
-     * Tests if *Refactor* menu in main menu is same as permanent UI spec
-     * http://wiki.netbeans.org/MainMenu#section-MainMenu-Refactor
-     */
     public void testRefactorMenu() {
         oneMenuTest("Refactor");
     }
 
-    /**
-     * Tests if *Run* menu in main menu is same as permanent UI spec
-     * http://wiki.netbeans.org/MainMenu#section-MainMenu-Run
-     */
     public void testRunMenu() {
         oneMenuTest("Run");
     }
 
-        /**
-     * Tests if *Build* menu in main menu is same as permanent UI spec
-     * http://wiki.netbeans.org/MainMenu#section-MainMenu-Build
-     */
     public void testDebugMenu() {
         oneMenuTest("Debug");
     }
 
-    /**
-     * Tests if *Help* menu in main menu is same as permanent UI spec
-     * http://wiki.netbeans.org/MainMenu#section-MainMenu-Help
-     */
     public void testHelpMenu() {
         oneMenuTest("Help");
     }
 
-    /**
-     * Tests if *Tools* menu in main menu is same as permanent UI spec
-     * http://wiki.netbeans.org/MainMenu#section-MainMenu-Tools
-     */
     public void testToolsMenu() {
         oneMenuTest("Tools");
     }
 
-    /**
-     * Tests if *Versioning* menu in main menu is same as permanent UI spec
-     * http://wiki.netbeans.org/MainMenu#section-MainMenu-Versioning
-     */
-    public void testVersioningMenu() {
-        oneMenuTest("Versioning");
+    public void testTeamMenu() {
+        oneMenuTest("Team");
     }
 
-    /**
-     * Tests if *Window* menu in main menu is same as permanent UI spec
-     * http://wiki.netbeans.org/MainMenu#section-MainMenu-Window
-     */
     public void testWindowMenu() {
         oneMenuTest("Window");
     }
 
-    /**
-     * Tests if *Run* menu in main menu is same as permanent UI spec
-     * http://wiki.netbeans.org/MainMenu#section-MainMenu-Run
-     */
+    public void testProfileMenu() {
+        oneMenuTest("Profile");
+    }
+
     public void testFile_ProjectGroupSubMenu() {
-        String goldenFile = getMainMenuGoldenFile("File-Project_Group");
-        oneSubMenuTest("File|Project Group", goldenFile, true);
+        oneSubMenuTest("File|Project Group");
     }
 
-    /**
-     * Tests if *Run* menu in main menu is same as permanent UI spec
-     * http://wiki.netbeans.org/MainMenu#section-MainMenu-Run
-     */
+    public void testFile_ImportProjectSubMenu() {
+        oneSubMenuTest("File|Import Project");
+    }
+
+    public void testFile_ExportProjectSubMenu() {
+        oneSubMenuTest("File|Export Project");
+    }
+
     public void testNavigate_InspectSubMenu() {
-        String goldenFile = getMainMenuGoldenFile("Navigate-Inspect");
-        oneSubMenuTest("Navigate|Inspect",  goldenFile, true);
+        oneSubMenuTest("Navigate|Inspect");
     }
 
-    /**
-     * Tests if *Run* menu in main menu is same as permanent UI spec
-     * http://wiki.netbeans.org/MainMenu#section-MainMenu-Run
-     */
     public void testView_CodeFoldsSubMenu() {
-        String goldenFile = getMainMenuGoldenFile("View-Code_Folds");
-        oneSubMenuTest("View|Code Folds", goldenFile, false);
+        //Submenu disabled - do nothing
     }
 
-    /**
-     * Tests if *Run* menu in main menu is same as permanent UI spec
-     * http://wiki.netbeans.org/MainMenu#section-MainMenu-Run
-     */
     public void testView_ToolbarsSubMenu() {
-        String goldenFile = getMainMenuGoldenFile("View-Toolbars");
-        oneSubMenuTest("View|Toolbars", goldenFile, true);
+        oneSubMenuTest("View|Toolbars");
     }
 
     public void testProfile_AdvancedCommandsSubMenu() {
-        String goldenFile = getMainMenuGoldenFile("Profile-Advanced_Commands");
-        oneSubMenuTest("Profile|Advanced Commands", goldenFile, true);
-    }
-
-    public void testProfile_ProfileOtherSubMenu() {
-        String goldenFile = getMainMenuGoldenFile("Profile-Profile_Other");
-        oneSubMenuTest("Profile|Profile Other", goldenFile, true);
-    }
-
-    public void testRun_SetMainProjectSubMenu() {
-        String goldenFile = getMainMenuGoldenFile("Run-Set_Main_Project");
-        oneSubMenuTest("Run|Set Main Project", goldenFile, false);
+        oneSubMenuTest("Profile|Advanced Commands");
     }
 
     public void testDebug_StackSubMenu() {
-        String goldenFile = getMainMenuGoldenFile("Debug-Stack");
-        oneSubMenuTest("Debug|Stack", goldenFile, true);
+        oneSubMenuTest("Debug|Stack");
     }
 
     public void testSource_PreprocessorBlocksSubMenu() {
-        String goldenFile = getMainMenuGoldenFile("Source-Preprocessor_Blocks");
-        oneSubMenuTest("Source|Preprocessor Blocks", goldenFile, false);
+        //Submenu disabled - do nothing
     }
 
     public void testTools_InternationalizationSubMenu() {
-        String goldenFile = getMainMenuGoldenFile("Tools-Internationalization");
-        oneSubMenuTest("Tools|Internationalization", goldenFile, true);
+        oneSubMenuTest("Tools|Internationalization");
     }
 
     public void testTools_PaletteSubMenu() {
-        String goldenFile = getMainMenuGoldenFile("Tools-Palette");
-        oneSubMenuTest("Tools|Palette", goldenFile, true);
+        oneSubMenuTest("Tools|Palette");
     }
 
-    public void testVersioning_CVSSubMenu() {
-        String goldenFile = getMainMenuGoldenFile("Versioning-CVS");
-        oneSubMenuTest("Versioning|CVS", goldenFile, true);
+    public void testTeam_GitSubMenu() {
+        oneSubMenuTest("Team|Git");
     }
 
-    public void testVersioning_CVS_BranchesSubMenu() {
-        String goldenFile = getMainMenuGoldenFile("Versioning-CVS-Branches");
-        oneSubMenuTest("Versioning|CVS|Branches", goldenFile, true);
+    public void testTeam_MercurialSubMenu() {
+        oneSubMenuTest("Team|Mercurial");
     }
 
-    public void testVersioning_LocalHistorySubMenu() {
-        String goldenFile = getMainMenuGoldenFile("Versioning-Local_History");
-        oneSubMenuTest("Versioning|Local History", goldenFile, true);
-    }
-
-    public void testVersioning_Mercurial_MergeSubMenu() {
-        String goldenFile = getMainMenuGoldenFile("Versioning-Mercurial-Merge");
-        oneSubMenuTest("Versioning|Mercurial|Merge", goldenFile, true);
-    }
-
-    public void testVersioning_Mercurial_RecoverSubMenu() {
-        String goldenFile = getMainMenuGoldenFile("Versioning-Mercurial-Recover");
-        oneSubMenuTest("Versioning|Mercurial|Recover", goldenFile, true);
-    }
-
-    public void testVersioning_Mercurial_ShareSubMenu() {
-        String goldenFile = getMainMenuGoldenFile("Versioning-Mercurial-Share");
-        oneSubMenuTest("Versioning|Mercurial|Share", goldenFile, true);
-    }
-
-    public void testVersioning_Mercurial_ShowSubMenu() {
-        String goldenFile = getMainMenuGoldenFile("Versioning-Mercurial-Show");
-        oneSubMenuTest("Versioning|Mercurial|Show", goldenFile, true);
+    public void testTeam_SubversionSubMenu() {
+        //Submenu initializing - do nothing
     }
 
     public void testWindow_DebuggingSubMenu() {
-        String goldenFile = getMainMenuGoldenFile("Window-Debugging");
-        oneSubMenuTest("Window|Debugging",  goldenFile, true);
+        oneSubMenuTest("Window|Debugging");
     }
 
     public void testWindow_NavigatingSubMenu() {
-        String goldenFile = getMainMenuGoldenFile("Window-Navigating");
-        oneSubMenuTest("Window|Navigating", goldenFile, true);
+        oneSubMenuTest("Window|Navigating");
     }
 
     public void testWindow_OtherSubMenu() {
-        String goldenFile = getMainMenuGoldenFile("Window-Other");
-        oneSubMenuTest("Window|Other", goldenFile, true);
+        oneSubMenuTest("Window|Other");
     }
 
     public void testWindow_OutputSubMenu() {
-        String goldenFile = getMainMenuGoldenFile("Window-Output");
-        oneSubMenuTest("Window|Output", goldenFile, true);
+        oneSubMenuTest("Window|Output");
     }
 
     public void testWindow_ProfilingSubMenu() {
-        String goldenFile = getMainMenuGoldenFile("Window-Profiling");
-        oneSubMenuTest("Window|Profiling", goldenFile, true);
+        oneSubMenuTest("Window|Profiling");
     }
 
     public void testWindow_VersioningSubMenu() {
-        String goldenFile = getMainMenuGoldenFile("Window-Versioning");
-        oneSubMenuTest("Window|Versioning", goldenFile, true);
+        oneSubMenuTest("Window|Versioning");
+    }
+
+    ProjectContext getProjectContext(){
+        return ProjectContext.NONE;
     }
 
     /**
-     *
      * @param menuName to be tested
      * @return difference between menuName and golden file with the same name
      */
-    private void oneMenuTest(String menuName) {
-        oneMenuTest(menuName, getMainMenuGoldenFile(menuName));
+    void oneMenuTest(String menuName) {
+        oneMenuTest(menuName, ProjectContext.NONE);
+    }
+
+    void oneMenuTest(String menuName, ProjectContext context) {
+        oneMenuTest(menuName, getMainMenuGoldenFile(menuName, context));
     }
 
     /**
-     *
      * @param menuName to be tested
      * @param goldenFileName to be tested
      * @return difference between menuName and goldenFileName
@@ -404,6 +319,7 @@ public class MainMenuTest extends JellyTestCase {
             Utilities.printMenuStructure(goldenFile, permanentMenu, "---", 1);
 
             NbMenuItem menuItem = getMainMenuItem(menuName);
+            captureScreen();
             ideFile = new PrintStream(menuItemsLogFile);
             Utilities.printMenuStructure(ideFile, menuItem, "---", 1);
 
@@ -428,7 +344,28 @@ public class MainMenuTest extends JellyTestCase {
         }
     }
 
-//
+    /**
+     *
+     * @param menuName to be tested
+     * @return difference between menuName and golden file with the same name
+     */
+    void oneSubMenuTest(String submenuPath, boolean w84init) {
+        oneSubMenuTest(submenuPath, w84init, ProjectContext.NONE);
+    }
+    
+    void oneSubMenuTest(String submenuPath, ProjectContext context) {
+        oneSubMenuTest(submenuPath, false, context);
+    }
+
+    void oneSubMenuTest(String submenuPath) {
+        oneSubMenuTest(submenuPath, false, ProjectContext.NONE);
+    }
+
+    void oneSubMenuTest(String submenuPath, boolean w84init, ProjectContext context) {
+        String fileName = submenuPath.replace('|', '-').replace(' ', '_');
+        oneSubMenuTest(submenuPath, getMainMenuGoldenFile(fileName, context), w84init);
+    }
+
     /**
      *
      * @param submenuName to be tested
@@ -436,7 +373,7 @@ public class MainMenuTest extends JellyTestCase {
      * @param goldenFileName to be tested
      * @return difference between submenuName and goldenFileName
      */
-    private void oneSubMenuTest(String submenuPath, String goldenFileName, boolean pushMenu) throws IllegalArgumentException {
+    private void oneSubMenuTest(String submenuPath, String goldenFileName, boolean w84init) throws IllegalArgumentException {
         NbMenuItem permanentMenu = Utilities.readSubmenuStructureFromFile(goldenFileName);
         assertNotNull("Nothing read from " + goldenFileName, permanentMenu); //was the file read correctly?
         PrintStream ideFile = null;
@@ -446,32 +383,36 @@ public class MainMenuTest extends JellyTestCase {
         final String diffFile = getWorkDirPath() + File.separator + getName() + ".diff";
         ArrayList<NbMenuItem> newSubmenu = Utilities.filterOutSeparators(permanentMenu.getSubmenu()); //TODO: fix the getMainMenuItem(.) to return even separators
         permanentMenu.setSubmenu(newSubmenu); //TODO: remove when getMainMenuItem(.) fixed
-//        System.out.println("GOLDEN FILE:");
-//        Utilities.printMenuStructure(System.out, permanentMenu, "  ", 100);
         try {
             goldenFile = new PrintStream(permuiLogsFile);
 
             Utilities.printMenuStructure(goldenFile, permanentMenu, "   ", 1);
 
             ideFile = new PrintStream(menuItemsLogFile);
-            if(pushMenu) //there are cases when we don't want to push the submenuPath 
+            pushMainMenuItem(submenuPath);
+            captureScreen();
+            if(w84init) {
+                waitForInit();
                 pushMainMenuItem(submenuPath);
+            }
             String submenuItems[] = submenuPath.split("\\|");
             assertTrue("submenuPath must be >= 2. - " + submenuPath, submenuItems.length >= 2); //check the size
             NbMenuItem mainM = getMainMenuItem(submenuItems[0]);
-            //System.out.println("-------------MENU-----------------");
-            //Utilities.printMenuStructure(System.out, mainM, "---", 100);
-
             NbMenuItem submenuItem = Utilities.getMenuByName(submenuItems[submenuItems.length-1], mainM);
-//            mainmenuOp.showMenuItem(submenuPath+"\\|"+submenuItem.getName());
-
             assertNotNull("Cannot find submenu " + submenuPath, submenuItem);//is there such submenu?
             submenuItem.setMnemo((char)0); //remove the mnemonic of the submenu item because it is not in the perm ui spec too
-            //System.out.println("IDE MENU:");
-            //Utilities.printMenuStructure(System.out, submenuItem, "   ", 100);
             Utilities.printMenuStructure(ideFile, submenuItem, "   ", 1);
-            //System.out.println("-------------SUBMENU-----------------");
-            //Utilities.printMenuStructure(System.out, submenuItem, "---", 100);
+
+            if (logging) {
+                System.out.println("GOLDEN FILE:");
+                Utilities.printMenuStructure(System.out, permanentMenu, "  ", 100);
+                System.out.println("-------------MENU-----------------");
+                Utilities.printMenuStructure(System.out, mainM, "---", 100);
+                System.out.println("IDE MENU:");
+                Utilities.printMenuStructure(System.out, submenuItem, "   ", 100);
+                System.out.println("-------------SUBMENU-----------------");
+                Utilities.printMenuStructure(System.out, submenuItem, "---", 100);
+            }
 
             Manager.getSystemDiff().diff(menuItemsLogFile, permuiLogsFile, diffFile);
             //assert
@@ -493,14 +434,14 @@ public class MainMenuTest extends JellyTestCase {
      * @param menuName
      * @return
      */
-    private String getMainMenuGoldenFile(String menuName) {
+    private String getMainMenuGoldenFile(String menuName, ProjectContext context) {
         String dataDir = "";
         try {
             dataDir = getDataDir().getCanonicalPath();
         } catch (IOException ex) {
             ex.printStackTrace();
         }
-        return dataDir +File.separator+ "permanentUI"+File.separator+"mainmenu"+File.separator+ menuName + ".txt";
+        return dataDir + File.separator + "permanentUI" + File.separator + "mainmenu" + File.separator + menuName + context.getPathSuffix() + ".txt";
     }
 
     public JMenuBarOperator pushMainMenuItem(String mainMenuItem) {
@@ -522,5 +463,24 @@ public class MainMenuTest extends JellyTestCase {
         theMenu.setSubmenu(MenuChecker.getMenuArrayList(mainmenuOp.getMenu(position)));
 
         return theMenu;
+    }
+
+    private void waitForInit() {
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+    }
+
+    private void captureScreen() {
+        if(screen) {
+            try {
+                String captureFile = getWorkDir().getAbsolutePath() + File.separator + "screen.png";
+                PNGEncoder.captureScreen(captureFile, PNGEncoder.COLOR_MODE);
+            } catch (Exception ex) {
+                ex.printStackTrace(getLog());
+            }
+        }
     }
 }

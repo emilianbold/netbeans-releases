@@ -429,7 +429,6 @@ public class EjbJarProject implements Project, FileChangeListener {
                 // FIXME this is just fallback for code searching for the old SPI in lookup
                 // remove in next release
                 new EjbJarImpl(apiEjbJar),
-                new EjbJarActionProvider(this, updateHelper),
                 new EjbJarLogicalViewProvider(this, updateHelper, evaluator(), spp, refHelper, ejbModule),
                 new CustomizerProviderImpl( this, updateHelper, evaluator(), refHelper ),
                 LookupMergerSupport.createClassPathProviderMerger(cpProvider),

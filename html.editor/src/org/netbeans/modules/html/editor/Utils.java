@@ -44,11 +44,8 @@ package org.netbeans.modules.html.editor;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.logging.Level;
 import javax.swing.text.Document;
-import javax.swing.text.StyledDocument;
-import org.netbeans.editor.BaseDocument;
-import org.netbeans.modules.css.editor.api.CssCslParserResult;
+import org.netbeans.modules.css.lib.api.CssParserResult;
 import org.netbeans.modules.css.model.api.Model;
 import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
@@ -59,7 +56,6 @@ import org.netbeans.modules.web.common.api.WebUtils;
 import org.openide.cookies.EditorCookie;
 import org.openide.cookies.SaveCookie;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 
 /**
@@ -130,8 +126,8 @@ public class Utils {
             public void run(ResultIterator resultIterator) throws Exception {
                 ResultIterator ri = WebUtils.getResultIterator(resultIterator, "text/css");
                 if(ri != null) {
-                    CssCslParserResult result = (CssCslParserResult)ri.getParserResult();
-                    model_ref.set(result.getModel());
+                    CssParserResult result = (CssParserResult)ri.getParserResult();
+                    model_ref.set(Model.getModel(result));
                 }
                 
             }

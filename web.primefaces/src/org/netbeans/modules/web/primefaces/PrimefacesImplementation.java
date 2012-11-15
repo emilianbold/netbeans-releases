@@ -52,8 +52,6 @@ import java.util.logging.Logger;
 import java.util.prefs.Preferences;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.classpath.ProjectClassPathModifier;
-import org.netbeans.api.project.FileOwnerQuery;
-import org.netbeans.api.project.Project;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.modules.j2ee.common.Util;
@@ -63,7 +61,6 @@ import org.netbeans.modules.web.jsf.api.facesmodel.JSFVersion;
 import org.netbeans.modules.web.jsf.spi.components.JsfComponentCustomizer;
 import org.netbeans.modules.web.jsf.spi.components.JsfComponentImplementation;
 import org.netbeans.modules.web.primefaces.ui.PrimefacesCustomizerPanel;
-import org.netbeans.spi.project.ant.AntArtifactProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.JarFileSystem;
@@ -82,8 +79,12 @@ public class PrimefacesImplementation implements JsfComponentImplementation {
 
     private PrimefacesCustomizer customizer;
 
-    private final String name;
-    private final String description;
+    /** Framework name used also for statistics. */
+    public static final String PRIMEFACES_NAME = "PrimeFaces"; //NOI18N
+
+    // ICEfaces Maven resources
+    private static final String MAVEN_REPO ="default:http://repository.primefaces.org/"; //NOI18N
+    private static final String MAVEN_DEP = "org.primefaces:primefaces:3.4:jar"; //NOI18N
 
     private static final Logger LOGGER = Logger.getLogger(PrimefacesImplementation.class.getName());
     private static final String PRIMEFACES_SPECIFIC_PRIME_RESOURCE = "org.primefaces.application.PrimeResource"; //NOI18N
@@ -95,53 +96,30 @@ public class PrimefacesImplementation implements JsfComponentImplementation {
     public static final String PROP_PREFERRED_LIBRARY = "preferred-library"; //NOI18N
 
     public PrimefacesImplementation() {
-        this.name = NbBundle.getMessage(PrimefacesProvider.class, "LBL_PrimeFaces");  //NOI18N
-        this.description = NbBundle.getMessage(PrimefacesProvider.class, "LBL_PrimeFaces_Description"); //NOI18N
     }
 
     @Override
     public String getName() {
-        return name;
+        return PRIMEFACES_NAME;
+    }
+
+    @NbBundle.Messages({
+        "PrimefacesImplementation.primefaces.display.name=PrimeFaces"
+    })
+    @Override
+    public String getDisplayName() {
+        return Bundle.PrimefacesImplementation_primefaces_display_name();
     }
 
     @Override
     public String getDescription() {
-        return description;
+        return NbBundle.getMessage(PrimefacesProvider.class, "LBL_PrimeFaces_Description"); //NOI18N
     }
 
     @Override
     public Set<FileObject> extend(WebModule webModule, JsfComponentCustomizer jsfComponentCustomizer) {
         // Add PrimeFaces library to WebModule classpath
-        try {
-            Library primefacesLibrary = getPreferredLibrary(jsfComponentCustomizer);
-            if (primefacesLibrary == null) {
-                LOGGER.log(Level.SEVERE, "No PrimeFaces library found.");
-            } else {
-                // in cases of Maven, update library to contains maven-pom references if needed
-                Project project = FileOwnerQuery.getOwner(webModule.getDocumentBase());
-                AntArtifactProvider antArtifactProvider = project.getLookup().lookup(AntArtifactProvider.class);
-                if (antArtifactProvider == null) {
-                    Map<String, String> properties = primefacesLibrary.getProperties();
-                     if (!properties.containsKey("maven-dependencies") //NOI18N
-                             || properties.get("maven-dependencies").trim().isEmpty()) { //NOI18N
-                        List<URI> pomURIs = getPomURIs(primefacesLibrary);
-                        if (!pomURIs.isEmpty()) {
-                            primefacesLibrary = JsfComponentUtils.enhanceLibraryWithPomContent(primefacesLibrary, pomURIs);
-                        }
-                    }
-                }
-
-                FileObject[] javaSources = webModule.getJavaSources();
-                ProjectClassPathModifier.addLibraries(
-                        new Library[] {primefacesLibrary},
-                        javaSources[0],
-                        ClassPath.COMPILE);
-            }
-        } catch (IOException ex) {
-            LOGGER.log(Level.WARNING, "Exception during extending an web project", ex); //NOI18N
-        } catch (UnsupportedOperationException ex) {
-            LOGGER.log(Level.WARNING, "Exception during extending an web project", ex); //NOI18N
-        }
+        extendClasspath(webModule, jsfComponentCustomizer);
 
         // generate PrimeFaces welcome page
         try {
@@ -183,16 +161,49 @@ public class PrimefacesImplementation implements JsfComponentImplementation {
     @Override
     public void remove(WebModule webModule) {
         try {
-            List<Library> allRegisteredPrimefaces = getAllRegisteredPrimefaces();
-            ProjectClassPathModifier.removeLibraries(
-                    allRegisteredPrimefaces.toArray(new Library[allRegisteredPrimefaces.size()]),
-                    webModule.getJavaSources()[0],
-                    ClassPath.COMPILE);
+            List<Library> primefacesLibraries;
+            if (JsfComponentUtils.isMavenBased(webModule)) {
+                primefacesLibraries = Arrays.asList(getMavenLibrary());
+            } else {
+                primefacesLibraries = getAllRegisteredPrimefaces();
+            }
+            ProjectClassPathModifier.removeLibraries(primefacesLibraries.toArray(
+                    new Library[primefacesLibraries.size()]), webModule.getJavaSources()[0], ClassPath.COMPILE);
         } catch (IOException ex) {
             LOGGER.log(Level.WARNING, "Exception during removing JSF suite from an web project", ex); //NOI18N
         } catch (UnsupportedOperationException ex) {
             LOGGER.log(Level.WARNING, "Exception during removing JSF suite from an web project", ex); //NOI18N
         }
+    }
+
+    private static void extendClasspath(WebModule webModule, JsfComponentCustomizer jsfComponentCustomizer) {
+        try {
+            Library primefacesLibrary;
+            if (JsfComponentUtils.isMavenBased(webModule)) {
+                primefacesLibrary = getMavenLibrary();
+            } else {
+                primefacesLibrary = getPreferredLibrary(jsfComponentCustomizer);
+                if (primefacesLibrary == null) {
+                    LOGGER.log(Level.SEVERE, "No PrimeFaces library found.");
+                }
+            }
+            FileObject[] javaSources = webModule.getJavaSources();
+                ProjectClassPathModifier.addLibraries(
+                        new Library[] {primefacesLibrary},
+                        javaSources[0],
+                        ClassPath.COMPILE);
+        } catch (IOException ex) {
+            LOGGER.log(Level.WARNING, "Exception during extending an web project", ex); //NOI18N
+        } catch (UnsupportedOperationException ex) {
+            LOGGER.log(Level.WARNING, "Exception during extending an web project", ex); //NOI18N
+        }
+    }
+
+    private static Library getMavenLibrary() {
+        return JsfComponentUtils.createMavenDependencyLibrary(
+                PRIMEFACES_NAME + "-maven-lib", //NOI18N
+                new String[]{MAVEN_DEP},
+                new String[]{MAVEN_REPO});
     }
 
      /**

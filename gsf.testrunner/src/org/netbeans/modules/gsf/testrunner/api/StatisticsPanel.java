@@ -61,6 +61,7 @@ import javax.swing.SwingConstants;
 import javax.swing.UIManager;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.openide.awt.ToolbarWithOverflow;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
@@ -139,7 +140,7 @@ final class StatisticsPanel extends JPanel {
         createNextPrevFailureButtons();
         String testingFramework = Manager.getInstance().getTestingFramework();
 
-        JToolBar toolbar = new JToolBar(SwingConstants.VERTICAL);
+        JToolBar toolbar = new ToolbarWithOverflow(SwingConstants.VERTICAL);
         toolbar.add(rerunButton);
         toolbar.add(rerunFailedButton);
         toolbar.add(new JToolBar.Separator());
@@ -152,9 +153,9 @@ final class StatisticsPanel extends JPanel {
 //        if(testingFramework.equals(Manager.TESTNG_TF) || testingFramework.equals(Manager.JUNIT_TF)) {
 //            toolbar.add(btnShowIgnored);
 //        }
-//        if(testingFramework.equals(Manager.TESTNG_TF)) {
-//            toolbar.add(btnShowSkipped);
-//        }
+        if(testingFramework.equals(Manager.TESTNG_TF)) {
+            toolbar.add(btnShowSkipped);
+        }
         toolbar.add(new JToolBar.Separator());
         toolbar.add(previousFailure);
         toolbar.add(nextFailure);

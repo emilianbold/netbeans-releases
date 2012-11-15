@@ -821,7 +821,7 @@ public class ProjectBridge {
         cache.clear();
     }
     
-    private CompilerSet getCompilerSet(){
+    public CompilerSet getCompilerSet(){
         MakeConfiguration makeConfiguration = makeConfigurationDescriptor.getActiveConfiguration();
         return makeConfiguration.getCompilerSet().getCompilerSet();
     }

@@ -1,0 +1,25 @@
+/* 
+    Document   : style
+    Created on : Aug 19, 2012, 12:32:23 PM
+    Author     : jb
+    Description:
+        Purpose of the stylesheet follows.
+*/
+
+.footer {
+    margin-top: 20px;
+    font-size: 10px;
+    color: gray;
+}
+
+.thumb {
+    width: 100px;
+    height: 100px;
+}
+
+.fancy {
+    font-family: sans-serif;
+    font-size: 16px;
+    padding: 20px;
+}
+

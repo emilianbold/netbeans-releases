@@ -64,7 +64,9 @@ import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
 
 /**
- * HTML content indexer
+ * HTML content indexer.
+ * 
+ * TODO the file changes event should be aggregated and fire one event once the indexing finishes!!!
  *
  * @author mfukala@netbeans.org
  */

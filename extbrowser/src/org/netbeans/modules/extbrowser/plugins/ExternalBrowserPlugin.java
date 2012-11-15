@@ -93,6 +93,8 @@ public final class ExternalBrowserPlugin {
     }
 
     private static final ExternalBrowserPlugin INSTANCE = new ExternalBrowserPlugin();
+    
+    private static RequestProcessor RP = new RequestProcessor("ExternalBrowserPlugin", 5); // NOI18N
 
     private ExternalBrowserPlugin() {
         try {
@@ -135,7 +137,7 @@ public final class ExternalBrowserPlugin {
      * Show URL in browser in given browser tab.
      */
     public void showURLInTab(final BrowserTabDescriptor tab, final URL url) {
-        RequestProcessor.getDefault().post(new Runnable() {
+        RP.post(new Runnable() {
             @Override
             public void run() {
                 tab.init();
@@ -218,9 +220,19 @@ public final class ExternalBrowserPlugin {
             }
         }
     }
+    
+    private void closeOtherDebuggingSessionsWithPageInspector(int tabId) {
+        for(Iterator<BrowserTabDescriptor> iterator = knownBrowserTabs.iterator() ; iterator.hasNext() ; ) {
+            BrowserTabDescriptor browserTab = iterator.next();
+            if ( tabId != browserTab.tabID && browserTab.isPageInspectorActive()) {
+                close(browserTab, false);
+            }
+        }
+    }
 
     class BrowserPluginHandler implements WebSocketReadHandler {
-
+        /** Name of the attribute of the INIT message that holds the version information. */
+        private static final String VERSION = "version"; // NOI18N
         private static final String URL = "url";        // NOI18N
 
         /* (non-Javadoc)
@@ -274,12 +286,18 @@ public final class ExternalBrowserPlugin {
         }
 
         private void handleInit( Message message , SelectionKey key ){
+            String version = (String)message.getValue().get(VERSION);
             String url = (String)message.getValue().get(URL);
             int tabId = message.getTabId();
-            if ( url == null || tabId == -1 ){
+            if (version == null || url == null || tabId == -1) {
                 return;
             }
-            final Pair p = getAwaitingPair(url);
+            final Pair p;
+            if (isSupportedVersion(version)) {
+                p = getAwaitingPair(url);
+            } else {
+                p = null;
+            }
             ExtBrowserImpl browserImpl = p != null ? p.impl : null;
             if (browserImpl == null) {
                 Map map = new HashMap();
@@ -304,6 +322,18 @@ public final class ExternalBrowserPlugin {
             }
         }
 
+        /**
+         * Determines whether the specified version of the INIT message/protocol
+         * is supported or not.
+         * 
+         * @param version version to check.
+         * @return {@code true} when the version is supported,
+         * returns {@code false} otherwise.
+         */
+        private boolean isSupportedVersion(String version) {
+            return version.startsWith("1."); // NOI18N
+        }
+
         private void handleDebuggerDetached(Message message) {
             int tabId = message.getTabId();
             if ( tabId == -1 ){
@@ -313,6 +343,10 @@ public final class ExternalBrowserPlugin {
         }
         
         private Pair getAwaitingPair(String url) {
+            if (url.startsWith("chrome")) {
+                // ignore internal chrome URLs:
+                return null;
+            }
             URL u = null;
             try {
                 u = new URL(url);
@@ -447,7 +481,7 @@ public final class ExternalBrowserPlugin {
                     executor.activate();
                 }
                 // Do not block WebSocket thread
-                RequestProcessor.getDefault().post(new Runnable() {
+                RP.post(new Runnable() {
                     @Override
                     public void run() {
                         inspector.inspectPage(new ProxyLookup(context, projectContext));
@@ -692,6 +726,11 @@ public final class ExternalBrowserPlugin {
 
             PageInspector inspector = PageInspector.getDefault();
             if (inspector != null && !browserImpl.isDisablePageInspector()) {
+                
+                // #219241 - "Web inspection is broken when switching 2 projects with different configuration"
+                // a solution is to close previous debugging sessions:
+                ExternalBrowserPlugin.getInstance().closeOtherDebuggingSessionsWithPageInspector(tabID);
+                
                 inspector.inspectPage(new ProxyLookup(browserImpl.getLookup(), browserImpl.getProjectContext()));
             }
         }
@@ -721,6 +760,11 @@ public final class ExternalBrowserPlugin {
             if (dispatcher != null) {
                 dispatcher.dispatchMessage(PageInspector.MESSAGE_DISPATCHER_FEATURE_ID, null);
             }
+        }
+        
+        public boolean isPageInspectorActive() {
+            return PageInspector.getDefault() != null && 
+                !browserImpl.isDisablePageInspector();
         }
 
     }

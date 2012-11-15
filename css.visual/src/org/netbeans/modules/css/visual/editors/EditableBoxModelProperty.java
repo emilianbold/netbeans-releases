@@ -45,7 +45,7 @@ import java.beans.PropertyEditor;
 import java.lang.reflect.InvocationTargetException;
 import org.netbeans.modules.css.model.api.semantic.box.EditableBox;
 import org.netbeans.modules.css.model.api.semantic.PModel;
-import org.netbeans.modules.css.visual.RuleNode;
+import org.netbeans.modules.css.visual.RuleEditorNode;
 import org.openide.nodes.Node;
 
 /**
@@ -55,9 +55,9 @@ import org.openide.nodes.Node;
 public class EditableBoxModelProperty extends Node.Property<EditableBox> {
 
     private PModel model;
-    private RuleNode ruleNode;
+    private RuleEditorNode ruleNode;
 
-    public EditableBoxModelProperty(RuleNode ruleNode, PModel model) {
+    public EditableBoxModelProperty(RuleEditorNode ruleNode, PModel model) {
         super(EditableBox.class);
         this.ruleNode = ruleNode;
         this.model = model;

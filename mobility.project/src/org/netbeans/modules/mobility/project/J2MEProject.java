@@ -110,6 +110,7 @@ import org.netbeans.modules.mobility.project.queries.CompiledSourceForBinaryQuer
 import org.netbeans.modules.mobility.project.queries.JavadocForBinaryQueryImpl;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.api.project.ProjectInformation;
+import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.j2me.cdc.platform.CDCPlatform;
 import org.netbeans.modules.mobility.project.classpath.J2MEClassPathProvider;
 import org.netbeans.modules.mobility.project.deployment.DeploymentPropertiesHandler;
@@ -444,6 +445,7 @@ public final class J2MEProject implements Project, AntProjectListener {
         
         J2MEActionProvider actionProvider = new J2MEActionProvider( this, helper );
         Object stdLookups[]=new Object[] {
+            J2MEProject.this,
             new Info(),
             rp,
             aux,
@@ -719,10 +721,9 @@ public final class J2MEProject implements Project, AntProjectListener {
             final String srcDir = helper.getStandardPropertyEvaluator().getProperty(DefaultPropertiesDescriptor.SRC_DIR);
             final FileObject srcRoot = srcDir == null ? null : helper.resolveFileObject(srcDir);
             final Project other = srcRoot == null ? null : FileOwnerQuery.getOwner(srcRoot);
-            if (other != null && !J2MEProject.this.equals(other)) {
+            if (other != null && !J2MEProject.this.equals(other.getLookup().lookup(J2MEProject.class))) {
                 if (Arrays.asList(OpenProjects.getDefault().getOpenProjects()).contains(other)) {
-                    final ProjectInformation pi = other.getLookup().lookup(ProjectInformation.class);
-                    final String name = pi == null ? other.getProjectDirectory().getPath() : pi.getDisplayName();
+                    final String name = ProjectUtils.getInformation(other).getDisplayName();
                     if (NotifyDescriptor.OK_OPTION.equals(DialogDisplayer.getDefault().notify(
                             new NotifyDescriptor.Confirmation(NbBundle.getMessage(J2MEProject.class, "MSG_ClashingSourceRoots", J2MEProject.this.getName(), name), NotifyDescriptor.OK_CANCEL_OPTION, NotifyDescriptor.WARNING_MESSAGE)))) { //NOI18N
                         OpenProjects.getDefault().close(new Project[]{other});

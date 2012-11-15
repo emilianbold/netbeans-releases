@@ -48,9 +48,10 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Date;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 import javax.swing.UIManager;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.web.common.api.ServerURLMapping;
@@ -85,6 +86,7 @@ public class BrowserConsoleLogger implements Console.Listener {
     /** The last logged message. */
     private ConsoleMessage lastMessage;
     //private Color colorErrBrighter;
+    private final AtomicBoolean shownOnError = new AtomicBoolean(false);
 
     public BrowserConsoleLogger(ProjectContext pc) {
         this.pc = pc;
@@ -128,6 +130,7 @@ public class BrowserConsoleLogger implements Console.Listener {
 //        try {
 //            getOutputLogger().getOut().reset();
 //        } catch (IOException ex) {}
+        shownOnError.set(false);
     }
 
     @Override
@@ -232,7 +235,7 @@ public class BrowserConsoleLogger implements Console.Listener {
                 ow.println(sb.toString());
             }
         }
-        if (io.isClosed() || isErr) {
+        if (io.isClosed() || (isErr && !shownOnError.getAndSet(true))) {
             io.select();
         }
     }
@@ -256,6 +259,9 @@ public class BrowserConsoleLogger implements Console.Listener {
         }
         int fileEnd = line.lastIndexOf(':', lineNumberEnd-1);
         if (fileEnd == -1) {
+            return null;
+        }
+        if (start >= fileEnd) {
             return null;
         }
         int lineNumber = -1;

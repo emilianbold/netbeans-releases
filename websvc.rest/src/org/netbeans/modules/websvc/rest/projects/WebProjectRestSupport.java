@@ -86,7 +86,8 @@ import org.openide.util.NbBundle;
  *
  * @author Nam Nguyen
  */
-@ProjectServiceProvider(service=RestSupport.class, projectType="org-netbeans-modules-web-project")
+@ProjectServiceProvider(service={RestSupport.class, WebRestSupport.class}, 
+    projectType="org-netbeans-modules-web-project")
 public class WebProjectRestSupport extends WebRestSupport {
 
     public static final String J2EE_SERVER_INSTANCE = "j2ee.server.instance";   //NOI18N

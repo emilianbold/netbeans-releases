@@ -223,6 +223,13 @@ public class FileChooserBuilderTest extends NbTestCase {
         assertEquals (ff.size() + 1, actual.size());
     }
 
+    public void testSetAcceptAllFileFilterUsed() {
+        FileChooserBuilder instance = new FileChooserBuilder("k");
+        assertTrue(instance.createFileChooser().isAcceptAllFileFilterUsed());
+        instance.setAcceptAllFileFilterUsed(false);
+        assertFalse(instance.createFileChooser().isAcceptAllFileFilterUsed());
+    }
+
     private static final class FF extends FileFilter {
         private String x;
         FF(String x) {

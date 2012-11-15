@@ -44,7 +44,6 @@ package org.netbeans.modules.php.editor.api;
 import java.net.URL;
 import java.util.LinkedHashSet;
 import java.util.Set;
-import org.netbeans.modules.php.editor.api.NameKind.Prefix;
 import org.netbeans.modules.php.editor.api.elements.AliasedElement;
 import org.netbeans.modules.php.editor.api.elements.ClassElement;
 import org.netbeans.modules.php.editor.api.elements.ConstantElement;
@@ -55,10 +54,10 @@ import org.netbeans.modules.php.editor.api.elements.MethodElement;
 import org.netbeans.modules.php.editor.api.elements.NamespaceElement;
 import org.netbeans.modules.php.editor.api.elements.PhpElement;
 import org.netbeans.modules.php.editor.api.elements.TraitElement;
+import org.netbeans.modules.php.editor.api.elements.TreeElement;
 import org.netbeans.modules.php.editor.api.elements.TypeConstantElement;
 import org.netbeans.modules.php.editor.api.elements.TypeElement;
 import org.netbeans.modules.php.editor.api.elements.TypeMemberElement;
-import org.netbeans.modules.php.editor.api.elements.TreeElement;
 import org.netbeans.modules.php.editor.api.elements.VariableElement;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
 import org.openide.filesystems.FileObject;
@@ -187,15 +186,15 @@ public interface ElementQuery {
 
         Set<TypeConstantElement> getDeclaredTypeConstants(TypeElement typeElement);
 
-        public LinkedHashSet<TypeElement> getDirectInheritedTypes(final TypeElement typeElement);
+        LinkedHashSet<TypeElement> getDirectInheritedTypes(final TypeElement typeElement);
 
-        public LinkedHashSet<ClassElement> getDirectInheritedClasses(final TypeElement typeElement);
+        LinkedHashSet<ClassElement> getDirectInheritedClasses(final TypeElement typeElement);
 
-        public LinkedHashSet<InterfaceElement> getDirectInheritedInterfaces(final TypeElement typeElement);
+        LinkedHashSet<InterfaceElement> getDirectInheritedInterfaces(final TypeElement typeElement);
 
-        public LinkedHashSet<TypeElement> getDirectInheritedByTypes(final TypeElement typeElement);
+        LinkedHashSet<TypeElement> getDirectInheritedByTypes(final TypeElement typeElement);
 
-        public LinkedHashSet<TypeElement> getInheritedByTypes(final TypeElement typeElement);
+        LinkedHashSet<TypeElement> getInheritedByTypes(final TypeElement typeElement);
         /**
          * @return all extended classes (see method getInheritedClasses) + implemented interfaces (see method getInheritedInterfaces)
          * recursively
@@ -302,7 +301,7 @@ public interface ElementQuery {
          */
         Set<TypeConstantElement> getAllTypeConstants(NameKind.Exact typeQuery, NameKind constantQuery);
 
-        /** probably delete, just because of being able to somehow fast rewrite */
+        /** probably delete, just because of being able to somehow fast rewrite. */
         Set<FileObject> getLocationsForIdentifiers(String identifierName);
     }
 }

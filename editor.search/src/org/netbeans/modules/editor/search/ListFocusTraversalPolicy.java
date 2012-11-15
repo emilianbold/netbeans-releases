@@ -46,6 +46,7 @@ import java.awt.Container;
 import java.awt.FocusTraversalPolicy;
 import java.util.ArrayList;
 import java.util.List;
+import javax.swing.text.JTextComponent;
 
 public class ListFocusTraversalPolicy extends FocusTraversalPolicy {
 
@@ -64,9 +65,15 @@ public class ListFocusTraversalPolicy extends FocusTraversalPolicy {
         if (indexOf == -1) {
             return null;
         } else if (indexOf == getFocusList().size() - 1) {
-            return isFocusableComponent(getFocusList().get(0)) ? getFocusList().get(0) : getComponentAfter(aContainer, getFocusList().get(0));
+            Component nextComponent = isFocusableComponent(getFocusList().get(0)) ? getFocusList().get(0) : getComponentAfter(aContainer, getFocusList().get(0));
+            deselectComponent(aComponent);
+            selectComponent(nextComponent);
+            return nextComponent;
         } else {
-            return isFocusableComponent(getFocusList().get(indexOf + 1)) ? getFocusList().get(indexOf + 1) : getComponentAfter(aContainer, getFocusList().get(indexOf + 1));
+            Component nextComponent = isFocusableComponent(getFocusList().get(indexOf + 1)) ? getFocusList().get(indexOf + 1) : getComponentAfter(aContainer, getFocusList().get(indexOf + 1));
+            deselectComponent(aComponent);
+            selectComponent(nextComponent);
+            return nextComponent;
         }
     }
 
@@ -76,9 +83,27 @@ public class ListFocusTraversalPolicy extends FocusTraversalPolicy {
         if (indexOf == -1) {
             return null;
         } else if (indexOf == 0) {
-            return isFocusableComponent(getFocusList().get(getFocusList().size() - 1)) && getFocusList().get(getFocusList().size() - 1).isVisible() ? getFocusList().get(getFocusList().size() - 1) : getComponentBefore(aContainer, getFocusList().get(getFocusList().size() - 1));
+            Component nextComponent = isFocusableComponent(getFocusList().get(getFocusList().size() - 1)) && getFocusList().get(getFocusList().size() - 1).isVisible() ? getFocusList().get(getFocusList().size() - 1) : getComponentBefore(aContainer, getFocusList().get(getFocusList().size() - 1));
+            deselectComponent(aComponent);
+            selectComponent(nextComponent);
+            return nextComponent;
         } else {
-            return isFocusableComponent(getFocusList().get(indexOf - 1)) ? getFocusList().get(indexOf - 1) : getComponentBefore(aContainer, getFocusList().get(indexOf - 1));
+            Component nextComponent = isFocusableComponent(getFocusList().get(indexOf - 1)) ? getFocusList().get(indexOf - 1) : getComponentBefore(aContainer, getFocusList().get(indexOf - 1));
+            deselectComponent(aComponent);
+            selectComponent(nextComponent);
+            return nextComponent;
+        }
+    }
+    
+    private static void deselectComponent(Component aComponent) {
+        if (aComponent instanceof JTextComponent) {
+            ((JTextComponent) aComponent).select(0, 0);
+        }
+    }
+    
+    private static void selectComponent(Component aComponent) {
+        if (aComponent instanceof JTextComponent) {
+            ((JTextComponent) aComponent).selectAll();
         }
     }
 

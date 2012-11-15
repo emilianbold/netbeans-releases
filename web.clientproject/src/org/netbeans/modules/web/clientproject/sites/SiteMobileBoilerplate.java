@@ -105,7 +105,7 @@ public class SiteMobileBoilerplate implements SiteTemplateImplementation {
 
     @Override
     public Collection<String> supportedLibraries() {
-        return FileUtilities.listJsFilenamesFromZipFile(LIB_FILE);
+        return SiteHelper.stripRootFolder(FileUtilities.listJsFilesFromZipFile(LIB_FILE));
     }
 
 }

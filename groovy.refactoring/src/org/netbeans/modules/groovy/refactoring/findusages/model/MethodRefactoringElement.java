@@ -43,7 +43,6 @@
 package org.netbeans.modules.groovy.refactoring.findusages.model;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import org.codehaus.groovy.ast.ASTNode;
@@ -76,6 +75,11 @@ public class MethodRefactoringElement extends RefactoringElement {
         this.methodType = methodType;
     }
 
+    
+    @Override
+    public String getName() {
+        return ElementUtils.getNameWithoutPackage(node);
+    }
 
     @Override
     public ElementKind getKind() {

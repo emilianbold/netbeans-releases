@@ -12,44 +12,70 @@
         <h2>Editing a Cascading Style Sheet</h2>
         <p> <small><a href="#seealso">See Also</a>&nbsp; </small>
         <p>When editing CSS files, you can take advantage of typical Source Editor features,
-            including indentation, syntax coloring, and standard clipboard commands. NetBeans
-            IDE also provides a CSS Style Builder and a Preview window. Use these features 
-            together to experiment with different styles.</p>
+            including indentation, syntax coloring, and standard clipboard commands. 
+            The IDE also provides windows and dialog boxes that can help you create CSS rules and declarations.</p>
 
         <h4>To open a CSS file in the Source Editor:</h4>
 
+        <ul>
+            <li>Double-click the CSS file node (<img src="../images/css.gif" alt="CSS node icon image">) in the Projects window or Files window. 
+                <p>Alternately, you can right-click the file node and choose Open in the popup menu.</p></li>
+        </ul>
+        <p>The IDE opens the CSS file in a new Source Editor tab.</p>
+        
+        <h3>CSS Styles Window</h3>
+        <p>The CSS Styles window enables you to view the rules defined in a CSS file and to 
+        edit the declarations of rules for HTML elements and selectors in a CSS file. 
+        To open the CSS Styles window, choose Window &gt; Web &gt; CSS Styles from the main menu.
+        The CSS Styles window opens in the main window.</p>
+
+        <h4>To edit a CSS rule using the CSS Styles window, perform the following steps.</h4>
         <ol>
-            <li>Right-click the CSS file's node (<img src="../images/css.gif" alt="CSS node icon image">) in the Files window.  
-            <li>Choose Edit from the pop-up menu. 
-                <p>The IDE opens the CSS file in a new Source Editor
-                    tab and shifts focus to it. Alternately, you can also simply double-click
-                    the file's node in the Files window. 
+            <li>Open the CSS file in the editor.</li>
+            <li>Open the CSS Styles window, if not already open.</li>
+            <li>In the CSS Styles window, double-click the name of the rule that you want to edit.
+                <p>You can type in the text field in the upper pane of the CSS Styles window
+                    to filter the list of rules that are displayed.</p>
+            The lower pane of the CSS Styles window displays the properties and values for the 
+            declarations for the selected rule.</li>
+            <li>Type a value for the property that you want to edit or select
+            a value from the dropdown list adjacent to the property. </li>
+            <li>Press Return on your keyboard.</li>
         </ol>
-        <h3>CSS Style Builder</h3>
-        <p>To open the Style Builder, go to Window &gt; Other &gt; CSS Style Builder. The Style Builder opens below the Editor window.</p>
-        <p>To use the Style Builder, go to the Editor window and place your cursor 
-            in the element whose style you want to define. A set of tabs appear in the Style
-            Builder. The tabs correspond to style categories, such as Font and Background. 
-            Select a tab and select style settings in that tab. For example, to set the font
-            of the &lt;h2&gt; element as Verdana, find <span style="color:green"><b>h2</b></span>
-            in the Editor, open the Font tab in the Style builder, and select "Verdana, Arial, Helvetica,
-            sans-serif" in the list of fonts.  
-        </p>
-        <h3>Preview Window</h3>
-        <p>The IDE provides a Preview window in which you can preview what HTML elements
-            look like according to your CSS. By default, the Preview window appears below and to 
-            the right of the Editor window when you open a CSS file. If the Preview window is
-            closed, open it by going to Window &gt; Other &gt; CSS Preview.</p>
-        <p>The Preview window requires a CSS Previewer plugin. The NetBeans Update Center
-            includes one CSS Previewer, the Flying Saucer Renderer. To install Flying Saucer,
-            go to Tools &gt; Plugins, open the Available Plugins tab, and find the CSS Preview
-            Flying Saucer plugin.</p>
-        <p>To use the Preview window, select a CSS element in the Editor window. If the previewer
-            can render the element, sample text in that style appears in the Preview window.</p>
+            <ul class="note">
+            <li>You can use the buttons in the toolbar in the CSS Styles window to modify the properties that are displayed
+                and to create new rules and add properties.</li>
+        </ul>  
+            
+            
+            
+        
+        <h4>To create a CSS rule using the CSS Styles window, perform the following steps.</h4>
+        <ol>
+            <li>Open the CSS file in the editor.</li>
+            <li>Open the CSS Styles window, if not already open.</li>
+            <li>Place the insert cursor in the CSS file in the line where you want
+            to create the new rule.</li>
+            <li>In the CSS Styles window, click the Create New CSS Rule button (<img src="../images/newcssrule.png" alt="Create New CSS Rule">)
+            to open the Create CSS Rule dialog box.</li>
+            <li>In the create CSS Rule dialog box, select the type of selector that you want to create.</li>
+            <li>Specify the name of the selector by typing in the text field or by selecting an HTML element in the dropdown list.</li>
+            <li>Click OK to create the rule.</li>
+            <li>Place the insert cursor in the new CSS rule in the editor.</li>
+            <li>In the CSS Styles window, click the Add Property button (<img src="../images/newcssproperty.png" alt="Add Property">)
+            to open the Add CSS Property dialog box and specify a value for the
+            property that you want to add. Click OK.
+            <p>Alternatively, specify a value for a property in the lower pane of the
+            CSS Styles window and press Return on your keyboard.</p></li>
+        </ol>
+        
+              
+        
+        
+
         <dl> 
             <dt><a name="seealso">See Also</a></dt>
             <dd> <a href="css_create.html">Creating a Cascading Style Sheet</a></dd>
-            <dd><a href="css_check.html">Checking a Cascading Style Sheet for Validity</a></dd>
             <dd><a href="../dtd/dtd_document.html">Generating DTD Documentation</a> </dd>
         </dl>
         <hr>

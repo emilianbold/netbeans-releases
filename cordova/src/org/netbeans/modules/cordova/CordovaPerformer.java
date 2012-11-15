@@ -41,109 +41,41 @@
  */
 package org.netbeans.modules.cordova;
 
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.Properties;
-import javax.swing.AbstractAction;
-import javax.swing.Action;
+import java.util.prefs.Preferences;
 import org.apache.tools.ant.module.api.support.ActionUtils;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
-import org.netbeans.modules.cordova.android.AndroidPlatform;
-import org.netbeans.modules.cordova.ios.Device;
-import org.netbeans.modules.cordova.ios.IOSPlatform;
+import org.netbeans.modules.cordova.platforms.BuildPerformer;
 import org.netbeans.modules.cordova.project.ClientProjectConfigurationImpl;
+import org.netbeans.modules.cordova.project.ClientProjectUtilities;
+import org.netbeans.modules.web.common.api.ServerURLMapping;
+import org.netbeans.modules.web.common.api.WebServer;
 import org.netbeans.spi.project.ProjectConfigurationProvider;
-import org.netbeans.spi.project.ui.support.ProjectActionPerformer;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.modules.InstalledFileLocator;
 import org.openide.util.*;
+import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
  * @author Jan Becicka
  */
-public class CordovaPerformer extends AbstractAction implements ProjectActionPerformer, ActionListener, ContextAwareAction {
+@ServiceProvider(service=BuildPerformer.class)
+public class CordovaPerformer implements BuildPerformer {
     
-    public static final String BUILD_IOS = "build-ios";
-    public static final String BUILD_ANDROID = "build-android";
-    public static final String RUN_IOS = "sim-ios";
-    public static final String RUN_ANDROID = "sim-android";
-    public static final String CLEAN_IOS = "clean-ios";
-    public static final String CLEAN_ANDROID = "clean-android";
     
-    private String target;
-    private Project p;
- 
-    
-//    @ActionID(id = "org.netbeans.modules.web.clientproject.ui.action.buildIOS", category = "Project")
-//    @ActionRegistration(displayName = "#build-ios", lazy=false)
-//    @ActionReference(position = 1000, path = "Projects/org.netbeans.modules.web.clientproject/Actions")
-    public static CordovaPerformer buildIOS() {
-        return new CordovaPerformer(BUILD_IOS);
-    }
-
-//    @ActionID(id = "org.netbeans.modules.web.clientproject.ui.action.buildAndroid", category = "Project")
-//    @ActionRegistration(displayName = "#build-android", lazy=false)
-//    @ActionReference(position = 1100, path = "Projects/org.netbeans.modules.web.clientproject/Actions")
-    public static CordovaPerformer buildAndroid() {
-        return new CordovaPerformer(BUILD_ANDROID);
-    }
-
-//    @ActionID(id = "org.netbeans.modules.web.clientproject.ui.action.runIOS", category = "Project")
-//    @ActionRegistration(displayName = "#sim-ios", lazy=false)
-//    @ActionReference(position = 1200, path = "Projects/org.netbeans.modules.web.clientproject/Actions")
-    public static CordovaPerformer runIOS() {
-        return new CordovaPerformer(RUN_IOS);
-    }
-
-//    @ActionID(id = "org.netbeans.modules.web.clientproject.ui.action.runAndroid", category = "Project")
-//    @ActionRegistration(displayName = "#sim-android", lazy=false)
-//    @ActionReference(position = 1300, path = "Projects/org.netbeans.modules.web.clientproject/Actions")
-    public static CordovaPerformer runAndroid() {
-        return new CordovaPerformer(RUN_ANDROID);
-    }
-
-//    @ActionID(id = "org.netbeans.modules.web.clientproject.ui.action.cleanIOS", category = "Project")
-//    @ActionRegistration(displayName = "#clean-ios", lazy=false)
-//    @ActionReference(position = 1400, path = "Projects/org.netbeans.modules.web.clientproject/Actions")
-    public static CordovaPerformer cleanIOS() {
-        return new CordovaPerformer(CLEAN_IOS);
-    }
-
-//    @ActionID(id = "org.netbeans.modules.web.clientproject.ui.action.cleanAndroid", category = "Project")
-//    @ActionRegistration(displayName = "#clean-android", lazy=false)
-//    @ActionReference(position = 1500, path = "Projects/org.netbeans.modules.web.clientproject/Actions")
-    public static CordovaPerformer cleanAndroid() {
-        return new CordovaPerformer(CLEAN_ANDROID);
-    }
-
-    public CordovaPerformer(String target) {
-        super(NbBundle.getMessage(CordovaPerformer.class, target));
-        this.target = target;
-    }
-
-    private CordovaPerformer(Project p, String target) {
-        this(target);
-        this.p = p;
-    }
-
     @Override
-    public boolean enable(Project project) {
-        return true;
-    }
-
-    @Override
-    public void perform(Project project) {
-        FileObject buildFo = project.getProjectDirectory().getFileObject("nbproject/build.xml");
+    public void perform(String target, Project project) {
+        FileObject buildFo = project.getProjectDirectory().getFileObject("nbproject/build.xml"); //NOI18N
         if (buildFo == null) {
             generateBuildScripts(project);
-            //updateProjectProperties(project);
-            buildFo = project.getProjectDirectory().getFileObject("nbproject/build.xml");
+            buildFo = project.getProjectDirectory().getFileObject("nbproject/build.xml");//NOI18N
         }
         try { 
             ActionUtils.runTarget(buildFo, new String[]{target}, properties(project));
@@ -158,51 +90,33 @@ public class CordovaPerformer extends AbstractAction implements ProjectActionPer
         ProjectConfigurationProvider provider = p.getLookup().lookup(ProjectConfigurationProvider.class);
         ClientProjectConfigurationImpl activeConfiguration = (ClientProjectConfigurationImpl) provider.getActiveConfiguration();
         Properties props = new Properties();
-        props.put("cordova.home", CordovaPlatform.getDefault().getSdkLocation());
-        props.put("cordova.version", CordovaPlatform.getDefault().getVersion());
-        String debug = activeConfiguration.getProperty("debug.enable");
+        final CordovaPlatform phoneGap = CordovaPlatform.getDefault();
+        props.put("cordova.home", phoneGap.getSdkLocation());//NOI18N
+        props.put("cordova.version", phoneGap.getVersion());//NOI18N
+        props.put("site.root", org.netbeans.modules.cordova.project.ClientProjectUtilities.getSiteRoot(p).getPath());
+        props.put("start.file", org.netbeans.modules.cordova.project.ClientProjectUtilities.getStartFile(p).getPath());
+
+        String debug = ClientProjectUtilities.getProperty(p, "debug.enable");//NOI18N
         if (debug == null) {
-            debug = "true";
+            debug = "true";//NOI18N
         }
-        props.put("debug.enable", debug);
+        props.put("debug.enable", debug);//NOI18N
         //workaround for some strange behavior of ant execution in netbeans
-        props.put("env.DISPLAY", ":0.0");
-        if (activeConfiguration.getType().equals(AndroidPlatform.TYPE)) {
-            props.put("android.build.target", AndroidPlatform.getDefault().getPrefferedTarget());
-            props.put("android.sdk.home", AndroidPlatform.getDefault().getSdkLocation());
-            props.put("android.target.device.arg", "device".equals(activeConfiguration.getProperty("device"))?"-d":"-e");
-        } else if (activeConfiguration.getType().equals(IOSPlatform.TYPE)) {
-            props.put("ios.sim.exec", InstalledFileLocator.getDefault().locate("bin/ios-sim", "org.netbeans.modules.cordova", false).getPath());
-            String virtualDevice = activeConfiguration.getProperty("vd");
-            if (virtualDevice!=null) {
-                Device dev = Device.valueOf(virtualDevice);
-                props.put("ios.device.args", dev.getArgs());
-            } else {
-                //default
-                props.put("ios.device.args", Device.IPHONE.getArgs());
-            }
-        }
+        props.put("env.DISPLAY", ":0.0");//NOI18N
+        activeConfiguration.getDevice().addProperties(props);
         return props;
     }
 
     private void generateBuildScripts(Project project) {
         try {
-            createScript(project, "build.xml", "nbproject/build.xml");
-            createProperties(project, "build.properties", "nbproject/build.properties");
+            createScript(project, "build.xml", "nbproject/build.xml");//NOI18N
+            createProperties(project, "build.properties", "nbproject/build.properties");//NOI18N
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
         }
     }
 
-//    private void updateProjectProperties(Project project) {
-//        AntProjectHelper helper = project.getLookup().lookup(AntProjectHelper.class);
-//        helper.getProperties("nbproject/project.properties");
-//        EditableProperties ep = new EditableProperties(true);
-//        throw new UnsupportedOperationException("Not yet implemented");
-//    }
-
     private void createScript(Project project, String source, String target) throws IOException {
-        //URL buildUrl = CordovaPerformer.class.getResource("build.xml");
         FileObject build= FileUtil.createData(project.getProjectDirectory(), target);
         InputStream resourceAsStream = CordovaPerformer.class.getResourceAsStream(source);
         OutputStream outputStream = build.getOutputStream();
@@ -217,17 +131,17 @@ public class CordovaPerformer extends AbstractAction implements ProjectActionPer
     private void createProperties(Project project, String buildproperties, String nbprojectbuildproperties) {
         Properties props = new Properties();
         try {
-            InputStream is = CordovaPerformer.class.getResourceAsStream("build.properties");
+            InputStream is = CordovaPerformer.class.getResourceAsStream("build.properties");//NOI18N
             try {
                 props.load(is);
             } finally {
                 is.close();
             }
-            props.put("project.name", ProjectUtils.getInformation(project).getDisplayName().replaceAll(" ", ""));
-            props.put("android.project.activity", ProjectUtils.getInformation(project).getDisplayName().replaceAll(" ", ""));
-            props.put("android.project.package","org.netbeans");
-            props.put("android.project.package.folder","org/netbeans");
-            FileObject p= FileUtil.createData(project.getProjectDirectory(), nbprojectbuildproperties);
+            props.put("project.name", ProjectUtils.getInformation(project).getDisplayName().replaceAll(" ", ""));//NOI18N
+            props.put("android.project.activity", ProjectUtils.getInformation(project).getDisplayName().replaceAll(" ", ""));//NOI18N
+            props.put("android.project.package", "org.netbeans");//NOI18N
+            props.put("android.project.package.folder", "org/netbeans");//NOI18N
+            FileObject p = FileUtil.createData(project.getProjectDirectory(), nbprojectbuildproperties);
             OutputStream outputStream = p.getOutputStream();
             try {
                 props.store(outputStream, null);
@@ -240,19 +154,26 @@ public class CordovaPerformer extends AbstractAction implements ProjectActionPer
     }
 
     @Override
-    public void actionPerformed(ActionEvent e) {
-        perform(p);
+    public String getUrl(Project p) {
+        if (org.netbeans.modules.cordova.project.ClientProjectUtilities.isUsingEmbeddedServer(p)) {
+            WebServer.getWebserver().start(p, org.netbeans.modules.cordova.project.ClientProjectUtilities.getStartFile(p), org.netbeans.modules.cordova.project.ClientProjectUtilities.getWebContextRoot(p));
+        } else {
+            WebServer.getWebserver().stop(p);
+        }
+        
+        FileObject fileObject = org.netbeans.modules.cordova.project.ClientProjectUtilities.getStartFile(p);
+        try {
+            return ServerURLMapping.toServer(p, fileObject).toExternalForm().replace("localhost", InetAddress.getLocalHost().getHostAddress());
+        } catch (UnknownHostException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        return null;
     }
 
     @Override
-    public Action createContextAwareInstance(Lookup actionContext) {
-        Project p = actionContext.lookup(Project.class);
-        if (p == null) {
-            return this;
-        }
-        if (p instanceof Project) {
-            return new CordovaPerformer(p, target);
-        }
-        return this;
+    public boolean isPhoneGapBuild(Project p) {
+        Preferences preferences = ProjectUtils.getPreferences(p, CordovaPlatform.class, true);
+        return Boolean.parseBoolean(preferences.get("phonegap", "false"));
     }
+
 }

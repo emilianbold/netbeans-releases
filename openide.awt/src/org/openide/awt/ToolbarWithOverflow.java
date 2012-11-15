@@ -45,6 +45,7 @@ import java.awt.AWTEvent;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
+import java.awt.Insets;
 import java.awt.Toolkit;
 import java.awt.event.AWTEventListener;
 import java.awt.event.ComponentAdapter;
@@ -212,8 +213,9 @@ public class ToolbarWithOverflow extends JToolBar {
     @Override
     public Dimension getPreferredSize() {
         Component[] comps = getAllComponents();
-        int width = 0;
-        int height = 0;
+        Insets insets = getInsets();
+        int width = null == insets ? 0 : insets.left + insets.right;
+        int height = null == insets ? 0 : insets.top + insets.bottom;
         for (int i = 0; i < comps.length; i++) {
             Component comp = comps[i];
             width += getOrientation() == HORIZONTAL ? comp.getPreferredSize().width : comp.getPreferredSize().height;
@@ -299,6 +301,10 @@ public class ToolbarWithOverflow extends JToolBar {
         int maxSize = getOrientation() == HORIZONTAL ? getWidth() : getHeight();
         int overflowButtonSize = getOrientation() == HORIZONTAL ? overflowButton.getPreferredSize().width : overflowButton.getPreferredSize().height;
         int showingButtons = 0;
+        Insets insets = getInsets();
+        if( null != insets ) {
+            sizeSoFar = getOrientation() == HORIZONTAL ? insets.left+insets.right : insets.top+insets.bottom;
+        }
         for (int i = 0; i < comps.length; i++) {
             Component comp = comps[i];
             if( !comp.isVisible() )
@@ -321,6 +327,7 @@ public class ToolbarWithOverflow extends JToolBar {
             if (comps[0] instanceof JComponent) {
                 if (Boolean.TRUE.equals(((JComponent) comps[0]).getClientProperty(PROP_DRAGGER))) {
                     visibleButtons = 1;
+                    return;
                 }
             }
         }

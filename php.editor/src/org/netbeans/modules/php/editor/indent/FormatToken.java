@@ -111,7 +111,8 @@ public class FormatToken {
         WHITESPACE_BEFORE_USE_TRAIT_PART,
         WHITESPACE_BEFORE_USE_TRAIT_BODY_LEFT_BRACE,
         WHITESPACE_BEFORE_USE_TRAIT_BODY_RIGHT_BRACE,
-        WHITESPACE_WITHIN_ARRAY_DECL_PARENS,
+        WHITESPACE_AFTER_ARRAY_DECL_LEFT_PAREN,
+        WHITESPACE_BEFORE_ARRAY_DECL_RIGHT_PAREN,
         WHITESPACE_WITHIN_METHOD_DECL_PARENS,
         WHITESPACE_WITHIN_METHOD_CALL_PARENS,
         WHITESPACE_WITHIN_IF_PARENS,
@@ -136,6 +137,7 @@ public class FormatToken {
         WHITESPACE_BETWEEN_LINE_COMMENTS,
         WHITESPACE_BETWEEN_OPEN_CLOSE_BRACES,
         WHITESPACE_IN_ARGUMENT_LIST,
+        WHITESPACE_IN_ARRAY_ELEMENT_LIST,
         WHITESPACE_IN_INTERFACE_LIST,
         WHITESPACE_IN_PARAMETER_LIST,
         WHITESPACE_IN_CHAINED_METHOD_CALLS,
@@ -262,7 +264,7 @@ public class FormatToken {
 
     /**
      * This class remember length of an identifier that is placed before = or =>
-     * to allow group alignment
+     * to allow group alignment.
      */
     public static class AssignmentAnchorToken extends FormatToken {
 

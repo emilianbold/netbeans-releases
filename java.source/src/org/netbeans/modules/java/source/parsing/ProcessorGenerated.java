@@ -97,7 +97,7 @@ public final class ProcessorGenerated extends TransactionContext.Service {
     private StringBuilder cachedValue;
     private Set<String> cachedResources;
     private boolean cacheChanged;
-    
+    private boolean closedTx;
     
     
     private ProcessorGenerated(@NullAllowed final URL root) {
@@ -188,6 +188,7 @@ public final class ProcessorGenerated extends TransactionContext.Service {
 
     @Override
     protected void commit() throws IOException {
+        closeTx();
         if (!canWrite()) {
             assert generated.isEmpty();
             return;
@@ -211,6 +212,7 @@ public final class ProcessorGenerated extends TransactionContext.Service {
 
     @Override
     protected void rollBack() throws IOException {
+        closeTx();
         if (!canWrite()) {
             assert generated.isEmpty();
             return;
@@ -224,6 +226,13 @@ public final class ProcessorGenerated extends TransactionContext.Service {
         cachedResources = null;
         cachedValue = null;
         cacheChanged = false;
+    }
+
+    private void closeTx() {
+        if (closedTx) {
+            throw new IllegalStateException("Already commited or rolled back transaction.");    //NOI18N
+        }
+        closedTx = true;
     }
     
     private void commitSource(

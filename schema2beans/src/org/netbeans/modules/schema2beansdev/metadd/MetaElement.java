@@ -94,6 +94,7 @@ public class MetaElement implements org.netbeans.modules.schema2beansdev.metadd.
 	private String _BeanInterfaceExtends;
 	private boolean _CanBeEmpty;
 	private boolean _isSet_CanBeEmpty = false;
+	private static final java.util.logging.Logger _logger = java.util.logging.Logger.getLogger("org.netbeans.modules.schema2beansdev.metadd.MetaElement");
 
 	/**
 	 * Normal starting point constructor.
@@ -581,7 +582,23 @@ public class MetaElement implements org.netbeans.modules.schema2beansdev.metadd.
 			out.write(":");
 		}
 		out.write(nodeName);
+		writeNodeAttributes(out, nodeName, namespace, indent, namespaceMap);
 		out.write(">\n");
+		writeNodeChildren(out, nodeName, namespace, indent, namespaceMap);
+		out.write(indent);
+		out.write("</");
+		if (namespace != null) {
+			out.write((String)namespaceMap.get(namespace));
+			out.write(":");
+		}
+		out.write(nodeName);
+		out.write(">\n");
+	}
+
+	protected void writeNodeAttributes(java.io.Writer out, String nodeName, String namespace, String indent, java.util.Map namespaceMap) throws java.io.IOException {
+	}
+
+	protected void writeNodeChildren(java.io.Writer out, String nodeName, String namespace, String indent, java.util.Map namespaceMap) throws java.io.IOException {
 		String nextIndent = indent + "	";
 		if (_DtdName != null) {
 			out.write(nextIndent);
@@ -731,14 +748,6 @@ public class MetaElement implements org.netbeans.modules.schema2beansdev.metadd.
 				out.write("/>\n");	// NOI18N
 			}
 		}
-		out.write(indent);
-		out.write("</");
-		if (namespace != null) {
-			out.write((String)namespaceMap.get(namespace));
-			out.write(":");
-		}
-		out.write(nodeName);
-		out.write(">\n");
 	}
 
 	public void readNode(org.w3c.dom.Node node) {
@@ -764,98 +773,122 @@ public class MetaElement implements org.netbeans.modules.schema2beansdev.metadd.
 					namespacePrefixes.put(attrNSPrefix, attr.getValue());
 				}
 			}
+			readNodeAttributes(node, namespacePrefixes, attrs);
 		}
+		readNodeChildren(node, namespacePrefixes);
+	}
+
+	protected void readNodeAttributes(org.w3c.dom.Node node, java.util.Map namespacePrefixes, org.w3c.dom.NamedNodeMap attrs) {
+		org.w3c.dom.Attr attr;
+		java.lang.String attrValue;
+	}
+
+	protected void readNodeChildren(org.w3c.dom.Node node, java.util.Map namespacePrefixes) {
 		org.w3c.dom.NodeList children = node.getChildNodes();
 		for (int i = 0, size = children.getLength(); i < size; ++i) {
 			org.w3c.dom.Node childNode = children.item(i);
+			if (!(childNode instanceof org.w3c.dom.Element)) {
+				continue;
+			}
 			String childNodeName = (childNode.getLocalName() == null ? childNode.getNodeName().intern() : childNode.getLocalName().intern());
 			String childNodeValue = "";
 			if (childNode.getFirstChild() != null) {
 				childNodeValue = childNode.getFirstChild().getNodeValue();
 			}
-			if (childNodeName == "dtd-name") {
-				_DtdName = childNodeValue;
-			}
-			else if (childNodeName == "namespace") {
-				_Namespace = childNodeValue;
-			}
-			else if (childNodeName == "bean-name") {
-				_BeanName = childNodeValue;
-			}
-			else if (childNodeName == "bean-class") {
-				_BeanClass = childNodeValue;
-			}
-			else if (childNodeName == "wrapper-class") {
-				_WrapperClass = childNodeValue;
-			}
-			else if (childNodeName == "default-value") {
-				String aDefaultValue;
-				aDefaultValue = childNodeValue;
-				_DefaultValue.add(aDefaultValue);
-			}
-			else if (childNodeName == "known-value") {
-				String aKnownValue;
-				aKnownValue = childNodeValue;
-				_KnownValue.add(aKnownValue);
-			}
-			else if (childNodeName == "meta-property") {
-				MetaProperty aMetaProperty = newMetaProperty();
-				aMetaProperty.readNode(childNode, namespacePrefixes);
-				_MetaProperty.add(aMetaProperty);
-			}
-			else if (childNodeName == "comparator-class") {
-				String aComparatorClass;
-				aComparatorClass = childNodeValue;
-				_ComparatorClass.add(aComparatorClass);
-			}
-			else if (childNodeName == "implements") {
-				_Implements = childNodeValue;
-			}
-			else if (childNodeName == "extends") {
-				_Extends = childNodeValue;
-			}
-			else if (childNodeName == "import") {
-				String aImport;
-				aImport = childNodeValue;
-				_Import.add(aImport);
-			}
-			else if (childNodeName == "user-code") {
-				_UserCode = childNodeValue;
-			}
-			else if (childNodeName == "vetoable") {
-				if (childNode.getFirstChild() == null)
-					_Vetoable = true;
-				else
-					_Vetoable = java.lang.Boolean.valueOf(childNodeValue).booleanValue();
-				_isSet_Vetoable = true;
-			}
-			else if (childNodeName == "skip-generation") {
-				if (childNode.getFirstChild() == null)
-					_SkipGeneration = true;
-				else
-					_SkipGeneration = java.lang.Boolean.valueOf(childNodeValue).booleanValue();
-				_isSet_SkipGeneration = true;
-			}
-			else if (childNodeName == "delegator-name") {
-				_DelegatorName = childNodeValue;
-			}
-			else if (childNodeName == "delegator-extends") {
-				_DelegatorExtends = childNodeValue;
-			}
-			else if (childNodeName == "bean-interface-extends") {
-				_BeanInterfaceExtends = childNodeValue;
-			}
-			else if (childNodeName == "can-be-empty") {
-				if (childNode.getFirstChild() == null)
-					_CanBeEmpty = true;
-				else
-					_CanBeEmpty = java.lang.Boolean.valueOf(childNodeValue).booleanValue();
-				_isSet_CanBeEmpty = true;
-			}
-			else {
-				// Found extra unrecognized childNode
+			boolean recognized = readNodeChild(childNode, childNodeName, childNodeValue, namespacePrefixes);
+			if (!recognized) {
+				if (childNode instanceof org.w3c.dom.Element) {
+					_logger.info("Found extra unrecognized childNode '"+childNodeName+"'");
+				}
 			}
 		}
+	}
+
+	protected boolean readNodeChild(org.w3c.dom.Node childNode, String childNodeName, String childNodeValue, java.util.Map namespacePrefixes) {
+		// assert childNodeName == childNodeName.intern()
+		if ("dtd-name".equals(childNodeName)) {
+			_DtdName = childNodeValue;
+		}
+		else if ("namespace".equals(childNodeName)) {
+			_Namespace = childNodeValue;
+		}
+		else if ("bean-name".equals(childNodeName)) {
+			_BeanName = childNodeValue;
+		}
+		else if ("bean-class".equals(childNodeName)) {
+			_BeanClass = childNodeValue;
+		}
+		else if ("wrapper-class".equals(childNodeName)) {
+			_WrapperClass = childNodeValue;
+		}
+		else if ("default-value".equals(childNodeName)) {
+			String aDefaultValue;
+			aDefaultValue = childNodeValue;
+			_DefaultValue.add(aDefaultValue);
+		}
+		else if ("known-value".equals(childNodeName)) {
+			String aKnownValue;
+			aKnownValue = childNodeValue;
+			_KnownValue.add(aKnownValue);
+		}
+		else if ("meta-property".equals(childNodeName)) {
+			MetaProperty aMetaProperty = newMetaProperty();
+			aMetaProperty.readNode(childNode, namespacePrefixes);
+			_MetaProperty.add(aMetaProperty);
+		}
+		else if ("comparator-class".equals(childNodeName)) {
+			String aComparatorClass;
+			aComparatorClass = childNodeValue;
+			_ComparatorClass.add(aComparatorClass);
+		}
+		else if ("implements".equals(childNodeName)) {
+			_Implements = childNodeValue;
+		}
+		else if ("extends".equals(childNodeName)) {
+			_Extends = childNodeValue;
+		}
+		else if ("import".equals(childNodeName)) {
+			String aImport;
+			aImport = childNodeValue;
+			_Import.add(aImport);
+		}
+		else if ("user-code".equals(childNodeName)) {
+			_UserCode = childNodeValue;
+		}
+		else if ("vetoable".equals(childNodeName)) {
+			if (childNode.getFirstChild() == null)
+				_Vetoable = true;
+			else
+				_Vetoable = ("true".equalsIgnoreCase(childNodeValue) || "1".equals(childNodeValue));
+			_isSet_Vetoable = true;
+		}
+		else if ("skip-generation".equals(childNodeName)) {
+			if (childNode.getFirstChild() == null)
+				_SkipGeneration = true;
+			else
+				_SkipGeneration = ("true".equalsIgnoreCase(childNodeValue) || "1".equals(childNodeValue));
+			_isSet_SkipGeneration = true;
+		}
+		else if ("delegator-name".equals(childNodeName)) {
+			_DelegatorName = childNodeValue;
+		}
+		else if ("delegator-extends".equals(childNodeName)) {
+			_DelegatorExtends = childNodeValue;
+		}
+		else if ("bean-interface-extends".equals(childNodeName)) {
+			_BeanInterfaceExtends = childNodeValue;
+		}
+		else if ("can-be-empty".equals(childNodeName)) {
+			if (childNode.getFirstChild() == null)
+				_CanBeEmpty = true;
+			else
+				_CanBeEmpty = ("true".equalsIgnoreCase(childNodeValue) || "1".equals(childNodeValue));
+			_isSet_CanBeEmpty = true;
+		}
+		else {
+			return false;
+		}
+		return true;
 	}
 
 	public void validate() throws org.netbeans.modules.schema2beansdev.metadd.MetaDD.ValidateException {
@@ -894,96 +927,96 @@ public class MetaElement implements org.netbeans.modules.schema2beansdev.metadd.
 	public void changePropertyByName(String name, Object value) {
 		if (name == null) return;
 		name = name.intern();
-		if (name == "dtdName")
+		if ("dtdName".equals(name))
 			setDtdName((String)value);
-		else if (name == "namespace")
+		else if ("namespace".equals(name))
 			setNamespace((String)value);
-		else if (name == "beanName")
+		else if ("beanName".equals(name))
 			setBeanName((String)value);
-		else if (name == "beanClass")
+		else if ("beanClass".equals(name))
 			setBeanClass((String)value);
-		else if (name == "wrapperClass")
+		else if ("wrapperClass".equals(name))
 			setWrapperClass((String)value);
-		else if (name == "defaultValue")
+		else if ("defaultValue".equals(name))
 			addDefaultValue((String)value);
-		else if (name == "defaultValue[]")
+		else if ("defaultValue[]".equals(name))
 			setDefaultValue((String[]) value);
-		else if (name == "knownValue")
+		else if ("knownValue".equals(name))
 			addKnownValue((String)value);
-		else if (name == "knownValue[]")
+		else if ("knownValue[]".equals(name))
 			setKnownValue((String[]) value);
-		else if (name == "metaProperty")
+		else if ("metaProperty".equals(name))
 			addMetaProperty((MetaProperty)value);
-		else if (name == "metaProperty[]")
+		else if ("metaProperty[]".equals(name))
 			setMetaProperty((MetaProperty[]) value);
-		else if (name == "comparatorClass")
+		else if ("comparatorClass".equals(name))
 			addComparatorClass((String)value);
-		else if (name == "comparatorClass[]")
+		else if ("comparatorClass[]".equals(name))
 			setComparatorClass((String[]) value);
-		else if (name == "implements")
+		else if ("implements".equals(name))
 			setImplements((String)value);
-		else if (name == "extends")
+		else if ("extends".equals(name))
 			setExtends((String)value);
-		else if (name == "import")
+		else if ("import".equals(name))
 			addImport((String)value);
-		else if (name == "import[]")
+		else if ("import[]".equals(name))
 			setImport((String[]) value);
-		else if (name == "userCode")
+		else if ("userCode".equals(name))
 			setUserCode((String)value);
-		else if (name == "vetoable")
+		else if ("vetoable".equals(name))
 			setVetoable(((java.lang.Boolean)value).booleanValue());
-		else if (name == "skipGeneration")
+		else if ("skipGeneration".equals(name))
 			setSkipGeneration(((java.lang.Boolean)value).booleanValue());
-		else if (name == "delegatorName")
+		else if ("delegatorName".equals(name))
 			setDelegatorName((String)value);
-		else if (name == "delegatorExtends")
+		else if ("delegatorExtends".equals(name))
 			setDelegatorExtends((String)value);
-		else if (name == "beanInterfaceExtends")
+		else if ("beanInterfaceExtends".equals(name))
 			setBeanInterfaceExtends((String)value);
-		else if (name == "canBeEmpty")
+		else if ("canBeEmpty".equals(name))
 			setCanBeEmpty(((java.lang.Boolean)value).booleanValue());
 		else
 			throw new IllegalArgumentException(name+" is not a valid property name for MetaElement");
 	}
 
 	public Object fetchPropertyByName(String name) {
-		if (name == "dtdName")
+		if ("dtdName".equals(name))
 			return getDtdName();
-		if (name == "namespace")
+		if ("namespace".equals(name))
 			return getNamespace();
-		if (name == "beanName")
+		if ("beanName".equals(name))
 			return getBeanName();
-		if (name == "beanClass")
+		if ("beanClass".equals(name))
 			return getBeanClass();
-		if (name == "wrapperClass")
+		if ("wrapperClass".equals(name))
 			return getWrapperClass();
-		if (name == "defaultValue[]")
+		if ("defaultValue[]".equals(name))
 			return getDefaultValue();
-		if (name == "knownValue[]")
+		if ("knownValue[]".equals(name))
 			return getKnownValue();
-		if (name == "metaProperty[]")
+		if ("metaProperty[]".equals(name))
 			return getMetaProperty();
-		if (name == "comparatorClass[]")
+		if ("comparatorClass[]".equals(name))
 			return getComparatorClass();
-		if (name == "implements")
+		if ("implements".equals(name))
 			return getImplements();
-		if (name == "extends")
+		if ("extends".equals(name))
 			return getExtends();
-		if (name == "import[]")
+		if ("import[]".equals(name))
 			return getImport();
-		if (name == "userCode")
+		if ("userCode".equals(name))
 			return getUserCode();
-		if (name == "vetoable")
+		if ("vetoable".equals(name))
 			return (isVetoable() ? java.lang.Boolean.TRUE : java.lang.Boolean.FALSE);
-		if (name == "skipGeneration")
+		if ("skipGeneration".equals(name))
 			return (isSkipGeneration() ? java.lang.Boolean.TRUE : java.lang.Boolean.FALSE);
-		if (name == "delegatorName")
+		if ("delegatorName".equals(name))
 			return getDelegatorName();
-		if (name == "delegatorExtends")
+		if ("delegatorExtends".equals(name))
 			return getDelegatorExtends();
-		if (name == "beanInterfaceExtends")
+		if ("beanInterfaceExtends".equals(name))
 			return getBeanInterfaceExtends();
-		if (name == "canBeEmpty")
+		if ("canBeEmpty".equals(name))
 			return (isCanBeEmpty() ? java.lang.Boolean.TRUE : java.lang.Boolean.FALSE);
 		throw new IllegalArgumentException(name+" is not a valid property name for MetaElement");
 	}
@@ -1011,218 +1044,6 @@ public class MetaElement implements org.netbeans.modules.schema2beansdev.metadd.
 	 * @return null if not found
 	 */
 	public String nameChild(Object childObj, boolean returnConstName, boolean returnSchemaName, boolean returnXPathName) {
-		if (childObj instanceof java.lang.String) {
-			java.lang.String child = (java.lang.String) childObj;
-			if (child == _DtdName) {
-				if (returnConstName) {
-					return DTD_NAME;
-				} else if (returnSchemaName) {
-					return "dtd-name";
-				} else if (returnXPathName) {
-					return "dtd-name";
-				} else {
-					return "DtdName";
-				}
-			}
-			if (child == _Namespace) {
-				if (returnConstName) {
-					return NAMESPACE;
-				} else if (returnSchemaName) {
-					return "namespace";
-				} else if (returnXPathName) {
-					return "namespace";
-				} else {
-					return "Namespace";
-				}
-			}
-			if (child == _BeanName) {
-				if (returnConstName) {
-					return BEAN_NAME;
-				} else if (returnSchemaName) {
-					return "bean-name";
-				} else if (returnXPathName) {
-					return "bean-name";
-				} else {
-					return "BeanName";
-				}
-			}
-			if (child == _BeanClass) {
-				if (returnConstName) {
-					return BEAN_CLASS;
-				} else if (returnSchemaName) {
-					return "bean-class";
-				} else if (returnXPathName) {
-					return "bean-class";
-				} else {
-					return "BeanClass";
-				}
-			}
-			if (child == _WrapperClass) {
-				if (returnConstName) {
-					return WRAPPER_CLASS;
-				} else if (returnSchemaName) {
-					return "wrapper-class";
-				} else if (returnXPathName) {
-					return "wrapper-class";
-				} else {
-					return "WrapperClass";
-				}
-			}
-			int index = 0;
-			for (java.util.Iterator it = _DefaultValue.iterator(); 
-				it.hasNext(); ) {
-				String element = (String)it.next();
-				if (child == element) {
-					if (returnConstName) {
-						return DEFAULT_VALUE;
-					} else if (returnSchemaName) {
-						return "default-value";
-					} else if (returnXPathName) {
-						return "default-value[position()="+index+"]";
-					} else {
-						return "DefaultValue."+Integer.toHexString(index);
-					}
-				}
-				++index;
-			}
-			index = 0;
-			for (java.util.Iterator it = _KnownValue.iterator(); 
-				it.hasNext(); ) {
-				String element = (String)it.next();
-				if (child == element) {
-					if (returnConstName) {
-						return KNOWN_VALUE;
-					} else if (returnSchemaName) {
-						return "known-value";
-					} else if (returnXPathName) {
-						return "known-value[position()="+index+"]";
-					} else {
-						return "KnownValue."+Integer.toHexString(index);
-					}
-				}
-				++index;
-			}
-			index = 0;
-			for (java.util.Iterator it = _ComparatorClass.iterator(); 
-				it.hasNext(); ) {
-				String element = (String)it.next();
-				if (child == element) {
-					if (returnConstName) {
-						return COMPARATOR_CLASS;
-					} else if (returnSchemaName) {
-						return "comparator-class";
-					} else if (returnXPathName) {
-						return "comparator-class[position()="+index+"]";
-					} else {
-						return "ComparatorClass."+Integer.toHexString(index);
-					}
-				}
-				++index;
-			}
-			if (child == _Implements) {
-				if (returnConstName) {
-					return IMPLEMENTS;
-				} else if (returnSchemaName) {
-					return "implements";
-				} else if (returnXPathName) {
-					return "implements";
-				} else {
-					return "Implements";
-				}
-			}
-			if (child == _Extends) {
-				if (returnConstName) {
-					return EXTENDS;
-				} else if (returnSchemaName) {
-					return "extends";
-				} else if (returnXPathName) {
-					return "extends";
-				} else {
-					return "Extends";
-				}
-			}
-			index = 0;
-			for (java.util.Iterator it = _Import.iterator(); it.hasNext(); 
-				) {
-				String element = (String)it.next();
-				if (child == element) {
-					if (returnConstName) {
-						return IMPORT;
-					} else if (returnSchemaName) {
-						return "import";
-					} else if (returnXPathName) {
-						return "import[position()="+index+"]";
-					} else {
-						return "Import."+Integer.toHexString(index);
-					}
-				}
-				++index;
-			}
-			if (child == _UserCode) {
-				if (returnConstName) {
-					return USER_CODE;
-				} else if (returnSchemaName) {
-					return "user-code";
-				} else if (returnXPathName) {
-					return "user-code";
-				} else {
-					return "UserCode";
-				}
-			}
-			if (child == _DelegatorName) {
-				if (returnConstName) {
-					return DELEGATOR_NAME;
-				} else if (returnSchemaName) {
-					return "delegator-name";
-				} else if (returnXPathName) {
-					return "delegator-name";
-				} else {
-					return "DelegatorName";
-				}
-			}
-			if (child == _DelegatorExtends) {
-				if (returnConstName) {
-					return DELEGATOR_EXTENDS;
-				} else if (returnSchemaName) {
-					return "delegator-extends";
-				} else if (returnXPathName) {
-					return "delegator-extends";
-				} else {
-					return "DelegatorExtends";
-				}
-			}
-			if (child == _BeanInterfaceExtends) {
-				if (returnConstName) {
-					return BEAN_INTERFACE_EXTENDS;
-				} else if (returnSchemaName) {
-					return "bean-interface-extends";
-				} else if (returnXPathName) {
-					return "bean-interface-extends";
-				} else {
-					return "BeanInterfaceExtends";
-				}
-			}
-		}
-		if (childObj instanceof MetaProperty) {
-			MetaProperty child = (MetaProperty) childObj;
-			int index = 0;
-			for (java.util.Iterator it = _MetaProperty.iterator(); 
-				it.hasNext(); ) {
-				org.netbeans.modules.schema2beansdev.metadd.MetaProperty element = (org.netbeans.modules.schema2beansdev.metadd.MetaProperty)it.next();
-				if (child == element) {
-					if (returnConstName) {
-						return META_PROPERTY;
-					} else if (returnSchemaName) {
-						return "meta-property";
-					} else if (returnXPathName) {
-						return "meta-property[position()="+index+"]";
-					} else {
-						return "MetaProperty."+Integer.toHexString(index);
-					}
-				}
-				++index;
-			}
-		}
 		if (childObj instanceof java.lang.Boolean) {
 			java.lang.Boolean child = (java.lang.Boolean) childObj;
 			if (((java.lang.Boolean)child).booleanValue() == _Vetoable) {
@@ -1256,6 +1077,218 @@ public class MetaElement implements org.netbeans.modules.schema2beansdev.metadd.
 					return "can-be-empty";
 				} else {
 					return "CanBeEmpty";
+				}
+			}
+		}
+		if (childObj instanceof MetaProperty) {
+			MetaProperty child = (MetaProperty) childObj;
+			int index = 0;
+			for (java.util.Iterator it = _MetaProperty.iterator(); 
+				it.hasNext(); ) {
+				org.netbeans.modules.schema2beansdev.metadd.MetaProperty element = (org.netbeans.modules.schema2beansdev.metadd.MetaProperty)it.next();
+				if (child == element) {
+					if (returnConstName) {
+						return META_PROPERTY;
+					} else if (returnSchemaName) {
+						return "meta-property";
+					} else if (returnXPathName) {
+						return "meta-property[position()="+index+"]";
+					} else {
+						return "MetaProperty."+Integer.toHexString(index);
+					}
+				}
+				++index;
+			}
+		}
+		if (childObj instanceof java.lang.String) {
+			java.lang.String child = (java.lang.String) childObj;
+			if (child.equals(_DtdName)) {
+				if (returnConstName) {
+					return DTD_NAME;
+				} else if (returnSchemaName) {
+					return "dtd-name";
+				} else if (returnXPathName) {
+					return "dtd-name";
+				} else {
+					return "DtdName";
+				}
+			}
+			if (child.equals(_Namespace)) {
+				if (returnConstName) {
+					return NAMESPACE;
+				} else if (returnSchemaName) {
+					return "namespace";
+				} else if (returnXPathName) {
+					return "namespace";
+				} else {
+					return "Namespace";
+				}
+			}
+			if (child.equals(_BeanName)) {
+				if (returnConstName) {
+					return BEAN_NAME;
+				} else if (returnSchemaName) {
+					return "bean-name";
+				} else if (returnXPathName) {
+					return "bean-name";
+				} else {
+					return "BeanName";
+				}
+			}
+			if (child.equals(_BeanClass)) {
+				if (returnConstName) {
+					return BEAN_CLASS;
+				} else if (returnSchemaName) {
+					return "bean-class";
+				} else if (returnXPathName) {
+					return "bean-class";
+				} else {
+					return "BeanClass";
+				}
+			}
+			if (child.equals(_WrapperClass)) {
+				if (returnConstName) {
+					return WRAPPER_CLASS;
+				} else if (returnSchemaName) {
+					return "wrapper-class";
+				} else if (returnXPathName) {
+					return "wrapper-class";
+				} else {
+					return "WrapperClass";
+				}
+			}
+			int index = 0;
+			for (java.util.Iterator it = _DefaultValue.iterator(); 
+				it.hasNext(); ) {
+				String element = (String)it.next();
+				if (child.equals(element)) {
+					if (returnConstName) {
+						return DEFAULT_VALUE;
+					} else if (returnSchemaName) {
+						return "default-value";
+					} else if (returnXPathName) {
+						return "default-value[position()="+index+"]";
+					} else {
+						return "DefaultValue."+Integer.toHexString(index);
+					}
+				}
+				++index;
+			}
+			index = 0;
+			for (java.util.Iterator it = _KnownValue.iterator(); 
+				it.hasNext(); ) {
+				String element = (String)it.next();
+				if (child.equals(element)) {
+					if (returnConstName) {
+						return KNOWN_VALUE;
+					} else if (returnSchemaName) {
+						return "known-value";
+					} else if (returnXPathName) {
+						return "known-value[position()="+index+"]";
+					} else {
+						return "KnownValue."+Integer.toHexString(index);
+					}
+				}
+				++index;
+			}
+			index = 0;
+			for (java.util.Iterator it = _ComparatorClass.iterator(); 
+				it.hasNext(); ) {
+				String element = (String)it.next();
+				if (child.equals(element)) {
+					if (returnConstName) {
+						return COMPARATOR_CLASS;
+					} else if (returnSchemaName) {
+						return "comparator-class";
+					} else if (returnXPathName) {
+						return "comparator-class[position()="+index+"]";
+					} else {
+						return "ComparatorClass."+Integer.toHexString(index);
+					}
+				}
+				++index;
+			}
+			if (child.equals(_Implements)) {
+				if (returnConstName) {
+					return IMPLEMENTS;
+				} else if (returnSchemaName) {
+					return "implements";
+				} else if (returnXPathName) {
+					return "implements";
+				} else {
+					return "Implements";
+				}
+			}
+			if (child.equals(_Extends)) {
+				if (returnConstName) {
+					return EXTENDS;
+				} else if (returnSchemaName) {
+					return "extends";
+				} else if (returnXPathName) {
+					return "extends";
+				} else {
+					return "Extends";
+				}
+			}
+			index = 0;
+			for (java.util.Iterator it = _Import.iterator(); it.hasNext(); 
+				) {
+				String element = (String)it.next();
+				if (child.equals(element)) {
+					if (returnConstName) {
+						return IMPORT;
+					} else if (returnSchemaName) {
+						return "import";
+					} else if (returnXPathName) {
+						return "import[position()="+index+"]";
+					} else {
+						return "Import."+Integer.toHexString(index);
+					}
+				}
+				++index;
+			}
+			if (child.equals(_UserCode)) {
+				if (returnConstName) {
+					return USER_CODE;
+				} else if (returnSchemaName) {
+					return "user-code";
+				} else if (returnXPathName) {
+					return "user-code";
+				} else {
+					return "UserCode";
+				}
+			}
+			if (child.equals(_DelegatorName)) {
+				if (returnConstName) {
+					return DELEGATOR_NAME;
+				} else if (returnSchemaName) {
+					return "delegator-name";
+				} else if (returnXPathName) {
+					return "delegator-name";
+				} else {
+					return "DelegatorName";
+				}
+			}
+			if (child.equals(_DelegatorExtends)) {
+				if (returnConstName) {
+					return DELEGATOR_EXTENDS;
+				} else if (returnSchemaName) {
+					return "delegator-extends";
+				} else if (returnXPathName) {
+					return "delegator-extends";
+				} else {
+					return "DelegatorExtends";
+				}
+			}
+			if (child.equals(_BeanInterfaceExtends)) {
+				if (returnConstName) {
+					return BEAN_INTERFACE_EXTENDS;
+				} else if (returnSchemaName) {
+					return "bean-interface-extends";
+				} else if (returnXPathName) {
+					return "bean-interface-extends";
+				} else {
+					return "BeanInterfaceExtends";
 				}
 			}
 		}

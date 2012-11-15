@@ -44,6 +44,8 @@ package org.netbeans.modules.editor.lib2.actions;
 import java.awt.event.ActionEvent;
 import java.util.Map;
 import javax.swing.text.JTextComponent;
+import org.netbeans.api.editor.EditorActionRegistration;
+import org.netbeans.modules.editor.lib2.EditorActionRegistrationProcessor;
 import org.netbeans.spi.editor.AbstractEditorAction;
 
 /**
@@ -53,7 +55,14 @@ import org.netbeans.spi.editor.AbstractEditorAction;
  * @author Miloslav Metelka
  */
 public class WrapperEditorAction extends AbstractEditorAction {
-    
+
+    /**
+     * Create a wrapper class - this method is mostly sused from an xml layer
+     * by {@link EditorActionRegistrationProcessor}.
+     *
+     * @param attrs attributes of fileobject of registration by {@link EditorActionRegistration}.
+     * @return wrapper action creation.
+     */
     public static WrapperEditorAction create(Map<String,?> attrs) {
         return new WrapperEditorAction(attrs);
     }
@@ -63,7 +72,7 @@ public class WrapperEditorAction extends AbstractEditorAction {
     }
 
     @Override
-    public void actionPerformed(ActionEvent evt, JTextComponent component) {
+    protected void actionPerformed(ActionEvent evt, JTextComponent component) {
         // Do nothing - real work is done in delegate
     }
     

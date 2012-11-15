@@ -52,6 +52,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -210,9 +211,6 @@ public final class EditorBridge extends KeymapManager {
             undefinedActions.put(s, actionToMkb);
         }
         
-        // actions registered for the base (null) MIME
-        Map<String, List<MultiKeyBinding>> defaultActions = (Map<String, List<MultiKeyBinding>>)undefinedActions.get(null);
-        
         // 1)
         // convert actionToShortcuts: Map (ShortcutAction > Set (String (shortcut AS-M)))
         // to mimeTypeToKeyBinding: Map (String (mimetype) > List (MultiKeyBinding)).
@@ -226,33 +224,51 @@ public final class EditorBridge extends KeymapManager {
             }
             
             EditorAction editorAction = (EditorAction) action;
-            Set<String> mimeTypes = getMimeTypes(editorAction);
+            Set<String> mimeTypesPre = getMimeTypes(editorAction);
 
-            assert mimeTypes != null : "Cannot find MIME types for action " + editorAction; // NOI18N
+            assert mimeTypesPre != null : "Cannot find MIME types for action " + editorAction; // NOI18N
 
+            Set<String> mimeTypes = new LinkedHashSet<String>(mimeTypesPre.size() + 1);
+            mimeTypes.add(null);
+            mimeTypes.addAll(mimeTypesPre);
+            
+            List<MultiKeyBinding> nullBindings = new ArrayList<MultiKeyBinding>();
             
             for (String shortcut : shortcuts) {
                 MultiKeyBinding mkb = new MultiKeyBinding(stringToKeyStrokes2(shortcut), editorAction.getId());
-                boolean presentInDefault = mimeTypes.contains(null);
+                boolean presentInDefault = mimeTypesPre.contains(null);
                 
                 for (String mimeType : mimeTypes) {
                     // check whether the action thing already exists in the specific MIME map:
                     Map<String, List<MultiKeyBinding>> mimeActions = (Map<String, List<MultiKeyBinding>>)undefinedActions.get(mimeType);
                     boolean exists = mimeActions != null && mimeActions.get(editorAction.getId()) != null;
                     
-                    if (!exists && mimeType != null) {
-                        if (presentInDefault) {
-                            // the action -> mkb is already defined in the null Mimetype, 
-                            // do not duplicate
+                    if (mimeType != null) {
+                        if (!exists) {
+                            if (presentInDefault) {
+                                // the action -> mkb is already defined in the null Mimetype, 
+                                // do not duplicate
+                                continue;
+                            }
+                            if (nullBindings.contains(mkb)) {
+                                // the root MIME defines the action, but its EKit does not handle it
+                                // == a common action binding for many MIMEs. Still do not duplicate, if the
+                                // mkb is the same.
+                                continue;
+                            }
+                            /*
+                            List<MultiKeyBinding> defaultBindings = defaultActions.get(editorAction.getId());
+                            if (defaultBindings != null && defaultBindings.contains(mkb)) {
+                                continue;
+                            }
+                            */
+                        }
+                    } else {
+                        if (!exists && !mimeActions.containsKey(editorAction.getId())) {
+                            // do not define in default iff not already defined
                             continue;
                         }
-                        List<MultiKeyBinding> defaultBindings = defaultActions.get(editorAction.getId());
-                        if (defaultBindings != null && defaultBindings.contains(mkb)) {
-                            // the root MIME defines the action, but its EKit does not handle it
-                            // == a common action binding for many MIMEs. Still do not duplicate, if the
-                            // mkb is the same.
-                            continue;
-                        }
+                        nullBindings.add(mkb);
                     }
                     List<MultiKeyBinding> l = mimeTypeToKeyBinding.get(mimeType);
                     if (l == null) {
@@ -303,7 +319,7 @@ public final class EditorBridge extends KeymapManager {
      */
     /* test */ Map<String, EditorAction> getEditorActionsMap() {
         if (editorActionsMap == null) {
-            editorActionsMap = new HashMap<String, EditorAction>();
+            editorActionsMap = new LinkedHashMap<String, EditorAction>();
             initActionMap(null, null);
             Map<String, EditorAction> emptyMimePathActions = new HashMap<String, EditorAction>(editorActionsMap);
             

@@ -62,6 +62,7 @@ import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.queries.VisibilityQuery;
+import org.netbeans.modules.parsing.spi.indexing.Indexable;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
@@ -105,7 +106,7 @@ final class FileObjectCrawler extends Crawler {
     }
 
     @Override
-    protected boolean collectResources(Collection<IndexableImpl> resources, Collection<IndexableImpl> allResources) {
+    protected boolean collectResources(Collection<Indexable> resources, Collection<Indexable> allResources) {
         boolean finished = true;
         final long tm1 = System.currentTimeMillis();
         final Stats stats = LOG.isLoggable(Level.FINE) ? new Stats() : null;
@@ -196,8 +197,8 @@ final class FileObjectCrawler extends Crawler {
     private boolean collect (
             final @NonNull FileObject[] fos,
             final @NonNull FileObject root,
-            final @NonNull Collection<IndexableImpl> resources,
-            final @NonNull Collection<IndexableImpl> allResources,
+            final @NonNull Collection<Indexable> resources,
+            final @NonNull Collection<Indexable> allResources,
             final @NullAllowed Stats stats,
             final @NullAllowed ClassPath.Entry entry,
             final @NonNull Deque<File> path,
@@ -247,7 +248,7 @@ final class FileObjectCrawler extends Crawler {
                         Stats.inc(stats.extensions, fo.getExt());
                     }
 
-                    FileObjectIndexable indexable = new FileObjectIndexable(root, relativePath);
+                    Indexable indexable = createIndexable(new FileObjectIndexable(root, relativePath));
                     allResources.add(indexable);
                     if (!isUpToDate(fo, relativePath)) {
                         resources.add(indexable);

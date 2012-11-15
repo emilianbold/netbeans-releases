@@ -73,7 +73,7 @@ public class LoopOnlyKeywordsUnhandledError extends AbstractUnhandledError {
     }
 
     private boolean appliesTo(FileObject fileObject) {
-        return CodeUtils.isPhp_52(fileObject);
+        return CodeUtils.isPhp52(fileObject);
     }
 
     private static class CheckVisitor extends DefaultTreePathVisitor {

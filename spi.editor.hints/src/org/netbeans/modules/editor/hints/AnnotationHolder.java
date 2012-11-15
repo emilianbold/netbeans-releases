@@ -114,6 +114,7 @@ import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor.Task;
 
 /**
  *
@@ -287,22 +288,63 @@ public final class AnnotationHolder implements ChangeListener, DocumentListener 
 
     final class NbDocumentAttacher implements Attacher {
         public void attachAnnotation(Position lineStart, ParseErrorAnnotation a) throws BadLocationException {
-            if (LOG.isLoggable(Level.FINE)) {
-                LOG.fine("addAnnotation: pos=" + lineStart.getOffset() + ", a="+ a + ", doc=" +
-                        System.identityHashCode(doc) + "\n");
-            }
-            a.attachAnnotation((StyledDocument) doc, lineStart);
+            addToToDo(new ToDo(lineStart, a));
         }
         public void detachAnnotation(ParseErrorAnnotation a) {
-            if (doc != null) {
-                if (LOG.isLoggable(Level.FINE)) {
-                    LOG.fine("removeAnnotation: a=" + a + ", doc=" + System.identityHashCode(doc) + "\n");
+            addToToDo(new ToDo(null, a));
+        }
+        private void addToToDo(ToDo item) {
+            synchronized (todoLock) {
+                if (todo == null) {
+                    todo = new ArrayList<ToDo>();
+                    ATTACHER.schedule(50);
                 }
-                a.detachAnnotation((StyledDocument) doc);
+                todo.add(item);
             }
         }
     }
 
+    private static class ToDo {
+        private final Position lineStart;
+        private final ParseErrorAnnotation a;
+        public ToDo(Position lineStart, ParseErrorAnnotation a) {
+            this.lineStart = lineStart;
+            this.a = a;
+        }
+    }
+    
+    private static final RequestProcessor ATTACHING_THREAD = new RequestProcessor(AnnotationHolder.class.getName(), 1, false, false);
+    private List<ToDo> todo;
+    private final Object todoLock = new Object();
+    private final Task ATTACHER = ATTACHING_THREAD.create(new Runnable() {
+        @Override public void run() {
+            List<ToDo> todo = null;
+            synchronized (todoLock) {
+                todo = AnnotationHolder.this.todo;
+                AnnotationHolder.this.todo = null;
+            }
+            
+            if (todo == null) return;
+            
+            for (ToDo t : todo) {
+                if (t.lineStart != null) {
+                    if (LOG.isLoggable(Level.FINE)) {
+                        LOG.fine("addAnnotation: pos=" + t.lineStart.getOffset() + ", a="+ t.a + ", doc=" +
+                                System.identityHashCode(doc) + "\n");
+                    }
+                    t.a.attachAnnotation((StyledDocument) doc, t.lineStart);
+                } else {
+                    if (doc != null) {
+                        if (LOG.isLoggable(Level.FINE)) {
+                            LOG.fine("removeAnnotation: a=" + t.a + ", doc=" + System.identityHashCode(doc) + "\n");
+                        }
+                        t.a.detachAnnotation((StyledDocument) doc);
+                    }
+                }
+            }
+        }
+    });
+        
     private synchronized void clearAll() {
         //remove all annotations:
         for (ParseErrorAnnotation a : line2Annotations.values()) {

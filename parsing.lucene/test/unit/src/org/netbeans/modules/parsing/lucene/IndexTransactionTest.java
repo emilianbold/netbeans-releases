@@ -164,8 +164,8 @@ public class IndexTransactionTest extends NbTestCase {
      */
     public void testAddDocumentAndQuery() throws Exception {
         setupLuceneIndex();
-        
-        DocumentIndex docIndex = IndexManager.createDocumentIndex(index);
+        final SimpleDocumentIndexCache cache = new SimpleDocumentIndexCache();
+        DocumentIndex docIndex = IndexManager.createDocumentIndex(index, cache);
         IndexDocument doc = IndexManager.createDocument("manicka");
         doc.addPair("name", "manicka", true, false);
         doc.addPair("age", "10", true, true);
@@ -185,7 +185,7 @@ public class IndexTransactionTest extends NbTestCase {
         doc2.addPair("age", "11", true, true);
         
         // force flush to disk
-        ((DocumentIndexImpl)docIndex).testClarDataRef();
+        cache.testClearDataRef();
         docIndex.addDocument(doc2);
         
         results = 
@@ -204,8 +204,8 @@ public class IndexTransactionTest extends NbTestCase {
     
     public void testRemoveDocumentAndQuery() throws Exception {
         setupLuceneIndex();
-        
-        DocumentIndex docIndex = IndexManager.createDocumentIndex(index);
+        final SimpleDocumentIndexCache cache = new SimpleDocumentIndexCache();
+        DocumentIndex docIndex = IndexManager.createDocumentIndex(index, cache);
         IndexDocument doc = IndexManager.createDocument("manicka");
         doc.addPair("name", "manicka", true, false);
         doc.addPair("age", "10", true, true);
@@ -235,7 +235,7 @@ public class IndexTransactionTest extends NbTestCase {
         assertEquals(2, results.size());
         
         // force flush
-        ((DocumentIndexImpl)docIndex).testClarDataRef();
+        cache.testClearDataRef();
         docIndex.removeDocument(doc2.getPrimaryKey());
         
         results = 

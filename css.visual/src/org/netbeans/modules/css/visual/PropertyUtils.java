@@ -41,10 +41,16 @@
  */
 package org.netbeans.modules.css.visual;
 
+import java.util.Collection;
+import java.util.Collections;
 import java.util.Comparator;
+import java.util.List;
 import org.netbeans.modules.css.lib.api.properties.Properties;
 import org.netbeans.modules.css.lib.api.properties.PropertyDefinition;
 import org.netbeans.modules.css.model.api.Declaration;
+import org.netbeans.modules.css.model.api.Declarations;
+import org.netbeans.modules.css.model.api.Rule;
+import org.netbeans.modules.web.common.api.LexerUtils;
 
 /**
  *
@@ -52,7 +58,9 @@ import org.netbeans.modules.css.model.api.Declaration;
  */
 public class PropertyUtils {
 
-    public static final Comparator<PropertyDefinition> PROPERTY_DEFINITIONS_COMPARATOR = new Comparator<PropertyDefinition>() {
+    private static final Comparator<Declaration> DECLARATIONS_COMPARATOR = new DeclarationsComparator();
+    
+    private static final Comparator<PropertyDefinition> PROPERTY_DEFINITIONS_COMPARATOR = new Comparator<PropertyDefinition>() {
         @Override
         public int compare(PropertyDefinition pd1, PropertyDefinition pd2) {
             String pd1name = pd1.getName();
@@ -72,7 +80,110 @@ public class PropertyUtils {
         }
     };
     
-    public static final Comparator<Declaration> DECLARATIONS_COMPARATOR = new Comparator<Declaration>() {
+    /**
+     * Returns an unique id of the property within current rule.
+     *
+     * Format of the ID:
+     *
+     * property name_S_D
+     *
+     * Where: "S" is the property index within the rule "D" is the number of the
+     * property if there are more properties of same name
+     *
+     * Example:
+     *
+     * div { color: red; // color_0 font: courier; // font_1 color: green; //
+     * color_2_1 }
+     *
+     * @param property
+     */
+    public static String getDeclarationId(Rule rule, Declaration declaration) {
+        assert rule.getModel() == declaration.getModel();
+
+        CharSequence searched = declaration.getProperty().getContent();
+        Declarations ds = rule.getDeclarations();
+        Collection<Declaration> declarations = ds != null ? ds.getDeclarations() : Collections.<Declaration>emptyList();
+
+        int identityIndex = -1;
+        int index = -1;
+        for (Declaration d : declarations) {
+            index++;
+            CharSequence propName = d.getProperty().getContent();
+            if (LexerUtils.equals(searched, propName, false, false)) {
+                identityIndex++;
+            }
+            if (d == declaration) {
+                break;
+            }
+        }
+        assert identityIndex >= 0;
+        StringBuilder b = new StringBuilder();
+        b.append(searched);
+        b.append('_');
+        b.append(index);
+        if (identityIndex > 0) {
+            b.append('_');
+            b.append(identityIndex);
+        }
+        return b.toString();
+    }
+    
+    static Comparator<PropertyDefinition> getPropertyDefinitionsComparator() {
+        return PROPERTY_DEFINITIONS_COMPARATOR;
+    }
+    
+    static Comparator<Declaration> getDeclarationsComparator() {
+        return DECLARATIONS_COMPARATOR;
+    }
+    
+    /**
+     * Creates a comparator for {@link Declaration} which allows to put some items
+     * at the end of the list keeping their natural order.
+     * 
+     */
+    static Comparator<Declaration> createDeclarationsComparator(Rule rule, List<String> extraDeclarationsIds) {
+        return new ExtDeclarationsComparator(rule, extraDeclarationsIds);
+    }
+    
+    private static class ExtDeclarationsComparator extends DeclarationsComparator {
+        
+        private Rule rule;
+        private List<String> extraDeclarationsIds;
+
+        public ExtDeclarationsComparator(Rule rule, List<String> extraDeclarationsIds) {
+            this.rule = rule;
+            this.extraDeclarationsIds = extraDeclarationsIds;
+        }
+
+        @Override
+        public int compare(Declaration d1, Declaration d2) {
+            String d1Id = PropertyUtils.getDeclarationId(rule, d1);
+            String d2Id = PropertyUtils.getDeclarationId(rule, d2);
+            
+            boolean d1Extra = extraDeclarationsIds.contains(d1Id);
+            boolean d2Extra = extraDeclarationsIds.contains(d2Id);
+            
+            if (d1Extra && !d2Extra) {
+                return +1;
+            } else if (!d1Extra && d2Extra) {
+                return -1;
+            } else if(d1Extra && d2Extra) {
+                //both extra items => compare according to the natural order in the list
+                int d1Index = extraDeclarationsIds.indexOf(d1Id);
+                int d2Index = extraDeclarationsIds.indexOf(d2Id);
+                
+                return d1Index - d2Index;
+                
+            } else {
+                return super.compare(d1, d2);
+            }
+            
+        }
+        
+    }
+
+    private static class DeclarationsComparator implements Comparator<Declaration> {
+        
         @Override
         public int compare(Declaration d1, Declaration d2) {
             String d1Name = d1.getProperty().getContent().toString();

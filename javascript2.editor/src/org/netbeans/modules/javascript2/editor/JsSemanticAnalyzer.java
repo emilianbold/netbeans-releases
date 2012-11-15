@@ -42,6 +42,7 @@
 package org.netbeans.modules.javascript2.editor;
 
 import java.util.Arrays;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -50,12 +51,14 @@ import java.util.Set;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.csl.api.ColoringAttributes;
+import org.netbeans.modules.csl.api.Modifier;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.api.SemanticAnalyzer;
 import org.netbeans.modules.javascript2.editor.doc.spi.JsComment;
 import org.netbeans.modules.javascript2.editor.doc.spi.JsDocumentationHolder;
 import org.netbeans.modules.javascript2.editor.lexer.JsTokenId;
 import org.netbeans.modules.javascript2.editor.lexer.LexUtilities;
+import org.netbeans.modules.javascript2.editor.model.JsElement;
 import org.netbeans.modules.javascript2.editor.model.JsFunction;
 import org.netbeans.modules.javascript2.editor.model.JsObject;
 import org.netbeans.modules.javascript2.editor.model.Model;
@@ -72,7 +75,8 @@ import org.netbeans.modules.parsing.spi.SchedulerEvent;
  */
 public class JsSemanticAnalyzer extends SemanticAnalyzer<JsParserResult> {
     //public static final EnumSet<ColoringAttributes> UNUSED_VARIABLE_SET = EnumSet.of(ColoringAttributes.UNUSED, ColoringAttributes.VA);
-    
+    public static final EnumSet<ColoringAttributes> UNUSED_OBJECT_SET = EnumSet.of( ColoringAttributes.UNUSED,  ColoringAttributes.CLASS);
+
     private boolean cancelled;
     private Map<OffsetRange, Set<ColoringAttributes>> semanticHighlights;
     private static List<String> GLOBAL_TYPES = Arrays.asList(Type.ARRAY, Type.STRING, Type.BOOLEAN, Type.NUMBER, Type.UNDEFINED);
@@ -153,8 +157,12 @@ public class JsSemanticAnalyzer extends SemanticAnalyzer<JsParserResult> {
                         for (Occurrence occurence : object.getOccurrences()) {
                             highlights.put(occurence.getOffsetRange(), ColoringAttributes.GLOBAL_SET);
                         }
-                    } else if (object.isDeclared() && !"prototype".equals(object.getName())) {
-                        highlights.put(object.getDeclarationName().getOffsetRange(), ColoringAttributes.CLASS_SET);
+                    } else if (object.isDeclared() && !"prototype".equals(object.getName()) && !object.isAnonymous()) {
+                        if(object.getOccurrences().isEmpty() && object.getModifiers().contains(Modifier.PRIVATE)) {
+                            highlights.put(object.getDeclarationName().getOffsetRange(), UNUSED_OBJECT_SET);
+                        } else {
+                            highlights.put(object.getDeclarationName().getOffsetRange(), ColoringAttributes.CLASS_SET);
+                        }
                     }
                     break;
                 case PROPERTY:

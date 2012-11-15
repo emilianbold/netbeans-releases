@@ -101,8 +101,13 @@ class DownloadPlugin {
                     @Override
                     public void run() {
                         OperationContainer<InstallSupport> oc = OperationContainer.createForInstall();
-                        oc.add(updateElement[0]);
-                        PluginManager.openInstallWizard(oc);
+                        if (oc.canBeAdded(updateElement[0].getUpdateUnit(), updateElement[0])) {
+                            oc.add(updateElement[0]);
+                            PluginManager.openInstallWizard(oc);
+                        } else {
+                            notifyError(NbBundle.getMessage(DownloadPlugin.class, "MSG_CannotBeInstalled"),  // NOI18N
+                                        NbBundle.getMessage(DownloadPlugin.class, "LBL_Error"));            // NOI18N
+                        }
                     }
                 });
             }

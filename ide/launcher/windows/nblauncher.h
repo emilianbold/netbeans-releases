@@ -50,6 +50,7 @@
 #include <string>
 #include <windows.h>
 #include "cmdargs.h"
+#include "shlobj.h"
 
 class NbLauncher {
 protected:

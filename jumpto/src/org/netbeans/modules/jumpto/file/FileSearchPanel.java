@@ -268,9 +268,14 @@ public class FileSearchPanel extends javax.swing.JPanel implements ActionListene
     
     private void update() {
         time = System.currentTimeMillis();
-        String text = getText();
+        final String text = getText();
+        if (oldText != null && FileSearchAction.isLineNumberChange(oldText, text)) {  //NOI18N
+            //Only line number separator added or removed
+            oldText = text;
+            return;
+        }
         if ( oldText == null || oldText.trim().length() == 0 || !text.startsWith(oldText) ) {
-            setListPanelContent(NbBundle.getMessage(FileSearchPanel.class, "TXT_Searching"),true); // NOI18N
+            setListPanelContent(NbBundle.getMessage(FileSearchPanel.class, "TXT_Searching"),true);
         }
         oldText = text;
         contentProvider.setListModel(this, text);

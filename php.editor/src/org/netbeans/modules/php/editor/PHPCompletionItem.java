@@ -44,8 +44,21 @@ package org.netbeans.modules.php.editor;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.lang.ref.WeakReference;
-import java.util.*;
-import java.util.concurrent.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Set;
+import java.util.WeakHashMap;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.ImageIcon;
@@ -56,7 +69,11 @@ import org.netbeans.api.editor.completion.Completion;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
-import org.netbeans.modules.csl.api.*;
+import org.netbeans.modules.csl.api.CompletionProposal;
+import org.netbeans.modules.csl.api.ElementHandle;
+import org.netbeans.modules.csl.api.ElementKind;
+import org.netbeans.modules.csl.api.HtmlFormatter;
+import org.netbeans.modules.csl.api.Modifier;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.php.editor.CompletionContextFinder.CompletionContext;
 import org.netbeans.modules.php.editor.CompletionContextFinder.KeywordCompletionType;
@@ -65,18 +82,39 @@ import org.netbeans.modules.php.editor.api.ElementQuery;
 import org.netbeans.modules.php.editor.api.PhpElementKind;
 import org.netbeans.modules.php.editor.api.QualifiedName;
 import org.netbeans.modules.php.editor.api.QualifiedNameKind;
-import org.netbeans.modules.php.editor.api.elements.*;
+import org.netbeans.modules.php.editor.api.elements.AliasedElement;
+import org.netbeans.modules.php.editor.api.elements.BaseFunctionElement;
 import org.netbeans.modules.php.editor.api.elements.BaseFunctionElement.PrintAs;
+import org.netbeans.modules.php.editor.api.elements.ClassElement;
 import org.netbeans.modules.php.editor.api.elements.ConstantElement;
 import org.netbeans.modules.php.editor.api.elements.FieldElement;
+import org.netbeans.modules.php.editor.api.elements.FullyQualifiedElement;
+import org.netbeans.modules.php.editor.api.elements.FunctionElement;
+import org.netbeans.modules.php.editor.api.elements.InterfaceElement;
+import org.netbeans.modules.php.editor.api.elements.MethodElement;
+import org.netbeans.modules.php.editor.api.elements.NamespaceElement;
+import org.netbeans.modules.php.editor.api.elements.ParameterElement;
 import org.netbeans.modules.php.editor.api.elements.ParameterElement.OutputType;
+import org.netbeans.modules.php.editor.api.elements.PhpElement;
+import org.netbeans.modules.php.editor.api.elements.TraitElement;
+import org.netbeans.modules.php.editor.api.elements.TypeConstantElement;
+import org.netbeans.modules.php.editor.api.elements.TypeElement;
+import org.netbeans.modules.php.editor.api.elements.TypeMemberElement;
+import org.netbeans.modules.php.editor.api.elements.TypeNameResolver;
+import org.netbeans.modules.php.editor.api.elements.TypeResolver;
+import org.netbeans.modules.php.editor.api.elements.VariableElement;
 import org.netbeans.modules.php.editor.codegen.CodegenUtils;
 import org.netbeans.modules.php.editor.elements.ParameterElementImpl;
 import org.netbeans.modules.php.editor.elements.TypeNameResolverImpl;
 import org.netbeans.modules.php.editor.indent.CodeStyle;
 import org.netbeans.modules.php.editor.index.PredefinedSymbolElement;
 import org.netbeans.modules.php.editor.lexer.PHPTokenId;
-import org.netbeans.modules.php.editor.model.*;
+import org.netbeans.modules.php.editor.model.FileScope;
+import org.netbeans.modules.php.editor.model.Model;
+import org.netbeans.modules.php.editor.model.ModelUtils;
+import org.netbeans.modules.php.editor.model.NamespaceScope;
+import org.netbeans.modules.php.editor.model.VariableName;
+import org.netbeans.modules.php.editor.model.VariableScope;
 import org.netbeans.modules.php.editor.model.impl.VariousUtils;
 import org.netbeans.modules.php.editor.model.nodes.NamespaceDeclarationInfo;
 import org.netbeans.modules.php.editor.nav.NavUtils;
@@ -106,12 +144,20 @@ public abstract class PHPCompletionItem implements CompletionProposal {
     private final ElementHandle element;
     protected QualifiedNameKind generateAs;
     private static ScheduledExecutorService service = Executors.newSingleThreadScheduledExecutor();
-    private static final Cache<FileObject, PhpLanguageProperties> PROPERTIES_CACHE = new Cache<FileObject, PhpLanguageProperties>(new WeakHashMap<FileObject, PhpLanguageProperties>());
+    private static final Cache<FileObject, PhpLanguageProperties> PROPERTIES_CACHE
+            = new Cache<FileObject, PhpLanguageProperties>(new WeakHashMap<FileObject, PhpLanguageProperties>());
+    private final boolean isPlatform;
 
     PHPCompletionItem(ElementHandle element, CompletionRequest request, QualifiedNameKind generateAs) {
         this.request = request;
         this.element = element;
         this.generateAs = generateAs;
+        if (element instanceof PhpElement) {
+            final PhpElement phpElement = (PhpElement) element;
+            isPlatform = phpElement.isPlatform();
+        } else {
+            isPlatform = false;
+        }
     }
 
     PHPCompletionItem(ElementHandle element, CompletionRequest request) {
@@ -163,7 +209,7 @@ public abstract class PHPCompletionItem implements CompletionProposal {
 
     public String getFileNameURL() {
         ElementHandle elem = getElement();
-        return (elem instanceof PhpElement) ? ((PhpElement) elem).getFilenameUrl() : "";//NOI18N
+        return (elem instanceof PhpElement) ? ((PhpElement) elem).getFilenameUrl() : ""; //NOI18N
     }
 
     @Override
@@ -302,7 +348,7 @@ public abstract class PHPCompletionItem implements CompletionProposal {
             return formatter.getText();
         } else if (element instanceof PhpElement) {
             PhpElement ie = (PhpElement) element;
-            if (ie.isPlatform()) {
+            if (isPlatform) {
                 return NbBundle.getMessage(PHPCompletionItem.class, "PHPPlatform");
             }
 
@@ -318,6 +364,41 @@ public abstract class PHPCompletionItem implements CompletionProposal {
 
 
         return null;
+    }
+
+    public static boolean insertOnlyMethodsName(CompletionRequest request) {
+        boolean result = false;
+        TokenHierarchy<?> tokenHierarchy = request.result.getSnapshot().getTokenHierarchy();
+        TokenSequence<PHPTokenId> tokenSequence = (TokenSequence<PHPTokenId>) tokenHierarchy.tokenSequence();
+        if (tokenSequence != null) {
+            VariableScope variableScope = request.result.getModel().getVariableScope(request.anchor);
+            if (variableScope != null) {
+                tokenSequence = tokenSequence.subSequence(request.anchor, variableScope.getBlockRange().getEnd());
+            }
+            boolean wasWhitespace = false;
+            while (tokenSequence.moveNext()) {
+                Token<PHPTokenId> token = tokenSequence.token();
+                PHPTokenId id = token.id();
+                if (PHPTokenId.PHP_STRING.equals(id)) {
+                    if (wasWhitespace) {
+                        // this needs brackets: curl_set^ curl_setopt($ch, $option, $ch);
+                        break;
+                    } else {
+                        // this doesn't need brackets: curl_setopt^  ($ch, $option, $ch);
+                        continue;
+                    }
+                } else if (PHPTokenId.WHITESPACE.equals(id)) {
+                    wasWhitespace = true;
+                    continue;
+                } else if (PHPTokenId.PHP_TOKEN.equals(id) && token.text().toString().equals("(")) { //NOI18N
+                    result = true;
+                    break;
+                } else {
+                    break;
+                }
+            }
+        }
+        return result;
     }
 
     static class NewClassItem extends MethodElementItem {
@@ -445,7 +526,14 @@ public abstract class PHPCompletionItem implements CompletionProposal {
                 }
                 if (variableToUseName != null) {
                     usedVariables.add(variableToUseName);
-                    return new ParameterElementImpl(variableToUseName.getName(), param.getDefaultValue(), param.getOffset(), param.getTypes(), param.isMandatory(), param.hasDeclaredType(), param.isReference());
+                    return new ParameterElementImpl(
+                            variableToUseName.getName(),
+                            param.getDefaultValue(),
+                            param.getOffset(),
+                            param.getTypes(),
+                            param.isMandatory(),
+                            param.hasDeclaredType(),
+                            param.isReference());
                 }
             }
             return param;
@@ -535,57 +623,23 @@ public abstract class PHPCompletionItem implements CompletionProposal {
         @Override
         public String getCustomInsertTemplate() {
             StringBuilder template = new StringBuilder();
-            String superTemplate = super.getInsertPrefix();
-            template.append(superTemplate);
+            template.append(super.getInsertPrefix());
+            if (!insertOnlyMethodsName(request)) {
+                template.append("("); //NOI18N
+                List<String> params = getInsertParams();
+                for (int i = 0; i < params.size(); i++) {
+                    String param = params.get(i);
+                    if (param.startsWith("&")) { //NOI18N
+                        param = param.substring(1);
+                    }
+                    template.append(String.format("${php-cc-%d  default=\"%s\"}", i, param));
 
-            TokenHierarchy<?> tokenHierarchy = request.result.getSnapshot().getTokenHierarchy();
-            TokenSequence<PHPTokenId> tokenSequence = (TokenSequence<PHPTokenId>) tokenHierarchy.tokenSequence();
-            if (tokenSequence != null) {
-                VariableScope variableScope = request.result.getModel().getVariableScope(request.anchor);
-                if (variableScope != null) {
-                    tokenSequence = tokenSequence.subSequence(request.anchor, variableScope.getBlockRange().getEnd());
-                }
-                boolean wasWhitespace = false;
-                while (tokenSequence.moveNext()) {
-                    Token<PHPTokenId> token = tokenSequence.token();
-                    PHPTokenId id = token.id();
-                    if (PHPTokenId.PHP_STRING.equals(id)) {
-                        if (wasWhitespace) {
-                            // this needs brackets: curl_set^ curl_setopt($ch, $option, $ch);
-                            break;
-                        } else {
-                            // this doesn't need brackets: curl_setopt^  ($ch, $option, $ch);
-                            continue;
-                        }
-                    } else if (PHPTokenId.WHITESPACE.equals(id)) {
-                        wasWhitespace = true;
-                        continue;
-                    } else if (PHPTokenId.PHP_TOKEN.equals(id) && token.text().toString().equals("(")) { //NOI18N
-                        return template.toString();
-                    } else {
-                        break;
+                    if (i < params.size() - 1) {
+                        template.append(", "); //NOI18N
                     }
                 }
+                template.append(')');
             }
-
-            template.append("("); //NOI18N
-
-            List<String> params = getInsertParams();
-
-            for (int i = 0; i < params.size(); i++) {
-                String param = params.get(i);
-                if (param.startsWith("&")) {//NOI18N
-                    param = param.substring(1);
-                }
-                template.append(String.format("${php-cc-%d  default=\"%s\"}", i, param));
-
-                if (i < params.size() - 1) {
-                    template.append(", "); //NOI18N
-                }
-            }
-
-            template.append(')');
-
             return template.toString();
         }
 
@@ -615,7 +669,7 @@ public abstract class PHPCompletionItem implements CompletionProposal {
         }
 
         protected boolean emphasisName() {
-            return true;//getFunction().isResolved();
+            return true;
         }
 
         public List<String> getInsertParams() {
@@ -729,7 +783,7 @@ public abstract class PHPCompletionItem implements CompletionProposal {
         @Override
         protected String getTypeName() {
             Set<TypeResolver> types = getField().getInstanceTypes();
-            String typeName = types.isEmpty() ? "?" : types.size() > 1 ? "mixed" : "?";//NOI18N
+            String typeName = types.isEmpty() ? "?" : types.size() > 1 ? "mixed" : "?"; //NOI18N
             if (types.size() == 1) {
                 TypeResolver typeResolver = types.iterator().next();
                 if (typeResolver.isResolved()) {
@@ -770,7 +824,7 @@ public abstract class PHPCompletionItem implements CompletionProposal {
             formatter.appendText(" "); //NOI18N
             String value = getConstant().getValue();
             formatter.type(true);
-            formatter.appendText(value != null ? value : "?");//NOI18N
+            formatter.appendText(value != null ? value : "?"); //NOI18N
             formatter.type(false);
 
             return formatter.getText();
@@ -799,7 +853,7 @@ public abstract class PHPCompletionItem implements CompletionProposal {
 
                 @Override
                 protected String getFunctionBodyForTemplate() {
-                    return "\n";//NOI18N
+                    return "\n"; //NOI18N
                 }
             };
         }
@@ -809,7 +863,7 @@ public abstract class PHPCompletionItem implements CompletionProposal {
 
                 @Override
                 public String getCustomInsertTemplate() {
-                    return super.getNameAndFunctionBodyForTemplate();
+                    return insertOnlyMethodsName(request) ? super.getInsertPrefix() : super.getNameAndFunctionBodyForTemplate();
                 }
             };
         }
@@ -841,21 +895,23 @@ public abstract class PHPCompletionItem implements CompletionProposal {
             StringBuilder template = new StringBuilder();
             String modifierStr = BodyDeclaration.Modifier.toString(getBaseFunctionElement().getFlags());
             if (modifierStr.length() != 0) {
-                modifierStr = modifierStr.replace("abstract", "").trim();//NOI18N
+                modifierStr = modifierStr.replace("abstract", "").trim(); //NOI18N
                 template.append(modifierStr);
             }
-            template.append(" ").append("function");//NOI18N
+            template.append(" ").append("function"); //NOI18N
             template.append(getNameAndFunctionBodyForTemplate());
             return template.toString();
         }
 
         protected String getNameAndFunctionBodyForTemplate() {
             StringBuilder template = new StringBuilder();
-            TypeNameResolver typeNameResolver = getBaseFunctionElement().getParameters().isEmpty() || request == null ? TypeNameResolverImpl.forNull() : CodegenUtils.createSmarterTypeNameResolver(getBaseFunctionElement(), request.result.getModel(), request.anchor);
+            TypeNameResolver typeNameResolver = getBaseFunctionElement().getParameters().isEmpty() || request == null
+                    ? TypeNameResolverImpl.forNull()
+                    : CodegenUtils.createSmarterTypeNameResolver(getBaseFunctionElement(), request.result.getModel(), request.anchor);
             template.append(getBaseFunctionElement().asString(PrintAs.NameAndParamsDeclaration, typeNameResolver));
-            template.append(" ").append("{\n");//NOI18N
-            template.append(getFunctionBodyForTemplate());//NOI18N
-            template.append("}");//NOI18N
+            template.append(" ").append("{\n"); //NOI18N
+            template.append(getFunctionBodyForTemplate()); //NOI18N
+            template.append("}"); //NOI18N
             return template.toString();
         }
 
@@ -867,9 +923,9 @@ public abstract class PHPCompletionItem implements CompletionProposal {
             MethodElement method = (MethodElement) getBaseFunctionElement();
             TypeElement type = method.getType();
             if (isMagic() || type.isInterface() || method.isAbstract()) {
-                template.append("${cursor};\n");//NOI18N
+                template.append("${cursor};\n"); //NOI18N
             } else {
-                template.append("${cursor}parent::").append(getSignature().replace("&$", "$")).append(";\n");//NOI18N
+                template.append("${cursor}parent::").append(getSignature().replace("&$", "$")).append(";\n"); //NOI18N
             }
             return template.toString();
         }
@@ -882,12 +938,12 @@ public abstract class PHPCompletionItem implements CompletionProposal {
             List<ParameterElement> parameters = getBaseFunctionElement().getParameters();
             for (ParameterElement parameter : parameters) {
                 if (parametersInfo.length() > 0) {
-                    parametersInfo.append(", ");//NOI18N
+                    parametersInfo.append(", "); //NOI18N
                 }
                 parametersInfo.append(parameter.getName());
             }
             retval.append(parametersInfo);
-            retval.append(")");//NOI18N
+            retval.append(")"); //NOI18N
             return retval.toString();
         }
 
@@ -923,7 +979,7 @@ public abstract class PHPCompletionItem implements CompletionProposal {
 
         @Override
         public String getLhsHtml(HtmlFormatter formatter) {
-            if (keyword.startsWith("$")) {//NOI18N
+            if (keyword.startsWith("$")) { //NOI18N
                 if (className != null) {
                     formatter.type(true);
                     formatter.appendText(className);
@@ -1239,14 +1295,14 @@ public abstract class PHPCompletionItem implements CompletionProposal {
             formatter.name(getKind(), false);
             formatter.appendText(" "); //NOI18N
             formatter.type(true);
-            formatter.appendText(value != null ? value : "?");//NOI18N
+            formatter.appendText(value != null ? value : "?"); //NOI18N
             formatter.type(false);
 
             return formatter.getText();
         }
 
         protected boolean emphasisName() {
-            return true;//cons.isResolved()
+            return true;
         }
 
         @Override
@@ -1333,7 +1389,7 @@ public abstract class PHPCompletionItem implements CompletionProposal {
     static class InterfaceItem extends PHPCompletionItem {
 
         private static final String PHP_INTERFACE_ICON = "org/netbeans/modules/php/editor/resources/interface.png"; //NOI18N
-        private static ImageIcon INTERFACE_ICON = null;
+        private static ImageIcon interfaceIcon = null;
         private boolean endWithDoubleColon;
 
         InterfaceItem(InterfaceElement iface, CompletionRequest request, boolean endWithDoubleColon) {
@@ -1352,10 +1408,10 @@ public abstract class PHPCompletionItem implements CompletionProposal {
         }
 
         private static ImageIcon icon() {
-            if (INTERFACE_ICON == null) {
-                INTERFACE_ICON = new ImageIcon(ImageUtilities.loadImage(PHP_INTERFACE_ICON));
+            if (interfaceIcon == null) {
+                interfaceIcon = new ImageIcon(ImageUtilities.loadImage(PHP_INTERFACE_ICON));
             }
-            return INTERFACE_ICON;
+            return interfaceIcon;
         }
 
         @Override
@@ -1418,7 +1474,7 @@ public abstract class PHPCompletionItem implements CompletionProposal {
 
         protected String getTypeName() {
             Set<TypeResolver> types = getVariable().getInstanceTypes();
-            String typeName = types.isEmpty() ? "?" : types.size() > 1 ? "mixed" : "?";//NOI18N
+            String typeName = types.isEmpty() ? "?" : types.size() > 1 ? "mixed" : "?"; //NOI18N
             if (types.size() == 1) {
                 TypeResolver typeResolver = types.iterator().next();
                 if (typeResolver.isResolved()) {

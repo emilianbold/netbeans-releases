@@ -101,12 +101,15 @@ public final class ResultsModel extends AbstractListModel implements ActionListe
     synchronized Collection<IssueImpl> getCachedIssues(RepositoryImpl repo) {
         if(issuesCached != null) {
             Set<IssueImpl> s = issuesCached.get(repo);
-            if(s != null) return s;
+            if(s != null) {
+                return s;
+            }
         }
         return Collections.emptyList();
     }
     /******* AbstractListModel impl ********/
 
+    @Override
     public int getSize() {
         if (results == null) {
             return 0;
@@ -114,6 +117,7 @@ public final class ResultsModel extends AbstractListModel implements ActionListe
         return results.size();
     }
 
+    @Override
     public Object getElementAt (int index) {
         if (results == null) {
             return null;
@@ -134,6 +138,7 @@ public final class ResultsModel extends AbstractListModel implements ActionListe
         }
     }
 
+    @Override
     public void actionPerformed(ActionEvent e) {
         fireTimer.stop();
         fireContentsChanged(this, 0, getSize());

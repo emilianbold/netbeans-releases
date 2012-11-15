@@ -92,7 +92,8 @@ public class JSTestDriverCustomizerPanel extends javax.swing.JPanel implements D
         jBrowsersTable.setModel(new BrowsersTableModel());
         jBrowsersTable.setDefaultRenderer(TableRow.class, new TableRowCellRenderer());
         initTableVisualProperties(jBrowsersTable);
-        jRestartNeededLabel.setVisible(JSTestDriverSupport.getDefault().isRunning());
+        jRestartNeededLabel.setVisible(JSTestDriverSupport.getDefault().isRunning() && 
+                !JSTestDriverSupport.getDefault().wasStartedExternally());
     }
     
     private void initTableVisualProperties(JTable table) {
@@ -123,7 +124,8 @@ public class JSTestDriverCustomizerPanel extends javax.swing.JPanel implements D
         boolean externalServer = (getPort(jServerURLTextField.getText()) == -1);
         jBrowsersTable.setEnabled(!externalServer);
         jStrictCheckBox.setEnabled(!externalServer);
-        jRestartNeededLabel.setVisible(JSTestDriverSupport.getDefault().isRunning() && !externalServer);
+        jRestartNeededLabel.setVisible(JSTestDriverSupport.getDefault().isRunning() && 
+                (!externalServer && !JSTestDriverSupport.getDefault().wasStartedExternally()));
         jRemoteServerLabel.setVisible(externalServer);
     }
 
@@ -150,6 +152,11 @@ public class JSTestDriverCustomizerPanel extends javax.swing.JPanel implements D
         dialog.setVisible(true);
         dialog.dispose();
         if (descriptor.getValue() == DialogDescriptor.OK_OPTION) {
+            if (JSTestDriverSupport.getDefault().isRunning() && 
+                JSTestDriverSupport.getDefault().wasStartedExternally()) {
+                // forget current server:
+                JSTestDriverSupport.getDefault().forgetCurrentServer();
+            }
             Preferences prefs = NbPreferences.forModule(JSTestDriverCustomizerPanel.class);
             prefs.put(LOCATION, panel.jLocationTextField.getText());
             prefs.put(SERVER_URL, panel.jServerURLTextField.getText());
@@ -203,17 +210,21 @@ public class JSTestDriverCustomizerPanel extends javax.swing.JPanel implements D
     }
     
     private static List<TableRow> createModel() {
+        boolean noSelectedBrowser = true;
         List<TableRow> model = new ArrayList<TableRow>();
         for (WebBrowser browser : WebBrowsers.getInstance().getAll(false)) {
             if (browser.isEmbedded()) {
                 continue;
             }
             if (browser.getBrowserFamily() == BrowserFamilyId.CHROME || browser.getBrowserFamily() == BrowserFamilyId.CHROMIUM) {
-                model.add(new TableRow(browser, 
-                    NbPreferences.forModule(JSTestDriverCustomizerPanel.class).getBoolean(getBrowserPropertyName(browser, true), true), true));
+                boolean selected = NbPreferences.forModule(JSTestDriverCustomizerPanel.class).getBoolean(getBrowserPropertyName(browser, true), noSelectedBrowser ? true : false);
+                if (selected) {
+                    noSelectedBrowser = false;
+                }
+                model.add(new TableRow(browser, selected, true));
             }
             model.add(new TableRow(browser, 
-                NbPreferences.forModule(JSTestDriverCustomizerPanel.class).getBoolean(getBrowserPropertyName(browser, false), true), false));
+                NbPreferences.forModule(JSTestDriverCustomizerPanel.class).getBoolean(getBrowserPropertyName(browser, false), false), false));
         }
         return model;
     }

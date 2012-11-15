@@ -53,6 +53,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmModel;
 import org.netbeans.modules.cnd.api.model.CsmModelAccessor;
+import org.netbeans.modules.cnd.api.model.CsmModelState;
 import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.api.project.NativeFileItem;
 import org.netbeans.modules.cnd.api.project.NativeProject;
@@ -84,6 +85,11 @@ public final class DiscoveryProjectGenerator {
     }
     
     public static boolean fixExcludedHeaderFiles(Project makeProject, Logger logger) {
+        if (CsmModelAccessor.getModelState() != CsmModelState.ON) {
+            if (logger != null) {
+                logger.log(Level.INFO, "#model is not ON: {0}", CsmModelAccessor.getModelState()); // NOI18N
+            }
+        }
         CsmModel model = CsmModelAccessor.getModel();
         if (!(model instanceof ModelImpl && makeProject != null)) {
             if (logger != null) {
@@ -137,7 +143,9 @@ public final class DiscoveryProjectGenerator {
                         if (logger != null) {
                             logger.log(Level.FINE, "#fix excluded->included header for file {0}", impl.getAbsolutePath()); // NOI18N
                         }
-                        ProjectBridge.setExclude((Item) item, false);
+                        if (true || !ConfigurationDescriptorProvider.VCS_WRITE) {
+                            ProjectBridge.setExclude((Item) item, false);
+                        }
                         ProjectBridge.setHeaderTool((Item) item);
                         isChanged = true;
                         if (file.isHeaderFile()) {

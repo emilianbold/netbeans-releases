@@ -123,6 +123,7 @@ public class FileChooserBuilder {
             Boolean.getBoolean("forget.recent.dirs");
     private SelectionApprover approver;
     private final List<FileFilter> filters = new ArrayList<FileFilter>(3);
+    private boolean useAcceptAllFileFilter = true;
     /**
      * Create a new FileChooserBuilder using the name of the passed class
      * as the metadata for looking up a starting directory from previous
@@ -205,6 +206,22 @@ public class FileChooserBuilder {
      */
     public FileChooserBuilder setFileFilter (FileFilter filter) {
         this.filter = filter;
+        return this;
+    }
+
+    /**
+     * Determines whether the <code>AcceptAll FileFilter</code> is used
+     * as an available choice in the choosable filter list.
+     * If false, the <code>AcceptAll</code> file filter is removed from
+     * the list of available file filters.
+     * If true, the <code>AcceptAll</code> file filter will become the
+     * the actively used file filter.
+     * @param accept whether the <code>AcceptAll FileFilter</code> is used
+     * @return this
+     * @since 8.3
+     */
+    public FileChooserBuilder setAcceptAllFileFilterUsed(boolean accept) {
+        useAcceptAllFileFilter = accept;
         return this;
     }
 
@@ -387,6 +404,7 @@ public class FileChooserBuilder {
                 JFileChooser.FILES_AND_DIRECTORIES);
         chooser.setFileHidingEnabled(fileHiding);
         chooser.setControlButtonsAreShown(controlButtonsShown);
+        chooser.setAcceptAllFileFilterUsed(useAcceptAllFileFilter);
         if (title != null) {
             chooser.setDialogTitle(title);
         }

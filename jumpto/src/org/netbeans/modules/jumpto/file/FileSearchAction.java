@@ -143,7 +143,8 @@ import org.openide.windows.TopComponent;
 public class FileSearchAction extends AbstractAction implements FileSearchPanel.ContentProvider {
 
     /* package */ static final Logger LOGGER = Logger.getLogger(FileSearchAction.class.getName());
-    private static final Pattern PATTERN_WITH_LINE_NUMBER = Pattern.compile("(.*):(\\d+)");    //NOI18N
+    private static final char LINE_NUMBER_SEPARATOR = ':';    //NOI18N
+    private static final Pattern PATTERN_WITH_LINE_NUMBER = Pattern.compile("(.*)"+LINE_NUMBER_SEPARATOR+"(\\d+)");    //NOI18N
     
     private static ListModel EMPTY_LIST_MODEL = new DefaultListModel();
     private static final RequestProcessor rp = new RequestProcessor ("FileSearchAction-RequestProcessor",1);
@@ -270,6 +271,24 @@ public class FileSearchAction extends AbstractAction implements FileSearchPanel.
     @Override
     public boolean hasValidContent () {
         return this.openBtn != null && this.openBtn.isEnabled();
+    }
+
+    static boolean isLineNumberChange(
+            @NonNull final String oldText,
+            @NonNull final String newText) {
+        final int oldIndex = oldText.indexOf(LINE_NUMBER_SEPARATOR);
+        final int newIndex = newText.indexOf(LINE_NUMBER_SEPARATOR);
+        if (newIndex > 0) {
+            if (oldIndex == newIndex) {
+                return newText.substring(0,newIndex).equals(oldText.substring(0,oldIndex));
+            } else {
+                return newText.equals(oldText + LINE_NUMBER_SEPARATOR);
+            }
+        } else if (oldIndex > 0) {
+            return oldText.equals(newText + LINE_NUMBER_SEPARATOR);
+        } else {
+            return false;
+        }
     }
 
     // Private methods ---------------------------------------------------------
@@ -608,7 +627,7 @@ public class FileSearchAction extends AbstractAction implements FileSearchPanel.
 
                 //PENDING Now we have to search folders which not included in Search API
                 st = System.currentTimeMillis();
-                Collection <FileObject> allFolders = new ArrayList<FileObject>();
+                Collection <FileObject> allFolders = new HashSet<FileObject>();
                 List<SearchFilter> filters = SearchInfoUtils.DEFAULT_FILTERS;
                 for (FileObject root : sgRoots) {
                     allFolders = searchSources(root, allFolders, excludes, filters);
@@ -940,7 +959,8 @@ public class FileSearchAction extends AbstractAction implements FileSearchPanel.
                 final String formattedFileName = fileNameFormatter.formatName(
                     fd.getFileName(),
                     textToFind,
-                    caseSensitive);
+                    caseSensitive,
+                    isSelected? fgSelectionColor : fgColor);
                 jlName.setText(formattedFileName);
                 jlPath.setIcon(null);
                 jlPath.setHorizontalAlignment(SwingConstants.LEFT);

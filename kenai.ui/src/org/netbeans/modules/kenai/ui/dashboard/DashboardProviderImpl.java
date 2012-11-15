@@ -67,6 +67,7 @@ import org.netbeans.modules.team.ui.spi.ProjectHandle;
 import org.netbeans.modules.team.ui.spi.QueryAccessor;
 import org.netbeans.modules.team.ui.spi.SourceAccessor;
 import org.netbeans.modules.team.ui.spi.SourceHandle;
+import org.netbeans.modules.team.ui.spi.TeamUIUtils;
 import org.netbeans.modules.team.ui.treelist.LeafNode;
 import org.netbeans.modules.team.ui.treelist.TreeListNode;
 import org.openide.util.RequestProcessor;
@@ -104,7 +105,7 @@ public class DashboardProviderImpl extends DashboardProvider<KenaiServer, KenaiP
         return new AbstractAction() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                org.netbeans.modules.kenai.ui.api.KenaiUIUtils.showLogin(server.getKenai());
+                TeamUIUtils.showLogin(server, true);
             }
         };
     }

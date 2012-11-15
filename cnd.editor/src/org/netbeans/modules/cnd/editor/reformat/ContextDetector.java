@@ -398,6 +398,7 @@ public class ContextDetector extends ExtendedTokenSequence {
                  previous.id() != RPAREN && previous.id() != RBRACKET)){
                 switch(current.id()){
                     case STAR:
+                    case AMPAMP:
                     case AMP:
                         return OperatorKind.TYPE_MODIFIER;
                     case PLUS:
@@ -484,6 +485,7 @@ public class ContextDetector extends ExtendedTokenSequence {
             if (KEYWORD_CATEGORY.equals(nextCategory)){
                 switch(current.id()){
                     case STAR:
+                    case AMPAMP:
                     case AMP:
                         return OperatorKind.BINARY;
                     case PLUS:
@@ -504,6 +506,7 @@ public class ContextDetector extends ExtendedTokenSequence {
                      switch(current.id()){
                         case STAR:
                         case AMP:
+                        case AMPAMP:
                             return OperatorKind.TYPE_MODIFIER;
                         case GT:
                         case LT:
@@ -534,6 +537,7 @@ public class ContextDetector extends ExtendedTokenSequence {
                         switch(current.id()){
                             case STAR:
                             case AMP:
+                            case AMPAMP:
                                 return OperatorKind.TYPE_MODIFIER;
                             case PLUS:
                             case MINUS:
@@ -555,6 +559,7 @@ public class ContextDetector extends ExtendedTokenSequence {
                         switch(current.id()){
                             case STAR:
                             case AMP:
+                            case AMPAMP:
                                 return OperatorKind.TYPE_MODIFIER;
                             case PLUS:
                             case MINUS:
@@ -583,6 +588,7 @@ public class ContextDetector extends ExtendedTokenSequence {
                     switch(current.id()){
                         case STAR:
                         case AMP:
+                        case AMPAMP:
                             return OperatorKind.TYPE_MODIFIER;
                         case PLUS:
                         case MINUS:
@@ -598,6 +604,7 @@ public class ContextDetector extends ExtendedTokenSequence {
                     switch(current.id()){
                         case STAR:
                         case AMP:
+                        case AMPAMP:
                             if (braces.isDeclarationLevel()) {
                                 return OperatorKind.TYPE_MODIFIER;
                             } else if (isLikeForDeclaration()) {

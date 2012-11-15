@@ -114,7 +114,7 @@ public class IsOverriddenAnnotation extends Annotation {
         return pos;
     }
     
-    public String debugDump() {
+    public String debugDump(boolean includePosition) {
         List<String> elementNames = new ArrayList<String>();
         
         for(ElementDescription desc : declarations) {
@@ -123,7 +123,7 @@ public class IsOverriddenAnnotation extends Annotation {
         
         Collections.sort(elementNames);
         
-        return "IsOverriddenAnnotation: type=" + type.name() + ", elements:" + elementNames.toString(); //NOI18N
+        return "IsOverriddenAnnotation: type=" + type.name() + ", elements:" + elementNames.toString() + (includePosition ? ":" + pos.getOffset() : ""); //NOI18N
     }
     
     public AnnotationType getType() {

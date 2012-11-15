@@ -116,22 +116,19 @@ public class NbStartLocalTest extends NativeExecutionBaseTestCase {
         Properties properties = System.getProperties();
         String user = properties.getProperty("user.name");
 
-        File whoami = new File("/usr/bin/whoami");
-        if (!whoami.exists()) {
-            whoami = new File("/bin/whoami");
-            if (!whoami.exists()) {
-                whoami = new File("/usr/local/bin/whoami");
-                if (!whoami.exists()) {
-                    System.out.println("Unable to find local whoami program");
+        File echo = new File("/bin/echo");
+        if (!echo.exists()) {
+            echo = new File("/usr/bin/echo");
+            if (!echo.exists()) {
+                    System.out.println("Unable to find local echo executable");
                     return;
-                }
             }
         }
 
-        npb.setExecutable(whoami.getAbsolutePath()).setStatusEx(true);
+        npb.setExecutable(echo.getAbsolutePath()).setArguments(user).setStatusEx(true);
         NativeProcess process = npb.call();
         int rc = process.waitFor();
-        assertEquals(whoami + " exit status", 0, rc);
+        assertEquals(echo + " exit status", 0, rc);
         String userName = ProcessUtils.readProcessOutputLine(process);
         assertEquals(user, userName);
     }
@@ -154,7 +151,7 @@ public class NbStartLocalTest extends NativeExecutionBaseTestCase {
         out.mkdirs();
         out.delete();
         try {
-            npb.setCommandLine("echo TEST > " + out.getAbsolutePath());
+            npb.setCommandLine("echo TEST > \"" + out.getAbsolutePath() + "\"");
             NativeProcess process = npb.call();
             int rc = process.waitFor();
 
@@ -234,7 +231,7 @@ public class NbStartLocalTest extends NativeExecutionBaseTestCase {
         CommonTasksSupport.sendSignal(env, process.getPID(), Signal.SIGCONT, null);
 
         try {
-            int threshold = process instanceof NbNativeProcess ? 100 : 1500;
+            int threshold = process instanceof NbNativeProcess ? 500 : 1500;
             waitTask.waitFinished(threshold);
         } catch (InterruptedException ex) {
             fail("Process must continue after senging the SIGCONT");

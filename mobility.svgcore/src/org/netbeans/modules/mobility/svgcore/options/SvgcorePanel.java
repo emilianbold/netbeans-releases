@@ -57,7 +57,7 @@ import org.openide.NotifyDescriptor;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
-@OptionsPanelController.Keywords(keywords={"#AdvancedOption_Tooltip", "svg"}, location=OptionsDisplayer.ADVANCED, tabTitle="#AdvancedOption_DisplayName")
+@OptionsPanelController.Keywords(keywords={"#AdvancedOption_Tooltip", "#LBL_SVGFrame", "#LBL_EditorFrame"}, location=OptionsDisplayer.ADVANCED, tabTitle="#AdvancedOption_DisplayName")
 final class SvgcorePanel extends javax.swing.JPanel {
 
     private final SvgcoreOptionsPanelController controller;

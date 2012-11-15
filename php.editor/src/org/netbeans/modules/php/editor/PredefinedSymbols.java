@@ -61,7 +61,7 @@ import org.openide.util.Utilities;
  *
  * @author tomslot
  */
-public class PredefinedSymbols {
+public final class PredefinedSymbols {
     public static final String MIXED_TYPE = "mixed"; //NOI18N
 
     // see http://www.php.net/manual/en/reserved.variables.php
@@ -133,6 +133,9 @@ public class PredefinedSymbols {
 
     private static String docURLBase;
 
+    private PredefinedSymbols() {
+    }
+
     private static void initDoc() {
         File file = InstalledFileLocator.getDefault().locate("docs/predefined_vars.zip", null, true); //NoI18N
         if (file != null) {
@@ -146,7 +149,7 @@ public class PredefinedSymbols {
         }
     }
 
-    public static boolean isSuperGlobalName(String name){
+    public static boolean isSuperGlobalName(String name) {
         return SUPERGLOBALS.contains(name);
     }
 
@@ -160,9 +163,9 @@ public class PredefinedSymbols {
         try {
             URL url = new URL(resPath);
             InputStream is = url.openStream();
-            byte buffer[] = new byte[1000];
+            byte[] buffer = new byte[1000];
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            int count = 0;
+            int count;
             do {
                 count = is.read(buffer);
                 if (count > 0) {

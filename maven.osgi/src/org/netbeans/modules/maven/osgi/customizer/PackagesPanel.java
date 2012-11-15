@@ -60,14 +60,21 @@ import org.netbeans.modules.maven.api.customizer.support.SelectedItemsTable.Sele
 public class PackagesPanel extends javax.swing.JPanel {
 
     private final SelectedItemsTableModel tableModel;
+    private final FelixExportPersister exportPersist;
 
     /** Creates new form PackagesPanel */
     public PackagesPanel(ModelHandle2 handle, Project prj) {
-        FelixExportPersister exportPersist = new FelixExportPersister(prj, handle);
+        exportPersist = new FelixExportPersister(prj, handle);
         tableModel = new SelectedItemsTableModel(exportPersist);
 
         initComponents();
-
+        if (exportPersist.isIsDefined()) {
+            rbCustom.setSelected(true);
+            exportTable.setEnabled(true);
+        } else {
+            rbDefaults.setSelected(true);
+            exportTable.setEnabled(false);
+        }
         jScrollPane1.getViewport().setBackground(exportTable.getBackground());
     }
 
@@ -80,38 +87,87 @@ public class PackagesPanel extends javax.swing.JPanel {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        jLabel1 = new javax.swing.JLabel();
+        buttonGroup1 = new javax.swing.ButtonGroup();
+        rbDefaults = new javax.swing.JRadioButton();
+        rbCustom = new javax.swing.JRadioButton();
         jScrollPane1 = new javax.swing.JScrollPane();
         exportTable = new SelectedItemsTable(tableModel);
+        jLabel1 = new javax.swing.JLabel();
 
-        jLabel1.setLabelFor(exportTable);
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(PackagesPanel.class, "PackagesPanel.jLabel1.text")); // NOI18N
+        buttonGroup1.add(rbDefaults);
+        rbDefaults.setSelected(true);
+        org.openide.awt.Mnemonics.setLocalizedText(rbDefaults, org.openide.util.NbBundle.getMessage(PackagesPanel.class, "PackagesPanel.rbDefaults.text")); // NOI18N
+        rbDefaults.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                rbDefaultsActionPerformed(evt);
+            }
+        });
 
+        buttonGroup1.add(rbCustom);
+        org.openide.awt.Mnemonics.setLocalizedText(rbCustom, org.openide.util.NbBundle.getMessage(PackagesPanel.class, "PackagesPanel.rbCustom.text")); // NOI18N
+        rbCustom.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                rbCustomActionPerformed(evt);
+            }
+        });
+
+        exportTable.setEnabled(false);
         jScrollPane1.setViewportView(exportTable);
+
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(PackagesPanel.class, "PackagesPanel.jLabel1.text")); // NOI18N
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addComponent(jLabel1)
-                .addContainerGap(288, Short.MAX_VALUE))
-            .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 394, Short.MAX_VALUE)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(layout.createSequentialGroup()
+                        .addContainerGap()
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(layout.createSequentialGroup()
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addComponent(rbDefaults)
+                                    .addComponent(rbCustom))
+                                .addGap(0, 0, Short.MAX_VALUE))
+                            .addComponent(jScrollPane1)))
+                    .addGroup(layout.createSequentialGroup()
+                        .addGap(35, 35, 35)
+                        .addComponent(jLabel1, javax.swing.GroupLayout.DEFAULT_SIZE, 504, Short.MAX_VALUE)))
+                .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(rbDefaults)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jLabel1)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 211, Short.MAX_VALUE))
+                .addComponent(rbCustom)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 147, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
 
+    private void rbDefaultsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_rbDefaultsActionPerformed
+        exportTable.setEnabled(false);
+        exportPersist.setDefault(true);
+    }//GEN-LAST:event_rbDefaultsActionPerformed
+
+    private void rbCustomActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_rbCustomActionPerformed
+        exportTable.setEnabled(true);
+        exportPersist.setDefault(false);
+    }//GEN-LAST:event_rbCustomActionPerformed
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.ButtonGroup buttonGroup1;
     private javax.swing.JTable exportTable;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JScrollPane jScrollPane1;
+    private javax.swing.JRadioButton rbCustom;
+    private javax.swing.JRadioButton rbDefaults;
     // End of variables declaration//GEN-END:variables
 
 }

@@ -58,7 +58,7 @@ public class FindConstructorUsagesVisitor extends AbstractFindUsagesVisitor {
 
     public FindConstructorUsagesVisitor(ModuleNode moduleNode, RefactoringElement element) {
         super(moduleNode);
-        this.name = element.getDeclaringClassName();
+        this.name = element.getOwnerName();
     }
 
     @Override

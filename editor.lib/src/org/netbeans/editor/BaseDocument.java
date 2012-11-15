@@ -52,7 +52,6 @@ import java.util.Enumeration;
 import java.io.Reader;
 import java.io.Writer;
 import java.io.IOException;
-import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeSupport;
 import java.util.Collection;
@@ -99,7 +98,6 @@ import org.netbeans.modules.editor.lib.BeforeSaveTasks;
 import org.netbeans.modules.editor.lib.EditorPackageAccessor;
 import org.netbeans.modules.editor.lib2.EditorPreferencesDefaults;
 import org.netbeans.modules.editor.lib2.EditorPreferencesKeys;
-import org.netbeans.modules.editor.lib.TrailingWhitespaceRemove;
 import org.netbeans.modules.editor.lib.SettingsConversions;
 import org.netbeans.modules.editor.lib.drawing.DrawEngine;
 import org.netbeans.modules.editor.lib.drawing.DrawGraphics;
@@ -1554,7 +1552,7 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
     public void resetUndoMerge() {
         undoMergeReset = true;
     }
-
+    
     /* Defined because of the hack for undo()
      * in the BaseDocumentEvent.
      */
@@ -1692,21 +1690,9 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
             }
 
             if (--atomicDepth == 0) { // lock really ended
-                AtomicCompoundEdit nonEmptyAtomicEdits = null;
                 fireAtomicUnlock(atomicLockEventInstance);
 
-                if (atomicEdits != null && atomicEdits.size() > 0) {
-                    // Some edits performed
-                    atomicEdits.end();
-                    nonEmptyAtomicEdits = atomicEdits;
-                    atomicEdits = null; // Clear the var to allow doc.runAtomic() in undoableEditHappened()
-                } else {
-                    noModsAndOuterUnlock = true;
-                }
-
-                if (nonEmptyAtomicEdits != null) {
-                    fireUndoableEditUpdate(new UndoableEditEvent(this, nonEmptyAtomicEdits));
-                }
+                noModsAndOuterUnlock = !checkAndFireAtomicEdits();
                 atomicLockListenerList = null;
                 extWriteUnlock();
             }
@@ -1741,18 +1727,7 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
     * This method is not synced as it must be called only from writer thread.
     */
     public final void breakAtomicLock() {
-        if (atomicEdits != null && atomicEdits.size() > 0) {
-            atomicEdits.end();
-            if (atomicEdits.canUndo()) {
-                atomicEdits.undo();
-            } else {
-                LOG.log(Level.WARNING,
-                        "Cannot UNDO: " + atomicEdits.toString() + // NOI18N
-                        " Edits: " + atomicEdits.getEdits(),       // NOI18N
-                        new CannotUndoException());
-            }
-            atomicEdits = null;
-        }
+        undoAtomicEdits();
     }
 
     public @Override void atomicUndo() {
@@ -2043,20 +2018,70 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
         return new LazyPropertyMap(origDocumentProperties);
     }
 
+    private void ensureAtomicEditsInited() {
+        if (atomicEdits == null) {
+            atomicEdits = new AtomicCompoundEdit();
+        }
+    }
+
+    private boolean checkAndFireAtomicEdits() {
+        if (atomicEdits != null && atomicEdits.size() > 0) {
+            // Some edits performed
+            atomicEdits.end();
+            AtomicCompoundEdit nonEmptyAtomicEdits = atomicEdits;
+            atomicEdits = null; // Clear the var to allow doc.runAtomic() in undoableEditHappened()
+            fireUndoableEditUpdate(new UndoableEditEvent(this, nonEmptyAtomicEdits));
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    private void undoAtomicEdits() {
+        if (atomicEdits != null && atomicEdits.size() > 0) {
+            atomicEdits.end();
+            if (atomicEdits.canUndo()) {
+                atomicEdits.undo();
+            } else {
+                LOG.log(Level.WARNING,
+                        "Cannot UNDO: " + atomicEdits.toString() + // NOI18N
+                        " Edits: " + atomicEdits.getEdits(),       // NOI18N
+                        new CannotUndoException());
+            }
+            atomicEdits = null;
+        }
+    }
+
+    void clearAtomicEdits() {
+        atomicEdits = null;
+    }
+    
+    UndoableEdit startOnSaveTasks() {
+        assert (atomicDepth > 0); // Should only be called under atomic lock
+        // If there would be any pending edits
+        // fire them so that they don't clash with on-save tasks in undo manager.
+        // Pending edits could occur due to an outer atomic lock
+        // around CES.saveDocument(). Anyway it would generally be an undesirable situation
+        // due to possibly invalid lock order (doc's atomic lock would then precede on-save tasks' locks).
+        checkAndFireAtomicEdits();
+        ensureAtomicEditsInited();
+        return atomicEdits;
+
+    }
+    
+    void endOnSaveTasks(boolean success) {
+        if (success) { // Possibly fire atomic edit
+            checkAndFireAtomicEdits();
+        } else { // Undo edits contained in atomic edit
+            undoAtomicEdits();
+        }
+    }
+
     UndoableEdit markAtomicEditsNonSignificant() {
         assert (atomicDepth > 0); // Should only be called under atomic lock
         ensureAtomicEditsInited();
         atomicEdits.setSignificant(false);
         return atomicEdits;
-    }
-    
-    void clearAtomicEdits() {
-        atomicEdits = null;
-    }
-
-    private void ensureAtomicEditsInited() {
-        if (atomicEdits == null)
-            atomicEdits = new AtomicCompoundEdit();
     }
     
     public @Override String toString() {
@@ -2423,6 +2448,17 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
             bDoc.resetUndoMerge();
         }
 
+        @Override
+        public UndoableEdit startOnSaveTasks(Document doc) {
+            BaseDocument bDoc = (BaseDocument) doc;
+            return bDoc.startOnSaveTasks();
+        }
+
+        @Override
+        public void endOnSaveTasks(Document doc, boolean success) {
+            BaseDocument bDoc = (BaseDocument) doc;
+            bDoc.endOnSaveTasks(success);
+        }
 
     }
 

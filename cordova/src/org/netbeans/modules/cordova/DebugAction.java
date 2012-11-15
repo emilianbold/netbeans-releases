@@ -45,9 +45,7 @@ import java.awt.event.ActionEvent;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.cordova.android.AndroidDebugTransport;
-import org.netbeans.modules.cordova.ios.IOSDebugTransport;
-import org.netbeans.modules.cordova.ios.IOSPlatform;
+import org.netbeans.modules.cordova.platforms.MobileDebugTransport;
 import org.netbeans.modules.cordova.project.ClientProjectConfigurationImpl;
 import org.netbeans.modules.web.browser.api.PageInspector;
 import org.netbeans.modules.web.webkit.debugging.api.WebKitDebugging;
@@ -55,9 +53,6 @@ import org.netbeans.modules.web.webkit.debugging.spi.Factory;
 import org.netbeans.modules.web.webkit.debugging.spi.netbeansdebugger.NetBeansJavaScriptDebuggerFactory;
 import org.netbeans.spi.project.ProjectConfiguration;
 import org.netbeans.spi.project.ProjectConfigurationProvider;
-import org.openide.awt.ActionID;
-import org.openide.awt.ActionReference;
-import org.openide.awt.ActionRegistration;
 import org.openide.util.ContextAwareAction;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle.Messages;
@@ -65,9 +60,9 @@ import org.openide.util.RequestProcessor;
 import org.openide.util.lookup.Lookups;
 
 @Messages("CTL_DebugAction=Attach Debugger")
-    @ActionID(id = "org.netbeans.modules.cordova.ios.DebugAction", category = "Project")
-    @ActionRegistration(displayName = "#CTL_DebugAction", lazy=false)
-    @ActionReference(position = 650, path = "Projects/org.netbeans.modules.web.clientproject/Actions")
+//    @ActionID(id = "org.netbeans.modules.cordova.ios.DebugAction", category = "Project")
+//    @ActionRegistration(displayName = "#CTL_DebugAction", lazy=false)
+//    @ActionReference(position = 650, path = "Projects/org-netbeans-modules-web-clientproject/Actions")
 public final class DebugAction extends AbstractAction implements ContextAwareAction {
 
     private Project p;
@@ -92,7 +87,7 @@ public final class DebugAction extends AbstractAction implements ContextAwareAct
         ProjectConfiguration activeConfiguration = provider.getActiveConfiguration();
         final MobileDebugTransport transport;
         if (activeConfiguration instanceof ClientProjectConfigurationImpl) {
-            transport = ((ClientProjectConfigurationImpl)activeConfiguration).getType().equals(IOSPlatform.TYPE)?new IOSDebugTransport():new AndroidDebugTransport();
+            transport = ((ClientProjectConfigurationImpl)activeConfiguration).getDevice().getPlatform().getDebugTransport();
         } else {
             return;
         }

@@ -155,7 +155,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
     }
 
     @Override
-    public FileObject createDataImpl(String name, String ext, RemoteFileObjectBase orig) throws IOException {
+    public RemoteFileObject createDataImpl(String name, String ext, RemoteFileObjectBase orig) throws IOException {
         return create(composeName(name, ext), false, orig);
     }
 
@@ -385,23 +385,20 @@ public class RemoteDirectory extends RemoteFileObjectBase {
             File storageFile = getStorageFile();
             if (storageFile.exists()) {
                 Lock readLock = RemoteFileSystem.getLock(getCache()).readLock();
-                try  {
-                    if (readLock.tryLock()) {
-                        try {
-                            storage = DirectoryStorage.load(storageFile);
-                        } catch (FormatException e) {
-                            Level level = e.isExpected() ? Level.FINE : Level.WARNING;
-                            RemoteLogger.getInstance().log(level, "Error reading directory cache", e); // NOI18N
-                            storageFile.delete();
-                        } catch (InterruptedIOException e) {
-                            // nothing
-                        } catch (FileNotFoundException e) {
-                            // this might happen if we switch to different DirEntry implementations, see storageFile.delete() above
-                            RemoteLogger.finest(e, this);
-                        } catch (IOException e) {
-                            RemoteLogger.finest(e, this);
-                        }
-                    }
+                readLock.lock();
+                try {
+                    storage = DirectoryStorage.load(storageFile);
+                } catch (FormatException e) {
+                    Level level = e.isExpected() ? Level.FINE : Level.WARNING;
+                    RemoteLogger.getInstance().log(level, "Error reading directory cache", e); // NOI18N
+                    storageFile.delete();
+                } catch (InterruptedIOException e) {
+                    // nothing
+                } catch (FileNotFoundException e) {
+                    // this might happen if we switch to different DirEntry implementations, see storageFile.delete() above
+                    RemoteLogger.finest(e, this);
+                } catch (IOException e) {
+                    RemoteLogger.finest(e, this);
                 } finally {
                     readLock.unlock();
                 }
@@ -409,7 +406,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
         }
         return  storage == null ? DirectoryStorage.EMPTY : storage;
     }
-    
+
     private RemoteFileObjectBase[] getExistentChildren(DirectoryStorage storage) {
         List<DirEntry> entries = storage.listValid();
         List<RemoteFileObjectBase> result = new ArrayList<RemoteFileObjectBase>(entries.size());
@@ -1316,6 +1313,13 @@ public class RemoteDirectory extends RemoteFileObjectBase {
                 antiLoop.add(getPath());
             }
         }
+        DirectoryStorage storage = getExistingDirectoryStorage();
+        if (storage ==  null ||storage == DirectoryStorage.EMPTY) {
+            return;
+        }
+        // unfortunately we can't skip refresh if there is a storage but no children exists
+        // in this case we have to reafresh just storage - but for the time being only RemoteDirectory can do that
+        // TODO: revisit this after refactoring cache into a separate class(es)
         DirectoryStorage refreshedStorage = refreshDirectoryStorage(null, expected);
         if (recursive) {
             for (RemoteFileObjectBase child : getExistentChildren(refreshedStorage)) {

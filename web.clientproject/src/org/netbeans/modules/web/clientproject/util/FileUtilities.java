@@ -190,28 +190,23 @@ public final class FileUtilities {
     }
 
     /**
-     * Get list of JS file names (just filenames, without any relative path) from the given ZIP file.
+     * Get list of JS files (filenames with relative path) from the given ZIP file.
      * <p>
      * If any error occurs, this error is logged with INFO level and an empty list is returned.
      * @param zipFile ZIP file to be listed
-     * @return list of JS file names (just filenames, without any relative path) from the given ZIP file
+     * @return list of JS files (filenames with relative path) from the given ZIP file.
      * @see #listZipFiles(File, ZipEntryFilter)
+     * @see #listJsFilenamesFromZipFile(File)
      */
-    public static List<String> listJsFilenamesFromZipFile(File zipFile) {
+    public static List<String> listJsFilesFromZipFile(File zipFile) {
         try {
-            List<String> entries = listZipFiles(zipFile, new ZipEntryFilter() {
+            return listZipFiles(zipFile, new ZipEntryFilter() {
                 @Override
                 public boolean accept(ZipEntry zipEntry) {
                     return !zipEntry.isDirectory()
                             && zipEntry.getName().toLowerCase().endsWith(".js"); // NOI18N
                 }
             });
-            List<String> files = new ArrayList<String>(entries.size());
-            for (String entry : entries) {
-                String[] segments = entry.split("/"); // NOI18N
-                files.add(segments[segments.length - 1]);
-            }
-            return files;
         } catch (IOException ex) {
             LOGGER.log(Level.INFO, null, ex);
         }
