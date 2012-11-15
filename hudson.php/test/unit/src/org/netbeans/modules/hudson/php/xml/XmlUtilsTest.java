@@ -50,11 +50,6 @@ import org.w3c.dom.NodeList;
 
 public class XmlUtilsTest extends NbTestCase {
 
-    static {
-        // workaround for failing test after #215972
-        System.setProperty("javax.xml.transform.TransformerFactory", "com.sun.org.apache.xalan.internal.xsltc.trax.TransformerFactoryImpl");
-    }
-
     public XmlUtilsTest(String name) {
         super(name);
     }
