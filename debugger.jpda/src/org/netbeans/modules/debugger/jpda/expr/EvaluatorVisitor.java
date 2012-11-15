@@ -1930,6 +1930,27 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
                 }
                 Field field = declaringType.fieldByName(fieldName);
                 if (field == null) {
+                    // Check the enclosing class...
+                    if (enclosingClass != null && !enclosingClass.equals(declaringType.name())) {
+                        vm = evaluationContext.getDebugger().getVirtualMachine();
+                        if (vm == null) {
+                            return null;
+                        }
+                        declaringType = getOrLoadClass(vm, enclosingClass, evaluationContext);
+                        if (declaringType != null) {
+                            field = declaringType.fieldByName(fieldName);
+                        } else {
+                            // Unknown class, try to get a constant value, if it's a constant...
+                            Object constantValue = ve.getConstantValue();
+                            if (constantValue != null) {
+                                return mirrorOf(vm, constantValue);
+                            } else {
+                                Assert.error(arg0, "unknownType", enclosingClass);
+                            }
+                        }
+                    }
+                }
+                if (field == null) {
                     Assert.error(arg0, "unknownVariable", fieldName);
                 }
                 if (field.isStatic()) {
@@ -3977,6 +3998,8 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
             return new FloatVal(vm, ((Float)value).floatValue());
         } else if (value instanceof Double) {
             return new DoubleVal(vm, ((Double)value).doubleValue());
+        } else if (value instanceof String) {
+            return vm.mirrorOf((String) value);
         }
         return null;
     }

@@ -287,7 +287,14 @@ implements java.beans.PropertyChangeListener, FileSystem.AtomicAction {
         public Class instanceClass() throws IOException, ClassNotFoundException {
             String name = getInstanceClassName();
             if (name == null) {
-                return instanceCreate().getClass();
+		Object instanceCreate = instanceCreate();
+		if(instanceCreate != null) {
+		    return instanceCreate.getClass();
+		}
+		if (LOG.isLoggable(Level.FINE)) {
+		    LOG.log(Level.FINE, "instance could not be created for: {0}", getInstanceClassName()); // NOI18N
+		}
+		return null;
             } else {
                 return ((ClassLoader)Lookup.getDefault().lookup(ClassLoader.class)).loadClass(name);
             }
@@ -333,7 +340,10 @@ implements java.beans.PropertyChangeListener, FileSystem.AtomicAction {
             
             Exception e = null;
             try {
-                return instanceClass().getName();
+		Class instanceClass = instanceClass();
+		if(instanceClass != null) {
+		    return instanceClass.getName();
+		}
             } catch (IOException ex) {
                 e = ex;
             } catch (ClassNotFoundException ex) {
@@ -361,7 +371,10 @@ implements java.beans.PropertyChangeListener, FileSystem.AtomicAction {
             if (instanceOfSet.isEmpty()) {
                 Exception e = null;
                 try {
-                    return type.isAssignableFrom(instanceClass());
+		    Class instanceClass = instanceClass();
+		    if(instanceClass != null) {
+			return type.isAssignableFrom(instanceClass);
+		    }
                 } catch (IOException ex) {
                     e = ex;
                 } catch (ClassNotFoundException ex) {

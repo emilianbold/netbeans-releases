@@ -42,6 +42,8 @@
 package org.netbeans.modules.php.editor.indent.ui;
 
 import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.modules.options.editor.spi.PreferencesCustomizer;
 import org.netbeans.modules.php.editor.indent.FmtOptions;
 import org.netbeans.modules.php.editor.indent.FmtOptions.CategorySupport;
@@ -53,9 +55,11 @@ import static org.netbeans.modules.php.editor.indent.FmtOptions.CategorySupport.
  */
 public class FmtUses extends javax.swing.JPanel {
 
+    private static final Logger LOGGER = Logger.getLogger(FmtUses.class.getName());
+
     public FmtUses() {
         initComponents();
-        preferFullyQualifiedNamesCheckBox.putClientProperty(OPTION_ID, FmtOptions. PREFER_FULLY_QUALIFIED_NAMES);
+        preferFullyQualifiedNamesCheckBox.putClientProperty(OPTION_ID, FmtOptions.PREFER_FULLY_QUALIFIED_NAMES);
         preferMultipleUseStatementsCombinedCheckBox.putClientProperty(OPTION_ID, FmtOptions.PREFER_MULTIPLE_USE_STATEMENTS_COMBINED);
         startUseWithNamespaceSeparatorCheckBox.putClientProperty(OPTION_ID, FmtOptions.START_USE_WITH_NAMESPACE_SEPARATOR);
         aliasesCapitalsOfNamespacesCheckBox.putClientProperty(OPTION_ID, FmtOptions.ALIASES_CAPITALS_OF_NAMESPACES);
@@ -66,7 +70,7 @@ public class FmtUses extends javax.swing.JPanel {
         try {
             preview = Utils.loadPreviewText(FmtUses.class.getClassLoader().getResourceAsStream("org/netbeans/modules/php/editor/indent/ui/Uses.php"));
         } catch (IOException ex) {
-            // TODO log it
+            LOGGER.log(Level.WARNING, null, ex);
         }
         return new CategorySupport.Factory("uses", FmtUses.class, preview);
     }
