@@ -55,18 +55,22 @@ import org.openide.util.Union2;
 
 class ConstantElementImpl extends ModelElementImpl implements ConstantElement, FullyQualifiedElement {
     private final String value;
+
     ConstantElementImpl(NamespaceScopeImpl inScope, ClassConstantDeclarationInfo node) {
-        this(inScope,node.getName(),node.getValue(), inScope.getFile(),node.getRange());
+        this(inScope, node.getName(), node.getValue(), inScope.getFile(), node.getRange());
     }
 
     ConstantElementImpl(IndexScopeImpl inScope, org.netbeans.modules.php.editor.api.elements.ConstantElement indexedConstant) {
-        this(inScope,indexedConstant.getName(), indexedConstant.getValue(),
+        this(
+                inScope,
+                indexedConstant.getName(),
+                indexedConstant.getValue(),
                 Union2.<String/*url*/, FileObject>createFirst(indexedConstant.getFilenameUrl()),
-                new OffsetRange(indexedConstant.getOffset(), indexedConstant.getOffset() + indexedConstant.getName().length()));
+                new OffsetRange(indexedConstant.getOffset(),
+                indexedConstant.getOffset() + indexedConstant.getName().length()));
     }
 
-    private ConstantElementImpl(ScopeImpl inScope, String name, String value,
-            Union2<String, FileObject> file, OffsetRange offsetRange) {
+    private ConstantElementImpl(ScopeImpl inScope, String name, String value, Union2<String, FileObject> file, OffsetRange offsetRange) {
         super(inScope, name, file, offsetRange, PhpElementKind.CONSTANT);
         this.value = value;
     }
@@ -81,7 +85,7 @@ class ConstantElementImpl extends ModelElementImpl implements ConstantElement, F
         assert namespaceScope != null;
         QualifiedName qualifiedName = namespaceScope.getQualifiedName();
         sb.append(qualifiedName.toString()).append(Signature.ITEM_DELIMITER);
-        sb.append(getValue() != null ? Signature.encodeItem(getValue()) : "?").append(Signature.ITEM_DELIMITER);//NOI18N
+        sb.append(getValue() != null ? Signature.encodeItem(getValue()) : "?").append(Signature.ITEM_DELIMITER); //NOI18N
         return sb.toString();
     }
 

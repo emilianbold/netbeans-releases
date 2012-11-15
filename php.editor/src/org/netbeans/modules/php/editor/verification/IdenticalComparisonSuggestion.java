@@ -47,7 +47,11 @@ import java.util.List;
 import javax.swing.text.BadLocationException;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
-import org.netbeans.modules.csl.api.*;
+import org.netbeans.modules.csl.api.EditList;
+import org.netbeans.modules.csl.api.Hint;
+import org.netbeans.modules.csl.api.HintFix;
+import org.netbeans.modules.csl.api.HintSeverity;
+import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.php.editor.CodeUtils;
 import org.netbeans.modules.php.editor.model.Model;
 import org.netbeans.modules.php.editor.model.ModelUtils;
@@ -254,7 +258,7 @@ public class IdenticalComparisonSuggestion extends AbstractSuggestion {
         @Override
         public void implement() throws Exception {
             EditList edits = new EditList(doc);
-            edits.replace(fixInfo.getStart(), fixInfo.getLength(), " === (" + fixInfo.getTypeName() +") ", true, 0); //NOI18N
+            edits.replace(fixInfo.getStart(), fixInfo.getLength(), " === (" + fixInfo.getTypeName() + ") ", true, 0); //NOI18N
             edits.apply();
         }
 

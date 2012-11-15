@@ -79,7 +79,7 @@ public class AbstractClassInstantiationHintError extends AbstractHintError {
         hints.addAll(checkVisitor.getHints());
     }
 
-    private class CheckVisitor extends DefaultVisitor {
+    private final class CheckVisitor extends DefaultVisitor {
         private final FileObject fileObject;
         private final Index index;
         private final List<Hint> hints = new LinkedList<Hint>();
@@ -110,7 +110,13 @@ public class AbstractClassInstantiationHintError extends AbstractHintError {
                 ClassElement classElement = ModelUtils.getFirst(classes);
                 if (classElement != null && classElement.isAbstract()) {
                     OffsetRange offsetRange = new OffsetRange(startOffset, node.getEndOffset());
-                    hints.add(new Hint(AbstractClassInstantiationHintError.this, Bundle.AbstractClassInstantiationDesc(classElement.getFullyQualifiedName().toString()), fileObject, offsetRange, null, 500));
+                    hints.add(new Hint(
+                            AbstractClassInstantiationHintError.this,
+                            Bundle.AbstractClassInstantiationDesc(classElement.getFullyQualifiedName().toString()),
+                            fileObject,
+                            offsetRange,
+                            null,
+                            500));
                 }
             }
         }

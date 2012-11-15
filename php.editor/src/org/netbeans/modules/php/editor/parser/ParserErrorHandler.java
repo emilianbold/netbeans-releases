@@ -55,6 +55,6 @@ public interface ParserErrorHandler {
         SYNTAX_ERROR
     }
 
-    public void handleError(ParserErrorHandler.Type type, short[] expectedTokens, Symbol current, Symbol previous);
+    void handleError(ParserErrorHandler.Type type, short[] expectedTokens, Symbol current, Symbol previous);
 
 }

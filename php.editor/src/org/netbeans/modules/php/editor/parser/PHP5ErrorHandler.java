@@ -54,13 +54,10 @@ import org.openide.util.NbBundle;
  */
 public interface PHP5ErrorHandler extends ParserErrorHandler {
 
-    public List<Error> displayFatalError();
-
-    public List<Error> displaySyntaxErrors(Program program);
-
-    public List<SyntaxError> getSyntaxErrors();
-
-    public void disableHandling();
+    List<Error> displayFatalError();
+    List<Error> displaySyntaxErrors(Program program);
+    List<SyntaxError> getSyntaxErrors();
+    void disableHandling();
 
     @org.netbeans.api.annotations.common.SuppressWarnings({"EI_EXPOSE_REP", "EI_EXPOSE_REP2"})
     public static class SyntaxError {
@@ -142,7 +139,7 @@ public interface PHP5ErrorHandler extends ParserErrorHandler {
     public static class FatalError extends GSFPHPError {
 
         @NbBundle.Messages("MSG_FatalError=Unable to parse the file")
-        FatalError(GSFPHPParser.Context context){
+        FatalError(GSFPHPParser.Context context) {
             super(Bundle.MSG_FatalError(),
                 context.getSnapshot().getSource().getFileObject(),
                 0, context.getSource().length(),

@@ -49,7 +49,7 @@ import org.netbeans.modules.csl.api.RuleContext;
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-abstract public class AbstractError implements ErrorRule {
+public abstract class AbstractError implements ErrorRule {
 
     @Override
     public boolean appliesTo(RuleContext context) {

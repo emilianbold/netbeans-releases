@@ -56,7 +56,7 @@ import org.openide.util.NbBundle;
  *
  * @author Andrei Badea
  */
-public class SelectConnectionPanel extends javax.swing.JPanel {
+public final class SelectConnectionPanel extends javax.swing.JPanel {
 
     private final boolean mySQLOnly;
     private final boolean passwordRequired;

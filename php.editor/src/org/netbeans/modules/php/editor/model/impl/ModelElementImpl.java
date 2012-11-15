@@ -59,7 +59,12 @@ import org.netbeans.modules.php.editor.api.QualifiedName;
 import org.netbeans.modules.php.editor.api.elements.PhpElement;
 import org.netbeans.modules.php.editor.elements.PhpElementImpl;
 import org.netbeans.modules.php.editor.index.PHPElement;
-import org.netbeans.modules.php.editor.model.*;
+import org.netbeans.modules.php.editor.model.FileScope;
+import org.netbeans.modules.php.editor.model.IndexScope;
+import org.netbeans.modules.php.editor.model.ModelElement;
+import org.netbeans.modules.php.editor.model.ModelUtils;
+import org.netbeans.modules.php.editor.model.NamespaceScope;
+import org.netbeans.modules.php.editor.model.Scope;
 import org.netbeans.modules.php.editor.model.nodes.ASTNodeInfo;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
@@ -83,13 +88,17 @@ abstract class ModelElementImpl extends PHPElement implements ModelElement {
 
     //new contructors
     ModelElementImpl(Scope inScope, ASTNodeInfo info, PhpModifiers modifiers) {
-        this(inScope, info.getName(),inScope.getFile(),info.getRange(),info.getPhpElementKind(),modifiers);
+        this(inScope, info.getName(), inScope.getFile(), info.getRange(), info.getPhpElementKind(), modifiers);
     }
 
     ModelElementImpl(Scope inScope, PhpElement element, PhpElementKind kind) {
-        this(inScope, element.getName(),Union2.<String, FileObject>createFirst(element.getFilenameUrl()),
-                new OffsetRange(element.getOffset(), element.getOffset()+element.getName().length()),
-                kind, PhpModifiers.fromBitMask(element.getFlags()));
+        this(
+                inScope,
+                element.getName(),
+                Union2.<String, FileObject>createFirst(element.getFilenameUrl()),
+                new OffsetRange(element.getOffset(), element.getOffset() + element.getName().length()),
+                kind,
+                PhpModifiers.fromBitMask(element.getFlags()));
         this.indexedElement = element;
     }
 
@@ -103,8 +112,7 @@ abstract class ModelElementImpl extends PHPElement implements ModelElement {
             Union2<String/*url*/, FileObject> file, OffsetRange offsetRange, PhpElementKind kind,
             PhpModifiers modifiers) {
         if (name == null || file == null || kind == null || modifiers == null) {
-            throw new IllegalArgumentException("null for name | fo | kind: " //NOI18N
-                    + name + " | " + file + " | " + kind);//NOI18N
+            throw new IllegalArgumentException("null for name | fo | kind: " + name + " | " + file + " | " + kind);
         }
         assert file.hasFirst() || file.hasSecond();
         if (file.hasFirst() && file.first() != null) {
@@ -121,7 +129,7 @@ abstract class ModelElementImpl extends PHPElement implements ModelElement {
         this.file = file;
         this.modifiers = modifiers;
         if (inScope instanceof ScopeImpl && !(this instanceof AssignmentImpl)/* && !(inScope instanceof IndexScope)*/) {
-            ((ScopeImpl)inScope).addElement(this);
+            ((ScopeImpl) inScope).addElement(this);
         }
     }
 
@@ -149,13 +157,12 @@ abstract class ModelElementImpl extends PHPElement implements ModelElement {
     }
 
     public String getNormalizedName() {
-        String filePath = "";//NOI18N
+        String filePath = ""; //NOI18N
         final FileObject fileObject = getFileObject();
         if (fileObject != null) {
             filePath = fileObject.getPath();
         }
-        return getNamespaceName().append(QualifiedName.create(getName())).toString().toLowerCase() +
-                String.valueOf(offsetRange.getStart())+filePath;
+        return getNamespaceName().append(QualifiedName.create(getName())).toString().toLowerCase() + String.valueOf(offsetRange.getStart())+filePath;
     }
 
     static boolean nameKindMatch(Pattern p, String text) {
@@ -375,7 +382,7 @@ abstract class ModelElementImpl extends PHPElement implements ModelElement {
         //TODO: FileScope should implement ElementQuery
         FileScope fileScope = ModelUtils.getFileScope(this);
         if (fileScope == null && getInScope() instanceof IndexScope) {
-            return ((IndexScope)getInScope()).getIndex();
+            return ((IndexScope) getInScope()).getIndex();
         }
         assert fileScope != null : this;
         assert fileScope.getIndexScope() != null : this;

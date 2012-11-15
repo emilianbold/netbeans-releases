@@ -53,9 +53,14 @@ import org.netbeans.modules.php.editor.api.elements.MethodElement;
 import org.netbeans.modules.php.editor.api.elements.TypeConstantElement;
 import org.netbeans.modules.php.editor.api.elements.TypeElement;
 import org.netbeans.modules.php.editor.index.Signature;
-import org.netbeans.modules.php.editor.model.*;
+import org.netbeans.modules.php.editor.model.ClassConstantElement;
+import org.netbeans.modules.php.editor.model.IndexScope;
+import org.netbeans.modules.php.editor.model.InterfaceScope;
+import org.netbeans.modules.php.editor.model.MethodScope;
+import org.netbeans.modules.php.editor.model.ModelUtils;
+import org.netbeans.modules.php.editor.model.NamespaceScope;
+import org.netbeans.modules.php.editor.model.Scope;
 import org.netbeans.modules.php.editor.model.nodes.InterfaceDeclarationInfo;
-
 
 /**
  *
@@ -81,6 +86,8 @@ class InterfaceScopeImpl extends TypeScopeImpl implements InterfaceScope {
             case SuperTypes:
                 printAsSuperTypes(retval);
                 break;
+            default:
+                assert false : as;
         }
         return retval.toString();
     }
@@ -88,12 +95,12 @@ class InterfaceScopeImpl extends TypeScopeImpl implements InterfaceScope {
     private void printAsSuperTypes(StringBuilder sb) {
         Set<QualifiedName> superIfaces = getSuperInterfaces();
         if (!superIfaces.isEmpty()) {
-            sb.append(" extends ");//NOI18N
+            sb.append(" extends "); //NOI18N
         }
         StringBuilder ifacesBuffer = new StringBuilder();
         for (QualifiedName qualifiedName : superIfaces) {
             if (ifacesBuffer.length() > 0) {
-                ifacesBuffer.append(", ");//NOI18N
+                ifacesBuffer.append(", "); //NOI18N
             }
             ifacesBuffer.append(qualifiedName.getName());
         }
@@ -114,9 +121,9 @@ class InterfaceScopeImpl extends TypeScopeImpl implements InterfaceScope {
                 MethodElement indexedFunction = classMember;
                 TypeElement type = indexedFunction.getType();
                 if (type.isInterface()) {
-                    allMethods.add(new MethodScopeImpl(new InterfaceScopeImpl(indexScope, (InterfaceElement)type), indexedFunction));
+                    allMethods.add(new MethodScopeImpl(new InterfaceScopeImpl(indexScope, (InterfaceElement) type), indexedFunction));
                 } else {
-                    allMethods.add(new MethodScopeImpl(new ClassScopeImpl(indexScope, (ClassElement)type), indexedFunction));
+                    allMethods.add(new MethodScopeImpl(new ClassScopeImpl(indexScope, (ClassElement) type), indexedFunction));
                 }
             }
         }
@@ -168,9 +175,9 @@ class InterfaceScopeImpl extends TypeScopeImpl implements InterfaceScope {
             Collection<QualifiedName> fQSuperInterfaceNames = getFQSuperInterfaceNames();
             for (QualifiedName fQSuperInterfaceName : fQSuperInterfaceNames) {
                 if (fqIfaceSb.length() > 0) {
-                    fqIfaceSb.append(",");//NOI18N
+                    fqIfaceSb.append(","); //NOI18N
                 }
-                fqIfaceSb.append(fQSuperInterfaceName.toString());//NOI18N
+                fqIfaceSb.append(fQSuperInterfaceName.toString()); //NOI18N
             }
             sb.append(fqIfaceSb);
         }
@@ -185,7 +192,7 @@ class InterfaceScopeImpl extends TypeScopeImpl implements InterfaceScope {
     @Override
     public QualifiedName getNamespaceName() {
         if (indexedElement instanceof InterfaceElement) {
-            InterfaceElement indexedInterface = (InterfaceElement)indexedElement;
+            InterfaceElement indexedInterface = (InterfaceElement) indexedElement;
             return indexedInterface.getNamespaceName();
         }
         return super.getNamespaceName();
@@ -204,5 +211,5 @@ class InterfaceScopeImpl extends TypeScopeImpl implements InterfaceScope {
         }
         return sb.toString();
     }
-    
+
 }

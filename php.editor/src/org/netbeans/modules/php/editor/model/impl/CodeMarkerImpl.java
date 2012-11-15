@@ -56,6 +56,7 @@ class CodeMarkerImpl implements CodeMarker {
     private OffsetRange range;
     private Scope scope;
     private FileScopeImpl fileScope;
+
     public CodeMarkerImpl(Scope scope , ASTNodeInfo nodeInfo, FileScopeImpl fileScope) {
         this(scope, nodeInfo.getRange(), fileScope);
     }

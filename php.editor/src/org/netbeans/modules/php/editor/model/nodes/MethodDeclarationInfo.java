@@ -55,8 +55,8 @@ import org.netbeans.modules.php.editor.model.impl.VariousUtils;
 import org.netbeans.modules.php.editor.model.nodes.ASTNodeInfo.Kind;
 import org.netbeans.modules.php.editor.parser.astnodes.BodyDeclaration.Modifier;
 import org.netbeans.modules.php.editor.parser.astnodes.FormalParameter;
-import org.netbeans.modules.php.editor.parser.astnodes.MethodDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.Identifier;
+import org.netbeans.modules.php.editor.parser.astnodes.MethodDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.Program;
 
 /**
@@ -77,7 +77,7 @@ public class MethodDeclarationInfo extends ASTNodeInfo<MethodDeclaration> {
     public static MethodDeclarationInfo create(Program program, MethodDeclaration methodDeclaration, final boolean isFromInterface) {
         return new MethodDeclarationInfo(program, methodDeclaration, isFromInterface);
     }
-    public static MethodDeclarationInfo create(Program program,MethodDeclaration methodDeclaration, final TypeScope typeScope) {
+    public static MethodDeclarationInfo create(Program program, MethodDeclaration methodDeclaration, final TypeScope typeScope) {
         return create(program, methodDeclaration, typeScope.isInterface());
     }
     public static MethodDeclarationInfo create(MethodDeclaration classDeclaration, final TypeScope typeScope) {
@@ -87,7 +87,7 @@ public class MethodDeclarationInfo extends ASTNodeInfo<MethodDeclaration> {
     @Override
     public Kind getKind() {
         PhpModifiers modifiers = PhpModifiers.fromBitMask(getOriginalNode().getModifier());
-        return modifiers.isStatic() ? Kind.STATIC_METHOD: Kind.METHOD;
+        return modifiers.isStatic() ? Kind.STATIC_METHOD : Kind.METHOD;
     }
 
     @Override

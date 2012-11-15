@@ -132,7 +132,7 @@ final class MethodScopeImpl extends FunctionScopeImpl implements MethodScope, Va
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
-        sb.append(getPhpModifiers().toString()).append(" ");//NOI18N
+        sb.append(getPhpModifiers().toString()).append(" "); //NOI18N
         sb.append(super.toString());
         return sb.toString();
     }
@@ -159,15 +159,15 @@ final class MethodScopeImpl extends FunctionScopeImpl implements MethodScope, Va
 
     @Override
     public String getNormalizedName() {
-        return classNormName+super.getNormalizedName();
+        return classNormName + super.getNormalizedName();
     }
 
     @Override
     public String getClassSkeleton() {
         StringBuilder sb = new StringBuilder();
-        sb.append(getPhpModifiers().toString()).append(" ");//NOI18N
-        sb.append("function").append(" ").append(getName());//NOI18N
-        sb.append("(");//NOI18N
+        sb.append(getPhpModifiers().toString()).append(" "); //NOI18N
+        sb.append("function").append(" ").append(getName()); //NOI18N
+        sb.append("("); //NOI18N
         List<? extends ParameterElement> parameterList = getParameters();
         if (parameterList.size() > 0) {
             for (int i = 0, n = parameterList.size(); i < n; i++) {
@@ -180,7 +180,7 @@ final class MethodScopeImpl extends FunctionScopeImpl implements MethodScope, Va
                         if (types.size() == 1) {
                             for (TypeResolver typeResolver : types) {
                                 if (typeResolver.isResolved()) {
-                                    sb.append(typeResolver.getTypeName(false)).append(' ');//NOI18N
+                                    sb.append(typeResolver.getTypeName(false)).append(' '); //NOI18N
                                 }
                             }
                         }
@@ -197,26 +197,26 @@ final class MethodScopeImpl extends FunctionScopeImpl implements MethodScope, Va
         }
 
         sb.append(")"); //NOI18N
-        sb.append("{\n}");//NOI18N
+        sb.append("{\n}"); //NOI18N
         return sb.toString();
     }
 
     @Override
     public String getInterfaceSkeleton() {
         StringBuilder sb = new StringBuilder();
-        sb.append(getPhpModifiers().toString()).append(" ");//NOI18N
-        sb.append("function").append(" ").append(getName());//NOI18N
-        sb.append("(");//NOI18N
+        sb.append(getPhpModifiers().toString()).append(" "); //NOI18N
+        sb.append("function").append(" ").append(getName()); //NOI18N
+        sb.append("("); //NOI18N
         List<? extends String> parameterNames = getParameterNames();
         for (int i = 0; i < parameterNames.size(); i++) {
             String param = parameterNames.get(i);
             if (i > 0) {
-                sb.append(", ");//NOI18N
+                sb.append(", "); //NOI18N
             }
             sb.append(param);
         }
         sb.append(")"); //NOI18N
-        sb.append(";\n");//NOI18N
+        sb.append(";\n"); //NOI18N
         return sb.toString();
     }
 

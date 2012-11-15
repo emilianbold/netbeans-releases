@@ -42,13 +42,21 @@
 package org.netbeans.modules.php.editor.verification;
 
 import java.io.IOException;
-import java.util.*;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 import javax.swing.text.BadLocationException;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
-import org.netbeans.modules.csl.api.*;
+import org.netbeans.modules.csl.api.EditList;
+import org.netbeans.modules.csl.api.Hint;
+import org.netbeans.modules.csl.api.HintFix;
+import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.csl.api.UiUtils;
 import org.netbeans.modules.csl.spi.GsfUtilities;
 import org.netbeans.modules.php.api.util.StringUtils;
 import org.netbeans.modules.php.editor.CodeUtils;
@@ -58,16 +66,34 @@ import org.netbeans.modules.php.editor.api.ElementQuery;
 import org.netbeans.modules.php.editor.api.NameKind;
 import org.netbeans.modules.php.editor.api.PhpElementKind;
 import org.netbeans.modules.php.editor.api.QualifiedName;
-import org.netbeans.modules.php.editor.api.elements.*;
 import org.netbeans.modules.php.editor.api.elements.BaseFunctionElement.PrintAs;
+import org.netbeans.modules.php.editor.api.elements.ClassElement;
+import org.netbeans.modules.php.editor.api.elements.ElementFilter;
 import org.netbeans.modules.php.editor.api.elements.FieldElement;
+import org.netbeans.modules.php.editor.api.elements.MethodElement;
+import org.netbeans.modules.php.editor.api.elements.TypeConstantElement;
 import org.netbeans.modules.php.editor.elements.MethodElementImpl;
 import org.netbeans.modules.php.editor.lexer.LexUtilities;
 import org.netbeans.modules.php.editor.lexer.PHPTokenId;
-import org.netbeans.modules.php.editor.model.*;
+import org.netbeans.modules.php.editor.model.ClassScope;
+import org.netbeans.modules.php.editor.model.MethodScope;
+import org.netbeans.modules.php.editor.model.Model;
+import org.netbeans.modules.php.editor.model.ModelElement;
+import org.netbeans.modules.php.editor.model.ModelUtils;
+import org.netbeans.modules.php.editor.model.TypeScope;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
-import org.netbeans.modules.php.editor.parser.astnodes.*;
+import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
 import org.netbeans.modules.php.editor.parser.astnodes.BodyDeclaration.Modifier;
+import org.netbeans.modules.php.editor.parser.astnodes.ClassDeclaration;
+import org.netbeans.modules.php.editor.parser.astnodes.ClassInstanceCreation;
+import org.netbeans.modules.php.editor.parser.astnodes.Expression;
+import org.netbeans.modules.php.editor.parser.astnodes.FieldAccess;
+import org.netbeans.modules.php.editor.parser.astnodes.MethodInvocation;
+import org.netbeans.modules.php.editor.parser.astnodes.StaticConstantAccess;
+import org.netbeans.modules.php.editor.parser.astnodes.StaticFieldAccess;
+import org.netbeans.modules.php.editor.parser.astnodes.StaticMethodInvocation;
+import org.netbeans.modules.php.editor.parser.astnodes.Variable;
+import org.netbeans.modules.php.editor.parser.astnodes.VariableBase;
 import org.netbeans.modules.php.editor.parser.astnodes.visitors.DefaultTreePathVisitor;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
@@ -86,7 +112,7 @@ public class IntroduceSuggestion extends AbstractSuggestion {
 
     @Override
     public String getId() {
-        return "Introduce.Hint";//NOI18N
+        return "Introduce.Hint"; //NOI18N
     }
 
     @Override
@@ -249,7 +275,7 @@ public class IntroduceSuggestion extends AbstractSuggestion {
                     if (fieldName == null) {
                         return;
                     }
-                    if (fieldName.startsWith("$")) {//NOI18N
+                    if (fieldName.startsWith("$")) { //NOI18N
                         fieldName = fieldName.substring(1);
                     }
 
@@ -356,7 +382,7 @@ public class IntroduceSuggestion extends AbstractSuggestion {
         static IntroduceClassFix getInstance(String className, Model model, ClassInstanceCreation instanceCreation) {
             FileObject currentFile = model.getFileScope().getFileObject();
             FileObject folder = currentFile == null ? null : currentFile.getParent();
-            String templatePath = "Templates/Scripting/PHPClass.php";//NOI18N
+            String templatePath = "Templates/Scripting/PHPClass.php"; //NOI18N
             FileObject template = FileUtil.getConfigFile(templatePath);
             return (template != null && folder != null && folder.canWrite())
                     ? new IntroduceClassFix(className, template, folder, instanceCreation) : null;
@@ -410,10 +436,10 @@ public class IntroduceSuggestion extends AbstractSuggestion {
             if (length > 30) {
                 fileName = fileName.substring(length - 30);
                 final int indexOf = fileName.indexOf("/");
-                if (indexOf != -1) {//NOI18N
+                if (indexOf != -1) { //NOI18N
                     fileName = fileName.substring(indexOf);
                 }
-                fileName = String.format("...%s/%s.php", fileName, clsName);//NOI18N
+                fileName = String.format("...%s/%s.php", fileName, clsName); //NOI18N
             }
             return Bundle.IntroduceHintClassDesc(clsName, fileName);
         }
@@ -434,7 +460,7 @@ public class IntroduceSuggestion extends AbstractSuggestion {
         public void implement() throws Exception {
             int templateOffset = getOffset();
             EditList edits = new EditList(doc);
-            edits.replace(templateOffset, 0, "\n" + item.getCustomInsertTemplate(), true, 0);//NOI18N
+            edits.replace(templateOffset, 0, "\n" + item.getCustomInsertTemplate(), true, 0); //NOI18N
             edits.apply();
             templateOffset = Utilities.getRowEnd(doc, templateOffset + 1);
             UiUtils.open(type.getFileObject(), Utilities.getRowEnd(doc, templateOffset + 1) - 1);
@@ -475,7 +501,7 @@ public class IntroduceSuggestion extends AbstractSuggestion {
         public void implement() throws Exception {
             int templateOffset = getOffset();
             EditList edits = new EditList(doc);
-            edits.replace(templateOffset, 0, "\n" + item.getCustomInsertTemplate(), true, 0);//NOI18N
+            edits.replace(templateOffset, 0, "\n" + item.getCustomInsertTemplate(), true, 0); //NOI18N
             edits.apply();
             templateOffset = Utilities.getRowEnd(doc, templateOffset + 1);
             UiUtils.open(type.getFileObject(), Utilities.getRowEnd(doc, templateOffset + 1) - 1);
@@ -518,7 +544,7 @@ public class IntroduceSuggestion extends AbstractSuggestion {
         public void implement() throws Exception {
             int templateOffset = getOffset();
             EditList edits = new EditList(doc);
-            edits.replace(templateOffset, 0, "\n" + templ, true, 0);//NOI18N
+            edits.replace(templateOffset, 0, "\n" + templ, true, 0); //NOI18N
             edits.apply();
             templateOffset = Utilities.getRowEnd(doc, templateOffset + 1) - 2;
             UiUtils.open(clz.getFileObject(), templateOffset);
@@ -546,7 +572,7 @@ public class IntroduceSuggestion extends AbstractSuggestion {
             Variable fieldVar = ((FieldAccess) node).getField();
             this.fieldName = CodeUtils.extractVariableName(fieldVar);
             if (!fieldVar.isDollared()) {
-                this.fieldName = "$" + this.fieldName;//NOI18N
+                this.fieldName = "$" + this.fieldName; //NOI18N
             }
             return String.format("%s %s;", isInternal() ? "private" : "public", fieldName); //NOI18N
         }
@@ -578,7 +604,7 @@ public class IntroduceSuggestion extends AbstractSuggestion {
         public void implement() throws Exception {
             int templateOffset = getOffset();
             EditList edits = new EditList(doc);
-            edits.replace(templateOffset, 0, "\n" + templ, true, 0);//NOI18N
+            edits.replace(templateOffset, 0, "\n" + templ, true, 0); //NOI18N
             edits.apply();
             templateOffset = Utilities.getRowEnd(doc, templateOffset + 1) - 2;
             UiUtils.open(clz.getFileObject(), templateOffset);
@@ -607,7 +633,7 @@ public class IntroduceSuggestion extends AbstractSuggestion {
             Variable fieldVar = ((StaticFieldAccess) node).getField();
             fieldName = CodeUtils.extractVariableName(fieldVar);
             if (!fieldVar.isDollared()) {
-                fieldName = "$" + fieldName;//NOI18N
+                fieldName = "$" + fieldName; //NOI18N
             }
             return String.format("static %s = \"\";", fieldName);
         }
@@ -630,7 +656,7 @@ public class IntroduceSuggestion extends AbstractSuggestion {
         public void implement() throws Exception {
             int templateOffset = getOffset();
             EditList edits = new EditList(doc);
-            edits.replace(templateOffset, 0, "\n" + templ, true, 0);//NOI18N
+            edits.replace(templateOffset, 0, "\n" + templ, true, 0); //NOI18N
             edits.apply();
             templateOffset = Utilities.getRowEnd(doc, templateOffset + 1) - 2;
             UiUtils.open(type.getFileObject(), templateOffset);
@@ -697,7 +723,7 @@ public class IntroduceSuggestion extends AbstractSuggestion {
                 varName = CodeUtils.extractVariableName((Variable) expression);
             }
             if (varName == null) {
-                varName = String.format("$param%d", i);//NOI18N
+                varName = String.format("$param%d", i); //NOI18N
             }
             if (i > 0) {
                 paramNames.append(", ");

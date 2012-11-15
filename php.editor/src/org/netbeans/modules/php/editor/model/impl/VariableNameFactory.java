@@ -50,5 +50,7 @@ import org.netbeans.modules.php.editor.parser.astnodes.Variable;
  * @author Radek Matous
  */
 interface VariableNameFactory extends VariableScope  {
+
     VariableNameImpl createElement(Variable node);
+
 }

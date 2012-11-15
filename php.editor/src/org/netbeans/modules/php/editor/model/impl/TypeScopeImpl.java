@@ -60,7 +60,15 @@ import org.netbeans.modules.php.editor.api.elements.ClassElement;
 import org.netbeans.modules.php.editor.api.elements.InterfaceElement;
 import org.netbeans.modules.php.editor.api.elements.TraitElement;
 import org.netbeans.modules.php.editor.api.elements.TypeElement;
-import org.netbeans.modules.php.editor.model.*;
+import org.netbeans.modules.php.editor.model.ClassConstantElement;
+import org.netbeans.modules.php.editor.model.IndexScope;
+import org.netbeans.modules.php.editor.model.InterfaceScope;
+import org.netbeans.modules.php.editor.model.MethodScope;
+import org.netbeans.modules.php.editor.model.ModelElement;
+import org.netbeans.modules.php.editor.model.ModelUtils;
+import org.netbeans.modules.php.editor.model.NamespaceScope;
+import org.netbeans.modules.php.editor.model.Scope;
+import org.netbeans.modules.php.editor.model.TypeScope;
 import org.netbeans.modules.php.editor.model.nodes.ClassDeclarationInfo;
 import org.netbeans.modules.php.editor.model.nodes.InterfaceDeclarationInfo;
 import org.netbeans.modules.php.editor.model.nodes.TraitDeclarationInfo;
@@ -155,18 +163,19 @@ abstract class TypeScopeImpl extends ScopeImpl implements TypeScope {
                     if (indexedElement == null) {
                         NamespaceScope top = (NamespaceScope) getInScope();
                         NamespaceScopeImpl ps = (NamespaceScopeImpl) top;
-                        retval.addAll(iface = ModelUtils.filter(ps.getDeclaredInterfaces(), ifaceName));
-                        ifaces.put(ifaceName,iface);
+                        iface = ModelUtils.filter(ps.getDeclaredInterfaces(), ifaceName);
+                        retval.addAll(iface);
+                        ifaces.put(ifaceName, iface);
                         /*for (InterfaceScopeImpl interfaceScope : iface) {
                             retval.addAll(interfaceScope.getInterfaces());
                         }*/
                         if (retval.isEmpty() && top instanceof NamespaceScopeImpl) {
                             IndexScope indexScope = ModelUtils.getIndexScope(ps);
                             if (indexScope != null) {
-                                Collection<? extends InterfaceScope> cIfaces =IndexScopeImpl.getInterfaces(QualifiedName.create(ifaceName), this);
-                                ifaces.put(ifaceName,(List<? extends InterfaceScopeImpl>)cIfaces);
+                                Collection<? extends InterfaceScope> cIfaces = IndexScopeImpl.getInterfaces(QualifiedName.create(ifaceName), this);
+                                ifaces.put(ifaceName, (List<? extends InterfaceScopeImpl>) cIfaces);
                                 for (InterfaceScope interfaceScope : cIfaces) {
-                                    retval.add((InterfaceScopeImpl)interfaceScope);
+                                    retval.add((InterfaceScopeImpl) interfaceScope);
                                 }
                             } else {
                                 //TODO: create it from idx
@@ -216,10 +225,9 @@ abstract class TypeScopeImpl extends ScopeImpl implements TypeScope {
 
             @Override
             public boolean isAccepted(ModelElement element) {
-                return element.getPhpElementKind().equals(PhpElementKind.METHOD) &&
-                        ModelElementImpl.nameKindMatch(element.getName(), QuerySupport.Kind.EXACT, queryName) &&
-                        (modifiers.length == 0 ||
-                        (element.getPhpModifiers().toFlags() & PhpModifiers.fromBitMask(modifiers).toFlags()) != 0);
+                return element.getPhpElementKind().equals(PhpElementKind.METHOD)
+                        && ModelElementImpl.nameKindMatch(element.getName(), QuerySupport.Kind.EXACT, queryName)
+                        && (modifiers.length == 0 || (element.getPhpModifiers().toFlags() & PhpModifiers.fromBitMask(modifiers).toFlags()) != 0);
             }
         });
     }
@@ -229,7 +237,7 @@ abstract class TypeScopeImpl extends ScopeImpl implements TypeScope {
     public final Collection<? extends ClassConstantElement> getDeclaredConstants() {
         if (ModelUtils.getFileScope(this) == null) {
             IndexScopeImpl indexScopeImpl = (IndexScopeImpl) ModelUtils.getIndexScope(this);
-            return indexScopeImpl.findClassConstants(this);//NOI18N
+            return indexScopeImpl.findClassConstants(this); //NOI18N
         }
         return filter(getElements(), new ElementFilter() {
 
@@ -243,7 +251,6 @@ abstract class TypeScopeImpl extends ScopeImpl implements TypeScope {
     @Override
     public String getNormalizedName() {
         StringBuilder sb = new StringBuilder();
-        //Set<String> ifaceNames = ifaces.keySet();
         Collection<QualifiedName> fQSuperInterfaceNames = getFQSuperInterfaceNames();
         if (fQSuperInterfaceNames.isEmpty()) {
             List<? extends String> ifaceNames = getSuperInterfaceNames();
@@ -255,7 +262,7 @@ abstract class TypeScopeImpl extends ScopeImpl implements TypeScope {
                 sb.append(qualifiedName.toString());
             }
         }
-        return sb.toString()+super.getNormalizedName();
+        return sb.toString() + super.getNormalizedName();
     }
 
     @Override
@@ -298,11 +305,11 @@ abstract class TypeScopeImpl extends ScopeImpl implements TypeScope {
                 } else {
                     result = isSuperTypeOf(interfaceScope);
                 }
-                if (result == true) {
+                if (result) {
                     break;
                 }
             }
-            if (result == false && !subType.isInterface()) {
+            if (!result && !subType.isInterface()) {
                 result = subType.isSubTypeOf(this);
             }
         }
@@ -320,7 +327,7 @@ abstract class TypeScopeImpl extends ScopeImpl implements TypeScope {
                     } else {
                         result = interfaceScope.isSubTypeOf(superType);
                     }
-                    if (result == true) {
+                    if (result) {
                         break;
                     }
                 }
