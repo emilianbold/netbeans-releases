@@ -90,7 +90,7 @@ public class FileStatusCache {
      */
     private final Map<File, FileInformation> cachedFiles;
     private final LinkedHashSet<File> upToDateFiles = new LinkedHashSet<File>(MAX_COUNT_UPTODATE_FILES);
-    private final RequestProcessor rp = new RequestProcessor("Git.cache", 1, true);
+    private final RequestProcessor rp = new RequestProcessor("Git.cache", 1, true, false);
     private final HashSet<File> nestedRepositories = new HashSet<File>(2); // mainly for logging
     private PropertyChangeSupport listenerSupport = new PropertyChangeSupport(this);
 
