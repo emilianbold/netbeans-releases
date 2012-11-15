@@ -271,7 +271,7 @@ public class NbMainSequence extends WizardSequence {
                                 msg = ResourceUtils.getString(NbMainSequence.class, "NBMS.CACHE.SuccessIfBoth_JUnitNotFound_NoUpdates");
                             }
                         } else if (installJUnitOrig) {
-                            msg = sizeOfModules > 0 ? 
+                            msg = sumOfModules > 0 ? 
                                     // JUnit installed
                                     ResourceUtils.getString(NbMainSequence.class, "NBMS.CACHE.SuccessIfJunit_JUnitInstalled") : // NOI18N
                                     // JUnit not found
@@ -279,9 +279,9 @@ public class NbMainSequence extends WizardSequence {
                         } else if (checkForUpdate) {
                             msg = sumOfUpdates > 0 ?
                                     // Updates installed
-                                    ResourceUtils.getString(NbMainSequence.class, "NBMS.CACHE.SuccessIfCheck_UpdatesInstalled") : // NOI18N
+                                    ResourceUtils.getString(NbMainSequence.class, "NBMS.CACHE.SuccessIfCheck_UpdatesInstalled", sumOfUpdates) : // NOI18N
                                     // No updates
-                                    ResourceUtils.getString(NbMainSequence.class, "NBMS.CACHE.SuccessIfCheck_NoUpdates", sumOfModules); // NOI18N
+                                    ResourceUtils.getString(NbMainSequence.class, "NBMS.CACHE.SuccessIfCheck_NoUpdates"); // NOI18N
                         }
                         nbBase.setProperty(NbPostInstallSummaryPanel.NETBEANS_SUMMARY_MESSAGE_TEXT_PROPERTY, msg);
                     }
