@@ -96,6 +96,17 @@ public abstract class TaskContainerNode extends AsynchronousNode<List<Issue>> {
 
     abstract boolean isTaskLimited();
 
+    abstract void refreshTaskContainer();
+
+    @Override
+    protected List<Issue> load() {
+        if (refresh) {
+            refreshTaskContainer();
+            refresh = false;
+        }
+        return getTasks();
+    }
+
     @Override
     protected void childrenLoadingFinished() {
         SwingUtilities.invokeLater(new Runnable() {
@@ -117,6 +128,12 @@ public abstract class TaskContainerNode extends AsynchronousNode<List<Issue>> {
         for (LinkButton lb : buttons) {
             lb.setForeground(foreground, isSelected);
         }
+    }
+
+    @Override
+    protected void attach() {
+        super.attach();
+        addTaskListeners();
     }
 
     @Override
@@ -185,13 +202,15 @@ public abstract class TaskContainerNode extends AsynchronousNode<List<Issue>> {
             return filteredTaskNodes != null ? filteredTaskNodes.size() : 0;
         }
     }
-    
+
     final void updateNodes() {
+        updateNodes(getTasks());
+    }
+
+    final void updateNodes(List<Issue> issues) {
         synchronized (LOCK) {
             DashboardViewer dashboard = DashboardViewer.getInstance();
             AppliedFilters appliedFilters = dashboard.getAppliedTaskFilters();
-            List<Issue> issues = getTasks();
-            disposeTaskNodes();
             removeTaskListeners();
             if (taskListener == null) {
                 taskListener = new TaskListener();
@@ -222,7 +241,7 @@ public abstract class TaskContainerNode extends AsynchronousNode<List<Issue>> {
 
     final void removeTaskListeners() {
         synchronized (LOCK) {
-            if (taskListener != null) {
+            if (taskListener != null && taskNodes != null) {
                 for (TaskNode taskNode : taskNodes) {
                     taskNode.getTask().removePropertyChangeListener(taskListener);
                 }
@@ -232,16 +251,15 @@ public abstract class TaskContainerNode extends AsynchronousNode<List<Issue>> {
 
     final void addTaskListeners() {
         synchronized (LOCK) {
-            if (taskListener == null) {
-                taskListener = new TaskListener();
-            }
-            for (TaskNode taskNode : filteredTaskNodes) {
-                taskNode.getTask().addPropertyChangeListener(taskListener);
+            if (taskListener != null && taskNodes != null) {
+                for (TaskNode taskNode : taskNodes) {
+                    taskNode.getTask().addPropertyChangeListener(taskListener);
+                }
             }
         }
     }
 
-    final void showAdditionalPage(){
+    final void showAdditionalPage() {
         pageCountShown++;
         updateContent();
     }
@@ -266,7 +284,7 @@ public abstract class TaskContainerNode extends AsynchronousNode<List<Issue>> {
         return children;
     }
 
-    private int getTaskCountToShow(){
+    private int getTaskCountToShow() {
         return pageSize * pageCountShown;
     }
 
@@ -275,16 +293,6 @@ public abstract class TaskContainerNode extends AsynchronousNode<List<Issue>> {
         pageCountShown = 1;
     }
 
-    private void disposeTaskNodes() {
-        synchronized(LOCK) {
-            if (taskNodes != null) {
-                for (TaskNode taskNode : taskNodes) {
-                    taskNode.dispose();
-                }
-            }
-        }
-    }
-    
     final void handleError(String message) {
         DashboardViewer.LOG.log(Level.WARNING, "Tasks loading failed due to: {0}", message); //NOI18N
         setRefresh(true);

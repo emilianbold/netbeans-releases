@@ -48,6 +48,7 @@ import org.netbeans.modules.tasks.ui.LinkButton;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import javax.swing.*;
@@ -57,6 +58,7 @@ import org.netbeans.modules.tasks.ui.actions.*;
 import org.netbeans.modules.tasks.ui.actions.Actions.CloseRepositoryNodeAction;
 import org.netbeans.modules.tasks.ui.actions.Actions.CreateTaskAction;
 import org.netbeans.modules.tasks.ui.actions.Actions.OpenRepositoryNodeAction;
+import org.netbeans.modules.tasks.ui.treelist.AsynchronousNode;
 import org.netbeans.modules.tasks.ui.treelist.TreeLabel;
 import org.netbeans.modules.tasks.ui.treelist.TreeListNode;
 import org.netbeans.modules.tasks.ui.utils.Utils;
@@ -67,7 +69,7 @@ import org.openide.util.NbBundle;
  *
  * @author jpeska
  */
-public class RepositoryNode extends TreeListNode implements PropertyChangeListener, Comparable<RepositoryNode> {
+public class RepositoryNode extends AsynchronousNode<Collection<Query>> implements Comparable<RepositoryNode> {
 
     private final Repository repository;
     private List<QueryNode> queryNodes;
@@ -82,102 +84,127 @@ public class RepositoryNode extends TreeListNode implements PropertyChangeListen
     private LinkButton btnCreateTask;
     private CloseRepositoryNodeAction closeRepositoryAction;
     private OpenRepositoryNodeAction openRepositoryAction;
-    private LinkButton btnEmtpyContent;
+    private Map<String, QueryNode> queryNodesMap;
+    private RepositoryListener repositoryListener;
 
     public RepositoryNode(Repository repository, boolean loaded) {
         this(repository, loaded, true);
     }
 
     public RepositoryNode(Repository repository, boolean loaded, boolean opened) {
-        super(opened, null);
+        super(opened, null, repository.getDisplayName());
         this.repository = repository;
         this.loaded = loaded;
         this.refresh = false;
-        updateNodes();
-        repository.addPropertyChangeListener(this);
+        queryNodesMap = new HashMap<String, QueryNode>();
+        repositoryListener = new RepositoryListener();
+    }
+
+    @Override
+    protected Collection<Query> load() {
+        if (refresh && queryNodes != null) {
+            for (QueryNode queryNode : queryNodes) {
+                queryNode.refreshContent();
+            }
+            refresh = false;
+        }
+        return getQueries();
+    }
+
+    @Override
+    protected void configure(JComponent component, Color foreground, Color background, boolean isSelected, boolean hasFocus) {
+        lblName.setText(Utils.getRepositoryDisplayText(this));
+        lblName.setForeground(foreground);
+    }
+
+    @Override
+    protected JComponent createComponent(Collection<Query> data) {
+        if (isOpened()) {
+            updateNodes(data);
+            setExpanded(true);
+        }
+        panel = new JPanel(new GridBagLayout());
+        panel.setOpaque(false);
+        final JLabel iconLabel = new JLabel(getIcon()); //NOI18N
+        if (!isOpened()) {
+            iconLabel.setEnabled(false);
+        }
+        panel.add(iconLabel, new GridBagConstraints(0, 0, 1, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 3), 0, 0));
+
+        lblName = new TreeLabel(getRepository().getDisplayName());
+        panel.add(lblName, new GridBagConstraints(1, 0, 1, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 3), 0, 0));
+        panel.add(new JLabel(), new GridBagConstraints(2, 0, 1, 1, 1.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
+        if (isOpened()) {
+            btnRefresh = new LinkButton(ImageUtilities.loadImageIcon("org/netbeans/modules/tasks/ui/resources/refresh.png", true), new Actions.RefreshRepositoryAction(this)); //NOI18N
+            btnRefresh.setToolTipText(NbBundle.getMessage(CategoryNode.class, "LBL_Refresh")); //NOI18N
+            panel.add(btnRefresh, new GridBagConstraints(8, 0, 1, 1, 0.0, 0.0, GridBagConstraints.EAST, GridBagConstraints.NONE, new Insets(0, 3, 0, 0), 0, 0));
+
+            btnSearch = new LinkButton(ImageUtilities.loadImageIcon("org/netbeans/modules/tasks/ui/resources/search_repo.png", true), new SearchRepositoryAction(this)); //NOI18N
+            btnSearch.setToolTipText(NbBundle.getMessage(CategoryNode.class, "LBL_SearchInRepo")); //NOI18N
+            panel.add(btnSearch, new GridBagConstraints(7, 0, 1, 1, 0.0, 0.0, GridBagConstraints.EAST, GridBagConstraints.NONE, new Insets(0, 3, 0, 0), 0, 0));
+
+            btnCreateTask = new LinkButton(ImageUtilities.loadImageIcon("org/netbeans/modules/tasks/ui/resources/add_task.png", true), new CreateTaskAction(this)); //NOI18N
+            btnCreateTask.setToolTipText(NbBundle.getMessage(CategoryNode.class, "LBL_CreateTask")); //NOI18N
+            panel.add(btnCreateTask, new GridBagConstraints(6, 0, 1, 1, 0.0, 0.0, GridBagConstraints.EAST, GridBagConstraints.NONE, new Insets(0, 3, 0, 0), 0, 0));
+        }
+        return panel;
+    }
+
+    @Override
+    protected void attach() {
+        super.attach();
+        repository.addPropertyChangeListener(repositoryListener);
     }
 
     @Override
     protected void dispose() {
         super.dispose();
-        getRepository().removePropertyChangeListener(this);
+        getRepository().removePropertyChangeListener(repositoryListener);
     }
 
     @Override
     protected List<TreeListNode> createChildren() {
-        if (refresh) {
-            SwingUtilities.invokeLater(new Runnable() {
-                @Override
-                public void run() {
-                    for (QueryNode queryNode : queryNodes) {
-                        queryNode.refreshContent();
-                    }
-                    refresh = false;
-                }
-            });
-        }
-        loaded = true;
-        DashboardViewer dashboard = DashboardViewer.getInstance();
-        if (!filteredQueryNodes.isEmpty()) {
-            List<QueryNode> children = filteredQueryNodes;
-            boolean expand = dashboard.expandNodes();
-            for (QueryNode queryNode : children) {
-                queryNode.setExpanded(expand);
-            }
-            Collections.sort(children);
-            return new ArrayList<TreeListNode>(children);
-        } else {
-            List<TreeListNode> children = new ArrayList<TreeListNode>();
-            children.add(new EmptyContentNode(this, NbBundle.getMessage(RepositoryNode.class, "LBL_NoQuery")));
-            return children;
-        }
-    }
-
-    @Override
-    protected JComponent getComponent(Color foreground, Color background, boolean isSelected, boolean hasFocus, int rowWidth) {
         synchronized (LOCK) {
-            if (panel == null) {
-                panel = new JPanel(new GridBagLayout());
-                panel.setOpaque(false);
-                final JLabel iconLabel = new JLabel(getIcon()); //NOI18N
-                if (!isOpened()) {
-                    iconLabel.setEnabled(false);
-                }
-                panel.add(iconLabel, new GridBagConstraints(0, 0, 1, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 3), 0, 0));
-
-                lblName = new TreeLabel(getRepository().getDisplayName());
-                panel.add(lblName, new GridBagConstraints(1, 0, 1, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 3), 0, 0));
-                panel.add(new JLabel(), new GridBagConstraints(2, 0, 1, 1, 1.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
-                if (isOpened()) {
-                    btnRefresh = new LinkButton(ImageUtilities.loadImageIcon("org/netbeans/modules/tasks/ui/resources/refresh.png", true), new Actions.RefreshRepositoryAction(this)); //NOI18N
-                    btnRefresh.setToolTipText(NbBundle.getMessage(CategoryNode.class, "LBL_Refresh")); //NOI18N
-                    panel.add(btnRefresh, new GridBagConstraints(8, 0, 1, 1, 0.0, 0.0, GridBagConstraints.EAST, GridBagConstraints.NONE, new Insets(0, 3, 0, 0), 0, 0));
-
-                    btnSearch = new LinkButton(ImageUtilities.loadImageIcon("org/netbeans/modules/tasks/ui/resources/search_repo.png", true), new SearchRepositoryAction(this)); //NOI18N
-                    btnSearch.setToolTipText(NbBundle.getMessage(CategoryNode.class, "LBL_SearchInRepo")); //NOI18N
-                    panel.add(btnSearch, new GridBagConstraints(7, 0, 1, 1, 0.0, 0.0, GridBagConstraints.EAST, GridBagConstraints.NONE, new Insets(0, 3, 0, 0), 0, 0));
-
-                    btnCreateTask = new LinkButton(ImageUtilities.loadImageIcon("org/netbeans/modules/tasks/ui/resources/add_task.png", true), new CreateTaskAction(this)); //NOI18N
-                    btnCreateTask.setToolTipText(NbBundle.getMessage(CategoryNode.class, "LBL_CreateTask")); //NOI18N
-                    panel.add(btnCreateTask, new GridBagConstraints(6, 0, 1, 1, 0.0, 0.0, GridBagConstraints.EAST, GridBagConstraints.NONE, new Insets(0, 3, 0, 0), 0, 0));
-                }
-
+            if (filteredQueryNodes == null) {
+                return new ArrayList<TreeListNode>(0);
             }
-            lblName.setText(Utils.getRepositoryDisplayText(this));
-            lblName.setForeground(foreground);
-            return panel;
+            loaded = true;
+            DashboardViewer dashboard = DashboardViewer.getInstance();
+            if (!filteredQueryNodes.isEmpty()) {
+                List<QueryNode> children = filteredQueryNodes;
+                boolean expand = dashboard.expandNodes();
+                for (QueryNode queryNode : children) {
+                    queryNode.setExpanded(expand);
+                }
+                Collections.sort(children);
+                return new ArrayList<TreeListNode>(children);
+            } else {
+                List<TreeListNode> children = new ArrayList<TreeListNode>();
+                children.add(new EmptyContentNode(this, NbBundle.getMessage(RepositoryNode.class, "LBL_NoQuery")));
+                return children;
+            }
         }
     }
 
-    final void updateNodes() {
-        queryNodes = new ArrayList<QueryNode>();
-        filteredQueryNodes = new ArrayList<QueryNode>();
-        Collection<Query> queries = getQueries();
-        for (Query query : queries) {
-            QueryNode queryNode = new QueryNode(query, this, !loaded);
-            queryNodes.add(queryNode);
-            if ((DashboardViewer.getInstance().expandNodes() && queryNode.getFilteredTaskCount() > 0) || !DashboardViewer.getInstance().expandNodes()) {
-                filteredQueryNodes.add(queryNode);
+    private void updateNodes() {
+        updateNodes(getQueries());
+    }
+
+    private void updateNodes(Collection<Query> queries) {
+        synchronized (LOCK) {
+            queryNodes = new ArrayList<QueryNode>();
+            filteredQueryNodes = new ArrayList<QueryNode>();
+            for (Query query : queries) {
+                QueryNode queryNode = queryNodesMap.get(query.getDisplayName());
+                if (queryNode == null) {
+                    queryNode = new QueryNode(query, this, !loaded);
+                    queryNodesMap.put(query.getDisplayName(), queryNode);
+                }
+                queryNode.updateContent();
+                queryNodes.add(queryNode);
+                if (queryNode.getFilteredTaskCount() > 0 || !DashboardViewer.getInstance().expandNodes()) {
+                    filteredQueryNodes.add(queryNode);
+                }
             }
         }
     }
@@ -248,6 +275,9 @@ public class RepositoryNode extends TreeListNode implements PropertyChangeListen
     }
 
     public int getFilterHits() {
+        if (filteredQueryNodes == null) {
+            return 0;
+        }
         int hits = 0;
         for (QueryNode queryNode : filteredQueryNodes) {
             hits += queryNode.getFilteredTaskCount();
@@ -292,24 +322,6 @@ public class RepositoryNode extends TreeListNode implements PropertyChangeListen
         return loaded;
     }
 
-    @Override
-    public void propertyChange(PropertyChangeEvent evt) {
-        if (evt.getPropertyName().equals(Repository.EVENT_QUERY_LIST_CHANGED)) {
-            updateContent();
-        } else if (evt.getPropertyName().equals(Repository.EVENT_ATTRIBUTES_CHANGED)) {
-            if (evt.getNewValue() instanceof Map) {
-                Map<String, String> attributes = (Map<String, String>) evt.getNewValue();
-                String displayName = attributes.get(Repository.ATTRIBUTE_DISPLAY_NAME);
-                if (displayName != null && !displayName.isEmpty()) {
-                    if (lblName != null) {
-                        lblName.setText(displayName);
-                        fireContentChanged();
-                    }
-                }
-            }
-        }
-    }
-
     void updateContent() {
         updateNodes();
         refreshChildren();
@@ -325,9 +337,27 @@ public class RepositoryNode extends TreeListNode implements PropertyChangeListen
 
     public void refreshContent() {
         refresh = true;
-        if (!isExpanded()) {
-            setExpanded(true);
+        refresh();
+    }
+
+    private class RepositoryListener implements PropertyChangeListener {
+
+        @Override
+        public void propertyChange(PropertyChangeEvent evt) {
+            if (evt.getPropertyName().equals(Repository.EVENT_QUERY_LIST_CHANGED)) {
+                updateContent();
+            } else if (evt.getPropertyName().equals(Repository.EVENT_ATTRIBUTES_CHANGED)) {
+                if (evt.getNewValue() instanceof Map) {
+                    Map<String, String> attributes = (Map<String, String>) evt.getNewValue();
+                    String displayName = attributes.get(Repository.ATTRIBUTE_DISPLAY_NAME);
+                    if (displayName != null && !displayName.isEmpty()) {
+                        if (lblName != null) {
+                            lblName.setText(displayName);
+                            fireContentChanged();
+                        }
+                    }
+                }
+            }
         }
-        updateContent();
     }
 }

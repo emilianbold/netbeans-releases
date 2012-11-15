@@ -74,6 +74,11 @@ public class TaskNode extends TreeListNode implements Comparable<TaskNode>, Prop
         //super(task.hasSubtasks(), parent);
         super(false, parent);
         this.task = task;
+    }
+    
+    @Override
+    protected void attach() {
+        super.attach();
         this.task.addPropertyChangeListener(this);
     }
 
