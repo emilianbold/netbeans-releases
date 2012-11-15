@@ -1028,7 +1028,7 @@ public final class DashboardViewer implements PropertyChangeListener {
     private void removeRootFromModel(TreeListNode node) {
         if (persistExpanded) {
             expandedNodes.remove(node);
-            if (node.isExpanded()) {
+            if (node.isExpanded() && !(node instanceof RepositoryNode)) {
                 expandedNodes.add(node);
             }
         }
