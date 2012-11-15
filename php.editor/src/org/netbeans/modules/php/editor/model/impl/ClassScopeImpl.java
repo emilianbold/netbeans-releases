@@ -573,7 +573,7 @@ class ClassScopeImpl extends TypeScopeImpl implements ClassScope, VariableNameFa
                 }
             } else {
                 result = super.isSubTypeOf(superType);
-                if (result) {
+                if (!result) {
                     for (ClassScope classScope : getSuperClasses()) {
                         result = classScope.isSubTypeOf(superType);
                         if (result) {
