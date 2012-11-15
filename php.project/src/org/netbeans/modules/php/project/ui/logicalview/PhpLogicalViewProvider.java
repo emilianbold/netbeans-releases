@@ -347,6 +347,11 @@ public class PhpLogicalViewProvider implements LogicalViewProvider {
         }
 
         @Override
+        public String getName() {
+            return projectInfo.getName();
+        }
+
+        @Override
         public String getShortDescription() {
             String prjDirDispName = FileUtil.getFileDisplayName(project.getProjectDirectory());
             return NbBundle.getMessage(PhpLogicalViewProvider.class, "HINT_project_root_node", prjDirDispName);
