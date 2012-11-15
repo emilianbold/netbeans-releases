@@ -246,7 +246,7 @@ class NodeTableModel extends AbstractTableModel {
 
     /* recompute set of visible columns
      */
-    private void computeVisiblePorperties(int visCount) {
+    private void computeVisibleProperties(int visCount) {
         propertyColumns = new int[visCount];
 
         TreeMap<Double, Integer> sort = new TreeMap<Double, Integer>();
@@ -269,9 +269,17 @@ class NodeTableModel extends AbstractTableModel {
             ColumnDescriptor p = allPropertyColumns[i].getProperty();
 
             if (p.isVisible()) {
-                propertyColumns[j] = i;
-                allPropertyColumns[i].setVisibleIndex(j);
-                j++;
+                if(IssueNode.LABEL_NAME_SEEN.equals(allPropertyColumns[i].getProperty().getName())) {
+                    propertyColumns[visCount - 1] = i;
+                    allPropertyColumns[i].setVisibleIndex(visCount - 1);
+                } else if(IssueNode.LABEL_RECENT_CHANGES.equals(allPropertyColumns[i].getProperty().getName())) {
+                    propertyColumns[visCount - 2] = i;
+                    allPropertyColumns[i].setVisibleIndex(visCount - 2);
+                } else {
+                    propertyColumns[j] = i;
+                    allPropertyColumns[i].setVisibleIndex(j);
+                    j++;
+                }
             } else {
                 allPropertyColumns[i].setVisibleIndex(-1);
 
@@ -285,7 +293,7 @@ class NodeTableModel extends AbstractTableModel {
                 }
             }
         }
-
+        
         fireTableStructureChanged();
     }
 
@@ -685,12 +693,7 @@ class NodeTableModel extends AbstractTableModel {
         String boxtext;
         TreeMap<String, Integer> sort = new TreeMap<String, Integer>();
 
-        int alwaysVisibleCount = 0;
         for (int i = 0; i < allPropertyColumns.length; i++) {
-            if(allPropertyColumns[i].getProperty().alwaysVisible()) {
-                alwaysVisibleCount++;
-                continue;
-            }
             oldvalues[i] = allPropertyColumns[i].getProperty().isVisible();
             boxtext = getDisplayNameWithMnemonic( allPropertyColumns[i].getProperty() );
             sort.put(boxtext, Integer.valueOf(i));
@@ -742,7 +745,7 @@ class NodeTableModel extends AbstractTableModel {
 
             // Don't allow the user to disable ALL columns
             if (changed) {
-                computeVisiblePorperties(nv + alwaysVisibleCount);
+                computeVisibleProperties(nv);
             }
         }
 

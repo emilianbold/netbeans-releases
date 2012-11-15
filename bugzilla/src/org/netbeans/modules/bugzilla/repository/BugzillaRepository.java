@@ -394,7 +394,8 @@ public class BugzillaRepository {
         return cache;
     }
 
-    public void removeQuery(BugzillaQuery query) {
+    public void removeQuery(BugzillaQuery query) {        
+        Bugzilla.LOG.log(Level.FINE, "removing query {0} for repository {1}", new Object[]{query.getDisplayName(), getDisplayName()}); // NOI18N
         BugzillaConfig.getInstance().removeQuery(this, query);
         getIssueCache().removeQuery(query.getStoredQueryName());
         getQueriesIntern().remove(query);
@@ -404,6 +405,7 @@ public class BugzillaRepository {
 
     public void saveQuery(BugzillaQuery query) {
         assert info != null;
+        Bugzilla.LOG.log(Level.FINE, "saving query {0} for repository {1}", new Object[]{query.getDisplayName(), getDisplayName()}); // NOI18N
         BugzillaConfig.getInstance().putQuery(this, query); 
         getQueriesIntern().add(query);
         fireQueryListChanged();
@@ -418,6 +420,7 @@ public class BugzillaRepository {
     }
     
     private void fireQueryListChanged() {
+        Bugzilla.LOG.log(Level.FINER, "firing query list changed for repository {0}", new Object[]{getDisplayName()}); // NOI18N
         support.firePropertyChange(RepositoryProvider.EVENT_QUERY_LIST_CHANGED, null, null);
     }
     
