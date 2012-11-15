@@ -244,7 +244,29 @@ public class MethodChooser {
             endLine = Utilities.getLineOffset((BaseDocument)doc, maxOffs) + 1;
         } catch (BadLocationException e) {
         }
+        if (SwingUtilities.isEventDispatchThread()) {
+            showUIinEDT();
+        } else {
+            try {
+                SwingUtilities.invokeAndWait(new Runnable() {
+                    @Override
+                    public void run() {
+                        showUIinEDT();
+                    }
+                });
+            } catch (InterruptedException ex) {
+                Exceptions.printStackTrace(ex);
+            } catch (InvocationTargetException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
         // continue by showing method selection ui
+        isInSelectMode = true;
+        return true;
+    }
+    
+    private void showUIinEDT() {
+        assert SwingUtilities.isEventDispatchThread();
         mainListener = new CentralListener();
         editorPane.putClientProperty(MethodChooser.class, this);
         editorPane.addKeyListener(mainListener);
@@ -263,8 +285,6 @@ public class MethodChooser {
         if (hintText != null && hintText.trim().length() > 0) {
             Utilities.setStatusText(editorPane, " " + hintText);
         }
-        isInSelectMode = true;
-        return true;
     }
 
     /**
@@ -414,6 +434,7 @@ public class MethodChooser {
     }
 
     private void requestRepaint() {
+        assert SwingUtilities.isEventDispatchThread();
         if (attribsLeft == null) {
             Color foreground = editorPane.getForeground();
             Color foreground2 = Color.GRAY;

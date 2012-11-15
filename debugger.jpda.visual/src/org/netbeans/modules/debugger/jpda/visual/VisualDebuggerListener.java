@@ -288,6 +288,7 @@ public class VisualDebuggerListener extends DebuggerManagerAdapter {
             
             ClassType serviceClass = (ClassType) ClassObjectReferenceWrapper.reflectedType(cor);//RemoteServices.getClass(vm, "org.netbeans.modules.debugger.jpda.visual.remote.RemoteService");
 
+            InvocationExceptionTranslated iextr = null;
             Method startMethod = ClassTypeWrapper.concreteMethodByName(serviceClass, "startAccessLoop", "()V");
             try {
                 t.notifyMethodInvoking();
@@ -302,19 +303,21 @@ public class VisualDebuggerListener extends DebuggerManagerAdapter {
                 }
             } catch (VMDisconnectedExceptionWrapper vmd) {
             } catch (InvocationException iex) {
-                InvocationExceptionTranslated iextr = new InvocationExceptionTranslated(iex, t.getDebugger());
-                iextr.setPreferredThread(t);
-                iextr.getMessage();
-                iextr.getLocalizedMessage();
-                iextr.getCause();
-                iextr.getStackTrace();
-                Exceptions.printStackTrace(iextr);
+                iextr = new InvocationExceptionTranslated(iex, t.getDebugger());
                 Exceptions.printStackTrace(iex);
             } catch (Exception ex) {
                 Exceptions.printStackTrace(ex);
             } finally {
                 t.notifyMethodInvokeDone();
                 ObjectReferenceWrapper.enableCollection(cor); // While AWTAccessLoop is running, it should not be collected.
+            }
+            if (iextr != null) {
+                iextr.setPreferredThread(t);
+                iextr.getMessage();
+                iextr.getLocalizedMessage();
+                iextr.getCause();
+                iextr.getStackTrace();
+                Exceptions.printStackTrace(iextr);
             }
         } catch (InternalExceptionWrapper iex) {
         } catch (ClassNotPreparedExceptionWrapper cnpex) {
