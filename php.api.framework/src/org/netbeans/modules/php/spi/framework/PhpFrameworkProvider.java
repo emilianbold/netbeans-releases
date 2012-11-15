@@ -94,21 +94,6 @@ public abstract class PhpFrameworkProvider {
     }
 
     /**
-     * Creates a new PHP framework with a name and description.
-     * <p>
-     * <b>This constructor will be removed after 7.1!</b>
-     *
-     * @param  name the short, <b>localized</b> name of this PHP framework (e.g., "Symfony"); never <code>null</code>.
-     * @param  description the description of this PHP framework (e.g., "An open source framework based on the MVC pattern"); can be <code>null</code>.
-     * @throws NullPointerException if the <code>name</code> parameter is <code>null</code>.
-     * @deprecated use {@link PhpFrameworkProvider#PhpFrameworkProvider(String, String, String)} instead
-     */
-    @Deprecated
-    public PhpFrameworkProvider(String name, String description) {
-        this(name, name, description);
-    }
-
-    /**
      * Returns the <b>non-localized (usually english)</b> identifier of this PHP framework.
      *
      * @return the <b>non-localized (usually english)</b> identifier; never <code>null</code>.
