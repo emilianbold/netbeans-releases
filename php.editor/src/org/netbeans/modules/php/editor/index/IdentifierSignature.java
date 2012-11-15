@@ -49,13 +49,13 @@ import org.netbeans.modules.parsing.spi.indexing.support.IndexDocument;
  */
 public interface IdentifierSignature {
 
-    public static final IdentifierSignature NONE = new IdentifierSignature() {
+    IdentifierSignature NONE = new IdentifierSignature() {
 
         @Override
         public void save(IndexDocument indexDocument, String key) {
         }
     };
 
-    public void save(final IndexDocument indexDocument, final String key);
+    void save(final IndexDocument indexDocument, final String key);
 
 }

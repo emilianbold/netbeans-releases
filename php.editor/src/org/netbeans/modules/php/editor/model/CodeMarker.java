@@ -50,6 +50,8 @@ import org.netbeans.modules.csl.api.OffsetRange;
  * @author Radek Matous
  */
 public interface CodeMarker {
+
     List<? extends CodeMarker> getAllMarkers();
     OffsetRange getOffsetRange();
+
 }

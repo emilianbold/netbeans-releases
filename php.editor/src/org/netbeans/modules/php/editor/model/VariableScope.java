@@ -49,5 +49,7 @@ import java.util.Collection;
  * @author Radek Matous
  */
 public interface VariableScope extends Scope  {
-    public Collection<? extends VariableName> getDeclaredVariables();
+
+    Collection<? extends VariableName> getDeclaredVariables();
+
 }

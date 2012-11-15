@@ -42,15 +42,16 @@
 
 package org.netbeans.modules.php.editor.model;
 
-import org.netbeans.modules.php.editor.api.QualifiedName;
 import java.util.List;
 import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.php.editor.api.QualifiedName;
 
 /**
  *
  * @author Radek Matous
  */
 public interface Parameter {
+
     String getName();
     String getDefaultValue();
     /**
@@ -58,8 +59,9 @@ public interface Parameter {
      */
     boolean hasRawType();
     boolean isMandatory();
-    /** mixed types can be documented in php doc*/
+    /*mixed types can be documented in php doc*/
     List<QualifiedName> getTypes();
     OffsetRange getOffsetRange();
     String getIndexSignature();
+
 }
