@@ -147,7 +147,7 @@ public final class NbProxySelector extends ProxySelector {
                         Proxy p = new Proxy (Proxy.Type.HTTP,  new InetSocketAddress (hosts, porti));
                         res.add (p);
                     } else {
-                        LOG.info ("Incomplete HTTP Proxy [" + hosts + "/" + ports + "] found in ProxySelector[Type: " + ProxySettings.getProxyType () + "] for uri " + uri + ". ");
+                        LOG.fine ("Incomplete HTTP Proxy [" + hosts + "/" + ports + "] found in ProxySelector[Type: " + ProxySettings.getProxyType () + "] for uri " + uri + ". ");
                         if (original != null) {
                             LOG.finest ("Fallback to the default ProxySelector which returns " + original.select (uri));
                             res.addAll (original.select (uri));
@@ -161,7 +161,7 @@ public final class NbProxySelector extends ProxySelector {
                         Proxy p = new Proxy (Proxy.Type.SOCKS,  new InetSocketAddress (hosts, porti));
                         res.add (p);
                     } else {
-                        LOG.info ("Incomplete SOCKS Server [" + hosts + "/" + ports + "] found in ProxySelector[Type: " + ProxySettings.getProxyType () + "] for uri " + uri + ". ");
+                        LOG.fine ("Incomplete SOCKS Server [" + hosts + "/" + ports + "] found in ProxySelector[Type: " + ProxySettings.getProxyType () + "] for uri " + uri + ". ");
                         if (original != null) {
                             LOG.finest ("Fallback to the default ProxySelector which returns " + original.select (uri));
                             res.addAll (original.select (uri));
