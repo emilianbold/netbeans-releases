@@ -151,6 +151,12 @@ public class RepositoryNode extends AsynchronousNode<Collection<Query>> implemen
     }
 
     @Override
+    protected void attach() {
+        super.attach();
+        repository.addPropertyChangeListener(repositoryListener);
+    }
+
+    @Override
     protected void dispose() {
         super.dispose();
         getRepository().removePropertyChangeListener(repositoryListener);
@@ -194,7 +200,7 @@ public class RepositoryNode extends AsynchronousNode<Collection<Query>> implemen
                     queryNode = new QueryNode(query, this, !loaded);
                     queryNodesMap.put(query.getDisplayName(), queryNode);
                 }
-                queryNode.updateNodes();
+                queryNode.updateContent();
                 queryNodes.add(queryNode);
                 if (queryNode.getFilteredTaskCount() > 0 || !DashboardViewer.getInstance().expandNodes()) {
                     filteredQueryNodes.add(queryNode);
@@ -332,10 +338,6 @@ public class RepositoryNode extends AsynchronousNode<Collection<Query>> implemen
     public void refreshContent() {
         refresh = true;
         refresh();
-    }
-
-    public void attachListener() {
-        repository.addPropertyChangeListener(repositoryListener);
     }
 
     private class RepositoryListener implements PropertyChangeListener {

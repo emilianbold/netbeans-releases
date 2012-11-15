@@ -76,12 +76,17 @@ public class QueryNode extends TaskContainerNode implements Comparable<QueryNode
         super(refresh, true, parent, query.getDisplayName());
         this.query = query;
         queryListener = new QueryListener();
-        query.addPropertyChangeListener(queryListener);
     }
 
     @Override
     void refreshTaskContainer() {
         query.refresh();
+    }
+
+    @Override
+    protected void attach() {
+        super.attach();
+        query.addPropertyChangeListener(queryListener);
     }
 
     @Override

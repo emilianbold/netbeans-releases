@@ -131,6 +131,12 @@ public abstract class TaskContainerNode extends AsynchronousNode<List<Issue>> {
     }
 
     @Override
+    protected void attach() {
+        super.attach();
+        addTaskListeners();
+    }
+
+    @Override
     protected void dispose() {
         super.dispose();
         removeTaskListeners();
@@ -205,7 +211,6 @@ public abstract class TaskContainerNode extends AsynchronousNode<List<Issue>> {
         synchronized (LOCK) {
             DashboardViewer dashboard = DashboardViewer.getInstance();
             AppliedFilters appliedFilters = dashboard.getAppliedTaskFilters();
-            disposeTaskNodes();
             removeTaskListeners();
             if (taskListener == null) {
                 taskListener = new TaskListener();
@@ -236,7 +241,7 @@ public abstract class TaskContainerNode extends AsynchronousNode<List<Issue>> {
 
     final void removeTaskListeners() {
         synchronized (LOCK) {
-            if (taskListener != null) {
+            if (taskListener != null && taskNodes != null) {
                 for (TaskNode taskNode : taskNodes) {
                     taskNode.getTask().removePropertyChangeListener(taskListener);
                 }
@@ -246,11 +251,10 @@ public abstract class TaskContainerNode extends AsynchronousNode<List<Issue>> {
 
     final void addTaskListeners() {
         synchronized (LOCK) {
-            if (taskListener == null) {
-                taskListener = new TaskListener();
-            }
-            for (TaskNode taskNode : filteredTaskNodes) {
-                taskNode.getTask().addPropertyChangeListener(taskListener);
+            if (taskListener != null && taskNodes != null) {
+                for (TaskNode taskNode : taskNodes) {
+                    taskNode.getTask().addPropertyChangeListener(taskListener);
+                }
             }
         }
     }
@@ -287,16 +291,6 @@ public abstract class TaskContainerNode extends AsynchronousNode<List<Issue>> {
     final void initPaging() {
         pageSize = DashboardSettings.getInstance().isTasksLimit() ? DashboardSettings.getInstance().getTasksLimitValue() : Integer.MAX_VALUE;
         pageCountShown = 1;
-    }
-
-    private void disposeTaskNodes() {
-        synchronized (LOCK) {
-            if (taskNodes != null) {
-                for (TaskNode taskNode : taskNodes) {
-                    taskNode.dispose();
-                }
-            }
-        }
     }
 
     final void handleError(String message) {
