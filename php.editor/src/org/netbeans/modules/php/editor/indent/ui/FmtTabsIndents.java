@@ -45,10 +45,12 @@
 package org.netbeans.modules.php.editor.indent.ui;
 
 import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.modules.options.editor.spi.PreferencesCustomizer;
 import org.netbeans.modules.php.editor.indent.FmtOptions;
 import org.netbeans.modules.php.editor.indent.FmtOptions.CategorySupport;
-import static  org.netbeans.modules.php.editor.indent.FmtOptions.CategorySupport.OPTION_ID;
+import static org.netbeans.modules.php.editor.indent.FmtOptions.CategorySupport.OPTION_ID;
 
 /**
  *
@@ -56,7 +58,8 @@ import static  org.netbeans.modules.php.editor.indent.FmtOptions.CategorySupport
  */
 public class FmtTabsIndents extends javax.swing.JPanel {
 
-    /** Creates new form FmtTabsIndents */
+    private static final Logger LOGGER = Logger.getLogger(FmtTabsIndents.class.getName());
+
     public FmtTabsIndents() {
         initComponents();
 
@@ -74,12 +77,12 @@ public class FmtTabsIndents extends javax.swing.JPanel {
         try {
             preview = Utils.loadPreviewText(FmtTabsIndents.class.getClassLoader().getResourceAsStream("org/netbeans/modules/php/editor/indent/ui/TabsIndents.php"));
         } catch (IOException ex) {
-            // TODO log it
+            LOGGER.log(Level.WARNING, null, ex);
         }
         return new CategorySupport.Factory(PreferencesCustomizer.TABS_AND_INDENTS_ID, FmtTabsIndents.class,
                 preview,
-                new String[] { FmtOptions.RIGHT_MARGIN, "30" }, //NOI18N
-                new String[] { FmtOptions.INITIAL_INDENT, "0" } //NOI18N
+                new String[] {FmtOptions.RIGHT_MARGIN, "30"}, //NOI18N
+                new String[] {FmtOptions.INITIAL_INDENT, "0"} //NOI18N
                 );
     }
 

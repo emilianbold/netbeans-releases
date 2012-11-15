@@ -45,12 +45,12 @@
 package org.netbeans.modules.php.editor.indent.ui;
 
 import java.io.IOException;
-import java.util.prefs.Preferences;
-import org.netbeans.modules.php.editor.indent.CodeStyle.WrapStyle;
-import static org.netbeans.modules.php.editor.indent.FmtOptions.*;
-import static org.netbeans.modules.php.editor.indent.FmtOptions.CategorySupport.OPTION_ID;
-import org.netbeans.modules.php.editor.indent.FmtOptions.CategorySupport;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.modules.options.editor.spi.PreferencesCustomizer;
+import static org.netbeans.modules.php.editor.indent.FmtOptions.*;
+import org.netbeans.modules.php.editor.indent.FmtOptions.CategorySupport;
+import static org.netbeans.modules.php.editor.indent.FmtOptions.CategorySupport.OPTION_ID;
 
 
 /**
@@ -59,7 +59,8 @@ import org.netbeans.modules.options.editor.spi.PreferencesCustomizer;
  */
 public class FmtAlignment extends javax.swing.JPanel {
 
-    /** Creates new form FmtAlignment */
+    private static final Logger LOGGER = Logger.getLogger(FmtAlignment.class.getName());
+
     public FmtAlignment() {
         initComponents();
         nlElseCheckBox.putClientProperty(OPTION_ID, PLACE_ELSE_ON_NEW_LINE);
@@ -88,11 +89,11 @@ public class FmtAlignment extends javax.swing.JPanel {
     }
 
     public static PreferencesCustomizer.Factory getController() {
-	String preview = "";
+        String preview = "";
         try {
             preview = Utils.loadPreviewText(FmtBlankLines.class.getClassLoader().getResourceAsStream("org/netbeans/modules/php/editor/indent/ui/Spaces.php"));
         } catch (IOException ex) {
-            // TODO log it
+            LOGGER.log(Level.WARNING, null, ex);
         }
         return new CategorySupport.Factory("alignment", FmtAlignment.class, //NOI18N
                 preview);
