@@ -478,17 +478,19 @@ abstract class BreakpointImpl implements ConditionedExecutor, PropertyChangeList
         }
         resume = brkpSuspend.intValue() == JPDABreakpoint.SUSPEND_NONE || e.getResume ();
         logger.fine("BreakpointImpl: perform breakpoint: " + this + " resume: " + resume);
-        if (!resume) {
-            try {
-                resume = checkWhetherResumeToFinishStep(threadReference);
-            } catch (InternalExceptionWrapper ex) {
-                return false;
-            } catch (VMDisconnectedExceptionWrapper ex) {
-                return false;
+        if (threadReference != null) {
+            if (!resume) {
+                try {
+                    resume = checkWhetherResumeToFinishStep(threadReference);
+                } catch (InternalExceptionWrapper ex) {
+                    return false;
+                } catch (VMDisconnectedExceptionWrapper ex) {
+                    return false;
+                }
             }
-        }
-        if (!resume) {
-            getDebugger().getThread(threadReference).setCurrentBreakpoint(breakpoint);
+            if (!resume) {
+                getDebugger().getThread(threadReference).setCurrentBreakpoint(breakpoint);
+            }
         }
         //S ystem.out.println("BreakpointImpl.perform end");
         return resume; 

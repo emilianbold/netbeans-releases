@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,56 +34,59 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.gsf.testrunner.api;
+package org.netbeans.modules.parsing.lucene.support;
+
+import java.util.Collection;
+import org.netbeans.api.annotations.common.NonNull;
 
 /**
- * Enums for representing status of a test case or suite.
- * 
- * @author Erno Mononen
+ * Cache of deleted and added documents used by {@link DocumentIndex}.
+ * Threading: The {@link DocumentIndex} is responsible for mutual exclusion,
+ * no synchronization in this class is needed.
+ * @author Tomas Zezula
+ * @since 2.18.0
  */
-public enum Status {
-
-    PASSED(1,"00CC00"), PENDING(1<<1,"800080"), FAILED(1<<2,"FF0000"), ERROR(1<<3,"FF0000"), ABORTED(1<<4,"D69D29"), SKIPPED(1<<5,"585858"), PASSEDWITHERRORS(1<<6,"00CC00"), IGNORED(1<<7,"000000"); //NOI18N
-
-    private final int bitMask;
-    private final String displayColor;
-
-    private Status(int bitMask, String displayColor) {
-        this.bitMask = bitMask;
-        this.displayColor = displayColor;
-    }
+public interface DocumentIndexCache {
 
     /**
-     * @return the bit mask for this status.
+     * Adds a document into document cache.
+     * @param document the document to be added
+     * @return true if the cache is full and should be
+     * flushed.
      */
-    public int getBitMask(){
-        return bitMask;
-    }
+    boolean addDocument(@NonNull IndexDocument document);
 
     /**
-     * @return the html display color for this status.
+     * Adds a primary key of document(s) to delete set.
+     * @param primaryKey the primary key of document(s) which should be removed.
+     * @return true if the cache is full and should be
+     * flushed.
      */
-    public String getHtmlDisplayColor() {
-        return displayColor;
-    }
+    boolean removeDocument(@NonNull String primaryKey);
 
     /**
-     * @return true if the given status represents a failure or an error.
+     * Clears the cache content.
      */
-    static boolean isFailureOrError(Status status) {
-        return FAILED.equals(status) || ERROR.equals(status);
-    }
+    void clear();
 
     /**
-     * @return true if the given status represents a skipped test.
+     * Returns a {@link Collection} of primary keys of documents
+     * to be removed.
+     * @return iterator
      */
-    static boolean isSkipped(Status status) {
-        return SKIPPED.equals(status);
-    }
+    @NonNull
+    Collection<? extends String> getRemovedKeys();
 
-    boolean isMaskApplied(int mask){
-        return (mask & getBitMask()) != 0;
-    }
+    /**
+     * Returns a {@link Collection} of added documents.
+     * @return iterator
+     */
+    @NonNull
+    Collection<? extends IndexDocument> getAddedDocuments();
 
 }

@@ -86,24 +86,24 @@ public class ClusteredIndexablesTest {
 
     @Test
     public void testSimple() {
-        List<IndexableImpl> textPlains = Arrays.asList(new IndexableImpl [] {
-            new TestIndexable("foo/indexable1", "text/plain"),
-            new TestIndexable("foo/indexable2", "text/plain"),
-            new TestIndexable("foo/indexable3", "text/plain"),
+        List<Indexable> textPlains = Arrays.asList(new Indexable [] {
+            SPIAccessor.getInstance().create(new TestIndexable("foo/indexable1", "text/plain")),
+            SPIAccessor.getInstance().create(new TestIndexable("foo/indexable2", "text/plain")),
+            SPIAccessor.getInstance().create(new TestIndexable("foo/indexable3", "text/plain")),
         });
-        List<IndexableImpl> javas = Arrays.asList(new IndexableImpl [] {
-            new TestIndexable("java/indexable1", "text/x-java"),
-            new TestIndexable("java/indexable2", "text/x-java"),
+        List<Indexable> javas = Arrays.asList(new Indexable [] {
+            SPIAccessor.getInstance().create(new TestIndexable("java/indexable1", "text/x-java")),
+            SPIAccessor.getInstance().create(new TestIndexable("java/indexable2", "text/x-java")),
         });
-        List<IndexableImpl> xmls = Arrays.asList(new IndexableImpl [] {
-            new TestIndexable("xml/indexable1", "text/xml"),
-            new TestIndexable("xml/indexable2", "text/xml"),
-            new TestIndexable("xml/indexable3", "text/xml"),
-            new TestIndexable("xml/indexable4", "text/xml"),
-            new TestIndexable("xml/indexable5", "text/xml"),
+        List<Indexable> xmls = Arrays.asList(new Indexable [] {
+            SPIAccessor.getInstance().create(new TestIndexable("xml/indexable1", "text/xml")),
+            SPIAccessor.getInstance().create(new TestIndexable("xml/indexable2", "text/xml")),
+            SPIAccessor.getInstance().create(new TestIndexable("xml/indexable3", "text/xml")),
+            SPIAccessor.getInstance().create(new TestIndexable("xml/indexable4", "text/xml")),
+            SPIAccessor.getInstance().create(new TestIndexable("xml/indexable5", "text/xml")),
         });
 
-        List<IndexableImpl> indexables = new ArrayList<IndexableImpl>();
+        List<Indexable> indexables = new ArrayList<Indexable>();
         indexables.addAll(textPlains);
         indexables.addAll(javas);
         indexables.addAll(xmls);
@@ -128,11 +128,11 @@ public class ClusteredIndexablesTest {
         check("Wrong all indexables", indexables, allAgain);
     }
 
-    private void check(String message, Collection<IndexableImpl> indexableImpls, Collection<Indexable> indexables) {
+    private void check(String message, Collection<Indexable> indexableImpls, Collection<Indexable> indexables) {
         Assert.assertEquals(message, indexableImpls.size(), indexables.size());
 
         Map<String, String> iiMap = new HashMap<String, String>();
-        for(IndexableImpl ii : indexableImpls) {
+        for(Indexable ii : indexableImpls) {
             iiMap.put(ii.getRelativePath(), ii.getMimeType());
         }
 

@@ -188,8 +188,9 @@ public final class NbProxySelector extends ProxySelector {
                         res.add(Proxy.NO_PROXY);
                     }
                     if (pac.getPacURI().getHost() == null) {
-                        LOG.finest("Malformed PAC URI " + pac.getPacURI() + " for URI " + uri);
-                        res.add(Proxy.NO_PROXY);
+                        LOG.log(Level.FINEST, "Identifying proxy for URI {0}---{1}, PAC LOCAL URI: {2}", //NOI18N
+                                new Object[] { uri.toString(), uri.getHost(), pac.getPacURI().toString() });
+                        res.addAll(pac.findProxyForURL(uri));
                     } else if (pac.getPacURI().getHost().equals(uri.getHost())) {
                         // don't proxy PAC files
                         res.add(Proxy.NO_PROXY);
@@ -214,8 +215,9 @@ public final class NbProxySelector extends ProxySelector {
                     res.add(Proxy.NO_PROXY);
                 }
                 if (pac.getPacURI().getHost() == null) {
-                    LOG.finest("Malformed PAC URI " + pac.getPacURI() + " for URI " + uri);
-                    res.add(Proxy.NO_PROXY);
+                        LOG.log(Level.FINEST, "Identifying proxy for URI {0}---{1}, PAC LOCAL URI: {2}", //NOI18N
+                                new Object[] { uri.toString(), uri.getHost(), pac.getPacURI().toString() });
+                        res.addAll(pac.findProxyForURL(uri));
                 } else if (pac.getPacURI().getHost().equals(uri.getHost())) {
                     // don't proxy PAC files
                     res.add(Proxy.NO_PROXY);

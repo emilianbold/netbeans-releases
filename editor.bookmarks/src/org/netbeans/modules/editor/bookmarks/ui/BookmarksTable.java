@@ -49,6 +49,7 @@ import java.awt.event.MouseMotionAdapter;
 import javax.swing.JTable;
 import javax.swing.KeyStroke;
 import javax.swing.ListSelectionModel;
+import javax.swing.SwingUtilities;
 import javax.swing.table.JTableHeader;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableColumnModel;
@@ -101,13 +102,17 @@ public class BookmarksTable extends ETable {
         addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
-                if (e.getClickCount() == 2) {
+                if (e.getClickCount() == 2 || SwingUtilities.isRightMouseButton(e)) {
                     if (getModel() instanceof BookmarksTableModel) {
                         BookmarksTableModel model = (BookmarksTableModel) getModel();
                         int row = ((JTable) e.getSource()).getSelectedRow();
 
-                        BookmarkNode node = model.getEntry(row);
-                        node.openInEditor();
+                        final BookmarkNode node = model.getEntry(row);
+                        if (e.getClickCount() == 2) {
+                            node.openInEditor();
+                        } else if (SwingUtilities.isRightMouseButton(e)) {
+                            node.getContextMenu().show(BookmarksTable.this, e.getPoint().x, e.getPoint().y);
+                        }
                     }
                 }
             }

@@ -233,7 +233,8 @@ class PlatformNode extends AbstractNode implements ChangeListener {
 
         @Override
         protected Node[] createNodes(SourceGroup sg) {
-            return new Node[] {ActionFilterNode.forPackage(PackageView.createPackageView(sg))};
+            final Node afn = ActionFilterNode.forPackage(PackageView.createPackageView(sg));
+            return afn == null ? new Node[0] : new Node[] {afn};
         }
 
         private List<SourceGroup> getKeys () {

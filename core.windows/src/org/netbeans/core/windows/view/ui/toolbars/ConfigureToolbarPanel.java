@@ -442,8 +442,8 @@ public class ConfigureToolbarPanel extends javax.swing.JPanel implements Runnabl
 
             @Override
             protected Node copyNode(Node node) {
-                DataFolder df = node.getCookie( DataFolder.class );
-                if( null == df )
+                FileObject fo = node.getLookup().lookup( FileObject.class );
+                if( null != fo && fo.isData() )
                     return new ItemActionNode( node );
                 return new FolderActionNode( node );
             }

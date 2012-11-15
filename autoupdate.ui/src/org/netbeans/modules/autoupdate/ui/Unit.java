@@ -481,7 +481,7 @@ public abstract class Unit {
         }
         @Override
         public void setMarked(boolean marked) {
-            assert marked != isMarked();
+            assert marked != isMarked() : this + " marked as " + marked + " but was " + isMarked();
             OperationContainer container = Containers.forUpdate();
             for (UpdateUnit invisible : getUpdateUnits()) {
                 if (marked) {

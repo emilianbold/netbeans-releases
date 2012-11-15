@@ -75,6 +75,7 @@ class PropertiesStorage implements NbPreferences.FileStorage {
     private String filePath;
     private boolean isModified;
     private FileChangeAdapter fileChangeAdapter;
+    private static final Logger LOGGER = Logger.getLogger(PropertiesStorage.class.getName());
     
     
     static NbPreferences.FileStorage instance(final String absolutePath) {
@@ -230,7 +231,10 @@ class PropertiesStorage implements NbPreferences.FileStorage {
                         os = outputStream();
                         properties.store(os);
                     } finally {
-                        if (os != null) os.close();
+                        if (os != null) {
+			    LOGGER.log(Level.FINE, "Closing output-stream for file {0} in {1}.", new Object[]{filePath, folderPath});
+			    os.close();
+			}
                     }
                 } else {
                     FileObject file = toPropertiesFile();

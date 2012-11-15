@@ -49,6 +49,7 @@ import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.modules.parsing.impl.indexing.CancelRequest;
+import org.netbeans.modules.parsing.impl.indexing.FileObjectProvider;
 import org.netbeans.modules.parsing.impl.indexing.IndexFactoryImpl;
 import org.netbeans.modules.parsing.impl.indexing.IndexableImpl;
 import org.netbeans.modules.parsing.impl.indexing.LogContext;
@@ -58,6 +59,7 @@ import org.netbeans.modules.parsing.impl.indexing.SuspendSupport.SuspendStatusIm
 import org.netbeans.modules.parsing.spi.Parser.Result;
 import org.netbeans.modules.parsing.spi.indexing.support.IndexingSupport;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.URLMapper;
 import org.openide.util.Parameters;
 
 
@@ -301,7 +303,22 @@ public final class Indexable {
                 @NonNull final Context context,
                 @NonNull final String propName) {
             return context.getProperty(propName);
-        }        
+        }
+
+        @Override
+        public boolean isTypeOf (
+                @NonNull final Indexable indexable,
+                @NonNull final String mimeType) {
+            return indexable.delegate.isTypeOf(mimeType);
+        }
+
+        @Override
+        public FileObject getFileObject(
+                @NonNull final Indexable indexable) {
+            return indexable.delegate instanceof FileObjectProvider ?
+                ((FileObjectProvider)indexable.delegate).getFileObject() :
+                URLMapper.findFileObject(indexable.getURL());
+        }
     }
 
 }
