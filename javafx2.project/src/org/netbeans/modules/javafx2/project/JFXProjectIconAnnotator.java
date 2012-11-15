@@ -122,7 +122,7 @@ public class JFXProjectIconAnnotator implements ProjectIconAnnotator {
         if (eval == null) {
             return false;
         }
-        //Don't use to prevent JFXProjectProperties.isTrue to be loaded
+        //Don't use JFXProjectProperties.isTrue to prevent JFXProjectProperties from being loaded
         //JFXProjectProperties.JAVAFX_ENABLED is inlined by compliler
         return isTrue(eval.evaluator().getProperty(JFXProjectProperties.JAVAFX_ENABLED));
     }

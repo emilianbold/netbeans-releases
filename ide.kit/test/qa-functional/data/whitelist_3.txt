@@ -70,12 +70,10 @@ org.netbeans.modules.j2ee.spi.ejbjar.CarsInProject
 org.netbeans.modules.j2ee.spi.ejbjar.EjbJarProvider
 org.netbeans.modules.j2ee.spi.ejbjar.EjbJarsInProject
 
-#204439
+#204439 - three services correctly loaded with j2se project
 org.netbeans.modules.javafx2.project.JFXActionProvider
 org.netbeans.modules.javafx2.project.JFXProjectIconAnnotator
 org.netbeans.modules.javafx2.project.JFXProjectOpenedHook
-org.netbeans.modules.javafx2.project.JFXProjectProperties
-org.netbeans.modules.javafx2.project.JFXProjectUtils
 
 #204438
 org.netbeans.modules.java.hints.declarative.ClassPathProviderImpl

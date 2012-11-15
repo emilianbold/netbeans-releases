@@ -9,8 +9,10 @@
     controllerClassName - controller class name (type: String)
     controllerPackageName - controller package name (type: String)
     entityClassName - entity class name without package (type: String)
+    importEntityFullClassName - whether to import entityFullClassName or not
     entityFullClassName - fully qualified entity class name (type: String)
     ejbClassName - EJB class name (type: String)
+    importEjbFullClassName - whether to import ejbFullClassName or not
     ejbFullClassName - fully qualified EJB class name (type: String)
     managedBeanName - name of managed bean (type: String)
     keyEmbedded - is entity primary key is an embeddable class (type: Boolean)
@@ -27,13 +29,17 @@
 </#if>
 package ${controllerPackageName};
 
+<#if importEntityFullClassName?? && importEntityFullClassName == true>
 import ${entityFullClassName};
+</#if>
 import ${controllerPackageName}.util.JsfUtil;
 import ${controllerPackageName}.util.PaginationHelper;
-<#if ejbClassName??>
+<#if importEjbFullClassName?? && importEjbFullClassName == true>
+    <#if ejbClassName??>
 import ${ejbFullClassName};
-<#elseif jpaControllerClassName??>
+    <#elseif jpaControllerClassName??>
 import ${jpaControllerFullClassName};
+    </#if>
 </#if>
 
 import java.io.Serializable;

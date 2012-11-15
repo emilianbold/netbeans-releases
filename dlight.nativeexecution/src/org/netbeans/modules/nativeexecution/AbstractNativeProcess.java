@@ -336,7 +336,11 @@ public abstract class AbstractNativeProcess extends NativeProcess implements ExP
         } catch (IllegalThreadStateException ex) {
         }
 
-        SignalSupport.signalProcess(execEnv, pid, Signal.SIGTERM);
+        try {
+            SignalSupport.signalProcess(execEnv, pid, Signal.SIGTERM);
+        } catch (UnsupportedOperationException ex) {
+            // ignore ...
+        }
 
         try {
             waitTask.get(SIGKILL_TIMEOUT, TimeUnit.SECONDS);
@@ -354,7 +358,11 @@ public abstract class AbstractNativeProcess extends NativeProcess implements ExP
         } catch (IllegalThreadStateException ex) {
         }
 
-        SignalSupport.signalProcess(execEnv, pid, Signal.SIGKILL);
+        try {
+            SignalSupport.signalProcess(execEnv, pid, Signal.SIGKILL);
+        } catch (UnsupportedOperationException ex) {
+            // ignore ...
+        }
     }
 
     /**
