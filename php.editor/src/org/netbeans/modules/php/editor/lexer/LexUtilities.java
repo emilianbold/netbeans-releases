@@ -70,7 +70,7 @@ import org.openide.util.Exceptions;
  * @author Tor Norbye
  * @author Petr Pisl
  */
-public class LexUtilities {
+public final class LexUtilities {
 
     private LexUtilities() {
     }
@@ -91,7 +91,7 @@ public class LexUtilities {
             public void run() {
                 TokenHierarchy th = TokenHierarchy.get(doc);
                 List<TokenSequence<? extends TokenId>> sequences = th.embeddedTokenSequences(offset, false);
-                if(sequences.isEmpty()) {
+                if (sequences.isEmpty()) {
                     //no embedding, return top level sequence;
                     ref.set(th.tokenSequence());
                 } else {
@@ -100,7 +100,7 @@ public class LexUtilities {
             }
         };
 
-        if(runUnderLock) {
+        if (runUnderLock) {
             doc.render(r);
         } else {
             r.run();
@@ -149,7 +149,7 @@ public class LexUtilities {
             try {
                 ts.move(offset);
             } catch (AssertionError e) {
-                DataObject dobj = (DataObject)doc.getProperty(Document.StreamDescriptionProperty);
+                DataObject dobj = (DataObject) doc.getProperty(Document.StreamDescriptionProperty);
 
                 if (dobj != null) {
                     Exceptions.attachMessage(e, FileUtil.getFileDisplayName(dobj.getPrimaryFile()));
@@ -191,7 +191,7 @@ public class LexUtilities {
         return 0;
     }
 
-    /** Search forwards in the token sequence until a token of type <code>down</code> is found */
+    /* Search forwards in the token sequence until a token of type <code>down</code> is found */
     public static OffsetRange findFwd(BaseDocument doc, TokenSequence<?extends PHPTokenId> ts, PHPTokenId tokenUpId, char up, PHPTokenId tokenDownId, char down) {
         int balance = 0;
 
@@ -213,7 +213,7 @@ public class LexUtilities {
         return OffsetRange.NONE;
     }
 
-    /** Search backwards in the token sequence until a token of type <code>up</code> is found */
+    /* Search backwards in the token sequence until a token of type <code>up</code> is found */
     public static OffsetRange findBwd(BaseDocument doc, TokenSequence<?extends PHPTokenId> ts, PHPTokenId tokenUpId, char up, PHPTokenId tokenDownId, char down) {
         int balance = 0;
 
@@ -300,7 +300,7 @@ public class LexUtilities {
             possibleBegin = Arrays.asList(PHPTokenId.PHP_TOKEN, PHPTokenId.PHP_IF, PHPTokenId.PHP_ELSE, PHPTokenId.PHP_ELSEIF, PHPTokenId.PHP_ENDIF);
         } else if (endTokenId == PHPTokenId.PHP_ELSE) {
             possibleBegin = Arrays.asList(PHPTokenId.PHP_TOKEN, PHPTokenId.PHP_IF, PHPTokenId.PHP_ELSE, PHPTokenId.PHP_ELSEIF, PHPTokenId.PHP_ENDIF);
-        }else if (endTokenId == PHPTokenId.PHP_ENDWHILE) {
+        } else if (endTokenId == PHPTokenId.PHP_ENDWHILE) {
             possibleBegin = Arrays.asList(PHPTokenId.PHP_TOKEN, PHPTokenId.PHP_WHILE, PHPTokenId.PHP_ENDWHILE);
         } else if (endTokenId == PHPTokenId.PHP_ENDFOR) {
             possibleBegin = Arrays.asList(PHPTokenId.PHP_TOKEN, PHPTokenId.PHP_FOR, PHPTokenId.PHP_ENDFOR);
@@ -324,13 +324,13 @@ public class LexUtilities {
                     columnOffset = ts.offset();
                 }
             } else if (token.id() == endTokenId) {
-                balance --;
+                balance--;
             } else {
-                if(balance == 0) {
+                if (balance == 0) {
                     return new OffsetRange(columnOffset, columnOffset + 1);
                 }
                 if (endTokenId != PHPTokenId.PHP_ENDIF || (endTokenId == PHPTokenId.PHP_ENDIF && token.id() == PHPTokenId.PHP_IF)) {
-                    balance ++;
+                    balance++;
                 }
             }
         }
@@ -343,29 +343,10 @@ public class LexUtilities {
      * precisely the reason why the user is using pair matching to see what's wrong.
      */
     public static OffsetRange findBegin(BaseDocument doc, TokenSequence<?extends PHPTokenId> ts) {
-// XXX: ressurect
-//        int balance = 0;
-//
-//        while (ts.movePrevious()) {
-//            Token<?extends JsTokenId> token = ts.token();
-//            TokenId id = token.id();
-//
-//            if (isBeginToken(id, doc, ts)) {
-//                // No matching dot for "do" used in conditionals etc.)) {
-//                if (balance == 0) {
-//                    return new OffsetRange(ts.offset(), ts.offset() + token.length());
-//                }
-//
-//                balance--;
-//            } else if (isEndToken(id, doc, ts)) {
-//                balance++;
-//            }
-//        }
-//
         return OffsetRange.NONE;
     }
 
-    /** Compute the balance of begin/end tokens on the line */
+    /* Compute the balance of begin/end tokens on the line */
     public static int getLineBalance(BaseDocument doc, int offset, TokenId up, TokenId down, LineBalance lineBalance) {
         try {
             int begin = Utilities.getRowStart(doc, offset);
@@ -391,20 +372,24 @@ public class LexUtilities {
 
                 if (id == up) {
                     if (lineBalance.equals(LineBalance.DOWN_FIRST)) {
-                        if (upCount > 0) {upCount++;}
+                        if (upCount > 0) {
+                            upCount++;
+                        }
                     } else {
                         upCount++;
                     }
                 } else if (id == down) {
                     if (lineBalance.equals(LineBalance.UP_FIRST)) {
-                        if (upCount > 0) {downCount++;}
+                        if (upCount > 0) {
+                            downCount++;
+                        }
                     } else {
                         downCount++;
                     }
                 }
             } while (ts.moveNext() && (ts.offset() <= end));
 
-            return (upCount-downCount);
+            return (upCount - downCount);
         } catch (BadLocationException ble) {
             Exceptions.printStackTrace(ble);
 
@@ -482,28 +467,32 @@ public class LexUtilities {
 
     public static Token<?extends PHPTokenId> findNext(TokenSequence<?extends PHPTokenId> ts, List<PHPTokenId> ignores) {
         if (ignores.contains(ts.token().id())) {
-            while (ts.moveNext() && ignores.contains(ts.token().id())) {}
+            while (ts.moveNext() && ignores.contains(ts.token().id())) {
+            }
         }
         return ts.token();
     }
 
     public static Token<?extends PHPTokenId> findPrevious(TokenSequence<?extends PHPTokenId> ts, List<PHPTokenId> ignores) {
         if (ignores.contains(ts.token().id())) {
-            while (ts.movePrevious() && ignores.contains(ts.token().id())) {}
+            while (ts.movePrevious() && ignores.contains(ts.token().id())) {
+            }
         }
         return ts.token();
     }
 
     public static Token<?extends PHPTokenId> findNextToken(TokenSequence<?extends PHPTokenId> ts, List<PHPTokenId> lookfor) {
         if (!lookfor.contains(ts.token().id())) {
-            while (ts.moveNext() && !lookfor.contains(ts.token().id())) {}
+            while (ts.moveNext() && !lookfor.contains(ts.token().id())) {
+            }
         }
         return ts.token();
     }
 
     public static Token<?extends PHPTokenId> findPreviousToken(TokenSequence<?extends PHPTokenId> ts, List<PHPTokenId> lookfor) {
         if (!lookfor.contains(ts.token().id())) {
-            while (ts.movePrevious() && !lookfor.contains(ts.token().id())) {}
+            while (ts.movePrevious() && !lookfor.contains(ts.token().id())) {
+            }
         }
         return ts.token();
     }
@@ -517,7 +506,7 @@ public class LexUtilities {
         do {
             Token<?extends PHPTokenId> token = findNextToken(ts,
                     Arrays.asList(PHPTokenId.WHITESPACE, PHPTokenId.PHP_LINE_COMMENT));
-            for(int i = token.text().length() - 1; i > -1; i--) {
+            for (int i = token.text().length() - 1; i > -1; i--) {
                 if (token.text().charAt(i) == '\n') {
                     return token;
                 }

@@ -58,28 +58,28 @@ import org.openide.filesystems.FileObject;
  *
  * @author Petr Pisl, Marek Fukala
  */
-public class GSFPHPLexer implements Lexer<PHPTokenId> {
+public final class GSFPHPLexer implements Lexer<PHPTokenId> {
 
     private final PHP5ColoringLexer scanner;
     private TokenFactory<PHPTokenId> tokenFactory;
 
-    private GSFPHPLexer(LexerRestartInfo<PHPTokenId> info, boolean short_tag, boolean asp_tag, boolean inPHP) {
-        scanner = new PHP5ColoringLexer(info, short_tag, asp_tag, inPHP);
+    private GSFPHPLexer(LexerRestartInfo<PHPTokenId> info, boolean shortTag, boolean aspTag, boolean inPHP) {
+        scanner = new PHP5ColoringLexer(info, shortTag, aspTag, inPHP);
         tokenFactory = info.tokenFactory();
     }
 
     public static GSFPHPLexer create(LexerRestartInfo<PHPTokenId> info, boolean inPHP) {
         PhpLanguageProperties languageProperties;
-        FileObject fileObject = (FileObject)info.getAttributeValue(FileObject.class);
+        FileObject fileObject = (FileObject) info.getAttributeValue(FileObject.class);
         if (fileObject != null) {
             languageProperties = PhpLanguageProperties.forFileObject(fileObject);
         } else {
             languageProperties = PhpLanguageProperties.getDefault();
         }
-        boolean asp_tag = languageProperties.areAspTagsEnabled();
-        boolean short_tag = languageProperties.areShortTagsEnabled();
-        synchronized(GSFPHPLexer.class) {
-            return new GSFPHPLexer(info, short_tag, asp_tag, inPHP);
+        boolean aspTag = languageProperties.areAspTagsEnabled();
+        boolean shortTag = languageProperties.areShortTagsEnabled();
+        synchronized (GSFPHPLexer.class) {
+            return new GSFPHPLexer(info, shortTag, aspTag, inPHP);
         }
     }
 

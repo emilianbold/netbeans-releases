@@ -46,6 +46,7 @@ package org.netbeans.modules.php.editor.model;
  * @author Radek Matous
  */
 public interface MethodScope extends FunctionScope, VariableScope, ClassMemberElement {
+
     boolean isMagic();
     /**
      * Returns true if this method initiates the state of object.
@@ -59,5 +60,6 @@ public interface MethodScope extends FunctionScope, VariableScope, ClassMemberEl
     TypeScope getTypeScope();
     String getClassSkeleton();
     String getInterfaceSkeleton();
-    public String getConstructorIndexSignature();
+    String getConstructorIndexSignature();
+
 }

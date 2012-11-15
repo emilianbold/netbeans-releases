@@ -83,10 +83,6 @@ public final class Model {
         this.info = info;
     }
 
-//    Model(FileObject fo) {
-//        ParserManager.
-//    }
-
     public List<PhpBaseElement>  getExtendedElements() {
         return getModelVisitor().extendedElements();
     }
@@ -104,7 +100,7 @@ public final class Model {
     public synchronized OccurencesSupport getOccurencesSupport(final OffsetRange range) {
         final ModelVisitor visitor = getModelVisitor();
         if (occurencesSupport == null || !range.containsInclusive(occurencesSupport.offset)) {
-            occurencesSupport = new OccurencesSupport(visitor, range.getStart()+1);
+            occurencesSupport = new OccurencesSupport(visitor, range.getStart() + 1);
         }
         return occurencesSupport;
     }
