@@ -96,7 +96,7 @@ public class AddUseImportSuggestion extends AbstractSuggestion {
 
     @Override
     public String getId() {
-        return "AddUse.Import.Rule";//NOI18N
+        return "AddUse.Import.Rule"; //NOI18N
     }
 
     @Override
@@ -219,8 +219,7 @@ public class AddUseImportSuggestion extends AbstractSuggestion {
                     }
                 }
                 String stringValue = node.getStringValue();
-                if (stringValue != null && stringValue.trim().length() > 0 &&
-                        node.getScalarType() == Type.STRING && !NavUtils.isQuoted(stringValue)) {
+                if (stringValue != null && stringValue.trim().length() > 0 && node.getScalarType() == Type.STRING && !NavUtils.isQuoted(stringValue)) {
                     final QualifiedName nodeName = QualifiedName.create(stringValue);
                     if (!nodeName.getKind().isFullyQualified()) {
                         Set<ConstantElement> constants = context.getIndex().getConstants(NameKind.exact(nodeName));
@@ -234,8 +233,8 @@ public class AddUseImportSuggestion extends AbstractSuggestion {
         }
 
         private void addImportHints(FullyQualifiedElement idxElement, final QualifiedName nodeName, NamespaceDeclaration currenNamespace, ASTNode node) {
-            final QualifiedName indexedName = idxElement.getFullyQualifiedName();//getQualifiedName() used before
-            QualifiedName importName = QualifiedName.getPrefix( indexedName, nodeName, true);
+            final QualifiedName indexedName = idxElement.getFullyQualifiedName(); //getQualifiedName() used before
+            QualifiedName importName = QualifiedName.getPrefix(indexedName, nodeName, true);
 
             if (importName != null && context.fileScope != null) {
                 final String retvalStr = importName.toString();
@@ -316,13 +315,13 @@ public class AddUseImportSuggestion extends AbstractSuggestion {
         public void implement() throws Exception {
             int templateOffset = getOffset();
             EditList edits = new EditList(doc);
-            edits.replace(templateOffset, 0, "\n" + getGeneratedCode(), true, 0);//NOI18N
+            edits.replace(templateOffset, 0, "\n" + getGeneratedCode(), true, 0); //NOI18N
             edits.apply();
             UiUtils.open(scope.getFileObject(), Utilities.getRowStart(doc, getOffsetRange().getEnd()));
         }
 
         private String getGeneratedCode() {
-            return "use " + importName.toString() + ";";//NOI18N
+            return "use " + importName.toString() + ";"; //NOI18N
             }
 
         private int getOffset() {
@@ -390,7 +389,7 @@ public class AddUseImportSuggestion extends AbstractSuggestion {
         public void implement() throws Exception {
             int templateOffset = getOffset();
             EditList edits = new EditList(doc);
-            edits.replace(templateOffset, oldName.toString().length(), getGeneratedCode(), true, 0);//NOI18N
+            edits.replace(templateOffset, oldName.toString().length(), getGeneratedCode(), true, 0); //NOI18N
             edits.apply();
             UiUtils.open(scope.getFileObject(), Utilities.getRowStart(doc, templateOffset));
         }
@@ -405,9 +404,8 @@ public class AddUseImportSuggestion extends AbstractSuggestion {
     }
 
     private static boolean isClassName(ASTNode parentNode) {
-        return parentNode instanceof ClassName || parentNode instanceof FormalParameter ||
-                parentNode instanceof StaticConstantAccess || parentNode instanceof StaticMethodInvocation ||
-                parentNode instanceof StaticFieldAccess || parentNode instanceof ClassDeclaration;
+        return parentNode instanceof ClassName || parentNode instanceof FormalParameter || parentNode instanceof StaticConstantAccess
+                || parentNode instanceof StaticMethodInvocation || parentNode instanceof StaticFieldAccess || parentNode instanceof ClassDeclaration;
     }
 
     private static boolean isFunctionName(ASTNode parentNode) {

@@ -133,7 +133,8 @@ public class SemiAttribute extends DefaultVisitor {
     public SemiAttribute(ParserResult info, int o) {
         this.offset = o;
         this.info = info;
-        scopes.push(global = new DefinitionScope());
+        global = new DefinitionScope();
+        scopes.push(global);
     }
 
     @Override
@@ -141,17 +142,12 @@ public class SemiAttribute extends DefaultVisitor {
         if (node == null) {
             return;
         }
-
         if ((offset != (-1) && offset <= node.getStartOffset())) {
             throw new Stop();
         }
-
         nodes.push(node);
-
         super.scan(node);
-
         nodes.pop();
-
         if ((offset != (-1) && offset <= node.getEndOffset())) {
             throw new Stop();
         }
@@ -173,7 +169,7 @@ public class SemiAttribute extends DefaultVisitor {
             AttributedType at = null;
             Expression rightSideExpression = node.getRightHandSide();
             if (rightSideExpression instanceof Reference) {
-                rightSideExpression = ((Reference)rightSideExpression).getExpression();
+                rightSideExpression = ((Reference) rightSideExpression).getExpression();
             }
 
             if (rightSideExpression instanceof ClassInstanceCreation) {
@@ -191,7 +187,7 @@ public class SemiAttribute extends DefaultVisitor {
             } else if (rightSideExpression instanceof FieldAccess) {
                 FieldAccess access = (FieldAccess) rightSideExpression;
                 Variable field = access.getField();
-                String name =extractVariableName(field);
+                String name = extractVariableName(field);
 
                 if (name != null) {
                     node2Element.put(vb, scopes.peek().enterWrite(name, Kind.VARIABLE, access, at));
@@ -237,7 +233,7 @@ public class SemiAttribute extends DefaultVisitor {
         ClassName className = node.getClassName();
         if (className != null) {
             Expression expr = className.getName();
-            String name = (expr instanceof Identifier) ? ((Identifier)expr).getName() : null;
+            String name = (expr instanceof Identifier) ? ((Identifier) expr).getName() : null;
             if (name != null) {
                 Collection<AttributedElement> namedGlobalElements = getNamedGlobalElements(Kind.CLASS, name);
                 if (!namedGlobalElements.isEmpty()) {
@@ -268,9 +264,11 @@ public class SemiAttribute extends DefaultVisitor {
             Collection<AttributedElement> namedGlobalElements =
                     getNamedGlobalElements(Kind.CLASS, name);
             if (!namedGlobalElements.isEmpty()) {
-                node2Element.put(className, ae = lookup(name, Kind.CLASS));
+                ae = lookup(name, Kind.CLASS);
+                node2Element.put(className, ae);
             } else {
-                node2Element.put(className, ae = lookup(name, Kind.IFACE));
+                ae = lookup(name, Kind.IFACE);
+                node2Element.put(className, ae);
             }
         }
         Variable var = node.getVariable();
@@ -289,10 +287,10 @@ public class SemiAttribute extends DefaultVisitor {
     public void visit(FormalParameter node) {
         Variable var = null;
         if (node.getParameterName() instanceof Reference) {
-            Reference ref = (Reference)node.getParameterName();
+            Reference ref = (Reference) node.getParameterName();
             Expression parameterName = ref.getExpression();
             if (parameterName instanceof Variable) {
-                var = (Variable)parameterName;
+                var = (Variable) parameterName;
             }
         } else if (node.getParameterName() instanceof Variable) {
             var = (Variable) node.getParameterName();
@@ -303,10 +301,9 @@ public class SemiAttribute extends DefaultVisitor {
                 scopes.peek().enterWrite(name, Kind.VARIABLE, var);
             }
         }
-        Identifier parameterType = (node.getParameterType() != null) ?
-            CodeUtils.extractUnqualifiedIdentifier(node.getParameterType()) : null;
+        Identifier parameterType = (node.getParameterType() != null) ? CodeUtils.extractUnqualifiedIdentifier(node.getParameterType()) : null;
 
-        if (parameterType != null){
+        if (parameterType != null) {
             String name = parameterType.getName();
             if (name != null) {
                 Collection<AttributedElement> namedGlobalElements = getNamedGlobalElements(Kind.CLASS, name);
@@ -343,9 +340,7 @@ public class SemiAttribute extends DefaultVisitor {
         }
 
         if (exp instanceof Variable) {
-            //XXX:
             Expression n = ((Variable) exp).getName();
-
             if (n instanceof Identifier) {
                 name = ((Identifier) n).getName();
             }
@@ -355,9 +350,7 @@ public class SemiAttribute extends DefaultVisitor {
             AttributedElement thisEl = null;
             ASTNode n = nodes.pop();
             ASTNode par = nodes.peek();
-
             nodes.push(n);
-
             if (par instanceof MethodInvocation) {
                 ClassElementAttribute ce = resolveTypeSimple((Dispatch) par);
 
@@ -368,12 +361,12 @@ public class SemiAttribute extends DefaultVisitor {
                 if (par instanceof StaticMethodInvocation) {
                     StaticMethodInvocation smi = (StaticMethodInvocation) par;
                     final String clsName = CodeUtils.extractUnqualifiedClassName(smi);
-                    Collection<AttributedElement> nn = getNamedGlobalElements(Kind.CLASS,clsName);
+                    Collection<AttributedElement> nn = getNamedGlobalElements(Kind.CLASS, clsName);
                     if (!nn.isEmpty()) {
                         String contextClassName = clsName;
-                        if ("parent".equals(clsName)) {//NOI18N
+                        if ("parent".equals(clsName)) { //NOI18N
                             contextClassName = getContextSuperClassName();
-                        } else if ("self".equals(clsName)) {//NOI18N
+                        } else if ("self".equals(clsName)) { //NOI18N
                             contextClassName = getContextClassName();
                         }
                         for (AttributedElement ell : nn) {
@@ -450,8 +443,7 @@ public class SemiAttribute extends DefaultVisitor {
         ClassElementAttribute ce = (ClassElementAttribute) global.enterWrite(name, Kind.CLASS, node);
 
         node2Element.put(node, ce);
-        Identifier superClsName = (node.getSuperClass() != null) ?
-            CodeUtils.extractUnqualifiedIdentifier(node.getSuperClass()) : null;
+        Identifier superClsName = (node.getSuperClass() != null) ? CodeUtils.extractUnqualifiedIdentifier(node.getSuperClass()) : null;
         if (superClsName != null) {
             ce.superClass = (ClassElementAttribute) lookup(superClsName.getName(), Kind.CLASS);
         }
@@ -533,7 +525,7 @@ public class SemiAttribute extends DefaultVisitor {
 
     private ClassElementAttribute getCurrentClassElement() {
         ClassElementAttribute c = null;
-        for (int i = scopes.size()-1; i >= 0; i--) {
+        for (int i = scopes.size() - 1; i >= 0; i--) {
             DefinitionScope scope = scopes.get(i);
             if (scope != null && scope.enclosingClass != null) {
                 c = scope.enclosingClass;
@@ -546,12 +538,12 @@ public class SemiAttribute extends DefaultVisitor {
     @Override
     public void visit(StaticConstantAccess node) {
         String clsName = CodeUtils.extractUnqualifiedClassName(node);
-        if (clsName.equals("self")) {//NOI18N
+        if (clsName.equals("self")) { //NOI18N
             ClassElementAttribute c = getCurrentClassElement();
             if (c != null) {
                 clsName = c.getName();
             }
-        } else if (clsName.equals("parent")) {//NOI18N
+        } else if (clsName.equals("parent")) { //NOI18N
             ClassElementAttribute c = getCurrentClassElement();
             if (c != null) {
                 c = c.getSuperClass();
@@ -560,11 +552,10 @@ public class SemiAttribute extends DefaultVisitor {
                 }
             }
         }
-        Collection<AttributedElement> nn = getNamedGlobalElements(Kind.CLASS,clsName);//NOI18N
-
+        Collection<AttributedElement> nn = getNamedGlobalElements(Kind.CLASS, clsName); //NOI18N
         if (!nn.isEmpty()) {
             for (AttributedElement ell : nn) {
-                ClassElementAttribute ce = (ClassElementAttribute)ell;
+                ClassElementAttribute ce = (ClassElementAttribute) ell;
                 if (ce != null && ce.getName().equals(clsName)) {
                     String name = CodeUtils.extractUnqualifiedClassName(node);
                     AttributedElement thisEl = ce.lookup(name, Kind.CONST);
@@ -717,13 +708,13 @@ public class SemiAttribute extends DefaultVisitor {
         final Map<String, AttributedElement> name2El = global.name2Writes.get(k);
         if (global != null) {
             for (String fName : filterNames) {
-                if (fName.equals("self")) {//NOI18N
+                if (fName.equals("self")) { //NOI18N
                     String ctxName = getContextClassName();
                     if (ctxName != null) {
                         fName = ctxName;
                     }
                 }
-                if (Kind.CLASS.equals(k) && fName.equals("parent")) {//NOI18N
+                if (Kind.CLASS.equals(k) && fName.equals("parent")) { //NOI18N
                     if (name2El != null) {
                         Collection<AttributedElement> values = name2El.values();
                         for (AttributedElement ael : values) {
@@ -784,31 +775,25 @@ public class SemiAttribute extends DefaultVisitor {
                 node2Element.put(nn, scope.enterWrite(name, Kind.FUNC, n));
                 continue;
             }
-
             if (n instanceof FunctionDeclaration) {
                 String name = ((FunctionDeclaration) n).getFunctionName().getName();
 
                 node2Element.put(n, scope.enterWrite(name, Kind.FUNC, n));
             }
-
             if (n instanceof FieldsDeclaration) {
                 for (SingleFieldDeclaration f : ((FieldsDeclaration) n).getFields()) {
                     String name = extractVariableName(f.getName());
-
                     if (name != null) {
                         node2Element.put(n, scope.enterWrite(name, Kind.VARIABLE, n));
                     }
                 }
             }
-
             if (n instanceof ClassDeclaration) {
                 ClassDeclaration node = (ClassDeclaration) n;
                 String name = node.getName().getName();
                 ClassElementAttribute ce = (ClassElementAttribute) global.enterWrite(name, Kind.CLASS, node);
                 node2Element.put(node, ce);
-                Identifier superClsName = (node.getSuperClass() != null) ?
-                    CodeUtils.extractUnqualifiedIdentifier(node.getSuperClass()) : null;
-
+                Identifier superClsName = (node.getSuperClass() != null) ? CodeUtils.extractUnqualifiedIdentifier(node.getSuperClass()) : null;
                 if (superClsName != null) {
                     ce.superClass = (ClassElementAttribute) lookup(superClsName.getName(), Kind.CLASS);
                     node2Element.put(node.getSuperClass(), ce.superClass);
@@ -821,7 +806,6 @@ public class SemiAttribute extends DefaultVisitor {
                     performEnterPass(ce.enclosedElements, node.getBody().getStatements());
                 }
             }
-
             if (n instanceof ConstantDeclaration) {
                 List<Identifier> constNames = ((ConstantDeclaration) n).getNames();
                 for (Identifier id : constNames) {
@@ -880,11 +864,9 @@ public class SemiAttribute extends DefaultVisitor {
     //TODO converge this method with CodeUtils.extractVariableName()
     public static String extractVariableName(Variable var) {
         String varName = CodeUtils.extractVariableName(var);
-
-        if (varName != null && varName.startsWith("$")){ //NOI18N
+        if (varName != null && varName.startsWith("$")) { //NOI18N
             return varName.substring(1);
         }
-
         return varName;
     }
 
@@ -1018,7 +1000,7 @@ public class SemiAttribute extends DefaultVisitor {
         }
 
         public String getScopeName() {
-            String retval = "";//NOI18N
+            String retval = ""; //NOI18N
             Types types = getTypes();
             for (int i = 0; i < types.size(); i++) {
                 AttributedType type = types.getType(i);
@@ -1211,26 +1193,28 @@ public class SemiAttribute extends DefaultVisitor {
                 return el;
             }
             Index index = ElementQueryFactory.getIndexQuery(info);
-            int attrs = PhpModifiers.ALL_FLAGS;
-            switch(k) {
+            switch (k) {
                 case CONST:
-
-                for (TypeConstantElement classMember : index.getAllTypeConstants(NameKind.exact(getName()), NameKind.prefix(name))) {
-                    String idxName = classMember.getName();
-                    idxName = (idxName.startsWith("$")) ? idxName.substring(1) : idxName;
-                    enclosedElements.enterWrite(idxName, Kind.CONST, classMember);
-                } break;
+                    for (TypeConstantElement classMember : index.getAllTypeConstants(NameKind.exact(getName()), NameKind.prefix(name))) {
+                        String idxName = classMember.getName();
+                        idxName = (idxName.startsWith("$")) ? idxName.substring(1) : idxName;
+                        enclosedElements.enterWrite(idxName, Kind.CONST, classMember);
+                    }
+                    break;
                 case FUNC:
-                for (MethodElement classMember : index.getAllMethods(NameKind.exact(getName()), NameKind.prefix(name))) {
-                    enclosedElements.enterWrite(classMember.getName(), Kind.FUNC, classMember);
-                } break;
+                    for (MethodElement classMember : index.getAllMethods(NameKind.exact(getName()), NameKind.prefix(name))) {
+                        enclosedElements.enterWrite(classMember.getName(), Kind.FUNC, classMember);
+                    }
+                    break;
                 case VARIABLE:
-                for (FieldElement classMember : index.getAlllFields(NameKind.exact(getName()), NameKind.prefix(name))) {
-                    String idxName = classMember.getName();
-                    idxName = (idxName.startsWith("$")) ? idxName.substring(1) : idxName;
-                    enclosedElements.enterWrite(idxName, Kind.VARIABLE, classMember);
-                } break;
-
+                    for (FieldElement classMember : index.getAlllFields(NameKind.exact(getName()), NameKind.prefix(name))) {
+                        String idxName = classMember.getName();
+                        idxName = (idxName.startsWith("$")) ? idxName.substring(1) : idxName;
+                        enclosedElements.enterWrite(idxName, Kind.VARIABLE, classMember);
+                    }
+                    break;
+                default:
+                    //no-op
             }
             return enclosedElements.lookup(name, k);
         }
@@ -1406,7 +1390,7 @@ public class SemiAttribute extends DefaultVisitor {
         }
     }
 
-    public  class DefinitionScope {
+    public class DefinitionScope {
 
         private final Map<Kind, Map<String, AttributedElement>> name2Writes = new EnumMap<Kind, Map<String, AttributedElement>>(Kind.class);
         private boolean classScope;
@@ -1421,8 +1405,6 @@ public class SemiAttribute extends DefaultVisitor {
         public DefinitionScope(ClassElementAttribute enclosingClass) {
             this.enclosingClass = enclosingClass;
             this.classScope = enclosingClass != null;
-
-
             if (classScope) {
                 thisVar = enterWrite("this", Kind.VARIABLE, (ASTNode) null, new ClassType(enclosingClass));
             }
@@ -1456,7 +1438,8 @@ public class SemiAttribute extends DefaultVisitor {
             Map<String, AttributedElement> name2El = name2Writes.get(k);
 
             if (name2El == null) {
-                name2Writes.put(k, name2El = new HashMap<String, AttributedElement>());
+                name2El = new HashMap<String, AttributedElement>();
+                name2Writes.put(k, name2El);
             }
 
             AttributedElement el = name2El.get(name);
@@ -1500,7 +1483,8 @@ public class SemiAttribute extends DefaultVisitor {
         public AttributedElement enter(String name, Kind k, AttributedElement el) {
             Map<String, AttributedElement> name2El = name2Writes.get(k);
             if (name2El == null) {
-                name2Writes.put(k, name2El = new HashMap<String, AttributedElement>());
+                name2El = new HashMap<String, AttributedElement>();
+                name2Writes.put(k, name2El);
             }
             name2El.put(name, el);
             return el;
@@ -1514,13 +1498,15 @@ public class SemiAttribute extends DefaultVisitor {
             }
             if (el == null) {
                 Index index = ElementQueryFactory.getIndexQuery(info);
-                switch(k) {
+                switch (k) {
                     case CONST:
-                    for (ConstantElement m : index.getConstants(NameKind.prefix(name))) {
-                        String idxName = m.getName();
-                        el = enterWrite(idxName, Kind.CONST, m);
-                    }
-                    break;
+                        for (ConstantElement m : index.getConstants(NameKind.prefix(name))) {
+                            String idxName = m.getName();
+                            el = enterWrite(idxName, Kind.CONST, m);
+                        }
+                        break;
+                    default:
+                        //no-op
                 }
             }
             return el;
@@ -1560,9 +1546,10 @@ public class SemiAttribute extends DefaultVisitor {
     private static final class Stop extends Error {
     }
 
-    public static abstract class AttributedType {
+    public abstract static class AttributedType {
 
         public abstract String getTypeName();
+        
     }
 
     public static class ClassType extends AttributedType {

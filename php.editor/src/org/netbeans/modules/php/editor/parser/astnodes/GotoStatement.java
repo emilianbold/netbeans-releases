@@ -60,7 +60,7 @@ public class GotoStatement extends Statement {
     }
 
     /**
-     * Returns the label of this goto label
+     * Returns the label of this goto label.
      *
      * @return the label label
      */

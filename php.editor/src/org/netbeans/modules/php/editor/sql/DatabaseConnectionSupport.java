@@ -59,8 +59,11 @@ import org.openide.filesystems.FileObject;
  *
  * @author David Van Couvering
  */
-public class DatabaseConnectionSupport {
+public final class DatabaseConnectionSupport {
     private static final String PROP_DBCONN = "dbconn"; // NOI18N
+
+    private DatabaseConnectionSupport() {
+    }
 
     // TODO - add support for setting a connection for a given file, instead
     // of the whole project

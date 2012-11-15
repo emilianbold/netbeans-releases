@@ -56,7 +56,7 @@ final class PHPSQLStatement {
 
     /**
      * Given a caret offset into a PHP document, compute the SQL statement for that
-     * location, if any
+     * location, if any.
      *
      * @param document the PHP source document
      * @param caretOffset the caret location in the document
@@ -84,7 +84,7 @@ final class PHPSQLStatement {
     }
 
     /**
-     * Return true if this string could potentially be SQL
+     * Return true if this string could potentially be SQL.
      */
     public static boolean couldBeSQL(TokenSequence seq) {
         String potentialStatement = seq.token().text().toString();
@@ -92,11 +92,9 @@ final class PHPSQLStatement {
             potentialStatement = potentialStatement.substring(1);
         }
         potentialStatement = potentialStatement.toLowerCase().trim();
-        return potentialStatement.startsWith("select") ||
-                potentialStatement.startsWith("insert") ||
-                potentialStatement.startsWith("update") ||
-                potentialStatement.startsWith("delete") ||
-                potentialStatement.startsWith("drop");
+        return potentialStatement.startsWith("select") || potentialStatement.startsWith("insert")
+                || potentialStatement.startsWith("update") || potentialStatement.startsWith("delete")
+                || potentialStatement.startsWith("drop");
     }
 
     private PHPSQLStatement(TokenSequence seq, int caretOffset) {
@@ -182,7 +180,7 @@ final class PHPSQLStatement {
         seq.move(statementOffset);
         seq.moveNext();
 
-        if (! couldBeSQL(seq)) {
+        if (!couldBeSQL(seq)) {
             return null;
         }
 
@@ -479,6 +477,8 @@ final class PHPSQLStatement {
                                     substringTermOffset = getOffset(seq, direction);
                                 }
                                 break;
+                            default:
+                                //no-op
                         }
                         break;
                     case PHP_ENCAPSED_AND_WHITESPACE:
@@ -520,6 +520,8 @@ final class PHPSQLStatement {
                                 break;
                             case CONCATENATING:
                                 break;
+                            default:
+                                //no-op
                         }
                         break;
                     case PHP_SEMICOLON:
@@ -551,6 +553,8 @@ final class PHPSQLStatement {
                             case CONCATENATING:
                                 // Keep going...
                                 break;
+                            default:
+                                //no-op
                         }
                         break;
                     case PHP_CURLY_OPEN:
@@ -571,6 +575,8 @@ final class PHPSQLStatement {
                             case MAYBE_SUBSTRING_TERM:
                                 // Keep going, looking for that potential concatenation token...
                                 break;
+                            default:
+                                //no-op
                         }
                         break;
                     case UNKNOWN_TOKEN:
@@ -592,6 +598,8 @@ final class PHPSQLStatement {
                             case STARTING:
                                 // Not in a string
                                 break outer;
+                            default:
+                                //no-op
                         }
                         break;
                 }

@@ -63,9 +63,6 @@ import org.openide.util.NbBundle;
  */
 public class PHPPaletteActions extends PaletteActions {
 
-    /**
-     * Creates a new instance of jbossddPaletteActions
-     */
     public PHPPaletteActions() {
     }
 
@@ -114,7 +111,7 @@ public class PHPPaletteActions extends PaletteActions {
                 return;
             }
             if (drop == null) {
-                Logger.getLogger(Logger.GLOBAL_LOGGER_NAME).log(Level.INFO, "{0} doesn''t provide {1}", new Object[]{item.getClass(), ActiveEditorDrop.class});//NOI18N
+                Logger.getLogger(Logger.GLOBAL_LOGGER_NAME).log(Level.INFO, "{0} doesn''t provide {1}", new Object[]{item.getClass(), ActiveEditorDrop.class}); //NOI18N
                 return;
             }
             try {

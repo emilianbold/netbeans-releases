@@ -60,7 +60,7 @@ import org.netbeans.modules.php.editor.parser.astnodes.PHPDocVarTypeTag;
  *
  * @author Radek Matous
  */
-public class PhpDocTypeTagInfo extends ASTNodeInfo<PHPDocNode> {
+public final class PhpDocTypeTagInfo extends ASTNodeInfo<PHPDocNode> {
     private PHPDocTypeTag typeTag;
     private Kind kind;
     private String typeName;
@@ -132,7 +132,7 @@ public class PhpDocTypeTagInfo extends ASTNodeInfo<PHPDocNode> {
         PHPDocNode docNode = getOriginalNode();
         String value = docNode.getValue();
         int idx = value.indexOf("::");
-        if (idx != -1) {//NOI18N
+        if (idx != -1) {
             value = value.substring(0, idx);
         }
         if (getKind().equals(Kind.CLASS)) {
@@ -163,7 +163,7 @@ public class PhpDocTypeTagInfo extends ASTNodeInfo<PHPDocNode> {
             return new OffsetRange(start, end);
         }
         if (Kind.USE_ALIAS.equals(getKind())) {
-            return new OffsetRange(node.getStartOffset(), node.getStartOffset()+getName().length());
+            return new OffsetRange(node.getStartOffset(), node.getStartOffset() + getName().length());
         }
         QualifiedName typeQN = QualifiedName.create(typeName);
         final QualifiedName namespaceName = typeQN.toNamespaceName(typeQN.getKind().isFullyQualified());
@@ -175,10 +175,11 @@ public class PhpDocTypeTagInfo extends ASTNodeInfo<PHPDocNode> {
                 startOffset += 1;
             }
         }
-        return new OffsetRange(startOffset, startOffset+typeQN.toName().toString().length());
+        return new OffsetRange(startOffset, startOffset + typeQN.toName().toString().length());
     }
 
     public PhpModifiers getAccessModifiers() {
         return PhpModifiers.fromBitMask(PhpModifiers.PUBLIC);
     }
+
 }

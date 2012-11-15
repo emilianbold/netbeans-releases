@@ -80,23 +80,16 @@ import org.openide.util.Union2;
  * @author Radek Matous
  */
 class VariableNameImpl extends ScopeImpl implements VariableName {
-    final List<LazyFieldAssignment> assignmentDatas = new ArrayList<LazyFieldAssignment>();
-
-    private Collection<TypeScope> getMergedTypes() {
-        Collection<TypeScope> types = new HashSet<TypeScope>();
-        List<? extends VarAssignmentImpl> varAssignments = getVarAssignments();
-        for (VarAssignmentImpl vAssignment : varAssignments) {
-            types.addAll(vAssignment.getTypes());
-        }
-        return types;
-    }
 
     enum TypeResolutionKind {
         LAST_ASSIGNMENT,
         MERGE_ASSIGNMENTS
     };
+
     private TypeResolutionKind typeResolutionKind = TypeResolutionKind.LAST_ASSIGNMENT;
+    final List<LazyFieldAssignment> assignmentDatas = new ArrayList<LazyFieldAssignment>();
     private boolean globallyVisible;
+
     VariableNameImpl(Scope inScope, VariableElement indexedVariable) {
         this(inScope, indexedVariable.getName(),
                 Union2.<String/*url*/, FileObject>createFirst(indexedVariable.getFilenameUrl()),
@@ -390,6 +383,15 @@ class VariableNameImpl extends ScopeImpl implements VariableName {
             return retval;
         }
         return Collections.emptyList();
+    }
+
+    private Collection<TypeScope> getMergedTypes() {
+        Collection<TypeScope> types = new HashSet<TypeScope>();
+        List<? extends VarAssignmentImpl> varAssignments = getVarAssignments();
+        for (VarAssignmentImpl vAssignment : varAssignments) {
+            types.addAll(vAssignment.getTypes());
+        }
+        return types;
     }
 
     @Override

@@ -47,7 +47,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import org.netbeans.modules.csl.api.OffsetRange;
-import org.netbeans.modules.php.editor.model.Parameter;
 import org.netbeans.modules.php.editor.api.QualifiedName;
 import org.netbeans.modules.php.editor.api.elements.ParameterElement;
 import org.netbeans.modules.php.editor.parser.astnodes.FormalParameter;
@@ -59,6 +58,7 @@ import org.netbeans.modules.php.editor.parser.astnodes.LambdaFunctionDeclaration
  */
 public class LambdaFunctionDeclarationInfo extends ASTNodeInfo<LambdaFunctionDeclaration> {
     Map<String, List<QualifiedName>> paramDocTypes = Collections.emptyMap();
+
     protected LambdaFunctionDeclarationInfo(LambdaFunctionDeclaration node) {
         super(node);
     }
@@ -66,7 +66,6 @@ public class LambdaFunctionDeclarationInfo extends ASTNodeInfo<LambdaFunctionDec
     public static LambdaFunctionDeclarationInfo create(LambdaFunctionDeclaration fnc) {
         return new LambdaFunctionDeclarationInfo(fnc);
     }
-
 
     @Override
     public Kind getKind() {
@@ -76,7 +75,7 @@ public class LambdaFunctionDeclarationInfo extends ASTNodeInfo<LambdaFunctionDec
     @Override
     public String getName() {
         LambdaFunctionDeclaration fnc = getOriginalNode();
-        return String.format("LambdaFunctionDeclaration:%d", fnc.getStartOffset());//NOI18N
+        return String.format("LambdaFunctionDeclaration:%d", fnc.getStartOffset()); //NOI18N
     }
 
     @Override
@@ -99,4 +98,5 @@ public class LambdaFunctionDeclarationInfo extends ASTNodeInfo<LambdaFunctionDec
         }
         return retval;
     }
+
 }

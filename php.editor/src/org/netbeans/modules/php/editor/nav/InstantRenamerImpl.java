@@ -143,4 +143,5 @@ public class InstantRenamerImpl implements InstantRenamer {
         allOccurences = collected;
         return true;
     }
+
 }

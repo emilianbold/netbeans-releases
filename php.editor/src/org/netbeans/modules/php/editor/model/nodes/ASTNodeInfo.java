@@ -77,13 +77,13 @@ public class ASTNodeInfo<T extends ASTNode> {
     private Kind kind;
 
     public enum Kind {
-
         NAMESPACE_DECLARATION, USE_STATEMENT, IFACE, CLASS, CLASS_INSTANCE_CREATION,
         METHOD, STATIC_METHOD,
         FIELD, STATIC_FIELD,
         CLASS_CONSTANT, STATIC_CLASS_CONSTANT,
-        VARIABLE, CONSTANT, FUNCTION,PARAMETER,
-        INCLUDE, RETURN_MARKER, GOTO, TRAIT, USE_ALIAS}
+        VARIABLE, CONSTANT, FUNCTION, PARAMETER,
+        INCLUDE, RETURN_MARKER, GOTO, TRAIT, USE_ALIAS
+    }
 
     ASTNodeInfo(T node) {
         this.node = node;
@@ -114,7 +114,7 @@ public class ASTNodeInfo<T extends ASTNode> {
             Identifier cname = (Identifier) node;
             retval = QualifiedName.createUnqualifiedName(cname);
         } else if (node instanceof NamespaceName) {
-            retval = QualifiedName.create((NamespaceName)node);
+            retval = QualifiedName.create((NamespaceName) node);
         } else if (node instanceof ClassInstanceCreation) {
             ClassInstanceCreation instanceCreation = (ClassInstanceCreation) node;
             retval = QualifiedName.create(instanceCreation.getClassName().getName());
@@ -133,7 +133,7 @@ public class ASTNodeInfo<T extends ASTNode> {
             if (toName == null) {
                 //#185702 - NullPointerException at org.netbeans.modules.php.editor.api.QualifiedNameKind.resolveKind
                 //$this->{'_find' . ucfirst($type)}('before', $query);
-                retval = QualifiedName.createUnqualifiedName("");//NOI18N
+                retval = QualifiedName.createUnqualifiedName(""); //NOI18N
             } else {
                 retval = QualifiedName.createUnqualifiedName(toName);
             }
@@ -180,6 +180,8 @@ public class ASTNodeInfo<T extends ASTNode> {
                 return PhpElementKind.TRAIT;
             case USE_ALIAS:
                 return PhpElementKind.USE_ALIAS;
+            default:
+                assert false : k;
         }
         throw new IllegalStateException();
     }
@@ -320,7 +322,7 @@ public class ASTNodeInfo<T extends ASTNode> {
             Identifier cname = (Identifier) node;
             return cname.getName();
         } else if (node instanceof NamespaceName) {
-            return toName(CodeUtils.extractUnqualifiedIdentifier((NamespaceName)node));
+            return toName(CodeUtils.extractUnqualifiedIdentifier((NamespaceName) node));
         } else if (node instanceof Scalar) {
             Scalar scalar = (Scalar) node;
             return NavUtils.isQuoted(scalar.getStringValue()) ? NavUtils.dequote(scalar.getStringValue()) : scalar.getStringValue();
@@ -331,9 +333,9 @@ public class ASTNodeInfo<T extends ASTNode> {
             FieldAccess fieldAccess = (FieldAccess) node;
             return toNameField(fieldAccess.getField());
         } else if (node instanceof ReturnStatement) {
-            return "return";//NOI18N
+            return "return"; //NOI18N
         } else if (node instanceof Reference) {
-            return toName(((Reference)node).getExpression());
+            return toName(((Reference) node).getExpression());
         } else if (node instanceof UseStatementPart) {
             return toQualifiedName(node, false).toString();
         }
@@ -367,17 +369,15 @@ public class ASTNodeInfo<T extends ASTNode> {
             return new OffsetRange(constant.getStartOffset(), constant.getEndOffset());
         } else if (node instanceof ClassName) {
             Identifier id = CodeUtils.extractUnqualifiedIdentifier(((ClassName) node).getName());
-
-            if (id == null){ // #168459
+            if (id == null) { // #168459
                 return new OffsetRange(node.getStartOffset(), node.getEndOffset());
             }
-
             return new OffsetRange(id.getStartOffset(), id.getEndOffset());
         } else if (node instanceof Identifier) {
             Identifier cname = (Identifier) node;
             return new OffsetRange(cname.getStartOffset(), cname.getEndOffset());
         } else if (node instanceof NamespaceName) {
-            return toOffsetRange(CodeUtils.extractUnqualifiedIdentifier((NamespaceName)node));
+            return toOffsetRange(CodeUtils.extractUnqualifiedIdentifier((NamespaceName) node));
         } else if (node instanceof Scalar) {
             Scalar scalar = (Scalar) node;
             if (NavUtils.isQuoted(scalar.getStringValue())) {
@@ -395,7 +395,7 @@ public class ASTNodeInfo<T extends ASTNode> {
             ReturnStatement returnStatement = (ReturnStatement) node;
             return new OffsetRange(returnStatement.getStartOffset(), returnStatement.getEndOffset());
         } else if (node instanceof Reference) {
-            return toOffsetRange(((Reference)node).getExpression());
+            return toOffsetRange(((Reference) node).getExpression());
         } else if (node instanceof UseStatementPart) {
             return new OffsetRange(node.getStartOffset(), node.getEndOffset());
         }
@@ -408,7 +408,7 @@ public class ASTNodeInfo<T extends ASTNode> {
     static String toNameField(Variable var) {
         String retval = CodeUtils.extractVariableName(var);
         if (retval != null && !retval.startsWith("$")) {
-            retval = "$"+retval;
+            retval = "$" + retval;
         }
         return retval;
     }

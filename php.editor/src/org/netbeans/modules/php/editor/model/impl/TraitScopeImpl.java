@@ -50,7 +50,17 @@ import org.netbeans.modules.php.editor.api.PhpElementKind;
 import org.netbeans.modules.php.editor.api.QualifiedName;
 import org.netbeans.modules.php.editor.api.elements.TraitElement;
 import org.netbeans.modules.php.editor.index.Signature;
-import org.netbeans.modules.php.editor.model.*;
+import org.netbeans.modules.php.editor.model.ClassConstantElement;
+import org.netbeans.modules.php.editor.model.FieldElement;
+import org.netbeans.modules.php.editor.model.IndexScope;
+import org.netbeans.modules.php.editor.model.MethodScope;
+import org.netbeans.modules.php.editor.model.ModelElement;
+import org.netbeans.modules.php.editor.model.ModelUtils;
+import org.netbeans.modules.php.editor.model.NamespaceScope;
+import org.netbeans.modules.php.editor.model.Scope;
+import org.netbeans.modules.php.editor.model.TraitScope;
+import org.netbeans.modules.php.editor.model.TraitedScope;
+import org.netbeans.modules.php.editor.model.TypeScope;
 import org.netbeans.modules.php.editor.model.nodes.TraitDeclarationInfo;
 
 /**
@@ -119,8 +129,8 @@ public class TraitScopeImpl extends TypeScopeImpl implements TraitScope {
     @Override
     public QualifiedName getNamespaceName() {
         if (indexedElement instanceof TraitElement) {
-            TraitElement TraitClass = (TraitElement)indexedElement;
-            return TraitClass.getNamespaceName();
+            TraitElement traitClass = (TraitElement) indexedElement;
+            return traitClass.getNamespaceName();
         }
         return super.getNamespaceName();
     }
@@ -145,7 +155,7 @@ public class TraitScopeImpl extends TypeScopeImpl implements TraitScope {
     }
 
     @Override
-    public Collection<? extends TraitScope> getTraits(){
+    public Collection<? extends TraitScope> getTraits() {
         Collection<TraitScope> result = new ArrayList<TraitScope>();
         for (QualifiedName qualifiedName : getUsedTraits()) {
             result.addAll(IndexScopeImpl.getTraits(qualifiedName, this));
@@ -165,11 +175,11 @@ public class TraitScopeImpl extends TypeScopeImpl implements TraitScope {
                     } else {
                         result = isSuperTypeOf(traitScope);
                     }
-                    if (result == true) {
+                    if (result) {
                         break;
                     }
                 }
-                if (result == false && subType.isClass()) {
+                if (!result && subType.isClass()) {
                     result = subType.isSubTypeOf(this);
                 }
             }
@@ -188,7 +198,7 @@ public class TraitScopeImpl extends TypeScopeImpl implements TraitScope {
                     } else {
                         result = traitScope.isSubTypeOf(superType);
                     }
-                    if (result == true) {
+                    if (result) {
                         break;
                     }
                 }
