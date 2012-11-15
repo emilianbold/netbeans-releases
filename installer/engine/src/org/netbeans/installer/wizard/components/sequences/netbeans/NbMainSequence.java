@@ -275,7 +275,7 @@ public class NbMainSequence extends WizardSequence {
                                     // JUnit installed
                                     ResourceUtils.getString(NbMainSequence.class, "NBMS.CACHE.SuccessIfJunit_JUnitInstalled") : // NOI18N
                                     // JUnit not found
-                                    ResourceUtils.getString(NbMainSequence.class, "NNBMS.CACHE.SuccessIfJunit_JUnitNotFound"); // NOI18N
+                                    ResourceUtils.getString(NbMainSequence.class, "NBMS.CACHE.SuccessIfJunit_JUnitNotFound"); // NOI18N
                         } else if (checkForUpdate) {
                             msg = sumOfUpdates > 0 ?
                                     // Updates installed
