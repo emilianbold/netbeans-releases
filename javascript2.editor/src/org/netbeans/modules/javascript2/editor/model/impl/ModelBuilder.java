@@ -75,7 +75,7 @@ public final class ModelBuilder {
      * @return the currentScope or null
      */
     JsObjectImpl getCurrentObject() {
-        return stack.isEmpty() ? null : stack.peek();
+        return stack.isEmpty() ? globalObject : stack.peek();
     }
     
     DeclarationScopeImpl getCurrentDeclarationScope() {
