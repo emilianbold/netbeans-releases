@@ -44,6 +44,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
 import javax.swing.SwingUtilities;
+import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectUtils;
@@ -88,7 +90,7 @@ public final class JFXProjectOpenedHook extends ProjectOpenedHook {
 
     @Override
     protected synchronized void projectOpened() {
-        if(JFXProjectProperties.isTrue(this.eval.evaluator().getProperty(JFXProjectProperties.JAVAFX_ENABLED))) {
+        if(isFXProject(eval)) {
             JFXProjectGenerator.logUsage(JFXProjectGenerator.Action.OPEN);
 
             //hotfix for Bug 214819 - Completion list is corrupted after IDE upgrade 
@@ -171,7 +173,7 @@ public final class JFXProjectOpenedHook extends ProjectOpenedHook {
 
     @Override
     protected void projectClosed() {
-        if(JFXProjectProperties.isTrue(this.eval.evaluator().getProperty(JFXProjectProperties.JAVAFX_ENABLED))) {
+        if(isFXProject(eval)) {
             JFXProjectGenerator.logUsage(JFXProjectGenerator.Action.CLOSE);
             assert pcp != null;
             if(chl != null) {
@@ -285,5 +287,21 @@ public final class JFXProjectOpenedHook extends ProjectOpenedHook {
                 }
             }
         }
+    }
+
+    private static boolean isFXProject(@NonNull final J2SEPropertyEvaluator eval) {
+        if (eval == null) {
+            return false;
+        }
+        //Don't use JFXProjectProperties.isTrue to prevent JFXProjectProperties from being loaded
+        //JFXProjectProperties.JAVAFX_ENABLED is inlined by compliler
+        return isTrue(eval.evaluator().getProperty(JFXProjectProperties.JAVAFX_ENABLED));
+    }
+
+    private static boolean isTrue(@NullAllowed final String value) {
+        return  value != null && (
+           "true".equalsIgnoreCase(value) ||    //NOI18N
+           "yes".equalsIgnoreCase(value) ||     //NOI18N
+           "on".equalsIgnoreCase(value));       //NOI18N
     }
 }

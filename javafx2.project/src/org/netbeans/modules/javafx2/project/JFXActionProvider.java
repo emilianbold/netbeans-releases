@@ -53,6 +53,7 @@ import javax.script.ScriptEngineManager;
 import org.apache.tools.ant.module.api.support.ActionUtils;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.extexecution.startup.StartupExtender;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
@@ -75,7 +76,7 @@ import org.openide.util.Task;
 import org.openide.util.TaskListener;
 
 /**
- * Skeleton of JFX Action Provider
+ * JFX Action Provider
  */
 @ProjectServiceProvider(
     service=ActionProvider.class,
@@ -168,13 +169,13 @@ public class JFXActionProvider implements ActionProvider {
 
     @Override
     public boolean isActionEnabled(@NonNull String command, @NonNull Lookup context) throws IllegalArgumentException {
-        if (!JFXProjectUtils.isFXProject(prj)) {
-            return false;
+        if (isFXProject(prj)) {
+            if (findBuildXml() == null) {
+                return false;
+            }
+            return findTarget(command) != null;
         }
-        if (findBuildXml() == null) {
-            return false;
-        }
-        return findTarget(command) != null;
+        return false;
     }
 
     @NonNull
@@ -252,5 +253,22 @@ public class JFXActionProvider implements ActionProvider {
         isJSAvailableChecked = true;
         isJSAvailable = false;
         return isJSAvailable;
+    }
+
+    private static boolean isFXProject(@NonNull final Project prj) {
+        final J2SEPropertyEvaluator eval = prj.getLookup().lookup(J2SEPropertyEvaluator.class);
+        if (eval == null) {
+            return false;
+        }
+        //Don't use JFXProjectProperties.isTrue to prevent JFXProjectProperties from being loaded
+        //JFXProjectProperties.JAVAFX_ENABLED is inlined by compliler
+        return isTrue(eval.evaluator().getProperty(JFXProjectProperties.JAVAFX_ENABLED));
+    }
+
+    private static boolean isTrue(@NullAllowed final String value) {
+        return  value != null && (
+           "true".equalsIgnoreCase(value) ||    //NOI18N
+           "yes".equalsIgnoreCase(value) ||     //NOI18N
+           "on".equalsIgnoreCase(value));       //NOI18N
     }
 }
