@@ -54,7 +54,6 @@ import org.netbeans.lib.ddl.impl.Specification;
 import org.netbeans.modules.db.explorer.DatabaseConnection;
 import org.netbeans.modules.db.explorer.DatabaseConnector;
 import org.netbeans.modules.db.explorer.DatabaseMetaDataTransferAccessor;
-import org.netbeans.modules.db.explorer.action.RefreshAction;
 import org.netbeans.modules.db.metadata.model.api.Action;
 import org.netbeans.modules.db.metadata.model.api.Column;
 import org.netbeans.modules.db.metadata.model.api.Index;
@@ -67,11 +66,9 @@ import org.netbeans.modules.db.metadata.model.api.Nullable;
 import org.netbeans.modules.db.metadata.model.api.Table;
 import org.netbeans.modules.db.metadata.model.api.Tuple;
 import org.netbeans.modules.db.metadata.model.api.PrimaryKey;
-import org.openide.nodes.Node;
 import org.openide.nodes.PropertySupport;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
-import org.openide.util.actions.SystemAction;
 import org.openide.util.datatransfer.ExTransferable;
 
 /**
@@ -324,7 +321,7 @@ public class ColumnNode extends BaseNode implements SchemaNameProvider, ColumnNa
             LOG.log(Level.INFO, e.getMessage(), e);
         }
 
-        SystemAction.get(RefreshAction.class).performAction(new Node[]{getParentNode()});
+        setValue(BaseFilterNode.REFRESH_ANCESTOR_DISTANCE, new Integer(1));
     }
 
     @Override
