@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.php.project;
 
+import org.netbeans.modules.php.project.problems.ProjectPropertiesProblemProvider;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -52,15 +53,26 @@ public final class PhpProjectValidator {
     }
 
     /**
-     * Is the given project broken?
+     * Is the given project fatally broken?
      *
      * Currently, it means that its source directory is not set or is invalid (deleted).
      * @param project project to be checked
-     * @return {@code true} if the project is broken
+     * @return {@code true} if the project is fatally broken
      */
     public static boolean isFatallyBroken(PhpProject project) {
         FileObject sources = ProjectPropertiesSupport.getSourcesDirectory(project);
         return sources == null || !sources.isValid();
+    }
+
+    /**
+     * Is the given project broken?
+     *
+     * Currently, it means that the given project has any {@link ProjectPropertiesProblemProvider#getProblems() problem}.
+     * @param project project to be checked
+     * @return {@code true} if the project is broken
+     */
+    public static boolean isBroken(PhpProject project) {
+        return !project.getLookup().lookup(ProjectPropertiesProblemProvider.class).getProblems().isEmpty();
     }
 
 }

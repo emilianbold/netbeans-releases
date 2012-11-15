@@ -45,6 +45,7 @@ import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.io.CharConversionException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -105,7 +106,7 @@ import org.openide.util.WeakListeners;
 import org.openide.util.actions.Presenter;
 import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
-import org.openide.util.lookup.Lookups;
+import org.openide.xml.XMLUtil;
 
 /**
  * @author ads, Tomas Mysik
@@ -349,6 +350,19 @@ public class PhpLogicalViewProvider implements LogicalViewProvider {
         public String getShortDescription() {
             String prjDirDispName = FileUtil.getFileDisplayName(project.getProjectDirectory());
             return NbBundle.getMessage(PhpLogicalViewProvider.class, "HINT_project_root_node", prjDirDispName);
+        }
+
+        @Override
+        public String getHtmlDisplayName() {
+            String dispName = super.getDisplayName();
+            try {
+                dispName = XMLUtil.toElementContent(dispName);
+            } catch (CharConversionException ex) {
+                return dispName;
+            }
+            return PhpProjectValidator.isBroken(project)
+                    ? "<font color=\"#" + Integer.toHexString(Utils.getErrorForeground().getRGB() & 0xffffff) + "\">" + dispName + "</font>" // NOI18N
+                    : null;
         }
 
         @Override
