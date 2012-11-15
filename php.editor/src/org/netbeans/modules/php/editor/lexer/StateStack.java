@@ -89,8 +89,7 @@ public class StateStack {
     }
 
     public int size() {
-        lastIn = lastIn + 1;
-        return lastIn;
+        return lastIn + 1;
     }
 
     public StateStack createClone() {
