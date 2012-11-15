@@ -48,9 +48,12 @@ import java.awt.Dimension;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.io.IOException;
-import static org.netbeans.modules.php.editor.indent.FmtOptions.*;
-import static org.netbeans.modules.php.editor.indent.FmtOptions.CategorySupport.OPTION_ID;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.modules.options.editor.spi.PreferencesCustomizer;
+import static org.netbeans.modules.php.editor.indent.FmtOptions.*;
+import org.netbeans.modules.php.editor.indent.FmtOptions.CategorySupport;
+import static org.netbeans.modules.php.editor.indent.FmtOptions.CategorySupport.OPTION_ID;
 
 
 /**
@@ -59,7 +62,8 @@ import org.netbeans.modules.options.editor.spi.PreferencesCustomizer;
  */
 public class FmtWrapping extends javax.swing.JPanel implements FocusListener {
 
-    /** Creates new form FmtWrapping */
+    private static final Logger LOGGER = Logger.getLogger(FmtWrapping.class.getName());
+
     public FmtWrapping() {
         initComponents();
 
@@ -107,16 +111,18 @@ public class FmtWrapping extends javax.swing.JPanel implements FocusListener {
         try {
             preview = Utils.loadPreviewText(FmtWrapping.class.getClassLoader().getResourceAsStream("org/netbeans/modules/php/editor/indent/ui/Spaces.php"));
         } catch (IOException ex) {
-            // TODO log it
+            LOGGER.log(Level.WARNING, null, ex);
         }
         return new CategorySupport.Factory("wrapping", FmtWrapping.class, //NOI18N
                 preview);
     }
 
+    @Override
     public void focusGained(FocusEvent e) {
         scrollPane.getViewport().scrollRectToVisible(e.getComponent().getBounds());
     }
 
+    @Override
     public void focusLost(FocusEvent e) {
     }
 
