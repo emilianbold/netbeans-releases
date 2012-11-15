@@ -835,11 +835,19 @@ public class ProjectBridge {
     }
 
     public CompilerFlavor getCompilerFlavor(){
-        return getCompilerSet().getCompilerFlavor();
+        final CompilerSet compilerSet = getCompilerSet();
+        if (compilerSet != null) {
+            return compilerSet.getCompilerFlavor();
+        }
+        return null;
     }
 
     public String getCompilerDirectory(){
-        return getCompilerSet().getDirectory();
+        final CompilerSet compilerSet = getCompilerSet();
+        if (compilerSet != null) {
+            return getCompilerSet().getDirectory();
+        }
+        return null;
     }
     
     private List<String> systemIncludePathsC;
@@ -855,13 +863,17 @@ public class ProjectBridge {
             systemIncludePaths = new ArrayList<String>();
             CompilerSet compilerSet = getCompilerSet();
             AbstractCompiler compiler;
-            if (isCPP) {
-                compiler = (AbstractCompiler)compilerSet.getTool(PredefinedToolKind.CCCompiler);
-            } else {
-                compiler = (AbstractCompiler)compilerSet.getTool(PredefinedToolKind.CCompiler);
-            }
-            for(String path :compiler.getSystemIncludeDirectories()){
-                systemIncludePaths.add(fixWindowsPath(path));
+            if (compilerSet != null) {
+                if (isCPP) {
+                    compiler = (AbstractCompiler)compilerSet.getTool(PredefinedToolKind.CCCompiler);
+                } else {
+                    compiler = (AbstractCompiler)compilerSet.getTool(PredefinedToolKind.CCompiler);
+                }
+                if (compiler != null) {
+                    for(String path :compiler.getSystemIncludeDirectories()){
+                        systemIncludePaths.add(fixWindowsPath(path));
+                    }
+                }
             }
             if (isCPP) {
                 systemIncludePathsCpp = systemIncludePaths;
@@ -884,24 +896,26 @@ public class ProjectBridge {
         if (macros == null) {
             macros = new HashMap<String,List<String>>();
             CompilerSet compilerSet = getCompilerSet();
+            if (compilerSet != null) {
             AbstractCompiler compiler;
-            if (isCPP) {
-                compiler = (AbstractCompiler)compilerSet.getTool(PredefinedToolKind.CCCompiler);
-            } else {
-                compiler = (AbstractCompiler)compilerSet.getTool(PredefinedToolKind.CCompiler);
-            }
-            if (compiler != null && compiler.getDescriptor() != null) {
-                final List<PredefinedMacro> predefinedMacros = compiler.getDescriptor().getPredefinedMacros();
-                if (predefinedMacros != null) {
-                    for(ToolchainManager.PredefinedMacro macro : predefinedMacros){
-                        if (macro.getFlags() != null) {
-                            if (!macro.isHidden()) {
-                                List<String> list = macros.get(macro.getFlags());
-                                if (list == null) {
-                                    list = new ArrayList<String>();
-                                    macros.put(macro.getFlags(), list);
+                if (isCPP) {
+                    compiler = (AbstractCompiler)compilerSet.getTool(PredefinedToolKind.CCCompiler);
+                } else {
+                    compiler = (AbstractCompiler)compilerSet.getTool(PredefinedToolKind.CCompiler);
+                }
+                if (compiler != null && compiler.getDescriptor() != null) {
+                    final List<PredefinedMacro> predefinedMacros = compiler.getDescriptor().getPredefinedMacros();
+                    if (predefinedMacros != null) {
+                        for(ToolchainManager.PredefinedMacro macro : predefinedMacros){
+                            if (macro.getFlags() != null) {
+                                if (!macro.isHidden()) {
+                                    List<String> list = macros.get(macro.getFlags());
+                                    if (list == null) {
+                                        list = new ArrayList<String>();
+                                        macros.put(macro.getFlags(), list);
+                                    }
+                                    list.add(macro.getMacro());
                                 }
-                                list.add(macro.getMacro());
                             }
                         }
                     }
@@ -929,24 +943,26 @@ public class ProjectBridge {
         if (macros == null) {
             macros = new HashMap<String,List<String>>();
             CompilerSet compilerSet = getCompilerSet();
-            AbstractCompiler compiler;
-            if (isCPP) {
-                compiler = (AbstractCompiler)compilerSet.getTool(PredefinedToolKind.CCCompiler);
-            } else {
-                compiler = (AbstractCompiler)compilerSet.getTool(PredefinedToolKind.CCompiler);
-            }
-            if (compiler != null && compiler.getDescriptor() != null) {
-                final List<PredefinedMacro> predefinedMacros = compiler.getDescriptor().getPredefinedMacros();
-                if (predefinedMacros != null) {
-                    for(ToolchainManager.PredefinedMacro macro : predefinedMacros){
-                        if (macro.getFlags() != null) {
-                            if (macro.isHidden()) {
-                                List<String> list = macros.get(macro.getFlags());
-                                if (list == null) {
-                                    list = new ArrayList<String>();
-                                    macros.put(macro.getFlags(), list);
+            if (compilerSet != null) {
+                AbstractCompiler compiler;
+                if (isCPP) {
+                    compiler = (AbstractCompiler)compilerSet.getTool(PredefinedToolKind.CCCompiler);
+                } else {
+                    compiler = (AbstractCompiler)compilerSet.getTool(PredefinedToolKind.CCompiler);
+                }
+                if (compiler != null && compiler.getDescriptor() != null) {
+                    final List<PredefinedMacro> predefinedMacros = compiler.getDescriptor().getPredefinedMacros();
+                    if (predefinedMacros != null) {
+                        for(ToolchainManager.PredefinedMacro macro : predefinedMacros){
+                            if (macro.getFlags() != null) {
+                                if (macro.isHidden()) {
+                                    List<String> list = macros.get(macro.getFlags());
+                                    if (list == null) {
+                                        list = new ArrayList<String>();
+                                        macros.put(macro.getFlags(), list);
+                                    }
+                                    list.add(macro.getMacro());
                                 }
-                                list.add(macro.getMacro());
                             }
                         }
                     }
@@ -988,19 +1004,23 @@ public class ProjectBridge {
         if (systemMacroDefinitions == null) {
             systemMacroDefinitions = new HashMap<String,String>();
             CompilerSet compilerSet = getCompilerSet();
-            AbstractCompiler compiler;
-            if (isCPP) {
-                compiler = (AbstractCompiler)compilerSet.getTool(PredefinedToolKind.CCCompiler);
-            } else {
-                compiler = (AbstractCompiler)compilerSet.getTool(PredefinedToolKind.CCompiler);
-            }
-            for(Object o :compiler.getSystemPreprocessorSymbols()){
-                String macro = (String)o;
-                int i = macro.indexOf('=');
-                if (i>0){
-                    systemMacroDefinitions.put(macro.substring(0,i), macro.substring(i+1).trim());
+            if (compilerSet != null) {
+                AbstractCompiler compiler;
+                if (isCPP) {
+                    compiler = (AbstractCompiler)compilerSet.getTool(PredefinedToolKind.CCCompiler);
                 } else {
-                    systemMacroDefinitions.put(macro, null);
+                    compiler = (AbstractCompiler)compilerSet.getTool(PredefinedToolKind.CCompiler);
+                }
+                if (compiler != null) {
+                    for(Object o :compiler.getSystemPreprocessorSymbols()){
+                        String macro = (String)o;
+                        int i = macro.indexOf('=');
+                        if (i>0){
+                            systemMacroDefinitions.put(macro.substring(0,i), macro.substring(i+1).trim());
+                        } else {
+                            systemMacroDefinitions.put(macro, null);
+                        }
+                    }
                 }
             }
             if (isCPP) {

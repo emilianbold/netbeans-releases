@@ -276,6 +276,66 @@ public class LogReaderTest extends TestCase {
         }
        assertEquals(res, "D:/cygwin_dir");
     }
+    
+    public void testCygwinCommandLine() {
+        String line = "gcc -g -O3 -Ospace --diag_suppress=1295   --thumb --apcs=/interwork --cpu Cortex-M3 "
+                + "-DENABLE_RTX -D__RTX -DUSE_PROPERTIES_FROM_FS -DUSE_MCBSTM32F200 -DUSE_MDK -DENABLE_JSR_75=1  "
+                + "-DENABLE_CBS=1  -DENABLE_JAVA_LOGGING=1          -I`cygpath -m  /tools/taiga/output/esa_rtx_mdk_impng/javacall/inc` "
+                + "-I/tools/taiga/platform/modules/stm32f2xx/inc -I/tools/taiga/platform/modules/mcbstm32f200/inc "
+                + "-I\"/tools/taiga/cldc/src/anilib/share\" "
+                + "-I/tools/taiga/platform/modules/usbd/inc  --default_extension=o  -c "
+                + "-o`cygpath -m  /tools/taiga/output/esa_rtx_mdk_impng/javacall/obj/device_info.o`  "
+                + "'D:\\tools\\taiga\\deviceaccess\\src\\native\\KNI_I2C.c'";
+          String expResult =
+                      "Source:D:\\tools\\taiga\\deviceaccess\\src\\native\\KNI_I2C.c\n"+
+                      "Macros:\n"+
+                      "ENABLE_CBS=1\n"+
+                      "ENABLE_JAVA_LOGGING=1\n"+
+                      "ENABLE_JSR_75=1\n"+
+                      "ENABLE_RTX\n"+
+                      "USE_MCBSTM32F200\n"+
+                      "USE_MDK\n"+
+                      "USE_PROPERTIES_FROM_FS\n"+
+                      "__RTX\n"+
+                      "Paths:\n"+
+                      "/tools/taiga/output/esa_rtx_mdk_impng/javacall/inc\n"+
+                      "/tools/taiga/platform/modules/stm32f2xx/inc\n"+
+                      "/tools/taiga/platform/modules/mcbstm32f200/inc\n"+
+                      "/tools/taiga/cldc/src/anilib/share\n"+
+                      "/tools/taiga/platform/modules/usbd/inc";
+        String result = processLine(line, DiscoveryUtils.LogOrigin.BuildLog);
+        assertDocumentText(line, expResult, result);
+    }
+
+    public void testCygwinCommandLine2() {
+        String line = "gcc -g -O3 -Ospace --diag_suppress=1295   --thumb --apcs=/interwork --cpu Cortex-M3 "
+                + "-DENABLE_RTX -D__RTX -DUSE_PROPERTIES_FROM_FS -DUSE_MCBSTM32F200 -DUSE_MDK -DENABLE_JSR_75=1  "
+                + "-DENABLE_CBS=1  -DENABLE_JAVA_LOGGING=1          -I`cygpath -m  /tools/taiga/output/esa_rtx_mdk_impng/javacall/inc` "
+                + "-I/tools/taiga/platform/modules/stm32f2xx/inc -I/tools/taiga/platform/modules/mcbstm32f200/inc "
+                + "-I\"/tools/taiga/cldc/src/anilib/share\" "
+                + "-I/tools/taiga/platform/modules/usbd/inc  --default_extension=o  -c "
+                + "-o`cygpath -m  /tools/taiga/output/esa_rtx_mdk_impng/javacall/obj/device_info.o`  "
+                + "`cygpath -m  /tools/taiga/javacall-com/implementation/rtx/midp/device_info.c`";
+          String expResult =
+                      "Source:/tools/taiga/javacall-com/implementation/rtx/midp/device_info.c\n"+
+                      "Macros:\n"+
+                      "ENABLE_CBS=1\n"+
+                      "ENABLE_JAVA_LOGGING=1\n"+
+                      "ENABLE_JSR_75=1\n"+
+                      "ENABLE_RTX\n"+
+                      "USE_MCBSTM32F200\n"+
+                      "USE_MDK\n"+
+                      "USE_PROPERTIES_FROM_FS\n"+
+                      "__RTX\n"+
+                      "Paths:\n"+
+                      "/tools/taiga/output/esa_rtx_mdk_impng/javacall/inc\n"+
+                      "/tools/taiga/platform/modules/stm32f2xx/inc\n"+
+                      "/tools/taiga/platform/modules/mcbstm32f200/inc\n"+
+                      "/tools/taiga/cldc/src/anilib/share\n"+
+                      "/tools/taiga/platform/modules/usbd/inc";
+        String result = processLine(line, DiscoveryUtils.LogOrigin.BuildLog);
+        assertDocumentText(line, expResult, result);
+    }
 
     /**
      * Test of scanCommandLine method, of class DwarfSource.

@@ -169,6 +169,9 @@ public final class BuildTraceSupport {
                     if (tool != null) {
                         String name = tool.getName();
                         if (name != null && !name.isEmpty()) {
+                            if (name.endsWith(".exe")) { //NOI18N
+                                name = name.substring(0,name.length()-4);
+                            }
                             res.add(name);
                         }
                     }

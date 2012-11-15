@@ -303,6 +303,7 @@ public final class ExternalBrowserPlugin {
                 Map map = new HashMap();
                 map.put( Message.TAB_ID, tabId );
                 map.put("status","notaccepted");       // NOI18N
+                map.put("version", getNetBeansVersion()); // NOI18N
                 Message msg = new Message( Message.MessageType.INIT , map );
                 server.sendMessage(key, msg.toStringValue());
             } else  {
@@ -313,6 +314,7 @@ public final class ExternalBrowserPlugin {
                 Map map = new HashMap();
                 map.put( Message.TAB_ID, tabId );
                 map.put("status","accepted");       // NOI18N
+                map.put("version", getNetBeansVersion()); // NOI18N
                 Message msg = new Message( Message.MessageType.INIT , map );
                 server.sendMessage(key, msg.toStringValue());
                 
@@ -332,6 +334,15 @@ public final class ExternalBrowserPlugin {
          */
         private boolean isSupportedVersion(String version) {
             return version.startsWith("1."); // NOI18N
+        }
+
+        /**
+         * Returns the version of NetBeans (sent by IDE to browser extension).
+         * 
+         * @return version of NetBeans.
+         */
+        private String getNetBeansVersion() {
+            return "7.3"; // NOI18N
         }
 
         private void handleDebuggerDetached(Message message) {
