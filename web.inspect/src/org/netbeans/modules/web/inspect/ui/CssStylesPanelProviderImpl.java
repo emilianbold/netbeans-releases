@@ -153,6 +153,7 @@ public abstract class CssStylesPanelProviderImpl extends JPanel implements CssSt
     private void initRunFilePanel() {
         runFilePanel = new JPanel();
         JLabel label = new JLabel(NbBundle.getMessage(CssStylesPanelProviderImpl.class, "CssStylesPanelProviderImpl.runFileLabel")); // NOI18N
+        label.setHorizontalAlignment(SwingConstants.CENTER);
         runButton = new JButton();
         runButton.addActionListener(new ActionListener() {
             @Override
@@ -178,12 +179,9 @@ public abstract class CssStylesPanelProviderImpl extends JPanel implements CssSt
                 .addContainerGap(GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE));
         layout.setHorizontalGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(layout.createParallelGroup()
-                .addComponent(label)
-                .addGroup(layout.createSequentialGroup()
-                .addGap(0, 0, Short.MAX_VALUE)
-                .addComponent(runButton)
-                .addGap(0, 0, Short.MAX_VALUE)))
+                .addGroup(layout.createParallelGroup(GroupLayout.Alignment.CENTER)
+                .addComponent(label, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(runButton))
                 .addContainerGap());
     }
 
