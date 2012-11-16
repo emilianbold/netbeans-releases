@@ -901,16 +901,17 @@ public class MakeConfiguration extends Configuration implements Cloneable {
                         || itemConfiguration.getExcluded().getValue()) {
                     continue;
                 }
-                if (itemConfiguration.getTool() == PredefinedToolKind.CCompiler) {
+                PredefinedToolKind tool = itemConfiguration.getTool();
+                if (tool == PredefinedToolKind.CCompiler) {
                     hasCFiles = true;
                 }
-                if (itemConfiguration.getTool() == PredefinedToolKind.CCCompiler) {
+                if (tool == PredefinedToolKind.CCCompiler) {
                     hasCPPFiles = true;
                 }
-                if (itemConfiguration.getTool() == PredefinedToolKind.FortranCompiler) {
+                if (tool == PredefinedToolKind.FortranCompiler) {
                     hasFortranFiles = true;
                 }
-                if (itemConfiguration.getTool() == PredefinedToolKind.Assembler) {
+                if (tool == PredefinedToolKind.Assembler) {
                     hasAssemblerFiles = true;
                 }
                 //            if (itemConfiguration.getTool() == Tool.AsmCompiler) {
