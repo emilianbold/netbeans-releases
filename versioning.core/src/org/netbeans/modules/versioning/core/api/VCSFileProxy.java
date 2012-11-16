@@ -56,6 +56,7 @@ import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.WeakListeners;
 
 /**
  * Represents a file on a file system. 
@@ -80,6 +81,7 @@ public final class VCSFileProxy {
      */
     private Boolean isDirectory = null; // XXX might change for a file!!!
     private boolean foWasDeleted = false;
+    private FileChangeListener fileChangeListener = null;
     
     static {
         APIAccessor.IMPL = new APIAccessorImpl();
@@ -142,9 +144,8 @@ public final class VCSFileProxy {
                 if(file != null) {
                     final VCSFileProxy p = createFileProxy(file);
                     p.isDirectory = fileObject.isFolder();
-                    fileObject.addFileChangeListener(new FileChangeListener() {
-                        @Override
-                        public void fileDeleted(FileEvent fe) {
+                    p.fileChangeListener = new FileChangeListener() {
+                        @Override public void fileDeleted(FileEvent fe) {
                             p.foWasDeleted = true;
                         }
                         @Override public void fileFolderCreated(FileEvent fe) { }
@@ -152,7 +153,8 @@ public final class VCSFileProxy {
                         @Override public void fileChanged(FileEvent fe) { }
                         @Override public void fileRenamed(FileRenameEvent fe) { }
                         @Override public void fileAttributeChanged(FileAttributeEvent fe) { }
-                    });
+                    };
+                    fileObject.addFileChangeListener(WeakListeners.create(FileChangeListener.class, p.fileChangeListener, fileObject));
                     return p;
                 } else {
                     return null; // e.g. FileObject from a jar filesystem
