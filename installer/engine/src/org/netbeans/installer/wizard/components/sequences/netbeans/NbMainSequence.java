@@ -440,8 +440,8 @@ public class NbMainSequence extends WizardSequence {
                 if (! commands.contains("--modules")) {
                     commands.add("--modules");
                 }
-                if (getExtraUC() != null && ! commands.contains("--extra-uc")) {
-                    commands.add("--extra-uc " + getExtraUC());
+                if (! commands.toString().contains("--extra-uc") && getExtraUC() != null) {
+                    commands.add("--extra-uc \"" + getExtraUC() + "\"");
                 }
                 commands.add("--install");
                 commands.add("\".*junit.*\"");
@@ -453,8 +453,8 @@ public class NbMainSequence extends WizardSequence {
                 if (! commands.contains("--modules")) {
                     commands.add("--modules");
                 }
-                if (getExtraUC() != null && ! commands.contains("--extra-uc")) {
-                    commands.add("--extra-uc " + getExtraUC());
+                if (! commands.toString().contains("--extra-uc") && getExtraUC() != null) {
+                    commands.add("--extra-uc \"" + getExtraUC() + "\"");
                 }
                 commands.add("--update-all");
                 title = title == null ?
@@ -549,11 +549,13 @@ public class NbMainSequence extends WizardSequence {
         String extraUC = null;
         try {
             extraUC = System.getProperty("extra.update.center.url");
+            if (extraUC == null || extraUC.isEmpty()) {
+                LogManager.log("    ... empty URL of Extra UC.");
+                return null;
+            }
             urlExtra = new URL(extraUC);
-        } catch (IllegalArgumentException lae) {
-            LogManager.log("    Empty URL of Extra UC.");
         } catch (MalformedURLException ex) {
-            LogManager.log("    Invalid URL of Extra UC " + extraUC + ", cause: " + ex);
+            LogManager.log("    Invalid URL of Extra UC " + extraUC + ", cause: ", ex);
         }
         return urlExtra;
     }
