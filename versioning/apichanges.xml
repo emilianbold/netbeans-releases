@@ -112,6 +112,20 @@ is the proper place.
         <change>
             <api name="versioning_spi"/>
             <summary>Support ContextAwareActions</summary>
+            <version major="1" minor="37"/>
+            <date day="16" month="11" year="2012"/>
+            <author login="tstupka"/>
+            <compatibility addition="yes"/>
+            <description>
+                make it possible for Versioning Systems to fire visibility changes for a list of files
+                instead of one unspecific change event.
+            </description>
+            <class package="org.netbeans.modules.versioning.spi" name="VCSVisibilityQuery"/>
+            <issue number="221831"/>
+        </change>                
+        <change>
+            <api name="versioning_spi"/>
+            <summary>Support ContextAwareActions</summary>
             <version major="1" minor="31"/>
             <date day="12" month="4" year="2012"/>
             <author login="tstupka"/>

@@ -47,6 +47,9 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.io.PrintStream;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -92,6 +95,9 @@ public class ModuleOptions extends OptionProcessor {
     private Option refresh;
     private Option updateAll;
     private Option both;
+    private Option extraUC;
+    
+    private Collection<UpdateUnitProvider> ownUUP = new HashSet<UpdateUnitProvider> ();
     
     /** Creates a new instance of ModuleOptions */
     public ModuleOptions() {
@@ -100,7 +106,8 @@ public class ModuleOptions extends OptionProcessor {
     @NbBundle.Messages({
         "MSG_UpdateModules=Updates all or specified modules",
         "MSG_UpdateAll=Updates all modules",
-        "MSG_Refresh=Refresh all catalogs"
+        "MSG_Refresh=Refresh all catalogs",
+        "MSG_ExtraUC=Add a extra Update Center (URL)"
     })
     private Option init() {
         if (both != null) {
@@ -122,8 +129,10 @@ public class ModuleOptions extends OptionProcessor {
             Option.withoutArgument(Option.NO_SHORT_NAME, "refresh"), b, "MSG_Refresh"); // NOI18N
         updateAll = Option.shortDescription(
             Option.withoutArgument(Option.NO_SHORT_NAME, "update-all"), b, "MSG_UpdateAll"); // NOI18N
+        extraUC = Option.shortDescription(
+            Option.requiredArgument(Option.NO_SHORT_NAME, "extra-uc"), b, "MSG_ExtraUC"); // NOI18N
         
-        Option oper = OptionGroups.someOf(refresh, list, install, disable, enable, update, updateAll);
+        Option oper = OptionGroups.someOf(refresh, list, install, disable, enable, update, updateAll, extraUC);
         Option modules = Option.withoutArgument(Option.NO_SHORT_NAME, "modules");
         both = OptionGroups.allOf(modules, oper);
         return both;
@@ -171,41 +180,51 @@ public class ModuleOptions extends OptionProcessor {
 
     @Override
     protected void process(Env env, Map<Option, String[]> optionValues) throws CommandException {
-        if (optionValues.containsKey(refresh)) {
-            refresh(env);
-        }
-        
-        if (optionValues.containsKey(list)) {
-            listAllModules(env.getOutputStream());
-        }
-    
-        if (optionValues.containsKey(install)) {
-            install(env, optionValues.get(install));
-        }
-        
         try {
-
-            if (optionValues.containsKey(disable)) {
-                changeModuleState(optionValues.get(disable), false);
+            if (optionValues.containsKey(extraUC)) {
+                extraUC(env, optionValues.get(extraUC));
+            }
+            if (optionValues.containsKey(refresh)) {
+                refresh(env);
             }
 
-            if (optionValues.containsKey(enable)) {
-                changeModuleState(optionValues.get(enable), true);
+            if (optionValues.containsKey(list)) {
+                listAllModules(env.getOutputStream());
             }
-        } catch (InterruptedException ex) {
-            throw initCause(new CommandException(4), ex);
-        } catch (IOException ex) {
-            throw initCause(new CommandException(4), ex);
-        } catch (OperationException ex) {
-            throw initCause(new CommandException(4), ex);
+
+            if (optionValues.containsKey(install)) {
+                install(env, optionValues.get(install));
+            }
+
+            try {
+
+                if (optionValues.containsKey(disable)) {
+                    changeModuleState(optionValues.get(disable), false);
+                }
+
+                if (optionValues.containsKey(enable)) {
+                    changeModuleState(optionValues.get(enable), true);
+                }
+            } catch (InterruptedException ex) {
+                throw initCause(new CommandException(4), ex);
+            } catch (IOException ex) {
+                throw initCause(new CommandException(4), ex);
+            } catch (OperationException ex) {
+                throw initCause(new CommandException(4), ex);
+            }
+
+            if (optionValues.containsKey(updateAll)) {
+                updateAll(env);
+            }
+            if (optionValues.containsKey(update)) {
+                updateModules(env, optionValues.get(update));
+            }
+        } finally {
+            for (UpdateUnitProvider uuc : ownUUP) {
+                UpdateUnitProviderFactory.getDefault().remove(uuc);
+            }
         }
         
-        if (optionValues.containsKey(updateAll)) {
-            updateAll(env);
-        }
-        if (optionValues.containsKey(update)) {
-            updateModules(env, optionValues.get(update));
-        }
     }
 
     private void changeModuleState(String[] cnbs, boolean enable) throws IOException, CommandException, InterruptedException, OperationException {
@@ -474,6 +493,25 @@ public class ModuleOptions extends OptionProcessor {
     
     private void updateAll(Env env) throws CommandException {
         updateModules(env);
+    }
+
+    
+    @NbBundle.Messages({
+        "MSG_NoURL=None extra Update Center (URL) specified."
+    })
+    private void extraUC(Env env, String... urls) throws CommandException {
+        List<URL> url2UC = new ArrayList<URL> (urls.length);
+        for (String spec : urls) {
+            try {
+                url2UC.add(new URL(spec));
+            } catch (MalformedURLException ex) {
+                throw initCause(new CommandException(4), ex);
+            }
+        }
+        for (URL url : url2UC) {
+            ownUUP.add(UpdateUnitProviderFactory.getDefault().create(Long.toString(System.currentTimeMillis()), url.toExternalForm(), url));
+        }
+        refresh(env);        
     }
 
     private boolean initialized() {

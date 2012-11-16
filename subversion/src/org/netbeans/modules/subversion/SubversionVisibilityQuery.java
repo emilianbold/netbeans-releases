@@ -110,7 +110,7 @@ public class SubversionVisibilityQuery extends VCSVisibilityQuery implements Ver
                 FileInformation old = (FileInformation) event.getParams()[1];
                 FileInformation cur = (FileInformation) event.getParams()[2];
                 if (old != null && old.getStatus() == FileInformation.STATUS_VERSIONED_REMOVEDLOCALLY || cur.getStatus() == FileInformation.STATUS_VERSIONED_REMOVEDLOCALLY) {
-                    fireVisibilityChanged();
+                    fireVisibilityChanged(file);
                 }
             }
         }

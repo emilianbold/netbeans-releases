@@ -202,10 +202,11 @@ public final class GitClient {
     private final Set<NotificationListener> listeners;
     private JGitCredentialsProvider credentialsProvider;
 
-    GitClient (JGitRepository gitRepository) {
+    GitClient (JGitRepository gitRepository) throws GitException {
         this.gitRepository = gitRepository;
         listeners = new HashSet<NotificationListener>();
         delegateListener = new DelegateListener();
+        gitRepository.increaseClientUsage();
     }
 
     /**
@@ -754,6 +755,17 @@ public final class GitClient {
         cmd.setCredentialsProvider(this.credentialsProvider);
         cmd.execute();
         return cmd.getResult();
+    }
+    
+    /**
+     * Marks this client as released and notifies the repository it does not 
+     * have to stay open for this client. When all repository's clients are
+     * released the repository closes, flushes all cached metadata and closes
+     * all opened metadata files and file descriptors.
+     * @since 1.5
+     */
+    public void release () {
+        gitRepository.decreaseClientUsage();
     }
 
     /**

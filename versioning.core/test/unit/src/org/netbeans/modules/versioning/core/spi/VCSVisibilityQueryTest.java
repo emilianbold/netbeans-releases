@@ -50,11 +50,16 @@ import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileObject;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
 import javax.swing.event.ChangeListener;
+import junit.framework.Assert;
 import org.netbeans.api.queries.VisibilityQuery;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.netbeans.modules.versioning.core.spi.testvcs.TestVCS;
 import org.netbeans.modules.versioning.core.spi.testvcs.TestVCSVisibilityQuery;
+import org.netbeans.spi.queries.VisibilityQueryChangeEvent;
 import org.openide.util.test.MockLookup;
 
 /**
@@ -100,6 +105,43 @@ public class VCSVisibilityQueryTest extends NbTestCase {
         VisibilityQuery.getDefault().removeChangeListener(cl);
     }
 
+    public void testFireForAll() {
+        final boolean [] received = new boolean[] {false};
+        VisibilityQuery.getDefault().addChangeListener(new ChangeListener() {
+            @Override
+            public void stateChanged(ChangeEvent ce) {
+                received[0] = true;
+            }
+        });
+        TestVCS.getInstance().getVisibilityQuery().fireVisibilityChanged();
+        assertTrue(received[0]);
+    }
+    
+    public void testFireForFiles() throws IOException {
+        final List<String> received = new ArrayList<String>();
+        VisibilityQuery.getDefault().addChangeListener(new ChangeListener() {
+            @Override
+            public void stateChanged(ChangeEvent ce) {
+                Assert.assertTrue(ce instanceof VisibilityQueryChangeEvent);
+                FileObject[] fos = ((VisibilityQueryChangeEvent)ce).getFileObjects();
+                Assert.assertEquals(2, fos.length);
+                received.add(fos[0].getName());
+                received.add(fos[1].getName());
+            }
+        });
+        File f1 = new File(getWorkDir(), "f1" + TestVCS.VERSIONED_FOLDER_SUFFIX);
+        File f2 = new File(getWorkDir(), "f2" + TestVCS.VERSIONED_FOLDER_SUFFIX);
+        f1.createNewFile();
+        f2.createNewFile();
+        TestVCS.getInstance().getVisibilityQuery().fireVisibilityChanged(
+                new VCSFileProxy[] {
+                    VCSFileProxy.createFileProxy(f1), 
+                    VCSFileProxy.createFileProxy(f2)});
+        
+        assertTrue(received.contains(f1.getName()));
+        assertTrue(received.contains(f2.getName()));
+    }
+    
     private class VQChangeListener implements ChangeListener {
         private static final long MAXTIME = 30000;
         private static final long STABLETIME = 10000;
