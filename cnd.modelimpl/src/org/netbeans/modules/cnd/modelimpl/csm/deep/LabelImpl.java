@@ -104,6 +104,7 @@ public final class LabelImpl extends StatementBase implements CsmStatement, CsmL
             return NameCache.getManager().getString(label);
         }
         
+        @Override
         public LabelImpl create() {
             LabelImpl stmt = new LabelImpl(getLabel(), getScope(), getFile(), getStartOffset(), getEndOffset());
             return stmt;

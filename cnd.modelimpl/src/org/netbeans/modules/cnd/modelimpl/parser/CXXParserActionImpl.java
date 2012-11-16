@@ -393,6 +393,10 @@ public class CXXParserActionImpl implements CXXParserActionEx {
     @Override public void condition(Token token) {orig.condition(convertToken(token));}
     @Override public void condition(int kind, Token token) {orig.condition(kind, convertToken(token));}
     @Override public void end_condition(Token token) {orig.end_condition(convertToken(token));}
+    @Override public void condition_declaration(Token token) {orig.condition_declaration(convertToken(token));}
+    @Override public void end_condition_declaration(Token token) {orig.end_condition_declaration(convertToken(token));}
+    @Override public void condition_expression(Token token) {orig.condition_expression(convertToken(token));}
+    @Override public void end_condition_expression(Token token) {orig.end_condition_expression(convertToken(token));}
     @Override public void iteration_statement(Token token) {orig.iteration_statement(convertToken(token));}
     @Override public void iteration_statement(int kind, Token token) {orig.iteration_statement(kind, convertToken(token));}
     @Override public void end_iteration_statement(Token token) {orig.end_iteration_statement(convertToken(token));}
@@ -577,6 +581,36 @@ public class CXXParserActionImpl implements CXXParserActionEx {
     @Override public void handler(Token token) {orig.handler(convertToken(token));}
     @Override public void handler(int kind, Token token) {orig.handler(kind, convertToken(token));}
     @Override public void end_handler(Token token) {orig.end_handler(convertToken(token));}
+
+    @Override
+    public void assignment_expression(Token token) {
+        orig.assignment_expression(convertToken(token));
+    }
+
+    @Override
+    public void end_assignment_expression(Token token) {
+        orig.end_assignment_expression(convertToken(token));
+    }
+
+    @Override
+    public void expression(Token token) {
+        orig.expression(convertToken(token));
+    }
+
+    @Override
+    public void end_expression(Token token) {
+        orig.end_expression(convertToken(token));
+    }
+
+    @Override
+    public void constant_expression(Token token) {
+        orig.constant_expression(convertToken(token));
+    }
+
+    @Override
+    public void end_constant_expression(Token token) {
+        orig.end_constant_expression(convertToken(token));
+    }
 
 
     
