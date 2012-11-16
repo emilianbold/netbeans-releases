@@ -1260,8 +1260,8 @@ public class TokenFormatter {
 
                                         if (oldText == null) {
                                             try {
-                                                int offset = formatToken.getOffset() + delta;
-                                                int lineNumber = Utilities.getLineOffset(doc, offset);
+                                                int phpOpenTagOffset = formatToken.getOffset() + delta;
+                                                int lineNumber = Utilities.getLineOffset(doc, phpOpenTagOffset);
                                                 Integer suggestedIndent = suggestedLineIndents != null
                                                         ? suggestedLineIndents.get(lineNumber)
                                                         : Integer.valueOf(0);
@@ -1273,12 +1273,12 @@ public class TokenFormatter {
                                                             : Integer.valueOf(0);
                                                 }
 
-                                                int lineOffset = Utilities.getRowStart(doc, offset);
-                                                int firstNW = Utilities.getFirstNonWhiteFwd(doc, lineOffset);
-                                                if (firstNW == offset) {
+                                                int lineOffset = Utilities.getRowStart(doc, phpOpenTagOffset);
+                                                int firstNonWhiteCharacterOffset = Utilities.getFirstNonWhiteFwd(doc, lineOffset);
+                                                if (firstNonWhiteCharacterOffset == phpOpenTagOffset) {
                                                     indentRule = true;
                                                     changeOffset = lineOffset - delta;
-                                                    oldText = doc.getText(lineOffset, firstNW - lineOffset);
+                                                    oldText = doc.getText(lineOffset, firstNonWhiteCharacterOffset - lineOffset);
                                                     htmlIndent = suggestedIndent.intValue();
                                                     // the indentation is composed from html inden + php indent
                                                     indent = htmlIndent + docOptions.initialIndent + lastPHPIndent;
