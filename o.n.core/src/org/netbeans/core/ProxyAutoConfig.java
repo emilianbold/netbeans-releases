@@ -337,6 +337,8 @@ public class ProxyAutoConfig {
         File f = new File(fileLocation);
         if (f.canRead()) {
             pacURL = Utilities.toURI(f).toString();
+        } else {
+            pacURL = pacURL.replaceAll("\\\\", "/"); //NOI18N
         }
         if ((index = pacURL.indexOf(" ")) != -1) { // NOI18N
             pacURL = pacURL.substring(0, index);

@@ -69,7 +69,9 @@ public class DashboardOptionsController extends OptionsPanelController {
 
     @Override
     public void applyChanges() {
-        getOptions().applyChanges();
+        if (isChanged()) {
+            getOptions().applyChanges();
+        }
     }
 
     @Override

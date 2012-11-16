@@ -88,13 +88,8 @@ public class CategoryNode extends TaskContainerNode implements Comparable<Catego
     }
 
     @Override
-    protected List<Issue> load() {
-        if (isRefresh()) {
-            category.refresh();
-            updateNodes();
-            setRefresh(false);
-        }
-        return getTasks();
+    void refreshTaskContainer() {
+        category.refresh();
     }
 
     @Override
@@ -143,7 +138,7 @@ public class CategoryNode extends TaskContainerNode implements Comparable<Catego
             setError(false);
             return null;
         }
-        updateNodes();
+        updateNodes(data);
         panel = new JPanel(new GridBagLayout());
         panel.setOpaque(false);
         synchronized (LOCK) {
