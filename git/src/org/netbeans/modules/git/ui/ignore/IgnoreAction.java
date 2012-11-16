@@ -174,12 +174,17 @@ public class IgnoreAction extends MultipleRepositoryAction {
     private File[] filterFolders (File repository, File[] roots) {
         List<File> unignoredFolders = new LinkedList<File>();
         Map<File, GitStatus> statuses;
+        GitClient client = null;
         try {
-            GitClient client = Git.getInstance().getClient(repository);
+            client = Git.getInstance().getClient(repository);
             statuses = client.getStatus(roots, GitUtils.NULL_PROGRESS_MONITOR);
         } catch (GitException ex) {
             LOG.log(Level.INFO, null, ex);
             statuses = Collections.<File, GitStatus>emptyMap();
+        } finally {
+            if (client != null) {
+                client.release();
+            }
         }
         for (File f : roots) {
             GitStatus st = statuses.get(f);

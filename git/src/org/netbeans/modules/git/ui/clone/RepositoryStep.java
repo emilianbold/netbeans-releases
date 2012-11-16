@@ -189,8 +189,9 @@ public class RepositoryStep extends AbstractWizardPanel implements ActionListene
 
         @Override
         public void perform() {
+            GitClient client = null;
             try {
-                GitClient client = Git.getInstance().getClient(getRepositoryRoot(), this, false);
+                client = Git.getInstance().getClient(getRepositoryRoot(), this, false);
                 client.init(getProgressMonitor());
                 branches = new HashMap<String, GitBranch>();
                 branches.putAll(client.listRemoteBranches(uri.toPrivateString(), getProgressMonitor()));
@@ -204,6 +205,9 @@ public class RepositoryStep extends AbstractWizardPanel implements ActionListene
                 message = new Message(str, false);
                 setValid(false, message);
             } finally {
+                if (client != null) {
+                    client.release();
+                }
                 Utils.deleteRecursively(getRepositoryRoot());
                 if (message == null && isCanceled()) {
                     message = new Message(NbBundle.getMessage(RepositoryStep.class, "MSG_RepositoryStep.validationCanceled"), true); //NOI18N

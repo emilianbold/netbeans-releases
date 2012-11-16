@@ -46,8 +46,10 @@ import java.io.OutputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -77,6 +79,7 @@ import org.netbeans.modules.git.ui.repository.RepositoryInfo;
 import org.netbeans.modules.versioning.util.IndexingBridge;
 import org.netbeans.modules.versioning.util.Utils;
 import org.openide.util.NetworkSettings;
+import org.openide.util.RequestProcessor;
 
 /**
  *
@@ -87,6 +90,9 @@ public final class GitClient {
     private final org.netbeans.libs.git.GitClient delegate;
     private final GitProgressSupport progressSupport;
     private final boolean handleAuthenticationIssues;
+    private static final int CLEANUP_TIME = 15000;
+    private static final List<org.netbeans.libs.git.GitClient> unusedClients = new LinkedList<org.netbeans.libs.git.GitClient>();
+    private static RequestProcessor.Task cleanTask = Git.getInstance().getRequestProcessor().create(new CleanTask());
     
     /**
      * Set of commands that do not need to run under repository lock
@@ -194,6 +200,7 @@ public final class GitClient {
             ));
     private static final Logger LOG = Logger.getLogger(GitClient.class.getName());
     private final File repositoryRoot;
+    private boolean released;
 
     public GitClient (File repository, GitProgressSupport progressSupport, boolean handleAuthenticationIssues) throws GitException {
         this.repositoryRoot = repository;
@@ -586,6 +593,20 @@ public final class GitClient {
             }
         }, "push"); //NOI18N
     }
+    
+    /**
+     * Schedule cleanup of git repository used by this client
+     */
+    public void release () {
+        synchronized (unusedClients) {
+            if (released) {
+                return;
+            }
+            unusedClients.add(delegate);
+            released = true;
+        }
+        cleanTask.schedule(CLEANUP_TIME);
+    }
 
     public void remove (final File[] roots, final boolean cached, final ProgressMonitor monitor) throws GitException {
         new CommandInvoker().runMethod(new Callable<Void>() {
@@ -681,10 +702,29 @@ public final class GitClient {
             }
         }, "unignore"); //NOI18N
     }
+
+    private static class CleanTask implements Runnable {
+
+        @Override
+        public void run () {
+            Set<org.netbeans.libs.git.GitClient> toRelease;
+            synchronized (unusedClients) {
+                toRelease = new HashSet<org.netbeans.libs.git.GitClient>(unusedClients);
+                unusedClients.clear();
+            }
+            for (org.netbeans.libs.git.GitClient unusuedClient : toRelease) {
+                unusuedClient.release();
+            }
+        }
+        
+    }
     
     private final class CommandInvoker {
         
         private <T> T runMethod (Callable<T> callable, String methodName) throws GitException {
+            if (released) {
+                throw new IllegalStateException("Client already released.");
+            }
             return runMethod(callable, methodName, new File[0]);
         }
 
