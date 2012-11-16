@@ -53,7 +53,6 @@ import org.netbeans.modules.web.clientproject.spi.platform.ProjectConfigurationC
 import org.netbeans.spi.project.ActionProvider;
 import org.openide.modules.InstalledFileLocator;
 import org.openide.util.Exceptions;
-import org.openide.util.Lookup;
 
 /**
  *
@@ -112,14 +111,13 @@ public enum IOSDevice implements Device {
     public void openUrl(String url) {
         try {
             String sim = InstalledFileLocator.getDefault().locate("bin/ios-sim", "org.netbeans.modules.cordova.platforms.ios", false).getPath();
-            String a = ProcessUtils.callProcess(sim, false, "launch", "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator6.0.sdk/Applications/MobileSafari.app", "--args", "-u", url); //NOI18N
-            System.out.println(a);
+            String a = ProcessUtils.callProcess(sim, false, "launch", "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/" + getIPhoneSimName() +".sdk/Applications/MobileSafari.app", "--args", "-u", url); //NOI18N
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
         }
     }
-    
 
-    
-
+    private String getIPhoneSimName() {
+        return getPlatform().getPrefferedTarget().getIdentifier().replace("p","P").replace("s", "S");
+    }
 }

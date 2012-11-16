@@ -53,7 +53,9 @@ import javax.swing.event.ChangeListener;
 import javax.swing.text.StyledDocument;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.modules.cordova.CordovaPerformer;
 import org.netbeans.modules.cordova.CordovaPlatform;
 import org.netbeans.modules.cordova.project.CordovaPanel;
 import org.netbeans.modules.web.clientproject.spi.ClientProjectExtender;
@@ -66,6 +68,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.util.ChangeSupport;
+import org.openide.util.EditableProperties;
 import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -140,6 +143,7 @@ public class CordovaTemplate implements SiteTemplateImplementation {
     public static class CordovaExtender implements ClientProjectExtender {
 
         private boolean enabled;
+        private CordovaWizardPanel panel;
 
         /**
          * Get the value of enabled
@@ -162,7 +166,7 @@ public class CordovaTemplate implements SiteTemplateImplementation {
 
         @Override
         public Panel<WizardDescriptor>[] createWizardPanels() {
-            return new Panel[]{new CordovaWizardPanel(this)};
+            return new Panel[]{panel=new CordovaWizardPanel(this)};
         }
 
         @Override
@@ -183,9 +187,19 @@ public class CordovaTemplate implements SiteTemplateImplementation {
                 FileObject libFo = FileUtil.toFileObject(lib);
                 FileObject createFolder = FileUtil.createFolder(siteRoot, librariesPath + "/Cordova-" + version);//NOI18N
                 FileUtil.copyFile(libFo, createFolder, "cordova-" + version);//NOI18N
+                final Project project = FileOwnerQuery.getOwner(projectRoot);
                 
-                Preferences preferences = ProjectUtils.getPreferences(FileOwnerQuery.getOwner(projectRoot), CordovaPlatform.class, true);
+                Preferences preferences = ProjectUtils.getPreferences(project, CordovaPlatform.class, true);
                 preferences.put("phonegap", "true");
+                if (panel != null) {
+                    EditableProperties props = CordovaPerformer.getBuildProperties(project);
+
+                    props.put("android.project.package", panel.getPackageName()); //NOI18N
+                    props.put("android.project.package.folder", panel.getPackageName().replace(".", "/"));//NOI18N
+
+                    CordovaPerformer.storeBuildProperties(project, props);
+                    panel = null;
+                }
             } catch (IOException ex) {
                 Exceptions.printStackTrace(ex);
             } catch (Throwable ex) {
@@ -263,6 +277,10 @@ public class CordovaTemplate implements SiteTemplateImplementation {
         public void propertyChange(PropertyChangeEvent evt) {
             changeSupport.fireChange();
             panel.update();
+        }
+
+        private String getPackageName() {
+            return panel.getPackageName();
         }
     }
 }

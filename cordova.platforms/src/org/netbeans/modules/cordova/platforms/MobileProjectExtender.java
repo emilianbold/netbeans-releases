@@ -80,20 +80,23 @@ public class MobileProjectExtender implements ClientProjectExtender {
 
     public static void createMobileConfigs(FileObject projectRoot) throws IOException {
         EditableProperties ios = new EditableProperties(true);
-        ios.put("display.name", Bundle.LBL_iPhoneSimulator());//NOI18N
-        ios.put("type", PlatformManager.IOS_TYPE);//NOI18N
-        ios.put(Device.DEVICE_PROP, Device.EMULATOR);//NOI18N
+        ios.put(ConfigUtils.DISPLAY_NAME_PROP, Bundle.LBL_iPhoneSimulator());
+        ios.put(Device.TYPE_PROP, PlatformManager.IOS_TYPE);
+        ios.put(Device.DEVICE_PROP, Device.EMULATOR);
+        ios.put("ios.build.sdk", PlatformManager.getPlatform(PlatformManager.IOS_TYPE).getPrefferedTarget().getIdentifier());
+        ios.put("ios.build.arch", "i386");
+
         ConfigUtils.createConfigFile(projectRoot, PlatformManager.IOS_TYPE, ios);//NOI18N
 
         EditableProperties androide = new EditableProperties(true);
-        androide.put("display.name", Bundle.LBL_AndroidEmulator());
-        androide.put("type", PlatformManager.ANDROID_TYPE);//NOI18N
+        androide.put(ConfigUtils.DISPLAY_NAME_PROP, Bundle.LBL_AndroidEmulator());
+        androide.put(Device.TYPE_PROP, PlatformManager.ANDROID_TYPE);//NOI18N
         androide.put(Device.DEVICE_PROP, Device.EMULATOR);//NOI18N
         ConfigUtils.createConfigFile(projectRoot, PlatformManager.ANDROID_TYPE, androide);//NOI18N
 
         EditableProperties androidd = new EditableProperties(true);
-        androidd.put("display.name", Bundle.LBL_AndroidDevice());
-        androidd.put("type", PlatformManager.ANDROID_TYPE);//NOI18N
+        androidd.put(ConfigUtils.DISPLAY_NAME_PROP, Bundle.LBL_AndroidDevice());
+        androidd.put(Device.TYPE_PROP, PlatformManager.ANDROID_TYPE);//NOI18N
         androidd.put(Device.DEVICE_PROP, Device.DEVICE);//NOI18N
         ConfigUtils.createConfigFile(projectRoot, PlatformManager.ANDROID_TYPE, androidd);//NOI18N
     }
