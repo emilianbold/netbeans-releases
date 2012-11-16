@@ -87,6 +87,7 @@ import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileSystem;
+import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.Exceptions;
@@ -499,23 +500,28 @@ public final class Item implements NativeFileItem, PropertyChangeListener {
     }
     
     public final String getMIMEType() {
-        DataObject dataObject = getDataObject();
-        FileObject fo = dataObject == null ? null : dataObject.getPrimaryFile();
-        if (fo == null) {
-            fo = getFileObjectImpl();
+        // use file object of this item
+        return getMIMETypeImpl(this.getDataObject(), this);
+    }
+    
+    private static String getMIMETypeImpl(DataObject dataObject, Item item) {
+        FileObject fobj = dataObject == null ? null : dataObject.getPrimaryFile();
+        if (fobj == null) {
+            fobj = item.getFileObjectImpl();
         }
         String mimeType;
-        if (fo == null || ! fo.isValid()) {
-            mimeType = MIMESupport.getKnownSourceFileMIMETypeByExtension(getName());
+        if (fobj == null || ! fobj.isValid()) {
+            mimeType = MIMESupport.getKnownSourceFileMIMETypeByExtension(item.getName());
         } else {
-            mimeType = MIMESupport.getSourceFileMIMEType(fo);
+            mimeType = MIMESupport.getSourceFileMIMEType(fobj);
         }
         return mimeType;
     }
 
-    public PredefinedToolKind getDefaultTool() {
+    public static PredefinedToolKind getDefaultToolForItem(DataObject dataObject, Item item) {
         PredefinedToolKind tool;
-        String mimeType = getMIMEType();
+        // use mime type of passed data object
+        String mimeType = getMIMETypeImpl(dataObject, item);
         if (MIMENames.C_MIME_TYPE.equals(mimeType)) {
 //            DataObject dataObject = getDataObject();
 //            FileObject fo = dataObject == null ? null : dataObject.getPrimaryFile();
@@ -523,7 +529,7 @@ public final class Item implements NativeFileItem, PropertyChangeListener {
 //            if (fo != null && "pc".equals(fo.getExt())) { //NOI18N
 //                tool = PredefinedToolKind.CustomTool;
 //            } else {
-                tool = PredefinedToolKind.CCompiler;
+            tool = PredefinedToolKind.CCompiler;
 //            }
         } else if (MIMENames.HEADER_MIME_TYPE.equals(mimeType)) {
             tool = PredefinedToolKind.CustomTool;
@@ -532,10 +538,12 @@ public final class Item implements NativeFileItem, PropertyChangeListener {
         } else if (MIMENames.FORTRAN_MIME_TYPE.equals(mimeType)) {
             tool = PredefinedToolKind.FortranCompiler;
         } else if (MIMENames.ASM_MIME_TYPE.equals(mimeType)) {
-            DataObject dataObject = getDataObject();
-            FileObject fo = dataObject == null ? null : dataObject.getPrimaryFile();
+            FileObject fobj = dataObject == null ? null : dataObject.getPrimaryFile();
+            if (fobj == null) {
+                fobj = item.getFileObjectImpl();
+            }
             // Do not use assembler for .il files
-            if (fo != null && "il".equals(fo.getExt())) { //NOI18N
+            if (fobj != null && "il".equals(fobj.getExt())) { //NOI18N
                 tool = PredefinedToolKind.CustomTool;
             } else {
                 tool = PredefinedToolKind.Assembler;
@@ -545,7 +553,12 @@ public final class Item implements NativeFileItem, PropertyChangeListener {
         }
         return tool;
     }
-
+    
+    public PredefinedToolKind getDefaultTool() {
+        // use data object of this item
+        return getDefaultToolForItem(this.getDataObject(), this);
+    }
+    
     public boolean canHaveConfiguration() {
         return ConfigurationRequirementProvider.askAllProviders(this);
     }

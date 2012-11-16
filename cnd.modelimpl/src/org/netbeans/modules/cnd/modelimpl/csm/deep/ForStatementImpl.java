@@ -55,6 +55,7 @@ import org.netbeans.modules.cnd.antlr.collections.AST;
 import org.netbeans.modules.cnd.modelimpl.csm.deep.ConditionDeclarationImpl.ConditionDeclarationBuilder;
 import org.netbeans.modules.cnd.modelimpl.csm.deep.ConditionExpressionImpl.ConditionExpressionBuilder;
 import org.netbeans.modules.cnd.modelimpl.csm.deep.ExpressionBase.ExpressionBuilder;
+import org.netbeans.modules.cnd.modelimpl.csm.deep.ExpressionBase.ExpressionBuilderContainer;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 
 /**
@@ -215,7 +216,7 @@ public final class ForStatementImpl extends StatementBase implements CsmForState
         return iteration;
     }
     
-    public static class ForStatementBuilder extends StatementBuilder implements StatementBuilderContainer {
+    public static class ForStatementBuilder extends StatementBuilder implements StatementBuilderContainer, ExpressionBuilderContainer {
 
         ExpressionBuilder iteration;
         ConditionDeclarationBuilder conditionDeclaration;
@@ -224,6 +225,11 @@ public final class ForStatementImpl extends StatementBase implements CsmForState
         StatementBuilder body;
         boolean head = true;
 
+        @Override
+        public void addExpressionBuilder(ExpressionBuilder expression) {
+            setIteration(expression);
+        }
+        
         public void setIteration(ExpressionBuilder iteration) {
             this.iteration = iteration;
         }

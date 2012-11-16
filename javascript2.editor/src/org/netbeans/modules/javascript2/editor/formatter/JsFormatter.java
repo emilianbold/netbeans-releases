@@ -1486,7 +1486,7 @@ public class JsFormatter implements Formatter {
                         //indent = LexUtilities.getLineIndent(doc, offset)-originallockCommentIndention+adjustedBlockCommentIndention;
                         indent = GsfUtilities.getLineIndent(doc, offset);
                     }
-                } else if (!indentOnly && (endIndents = isEndIndent(context, offset)) > 0) {
+                } else if ((!indentOnly || offset < context.getCaretLineStart() || offset > context.getCaretLineEnd()) && (endIndents = isEndIndent(context, offset)) > 0) {
                     indent = (balance-endIndents) * indentSize + hangingIndent + initialIndent;
                 } else {
                     assert lineType == IN_CODE || lineType == IN_BLOCK_COMMENT_START;

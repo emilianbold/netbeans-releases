@@ -42,6 +42,8 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.FilenameFilter;
 import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.*;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -434,6 +436,10 @@ public class NbMainSequence extends WizardSequence {
                 if (! commands.contains("--modules")) {
                     commands.add("--modules");
                 }
+                if (! commands.toString().contains("--extra-uc") && getExtraUC() != null) {
+                    commands.add("--extra-uc");
+                    commands.add("\"" + getExtraUC() + "\"");
+                }
                 commands.add("--install");
                 commands.add("\".*junit.*\"");
                 title = ResourceUtils.getString(NbMainSequence.class, "NBMS.CACHE.InstallJUnit"); // NOI18N
@@ -443,6 +449,10 @@ public class NbMainSequence extends WizardSequence {
                 // check for updates
                 if (! commands.contains("--modules")) {
                     commands.add("--modules");
+                }
+                if (! commands.toString().contains("--extra-uc") && getExtraUC() != null) {
+                    commands.add("--extra-uc");
+                    commands.add("\"" + getExtraUC() + "\"");
                 }
                 commands.add("--update-all");
                 title = title == null ?
@@ -530,6 +540,23 @@ public class NbMainSequence extends WizardSequence {
             }
         }
     }
+    
+    private static URL getExtraUC() {
+        URL urlExtra = null;
+        String extraUC = null;
+        try {
+            extraUC = System.getProperty("extra.update.center.url");
+            if (extraUC == null || extraUC.isEmpty()) {
+                LogManager.log("    ... empty URL of Extra UC.");
+                return null;
+            }
+            urlExtra = new URL(extraUC);
+        } catch (MalformedURLException ex) {
+            LogManager.log("    Invalid URL of Extra UC " + extraUC + ", cause: ", ex);
+        }
+        return urlExtra;
+    }
+
 
     @Override
     public void executeForward() {

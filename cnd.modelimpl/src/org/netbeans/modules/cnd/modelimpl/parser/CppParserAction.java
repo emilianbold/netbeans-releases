@@ -309,6 +309,10 @@ public interface CppParserAction extends CsmParserProvider.CsmParseCallback {
     void condition(Token token);
     void condition(int kind, Token token);
     void end_condition(Token token);
+    void condition_declaration(Token token);
+    void end_condition_declaration(Token token);
+    void condition_expression(Token token);
+    void end_condition_expression(Token token);    
     void iteration_statement(Token token);
     void iteration_statement(int kind, Token token);
     void end_iteration_statement(Token token);
@@ -493,5 +497,10 @@ public interface CppParserAction extends CsmParserProvider.CsmParseCallback {
     void handler(Token token);
     void handler(int kind, Token token);
     void end_handler(Token token);
-    
+    void assignment_expression(Token token);
+    void end_assignment_expression(Token token);
+    void expression(Token token);
+    void end_expression(Token token);
+    void constant_expression(Token token);
+    void end_constant_expression(Token token);    
 }
