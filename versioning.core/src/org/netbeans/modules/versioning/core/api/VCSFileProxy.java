@@ -80,7 +80,11 @@ public final class VCSFileProxy {
      * this value is already cached as well so we are able to avoid unnecessary io access.
      */
     private Boolean isDirectory = null; // XXX might change for a file!!!
-    private boolean foWasDeleted = false;
+    
+    /**
+     * Listen on the FileObject this VCSFileProxy was created from. Some fields are cached 
+     * (e.g. isDirectory) and changes in the FileObject-s state should be reflected accordingly.
+     */
     private FileChangeListener fileChangeListener = null;
     
     static {
@@ -146,7 +150,7 @@ public final class VCSFileProxy {
                     p.isDirectory = fileObject.isFolder();
                     p.fileChangeListener = new FileChangeListener() {
                         @Override public void fileDeleted(FileEvent fe) {
-                            p.foWasDeleted = true;
+                            p.isDirectory = null;
                         }
                         @Override public void fileFolderCreated(FileEvent fe) { }
                         @Override public void fileDataCreated(FileEvent fe) { }
@@ -203,7 +207,7 @@ public final class VCSFileProxy {
      */
     public boolean isDirectory() {
         if (proxy == null) {
-            if(isDirectory != null && !foWasDeleted) {
+            if(isDirectory != null) {
                 return isDirectory;
             } else {
                 return new File(path).isDirectory();
@@ -222,7 +226,7 @@ public final class VCSFileProxy {
      */
     public boolean isFile() {
         if (proxy == null) { 
-            if(isDirectory != null && !foWasDeleted) {
+            if(isDirectory != null) {
                 return !isDirectory;
             } else {
                 return new File(path).isFile();
