@@ -51,8 +51,9 @@ import org.netbeans.modules.csl.api.OffsetRange;
  * @author Radek Matous
  */
 public interface Scope extends ModelElement {
-    /** TODO: remove*/
-    public String getNormalizedName();
+
+    String getNormalizedName();
     List<? extends ModelElement> getElements();
     OffsetRange getBlockRange();
+
 }

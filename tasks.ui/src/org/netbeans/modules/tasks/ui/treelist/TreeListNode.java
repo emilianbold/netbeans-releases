@@ -242,6 +242,13 @@ public abstract class TreeListNode {
         }
     }
 
+    /**
+     * Invoked when the node is added to the model. All listeners should be
+     * added here.
+     */
+    protected void attach() {
+    }
+
     final boolean isDescendantOf(TreeListNode grandParent) {
         if (null == parent) {
             return false;

@@ -47,8 +47,8 @@ import java.util.Collections;
 import java.util.List;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.modules.csl.api.OffsetRange;
-import org.netbeans.modules.php.editor.model.Parameter;
 import org.netbeans.modules.php.editor.api.QualifiedName;
+import org.netbeans.modules.php.editor.model.Parameter;
 import org.openide.util.Exceptions;
 
 /**
@@ -83,7 +83,7 @@ public class ParameterImpl implements Parameter {
     @NonNull
     @Override
     public String getDefaultValue() {
-        return defaultValue;//NOI18N
+        return defaultValue;
     }
 
     @Override
@@ -104,18 +104,18 @@ public class ParameterImpl implements Parameter {
     @Override
     public String getIndexSignature() {
         StringBuilder sb = new StringBuilder();
-        sb.append(getName()).append(":");//NOI18N
+        sb.append(getName()).append(":"); //NOI18N
         List<QualifiedName> qNames = getTypes();
         for (int idx = 0; idx < qNames.size(); idx++) {
             if (idx > 0) {
-                sb.append('|');//NOI18N
+                sb.append('|'); //NOI18N
             }
             QualifiedName qualifiedName = qNames.get(idx);
             sb.append(qualifiedName.toString());
         }
-        sb.append(":");//NOI18N
-        sb.append(isRawType?1:0);
-        sb.append(":");//NOI18N
+        sb.append(":"); //NOI18N
+        sb.append(isRawType ? 1 : 0);
+        sb.append(":"); //NOI18N
         String defValue = getDefaultValue();
         if (defValue != null) {
             sb.append(encode(defValue));
@@ -139,7 +139,7 @@ public class ParameterImpl implements Parameter {
                             qualifiedNames.add(QualifiedName.create(type));
                         }
                     }
-                    boolean isRawType = Integer.parseInt(parts[2]) > 0 ? true : false ;
+                    boolean isRawType = Integer.parseInt(parts[2]) > 0 ? true : false;
                     String defValue = (parts.length > 3) ? parts[3] : "";
                     parameters.add(new ParameterImpl(paramName, (defValue.length() != 0) ? decode(defValue) : null, qualifiedNames, isRawType, OffsetRange.NONE));
                 }
@@ -149,11 +149,11 @@ public class ParameterImpl implements Parameter {
     }
 
     private static String encode(String inStr) {
-        StringBuffer outStr = new StringBuffer(6 * inStr.length());
+        StringBuilder outStr = new StringBuilder(6 * inStr.length());
 
         for (int i = 0; i < inStr.length(); i++) {
-            if ((inStr.charAt(i) == ':') || (inStr.charAt(i) == '|') ||//NOI18N
-                    (inStr.charAt(i) == ';') || (inStr.charAt(i) == ',') ||  isEncodedChar(i, inStr)) {//NOI18N
+            if ((inStr.charAt(i) == ':') || (inStr.charAt(i) == '|') || //NOI18N
+                    (inStr.charAt(i) == ';') || (inStr.charAt(i) == ',') ||  isEncodedChar(i, inStr)) { //NOI18N
                 outStr.append(encodeChar(inStr.charAt(i)));
 
                 continue;
@@ -172,7 +172,7 @@ public class ParameterImpl implements Parameter {
         }
 
     private static String decode(final String inStr) {
-        StringBuffer outStr = new StringBuffer(inStr.length());
+        StringBuilder outStr = new StringBuilder(inStr.length());
 
         try {
             for (int i = 0; i < inStr.length(); i++) {
@@ -197,9 +197,7 @@ public class ParameterImpl implements Parameter {
         boolean isEncodedChar = (currentPosition + 5) < inStr.length();
 
         if (isEncodedChar) {
-            isEncodedChar &= ((inStr.charAt(currentPosition) == '\\') &&
-                    (inStr.charAt(currentPosition + 1) == 'u'));
-
+            isEncodedChar &= ((inStr.charAt(currentPosition) == '\\') && (inStr.charAt(currentPosition + 1) == 'u'));
             for (int i = currentPosition + 2; isEncodedChar && (i < (currentPosition + 6)); i++) {
                 char c = inStr.charAt(i);
                 isEncodedChar &= (Character.digit(c, 16) != -1);
@@ -209,6 +207,7 @@ public class ParameterImpl implements Parameter {
         return isEncodedChar;
     }
 
+    @Override
     public boolean hasRawType() {
         return isRawType;
     }

@@ -55,20 +55,20 @@ public interface PhpAnnotationType {
      *
      * @return Name.
      */
-    public String getName();
+    String getName();
 
     /**
      * Returns a description of a tag.
      *
      * @return Description.
      */
-    public String getDescription();
+    String getDescription();
 
     /**
      * Returns an offset-ranges and their types.
      *
      * @return Type in an offset-range.
      */
-    public Map<OffsetRange, String> getTypes();
+    Map<OffsetRange, String> getTypes();
 
 }

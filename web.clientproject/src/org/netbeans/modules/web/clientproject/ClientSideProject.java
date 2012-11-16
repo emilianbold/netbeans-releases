@@ -44,6 +44,7 @@ package org.netbeans.modules.web.clientproject;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -68,6 +69,7 @@ import org.netbeans.api.search.SearchScopeOptions;
 import org.netbeans.api.search.provider.SearchInfo;
 import org.netbeans.api.search.provider.SearchInfoUtils;
 import org.netbeans.api.search.provider.SearchListener;
+import org.netbeans.modules.web.clientproject.api.ClientSideModule;
 import org.netbeans.modules.web.clientproject.problems.ProjectPropertiesProblemProvider;
 import org.netbeans.modules.web.clientproject.remote.RemoteFiles;
 import org.netbeans.modules.web.clientproject.spi.platform.ClientProjectConfigurationImplementation;
@@ -82,7 +84,6 @@ import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.spi.project.ProjectConfigurationProvider;
 import org.netbeans.spi.project.support.ant.AntBasedProjectRegistration;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
-import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.ProjectXmlSavedHook;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
@@ -312,6 +313,7 @@ public class ClientSideProject implements Project {
                new PageInspectorCustomizerImpl(this),
                new ProjectWebRootProviderImpl(),
                new ClientSideProjectSources(this, projectHelper, eval),
+               new ClientSideModuleImpl(this),
                ProjectPropertiesProblemProvider.createForProject(this),
                UILookupMergerSupport.createProjectProblemsProviderMerger(),
                SharabilityQueryImpl.create(projectHelper, eval, ClientSideProjectConstants.PROJECT_SITE_ROOT_FOLDER,
@@ -402,40 +404,82 @@ public class ClientSideProject implements Project {
 
     }
 
-    private static class OpenHookImpl extends ProjectOpenedHook {
+    private static class OpenHookImpl extends ProjectOpenedHook implements PropertyChangeListener {
 
-        private final ClientSideProject p;
-        private FileChangeListener projectFileChangesListener;
+        private final ClientSideProject project;
+        private final FileChangeListener siteRootChangesListener;
 
-        public OpenHookImpl(ClientSideProject p) {
-            this.p = p;
+        // @GuardedBy("this")
+        private File siteRootFolder;
+
+
+        public OpenHookImpl(ClientSideProject project) {
+            this.project = project;
+            siteRootChangesListener = new SiteRootFolderListener(project);
         }
 
         @Override
         protected void projectOpened() {
-            projectFileChangesListener = new ProjectFilesListener(p);
-            FileUtil.addRecursiveListener(projectFileChangesListener, FileUtil.toFile(p.getProjectDirectory()));
-            GlobalPathRegistry.getDefault().register(ClassPathProviderImpl.SOURCE_CP, new ClassPath[]{p.getSourceClassPath()});
+            project.getEvaluator().addPropertyChangeListener(this);
+            addSiteRootListener();
+            GlobalPathRegistry.getDefault().register(ClassPathProviderImpl.SOURCE_CP, new ClassPath[]{project.getSourceClassPath()});
         }
 
         @Override
         protected void projectClosed() {
+            project.getEvaluator().removePropertyChangeListener(this);
+            removeSiteRootListener();
+            GlobalPathRegistry.getDefault().unregister(ClassPathProviderImpl.SOURCE_CP, new ClassPath[]{project.getSourceClassPath()});
+        }
+
+        private synchronized void addSiteRootListener() {
+            assert siteRootFolder == null : "Should not be listening to " + siteRootFolder;
+            FileObject siteRoot = project.getSiteRootFolder();
+            if (siteRoot == null) {
+                // broken project
+                return;
+            }
+            siteRootFolder = FileUtil.toFile(siteRoot);
+            if (siteRootFolder == null) {
+                // should not happen
+                LOGGER.log(Level.WARNING, "File not found for FileObject: {0}", siteRoot);
+                return;
+            }
+            FileUtil.addRecursiveListener(siteRootChangesListener, siteRootFolder);
+        }
+
+        private synchronized void removeSiteRootListener() {
+            if (siteRootFolder == null) {
+                // no listener
+                return;
+            }
             try {
-                FileUtil.removeRecursiveListener(projectFileChangesListener, FileUtil.toFile(p.getProjectDirectory()));
+                FileUtil.removeRecursiveListener(siteRootChangesListener, siteRootFolder);
             } catch (IllegalArgumentException ex) {
                 // #216349
                 LOGGER.log(Level.INFO, null, ex);
             }
-            GlobalPathRegistry.getDefault().unregister(ClassPathProviderImpl.SOURCE_CP, new ClassPath[]{p.getSourceClassPath()});
+            siteRootFolder = null;
+        }
+
+        @Override
+        public void propertyChange(PropertyChangeEvent evt) {
+            // change in project properties
+            if (ClientSideProjectConstants.PROJECT_SITE_ROOT_FOLDER.equals(evt.getPropertyName())) {
+                synchronized (this) {
+                    removeSiteRootListener();
+                    addSiteRootListener();
+                }
+            }
         }
 
     }
 
-    private static class ProjectFilesListener implements FileChangeListener {
+    private static class SiteRootFolderListener implements FileChangeListener {
 
         private final ClientSideProject p;
 
-        ProjectFilesListener(ClientSideProject p) {
+        SiteRootFolderListener(ClientSideProject p) {
             this.p = p;
         }
 
@@ -561,6 +605,55 @@ public class ClientSideProject implements Project {
                     result.add(root);
                 }
             }
+        }
+
+    }
+
+    private static final class ClientSideModuleImpl implements ClientSideModule {
+
+        private final ClientSideProject project;
+
+
+        public ClientSideModuleImpl(ClientSideProject project) {
+            this.project = project;
+        }
+
+        @Override
+        public Properties getProperties() {
+            return new PropertiesImpl();
+        }
+
+        private final class PropertiesImpl implements ClientSideModule.Properties {
+
+            @Override
+            public FileObject getStartFile() {
+                File startFile = getProjectProperties().getResolvedStartFile();
+                if (startFile == null) {
+                    return null;
+                }
+                return FileUtil.toFileObject(startFile);
+            }
+
+            @Override
+            public String getWebContextRoot() {
+                ClientSideProjectProperties projectProperties = getProjectProperties();
+                ClientSideProjectProperties.ProjectServer projectServer = projectProperties.getProjectServer();
+                switch (projectServer) {
+                    case EXTERNAL:
+                        return projectProperties.getProjectUrl();
+                        //break;
+                    case INTERNAL:
+                        return projectProperties.getWebRoot();
+                        //break;
+                    default:
+                        throw new IllegalStateException("Unknown project server: " + projectServer);
+                }
+            }
+
+            private ClientSideProjectProperties getProjectProperties() {
+                return new ClientSideProjectProperties(project);
+            }
+
         }
 
     }

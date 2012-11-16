@@ -77,7 +77,7 @@ public class IOSConfigurationPanel extends javax.swing.JPanel {
         sdkCombo.setRenderer(new SDKRenderer());
         sdkCombo.setModel(new DefaultComboBoxModel(sdks));
         for (IOSSDK sdk : sdks) {
-            final String sdkProp = config.getProperty(SDK.SDK_PROP);
+            final String sdkProp = config.getProperty(IOSSDK.IOS_BUILD_SDK_PROP);
             if (sdk.getName().equals(sdkProp)) {
                 sdkCombo.setSelectedItem(sdk);
                 break;
@@ -176,7 +176,7 @@ public class IOSConfigurationPanel extends javax.swing.JPanel {
             @Override
             public void run() {
                 try {
-                    final Collection<org.netbeans.modules.cordova.platforms.SDK> sdKs = org.netbeans.modules.cordova.platforms.PlatformManager.getPlatform(PlatformManager.IOS_TYPE).getSDKs();
+                    final Collection<? extends SDK> sdKs = PlatformManager.getPlatform(PlatformManager.IOS_TYPE).getSDKs();
                     refreshDeviceCombo(sdKs);
                 } catch (IOException ex) {
                     Exceptions.printStackTrace(ex);
@@ -284,7 +284,7 @@ public class IOSConfigurationPanel extends javax.swing.JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
     private void sdkComboActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_sdkComboActionPerformed
-        config.putProperty(SDK.SDK_PROP, ((IOSSDK)sdkCombo.getSelectedItem()).getName());
+        config.putProperty(IOSSDK.IOS_BUILD_SDK_PROP, ((IOSSDK)sdkCombo.getSelectedItem()).getIdentifier());
     }//GEN-LAST:event_sdkComboActionPerformed
 
     private void virtualDeviceComboActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_virtualDeviceComboActionPerformed

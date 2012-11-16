@@ -50,6 +50,7 @@ import java.util.List;
 import junit.framework.Test;
 import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.NbTestCase;
+import org.openide.util.Utilities;
 
 /**
  *
@@ -91,7 +92,7 @@ public class ProxyAutoConfigTest extends NbTestCase {
     }
     
     public void testGetProxyAutoConfigWithInvalidURL() {
-        assertNull(ProxyAutoConfig.get("http:\\\\pac\\pac.txt"));
+        assertNotNull(ProxyAutoConfig.get("http:\\\\pac\\pac.txt"));
     }
     
     public void testGetProxyAutoConfigWithRelativePath() {
@@ -148,7 +149,6 @@ public class ProxyAutoConfigTest extends NbTestCase {
             assertNotNull(pac);
             URI uri = pac.getPacURI();
             assertNotNull(uri);
-            assertNull(uri.getHost());
             List<Proxy> proxies = pac.findProxyForURL(new URI("http://netbeans.org"));
             assertEquals(1, proxies.size());
             assertEquals("DIRECT", proxies.get(0).toString());

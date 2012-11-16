@@ -49,6 +49,7 @@ import java.awt.EventQueue;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
@@ -147,7 +148,9 @@ public class LazyOperationDescriptionStep implements WizardDescriptor.Panel<Wiza
         checkRealUpdatesTask = Installer.RP.post (new Runnable () {
             @Override
             public void run () {
-                final Collection<UpdateElement> updates = AutoupdateCheckScheduler.checkUpdateElements (operationType,problems, forceReload);
+                final Collection<UpdateElement> updateElementsForStore = new HashSet<UpdateElement> ();
+                final Collection<UpdateElement> updates = AutoupdateCheckScheduler.checkUpdateElements(operationType, problems,
+                        forceReload, updateElementsForStore);
                 hasUpdates = updates != null && ! updates.isEmpty ();
                 if (hasUpdates) {
                     assert wd != null : "WizardDescriptor must found!";
@@ -181,7 +184,7 @@ public class LazyOperationDescriptionStep implements WizardDescriptor.Panel<Wiza
                             public void run () {
                                 wd.setPanelsAndSettings (panels, wd);
                                 fireChange ();
-                                LazyUnit.storeUpdateElements (operationType, updates);
+                                LazyUnit.storeUpdateElements (operationType, updateElementsForStore);
                             }
                         });
                     }

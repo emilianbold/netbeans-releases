@@ -47,7 +47,18 @@ import java.util.Collections;
 import java.util.List;
 import org.netbeans.modules.php.editor.CodeUtils;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
-import org.netbeans.modules.php.editor.parser.astnodes.*;
+import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
+import org.netbeans.modules.php.editor.parser.astnodes.AnonymousObjectVariable;
+import org.netbeans.modules.php.editor.parser.astnodes.DereferencedArrayAccess;
+import org.netbeans.modules.php.editor.parser.astnodes.Expression;
+import org.netbeans.modules.php.editor.parser.astnodes.FieldAccess;
+import org.netbeans.modules.php.editor.parser.astnodes.Identifier;
+import org.netbeans.modules.php.editor.parser.astnodes.MethodInvocation;
+import org.netbeans.modules.php.editor.parser.astnodes.ReflectionVariable;
+import org.netbeans.modules.php.editor.parser.astnodes.Scalar;
+import org.netbeans.modules.php.editor.parser.astnodes.StaticMethodInvocation;
+import org.netbeans.modules.php.editor.parser.astnodes.TraitDeclaration;
+import org.netbeans.modules.php.editor.parser.astnodes.UseTraitStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.visitors.DefaultVisitor;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle.Messages;
@@ -146,19 +157,19 @@ public class PHP54UnhandledError extends AbstractUnhandledError {
             }
         }
 
-        private  void createError(int startOffset, int endOffset){
+        private  void createError(int startOffset, int endOffset) {
             PHPVerificationError error = new PHP54VersionError(fileObject, startOffset, endOffset);
             errors.add(error);
         }
 
-        private void createError(ASTNode node){
+        private void createError(ASTNode node) {
             createError(node.getStartOffset(), node.getEndOffset());
             super.visit(node);
         }
 
     }
 
-    private static class PHP54VersionError extends PHPVerificationError {
+    private static final class PHP54VersionError extends PHPVerificationError {
 
         private static final String KEY = "Php.Version.54"; //NOI18N
 

@@ -45,6 +45,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
+import org.netbeans.modules.web.clientproject.api.ClientSideModule;
 import org.netbeans.modules.web.clientproject.api.WebClientProjectConstants;
 import org.netbeans.spi.project.ProjectConfigurationProvider;
 import org.openide.filesystems.FileObject;
@@ -63,11 +64,13 @@ public class ClientProjectUtilities {
     }
     
     public static FileObject getStartFile(Project project) {
-        return getSiteRoot(project).getFileObject("index.html");
+        ClientSideModule clientSide = project.getLookup().lookup(ClientSideModule.class);
+        return clientSide.getProperties().getStartFile();
     }
 
     public static String getWebContextRoot(Project p) {
-        return "/" + ProjectUtils.getInformation(p).getName();
+        ClientSideModule clientSide = p.getLookup().lookup(ClientSideModule.class);
+        return clientSide.getProperties().getWebContextRoot();
     }
 
     public static boolean isUsingEmbeddedServer(Project p) {

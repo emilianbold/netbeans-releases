@@ -58,7 +58,6 @@ import org.netbeans.lib.ddl.impl.Specification;
 import org.netbeans.modules.db.explorer.DatabaseConnection;
 import org.netbeans.modules.db.explorer.DatabaseConnector;
 import org.netbeans.modules.db.explorer.DatabaseMetaDataTransferAccessor;
-import org.netbeans.modules.db.explorer.action.RefreshAction;
 import org.netbeans.modules.db.metadata.model.api.Action;
 import org.netbeans.modules.db.metadata.model.api.Metadata;
 import org.netbeans.modules.db.metadata.model.api.MetadataElementHandle;
@@ -72,8 +71,6 @@ import org.openide.nodes.PropertySupport;
 import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
-import org.openide.util.RequestProcessor;
-import org.openide.util.actions.SystemAction;
 import org.openide.util.datatransfer.ExTransferable;
 
 /**
@@ -181,31 +178,7 @@ public class TableNode extends BaseNode implements SchemaNameProvider {
             Exceptions.printStackTrace(e);
         }
 
-        scheduleRefresh(getParentNode());
-    }
-
-    /**
-     * Schedule refreshing of a node. Do not schedule refreshing if it is
-     * already scheduled. See bug #216907
-     */
-    private static void scheduleRefresh(final Node node) {
-        synchronized (NODES_TO_REFRESH) {
-            if (NODES_TO_REFRESH.containsKey(node)) {
-                return;
-            } else {
-                NODES_TO_REFRESH.put(node, new Object());
-            }
-        }
-        RequestProcessor.getDefault().post(new Runnable() {
-            @Override
-            public void run() {
-                SystemAction.get(RefreshAction.class).performAction(
-                        new Node[]{node});
-                synchronized (NODES_TO_REFRESH) {
-                    NODES_TO_REFRESH.remove(node);
-                }
-            }
-        }, 250);
+        setValue(BaseFilterNode.REFRESH_ANCESTOR_DISTANCE, new Integer(1));
     }
 
     @Override

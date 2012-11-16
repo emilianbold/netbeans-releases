@@ -388,7 +388,11 @@ public final class VariousUtils {
 
     private static Set<String> recursionDetection = new HashSet<String>(); //#168868
     //TODO: needs to be improved to properly return more types
-    public static Collection<? extends TypeScope> getType(final VariableScope varScope, String semiTypeName, int offset, boolean justDispatcher) throws IllegalStateException {
+    public static Collection<? extends TypeScope> getType(
+            final VariableScope varScope,
+            String semiTypeName,
+            int offset,
+            boolean justDispatcher) {
         Collection<? extends TypeScope> recentTypes = Collections.emptyList();
         Collection<? extends TypeScope> oldRecentTypes;
         Stack<VariableName> fldVarStack = new Stack<VariableName>();
@@ -621,7 +625,7 @@ public final class VariousUtils {
         return result;
     }
 
-    public static Stack<? extends ModelElement> getElemenst(FileScope topScope, final VariableScope varScope, String semiTypeName, int offset) throws IllegalStateException {
+    public static Stack<? extends ModelElement> getElemenst(FileScope topScope, final VariableScope varScope, String semiTypeName, int offset) {
         Stack<ModelElement> emptyStack = new Stack<ModelElement>();
         Stack<ModelElement> retval = new Stack<ModelElement>();
         Stack<Collection<? extends TypeScope>> stack = new Stack<Collection<? extends TypeScope>>();
@@ -929,7 +933,7 @@ public final class VariousUtils {
     };
 
     @org.netbeans.api.annotations.common.SuppressWarnings({"SF_SWITCH_FALLTHROUGH"})
-    public static String getSemiType(TokenSequence<PHPTokenId> tokenSequence, State state, VariableScope varScope) throws IllegalStateException {
+    public static String getSemiType(TokenSequence<PHPTokenId> tokenSequence, State state, VariableScope varScope) {
         int commasCount = 0;
         String possibleClassName = ""; //NOI18N
         int anchor = -1;

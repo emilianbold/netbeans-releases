@@ -81,10 +81,10 @@ import org.openide.util.ImageUtilities;
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public class NavigatorScanner {
+public final class NavigatorScanner {
 
-    private static ImageIcon INTERFACE_ICON = null;
-    private static ImageIcon TRAIT_ICON = null;
+    private static ImageIcon interfaceIcon = null;
+    private static ImageIcon traitIcon = null;
     private static final String FONT_GRAY_COLOR = "<font color=\"#999999\">"; //NOI18N
     private static final String CLOSE_FONT = "</font>"; //NOI18N
 
@@ -149,7 +149,7 @@ public class NavigatorScanner {
                 }
                 Collection<? extends ClassConstantElement> declaredClsConstants = type.getDeclaredConstants();
                 for (ClassConstantElement classConstant : declaredClsConstants) {
-                    children.add(new PHPConstantStructureItem(classConstant, "con"));//NOI18N
+                    children.add(new PHPConstantStructureItem(classConstant, "con")); //NOI18N
                 }
                 if (type instanceof ClassScope) {
                     ClassScope cls = (ClassScope) type;
@@ -172,9 +172,9 @@ public class NavigatorScanner {
 
     private abstract class PHPStructureItem implements StructureItem {
 
-        final private ModelElement modelElement;
-        final private List<? extends StructureItem> children;
-        final private String sortPrefix;
+        private final ModelElement modelElement;
+        private final List<? extends StructureItem> children;
+        private final String sortPrefix;
 
         public PHPStructureItem(ModelElement elementHandle, List<? extends StructureItem> children, String sortPrefix) {
             this.modelElement = elementHandle;
@@ -325,7 +325,7 @@ public class NavigatorScanner {
                                     QualifiedName typeName = typeResolver.getTypeName(false);
                                     if (typeName != null) {
                                         if (typeSb.length() > 0) {
-                                            typeSb.append("|");//NOI18N
+                                            typeSb.append("|"); //NOI18N
                                         }
                                         typeSb.append(typeName.toString());
                                     }
@@ -352,7 +352,7 @@ public class NavigatorScanner {
                     if (sb == null) {
                         sb = new StringBuilder();
                     } else {
-                        sb.append(", ");//NOI18N
+                        sb.append(", "); //NOI18N
                     }
                     sb.append(type);
                 }
@@ -364,7 +364,7 @@ public class NavigatorScanner {
 
     private class PHPFieldStructureItem extends PHPSimpleStructureItem {
         public PHPFieldStructureItem(ModelElement elementHandle) {
-            super(elementHandle, "field");//NOI18N
+            super(elementHandle, "field"); //NOI18N
         }
 
         @Override
@@ -381,7 +381,7 @@ public class NavigatorScanner {
                         if (sb == null) {
                             sb = new StringBuilder();
                         } else {
-                            sb.append(", ");//NOI18N
+                            sb.append(", "); //NOI18N
                         }
                         sb.append(type);
 
@@ -441,7 +441,7 @@ public class NavigatorScanner {
             UseScope useElement = (UseScope) getElementHandle();
             final AliasedName aliasedName = useElement.getAliasedName();
             if (aliasedName != null) {
-                formatter.appendText(" as ");//NOI18N
+                formatter.appendText(" as "); //NOI18N
                 formatter.appendText(aliasedName.getAliasName());
             }
             return formatter.getText();
@@ -506,7 +506,7 @@ public class NavigatorScanner {
             final ConstantElement constant = getConstant();
             String value = constant.getValue();
             if (value != null) {
-                formatter.appendText(" ");//NOI18N
+                formatter.appendText(" "); //NOI18N
                 formatter.appendHtml(FONT_GRAY_COLOR); //NOI18N
                 formatter.appendText(value);
                 formatter.appendHtml(CLOSE_FONT);
@@ -565,10 +565,10 @@ public class NavigatorScanner {
 
         @Override
         public ImageIcon getCustomIcon() {
-            if (INTERFACE_ICON == null) {
-                INTERFACE_ICON = new ImageIcon(ImageUtilities.loadImage(PHP_INTERFACE_ICON));
+            if (interfaceIcon == null) {
+                interfaceIcon = new ImageIcon(ImageUtilities.loadImage(PHP_INTERFACE_ICON));
             }
-            return INTERFACE_ICON;
+            return interfaceIcon;
         }
 
         public InterfaceScope getInterfaceScope() {
@@ -598,10 +598,10 @@ public class NavigatorScanner {
 
         @Override
         public ImageIcon getCustomIcon() {
-            if (TRAIT_ICON == null) {
-                TRAIT_ICON = new ImageIcon(ImageUtilities.loadImage(PHP_TRAIT_ICON));
+            if (traitIcon == null) {
+                traitIcon = new ImageIcon(ImageUtilities.loadImage(PHP_TRAIT_ICON));
             }
-            return TRAIT_ICON;
+            return traitIcon;
         }
 
         public TraitScope getTraitScope() {

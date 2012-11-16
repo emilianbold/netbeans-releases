@@ -41,8 +41,16 @@
  */
 package org.netbeans.modules.php.editor.model.impl;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.EnumSet;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.php.api.util.StringUtils;
 import org.netbeans.modules.php.editor.CodeUtils;
@@ -52,14 +60,75 @@ import org.netbeans.modules.php.editor.api.NameKind;
 import org.netbeans.modules.php.editor.api.NameKind.Exact;
 import org.netbeans.modules.php.editor.api.PhpElementKind;
 import org.netbeans.modules.php.editor.api.QualifiedName;
-import org.netbeans.modules.php.editor.api.elements.*;
+import org.netbeans.modules.php.editor.api.elements.ElementFilter;
 import org.netbeans.modules.php.editor.api.elements.FieldElement;
-import org.netbeans.modules.php.editor.model.*;
+import org.netbeans.modules.php.editor.api.elements.FunctionElement;
+import org.netbeans.modules.php.editor.api.elements.MethodElement;
+import org.netbeans.modules.php.editor.api.elements.PhpElement;
+import org.netbeans.modules.php.editor.api.elements.TypeConstantElement;
+import org.netbeans.modules.php.editor.api.elements.TypeElement;
+import org.netbeans.modules.php.editor.api.elements.TypeMemberElement;
+import org.netbeans.modules.php.editor.model.ClassConstantElement;
+import org.netbeans.modules.php.editor.model.ClassMemberElement;
+import org.netbeans.modules.php.editor.model.ClassScope;
 import org.netbeans.modules.php.editor.model.ConstantElement;
+import org.netbeans.modules.php.editor.model.FileScope;
+import org.netbeans.modules.php.editor.model.FunctionScope;
+import org.netbeans.modules.php.editor.model.IncludeElement;
+import org.netbeans.modules.php.editor.model.IndexScope;
+import org.netbeans.modules.php.editor.model.InterfaceScope;
+import org.netbeans.modules.php.editor.model.MethodScope;
+import org.netbeans.modules.php.editor.model.ModelElement;
+import org.netbeans.modules.php.editor.model.ModelUtils;
+import org.netbeans.modules.php.editor.model.NamespaceScope;
+import org.netbeans.modules.php.editor.model.Occurence;
 import org.netbeans.modules.php.editor.model.Occurence.Accuracy;
-import org.netbeans.modules.php.editor.model.nodes.*;
+import org.netbeans.modules.php.editor.model.Scope;
+import org.netbeans.modules.php.editor.model.TraitScope;
+import org.netbeans.modules.php.editor.model.TypeScope;
+import org.netbeans.modules.php.editor.model.UseAliasElement;
+import org.netbeans.modules.php.editor.model.UseScope;
+import org.netbeans.modules.php.editor.model.VariableName;
+import org.netbeans.modules.php.editor.model.VariableScope;
+import org.netbeans.modules.php.editor.model.nodes.ASTNodeInfo;
 import org.netbeans.modules.php.editor.model.nodes.ASTNodeInfo.Kind;
-import org.netbeans.modules.php.editor.parser.astnodes.*;
+import org.netbeans.modules.php.editor.model.nodes.ClassConstantDeclarationInfo;
+import org.netbeans.modules.php.editor.model.nodes.ClassDeclarationInfo;
+import org.netbeans.modules.php.editor.model.nodes.ConstantDeclarationInfo;
+import org.netbeans.modules.php.editor.model.nodes.FunctionDeclarationInfo;
+import org.netbeans.modules.php.editor.model.nodes.IncludeInfo;
+import org.netbeans.modules.php.editor.model.nodes.InterfaceDeclarationInfo;
+import org.netbeans.modules.php.editor.model.nodes.MagicMethodDeclarationInfo;
+import org.netbeans.modules.php.editor.model.nodes.MethodDeclarationInfo;
+import org.netbeans.modules.php.editor.model.nodes.PhpDocTypeTagInfo;
+import org.netbeans.modules.php.editor.model.nodes.SingleFieldDeclarationInfo;
+import org.netbeans.modules.php.editor.model.nodes.TraitDeclarationInfo;
+import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
+import org.netbeans.modules.php.editor.parser.astnodes.ClassDeclaration;
+import org.netbeans.modules.php.editor.parser.astnodes.ClassInstanceCreation;
+import org.netbeans.modules.php.editor.parser.astnodes.ClassName;
+import org.netbeans.modules.php.editor.parser.astnodes.Expression;
+import org.netbeans.modules.php.editor.parser.astnodes.FieldAccess;
+import org.netbeans.modules.php.editor.parser.astnodes.FunctionDeclaration;
+import org.netbeans.modules.php.editor.parser.astnodes.FunctionInvocation;
+import org.netbeans.modules.php.editor.parser.astnodes.GotoLabel;
+import org.netbeans.modules.php.editor.parser.astnodes.GotoStatement;
+import org.netbeans.modules.php.editor.parser.astnodes.Identifier;
+import org.netbeans.modules.php.editor.parser.astnodes.Include;
+import org.netbeans.modules.php.editor.parser.astnodes.InterfaceDeclaration;
+import org.netbeans.modules.php.editor.parser.astnodes.MethodDeclaration;
+import org.netbeans.modules.php.editor.parser.astnodes.MethodInvocation;
+import org.netbeans.modules.php.editor.parser.astnodes.NamespaceName;
+import org.netbeans.modules.php.editor.parser.astnodes.PHPDocTypeTag;
+import org.netbeans.modules.php.editor.parser.astnodes.Scalar;
+import org.netbeans.modules.php.editor.parser.astnodes.SingleFieldDeclaration;
+import org.netbeans.modules.php.editor.parser.astnodes.StaticConstantAccess;
+import org.netbeans.modules.php.editor.parser.astnodes.StaticDispatch;
+import org.netbeans.modules.php.editor.parser.astnodes.StaticFieldAccess;
+import org.netbeans.modules.php.editor.parser.astnodes.StaticMethodInvocation;
+import org.netbeans.modules.php.editor.parser.astnodes.TraitDeclaration;
+import org.netbeans.modules.php.editor.parser.astnodes.Variable;
+import org.netbeans.modules.php.editor.parser.astnodes.VariableBase;
 import org.openide.util.Union2;
 
 /**
@@ -572,7 +641,6 @@ class OccurenceBuilder {
     }
 
     private void build(FileScopeImpl fileScope) {
-//        List<Occurence> retval = new ArrayList<Occurence>();
         ASTNodeInfo.Kind kind = elementInfo != null ? elementInfo.getKind() : null;
         if (elementInfo != null && kind != null) {
             final IndexScope indexScope = ModelUtils.getIndexScope(fileScope);
@@ -637,7 +705,10 @@ class OccurenceBuilder {
                     break;
                 case TRAIT:
                     final QualifiedName traitQualifiedName = elementInfo.getNodeInfo() != null
-                            ? VariousUtils.getFullyQualifiedName(elementInfo.getNodeInfo().getQualifiedName(), elementInfo.getNodeInfo().getOriginalNode().getStartOffset(), elementInfo.getScope())
+                            ? VariousUtils.getFullyQualifiedName(
+                                    elementInfo.getNodeInfo().getQualifiedName(),
+                                    elementInfo.getNodeInfo().getOriginalNode().getStartOffset(),
+                                    elementInfo.getScope())
                             : elementInfo.getQualifiedName();
                     final Set<TypeElement> traitTypes = index.getTypes(NameKind.exact(traitQualifiedName));
                     if (elementInfo.setDeclarations(traitTypes)) {
@@ -854,7 +925,7 @@ class OccurenceBuilder {
         Scope scope = elementInfo.getScope() instanceof TypeScope ? elementInfo.getScope() : elementInfo.getScope().getInScope();
         if (clzName.getKind().isUnqualified() && scope instanceof TypeScope) {
             if (clzName.getName().equalsIgnoreCase("self") //NOI18N
-                    || clzName.getName().equalsIgnoreCase("static")) {//NOI18N
+                    || clzName.getName().equalsIgnoreCase("static")) { //NOI18N
                 clzName = QualifiedName.create(((TypeScope) scope).getName());
             } else if (clzName.getName().equalsIgnoreCase("parent") && scope instanceof ClassScope) { //NOI18N
                 clzName = ((ClassScope) scope).getSuperClassName();
@@ -881,9 +952,9 @@ class OccurenceBuilder {
         final Set<MethodElement> methods = new HashSet<MethodElement>();
         Scope scope = elementInfo.getScope().getInScope();
         if (clzName.getKind().isUnqualified() && scope instanceof TypeScope) {
-            if (clzName.getName().equalsIgnoreCase("self") || clzName.getName().equalsIgnoreCase("static")) {//NOI18N
+            if (clzName.getName().equalsIgnoreCase("self") || clzName.getName().equalsIgnoreCase("static")) { //NOI18N
                 clzName = ((TypeScope) scope).getFullyQualifiedName();
-            } else if (clzName.getName().equalsIgnoreCase("parent") && scope instanceof ClassScope) {//NOI18N
+            } else if (clzName.getName().equalsIgnoreCase("parent") && scope instanceof ClassScope) { //NOI18N
                 clzName = ((ClassScope) scope).getSuperClassName();
             }
         }
@@ -1441,7 +1512,10 @@ class OccurenceBuilder {
                 ASTNodeInfo<ClassInstanceCreation> nodeInfo = entry.getKey();
                 final boolean isAliased = VariousUtils.isAliased(nodeInfo.getQualifiedName(), nodeInfo.getOriginalNode().getStartOffset(), entry.getValue());
                 if (!isAliased || nodeInfo.getQualifiedName().getSegments().size() > 1) {
-                    final QualifiedName qualifiedName = VariousUtils.getFullyQualifiedName(nodeInfo.getQualifiedName(), nodeInfo.getOriginalNode().getStartOffset(), entry.getValue());
+                    final QualifiedName qualifiedName = VariousUtils.getFullyQualifiedName(
+                            nodeInfo.getQualifiedName(),
+                            nodeInfo.getOriginalNode().getStartOffset(),
+                            entry.getValue());
                     Set<? extends PhpElement> contextTypes = elements;
                     if (NameKind.exact(qualifiedName).matchesName(phpElement)) {
                         if (qualifiedName.getKind().isUnqualified()) {

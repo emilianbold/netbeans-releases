@@ -185,13 +185,14 @@ public class AutoupdateCheckScheduler {
             }
             boolean hasUpdates = false;
             if (Utilities.shouldCheckAvailableUpdates ()) {
-                Collection<UpdateElement> updates = checkUpdateElements (OperationType.UPDATE, false);
+                Collection<UpdateElement> updates = new HashSet<UpdateElement> ();
+                checkUpdateElements(OperationType.UPDATE, null, false, updates);
                 hasUpdates = updates != null && ! updates.isEmpty ();
                 LazyUnit.storeUpdateElements (OperationType.UPDATE, updates);
                 Utilities.storeAcceptedLicenseIDs();
             }
             if (! hasUpdates && Utilities.shouldCheckAvailableNewPlugins ()) {
-                LazyUnit.storeUpdateElements (OperationType.INSTALL, checkUpdateElements (OperationType.INSTALL, false));
+                LazyUnit.storeUpdateElements (OperationType.INSTALL, checkUpdateElements(OperationType.INSTALL, null, false, null));
             }
             Installer.RP.post (doCheckLazyUpdates, 500);
         }
@@ -201,11 +202,8 @@ public class AutoupdateCheckScheduler {
         Installer.RP.post (doCheckAvailableUpdates, delay);
     }
 
-    public static Collection<UpdateElement> checkUpdateElements (OperationType type, boolean forceReload) {
-        return checkUpdateElements(type,null,forceReload);
-    }
-    
-    public static Collection<UpdateElement> checkUpdateElements (OperationType type,Collection<String> problems, boolean forceReload) {
+    public static Collection<UpdateElement> checkUpdateElements(OperationType type, Collection<String> problems,
+            boolean forceReload, Collection<UpdateElement> visibleUpdateElement) {
         // check
         err.log (Level.FINEST, "Check UpdateElements for " + type);
         if (forceReload) {
@@ -339,8 +337,22 @@ public class AutoupdateCheckScheduler {
         }
 
         // if any then notify updates
-        err.log (Level.FINE, "findUpdateElements(" + type + ") returns " + updates.size () + " elements.");
-        return updates;
+        if (visibleUpdateElement == null) {
+            err.log (Level.FINE, "findUpdateElements(" + type + ") returns " + updates.size () + " elements.");
+            return updates;
+        } else {
+            for (UnitCategory cat : cats) {
+                for (Unit u : cat.getUnits()) {
+                    assert u instanceof Unit.Update : u + " has to be instanceof Unit.Update";
+                    if (u instanceof Unit.Update) {
+                        visibleUpdateElement.add(((Unit.Update)u).getRelevantElement());
+                    }
+                }
+            }
+            err.log (Level.FINE, "findUpdateElements(" + type + ") returns " + visibleUpdateElement.size () +
+                    " visible elements (" + updates.size() + " in all)");
+            return visibleUpdateElement;
+        }
     }
 
     /**

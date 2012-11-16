@@ -54,6 +54,7 @@ public final class OccurencesSupport {
     private Occurence occurence;
     private CodeMarker codeMarker;
     int offset;
+
     OccurencesSupport(ModelVisitor modelVisitor, int offset) {
         this.modelVisitor = modelVisitor;
         this.offset = offset;

@@ -53,7 +53,7 @@ import org.netbeans.editor.Utilities;
 
 /**
  * Choose a connection to use for completion and potentially other
- * db-related features
+ * db-related features.
  *
  * @author David Van Couvering
  */

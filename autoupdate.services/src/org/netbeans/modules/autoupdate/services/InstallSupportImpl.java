@@ -1009,6 +1009,7 @@ public class InstallSupportImpl {
                 c += size;
                 if (! progressRunning && progress != null) {
                     progress.switchToDeterminate (totalSize);
+                    progress.progress (label);
                     progressRunning = true;
                 }
                 if (c > 1024) {
@@ -1127,7 +1128,7 @@ public class InstallSupportImpl {
         public void propertyChange(final PropertyChangeEvent ev) {
             if (UpdaterInternal.RUNNING.equals (ev.getPropertyName ())) {
                 if (handle != null) {
-                    handle.progress (i++);
+                    handle.progress (ev.getNewValue() == null ? "" : ev.getNewValue().toString(), i++);
                 }
             } else if (UpdaterInternal.FINISHED.equals (ev.getPropertyName ())){
                 this.ev = ev;

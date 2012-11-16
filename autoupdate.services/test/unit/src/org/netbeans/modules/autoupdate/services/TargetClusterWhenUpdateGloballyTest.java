@@ -47,6 +47,7 @@ package org.netbeans.modules.autoupdate.services;
 import java.io.IOException;
 import org.netbeans.api.autoupdate.OperationException;
 import org.netbeans.api.autoupdate.UpdateElement;
+import org.netbeans.junit.RandomlyFails;
 
 /**
  *
@@ -74,6 +75,7 @@ public class TargetClusterWhenUpdateGloballyTest extends TargetClusterTestCase {
         return installed;
     }
 
+    @RandomlyFails
     public void testUpdateGlobally () throws IOException, OperationException {
         // TODO: adjust changes (issue 128718)
         // If an update, overwrite the existing location, wherever that is.

@@ -47,7 +47,6 @@ import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.logging.Level;
 import javax.swing.*;
 import org.netbeans.modules.bugtracking.api.Issue;
 import org.netbeans.modules.bugtracking.api.Query;
@@ -76,19 +75,18 @@ public class QueryNode extends TaskContainerNode implements Comparable<QueryNode
     public QueryNode(Query query, TreeListNode parent, boolean refresh) {
         super(refresh, true, parent, query.getDisplayName());
         this.query = query;
-        updateNodes();
         queryListener = new QueryListener();
-        query.addPropertyChangeListener(queryListener);
     }
 
     @Override
-    protected List<Issue> load() {
-        if (isRefresh()) {
-            query.refresh();
-            updateNodes();
-            setRefresh(false);
-        }
-        return getTasks();
+    void refreshTaskContainer() {
+        query.refresh();
+    }
+
+    @Override
+    protected void attach() {
+        super.attach();
+        query.addPropertyChangeListener(queryListener);
     }
 
     @Override
@@ -141,6 +139,7 @@ public class QueryNode extends TaskContainerNode implements Comparable<QueryNode
             setError(false);
             return null;
         }
+        updateNodes(data);
         panel = new JPanel(new GridBagLayout());
         panel.setOpaque(false);
         synchronized (LOCK) {

@@ -55,7 +55,10 @@ import org.netbeans.modules.php.editor.parser.astnodes.PHPDocTypeNode;
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public class IdentifierSignatureFactory {
+public final class IdentifierSignatureFactory {
+
+    private IdentifierSignatureFactory() {
+    }
 
     public static IdentifierSignature createIdentifier(Identifier node) {
         String name = node.getName().toLowerCase();
@@ -102,9 +105,9 @@ public class IdentifierSignatureFactory {
         return result;
     }
 
-    private static class IdentifierSignatureImpl implements IdentifierSignature {
+    private static final class IdentifierSignatureImpl implements IdentifierSignature {
 
-        private static final int DECLARATION = 0x1;//else invocation or use
+        private static final int DECLARATION = 0x1; //else invocation or use
         private static final int IFACE_MEMBER = 0x2;
         private static final int CLS_MEMBER = 0x4;
         private static final int MODIFIER_STATIC = 0x8;
@@ -126,7 +129,7 @@ public class IdentifierSignatureFactory {
 
         private IdentifierSignatureImpl(String name, String typeName, int mask) {
             this.name = name.toLowerCase();
-            while (name.startsWith("$")) {//NOI18N
+            while (name.startsWith("$")) { //NOI18N
                 name = name.substring(1);
             }
             this.mask = mask;
@@ -139,7 +142,7 @@ public class IdentifierSignatureFactory {
                 ElementKind kind, String typeName, boolean declaration,
                 Boolean clsmember) {
             this.name = name.toLowerCase();
-            while (name.startsWith("$")) {//NOI18N
+            while (name.startsWith("$")) { //NOI18N
                 name = name.substring(1);
             }
             if (declaration) {
@@ -255,14 +258,14 @@ public class IdentifierSignatureFactory {
 
         private String getSignature() {
             StringBuilder sb = new StringBuilder();
-            sb.append(name).append(";");//NOI18N
+            sb.append(name).append(";"); //NOI18N
             if (mask != 0) {
-                sb.append(mask).append(";");//NOI18N
+                sb.append(mask).append(";"); //NOI18N
             } else {
                 assert !isDeclaration();
             }
             if (isDeclaration()) {
-                sb.append(typeName).append(";");//NOI18N
+                sb.append(typeName).append(";"); //NOI18N
             }
             return sb.toString();
         }

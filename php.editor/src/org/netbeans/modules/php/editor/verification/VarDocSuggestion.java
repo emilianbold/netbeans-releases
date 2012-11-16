@@ -75,7 +75,7 @@ public class VarDocSuggestion extends AbstractSuggestion {
 
     @Override
     public String getId() {
-        return "Var.Doc.Hint";//NOI18N
+        return "Var.Doc.Hint"; //NOI18N
     }
 
     @Override
@@ -105,13 +105,13 @@ public class VarDocSuggestion extends AbstractSuggestion {
                     int wordStart = Utilities.getWordStart(doc, caretOffset);
                     int wordEnd = Utilities.getWordEnd(doc, caretOffset);
                     VariableName variable = ModelUtils.getFirst(variableScope.getDeclaredVariables(), identifier);
-                    if (variable != null && (wordEnd-wordStart) == identifier.length()) {
+                    if (variable != null && (wordEnd - wordStart) == identifier.length()) {
                         final OffsetRange identifierRange = new OffsetRange(wordStart, wordEnd);
                         int offset = identifierRange.getEnd();
                         if (variable.getTypes(offset).isEmpty()) {
                             Collection<? extends String> typeNames = variable.getTypeNames(offset);
                             for (String type : typeNames) {
-                                if (!type.contains(VariousUtils.PRE_OPERATION_TYPE_DELIMITER)) {//NOI18N
+                                if (!type.contains(VariousUtils.PRE_OPERATION_TYPE_DELIMITER)) { //NOI18N
                                     return;
                                 }
                             }
@@ -147,7 +147,7 @@ public class VarDocSuggestion extends AbstractSuggestion {
             final String commentText = getCommentText();
             final int indexOf = commentText.indexOf(getTypeTemplate());
             final EditList editList = getEditList(doc, caretOffset);
-            final Position typeOffset = editList.createPosition(caretOffset+indexOf);
+            final Position typeOffset = editList.createPosition(caretOffset + indexOf);
             editList.apply();
             if (typeOffset != null && typeOffset.getOffset() != -1) {
                 JTextComponent target = GsfUtilities.getPaneFor(context.parserResult.getSnapshot().getSource().getFileObject());
@@ -183,16 +183,16 @@ public class VarDocSuggestion extends AbstractSuggestion {
         }
 
         private String getCommentText() {
-            return String.format("%n/* @var %s %s */", vName.getName(), getTypeTemplate());//NOI18N
+            return String.format("%n/* @var %s %s */", vName.getName(), getTypeTemplate()); //NOI18N
         }
 
         private String getTypeTemplate() {
-            return "type";//NOI18N
+            return "type"; //NOI18N
         }
 
         private int getOffset(BaseDocument doc) throws BadLocationException {
             final int caretOffset = Utilities.getRowStart(doc, context.caretOffset);
-            return Utilities.getRowEnd(doc, caretOffset-1);
+            return Utilities.getRowEnd(doc, caretOffset - 1);
         }
 
         private void scheduleShowingCompletion() {

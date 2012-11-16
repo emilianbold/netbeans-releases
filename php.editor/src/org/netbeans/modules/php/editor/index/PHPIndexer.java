@@ -87,7 +87,10 @@ import org.netbeans.modules.php.editor.model.VariableName;
 import org.netbeans.modules.php.editor.model.impl.LazyBuild;
 import org.netbeans.modules.php.editor.model.impl.VariousUtils;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
-import org.netbeans.modules.php.editor.parser.astnodes.*;
+import org.netbeans.modules.php.editor.parser.astnodes.Identifier;
+import org.netbeans.modules.php.editor.parser.astnodes.PHPDocTypeNode;
+import org.netbeans.modules.php.editor.parser.astnodes.Program;
+import org.netbeans.modules.php.editor.parser.astnodes.Visitor;
 import org.netbeans.modules.php.editor.parser.astnodes.visitors.DefaultVisitor;
 import org.netbeans.modules.php.project.api.PhpSourcePath;
 import org.openide.filesystems.FileObject;
@@ -123,7 +126,7 @@ public final class PHPIndexer extends EmbeddingIndexer {
     )
     @NbBundle.Messages("PHPResolver=PHP Files")
     // a workaround for issue #132388
-    private static final Collection<String>INDEXABLE_EXTENSIONS = Arrays.asList(
+    private static final Collection<String> INDEXABLE_EXTENSIONS = Arrays.asList(
         "php", "php3", "php4", "php5", "phtml", "inc", "phpt"
     );
 
@@ -166,7 +169,7 @@ public final class PHPIndexer extends EmbeddingIndexer {
     public static final String FIELD_TRAIT_METHOD_ALIAS = "traitmeth"; //NOI18N
 
     public static final String FIELD_VAR = "var"; //NOI18N
-    /** This field is for fast access top level elemnts */
+    /** This field is for fast access top level elemnts. */
     public static final String FIELD_TOP_LEVEL = "top"; //NOI18N
 
     private static final List<String> ALL_FIELDS = new LinkedList<String>(
@@ -247,18 +250,27 @@ public final class PHPIndexer extends EmbeddingIndexer {
                 QualifiedName superClassName = classScope.getSuperClassName();
                 if (superClassName != null) {
                     final String name = superClassName.getName();
-                    final String namespaceName = VariousUtils.getFullyQualifiedName(superClassName, classScope.getOffset(), (NamespaceScope)classScope.getInScope()).getNamespaceName();
-                    classDocument.addPair(FIELD_SUPER_CLASS, String.format("%s;%s;%s", name.toLowerCase(), name, namespaceName), true, true);//NOI18N
+                    final String namespaceName = VariousUtils.getFullyQualifiedName(
+                            superClassName,
+                            classScope.getOffset(),
+                            (NamespaceScope) classScope.getInScope()).getNamespaceName();
+                    classDocument.addPair(FIELD_SUPER_CLASS, String.format("%s;%s;%s", name.toLowerCase(), name, namespaceName), true, true); //NOI18N
                 }
                 Set<QualifiedName> superInterfaces = classScope.getSuperInterfaces();
                 for (QualifiedName superIfaceName : superInterfaces) {
                     final String name = superIfaceName.getName();
-                    final String namespaceName = VariousUtils.getFullyQualifiedName(superIfaceName, classScope.getOffset(), (NamespaceScope)classScope.getInScope()).getNamespaceName();
-                    classDocument.addPair(FIELD_SUPER_IFACE, String.format("%s;%s;%s", name.toLowerCase(), name, namespaceName), true, true);//NOI18N
+                    final String namespaceName = VariousUtils.getFullyQualifiedName(
+                            superIfaceName,
+                            classScope.getOffset(),
+                            (NamespaceScope) classScope.getInScope()).getNamespaceName();
+                    classDocument.addPair(FIELD_SUPER_IFACE, String.format("%s;%s;%s", name.toLowerCase(), name, namespaceName), true, true); //NOI18N
                 }
                 for (QualifiedName qualifiedName : classScope.getUsedTraits()) {
                     final String name = qualifiedName.getName();
-                    final String namespaceName = VariousUtils.getFullyQualifiedName(qualifiedName, classScope.getOffset(), (NamespaceScope) classScope.getInScope()).getNamespaceName();
+                    final String namespaceName = VariousUtils.getFullyQualifiedName(
+                            qualifiedName,
+                            classScope.getOffset(),
+                            (NamespaceScope) classScope.getInScope()).getNamespaceName();
                     classDocument.addPair(FIELD_USED_TRAIT, String.format("%s;%s;%s", name.toLowerCase(), name, namespaceName), true, true); //NOI18N
                 }
                 classDocument.addPair(FIELD_TOP_LEVEL, classScope.getName().toLowerCase(), true, true);
@@ -272,7 +284,7 @@ public final class PHPIndexer extends EmbeddingIndexer {
                     }
                     classDocument.addPair(FIELD_METHOD, methodScope.getIndexSignature(), true, true);
                     if (methodScope.isConstructor()) {
-                        classDocument.addPair(FIELD_CONSTRUCTOR,methodScope.getConstructorIndexSignature(), false, true);
+                        classDocument.addPair(FIELD_CONSTRUCTOR, methodScope.getConstructorIndexSignature(), false, true);
                     }
                 }
                 for (FieldElement fieldElement : classScope.getDeclaredFields()) {
@@ -290,7 +302,7 @@ public final class PHPIndexer extends EmbeddingIndexer {
                 for (QualifiedName superIfaceName : superInterfaces) {
                     final String name = superIfaceName.getName();
                     final String namespaceName = superIfaceName.toNamespaceName().toString();
-                    classDocument.addPair(FIELD_SUPER_IFACE, String.format("%s;%s;%s", name.toLowerCase(), name, namespaceName), true, true);//NOI18N
+                    classDocument.addPair(FIELD_SUPER_IFACE, String.format("%s;%s;%s", name.toLowerCase(), name, namespaceName), true, true); //NOI18N
                 }
 
                 classDocument.addPair(FIELD_TOP_LEVEL, ifaceSCope.getName().toLowerCase(), true, true);
@@ -308,7 +320,10 @@ public final class PHPIndexer extends EmbeddingIndexer {
                 traitDocument.addPair(FIELD_TOP_LEVEL, traitScope.getName().toLowerCase(), true, true);
                 for (QualifiedName qualifiedName : traitScope.getUsedTraits()) {
                     final String name = qualifiedName.getName();
-                    final String namespaceName = VariousUtils.getFullyQualifiedName(qualifiedName, traitScope.getOffset(), (NamespaceScope) traitScope.getInScope()).getNamespaceName();
+                    final String namespaceName = VariousUtils.getFullyQualifiedName(
+                            qualifiedName,
+                            traitScope.getOffset(),
+                            (NamespaceScope) traitScope.getInScope()).getNamespaceName();
                     traitDocument.addPair(FIELD_USED_TRAIT, String.format("%s;%s;%s", name.toLowerCase(), name, namespaceName), true, true); //NOI18N
                 }
                 for (MethodScope methodScope : traitScope.getDeclaredMethods()) {
@@ -329,7 +344,7 @@ public final class PHPIndexer extends EmbeddingIndexer {
                 defaultDocument.addPair(FIELD_CONST, constantElement.getIndexSignature(), true, true);
                 defaultDocument.addPair(FIELD_TOP_LEVEL, constantElement.getName().toLowerCase(), true, true);
             }
-            for (NamespaceScope nsElement : fileScope.getDeclaredNamespaces()){
+            for (NamespaceScope nsElement : fileScope.getDeclaredNamespaces()) {
                 Collection<? extends VariableName> declaredVariables = nsElement.getDeclaredVariables();
                 for (VariableName variableName : declaredVariables) {
                     String varName = variableName.getName();
@@ -340,7 +355,7 @@ public final class PHPIndexer extends EmbeddingIndexer {
                         defaultDocument.addPair(FIELD_TOP_LEVEL, variableName.getName().toLowerCase(), true, true);
                     }
                 }
-                if (nsElement.isDefaultNamespace()){
+                if (nsElement.isDefaultNamespace()) {
                     continue; // do not index default ns
                 }
 
@@ -451,7 +466,7 @@ public final class PHPIndexer extends EmbeddingIndexer {
         public void filesDeleted(Iterable<? extends Indexable> deleted, Context context) {
             try {
                 IndexingSupport is = IndexingSupport.getInstance(context);
-                for(Indexable i : deleted) {
+                for (Indexable i : deleted) {
                     is.removeDocuments(i);
                 }
             } catch (IOException ioe) {
@@ -468,7 +483,7 @@ public final class PHPIndexer extends EmbeddingIndexer {
         public void filesDirty(Iterable<? extends Indexable> dirty, Context context) {
             try {
                 IndexingSupport is = IndexingSupport.getInstance(context);
-                for(Indexable i : dirty) {
+                for (Indexable i : dirty) {
                     is.markDirtyDocuments(i);
                 }
             } catch (IOException ioe) {

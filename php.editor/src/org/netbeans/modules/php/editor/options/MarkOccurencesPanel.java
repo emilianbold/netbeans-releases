@@ -60,22 +60,18 @@ import org.openide.util.Exceptions;
 public class MarkOccurencesPanel extends javax.swing.JPanel {
 
     private static final boolean DEFAULT_VALUE = true; // May need to be splited if the defaunts ar not all on
-
     private List<JCheckBox> boxes;
     private MarkOccurencesOptionsPanelController controller;
 
-    /** Creates new form MarkOccurencesPanel */
-    public MarkOccurencesPanel( MarkOccurencesOptionsPanelController controller ) {
+    /* Creates new form MarkOccurencesPanel */
+    public MarkOccurencesPanel(MarkOccurencesOptionsPanelController controller) {
         initComponents();
-
-//        if( "Windows".equals(UIManager.getLookAndFeel().getID()) ) //NOI18N
-//            setOpaque( false );
         fillBoxes();
         addListeners();
-        load( controller );
+        load(controller);
     }
 
-    public void load( MarkOccurencesOptionsPanelController controller ) {
+    public void load(MarkOccurencesOptionsPanelController controller) {
         this.controller = controller;
 
         Preferences node = MarkOccurencesSettings.getCurrentNode();
@@ -88,9 +84,8 @@ public class MarkOccurencesPanel extends javax.swing.JPanel {
 
     }
 
-    public void store( ) {
+    public void store() {
         Preferences node = MarkOccurencesSettings.getCurrentNode();
-
         for (javax.swing.JCheckBox box : boxes) {
             boolean value = box.isSelected();
             boolean original = node.getBoolean(box.getActionCommand(),
@@ -102,24 +97,20 @@ public class MarkOccurencesPanel extends javax.swing.JPanel {
         }
         try {
             node.flush();
-        }
-        catch (BackingStoreException ex) {
+        } catch (BackingStoreException ex) {
             Exceptions.printStackTrace(ex);
         }
-}
+    }
 
     public boolean changed() {
-
         Preferences node = MarkOccurencesSettings.getCurrentNode();
-
         for (JCheckBox box : boxes) {
             boolean value = box.isSelected();
             boolean original = node.getBoolean(box.getActionCommand(), DEFAULT_VALUE);
-            if ( value != original ) {
+            if (value != original) {
                 return true;
             }
         }
-
         return false;
     }
 
@@ -203,46 +194,37 @@ public class MarkOccurencesPanel extends javax.swing.JPanel {
     // End of variables declaration//GEN-END:variables
     // End of variables declaration
 
-
     private void fillBoxes() {
         boxes = new ArrayList<JCheckBox>();
-        boxes.add( onOffCheckBox );
+        boxes.add(onOffCheckBox);
         boxes.add(keepMarksCheckBox);
-
         onOffCheckBox.setActionCommand(MarkOccurencesSettings.ON_OFF);
         keepMarksCheckBox.setActionCommand(MarkOccurencesSettings.KEEP_MARKS);
     }
 
-
     private void addListeners() {
         ChangeListener cl = new CheckChangeListener();
-
-        for( JCheckBox box : boxes ) {
+        for (JCheckBox box : boxes) {
             box.addChangeListener(cl);
         }
-
     }
 
     private void componentsSetEnabled() {
-        for( int i = 1; i < boxes.size(); i++ ) {
+        for (int i = 1; i < boxes.size(); i++) {
             boxes.get(i).setEnabled(onOffCheckBox.isSelected()); // Switch off the other boxes
         }
     }
 
-
     private class CheckChangeListener implements ChangeListener {
 
+        @Override
         public void stateChanged(ChangeEvent evt) {
-
-            if ( evt.getSource() == onOffCheckBox ) {
+            if (evt.getSource() == onOffCheckBox) {
                 componentsSetEnabled();
             }
-
             controller.changed();
         }
 
     }
-
-
 
 }

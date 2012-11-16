@@ -51,7 +51,6 @@ public class UninitializedVariableCustomizer extends javax.swing.JPanel {
     private final UninitializedVariableHint uninitializedVariableHint;
     private final Preferences preferences;
 
-    /** Creates new form UnusedVariableCustomizer */
     public UninitializedVariableCustomizer(Preferences preferences, UninitializedVariableHint uninitializedVariableHint) {
         this.preferences = preferences;
         this.uninitializedVariableHint = uninitializedVariableHint;

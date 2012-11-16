@@ -74,6 +74,7 @@ public class SelectConnectionItem implements CompletionItem {
         dbconn = DatabaseConnectionSupport.getDatabaseConnection(doc, true);
     }
 
+    @Override
     public void defaultAction(JTextComponent component) {
         DatabaseConnection newDBConn = DatabaseConnectionSupport.selectDatabaseConnection(Utilities.getDocument(component));
         if (newDBConn != null && newDBConn.getJDBCConnection() != null) {
@@ -81,37 +82,46 @@ public class SelectConnectionItem implements CompletionItem {
         }
     }
 
+    @Override
     public void processKeyEvent(KeyEvent evt) {
     }
 
+    @Override
     public int getPreferredWidth(Graphics g, Font defaultFont) {
         return CompletionUtilities.getPreferredWidth(getLeftHtmlText(), null, g, defaultFont);
     }
 
+    @Override
     public void render(Graphics g, Font defaultFont, Color defaultColor, Color backgroundColor, int width, int height, boolean selected) {
         CompletionUtilities.renderHtml(getImageIcon(), getLeftHtmlText(), null, g, defaultFont, defaultColor, width, height, selected);
     }
 
+    @Override
     public CompletionTask createDocumentationTask() {
         return null;
     }
 
+    @Override
     public CompletionTask createToolTipTask() {
         return null;
     }
 
+    @Override
     public boolean instantSubstitution(JTextComponent component) {
         return false;
     }
 
+    @Override
     public int getSortPriority() {
         return 0;
     }
 
+    @Override
     public CharSequence getSortText() {
         return "";
     }
 
+    @Override
     public CharSequence getInsertPrefix() {
         return "";
     }

@@ -105,7 +105,7 @@ public class GsfDataObject extends MultiDataObject {
                 PrintCookie.class, CloseCookie.class, Editable.class, LineCookie.class,
                 DataEditorSupport.class, CloneableEditorSupport.class,
                 CloneableOpenSupport.class
-            }, createEditorSupport());
+            }, new EditorSupportFactory());
     }
     
     public @Override Node createNodeDelegate() {
@@ -182,16 +182,7 @@ public class GsfDataObject extends MultiDataObject {
         return jes;
     }            
     
-    public static final class GenericEditorSupport extends DataEditorSupport 
-    implements OpenCookie, EditCookie, EditorCookie, PrintCookie, 
-               EditorCookie.Observable, SaveAsCapable, LineCookie,
-               CloseCookie, CookieSet.Factory {
-
-        @Override
-        protected boolean asynchronousOpen() {
-            return true;
-        }
-        
+    public final class EditorSupportFactory implements CookieSet.Factory {
         @Override
         public <T extends Cookie> T createCookie(Class<T> klass) {
                 if (
@@ -204,9 +195,20 @@ public class GsfDataObject extends MultiDataObject {
                 klass.isAssignableFrom(CloseCookie.class) || 
                 klass.isAssignableFrom(LineCookie.class)
             ) {
-                return klass.cast(this);
+                return klass.cast(createEditorSupport());
             }
             return null;
+        }
+    }
+    
+    public static final class GenericEditorSupport extends DataEditorSupport 
+    implements OpenCookie, EditCookie, EditorCookie, PrintCookie, 
+               EditorCookie.Observable, SaveAsCapable, LineCookie,
+               CloseCookie {
+
+        @Override
+        protected boolean asynchronousOpen() {
+            return true;
         }
         
         private static class Environment extends DataEditorSupport.Env {

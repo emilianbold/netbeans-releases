@@ -57,11 +57,9 @@ class FieldAssignmentImpl extends AssignmentImpl<FieldElementImpl> {
     @Override
     boolean canBeProcessed(String tName) {
         final String name = getName();
-        if (!canBeProcessed(tName, VariousUtils.FIELD_TYPE_PREFIX + name) ||
-                !canBeProcessed(tName, VariousUtils.FIELD_TYPE_PREFIX + name.substring(1))) {
-            return canBeProcessed(tName, VariousUtils.VAR_TYPE_PREFIX + variableNameImpl.getName()) &&
-                canBeProcessed(tName, VariousUtils.VAR_TYPE_PREFIX + variableNameImpl.getName().substring(1));
-
+        if (!canBeProcessed(tName, VariousUtils.FIELD_TYPE_PREFIX + name) || !canBeProcessed(tName, VariousUtils.FIELD_TYPE_PREFIX + name.substring(1))) {
+            return canBeProcessed(tName, VariousUtils.VAR_TYPE_PREFIX + variableNameImpl.getName())
+                    && canBeProcessed(tName, VariousUtils.VAR_TYPE_PREFIX + variableNameImpl.getName().substring(1));
         }
         return true;
     }

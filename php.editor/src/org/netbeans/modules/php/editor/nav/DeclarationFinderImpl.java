@@ -45,7 +45,11 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.List;
-import java.util.concurrent.*;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.text.Document;
@@ -53,9 +57,13 @@ import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
-import org.netbeans.modules.csl.api.*;
+import org.netbeans.modules.csl.api.DeclarationFinder;
 import org.netbeans.modules.csl.api.DeclarationFinder.AlternativeLocation;
 import org.netbeans.modules.csl.api.DeclarationFinder.DeclarationLocation;
+import org.netbeans.modules.csl.api.ElementHandle;
+import org.netbeans.modules.csl.api.ElementKind;
+import org.netbeans.modules.csl.api.HtmlFormatter;
+import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
@@ -77,7 +85,11 @@ import org.netbeans.modules.php.editor.model.nodes.PhpDocTypeTagInfo;
 import org.netbeans.modules.php.editor.parser.PHPDocCommentParser;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
 import org.netbeans.modules.php.editor.parser.api.Utils;
-import org.netbeans.modules.php.editor.parser.astnodes.*;
+import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
+import org.netbeans.modules.php.editor.parser.astnodes.PHPDocBlock;
+import org.netbeans.modules.php.editor.parser.astnodes.PHPDocMethodTag;
+import org.netbeans.modules.php.editor.parser.astnodes.PHPDocTag;
+import org.netbeans.modules.php.editor.parser.astnodes.PHPDocTypeTag;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Parameters;
@@ -173,9 +185,10 @@ public class DeclarationFinderImpl implements DeclarationFinder {
                     }
                     alternatives.addAlternative(al);
                 }
-                return (numberOfCurrentDeclaration == 1 &&
-                        !EnumSet.<Occurence.Accuracy>of(Occurence.Accuracy.MORE_TYPES, Occurence.Accuracy.MORE).contains(underCaret.degreeOfAccuracy()))
-                        ? location : alternatives;
+                return (numberOfCurrentDeclaration == 1
+                        && !EnumSet.<Occurence.Accuracy>of(Occurence.Accuracy.MORE_TYPES, Occurence.Accuracy.MORE).contains(underCaret.degreeOfAccuracy()))
+                        ? location
+                        : alternatives;
             }
         }
         return location;
@@ -270,15 +283,19 @@ public class DeclarationFinderImpl implements DeclarationFinder {
                     for (int i = 0; i < maxForgingTokens && ts.movePrevious(); i++) {
                         token = ts.token();
                         id = token.id();
-                        if (id.equals(PHPTokenId.PHP_INCLUDE) || id.equals(PHPTokenId.PHP_INCLUDE_ONCE) || id.equals(PHPTokenId.PHP_REQUIRE) || id.equals(PHPTokenId.PHP_REQUIRE_ONCE)) {
+                        if (id.equals(PHPTokenId.PHP_INCLUDE)
+                                || id.equals(PHPTokenId.PHP_INCLUDE_ONCE)
+                                || id.equals(PHPTokenId.PHP_REQUIRE)
+                                || id.equals(PHPTokenId.PHP_REQUIRE_ONCE)) {
                             return retval;
-                        } if (id.equals(PHPTokenId.PHP_STRING) && token.text().toString().equalsIgnoreCase("define")) {//NOI18N
+                        }
+                        if (id.equals(PHPTokenId.PHP_STRING) && token.text().toString().equalsIgnoreCase("define")) { //NOI18N
                             return retval;
                         }
                     }
                 } else if (id.equals(PHPTokenId.PHPDOC_COMMENT)) {
                     PHPDocCommentParser docParser = new PHPDocCommentParser();
-                    PHPDocBlock docBlock = docParser.parse(ts.offset()-3, ts.offset() + token.length(), token.text().toString());
+                    PHPDocBlock docBlock = docParser.parse(ts.offset() - 3, ts.offset() + token.length(), token.text().toString());
                     ASTNode[] hierarchy = Utils.getNodeHierarchyAtOffset(docBlock, caretOffset);
                     PhpDocTypeTagInfo node = null;
                     if (hierarchy != null && hierarchy.length > 0) {
@@ -336,8 +353,8 @@ public class DeclarationFinderImpl implements DeclarationFinder {
                         String[] segments = text.split("\\s");
                         for (int i = 0; i < segments.length; i++) {
                             String seg = segments[i];
-                            if (seg.equals(dollaredVar) && segments.length > i+2) {
-                                for (int j = 1; j <= 2 ; j++) {
+                            if (seg.equals(dollaredVar) && segments.length > i + 2) {
+                                for (int j = 1; j <= 2; j++) {
                                     seg = segments[i + j];
                                     if (seg != null && seg.trim().length() > 0) {
                                         int indexOf = text.indexOf(seg);
@@ -405,7 +422,7 @@ public class DeclarationFinderImpl implements DeclarationFinder {
             ElementKind ek = modelElement.getKind();
 
             formatter.name(ek, true);
-            if ((modelElement instanceof FullyQualifiedElement) && !((FullyQualifiedElement)modelElement).getNamespaceName().isDefaultNamespace()) {
+            if ((modelElement instanceof FullyQualifiedElement) && !((FullyQualifiedElement) modelElement).getNamespaceName().isDefaultNamespace()) {
                 QualifiedName namespaceName = ((FullyQualifiedElement) modelElement).getNamespaceName();
                 formatter.appendText(namespaceName.append(modelElement.getName()).toString());
             } else {

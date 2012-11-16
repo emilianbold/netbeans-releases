@@ -65,11 +65,11 @@ import org.netbeans.modules.php.editor.api.QuerySupportFactory;
 import org.netbeans.modules.php.editor.api.elements.ClassElement;
 import org.netbeans.modules.php.editor.model.ClassScope;
 import org.netbeans.modules.php.editor.model.FieldElement;
+import org.netbeans.modules.php.editor.model.FileScope;
+import org.netbeans.modules.php.editor.model.FunctionScope;
 import org.netbeans.modules.php.editor.model.MethodScope;
 import org.netbeans.modules.php.editor.model.Model;
 import org.netbeans.modules.php.editor.model.ModelFactory;
-import org.netbeans.modules.php.editor.model.FileScope;
-import org.netbeans.modules.php.editor.model.FunctionScope;
 import org.netbeans.modules.php.editor.model.ModelUtils;
 import org.netbeans.modules.php.editor.model.Scope;
 import org.netbeans.modules.php.editor.model.TypeScope;
@@ -154,12 +154,12 @@ public class EditorSupportImpl implements EditorSupport {
     }
 
     private PhpBaseElement getPhpBaseElement(Scope scope) {
-        PhpBaseElement PhpBaseElement = null;
+        PhpBaseElement phpBaseElement = null;
         if (scope instanceof MethodScope) {
             PhpClass phpClass = (PhpClass) getPhpBaseElement((TypeScope) scope.getInScope());
             for (PhpClass.Method method : phpClass.getMethods()) {
                 if (method.getName().equals(scope.getName())) {
-                    PhpBaseElement = method;
+                    phpBaseElement = method;
                     break;
                 }
             }
@@ -175,15 +175,15 @@ public class EditorSupportImpl implements EditorSupport {
             for (MethodScope methodScope : classScope.getDeclaredMethods()) {
                 phpClass.addMethod(methodScope.getName(), methodScope.getName(), methodScope.getOffset());
             }
-            PhpBaseElement = phpClass;
+            phpBaseElement = phpClass;
         } else if (scope instanceof FunctionScope) {
-            PhpBaseElement = new PhpFunction(
+            phpBaseElement = new PhpFunction(
                     scope.getName(),
                     scope.getNamespaceName().append(scope.getName()).toFullyQualified().toString(),
                     scope.getOffset());
         } else if (scope instanceof VariableScope) {
-            PhpBaseElement = new PhpVariable(scope.getName(), scope.getName(), scope.getOffset());
+            phpBaseElement = new PhpVariable(scope.getName(), scope.getName(), scope.getOffset());
         }
-        return PhpBaseElement;
+        return phpBaseElement;
     }
 }

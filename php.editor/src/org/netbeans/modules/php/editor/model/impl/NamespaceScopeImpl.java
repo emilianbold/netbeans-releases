@@ -47,7 +47,17 @@ import org.netbeans.modules.php.editor.api.PhpModifiers;
 import org.netbeans.modules.php.editor.api.QualifiedName;
 import org.netbeans.modules.php.editor.api.elements.VariableElement;
 import org.netbeans.modules.php.editor.index.Signature;
-import org.netbeans.modules.php.editor.model.*;
+import org.netbeans.modules.php.editor.model.ClassScope;
+import org.netbeans.modules.php.editor.model.ConstantElement;
+import org.netbeans.modules.php.editor.model.FunctionScope;
+import org.netbeans.modules.php.editor.model.InterfaceScope;
+import org.netbeans.modules.php.editor.model.ModelElement;
+import org.netbeans.modules.php.editor.model.ModelUtils;
+import org.netbeans.modules.php.editor.model.NamespaceScope;
+import org.netbeans.modules.php.editor.model.TraitScope;
+import org.netbeans.modules.php.editor.model.TypeScope;
+import org.netbeans.modules.php.editor.model.UseScope;
+import org.netbeans.modules.php.editor.model.VariableName;
 import org.netbeans.modules.php.editor.model.nodes.ASTNodeInfo;
 import org.netbeans.modules.php.editor.model.nodes.ConstantDeclarationInfo;
 import org.netbeans.modules.php.editor.model.nodes.FunctionDeclarationInfo;
@@ -67,12 +77,12 @@ final class NamespaceScopeImpl extends ScopeImpl implements NamespaceScope, Vari
     private final boolean isDefault;
 
     @Override
-    public VariableNameImpl createElement( Variable variable) {
+    public VariableNameImpl createElement(Variable variable) {
         VariableNameImpl retval = new VariableNameImpl(this, variable, true);
         return retval;
     }
 
-    public VariableNameImpl createElement( VariableElement variable) {
+    public VariableNameImpl createElement(VariableElement variable) {
         VariableNameImpl retval = new VariableNameImpl(this, variable);
         return retval;
     }
@@ -101,7 +111,12 @@ final class NamespaceScopeImpl extends ScopeImpl implements NamespaceScope, Vari
     }
 
     NamespaceScopeImpl(FileScopeImpl inScope) {
-        super(inScope, NamespaceDeclarationInfo.DEFAULT_NAMESPACE_NAME,inScope.getFile(), inScope.getNameRange(), PhpElementKind.NAMESPACE_DECLARATION);
+        super(
+                inScope,
+                NamespaceDeclarationInfo.DEFAULT_NAMESPACE_NAME,
+                inScope.getFile(),
+                inScope.getNameRange(),
+                PhpElementKind.NAMESPACE_DECLARATION);
         isDefault = true;
     }
 

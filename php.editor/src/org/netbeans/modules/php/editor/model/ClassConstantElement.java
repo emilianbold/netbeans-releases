@@ -49,6 +49,9 @@ import org.netbeans.api.annotations.common.CheckForNull;
  * @author Radek Matous
  */
 public interface ClassConstantElement extends ClassMemberElement, ConstantElement {
+
     @CheckForNull
+    @Override
     String getValue();
+    
 }

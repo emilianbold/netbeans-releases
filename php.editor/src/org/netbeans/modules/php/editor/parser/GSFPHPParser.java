@@ -60,7 +60,11 @@ import org.netbeans.modules.parsing.api.Task;
 import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.parsing.spi.Parser;
 import org.netbeans.modules.parsing.spi.SourceModificationEvent;
-import org.netbeans.modules.php.editor.parser.astnodes.*;
+import org.netbeans.modules.php.editor.parser.astnodes.ASTError;
+import org.netbeans.modules.php.editor.parser.astnodes.Comment;
+import org.netbeans.modules.php.editor.parser.astnodes.NamespaceDeclaration;
+import org.netbeans.modules.php.editor.parser.astnodes.Program;
+import org.netbeans.modules.php.editor.parser.astnodes.Statement;
 import org.netbeans.modules.php.project.api.PhpLanguageProperties;
 import org.openide.filesystems.FileObject;
 import org.openide.util.ChangeSupport;
@@ -402,7 +406,9 @@ public class GSFPHPParser extends Parser implements PropertyChangeListener {
 
                         if (canBeSanitized) {
                             int sanitizedChars = numberOfSanitizedChars(containsOpenParenthese, hasCloseDelimiter, hasCloseParenthese);
-                            context.setSanitizedPart(new SanitizedPartImpl(new OffsetRange(start + currentLeftOffset - 1, start + currentLeftOffset + sanitizedChars - phpOpenDelimiter.length() + 1), sanitizationString(delimiter, containsOpenParenthese, hasCloseDelimiter, hasCloseParenthese)));
+                            context.setSanitizedPart(new SanitizedPartImpl(
+                                    new OffsetRange(start + currentLeftOffset - 1, start + currentLeftOffset + sanitizedChars - phpOpenDelimiter.length() + 1),
+                                    sanitizationString(delimiter, containsOpenParenthese, hasCloseDelimiter, hasCloseParenthese)));
                             return true;
                         } else {
                             break;
@@ -651,69 +657,66 @@ public class GSFPHPParser extends Parser implements PropertyChangeListener {
     }
 
     /**
-     * Attempts to sanitize the input buffer
+     * Attempts to sanitize the input buffer.
      */
     public static enum Sanitize {
 
         /**
-         * Only parse the current file accurately, don't try heuristics
+         * Only parse the current file accurately, don't try heuristics.
          */
         NEVER,
         /**
-         * Perform no sanitization
+         * Perform no sanitization.
          */
         NONE,
         /**
-         * Remove current error token
+         * Remove current error token.
          */
         SYNTAX_ERROR_CURRENT,
         /**
-         * Remove token before error
+         * Remove token before error.
          */
         SYNTAX_ERROR_PREVIOUS,
         /**
-         * remove line with error
+         * remove line with error.
          */
         SYNTAX_ERROR_PREVIOUS_LINE,
         /**
-         * try to delete the whole block, where is the error
+         * try to delete the whole block, where is the error.
          */
         SYNTAX_ERROR_BLOCK,
         /**
-         * Try to remove the trailing . or :: at the caret line
+         * Try to remove the trailing . or :: at the caret line.
          */
         EDITED_DOT,
         /**
          * Try to remove the trailing . or :: at the error position, or the
-         * prior line, or the caret line
+         * prior line, or the caret line.
          */
         ERROR_DOT,
         /**
          * Try to remove the initial "if" or "unless" on the block in case it's
-         * not terminated
+         * not terminated.
          */
         BLOCK_START,
         /**
-         * Try to cut out the error line
+         * Try to cut out the error line.
          */
         ERROR_LINE,
         /**
-         * Try to cut out the current edited line, if known
+         * Try to cut out the current edited line, if known.
          */
         EDITED_LINE,
         /**
-         * Attempt to fix missing }
+         * Attempt to fix missing }.
          */
         MISSING_CURLY,
         /**
-         * Try tu fix incomplete 'require("' function for FS code complete
+         * Try tu fix incomplete 'require("' function for FS code complete.
          */
         REQUIRE_FUNCTION_INCOMPLETE,
     }
 
-    /**
-     * Parsing context
-     */
     public static class Context {
 
         private final Snapshot snapshot;
@@ -766,8 +769,8 @@ public class GSFPHPParser extends Parser implements PropertyChangeListener {
 
     }
 
-    public static interface SanitizedPart {
-        public static final SanitizedPart NONE = new SanitizedPart(){
+    public interface SanitizedPart {
+        SanitizedPart NONE = new SanitizedPart() {
 
             @Override
             public OffsetRange getOffsetRange() {
@@ -780,9 +783,8 @@ public class GSFPHPParser extends Parser implements PropertyChangeListener {
             }
         };
 
-        public OffsetRange getOffsetRange();
-
-        public String getText();
+        OffsetRange getOffsetRange();
+        String getText();
 
     }
 
@@ -809,9 +811,9 @@ public class GSFPHPParser extends Parser implements PropertyChangeListener {
 
     }
 
-    private static interface SourceHolder {
+    private interface SourceHolder {
 
-        public String getText();
+        String getText();
 
     }
 

@@ -340,7 +340,10 @@ public class OptionsDisplayerImpl {
         int x = NbPreferences.forModule(OptionsDisplayerImpl.class).getInt("OptionsX", Integer.MAX_VALUE);//NOI18N
         int y = NbPreferences.forModule(OptionsDisplayerImpl.class).getInt("OptionsY", Integer.MAX_VALUE);//NOI18N
         if (x > screenBounds.getWidth() || y > screenBounds.getHeight()
-                || x < screenBounds.x || y < screenBounds.y ) {
+                || (x < screenBounds.x && screenBounds.x >= 0)
+		|| (x > screenBounds.x && screenBounds.x < 0)
+		|| (y < screenBounds.y && screenBounds.y >= 0)
+		|| (y > screenBounds.y && screenBounds.y < 0)){
             return null;
         } else {
             return new Point(x, y);

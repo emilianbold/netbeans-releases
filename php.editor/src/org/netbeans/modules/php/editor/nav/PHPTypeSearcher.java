@@ -100,13 +100,12 @@ public class PHPTypeSearcher implements IndexSearcher {
                 Collections.<String>emptySet());
         final Index index = ElementQueryFactory.createIndexQuery(QuerySupportFactory.get(findRoots));
 
-
         Set<PHPTypeDescriptor> result = new HashSet<PHPTypeDescriptor>();
         if (index != null && textForQuery.trim().length() > 0) {
-            final boolean isVariable = textForQuery.startsWith("$");//NOI18N
+            final boolean isVariable = textForQuery.startsWith("$"); //NOI18N
             String query = prepareIdxQuery(textForQuery, regexpKinds, kind);
-            final Kind useKind = kind.equals(Kind.EXACT) ? Kind.EXACT : Kind.CASE_INSENSITIVE_PREFIX;//NOI18N
-            if (!kind.equals(Kind.EXACT)) {//NOI18N
+            final Kind useKind = kind.equals(Kind.EXACT) ? Kind.EXACT : Kind.CASE_INSENSITIVE_PREFIX;
+            if (!kind.equals(Kind.EXACT)) {
                 query = query.toLowerCase();
             }
             final NameKind prefix = NameKind.create(query, useKind);
@@ -140,7 +139,6 @@ public class PHPTypeSearcher implements IndexSearcher {
                 }
             }
         }
-
         return result;
     }
 
@@ -268,8 +266,7 @@ public class PHPTypeSearcher implements IndexSearcher {
                 GsfUtilities.open(fileObject, element.getOffset(), element.getName());
             } else {
                 Logger logger = Logger.getLogger(PHPTypeSearcher.class.getName());
-                logger.log(Level.INFO,String.format("%s: cannot find %s", //NOI18N
-                        PHPTypeSearcher.class.getName(), element.getFilenameUrl()));
+                logger.log(Level.INFO, String.format("%s: cannot find %s", PHPTypeSearcher.class.getName(), element.getFilenameUrl())); //NOI18N
             }
         }
 
@@ -289,8 +286,7 @@ public class PHPTypeSearcher implements IndexSearcher {
                 }
             } else {
                 if (enclosingClass != null) {
-                    if ((enclosingClass instanceof FullyQualifiedElement) &&
-                            (!((FullyQualifiedElement)enclosingClass).getNamespaceName().isDefaultNamespace())) {
+                    if ((enclosingClass instanceof FullyQualifiedElement) && (!((FullyQualifiedElement) enclosingClass).getNamespaceName().isDefaultNamespace())) {
                         sb.append(((FullyQualifiedElement) enclosingClass).getFullyQualifiedName().toString());
                     } else {
                         sb.append(enclosingClass.getName());
@@ -359,35 +355,33 @@ public class PHPTypeSearcher implements IndexSearcher {
         char[] chars = query.toCharArray();
         boolean incamel = false;
         if (!query.startsWith("$")) {
-            sb.append("[$]*");//NOI18N
+            sb.append("[$]*"); //NOI18N
         }
         for (int i = 0; i < chars.length; i++) {
-            if (i+1 < chars.length && chars[i] == '.' && chars[i+1] == '*') {//NOI18N
-                sb.append(".*");//NOI18N
+            if (i + 1 < chars.length && chars[i] == '.' && chars[i + 1] == '*') { //NOI18N
+                sb.append(".*"); //NOI18N
                 i++;
-            } else if (chars[i] == '?') {//NOI18N
-                sb.append('.');//NOI18N
+            } else if (chars[i] == '?') { //NOI18N
+                sb.append('.'); //NOI18N
             } else if (chars[i] == '*') {
-                sb.append(".*");//NOI18N
+                sb.append(".*"); //NOI18N
             } else if (chars[i] == '.') {
-                sb.append(".");//NOI18N
+                sb.append("."); //NOI18N
             } else if (Character.isUpperCase(chars[i])) {
                 if (incamel) {
-                    sb.append("[a-z0-9_]*");//NOI18N
+                    sb.append("[a-z0-9_]*"); //NOI18N
                 }
                 sb.append(chars[i]);
                 incamel = true;
             } else if (i == 0 && chars[i] == '$') {
-                sb.append('\\').append(chars[i]);//NOI18N
-            }else {
+                sb.append('\\').append(chars[i]); //NOI18N
+            } else {
                 sb.append(Pattern.quote(String.valueOf(chars[i])));
             }
         }
-        sb.append(".*");//NOI18N
+        sb.append(".*"); //NOI18N
         String patternString = sb.toString();
-        return caseInsensitive ?
-            Pattern.compile(patternString, Pattern.CASE_INSENSITIVE) :
-            Pattern.compile(patternString);
+        return caseInsensitive ? Pattern.compile(patternString, Pattern.CASE_INSENSITIVE) : Pattern.compile(patternString);
     }
 
     private String prepareIdxQuery(String textForQuery, EnumSet<Kind> regexpKinds, Kind kind) {
@@ -396,11 +390,11 @@ public class PHPTypeSearcher implements IndexSearcher {
             final char charAt = textForQuery.charAt(0);
             final int length = textForQuery.length();
             if (Character.isLetter(charAt) && length > 0) {
-                query = query.substring(0, 1);//NOI18N
+                query = query.substring(0, 1); //NOI18N
             } else if (charAt == '$' && length > 1) {
-                query = query.substring(0, 1);//NOI18N
-            }else {
-                query = "";//NOI18N
+                query = query.substring(0, 1); //NOI18N
+            } else {
+                query = ""; //NOI18N
             }
         }
         return query;

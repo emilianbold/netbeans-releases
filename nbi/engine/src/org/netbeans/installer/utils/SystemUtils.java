@@ -204,17 +204,21 @@ public final class SystemUtils {
     }
     
     public static ExecutionResults executeCommand(String... command) throws IOException {
-        return executeCommand(null, null, command);
+        return executeCommand(null, null, null, command);
     }
     
     public static ExecutionResults executeCommand(File workingDirectory, String... command) throws IOException {
-        return executeCommand(null, workingDirectory, command);
+        return executeCommand(null, null, workingDirectory, command);
     }
     
     @SuppressWarnings({"SleepWhileInLoop", "empty-statement"})
-    public static ExecutionResults executeCommand(Progress progress, File workingDirectory, String... command) throws IOException {
+    public static ExecutionResults executeCommand(Progress progress, String[] supportedPrefixes, File workingDirectory, String... command) throws IOException {
         // construct the initial log message
         String commandString = StringUtils.asString(command, StringUtils.SPACE);
+
+        if (supportedPrefixes == null) {
+            supportedPrefixes = new String[0];
+        }
         
         if (workingDirectory == null) {
             workingDirectory = getCurrentDirectory();
@@ -277,6 +281,16 @@ public final class SystemUtils {
             if (string.length() > 0) {
                 BufferedReader reader = new BufferedReader(new StringReader(string));
                 for (String line = reader.readLine(); line != null; line = reader.readLine()) {
+                    if (progress != null) {
+                        line = line.trim();
+                        if (! line.isEmpty()) {
+                            for (String prefix : supportedPrefixes) {
+                                if (line.startsWith(prefix)) {
+                                    progress.setDetail(line.substring(prefix.length()));
+                                }
+                            }
+                        }
+                    }
                     LogManager.log(ErrorLevel.MESSAGE, "[stderr]: " + line);
                 }
                 
