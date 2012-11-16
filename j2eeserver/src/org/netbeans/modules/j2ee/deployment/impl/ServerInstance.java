@@ -67,7 +67,6 @@ import org.netbeans.modules.j2ee.deployment.common.api.DatasourceAlreadyExistsEx
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.ArtifactListener.Artifact;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.JDBCDriverDeployer;
 import java.util.*;
-import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -78,6 +77,7 @@ import java.util.logging.Logger;
 import javax.enterprise.deploy.spi.exceptions.DeploymentManagerCreationException;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.debugger.LazyDebuggerManagerListener;
 import org.netbeans.modules.j2ee.deployment.common.api.MessageDestination;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
@@ -108,6 +108,7 @@ import org.openide.util.ChangeSupport;
 import org.openide.util.Exceptions;
 import org.openide.util.Parameters;
 import org.openide.util.RequestProcessor;
+import org.openide.util.WeakListeners;
 import org.openide.windows.InputOutput;
 
 
@@ -196,7 +197,9 @@ public class ServerInstance implements Node.Cookie, Comparable {
                 : new DefaultInstancePropertiesImpl(url);
         // listen to debugger changes so that we can update server status accordingly
         debuggerStateListener = new DebuggerStateListener();
-        DebuggerManager.getDebuggerManager().addDebuggerListener(debuggerStateListener);
+        DebuggerManager.getDebuggerManager().addDebuggerListener(
+                WeakListeners.create(LazyDebuggerManagerListener.class, debuggerStateListener,
+                    DebuggerManager.getDebuggerManager()));
     }
     
     /** Return this server instance InstanceProperties. */
@@ -1953,6 +1956,9 @@ public class ServerInstance implements Node.Cookie, Comparable {
 
                 @Override
                 public void run() {
+                    if (ServerRegistry.getInstance().getServerInstance(url) == null) {
+                        return;
+                    }
                     Target target = _retrieveTarget(null);
                     ServerDebugInfo sdi = getServerDebugInfo(target);
                     if (sdi == null) {

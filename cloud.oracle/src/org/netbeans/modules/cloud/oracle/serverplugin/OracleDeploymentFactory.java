@@ -79,6 +79,10 @@ public class OracleDeploymentFactory implements DeploymentFactory {
             String password) throws DeploymentManagerCreationException {
         OracleInstance instance = findInstance(uri);
         InstanceProperties props = InstanceProperties.getInstanceProperties(uri);
+        // just a safeguard, should not happen - better than NPE
+        if (props == null) {
+            throw new DeploymentManagerCreationException("Oracle Cloud instance: " + uri + " is not registered in the IDE."); // NOI18N
+        }
         ApplicationManager am = null;
         if (instance != null) {
             try {
@@ -103,6 +107,10 @@ public class OracleDeploymentFactory implements DeploymentFactory {
     @Override
     public DeploymentManager getDisconnectedDeploymentManager(String uri) throws DeploymentManagerCreationException {
         InstanceProperties props = InstanceProperties.getInstanceProperties(uri);
+        // just a safeguard, should not happen - better than NPE
+        if (props == null) {
+            throw new DeploymentManagerCreationException("Oracle Cloud instance: " + uri + " is not registered in the IDE."); // NOI18N
+        }
         return new OracleDeploymentManager(
                 null,
                 props.getProperty(IP_IDENTITY_DOMAIN),
