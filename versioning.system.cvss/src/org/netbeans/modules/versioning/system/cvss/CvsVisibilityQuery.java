@@ -106,7 +106,7 @@ public class CvsVisibilityQuery extends VCSVisibilityQuery implements Versioning
                 if (file.lastModified() > marker.lastModified() && !CvsVersioningSystem.FILENAME_CVS.equals(file.getName())) {
                     makeVisible(parent);
                 }
-                fireVisibilityChanged();
+                fireVisibilityChanged(file);
             }
         }
     }
