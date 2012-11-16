@@ -88,7 +88,7 @@ public class JUnitTestMethodNode extends TestMethodNode{
 	    try {
 		String text = testFO.asText();
 		if (text != null) {
-		    text = text.replaceAll(" ", "");
+		    text = text.replaceAll("\n", "").replaceAll(" ", "");
 		    if (text.contains("@RunWith(value=Parameterized.class)") || //NOI18N
 			    text.contains("@RunWith(Parameterized.class)")) {  //NOI18N
 			parameterized = true;
