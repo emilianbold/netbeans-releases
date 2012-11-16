@@ -57,5 +57,13 @@ public class TestVCSVisibilityQuery extends VCSVisibilityQuery {
     public boolean isVisible(File file) {
         return !file.getName().endsWith(INVISIBLE_FILE_SUFFIX);
     }
+    
+    public void visibilityChanged() {
+        fireVisibilityChanged();
+    }
+    
+    public void visibilityChanged(File... files) {
+        fireVisibilityChanged(files);
+    }
 
 }
