@@ -42,6 +42,7 @@
 package org.netbeans.modules.cordova.project;
 
 import org.netbeans.api.options.OptionsDisplayer;
+import org.netbeans.modules.cordova.CordovaPerformer;
 import org.netbeans.modules.cordova.CordovaPlatform;
 import org.netbeans.modules.cordova.template.CordovaTemplate;
 import org.openide.util.NbBundle;
@@ -68,7 +69,7 @@ public class CordovaPanel extends javax.swing.JPanel {
         update();
     }
 
-    CordovaPanel() {
+    public CordovaPanel() {
         this(null);
     }
     
@@ -144,7 +145,6 @@ public class CordovaPanel extends javax.swing.JPanel {
                 .add(phoneGapCheckBox)
                 .add(0, 0, Short.MAX_VALUE))
             .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                .add(0, 0, 0)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(layout.createSequentialGroup()
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -152,16 +152,16 @@ public class CordovaPanel extends javax.swing.JPanel {
                             .add(iosTarget))
                         .add(15, 15, 15)
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(androidTargetCombo, 0, 281, Short.MAX_VALUE)
+                            .add(androidTargetCombo, 0, 342, Short.MAX_VALUE)
                             .add(iosTargetCombo, 0, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
                     .add(layout.createSequentialGroup()
                         .add(packageLabel)
                         .add(18, 18, 18)
                         .add(packageTextField)))
-                .addContainerGap())
+                .add(0, 0, 0))
             .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                 .add(layout.createSequentialGroup()
-                    .addContainerGap(199, Short.MAX_VALUE)
+                    .addContainerGap(254, Short.MAX_VALUE)
                     .add(platformSetup)
                     .add(0, 0, 0)))
         );
@@ -219,6 +219,14 @@ public class CordovaPanel extends javax.swing.JPanel {
     
     public boolean isPanelEnabled() {
         return phoneGapCheckBox.isSelected();
+    }
+    
+    public String getPackageName() {
+        return packageTextField.getText();
+    }
+
+    void setPackageName(String pkg) {
+        packageTextField.setText(pkg);
     }
 
 

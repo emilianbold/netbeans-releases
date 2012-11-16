@@ -45,12 +45,13 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Properties;
+import java.util.EnumSet;
 import org.netbeans.modules.cordova.platforms.Device;
 import org.netbeans.modules.cordova.platforms.MobileDebugTransport;
 import org.netbeans.modules.cordova.platforms.MobilePlatform;
 import org.netbeans.modules.cordova.platforms.PlatformManager;
 import org.netbeans.modules.cordova.platforms.ProcessUtils;
+import org.netbeans.modules.cordova.platforms.SDK;
 import org.openide.modules.InstalledFileLocator;
 import org.openide.util.EditableProperties;
 import org.openide.util.Exceptions;
@@ -75,7 +76,7 @@ public class IOSPlatform implements MobilePlatform {
     }
     
     @Override
-    public Collection<org.netbeans.modules.cordova.platforms.SDK> getSDKs()  {
+    public Collection<SDK> getSDKs()  {
         try {
             String listSdks = ProcessUtils.callProcess("xcodebuild", true, "-showsdks"); //NOI18N
             return IOSSDK.parse(listSdks);
@@ -95,23 +96,25 @@ public class IOSPlatform implements MobilePlatform {
         }
     }
     
+    @Override
     public boolean isReady() {
         File f = new File("/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform");
         return f.exists();
     }
     
+    @Override
     public String getSimulatorPath() {
         return InstalledFileLocator.getDefault().locate("bin/ios-sim", "org.netbeans.modules.cordova.platforms.ios", false).getPath();
     }
 
     @Override
-    public Collection<org.netbeans.modules.cordova.platforms.Device> getConnectedDevices() throws IOException {
+    public Collection<Device> getConnectedDevices() throws IOException {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
     @Override
-    public IOSSDK getPrefferedTarget() {
-        throw new UnsupportedOperationException("Not supported yet.");
+    public SDK getPrefferedTarget() {
+        return getSDKs().iterator().next();
     }
 
     @Override
@@ -162,12 +165,12 @@ public class IOSPlatform implements MobilePlatform {
 
     @Override
     public Device getDevice(String name, EditableProperties props) {
-        return IOSDevice.IPAD;
+        return IOSDevice.IPHONE;
     }
 
     @Override
-    public Collection<Device> getVirtualDevices() throws IOException {
-        throw new UnsupportedOperationException("Not supported yet.");
+    public Collection<? extends Device> getVirtualDevices() throws IOException {
+        return EnumSet.allOf(IOSDevice.class);
     }
 }
 
