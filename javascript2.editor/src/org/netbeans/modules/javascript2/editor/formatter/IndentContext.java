@@ -45,7 +45,9 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Stack;
+import javax.swing.text.BadLocationException;
 import org.netbeans.editor.BaseDocument;
+import org.netbeans.editor.Utilities;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.editor.indent.spi.Context;
 import org.netbeans.modules.javascript2.editor.lexer.JsTokenId;
@@ -82,11 +84,33 @@ public final class IndentContext {
 
     private int embeddedIndent;
 
+    private final int caretLineStart;
+
+    private final int caretLineEnd;
+
     public IndentContext(Context context) {
         this.context = context;
 
         this.embedded = !JsTokenId.JAVASCRIPT_MIME_TYPE.equals(context.mimePath())
                 && !JsTokenId.JSON_MIME_TYPE.equals(context.mimePath());
+
+        int lineStart;
+        try {
+            lineStart = Utilities.getRowStart((BaseDocument) context.document(),
+                    context.caretOffset());
+        } catch (BadLocationException ex) {
+            lineStart = context.caretOffset();
+        }
+        this.caretLineStart = lineStart;
+
+        int lineEnd;
+        try {
+            lineEnd = Utilities.getRowEnd((BaseDocument) context.document(),
+                    context.caretOffset());
+        } catch (BadLocationException ex) {
+            lineEnd = context.caretOffset();
+        }
+        this.caretLineEnd = lineEnd;
     }
 
     public BaseDocument getDocument() {
@@ -119,6 +143,14 @@ public final class IndentContext {
 
     public List<Indentation> getIndentations() {
         return Collections.unmodifiableList(indentations);
+    }
+
+    public int getCaretLineStart() {
+        return caretLineStart;
+    }
+
+    public int getCaretLineEnd() {
+        return caretLineEnd;
     }
 
     public static final class Indentation {
