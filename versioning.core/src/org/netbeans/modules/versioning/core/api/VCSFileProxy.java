@@ -56,6 +56,7 @@ import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.WeakListeners;
 
 /**
  * Represents a file on a file system. 
@@ -79,7 +80,12 @@ public final class VCSFileProxy {
      * this value is already cached as well so we are able to avoid unnecessary io access.
      */
     private Boolean isDirectory = null; // XXX might change for a file!!!
-    private boolean foWasDeleted = false;
+    
+    /**
+     * Listen on the FileObject this VCSFileProxy was created from. Some fields are cached 
+     * (e.g. isDirectory) and changes in the FileObject-s state should be reflected accordingly.
+     */
+    private FileChangeListener fileChangeListener = null;
     
     static {
         APIAccessor.IMPL = new APIAccessorImpl();
@@ -142,17 +148,17 @@ public final class VCSFileProxy {
                 if(file != null) {
                     final VCSFileProxy p = createFileProxy(file);
                     p.isDirectory = fileObject.isFolder();
-                    fileObject.addFileChangeListener(new FileChangeListener() {
-                        @Override
-                        public void fileDeleted(FileEvent fe) {
-                            p.foWasDeleted = true;
+                    p.fileChangeListener = new FileChangeListener() {
+                        @Override public void fileDeleted(FileEvent fe) {
+                            p.isDirectory = null;
                         }
                         @Override public void fileFolderCreated(FileEvent fe) { }
                         @Override public void fileDataCreated(FileEvent fe) { }
                         @Override public void fileChanged(FileEvent fe) { }
                         @Override public void fileRenamed(FileRenameEvent fe) { }
                         @Override public void fileAttributeChanged(FileAttributeEvent fe) { }
-                    });
+                    };
+                    fileObject.addFileChangeListener(WeakListeners.create(FileChangeListener.class, p.fileChangeListener, fileObject));
                     return p;
                 } else {
                     return null; // e.g. FileObject from a jar filesystem
@@ -201,7 +207,7 @@ public final class VCSFileProxy {
      */
     public boolean isDirectory() {
         if (proxy == null) {
-            if(isDirectory != null && !foWasDeleted) {
+            if(isDirectory != null) {
                 return isDirectory;
             } else {
                 return new File(path).isDirectory();
@@ -220,7 +226,7 @@ public final class VCSFileProxy {
      */
     public boolean isFile() {
         if (proxy == null) { 
-            if(isDirectory != null && !foWasDeleted) {
+            if(isDirectory != null) {
                 return !isDirectory;
             } else {
                 return new File(path).isFile();
