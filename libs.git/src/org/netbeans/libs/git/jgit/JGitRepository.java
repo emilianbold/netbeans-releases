@@ -53,11 +53,23 @@ import org.eclipse.jgit.lib.Repository;
  * @author ondra
  */
 public final class JGitRepository {
-    private final Repository repository;
-    private boolean closed;
+    private Repository repository;
+    private final File location;
 
-    public JGitRepository (File location) throws GitException {
-        this.repository = getRepository(location);
+    public JGitRepository (File location) {
+        this.location = location;
+    }
+
+    public synchronized void increaseClientUsage () throws GitException {
+        if (repository == null) {
+            repository = getRepository(location);
+        } else {
+            repository.incrementOpen();
+        }
+    }
+
+    public synchronized void decreaseClientUsage () {
+        repository.close();
     }
 
     private Repository getRepository (File workDir) throws GitException {
@@ -75,21 +87,7 @@ public final class JGitRepository {
     }
 
     public Repository getRepository () {
+        assert repository != null;
         return repository;
-    }
-    
-    public synchronized void close () {
-        if (repository != null) {
-            if (!closed) {
-                repository.close();
-                closed = true;
-            }
-        }
-    }
-
-    @Override
-    protected void finalize () throws Throwable {
-        close();
-        super.finalize();
     }
 }

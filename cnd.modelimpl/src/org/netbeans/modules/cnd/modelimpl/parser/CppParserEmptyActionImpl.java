@@ -330,6 +330,10 @@ public class CppParserEmptyActionImpl implements CppParserActionEx {
     @Override public void condition(Token token) {}
     @Override public void condition(int kind, Token token) {}
     @Override public void end_condition(Token token) {}
+    @Override public void condition_declaration(Token token) {}
+    @Override public void end_condition_declaration(Token token) {}
+    @Override public void condition_expression(Token token) {}
+    @Override public void end_condition_expression(Token token) {}
     @Override public void iteration_statement(Token token) {}
     @Override public void iteration_statement(int kind, Token token) {}
     @Override public void end_iteration_statement(Token token) {}
@@ -515,5 +519,28 @@ public class CppParserEmptyActionImpl implements CppParserActionEx {
     @Override public void handler(int kind, Token token) {}
     @Override public void end_handler(Token token) {}
 
+    @Override
+    public void assignment_expression(Token token) {
+    }
+
+    @Override
+    public void end_assignment_expression(Token token) {
+    }
+
+    @Override
+    public void expression(Token token) {
+    }
+
+    @Override
+    public void end_expression(Token token) {
+    }
+
+    @Override
+    public void constant_expression(Token token) {
+    }
+
+    @Override
+    public void end_constant_expression(Token token) {
+    }
     
 }

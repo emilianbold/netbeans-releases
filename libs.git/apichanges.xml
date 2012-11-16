@@ -111,6 +111,23 @@ is the proper place.
         
         <change>
             <api name="gitlibrary_api"/>
+            <summary>Adding new method to GitClient: release()</summary>
+            <version major="1" minor="5"/>
+            <date day="16" month="11" year="2012"/>
+            <author login="ovrabec"/>
+            <compatibility addition="yes"/>
+            <description>
+                JGit repository normally does not close all opened file descriptors
+                and prevents external commands from working with the same repository.
+                Clients of the JGit API are supposed to call JGitRepository.close()
+                when they're done with the repository. We need to pass this method to the 
+                Git Library API so when clients are done with calling all required commands
+                the library closes all descriptors and frees the git metadata files
+                for other tools.
+            </description>
+        </change>
+        <change>
+            <api name="gitlibrary_api"/>
             <summary>Initial version of the API</summary>
             <version major="1" minor="0"/>
             <date day="11" month="3" year="2012"/>
