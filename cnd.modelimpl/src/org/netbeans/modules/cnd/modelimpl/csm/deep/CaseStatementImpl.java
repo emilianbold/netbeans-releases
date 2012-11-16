@@ -50,8 +50,8 @@ import org.netbeans.modules.cnd.api.model.deep.*;
 import org.netbeans.modules.cnd.modelimpl.csm.core.*;
 
 import org.netbeans.modules.cnd.antlr.collections.AST;
-import org.netbeans.modules.cnd.modelimpl.csm.core.OffsetableDeclarationBase.ScopedDeclarationBuilder;
 import org.netbeans.modules.cnd.modelimpl.csm.deep.ExpressionBase.ExpressionBuilder;
+import org.netbeans.modules.cnd.modelimpl.csm.deep.ExpressionBase.ExpressionBuilderContainer;
 
 /**
  *
@@ -103,17 +103,23 @@ public final class CaseStatementImpl extends StatementBase implements CsmCaseSta
         return CsmStatement.Kind.CASE;
     }
     
-    public static class CaseStatementBuilder extends StatementBuilder {
+    public static class CaseStatementBuilder extends StatementBuilder implements ExpressionBuilderContainer {
 
-        ExpressionBuilder expression;
+        private ExpressionBuilder expressionBuilder;
 
-        public void setExpressionBuilder(ExpressionBuilder expression) {
-            this.expression = expression;
+        @Override
+        public void addExpressionBuilder(ExpressionBuilder expression) {
+            this.expressionBuilder = expression;
         }
         
+        @Override
         public CaseStatementImpl create() {
-            //expression.setScope(getScope());
-            CaseStatementImpl expr = new CaseStatementImpl(ExpressionBase.create(0, 0, getFile(), getScope()), getScope(), getFile(), getStartOffset(), getEndOffset());
+            ExpressionBase expression = null;
+            if(expressionBuilder != null) {
+                expressionBuilder.setScope(getScope());
+                expression = expressionBuilder.create();
+            }
+            CaseStatementImpl expr = new CaseStatementImpl(expression, getScope(), getFile(), getStartOffset(), getEndOffset());
             return expr;
         }
     }
