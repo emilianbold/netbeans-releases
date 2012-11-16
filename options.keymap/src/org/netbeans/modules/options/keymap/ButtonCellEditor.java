@@ -92,7 +92,7 @@ class ButtonCellEditor extends DefaultCellEditor {
             }
         }
     };
-
+    
     private KeyAdapter escapeAdapter = new KeyAdapter() {
 
         @Override
@@ -100,7 +100,7 @@ class ButtonCellEditor extends DefaultCellEditor {
             if (e.getKeyCode() == KeyEvent.VK_ESCAPE) {
                 JTable table = (JTable) cell.getParent();
                 table.getCellEditor().cancelCellEditing();
-                ((KeymapPanel)table.getParent().getParent().getParent()).getModel().update();
+                model.update();
             }
         }
     };
