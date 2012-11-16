@@ -146,7 +146,7 @@ public class AndroidConfigurationPanel extends javax.swing.JPanel {
                 @Override
                 public void run() {
                     try {
-                        final Collection<Device> avDs = PlatformManager.getPlatform(PlatformManager.ANDROID_TYPE).getVirtualDevices();
+                        final Collection<? extends Device> avDs = PlatformManager.getPlatform(PlatformManager.ANDROID_TYPE).getVirtualDevices();
                         refreshCombo(avDs);
                     } catch (IOException ex) {
                         Exceptions.printStackTrace(ex);
@@ -159,7 +159,7 @@ public class AndroidConfigurationPanel extends javax.swing.JPanel {
         manageButton.setVisible(visible);
     }
     
-    private void refreshCombo(final Collection<Device> avDs) {
+    private void refreshCombo(final Collection<? extends Device> avDs) {
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
@@ -276,7 +276,7 @@ public class AndroidConfigurationPanel extends javax.swing.JPanel {
             @Override
             public void run() {
                 PlatformManager.getPlatform(PlatformManager.ANDROID_TYPE).manageDevices();
-                Collection<Device> avDs;
+                Collection<? extends Device> avDs;
                 try {
                     avDs = PlatformManager.getPlatform(PlatformManager.ANDROID_TYPE).getVirtualDevices();
                     refreshCombo(avDs);

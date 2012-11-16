@@ -57,14 +57,14 @@ public interface MobilePlatform {
      * @return
      * @throws IOException 
      */
-    Collection<Device> getConnectedDevices() throws IOException;
+    Collection<? extends Device> getConnectedDevices() throws IOException;
     
     /**
      * Getter for collection of virtual devices
      * @return
      * @throws IOException 
      */
-    Collection<Device> getVirtualDevices() throws IOException;
+    Collection<? extends Device> getVirtualDevices() throws IOException;
     
     /**
      * Getter for device according given parameters.
@@ -79,7 +79,7 @@ public interface MobilePlatform {
      * @return
      * @throws IOException 
      */
-    Collection<SDK> getSDKs() throws IOException;
+    Collection<? extends SDK> getSDKs() throws IOException;
     
     /**
      * Get prefferred SDK

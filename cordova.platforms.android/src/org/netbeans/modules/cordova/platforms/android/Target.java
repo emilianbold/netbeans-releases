@@ -108,4 +108,9 @@ public class Target implements SDK {
     public String toString() {
         return "Target{" + "id=" + id + ", name=" + name + '}'; //NOI18N
     }
+
+    @Override
+    public String getIdentifier() {
+        return Integer.toString(id);
+    }
 }

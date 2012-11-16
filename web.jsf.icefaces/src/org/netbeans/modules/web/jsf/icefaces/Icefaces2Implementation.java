@@ -99,7 +99,8 @@ public class Icefaces2Implementation implements JsfComponentImplementation {
     private static final String FACES_SKIP_COMMENTS = "javax.faces.FACELETS_SKIP_COMMENTS"; //NOI18N
 
     // ICEfaces Maven resources
-    private static final String MAVEN_DEP = "org.icefaces:icefaces:3.1.0:jar"; //NOI18N
+    private static final String MAVEN_DEP_CORE = "org.icefaces:icefaces:3.1.0:jar"; //NOI18N
+    private static final String MAVEN_DEP_ACE = "org.icefaces:icefaces-ace:3.1.0:jar"; //NOI18N
 
     @Override
     public String getName() {
@@ -207,7 +208,7 @@ public class Icefaces2Implementation implements JsfComponentImplementation {
     private static Library getMavenLibrary() {
         return JsfComponentUtils.createMavenDependencyLibrary(
                 ICEFACES_NAME + "-maven-lib", //NOI18N
-                new String[]{MAVEN_DEP},
+                new String[]{MAVEN_DEP_CORE, MAVEN_DEP_ACE},
                 new String[0]);
     }
 

@@ -39,40 +39,51 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.cordova.platforms;
+package org.netbeans.modules.web.clientproject.api;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.OutputStream;
+import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.api.annotations.common.NonNull;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileSystem;
-import org.openide.filesystems.FileUtil;
-import org.openide.util.EditableProperties;
 
 /**
- *
- * @author Jan Becicka
+ * Class representing Client Side project.
+ * <p>
+ * Its implementation can be gotten from project's lookup.
+ * @since 1.11
  */
-public final class ConfigUtils {
-    public static final String DISPLAY_NAME_PROP = "display.name";
+public interface ClientSideModule {
 
-    public static FileObject createConfigFile(FileObject projectRoot, final String name, final EditableProperties props) throws IOException {
-        final File f = new File(projectRoot.getPath() + "/nbproject/configs"); //NOI18N
-        final FileObject[] config = new FileObject[1];
-        projectRoot.getFileSystem().runAtomicAction(new FileSystem.AtomicAction() {
-            @Override
-            public void run() throws IOException {
-                FileObject configs = FileUtil.createFolder(f);
-                String freeName = FileUtil.findFreeFileName(configs, name, "properties"); //NOI18N
-                config[0] = configs.createData(freeName + ".properties"); //NOI18N
-                final OutputStream outputStream = config[0].getOutputStream();
-                try {
-                    props.store(outputStream);
-                } finally {
-                    outputStream.close();
-                }
-            }
-        });
-        return config[0];
+    /**
+     * Get properties of this module.
+     * @return
+     */
+    @NonNull
+    Properties getProperties();
+
+    //~ Inner classes
+
+    /**
+     * Class representing project properties.
+     */
+    public interface Properties {
+
+        /**
+         * Get the start file of this module. It can be {@code null}
+         * if the project is incorrectly configured.
+         * @return start file of this module, can be {@code null}
+         */
+        @CheckForNull
+        FileObject getStartFile();
+
+        /**
+         * Get context root of this module. It can be a relative URL
+         * (if internal web server is used) or an absolute one (if external
+         * web server is used).
+         * @return context root of this module
+         */
+        @NonNull
+        String getWebContextRoot();
+
     }
+
 }
