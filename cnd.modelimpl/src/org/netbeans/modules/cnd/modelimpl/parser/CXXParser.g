@@ -305,12 +305,26 @@ scope Declaration;
     :                                                                           {action.condition(input.LT(1));}
     (
         (type_specifier+ declarator EQUAL)=>
-            type_specifier+ declarator 
-            EQUAL                                                               {action.condition(action.CONDITION__EQUAL, input.LT(0));}
-            assignment_expression
+            condition_declaration
     |
-        expression
+        condition_expression
     )                                                                           {action.end_condition(input.LT(0));}
+    ;
+
+condition_declaration
+@init                                                                           {if(state.backtracking == 0){action.condition_declaration(input.LT(1));}}
+@after                                                                          {if(state.backtracking == 0){action.end_condition_declaration(input.LT(0));}}
+    :
+        type_specifier+ declarator 
+        EQUAL                                                                   {action.condition(action.CONDITION__EQUAL, input.LT(0));}
+        assignment_expression
+    ;
+
+condition_expression
+@init                                                                           {if(state.backtracking == 0){action.condition_expression(input.LT(1));}}
+@after                                                                          {if(state.backtracking == 0){action.end_condition_expression(input.LT(0));}}
+    :
+        expression
     ;
 
 iteration_statement
@@ -2472,7 +2486,10 @@ assignment_expression:
  * Ambiguity on logical_or_expression in assignment vs conditional_expression.
  * Resolved by unpretty rule-splitting and left-factoring.
  */
-assignment_expression:
+assignment_expression
+@init                                                                           {if(state.backtracking == 0){action.assignment_expression(input.LT(1));}}
+@after                                                                          {if(state.backtracking == 0){action.end_assignment_expression(input.LT(0));}}
+    :
         // this is taken from conditional_expression
         QUESTIONMARK expression COLON assignment_expression
     |
@@ -2491,11 +2508,16 @@ assignment_operator:
         BITWISEANDEQUAL | BITWISEXOREQUAL | BITWISEOREQUAL
     ;
 
-expression:
+expression
+@init                                                                           {if(state.backtracking == 0){action.expression(input.LT(1));}}
+@after                                                                          {if(state.backtracking == 0){action.end_expression(input.LT(0));}}
+    :
         assignment_expression ( COMMA assignment_expression )*
     ;
 
 constant_expression returns [ expression_t expr ]
+@init                                                                           {if(state.backtracking == 0){action.constant_expression(input.LT(1));}}
+@after                                                                          {if(state.backtracking == 0){action.end_constant_expression(input.LT(0));}}
     :
         conditional_expression
     ;

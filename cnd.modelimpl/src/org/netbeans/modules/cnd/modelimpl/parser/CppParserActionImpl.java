@@ -74,8 +74,6 @@ import org.netbeans.modules.cnd.modelimpl.csm.EnumeratorImpl.EnumeratorBuilder;
 import org.netbeans.modules.cnd.modelimpl.csm.FieldImpl.FieldBuilder;
 import org.netbeans.modules.cnd.modelimpl.csm.FriendFunctionDDImpl.FriendFunctionDDBuilder;
 import org.netbeans.modules.cnd.modelimpl.csm.FriendFunctionDefinitionImpl.FriendFunctionDefinitionBuilder;
-import org.netbeans.modules.cnd.modelimpl.csm.FriendFunctionImpl.FriendFunctionBuilder;
-import org.netbeans.modules.cnd.modelimpl.csm.FriendFunctionImplEx.FriendFunctionExBuilder;
 import org.netbeans.modules.cnd.modelimpl.csm.FunctionDDImpl.FunctionDDBuilder;
 import org.netbeans.modules.cnd.modelimpl.csm.FunctionDefinitionImpl.FunctionDefinitionBuilder;
 import org.netbeans.modules.cnd.modelimpl.csm.FunctionImpl.FunctionBuilder;
@@ -101,7 +99,11 @@ import org.netbeans.modules.cnd.modelimpl.csm.core.OffsetableDeclarationBase.Sim
 import org.netbeans.modules.cnd.modelimpl.csm.core.OffsetableIdentifiableBase.NameBuilder;
 import org.netbeans.modules.cnd.modelimpl.csm.deep.CaseStatementImpl.CaseStatementBuilder;
 import org.netbeans.modules.cnd.modelimpl.csm.deep.CompoundStatementImpl.CompoundStatementBuilder;
+import org.netbeans.modules.cnd.modelimpl.csm.deep.ConditionDeclarationImpl.ConditionDeclarationBuilder;
+import org.netbeans.modules.cnd.modelimpl.csm.deep.ConditionExpressionImpl.ConditionExpressionBuilder;
 import org.netbeans.modules.cnd.modelimpl.csm.deep.DeclarationStatementImpl.DeclarationStatementBuilder;
+import org.netbeans.modules.cnd.modelimpl.csm.deep.ExpressionBase.ExpressionBuilder;
+import org.netbeans.modules.cnd.modelimpl.csm.deep.ExpressionBase.ExpressionBuilderContainer;
 import org.netbeans.modules.cnd.modelimpl.csm.deep.ExpressionStatementImpl.ExpressionStatementBuilder;
 import org.netbeans.modules.cnd.modelimpl.csm.deep.ForStatementImpl.ForStatementBuilder;
 import org.netbeans.modules.cnd.modelimpl.csm.deep.GotoStatementImpl.GotoStatementBuilder;
@@ -1308,8 +1310,56 @@ public class CppParserActionImpl implements CppParserActionEx {
     }
     
     @Override public void condition(Token token) {}
-    @Override public void condition(int kind, Token token) {}
+    @Override public void condition(int kind, Token token) {}    
     @Override public void end_condition(Token token) {}
+    @Override public void condition_declaration(Token token) {
+        ConditionDeclarationBuilder builder = new ConditionDeclarationBuilder();
+        builder.setFile(currentContext.file);
+        builder.setStartOffset(((APTToken)token).getOffset());
+        builderContext.push(builder);            
+    }
+    @Override public void end_condition_declaration(Token token) {
+        ConditionDeclarationBuilder builder = (ConditionDeclarationBuilder)builderContext.top();
+        builderContext.pop();
+        builder.setEndOffset(((APTToken)token).getEndOffset());
+        if(builderContext.top() instanceof LoopStatementBuilder) {
+            LoopStatementBuilder container = (LoopStatementBuilder)builderContext.top();
+            container.setConditionDeclaration(builder);
+        } else if(builderContext.top() instanceof ForStatementBuilder) {
+            ForStatementBuilder container = (ForStatementBuilder)builderContext.top();
+            container.setConditionDeclaration(builder);
+        } else if(builderContext.top() instanceof SwitchStatementBuilder) {
+            SwitchStatementBuilder container = (SwitchStatementBuilder)builderContext.top();
+            container.setConditionDeclaration(builder);
+        } else if(builderContext.top() instanceof IfStatementBuilder) {
+            IfStatementBuilder container = (IfStatementBuilder)builderContext.top();
+            container.setConditionDeclaration(builder);
+        }
+    }
+    @Override public void condition_expression(Token token) {
+        ConditionExpressionBuilder builder = new ConditionExpressionBuilder();
+        builder.setFile(currentContext.file);
+        builder.setStartOffset(((APTToken)token).getOffset());
+        builderContext.push(builder);            
+    }
+    @Override public void end_condition_expression(Token token) {
+        ConditionExpressionBuilder builder = (ConditionExpressionBuilder)builderContext.top();
+        builderContext.pop();
+        builder.setEndOffset(((APTToken)token).getEndOffset());
+        if(builderContext.top() instanceof LoopStatementBuilder) {
+            LoopStatementBuilder container = (LoopStatementBuilder)builderContext.top();
+            container.setConditionExpression(builder);
+        } else if(builderContext.top() instanceof ForStatementBuilder) {
+            ForStatementBuilder container = (ForStatementBuilder)builderContext.top();
+            container.setConditionExpression(builder);
+        } else if(builderContext.top() instanceof SwitchStatementBuilder) {
+            SwitchStatementBuilder container = (SwitchStatementBuilder)builderContext.top();
+            container.setConditionExpression(builder);
+        } else if(builderContext.top() instanceof IfStatementBuilder) {
+            IfStatementBuilder container = (IfStatementBuilder)builderContext.top();
+            container.setConditionExpression(builder);
+        }
+    }
     
     @Override public void iteration_statement(Token token) {}
     @Override public void iteration_statement(int kind, Token token) {
@@ -2029,6 +2079,53 @@ public class CppParserActionImpl implements CppParserActionEx {
     @Override public void end_handler(Token token) {}
 
 
+    @Override
+    public void assignment_expression(Token token) {
+        expression(token);
+    }
+
+    @Override
+    public void end_assignment_expression(Token token) {
+        end_expression(token);
+    }
+
+    @Override
+    public void expression(Token token) {
+        if(!(builderContext.top() instanceof ExpressionBuilder)) {
+            ExpressionBuilder builder = new ExpressionBuilder();
+            builder.setStartOffset(((APTToken)token).getOffset());
+            builderContext.push(builder);        
+        } else {
+            ExpressionBuilder builder = (ExpressionBuilder) builderContext.top();
+            builder.enterExpression();
+        }
+    }
+    @Override
+    public void end_expression(Token token) {
+        ExpressionBuilder builder = (ExpressionBuilder) builderContext.top();
+        builder.setEndOffset(((APTToken)token).getEndOffset());
+        if(builder.isTopExpression()) {
+            builderContext.pop();
+            if(builderContext.top() instanceof ExpressionBuilderContainer) {
+                ExpressionBuilderContainer container = (ExpressionBuilderContainer) builderContext.top();
+                container.addExpressionBuilder(builder);
+            }
+        } else {
+            builder.leaveExpression();
+        }      
+    }
+
+    @Override
+    public void constant_expression(Token token) {
+        expression(token);
+    }
+
+    @Override
+    public void end_constant_expression(Token token) {
+        end_expression(token);
+    }    
+    
+    
     private static final boolean TRACE = false;
     private void addReference(Token token, final CsmObject definition, final CsmReferenceKind kind) {
         if (definition == null) {

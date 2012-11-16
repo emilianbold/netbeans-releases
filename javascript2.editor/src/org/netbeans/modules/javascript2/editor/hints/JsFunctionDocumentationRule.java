@@ -219,7 +219,8 @@ public class JsFunctionDocumentationRule extends JsAstRule {
 
         private boolean containFunctionParamName(List<DocParameter> documentationParams, String functionParamName) {
             for (DocParameter docParameter : documentationParams) {
-                if (docParameter.getParamName().getName().equals(functionParamName)) {
+                if (docParameter.getParamName() != null
+                        && docParameter.getParamName().getName().equals(functionParamName)) {
                     return true;
                 }
             }

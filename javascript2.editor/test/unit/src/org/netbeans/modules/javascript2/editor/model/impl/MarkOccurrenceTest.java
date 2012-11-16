@@ -430,6 +430,14 @@ public class MarkOccurrenceTest extends JsTestBase {
     public void testIssue221228_01() throws Exception {
         checkOccurrences("testfiles/markoccurences/issue221228.js", "    var ms^g = \"\"; // rename here", true);
     }
+    
+    public void testIssue222250_01() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue222250.js", "       this.x^hr = xhr;", true);
+    }
+
+    public void testIssue222250_02() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue222250.js", "       this.xhr = x^hr;", true);
+    }
 
 //    public void testIssue221228_02() throws Exception {
 //        checkOccurrences("testfiles/markoccurences/issue221228.js", "a.h^i(); // rename hi here", true);

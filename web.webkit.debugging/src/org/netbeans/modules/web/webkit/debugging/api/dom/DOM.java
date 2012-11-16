@@ -544,10 +544,12 @@ public class DOM {
             }
             JSONArray children = (JSONArray)params.get("nodes"); // NOI18N
             parent.initChildren();
+            List<Node> newChildren = new ArrayList<Node>(children.size());
             for (Object child : children) {
                 Node node = new Node((JSONObject)child);
-                parent.addChild(node);
+                newChildren.add(node);
             }
+            parent.addChildren(newChildren);
             updateNodesMap(parent);
         }
         notifyChildNodesSet(parent);

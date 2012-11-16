@@ -42,11 +42,13 @@
 package org.netbeans.modules.javascript2.editor;
 
 import javax.swing.text.BadLocationException;
+import javax.swing.text.Document;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.mimelookup.MimeRegistration;
 import org.netbeans.api.editor.mimelookup.MimeRegistrations;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
+import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
@@ -117,7 +119,7 @@ public class JsTypedBreakInterceptor implements TypedBreakInterceptor {
         JsTokenId id = token.id();
 
         // Insert a missing }
-        boolean insertRightBrace = isEndMissing(doc, offset);
+        boolean insertRightBrace = isRightCurlyMissing(doc, offset);
 
         if (!id.isError() && insertMatching && insertRightBrace && !isDocToken(id)) {
             int indent = GsfUtilities.getLineIndent(doc, offset);
@@ -129,11 +131,16 @@ public class JsTypedBreakInterceptor implements TypedBreakInterceptor {
             StringBuilder sb = new StringBuilder();
             int carretOffset = 0;
             if (offset > afterLastNonWhite) {
+                int curlyOffset = getUnbalancedCurlyOffset(doc, offset);
                 sb.append("\n"); // XXX On Windows, do \r\n?
                 sb.append(IndentUtils.createIndentString(doc, indent + IndentUtils.indentLevelSize(doc)));
                 carretOffset = sb.length();
                 sb.append("\n"); // NOI18N
-                sb.append(IndentUtils.createIndentString(doc, indent));
+                if (curlyOffset >= 0) {
+                    sb.append(IndentUtils.createIndentString(doc, GsfUtilities.getLineIndent(doc, curlyOffset)));
+                } else {
+                    sb.append(IndentUtils.createIndentString(doc, indent));
+                }
                 sb.append("}"); // NOI18N
             } else {
                 // I'm inserting a newline in the middle of a sentence, such as the scenario in #118656
@@ -489,7 +496,7 @@ public class JsTypedBreakInterceptor implements TypedBreakInterceptor {
      * @return <code>true</code> when ending } is missing
      * @throws BadLocationException 
      */
-    private static boolean isEndMissing(BaseDocument doc, int offset) throws BadLocationException {
+    private static boolean isRightCurlyMissing(BaseDocument doc, int offset) throws BadLocationException {
 
         // FIXME performance
         int curlyBalance = LexUtilities.getTokenBalance(doc,
@@ -509,6 +516,28 @@ public class JsTypedBreakInterceptor implements TypedBreakInterceptor {
         }
 
         return false;
+    }
+
+    private static int getUnbalancedCurlyOffset(BaseDocument doc, int offset) throws BadLocationException {
+        TokenSequence<? extends JsTokenId> ts = LexUtilities.getJsPositionedSequence(doc, offset);
+        if (ts == null) {
+            return -1;
+        }
+
+        int balance = 0;
+        while (ts.movePrevious()) {
+            Token t = ts.token();
+
+            if (t.id() == JsTokenId.BRACKET_RIGHT_CURLY) {
+                balance++;
+            } else if (t.id() == JsTokenId.BRACKET_LEFT_CURLY) {
+                balance--;
+                if (balance < 0) {
+                    return ts.offset();
+                }
+            }
+        }
+        return -1;
     }
 
     private boolean isDocToken(JsTokenId id) {

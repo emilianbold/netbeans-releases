@@ -253,14 +253,12 @@ public class DOMNode extends AbstractNode {
         if (node.getContentDocument() != null) {
             return false;
         }
-        synchronized (node) {
-            List<Node> subNodes = node.getChildren();
-            if (subNodes != null) {
-                for (Node subNode : subNodes) {
-                    boolean isElement = (subNode.getNodeType() == org.w3c.dom.Node.ELEMENT_NODE);
-                    if (isElement && !subNode.isInjectedByNetBeans()) {
-                        return false;
-                    }
+        List<Node> subNodes = node.getChildren();
+        if (subNodes != null) {
+            for (Node subNode : subNodes) {
+                boolean isElement = (subNode.getNodeType() == org.w3c.dom.Node.ELEMENT_NODE);
+                if (isElement && !subNode.isInjectedByNetBeans()) {
+                    return false;
                 }
             }
         }
@@ -314,14 +312,12 @@ public class DOMNode extends AbstractNode {
          */
         void updateKeys(Node node) {
             List<Integer> keys = new ArrayList<Integer>();
-            synchronized (node) {
-                List<Node> subNodes = node.getChildren();
-                if (subNodes != null) {
-                    for (Node subNode : subNodes) {
-                        boolean isElement = (subNode.getNodeType() == org.w3c.dom.Node.ELEMENT_NODE);
-                        if (isElement && !subNode.isInjectedByNetBeans()) {
-                            keys.add(subNode.getNodeId());
-                        }
+            List<Node> subNodes = node.getChildren();
+            if (subNodes != null) {
+                for (Node subNode : subNodes) {
+                    boolean isElement = (subNode.getNodeType() == org.w3c.dom.Node.ELEMENT_NODE);
+                    if (isElement && !subNode.isInjectedByNetBeans()) {
+                        keys.add(subNode.getNodeId());
                     }
                 }
             }
