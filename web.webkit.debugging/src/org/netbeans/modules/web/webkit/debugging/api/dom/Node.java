@@ -44,6 +44,7 @@ package org.netbeans.modules.web.webkit.debugging.api.dom;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 
@@ -77,9 +78,11 @@ public class Node {
         if (childrenValue != null) {
             initChildren();
             JSONArray childrenArray = (JSONArray)childrenValue;
+            List<Node> newChildren = new ArrayList<Node>(childrenArray.size());
             for (Object child : childrenArray) {
-                addChild(new Node((JSONObject)child));
+                newChildren.add(new Node((JSONObject)child));
             }
+            addChildren(newChildren);
         }
 
         // Attributes
@@ -185,7 +188,7 @@ public class Node {
      * Initializes {@code children} field.
      */
     final synchronized void initChildren() {
-        children = new ArrayList<Node>();
+        children = new CopyOnWriteArrayList<Node>();
     }
 
     /**
@@ -202,16 +205,18 @@ public class Node {
     }
 
     /**
-     * Adds child to this node.
+     * Adds children to this node.
      * 
-     * @param child new child to add.
+     * @param newChildren new children to add.
      */
-    synchronized final void addChild(Node child) {
+    synchronized final void addChildren(List<Node> newChildren) {
         if (children == null) {
             initChildren();
         }
-        children.add(child);
-        child.parent = this;
+        children.addAll(newChildren);
+        for (Node child : newChildren) {
+            child.parent = this;
+        }
     }
 
     /**

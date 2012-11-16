@@ -434,13 +434,7 @@ public class WebKitPageModel extends PageModel {
             nodes.put(nodeId, domNode);
         }
         boolean updateChildren = false;
-        List<Node> subNodes = null;
-        synchronized (node) {
-            List<Node> origSubNodes = node.getChildren();
-            if (origSubNodes != null) {
-                subNodes = new ArrayList<Node>(origSubNodes);
-            }
-        }
+        List<Node> subNodes = node.getChildren();
         if (subNodes == null) {
             int nodeType = node.getNodeType();
             if (nodeType == org.w3c.dom.Node.ELEMENT_NODE || nodeType == org.w3c.dom.Node.DOCUMENT_NODE) {
@@ -696,15 +690,13 @@ public class WebKitPageModel extends PageModel {
         int type = node.getNodeType();
         if (type == org.w3c.dom.Node.DOCUMENT_NODE) {
             // Highlight/select document element
-            synchronized (node) {
-                List<Node> subNodes = node.getChildren();
-                if (subNodes != null) {
-                    for (Node subNode : subNodes) {
-                        // There should be just one element
-                        if (subNode.getNodeType() == org.w3c.dom.Node.ELEMENT_NODE) {
-                            result = subNode;
-                            break;
-                        }
+            List<Node> subNodes = node.getChildren();
+            if (subNodes != null) {
+                for (Node subNode : subNodes) {
+                    // There should be just one element
+                    if (subNode.getNodeType() == org.w3c.dom.Node.ELEMENT_NODE) {
+                        result = subNode;
+                        break;
                     }
                 }
             }
