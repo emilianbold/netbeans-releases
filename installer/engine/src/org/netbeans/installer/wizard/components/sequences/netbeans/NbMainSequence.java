@@ -441,7 +441,8 @@ public class NbMainSequence extends WizardSequence {
                     commands.add("--modules");
                 }
                 if (! commands.toString().contains("--extra-uc") && getExtraUC() != null) {
-                    commands.add("--extra-uc \"" + getExtraUC() + "\"");
+                    commands.add("--extra-uc");
+                    commands.add("\"" + getExtraUC() + "\"");
                 }
                 commands.add("--install");
                 commands.add("\".*junit.*\"");
@@ -454,7 +455,8 @@ public class NbMainSequence extends WizardSequence {
                     commands.add("--modules");
                 }
                 if (! commands.toString().contains("--extra-uc") && getExtraUC() != null) {
-                    commands.add("--extra-uc \"" + getExtraUC() + "\"");
+                    commands.add("--extra-uc");
+                    commands.add("\"" + getExtraUC() + "\"");
                 }
                 commands.add("--update-all");
                 title = title == null ?

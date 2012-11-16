@@ -107,7 +107,7 @@ public class ModuleOptions extends OptionProcessor {
         "MSG_UpdateModules=Updates all or specified modules",
         "MSG_UpdateAll=Updates all modules",
         "MSG_Refresh=Refresh all catalogs",
-        "MSG_ExtraUC=Add a extra Update Centers (URLs)"
+        "MSG_ExtraUC=Add a extra Update Center (URL)"
     })
     private Option init() {
         if (both != null) {
