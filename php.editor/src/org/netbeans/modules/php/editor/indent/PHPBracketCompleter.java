@@ -1541,7 +1541,7 @@ public class PHPBracketCompleter implements KeystrokeHandler {
         TokenSequence<? extends PHPTokenId> ts = LexUtilities.getPHPTokenSequence(doc, offset);
         if (ts != null) {
             ts.move(offset);
-            if (!ts.moveNext() || !ts.moveNext()) {
+            if (!ts.movePrevious() || !ts.moveNext()) {
                 return previousIndent;
             }
             Token<? extends PHPTokenId> token = ts.token();

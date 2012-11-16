@@ -404,41 +404,36 @@ public class ClientSideProject implements Project {
 
     }
 
-    private static class OpenHookImpl extends ProjectOpenedHook {
+    private static class OpenHookImpl extends ProjectOpenedHook implements PropertyChangeListener {
 
         private final ClientSideProject project;
         private final FileChangeListener siteRootChangesListener;
 
-        private volatile File siteRootFolder;
+        // @GuardedBy("this")
+        private File siteRootFolder;
 
 
         public OpenHookImpl(ClientSideProject project) {
             this.project = project;
             siteRootChangesListener = new SiteRootFolderListener(project);
-            project.getEvaluator().addPropertyChangeListener(new PropertyChangeListener() {
-                @Override
-                public void propertyChange(PropertyChangeEvent evt) {
-                    if (ClientSideProjectConstants.PROJECT_SITE_ROOT_FOLDER.equals(evt.getPropertyName())) {
-                        removeSiteRootListener();
-                        addSiteRootListener();
-                    }
-                }
-            });
         }
 
         @Override
         protected void projectOpened() {
+            project.getEvaluator().addPropertyChangeListener(this);
             addSiteRootListener();
             GlobalPathRegistry.getDefault().register(ClassPathProviderImpl.SOURCE_CP, new ClassPath[]{project.getSourceClassPath()});
         }
 
         @Override
         protected void projectClosed() {
+            project.getEvaluator().removePropertyChangeListener(this);
             removeSiteRootListener();
             GlobalPathRegistry.getDefault().unregister(ClassPathProviderImpl.SOURCE_CP, new ClassPath[]{project.getSourceClassPath()});
         }
 
-        private void addSiteRootListener() {
+        private synchronized void addSiteRootListener() {
+            assert siteRootFolder == null : "Should not be listening to " + siteRootFolder;
             FileObject siteRoot = project.getSiteRootFolder();
             if (siteRoot == null) {
                 // broken project
@@ -453,7 +448,7 @@ public class ClientSideProject implements Project {
             FileUtil.addRecursiveListener(siteRootChangesListener, siteRootFolder);
         }
 
-        private void removeSiteRootListener() {
+        private synchronized void removeSiteRootListener() {
             if (siteRootFolder == null) {
                 // no listener
                 return;
@@ -465,6 +460,17 @@ public class ClientSideProject implements Project {
                 LOGGER.log(Level.INFO, null, ex);
             }
             siteRootFolder = null;
+        }
+
+        @Override
+        public void propertyChange(PropertyChangeEvent evt) {
+            // change in project properties
+            if (ClientSideProjectConstants.PROJECT_SITE_ROOT_FOLDER.equals(evt.getPropertyName())) {
+                synchronized (this) {
+                    removeSiteRootListener();
+                    addSiteRootListener();
+                }
+            }
         }
 
     }

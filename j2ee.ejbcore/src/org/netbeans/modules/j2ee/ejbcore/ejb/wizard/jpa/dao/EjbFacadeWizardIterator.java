@@ -403,6 +403,7 @@ import org.openide.util.NbBundle;
 
         }
 
+        final FileObject abstractFacadeFO = afFO;
         // add the @stateless annotation
         // add implements and extends clauses to the facade
         Task<WorkingCopy> modificationTask = new Task<WorkingCopy>(){
@@ -430,13 +431,19 @@ import org.openide.util.NbBundle;
                         "{super(" + entitySimpleName + ".class);}");            //NOI18N
                 members.add(constructor);
 
+                TypeElement abstactFacadeElement = wc.getElements().getTypeElement(afName);
+                TypeElement entityElement = wc.getElements().getTypeElement(entityFQN);
+                if (abstactFacadeElement == null) {
+                    LOGGER.log(Level.SEVERE, "TypeElement not found for {0}", afName);
+                    LOGGER.log(Level.SEVERE, "AbstractFacade:path={0},valid={1},canRead={2},", new Object[]{
+                        abstractFacadeFO.getPath(), abstractFacadeFO.isValid(), abstractFacadeFO.canRead()});
+                }
+
                 ClassTree newClassTree = maker.Class(
                         maker.addModifiersAnnotation(classTree.getModifiers(), genUtils.createAnnotation(EJB_STATELESS)),
                         classTree.getSimpleName(),
                         classTree.getTypeParameters(),
-                        maker.Type(wc.getTypes().getDeclaredType(
-                            wc.getElements().getTypeElement(afName),
-                            wc.getElements().getTypeElement(entityFQN).asType())),
+                        maker.Type(wc.getTypes().getDeclaredType(abstactFacadeElement, entityElement.asType())),
                         implementsClause,
                         members);
 
@@ -448,7 +455,9 @@ import org.openide.util.NbBundle;
             try {
                 JavaSource.forFileObject(afFO).runWhenScanFinished(waiter, true).get();
             } catch (InterruptedException ex) {
+                Exceptions.printStackTrace(ex);
             } catch (ExecutionException ex) {
+                Exceptions.printStackTrace(ex);
             }
         }
         
@@ -464,7 +473,7 @@ import org.openide.util.NbBundle;
                         new Object[]{facade.isValid(), classPath.contains(facade)});
             }
         }
-        JavaSource.forFileObject(facade).runModificationTask(modificationTask).commit();
+        facadeJS.runModificationTask(modificationTask).commit();
 
         return createdFiles;
     }

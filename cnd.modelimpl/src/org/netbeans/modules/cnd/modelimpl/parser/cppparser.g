@@ -1908,6 +1908,8 @@ declaration_specifiers [boolean allowTypedef, boolean noTypeId]
             (literal_inline {ds = dsINLINE;})
         |
             (sc = storage_class_specifier)
+        | 
+            LITERAL_virtual
         )*
         (options {greedy=true;} :type_attribute_specification)?
 
@@ -2007,11 +2009,15 @@ simple_type_specifier[boolean noTypeId] returns [/*TypeSpecifier*/int ts = tsInv
 	;
 
 builtin_cv_type_specifier[/*TypeSpecifier*/int old_ts] returns [/*TypeSpecifier*/int ts = old_ts]
-{TypeQualifier tq;}
+{TypeQualifier tq;StorageClass sc;}
     :
         (options{greedy = true;}: ts = builtin_type[ts])+
         ((cv_qualifier builtin_type[ts]) => 
         tq = cv_qualifier ts = builtin_cv_type_specifier[ts])?
+        ((storage_class_specifier builtin_type[ts]) => 
+        sc = storage_class_specifier ts = builtin_cv_type_specifier[ts])?
+        ((LITERAL_virtual builtin_type[ts]) => 
+        LITERAL_virtual ts = builtin_cv_type_specifier[ts])?
     ;
 
 builtin_type[/*TypeSpecifier*/int old_ts] returns [/*TypeSpecifier*/int ts = old_ts]

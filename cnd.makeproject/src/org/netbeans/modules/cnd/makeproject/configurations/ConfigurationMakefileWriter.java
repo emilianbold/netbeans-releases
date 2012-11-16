@@ -920,8 +920,9 @@ public class ConfigurationMakefileWriter {
                 command = ""; // NOI18N
                 comment = null;
                 additionalDep = null;
+                PredefinedToolKind tool = itemConfiguration.getTool();
                 if (itemConfiguration.isCompilerToolConfiguration()) {
-                    AbstractCompiler compiler = (AbstractCompiler) compilerSet.getTool(itemConfiguration.getTool());
+                    AbstractCompiler compiler = (AbstractCompiler) compilerSet.getTool(tool);
                     BasicCompilerConfiguration compilerConfiguration = itemConfiguration.getCompilerConfiguration();
                     target = compilerConfiguration.getOutputFile(items[i], conf, false);
                     if (compiler != null && compiler.getDescriptor() != null) {
@@ -957,7 +958,7 @@ public class ConfigurationMakefileWriter {
                         command += file;
                     }
                     additionalDep = compilerConfiguration.getAdditionalDependencies().getValue();
-                } else if (itemConfiguration.getTool() == PredefinedToolKind.CustomTool) {
+                } else if (tool == PredefinedToolKind.CustomTool) {
                     CustomToolConfiguration customToolConfiguration = itemConfiguration.getCustomToolConfiguration();
                     if (customToolConfiguration.getModified()) {
                         target = customToolConfiguration.getOutputs().getValue();
