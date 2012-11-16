@@ -1228,6 +1228,11 @@ final class Central implements ControllerHandler {
         if(!isGroupOpened(tcGroup)) {
             return;
         }
+
+        if( isViewMaximized() ) {
+            //#222210
+            switchMaximizedMode( null );
+        }
         
         Set tcs = tcGroup.getClosingSet();
         List<TopComponent> closedTcs = new ArrayList<TopComponent>();
