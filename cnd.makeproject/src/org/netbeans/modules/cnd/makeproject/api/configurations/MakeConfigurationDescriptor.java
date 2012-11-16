@@ -110,6 +110,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
+import org.openide.loaders.DataObject;
 import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
@@ -302,7 +303,8 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
     }
 
     public void initLogicalFolders(Iterator<SourceFolderInfo> sourceFileFolders, boolean createLogicalFolders,
-            Iterator<SourceFolderInfo> testFileFolders, Iterator<LogicalFoldersInfo> logicalFolders, Iterator<LogicalFolderItemsInfo> logicalFolderItems, Iterator<String> importantItems, String mainFilePath, boolean addGeneratedMakefileToLogicalView) {
+            Iterator<SourceFolderInfo> testFileFolders, Iterator<LogicalFoldersInfo> logicalFolders, Iterator<LogicalFolderItemsInfo> logicalFolderItems, Iterator<String> importantItems, 
+            String mainFilePath, DataObject mainFileTemplate, boolean addGeneratedMakefileToLogicalView) {
         if (createLogicalFolders) {
             sourceFileItems = rootFolder.addNewFolder(SOURCE_FILES_FOLDER, getString("SourceFilesTxt"), true, Folder.Kind.SOURCE_LOGICAL_FOLDER);
             headerFileItems = rootFolder.addNewFolder(HEADER_FILES_FOLDER, getString("HeaderFilesTxt"), true, Folder.Kind.SOURCE_LOGICAL_FOLDER);
@@ -351,7 +353,11 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
         if (mainFilePath != null) {
             Folder srcFolder = rootFolder.findFolderByName(MakeConfigurationDescriptor.SOURCE_FILES_FOLDER);
             if (srcFolder != null) {
-                srcFolder.addItem(Item.createInFileSystem(baseDirFS, mainFilePath));
+                Item added = srcFolder.addItem(Item.createInFileSystem(baseDirFS, mainFilePath));
+                PredefinedToolKind defaultToolForItem = Item.getDefaultToolForItem(mainFileTemplate, mainFileTemplate.getPrimaryFile(), mainFilePath);
+                for (ItemConfiguration ic : added.getItemConfigurations()) {
+                    ic.setTool(defaultToolForItem);
+                }
             }
         }
         // Handle test folders
