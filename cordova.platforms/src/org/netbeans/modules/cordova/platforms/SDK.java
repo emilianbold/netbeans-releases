@@ -47,8 +47,8 @@ package org.netbeans.modules.cordova.platforms;
  */
 public interface SDK {
 
-    public static String SDK_PROP = "sdk";
-
     public String getName();
+    
+    public String getIdentifier();
     
 }

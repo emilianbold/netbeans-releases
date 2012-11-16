@@ -80,7 +80,7 @@ public class GSFPHPError implements org.netbeans.modules.csl.api.Error.Badging {
 
     @Override
     public String getKey() {
-        return "[" + startPosition + "," + endPosition + "]-" + displayName ;
+        return "[" + startPosition + "," + endPosition + "]-" + displayName;
     }
 
     @Override

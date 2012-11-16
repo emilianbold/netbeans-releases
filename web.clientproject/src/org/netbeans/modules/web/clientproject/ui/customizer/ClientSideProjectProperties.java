@@ -358,6 +358,11 @@ public final class ClientSideProjectProperties {
         return FileUtil.toFile(project.getProjectDirectory());
     }
 
+    @CheckForNull
+    public File getResolvedStartFile() {
+        return resolveFile(getStartFile());
+    }
+
     private static void errorOccured(String message) {
         DialogDisplayer.getDefault().notifyLater(new NotifyDescriptor.Message(message, NotifyDescriptor.ERROR_MESSAGE));
     }

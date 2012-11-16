@@ -45,10 +45,24 @@ import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import org.netbeans.editor.BaseDocument;
-import org.netbeans.modules.csl.api.*;
+import org.netbeans.modules.csl.api.EditList;
+import org.netbeans.modules.csl.api.Hint;
+import org.netbeans.modules.csl.api.HintFix;
+import org.netbeans.modules.csl.api.HintSeverity;
+import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
-import org.netbeans.modules.php.editor.parser.astnodes.*;
+import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
+import org.netbeans.modules.php.editor.parser.astnodes.Assignment;
+import org.netbeans.modules.php.editor.parser.astnodes.Block;
+import org.netbeans.modules.php.editor.parser.astnodes.ConditionalExpression;
+import org.netbeans.modules.php.editor.parser.astnodes.DoStatement;
+import org.netbeans.modules.php.editor.parser.astnodes.ForEachStatement;
+import org.netbeans.modules.php.editor.parser.astnodes.ForStatement;
+import org.netbeans.modules.php.editor.parser.astnodes.IfStatement;
+import org.netbeans.modules.php.editor.parser.astnodes.InfixExpression;
 import org.netbeans.modules.php.editor.parser.astnodes.InfixExpression.OperatorType;
+import org.netbeans.modules.php.editor.parser.astnodes.ReturnStatement;
+import org.netbeans.modules.php.editor.parser.astnodes.WhileStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.visitors.DefaultTreePathVisitor;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle.Messages;
@@ -94,7 +108,13 @@ public class AmbiguousComparisonHint extends AbstractHint {
         @Messages("AmbiguousComparisonHintCustom=Possible accidental comparison found. Check if you wanted to use '=' instead.")
         private void createHint(final InfixExpression node) {
             final OffsetRange offsetRange = new OffsetRange(node.getStartOffset(), node.getEndOffset());
-            hints.add(new Hint(AmbiguousComparisonHint.this, Bundle.AmbiguousComparisonHintCustom(), fileObject, offsetRange, Collections.<HintFix>singletonList(new AssignmentHintFix(doc, node)), 500));
+            hints.add(new Hint(
+                    AmbiguousComparisonHint.this,
+                    Bundle.AmbiguousComparisonHintCustom(),
+                    fileObject,
+                    offsetRange,
+                    Collections.<HintFix>singletonList(new AssignmentHintFix(doc, node)),
+                    500));
         }
 
         @Override

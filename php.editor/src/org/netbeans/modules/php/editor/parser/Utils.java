@@ -45,7 +45,10 @@ package org.netbeans.modules.php.editor.parser;
  *
  * @author Petr Pisl
  */
-public class Utils {
+public final class Utils {
+
+    private Utils() {
+    }
 
     /**
      * This method is mainly used for debugging purpose.
@@ -535,7 +538,7 @@ public class Utils {
 
     public static int getRowEnd(String text, int offset) {
         int i = offset - 1;
-        if (i < 0 ) {
+        if (i < 0) {
             return 0;
         }
         for (; i < text.length(); i++) {

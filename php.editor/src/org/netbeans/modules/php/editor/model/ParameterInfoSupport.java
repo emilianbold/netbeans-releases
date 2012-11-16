@@ -88,6 +88,7 @@ public class ParameterInfoSupport {
         this.modelVisitor = modelVisitor;
         this.offset = offset;
     }
+
     private static final Collection<PHPTokenId> CTX_DELIMITERS = Arrays.asList(
             PHPTokenId.PHP_OPENTAG, PHPTokenId.PHP_SEMICOLON, PHPTokenId.PHP_CURLY_OPEN, PHPTokenId.PHP_CURLY_CLOSE,
             PHPTokenId.PHP_RETURN, PHPTokenId.PHP_OPERATOR, PHPTokenId.PHP_ECHO,
@@ -99,8 +100,7 @@ public class ParameterInfoSupport {
 
 
     private enum State {
-
-        START, METHOD, INVALID, VARBASE, DOLAR, PARAMS, REFERENCE, STATIC_REFERENCE, FUNCTION, FIELD, VARIABLE, CLASSNAME, STOP
+       START, METHOD, INVALID, VARBASE, DOLAR, PARAMS, REFERENCE, STATIC_REFERENCE, FUNCTION, FIELD, VARIABLE, CLASSNAME, STOP
     };
 
     public ParameterInfo getParameterInfo() {
@@ -110,6 +110,7 @@ public class ParameterInfoSupport {
         }
         return retval;
     }
+
     private ParameterInfo parametersTokenImpl() {
         FileScope modelScope = modelVisitor.getFileScope();
         VariableScope nearestVariableScope = modelVisitor.getNearestVariableScope(offset);

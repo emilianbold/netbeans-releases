@@ -71,9 +71,9 @@ import org.openide.filesystems.FileObject;
  * @author Radek Matous
  */
 public class OverridingMethodsImpl implements OverridingMethods {
-    private String classSignatureForInheritedMethods = "";//NOI18N
-    private String classSignatureForInheritedByMethods = "";//NOI18N
-    private String classSignatureForInheritedByTypes = "";//NOI18N
+    private String classSignatureForInheritedMethods = ""; //NOI18N
+    private String classSignatureForInheritedByMethods = ""; //NOI18N
+    private String classSignatureForInheritedByTypes = ""; //NOI18N
     /** just very simple implementation for now*/
     private Set<MethodElement> inheritedMethods = Collections.emptySet();
     private Set<MethodElement> inheritedByMethods = Collections.emptySet();
@@ -159,7 +159,7 @@ public class OverridingMethodsImpl implements OverridingMethods {
             Index index = ElementQueryFactory.getIndexQuery(info);
             TypeScope type = (TypeScope) method.getInScope();
             inheritedByMethods = new HashSet<MethodElement>();
-            for (TypeElement nextType : getInheritedByTypes(info,type)) {
+            for (TypeElement nextType : getInheritedByTypes(info, type)) {
                 inheritedByMethods.addAll(index.getDeclaredMethods(nextType));
             }
         }
@@ -167,7 +167,7 @@ public class OverridingMethodsImpl implements OverridingMethods {
         return inheritedByMethods;
     }
 
-    private static class MethodLocation extends DeclarationFinderImpl.AlternativeLocationImpl {
+    private static final class MethodLocation extends DeclarationFinderImpl.AlternativeLocationImpl {
 
         public static MethodLocation newInstance(PhpElement modelElement) {
             FileObject fileObject = modelElement.getFileObject();
@@ -194,7 +194,7 @@ public class OverridingMethodsImpl implements OverridingMethods {
             return sb.toString();
         }
     }
-    private static class TypeLocation extends DeclarationFinderImpl.AlternativeLocationImpl {
+    private static final class TypeLocation extends DeclarationFinderImpl.AlternativeLocationImpl {
 
         public static TypeLocation newInstance(PhpElement modelElement) {
             FileObject fileObject = modelElement.getFileObject();

@@ -84,7 +84,7 @@ public enum PHPTopTokenId implements TokenId {
         return primaryCategory;
     }
 
-    private static final Language<PHPTopTokenId> language =
+    private static final Language<PHPTopTokenId> LANGUAGE =
             new LanguageHierarchy<PHPTopTokenId>() {
 
                 @Override
@@ -117,7 +117,7 @@ public enum PHPTopTokenId implements TokenId {
             }.language();
 
     public static Language<PHPTopTokenId> language() {
-        return language;
+        return LANGUAGE;
     }
 
 }

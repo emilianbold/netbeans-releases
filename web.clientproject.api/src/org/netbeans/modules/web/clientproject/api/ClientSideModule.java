@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,47 +37,53 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.php.editor.model.impl;
+package org.netbeans.modules.web.clientproject.api;
 
-import java.util.Map;
-import org.netbeans.modules.csl.api.OffsetRange;
-import org.netbeans.modules.php.editor.model.Scope;
-import org.netbeans.modules.php.editor.parser.astnodes.Assignment;
+import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.api.annotations.common.NonNull;
+import org.openide.filesystems.FileObject;
 
 /**
- *
- * @author Radek Matous
+ * Class representing Client Side project.
+ * <p>
+ * Its implementation can be gotten from project's lookup.
+ * @since 1.11
  */
-class VarAssignmentImpl extends AssignmentImpl<VariableNameImpl> {
+public interface ClientSideModule {
 
-    VarAssignmentImpl(
-            VariableNameImpl var,
-            Scope scope,
-            boolean conditionalBlock,
-            OffsetRange scopeRange,
-            OffsetRange nameRange,
-            Assignment assignment,
-            Map<String, AssignmentImpl> allAssignments) {
-        super(var, scope, scopeRange, nameRange, assignment, allAssignments);
-        setConditionalBlock(conditionalBlock);
-    }
+    /**
+     * Get properties of this module.
+     * @return
+     */
+    @NonNull
+    Properties getProperties();
 
-    VarAssignmentImpl(VariableNameImpl var, Scope scope, boolean conditionalBlock, OffsetRange scopeRange, OffsetRange nameRange, String typeName) {
-        super(var, scope, scopeRange, nameRange, typeName);
-        setConditionalBlock(conditionalBlock);
-    }
+    //~ Inner classes
 
-    @Override
-    public String getNormalizedName() {
-        return super.getNormalizedName();
-    }
+    /**
+     * Class representing project properties.
+     */
+    public interface Properties {
 
-    @Override
-    boolean canBeProcessed(String tName) {
-        final String name = getName();
-        return canBeProcessed(tName, VariousUtils.VAR_TYPE_PREFIX + name) && canBeProcessed(tName, VariousUtils.VAR_TYPE_PREFIX + name.substring(1));
+        /**
+         * Get the start file of this module. It can be {@code null}
+         * if the project is incorrectly configured.
+         * @return start file of this module, can be {@code null}
+         */
+        @CheckForNull
+        FileObject getStartFile();
+
+        /**
+         * Get context root of this module. It can be a relative URL
+         * (if internal web server is used) or an absolute one (if external
+         * web server is used).
+         * @return context root of this module
+         */
+        @NonNull
+        String getWebContextRoot();
+
     }
 
 }

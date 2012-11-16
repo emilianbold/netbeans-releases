@@ -57,7 +57,6 @@ public class ImmutableVariablesCustomizer extends javax.swing.JPanel {
     private final ImmutableVariablesHint immutableVariablesHint;
     private final Preferences preferences;
 
-    /** Creates new form ImmutableVariablesCustomizer */
     public ImmutableVariablesCustomizer(Preferences preferences, ImmutableVariablesHint immutableVariablesHint) {
         this.preferences = preferences;
         this.immutableVariablesHint = immutableVariablesHint;

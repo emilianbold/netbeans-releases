@@ -52,7 +52,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.php.project.util.PhpProjectUtils;
 import org.netbeans.spi.project.CopyOperationImplementation;
 import org.netbeans.spi.project.DeleteOperationImplementation;
-import org.netbeans.spi.project.MoveOperationImplementation;
+import org.netbeans.spi.project.MoveOrRenameOperationImplementation;
 import org.openide.filesystems.FileObject;
 
 
@@ -60,7 +60,7 @@ import org.openide.filesystems.FileObject;
  * @author ads
  */
 public class PhpProjectOperations implements DeleteOperationImplementation, CopyOperationImplementation,
-        MoveOperationImplementation {
+        MoveOrRenameOperationImplementation {
 
     private final PhpProject project;
 
@@ -105,6 +105,15 @@ public class PhpProjectOperations implements DeleteOperationImplementation, Copy
     }
 
     @Override
+    public void notifyRenaming() throws IOException {
+    }
+
+    @Override
+    public void notifyRenamed(String nueName) throws IOException {
+        project.setName(nueName);
+    }
+
+    @Override
     public List<FileObject> getDataFiles() {
         // all the sources, including external
         return Arrays.asList(PhpProjectUtils.getSourceObjects(project));
@@ -120,4 +129,5 @@ public class PhpProjectOperations implements DeleteOperationImplementation, Copy
         }
         return files;
     }
+
 }

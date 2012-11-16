@@ -41,7 +41,13 @@
  */
 package org.netbeans.modules.php.editor.parser;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.EnumSet;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import org.netbeans.modules.csl.api.ColoringAttributes;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.api.SemanticAnalyzer;
@@ -51,8 +57,33 @@ import org.netbeans.modules.parsing.spi.Scheduler;
 import org.netbeans.modules.parsing.spi.SchedulerEvent;
 import org.netbeans.modules.php.editor.CodeUtils;
 import org.netbeans.modules.php.editor.api.QualifiedName;
-import org.netbeans.modules.php.editor.parser.astnodes.*;
+import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
+import org.netbeans.modules.php.editor.parser.astnodes.ArrayAccess;
+import org.netbeans.modules.php.editor.parser.astnodes.Block;
 import org.netbeans.modules.php.editor.parser.astnodes.BodyDeclaration.Modifier;
+import org.netbeans.modules.php.editor.parser.astnodes.ClassDeclaration;
+import org.netbeans.modules.php.editor.parser.astnodes.ConstantDeclaration;
+import org.netbeans.modules.php.editor.parser.astnodes.Expression;
+import org.netbeans.modules.php.editor.parser.astnodes.FieldAccess;
+import org.netbeans.modules.php.editor.parser.astnodes.FieldsDeclaration;
+import org.netbeans.modules.php.editor.parser.astnodes.FunctionName;
+import org.netbeans.modules.php.editor.parser.astnodes.Identifier;
+import org.netbeans.modules.php.editor.parser.astnodes.InterfaceDeclaration;
+import org.netbeans.modules.php.editor.parser.astnodes.MethodDeclaration;
+import org.netbeans.modules.php.editor.parser.astnodes.MethodInvocation;
+import org.netbeans.modules.php.editor.parser.astnodes.NamespaceName;
+import org.netbeans.modules.php.editor.parser.astnodes.PHPDocTypeNode;
+import org.netbeans.modules.php.editor.parser.astnodes.PHPVarComment;
+import org.netbeans.modules.php.editor.parser.astnodes.Program;
+import org.netbeans.modules.php.editor.parser.astnodes.StaticConstantAccess;
+import org.netbeans.modules.php.editor.parser.astnodes.StaticFieldAccess;
+import org.netbeans.modules.php.editor.parser.astnodes.StaticMethodInvocation;
+import org.netbeans.modules.php.editor.parser.astnodes.TraitDeclaration;
+import org.netbeans.modules.php.editor.parser.astnodes.TraitMethodAliasDeclaration;
+import org.netbeans.modules.php.editor.parser.astnodes.TypeDeclaration;
+import org.netbeans.modules.php.editor.parser.astnodes.UseStatement;
+import org.netbeans.modules.php.editor.parser.astnodes.UseStatementPart;
+import org.netbeans.modules.php.editor.parser.astnodes.Variable;
 import org.netbeans.modules.php.editor.parser.astnodes.visitors.DefaultTreePathVisitor;
 import org.netbeans.modules.php.editor.parser.astnodes.visitors.DefaultVisitor;
 
@@ -229,19 +260,17 @@ public class SemanticAnalysis extends SemanticAnalyzer {
                 for (ASTNodeColoring item : privateFieldsUnused.values()) {
                     if (item.coloring.contains(ColoringAttributes.STATIC)) {
                         addOffsetRange(item.identifier, UNUSED_STATIC_FIELD_SET);
-                    }
-                    else {
+                    } else {
                         addOffsetRange(item.identifier, UNUSED_FIELD_SET);
                     }
 
                 }
 
                 // are there unused private methods?
-                for(ASTNodeColoring item : privateUnusedMethods.values()) {
+                for (ASTNodeColoring item : privateUnusedMethods.values()) {
                     if (item.coloring.contains(ColoringAttributes.STATIC)) {
                         addOffsetRange(item.identifier, UNUSED_STATIC_METHOD_SET);
-                    }
-                    else {
+                    } else {
                         addOffsetRange(item.identifier, UNUSED_METHOD_SET);
                     }
                 }
@@ -263,8 +292,7 @@ public class SemanticAnalysis extends SemanticAnalyzer {
             // don't color private magic private method. methods which start __
             if (isPrivate && name != null && !name.startsWith("__")) {
                 privateUnusedMethods.put(new UnusedIdentifier(identifier.getName(), typeDeclaration), new ASTNodeColoring(identifier, coloring));
-            }
-            else {
+            } else {
                 // color now only non private method
                 addOffsetRange(identifier, coloring);
             }
@@ -289,13 +317,12 @@ public class SemanticAnalysis extends SemanticAnalyzer {
         public void visit(MethodInvocation node) {
             Identifier identifier = null;
             if (node.getMethod().getFunctionName().getName() instanceof Variable) {
-                Variable variable = (Variable)node.getMethod().getFunctionName().getName();
+                Variable variable = (Variable) node.getMethod().getFunctionName().getName();
                 if (variable.getName() instanceof Identifier) {
-                    identifier = (Identifier)variable.getName();
+                    identifier = (Identifier) variable.getName();
                 }
-            }
-            else if (node.getMethod().getFunctionName().getName() instanceof Identifier) {
-                identifier = (Identifier)node.getMethod().getFunctionName().getName();
+            } else if (node.getMethod().getFunctionName().getName() instanceof Identifier) {
+                identifier = (Identifier) node.getMethod().getFunctionName().getName();
             }
 
             if (identifier != null) {
@@ -409,7 +436,7 @@ public class SemanticAnalysis extends SemanticAnalyzer {
         public void visit(StaticFieldAccess node) {
             Expression expr = node.getField().getName();
             if (expr instanceof ArrayAccess) {
-                ArrayAccess arrayAccess = (ArrayAccess)expr;
+                ArrayAccess arrayAccess = (ArrayAccess) expr;
                 expr = arrayAccess.getName();
             }
             (new FieldAccessVisitor(ColoringAttributes.STATIC_FIELD_SET)).scan(expr);

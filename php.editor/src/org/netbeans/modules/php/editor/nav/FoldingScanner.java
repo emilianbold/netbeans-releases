@@ -81,7 +81,7 @@ import org.netbeans.modules.php.editor.parser.astnodes.visitors.DefaultVisitor;
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public class FoldingScanner {
+public final class FoldingScanner {
 
     private static final String FOLD_CODE_BLOCKS = "codeblocks"; //NOI18N
     private static final String FOLD_CLASS = "inner-classes"; //NOI18N
@@ -106,12 +106,12 @@ public class FoldingScanner {
                 if (program.getStatements().get(0) instanceof ASTError) {
                     final Document document = info.getSnapshot().getSource().getDocument(false);
                     @SuppressWarnings("unchecked") //NOI18N
-                    Map<String, List<OffsetRange>> lastCorrect = document != null ?
-                        ((Map<String, List<OffsetRange>>) document.getProperty(LAST_CORRECT_FOLDING_PROPERTY)) : null;
-                    if (lastCorrect != null){
+                    Map<String, List<OffsetRange>> lastCorrect = document != null
+                            ? ((Map<String, List<OffsetRange>>) document.getProperty(LAST_CORRECT_FOLDING_PROPERTY))
+                            : null;
+                    if (lastCorrect != null) {
                         return lastCorrect;
-                    }
-                    else {
+                    } else {
                         return Collections.emptyMap();
                     }
                 }
@@ -150,7 +150,7 @@ public class FoldingScanner {
             assert source != null : "source was null";
             Document doc = source.getDocument(false);
 
-            if (doc != null){
+            if (doc != null) {
                 doc.putProperty(LAST_CORRECT_FOLDING_PROPERTY, folds);
             }
             return folds;

@@ -50,7 +50,7 @@ import org.netbeans.modules.php.spi.annotation.AnnotationParsedLine;
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public class EditorAnnotationLineParser implements AnnotationLineParser {
+public final class EditorAnnotationLineParser implements AnnotationLineParser {
 
     private static final AnnotationLineParser INSTANCE = new EditorAnnotationLineParser();
 

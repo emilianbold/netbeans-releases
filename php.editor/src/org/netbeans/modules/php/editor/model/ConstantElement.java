@@ -48,6 +48,8 @@ import org.netbeans.api.annotations.common.CheckForNull;
  * @author Radek Matous
  */
 public interface ConstantElement extends ModelElement {
+
     @CheckForNull
     String getValue();
+
 }

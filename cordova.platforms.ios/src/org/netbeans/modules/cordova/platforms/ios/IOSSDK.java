@@ -56,6 +56,8 @@ import org.netbeans.modules.cordova.platforms.SDK;
  */
 public class IOSSDK implements SDK {
 
+    public static final String IOS_BUILD_SDK_PROP = "ios.build.sdk";
+
     private String name;
     private final String identifier;
 
@@ -70,14 +72,18 @@ public class IOSSDK implements SDK {
         String line = null;
         do {
             line = r.readLine();
-        } while (!line.startsWith("iOS SDKs")); //NOI18N
+        } while (!line.startsWith("iOS Simulator SDKs")); //NOI18N
+        
+        line = r.readLine();
       
         while (line !=null && r.ready()) {
             Matcher m = pattern.matcher(line);
             if (m.matches()) {
                 IOSSDK sdk = new IOSSDK(m.group(1).trim(), m.group(2).trim());
                 result.add(sdk);
-            } 
+            } else {
+                return result;
+            }
             line = r.readLine();
         }
         return result;
@@ -88,15 +94,15 @@ public class IOSSDK implements SDK {
         this.identifier = identifier;
     }
 
+    @Override
     public String getName() {
         return name;
     }
 
+    @Override
     public String getIdentifier() {
         return identifier;
     }
-    
-    
 
     @Override
     public String toString() {

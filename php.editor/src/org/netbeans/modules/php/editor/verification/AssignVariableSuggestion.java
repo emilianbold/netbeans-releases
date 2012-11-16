@@ -140,7 +140,7 @@ public class AssignVariableSuggestion extends AbstractSuggestion {
             if (isInside(node.getStartOffset(), lineBegin, lineEnd)) {
                 Expression expression = node.getExpression();
                 if (expression instanceof IgnoreError) {
-                    expression = ((IgnoreError)expression).getExpression();
+                    expression = ((IgnoreError) expression).getExpression();
                 }
                 String guessName = null;
                 if (expression instanceof ClassInstanceCreation) {
@@ -227,11 +227,11 @@ public class AssignVariableSuggestion extends AbstractSuggestion {
             int textOffset = getTextOffset();
             String variableName = getVariableName();
             EditList edits = new EditList(doc);
-            edits.replace(textOffset, 0, String.format("$%s = ", variableName), true, 0);//NOI18N
+            edits.replace(textOffset, 0, String.format("$%s = ", variableName), true, 0); //NOI18N
             edits.apply();
             JTextComponent target = GsfUtilities.getOpenPane();
             if (target != null) {
-                int selectStart = textOffset + 1;//after $
+                int selectStart = textOffset + 1; //after $
                 int selectEnd = selectStart + variableName.length();
                 target.select(selectStart, selectEnd);
             }
@@ -267,7 +267,7 @@ public class AssignVariableSuggestion extends AbstractSuggestion {
 
         String getVariableName(String guessName) {
             guessName = adjustName(firstToLower(guessName));
-            guessName = guessName != null ? guessName : "variable";//NOI18N
+            guessName = guessName != null ? guessName : "variable"; //NOI18N
             String proposedName = guessName;
             int incr = -1;
             boolean cont = true;

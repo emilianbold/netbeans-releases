@@ -96,14 +96,12 @@ public class ClassDeclarationInfo extends ASTNodeInfo<ClassDeclaration> {
     }
 
     public Expression getSuperClass() {
-        return (getOriginalNode().getSuperClass() != null) ?
-            getOriginalNode().getSuperClass() : null;
+        return (getOriginalNode().getSuperClass() != null) ? getOriginalNode().getSuperClass() : null;
     }
 
     public QualifiedName getSuperClassName() {
         final Expression superClass = getSuperClass();
-        return (superClass != null) ?
-            QualifiedName.create(superClass) : null;
+        return (superClass != null) ? QualifiedName.create(superClass) : null;
     }
 
     public List<? extends Expression> getInterfaces() {

@@ -429,7 +429,7 @@ public class JsConventionRule extends JsAstRule {
                             if (offset >= 0) {
                                 hints.add(new Hint(objectTrailingComma, Bundle.UnexpectedObjectTrailing(ts.token().text().toString()),
                                         context.getJsParserResult().getSnapshot().getSource().getFileObject(),
-                                        new OffsetRange(ts.offset(), ts.offset() + ts.token().length()), null, 500));
+                                        new OffsetRange(offset, offset + ts.token().length()), null, 500));
                             }
                         }
                     }
@@ -462,7 +462,7 @@ public class JsConventionRule extends JsAstRule {
                                 if (offset >= 0) {
                                     hints.add(new Hint(arrayTrailingComma, Bundle.UnexpectedArrayTrailing(ts.token().text().toString()),
                                             context.getJsParserResult().getSnapshot().getSource().getFileObject(),
-                                            new OffsetRange(ts.offset(), ts.offset() + ts.token().length()), null, 500));
+                                            new OffsetRange(offset, offset + ts.token().length()), null, 500));
                                 }
                             }
                         }

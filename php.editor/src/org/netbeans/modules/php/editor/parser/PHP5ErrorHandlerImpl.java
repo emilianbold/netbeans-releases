@@ -91,7 +91,7 @@ public class PHP5ErrorHandlerImpl implements PHP5ErrorHandler {
     }
 
     @Override
-    public List<Error> displayFatalError(){
+    public List<Error> displayFatalError() {
         return Arrays.asList((Error) new FatalError(context));
     }
 
@@ -117,7 +117,13 @@ public class PHP5ErrorHandlerImpl implements PHP5ErrorHandler {
                 message.append(createExpectedTokensText(possibleTags));
             }
         }
-        return new GSFPHPError(message.toString(), context.getSnapshot().getSource().getFileObject(), currentToken.left, currentToken.right, syntaxError.getSeverity(), new Object[]{syntaxError});
+        return new GSFPHPError(
+                message.toString(),
+                context.getSnapshot().getSource().getFileObject(),
+                currentToken.left,
+                currentToken.right,
+                syntaxError.getSeverity(),
+                new Object[]{syntaxError});
     }
 
     private static List<String> getExpectedTokenNames(SyntaxError syntaxError) {
@@ -159,12 +165,18 @@ public class PHP5ErrorHandlerImpl implements PHP5ErrorHandler {
         public static void log(short[] expectedtokens, Symbol current, Symbol previous) {
             if (LOGGER.isLoggable(Level.FINEST)) {
                 LOGGER.finest("Syntax error:"); //NOI18N
-                LOGGER.log(Level.FINEST, "Current [{0}, {1}]({2}): {3}", new Object[]{current.left, current.right, Utils.getASTScannerTokenName(current.sym), current.value}); //NOI18N
-                LOGGER.log(Level.FINEST, "Previous [{0}, {1}] ({2}):{3}", new Object[]{previous.left, previous.right, Utils.getASTScannerTokenName(previous.sym), previous.value}); //NOI18N
+                LOGGER.log(
+                        Level.FINEST,
+                        "Current [{0}, {1}]({2}): {3}", //NOI18N
+                        new Object[]{current.left, current.right, Utils.getASTScannerTokenName(current.sym), current.value});
+                LOGGER.log(
+                        Level.FINEST,
+                        "Previous [{0}, {1}] ({2}):{3}", //NOI18N
+                        new Object[]{previous.left, previous.right, Utils.getASTScannerTokenName(previous.sym), previous.value});
                 StringBuilder message = new StringBuilder();
                 message.append("Expected tokens:"); //NOI18N
                 for (int i = 0; i < expectedtokens.length; i += 2) {
-                    message.append(" ").append( Utils.getASTScannerTokenName(expectedtokens[i])); //NOI18N
+                    message.append(" ").append(Utils.getASTScannerTokenName(expectedtokens[i])); //NOI18N
                 }
                 LOGGER.finest(message.toString());
             }
@@ -172,7 +184,7 @@ public class PHP5ErrorHandlerImpl implements PHP5ErrorHandler {
 
     }
 
-    private static class TokenWrapper {
+    private static final class TokenWrapper {
         private final Symbol token;
 
         public static TokenWrapper create(Symbol token) {
@@ -240,9 +252,9 @@ public class PHP5ErrorHandlerImpl implements PHP5ErrorHandler {
         }
 
         private static boolean isValuableToken(Symbol token) {
-            return (token.sym == ASTPHP5Symbols.T_STRING || token.sym == ASTPHP5Symbols.T_CONSTANT_ENCAPSED_STRING ||
-                token.sym == ASTPHP5Symbols.T_DNUMBER || token.sym == ASTPHP5Symbols.T_LNUMBER ||
-                token.sym == ASTPHP5Symbols.T_VARIABLE) && !(token.value instanceof ASTNode) && !(token.value instanceof List);
+            return (token.sym == ASTPHP5Symbols.T_STRING || token.sym == ASTPHP5Symbols.T_CONSTANT_ENCAPSED_STRING
+                    || token.sym == ASTPHP5Symbols.T_DNUMBER || token.sym == ASTPHP5Symbols.T_LNUMBER
+                    || token.sym == ASTPHP5Symbols.T_VARIABLE) && !(token.value instanceof ASTNode) && !(token.value instanceof List);
         }
 
         public static String getTokenTextForm(int token) {

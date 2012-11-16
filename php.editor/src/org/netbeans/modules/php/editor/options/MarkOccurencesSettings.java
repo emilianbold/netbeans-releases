@@ -50,10 +50,9 @@ import org.openide.util.NbPreferences;
  *
  * @author Jan Lahoda
  */
-public class MarkOccurencesSettings {
+public final class MarkOccurencesSettings {
 
     private static final String MARK_OCCURENCES = "MarkOccurences"; // NOI18N
-
     public static final String ON_OFF = "OnOff"; // NOI18N
     public static final String KEEP_MARKS = "KeepMarks"; // NOI18N
 

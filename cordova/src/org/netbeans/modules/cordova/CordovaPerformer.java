@@ -68,7 +68,25 @@ import org.openide.util.lookup.ServiceProvider;
  */
 @ServiceProvider(service=BuildPerformer.class)
 public class CordovaPerformer implements BuildPerformer {
-    
+
+    public static EditableProperties getBuildProperties(Project project) {
+        return createProperties(project, "build.properties", "nbproject/build.properties");//NOI18N
+    }
+
+    public static void storeBuildProperties(Project proj, EditableProperties props) {
+        try {
+            FileObject p = FileUtil.createData(proj.getProjectDirectory(), "nbproject/build.properties");
+            OutputStream outputStream = p.getOutputStream();
+            try {
+                props.store(outputStream);
+            } finally {
+                outputStream.close();
+            }
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+    }
+
     
     @Override
     public void perform(String target, Project project) {
@@ -103,6 +121,7 @@ public class CordovaPerformer implements BuildPerformer {
         props.put("debug.enable", debug);//NOI18N
         //workaround for some strange behavior of ant execution in netbeans
         props.put("env.DISPLAY", ":0.0");//NOI18N
+        props.put("config", activeConfiguration.getId());
         activeConfiguration.getDevice().addProperties(props);
         return props;
     }
@@ -128,9 +147,20 @@ public class CordovaPerformer implements BuildPerformer {
         }
     }
 
-    private void createProperties(Project project, String buildproperties, String nbprojectbuildproperties) {
-        Properties props = new Properties();
+    private static EditableProperties createProperties(Project project, String buildproperties, String nbprojectbuildproperties) {
+        EditableProperties props = new EditableProperties(true);
         try {
+            FileObject fileObject = project.getProjectDirectory().getFileObject(nbprojectbuildproperties);
+            if (fileObject !=null) {
+                final InputStream inputStream = fileObject.getInputStream();
+                try {
+                    props.load(inputStream);
+                    return props;
+                } finally {
+                    inputStream.close();
+                }
+            }
+            
             InputStream is = CordovaPerformer.class.getResourceAsStream("build.properties");//NOI18N
             try {
                 props.load(is);
@@ -139,18 +169,17 @@ public class CordovaPerformer implements BuildPerformer {
             }
             props.put("project.name", ProjectUtils.getInformation(project).getDisplayName().replaceAll(" ", ""));//NOI18N
             props.put("android.project.activity", ProjectUtils.getInformation(project).getDisplayName().replaceAll(" ", ""));//NOI18N
-            props.put("android.project.package", "org.netbeans");//NOI18N
-            props.put("android.project.package.folder", "org/netbeans");//NOI18N
             FileObject p = FileUtil.createData(project.getProjectDirectory(), nbprojectbuildproperties);
             OutputStream outputStream = p.getOutputStream();
             try {
-                props.store(outputStream, null);
+                props.store(outputStream);
             } finally {
                 outputStream.close();
             }
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
         }
+        return props;
     }
 
     @Override

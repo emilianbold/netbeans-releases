@@ -365,7 +365,7 @@ public class AccidentalAssignmentHint extends AbstractHint implements PHPRuleWit
             return false;
         }
 
-        abstract protected String getOperatorText();
+        protected abstract String getOperatorText();
 
     }
 

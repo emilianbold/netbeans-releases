@@ -45,7 +45,11 @@ import java.util.Collections;
 import java.util.List;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
-import org.netbeans.modules.csl.api.*;
+import org.netbeans.modules.csl.api.EditList;
+import org.netbeans.modules.csl.api.Hint;
+import org.netbeans.modules.csl.api.HintFix;
+import org.netbeans.modules.csl.api.HintSeverity;
+import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.php.editor.CodeUtils;
 import org.netbeans.modules.php.editor.lexer.LexUtilities;
 import org.netbeans.modules.php.editor.lexer.PHPTokenId;
@@ -75,7 +79,13 @@ public class UnusedUsesHint extends AbstractHint {
             return;
         }
         for (UnusedOffsetRanges unusedOffsetRanges : SemanticAnalysis.computeUnusedUsesOffsetRanges(phpParseResult)) {
-            hints.add(new Hint(UnusedUsesHint.this, Bundle.UnsedUsesHintDisp(), fileObject, unusedOffsetRanges.getRangeToVisualise(), createHintFixes(context.doc, unusedOffsetRanges), 500));
+            hints.add(new Hint(
+                    UnusedUsesHint.this,
+                    Bundle.UnsedUsesHintDisp(),
+                    fileObject,
+                    unusedOffsetRanges.getRangeToVisualise(),
+                    createHintFixes(context.doc, unusedOffsetRanges),
+                    500));
         }
     }
 

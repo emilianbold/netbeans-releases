@@ -61,7 +61,7 @@ class PHPRuleContext extends RuleContext {
     public ElementQuery.Index getIndex() {
         if (index == null) {
             if (parserResult instanceof PHPParseResult) {
-                index = ElementQueryFactory.getIndexQuery((PHPParseResult)parserResult);
+                index = ElementQueryFactory.getIndexQuery((PHPParseResult) parserResult);
             }
         }
         return index;

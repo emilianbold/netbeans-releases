@@ -50,10 +50,12 @@ import java.io.IOException;
 import java.util.prefs.Preferences;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.modules.cordova.CordovaPerformer;
 import org.netbeans.modules.cordova.CordovaPlatform;
 import org.netbeans.modules.cordova.platforms.MobilePlatformsSetup;
 import org.netbeans.modules.cordova.platforms.MobileProjectExtender;
 import org.netbeans.spi.project.ProjectConfigurationProvider;
+import org.openide.util.EditableProperties;
 import org.openide.util.Exceptions;
 
 /**
@@ -109,7 +111,7 @@ public class CordovaCustomizerPanel extends javax.swing.JPanel implements Action
         createConfigs = new javax.swing.JButton();
         createConfigsLabel = new javax.swing.JLabel();
 
-        org.openide.awt.Mnemonics.setLocalizedText(createConfigs, org.openide.util.NbBundle.getMessage(CordovaCustomizerPanel.class, "CordovaPanel.platformSetup.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(createConfigs, org.openide.util.NbBundle.getMessage(CordovaCustomizerPanel.class, "CordovaPanel.createConfigs.text")); // NOI18N
         createConfigs.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 createConfigsActionPerformed(evt);
@@ -178,6 +180,10 @@ public class CordovaCustomizerPanel extends javax.swing.JPanel implements Action
         String phoneGapEnabled = preferences.get("phonegap", "false");
         cordovaPanel.setPanelEnabled(Boolean.parseBoolean(phoneGapEnabled));
         cordovaPanel.update();
+        String pkg = CordovaPerformer.getBuildProperties(project).getProperty("android.project.package");
+        if (pkg!=null) {
+            cordovaPanel.setPackageName(pkg);
+        }
         validate();
     }
 
@@ -188,5 +194,13 @@ public class CordovaCustomizerPanel extends javax.swing.JPanel implements Action
     public void actionPerformed(ActionEvent e) {
         Preferences preferences = ProjectUtils.getPreferences(project, CordovaPlatform.class, true);
         preferences.put("phonegap", Boolean.toString(cordovaPanel.isPanelEnabled()));
+        
+        EditableProperties props = CordovaPerformer.getBuildProperties(project);
+        
+        props.put("android.project.package",cordovaPanel.getPackageName()); //NOI18N
+        props.put("android.project.package.folder", cordovaPanel.getPackageName().replace(".", "/"));//NOI18N
+        
+        CordovaPerformer.storeBuildProperties(project, props);
+        
     }
 }

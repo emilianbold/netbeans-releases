@@ -172,17 +172,17 @@ public class PHP53UnhandledError extends AbstractUnhandledError {
         @Override
         public void visit(NamespaceName node) {
             QualifiedName qname = QualifiedName.create(node);
-            if (qname.getKind() != QualifiedNameKind.UNQUALIFIED){
+            if (qname.getKind() != QualifiedNameKind.UNQUALIFIED) {
                 createError(node);
             }
             super.visit(node);
         }
 
-        private  void createError(int startOffset, int endOffset){
+        private  void createError(int startOffset, int endOffset) {
             errors.add(new PhpVersionError(fileObject, startOffset, endOffset));
         }
 
-        private void createError(ASTNode node){
+        private void createError(ASTNode node) {
             createError(node.getStartOffset(), node.getEndOffset());
         }
 

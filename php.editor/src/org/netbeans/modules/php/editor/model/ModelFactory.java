@@ -47,15 +47,13 @@ import org.netbeans.modules.php.editor.parser.PHPParseResult;
 /**
  * @author Radek Matous
  */
-public class ModelFactory {
-    private ModelFactory() {}
+public final class ModelFactory {
+
+    private ModelFactory() {
+    }
 
     @NonNull
     public static Model getModel(PHPParseResult info) {
         return new Model(info);
     }
-
-    /*public static IndexScope getIndex(PHPIndex index) {
-        return ModelVisitor.getIndexScope(index);
-    }*/
 }
