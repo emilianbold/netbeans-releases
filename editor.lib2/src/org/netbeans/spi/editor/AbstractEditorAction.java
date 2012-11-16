@@ -241,7 +241,7 @@ public abstract class AbstractEditorAction extends TextAction implements
      * Subsequent modifications of this property should be avoided and they will likely not affect its behavior.
      */
     public static final String WRAPPER_ACTION_KEY = "WrapperActionKey"; // NOI18N
-
+    
     /** Logger for reporting invoked actions */
     private static final Logger UILOG = Logger.getLogger("org.netbeans.ui.actions.editor"); // NOI18N
     
@@ -563,14 +563,23 @@ public abstract class AbstractEditorAction extends TextAction implements
             value = EditorActionUtilities.createSmallIcon(this);
         } else if (Action.LARGE_ICON_KEY.equals(key)) {
             value = EditorActionUtilities.createLargeIcon(this);
-        } else {
+        } else if (attrs != null) {
             value = attrs.get(key);
+        } else {
+            value = null;
         }
         return value;
     }
     
     @Override
     public final void putValue(String key, Object value) {
+        Action dAction = delegateAction;
+        // Delegate whole putValue() if delegateAction already exists
+        if (dAction != null && dAction != UNITIALIZED_ACTION) {
+            dAction.putValue(key, value);
+            return;
+        }
+
         if (value == null && properties == null) { // Prevent NPE from super(null) in constructor
             return;
         }
@@ -586,6 +595,26 @@ public abstract class AbstractEditorAction extends TextAction implements
         firePropertyChange(key, oldValue, value); // Checks whether oldValue.equals(value)
     }
 
+    @Override
+    public boolean isEnabled() {
+        Action dAction = delegateAction;
+        if (dAction != null && dAction != UNITIALIZED_ACTION) {
+            return dAction.isEnabled();
+        } else {
+            return super.isEnabled();
+        }
+    }
+
+    @Override
+    public void setEnabled(boolean enabled) {
+        Action dAction = delegateAction;
+        if (dAction != null && dAction != UNITIALIZED_ACTION) {
+            dAction.setEnabled(enabled);
+        } else {
+            super.setEnabled(enabled);
+        }
+    }
+    
     @Override
     public Object[] getKeys() {
         Set<String> keys = properties.keySet();
@@ -619,6 +648,11 @@ public abstract class AbstractEditorAction extends TextAction implements
                 // would not work properly without this)
                 transferProperties(dAction);
             }
+            // Sync enabled status of this according to dAction (do it after valuesUpdated())
+            boolean dActionEnabled = dAction.isEnabled();
+            if (isEnabled() != dActionEnabled) {
+                super.setEnabled(dActionEnabled);
+            }
             dAction.addPropertyChangeListener(WeakListeners.propertyChange(
                     new DelegateActionPropertyChangeListener(this), dAction));
             delegateAction = dAction;
@@ -644,9 +678,9 @@ public abstract class AbstractEditorAction extends TextAction implements
                     }
                     dAction.putValue(key, value);
                 }
-                // Do not transfer enabled status (delegate action should decide by itself)
             }
         }
+        // Enabled status will be handled later in getDelegateAction()
     }
 
     private void checkPreferencesKey() {

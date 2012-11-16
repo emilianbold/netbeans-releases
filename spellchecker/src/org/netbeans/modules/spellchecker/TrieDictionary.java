@@ -63,12 +63,14 @@ import java.util.Map.Entry;
 import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.spellchecker.spi.dictionary.Dictionary;
 import org.netbeans.modules.spellchecker.spi.dictionary.ValidityType;
+import org.openide.modules.OnStop;
 import org.openide.modules.Places;
 import org.openide.util.CharSequences;
 import org.openide.util.Exceptions;
@@ -574,6 +576,20 @@ public class TrieDictionary implements Dictionary {
 
         public void close() throws IOException {
             out.close();
+        }
+    }
+    
+    @OnStop
+    public static final class RunOnStop implements Runnable {
+        @Override public void run() {
+            WORKER.shutdown();
+            while (!WORKER.isTerminated()) {
+                try {
+                    WORKER.awaitTermination(10, TimeUnit.SECONDS);
+                } catch (InterruptedException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
         }
     }
 }

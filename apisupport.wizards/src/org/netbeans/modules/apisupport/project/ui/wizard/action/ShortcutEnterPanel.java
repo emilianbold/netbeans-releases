@@ -50,6 +50,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.Collections;
 import javax.swing.AbstractButton;
 import javax.swing.JButton;
@@ -59,6 +61,7 @@ import org.netbeans.modules.apisupport.project.ui.wizard.common.WizardUtils;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.awt.Mnemonics;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
@@ -106,7 +109,39 @@ public class ShortcutEnterPanel extends javax.swing.JPanel {
         return tfShortcut.getText();
     }
     
+    // --- see defect #217279
+    private static final Method keyEvent_getExtendedKeyCode;
     
+    static {
+        Class eventClass = KeyEvent.class;
+        Method m = null;
+        try {
+            m = eventClass.getMethod("getExtendedKeyCode"); // NOI18N
+        } catch (NoSuchMethodException ex) {
+            // expected, JDK < 1.7
+        } catch (SecurityException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        keyEvent_getExtendedKeyCode = m;
+    }
+    
+    static KeyStroke createKeyStroke(KeyEvent e) {
+        int code = e.getKeyCode();
+        if (keyEvent_getExtendedKeyCode != null) {
+            try {
+                code = (int)(Integer)keyEvent_getExtendedKeyCode.invoke(e);
+            } catch (IllegalAccessException ex) {
+                Exceptions.printStackTrace(ex);
+            } catch (IllegalArgumentException ex) {
+                Exceptions.printStackTrace(ex);
+            } catch (InvocationTargetException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
+        return KeyStroke.getKeyStroke(code, e.getModifiers());
+    }
+    // --- end defect #217279
+
     static KeyStroke[] showDialog() {        
         Object[] buttons = new Object[] {
             DialogDescriptor.OK_OPTION,
@@ -163,10 +198,7 @@ public class ShortcutEnterPanel extends javax.swing.JPanel {
         }
         
         public void keyPressed(KeyEvent e) {
-            KeyStroke keyStroke = KeyStroke.getKeyStroke(
-                    e.getKeyCode(),
-                    e.getModifiers()
-                    );
+            KeyStroke keyStroke = createKeyStroke(e);
             
             boolean add = e.getKeyCode() != e.VK_SHIFT &&
                     e.getKeyCode() != e.VK_CONTROL &&

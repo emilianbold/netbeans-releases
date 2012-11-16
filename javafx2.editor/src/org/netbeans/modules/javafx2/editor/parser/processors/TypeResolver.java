@@ -178,7 +178,7 @@ public class TypeResolver extends FxNodeVisitor.ModelTreeTraversal implements Mo
             return beanInfo;
         }
         TypeMirrorHandle h = beanInfo.getFactoryType(fM);
-        TypeMirror tm = h.resolve(env.getCompilationInfo());
+        TypeMirror tm = h == null ? null : h.resolve(env.getCompilationInfo());
         if (tm == null) {
             env.addError(new ErrorMark(
                 start, decl.getTypeName().length(),

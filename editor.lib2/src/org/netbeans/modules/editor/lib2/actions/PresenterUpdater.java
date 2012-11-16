@@ -324,23 +324,27 @@ public final class PresenterUpdater implements PropertyChangeListener, ActionLis
 
         // Accelerator
         if ((propName == null) ||
-//                Action.ACCELERATOR_KEY.equals(propName) || Use MULTI_ACCELERATOR_LIST_KEY sensitivity
+                Action.ACCELERATOR_KEY.equals(propName) ||
                 AbstractEditorAction.MULTI_ACCELERATOR_LIST_KEY.equals(propName)
         ) {
             if (isMenuItem()) {
                 Action a = (cAction != null) ? cAction : action;
                 @SuppressWarnings("unchecked")
                 List<List<KeyStroke>> mkbList = (List<List<KeyStroke>>) a.getValue(AbstractEditorAction.MULTI_ACCELERATOR_LIST_KEY);
+                KeyStroke accelerator = null;
                 if (mkbList != null && mkbList.size() > 0) {
                     List<KeyStroke> firstMkb = mkbList.get(0);
-                    ((JMenuItem)presenter).setAccelerator(firstMkb.get(0));
+                    accelerator = firstMkb.get(0);
+                } else {
+                    accelerator = (KeyStroke) a.getValue(Action.ACCELERATOR_KEY);
                 }
+                ((JMenuItem) presenter).setAccelerator(accelerator);
             }
         }
 
         // ToolTip
         if ((propName == null) ||
-//                Action.ACCELERATOR_KEY.equals(propName) || Use MULTI_ACCELERATOR_LIST_KEY sensitivity
+                Action.ACCELERATOR_KEY.equals(propName) ||
                 AbstractEditorAction.MULTI_ACCELERATOR_LIST_KEY.equals(propName) ||
                 Action.SHORT_DESCRIPTION.equals(propName)
         ) {
@@ -362,6 +366,11 @@ public final class PresenterUpdater implements PropertyChangeListener, ActionLis
                     if (mkbList != null && mkbList.size() > 0) {
                         List<KeyStroke> firstMkb = mkbList.get(0);
                         toolTipText += " (" + EditorActionUtilities.getKeyMnemonic(firstMkb) + ")"; // NOI18N
+                    } else {
+                        KeyStroke accelerator = (KeyStroke) a.getValue(Action.ACCELERATOR_KEY);
+                        if (accelerator != null) {
+                            toolTipText += " (" + EditorActionUtilities.getKeyMnemonic(accelerator) + ")"; // NOI18N
+                        }
                     }
                 }
                 presenter.setToolTipText(toolTipText);
