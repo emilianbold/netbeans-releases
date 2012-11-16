@@ -51,6 +51,7 @@ import javax.swing.JEditorPane;
 import javax.swing.JTextArea;
 import javax.swing.text.Caret;
 import javax.swing.text.DefaultEditorKit;
+import javax.swing.text.Document;
 import org.netbeans.api.html.lexer.HTMLTokenId;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
@@ -114,6 +115,35 @@ public class PHPBracketCompleterTest extends PHPCodeCompletionTestBase {
         super.insertBreak(wrapAsPhp(original), wrapAsPhp(expected));
     }
 
+    public void insertBreak(String original, String expected, Map<String, Object> options) throws Exception {
+        JEditorPane ta = getPane(original);
+        Document doc = ta.getDocument();
+        setOptionsForDocument(doc, options);
+        insertBreak(original, expected);
+    }
+
+    private void setOptionsForDocument(Document doc, Map<String, Object> options) throws Exception {
+        Preferences prefs = CodeStylePreferences.get(doc).getPreferences();
+        for (String option : options.keySet()) {
+            Object value = options.get(option);
+            if (value instanceof Integer) {
+                prefs.putInt(option, ((Integer)value).intValue());
+            }
+            else if (value instanceof String) {
+                prefs.put(option, (String)value);
+            }
+            else if (value instanceof Boolean) {
+                prefs.put(option, ((Boolean)value).toString());
+            }
+            else if (value instanceof CodeStyle.BracePlacement) {
+                prefs.put(option, ((CodeStyle.BracePlacement)value).name());
+            }
+            else if (value instanceof CodeStyle.WrapStyle) {
+                prefs.put(option, ((CodeStyle.WrapStyle)value).name());
+            }
+        }
+    }
+
     private void insertChar(String original, char insertText, String expected) throws Exception {
         insertChar(original, insertText, expected, null);
     }
@@ -170,25 +200,7 @@ public class PHPBracketCompleterTest extends PHPCodeCompletionTestBase {
         setupDocumentIndentation(doc, null);
 
         if (formatter != null && formatPrefs != null) {
-            Preferences prefs = CodeStylePreferences.get(doc).getPreferences();
-            for (String option : formatPrefs.keySet()) {
-                Object value = formatPrefs.get(option);
-                if (value instanceof Integer) {
-                    prefs.putInt(option, ((Integer)value).intValue());
-                }
-                else if (value instanceof String) {
-                    prefs.put(option, (String)value);
-                }
-                else if (value instanceof Boolean) {
-                    prefs.put(option, ((Boolean)value).toString());
-                }
-                else if (value instanceof CodeStyle.BracePlacement) {
-                    prefs.put(option, ((CodeStyle.BracePlacement)value).name());
-                }
-                else if (value instanceof CodeStyle.WrapStyle) {
-                    prefs.put(option, ((CodeStyle.WrapStyle)value).name());
-                }
-            }
+            setOptionsForDocument(doc, formatPrefs);
         }
         runKitAction(ta, DefaultEditorKit.defaultKeyTypedAction, ""+insertText);
 
@@ -1041,6 +1053,12 @@ public class PHPBracketCompleterTest extends PHPCodeCompletionTestBase {
     public void testIssue202644() throws Exception {
         insertBreak("function foo($bar) {^\n    echo($bar);\n}\n\nfunction bar($foo) {",
                 "function foo($bar) {\n    ^\n    echo($bar);\n}\n\nfunction bar($foo) {");
+    }
+
+    public void testIssue185001() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
+        options.put(FmtOptions.WHILE_BRACE_PLACEMENT, CodeStyle.BracePlacement.NEW_LINE_INDENTED);
+        insertBreak("while (true)\n    {^", "while (true)\n    {\n    ^\n    }", options);
     }
 
 }
