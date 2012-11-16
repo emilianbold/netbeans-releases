@@ -187,7 +187,7 @@ public final class DocumentIndexImpl implements DocumentIndex, Runnable {
             }
         }
 
-        if (_toAdd.size() > 0 || _toRemove.size() > 0) {                                        
+        if (!_toAdd.isEmpty() || !_toRemove.isEmpty()) {
             LOGGER.log(Level.FINE, "Flushing: {0}", luceneIndex.toString()); //NOI18N
             if (flushOnly && txLuceneIndex != null) {
                 txLuceneIndex.txStore(
