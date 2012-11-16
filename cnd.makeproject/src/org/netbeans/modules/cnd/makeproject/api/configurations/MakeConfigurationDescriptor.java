@@ -354,7 +354,7 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
             Folder srcFolder = rootFolder.findFolderByName(MakeConfigurationDescriptor.SOURCE_FILES_FOLDER);
             if (srcFolder != null) {
                 Item added = srcFolder.addItem(Item.createInFileSystem(baseDirFS, mainFilePath));
-                PredefinedToolKind defaultToolForItem = Item.getDefaultToolForItem(mainFileTemplate, mainFileTemplate.getPrimaryFile(), mainFilePath);
+                PredefinedToolKind defaultToolForItem = Item.getDefaultToolForItem(mainFileTemplate, added);
                 for (ItemConfiguration ic : added.getItemConfigurations()) {
                     ic.setTool(defaultToolForItem);
                 }

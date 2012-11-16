@@ -500,26 +500,28 @@ public final class Item implements NativeFileItem, PropertyChangeListener {
     }
     
     public final String getMIMEType() {
-        return getMIMETypeImpl(getDataObject(), getFileObjectImpl(), getName());
+        // use file object of this item
+        return getMIMETypeImpl(this.getDataObject(), this);
     }
     
-    private static String getMIMETypeImpl(DataObject dataObject, FileObject fo, String name) {
+    private static String getMIMETypeImpl(DataObject dataObject, Item item) {
         FileObject fobj = dataObject == null ? null : dataObject.getPrimaryFile();
         if (fobj == null) {
-            fobj = fo;
+            fobj = item.getFileObjectImpl();
         }
         String mimeType;
         if (fobj == null || ! fobj.isValid()) {
-            mimeType = MIMESupport.getKnownSourceFileMIMETypeByExtension(name);
+            mimeType = MIMESupport.getKnownSourceFileMIMETypeByExtension(item.getName());
         } else {
             mimeType = MIMESupport.getSourceFileMIMEType(fobj);
         }
         return mimeType;
     }
 
-    public static PredefinedToolKind getDefaultToolForItem(DataObject dataObject, FileObject fo, String name) {
+    public static PredefinedToolKind getDefaultToolForItem(DataObject dataObject, Item item) {
         PredefinedToolKind tool;
-        String mimeType = getMIMETypeImpl(dataObject, fo, name);
+        // use mime type of passed data object
+        String mimeType = getMIMETypeImpl(dataObject, item);
         if (MIMENames.C_MIME_TYPE.equals(mimeType)) {
 //            DataObject dataObject = getDataObject();
 //            FileObject fo = dataObject == null ? null : dataObject.getPrimaryFile();
@@ -538,7 +540,7 @@ public final class Item implements NativeFileItem, PropertyChangeListener {
         } else if (MIMENames.ASM_MIME_TYPE.equals(mimeType)) {
             FileObject fobj = dataObject == null ? null : dataObject.getPrimaryFile();
             if (fobj == null) {
-                fobj = fo;
+                fobj = item.getFileObjectImpl();
             }
             // Do not use assembler for .il files
             if (fobj != null && "il".equals(fobj.getExt())) { //NOI18N
@@ -553,9 +555,10 @@ public final class Item implements NativeFileItem, PropertyChangeListener {
     }
     
     public PredefinedToolKind getDefaultTool() {
-        return getDefaultToolForItem(getDataObject(), getFileObjectImpl(), getName());
+        // use data object of this item
+        return getDefaultToolForItem(this.getDataObject(), this);
     }
-
+    
     public boolean canHaveConfiguration() {
         return ConfigurationRequirementProvider.askAllProviders(this);
     }
