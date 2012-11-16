@@ -292,6 +292,7 @@ public class TestSession {
             prj = FileOwnerQuery.getOwner(projectURI);
             project = new WeakReference<Project>(prj);
         }
+	assert prj != null : "Project was null for projectURI: " + projectURI; //NOI18N
         Report report = new Report(getCurrentSuite().getName(), prj);
         report.setElapsedTimeMillis(timeInMillis);
 	boolean isTestNG = Manager.getInstance().getTestingFramework().equals(Manager.TESTNG_TF);
