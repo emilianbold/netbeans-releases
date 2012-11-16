@@ -69,6 +69,7 @@ import org.netbeans.api.search.SearchScopeOptions;
 import org.netbeans.api.search.provider.SearchInfo;
 import org.netbeans.api.search.provider.SearchInfoUtils;
 import org.netbeans.api.search.provider.SearchListener;
+import org.netbeans.modules.web.clientproject.api.ClientSideModule;
 import org.netbeans.modules.web.clientproject.problems.ProjectPropertiesProblemProvider;
 import org.netbeans.modules.web.clientproject.remote.RemoteFiles;
 import org.netbeans.modules.web.clientproject.spi.platform.ClientProjectConfigurationImplementation;
@@ -312,6 +313,7 @@ public class ClientSideProject implements Project {
                new PageInspectorCustomizerImpl(this),
                new ProjectWebRootProviderImpl(),
                new ClientSideProjectSources(this, projectHelper, eval),
+               new ClientSideModuleImpl(this),
                ProjectPropertiesProblemProvider.createForProject(this),
                UILookupMergerSupport.createProjectProblemsProviderMerger(),
                SharabilityQueryImpl.create(projectHelper, eval, ClientSideProjectConstants.PROJECT_SITE_ROOT_FOLDER,
@@ -597,6 +599,55 @@ public class ClientSideProject implements Project {
                     result.add(root);
                 }
             }
+        }
+
+    }
+
+    private static final class ClientSideModuleImpl implements ClientSideModule {
+
+        private final ClientSideProject project;
+
+
+        public ClientSideModuleImpl(ClientSideProject project) {
+            this.project = project;
+        }
+
+        @Override
+        public Properties getProperties() {
+            return new PropertiesImpl();
+        }
+
+        private final class PropertiesImpl implements ClientSideModule.Properties {
+
+            @Override
+            public FileObject getStartFile() {
+                File startFile = getProjectProperties().getResolvedStartFile();
+                if (startFile == null) {
+                    return null;
+                }
+                return FileUtil.toFileObject(startFile);
+            }
+
+            @Override
+            public String getWebContextRoot() {
+                ClientSideProjectProperties projectProperties = getProjectProperties();
+                ClientSideProjectProperties.ProjectServer projectServer = projectProperties.getProjectServer();
+                switch (projectServer) {
+                    case EXTERNAL:
+                        return projectProperties.getProjectUrl();
+                        //break;
+                    case INTERNAL:
+                        return projectProperties.getWebRoot();
+                        //break;
+                    default:
+                        throw new IllegalStateException("Unknown project server: " + projectServer);
+                }
+            }
+
+            private ClientSideProjectProperties getProjectProperties() {
+                return new ClientSideProjectProperties(project);
+            }
+
         }
 
     }
