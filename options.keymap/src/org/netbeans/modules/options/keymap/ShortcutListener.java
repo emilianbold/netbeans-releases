@@ -43,9 +43,12 @@ package org.netbeans.modules.options.keymap;
 
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import javax.swing.JTextField;
 import javax.swing.KeyStroke;
 import org.netbeans.core.options.keymap.api.KeyStrokeUtils;
+import org.openide.util.Exceptions;
 
 /**
  * KeyListener trasforming keystrokes to human-readable and displaying them
@@ -82,6 +85,37 @@ public class ShortcutListener implements KeyListener {
     public void keyTyped(KeyEvent e) {
         e.consume();
     }
+    
+    private static final Method keyEvent_getExtendedKeyCode;
+    
+    static {
+        Class eventClass = KeyEvent.class;
+        Method m = null;
+        try {
+            m = eventClass.getMethod("getExtendedKeyCode"); // NOI18N
+        } catch (NoSuchMethodException ex) {
+            // expected, JDK < 1.7
+        } catch (SecurityException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        keyEvent_getExtendedKeyCode = m;
+    }
+    
+    static KeyStroke createKeyStroke(KeyEvent e) {
+        int code = e.getKeyCode();
+        if (keyEvent_getExtendedKeyCode != null) {
+            try {
+                code = (int)(Integer)keyEvent_getExtendedKeyCode.invoke(e);
+            } catch (IllegalAccessException ex) {
+                Exceptions.printStackTrace(ex);
+            } catch (IllegalArgumentException ex) {
+                Exceptions.printStackTrace(ex);
+            } catch (InvocationTargetException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
+        return KeyStroke.getKeyStroke(code, e.getModifiers());
+    }
 
     public void keyPressed(KeyEvent e) {
         assert (e.getSource() instanceof JTextField);
@@ -90,11 +124,9 @@ public class ShortcutListener implements KeyListener {
                 e.getKeyCode() == KeyEvent.VK_UP ||
                 e.getKeyCode() == KeyEvent.VK_ESCAPE)
             return ;
-
+        
         textField = (JTextField) e.getSource();
-        KeyStroke keyStroke = KeyStroke.getKeyStroke(
-                e.getKeyCode(),
-                e.getModifiers());
+        KeyStroke keyStroke = createKeyStroke(e);
 
         boolean add = e.getKeyCode() != KeyEvent.VK_SHIFT &&
                 e.getKeyCode() != KeyEvent.VK_CONTROL &&
