@@ -968,8 +968,6 @@ public class ConfigurationMakefileWriter {
                     } else {
                         continue;
                     }
-//                } else if (tool == PredefinedToolKind.UnknownTool) {
-//                    continue;
                 } else {
                     assert false;
                 }
