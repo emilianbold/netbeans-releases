@@ -211,10 +211,7 @@ public class ShortcutsDialog extends javax.swing.JPanel {
             }
 
             public void keyPressed (KeyEvent e) {
-                KeyStroke keyStroke = KeyStroke.getKeyStroke (
-                    e.getKeyCode (),
-                    e.getModifiers ()
-                );
+                KeyStroke keyStroke = ShortcutListener.createKeyStroke(e);
                 
                 boolean add = e.getKeyCode () != KeyEvent.VK_SHIFT &&
                               e.getKeyCode () != KeyEvent.VK_CONTROL &&
