@@ -76,7 +76,7 @@ public class PaintAppWizardPanel implements WizardDescriptor.Panel,
     }
     
     public HelpCtx getHelp() {
-        return new HelpCtx(PaintAppWizardPanel.class);
+        return null;
     }
     
     public boolean isValid() {
@@ -109,11 +109,15 @@ public class PaintAppWizardPanel implements WizardDescriptor.Panel,
     public void readSettings(Object settings) {
         wizardDescriptor = (WizardDescriptor) settings;
         component.read(wizardDescriptor);
+        wizardDescriptor.putProperty("NewProjectWizard_Title", //NOI18N
+                NbBundle.getMessage(PaintAppWizardPanel.class,
+                "Templates/Project/Samples/ApiSupport/PaintAppProject.zip")); //NOI18N
     }
     
     public void storeSettings(Object settings) {
         WizardDescriptor d = (WizardDescriptor) settings;
         component.store(d);
+        d.putProperty("NewProjectWizard_Title", null);                  //NOI18N
     }
     
     public boolean isFinishPanel() {

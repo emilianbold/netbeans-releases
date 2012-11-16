@@ -240,8 +240,8 @@ public class SelectUriStep extends AbstractWizardPanel implements ActionListener
                 @Override
                 protected void perform () {
                     String uri = getSelectedUri();
+                    GitClient client = null;
                     try {
-                        GitClient client;
                         if (newRepositorySpecification) {
                             repository.store();
                             client = Git.getInstance().getClient(getRepositoryRoot(), this, false);
@@ -258,6 +258,10 @@ public class SelectUriStep extends AbstractWizardPanel implements ActionListener
                         }
                         Logger.getLogger(SelectUriStep.class.getName()).log(Level.INFO, "Cannot connect to " + uri, ex); //NOI18N
                         message[0] = new Message(NbBundle.getMessage(SelectUriStep.class, "MSG_SelectUriStep.errorCannotConnect", uri), false); //NOI18N
+                    } finally {
+                        if (client != null) {
+                            client.release();
+                        }
                     }
                 }
 

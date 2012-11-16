@@ -145,8 +145,9 @@ public final class Git {
     void getOriginalFile (File workingCopy, File originalFile) {
         File repository = getRepositoryRoot(workingCopy);
         if (repository != null) {
+            GitClient client = null;
             try {
-                GitClient client = getClient(repository);
+                client = getClient(repository);
                 FileOutputStream fos = new FileOutputStream(originalFile);
                 boolean ok;                
                 try {
@@ -168,6 +169,10 @@ public final class Git {
                 originalFile.delete();
             } catch (IOException ex) {
                 LOG.log(Level.INFO, "IO exception", ex); //NOI18N
+            } finally {
+                if (client != null) {
+                    client.release();
+                }
             }
         }
     }

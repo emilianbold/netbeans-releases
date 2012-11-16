@@ -61,6 +61,7 @@ import org.netbeans.libs.git.GitBranch;
 import org.netbeans.libs.git.GitException;
 import org.netbeans.libs.git.GitRemoteConfig;
 import org.netbeans.modules.git.FileInformation.Status;
+import org.netbeans.modules.git.client.GitClient;
 import org.netbeans.modules.git.ui.history.SearchHistoryAction;
 import org.netbeans.modules.git.ui.repository.RepositoryInfo;
 import org.netbeans.modules.git.utils.GitUtils;
@@ -122,10 +123,16 @@ class FilesystemInterceptor extends VCSInterceptor {
             Git git = Git.getInstance();
             final File root = git.getRepositoryRoot(file);
             if (root == null) return false;
+            GitClient client = null;
             try {
-                git.getClient(root).reset(new File[] { file }, "HEAD", true, GitUtils.NULL_PROGRESS_MONITOR);
+                client = git.getClient(root);
+                client.reset(new File[] { file }, "HEAD", true, GitUtils.NULL_PROGRESS_MONITOR);
             } catch (GitException ex) {
                 LOG.log(Level.INFO, "beforeCreate(): File: {0} {1}", new Object[] { file.getAbsolutePath(), ex.toString()}); //NOI18N
+            } finally {
+                if (client != null) {
+                    client.release();
+                }
             }
             LOG.log(Level.FINER, "beforeCreate(): finished: {0}", file); // NOI18N
         }
@@ -158,9 +165,11 @@ class FilesystemInterceptor extends VCSInterceptor {
         if (file == null) return;
         Git git = Git.getInstance();
         File root = git.getRepositoryRoot(file);
+        GitClient client = null;
         try {
             if (GitUtils.getGitFolderForRoot(root).exists()) {
-                git.getClient(root).remove(new File[] { file }, false, GitUtils.NULL_PROGRESS_MONITOR);
+                client = git.getClient(root);
+                client.remove(new File[] { file }, false, GitUtils.NULL_PROGRESS_MONITOR);
             } else if (file.exists()) {
                 Utils.deleteRecursively(file);
                 if (file.exists()) {
@@ -178,6 +187,10 @@ class FilesystemInterceptor extends VCSInterceptor {
             Exceptions.attachLocalizedMessage(e, NbBundle.getMessage(FilesystemInterceptor.class, "MSG_DeleteFailed", new Object[] { file, e.getLocalizedMessage() })); //NOI18N
             ex.initCause(e);
             throw ex;
+        } finally {
+            if (client != null) {
+                client.release();
+            }
         }
     }
 
@@ -207,17 +220,19 @@ class FilesystemInterceptor extends VCSInterceptor {
         Git git = Git.getInstance();
         File root = git.getRepositoryRoot(from);
         File dstRoot = git.getRepositoryRoot(to);
+        GitClient client = null;
         try {
             if (root != null && root.equals(dstRoot) && !cache.getStatus(to).containsStatus(Status.NOTVERSIONED_EXCLUDED)) {
                 // target does not lie under ignored folder and is in the same repo as src
+                client = git.getClient(root);
                 if (equalPathsIgnoreCase(from, to)) {
                     // must do rename --after because the files/paths equal on Win or Mac
                     if (!from.renameTo(to)) {
                         throw new IOException(NbBundle.getMessage(FilesystemInterceptor.class, "MSG_MoveFailed", new Object[] { from, to, "" })); //NOI18N
                     }
-                    git.getClient(root).rename(from, to, true, GitUtils.NULL_PROGRESS_MONITOR);
+                    client.rename(from, to, true, GitUtils.NULL_PROGRESS_MONITOR);
                 } else {
-                    git.getClient(root).rename(from, to, false, GitUtils.NULL_PROGRESS_MONITOR);
+                    client.rename(from, to, false, GitUtils.NULL_PROGRESS_MONITOR);
                 }
             } else {
                 boolean result = from.renameTo(to);
@@ -225,7 +240,8 @@ class FilesystemInterceptor extends VCSInterceptor {
                     throw new IOException(NbBundle.getMessage(FilesystemInterceptor.class, "MSG_MoveFailed", new Object[] { from, to, "" })); //NOI18N
                 }
                 if (root != null) {
-                    git.getClient(root).remove(new File[] { from }, true, GitUtils.NULL_PROGRESS_MONITOR);
+                    client = git.getClient(root);
+                    client.remove(new File[] { from }, true, GitUtils.NULL_PROGRESS_MONITOR);
                 }
             }
         } catch (GitException e) {
@@ -233,6 +249,10 @@ class FilesystemInterceptor extends VCSInterceptor {
             Exceptions.attachLocalizedMessage(e, NbBundle.getMessage(FilesystemInterceptor.class, "MSG_MoveFailed", new Object[] { from, to, e.getLocalizedMessage() })); //NOI18N
             ex.initCause(e);
             throw ex;
+        } finally {
+            if (client != null) {
+                client.release();
+            }
         }
     }
 
@@ -283,15 +303,21 @@ class FilesystemInterceptor extends VCSInterceptor {
             // target lies under ignored folder, do not add it
             return;
         }
+        GitClient client = null;
         try {
             if (root.equals(dstRoot)) {
-                git.getClient(root).copyAfter(from, to, GitUtils.NULL_PROGRESS_MONITOR);
+                client = git.getClient(root);
+                client.copyAfter(from, to, GitUtils.NULL_PROGRESS_MONITOR);
             }
         } catch (GitException e) {
             IOException ex = new IOException();
             Exceptions.attachLocalizedMessage(e, NbBundle.getMessage(FilesystemInterceptor.class, "MSG_CopyFailed", new Object[] { from, to, e.getLocalizedMessage() })); //NOI18N
             ex.initCause(e);
             throw ex;
+        } finally {
+            if (client != null) {
+                client.release();
+            }
         }
     }
 

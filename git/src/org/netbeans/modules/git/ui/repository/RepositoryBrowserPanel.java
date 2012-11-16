@@ -948,8 +948,9 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
                         @Override
                         public void run () {
                             String tt = null;
+                            GitClient client = null;
                             try {
-                                GitClient client = Git.getInstance().getClient(repository);
+                                client = Git.getInstance().getClient(repository);
                                 GitRevisionInfo info = client.getCommonAncestor(new String[] { id, trackedBranch.getId() }, GitUtils.NULL_PROGRESS_MONITOR);
                                 if (info == null || !(info.getRevision().equals(id) || info.getRevision().equals(trackedBranch.getId()))) {
                                     tt = NbBundle.getMessage(RepositoryBrowserPanel.class, "MSG_BranchNode.tracking.mergeNeeded", trackedBranch.getName()); //NOI18N
@@ -976,6 +977,10 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
                                 }
                             } catch (GitException ex) {
                                 LOG.log(Level.INFO, null, ex);
+                            } finally {
+                                if (client != null) {
+                                    client.release();
+                                }
                             }
                             final String toolTip = tt;
                             EventQueue.invokeLater(new Runnable() {

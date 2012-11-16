@@ -95,8 +95,9 @@ public final class Git {
     }
 
     public static void initializeRepository (File localFolder, String repositoryUrl, PasswordAuthentication credentials) throws IOException, URISyntaxException {
+        GitClient client = null;
         try {
-            GitClient client = org.netbeans.modules.git.Git.getInstance().getClient(localFolder);
+            client = org.netbeans.modules.git.Git.getInstance().getClient(localFolder);
             client.init(GitUtils.NULL_PROGRESS_MONITOR);
             String remoteName = "origin"; //NOI18N
             client.setRemote(new GitRemoteConfig(remoteName, Arrays.asList(repositoryUrl),
@@ -122,6 +123,9 @@ public final class Git {
         } catch (GitException ex) {
             throw new IOException(ex);
         } finally {
+            if (client != null) {
+                client.release();
+            }
             org.netbeans.modules.git.Git.getInstance().clearAncestorCaches();
             VersioningSupport.versionedRootsChanged();
         }
