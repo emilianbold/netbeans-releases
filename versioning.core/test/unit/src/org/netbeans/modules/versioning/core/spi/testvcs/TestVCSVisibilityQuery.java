@@ -58,4 +58,11 @@ public class TestVCSVisibilityQuery extends VCSVisibilityQuery {
         return !file.getName().endsWith(INVISIBLE_FILE_SUFFIX);
     }
 
+    public void visibilityChanged() {
+        fireVisibilityChanged();
+    }
+    
+    public void visibilityChanged(VCSFileProxy... files) {
+        fireVisibilityChanged(files);
+    }    
 }

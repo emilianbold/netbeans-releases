@@ -346,4 +346,25 @@ public class JsTypedBreakInterceptorTest extends JsTestBase {
         insertBreak("<script>function Foo(){^</script>",
                 "<script>function Foo(){\n    ^\n}</script>");
     }
+
+    public void testIssue221676() throws Exception {
+        insertBreak("var obj = (new function() {\n"
+                + "   this.myFunc = function () {\n"
+                + "      if (this.condition) {\n"
+                + "         if (this.condition2) {\n"
+                + "            this.doSth();\n"
+                + "         }^\n"
+                + "   };\n"
+                + "}())\n",
+                "var obj = (new function() {\n"
+                + "   this.myFunc = function () {\n"
+                + "      if (this.condition) {\n"
+                + "         if (this.condition2) {\n"
+                + "            this.doSth();\n"
+                + "         }\n"
+                + "         ^\n"
+                + "      }\n"
+                + "   };\n"
+                + "}())\n");
+    }
 }

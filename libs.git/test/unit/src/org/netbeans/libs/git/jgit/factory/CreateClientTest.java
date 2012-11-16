@@ -43,7 +43,9 @@ package org.netbeans.libs.git.jgit.factory;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.Field;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
 import org.eclipse.jgit.lib.ConfigConstants;
 import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.lib.StoredConfig;
@@ -124,6 +126,41 @@ public class CreateClientTest extends AbstractGitTestCase {
         assertEquals(gitFolder, repo.getDirectory());
         statuses = client.getStatus(new File[] { newFile }, NULL_PROGRESS_MONITOR);
         assertStatus(statuses, subRepo, newFile, true, GitStatus.Status.STATUS_ADDED, GitStatus.Status.STATUS_NORMAL, GitStatus.Status.STATUS_ADDED, false);
+    }
+    
+    public void testClientRelease () throws Exception {
+        GitClient client1 = GitRepository.getInstance(workDir).createClient();
+        Repository jgitRepo1 = getRepository(client1);
+        assertRepoClients(jgitRepo1, 1);
+        client1.release();
+        assertRepoClients(jgitRepo1, 0);
+        
+        client1 = GitRepository.getInstance(workDir).createClient();
+        assertEquals(jgitRepo1, getRepository(client1));
+        assertRepoClients(jgitRepo1, 1);
+        // some commands
+        client1.getStatus(new File[] { workDir }, NULL_PROGRESS_MONITOR);
+        client1.add(new File[] { workDir }, NULL_PROGRESS_MONITOR);
+        
+        GitClient client2 = GitRepository.getInstance(workDir).createClient();
+        assertEquals(jgitRepo1, getRepository(client2));
+        assertRepoClients(jgitRepo1, 2);
+        // some commands
+        client2.getStatus(new File[] { workDir }, NULL_PROGRESS_MONITOR);
+        client2.add(new File[] { workDir }, NULL_PROGRESS_MONITOR);
+        
+        assertRepoClients(jgitRepo1, 2);        
+        client1.release();
+        assertRepoClients(jgitRepo1, 1);
+        client2.release();
+        assertRepoClients(jgitRepo1, 0);
+    }
+
+    private void assertRepoClients (Repository jgitRepo1, int expectedClients) throws Exception {
+        Field f = Repository.class.getDeclaredField("useCnt");
+        f.setAccessible(true);
+        AtomicInteger cnt = (AtomicInteger) f.get(jgitRepo1);
+        assertEquals(expectedClients, cnt.intValue());
     }
     
 }
