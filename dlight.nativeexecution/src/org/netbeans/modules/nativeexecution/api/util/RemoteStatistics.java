@@ -264,11 +264,8 @@ public final class RemoteStatistics implements Callable<Boolean> {
         }
 
         private void dump(PrintStream out) {
-            out.println("== Total traffic begin =="); // NOI18N
-            out.println("Direction|Bytes"); // NOI18N
-            out.println("download|" + down.get()); // NOI18N
-            out.println("upload|" + up.get()); // NOI18N
-            out.println("== Total traffic end =="); // NOI18N
+            out.println("Total upload traffic [bytes]: " + up.get()); // NOI18N
+            out.println("Total download traffic [bytes]: " + down.get()); // NOI18N
         }
     }
 
