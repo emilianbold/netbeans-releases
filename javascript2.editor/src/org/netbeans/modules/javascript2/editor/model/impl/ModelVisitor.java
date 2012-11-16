@@ -217,7 +217,7 @@ public class ModelVisitor extends PathNodeVisitor {
                     if(binaryNode.rhs() instanceof IdentNode) {
                         IdentNode rhs = (IdentNode)binaryNode.rhs();
                         JsFunction function = (JsFunction)modelBuilder.getCurrentDeclarationScope();
-                        if(function.getProperty(rhs.getName()) == null && function.getParameter(rhs.getName()) != null) {
+                        if(/*function.getProperty(rhs.getName()) == null &&*/ function.getParameter(rhs.getName()) != null) {
                             parameter = "@param;" + ModelUtils.createFQN(function) + ":" + rhs.getName();
                         }
                     }
@@ -1005,7 +1005,7 @@ public class ModelVisitor extends PathNodeVisitor {
             if (property == null) {
                 property = parameter;
             } else {
-                if(property.getJSKind() == JsElement.Kind.FIELD || property.getJSKind() == JsElement.Kind.PROPERTY) {
+                if(property.getJSKind() != JsElement.Kind.VARIABLE) {
                     property = parameter;
                 }
             }
