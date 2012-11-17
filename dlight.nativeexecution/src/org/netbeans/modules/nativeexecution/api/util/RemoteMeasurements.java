@@ -88,23 +88,19 @@ public final class RemoteMeasurements {
     }
 
     void dump(PrintStream out) {
-        out.println("== Statistics for #" + name + "# start =="); // NOI18N
         try {
             dumpTrafficStatistics(out);
             dumpCategoriesStatistics(out);
             dumpCategoriesArgsStatistics(out);
             dumpCategoriesStacksStatistics(out);
         } finally {
-            out.println("Total wall time: " + (System.currentTimeMillis() - startWallTime) + " ms."); // NOI18N
-            out.println("== Statistics for #" + name + "# end =="); // NOI18N
+            out.println("Total wall time '" + name + "' [ms]: " + (System.currentTimeMillis() - startWallTime)); // NOI18N
         }
     }
 
     private void dumpTrafficStatistics(PrintStream out) {
-        out.println("== Traffic statistics begin =="); // NOI18N
-        out.println("upload|download"); // NOI18N
-        out.println(upTraffic.get() + "|" + downTraffic.get()); // NOI18N
-        out.println("== Traffic statistics end =="); // NOI18N    
+        out.println("Upload traffic '" + name + "' [bytes]: " + upTraffic.get()); // NOI18N
+        out.println("Download traffic '" + name + "' [bytes]: " + downTraffic.get()); // NOI18N
     }
 
     private void dumpCategoriesArgsStatistics(PrintStream out) {
@@ -194,7 +190,7 @@ public final class RemoteMeasurements {
         }
         out.println("== Categories stat end =="); // NOI18N
 
-        out.println("TOTAL time by all categories: " + totalTime + " ms."); // NOI18N
+        out.println("Total time by all categories [ms]: " + totalTime); // NOI18N
     }
 
     private static int getStackID() {
