@@ -2598,8 +2598,7 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
                     return !getCancelRequest().isRaised();
                 } finally {
                     SourceAccessor.getINSTANCE().suppressListening(false, false);
-                    final Iterable<Indexable> proxyIterable = new ProxyIterable<Indexable>(allIndexblesSentToIndexers, false, true);
-                    usedIterables.offer(proxyIterable);
+                    usedIterables.offerAll(allIndexblesSentToIndexers);
                 }
         }
 
@@ -3189,24 +3188,35 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
                 ctx.addStoreTime(span);
             }
         }
-        
+
+        //@NotThreadSafe
         final class UsedIndexables {
             
             private final Collection<Iterable<? extends Indexable>> usedIndexables = new ArrayDeque<Iterable<? extends Indexable>>();
+            private  Iterable<? extends Indexable> cache;
+
+
+            UsedIndexables() {
+            }
             
             void offer(@NonNull final Iterable<? extends Indexable> indexables) {
                 usedIndexables.add(indexables);
+                cache = null;
             }
             
             void offerAll(@NonNull final Collection<? extends Iterable<? extends Indexable>> indexables) {
                 usedIndexables.addAll(indexables);
+                cache = null;
             }
             
             Iterable<? extends Indexable> get() {
                 if (usedIndexables.isEmpty()) {
                     return null;
                 }
-                return new ProxyIterable<Indexable>(usedIndexables, false);
+                if (cache == null) {
+                    cache = new ProxyIterable<Indexable>(usedIndexables, false, true);
+                }
+                return cache;
             }
         }
 

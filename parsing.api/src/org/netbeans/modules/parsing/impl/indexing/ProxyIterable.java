@@ -42,10 +42,10 @@
 
 package org.netbeans.modules.parsing.impl.indexing;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Set;
@@ -108,7 +108,7 @@ final class ProxyIterable<T> implements Iterable<T> {
             this.iterables = iterables;
             this.seen = allowDuplicates ? null : new HashSet<T>();
             this.cacheRef = cacheRef;
-            this.cache = this.cacheRef == null ? null : new LinkedList<T>();
+            this.cache = this.cacheRef == null ? null : new ArrayList<T>();
         }
 
         @Override
