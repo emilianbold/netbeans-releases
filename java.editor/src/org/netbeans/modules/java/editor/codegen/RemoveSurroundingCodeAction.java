@@ -78,6 +78,7 @@ import com.sun.source.util.TreePath;
 import org.netbeans.api.editor.EditorActionNames;
 import org.netbeans.api.editor.EditorActionRegistration;
 import org.netbeans.api.editor.settings.AttributesUtilities;
+import org.netbeans.api.java.source.Comment;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.JavaSource;
@@ -234,7 +235,7 @@ public class RemoveSurroundingCodeAction extends BaseAction {
             this.component = component;
             this.tpHandle = TreePathHandle.create(path, cInfo);
             this.unwrap = unwrap;
-            this.bag = createOffsetsBag(component, cInfo.getTrees().getSourcePositions(), path);
+            this.bag = createOffsetsBag(component, cInfo.getTreeUtilities(), cInfo.getTrees().getSourcePositions(), path);
         }
 
         @Override
@@ -271,9 +272,11 @@ public class RemoveSurroundingCodeAction extends BaseAction {
                             TreePath tp = tpHandle.resolve(copy);
                             if (tp != null) {
                                 TreeMaker tm = copy.getTreeMaker();
+                                TreeUtilities tu = copy.getTreeUtilities();
                                 Tree tree = tp.getLeaf();
                                 Tree parent = tp.getParentPath().getLeaf();
                                 ArrayList<StatementTree> stats = new ArrayList<StatementTree>();
+                                List<Comment> trailingComments = null;
                                 switch (tree.getKind()) {
                                     case IF:
                                         IfTree it = (IfTree) tree;
@@ -283,21 +286,25 @@ public class RemoveSurroundingCodeAction extends BaseAction {
                                             addStat(tm.If(it.getCondition(), it.getThenStatement(), null), stats);
                                         }
                                         addStat(it.getElseStatement(), stats);
+                                        trailingComments = getTrailingComments(tu, it.getElseStatement() != null ? it.getElseStatement() : it.getThenStatement());
                                         break;
                                     case FOR_LOOP:
                                         ForLoopTree flt = (ForLoopTree) tree;
                                         stats.addAll(flt.getInitializer());
                                         addStat(flt.getStatement(), stats);
+                                        trailingComments = getTrailingComments(tu, flt.getStatement());
                                         break;
                                     case ENHANCED_FOR_LOOP:
                                         EnhancedForLoopTree eflt = (EnhancedForLoopTree) tree;
                                         VariableTree var = eflt.getVariable();
                                         stats.add(tm.Variable(var.getModifiers(), var.getName(), var.getType(), tm.Literal(null)));
                                         addStat(eflt.getStatement(), stats);
-                                        break;
+                                        trailingComments = getTrailingComments(tu, eflt.getStatement());
+                                       break;
                                     case WHILE_LOOP:
                                         WhileLoopTree wlt = (WhileLoopTree) tree;
                                         addStat(wlt.getStatement(), stats);
+                                        trailingComments = getTrailingComments(tu, wlt.getStatement());
                                         break;
                                     case DO_WHILE_LOOP:
                                         DoWhileLoopTree dwlt = (DoWhileLoopTree) tree;
@@ -306,6 +313,7 @@ public class RemoveSurroundingCodeAction extends BaseAction {
                                     case SYNCHRONIZED:
                                         SynchronizedTree st = (SynchronizedTree) tree;
                                         addStat(st.getBlock(), stats);
+                                        trailingComments = getTrailingComments(tu, st.getBlock());
                                         break;
                                     case TRY:
                                         TryTree tt = (TryTree) tree;
@@ -314,11 +322,25 @@ public class RemoveSurroundingCodeAction extends BaseAction {
                                         }
                                         addStat(tt.getBlock(), stats);
                                         addStat(tt.getFinallyBlock(), stats);
+                                        trailingComments = getTrailingComments(tu, tt.getFinallyBlock() != null
+                                                ? tt.getFinallyBlock() : tt.getCatches().isEmpty() ? tt.getBlock() : tt.getCatches().get(tt.getCatches().size() - 1));
                                         break;
                                     case BLOCK:
                                         BlockTree bt = (BlockTree) tree;
                                         addStat(bt, stats);
                                         break;
+                                }
+                                if (!stats.isEmpty()) {
+                                    int i = 0;
+                                    for (Comment comment : tu.getComments(tree, true)) {
+                                        tm.insertComment(stats.get(0), comment, i++, true);
+                                    }
+                                    if (trailingComments == null) {
+                                        trailingComments = tu.getComments(tree, false);
+                                    }
+                                    for (Comment comment : trailingComments) {
+                                        tm.addComment(stats.get(stats.size() - 1), comment, false);
+                                    }
                                 }
                                 if (parent.getKind() == Tree.Kind.BLOCK) {
                                     BlockTree block = (BlockTree) parent;
@@ -355,8 +377,12 @@ public class RemoveSurroundingCodeAction extends BaseAction {
         public OffsetsBag getHighlight() {
             return bag;
         }
+        
+        private List<Comment> getTrailingComments(TreeUtilities tu, Tree tree) {
+            return tree.getKind() == Tree.Kind.BLOCK ? tu.getComments(tree, false) : null;
+        }
 
-        private OffsetsBag createOffsetsBag(JTextComponent component, SourcePositions sp, TreePath path) throws BadLocationException {
+        private OffsetsBag createOffsetsBag(JTextComponent component, TreeUtilities tu, SourcePositions sp, TreePath path) throws BadLocationException {
             Document doc = component.getDocument();
             OffsetsBag offsetsBag = new OffsetsBag(doc, true);
             int start = (int) sp.getStartPosition(path.getCompilationUnit(), path.getLeaf());
@@ -367,7 +393,7 @@ public class RemoveSurroundingCodeAction extends BaseAction {
                     case IF:
                         IfTree it = (IfTree) tree;
                         if (unwrap) {
-                            positions.add(getStatBounds(sp, path.getCompilationUnit(), it.getThenStatement()));
+                            positions.add(getStatBounds(tu, sp, path.getCompilationUnit(), it.getThenStatement()));
                         } else {
                             start = (int) sp.getEndPosition(path.getCompilationUnit(), it.getThenStatement());
                             int end = (int) sp.getStartPosition(path.getCompilationUnit(), it.getElseStatement());
@@ -376,47 +402,47 @@ public class RemoveSurroundingCodeAction extends BaseAction {
                                 start += off;
                             }
                         }
-                        positions.add(getStatBounds(sp, path.getCompilationUnit(), it.getElseStatement()));
+                        positions.add(getStatBounds(tu, sp, path.getCompilationUnit(), it.getElseStatement()));
                         break;
                     case FOR_LOOP:
                         ForLoopTree flt = (ForLoopTree) tree;
                         List<? extends StatementTree> inits = flt.getInitializer();
                         if (inits != null && !inits.isEmpty()) {
                             int[] bounds = {-1, -1};
-                            bounds[0] = (int) sp.getStartPosition(path.getCompilationUnit(), inits.get(0));
-                            bounds[1] = (int) sp.getEndPosition(path.getCompilationUnit(), inits.get(inits.size() - 1));
+                            bounds[0] = getStart(tu, sp, path.getCompilationUnit(), inits.get(0));
+                            bounds[1] = getEnd(tu, sp, path.getCompilationUnit(), inits.get(inits.size() - 1));
                             positions.add(bounds);
                         }
-                        positions.add(getStatBounds(sp, path.getCompilationUnit(), flt.getStatement()));
+                        positions.add(getStatBounds(tu, sp, path.getCompilationUnit(), flt.getStatement()));
                         break;
                     case ENHANCED_FOR_LOOP:
                         EnhancedForLoopTree eflt = (EnhancedForLoopTree) tree;
-                        positions.add(getStatBounds(sp, path.getCompilationUnit(), eflt.getVariable()));
-                        positions.add(getStatBounds(sp, path.getCompilationUnit(), eflt.getStatement()));
+                        positions.add(getStatBounds(tu, sp, path.getCompilationUnit(), eflt.getVariable()));
+                        positions.add(getStatBounds(tu, sp, path.getCompilationUnit(), eflt.getStatement()));
                         break;
                     case WHILE_LOOP:
                         WhileLoopTree wlt = (WhileLoopTree) tree;
-                        positions.add(getStatBounds(sp, path.getCompilationUnit(), wlt.getStatement()));
+                        positions.add(getStatBounds(tu, sp, path.getCompilationUnit(), wlt.getStatement()));
                         break;
                     case DO_WHILE_LOOP:
                         DoWhileLoopTree dwlt = (DoWhileLoopTree) tree;
-                        positions.add(getStatBounds(sp, path.getCompilationUnit(), dwlt.getStatement()));
+                        positions.add(getStatBounds(tu, sp, path.getCompilationUnit(), dwlt.getStatement()));
                         break;
                     case SYNCHRONIZED:
                         SynchronizedTree st = (SynchronizedTree) tree;
-                        positions.add(getStatBounds(sp, path.getCompilationUnit(), st.getBlock()));
+                        positions.add(getStatBounds(tu, sp, path.getCompilationUnit(), st.getBlock()));
                         break;
                     case TRY:
                         TryTree tt = (TryTree) tree;
                         for (Tree t : tt.getResources()) {
-                            positions.add(getStatBounds(sp, path.getCompilationUnit(), ((StatementTree)t)));
+                            positions.add(getStatBounds(tu, sp, path.getCompilationUnit(), ((StatementTree)t)));
                         }
-                        positions.add(getStatBounds(sp, path.getCompilationUnit(), tt.getBlock()));
-                        positions.add(getStatBounds(sp, path.getCompilationUnit(), tt.getFinallyBlock()));
+                        positions.add(getStatBounds(tu, sp, path.getCompilationUnit(), tt.getBlock()));
+                        positions.add(getStatBounds(tu, sp, path.getCompilationUnit(), tt.getFinallyBlock()));
                         break;
                     case BLOCK:
                         BlockTree bt = (BlockTree) tree;
-                        positions.add(getStatBounds(sp, path.getCompilationUnit(), bt));
+                        positions.add(getStatBounds(tu, sp, path.getCompilationUnit(), bt));
                         break;
                 }
                 for (int[] bounds : positions) {
@@ -444,21 +470,31 @@ public class RemoveSurroundingCodeAction extends BaseAction {
             }
         }
 
-        private int[] getStatBounds(SourcePositions sp, CompilationUnitTree cut, StatementTree stat) {
+        private int[] getStatBounds(TreeUtilities tu, SourcePositions sp, CompilationUnitTree cut, StatementTree stat) {
             int[] bounds = {-1, -1};
             if (stat != null) {
                 if (stat.getKind() == Tree.Kind.BLOCK) {
                     List<? extends StatementTree> stats = ((BlockTree) stat).getStatements();
                     if (stats != null && !stats.isEmpty()) {
-                        bounds[0] = (int) sp.getStartPosition(cut, stats.get(0));
-                        bounds[1] = (int) sp.getEndPosition(cut, stats.get(stats.size() - 1));
+                        bounds[0] = getStart(tu, sp, cut, stats.get(0));
+                        bounds[1] = getEnd(tu, sp, cut, stats.get(stats.size() - 1));
                     }
                 } else {
-                    bounds[0] = (int) sp.getStartPosition(cut, stat);
-                    bounds[1] = (int) sp.getEndPosition(cut, stat);
+                    bounds[0] = getStart(tu, sp, cut, stat);
+                    bounds[1] = getEnd(tu, sp, cut, stat);
                 }
             }
             return bounds;
+        }
+        
+        private int getStart(TreeUtilities tu, SourcePositions sp, CompilationUnitTree cut, Tree tree) {
+            List<Comment> comments = tu.getComments(tree, true);
+            return comments.isEmpty() ? (int) sp.getStartPosition(cut, tree) : comments.get(0).pos();
+        }
+
+        private int getEnd(TreeUtilities tu, SourcePositions sp, CompilationUnitTree cut, Tree tree) {
+            List<Comment> comments = tu.getComments(tree, false);
+            return comments.isEmpty() ? (int) sp.getEndPosition(cut, tree) : comments.get(comments.size() - 1).endPos();
         }
     }
 }

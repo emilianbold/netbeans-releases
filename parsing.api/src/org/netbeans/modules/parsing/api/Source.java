@@ -337,22 +337,22 @@ public final class Source {
                                 while(-1 != (size = reader.read(buffer, 0, buffer.length))) {
                                     for(int i = 0; i < size; i++) {
                                         char ch = buffer[i];
-                                        if (lastCharCR && ch == LF) { // found CRLF sequence
+                                        if (lastCharCR && ch == LF) {
+                                            // CR-LF pair changed to single LF
+                                            continue;
+                                        }
+                                        if (ch == CR) {
+                                            // convert to LF; subsequent LF will be skipped
+                                            output.append(LF);
+                                            lso.add(output.length());
+                                            lastCharCR = true;
+                                        } else if (ch == LS || ch == PS) { // Unicode LS, PS
                                             output.append(LF);
                                             lso.add(output.length());
                                             lastCharCR = false;
-
-                                        } else { // not CRLF sequence
-                                            if (ch == CR) {
-                                                lastCharCR = true;
-                                            } else if (ch == LS || ch == PS) { // Unicode LS, PS
-                                                output.append(LF);
-                                                lso.add(output.length());
-                                                lastCharCR = false;
-                                            } else { // current char not CR
-                                                lastCharCR = false;
-                                                output.append(ch);
-                                            }
+                                        } else { // current char not CR
+                                            lastCharCR = false;
+                                            output.append(ch);
                                         }
                                     }
                                 }
