@@ -46,6 +46,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import javax.swing.AbstractAction;
 import org.netbeans.modules.css.visual.CreateRulePanel;
+import org.netbeans.modules.css.visual.EditRulesPanel;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.filesystems.FileObject;
@@ -68,10 +69,12 @@ public class CreateRuleAction extends AbstractAction {
 
     public CreateRuleAction() {
         super(Bundle.label_create_rule());
+        setEnabled(false);
     }
     
     public void setContext(FileObject context) {
         this.context = context;
+        setEnabled(context != null);
     }
     
     public void setTargetLocation(FileObject stylesheet) {
@@ -80,8 +83,7 @@ public class CreateRuleAction extends AbstractAction {
 
     @Override
     public void actionPerformed(ActionEvent e) {
-        final CreateRulePanel panel = new CreateRulePanel();
-        panel.setContext(context);
+        final CreateRulePanel panel = new CreateRulePanel(context);
         
         DialogDescriptor descriptor = new DialogDescriptor(
                 panel,
@@ -106,4 +108,5 @@ public class CreateRuleAction extends AbstractAction {
         dialog.setVisible(true);
         
     }
+
 }
