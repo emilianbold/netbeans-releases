@@ -42,6 +42,7 @@
 package org.netbeans.modules.css.visual;
 
 import org.netbeans.modules.html.editor.lib.api.elements.OpenTag;
+import org.netbeans.modules.html.editor.lib.api.elements.TreePath;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.openide.filesystems.FileObject;
 
@@ -76,4 +77,18 @@ public class HtmlSourceElementHandle {
     public boolean isResolved() {
         return openTag != null;
     }
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        sb.append(HtmlSourceElementHandle.class.getSimpleName());
+        sb.append('(');
+        sb.append("file=");
+        sb.append(getFile().getPath());
+        sb.append(", element=");
+        sb.append(new TreePath(getOpenTag()).toString());
+        sb.append(')');
+        return sb.toString();
+    }
+    
 }
