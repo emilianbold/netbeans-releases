@@ -910,14 +910,14 @@ public class TraceModel extends TraceModelBase {
                     ResolvedPath path = (ResolvedPath) aptToken.getProperty(ResolvedPath.class);
                     if (path != null) {
                         assert aptToken.getProperty(Boolean.class) != null;
-                        String prefix = ((Boolean)aptToken.getProperty(Boolean.class)) ? "#=> " : "#<= ";
-                        text = prefix + "\"" + path.getPath() + "\" [" + path.getFolder() + "]";
+                        String prefix = ((Boolean)aptToken.getProperty(Boolean.class)) ? "#=> " : "#<= "; // NOI18N
+                        text = prefix + "\"" + path.getPath() + "\" [" + path.getFolder() + "]"; // NOI18N
                     } else {
-                        text = "#include " + t.toString();
+                        text = "#include " + t.toString(); // NOI18N
                     }
                     newLine = true;
                 }
-                print(text, newLine); // NOI18N
+                print(text, newLine); 
             }
             lastLine = t.getLine();
         }
