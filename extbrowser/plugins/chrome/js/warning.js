@@ -40,6 +40,9 @@
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
 
+// references from bg page
+var NetBeans_LocalStorage = chrome.extension.getBackgroundPage().NetBeans_LocalStorage;
+
 /**
  * Warning - the content is set by the URL ident (accessible via <code>window.location.hash</code>).
  */
@@ -47,19 +50,21 @@ var NetBeans_Warning = {};
 
 NetBeans_Warning._ident = null;
 NetBeans_Warning._okButton = null;
+NetBeans_Warning._doNotShowAgainButton = null;
 
 NetBeans_Warning.init = function() {
     if (NetBeans_Warning._ident !== null) {
         return;
     }
-    NetBeans_Warning._ident = window.location.hash.substring(1);
-    NetBeans_Warning._okButton = document.getElementById('okButton');
+    this._ident = window.location.hash.substring(1);
+    this._okButton = document.getElementById('okButton');
+    this._doNotShowAgainButton = document.getElementById('doNotShowAgainCheck');
     this._showContent();
     this._registerEvents();
 };
 // show proper content of the page
 NetBeans_Warning._showContent = function() {
-    document.getElementById(NetBeans_Warning._ident).style.display = 'block';
+    document.getElementById(this._ident).style.display = 'block';
 }
 // register events
 NetBeans_Warning._registerEvents = function() {
@@ -69,7 +74,11 @@ NetBeans_Warning._registerEvents = function() {
     }, false);
 };
 NetBeans_Warning._close = function() {
+    this._doNotShowAgain();
     window.close();
+};
+NetBeans_Warning._doNotShowAgain = function() {
+    NetBeans_LocalStorage.enableWarning(this._ident, !this._doNotShowAgainButton.checked);
 };
 
 // run!

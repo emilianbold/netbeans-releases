@@ -46,5 +46,6 @@ window.addEventListener('load', function() {
     var ident = window.location.hash.substring(1);
     I18n.elements(document.getElementById(ident).getElementsByClassName('i18n'));
     // buttons
+    I18n.element('doNotShowAgainLabel');
     I18n.element('okButton');
 }, false);

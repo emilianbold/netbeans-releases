@@ -83,7 +83,18 @@ div.topLevel {
 }
 
 #doNotShowAgain {
+    position: absolute;
+    height: 13px;
+    left: 13px;
+    bottom: 13px;
     font-size: 9pt;
+}
+#doNotShowAgain input {
+    position: absolute;
+    top: 1px;
+}
+#doNotShowAgain label {
+    margin-left: 22px;
 }
 
 #okButton {

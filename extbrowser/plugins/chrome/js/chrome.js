@@ -282,7 +282,9 @@ NetBeans._checkUnexpectedDetach = function(tabId) {
 };
 
 NetBeans.openWarning = function(ident, height) {
-    NetBeans.openPopup('html/warning.html#' + ident, 540, height);
+    NetBeans_LocalStorage.isWarningEnabled(ident, function() {
+        NetBeans.openPopup('html/warning.html#' + ident, 540, height);
+    });
 };
 
 NetBeans.openPopup = function(url, width, height) {
@@ -373,3 +375,54 @@ chrome.tabs.onAttached.addListener(function(tabId, attachInfo) {
         NetBeans.windowFocused(windowId);
     }
 });
+
+/**
+ * Local storage.
+ */
+NetBeans_LocalStorage = {};
+/**
+ * Runs the given task if the warning identified by the given ident is enabled.
+ * @param {String} ident warning identifier
+ * @param {function} task task to be run
+ * @returns {void}
+ */
+NetBeans_LocalStorage.isWarningEnabled = function(ident, task) {
+    var key = NetBeans_LocalStorage._getKeyFor(ident, 'enabled');
+    chrome.storage.sync.get(key, function(items) {
+        NetBeans_LocalStorage._logError('get', key);
+        if (items[key] !== undefined && items[key] === 'false') {
+            // warning disabled
+            return;
+        }
+        task();
+    });
+};
+/**
+ * Disable the given warning.
+ * @param {String} ident warning identifier
+ * @returns {void}
+ */
+NetBeans_LocalStorage.enableWarning = function(ident, enabled) {
+    var key = NetBeans_LocalStorage._getKeyFor(ident, 'enabled');
+    if (enabled) {
+        // remove fro local storage
+        chrome.storage.sync.remove(key, function() {
+            NetBeans_LocalStorage._logError('remove', key);
+        });
+    } else {
+        // disable
+        var data = {};
+        data[key] = 'false';
+        chrome.storage.sync.set(data, function() {
+            NetBeans_LocalStorage._logError('set', key);
+        });
+    }
+};
+NetBeans_LocalStorage._getKeyFor = function(ident, key) {
+    return 'warning.' + ident + '.' + key;
+};
+NetBeans_LocalStorage._logError = function(operation, key) {
+    if (chrome.runtime.lastError) {
+        console.error('Local storage error ("' + operation + '" operation for "' + key + '"): ' + chrome.runtime.lastError);
+    }
+};
