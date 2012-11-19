@@ -816,6 +816,8 @@ public class HintsInvoker {
     }
 
     public static List<ErrorDescription> join(Map<?, ? extends List<? extends ErrorDescription>> errors) {
+        if (errors == null) return null;
+        
         List<ErrorDescription> result = new LinkedList<ErrorDescription>();
 
         for (Entry<?, ? extends Collection<? extends ErrorDescription>> e : errors.entrySet()) {
