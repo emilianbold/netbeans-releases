@@ -367,7 +367,7 @@ public class CreateRulePanel extends javax.swing.JPanel {
 
         initializeActiveElement();
 
-//        selectorTypeList.setSelectedIndex(0); //class
+        selectorTypeList.setSelectedIndex(0); //class
 
     }
 
@@ -731,7 +731,9 @@ public class CreateRulePanel extends javax.swing.JPanel {
             }
 
             //b. and modify the html source element
-            modifySourceElement();
+            if(Settings.getCreateRule_ApplyChangesToSelectedSourceElement()) {
+                modifySourceElement();
+            }
 
         } catch (/* IOException | ParseException */Exception e) {
             Exceptions.printStackTrace(e);
