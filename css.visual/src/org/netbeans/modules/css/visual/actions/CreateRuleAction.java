@@ -46,7 +46,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import javax.swing.AbstractAction;
 import org.netbeans.modules.css.visual.CreateRulePanel;
-import org.netbeans.modules.css.visual.EditRulesPanel;
+import org.netbeans.modules.css.visual.HtmlSourceElementHandle;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.filesystems.FileObject;
@@ -67,6 +67,7 @@ public class CreateRuleAction extends AbstractAction {
     
     private FileObject context;
     private FileObject targetLocation;
+    private HtmlSourceElementHandle handle;
     
     private static CreateRuleAction instance;
 
@@ -87,13 +88,17 @@ public class CreateRuleAction extends AbstractAction {
         setEnabled(context != null);
     }
     
+    public void setHtmlSourceElementHandle(HtmlSourceElementHandle handle) {
+        this.handle = handle;
+    }
+    
     public void setTargetLocation(FileObject stylesheet) {
         this.targetLocation = stylesheet;
     }
 
     @Override
     public void actionPerformed(ActionEvent e) {
-        final CreateRulePanel panel = new CreateRulePanel(context);
+        final CreateRulePanel panel = new CreateRulePanel(context, handle);
         
         DialogDescriptor descriptor = new DialogDescriptor(
                 panel,

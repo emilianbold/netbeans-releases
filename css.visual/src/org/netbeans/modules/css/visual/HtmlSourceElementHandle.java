@@ -55,7 +55,7 @@ public class HtmlSourceElementHandle {
     private final Snapshot snapshot;
     private final FileObject file;
 
-    HtmlSourceElementHandle(OpenTag openTag, Snapshot snapshot, FileObject file) {
+    public HtmlSourceElementHandle(OpenTag openTag, Snapshot snapshot, FileObject file) {
         this.openTag = openTag;
         this.snapshot = snapshot;
         this.file = file;

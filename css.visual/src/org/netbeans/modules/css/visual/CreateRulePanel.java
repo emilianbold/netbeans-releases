@@ -163,9 +163,10 @@ public class CreateRulePanel extends javax.swing.JPanel {
     private FileObject context;
     private Collection<String> ELEMENT_SELECTOR_ITEMS;
 
-    public CreateRulePanel(FileObject context) {
+    public CreateRulePanel(FileObject context, HtmlSourceElementHandle handle) {
         assert context != null;
         this.context = context;
+        this.activeElement = handle;
 
         STYLESHEETS_MODEL = new ExtDefaultComboBoxModel();
         AT_RULES_MODEL = new ExtDefaultComboBoxModel();
@@ -420,8 +421,13 @@ public class CreateRulePanel extends javax.swing.JPanel {
     }
 
     private void initializeActiveElement() {
-        activeElement = HtmlEditorSourceTask.getElement();
+        if(activeElement == null) {
+            //if handle was not passed in the constructor, try to obtain
+            //it from the source task
+            activeElement = HtmlEditorSourceTask.getElement();
+        }
         if (activeElement == null) {
+            //still nothing, out of luck...
             return;
         }
 
