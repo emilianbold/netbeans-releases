@@ -765,8 +765,8 @@ public class RuleEditorPanel extends JPanel {
         @Override
         protected JPopupMenu createPopupMenu() {
             FeatureDescriptor fd = getSelection();
-            if(fd != null) {
-                if(fd instanceof RuleEditorNode.DeclarationProperty) {
+            if (fd != null) {
+                if (fd instanceof RuleEditorNode.DeclarationProperty) {
                     //property
                     //
                     //actions:
@@ -775,23 +775,26 @@ public class RuleEditorPanel extends JPanel {
                     //????
                     //custom popop for the whole panel
                     JPopupMenu pm = new JPopupMenu();
-                    
-                    pm.add(new GoToSourceAction(RuleEditorPanel.this, (RuleEditorNode.DeclarationProperty)fd));
-                    pm.addSeparator();
-                    pm.add(new RemovePropertyAction(RuleEditorPanel.this, (RuleEditorNode.DeclarationProperty)fd));
+
+                    if(!addPropertyMode) {
+                        pm.add(new GoToSourceAction(RuleEditorPanel.this, (RuleEditorNode.DeclarationProperty) fd));
+                        pm.addSeparator();
+                        pm.add(new RemovePropertyAction(RuleEditorPanel.this, (RuleEditorNode.DeclarationProperty) fd));
+                    }
 
                     return pm;
-                    
-                } else if(fd instanceof RuleEditorNode.PropertyCategoryPropertySet) {
+
+                } else if (fd instanceof RuleEditorNode.PropertyCategoryPropertySet) {
                     //property category
                     //TODO possibly add "add property" action which would
                     //preselect the css category in the "add property dialog".
                 }
-            }            
-            
+            }
+
             //no context popup - create the generic popup
             return genericPopupMenu;
         }
+
         
     }
 }
