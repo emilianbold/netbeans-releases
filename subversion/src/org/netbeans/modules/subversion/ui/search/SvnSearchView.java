@@ -89,20 +89,24 @@ class SvnSearchView implements ComponentListener {
         return pane;
     }
 
+    @Override
     public void componentResized(ComponentEvent e) {
         int [] selection = resultsList.getSelectedIndices();
         resultsList.setModel(new SvnSearchListModel());
         resultsList.setSelectedIndices(selection);
     }
 
+    @Override
     public void componentHidden(ComponentEvent e) {
         // not interested
     }
 
+    @Override
     public void componentMoved(ComponentEvent e) {
         // not interested
     }
 
+    @Override
     public void componentShown(ComponentEvent e) {
         // not interested
     }
@@ -134,6 +138,7 @@ class SvnSearchView implements ComponentListener {
 
     private class SvnSearchListModel extends AbstractListModel {
 
+        @Override
         public int getSize() {
             if(lm == null) {
                 return 0;
@@ -141,6 +146,7 @@ class SvnSearchView implements ComponentListener {
             return lm.length;
         }
 
+        @Override
         public Object getElementAt(int index) {
             return lm[index];
         }
@@ -196,6 +202,7 @@ class SvnSearchView implements ComponentListener {
                  Math.max((int)(c.getBlue() * DARKEN_FACTOR), 0));
         }
 
+        @Override
         public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
             if(value instanceof ISVNLogMessage) {
                 ISVNLogMessage message = (ISVNLogMessage) value;
