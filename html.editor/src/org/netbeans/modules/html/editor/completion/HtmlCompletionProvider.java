@@ -522,18 +522,22 @@ public class HtmlCompletionProvider implements CompletionProvider {
 
     private static class HtmlTagDocumetationItem implements CompletionDocumentation {
 
-        HtmlCompletionItem item;
+        private final HtmlCompletionItem item;
+        private final String documentationText;
 
         public HtmlTagDocumetationItem(HtmlCompletionItem ri) {
             this.item = ri;
+            
+            //initialize the text in constructor as it is not called from EDT
+            //in contrary to the {@link #getText()} method.
+            this.documentationText = loadDocText(); 
         }
 
         private HelpItem getHelpItem() {
             return item.getHelpItem();
         }
 
-        @Override
-        public String getText() {
+        private String loadDocText() {
             //normally it should be enough to return null here
             //and the documentation would be loaded from the URL.
             //However it seems that the html5 anchor navigation doesn't
@@ -555,6 +559,11 @@ public class HtmlCompletionProvider implements CompletionProvider {
             sb.append(helpContent);
 
             return sb.toString();
+        }
+        
+        @Override
+        public String getText() {
+            return documentationText;
         }
 
         @Override
