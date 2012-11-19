@@ -159,8 +159,13 @@ public class HtmlCompletionProvider implements CompletionProvider {
                 //check the items
                 for (CompletionItem item : items) {
                     if (item instanceof HtmlCompletionItem) {
-                        if (startsWithIgnoreCase(((HtmlCompletionItem) item).getItemText(), prefix)) {
-                            return true; //at least one item will remain
+                        String itemText = ((HtmlCompletionItem) item).getItemText();
+                        if(itemText != null) { //http://netbeans.org/bugzilla/show_bug.cgi?id=222234
+                            if (startsWithIgnoreCase(itemText, prefix)) {
+                                return true; //at least one item will remain
+                            }
+                        } else {
+                            LOG.log(Level.WARNING, "CompletionItem {0} returned null from getItemText()!", item);
                         }
                     }
                 }
