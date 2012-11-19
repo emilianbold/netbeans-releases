@@ -44,6 +44,7 @@ package org.netbeans.modules.css.visual.api;
 import java.awt.BorderLayout;
 import org.netbeans.modules.css.visual.CssStylesPanel;
 import org.netbeans.modules.css.visual.RuleEditorPanel;
+import org.netbeans.modules.css.visual.actions.CreateRuleAction;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
 import org.openide.filesystems.FileObject;
@@ -114,6 +115,9 @@ public final class CssStylesTC extends TopComponent {
     public void setContext(FileObject file) {
         setFileNameInTitle(file);
         cssStylesPanel.setContext(file);
+        
+        //hack - set context to the create rule action
+        CreateRuleAction.getDefault().setContext(file);
     }
 
     @Override

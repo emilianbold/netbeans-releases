@@ -226,7 +226,7 @@ public class RuleEditorPanel extends JPanel {
         
         //initialize actions
         addPropertyAction = new AddPropertyAction(this);
-        addRuleAction = new CreateRuleAction();
+        addRuleAction = CreateRuleAction.getDefault();
         removeRuleAction = new DeleteRuleAction(this);
 
         //init default components
