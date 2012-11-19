@@ -363,8 +363,30 @@ public class JsTypedBreakInterceptorTest extends JsTestBase {
                 + "            this.doSth();\n"
                 + "         }\n"
                 + "         ^\n"
-                + "      }\n"
                 + "   };\n"
                 + "}())\n");
+    }
+
+    public void testIssue222239() throws Exception {
+        insertBreak("var empowered = {\n"
+            + "    showFooter: function() {\n"
+            + "        $(\"footer #footer-permanent-content\").removeClass('fixed');\n"
+            + "        $(\"footer #footer-variable-content\").removeClass('padding-top');\n"
+            + "    },\n"
+            + "    showTestMenu: function() {^,\n"
+            + "    showPhoneMenu: function() {\n"
+            + "        $(\"footer #footer-permanent-content nav ul\").toggleClass('hidden-menu');\n"
+            + "    },\n",
+            "var empowered = {\n"
+            + "    showFooter: function() {\n"
+            + "        $(\"footer #footer-permanent-content\").removeClass('fixed');\n"
+            + "        $(\"footer #footer-variable-content\").removeClass('padding-top');\n"
+            + "    },\n"
+            + "    showTestMenu: function() {\n"
+            + "^\n"
+            + "},\n"
+            + "    showPhoneMenu: function() {\n"
+            + "        $(\"footer #footer-permanent-content nav ul\").toggleClass('hidden-menu');\n"
+            + "    },\n");
     }
 }
