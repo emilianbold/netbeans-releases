@@ -67,8 +67,17 @@ public class CreateRuleAction extends AbstractAction {
     
     private FileObject context;
     private FileObject targetLocation;
+    
+    private static CreateRuleAction instance;
 
-    public CreateRuleAction() {
+    public static CreateRuleAction getDefault() {
+        if(instance == null) {
+            instance = new CreateRuleAction();
+        }
+        return instance;
+    }
+    
+    private CreateRuleAction() {
         super(Bundle.label_create_rule());
         setEnabled(false);
     }

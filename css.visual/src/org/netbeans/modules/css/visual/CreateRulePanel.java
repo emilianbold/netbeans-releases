@@ -172,7 +172,7 @@ public class CreateRulePanel extends javax.swing.JPanel {
         SELECTORS_MODEL = new ExtDefaultComboBoxModel();
 
         createStyleSheetsModel();
-        updateAtRulesModel(context);
+//        updateAtRulesModel(context);
 
         SELECTORS_LIST_MODEL = new AbstractListModel() {
             @Override
@@ -224,20 +224,20 @@ public class CreateRulePanel extends javax.swing.JPanel {
                 SelectorItem activeSelectorItem = getActiveSelectorItem();
                 if (activeSelectorItem != null) {
                     FileObject file = activeSelectorItem.getFile();
+                    if(file != null) { //may be the NO_CLASS or NO_ID item w/o a file
+                        //select active stylesheet
+                        styleSheetCB.setSelectedItem(file);
 
-                    //select active stylesheet
-                    styleSheetCB.setSelectedItem(file);
-
-                    //update current stylesheet model && at rules model 
-                    updateAtRulesModel(file);
-                    //select the active at rule
-                    AtRuleItem createInAtRule = activeSelectorItem.getCreateInAtRule();
-                    if (createInAtRule != null) {
-                        atRuleCB.setSelectedItem(createInAtRule);
-                    } else {
-                        atRuleCB.setSelectedIndex(0); //select first
+                        //update current stylesheet model && at rules model 
+                        updateAtRulesModel(file);
+                        //select the active at rule
+                        AtRuleItem createInAtRule = activeSelectorItem.getCreateInAtRule();
+                        if (createInAtRule != null) {
+                            atRuleCB.setSelectedItem(createInAtRule);
+                        } else {
+                            atRuleCB.setSelectedIndex(0); //select first
+                        }
                     }
-
                 }
 
             }
@@ -621,6 +621,10 @@ public class CreateRulePanel extends javax.swing.JPanel {
 
             if (items.contains(context)) { //the context may be the html file itself!
                 STYLESHEETS_MODEL.setSelectedItem(context);
+            } else {
+                if(STYLESHEETS_MODEL.getSize() > 0) {
+                    STYLESHEETS_MODEL.setSelectedIndex(0);
+                }
             }
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
@@ -710,7 +714,7 @@ public class CreateRulePanel extends javax.swing.JPanel {
         try {
             //CLASS
             if (selectedClazz != null) {
-                if (selectedClazz.getCreateInFile() != null) {
+                if (selectedClazz.getExistsInFile() == null && selectedClazz.getCreateInFile() != null && selectedClazz.getItemFQName() != null) {
                     //a. we need to create new rule 
                     createNewRule(selectedClazz);
 
@@ -720,7 +724,7 @@ public class CreateRulePanel extends javax.swing.JPanel {
 
             //ID
             if (selectedId != null) {
-                if (selectedId.getCreateInFile() != null) {
+                if (selectedId.getExistsInFile() == null && selectedId.getCreateInFile() != null && selectedId.getItemFQName() != null) {
                     //a. we need to create new rule 
                     createNewRule(selectedId);
                 }
@@ -1050,7 +1054,7 @@ public class CreateRulePanel extends javax.swing.JPanel {
                         }
                     }
 
-                    if (selectedClazz == null || !selectedClazz.getItemName().equals(getSelectedElementClassName())) {
+                    if (selectedClassName != null && (selectedClazz == null || !selectedClazz.getItemName().equals(getSelectedElementClassName()))) {
                         //add special item for the class name preset in the html source element code but w/o
                         //a corresponding css rule
                         SelectorItem classSelectorItem = SelectorItem.createClass(selectedClassName, null);
@@ -1084,7 +1088,7 @@ public class CreateRulePanel extends javax.swing.JPanel {
                         }
                     }
 
-                    if (selectedId == null || !selectedId.getItemName().equals(getSelectedElementIdName())) {
+                    if (selectedIdName != null && (selectedId == null || !selectedId.getItemName().equals(getSelectedElementIdName()))) {
                         //add special item for the class name preset in the html source element code but w/o
                         //a corresponding css rule
                         SelectorItem idSelectorItem = SelectorItem.createId(selectedIdName, null);
@@ -1540,7 +1544,8 @@ public class CreateRulePanel extends javax.swing.JPanel {
             } else if (element != null) {
                 sb.append(element);
             }
-            return sb.toString();
+            
+            return sb.length() == 0 ? null : sb.toString();
         }
 
         public String getItemFQName() {
@@ -1554,7 +1559,7 @@ public class CreateRulePanel extends javax.swing.JPanel {
             } else if (element != null) {
                 sb.append(element);
             }
-            return sb.toString();
+            return sb.length() == 0 ? null : sb.toString();
         }
 
         @Override
@@ -1626,7 +1631,18 @@ public class CreateRulePanel extends javax.swing.JPanel {
 
         @Override
         public int compareTo(SelectorItem o) {
-            return o == null ? +1 : getItemFQName().compareTo(o.getItemFQName());
+            String myFQN = getItemFQName();
+            String herFQN = o == null ? null : o.getItemFQName();
+            
+            if(herFQN == null && myFQN != null) {
+                return +1;
+            } else if(herFQN != null && myFQN == null) {
+                return -1;
+            } else if(herFQN == null && myFQN == null) {
+                return 0;
+            } else {
+                return myFQN.compareTo(herFQN);
+            }
         }
     }
 
@@ -1743,6 +1759,16 @@ public class CreateRulePanel extends javax.swing.JPanel {
             fireIntervalAdded(this, 0, objects.size());
         }
 
+        public void setSelectedIndex(int index) {
+            if(index >= objects.size()) {
+                return ;
+            }
+            if(index < 0) {
+                return ;
+            }
+            setSelectedItem(objects.get(index));
+        }
+        
         // implements javax.swing.ComboBoxModel
         /**
          * Set the value of the selected item. The selected item may be null.

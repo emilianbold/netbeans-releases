@@ -148,7 +148,7 @@ public class DocumentViewPanel extends javax.swing.JPanel implements ExplorerMan
     public DocumentViewPanel(Lookup cssStylesLookup) {
         this.cssStylesLookup = cssStylesLookup;
 
-        createRuleAction = new CreateRuleAction();
+        createRuleAction = CreateRuleAction.getDefault();
 
         lookupFileObjectResult = cssStylesLookup.lookupResult(FileObject.class);
         lookupFileObjectResult.addLookupListener(new LookupListener() {
