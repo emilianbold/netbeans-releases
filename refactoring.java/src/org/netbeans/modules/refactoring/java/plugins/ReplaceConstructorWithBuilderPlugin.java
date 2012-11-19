@@ -70,7 +70,8 @@ import org.openide.util.NbBundle;
  *
  * @author Jan Becicka
  */
-@NbBundle.Messages({"WRN_NODEFAULT=Parameter {0}'s setter is optional but has no default value."})
+@NbBundle.Messages({"# {0} - ParameterName", "WRN_NODEFAULT=Parameter {0}'s setter is optional but has no default value.",
+"ERR_ReplaceAbstract=Cannot Replace Constructor with Builder in an abstract class."})
 public class ReplaceConstructorWithBuilderPlugin extends JavaRefactoringPlugin {
  
     private final ReplaceConstructorWithBuilderRefactoring refactoring;
@@ -90,6 +91,9 @@ public class ReplaceConstructorWithBuilderPlugin extends JavaRefactoringPlugin {
             return new Problem(true, ERR_ReplaceWrongType());
         }
         Element enclosingElement = constr.getEnclosingElement();
+        if(enclosingElement.getModifiers().contains(Modifier.ABSTRACT)) {
+            return new Problem(true, ERR_ReplaceAbstract());
+        }
         if(!enclosingElement.getModifiers().contains(Modifier.STATIC) && enclosingElement.getEnclosingElement().getKind() != ElementKind.PACKAGE) {
             return new Problem(true, ERR_ReplaceWrongInnerType());
         }
