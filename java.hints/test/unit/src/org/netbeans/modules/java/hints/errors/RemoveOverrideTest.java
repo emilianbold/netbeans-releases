@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2009-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,32 +37,56 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009-2010 Sun Microsystems, Inc.
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.java.hints.errors;
 
-package org.netbeans.modules.java.hints.jackpot.spi;
-
-import org.netbeans.modules.java.hints.providers.spi.HintDescription;
 import com.sun.source.util.TreePath;
-import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
-import java.util.concurrent.atomic.AtomicBoolean;
-import org.netbeans.api.annotations.common.CheckForNull;
+import java.util.Set;
 import org.netbeans.api.java.source.CompilationInfo;
-import org.netbeans.modules.java.hints.spiimpl.MessageImpl;
-import org.netbeans.modules.java.hints.spiimpl.hints.HintsInvoker;
-import org.netbeans.spi.editor.hints.ErrorDescription;
+import org.netbeans.modules.java.hints.infrastructure.ErrorHintsTestBase;
+import org.netbeans.spi.editor.hints.Fix;
 
 /**
  *
  * @author lahvac
  */
-public class HintsRunner {
+public class RemoveOverrideTest extends ErrorHintsTestBase {
+    
+    public RemoveOverrideTest(String name) {
+        super(name);
+    }
+    
+    public void testRemoveOverride() throws Exception {
+        performFixTest("test/Test.java",
+                       "package test;\n" +
+                       "public class Test {\n" +
+                       "    @Override public void test() {\n" +
+                       "    }\n" +
+                       "}\n",
+                       -1,
+                       Bundle.FIX_RemoveOverride(),
+                       ("package test;\n" +
+                       "public class Test {\n" +
+                       "    public void test() {\n" +
+                       "    }\n" +
+                       "}\n").replaceAll("[ \t\n]+", " "));
+    }
 
-    @CheckForNull
-    public static Map<HintDescription, List<ErrorDescription>> computeErrors(CompilationInfo info, Iterable<? extends HintDescription> hints, AtomicBoolean cancel) {
-        return new HintsInvoker(info, cancel).computeHints(info, new TreePath(info.getCompilationUnit()), hints, new LinkedList<MessageImpl>());
+    @Override
+    protected List<Fix> computeFixes(CompilationInfo info, int pos, TreePath path) throws Exception {
+        return new RemoveOverride().run(info, null, pos, path, null);
+    }
+
+    @Override
+    protected String toDebugString(CompilationInfo info, Fix f) {
+        return f.getText();
+    }
+
+    @Override
+    protected Set<String> getSupportedErrorKeys() {
+        return new RemoveOverride().getCodes();
     }
 
 }

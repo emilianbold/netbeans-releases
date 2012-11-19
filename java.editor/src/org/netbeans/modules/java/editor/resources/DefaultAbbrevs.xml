@@ -304,6 +304,12 @@ ${selection}${cursor}
         </code>
     </codetemplate>
 
+    <codetemplate abbreviation="par">
+        <code>
+<![CDATA[${no-format}(${selection}${cursor})]]>
+        </code>
+    </codetemplate>
+
     <!-- Added in 6.9 -->
 
     <!-- Arrays and List conversion and sorting -->
