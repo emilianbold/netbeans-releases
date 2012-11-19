@@ -161,7 +161,19 @@ public class JsIndex {
         return getElementsByPrefix(prexif, getProperties(fqn));
     }
 
+    
     public Collection <IndexedElement> getProperties(String fqn) {
+        return getProperties(fqn, 0, new ArrayList<String>());
+    }
+
+    private final int MAX_FIND_PROPERTIES_RECURSION = 15;
+    
+    private Collection <IndexedElement> getProperties(String fqn, int deepLevel, Collection<String> resolvedTypes) { 
+        if (deepLevel > MAX_FIND_PROPERTIES_RECURSION) {
+            return Collections.EMPTY_LIST;
+        }
+        resolvedTypes.add(fqn);
+        deepLevel = deepLevel + 1;
         Collection<? extends IndexResult> results = query(
                 JsIndex.FIELD_FQ_NAME, fqn, QuerySupport.Kind.EXACT, TERMS_PROPERTIES); //NOI18N
         Collection<IndexedElement> result = new ArrayList<IndexedElement>();
@@ -169,8 +181,8 @@ public class JsIndex {
             Collection<TypeUsage> assignments = IndexedElement.getAssignments(indexResult);
             if (!assignments.isEmpty()) {
                 TypeUsage type = assignments.iterator().next();
-                if (!type.getType().equals(fqn)) {
-                    result.addAll(getProperties(type.getType()));
+                if (!resolvedTypes.contains(type.getType())) {                    
+                    result.addAll(getProperties(type.getType(), deepLevel, resolvedTypes));
                 }
             }
             for (IndexedElement indexedElement : IndexedElement.createProperties(indexResult, fqn)) {
