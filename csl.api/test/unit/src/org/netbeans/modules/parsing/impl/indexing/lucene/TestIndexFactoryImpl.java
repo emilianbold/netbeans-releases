@@ -48,6 +48,7 @@ import java.lang.ref.WeakReference;
 import java.util.*;
 import org.netbeans.modules.parsing.impl.indexing.IndexFactoryImpl;
 import org.netbeans.modules.parsing.lucene.support.DocumentIndex;
+import org.netbeans.modules.parsing.lucene.support.DocumentIndexCache;
 import org.netbeans.modules.parsing.lucene.support.Index.Status;
 import org.netbeans.modules.parsing.lucene.support.IndexDocument;
 import org.netbeans.modules.parsing.lucene.support.Queries;
@@ -88,6 +89,13 @@ public class TestIndexFactoryImpl implements IndexFactoryImpl {
             }
             return lii;
         }
+
+        @Override
+        public DocumentIndexCache getCache(Context ctx) throws IOException {
+            return null;
+        }
+
+
         
         public TestIndexImpl getTestIndex(FileObject indexFolder) throws IOException {
             DocumentIndex ii = delegate.getIndex(indexFolder);
