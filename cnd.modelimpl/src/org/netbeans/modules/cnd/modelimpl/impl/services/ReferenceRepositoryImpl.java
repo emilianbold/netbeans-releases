@@ -448,4 +448,9 @@ public final class ReferenceRepositoryImpl extends CsmReferenceRepository {
         }
         return null;        
     }
+
+    @Override
+    public Collection<CsmFile> findRelevantFiles(CsmProject project, CharSequence id) {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
 }
