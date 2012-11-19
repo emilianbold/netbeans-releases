@@ -985,14 +985,12 @@ public abstract class JPACompletionItem implements CompletionItem {
 
         private static final String FIELD_ICON = "org/netbeans/modules/editor/resources/completion/field_16.png"; //NOI18N
         private ElementHandle<VariableElement> elemHandle;
-        private boolean deprecated;
         private String displayName;
 
         public ClassPropertyItem(int substitutionOffset, VariableElement elem, ElementHandle<VariableElement> elemHandle,
                 boolean deprecated) {
             super(substitutionOffset);
             this.elemHandle = elemHandle;
-            this.deprecated = deprecated;
             this.displayName = elem.getSimpleName().toString();
         }
 
