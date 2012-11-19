@@ -86,6 +86,7 @@ public class JiraAutoupdate {
     private static final Pattern VERSION_PATTERN = Pattern.compile("^.*version ((\\d+?\\.\\d+?\\.\\d+?)|(\\d+?\\.\\d+?)).*$");
     
     private static Map<String, Long> lastChecks = null;
+    private boolean wrongVersionAlreadyNotified = false;
 
     /**
      * Checks if the remote JIRA has a version higher then actually supported and if
@@ -191,10 +192,11 @@ public class JiraAutoupdate {
         }
         JiraVersion version = new JiraVersion(v[0]);
         boolean ret = isSupportedVersion(version);
-        if(!ret) {
+        if(!ret & !wrongVersionAlreadyNotified) {
             Jira.LOG.log(Level.INFO,
                          "JIRA repository [{0}] has version {1}. ", // NOI18N
                          new Object[] {repository.getUrl(), version});
+            wrongVersionAlreadyNotified = true;
         }
         return ret;
     }
