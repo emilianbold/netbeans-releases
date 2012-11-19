@@ -52,6 +52,7 @@ import org.openide.DialogDisplayer;
 import org.openide.filesystems.FileObject;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 
 /**
  *
@@ -95,10 +96,13 @@ public class CreateRuleAction extends AbstractAction {
                     @Override
                     public void actionPerformed(ActionEvent e) {
                         if(e.getSource().equals(DialogDescriptor.OK_OPTION)) {
-                            //should be called out of EDT, but due to Honza's hacks in Model.saveIfNotOpenInEditor()
-                            //I better keep it as it is at least for the John's demo.
-                            //XXX replan out of EDT, fix Model.saveIfNotOpenInEditor() not to require EDT and do I/O there.
-                            panel.applyChanges();
+                            RequestProcessor.getDefault().post(new Runnable() {
+                                @Override
+                                public void run() {
+                                    panel.applyChanges();
+                                }
+                                
+                            });
                         }
                     }
                 });
