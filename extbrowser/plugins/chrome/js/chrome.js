@@ -276,7 +276,7 @@ NetBeans._checkUnexpectedDetach = function(tabId) {
             warn = true;
         }
         if (warn) {
-            NetBeans.openPopup('html/warnDebuggerDetached.html');
+            NetBeans.openPopup('html/warning.html#disconnectedDebugger');
         }
     }, 100);
 };
@@ -285,8 +285,8 @@ NetBeans.openPopup = function(url) {
     chrome.windows.create({
         'url': url,
         type: 'popup',
-        width: 600,
-        height: 250
+        width: 540,
+        height: 400
     });
 };
 

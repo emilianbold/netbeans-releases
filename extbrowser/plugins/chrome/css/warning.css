@@ -40,6 +40,11 @@
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
 
+* {
+    margin: 0px;
+    padding: 0px;
+}
+
 body {
     font-family: Arial, Tahoma, Helvetica;
     font-size: 10pt;
@@ -47,10 +52,44 @@ body {
     color: #303942;
     background-color: #fff;
 }
+
 h1 {
-    color: darkred;
+    font-size: 13pt;
+    font-weight: bold;
+    color: #37414a;
+    margin-bottom: 30px;
+}
+
+div.topLevel {
+    display: none;
+    margin: 40px 76px 61px 76px;
+}
+
+.perex {
+    font-weight: bold;
+    color: #000;
+    margin-bottom: 20px;
+}
+
+.body {
+    color: #37414a;
+    margin-bottom: 20px;
+}
+
+#mainIco {
+    position: absolute;
+    left: 13px;
+    top: 13px;
+}
+
+#doNotShowAgain {
+    font-size: 9pt;
 }
 
 #okButton {
-    float: right;
+    position: absolute;
+    bottom: 13px;
+    right: 13px;
+    min-width: 45px;
+    height: 27px;
 }

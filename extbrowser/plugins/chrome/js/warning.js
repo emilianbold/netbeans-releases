@@ -41,43 +41,38 @@
  */
 
 /**
- * Debugger detached warning.
+ * Warning - the content is set by the URL ident (accessible via <code>window.location.hash</code>).
  */
-var NetBeans_DebuggerDetachedWarning = {};
+var NetBeans_Warning = {};
 
-NetBeans_DebuggerDetachedWarning.CHROME_ISSUE_LINK = 'http://code.google.com/p/chromium/issues/detail?id=138258';
+NetBeans_Warning._ident = null;
+NetBeans_Warning._okButton = null;
 
-NetBeans_DebuggerDetachedWarning._okButton = null;
-NetBeans_DebuggerDetachedWarning._chromeIssueLink = null;
-
-NetBeans_DebuggerDetachedWarning.init = function() {
-    if (NetBeans_DebuggerDetachedWarning._okButton != null) {
+NetBeans_Warning.init = function() {
+    if (NetBeans_Warning._ident !== null) {
         return;
     }
-    NetBeans_DebuggerDetachedWarning._okButton = document.getElementById('okButton');
-    NetBeans_DebuggerDetachedWarning._chromeIssueLink = document.getElementById('chromeIssueLink');
+    NetBeans_Warning._ident = window.location.hash.substring(1);
+    NetBeans_Warning._okButton = document.getElementById('okButton');
+    this._showContent();
     this._registerEvents();
 };
+// show proper content of the page
+NetBeans_Warning._showContent = function() {
+    document.getElementById(NetBeans_Warning._ident).style.display = 'block';
+}
 // register events
-NetBeans_DebuggerDetachedWarning._registerEvents = function() {
+NetBeans_Warning._registerEvents = function() {
     var that = this;
     this._okButton.addEventListener('click', function() {
         that._close();
     }, false);
-    this._chromeIssueLink.addEventListener('click', function() {
-        that._openChromeIssueInMainWindow();
-    }, false);
 };
-NetBeans_DebuggerDetachedWarning._close = function() {
+NetBeans_Warning._close = function() {
     window.close();
-};
-NetBeans_DebuggerDetachedWarning._openChromeIssueInMainWindow = function() {
-    this._chromeIssueLink.setAttribute('href', NetBeans_DebuggerDetachedWarning.CHROME_ISSUE_LINK);
-    this._chromeIssueLink.setAttribute('target', '_blank');
-    this._close();
 };
 
 // run!
 window.addEventListener('load', function() {
-    NetBeans_DebuggerDetachedWarning.init();
+    NetBeans_Warning.init();
 }, false);
