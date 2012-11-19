@@ -732,7 +732,9 @@ public class CreateRulePanel extends javax.swing.JPanel {
 
             //b. and modify the html source element
             if(Settings.getCreateRule_ApplyChangesToSelectedSourceElement()) {
-                modifySourceElement();
+                if(activeElement != null) {
+                    modifySourceElement();
+                }
             }
 
         } catch (/* IOException | ParseException */Exception e) {
