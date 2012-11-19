@@ -54,7 +54,7 @@ import org.openide.util.NbBundle;
 import org.openide.util.lookup.ServiceProvider;
 
 
-abstract class OnlineSites implements SiteTemplateImplementation {
+public abstract class OnlineSites implements SiteTemplateImplementation {
 
     private static final Logger LOGGER = Logger.getLogger(OnlineSites.class.getName());
 
@@ -64,7 +64,7 @@ abstract class OnlineSites implements SiteTemplateImplementation {
     private final String description;
 
 
-    private OnlineSites(String name, String description, String url, File libFile) {
+    protected OnlineSites(String name, String description, String url, File libFile) {
         this.name = name;
         this.description = description;
         this.url = url;
