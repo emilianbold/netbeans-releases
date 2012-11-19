@@ -72,13 +72,13 @@ public class CopyFinderBasedBulkSearch extends BulkSearch {
     }
 
     @Override
-    public Map<String, Collection<TreePath>> match(CompilationInfo info, TreePath toSearch, BulkPattern pattern, Map<String, Long> timeLog) {
+    public Map<String, Collection<TreePath>> match(CompilationInfo info, AtomicBoolean cancel, TreePath toSearch, BulkPattern pattern, Map<String, Long> timeLog) {
         Parameters.notNull("info", info);
         Map<String, Collection<TreePath>> result = new HashMap<String, Collection<TreePath>>();
         TreePath topLevel = new TreePath(info.getCompilationUnit());
         
         for (Entry<Tree, String> e : ((BulkPatternImpl) pattern).pattern2Code.entrySet()) {
-            for (Occurrence od : Matcher.create(info).setCancel(new AtomicBoolean()).setUntypedMatching().match(Pattern.createPatternWithFreeVariables(new TreePath(topLevel, e.getKey()), Collections.<String, TypeMirror>emptyMap()))) {
+            for (Occurrence od : Matcher.create(info).setCancel(new AtomicBoolean()).setUntypedMatching().setCancel(cancel).match(Pattern.createPatternWithFreeVariables(new TreePath(topLevel, e.getKey()), Collections.<String, TypeMirror>emptyMap()))) {
                 Collection<TreePath> c = result.get(e.getValue());
 
                 if (c == null) {
@@ -93,13 +93,13 @@ public class CopyFinderBasedBulkSearch extends BulkSearch {
     }
 
     @Override
-    public boolean matches(CompilationInfo info, TreePath toSearch, BulkPattern pattern) {
+    public boolean matches(CompilationInfo info, AtomicBoolean cancel, TreePath toSearch, BulkPattern pattern) {
         //XXX: performance
-        return !match(info, toSearch, pattern).isEmpty();
+        return !match(info, cancel, toSearch, pattern).isEmpty();
     }
 
     @Override
-    public BulkPattern create(Collection<? extends String> code, Collection<? extends Tree> patterns, Collection<? extends AdditionalQueryConstraints> additionalConstraints) {
+    public BulkPattern create(Collection<? extends String> code, Collection<? extends Tree> patterns, Collection<? extends AdditionalQueryConstraints> additionalConstraints, AtomicBoolean cancel) {
         Map<Tree, String> pattern2Code = new HashMap<Tree, String>();
 
         Iterator<? extends String> itCode = code.iterator();
@@ -113,17 +113,17 @@ public class CopyFinderBasedBulkSearch extends BulkSearch {
     }
 
     @Override
-    public boolean matches(InputStream encoded, BulkPattern pattern) {
+    public boolean matches(InputStream encoded, AtomicBoolean cancel, BulkPattern pattern) {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
     @Override
-    public void encode(Tree tree, EncodingContext ctx) {
+    public void encode(Tree tree, EncodingContext ctx, AtomicBoolean cancel) {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
     @Override
-    public Map<String, Integer> matchesWithFrequencies(InputStream encoded, BulkPattern pattern) {
+    public Map<String, Integer> matchesWithFrequencies(InputStream encoded, BulkPattern pattern, AtomicBoolean cancel) {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 

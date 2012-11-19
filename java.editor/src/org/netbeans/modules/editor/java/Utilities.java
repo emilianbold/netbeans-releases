@@ -47,6 +47,7 @@ package org.netbeans.modules.editor.java;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.EnhancedForLoopTree;
+import com.sun.source.tree.ErroneousTree;
 import com.sun.source.tree.IdentifierTree;
 import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodInvocationTree;
@@ -60,6 +61,7 @@ import com.sun.source.util.SourcePositions;
 import com.sun.source.util.TreePath;
 import com.sun.source.util.TreePathScanner;
 import com.sun.source.util.Trees;
+import com.sun.source.util.TreeScanner;
 
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -574,6 +576,24 @@ public final class Utilities {
             }
         }.scan(info.getCompilationUnit(), null);
         return ret;                
+    }
+    
+    public static boolean containErrors(Tree tree) {
+        final AtomicBoolean containsErrors = new AtomicBoolean();
+        new TreeScanner<Void, Void>() {
+            public Void visitErroneous(ErroneousTree node, Void p) {
+                containsErrors.set(true);
+                return null;
+            }
+            
+            public Void scan(Tree node, Void p) {
+                if (containsErrors.get()) {
+                    return null;
+                }
+                return super.scan(node, p);
+            }
+        }.scan(tree, null);
+        return containsErrors.get();
     }
 
     private static List<String> varNamesForType(TypeMirror type, Types types, Elements elements, String prefix) {
