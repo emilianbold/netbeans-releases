@@ -185,6 +185,9 @@ class SvnSearchView implements ComponentListener {
             setLayout(new BorderLayout());
             add(textPane);
             textPane.setBorder(null);
+            //fix for nimbus laf
+            textPane.setOpaque(false);
+            textPane.setBackground(new Color(0, 0, 0, 0));
         }
 
         public Color darker(Color c) {
@@ -200,11 +203,11 @@ class SvnSearchView implements ComponentListener {
 
                 Style style;
                 if (isSelected) {
-                    textPane.setBackground(selectionBackground); // NOI18N
+                    setBackground(selectionBackground);
                     style = selectedStyle;
                 } else {
                     Color c = UIManager.getColor("List.background"); // NOI18N
-                    textPane.setBackground((index & 1) == 0 ? c : darker(c));
+                    setBackground((index & 1) == 0 ? c : darker(c));
                     style = normalStyle;
                 }
 
@@ -216,6 +219,7 @@ class SvnSearchView implements ComponentListener {
                     sd.insertString(sd.getLength(), FIELDS_SEPARATOR + message.getAuthor(), null);
                     sd.insertString(sd.getLength(), FIELDS_SEPARATOR +  defaultFormat.format(message.getDate()), null);
                     sd.insertString(sd.getLength(), "\n" + message.getMessage(), null); // NOI18N
+                    sd.setCharacterAttributes(0, Integer.MAX_VALUE, style, false);
                 } catch (BadLocationException e) {
                     Subversion.LOG.log(Level.SEVERE, null, e);
                 }
