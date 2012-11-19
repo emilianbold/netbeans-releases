@@ -39,83 +39,54 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.cnd.apt.impl.support;
+package org.netbeans.modules.java.hints.errors;
 
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
-import org.netbeans.modules.cnd.apt.structure.APT;
-import org.netbeans.modules.cnd.apt.support.APTToken;
-import org.netbeans.modules.cnd.apt.support.APTTokenAbstact;
-import org.netbeans.modules.cnd.apt.support.ResolvedPath;
+import com.sun.source.util.TreePath;
+import java.util.List;
+import java.util.Set;
+import org.netbeans.api.java.source.CompilationInfo;
+import org.netbeans.modules.java.hints.infrastructure.ErrorHintsTestBase;
+import org.netbeans.spi.editor.hints.Fix;
 
 /**
- * wrapper for APT nodes corresponding to preprocessor directives
- * @author Vladimir Voskresensky
+ *
+ * @author lahvac
  */
-public final class APTPreprocessorToken extends APTTokenAbstact {
-    private final APT ppNode;
-    private final APTToken ppNodeToken;
-    private final Map<Object, Object> props;
-    private final ResolvedPath resolvedPath;
-    private final boolean enterInclude;
-    private static final Map<Object, Object> EMPTY = Collections.emptyMap();
-
-    public APTPreprocessorToken(APT ppNode, boolean enterInclude, ResolvedPath resolvedPath, Map<Object, Object> props) {
-        assert ppNode != null;
-        this.ppNode = ppNode;
-        this.enterInclude = enterInclude;
-        this.resolvedPath = resolvedPath;
-        this.ppNodeToken = ppNode.getToken();
-        this.props = props == null ? EMPTY : new HashMap<Object, Object>(props);
+public class RemoveOverrideTest extends ErrorHintsTestBase {
+    
+    public RemoveOverrideTest(String name) {
+        super(name);
     }
     
-    @Override
-    public Object getProperty(Object key) {
-        if (key == ResolvedPath.class) {
-            return resolvedPath;
-        } else if (key == Boolean.class) {
-            return enterInclude;
-        }
-        return props.get(key);
+    public void testRemoveOverride() throws Exception {
+        performFixTest("test/Test.java",
+                       "package test;\n" +
+                       "public class Test {\n" +
+                       "    @Override public void test() {\n" +
+                       "    }\n" +
+                       "}\n",
+                       -1,
+                       Bundle.FIX_RemoveOverride(),
+                       ("package test;\n" +
+                       "public class Test {\n" +
+                       "    public void test() {\n" +
+                       "    }\n" +
+                       "}\n").replaceAll("[ \t\n]+", " "));
     }
 
     @Override
-    public int getType() {
-        return ppNodeToken.getType();
+    protected List<Fix> computeFixes(CompilationInfo info, int pos, TreePath path) throws Exception {
+        return new RemoveOverride().run(info, null, pos, path, null);
     }
 
     @Override
-    public int getLine() {
-        return ppNodeToken.getLine();
+    protected String toDebugString(CompilationInfo info, Fix f) {
+        return f.getText();
     }
 
     @Override
-    public String getFilename() {
-        return ppNodeToken.getFilename();
+    protected Set<String> getSupportedErrorKeys() {
+        return new RemoveOverride().getCodes();
     }
 
-    @Override
-    public int getColumn() {
-        return ppNodeToken.getColumn();
-    }
-
-    @Override
-    public int getOffset() {
-        return ppNodeToken.getOffset();
-    }
-
-    @Override
-    public int getEndOffset() {
-        return ppNode.getEndOffset();
-    }
-
-    @Override
-    public CharSequence getTextID() {
-        return ppNodeToken.getTextID();
-    }
-    
-    public final APT getAPT() {
-        return ppNode;
-    }
 }
