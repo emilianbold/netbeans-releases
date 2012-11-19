@@ -903,7 +903,7 @@ public class TraceModel extends TraceModelBase {
         int lastLine = -1;
         for (Token t = ts.nextToken(); !APTUtils.isEOF(t); t = ts.nextToken()) {
             if (printTokens) {
-                String text = " " + t.getText();
+                String text = " " + t.getText(); // NOI18N
                 boolean newLine = t.getLine() != lastLine;
                 if (isIncludeToken(t.getType())) {
                     APTToken aptToken = (APTToken)t;
