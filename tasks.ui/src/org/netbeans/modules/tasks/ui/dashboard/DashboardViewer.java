@@ -742,6 +742,12 @@ public final class DashboardViewer implements PropertyChangeListener {
         return manageRemoveFilter(refresh, !repositoryFilter.expandNodes());
     }
 
+    public void clearFilters() {
+        appliedCategoryFilters.clear();
+        appliedRepositoryFilters.clear();
+        appliedTaskFilters.clear();
+    }
+
     private int manageRemoveFilter(boolean refresh, boolean wasForceExpand) {
         if (refresh) {
             taskHits = 0;
@@ -1089,7 +1095,7 @@ public final class DashboardViewer implements PropertyChangeListener {
     }
 
     private boolean isRepositoryInFilter(RepositoryNode repositoryNode) {
-        return expandNodes() ? !repositoryNode.getFilteredQueryNodes().isEmpty() && appliedRepositoryFilters.isInFilter(repositoryNode) : appliedRepositoryFilters.isInFilter(repositoryNode);
+        return expandNodes() ? repositoryNode.getFilteredQueryCount() > 0 && appliedRepositoryFilters.isInFilter(repositoryNode) : appliedRepositoryFilters.isInFilter(repositoryNode);
     }
 
     private void removeNodesFromModel(Class nodeClass) {
