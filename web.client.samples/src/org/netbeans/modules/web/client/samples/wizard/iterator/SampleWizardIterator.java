@@ -40,9 +40,8 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.web.client.samples.ui;
+package org.netbeans.modules.web.client.samples.wizard.iterator;
 
-import java.awt.Component;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
@@ -53,114 +52,42 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
-import javax.swing.JComponent;
-import javax.swing.event.ChangeListener;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.project.ProjectManager;
+import org.netbeans.modules.web.client.samples.wizard.ui.SamplePanel;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.WizardDescriptor;
 import org.openide.WizardDescriptor.Panel;
-import org.openide.WizardDescriptor.ProgressInstantiatingIterator;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.NbBundle;
 
 
 /**
  * @author ads
+ * @author Martin Janicek
  *
  */
-public class SampleWizardIterator implements ProgressInstantiatingIterator<WizardDescriptor> {
-
-    public static final String HELP_CTX = "html5.samples";      // NOI18N
+public class SampleWizardIterator extends AbstractWizardIterator {
 
     @Override
-    public void addChangeListener(ChangeListener listener) {
-    }
-
-    @Override
-    public Panel<WizardDescriptor> current() {
-        return myPanels[myIndex];
-    }
-
-    @Override
-    public boolean hasNext() {
-        return myIndex < myPanels.length - 1;
-    }
-
-    @Override
-    public boolean hasPrevious() {
-        return myIndex > 0;
-    }
-
-    @Override
-    public String name() {
-        return null;
-    }
-
-    @Override
-    public void nextPanel() {
-        if (!hasNext()) {
-            throw new NoSuchElementException();
-        }
-        myIndex++;
-    }
-
-    /* (non-Javadoc)
-     * @see org.openide.WizardDescriptor.Iterator#previousPanel()
-     */
-    @Override
-    public void previousPanel() {
-        if (!hasPrevious()) {
-            throw new NoSuchElementException();
-        }
-        myIndex--;
-    }
-
-    @Override
-    public void removeChangeListener(ChangeListener listener) {
-    }
-
-    @Override
-    public void initialize(WizardDescriptor descriptor) {
-        myDescriptor = descriptor;
-        myPanels = new Panel[1];
-        myPanels[0] = new SamplePanel(descriptor);
-
-        String[] steps = createSteps();
-        for (int i = 0; i < myPanels.length; i++) {
-            Component c = myPanels[i].getComponent();
-            if (c instanceof JComponent) { // assume Swing components
-                JComponent jc = (JComponent) c;
-                // Step #.
-                jc.putClientProperty(WizardDescriptor.PROP_CONTENT_SELECTED_INDEX, Integer.valueOf(i));
-                // Step name (actually the whole list for reference).
-                jc.putClientProperty(WizardDescriptor.PROP_CONTENT_DATA, steps);
-            }
-        }
-    }
-
-    @Override
-    public Set<?> instantiate() throws IOException {
-        assert false;
-        return null;
+    protected Panel[] createPanels(WizardDescriptor wizard) {
+        return new Panel[] {new SamplePanel(descriptor)};
     }
 
     @Override
     public Set<?> instantiate(ProgressHandle handle) throws IOException {
-        FileObject targetFolder = Templates.getTargetFolder(myDescriptor);
+        FileObject targetFolder = Templates.getTargetFolder(descriptor);
 
-        String targetName = Templates.getTargetName(myDescriptor);
+        String targetName = Templates.getTargetName(descriptor);
         FileUtil.toFile(targetFolder).mkdirs();
         FileObject projectFolder = targetFolder.createFolder(targetName);
 
-        FileObject template = Templates.getTemplate(myDescriptor);
+        FileObject template = Templates.getTemplate(descriptor);
         unZipFile(template.getInputStream(), projectFolder);
         ProjectManager.getDefault().clearNonProjectCache();
 
@@ -172,18 +99,13 @@ public class SampleWizardIterator implements ProgressInstantiatingIterator<Wizar
         return Collections.singleton(projectFolder);
     }
 
-    @Override
-    public void uninitialize(WizardDescriptor descriptor) {
-        myPanels = null;
-    }
-
-    protected void replaceTokens(FileObject dir, Map<String, String> map, String ... files) throws IOException {
+    private void replaceTokens(FileObject dir, Map<String, String> map, String ... files) throws IOException {
         for (String file : files) {
             replaceToken(dir.getFileObject(file), map);
         }
     }
 
-    protected void replaceToken(FileObject fo, Map<String, String> map) throws IOException {
+    private void replaceToken(FileObject fo, Map<String, String> map) throws IOException {
         if (fo == null) {
             return;
         }
@@ -212,7 +134,7 @@ public class SampleWizardIterator implements ProgressInstantiatingIterator<Wizar
         }
     }
 
-    static void unZipFile(InputStream source, FileObject rootFolder) throws IOException {
+    private void unZipFile(InputStream source, FileObject rootFolder) throws IOException {
         try {
             ZipInputStream str = new ZipInputStream(source);
             ZipEntry entry;
@@ -238,13 +160,4 @@ public class SampleWizardIterator implements ProgressInstantiatingIterator<Wizar
             source.close();
         }
     }
-
-    private String[] createSteps() {
-        return new String[] {NbBundle.getMessage(SamplePanel.class, "LBL_NameNLocation")}; // NOI18N
-    }
-
-    private transient WizardDescriptor.Panel[] myPanels;
-    private transient int myIndex;
-    private transient WizardDescriptor myDescriptor;
-
 }
