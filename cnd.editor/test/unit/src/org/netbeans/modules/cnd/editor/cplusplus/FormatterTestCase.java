@@ -5616,4 +5616,21 @@ public class FormatterTestCase extends EditorBase {
               + "int && c;\n"
               + "\n");
     }
+    
+    public void test222396() {
+        setDefaultsOptions();
+        setLoadDocumentText(
+                "if(0){\n" 
+              + "        int a=0;\n" 
+              + "    }//sample comment\n"
+              + "else\n"
+              + "    int b = 1;");
+        reformat();
+        assertDocumentText("Incorrect rvalue reference",
+                "if (0) {\n" 
+              + "    int a = 0;\n" 
+              + "}//sample comment\n"
+              + "else\n"
+              + "    int b = 1;");
+    }
 }
