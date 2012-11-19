@@ -129,8 +129,8 @@ import org.openide.util.NbBundle;
     "selector.type.compound=Compound",
     "selector.rule.postfix= Rule",
     "none.item=<html><font color=\"777777\">&lt;none&gt;</font></html>",
-    "class.selector.descr=Applies to all elements with this style class assigned.\n\nThe selector name starts with dot.",
-    "id.selector.descr=Applies just to one single element with this id set.\n\nThe selector name starts with hash sign.",
+    "class.selector.descr=Applies to all elements with this style class assigned.",
+    "id.selector.descr=Applies just to one single element with this id set.",
     "element.selector.descr=Applies to html elements with the selector name.",
     "compound.selector.descr=The Compound selector is used to create styles for a combination of tags or tags that are nested in other tags."
 })
