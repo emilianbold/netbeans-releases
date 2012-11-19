@@ -49,6 +49,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeSupport;
 import java.util.concurrent.Callable;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
@@ -79,6 +80,8 @@ implements ActionListener, Runnable, Callable<JButton> {
     private static Task lastRecord = Task.EMPTY;
     private static RequestProcessor FLUSH = new RequestProcessor("Flush UI Logs"); // NOI18N
     private static boolean flushOnRecord;
+    private static final AtomicInteger recordsToWriteOut = new AtomicInteger(0);
+    private static final int MAX_RECORDS_TO_WRITE_OUT = 1000; // Be sure not to hold more than this number of log records.
     private final SlownessReporter reporter;
 
     private static boolean exceptionHandler;
@@ -154,6 +157,7 @@ implements ActionListener, Runnable, Callable<JButton> {
             public LogRecord r;
             @Override
             public void run() {
+                recordsToWriteOut.decrementAndGet();
                 Installer.writeOut(r);
                 SUPPORT.firePropertyChange(null, null, null);
                 r = null;
@@ -162,9 +166,10 @@ implements ActionListener, Runnable, Callable<JButton> {
         }
         WriteOut wo = new WriteOut();
         wo.r = record;
+        recordsToWriteOut.incrementAndGet();
         lastRecord = FLUSH.post(wo);
         
-        if (flushOnRecord) {
+        if (flushOnRecord || recordsToWriteOut.get() > MAX_RECORDS_TO_WRITE_OUT) {
             waitFlushed();
         }
     }
