@@ -51,7 +51,6 @@ import com.sun.tools.javac.tree.JCTree.*;
 import com.sun.tools.javac.tree.TreeInfo;
 
 import static com.sun.tools.javac.code.Flags.*;
-import static com.sun.tools.javac.code.TypeTags.*;
 
 /** Estimate the printed width of a tree
  */
@@ -320,7 +319,7 @@ System.err.println("Need width calc for "+tree);
     }
 
     public void visitTypeIdent(JCPrimitiveTypeTree tree) {
-	width(symbols.typeOfTag[tree.typetag].tsym.name);
+	width(tree.typetag.name().toLowerCase());
     }
 
     public void visitTypeArray(JCArrayTypeTree tree) {

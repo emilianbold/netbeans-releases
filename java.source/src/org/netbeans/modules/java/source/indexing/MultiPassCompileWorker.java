@@ -46,7 +46,7 @@ import com.sun.source.tree.CompilationUnitTree;
 import com.sun.tools.javac.api.JavacTaskImpl;
 import com.sun.tools.javac.code.Symbol.ClassSymbol;
 import com.sun.tools.javac.code.Type;
-import com.sun.tools.javac.code.TypeTags;
+import com.sun.tools.javac.code.TypeTag;
 import com.sun.tools.javac.code.Types;
 import com.sun.tools.javac.comp.AttrContext;
 import com.sun.tools.javac.comp.Enter;
@@ -209,7 +209,7 @@ final class MultiPassCompileWorker extends CompileWorker {
                         public void visitClassDef(JCClassDecl node) {
                             if (node.sym != null) {
                                 Type st = ts.supertype(node.sym.type);
-                                if (st.tag == TypeTags.CLASS) {
+                                if (st.hasTag(TypeTag.CLASS)) {
                                     ClassSymbol c = st.tsym.outermostClass();
                                     CompileTuple u = jfo2tuples.get(c.sourcefile);
                                     if (u != null && !previous.finishedFiles.contains(u.indexable) && !u.indexable.equals(activeIndexable)) {
@@ -407,7 +407,7 @@ final class MultiPassCompileWorker extends CompileWorker {
                 public void visitClassDef(JCClassDecl node) {
                     if (node.sym != null) {
                         Type st = types.supertype(node.sym.type);
-                        if (st.tag == TypeTags.CLASS) {
+                        if (st.hasTag(TypeTag.CLASS)) {
                             ClassSymbol c = st.tsym.outermostClass();
                             Env<AttrContext> stEnv = enter.getEnv(c);
                             if (stEnv != null && env != stEnv) {

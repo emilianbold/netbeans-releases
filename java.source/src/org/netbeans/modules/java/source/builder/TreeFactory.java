@@ -57,7 +57,6 @@ import com.sun.tools.javac.code.Kinds;
 import com.sun.tools.javac.code.Symbol;
 import com.sun.tools.javac.code.Type;
 import com.sun.tools.javac.code.Type.WildcardType;
-import com.sun.tools.javac.code.TypeTags;
 import com.sun.tools.javac.jvm.ClassReader;
 import com.sun.tools.javac.model.JavacTypes;
 import com.sun.tools.javac.tree.JCTree;
@@ -78,6 +77,7 @@ import javax.lang.model.util.Types;
 import org.netbeans.api.annotations.common.NonNull;
 import static org.netbeans.modules.java.source.save.PositionEstimator.*;
 import static com.sun.tools.javac.code.Flags.*;
+import com.sun.tools.javac.code.TypeTag;
 
 /**
  * Factory for creating new com.sun.source.tree instances.
@@ -387,16 +387,16 @@ public class TreeFactory {
     public LiteralTree Literal(Object value) {
         try {
             if (value instanceof Boolean)  // workaround for javac issue 6504896
-                return make.at(NOPOS).Literal(TypeTags.BOOLEAN, value == Boolean.FALSE ? 0 : 1);
+                return make.at(NOPOS).Literal(TypeTag.BOOLEAN, value == Boolean.FALSE ? 0 : 1);
             if (value instanceof Character) // looks like world championship in workarounds here ;-)
-                return make.at(NOPOS).Literal(TypeTags.CHAR, Integer.valueOf((Character) value));
+                return make.at(NOPOS).Literal(TypeTag.CHAR, Integer.valueOf((Character) value));
             if (value instanceof Byte) // #119143: Crystal ball no. 4
-                return make.at(NOPOS).Literal(TypeTags.INT, ((Byte) value).intValue());
+                return make.at(NOPOS).Literal(TypeTag.INT, ((Byte) value).intValue());
             if (value instanceof Short)
-                return make.at(NOPOS).Literal(TypeTags.INT, ((Short) value).intValue());
+                return make.at(NOPOS).Literal(TypeTag.INT, ((Short) value).intValue());
             // workaround for making NULL_LITERAL kind.
             if (value == null) {
-                return make.at(NOPOS).Literal(TypeTags.BOT, value);
+                return make.at(NOPOS).Literal(TypeTag.BOT, value);
             }
             return make.at(NOPOS).Literal(value);
         } catch (AssertionError e) {
@@ -568,34 +568,34 @@ public class TreeFactory {
     }
     
     public PrimitiveTypeTree PrimitiveType(TypeKind typekind) {
-        final int typetag;
+        final TypeTag typetag;
         switch (typekind) {
             case BOOLEAN:
-                typetag = TypeTags.BOOLEAN;
+                typetag = TypeTag.BOOLEAN;
                 break;
             case BYTE:
-                typetag = TypeTags.BYTE;
+                typetag = TypeTag.BYTE;
                 break;
             case SHORT:
-                typetag = TypeTags.SHORT;
+                typetag = TypeTag.SHORT;
                 break;
             case INT:
-                typetag = TypeTags.INT;
+                typetag = TypeTag.INT;
                 break;
             case LONG:
-                typetag = TypeTags.LONG;
+                typetag = TypeTag.LONG;
                 break;
             case CHAR:
-                typetag = TypeTags.CHAR;
+                typetag = TypeTag.CHAR;
                 break;
             case FLOAT:
-                typetag = TypeTags.FLOAT;
+                typetag = TypeTag.FLOAT;
                 break;
             case DOUBLE:
-                typetag = TypeTags.DOUBLE;
+                typetag = TypeTag.DOUBLE;
                 break;
             case VOID:
-                typetag = TypeTags.VOID;
+                typetag = TypeTag.VOID;
                 break;
             default:
                 throw new AssertionError("unknown primitive type " + typekind);
@@ -696,7 +696,7 @@ public class TreeFactory {
                 tp = make.at(NOPOS).TypeArray((JCExpression) Type(((ArrayType) type).getComponentType()));
                 break;
             case NULL:
-                tp = make.at(NOPOS).Literal(TypeTags.BOT, null);
+                tp = make.at(NOPOS).Literal(TypeTag.BOT, null);
                 break;
             case ERROR:
                 tp = make.at(NOPOS).Ident(((ErrorType) type).tsym.name);

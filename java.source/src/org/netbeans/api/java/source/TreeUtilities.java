@@ -822,7 +822,7 @@ public final class TreeUtilities {
     }
 
     public boolean isExtensionMethodHack(MethodTree mt) {
-        return (((JCMethodDecl) mt).getModifiers().flags & Flags.DEFENDER) != 0;
+        return (((JCMethodDecl) mt).getModifiers().flags & Flags.DEFAULT) != 0;
     }
 
     static @NonNull CharSequence decodeIdentifierInternal(@NonNull CharSequence text) {

@@ -50,7 +50,7 @@ import com.sun.tools.javac.code.Symtab;
 import com.sun.tools.javac.code.Type;
 import com.sun.tools.javac.code.Type.ClassType;
 import com.sun.tools.javac.code.Type.TypeVar;
-import com.sun.tools.javac.code.TypeTags;
+import com.sun.tools.javac.code.TypeTag;
 import com.sun.tools.javac.code.Types;
 import com.sun.tools.javac.code.Types.DefaultTypeVisitor;
 import com.sun.tools.javac.util.Context;
@@ -378,7 +378,7 @@ public final class TypeMirrorHandle<T extends TypeMirror> {
                 t = Types.instance(info.impl.getJavacTask().getContext());
                 Type lub = t.lub(resolvedAlternatives);
 
-                if (lub.tag != TypeTags.CLASS) return null;
+                if (!lub.hasTag(TypeTag.CLASS)) return null;
 
                 return (T) new Type.UnionClassType((ClassType) lub, resolvedAlternatives);
             default:
@@ -405,7 +405,7 @@ public final class TypeMirrorHandle<T extends TypeMirror> {
         private Type delegate = null;
         
         public PlaceholderType() {
-            super(TypeTags.UNKNOWN, null);
+            super(TypeTag.UNKNOWN, null);
         }       
     }
     

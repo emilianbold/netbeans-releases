@@ -1308,7 +1308,7 @@ public class Utilities {
         }
 
         @Override
-        public com.sun.tools.javac.util.List<JCTree> classOrInterfaceBodyDeclaration(com.sun.tools.javac.util.Name className, boolean isInterface, boolean isAnno) {
+        public com.sun.tools.javac.util.List<JCTree> classOrInterfaceBodyDeclaration(com.sun.tools.javac.util.Name className, boolean isInterface) {
             if (token.kind == TokenKind.IDENTIFIER) {
                 if (token.name().startsWith(dollar)) {
                     com.sun.tools.javac.util.Name name = token.name();
@@ -1323,7 +1323,7 @@ public class Utilities {
                     }
                 }
             }
-            return super.classOrInterfaceBodyDeclaration(className, isInterface, isAnno);
+            return super.classOrInterfaceBodyDeclaration(className, isInterface);
         }
         
         @Override
