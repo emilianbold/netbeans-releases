@@ -45,6 +45,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import javax.swing.Action;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -165,9 +166,12 @@ public class StyleSheetNode extends AbstractNode {
 
         private void refreshKeys() {
             Collection<RuleHandle> keys = new ArrayList<RuleHandle>();
-            for(RuleHandle handle : model.getFilesToRulesMap().get(stylesheet)) {
-                if(includeKey(handle)) {
-                    keys.add(handle);
+            List<RuleHandle> ruleHandles = model.getFilesToRulesMap().get(stylesheet);
+            if(ruleHandles != null) {
+                for(RuleHandle handle : ruleHandles) {
+                    if(includeKey(handle)) {
+                        keys.add(handle);
+                    }
                 }
             }
             setKeys(keys);
