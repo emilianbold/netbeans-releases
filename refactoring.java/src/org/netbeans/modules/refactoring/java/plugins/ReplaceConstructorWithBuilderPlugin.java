@@ -135,7 +135,6 @@ public class ReplaceConstructorWithBuilderPlugin extends JavaRefactoringPlugin {
         cancel.set(false);
         final TreePathHandle constr = refactoring.getRefactoringSource().lookup(TreePathHandle.class);
         final String[] ruleCode = new String[1];
-        final String[] toCode = new String[1];
         final String[] parentSimpleName = new String[1];
 
         try {
@@ -201,10 +200,25 @@ public class ReplaceConstructorWithBuilderPlugin extends JavaRefactoringPlugin {
                                 "{this." + set.getVarName() + " = " + set.getVarName() + ";\nreturn this;}", //NOI18N
                                 null));
                     }
-
-
-                    for (Setter set : refactoring.getSetters()) {
+                    
+                    ClassTree parentTree = (ClassTree) constrPath.getParentPath().getLeaf();
+                    List<? extends TypeParameterTree> typeParameters = parentTree.getTypeParameters();
+                    
+                    List<ExpressionTree> arguments = new LinkedList<ExpressionTree>();
+                    for (VariableTree vt : constructor.getParameters()) {
+                        arguments.add(make.Identifier(vt.getName()));
                     }
+                    
+                    List<ExpressionTree> typeArguments = new LinkedList<ExpressionTree>();
+                    for (TypeParameterTree vt : typeParameters) {
+                        typeArguments.add(make.Identifier(vt.getName()));
+                    }
+                    ExpressionTree ident = make.QualIdent(parent);
+                    if(!typeArguments.isEmpty()) {
+                        ident = (ExpressionTree) make.ParameterizedType(ident, typeArguments);
+                    }
+                    
+                    BlockTree body = make.Block(Collections.singletonList(make.Return(make.NewClass(null, Collections.EMPTY_LIST, ident, arguments, null))), false);
 
                     members.add(make.Method(
                             make.Modifiers(EnumSet.of(Modifier.PUBLIC)),
@@ -213,12 +227,13 @@ public class ReplaceConstructorWithBuilderPlugin extends JavaRefactoringPlugin {
                             Collections.<TypeParameterTree>emptyList(),
                             Collections.<VariableTree>emptyList(),
                             Collections.<ExpressionTree>emptyList(),
-                            "{return new " + parent.getSimpleName() + "(" + (args==null?"":args) + ");}", //NOI18N
+                            body,
+                            //"{return new " + parent.getSimpleName() + (hasTypeParams? "<$modifiers$>(" : "(") + (args==null?"":args) + ");}", //NOI18N
                             null));
 
 
                     ClassTree builder = make.Class(make.Modifiers(EnumSet.of(Modifier.PUBLIC)), simpleName,
-                            Collections.EMPTY_LIST,
+                            typeParameters,
                             null,
                             Collections.EMPTY_LIST,
                             members);
@@ -226,7 +241,8 @@ public class ReplaceConstructorWithBuilderPlugin extends JavaRefactoringPlugin {
                     CompilationUnitTree builderUnit = make.CompilationUnit(root, refactoring.getBuilderName().replace('.', '/') + ".java", Collections.EMPTY_LIST, Collections.singletonList(builder));
                     workingCopy.rewrite(null, builderUnit);
                     StringBuilder rule = new StringBuilder();
-                    rule.append("new ").append(parent.getQualifiedName()).append("(").append(parameters).append(")"); //NOI18N
+                    boolean hasTypeParams = !parent.getTypeParameters().isEmpty();
+                    rule.append("new ").append(parent.getQualifiedName()).append(hasTypeParams? "<$modifiers$>(" : "(").append(parameters).append(")"); //NOI18N
                     if (constraints.length() > 0) {
                         rule.append(" :: ").append(constraints); //NOI18N
                     }
@@ -244,7 +260,16 @@ public class ReplaceConstructorWithBuilderPlugin extends JavaRefactoringPlugin {
                 @Override
                 public void transform(WorkingCopy copy, Occurrence occurrence) {
                     final TreeMaker make = copy.getTreeMaker();
-                    ExpressionTree expression = make.NewClass(null, Collections.EMPTY_LIST, make.QualIdent(refactoring.getBuilderName()), Collections.EMPTY_LIST, null);
+                    Collection<? extends TreePath> modifiers = occurrence.getMultiVariables().get("$modifiers$");
+                    ExpressionTree ident = make.QualIdent(refactoring.getBuilderName());
+                    if(modifiers != null) {
+                        LinkedList<Tree> arguments = new LinkedList<Tree>();
+                        for (TreePath treePath : modifiers) {
+                            arguments.add(treePath.getLeaf());
+                        }
+                        ident = (ExpressionTree) make.ParameterizedType(ident, arguments);
+                    }
+                    ExpressionTree expression = make.NewClass(null, Collections.EMPTY_LIST, ident, Collections.EMPTY_LIST, null);
 
                     int i = 0;
                     for (Setter set : refactoring.getSetters()) {
