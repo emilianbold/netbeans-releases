@@ -384,7 +384,6 @@ class JsCodeCompletion implements CodeCompletionHandler {
 
     @Override
     public QueryType getAutoQuery(JTextComponent component, String typedText) {
-        System.out.println("typedText: " + typedText );
         if (typedText.length() == 0) {
             return QueryType.NONE;
         }
