@@ -367,7 +367,7 @@ public class CreateRulePanel extends javax.swing.JPanel {
 
         initializeActiveElement();
 
-//        selectorTypeList.setSelectedIndex(0); //class
+        selectorTypeList.setSelectedIndex(0); //class
 
     }
 
