@@ -40,17 +40,48 @@
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
 
-body {
-    font-family: Arial, Tahoma, Helvetica;
-    font-size: 10pt;
-    font-weight: normal;
-    color: #303942;
-    background-color: #fff;
-}
-h1 {
-    color: darkred;
-}
+// references from bg page
+var NetBeans_LocalStorage = chrome.extension.getBackgroundPage().NetBeans_LocalStorage;
 
-#okButton {
-    float: right;
+/**
+ * Warning - the content is set by the URL ident (accessible via <code>window.location.hash</code>).
+ */
+var NetBeans_Warning = {};
+
+NetBeans_Warning._ident = null;
+NetBeans_Warning._okButton = null;
+NetBeans_Warning._doNotShowAgainButton = null;
+
+NetBeans_Warning.init = function() {
+    if (NetBeans_Warning._ident !== null) {
+        return;
+    }
+    this._ident = window.location.hash.substring(1);
+    this._okButton = document.getElementById('okButton');
+    this._doNotShowAgainButton = document.getElementById('doNotShowAgainCheck');
+    this._showContent();
+    this._registerEvents();
+};
+// show proper content of the page
+NetBeans_Warning._showContent = function() {
+    document.getElementById(this._ident).style.display = 'block';
 }
+// register events
+NetBeans_Warning._registerEvents = function() {
+    var that = this;
+    this._okButton.addEventListener('click', function() {
+        that._close();
+    }, false);
+};
+NetBeans_Warning._close = function() {
+    this._doNotShowAgain();
+    window.close();
+};
+NetBeans_Warning._doNotShowAgain = function() {
+    NetBeans_LocalStorage.enableWarning(this._ident, !this._doNotShowAgainButton.checked);
+};
+
+// run!
+window.addEventListener('load', function() {
+    NetBeans_Warning.init();
+}, false);
