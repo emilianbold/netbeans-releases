@@ -596,6 +596,11 @@ public final class GspLexer implements Lexer<GspTokenId> {
                                 state = LexerState.GTAG_EXPR_PC;
                                 return token(GspTokenId.GROOVY_EXPR);
                             }
+
+                        // --> issue 220938
+                        case '>':
+                            state = LexerState.INIT;
+                            return token(GspTokenId.GTAG);
                         default:
                             state = LexerState.GTAG_EXPR_PC;
                             break;
