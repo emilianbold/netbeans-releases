@@ -164,10 +164,10 @@
         "message": "It looks like you either started the Chrome Developer Tools, or closed the \"NetBeans Connector is debugging this tab.\" infotip by clicking its Cancel button or close icon. Chrome requires that this remain open while you are connected."
     },
 
-    "_WindowTooSmall": {
+    "_Warning_WindowTooSmallTitle": {
         "message": "Window cannot be resized properly"
     },
-    "_WindowTooSmallInfo": {
+    "_Warning_WindowTooSmallPerex": {
         "message": "Unfortunately, on Mac OS, the minimal width of the Chrome window is 400 pixels."
     }
 
