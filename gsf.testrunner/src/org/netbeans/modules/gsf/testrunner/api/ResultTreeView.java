@@ -44,7 +44,6 @@
 
 package org.netbeans.modules.gsf.testrunner.api;
 
-import org.netbeans.modules.gsf.testrunner.api.TestsuiteNode;
 import java.awt.Component;
 import java.awt.EventQueue;
 import javax.accessibility.AccessibleContext;
@@ -53,6 +52,7 @@ import javax.swing.tree.TreeCellRenderer;
 import javax.swing.tree.TreeNode;
 import org.openide.awt.HtmlRenderer;
 import org.openide.explorer.view.BeanTreeView;
+import org.openide.explorer.view.Visualizer;
 import org.openide.util.NbBundle;
 
 
@@ -103,7 +103,13 @@ final class ResultTreeView extends BeanTreeView implements Runnable {
             boolean isResultRootNode =
                             (value instanceof TreeNode)
                             && (((TreeNode) value).getParent() == null);
-            TreeCellRenderer renderer = isResultRootNode
+	    // render no icon space an empty icon of a callStackFrame
+            boolean isCallstackFrame = false;
+            if (null != value) {
+                isCallstackFrame = (Visualizer.findNode(value) instanceof CallstackFrameNode);
+            }
+
+            TreeCellRenderer renderer = (isResultRootNode || isCallstackFrame)
                                         ? noIconTreeCellRenderer
                                         : defaultTreeCellRenderer;
             return renderer.getTreeCellRendererComponent(
