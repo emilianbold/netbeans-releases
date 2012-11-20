@@ -636,18 +636,7 @@ public class ClientSideProject implements Project {
 
             @Override
             public String getWebContextRoot() {
-                ClientSideProjectProperties projectProperties = getProjectProperties();
-                ClientSideProjectProperties.ProjectServer projectServer = projectProperties.getProjectServer();
-                switch (projectServer) {
-                    case EXTERNAL:
-                        return projectProperties.getProjectUrl();
-                        //break;
-                    case INTERNAL:
-                        return projectProperties.getWebRoot();
-                        //break;
-                    default:
-                        throw new IllegalStateException("Unknown project server: " + projectServer);
-                }
+                return getProjectProperties().getWebRoot();
             }
 
             private ClientSideProjectProperties getProjectProperties() {

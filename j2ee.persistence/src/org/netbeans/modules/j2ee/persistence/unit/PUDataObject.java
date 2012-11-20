@@ -100,7 +100,7 @@ public class PUDataObject extends XmlMultiViewDataObject {
     
     public static final String HELP_ID_DESIGN_PERSISTENCE_UNIT
             = "persistence_multiview_design_persistenceUnitNode";  // NOI18N
-    private ModelSynchronizer modelSynchronizer;
+    private final ModelSynchronizer modelSynchronizer;
     /**
      * Update delay for model synchronizer.
      */
@@ -167,7 +167,7 @@ public class PUDataObject extends XmlMultiViewDataObject {
      * @see EditorCookie#saveDocument
      */
     public void save(){
-        EditorCookie edit = (EditorCookie) getCookie(EditorCookie.class);
+        EditorCookie edit = (EditorCookie) getLookup().lookup(EditorCookie.class);
         if (edit != null){
             try {
                 edit.saveDocument();
@@ -233,7 +233,9 @@ public class PUDataObject extends XmlMultiViewDataObject {
                             PersistenceMetadata.getDefault().refresh(getPrimaryFile());
                             return true;
                         }
-                        else return false;
+                        else {
+                            return false;
+                        }
                     }
                 }
             } catch (IOException ioe){
@@ -283,6 +285,7 @@ public class PUDataObject extends XmlMultiViewDataObject {
             // this enables to finish the current action first (e.g. painting particular view)
             // see the issue 67580
             SwingUtilities.invokeLater(new Runnable(){
+                @Override
                 public void run() {
                     goToXmlView();
                 }
@@ -383,6 +386,7 @@ public class PUDataObject extends XmlMultiViewDataObject {
         if (target!=null) {
             final Object key=target;
             org.netbeans.modules.xml.multiview.Utils.runInAwtDispatchThread(new Runnable() {
+                @Override
                 public void run() {
                     getActiveMultiViewElement0().getSectionView().openPanel(key);
                 }
@@ -390,6 +394,7 @@ public class PUDataObject extends XmlMultiViewDataObject {
         }
     }
     
+    @Override
     protected String getPrefixMark() {
         return null;
     }
@@ -451,10 +456,12 @@ public class PUDataObject extends XmlMultiViewDataObject {
             super(dataObject, UPDATE_DELAY);
         }
         
+        @Override
         protected boolean mayUpdateData(boolean allowDialog) {
             return true;
         }
         
+        @Override
         protected void updateDataFromModel(Object model, FileLock lock, boolean modify) {
             if (model == null) {
                 return;
@@ -475,10 +482,12 @@ public class PUDataObject extends XmlMultiViewDataObject {
             }
         }
         
+        @Override
         protected Object getModel() {
             return getPersistence();
         }
         
+        @Override
         protected void reloadModelFromData() {
             parseDocument();
         }

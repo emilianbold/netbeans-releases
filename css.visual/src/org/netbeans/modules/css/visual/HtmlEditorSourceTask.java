@@ -72,7 +72,7 @@ public final class HtmlEditorSourceTask extends ParserResultTask<HtmlParserResul
 
     private static final Logger LOGGER = Logger.getLogger(HtmlEditorSourceTask.class.getSimpleName());
     
-    private static OpenTag activeElement;
+    private static HtmlSourceElementHandle activeElement;
 
     @MimeRegistrations({
         @MimeRegistration(mimeType = "text/html", service = TaskFactory.class),
@@ -132,6 +132,7 @@ public final class HtmlEditorSourceTask extends ParserResultTask<HtmlParserResul
     
     private void setActiveElement(HtmlParserResult result, int caretOffset) {
         Snapshot snapshot = result.getSnapshot();
+        FileObject file = snapshot.getSource().getFileObject();
         int embeddedCaretOffset = snapshot.getEmbeddedOffset(caretOffset);
         if(embeddedCaretOffset == -1) {
             return ;
@@ -139,7 +140,7 @@ public final class HtmlEditorSourceTask extends ParserResultTask<HtmlParserResul
         Node node = result.findBySemanticRange(embeddedCaretOffset, true);
         if (node != null) {
             if (node.type() == ElementType.OPEN_TAG) { //may be root node!
-                activeElement = (OpenTag) node;
+                activeElement = new HtmlSourceElementHandle((OpenTag)node, snapshot, file);
                 return ;
             }
         }
@@ -152,7 +153,7 @@ public final class HtmlEditorSourceTask extends ParserResultTask<HtmlParserResul
      * file with html content.
      * 
      */
-    public static OpenTag getElement() {
+    public static HtmlSourceElementHandle getElement() {
         return activeElement;
     }
     

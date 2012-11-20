@@ -1327,7 +1327,25 @@ public class TokenFormatter {
                                             newLines = ((FormatToken.InitToken) formatTokens.get(0)).hasHTML()
                                                     ? docOptions.blankLinesAfterOpenPHPTagInHTML + 1
                                                     : docOptions.blankLinesAfterOpenPHPTag + 1;
-                                            countSpaces = indent;
+                                            suggestedLineIndents = (Map<Integer, Integer>) doc.getProperty("AbstractIndenter.lineIndents");
+                                            if (suggestedLineIndents != null) {
+                                                try {
+                                                    int offset = formatToken.getOffset() + delta;
+                                                    int lineNumber = Utilities.getLineOffset(doc, offset) + 1;
+                                                    Integer suggestedIndent = suggestedLineIndents.get(lineNumber);
+                                                    if (suggestedIndent != null) {
+                                                        htmlIndent = suggestedIndent.intValue();
+                                                        indent = htmlIndent + docOptions.initialIndent + lastPHPIndent;
+                                                        countSpaces = indent;
+                                                    } else {
+                                                        countSpaces = indent;
+                                                    }
+                                                } catch (BadLocationException ex) {
+                                                    Exceptions.printStackTrace(ex);
+                                                }
+                                            } else {
+                                                countSpaces = indent;
+                                            }
                                             helpIndex = index + 1;
                                             while (helpIndex < formatTokens.size()
                                                     && formatTokens.get(helpIndex).isWhitespace()) {

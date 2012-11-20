@@ -39,18 +39,66 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.web.webkit.debugging.api.css;
 
-body {
-    font-family: Arial, Tahoma, Helvetica;
-    font-size: 10pt;
-    font-weight: normal;
-    color: #303942;
-    background-color: #fff;
-}
-h1 {
-    color: darkred;
-}
+import java.util.Collections;
+import java.util.List;
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
 
-#okButton {
-    float: right;
+/**
+ * Information about a supported CSS property.
+ *
+ * @author Jan Stola
+ */
+public class PropertyInfo {
+    /** Property name. */
+    private String name;
+    /** Longhand property names. */
+    private List<String> longhands;
+
+    /**
+     * Creates a new {@code PropertyInfo} that corresponds to the given JSONObject.
+     *
+     * @param propertyInfo JSONObject describing the property.
+     */
+    PropertyInfo(JSONObject propertyInfo) {
+        name = (String)propertyInfo.get("name"); // NOI18N
+        JSONArray longHandsArray = (JSONArray)propertyInfo.get("longhands"); // NOI18N
+        if (longHandsArray == null) {
+            longhands = Collections.EMPTY_LIST;
+        } else {
+            longhands = (List<String>)longHandsArray;
+        }
+    }
+
+    /**
+     * Creates a new empty {@code PropertyInfo} for a property
+     * with the specified name.
+     *
+     * @param name name of a CSS property.
+     */
+    PropertyInfo(String name) {
+        this.name = name;
+        this.longhands = Collections.EMPTY_LIST;
+    }
+
+    /**
+     * Returns the name of the property.
+     *
+     * @return name of the property.
+     */
+    public String getName() {
+        return name;
+    }
+
+    /**
+     * Returns longhand property names.
+     *
+     * @return longhand property names.
+     */
+    public List<String> getLonghands() {
+        return Collections.unmodifiableList(longhands);
+    }
+
 }

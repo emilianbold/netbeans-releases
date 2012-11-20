@@ -43,9 +43,9 @@
 window.addEventListener('load', function() {
     I18n.pageTitle();
     // texts
-    I18n.element('title');
-    I18n.element('info');
-    I18n.element('rerun');
-    I18n.element('chromeIssue');
+    var ident = window.location.hash.substring(1);
+    I18n.elements(document.getElementById(ident).getElementsByClassName('i18n'));
+    // buttons
+    I18n.element('doNotShowAgainLabel');
     I18n.element('okButton');
 }, false);
