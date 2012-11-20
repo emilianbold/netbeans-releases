@@ -112,7 +112,11 @@ public class HelperUtility {
 
             if (result == null) {
                 try {
-                    File localFile = getLocalFile(hinfo);
+                    File localFile = getLocalFileFromSysProp(hinfo);
+
+                    if (localFile == null) {
+                        localFile = getLocalFile(hinfo);
+                    }
 
                     if (localFile == null) {
                         localFile = getLocalFile(env);
@@ -251,5 +255,23 @@ public class HelperUtility {
                 destination.close();
             }
         }
+    }
+
+    private File getLocalFileFromSysProp(HostInfo hostInfo) {
+        String osname = hostInfo.getOS().getFamily().cname();
+        String platform = hostInfo.getCpuFamily().name().toLowerCase();
+        String bitness = hostInfo.getOS().getBitness() == HostInfo.Bitness._64 ? "_64" : ""; // NOI18N
+        StringBuilder propName = new StringBuilder(getClass().getSimpleName());
+        propName.append('.').append(osname).append('-').append(platform).append(bitness).append(".exec"); // NOI18N
+        String prop = System.getProperty(propName.toString());
+        if (prop != null) {
+            File res = new File(prop);
+            if (res.canRead()) {
+                log.log(Level.WARNING, "Using an executable specified by {0} system property for {1}: {2}", // NOI18N
+                        new Object[]{propName, getClass().getSimpleName(), res.getAbsolutePath()});
+                return res;
+            }
+        }
+        return null;
     }
 }
