@@ -1744,7 +1744,8 @@ public class CreateRulePanel extends javax.swing.JPanel {
 
         @Override
         public String toString() {
-            return getItemName();
+            String in = getItemName();
+            return in != null ? in : "";
         }
 
         /**
