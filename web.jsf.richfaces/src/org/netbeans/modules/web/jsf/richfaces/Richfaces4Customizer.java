@@ -115,7 +115,6 @@ public class Richfaces4Customizer implements JsfComponentCustomizer {
                 result = RP.submit(new Callable<Boolean>() {
                     @Override
                     public Boolean call() throws Exception {
-                        Thread.sleep(4000);
                         for (Library library : LibraryManager.getDefault().getLibraries()) {
                             if (!"j2se".equals(library.getType())) { //NOI18N
                                 continue;
