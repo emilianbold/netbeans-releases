@@ -64,6 +64,7 @@ import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle.Messages;
+import static org.netbeans.modules.maven.j2ee.newproject.Bundle.*;
 
 /**
  * This class is responsible for creating new EAR projects
@@ -118,6 +119,12 @@ public class EAWizardIterator extends BaseWizardIterator {
         }
         
         return projects;
+    }
+
+    @Override
+    public void initialize(WizardDescriptor wiz) {
+        super.initialize(wiz); 
+        wiz.putProperty ("NewProjectWizard_Title", template_EA()); // NOI18N
     }
     
     /**

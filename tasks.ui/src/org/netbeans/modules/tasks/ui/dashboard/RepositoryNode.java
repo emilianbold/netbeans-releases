@@ -266,8 +266,10 @@ public class RepositoryNode extends AsynchronousNode<Collection<Query>> implemen
         return queryNodes;
     }
 
-    public List<QueryNode> getFilteredQueryNodes() {
-        return filteredQueryNodes;
+    public final int getFilteredQueryCount() {
+        synchronized (LOCK) {
+            return filteredQueryNodes != null ? filteredQueryNodes.size() : 0;
+        }
     }
 
     public void setFilteredQueryNodes(List<QueryNode> filteredQueryNodes) {
