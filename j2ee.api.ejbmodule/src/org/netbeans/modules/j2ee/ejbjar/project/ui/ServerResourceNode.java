@@ -97,11 +97,11 @@ public class ServerResourceNode extends FilterNode {
     private FileChangeListener projectDirectoryListener;
     
     /** Creates a new instance of ServerResourceNode */
-    public ServerResourceNode(Project project) throws DataObjectNotFoundException, FileStateInvalidException {
+    public ServerResourceNode(Project project) throws DataObjectNotFoundException {
         this(getSetupDataFolder(project), project);
     }
     
-    private ServerResourceNode(DataFolder folderDo, Project project) throws DataObjectNotFoundException, FileStateInvalidException {
+    private ServerResourceNode(DataFolder folderDo, Project project) throws DataObjectNotFoundException {
         // if lookup would be needed uncomment and use getLookup() method
         super(getDataFolderNode(folderDo, project), getDataFolderNodeChildren(folderDo));
         projectDirectoryListener = new ProjectDirectoryListener();

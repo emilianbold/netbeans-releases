@@ -67,7 +67,7 @@ public class EjbContainerNode extends AbstractNode {
     public static final String NAME = "EJBS"; // NOI18N
     private static final String EJB_BADGE = "org/netbeans/modules/j2ee/ejbjar/project/ui/enterpriseBeansBadge.png"; // NOI18N
 
-    public EjbContainerNode(EjbJar ejbModule, Project p, EjbNodesFactory nodesFactory) throws DataObjectNotFoundException, FileStateInvalidException {
+    public EjbContainerNode(EjbJar ejbModule, Project p, EjbNodesFactory nodesFactory) throws DataObjectNotFoundException {
         super(new EjbContainerChildren(ejbModule, nodesFactory, p), Lookups.fixed(new Object[]{p, DataFolder.find(p.getProjectDirectory())}));
         setName(EjbNodesFactory.CONTAINER_NODE_NAME);
         setDisplayName(NbBundle.getMessage(EjbContainerNode.class, "LBL_node"));
