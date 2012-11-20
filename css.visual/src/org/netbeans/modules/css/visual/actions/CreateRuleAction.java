@@ -46,12 +46,13 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import javax.swing.AbstractAction;
 import org.netbeans.modules.css.visual.CreateRulePanel;
-import org.netbeans.modules.css.visual.EditRulesPanel;
+import org.netbeans.modules.css.visual.HtmlSourceElementHandle;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.filesystems.FileObject;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 
 /**
  *
@@ -66,8 +67,18 @@ public class CreateRuleAction extends AbstractAction {
     
     private FileObject context;
     private FileObject targetLocation;
+    private HtmlSourceElementHandle handle;
+    
+    private static CreateRuleAction instance;
 
-    public CreateRuleAction() {
+    public static CreateRuleAction getDefault() {
+        if(instance == null) {
+            instance = new CreateRuleAction();
+        }
+        return instance;
+    }
+    
+    private CreateRuleAction() {
         super(Bundle.label_create_rule());
         setEnabled(false);
     }
@@ -77,13 +88,17 @@ public class CreateRuleAction extends AbstractAction {
         setEnabled(context != null);
     }
     
+    public void setHtmlSourceElementHandle(HtmlSourceElementHandle handle) {
+        this.handle = handle;
+    }
+    
     public void setTargetLocation(FileObject stylesheet) {
         this.targetLocation = stylesheet;
     }
 
     @Override
     public void actionPerformed(ActionEvent e) {
-        final CreateRulePanel panel = new CreateRulePanel(context);
+        final CreateRulePanel panel = new CreateRulePanel(context, handle);
         
         DialogDescriptor descriptor = new DialogDescriptor(
                 panel,
@@ -95,10 +110,13 @@ public class CreateRuleAction extends AbstractAction {
                     @Override
                     public void actionPerformed(ActionEvent e) {
                         if(e.getSource().equals(DialogDescriptor.OK_OPTION)) {
-                            //should be called out of EDT, but due to Honza's hacks in Model.saveIfNotOpenInEditor()
-                            //I better keep it as it is at least for the John's demo.
-                            //XXX replan out of EDT, fix Model.saveIfNotOpenInEditor() not to require EDT and do I/O there.
-                            panel.applyChanges();
+                            RequestProcessor.getDefault().post(new Runnable() {
+                                @Override
+                                public void run() {
+                                    panel.applyChanges();
+                                }
+                                
+                            });
                         }
                     }
                 });

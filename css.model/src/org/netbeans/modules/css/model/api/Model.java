@@ -130,6 +130,7 @@ public final class Model implements PropertyChangeListener {
     private static int globalModelSerialNumber;
     
     private EditorCookie.Observable editorCookie;
+    private DataObject dataObject;
     
     /**
      * Gets cached instance of {@link Model}.
@@ -198,8 +199,8 @@ public final class Model implements PropertyChangeListener {
             //if the original document was closed.
             //See issue http://netbeans.org/bugzilla/show_bug.cgi?id=219493 for more details
             try {
-                DataObject dobj = DataObject.find(file);
-                editorCookie = dobj.getLookup().lookup(EditorCookie.Observable.class);
+                dataObject = DataObject.find(file);
+                editorCookie = dataObject.getLookup().lookup(EditorCookie.Observable.class);
                 editorCookie.addPropertyChangeListener(WeakListeners.propertyChange(this, editorCookie));
             } catch (DataObjectNotFoundException ex) {
                 Exceptions.printStackTrace(ex);
@@ -223,13 +224,18 @@ public final class Model implements PropertyChangeListener {
                 try {
                     //Document closed.
                     //Re-create the document and update the lookup.
-                    StyledDocument newDocument = editorCookie.openDocument();
-                    documentLookup.updateLookup(Lookups.fixed(newDocument));
+                    if(dataObject.isValid()) {
+                        StyledDocument newDocument = editorCookie.openDocument();
+                        documentLookup.updateLookup(Lookups.fixed(newDocument));
 
-                    LOGGER.log(Level.FINE, "Model: {0}: new document instance set to {0} upon "
-                            + "EditorCookie.Observable.PROP_DOCUMENT property change.", 
-                            new Object[]{this, System.identityHashCode(newDocument)}); //NOI18N
-                    
+                        LOGGER.log(Level.FINE, "Model: {0}: new document instance set to {0} upon "
+                                + "EditorCookie.Observable.PROP_DOCUMENT property change.",
+                                new Object[]{this, System.identityHashCode(newDocument)}); //NOI18N
+                    } else {
+                        documentLookup.updateLookup(Lookups.fixed()); //remove the document from lookup
+                        LOGGER.log(Level.FINE, "Model: {0}: DataObject become invalid.",
+                                new Object[]{this}); //NOI18N
+                    }
                 } catch (IOException ex) {
                     Exceptions.printStackTrace(ex);
                 }
@@ -350,7 +356,7 @@ public final class Model implements PropertyChangeListener {
         }
         Document doc = getLookup().lookup(Document.class);
         if (doc == null) {
-            throw new IOException("Not document based model instance!"); //NOI18N
+            throw new IllegalStateException("Trying to save model with invalidated DataObject!");
         }
         
         Difference[] diff = getModelSourceDiff();
