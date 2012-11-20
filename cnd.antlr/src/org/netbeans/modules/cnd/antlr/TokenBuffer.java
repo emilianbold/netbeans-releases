@@ -1,8 +1,5 @@
 package org.netbeans.modules.cnd.antlr;
 
-import java.util.List;
-import java.util.ArrayList;
-
 /* ANTLR Translator Generator
  * Project led by Terence Parr at http://www.cs.usfca.edu
  * Software rights: http://www.antlr.org/license.html
@@ -24,112 +21,116 @@ import java.util.ArrayList;
 
 public class TokenBuffer {
 
+    // Token source
+    private final TokenStream input;
+
     // Number of active markers
     private int nMarkers = 0;
-
-	/** The index into the tokens list of the current token (next token
-     *  to consume).
-     */
-    private int p = 0;
-
-    public static final int INITIAL_BUFFER_SIZE = 2048;
     
-    /** Record every single token pulled from the source so we can reproduce
-     *  chunks of it later.
-     */
-    private final List<Token> tokens;
+    private int windowStart = 0;
 
-    // type buffer data (created to improve performance of LA)
-    private final int size;
-    private short[] data;
+    // Additional offset used when markers are active
+    private int markerOffset = 0;
+
+    // Number of calls to consume() since last LA() or LT() call
+    private int numToConsume = 0;
+
+    // Circular queue
+    private final TokenQueue queue;
 
     /** Create a token buffer */
     public TokenBuffer(TokenStream input) {
-        this(input, INITIAL_BUFFER_SIZE);
+        this.input = input;
+        this.queue = new TokenQueue(1);
     }
-
-    /** Create a token buffer */
+    
     public TokenBuffer(TokenStream input, int initialCapacity) {
-        tokens = new ArrayList<Token>(initialCapacity);
-        data = new short[initialCapacity];
-        // fill buffer
-        int pos = 0;
-        try {
-            Token t = input.nextToken();
-            int type;
-            while ( (t != null) && ((type = t.getType()) != Token.EOF_TYPE) ) {
-                tokens.add(t);
-                if (pos == data.length) {
-                    resizeData();
-                }
-                assert type < Short.MAX_VALUE;
-                data[pos++] = (short) type;
-                t = input.nextToken();
-            }
-        }
-        catch (TokenStreamException tse) {
-                System.err.println("tmp error: can't load tokens: "+tse);
-        }
-        size = pos;
-    }
-
-    // double data size
-    private void resizeData() {
-        short[] newdata = new short[data.length*2]; // resize
-        System.arraycopy(data, 0, newdata, 0, data.length);
-        data = newdata;
+        this(input);
     }
 
     /** Mark another token for deferred consumption */
     public final void consume() {
-        p++;
+        numToConsume++;
+    }
+
+    /** Ensure that the token buffer is sufficiently full */
+    private void fill(int amount) {
+        syncConsume();
+        // Fill the buffer sufficiently to hold needed tokens
+        try {
+            while (queue.nbrEntries < amount + markerOffset) {
+                // Append the next token
+                queue.append(input.nextToken());
+            }
+        }
+        catch (TokenStreamException tse) {
+                System.err.println("tmp error: can't load tokens: "+tse); //NOI18N
+        }
     }
 
     /** Get a lookahead token value */
     public final int LA(int i) {
-        int dataPos = p + i - 1;
-        if ( dataPos >= size ) {
-                return TokenImpl.EOF_TYPE;
-        }
-        return data[dataPos];
+        fill(i+1);
+        return queue.elementAt(markerOffset + i - 1).getType();
     }
 
     /** Get a lookahead token */
     public final Token LT(int i) {
-        if ( (p+i-1) >= size ) {
-                return TokenImpl.EOF_TOKEN;
-        }
-        return tokens.get(p + i - 1);
+        fill(i+1);
+        return queue.elementAt(markerOffset + i - 1);
     }
 
     /**Return an integer marker that can be used to rewind the buffer to
      * its current state.
      */
     public final int mark() {
-        //System.out.println("Marking at " + p);
-        //try { for (int i = 1; i <= 2; i++) { System.out.println("LA("+i+")=="+LT(i).getText()); } } catch (ScannerException e) {}
+        syncConsume();
+//System.out.println("Marking at " + markerOffset);
+//try { for (int i = 1; i <= 2; i++) { System.out.println("LA("+i+")=="+LT(i).getText()); } } catch (ScannerException e) {}
         nMarkers++;
-        return p;
+        return markerOffset+windowStart;
     }
-
+    
     /** What token index are we at?  Assume mark() done at start.
      */
     public final int index() {
-        return p;
+        syncConsume();
+        return windowStart+markerOffset;
     }
-
+    
     public final void seek(int position) {
-        p = position;
+        syncConsume();
+        markerOffset = position-windowStart;
+        assert markerOffset >= 0 : "Seek to unbuffered position"; //NOI18N
     }
 
     /**Rewind the token buffer to a marker.
-     * @param marker Marker returned previously from mark()
+     * @param mark Marker returned previously from mark()
      */
-    public final void rewind(int marker) {
-        seek(marker);
+    public final void rewind(int mark) {
+        syncConsume();
+        markerOffset = mark-windowStart;
+        assert markerOffset >= 0 : "Rewind to unbuffered position"; //NOI18N
         nMarkers--;
-        //System.out.println("Rewinding to " + marker);
-        //try { for (int i = 1; i <= 2; i++) { System.out.println("LA("+i+")=="+LT(i).getText()); } } catch (ScannerException e) {}
+        assert nMarkers >= 0 : "Unbalanced mark-rewind"; //NOI18N
+//        System.err.println("Rewinding to " + mark);
+//        for (int i = 1; i <= 2; i++) { 
+//            System.err.println("LA("+i+")="+LA(i));
+//        }
     }
 
+    /** Sync up deferred consumption */
+    private void syncConsume() {
+        while (numToConsume > 0) {
+            if (nMarkers > 0) {
+                // guess mode -- leave leading tokens and bump offset.
+                markerOffset++;
+            } else {
+                // normal mode -- remove first token
+                queue.removeFirst();
+                windowStart++;
+            }
+            numToConsume--;
+        }
+    }
 }
