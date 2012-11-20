@@ -22,6 +22,7 @@ extern "C" {
 #include <string.h>
 
     void err_sys(const char *fmt, ...);
+    void err_sys2(int rc, const char *fmt, ...);
     void warn_sys(const char *fmt, ...);
     void err_quit(const char *fmt, ...);
 

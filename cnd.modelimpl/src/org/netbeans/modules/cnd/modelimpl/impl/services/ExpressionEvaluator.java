@@ -295,13 +295,13 @@ public class ExpressionEvaluator implements CsmExpressionEvaluatorProvider {
 
         @Override
         public void rewind(int arg0) {
-            tb.mark();
-            tb.rewind(lastMark);
+            tb.rewind(arg0);
         }
 
         @Override
         public void rewind() {
-            tb.rewind(0);
+            tb.mark();
+            tb.rewind(lastMark);
         }
 
         @Override

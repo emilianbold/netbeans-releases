@@ -81,16 +81,19 @@ int main(int argc, char** argv) {
         //              specified file
 
         err_quit("\n\n"
-                "usage: %s [-e] [--no-pty] [-w] [-p pts_name] [--set-erase-key] [--readenv env_file] [[--env NAME=VALUE] ...] [--dir dir] [--report report_file] program [ arg ... ]\n"
-                "\t-e\t\tturn echoing off\n"
-                "\t-w\t\twait SIGCONT after reporting PID/TYY/.. and before executing the program\n"
-                "\t-p\t\tdefine pts_name to attach process's I/O instead of opening a new one\n"
-                "\t--readenv\tread environment to start process in from a file\n"
-                "\t--env\t\tpass (additional) environment variable to the process\n"
-                "\t--dir\t\tchange working directory for starting process\n"
-                "\t--report\trecord process' and exit status information into specified file\n\n"
+                "usage: %s [-e] [--no-pty] [-w] [-p pts_name] [--set-erase-key]\n"
+                "\t\t[--readenv env_file] [[--env NAME=VALUE] ...] [--dir dir]\n"
+                "\t\t[--redirect-error] [--report report_file] program [ arg ... ]\n\n"
+                "\t-e\t\t turn echoing off\n"
+                "\t-w\t\t wait SIGCONT after reporting PID/TTY/.. but before executing the program\n"
+                "\t-p\t\t define pts_name to attach process's I/O instead of opening a new one\n"
+                "\t--readenv\t read environment to start process in from a file\n"
+                "\t--env\t\t pass (additional) environment variable to the process\n"
+                "\t--dir\t\t change working directory for starting process\n"
+                "\t--redirect-error redirect stderror to stdout for starting process (makes sense if --no-pty only)\n"
+                "\t--report\t record process' and exit status information into specified file\n\n"
                 "usage: %s --dumpenv env_file\n"
-                "\t--dumpenv\tdump environment to a file\n"
+                "\t--dumpenv\t dump environment to a file\n"
                 , progname, progname);
         exit(-1);
     }
@@ -98,6 +101,11 @@ int main(int argc, char** argv) {
     // Set SIGCONT handler for both parent and child
     // This is to avoid a race condition
     signal(SIGCONT, sigcont);
+
+    if (params.redirect_error) {
+        close(STDERR_FILENO);
+        dup2(STDOUT_FILENO, STDERR_FILENO);
+    }
 
     if (params.nopty == 0) {
         if (params.pty != NULL) {
@@ -180,7 +188,7 @@ int main(int argc, char** argv) {
 
         if (params.wdir != NULL) {
             if (chdir(params.wdir) == -1) {
-                err_sys("chdir failed");
+                err_sys2(errno == ENOENT ? 127 : 1, "failed to change directory: %s", params.wdir);
             }
         }
 
@@ -190,7 +198,7 @@ int main(int argc, char** argv) {
         // This is controlled by java code for now, at least
 
         if (execvp(argv[0], argv) < 0) {
-            err_sys("failed to start %s", argv[0]);
+            err_sys2(errno == ENOENT ? 127 : 1, "failed to start %s", argv[0]);
         }
 
     }

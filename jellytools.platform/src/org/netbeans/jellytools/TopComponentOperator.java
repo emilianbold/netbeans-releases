@@ -45,6 +45,7 @@ import java.awt.Point;
 import java.awt.Rectangle;
 import java.io.IOException;
 import javax.swing.JComponent;
+import org.netbeans.api.actions.Savable;
 import org.netbeans.jemmy.QueueTool;
 import org.netbeans.jemmy.TestOut;
 import org.netbeans.jellytools.actions.AttachWindowAction;
@@ -70,6 +71,7 @@ import org.openide.loaders.DataObject;
 import org.openide.windows.TopComponent;
 //import org.netbeans.core.multiview.MultiViewCloneableTopComponent;
 import org.netbeans.swing.tabcontrol.TabbedContainer;
+import org.openide.util.Exceptions;
 
 /**
  * Represents org.openide.windows.TopComponent. It is IDE wrapper for a lot of
@@ -335,25 +337,12 @@ public class TopComponentOperator extends JComponentOperator {
      */
     public void save() {
         // should be just one node
-        org.openide.nodes.Node[] nodes = ((TopComponent) getSource()).getActivatedNodes();
-        if (nodes == null) {
-            // try to find possible enclosing MultiviewTopComponent
-            TopComponentOperator parentTco = findParentTopComponent();
-            if (parentTco != null) {
-                parentTco.save();
-            }
-        }
-        // TopComponent like Execution doesn't have any nodes associated
-        if (nodes != null) {
-            for (int i = 0; i < nodes.length; i++) {
-                SaveCookie sc = (SaveCookie) nodes[i].getCookie(SaveCookie.class);
-                if (sc != null) {
-                    try {
-                        sc.save();
-                    } catch (IOException e) {
-                        throw new JemmyException("Exception while saving this TopComponent.", e);
-                    }
-                }
+        Savable s = ((TopComponent) getSource()).getLookup().lookup(org.netbeans.api.actions.Savable.class);
+        if (s!=null) {
+            try {
+                s.save();
+            } catch (IOException ex) {
+                   throw new JemmyException("Exception while saving this TopComponent.", ex);
             }
         }
     }

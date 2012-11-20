@@ -117,7 +117,11 @@ public final class PtyNativeProcess extends AbstractNativeProcess {
         if (origCommand != null) {
             newArgs.add(hostInfo.getShell());
             newArgs.add("-c"); // NOI18N
-            newArgs.add("exec " + origCommand); // NOI18N
+            if (info.isRedirectError()) {
+                newArgs.add("exec 2>&1; exec " + origCommand); // NOI18N
+            } else {
+                newArgs.add("exec " + origCommand); // NOI18N
+            }
         } else {
             // this means that there is no shell available
             String processExecutable = info.getExecutable();
@@ -147,7 +151,7 @@ public final class PtyNativeProcess extends AbstractNativeProcess {
         }
 
         delegate.createAndStart();
-        
+
         InputStream inputStream = delegate.getInputStream();
 
         if (pty != null) {

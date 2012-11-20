@@ -54,6 +54,7 @@ import java.awt.Rectangle;
 import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.lang.reflect.ParameterizedType;
@@ -274,7 +275,7 @@ public final class NotifyExcPanel extends JPanel implements ActionListener {
     static void notify (
         final NbErrorManager.Exc t
     ) {
-        if (!shallNotify(t.getSeverity(), false)) {
+        if (!t.isUserQuestion() && !shallNotify(t.getSeverity(), false)) {
             return;
         }
         
@@ -285,10 +286,24 @@ public final class NotifyExcPanel extends JPanel implements ActionListener {
         }
 
         SwingUtilities.invokeLater (new Runnable () {
+            @Override
             public void run() {
                 String glm = t.getLocalizedMessage();
                 Level gs = t.getSeverity();
                 boolean loc = t.isLocalized();
+                
+                if (t.isUserQuestion() && loc) {
+                    Object ret = DialogDisplayer.getDefault().notify(
+                               new NotifyDescriptor.Confirmation(glm, NotifyDescriptor.OK_CANCEL_OPTION));
+                    if (ret == NotifyDescriptor.OK_OPTION) {
+                        try {
+                            t.confirm();
+                        } catch (IOException ex) {
+                            Exceptions.printStackTrace(ex);
+                        }
+                    }
+                    return;
+                }
 
                 if (loc) {
                     if (gs == Level.WARNING) {
