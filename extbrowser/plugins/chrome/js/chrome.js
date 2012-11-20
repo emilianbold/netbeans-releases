@@ -282,7 +282,7 @@ NetBeans._checkUnexpectedDetach = function(tabId) {
 };
 
 NetBeans.openWarning = function(ident, height) {
-    NetBeans_LocalStorage.isWarningEnabled(ident, function() {
+    NetBeans_Warnings.runIfEnabled(ident, function() {
         NetBeans.openPopup('html/warning.html#' + ident, 540, height);
     });
 };
@@ -377,19 +377,19 @@ chrome.tabs.onAttached.addListener(function(tabId, attachInfo) {
 });
 
 /**
- * Local storage.
+ * Warnings manager.
  */
-NetBeans_LocalStorage = {};
+NetBeans_Warnings = {};
 /**
  * Runs the given task if the warning identified by the given ident is enabled.
  * @param {String} ident warning identifier
  * @param {function} task task to be run
  * @returns {void}
  */
-NetBeans_LocalStorage.isWarningEnabled = function(ident, task) {
-    var key = NetBeans_LocalStorage._getKeyFor(ident, 'enabled');
+NetBeans_Warnings.runIfEnabled = function(ident, task) {
+    var key = NetBeans_Warnings._getKeyFor(ident, 'enabled');
     chrome.storage.sync.get(key, function(items) {
-        NetBeans_LocalStorage._logError('get', key);
+        NetBeans_Warnings._logError('get', key);
         if (items[key] !== undefined && items[key] === 'false') {
             // warning disabled
             return;
@@ -398,30 +398,31 @@ NetBeans_LocalStorage.isWarningEnabled = function(ident, task) {
     });
 };
 /**
- * Disable the given warning.
+ * Enable/disable the given warning.
  * @param {String} ident warning identifier
+ * @param {boolean} true for enable, false to disable
  * @returns {void}
  */
-NetBeans_LocalStorage.enableWarning = function(ident, enabled) {
-    var key = NetBeans_LocalStorage._getKeyFor(ident, 'enabled');
+NetBeans_Warnings.enable = function(ident, enabled) {
+    var key = NetBeans_Warnings._getKeyFor(ident, 'enabled');
     if (enabled) {
         // remove fro local storage
         chrome.storage.sync.remove(key, function() {
-            NetBeans_LocalStorage._logError('remove', key);
+            NetBeans_Warnings._logError('remove', key);
         });
     } else {
         // disable
         var data = {};
         data[key] = 'false';
         chrome.storage.sync.set(data, function() {
-            NetBeans_LocalStorage._logError('set', key);
+            NetBeans_Warnings._logError('set', key);
         });
     }
 };
-NetBeans_LocalStorage._getKeyFor = function(ident, key) {
+NetBeans_Warnings._getKeyFor = function(ident, key) {
     return 'warning.' + ident + '.' + key;
 };
-NetBeans_LocalStorage._logError = function(operation, key) {
+NetBeans_Warnings._logError = function(operation, key) {
     if (chrome.runtime.lastError) {
         console.error('Local storage error ("' + operation + '" operation for "' + key + '"): ' + chrome.runtime.lastError);
     }

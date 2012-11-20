@@ -41,7 +41,7 @@
  */
 
 // references from bg page
-var NetBeans_LocalStorage = chrome.extension.getBackgroundPage().NetBeans_LocalStorage;
+var NetBeans_Warnings = chrome.extension.getBackgroundPage().NetBeans_Warnings;
 
 /**
  * Warning - the content is set by the URL ident (accessible via <code>window.location.hash</code>).
@@ -78,7 +78,7 @@ NetBeans_Warning._close = function() {
     window.close();
 };
 NetBeans_Warning._doNotShowAgain = function() {
-    NetBeans_LocalStorage.enableWarning(this._ident, !this._doNotShowAgainButton.checked);
+    NetBeans_Warnings.enable(this._ident, !this._doNotShowAgainButton.checked);
 };
 
 // run!
