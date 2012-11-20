@@ -49,8 +49,12 @@ import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.modules.parsing.impl.indexing.ClusteredIndexables;
+import org.netbeans.modules.parsing.impl.indexing.Pair;
 import org.netbeans.modules.parsing.impl.indexing.PathRegistry;
 import org.netbeans.modules.parsing.lucene.support.DocumentIndex;
+import org.netbeans.modules.parsing.lucene.support.DocumentIndexCache;
 import org.netbeans.modules.parsing.lucene.support.IndexManager;
 import org.openide.util.Exceptions;
 import org.openide.util.Utilities;
@@ -66,7 +70,8 @@ public final class DocumentBasedIndexManager {
     @org.netbeans.api.annotations.common.SuppressWarnings(
     value="DMI_COLLECTION_OF_URLS"
     /*,justification="URLs have never host part"*/)
-    private final Map<URL, DocumentIndex> indexes = new HashMap<URL, DocumentIndex> ();
+    private final Map<URL, Pair<DocumentIndex, DocumentIndexCache>> indexes =
+            new HashMap<URL, Pair<DocumentIndex, DocumentIndexCache>> ();
     //@GuardedBy("this")
     private boolean closed;
 
@@ -97,7 +102,7 @@ public final class DocumentBasedIndexManager {
         if (closed) {
             return null;
         }
-        DocumentIndex li = indexes.get(root);
+        Pair<DocumentIndex, DocumentIndexCache> li = indexes.get(root);
         if (li == null) {
             try {
                 switch (mode) {
@@ -105,7 +110,10 @@ public final class DocumentBasedIndexManager {
                     {
                         final File file = Utilities.toFile(root.toURI());
                         file.mkdir();
-                        li = IndexManager.createDocumentIndex(file);
+                        final ClusteredIndexables.DocumentIndexCache cache = ClusteredIndexables.createDocumentIndexCache();
+                        final DocumentIndex index = IndexManager.createDocumentIndex(file, cache);
+                        li = Pair.<DocumentIndex, DocumentIndexCache>of(index, cache);
+
                         indexes.put(root,li);
                         break;
                     }
@@ -114,7 +122,9 @@ public final class DocumentBasedIndexManager {
                         final File file = Utilities.toFile(root.toURI());
                         String[] children;
                         if (file.isDirectory() && (children=file.list())!= null && children.length > 0) {
-                            li = IndexManager.createDocumentIndex(file);
+                            final ClusteredIndexables.DocumentIndexCache cache = ClusteredIndexables.createDocumentIndexCache();
+                            final DocumentIndex index = IndexManager.createDocumentIndex(file, cache);
+                            li = Pair.<DocumentIndex, DocumentIndexCache>of(index, cache);
                             indexes.put(root,li);
                         }
                         break;
@@ -124,17 +134,23 @@ public final class DocumentBasedIndexManager {
                 throw new IOException(e);
             }
         }
-        return li;
+        return li == null ? null : li.first;
     }
+
+   @CheckForNull
+   public DocumentIndexCache getCache(@NonNull final URL root) {
+       final Pair<DocumentIndex, DocumentIndexCache> entry = indexes.get(root);
+       return entry == null ? null : entry.second;
+   }
    
    public synchronized void close() {
        if (closed) {
            return;
        }
        closed = true;
-       for (DocumentIndex index : indexes.values()) {
+       for (Pair<DocumentIndex, DocumentIndexCache> index : indexes.values()) {
            try {
-            index.close();
+            index.first.close();
            } catch (IOException ioe) {
                Exceptions.printStackTrace(ioe);
            }

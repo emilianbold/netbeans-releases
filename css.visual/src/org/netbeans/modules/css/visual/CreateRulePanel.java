@@ -41,26 +41,38 @@
  */
 package org.netbeans.modules.css.visual;
 
+import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Component;
+import java.awt.Font;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.io.IOException;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.TreeSet;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 import javax.swing.AbstractListModel;
-import javax.swing.ComboBoxModel;
-import javax.swing.DefaultComboBoxModel;
+import javax.swing.ComboBoxEditor;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.JEditorPane;
+import javax.swing.JLabel;
 import javax.swing.JList;
+import javax.swing.JPanel;
 import javax.swing.ListCellRenderer;
 import javax.swing.ListModel;
+import javax.swing.MutableComboBoxModel;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
+import javax.swing.text.Document;
+import javax.swing.text.JTextComponent;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.css.indexing.api.CssIndex;
@@ -77,6 +89,10 @@ import org.netbeans.modules.css.model.api.Selector;
 import org.netbeans.modules.css.model.api.SelectorsGroup;
 import org.netbeans.modules.css.model.api.StyleSheet;
 import org.netbeans.modules.html.editor.lib.api.HtmlVersion;
+import org.netbeans.modules.html.editor.lib.api.elements.Attribute;
+import org.netbeans.modules.html.editor.lib.api.elements.Element;
+import org.netbeans.modules.html.editor.lib.api.elements.OpenTag;
+import org.netbeans.modules.html.editor.lib.api.elements.TreePath;
 import org.netbeans.modules.html.editor.lib.api.model.HtmlModel;
 import org.netbeans.modules.html.editor.lib.api.model.HtmlModelFactory;
 import org.netbeans.modules.html.editor.lib.api.model.HtmlTag;
@@ -113,7 +129,19 @@ import org.openide.util.NbBundle;
 })
 public class CreateRulePanel extends javax.swing.JPanel {
 
-    private String selector;
+    //TODO take the values from editor settings!
+    private static Color tagColor = new Color(0, 0, 230);
+    private static Color attrNameColor = new Color(0, 153, 0);
+    private static Color attrValueColor = new Color(206, 123, 0);
+    private String compoundSelectorDefaultValue;
+    private OpenTag activeElement;
+    private AtomicReference<String> activeElementClass, activeElementId;
+    private SelectorItem selectedClazz, selectedId, selectedElement, selectedCompound;
+    private final SelectorItem NO_CLASS = SelectorItem.createClass(null, null);
+    private final SelectorItem NO_ID = SelectorItem.createId(null, null);
+    
+    private int activeSelectorType = 0;//class
+    
     private String[] SELECTOR_TYPE_DESCRIPTIONS = new String[]{
         Bundle.class_selector_descr(),
         Bundle.id_selector_descr(),
@@ -123,7 +151,7 @@ public class CreateRulePanel extends javax.swing.JPanel {
     /**
      * Models for stylesheets and at rules comboboxes.
      */
-    private DefaultComboBoxModel STYLESHEETS_MODEL, AT_RULES_MODEL, SELECTORS_MODEL;
+    private ExtDefaultComboBoxModel STYLESHEETS_MODEL, AT_RULES_MODEL, SELECTORS_MODEL;
     private ListModel SELECTORS_LIST_MODEL;
     /**
      * Context of the create rule panel.
@@ -133,10 +161,20 @@ public class CreateRulePanel extends javax.swing.JPanel {
      * Css source {@link Model} for the selected stylesheet.
      */
     private Model selectedStyleSheetModel;
+    private Collection<String> ELEMENT_SELECTOR_ITEMS;
 
-    private Collection<String> TAG_NAMES;
-    
-    public CreateRulePanel() {
+    public CreateRulePanel(FileObject context) {
+        assert context != null;
+        this.context = context;
+
+        STYLESHEETS_MODEL = new ExtDefaultComboBoxModel();
+        AT_RULES_MODEL = new ExtDefaultComboBoxModel();
+        SELECTORS_MODEL = new ExtDefaultComboBoxModel();
+
+        createStyleSheetsModel();
+        updateCssModel(context);
+        updateAtRulesModel();
+
         SELECTORS_LIST_MODEL = new AbstractListModel() {
             @Override
             public int getSize() {
@@ -145,7 +183,7 @@ public class CreateRulePanel extends javax.swing.JPanel {
 
             @Override
             public Object getElementAt(int i) {
-                switch(i) {
+                switch (i) {
                     case 0:
                         return Bundle.selector_type_class();
                     case 1:
@@ -159,95 +197,410 @@ public class CreateRulePanel extends javax.swing.JPanel {
                 }
             }
         };
-        
-        STYLESHEETS_MODEL = new DefaultComboBoxModel();
-        AT_RULES_MODEL = new DefaultComboBoxModel();
-        SELECTORS_MODEL = new DefaultComboBoxModel();
 
         initComponents();
 
         selectorTypeList.addListSelectionListener(new ListSelectionListener() {
             @Override
             public void valueChanged(ListSelectionEvent e) {
+                if (e.getValueIsAdjusting()) {
+                    return; //ignore adjusting events
+                }
+
+                //enable the selectors CB once user chooses one of the selector types
+                if (!selectorCB.isEnabled()) {
+                    selectorCB.setEnabled(true);
+                }
+
                 //update the description
                 int index = selectorTypeList.getSelectedIndex();
                 descriptionPane.setText(SELECTOR_TYPE_DESCRIPTIONS[index]);
 
-                //disable editing mode for html elements
-                selectorCB.setEditable(index != 2);
-                
+
                 //update the separator's title
                 selectorTypeLabel.setText(selectorTypeList.getSelectedValue().toString() + Bundle.selector_rule_postfix());
-                
-                updateSelectorsModel();
+
+                updateSelectorsModel(); //will also select active element
+               
+                SelectorItem activeSelectorItem = getActiveSelectorItem();
+                if (activeSelectorItem != null) {
+                    FileObject file = activeSelectorItem.getFile();
+
+                    //select active stylesheet
+                    styleSheetCB.setSelectedItem(file);
+
+                    //update current stylesheet model && at rules model 
+                    updateCssModel(file);
+                    updateAtRulesModel();
+                    //select the active at rule
+                    AtRuleItem createInAtRule = activeSelectorItem.getCreateInAtRule();
+                    if (createInAtRule != null) {
+                        atRuleCB.setSelectedItem(createInAtRule);
+                    } else {
+                        atRuleCB.setSelectedIndex(0); //select first
+                    }
+
+                }
 
             }
         });
-        selectorTypeList.setSelectedIndex(0);
 
         selectorCB.addItemListener(new ItemListener() {
             @Override
             public void itemStateChanged(ItemEvent e) {
-                String item = e.getItem().toString();
-                if (item.isEmpty()) {
-                    return;
+                if (e.getStateChange() == ItemEvent.SELECTED) {
+                    Object item = e.getItem();
+                    if (item instanceof SelectorItem) {
+                        //user selected sg. from drop down
+                        SelectorItem si = (SelectorItem) e.getItem();
+                        setSelectorItem(si);
+                    }
                 }
-                switch (selectorTypeList.getSelectedIndex()) {
-                    case 0:
-                        //class
-                        if (item.charAt(0) != '.') {
-                            item = '.' + item;
-                        }
-                        break;
-                    case 1:
-                        //id
-                        if (item.charAt(0) != '#') {
-                            item = '#' + item;
-                        }
-                        break;
-                    case 2:
-                        //element
-                        break;
-                    case 3:
-                        //compound
-                        break;
-                    default:
-                        throw new IllegalStateException();
-                }
-                selectorSet(item);
-
             }
         });
 
+        final ComboBoxEditor editor = selectorCB.getEditor();
+        if (editor.getEditorComponent() instanceof JTextComponent) {
+            JTextComponent textEditor = (JTextComponent) editor.getEditorComponent();
+            Document doc = textEditor.getDocument();
+            doc.addDocumentListener(new DocumentListener() {
+                @Override
+                public void insertUpdate(DocumentEvent de) {
+                    change();
+                }
+
+                @Override
+                public void removeUpdate(DocumentEvent de) {
+                    change();
+                }
+
+                @Override
+                public void changedUpdate(DocumentEvent de) {
+                    change();
+                }
+
+                private void change() {
+                    //user change the selector - either by typing into the 
+                    //text area or by selecting one from the dropdown
+                    String item = editor.getItem().toString();
+
+                    SelectorItem selectorItem;
+                    switch (selectorTypeList.getSelectedIndex()) {
+                        case 0:
+                            //class
+                            if (item.isEmpty()) {
+                                selectorItem = NO_CLASS;
+                            } else {
+                                if (item.charAt(0) == '.') {
+                                    item = item.substring(1);
+                                }
+                                selectorItem = SelectorItem.createClass(item, null);
+                            }
+                            break;
+                        case 1:
+                            //id
+                            if (item.isEmpty()) {
+                                selectorItem = NO_ID;
+                            } else {
+                                if (item.charAt(0) == '#') {
+                                    item = item.substring(1);
+                                }
+                                selectorItem = SelectorItem.createId(item, null);
+                            }
+                            break;
+                        case 2:
+                            //element
+                            if(item.isEmpty()) {
+                                return ;
+                            }
+                            selectorItem = SelectorItem.createElement(item);
+                            
+                            break;
+                        case 3:
+                            //compound
+                            if(item.isEmpty()) {
+                                return ;
+                            }
+                            selectorItem = SelectorItem.createCompound(item);
+                            
+                            break;
+                        default:
+                            throw new IllegalStateException();
+                    }
+
+                    FileObject selectedStylesheet = (FileObject) styleSheetCB.getSelectedItem();
+                    selectorItem.setCreateInFile(selectedStylesheet);
+                    AtRuleItem selectedAtRule = (AtRuleItem) atRuleCB.getSelectedItem();
+                    selectorItem.setCreateInAtRule(selectedAtRule);
+                    setSelectorItem(selectorItem);
+
+                }
+            });
+        }
+
+        styleSheetCB.addItemListener(new ItemListener() {
+            @Override
+            public void itemStateChanged(ItemEvent e) {
+                if (e.getStateChange() == ItemEvent.SELECTED) {
+                    //user changed stylesheet in the combobox
+                    //update the active SelectorItem to the selected stylesheet
+                    SelectorItem activeSelectorItem = getActiveSelectorItem();
+                    if (activeSelectorItem != null) {
+                        activeSelectorItem.setCreateInFile(getActiveStylesheet());
+                    }
+                }
+            }
+        });
+
+        atRuleCB.addItemListener(new ItemListener() {
+            @Override
+            public void itemStateChanged(ItemEvent e) {
+                if (e.getStateChange() == ItemEvent.SELECTED) {
+                    //user changed at-rule in the combobox
+                    //update the active SelectorItem to the selected at-rule
+                    SelectorItem activeSelectorItem = getActiveSelectorItem();
+                    if (activeSelectorItem != null) {
+                        activeSelectorItem.setCreateInAtRule(getActiveAtRule());
+                    }
+                }
+            }
+        });
+
+
+        initializeActiveElement();
+
+//        selectorTypeList.setSelectedIndex(0); //class
+
+        //fixme:
+//        atRuleCB.setEnabled(AT_RULES_MODEL.getSize() > 1);
     }
 
-    public void setContext(FileObject context) {
-        this.context = context;
-        updateModels();
+    /**
+     * Returns value of the class attribute of the selected html source element.
+     */
+    private String getSelectedElementClass() {
+        if (activeElementClass == null) {
+            activeElementClass = new AtomicReference<String>();
+            if (activeElement != null) {
+                Attribute clz = activeElement.getAttribute("class"); //NOI18N
+                if (clz != null) {
+                    CharSequence unquotedValue = clz.unquotedValue();
+                    if (unquotedValue != null) {
+                        activeElementClass.set(unquotedValue.toString());
+                    }
+                }
+            }
+        }
+        return activeElementClass.get();
     }
 
-    private void updateModels() {
-        //update selectors model
-        updateSelectorsModel();
+    /**
+     * Returns value of the id attribute of the selected html source element.
+     */
+    private String getSelectedElementId() {
+        if (activeElementId == null) {
+            activeElementId = new AtomicReference<String>();
+            if (activeElement != null) {
+                Attribute id = activeElement.getAttribute("id"); //NOI18N
+                if (id != null) {
+                    CharSequence unquotedValue = id.unquotedValue();
+                    if (unquotedValue != null) {
+                        activeElementId.set(unquotedValue.toString());
+                    }
+                }
+            }
+        }
+        return activeElementId.get();
+    }
 
-        //update stylesheets combobox model
-        updateStyleSheetsModel();
-
-        //create css model for the selected stylesheet
-        updateCssModel(context);
-
-        if (selectedStyleSheetModel == null) {
-            //no css code to perform on
+    private void initializeActiveElement() {
+        activeElement = HtmlEditorSourceTask.getElement();
+        if (activeElement == null) {
             return;
         }
 
-        //update at rules model
-        updateAtRulesModel();
+        //set path
+        StringBuilder compoundDefaultValue = new StringBuilder();
+        StringBuilder elementPathLabelText = new StringBuilder();
+        elementPathLabelText.append("<html><body>");
+
+        TreePath path = new TreePath(activeElement);
+        for (int i = path.path().size() - 2; i >= 0; i--) { //skip the last "root" element
+            Element e = path.path().get(i);
+            compoundDefaultValue.append(e.id());
+
+            elementPathLabelText.append("<font color=\"");
+            elementPathLabelText.append(WebUtils.toHexCode(tagColor));
+            elementPathLabelText.append("\">");
+            elementPathLabelText.append("&lt;");
+            elementPathLabelText.append(e.id());
+            elementPathLabelText.append("&gt;");
+            elementPathLabelText.append("</font>");
+
+            if (i > 0) {
+                //not last element
+                compoundDefaultValue.append(' '); //NOI18N
+                elementPathLabelText.append(' '); //NOI18N
+            }
+        }
+
+        elementPathLabelText.append("</body></html>");
+
+        elementPathLabel.setText(elementPathLabelText.toString());
+
+        applyChangesCB.setEnabled(true);
+        applyChangesCB.setSelected(true);
+
+        //update the default for compound rule
+        compoundSelectorDefaultValue = compoundDefaultValue.toString();
+
+        updateElementCodeSample();
     }
 
-    private void updateStyleSheetsModel() {
+    private void updateElementCodeSample() {
+        if (activeElement == null) {
+            return;
+        }
+        StringBuilder source = new StringBuilder();
+
+        source.append("<html><body>");
+        source.append("<font color=\"");
+        source.append(WebUtils.toHexCode(tagColor));
+        source.append("\">");
+        source.append("&lt;");
+        source.append(activeElement.name());
+        source.append("</font>");
+
+        String selectedClazzName = selectedClazz != null ? selectedClazz.getItemName() : null;
+        String selectedElementClass = getSelectedElementClass();
+
+        String clz = selectedClazzName != null ? selectedClazzName : selectedElementClass;
+        boolean change = selectedClazzName != null && selectedElementClass != null && !selectedClazzName.equals(selectedElementClass)
+                || selectedClazzName != null && selectedElementClass == null;
+
+        if (clz != null && !clz.isEmpty()) { //isEmpty - removed
+            if (change) {
+                source.append("<b>");
+            }
+            source.append("<font color=\"");
+            source.append(WebUtils.toHexCode(attrNameColor));
+            source.append("\">");
+            source.append(" class=");
+            source.append("</font>");
+            source.append("<font color=\"");
+            source.append(WebUtils.toHexCode(attrValueColor));
+            source.append("\">");
+            source.append("\"");
+            source.append(clz);
+            source.append("\"");
+            source.append("</font>");
+            if (change) {
+                source.append("</b>");
+            }
+        }
+
+        String selectedIdName = selectedId != null ? selectedId.getItemName() : null;
+        String selectedElementId = getSelectedElementId();
+
+        String id = selectedIdName != null ? selectedIdName : selectedElementId;
+        change = selectedIdName != null && selectedElementId != null && !selectedIdName.equals(selectedElementId)
+                || selectedIdName != null && selectedElementId == null;
+
+        if (id != null && !id.isEmpty()) {
+            if (change) {
+                source.append("<b>");
+            }
+            source.append("<font color=\"");
+            source.append(WebUtils.toHexCode(attrNameColor));
+            source.append("\">");
+            source.append(" id=");
+            source.append("</font>");
+            source.append("<font color=\"");
+            source.append(WebUtils.toHexCode(attrValueColor));
+            source.append("\">");
+            source.append("\"");
+            source.append(id);
+            source.append("\"");
+            source.append("</font>");
+            if (change) {
+                source.append("</b>");
+            }
+        }
+
+        source.append("<font color=\"");
+        source.append(WebUtils.toHexCode(tagColor));
+        source.append("\">");
+        source.append("&gt;");
+        source.append("</font>");
+        source.append("</body></html>");
+
+        elementCodeLabel.setText(source.toString());
+
+    }
+
+    private FileObject getActiveStylesheet() {
+        return (FileObject) styleSheetCB.getSelectedItem();
+    }
+
+    private AtRuleItem getActiveAtRule() {
+        return (AtRuleItem) atRuleCB.getSelectedItem();
+    }
+
+    private SelectorItem getActiveSelectorItem() {
+        switch (selectorTypeList.getSelectedIndex()) {
+            case 0:
+                //class
+                return selectedClazz;
+            case 1:
+                //id
+                return selectedId;
+            case 2:
+                //element
+                return selectedElement;
+            case 3:
+                //compound
+                return selectedCompound;
+            default:
+                throw new IllegalStateException();
+        }
+    }
+
+    private void setSelectorItem(SelectorItem selector) {
+        switch (selector.getType()) {
+            case SelectorItem.CLASS_TYPE:
+                selectedClazz = selector;
+                break;
+            case SelectorItem.ID_TYPE:
+                selectedId = selector;
+                break;
+            case SelectorItem.ELEMENT_TYPE:
+                selectedElement = selector;
+                break;
+            case SelectorItem.COMPOUND_TYPE:
+                selectedCompound = selector;
+                break;
+        }
+
+        updateElementCodeSample(); //refresh UI
+
+        FileObject existsIn = selector != null ? selector.getExistsInFile() : null;
+        boolean exists = existsIn != null;
+        if (exists) {
+            STYLESHEETS_MODEL.setSelectedItem(existsIn);
+        }
+
+
+        styleSheetCB.setEnabled(!exists);
+//        addStylesheetButton.setEnabled(!exists);
+        atRuleCB.setEnabled(!exists);
+        //TODO select the at rule in which the element is located
+
+
+    }
+
+    private void createStyleSheetsModel() {
         try {
-            STYLESHEETS_MODEL.removeAllElements();
+            List<FileObject> items = new ArrayList<FileObject>();
             Project project = FileOwnerQuery.getOwner(context);
             if (project == null) {
                 return;
@@ -255,12 +608,13 @@ public class CreateRulePanel extends javax.swing.JPanel {
             CssIndex index = CssIndex.create(project);
             for (FileObject file : index.getAllIndexedFiles()) {
                 if ("text/css".equals(file.getMIMEType())) {
-                    STYLESHEETS_MODEL.addElement(file);
+                    items.add(file);
                 }
             }
 
-            if (STYLESHEETS_MODEL.getIndexOf(context) >= 0) {
-                //the context may be the html file itself
+            STYLESHEETS_MODEL.setItems(items);
+
+            if (items.contains(context)) { //the context may be the html file itself!
                 STYLESHEETS_MODEL.setSelectedItem(context);
             }
         } catch (IOException ex) {
@@ -288,9 +642,9 @@ public class CreateRulePanel extends javax.swing.JPanel {
     }
 
     private void updateAtRulesModel() {
-        AT_RULES_MODEL.removeAllElements();
+        final Collection<AtRuleItem> items = new ArrayList<AtRuleItem>();
 
-        AT_RULES_MODEL.addElement(null);
+        items.add(null);
         selectedStyleSheetModel.runReadTask(new Model.ModelTask() {
             @Override
             public void run(StyleSheet styleSheet) {
@@ -298,59 +652,84 @@ public class CreateRulePanel extends javax.swing.JPanel {
                     @Override
                     public void visitMedia(Media media) {
                         String displayName = selectedStyleSheetModel.getElementSource(media.getMediaQueryList()).toString();
-                        AT_RULES_MODEL.addElement(new MediaItem(displayName, media));
+                        items.add(new AtRuleItem(displayName, media));
                     }
                 };
                 styleSheet.accept(visitor);
             }
         });
 
-        atRuleCB.setEnabled(AT_RULES_MODEL.getSize() > 1);
+        AT_RULES_MODEL.setItems(items);
     }
 
+    private void dumpSummary() {
+        if (selectedClazz != null) {
+            System.out.println("selected class = " + selectedClazz.getInfo());
+        }
+        if (selectedId != null) {
+            System.out.println("selected id = " + selectedId.getInfo());
+        }
+        if (selectedElement != null) {
+            System.out.println("selected element = " + selectedElement.getInfo());
+        }
+        if (selectedCompound != null) {
+            System.out.println("selected compound = " + selectedCompound.getInfo());
+        }
+    }
+    
+//     private Media getSelectedMedia() {
+//        Object selected = atRuleCB.getSelectedItem();
+//        if (selected == null) {
+//            return null;
+//        }
+//        return ((MediaItem) selected).getMedia();
+//    }
+//    
     /**
      * call outside of AWT thread, it does some I/Os
      */
     public void applyChanges() {
-        if (selector == null) {
-            //no value set
-            return;
-        }
+        dumpSummary();
 
-        //called if the dialog is confirmed
-        selectedStyleSheetModel.runWriteTask(new Model.ModelTask() {
-            @Override
-            public void run(StyleSheet styleSheet) {
-
-                ElementFactory factory = selectedStyleSheetModel.getElementFactory();
-                Selector s = factory.createSelector(selector);
-                SelectorsGroup sg = factory.createSelectorsGroup(s);
-                Declarations ds = factory.createDeclarations();
-                Rule rule = factory.createRule(sg, ds);
-
-                Media media = getSelectedMedia();
-                if (media == null) {
-                    //add to the body
-                    Body body = styleSheet.getBody();
-                    if (body == null) {
-                        //create body if empty file
-                        body = factory.createBody();
-                        styleSheet.setBody(body);
-                    }
-                    styleSheet.getBody().addRule(rule);
-                } else {
-                    //add to the media
-                    media.addRule(rule);
-                }
-
-                try {
-                    selectedStyleSheetModel.applyChanges();
-                    selectTheRuleInEditorIfOpened(selectedStyleSheetModel, rule);
-                } catch (Exception /*ParseException, IOException, BadLocationException*/ ex) {
-                    Exceptions.printStackTrace(ex);
-                }
-            }
-        });
+//        if (selectorItem == null) {
+//            //no value set
+//            return;
+//        }
+//
+//        //called if the dialog is confirmed
+//        selectedStyleSheetModel.runWriteTask(new Model.ModelTask() {
+//            @Override
+//            public void run(StyleSheet styleSheet) {
+//
+//                ElementFactory factory = selectedStyleSheetModel.getElementFactory();
+//                Selector s = factory.createSelector(selectorItem.getItemFQName());
+//                SelectorsGroup sg = factory.createSelectorsGroup(s);
+//                Declarations ds = factory.createDeclarations();
+//                Rule rule = factory.createRule(sg, ds);
+//
+//                Media media = getSelectedMedia();
+//                if (media == null) {
+//                    //add to the body
+//                    Body body = styleSheet.getBody();
+//                    if (body == null) {
+//                        //create body if empty file
+//                        body = factory.createBody();
+//                        styleSheet.setBody(body);
+//                    }
+//                    styleSheet.getBody().addRule(rule);
+//                } else {
+//                    //add to the media
+//                    media.addRule(rule);
+//                }
+//
+//                try {
+//                    selectedStyleSheetModel.applyChanges();
+//                    selectTheRuleInEditorIfOpened(selectedStyleSheetModel, rule);
+//                } catch (Exception /*ParseException, IOException, BadLocationException*/ ex) {
+//                    Exceptions.printStackTrace(ex);
+//                }
+//            }
+//        });
     }
 
     private void selectTheRuleInEditorIfOpened(final Model omodel, final Rule orule) throws DataObjectNotFoundException, ParseException {
@@ -396,52 +775,187 @@ public class CreateRulePanel extends javax.swing.JPanel {
 
     }
 
-    private void selectorSet(String selector) {
-        this.selector = selector;
-    }
-
-    private Media getSelectedMedia() {
-        Object selected = atRuleCB.getSelectedItem();
-        if (selected == null) {
-            return null;
-        }
-        return ((MediaItem) selected).getMedia();
-    }
-
     private void updateSelectorsModel() {
-        SELECTORS_MODEL.removeAllElements();
-        switch (selectorTypeList.getSelectedIndex()) {
-            case 0:
-                //class
-                //TODO possibly show the current html elements' class
-                break;
-            case 1:
-                //id
-                //TODO possibly show the current html elements' id
-                break;
-            case 2:
-                //element
-                for(String tag : getTagNames()) {
-                    SELECTORS_MODEL.addElement(tag);
+        Collection<SelectorItem> items = new TreeSet<SelectorItem>();
+        SelectorItem selection = null;
+
+        //1.add classes && ids
+        Project project = FileOwnerQuery.getOwner(context);
+        if (project == null) {
+            return;
+        }
+
+        try {
+            CssIndex index = CssIndex.create(project);
+            DependenciesGraph dependencies = index.getDependencies(context);
+            Collection<FileObject> allReferedFiles = dependencies.getAllReferedFiles();
+
+            switch (selectorTypeList.getSelectedIndex()) {
+                case 0:
+                    //class
+                    items.add(NO_CLASS);
+                    String selectedClassName = selectedClazz == null ? getSelectedElementClass() : null;
+                    Map<FileObject, Collection<String>> findAllClassDeclarations = index.findAllClassDeclarations();
+                    for (FileObject file : findAllClassDeclarations.keySet()) {
+                        if (allReferedFiles.contains(file)) { //only refered files
+                            Collection<String> classes = findAllClassDeclarations.get(file);
+                            for (String clz : classes) {
+                                SelectorItem classSelectorItem = SelectorItem.createClass(clz, file);
+                                items.add(classSelectorItem);
+                                if (clz.equals(selectedClassName)) {
+                                    //remember the element matching the selected html source element class
+                                    //if not already modified (selectedClazz != null)
+                                    selection = classSelectorItem;
+                                }
+                            }
+                        }
+                    }
+
+                    if (selectedClazz == null || !selectedClazz.getItemName().equals(getSelectedElementClass())) {
+                        //add special item for the class name preset in the html source element code but w/o
+                        //a corresponding css rule
+                        SelectorItem classSelectorItem = SelectorItem.createClass(selectedClassName, null);
+                        classSelectorItem.setCreateInFile(getActiveStylesheet());
+                        classSelectorItem.setCreateInAtRule(getActiveAtRule());
+
+                        items.add(classSelectorItem);
+                        selection = classSelectorItem;
+                    }
+
+                    if (selectedClazz != null) {
+                        selection = selectedClazz;
+                    }
+
+                    break;
+                case 1:
+                    //id
+                    items.add(NO_ID);
+                    String selectedIdName = selectedId == null ? getSelectedElementId() : null;
+                    Map<FileObject, Collection<String>> findAllIdDeclarations = index.findAllIdDeclarations();
+                    for (FileObject file : findAllIdDeclarations.keySet()) {
+                        if (allReferedFiles.contains(file)) { //only refered files
+                            Collection<String> ids = findAllIdDeclarations.get(file);
+                            for (String id : ids) {
+                                SelectorItem idSelectorItem = SelectorItem.createId(id, file);
+                                items.add(idSelectorItem);
+                                if (id.equals(selectedIdName)) {
+                                    selection = idSelectorItem;
+                                }
+                            }
+                        }
+                    }
+
+                    if (selectedId == null || !selectedId.getItemName().equals(getSelectedElementId())) {
+                        //add special item for the class name preset in the html source element code but w/o
+                        //a corresponding css rule
+                        SelectorItem idSelectorItem = SelectorItem.createId(selectedIdName, null);
+                        idSelectorItem.setCreateInFile(getActiveStylesheet());
+                        idSelectorItem.setCreateInAtRule(getActiveAtRule());
+
+                        items.add(idSelectorItem);
+                        selection = idSelectorItem;
+                    }
+
+                    if (selectedId != null) {
+                        selection = selectedId;
+                    }
+                    break;
+                case 2:
+                    //element
+                    for (String elementName : getElementNames()) {
+                        SelectorItem item = SelectorItem.createElement(elementName);
+                        item.setCreateInFile(getActiveStylesheet());
+                        item.setCreateInAtRule(getActiveAtRule());
+                        items.add(item);
+                    }
+                    if (selectedElement == null) {
+                        selection = items.iterator().next();
+                    } else {
+                        selection = selectedElement;
+                    }
+                    break;
+                case 3:
+                    //compound
+                    if (compoundSelectorDefaultValue != null) {
+                        items.add(SelectorItem.createCompound(compoundSelectorDefaultValue));
+                    }
+                    if (selectedCompound == null) {
+                        SelectorItem compound = SelectorItem.createCompound(compoundSelectorDefaultValue);
+                        compound.setCreateInFile(getActiveStylesheet());
+                        compound.setCreateInAtRule(getActiveAtRule());
+                        selection = compound;
+                    } else {
+                        selection = selectedCompound;
+                    }
+
+                    break;
+            }
+
+            SELECTORS_MODEL.setItems(items);
+            if (selection != null) {
+                selectorCB.setSelectedItem(selection);
+            } else {
+                if (SELECTORS_MODEL.getSize() > 0) {
+                    selectorCB.setSelectedIndex(0); //select first
+                } else {
+                    //just clear out the combo area
+                    selectorCB.setSelectedItem(null);
                 }
-                break;
-            case 3:
-                //compound
-                //TODO possibly show the current html elements' elements path
-                break;
+            }
+
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
         }
 
     }
-    
-    private Collection<String> getTagNames() {
-        if (TAG_NAMES == null) {
-            TAG_NAMES = new TreeSet<String>();
+
+    private Collection<String> getElementNames() {
+        if (ELEMENT_SELECTOR_ITEMS == null) {
+            ELEMENT_SELECTOR_ITEMS = new TreeSet<String>();
             HtmlModel model = HtmlModelFactory.getModel(HtmlVersion.HTML5);
             for (HtmlTag tag : model.getAllTags()) {
-                TAG_NAMES.add(tag.getName());
+                ELEMENT_SELECTOR_ITEMS.add(tag.getName());
             }
         }
-        return TAG_NAMES;
+        return ELEMENT_SELECTOR_ITEMS;
+    }
+    private SelectorItemRenderer SELECTOR_MODEL_ITEM_RENDERER;
+
+    private SelectorItemRenderer getSelectorModelItemRenderer() {
+        if (SELECTOR_MODEL_ITEM_RENDERER == null) {
+            SELECTOR_MODEL_ITEM_RENDERER = new SelectorItemRenderer();
+        }
+        return SELECTOR_MODEL_ITEM_RENDERER;
+    }
+
+    private ListCellRenderer createSelectorsRenderer() {
+        return new DefaultListCellRenderer() {
+            @Override
+            public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+                Component c = super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+                if (value != null) {
+                    SelectorItem selectorItem = (SelectorItem) value;
+                    if (selectorItem == NO_CLASS || selectorItem == NO_ID) {
+                        setText(Bundle.none_item());
+                        return c;
+                    } else {
+                        SelectorItemRenderer selectorModelItemRenderer = getSelectorModelItemRenderer();
+                        boolean originalElement = false;
+                        switch (selectorItem.getType()) {
+                            case SelectorItem.CLASS_TYPE:
+                                originalElement = selectorItem.getItemName().equals(getSelectedElementClass());
+                                break;
+                            case SelectorItem.ID_TYPE:
+                                originalElement = selectorItem.getItemName().equals(getSelectedElementId());
+                                break;
+                        }
+                        selectorModelItemRenderer.setItem(selectorItem, isSelected, originalElement);
+                        return selectorModelItemRenderer;
+                    }
+                }
+                return c;
+            }
+        };
     }
 
     private ListCellRenderer createAtRulesRenderer() {
@@ -452,7 +966,7 @@ public class CreateRulePanel extends javax.swing.JPanel {
                 if (value == null) {
                     setText(Bundle.none_item());
                 } else {
-                    setText(((MediaItem) value).getDisplayName());
+                    setText(((AtRuleItem) value).getDisplayName());
                 }
                 return c;
             }
@@ -464,10 +978,10 @@ public class CreateRulePanel extends javax.swing.JPanel {
             @Override
             public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
                 Component c = super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
-                if(value == null) {
+                if (value == null) {
                     //empty model
                     return c;
-                }                
+                }
                 FileObject file = (FileObject) value;
                 String fileNameExt = file.getNameExt();
                 setText(fileNameExt);
@@ -484,25 +998,6 @@ public class CreateRulePanel extends javax.swing.JPanel {
                 return c;
             }
         };
-    }
-
-    private static class MediaItem {
-
-        private Media media;
-        private String displayName;
-
-        public MediaItem(String displayName, Media media) {
-            this.displayName = displayName;
-            this.media = media;
-        }
-
-        public Media getMedia() {
-            return media;
-        }
-
-        public String getDisplayName() {
-            return displayName;
-        }
     }
 
     /**
@@ -528,6 +1023,13 @@ public class CreateRulePanel extends javax.swing.JPanel {
         selectorCB = new javax.swing.JComboBox();
         jSeparator1 = new javax.swing.JSeparator();
         selectorTypeLabel = new javax.swing.JLabel();
+        jSeparator2 = new javax.swing.JSeparator();
+        jLabel5 = new javax.swing.JLabel();
+        jLabel6 = new javax.swing.JLabel();
+        elementPathLabel = new javax.swing.JLabel();
+        applyChangesCB = new javax.swing.JCheckBox();
+        jLabel8 = new javax.swing.JLabel();
+        elementCodeLabel = new javax.swing.JLabel();
 
         org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(CreateRulePanel.class, "CreateRulePanel.jLabel1.text")); // NOI18N
 
@@ -541,6 +1043,7 @@ public class CreateRulePanel extends javax.swing.JPanel {
         jSplitPane1.setLeftComponent(jScrollPane1);
 
         descriptionPane.setEditable(false);
+        descriptionPane.setText(org.openide.util.NbBundle.getMessage(CreateRulePanel.class, "CreateRulePanel.descriptionPane.text")); // NOI18N
         descriptionPane.setEnabled(false);
         jScrollPane2.setViewportView(descriptionPane);
 
@@ -551,6 +1054,7 @@ public class CreateRulePanel extends javax.swing.JPanel {
         org.openide.awt.Mnemonics.setLocalizedText(jLabel3, org.openide.util.NbBundle.getMessage(CreateRulePanel.class, "CreateRulePanel.jLabel3.text")); // NOI18N
 
         styleSheetCB.setModel(STYLESHEETS_MODEL);
+        styleSheetCB.setEnabled(false);
         styleSheetCB.setRenderer(createStylesheetsRenderer());
         styleSheetCB.addItemListener(new java.awt.event.ItemListener() {
             public void itemStateChanged(java.awt.event.ItemEvent evt) {
@@ -559,14 +1063,32 @@ public class CreateRulePanel extends javax.swing.JPanel {
         });
 
         atRuleCB.setModel(AT_RULES_MODEL);
+        atRuleCB.setEnabled(false);
         atRuleCB.setRenderer(createAtRulesRenderer());
 
         org.openide.awt.Mnemonics.setLocalizedText(jLabel4, org.openide.util.NbBundle.getMessage(CreateRulePanel.class, "CreateRulePanel.jLabel4.text")); // NOI18N
 
         selectorCB.setEditable(true);
         selectorCB.setModel(SELECTORS_MODEL);
+        selectorCB.setEnabled(false);
+        selectorCB.setRenderer(createSelectorsRenderer());
 
         org.openide.awt.Mnemonics.setLocalizedText(selectorTypeLabel, null);
+
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel5, org.openide.util.NbBundle.getMessage(CreateRulePanel.class, "CreateRulePanel.jLabel5.text")); // NOI18N
+
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel6, org.openide.util.NbBundle.getMessage(CreateRulePanel.class, "CreateRulePanel.jLabel6.text")); // NOI18N
+
+        elementPathLabel.setFont(new java.awt.Font("Monospaced", 0, 13)); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(elementPathLabel, org.openide.util.NbBundle.getMessage(CreateRulePanel.class, "CreateRulePanel.elementPathLabel.text")); // NOI18N
+
+        org.openide.awt.Mnemonics.setLocalizedText(applyChangesCB, org.openide.util.NbBundle.getMessage(CreateRulePanel.class, "CreateRulePanel.applyChangesCB.text")); // NOI18N
+        applyChangesCB.setEnabled(false);
+
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel8, org.openide.util.NbBundle.getMessage(CreateRulePanel.class, "CreateRulePanel.jLabel8.text")); // NOI18N
+
+        elementCodeLabel.setFont(new java.awt.Font("Monospaced", 0, 13)); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(elementCodeLabel, org.openide.util.NbBundle.getMessage(CreateRulePanel.class, "CreateRulePanel.elementCodeLabel.text")); // NOI18N
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
@@ -575,25 +1097,41 @@ public class CreateRulePanel extends javax.swing.JPanel {
             .add(layout.createSequentialGroup()
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(jSplitPane1)
                     .add(layout.createSequentialGroup()
                         .add(jLabel1)
-                        .add(0, 0, Short.MAX_VALUE))
-                    .add(layout.createSequentialGroup()
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(jLabel2)
-                            .add(jLabel3)
-                            .add(jLabel4))
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(styleSheetCB, 0, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .add(atRuleCB, 0, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .add(selectorCB, 0, 427, Short.MAX_VALUE)))
+                        .addContainerGap(462, Short.MAX_VALUE))
                     .add(layout.createSequentialGroup()
                         .add(selectorTypeLabel)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(jSeparator1)))
-                .addContainerGap())
+                        .add(jSeparator1)
+                        .add(6, 6, 6))
+                    .add(layout.createSequentialGroup()
+                        .add(jLabel8)
+                        .add(12, 12, 12)
+                        .add(jSeparator2)
+                        .add(6, 6, 6))
+                    .add(layout.createSequentialGroup()
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                            .add(jLabel4)
+                            .add(jLabel2)
+                            .add(jLabel3)
+                            .add(jLabel5)
+                            .add(jLabel6))
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                            .add(org.jdesktop.layout.GroupLayout.TRAILING, elementPathLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .add(org.jdesktop.layout.GroupLayout.TRAILING, elementCodeLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .add(org.jdesktop.layout.GroupLayout.TRAILING, atRuleCB, 0, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .add(org.jdesktop.layout.GroupLayout.TRAILING, styleSheetCB, 0, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .add(org.jdesktop.layout.GroupLayout.TRAILING, selectorCB, 0, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                        .addContainerGap())
+                    .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                            .add(org.jdesktop.layout.GroupLayout.TRAILING, jSplitPane1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)
+                            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
+                                .add(0, 0, Short.MAX_VALUE)
+                                .add(applyChangesCB)))
+                        .addContainerGap())))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -607,7 +1145,7 @@ public class CreateRulePanel extends javax.swing.JPanel {
                     .add(jSeparator1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 10, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                     .add(selectorTypeLabel))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.CENTER)
                     .add(jLabel4)
                     .add(selectorCB, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
@@ -618,7 +1156,21 @@ public class CreateRulePanel extends javax.swing.JPanel {
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(atRuleCB, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                     .add(jLabel3))
-                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
+                    .add(jSeparator2, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 10, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(jLabel8))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(jLabel5)
+                    .add(elementCodeLabel))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(jLabel6)
+                    .add(elementPathLabel))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(applyChangesCB)
+                .addContainerGap(16, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
 
@@ -628,21 +1180,411 @@ public class CreateRulePanel extends javax.swing.JPanel {
         updateCssModel(file);
         //update at rules model
         updateAtRulesModel();
+
+        //fixme:
+        atRuleCB.setEnabled(AT_RULES_MODEL.getSize() > 1);
     }//GEN-LAST:event_styleSheetCBItemStateChanged
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JCheckBox applyChangesCB;
     private javax.swing.JComboBox atRuleCB;
     private javax.swing.JTextPane descriptionPane;
+    private javax.swing.JLabel elementCodeLabel;
+    private javax.swing.JLabel elementPathLabel;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
+    private javax.swing.JLabel jLabel5;
+    private javax.swing.JLabel jLabel6;
+    private javax.swing.JLabel jLabel8;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JSeparator jSeparator1;
+    private javax.swing.JSeparator jSeparator2;
     private javax.swing.JSplitPane jSplitPane1;
     private javax.swing.JComboBox selectorCB;
     private javax.swing.JLabel selectorTypeLabel;
     private javax.swing.JList selectorTypeList;
     private javax.swing.JComboBox styleSheetCB;
     // End of variables declaration//GEN-END:variables
+
+    private static class SelectorItem implements Comparable<SelectorItem> {
+
+        public static final int CLASS_TYPE = 0;
+        public static final int ID_TYPE = 1;
+        public static final int ELEMENT_TYPE = 2;
+        public static final int COMPOUND_TYPE = 3;
+        private int type;
+        private String clz, id, element;
+        private FileObject existsIn;
+        private FileObject createNewIn;
+        private AtRuleItem createIn;
+
+        private static SelectorItem createClass(String name, FileObject existsIn) {
+            return new SelectorItem(CLASS_TYPE, name, null, null, existsIn);
+        }
+
+        private static SelectorItem createId(String name, FileObject existsIn) {
+            return new SelectorItem(ID_TYPE, null, name, null, existsIn);
+        }
+
+        private static SelectorItem createElement(String name) {
+            return new SelectorItem(ELEMENT_TYPE, null, null, name, null);
+        }
+
+        private static SelectorItem createCompound(String name) {
+            return new SelectorItem(COMPOUND_TYPE, null, null, name, null);
+        }
+
+        public SelectorItem(int type, String clz, String id, String element, FileObject existsIn) {
+            this.type = type;
+            this.clz = clz;
+            this.id = id;
+            this.element = element;
+            this.existsIn = existsIn;
+        }
+
+        public int getType() {
+            return type;
+        }
+
+        public void setCreateInAtRule(AtRuleItem mediaItem) {
+            this.createIn = mediaItem;
+        }
+
+        public AtRuleItem getCreateInAtRule() {
+            return createIn;
+        }
+
+        public String getCreateInAtRuleDisplayName() {
+            return getCreateInAtRule() != null ? getCreateInAtRule().getDisplayName() : null;
+        }
+
+        public void setCreateInFile(FileObject file) {
+            this.createNewIn = file;
+        }
+
+        public FileObject getCreateInFile() {
+            return createNewIn;
+        }
+
+        public FileObject getFile() {
+            return getCreateInFile() != null ? getCreateInFile() : getExistsInFile();
+        }
+
+        public String getCreateInFileDisplayName() {
+            return getCreateInFile() != null ? getCreateInFile().getNameExt() : null;
+        }
+
+        public FileObject getExistsInFile() {
+            return existsIn;
+        }
+
+        public String getFileDisplayName() {
+            return existsIn != null ? existsIn.getNameExt() : null;
+        }
+
+        public String getItemName() {
+            StringBuilder sb = new StringBuilder();
+            if (clz != null) {
+                sb.append(clz);
+            } else if (id != null) {
+                sb.append(id);
+            } else if (element != null) {
+                sb.append(element);
+            }
+            return sb.toString();
+        }
+
+        public String getItemFQName() {
+            StringBuilder sb = new StringBuilder();
+            if (clz != null) {
+                sb.append('.');
+                sb.append(clz);
+            } else if (id != null) {
+                sb.append('#');
+                sb.append(id);
+            } else if (element != null) {
+                sb.append(element);
+            }
+            return sb.toString();
+        }
+
+        @Override
+        public String toString() {
+            return getItemName();
+        }
+
+        public String getInfo() {
+            StringBuilder sb = new StringBuilder();
+            sb.append("type=");
+            sb.append(getType());
+            sb.append(", name=");
+            sb.append(getItemName());
+            sb.append(", existsIn=");
+            sb.append(getFileDisplayName());
+            sb.append(", createInFile=");
+            sb.append(getCreateInFileDisplayName());
+            sb.append(", createInAt-Rule=");
+            sb.append(getCreateInAtRuleDisplayName());
+            return sb.toString();
+
+        }
+
+        @Override
+        public int hashCode() {
+            int hash = 5;
+            hash = 13 * hash + this.type;
+            hash = 13 * hash + (this.clz != null ? this.clz.hashCode() : 0);
+            hash = 13 * hash + (this.id != null ? this.id.hashCode() : 0);
+            hash = 13 * hash + (this.element != null ? this.element.hashCode() : 0);
+            hash = 13 * hash + (this.existsIn != null ? this.existsIn.hashCode() : 0);
+            hash = 13 * hash + (this.createNewIn != null ? this.createNewIn.hashCode() : 0);
+            hash = 13 * hash + (this.createIn != null ? this.createIn.hashCode() : 0);
+            return hash;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (obj == null) {
+                return false;
+            }
+            if (getClass() != obj.getClass()) {
+                return false;
+            }
+            final SelectorItem other = (SelectorItem) obj;
+            if (this.type != other.type) {
+                return false;
+            }
+            if ((this.clz == null) ? (other.clz != null) : !this.clz.equals(other.clz)) {
+                return false;
+            }
+            if ((this.id == null) ? (other.id != null) : !this.id.equals(other.id)) {
+                return false;
+            }
+            if ((this.element == null) ? (other.element != null) : !this.element.equals(other.element)) {
+                return false;
+            }
+            if (this.existsIn != other.existsIn && (this.existsIn == null || !this.existsIn.equals(other.existsIn))) {
+                return false;
+            }
+            if (this.createNewIn != other.createNewIn && (this.createNewIn == null || !this.createNewIn.equals(other.createNewIn))) {
+                return false;
+            }
+            if (this.createIn != other.createIn && (this.createIn == null || !this.createIn.equals(other.createIn))) {
+                return false;
+            }
+            return true;
+        }
+
+        @Override
+        public int compareTo(SelectorItem o) {
+            return o == null ? +1 : getItemFQName().compareTo(o.getItemFQName());
+        }
+    }
+
+    private static class AtRuleItem {
+
+        private Media media;
+        private String displayName;
+
+        public AtRuleItem(String displayName, Media media) {
+            this.displayName = displayName;
+            this.media = media;
+        }
+
+        public Media getMedia() {
+            return media;
+        }
+
+        public String getDisplayName() {
+            return displayName;
+        }
+
+        @Override
+        public int hashCode() {
+            int hash = 7;
+            hash = 59 * hash + (this.media != null ? this.media.hashCode() : 0);
+            hash = 59 * hash + (this.displayName != null ? this.displayName.hashCode() : 0);
+            return hash;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (obj == null) {
+                return false;
+            }
+            if (getClass() != obj.getClass()) {
+                return false;
+            }
+            final AtRuleItem other = (AtRuleItem) obj;
+            if (this.media != other.media && (this.media == null || !this.media.equals(other.media))) {
+                return false;
+            }
+            if ((this.displayName == null) ? (other.displayName != null) : !this.displayName.equals(other.displayName)) {
+                return false;
+            }
+            return true;
+        }
+    }
+
+    private static class SelectorItemRenderer extends JPanel {
+
+        private JLabel west, east;
+        private Color bg, bgSelected, fg, fgSelected, inFile;
+        private Font plain, bold;
+        private boolean original;
+
+        public SelectorItemRenderer() {
+            west = new JLabel();
+            east = new JLabel();
+            setLayout(new BorderLayout());
+            add(west, BorderLayout.WEST);
+            add(east, BorderLayout.EAST);
+
+            fg = javax.swing.UIManager.getDefaults().getColor("ComboBox.foreground");
+            bg = javax.swing.UIManager.getDefaults().getColor("ComboBox.background");
+            fgSelected = javax.swing.UIManager.getDefaults().getColor("ComboBox.selectionForeground");
+            bgSelected = javax.swing.UIManager.getDefaults().getColor("ComboBox.selectionBackground");
+            inFile = Color.gray;
+
+            plain = west.getFont();
+            bold = plain.deriveFont(Font.BOLD);
+        }
+
+        public void setItem(SelectorItem item, boolean isSelected, boolean originalElement) {
+            if (original != originalElement) {
+                //font change
+                west.setFont(originalElement ? bold : plain);
+                original = originalElement;
+            }
+
+            west.setText(item.getItemName());
+            east.setText(item.getFileDisplayName());
+
+            if (isSelected) {
+                west.setForeground(fgSelected);
+                east.setForeground(fgSelected);
+                setBackground(bgSelected);
+            } else {
+                west.setForeground(fg);
+                east.setForeground(inFile);
+                setBackground(bg);
+
+            }
+        }
+    }
+
+    //copied and modified platform's DefaultComboBoxModel
+    public class ExtDefaultComboBoxModel extends AbstractListModel implements MutableComboBoxModel, Serializable {
+
+        private List objects;
+        private Object selectedObject;
+
+        /**
+         * Constructs an empty DefaultComboBoxModel object.
+         */
+        public ExtDefaultComboBoxModel() {
+            objects = new ArrayList();
+        }
+
+        public void setItems(Collection items) {
+            int oldLen = objects.size();
+            objects.clear();
+            objects.addAll(items);
+            fireIntervalRemoved(this, 0, oldLen);
+            fireIntervalAdded(this, 0, objects.size());
+        }
+
+        // implements javax.swing.ComboBoxModel
+        /**
+         * Set the value of the selected item. The selected item may be null.
+         * <p>
+         *
+         * @param anObject The combo box value or null for no selection.
+         */
+        @Override
+        public void setSelectedItem(Object anObject) {
+            if ((selectedObject != null && !selectedObject.equals(anObject))
+                    || selectedObject == null && anObject != null) {
+                selectedObject = anObject;
+                fireContentsChanged(this, -1, -1);
+            }
+        }
+
+        // implements javax.swing.ComboBoxModel
+        @Override
+        public Object getSelectedItem() {
+            return selectedObject;
+        }
+
+        // implements javax.swing.ListModel
+        @Override
+        public int getSize() {
+            return objects.size();
+        }
+
+        // implements javax.swing.ListModel
+        @Override
+        public Object getElementAt(int index) {
+            if (index >= 0 && index < objects.size()) {
+                return objects.get(index);
+            } else {
+                return null;
+            }
+        }
+
+        /**
+         * Returns the index-position of the specified object in the list.
+         *
+         * @param anObject
+         * @return an int representing the index position, where 0 is the first
+         * position
+         */
+        public int getIndexOf(Object anObject) {
+            return objects.indexOf(anObject);
+        }
+
+        // implements javax.swing.MutableComboBoxModel
+        @Override
+        public void addElement(Object anObject) {
+            objects.add(anObject);
+            fireIntervalAdded(this, objects.size() - 1, objects.size() - 1);
+            if (objects.size() == 1 && selectedObject == null && anObject != null) {
+                setSelectedItem(anObject);
+            }
+        }
+
+        // implements javax.swing.MutableComboBoxModel
+        @Override
+        public void insertElementAt(Object anObject, int index) {
+            objects.add(index, anObject);
+            fireIntervalAdded(this, index, index);
+        }
+
+        // implements javax.swing.MutableComboBoxModel
+        @Override
+        public void removeElementAt(int index) {
+            if (getElementAt(index) == selectedObject) {
+                if (index == 0) {
+                    setSelectedItem(getSize() == 1 ? null : getElementAt(index + 1));
+                } else {
+                    setSelectedItem(getElementAt(index - 1));
+                }
+            }
+
+            objects.remove(index);
+
+            fireIntervalRemoved(this, index, index);
+        }
+
+        // implements javax.swing.MutableComboBoxModel
+        @Override
+        public void removeElement(Object anObject) {
+            int index = objects.indexOf(anObject);
+            if (index != -1) {
+                removeElementAt(index);
+            }
+        }
+    }
 }

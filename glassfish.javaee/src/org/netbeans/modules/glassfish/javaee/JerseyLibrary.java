@@ -41,14 +41,21 @@
  */
 package org.netbeans.modules.glassfish.javaee;
 
+import java.io.IOException;
 import java.net.URL;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import java.util.regex.Pattern;
 import org.glassfish.tools.ide.data.GlassFishLibrary;
 import org.glassfish.tools.ide.data.GlassFishVersion;
 import org.glassfish.tools.ide.server.config.LibraryBuilder;
 import org.glassfish.tools.ide.server.config.LibraryConfig;
+import org.netbeans.api.project.libraries.Library;
+import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.modules.glassfish.spi.GlassfishModule;
-import org.netbeans.spi.project.libraries.LibraryImplementation;
 
 /**
  * GlassFish bundled Jersey library provider.
@@ -59,11 +66,19 @@ import org.netbeans.spi.project.libraries.LibraryImplementation;
  * <p/>
  * @author Tomas Kraus, Peter Benedikovic
  */
-public class JerseyLibrary {
+public class JerseyLibrary /*implements JaxRsStackSupportImplementation*/ {
 
     ////////////////////////////////////////////////////////////////////////////
     // Class attributes                                                       //
     ////////////////////////////////////////////////////////////////////////////
+
+    /** Jersey library provider type. */
+    private static final String JERSEY_PROVIDER_TYPE = "j2se";
+
+    /** Jersey library name suffix to be added after server instance name.
+     *  Jersey library name must be unique so combination of instance name
+     *  and some common suffix is used. */
+    private static final String JERSEY_NAME_SUFFIX = " Jersey";
 
     /** Library builder default configuration file. */
     private static final URL LIBRARY_BUILDER_CONFIG_DEFAULT
@@ -78,6 +93,10 @@ public class JerseyLibrary {
     private static final LibraryConfig libraryConfig = new LibraryConfig(
             LIBRARY_BUILDER_CONFIG_DEFAULT, LIBRARY_BUILDER_CONFIG_V2);
 
+    /** Jersey library name pattern to search for it in
+     *  <code>GlassFishLibrary</code> list. */
+    private Pattern JERSEY_PATTERN = Pattern.compile(".*[jJ]ersey.*");
+
     ////////////////////////////////////////////////////////////////////////////
     // Instance attributes                                                    //
     ////////////////////////////////////////////////////////////////////////////
@@ -87,11 +106,17 @@ public class JerseyLibrary {
       * internally. */
     private volatile LibraryBuilder builder;
 
-    /** GlassFish server deployment manager. */
-    private Hk2DeploymentManager dm;
-
     /** GlassFish server home directory. */
-    private String serverHome;
+    private final String serverHome;
+
+    /** GlassFish server name. */
+    private final String serverName;
+
+    /** Jersey library name associated with current GlassFish server context.
+     *  This is lazy initialized internal cache. Do not access this attribute
+     *  outside {@see #getName()} method! */
+    private volatile String jerseyName = null;
+
     ////////////////////////////////////////////////////////////////////////////
     // Constructors                                                           //
     ////////////////////////////////////////////////////////////////////////////
@@ -101,35 +126,89 @@ public class JerseyLibrary {
      * <p/>
      * @param url GlassFish server URL.
      */
-    private JerseyLibrary(Hk2DeploymentManager dm) {
+    JerseyLibrary(Hk2DeploymentManager dm) {
         if (dm == null) {
             throw new IllegalArgumentException(
                     "GlassFish server deployment manager shall not be null.");
         }
-        this.dm = dm;
-        this.serverHome = dm.getCommonServerSupport().getInstanceProperties()
+        serverHome = dm.getCommonServerSupport().getInstanceProperties()
                 .get(GlassfishModule.GLASSFISH_FOLDER_ATTR);
+        serverName = dm.getCommonServerSupport().getInstanceProperties()
+                .get(GlassfishModule.DISPLAY_NAME_ATTR);
     }
-    
+
     ////////////////////////////////////////////////////////////////////////////
     // Methods                                                                //
     ////////////////////////////////////////////////////////////////////////////
 
     /**
+     * Get Jersey library name for this server context.
+     * <p/>
+     * This library name shall be registered in default {@see LibraryManager}
+     * and is unique for Jersey modules of given GlassFish server instance.
+     * Library name is cached after first usage.
+     * <p/>
+     * @return Jersey library name for this server context.
+     */
+    public String getName() {
+        if (jerseyName != null) {
+            return jerseyName;
+        }
+        synchronized (this) {
+            StringBuilder sb = new StringBuilder(
+                    serverName.length() + JERSEY_NAME_SUFFIX.length());
+            sb.append(serverName);
+            sb.append(JERSEY_NAME_SUFFIX);
+            jerseyName = sb.toString();
+        }
+        return jerseyName;
+    }
+
+    /**
      * Return Jersey libraries available in GlassFish v3.
      */
-    public LibraryImplementation getLibrary() {
+    public Library getLibrary() {
+        Library lib = LibraryManager.getDefault().getLibrary(getName());
+        if (lib != null) {
+            return lib;
+        }
         LibraryBuilder lb = getBuilder();
-        List<GlassFishLibrary> libs = lb.getLibraries(GlassFishVersion.GF_3);
-//        TODO: Create LibraryImplementation3 instance
-//        LibraryImplementation lis = CommonProjectUtils
-//                = LibrariesSupport.createLibraryImplementation(type, volumeIds);
-//        return lis;
+        List<GlassFishLibrary> gfLibs = lb.getLibraries(GlassFishVersion.GF_3);
+        for (GlassFishLibrary gfLib : gfLibs) {
+            if (JERSEY_PATTERN.matcher(gfLib.getLibraryID()).matches()) {
+                Map<String,List<URL>> contents
+                        = new HashMap<String, List<URL>>(1);
+                Map<String, String> properties = new HashMap<String, String>(2);
+                contents.put("classpath", gfLib.getClasspath());
+                contents.put("javadoc", gfLib.getJavadocs());
+                properties.put("maven-dependencies", gfLib.getMavenDeps());
+                properties.put("maven-repositories", "default");
+                try {
+                    return LibraryManager.getDefault().createLibrary(
+                            JERSEY_PROVIDER_TYPE,
+                            getName(),
+                            null,
+                            null,
+                            contents,
+                            properties);
+                } catch (IOException ioe) {
+                    Logger.getLogger("glassfish-javaee").log(Level.WARNING,
+                            "Could not create Jersey library for "
+                            + serverName + ": ", ioe);
+                }
+            }
+        }
         return null;
     }
 
     /**
-     * Initialize library builder on demand.
+     * Get library builder.
+     * <p/>
+     * Library builder instance is initialized in first request and cached for
+     * subsequent usage. Library builder is thread safe so it should be used
+     * without additional locking.
+     * <p/>
+     * @return Library builder.
      */
     private LibraryBuilder getBuilder() {
         if (builder != null) {
@@ -143,10 +222,5 @@ public class JerseyLibrary {
         }
         return builder;
     }
-
-    /**
-     * Get Jersey library
-     */
-
 
 }

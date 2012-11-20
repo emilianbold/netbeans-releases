@@ -75,8 +75,6 @@ public class CallstackFrameNode extends AbstractNode {
         setDisplayName(displayName != null
                        ? displayName
                        : frameInfo);                            //NOI18N
-        setIconBaseWithExtension(
-                "org/netbeans/modules/gsf/testrunner/resources/empty.gif");     //NOI18N
 
         this.frameInfo = frameInfo;
     }
