@@ -325,6 +325,7 @@ public class CssStylesPanel extends javax.swing.JPanel {
 
         setLayout(new java.awt.BorderLayout());
 
+        splitPane.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         splitPane.setDividerSize(4);
         splitPane.setOrientation(javax.swing.JSplitPane.VERTICAL_SPLIT);
 
