@@ -51,6 +51,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.Semaphore;
 import java.util.logging.Level;
+import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.extexecution.print.ConvertedLine;
@@ -75,7 +76,9 @@ import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.text.Line;
 import org.openide.util.Exceptions;
+import org.openide.util.NbBundle;
 import org.openide.util.NbBundle.Messages;
+import org.openide.util.Parameters;
 import org.openide.util.RequestProcessor;
 import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
@@ -92,6 +95,7 @@ public class JSTestDriverSupport {
 
     private static JSTestDriverSupport def;
     private static final Logger LOGGER = Logger.getLogger(JSTestDriverSupport.class.getName());
+    private static final Logger USG_LOGGER = Logger.getLogger("org.netbeans.ui.metrics.jstestdriver"); // NOI18N
     private RequestProcessor RP = new RequestProcessor("js-test-driver server", 5);
     private AbstractLookup projectContext;
     private InstanceContent lookupContent;
@@ -204,6 +208,7 @@ public class JSTestDriverSupport {
                                     }
                                     starting = false;
                                     TestDriverServiceNode.getInstance().refresh();
+                                    logUsage(JSTestDriverSupport.class, "USG_JSTESTDRIVER_STARTED", null); // NOI18N
                                 }
                             });
                         }
@@ -524,6 +529,19 @@ public class JSTestDriverSupport {
             manager.displayReport(testSession, report, true);
         }
         
+    }
+
+    public static void logUsage(Class srcClass, String message, Object[] params) {
+        Parameters.notNull("message", message); // NOI18N
+
+        LogRecord logRecord = new LogRecord(Level.INFO, message);
+        logRecord.setLoggerName(USG_LOGGER.getName());
+        logRecord.setResourceBundle(NbBundle.getBundle(srcClass));
+        logRecord.setResourceBundleName(srcClass.getPackage().getName() + ".Bundle"); // NOI18N
+        if (params != null) {
+            logRecord.setParameters(params);
+        }
+        USG_LOGGER.log(logRecord);
     }
 
 }
