@@ -129,8 +129,9 @@ public class JsTypedBreakInterceptor implements TypedBreakInterceptor {
             // look like the end we're after, so insert a matching end.
             StringBuilder sb = new StringBuilder();
             int carretOffset = 0;
+            int curlyOffset = getUnbalancedCurlyOffset(doc, offset);
             if (offset > afterLastNonWhite) {
-                int curlyOffset = getUnbalancedCurlyOffset(doc, offset);
+                
                 sb.append("\n"); // XXX On Windows, do \r\n?
                 sb.append(IndentUtils.createIndentString(doc, indent + IndentUtils.indentLevelSize(doc)));
                 carretOffset = sb.length();
@@ -142,21 +143,34 @@ public class JsTypedBreakInterceptor implements TypedBreakInterceptor {
                 }
                 sb.append("}"); // NOI18N
             } else {
-                // I'm inserting a newline in the middle of a sentence, such as the scenario in #118656
-                // I should insert the end AFTER the text on the line
-                String restOfLine = doc.getText(offset, Utilities.getRowEnd(doc, afterLastNonWhite)-offset);
-                sb.append("\n"); // XXX On Windows, do \r\n?
-                sb.append(IndentUtils.createIndentString(doc, indent + IndentUtils.indentLevelSize(doc)));
-                // right brace must be included into the correct context - issue #219683
-                carretOffset = sb.length();
-                sb.append("\n}"); // NOI18N
-                sb.append(restOfLine.trim());
-                // FIXME can we avoid this ?
-                doc.remove(offset, restOfLine.length());
+                boolean insert[] = {true};
+                int end = getRowOrBlockEnd(doc, offset, insert);
+                if (insert[0]) {
+                    // I'm inserting a newline in the middle of a sentence, such as the scenario in #118656
+                    // I should insert the end AFTER the text on the line
+                    String restOfLine = doc.getText(offset,
+                            Math.min(end, Utilities.getRowEnd(doc, afterLastNonWhite)) - offset);
+                    sb.append("\n"); // XXX On Windows, do \r\n?
+                    sb.append(IndentUtils.createIndentString(doc, indent + IndentUtils.indentLevelSize(doc)));
+                    // right brace must be included into the correct context - issue #219683
+                    carretOffset = sb.length();
+
+                    sb.append(restOfLine); // NOI18N
+                    sb.append("\n"); // NOI18N
+                    if (curlyOffset >= 0) {
+                        sb.append(IndentUtils.createIndentString(doc, GsfUtilities.getLineIndent(doc, curlyOffset)));
+                    } else {
+                        sb.append(IndentUtils.createIndentString(doc, indent));
+                    }
+                    sb.append("}"); // NOI18N
+                    doc.remove(offset, restOfLine.length());
+                }
                 
             }
 
-            context.setText(sb.toString(), 0, carretOffset);
+            if (sb.length() > 0) {
+                context.setText(sb.toString(), 0, carretOffset);
+            }
             return;
         }
 
@@ -507,11 +521,8 @@ public class JsTypedBreakInterceptor implements TypedBreakInterceptor {
      *  or false if not.
      */
     static boolean isAddRightBrace(BaseDocument doc, int caretOffset) throws BadLocationException {
-//        if (tokenBalance(doc, JavaTokenId.LBRACE) <= 0) {
-//            return false;
-//        }
         if (LexUtilities.getTokenBalance(doc,
-                JsTokenId.BRACKET_LEFT_CURLY, JsTokenId.BRACKET_RIGHT_CURLY, 0) <= 0) {
+                JsTokenId.BRACKET_LEFT_CURLY, JsTokenId.BRACKET_RIGHT_CURLY, caretOffset) <= 0) {
             return false;
         }
         int caretRowStartOffset = org.netbeans.editor.Utilities.getRowStart(doc, caretOffset);
@@ -544,6 +555,72 @@ public class JsTypedBreakInterceptor implements TypedBreakInterceptor {
         return false;
     }
 
+    /**
+     * From Java.
+     * 
+     * Returns position of the first unpaired closing paren/brace/bracket from the caretOffset
+     * till the end of caret row. If there is no such element, position after the last non-white
+     * character on the caret row is returned.
+     */
+    static int getRowOrBlockEnd(BaseDocument doc, int caretOffset, boolean[] insert) throws BadLocationException {
+        int rowEnd = org.netbeans.editor.Utilities.getRowLastNonWhite(doc, caretOffset);
+        if (rowEnd == -1 || caretOffset >= rowEnd) {
+            return caretOffset;
+        }
+        rowEnd += 1;
+        int parenBalance = 0;
+        int braceBalance = 0;
+        int bracketBalance = 0;
+        TokenSequence<? extends JsTokenId> ts = LexUtilities.getJsPositionedSequence(doc, caretOffset);
+        if (ts == null) {
+            return caretOffset;
+        }
+        while (ts.offset() < rowEnd) {
+            JsTokenId id = ts.token().id();
+            switch (id) {
+                case OPERATOR_SEMICOLON:
+                    return ts.offset() + 1;
+                case OPERATOR_COMMA:
+                    return ts.offset();
+                case BRACKET_LEFT_PAREN:
+                    parenBalance++;
+                    break;
+                case BRACKET_RIGHT_PAREN:
+                    if (parenBalance-- == 0) {
+                        return ts.offset();
+                    }
+                    break;
+                case BRACKET_LEFT_CURLY:
+                    braceBalance++;
+                    break;
+                case BRACKET_RIGHT_CURLY:
+                    if (braceBalance-- == 0) {
+                        return ts.offset();
+                    }
+                    break;
+                case BRACKET_LEFT_BRACKET:
+                    bracketBalance++;
+                    break;
+                case BRACKET_RIGHT_BRACKET:
+                    if (bracketBalance-- == 0) {
+                        return ts.offset();
+                    }
+                    break;
+            }
+            if (!ts.moveNext()) {
+                // this might happen in embedded case - line is not at the end
+                // but there are no more tokens - for example <script>function foo() {</script>
+                if ((caretOffset - ts.offset()) == 1
+                        && (bracketBalance == 1 || parenBalance == 1 || braceBalance == 1)) {
+                    return caretOffset;
+                }
+                break;
+            }
+        }
+
+        insert[0] = false;
+        return rowEnd;
+    }
     private static int getUnbalancedCurlyOffset(BaseDocument doc, int offset) throws BadLocationException {
         TokenSequence<? extends JsTokenId> ts = LexUtilities.getJsPositionedSequence(doc, offset);
         if (ts == null) {
