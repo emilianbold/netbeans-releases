@@ -215,7 +215,7 @@ public class HtmlIndex {
                 try {
                     urls.add(new URL(p));
                 } catch (MalformedURLException ex) {
-                    Exceptions.printStackTrace(ex);
+                    // #219118 - ignore invalid URLs silently
                 }
             }
         }

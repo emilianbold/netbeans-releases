@@ -155,4 +155,9 @@ public class PHPFormatterHtmlTest extends PHPFormatterTestBase {
         HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
         reformatFileContents("testfiles/formatting/html/issue179184_02.php", options);
     }
+
+    public void testIssue176223() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
+        reformatFileContents("testfiles/formatting/html/issue176223.php", options);
+    }
 }

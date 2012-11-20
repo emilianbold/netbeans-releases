@@ -41,10 +41,8 @@
  */
 package org.netbeans.modules.j2ee.persistence.unit;
 
-import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import javax.swing.ComboBoxEditor;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JComboBox;
 import javax.swing.JTextField;
@@ -107,8 +105,9 @@ public class PropertyPanel extends javax.swing.JPanel implements ActionListener 
             
             if (propValue != null) {
                 valueComboBox.setSelectedItem(propValue);
-            } else
+            } else {
                 valueComboBox.setSelectedIndex(0);
+            }
         }
 
         this.revalidate();
@@ -196,41 +195,4 @@ public class PropertyPanel extends javax.swing.JPanel implements ActionListener 
     private javax.swing.JPanel valuePanel;
     // End of variables declaration//GEN-END:variables
 
-private class ValueComboBoxEditor implements ComboBoxEditor {
-        JTextField textField = null;
-        
-        ValueComboBoxEditor( JTextField textField ) {
-            this.textField = textField;
-        }
-
-        @Override
-        public Component getEditorComponent() {
-            return this.textField;
-        }
-
-        @Override
-        public void setItem(Object anObject) {
-            this.textField.setText( (String)anObject );
-        }
-
-        @Override
-        public Object getItem() {
-            return this.textField.getText().trim();
-        }
-
-        @Override
-        public void selectAll() {
-            this.textField.selectAll();
-        }
-
-        @Override
-        public void addActionListener(ActionListener l) {
-            this.textField.addActionListener(l);
-        }
-
-        @Override
-        public void removeActionListener(ActionListener l) {
-            this.textField.removeActionListener(l);
-        }
-    }
 }

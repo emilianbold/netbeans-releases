@@ -416,8 +416,8 @@ public class HtmlElementNode extends AbstractNode {
         } else {
             
             actions.add(openAction);
-            actions.add(null);
-            actions.add(editRulesAction);
+//            actions.add(null);
+//            actions.add(editRulesAction);
             actions.add(null);
             actions.addAll(Arrays.asList(ui.getActions()));
         }

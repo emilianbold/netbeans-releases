@@ -81,6 +81,12 @@ class SlownessReporter {
     private static final String UI_ACTION_KEY_PRESS = "UI_ACTION_KEY_PRESS";    //NOI18N
     private static final String DELEGATE_PATTERN = "delegate=.*@";         // NOI18N
     static final long LATEST_ACTION_LIMIT = 1000;//ms
+    private static final int PRIORITY;
+    static {
+        int defPrio = 20000;
+        assert (defPrio = 10000) > 0;
+        PRIORITY = Integer.getInteger("org.netbeans.modules.uihandler.SlownessReporter.priority", defPrio);
+    } // NOI18N
     private static final int CLEAR = Integer.getInteger("org.netbeans.modules.uihandler.SlownessReporter.clear", 60000); // NOI18N
     private static final RequestProcessor IO_RP = new RequestProcessor(SlownessReporter.class);
     
@@ -167,9 +173,8 @@ class SlownessReporter {
 
         NotifySnapshot(SlownessData data) {
             this.data = data;
-            NotificationDisplayer.Priority priority = Priority.SILENT;
-            // in dev builds use higher priority
-            assert (priority = Priority.LOW) != null;
+            NotificationDisplayer.Priority priority = data.getTime() > PRIORITY ?
+                Priority.LOW : Priority.SILENT;
             String message = NbBundle.getMessage(NotifySnapshot.class, data.getSlownessType());
             note = NotificationDisplayer.getDefault().notify(
                     message,

@@ -39,33 +39,56 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.css.visual;
+
+import org.netbeans.modules.html.editor.lib.api.elements.OpenTag;
+import org.netbeans.modules.html.editor.lib.api.elements.TreePath;
+import org.netbeans.modules.parsing.api.Snapshot;
+import org.openide.filesystems.FileObject;
 
 /**
- * Window too small warning.
+ *
+ * @author marekfukala
  */
-var NetBeans_WindowTooSmallWarning = {};
+public class HtmlSourceElementHandle {
 
-NetBeans_WindowTooSmallWarning._okButton = null;
+    private final OpenTag openTag;
+    private final Snapshot snapshot;
+    private final FileObject file;
 
-NetBeans_WindowTooSmallWarning.init = function() {
-    if (NetBeans_WindowTooSmallWarning._okButton != null) {
-        return;
+    public HtmlSourceElementHandle(OpenTag openTag, Snapshot snapshot, FileObject file) {
+        this.openTag = openTag;
+        this.snapshot = snapshot;
+        this.file = file;
     }
-    NetBeans_WindowTooSmallWarning._okButton = document.getElementById('okButton');
-    this._registerEvents();
-};
-// register events
-NetBeans_WindowTooSmallWarning._registerEvents = function() {
-    var that = this;
-    this._okButton.addEventListener('click', function() {
-        that._close();
-    }, false);
-};
-NetBeans_WindowTooSmallWarning._close = function() {
-    window.close();
-};
 
-// run!
-window.addEventListener('load', function() {
-    NetBeans_WindowTooSmallWarning.init();
-}, false);
+    public OpenTag getOpenTag() {
+        return openTag;
+    }
+
+    public Snapshot getSnapshot() {
+        return snapshot;
+    }
+
+    public FileObject getFile() {
+        return file;
+    }
+
+    public boolean isResolved() {
+        return openTag != null;
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        sb.append(HtmlSourceElementHandle.class.getSimpleName());
+        sb.append('(');
+        sb.append("file=");
+        sb.append(getFile().getPath());
+        sb.append(", element=");
+        sb.append(new TreePath(getOpenTag()).toString());
+        sb.append(')');
+        return sb.toString();
+    }
+    
+}
