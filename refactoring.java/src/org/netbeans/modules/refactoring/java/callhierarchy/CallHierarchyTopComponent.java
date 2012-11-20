@@ -459,6 +459,7 @@ private void jMenuItemScopeActionPerformed(java.awt.event.ActionEvent evt) {//GE
     }
     
     void setRunningState(boolean isRunning) {
+        makeBusy(isRunning);
         jBtnCancel.setEnabled(isRunning);
     }
 
