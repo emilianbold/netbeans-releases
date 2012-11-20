@@ -51,6 +51,7 @@ import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.modules.parsing.impl.indexing.IndexFactoryImpl;
 import org.netbeans.modules.parsing.impl.indexing.Util;
 import org.netbeans.modules.parsing.lucene.support.DocumentIndex;
+import org.netbeans.modules.parsing.lucene.support.DocumentIndexCache;
 import org.netbeans.modules.parsing.lucene.support.IndexDocument;
 import org.netbeans.modules.parsing.lucene.support.IndexManager;
 import org.netbeans.modules.parsing.spi.indexing.Context;
@@ -93,6 +94,17 @@ public final class LuceneIndexFactory implements IndexFactoryImpl {
             throw new IOException("No index base folder."); //NOI18N
         }
         return getIndexImpl(indexBaseFolder, DocumentBasedIndexManager.Mode.CREATE);
+    }
+
+    @Override
+    @CheckForNull
+    public DocumentIndexCache getCache (@NonNull final Context ctx) throws IOException {
+        Parameters.notNull("ctx", ctx); //NOI18N
+        final FileObject indexBaseFolder = ctx.getIndexFolder();
+        if (indexBaseFolder == null) {
+            throw new IOException("No index base folder."); //NOI18N
+        }
+        return DocumentBasedIndexManager.getDefault().getCache(getIndexFolder(indexBaseFolder));
     }
 
     @Override

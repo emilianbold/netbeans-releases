@@ -170,6 +170,7 @@ public class NbMainSequence extends WizardSequence {
             File tmpCacheDir = new File(tmpUserDir, "var" + File.separator + "cache"); // NOI18N
             
             List<String> commandsBase = new ArrayList(Arrays.asList(runIDE,
+                    SystemUtils.isWindows() ? "--fork-java" : "",
                     "-J-Dnetbeans.close=true",
                     "--nosplash",
                     "-J-Dorg.netbeans.core.WindowSystem.show=false",

@@ -106,6 +106,7 @@ public final class FtpConfigurationPanel extends JPanel implements RemoteConfigu
         return this;
     }
 
+    @NbBundle.Messages("FtpConfigurationPanel.warning.proxy=Configured HTTP proxy will be used only for Pure FTP.")
     @Override
     public boolean isValidConfiguration() {
         String err = RemoteValidator.validateHost(hostTextField.getText());
@@ -138,6 +139,12 @@ public final class FtpConfigurationPanel extends JPanel implements RemoteConfigu
         if (err != null) {
             setError(err);
             return false;
+        }
+
+        // #195879
+        if (RemoteUtils.hasHttpProxy()) {
+            setWarning(Bundle.FtpConfigurationPanel_warning_proxy());
+            return true;
         }
 
         // ok

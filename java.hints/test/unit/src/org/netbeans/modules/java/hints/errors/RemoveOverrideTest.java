@@ -39,13 +39,54 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.java.hints.errors;
 
-window.addEventListener('load', function() {
-    I18n.pageTitle();
-    // texts
-    I18n.element('title');
-    I18n.element('info');
-    I18n.element('rerun');
-    I18n.element('chromeIssue');
-    I18n.element('okButton');
-}, false);
+import com.sun.source.util.TreePath;
+import java.util.List;
+import java.util.Set;
+import org.netbeans.api.java.source.CompilationInfo;
+import org.netbeans.modules.java.hints.infrastructure.ErrorHintsTestBase;
+import org.netbeans.spi.editor.hints.Fix;
+
+/**
+ *
+ * @author lahvac
+ */
+public class RemoveOverrideTest extends ErrorHintsTestBase {
+    
+    public RemoveOverrideTest(String name) {
+        super(name);
+    }
+    
+    public void testRemoveOverride() throws Exception {
+        performFixTest("test/Test.java",
+                       "package test;\n" +
+                       "public class Test {\n" +
+                       "    @Override public void test() {\n" +
+                       "    }\n" +
+                       "}\n",
+                       -1,
+                       Bundle.FIX_RemoveOverride(),
+                       ("package test;\n" +
+                       "public class Test {\n" +
+                       "    public void test() {\n" +
+                       "    }\n" +
+                       "}\n").replaceAll("[ \t\n]+", " "));
+    }
+
+    @Override
+    protected List<Fix> computeFixes(CompilationInfo info, int pos, TreePath path) throws Exception {
+        return new RemoveOverride().run(info, null, pos, path, null);
+    }
+
+    @Override
+    protected String toDebugString(CompilationInfo info, Fix f) {
+        return f.getText();
+    }
+
+    @Override
+    protected Set<String> getSupportedErrorKeys() {
+        return new RemoveOverride().getCodes();
+    }
+
+}

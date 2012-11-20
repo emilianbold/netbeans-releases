@@ -135,14 +135,6 @@
                     </run-dependency>
                 </dependency>
                 <dependency>
-                    <code-name-base>org.netbeans.modules.web.client.samples</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
-                    <run-dependency>
-                        <specification-version>1.0</specification-version>
-                    </run-dependency>
-                </dependency>
-                <dependency>
                     <code-name-base>org.netbeans.modules.web.clientproject.api</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
@@ -280,7 +272,12 @@
                     </run-dependency>
                 </dependency>
             </module-dependencies>
-            <public-packages/>
+            <friend-packages>
+                <friend>org.netbeans.modules.web.client.samples</friend>
+                <package>org.netbeans.modules.web.clientproject</package>
+                <package>org.netbeans.modules.web.clientproject.sites</package>
+                <package>org.netbeans.modules.web.clientproject.util</package>
+            </friend-packages>
         </data>
     </configuration>
 </project>

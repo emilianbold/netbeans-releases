@@ -40,11 +40,67 @@
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
 
-window.addEventListener('load', function() {
-    I18n.pageTitle();
-    // texts
-    I18n.element('title');
-    I18n.element('info');
-    I18n.element('okButton');
-}, false);
+* {
+    margin: 0px;
+    padding: 0px;
+}
 
+body {
+    font-family: Arial, Tahoma, Helvetica;
+    font-size: 10pt;
+    font-weight: normal;
+    color: #303942;
+    background-color: #fff;
+}
+
+h1 {
+    font-size: 13pt;
+    font-weight: bold;
+    color: #37414a;
+    margin-bottom: 30px;
+}
+
+div.topLevel {
+    display: none;
+    margin: 40px 76px 61px 76px;
+}
+
+.perex {
+    font-weight: bold;
+    color: #000;
+    margin-bottom: 20px;
+}
+
+.body {
+    color: #37414a;
+    margin-bottom: 20px;
+}
+
+#mainIco {
+    position: absolute;
+    left: 13px;
+    top: 13px;
+}
+
+#doNotShowAgain {
+    position: absolute;
+    height: 13px;
+    left: 13px;
+    bottom: 13px;
+    font-size: 9pt;
+}
+#doNotShowAgain input {
+    position: absolute;
+    top: 1px;
+}
+#doNotShowAgain label {
+    margin-left: 22px;
+}
+
+#okButton {
+    position: absolute;
+    bottom: 13px;
+    right: 13px;
+    min-width: 45px;
+    height: 27px;
+}

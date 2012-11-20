@@ -507,6 +507,7 @@ made subject to such option by the copyright holder.
                 <friend>org.netbeans.modules.web.el</friend>
                 <friend>org.netbeans.modules.web.jsf</friend>
                 <friend>org.netbeans.modules.web.jsf.editor</friend>
+                <friend>org.netbeans.modules.css.visual</friend>
                 <package>org.netbeans.modules.html.editor.api</package>
                 <package>org.netbeans.modules.html.editor.api.actions</package>
                 <package>org.netbeans.modules.html.editor.api.completion</package>
