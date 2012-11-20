@@ -379,9 +379,9 @@ public class RefactoringPanel extends JPanel implements FiltersManagerImpl.Filte
         toolbar.add(stopButton);
         toolbar.add(prevMatch);
         toolbar.add(nextMatch);
+        toolbar.add(expandButton);
         toolbar.add(logicalViewButton);
         toolbar.add(physicalViewButton);
-        toolbar.add(expandButton);
         if (ui instanceof RefactoringCustomUI) {
             toolbar.add(customViewButton);
         }
