@@ -109,6 +109,11 @@ public class StaticImportTest extends TreeRuleTestBase {
         String test = "package test; public class Test extends Foo { class FooBar { FooBar() { Foo.<String>foo|(); } } } class Foo { static protected void foo() { } }";
         performAnalysisTest(test);
     }
+    
+    public void test222375() throws Exception {
+        String test = "package test; public class Test { { Foo.foo|(); } } class Foo { private static void foo() { } }";
+        performAnalysisTest(test);
+    }
 
     // test is single line source code for test.Test, | in the member select, space before
     // golden is the output to test against

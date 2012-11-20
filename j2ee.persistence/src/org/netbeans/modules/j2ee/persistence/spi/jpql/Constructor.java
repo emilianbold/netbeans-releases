@@ -108,8 +108,9 @@ public class Constructor implements IConstructor{
         TypeMirror aType =  tMirror;
         ITypeDeclaration[] generics = null;
         if(tMirror.getKind() == TypeKind.ARRAY){
-            for(;aType.getKind() == TypeKind.ARRAY; aType =  ((ArrayType)tMirror).getComponentType())
-            dimension++;
+            for(;aType.getKind() == TypeKind.ARRAY; aType =  ((ArrayType)tMirror).getComponentType()) {
+                dimension++;
+            }
         }
         if(aType.getKind() == TypeKind.DECLARED){
             DeclaredType dType = (DeclaredType) aType;

@@ -63,7 +63,6 @@ import org.netbeans.api.java.project.classpath.ProjectClassPathModifier;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
-import org.netbeans.api.project.libraries.Library;
 import org.netbeans.modules.glassfish.spi.GlassfishModule;
 import org.netbeans.modules.glassfish.spi.ServerUtilities;
 import org.netbeans.modules.j2ee.deployment.common.api.J2eeLibraryTypeProvider;
@@ -102,7 +101,7 @@ public class Hk2JavaEEPlatformImpl extends J2eePlatformImpl2 {
     /** Keep local Lookup instance to be returned by getLookup method. */
     private volatile Lookup lkp;
     /** Jersey Library support. */
-    private JerseyLibrary jerseyLibrary;
+    private Hk2LibraryProvider libraryProvider;
 
     /**
      * 
@@ -111,7 +110,7 @@ public class Hk2JavaEEPlatformImpl extends J2eePlatformImpl2 {
     public Hk2JavaEEPlatformImpl(Hk2DeploymentManager dm, Hk2JavaEEPlatformFactory pf) {
         this.dm = dm;
         this.pf = pf;
-        this.jerseyLibrary = new JerseyLibrary(dm);
+        this.libraryProvider = new Hk2LibraryProvider(dm);
         addFcl();
         initLibraries();
     }
@@ -558,8 +557,13 @@ public class Hk2JavaEEPlatformImpl extends J2eePlatformImpl2 {
         return null;
     }
 
-    public Library getJerseyLibrary() {
-        return jerseyLibrary.getLibrary();
+    /**
+     * Get GlassFish bundled libraries provider.
+     * <p/>
+     * @return GlassFish bundled libraries provider.
+     */
+    public Hk2LibraryProvider getLibraryProvider() {
+        return libraryProvider;
     }
 
     private class JaxRsStackSupportImpl implements JaxRsStackSupportImplementation {

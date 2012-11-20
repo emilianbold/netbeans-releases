@@ -42,6 +42,10 @@
 package org.netbeans.modules.css.visual;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Component;
+import java.awt.Graphics;
+import java.awt.Insets;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -55,6 +59,7 @@ import javax.swing.JToggleButton;
 import javax.swing.JToolBar;
 import javax.swing.UIManager;
 import javax.swing.border.Border;
+import javax.swing.plaf.basic.BasicSplitPaneUI;
 import org.netbeans.modules.css.visual.api.RuleEditorController;
 import org.netbeans.modules.css.visual.spi.CssStylesPanelProvider;
 import org.openide.filesystems.FileObject;
@@ -144,6 +149,7 @@ public class CssStylesPanel extends javax.swing.JPanel {
             toolBar.setRollover(true);
         } else if( AQUA ) {
             toolBar.setBackground(UIManager.getColor("NbExplorerView.background"));
+            splitPane.setUI(new CleanSplitPaneUI());
         }
         
         splitPane.setResizeWeight(0.66);
@@ -316,6 +322,7 @@ public class CssStylesPanel extends javax.swing.JPanel {
 
         setLayout(new java.awt.BorderLayout());
 
+        splitPane.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         splitPane.setDividerSize(4);
         splitPane.setOrientation(javax.swing.JSplitPane.VERTICAL_SPLIT);
 
@@ -389,6 +396,35 @@ public class CssStylesPanel extends javax.swing.JPanel {
             return delegate.providesContentFor(file);
         }
         
+    }
+    
+     private static class CleanSplitPaneUI extends BasicSplitPaneUI {
+        @Override
+        protected void installDefaults() {
+            super.installDefaults();
+            divider.setBorder(new SplitBorder());
+        }
+    }
+     
+    private static class SplitBorder implements Border {
+        
+        private Color bkColor = UIManager.getColor("NbSplitPane.background");
+
+        @Override
+        public Insets getBorderInsets(Component c) {
+            return new Insets(0, 0, 0, 0);
+        }
+
+        @Override
+        public boolean isBorderOpaque() {
+            return true;
+        }
+
+        @Override
+        public void paintBorder(Component c, Graphics g, int x, int y, int width, int height) {
+            g.setColor(bkColor);
+            g.fillRect(x,y,width,height);
+        }
     }
 
 }
