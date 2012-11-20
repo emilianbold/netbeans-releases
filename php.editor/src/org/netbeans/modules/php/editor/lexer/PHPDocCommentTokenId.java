@@ -46,7 +46,6 @@ package org.netbeans.modules.php.editor.lexer;
 import java.util.Collection;
 import java.util.EnumSet;
 import java.util.Map;
-
 import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.spi.lexer.LanguageHierarchy;
@@ -54,7 +53,7 @@ import org.netbeans.spi.lexer.Lexer;
 import org.netbeans.spi.lexer.LexerRestartInfo;
 
 /**
- * Token ids for PHP Documentor Comments
+ * Token ids for PHP Documentor Comments.
  *
  * @author Petr Pisl
  */
@@ -80,7 +79,7 @@ public enum PHPDocCommentTokenId implements TokenId {
         return fixedText;
     }
 
-    private static final Language<PHPDocCommentTokenId> language =
+    private static final Language<PHPDocCommentTokenId> LANGUAGE =
         new LanguageHierarchy<PHPDocCommentTokenId>() {
                 @Override
                 protected Collection<PHPDocCommentTokenId> createTokenIds() {
@@ -105,6 +104,6 @@ public enum PHPDocCommentTokenId implements TokenId {
             }.language();
 
     public static Language<PHPDocCommentTokenId> language() {
-        return language;
+        return LANGUAGE;
     }
 }

@@ -56,6 +56,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.Action;
 import javax.swing.JPopupMenu;
+import org.netbeans.modules.openide.nodes.PERegistrationSupport;
 import org.openide.util.Enumerations;
 import org.openide.util.Lookup;
 import org.openide.util.Utilities;
@@ -457,6 +458,17 @@ public final class NodeOp extends Object {
      */
     public static NodeListener weakNodeListener(NodeListener l, Object source) {
         return WeakListeners.create(NodeListener.class, l, source);
+    }
+    
+    /** Registers Property Editors and sets the Property Editors search path.
+     * 
+     * @see PropertyEditorSearchPath
+     * @see PropertyEditorRegistration
+     * 
+     * @since 7.30
+     */
+    public static void registerPropertyEditors() {
+        PERegistrationSupport.registerPropertyEditors();
     }
 
     /** more info in class javadoc.

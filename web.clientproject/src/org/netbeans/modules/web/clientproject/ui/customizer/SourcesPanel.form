@@ -25,10 +25,10 @@
               </Group>
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Component id="jProjectFolderTextField" pref="0" max="32767" attributes="0"/>
+                  <Component id="jProjectFolderTextField" max="32767" attributes="0"/>
                   <Group type="102" alignment="1" attributes="0">
                       <Group type="103" groupAlignment="1" attributes="0">
-                          <Component id="jEncodingComboBox" alignment="0" pref="195" max="32767" attributes="0"/>
+                          <Component id="jEncodingComboBox" alignment="0" pref="159" max="32767" attributes="0"/>
                           <Component id="jTestFolderTextField" max="32767" attributes="0"/>
                           <Component id="jSiteRootFolderTextField" max="32767" attributes="0"/>
                       </Group>
@@ -61,12 +61,12 @@
                   <Component id="jTestFolderTextField" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="jBrowseTestButton" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
-              <EmptySpace type="separate" max="-2" attributes="0"/>
+              <EmptySpace type="unrelated" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
                   <Component id="jLabel4" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="jEncodingComboBox" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
-              <EmptySpace min="0" pref="146" max="32767" attributes="0"/>
+              <EmptySpace min="0" pref="148" max="32767" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>

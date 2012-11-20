@@ -45,11 +45,7 @@ import java.net.URL;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Logger;
-import java.util.prefs.Preferences;
 import javax.swing.text.Document;
-import org.netbeans.api.project.FileOwnerQuery;
-import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.csl.api.ColoringAttributes;
 import org.netbeans.modules.csl.api.CompletionProposal;
 import org.netbeans.modules.csl.api.DeclarationFinder.DeclarationLocation;
@@ -310,12 +306,10 @@ public class CssModuleSupport {
         return all;
     }
 
-    //todo: cache results of most of the methods below!!!!!!!!!!!!!!!
-    //TODO: the pseudo elements and classes should be context aware, not simple strings ... later
-    public static Collection<String> getPseudoClasses() {
+    public static Collection<String> getPseudoClasses(EditorFeatureContext context) {
         Collection<String> all = new HashSet<String>();
         for (CssEditorModule module : getModules()) {
-            Collection<String> vals = module.getPseudoClasses();
+            Collection<String> vals = module.getPseudoClasses(context);
             if (vals != null) {
                 all.addAll(vals);
             }
@@ -323,10 +317,10 @@ public class CssModuleSupport {
         return all;
     }
 
-    public static Collection<String> getPseudoElements() {
+    public static Collection<String> getPseudoElements(EditorFeatureContext context) {
         Collection<String> all = new HashSet<String>();
         for (CssEditorModule module : getModules()) {
-            Collection<String> vals = module.getPseudoElements();
+            Collection<String> vals = module.getPseudoElements(context);
             if (vals != null) {
                 all.addAll(vals);
             }
@@ -334,7 +328,7 @@ public class CssModuleSupport {
         return all;
     }
 
-    public static SortedSet<Browser> getBrowsers() {
+    public static SortedSet<Browser> getBrowsers(FileObject file) {
         //sort by browser name
         SortedSet<Browser> all = new TreeSet<Browser>(new Comparator<Browser>() {
 
@@ -344,7 +338,7 @@ public class CssModuleSupport {
             }
         });
         for (CssEditorModule module : getModules()) {
-            Collection<Browser> extraBrowsers = module.getExtraBrowsers();
+            Collection<Browser> extraBrowsers = module.getExtraBrowsers(file);
             if (extraBrowsers != null) {
                 all.addAll(extraBrowsers);
             }
@@ -372,10 +366,10 @@ public class CssModuleSupport {
         return new HelpResolver() {
 
             @Override
-            public String getHelp(PropertyDefinition property) {
+            public String getHelp(FileObject context, PropertyDefinition property) {
                 StringBuilder sb = new StringBuilder();
-                for (HelpResolver resolver : getSortedHelpResolvers()) {
-                    String help = resolver.getHelp(property);
+                for (HelpResolver resolver : getSortedHelpResolvers(context)) {
+                    String help = resolver.getHelp(context, property);
                     if (help != null) {
                         sb.append(help);
                     }
@@ -384,9 +378,9 @@ public class CssModuleSupport {
             }
 
             @Override
-            public URL resolveLink(PropertyDefinition property, String link) {
-                for (HelpResolver resolver : getSortedHelpResolvers()) {
-                    URL url = resolver.resolveLink(property, link);
+            public URL resolveLink(FileObject context, PropertyDefinition property, String link) {
+                for (HelpResolver resolver : getSortedHelpResolvers(context)) {
+                    URL url = resolver.resolveLink(context, property, link);
                     if (url != null) {
                         return url;
                     }
@@ -402,10 +396,10 @@ public class CssModuleSupport {
 
     }
 
-    private static Collection<HelpResolver> getSortedHelpResolvers() {
+    private static Collection<HelpResolver> getSortedHelpResolvers(FileObject file) {
         List<HelpResolver> list = new ArrayList<HelpResolver>();
         for (CssEditorModule module : getModules()) {
-            Collection<HelpResolver> resolvers = module.getHelpResolvers();
+            Collection<HelpResolver> resolvers = module.getHelpResolvers(file);
             if (resolvers != null) {
                 list.addAll(resolvers);
             }

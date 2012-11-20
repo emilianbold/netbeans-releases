@@ -646,10 +646,16 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
 	state().isLoaded = false;
 	stateChanged();
         
-        if (MemoryWindow.getDefault().isShowing()) {
-            MemoryWindow.getDefault().setDebugger(null);
-        }
+        SwingUtilities.invokeLater(new Runnable() {
 
+            @Override
+            public void run() {
+                if (MemoryWindow.getDefault().isShowing()) {
+                    MemoryWindow.getDefault().setDebugger(null);
+                }
+            }
+        });
+        
         // tell debuggercore that we're going away
         engineProvider.getDestructor().killEngine();
 
@@ -679,7 +685,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
         if (gdb != null && gdb.connected()) {
             // see IZ 191508, need to pause before exit
             // or kill gdb if process pid is unavailable
-            if (!pause(true)) {
+            if (getHost().getPlatform() == Platform.Windows_x86 || !pause(true)) {
                 try {
                     executor.terminate();
                     kill();
@@ -951,7 +957,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
 	}
 
 	protected void onError(MIRecord record) {
-	    if (failureChain == null && reportError) {
+            if (failureChain == null && reportError) {
 		genericFailure(record);
             }
 	    finish();
@@ -3606,8 +3612,6 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
             protected void onDone(MIRecord record) {
                 if (isCore) {
                     state().isCore = true;
-                } else {
-                    getFullPath(null);
                 }
 
 		gdb.startProgressManager().finishProgress();
@@ -4062,7 +4066,9 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
                 return;  // In order to avoid errors in multiple locations breakpoints
             }
 	}
-        newHandler(rt, (MIResult) results.get(0), bp);
+        if (results.size() > 0) {   // IN case of async BPs we get "^done" response
+            newHandler(rt, (MIResult) results.get(0), bp);
+        }
     }
 
     private void newHandler(int rt, MIResult result, BreakpointPlan bp) {
@@ -4253,6 +4259,12 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
             if (isConsoleCommand()) {
                 cliBreakpointsRTs.add(rt);
             }
+        }
+
+        @Override
+        protected void onError(MIRecord record) {
+            cliBreakpointsRTs.poll();   // removing routing tokens in case of error
+            super.onError(record);
         }
 
         @Override
@@ -4676,21 +4688,35 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
     
     private static String quoteValue(String value) {
         int length = value.length();
-	if (length > 1 
-                && (value.charAt(0) == '"') &&
-                (value.charAt(length-1) == '"')) {
+	if (length > 1) {
             return value.replace("\"", "\\\""); //NOI18N
+	}
+        return value;
+    }
+    
+    private static String unquoteValue(String value) {
+        int length = value.length();
+	if (length > 1) {
+            return value.replace("\\\"", "\""); //NOI18N
 	}
         return value;
     }
     
     void assignVar(final GdbVariable var, final String value, final boolean miVar) {
         String cmdString;
+        String quotedValue = value;
+        
+        if ( (quotedValue.indexOf(" ") >= 0) && (quotedValue.indexOf(" ") < quotedValue.indexOf("\"")) ) { // NOI18N
+            quotedValue = quotedValue.substring(quotedValue.indexOf("\"")); // NOI18N
+        }
+        
+        quotedValue = quoteValue(quotedValue);
+        
         if (miVar) {
-            cmdString = "-var-assign " + var.getMIName() + " " + value; // NOI18N
+            cmdString = "-var-assign " + var.getMIName() + " " + quotedValue; // NOI18N
         } else {
             cmdString = "-data-evaluate-expression \"" +  //NOI18N
-                    var.getFullName() + '=' + quoteValue(value) + '"'; // NOI18N
+                    var.getFullName() + '=' + quotedValue + '"'; // NOI18N
         }
         MICommand cmd =
             new MiCommandImpl(cmdString) {
@@ -4806,7 +4832,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
 
     // interface NativeDebugger
     public void exprEval(FormatOption format, final String expr) {
-        String cmdString = "-data-evaluate-expression " + "\"" + expr + "\""; // NOI18N
+        String cmdString = "-data-evaluate-expression " + "\"" + quoteValue(expr) + "\""; // NOI18N
         MICommand cmd = new MiCommandImpl(cmdString) {
             @Override
             protected void onDone(MIRecord record) {
@@ -4822,7 +4848,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
                         evalWindow.open();
                         evalWindow.requestActive();
                         evalWindow.componentShowing();
-                        evalWindow.evalResult(expr + " = " + res + "\n"); //NOI18N
+                        evalWindow.evalResult(expr + " = " + unquoteValue(res) + "\n"); //NOI18N
                     }
                 });
                 finish();

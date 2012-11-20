@@ -57,4 +57,8 @@ public interface NativeProjectChangeSupport {
     public void fireFilesPropertiesChanged(List<NativeFileItem> fileItems);
 
     public void fireFilesPropertiesChanged();
+    
+    public void fireFileOperationsStarted();
+    
+    public void fireFileOperationsFinished();
 }

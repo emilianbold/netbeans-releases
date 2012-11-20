@@ -87,10 +87,6 @@ public class JsTypedBreakInterceptorTest extends JsTestBase {
         insertBreak("x = {^}", "x = {\n    ^\n}");
     }
 
-    public void testInsertEnd1() throws Exception {
-        insertBreak("x^", "x\n^");
-    }
-
     public void testInsertBlockComment() throws Exception {
         insertBreak("/**^", "/**\n * ^\n */");
     }
@@ -141,12 +137,20 @@ public class JsTypedBreakInterceptorTest extends JsTestBase {
 //        insertBreak("  x = /test^/", "  x = /test\\n\\\n^/");
 //    }
 
-    public void testInsertEnd2() throws Exception {
+    public void testInsertNewLine1() throws Exception {
+        insertBreak("x^", "x\n^");
+    }
+
+    public void testInsertNewLine2() throws Exception {
         insertBreak("function foo() {^", "function foo() {\n    ^\n}");
     }
 
-    public void testInsertEnd3() throws Exception {
+    public void testInsertNewLine3() throws Exception {
         insertBreak("function foo() {^\n}", "function foo() {\n    ^\n}");
+    }
+
+    public void testInsertNewLine4() throws Exception {
+        insertBreak("function foo() {\n    if(bar())^\n\n}", "function foo() {\n    if(bar())\n        ^\n\n}");
     }
 
     public void testInsertIf1() throws Exception {
@@ -203,7 +207,6 @@ public class JsTypedBreakInterceptorTest extends JsTestBase {
     public void testContComment8() throws Exception {
         insertBreak("   // foo^bar", "   // foo\n   // ^bar");
     }
-
 
     public void testContComment9() throws Exception {
         insertBreak("^// foobar", "\n^// foobar");
@@ -284,28 +287,84 @@ public class JsTypedBreakInterceptorTest extends JsTestBase {
 
     public void testCommentUnbalancedBraces() throws Exception {
         insertBreak("var MyObj = {\n"
-            + "    version: 10,\n"
-            + "    factory: function () {\n"
-            + "        return this;\n"
-            + "    },\n"
-            + "\n"
-            + "    /*^\n"
-            + "    create: function () {\n"
-            + "        return new MyObj();\n"
-            + "    }"
-            + "}",
-            "var MyObj = {\n"
-            + "    version: 10,\n"
-            + "    factory: function () {\n"
-            + "        return this;\n"
-            + "    },\n"
-            + "\n"
-            + "    /*\n"
-            + "     * ^\n"
-            + "     */\n"
-            + "    create: function () {\n"
-            + "        return new MyObj();\n"
-            + "    }"
-            + "}");
+                + "    version: 10,\n"
+                + "    factory: function () {\n"
+                + "        return this;\n"
+                + "    },\n"
+                + "\n"
+                + "    /*^\n"
+                + "    create: function () {\n"
+                + "        return new MyObj();\n"
+                + "    }"
+                + "}",
+                "var MyObj = {\n"
+                + "    version: 10,\n"
+                + "    factory: function () {\n"
+                + "        return this;\n"
+                + "    },\n"
+                + "\n"
+                + "    /*\n"
+                + "     * ^\n"
+                + "     */\n"
+                + "    create: function () {\n"
+                + "        return new MyObj();\n"
+                + "    }"
+                + "}");
+    }
+
+    public void testBreakInsideObject() throws Exception {
+        insertBreak("function Synergy() { \n"
+                + "/**^\n"
+                + "this.endpoints = {};\n"
+                + "this.session = {};\n"
+                + "this.labels = {};\n"
+                + "}\n"
+                + "/** */\n"
+                + "window.SYNERGY = new Synergy();",
+                "function Synergy() { \n"
+                + "/**\n"
+                + " * ^\n"
+                + " */\n"
+                + "this.endpoints = {};\n"
+                + "this.session = {};\n"
+                + "this.labels = {};\n"
+                + "}\n"
+                + "/** */\n"
+                + "window.SYNERGY = new Synergy();");
+    }
+
+    public void testIssue118656() throws Exception {
+        insertBreak("if (true) ^thing()", "if (true) \n    ^thing()");
+    }
+
+    public void testIssue219683() throws Exception {
+        insertBreak("$(table).find(\"tbody tr\").each(function(){^)",
+                "$(table).find(\"tbody tr\").each(function(){\n    ^\n})");
+    }
+
+    public void testIssue220903() throws Exception {
+        insertBreak("<script>function Foo(){^</script>",
+                "<script>function Foo(){\n    ^\n}</script>");
+    }
+
+    public void testIssue221676() throws Exception {
+        insertBreak("var obj = (new function() {\n"
+                + "   this.myFunc = function () {\n"
+                + "      if (this.condition) {\n"
+                + "         if (this.condition2) {\n"
+                + "            this.doSth();\n"
+                + "         }^\n"
+                + "   };\n"
+                + "}())\n",
+                "var obj = (new function() {\n"
+                + "   this.myFunc = function () {\n"
+                + "      if (this.condition) {\n"
+                + "         if (this.condition2) {\n"
+                + "            this.doSth();\n"
+                + "         }\n"
+                + "         ^\n"
+                + "      }\n"
+                + "   };\n"
+                + "}())\n");
     }
 }

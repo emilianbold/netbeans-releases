@@ -101,12 +101,7 @@ class PopupSwitcher extends JPanel {
         table.getSelectionModel().addListSelectionListener( selectionListener );
         table.getColumnModel().getSelectionModel().addListSelectionListener( selectionListener );
 
-        SwingUtilities.invokeLater( new Runnable() {
-            @Override
-            public void run() {
-                table.setInitialSelection( hits, forward );
-            }
-        } );
+        table.setInitialSelection( hits, forward );
     }
 
     private void configureScrollPane() {
@@ -151,6 +146,8 @@ class PopupSwitcher extends JPanel {
     }
 
     private void updateDescription() {
+        if( !lblDescription.isShowing() )
+            return;
         if( !lblDescription.isValid() ) {
             SwingUtilities.invokeLater( new Runnable() {
                 @Override

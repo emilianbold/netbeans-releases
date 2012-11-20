@@ -46,15 +46,14 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import org.netbeans.modules.parsing.spi.indexing.support.IndexResult;
-import org.netbeans.modules.php.editor.parser.astnodes.visitors.PhpElementVisitor;
+import org.netbeans.modules.php.editor.api.ElementQuery;
 import org.netbeans.modules.php.editor.api.NameKind;
 import org.netbeans.modules.php.editor.api.PhpElementKind;
+import org.netbeans.modules.php.editor.api.QualifiedName;
 import org.netbeans.modules.php.editor.api.elements.ConstantElement;
-import org.netbeans.modules.php.editor.api.ElementQuery;
+import org.netbeans.modules.php.editor.api.elements.NamespaceElement;
 import org.netbeans.modules.php.editor.index.PHPIndexer;
 import org.netbeans.modules.php.editor.index.Signature;
-import org.netbeans.modules.php.editor.api.QualifiedName;
-import org.netbeans.modules.php.editor.api.elements.NamespaceElement;
 import org.netbeans.modules.php.editor.model.nodes.ConstantDeclarationInfo;
 import org.netbeans.modules.php.editor.parser.astnodes.ConstantDeclaration;
 import org.openide.util.Parameters;
@@ -100,8 +99,11 @@ public final class ConstantElementImpl extends FullyQualifiedElementImpl impleme
         ConstantSignatureParser signParser = new ConstantSignatureParser(sig);
         ConstantElement retval = null;
         if (matchesQuery(query, signParser)) {
-            retval = new ConstantElementImpl(signParser.getQualifiedName(),signParser.getValue(),
-                    signParser.getOffset(), indexResult.getUrl().toString(),
+            retval = new ConstantElementImpl(
+                    signParser.getQualifiedName(),
+                    signParser.getValue(),
+                    signParser.getOffset(),
+                    indexResult.getUrl().toString(),
                     indexScopeQuery);
         }
         return retval;
@@ -136,12 +138,12 @@ public final class ConstantElementImpl extends FullyQualifiedElementImpl impleme
     @Override
     public String getSignature() {
         StringBuilder sb = new StringBuilder();
-        sb.append(getName().toLowerCase()).append(SEPARATOR.SEMICOLON);//NOI18N
-        sb.append(getName()).append(SEPARATOR.SEMICOLON);//NOI18N
-        sb.append(getOffset()).append(SEPARATOR.SEMICOLON);//NOI18N
+        sb.append(getName().toLowerCase()).append(Separator.SEMICOLON); //NOI18N
+        sb.append(getName()).append(Separator.SEMICOLON); //NOI18N
+        sb.append(getOffset()).append(Separator.SEMICOLON); //NOI18N
         QualifiedName namespaceName = getNamespaceName();
-        sb.append(namespaceName.toString()).append(SEPARATOR.SEMICOLON);//NOI18N
-        sb.append(getValue()).append(SEPARATOR.SEMICOLON);//NOI18N
+        sb.append(namespaceName.toString()).append(Separator.SEMICOLON); //NOI18N
+        sb.append(getValue()).append(Separator.SEMICOLON); //NOI18N
         checkConstantSignature(sb);
         return sb.toString();
     }

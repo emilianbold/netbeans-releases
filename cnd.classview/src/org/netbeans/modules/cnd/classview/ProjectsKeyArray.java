@@ -64,6 +64,8 @@ import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.classview.model.CVUtil;
 import org.netbeans.modules.cnd.classview.model.ProjectNode;
 import org.netbeans.modules.cnd.utils.CndUtils;
+import org.netbeans.modules.cnd.utils.cache.CharSequenceUtils;
+import org.openide.filesystems.FileSystem;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.util.RequestProcessor;
@@ -76,7 +78,7 @@ public class ProjectsKeyArray extends Children.Keys<CsmProject> {
 
     private java.util.Map<CsmProject,SortedName> myProjects;
     private ChildrenUpdater childrenUpdater;
-    private static Comparator<java.util.Map.Entry<CsmProject, SortedName>> COMARATOR = new ProjectComparator();
+    private static Comparator<java.util.Map.Entry<CsmProject, SortedName>> COMARATOR = new ProjectComparator();    
     
     /** guards myProjects */
     private final Object myProjectsLock = new Object();
@@ -104,7 +106,23 @@ public class ProjectsKeyArray extends Children.Keys<CsmProject> {
         }
         setKeys(res);
     }
-    
+
+    public void projectLibsChanged(CsmProject owner) {
+        if (owner == libOwnerProject) {
+            synchronized(myProjectsLock) {
+                if (myProjects == null) {
+                    myProjects = createProjectsMap();
+                } else {
+                    myProjects.clear();
+                }
+                for (CsmProject p : owner.getLibraries()) {
+                    myProjects.put(p, getSortedName(p, true));
+                }
+            }
+            resetKeys();
+        }
+    }
+
     public void dispose(){
         synchronized(myProjectsLock) {
             if (myProjects != null) {
@@ -131,9 +149,9 @@ public class ProjectsKeyArray extends Children.Keys<CsmProject> {
     
     private SortedName getSortedName(CsmProject project, boolean isLibrary){
         if (isLibrary){
-            return new SortedName(1,project.getName(), 0);
+            return new IgnoreCaseSortedName(1,project.getName(), 0);
         }
-        return new SortedName(0,project.getName(), 0);
+        return new IgnoreCaseSortedName(0,project.getName(), 0);
     }
     
     public boolean isEmpty(){
@@ -297,6 +315,18 @@ public class ProjectsKeyArray extends Children.Keys<CsmProject> {
         resetKeys();
     }
     
+    private static class IgnoreCaseSortedName extends SortedName {
+        
+        public IgnoreCaseSortedName(int prefix, CharSequence name, int suffix) {
+            super(prefix, name, suffix);
+        }
+
+        @Override
+        protected Comparator<CharSequence> getCharSequenceComparator() {
+            return CharSequenceUtils.ComparatorIgnoreCase;
+        }
+    }
+    
     private static final class ProjectComparator implements Comparator<java.util.Map.Entry<CsmProject,SortedName>>, Serializable {
         @Override
         public int compare(java.util.Map.Entry<CsmProject, SortedName> o1, java.util.Map.Entry<CsmProject, SortedName> o2) {
@@ -326,6 +356,11 @@ public class ProjectsKeyArray extends Children.Keys<CsmProject> {
 
         @Override
         public String getDisplayName() {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public FileSystem getFileSystem() {
             throw new UnsupportedOperationException();
         }
 

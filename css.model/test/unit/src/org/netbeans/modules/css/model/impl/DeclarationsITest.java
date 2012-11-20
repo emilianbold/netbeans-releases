@@ -42,7 +42,7 @@
 package org.netbeans.modules.css.model.impl;
 
 import javax.swing.text.BadLocationException;
-import org.netbeans.modules.css.model.ModelTestBase;
+import org.netbeans.modules.css.model.api.ModelTestBase;
 import org.netbeans.modules.css.model.api.*;
 import org.netbeans.modules.parsing.spi.ParseException;
 
@@ -98,6 +98,34 @@ public class DeclarationsITest extends ModelTestBase {
                 + "    font-size: 222px;\n"
                 + "    margin: 3px;\n"
                 + "}\n", model.getModelSource().toString());
+        
+    }
+    
+    public void testRemoveNewDeclaration() {
+        String code = "div {}\n";
+        Model model = createModel(code);
+        StyleSheet styleSheet = getStyleSheet(model);
+        Rule rule = styleSheet.getBody().getRules().get(0);
+        assertNotNull(rule);
+        Declarations ds = rule.getDeclarations();
+        assertNull(ds);
+        
+        ElementFactory ef = model.getElementFactory();
+        ds = ef.createDeclarations();
+        rule.setDeclarations(ds);
+        
+        assertNotNull(rule.getDeclarations());
+        
+        Declaration newMargin = ef.createDeclaration(
+                ef.createProperty("margin"),
+                ef.createPropertyValue(ef.createExpression("3px")),
+                false);
+        
+        ds.addDeclaration(newMargin);
+        assertEquals(1, ds.getDeclarations().size());
+        
+        ds.removeDeclaration(newMargin);
+        assertEquals(0, ds.getDeclarations().size());
         
     }
     

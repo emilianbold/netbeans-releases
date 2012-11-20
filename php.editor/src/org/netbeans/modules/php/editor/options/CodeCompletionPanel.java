@@ -62,6 +62,7 @@ import org.openide.util.NbBundle;
 /**
  * @author Tomas Mysik
  */
+@org.netbeans.api.annotations.common.SuppressWarnings({"SE_BAD_FIELD_STORE"})
 public class CodeCompletionPanel extends JPanel {
     private static final long serialVersionUID = -24730122182427272L;
 
@@ -546,7 +547,7 @@ public class CodeCompletionPanel extends JPanel {
 
         @Override
         public HelpCtx getHelpCtx() {
-            return new HelpCtx(CodeCompletionPanel.class.getName());
+            return new HelpCtx("org.netbeans.modules.php.editor.options.CodeCompletionPanel");
         }
 
         @Override

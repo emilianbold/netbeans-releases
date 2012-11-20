@@ -43,10 +43,15 @@
  */
 package org.netbeans.modules.db.dataview.output;
 
+import java.sql.Blob;
+import java.sql.Clob;
 import java.sql.Connection;
+import java.sql.SQLException;
 import java.sql.Types;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.table.TableModel;
 import org.netbeans.modules.db.dataview.meta.DBColumn;
 import org.netbeans.modules.db.dataview.meta.DBConnectionFactory;
@@ -54,6 +59,7 @@ import org.netbeans.modules.db.dataview.meta.DBException;
 import org.netbeans.modules.db.dataview.meta.DBMetaDataFactory;
 import org.netbeans.modules.db.dataview.meta.DBPrimaryKey;
 import org.netbeans.modules.db.dataview.meta.DBTable;
+import org.netbeans.modules.db.dataview.util.BinaryToStringConverter;
 import org.netbeans.modules.db.dataview.util.DataViewUtils;
 import org.openide.util.NbBundle;
 
@@ -63,7 +69,8 @@ import org.openide.util.NbBundle;
  * @author Ahimanikya Satapathy
  */
 class SQLStatementGenerator {
-
+    private static final Logger LOG =
+            Logger.getLogger(SQLStatementGenerator.class.getName());
     private DataViewDBTable tblMeta;
     private DataView dataView;
 
@@ -458,9 +465,26 @@ class SQLStatementGenerator {
             return "b'" + val + "'"; // NOI18N
         } else if (DataViewUtils.isNumeric(type)) {
             return val;
-        } else {
-            return "'" + val + "'"; // NOI18N
+        } else if (val instanceof Clob) {
+            try {
+                Clob lob = (Clob) val;
+                String result = lob.getSubString(1, (int) lob.length());
+                return "'" + result.replace("'", "''") + "'"; //NOI18N
+            } catch (SQLException ex) {
+                LOG.log(Level.INFO, "Failed to read CLOB", ex); //NOI18N
+            }
+        } else if (val instanceof Blob) {
+            try {
+                Blob lob = (Blob) val;
+                byte[] result = lob.getBytes(1, (int) lob.length());
+                return "x'" + BinaryToStringConverter.convertToString(
+                        result, 16, false) + "'"; // NOI18N
+            } catch (SQLException ex) {
+                LOG.log(Level.INFO, "Failed to read BLOB", ex); //NOI18N
+            }
         }
+        // Fallback if previous converts fail
+        return "'" + val.toString().replace("'", "''") + "'"; //NOI18N
     }
 
     private String getAutoIncrementText(int dbType) throws Exception {

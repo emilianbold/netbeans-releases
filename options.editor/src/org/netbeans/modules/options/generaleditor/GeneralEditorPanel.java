@@ -53,6 +53,8 @@ import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.ListCellRenderer;
+import org.netbeans.api.options.OptionsDisplayer;
+import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.awt.Mnemonics;
 import org.openide.util.NbBundle;
 
@@ -61,6 +63,8 @@ import org.openide.util.NbBundle;
  *
  * @author Jan Jancura
  */
+@OptionsPanelController.Keywords(keywords={"#KW_General_Editor"}, location=OptionsDisplayer.EDITOR, tabTitle= "org.netbeans.modules.options.editor.Bundle#CTL_General_DisplayName")
+@NbBundle.Messages({"KW_General_Editor=general editor"})
 public class GeneralEditorPanel extends JPanel implements ActionListener {
 
     private boolean         changed = false;

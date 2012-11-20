@@ -201,11 +201,16 @@ public class JsConventionRule extends JsAstRule {
                 if (id == JsTokenId.STRING_END && ts.moveNext()) {
                     id = ts.token().id();
                 }
-                if ((id == JsTokenId.EOL || id == JsTokenId.LINE_COMMENT) && ts.movePrevious()) {
+                if ((id == JsTokenId.EOL || id == JsTokenId.BRACKET_RIGHT_CURLY) && ts.movePrevious()) {
                     id = ts.token().id();
                 }
+                if (id == JsTokenId.BLOCK_COMMENT || id == JsTokenId.LINE_COMMENT) {
+                    //try to find ; or , after
+                    Token<? extends JsTokenId> next = LexUtilities.findNext(ts, Arrays.asList(JsTokenId.WHITESPACE, JsTokenId.EOL, JsTokenId.BLOCK_COMMENT, JsTokenId.LINE_COMMENT));
+                    id = next.id();
+                }
                 if (id != JsTokenId.OPERATOR_SEMICOLON && id != JsTokenId.OPERATOR_COMMA) {
-                    Token<? extends JsTokenId> previous = LexUtilities.findPrevious(ts, Arrays.asList(JsTokenId.WHITESPACE));
+                    Token<? extends JsTokenId> previous = LexUtilities.findPrevious(ts, Arrays.asList(JsTokenId.WHITESPACE, JsTokenId.BLOCK_COMMENT));
                     id = previous.id();
                     // check again whether there is not semicolon and it is not generated
                     if (id != JsTokenId.OPERATOR_SEMICOLON && id != JsTokenId.OPERATOR_COMMA
@@ -218,6 +223,12 @@ public class JsConventionRule extends JsAstRule {
                         }
                     }
                 }
+            } else if (!ts.moveNext() && ts.movePrevious() && ts.moveNext()) {
+                // we are probably at the end of file without the semicolon
+                fileOffset = context.parserResult.getSnapshot().getOriginalOffset(ts.offset());
+                hints.add(new Hint(missingSemicolon, Bundle.MissingSemicolon(ts.token().text().toString()),
+                        context.getJsParserResult().getSnapshot().getSource().getFileObject(),
+                        new OffsetRange(fileOffset, fileOffset + ts.token().length()), null, 500));
             }
         }
 
@@ -418,7 +429,7 @@ public class JsConventionRule extends JsAstRule {
                             if (offset >= 0) {
                                 hints.add(new Hint(objectTrailingComma, Bundle.UnexpectedObjectTrailing(ts.token().text().toString()),
                                         context.getJsParserResult().getSnapshot().getSource().getFileObject(),
-                                        new OffsetRange(ts.offset(), ts.offset() + ts.token().length()), null, 500));
+                                        new OffsetRange(offset, offset + ts.token().length()), null, 500));
                             }
                         }
                     }
@@ -451,7 +462,7 @@ public class JsConventionRule extends JsAstRule {
                                 if (offset >= 0) {
                                     hints.add(new Hint(arrayTrailingComma, Bundle.UnexpectedArrayTrailing(ts.token().text().toString()),
                                             context.getJsParserResult().getSnapshot().getSource().getFileObject(),
-                                            new OffsetRange(ts.offset(), ts.offset() + ts.token().length()), null, 500));
+                                            new OffsetRange(offset, offset + ts.token().length()), null, 500));
                                 }
                             }
                         }

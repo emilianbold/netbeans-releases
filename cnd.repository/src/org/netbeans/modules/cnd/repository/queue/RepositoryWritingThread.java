@@ -58,9 +58,9 @@ import org.netbeans.modules.cnd.repository.util.RepositoryListenersManager;
  */
 public class RepositoryWritingThread implements Runnable {
     
-    private RepositoryWriter writer;
-    private RepositoryQueue queue;
-    private ReadWriteLock   rwLock;
+    private final RepositoryWriter writer;
+    private final RepositoryQueue queue;
+    private final ReadWriteLock   rwLock;
     
     public RepositoryWritingThread(RepositoryWriter writer, RepositoryQueue queue, ReadWriteLock rwLock) {
 	this.writer = writer;

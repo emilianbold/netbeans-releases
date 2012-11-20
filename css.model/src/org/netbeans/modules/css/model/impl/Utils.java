@@ -64,6 +64,14 @@ public class Utils {
         
         sb.append(IMPLEMENTATIONS_PACKAGE);
         sb.append('.');
+        sb.append(getInterfaceForNodeType(typeName));
+        sb.append(IMPLEMENTATIONS_SUFFIX);
+        
+        return sb.toString();
+    }
+    
+    static String getInterfaceForNodeType(String typeName) {
+        StringBuilder sb = new StringBuilder();
         sb.append(Character.toUpperCase(typeName.charAt(0)));
         
         //underscores in element names conversion
@@ -86,8 +94,6 @@ public class Utils {
             }
             
         }
-        sb.append(IMPLEMENTATIONS_SUFFIX);
-        
         return sb.toString();
     }
     

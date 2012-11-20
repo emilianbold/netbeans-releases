@@ -84,6 +84,9 @@ public final class GdbEngineCapabilityProvider implements EngineCapabilityProvid
     }
 
     public boolean isSupported(DebuggerDescriptor descriptor) {
+        if (descriptor == null) {
+            return false;
+        }
         final String id = descriptor.getID();
         if ("GNU".equalsIgnoreCase(id)) { // NOI18N
             return true;

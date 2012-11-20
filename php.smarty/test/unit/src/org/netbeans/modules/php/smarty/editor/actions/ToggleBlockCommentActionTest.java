@@ -172,6 +172,21 @@ public class ToggleBlockCommentActionTest extends TplTestBase {
         testCursorInFile("testfiles/toggleComment/context_cursor_uncomment4.tpl");
     }
 
+    public void testContextOptionCursorUncomment5() throws Exception {
+        SmartyOptions.getInstance().setToggleCommentOption(SmartyFramework.ToggleCommentOption.CONTEXT);
+        testCursorInFile("testfiles/toggleComment/context_cursor_uncomment5.tpl");
+    }
+
+    public void testContextOptionCursorUncomment6() throws Exception {
+        SmartyOptions.getInstance().setToggleCommentOption(SmartyFramework.ToggleCommentOption.CONTEXT);
+        testCursorInFile("testfiles/toggleComment/context_cursor_uncomment6.tpl");
+    }
+
+    public void testContextOptionCursorUncomment7() throws Exception {
+        SmartyOptions.getInstance().setToggleCommentOption(SmartyFramework.ToggleCommentOption.CONTEXT);
+        testCursorInFile("testfiles/toggleComment/context_cursor_uncomment7.tpl");
+    }
+
     protected void testCursorInFile(String file) throws Exception {
         FileObject fo = getTestFile(file);
         assertNotNull(fo);

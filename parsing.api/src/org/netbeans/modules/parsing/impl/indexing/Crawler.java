@@ -49,11 +49,13 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
-import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.ListIterator;
 import java.util.Set;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
+import org.netbeans.modules.parsing.spi.indexing.Indexable;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -99,7 +101,7 @@ abstract class Crawler {
         return listenOnVisibility;
     }
 
-    public final @NonNull Collection<IndexableImpl> getResources() throws IOException {
+    public final @NonNull List<Indexable> getResources() throws IOException {
         init ();        
         return resources;
     }
@@ -112,12 +114,12 @@ abstract class Crawler {
      * @return all resources within the root null
      * @throws IOException 
      */
-    public final @CheckForNull Collection<IndexableImpl> getAllResources() throws IOException {
+    public final @CheckForNull List<Indexable> getAllResources() throws IOException {
         init ();        
         return checkTimeStamps.contains(TimeStampAction.CHECK) || !supportsAllFiles ? allResources : resources;
     }
 
-    public final @NonNull Collection<IndexableImpl> getDeletedResources () throws IOException {
+    public final @NonNull List<Indexable> getDeletedResources () throws IOException {
         init ();        
         return deleted;
     }
@@ -155,6 +157,11 @@ abstract class Crawler {
         }
     }
 
+    @NonNull
+    protected final Indexable createIndexable(@NonNull final IndexableImpl impl) {
+        return SPIAccessor.getInstance().create(impl);
+    }
+
     /**
      * Used by subclasses and unit tests to simulate restart
      * @param value
@@ -163,7 +170,7 @@ abstract class Crawler {
         listenOnVisibility = value;
     }
 
-    protected abstract boolean collectResources(@NonNull Collection<IndexableImpl> resources, @NonNull Collection<IndexableImpl> allResources);
+    protected abstract boolean collectResources(@NonNull Collection<Indexable> resources, @NonNull Collection<Indexable> allResources);
 
     // -----------------------------------------------------------------------
     // private implementation
@@ -176,9 +183,9 @@ abstract class Crawler {
     private final CancelRequest cancelRequest;
     private final SuspendStatus suspendStatus;
 
-    private Collection<IndexableImpl> resources;
-    private Collection<IndexableImpl> allResources;
-    private Collection<IndexableImpl> deleted;
+    private List<Indexable> resources;
+    private List<Indexable> allResources;
+    private List<Indexable> deleted;
     private boolean finished;
     private boolean changed;
     private boolean initialized;
@@ -188,23 +195,25 @@ abstract class Crawler {
     private void init () throws IOException {
         if (!initialized) {
             try {
-                Collection<IndexableImpl> _resources = new LinkedHashSet<IndexableImpl>();
-                Collection<IndexableImpl> _allResources = checkTimeStamps.contains(TimeStampAction.CHECK) && supportsAllFiles ?
-                        new LinkedHashSet<IndexableImpl>() : new NullCollection<IndexableImpl>();
+                List<Indexable> _resources = new ArrayList<Indexable>();
+                List<Indexable> _allResources = checkTimeStamps.contains(TimeStampAction.CHECK) && supportsAllFiles ?
+                        new ArrayList<Indexable>() : new NullList<Indexable>();
                 this.finished = collectResources(_resources, _allResources);
-                this.resources = Collections.unmodifiableCollection(_resources);
-                this.allResources = checkTimeStamps.contains(TimeStampAction.CHECK) && supportsAllFiles ? Collections.unmodifiableCollection(_allResources) : null;
+                this.resources = Collections.unmodifiableList(_resources);
+                this.allResources = checkTimeStamps.contains(TimeStampAction.CHECK) && supportsAllFiles ?
+                    Collections.unmodifiableList(_allResources) :
+                    null;
                 changed = !_resources.isEmpty();
 
                 final Set<String> unseen = timeStamps.getUnseenFiles();                
                 if (unseen != null) {
-                    deleted = new ArrayList<IndexableImpl>(unseen.size());
+                    List<Indexable> _deleted = new ArrayList<Indexable>(unseen.size());
                     for (String u : unseen) {
-                        deleted.add(new DeletedIndexable(root, u));
+                        _deleted.add(createIndexable(new DeletedIndexable(root, u)));
                     }
-                    deleted = Collections.unmodifiableCollection(deleted);
+                    deleted = Collections.unmodifiableList(_deleted);
                 } else {
-                    deleted = Collections.<IndexableImpl>emptySet();
+                    deleted = Collections.<Indexable>emptyList();
                 }
                 changed |= !deleted.isEmpty();
             } finally {
@@ -218,7 +227,7 @@ abstract class Crawler {
      * Only add method is used.
      * @param <T>
      */
-    private static class NullCollection<T> implements Collection<T> {
+    private static class NullList<T> implements List<T> {
         
         private boolean changed;
 
@@ -259,6 +268,11 @@ abstract class Crawler {
         }
 
         @Override
+        public void add(int index, T element) {
+            changed = true;
+        }
+
+        @Override
         public boolean remove(Object o) {
             throw new UnsupportedOperationException();
         }
@@ -270,6 +284,12 @@ abstract class Crawler {
 
         @Override
         public boolean addAll(Collection<? extends T> c) {
+            changed = true;
+            return true;
+        }
+
+        @Override
+        public boolean addAll(int index, Collection<? extends T> c) {
             changed = true;
             return true;
         }
@@ -288,6 +308,46 @@ abstract class Crawler {
         public void clear() {
             throw new UnsupportedOperationException();
         }               
+
+        @Override
+        public T get(int index) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public T set(int index, T element) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public T remove(int index) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public int indexOf(Object o) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public int lastIndexOf(Object o) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public ListIterator<T> listIterator() {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public ListIterator<T> listIterator(int index) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public List<T> subList(int fromIndex, int toIndex) {
+            throw new UnsupportedOperationException();
+        }
     }
     //</editor-fold>
 }

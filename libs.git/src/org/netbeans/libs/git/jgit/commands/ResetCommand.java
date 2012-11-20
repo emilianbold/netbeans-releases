@@ -71,7 +71,7 @@ import org.netbeans.libs.git.GitException;
 import org.netbeans.libs.git.GitRefUpdateResult;
 import org.netbeans.libs.git.jgit.GitClassFactory;
 import org.netbeans.libs.git.jgit.Utils;
-import org.netbeans.libs.git.jgit.index.CheckoutIndex;
+import org.netbeans.libs.git.jgit.utils.CheckoutIndex;
 import org.netbeans.libs.git.progress.FileListener;
 import org.netbeans.libs.git.progress.ProgressMonitor;
 

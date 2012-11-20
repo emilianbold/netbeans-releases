@@ -41,20 +41,36 @@
  */
 package org.netbeans.modules.nativeexecution;
 
-import java.io.*;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InterruptedIOException;
+import java.io.OutputStream;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.concurrent.*;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.HostInfo;
+import org.netbeans.modules.nativeexecution.api.NativeProcess;
 import org.netbeans.modules.nativeexecution.api.NativeProcess.State;
-import org.netbeans.modules.nativeexecution.api.*;
-import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
+import org.netbeans.modules.nativeexecution.api.NativeProcessChangeEvent;
+import org.netbeans.modules.nativeexecution.api.ProcessInfo;
+import org.netbeans.modules.nativeexecution.api.ProcessInfoProvider;
+import org.netbeans.modules.nativeexecution.api.ProcessStatusEx;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager.CancellationException;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.netbeans.modules.nativeexecution.api.util.Signal;
+import org.netbeans.modules.nativeexecution.signals.SignalSupport;
 import org.netbeans.modules.nativeexecution.spi.ProcessInfoProviderFactory;
 import org.netbeans.modules.nativeexecution.support.Logger;
 import org.netbeans.modules.nativeexecution.support.NativeTaskExecutorService;
@@ -62,7 +78,7 @@ import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
-public abstract class AbstractNativeProcess extends NativeProcess {
+public abstract class AbstractNativeProcess extends NativeProcess implements ExProcessInfoProvider {
 
     protected final static java.util.logging.Logger LOG = Logger.getInstance();
     private final static Integer PID_TIMEOUT =
@@ -73,6 +89,7 @@ public abstract class AbstractNativeProcess extends NativeProcess {
             "dlight.nativeexecutor.forcekill.timeout", "5")); // NOI18N
     protected final NativeProcessInfo info;
     protected final HostInfo hostInfo;
+    private final ConcurrentHashMap<String, String> processInfo =  new ConcurrentHashMap<String, String>();
     protected long creation_ts = -1;
     private final String id;
     private final ExecutionEnvironment execEnv;
@@ -173,6 +190,18 @@ public abstract class AbstractNativeProcess extends NativeProcess {
         }
 
         return this;
+    }
+    
+    protected String getProcessInfo(String key) {
+        return processInfo.get(key);
+    }
+    
+    protected void addProcessInfo(String info) {
+        int spos = info.indexOf('=');
+        if (spos < 0) {
+            throw new IllegalArgumentException("info must be in format NAME=VALUE - was " + info); // NOI18N
+        }
+        processInfo.put(info.substring(0, spos), info.substring(spos + 1));
     }
 
     private void setResult(int exitCode) {
@@ -308,10 +337,9 @@ public abstract class AbstractNativeProcess extends NativeProcess {
         }
 
         try {
-            CommonTasksSupport.sendSignalGrp(execEnv, pid, Signal.SIGTERM, null).get();
-        } catch (InterruptedException ex) {
-            Thread.currentThread().interrupt();
-        } catch (ExecutionException ex) {
+            SignalSupport.signalProcess(execEnv, pid, Signal.SIGTERM);
+        } catch (UnsupportedOperationException ex) {
+            // ignore ...
         }
 
         try {
@@ -331,10 +359,9 @@ public abstract class AbstractNativeProcess extends NativeProcess {
         }
 
         try {
-            CommonTasksSupport.sendSignalGrp(execEnv, pid, Signal.SIGKILL, null).get();
-        } catch (InterruptedException ex1) {
-            Thread.currentThread().interrupt();
-        } catch (ExecutionException ex1) {
+            SignalSupport.signalProcess(execEnv, pid, Signal.SIGKILL);
+        } catch (UnsupportedOperationException ex) {
+            // ignore ...
         }
     }
 
@@ -419,6 +446,16 @@ public abstract class AbstractNativeProcess extends NativeProcess {
         }
     }
 
+    @Override
+    public ProcessStatusEx getExitStatusEx() {
+        exitValue();
+        return null;
+    }
+    
+    protected final void finishing() {
+        setState(State.FINISHING);
+    }
+
     private void setState(State state) {
         synchronized (stateLock) {
             if (this.state == state) {
@@ -427,7 +464,7 @@ public abstract class AbstractNativeProcess extends NativeProcess {
 
             /*
              * Process has determinated order of states it can be set to:
-             * INITIAL ---> STARTING  ---> RUNNING  ---> FINISHED
+             * INITIAL ---> STARTING  ---> RUNNING  ---> FINISHING ---> FINISHED
              *          |-> CANCELLED  |-> CENCELLED |-> CANCELLED
              *          |-> ERROR      |-> ERROR     |-> ERROR
              *
@@ -449,8 +486,8 @@ public abstract class AbstractNativeProcess extends NativeProcess {
 
                 if (!isInterrupted()) {
                     if (LOG.isLoggable(Level.FINEST)) {
-                        LOG.finest(String.format("%s: State changed: %s -> %s", // NOI18N
-                                this.toString(), this.state, state));
+                        LOG.finest(String.format("%s [%d]: State changed: %s -> %s", // NOI18N
+                                this.toString(), this.pid, this.state, state));
                     }
                 }
 
@@ -477,9 +514,13 @@ public abstract class AbstractNativeProcess extends NativeProcess {
         }
     }
 
+    protected final void setPID(final int pid) {
+        this.pid = pid;
+    }
+    
     // To be called from successors' constructor only...
     protected final void readPID(final InputStream is) throws IOException {
-        int c = -1;
+        int c;
         pid = 0;
 
         while (!isInterrupted()) {
@@ -491,6 +532,11 @@ public abstract class AbstractNativeProcess extends NativeProcess {
                 break;
             }
         }
+    }
+
+    @Override
+    public String getTTY() {
+        return getProcessInfo("TTY"); // NOI18N
     }
 
     @Override

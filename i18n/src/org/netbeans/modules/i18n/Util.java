@@ -145,15 +145,17 @@ public class Util {
 
         // try to find in sources of execution classpath
         ClassPath ecp = ClassPath.getClassPath( srcFile, ClassPath.EXECUTE);
-        for (ClassPath.Entry e : ecp.entries()) {
-            SourceForBinaryQuery.Result r = SourceForBinaryQuery.findSourceRoots(e.getURL());
-            for (FileObject srcRoot : r.getRoots()) {
-                // try to find the bundle under this source root
-                ClassPath cp = ClassPath.getClassPath(srcRoot, ClassPath.SOURCE);
-                if (cp != null) {
-                    FileObject ret = cp.findResource(bundleName);
-                    if (ret != null)
-                        return ret;
+        if (ecp != null) {
+            for (ClassPath.Entry e : ecp.entries()) {
+                SourceForBinaryQuery.Result r = SourceForBinaryQuery.findSourceRoots(e.getURL());
+                for (FileObject srcRoot : r.getRoots()) {
+                    // try to find the bundle under this source root
+                    ClassPath cp = ClassPath.getClassPath(srcRoot, ClassPath.SOURCE);
+                    if (cp != null) {
+                        FileObject ret = cp.findResource(bundleName);
+                        if (ret != null)
+                            return ret;
+                    }
                 }
             }
         }

@@ -75,6 +75,7 @@ import org.netbeans.modules.debugger.jpda.jdi.ObjectReferenceWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.ThreadGroupReferenceWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.ThreadReferenceWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.VMOutOfMemoryExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.VirtualMachineWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.event.ThreadDeathEventWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.event.ThreadStartEventWrapper;
@@ -204,7 +205,7 @@ public class ThreadsCache implements Executor {
         }
     }
 
-    private synchronized void initThreadGroups() throws VMDisconnectedExceptionWrapper {
+    private synchronized void initThreadGroups() throws VMDisconnectedExceptionWrapper, VMOutOfMemoryExceptionWrapper {
         threadMap = new HashMap<ThreadGroupReference, List<ThreadReference>>();
         if (groupMap == null) {
             groupMap = new HashMap<ThreadGroupReference, List<ThreadGroupReference>>();
@@ -278,6 +279,8 @@ public class ThreadsCache implements Executor {
                 initThreadGroups();
             } catch (VMDisconnectedExceptionWrapper ex) {
                 return Collections.emptyList();
+            } catch (VMOutOfMemoryExceptionWrapper ex) {
+                return Collections.emptyList();
             }
         }
         List<ThreadReference> threads = threadMap.get(group);
@@ -294,6 +297,8 @@ public class ThreadsCache implements Executor {
             try {
                 initThreadGroups();
             } catch (VMDisconnectedExceptionWrapper ex) {
+                return Collections.emptyList();
+            } catch (VMOutOfMemoryExceptionWrapper ex) {
                 return Collections.emptyList();
             }
         }
@@ -315,6 +320,8 @@ public class ThreadsCache implements Executor {
             try {
                 initThreadGroups();
             } catch (VMDisconnectedExceptionWrapper ex) {
+                return Collections.emptyList();
+            } catch (VMOutOfMemoryExceptionWrapper ex) {
                 return Collections.emptyList();
             }
         }
@@ -398,6 +405,8 @@ public class ThreadsCache implements Executor {
                 return true;
             } catch (VMDisconnectedExceptionWrapper ex) {
                 return true;
+            } catch (VMOutOfMemoryExceptionWrapper ex) {
+                return true;
             } catch (IllegalThreadStateExceptionWrapper ex) {
                 return true;
             } catch (ObjectCollectedExceptionWrapper ocex) {
@@ -478,6 +487,8 @@ public class ThreadsCache implements Executor {
                 } catch (InternalExceptionWrapper ex) {
                     group = null;
                 } catch (VMDisconnectedExceptionWrapper ex) {
+                    return true;
+                } catch (VMOutOfMemoryExceptionWrapper ex) {
                     return true;
                 } catch (IllegalThreadStateExceptionWrapper ex) {
                     group = null;
@@ -592,6 +603,8 @@ public class ThreadsCache implements Executor {
                     continue;
                 } catch (VMDisconnectedExceptionWrapper ex) {
                     return ;
+                } catch (VMOutOfMemoryExceptionWrapper ex) {
+                    return ;
                 } catch (IllegalThreadStateExceptionWrapper ex) {
                     continue;
                 } catch (ObjectCollectedExceptionWrapper ocex) {
@@ -636,6 +649,8 @@ public class ThreadsCache implements Executor {
                     } catch (InternalExceptionWrapper ex) {
                         group = null;
                     } catch (VMDisconnectedExceptionWrapper ex) {
+                        return ;
+                    } catch (VMOutOfMemoryExceptionWrapper ex) {
                         return ;
                     } catch (IllegalThreadStateExceptionWrapper ex) {
                         group = null;

@@ -71,19 +71,9 @@ public final class QueryImpl<Q, I>  {
         this.issueProvider = issueProvider;
         this.data = data;
         this.repository = repository;
-        queryProvider.addPropertyChangeListener(data, new PropertyChangeListener() {
-            @Override
-            public void propertyChange(PropertyChangeEvent evt) {
-                if(QueryProvider.EVENT_QUERY_REMOVED.equals(evt.getPropertyName()) ||
-                   QueryProvider.EVENT_QUERY_SAVED.equals(evt.getPropertyName())) 
-                {
-                    QueryImpl.this.repository.fireQueryListChanged();
-                }
-            }
-        });
     }
     
-    public Query getQuery() {
+    public synchronized Query getQuery() {
         if(query == null) {
             query = APIAccessor.IMPL.createQuery(this);
         }

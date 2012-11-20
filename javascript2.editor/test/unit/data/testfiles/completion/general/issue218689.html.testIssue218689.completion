@@ -1,0 +1,6 @@
+Code completion result for source line:
+b.v|
+(QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
+------------------------------------
+METHOD     valueOf(): Object               [PUBLIC]   stub_CORE_Object.js
+FIELD      value: Number                   [PUBLIC]   issue218689.html

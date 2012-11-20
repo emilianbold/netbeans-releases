@@ -57,11 +57,11 @@ package org.netbeans.modules.cnd.navigation.macroview;
 import javax.swing.JEditorPane;
 import javax.swing.JPanel;
 import javax.swing.text.Document;
+import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 import org.netbeans.modules.cnd.api.model.services.CsmMacroExpansion;
 import org.netbeans.modules.cnd.model.tasks.OpenedEditors;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.netbeans.modules.cnd.utils.MIMENames;
-import org.netbeans.modules.editor.NbEditorDocument;
 import org.openide.explorer.ExplorerManager;
 import org.openide.filesystems.FileObject;
 import org.openide.util.HelpCtx;
@@ -91,10 +91,9 @@ public class MacroExpansionPanel extends JPanel implements ExplorerManager.Provi
      * @param doc - document
      */
     public void setContextExpansionDocument(Document doc) {
-        Object mimeTypeObj = doc.getProperty(NbEditorDocument.MIME_TYPE_PROP);
-        String mimeType = MIMENames.CPLUSPLUS_MIME_TYPE;
-        if (mimeTypeObj != null) {
-            mimeType = (String) mimeTypeObj;
+        String mimeType = DocumentUtilities.getMimeType(doc);
+        if (mimeType == null) {
+            mimeType = MIMENames.CPLUSPLUS_MIME_TYPE;
         }
         jCodeExpansionEditorPane.setCaretPosition(0);
         jCodeExpansionEditorPane.setContentType(mimeType);

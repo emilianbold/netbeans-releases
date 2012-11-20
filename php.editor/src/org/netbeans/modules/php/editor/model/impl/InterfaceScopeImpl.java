@@ -41,21 +41,26 @@
  */
 package org.netbeans.modules.php.editor.model.impl;
 
-import org.netbeans.modules.php.editor.api.QualifiedName;
 import java.util.Collection;
 import java.util.HashSet;
-import org.netbeans.modules.php.editor.model.*;
 import java.util.List;
 import java.util.Set;
 import org.netbeans.modules.php.editor.api.ElementQuery;
+import org.netbeans.modules.php.editor.api.QualifiedName;
 import org.netbeans.modules.php.editor.api.elements.ClassElement;
 import org.netbeans.modules.php.editor.api.elements.InterfaceElement;
 import org.netbeans.modules.php.editor.api.elements.MethodElement;
-import org.netbeans.modules.php.editor.model.nodes.InterfaceDeclarationInfo;
 import org.netbeans.modules.php.editor.api.elements.TypeConstantElement;
 import org.netbeans.modules.php.editor.api.elements.TypeElement;
 import org.netbeans.modules.php.editor.index.Signature;
-
+import org.netbeans.modules.php.editor.model.ClassConstantElement;
+import org.netbeans.modules.php.editor.model.IndexScope;
+import org.netbeans.modules.php.editor.model.InterfaceScope;
+import org.netbeans.modules.php.editor.model.MethodScope;
+import org.netbeans.modules.php.editor.model.ModelUtils;
+import org.netbeans.modules.php.editor.model.NamespaceScope;
+import org.netbeans.modules.php.editor.model.Scope;
+import org.netbeans.modules.php.editor.model.nodes.InterfaceDeclarationInfo;
 
 /**
  *
@@ -71,41 +76,35 @@ class InterfaceScopeImpl extends TypeScopeImpl implements InterfaceScope {
     }
 
     @Override
-    public String toString() {
-        StringBuilder sb = new StringBuilder();
-        sb.append(super.toString());
-        List<? extends InterfaceScope> implementedInterfaces = getSuperInterfaceScopes();
-        if (implementedInterfaces.size() > 0) {
-            sb.append(" implements ");
-            for (InterfaceScope interfaceScope : implementedInterfaces) {
-                sb.append(interfaceScope.getName()).append(" ");
-            }
-        }
-        return sb.toString();
-    }
-
-    @Override
     public String asString(PrintAs as) {
         StringBuilder retval = new StringBuilder();
         switch (as) {
             case NameAndSuperTypes:
-                retval.append(getName()); //NOI18N
-            case SuperTypes:
-                Set<QualifiedName> superIfaces = getSuperInterfaces();
-                if (!superIfaces.isEmpty()) {
-                    retval.append(" extends ");//NOI18N
-                }
-                StringBuilder ifacesBuffer = new StringBuilder();
-                for (QualifiedName qualifiedName : superIfaces) {
-                    if (ifacesBuffer.length() > 0) {
-                        ifacesBuffer.append(", ");//NOI18N
-                    }
-                    ifacesBuffer.append(qualifiedName.getName());
-                }
-                retval.append(ifacesBuffer);
+                retval.append(getName());
+                printAsSuperTypes(retval);
                 break;
+            case SuperTypes:
+                printAsSuperTypes(retval);
+                break;
+            default:
+                assert false : as;
         }
         return retval.toString();
+    }
+
+    private void printAsSuperTypes(StringBuilder sb) {
+        Set<QualifiedName> superIfaces = getSuperInterfaces();
+        if (!superIfaces.isEmpty()) {
+            sb.append(" extends "); //NOI18N
+        }
+        StringBuilder ifacesBuffer = new StringBuilder();
+        for (QualifiedName qualifiedName : superIfaces) {
+            if (ifacesBuffer.length() > 0) {
+                ifacesBuffer.append(", "); //NOI18N
+            }
+            ifacesBuffer.append(qualifiedName.getName());
+        }
+        sb.append(ifacesBuffer);
     }
 
     @Override
@@ -122,9 +121,9 @@ class InterfaceScopeImpl extends TypeScopeImpl implements InterfaceScope {
                 MethodElement indexedFunction = classMember;
                 TypeElement type = indexedFunction.getType();
                 if (type.isInterface()) {
-                    allMethods.add(new MethodScopeImpl(new InterfaceScopeImpl(indexScope, (InterfaceElement)type), indexedFunction));
+                    allMethods.add(new MethodScopeImpl(new InterfaceScopeImpl(indexScope, (InterfaceElement) type), indexedFunction));
                 } else {
-                    allMethods.add(new MethodScopeImpl(new ClassScopeImpl(indexScope, (ClassElement)type), indexedFunction));
+                    allMethods.add(new MethodScopeImpl(new ClassScopeImpl(indexScope, (ClassElement) type), indexedFunction));
                 }
             }
         }
@@ -176,14 +175,15 @@ class InterfaceScopeImpl extends TypeScopeImpl implements InterfaceScope {
             Collection<QualifiedName> fQSuperInterfaceNames = getFQSuperInterfaceNames();
             for (QualifiedName fQSuperInterfaceName : fQSuperInterfaceNames) {
                 if (fqIfaceSb.length() > 0) {
-                    fqIfaceSb.append(",");//NOI18N
+                    fqIfaceSb.append(","); //NOI18N
                 }
-                fqIfaceSb.append(fQSuperInterfaceName.toString());//NOI18N
+                fqIfaceSb.append(fQSuperInterfaceName.toString()); //NOI18N
             }
             sb.append(fqIfaceSb);
         }
         sb.append(Signature.ITEM_DELIMITER);
         NamespaceScope namespaceScope = ModelUtils.getNamespaceScope(this);
+        assert namespaceScope != null;
         QualifiedName qualifiedName = namespaceScope.getQualifiedName();
         sb.append(qualifiedName.toString()).append(Signature.ITEM_DELIMITER);
         return sb.toString();
@@ -192,9 +192,24 @@ class InterfaceScopeImpl extends TypeScopeImpl implements InterfaceScope {
     @Override
     public QualifiedName getNamespaceName() {
         if (indexedElement instanceof InterfaceElement) {
-            InterfaceElement indexedInterface = (InterfaceElement)indexedElement;
+            InterfaceElement indexedInterface = (InterfaceElement) indexedElement;
             return indexedInterface.getNamespaceName();
         }
         return super.getNamespaceName();
     }
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        sb.append(super.toString());
+        List<? extends InterfaceScope> implementedInterfaces = getSuperInterfaceScopes();
+        if (implementedInterfaces.size() > 0) {
+            sb.append(" implements ");
+            for (InterfaceScope interfaceScope : implementedInterfaces) {
+                sb.append(interfaceScope.getName()).append(" ");
+            }
+        }
+        return sb.toString();
+    }
+
 }

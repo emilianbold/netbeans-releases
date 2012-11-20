@@ -312,18 +312,20 @@ public final class AbbrevDetection implements DocumentListener, PropertyChangeLi
     }
     
     private void checkExpansionKeystroke(KeyEvent evt) {
-        if (abbrevEndPosition != null && component != null && doc != null
-            && component.getCaretPosition() == abbrevEndPosition.getOffset()
-            && !isAbbrevDisabled()
-            && !Boolean.TRUE.equals(doc.getProperty(EDITING_TEMPLATE_DOC_PROPERTY))
-        ) {
-            CodeTemplateManagerOperation operation = CodeTemplateManagerOperation.get(component.getDocument(), abbrevEndPosition.getOffset());
-            if (operation != null) {
-                KeyStroke expandKeyStroke = operation.getExpansionKey();
+        synchronized (abbrevChars) {
+            if (abbrevEndPosition != null && component != null && doc != null
+                && component.getCaretPosition() == abbrevEndPosition.getOffset()
+                && !isAbbrevDisabled()
+                && !Boolean.TRUE.equals(doc.getProperty(EDITING_TEMPLATE_DOC_PROPERTY))
+            ) {
+                CodeTemplateManagerOperation operation = CodeTemplateManagerOperation.get(component.getDocument(), abbrevEndPosition.getOffset());
+                if (operation != null) {
+                    KeyStroke expandKeyStroke = operation.getExpansionKey();
 
-                if (expandKeyStroke.equals(KeyStroke.getKeyStrokeForEvent(evt))) {
-                    if (expand(operation)) {
-                        evt.consume();
+                    if (expandKeyStroke.equals(KeyStroke.getKeyStrokeForEvent(evt))) {
+                        if (expand(operation)) {
+                            evt.consume();
+                        }
                     }
                 }
             }

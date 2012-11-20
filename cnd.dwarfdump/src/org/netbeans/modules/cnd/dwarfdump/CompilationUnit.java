@@ -80,7 +80,7 @@ import org.netbeans.modules.cnd.dwarfdump.section.StringTableSection;
  *
  * @author ak119685
  */
-public class CompilationUnit {
+public class CompilationUnit implements CompilationUnitInterface{
     private final DwarfReader reader;
     
     private final long debugInfoSectionOffset;
@@ -719,5 +719,19 @@ public class CompilationUnit {
             Dwarf.LOG.log(Level.INFO, "File "+reader.getFileName(), ex); // NOI18N
             return ""; // NOI18N
         }
+    }
+
+    public boolean hasMain() throws IOException {
+        List<DwarfEntry> topLevelEntries = getTopLevelEntries();
+        for(DwarfEntry entry : topLevelEntries) {
+            if (entry.getKind() == TAG.DW_TAG_subprogram) {
+                if ("main".equals(entry.getName())) { // NOI18N
+                    if (entry.isExternal()) {
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
     }
 }

@@ -224,9 +224,11 @@ public class CssHtmlTranslator implements CssEmbeddingProvider.Translator {
                         if (!ILLEGAL_CHARS_IN_SELECTOR.matcher(text).find()) {
                             embeddings.add(snapshot.create("\n ", CSS_MIME_TYPE)); //NOI18N
 
-                            String prefix = HTMLTokenId.VALUE_CSS_TOKEN_TYPE_CLASS.equals(valueCssType) ? " ." : " #";
+                            boolean isClassElement = HTMLTokenId.VALUE_CSS_TOKEN_TYPE_CLASS.equals(valueCssType);
+                            String prefix = isClassElement ? " ." : " #";
                             Matcher matcher = CLASSES_LIST_PATTERN.matcher(text);
-                            boolean classExists = false;
+                            boolean elementExists = false;
+                            int last_class_name_end_offset = -1;
                             while(matcher.find()) {
                                 int start = matcher.start();
                                 int end = matcher.end();
@@ -235,16 +237,31 @@ public class CssHtmlTranslator implements CssEmbeddingProvider.Translator {
 
                                     //compute the token's document offset
                                     int start_in_document = sourceStart + start;
-                                    int lenght = end - start;
+                                    int length = end - start;
 
                                     //create the real text embedding
-                                    embeddings.add(snapshot.create(start_in_document, lenght, CSS_MIME_TYPE));
+                                    embeddings.add(snapshot.create(start_in_document, length, CSS_MIME_TYPE));
 
-                                    classExists = true;
+                                    elementExists = true;
+                                    last_class_name_end_offset = start_in_document + length;
                                 }
                             }
-
-                            if(!classExists) {
+                            
+                            if(elementExists) {
+                                if(isClassElement) {
+                                    //check if there's a whitespace after the last class and if so, add it to the virtual
+                                    //source so completion can work at <div class="foo |"/>
+                                    //HOWEVER this fix will only work of the caret is exactly one char after the last
+                                    //class name end, if further, completion for html element selectors will appear
+                                    //To fix this I'd likely need to completely redone the class/id completion so it doesn't
+                                    //use the normal css completion but some special html based completion taking the items
+                                    //from css index.
+                                    if(last_class_name_end_offset < sourceEnd) {
+                                        embeddings.add(snapshot.create(prefix, CSS_MIME_TYPE)); //NOI18N
+                                        embeddings.add(snapshot.create(last_class_name_end_offset + 1, 0, CSS_MIME_TYPE));
+                                    }
+                                }
+                            } else {
                                 //empty class attribute, we need to generate . {} so the completion can complete
                                 //classes after the dot
                                 embeddings.add(snapshot.create(prefix, CSS_MIME_TYPE)); //NOI18N

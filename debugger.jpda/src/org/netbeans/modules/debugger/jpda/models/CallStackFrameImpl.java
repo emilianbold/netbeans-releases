@@ -955,10 +955,14 @@ public class CallStackFrameImpl implements CallStackFrame {
                 return false;
             }
             EqualsInfo ei = (EqualsInfo) obj;
-            return thread == ei.thread &&
-                   depth == ei.depth &&
-                   (location == ei.location ||
-                    location != null && location.equals(ei.location));
+            try {
+                return thread == ei.thread &&
+                       depth == ei.depth &&
+                       (location == ei.location ||
+                        location != null && location.equals(ei.location));
+            } catch (VMDisconnectedException vmdex) {
+                return false;
+            }
         }
 
         @Override

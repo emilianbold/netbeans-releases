@@ -73,7 +73,7 @@ public class WhereUsedQueryUI implements RefactoringUI {
         name = usage.getName();
         kind = usage.getElementKind();
     }
-    
+
     @Override
     public boolean isQuery() {
         return true;
@@ -98,10 +98,11 @@ public class WhereUsedQueryUI implements RefactoringUI {
         } else if (kind == ElementKind.MODULE || kind == ElementKind.CLASS || kind == ElementKind.INTERFACE) {
             setForClass();
             return query.checkParameters();
-        } else
+        } else {
             return null;
+        }
     }
-    
+
     private void setForMethod() {
         if (panel.isMethodFromBaseClass()) {
             query.setRefactoringSource(Lookups.singleton(panel.getBaseMethod()));
@@ -111,14 +112,14 @@ public class WhereUsedQueryUI implements RefactoringUI {
         query.putValue(WhereUsedQueryConstants.FIND_OVERRIDING_METHODS,panel.isMethodOverriders());
         query.putValue(WhereUsedQuery.FIND_REFERENCES,panel.isMethodFindUsages());
     }
-    
+
     private void setForClass() {
         query.putValue(WhereUsedQueryConstants.FIND_SUBCLASSES,panel.isClassSubTypes());
         query.putValue(WhereUsedQueryConstants.FIND_DIRECT_SUBCLASSES,panel.isClassSubTypesDirectOnly());
         query.putValue(WhereUsedQueryConstants.FIND_SUBCLASSES,panel.isClassSubTypes());
         query.putValue(WhereUsedQuery.FIND_REFERENCES,panel.isClassFindUsages());
     }
-    
+
     @Override
     public org.netbeans.modules.refactoring.api.Problem checkParameters() {
         if (kind == ElementKind.METHOD) {
@@ -127,8 +128,9 @@ public class WhereUsedQueryUI implements RefactoringUI {
         } else if (kind == ElementKind.CLASS || kind == ElementKind.MODULE) {
             setForClass();
             return query.fastCheckParameters();
-        } else
+        } else {
             return null;
+        }
     }
 
     @Override
@@ -139,11 +141,11 @@ public class WhereUsedQueryUI implements RefactoringUI {
     @Override
     public String getDescription() {
         String nameText = name;//NOI18N
-        String bundleKey = (panel!=null && panel.isClassSubTypesDirectOnly()) ? 
+        String bundleKey = (panel!=null && panel.isClassSubTypesDirectOnly()) ?
             "DSC_WhereUsedFindDirectSubTypes" : "DSC_WhereUsed";//NOI18N
         return getString(bundleKey, nameText);
     }
-    
+
     private ResourceBundle bundle;
     private String getString(String key) {
         if (bundle == null) {
@@ -151,7 +153,7 @@ public class WhereUsedQueryUI implements RefactoringUI {
         }
         return bundle.getString(key);
     }
-    
+
     private String getString(String key, String value) {
         return new MessageFormat(getString(key)).format (new Object[] {value});
     }
@@ -163,7 +165,7 @@ public class WhereUsedQueryUI implements RefactoringUI {
                     new Object[] {name}
                 );
     }
-    
+
     @Override
     public boolean hasParameters() {
         return true;
@@ -171,6 +173,6 @@ public class WhereUsedQueryUI implements RefactoringUI {
 
     @Override
     public HelpCtx getHelpCtx() {
-        return new HelpCtx(WhereUsedQueryUI.class);
+        return new HelpCtx("org.netbeans.modules.refactoring.php.findusages.WhereUsedQueryUI");
     }
 }

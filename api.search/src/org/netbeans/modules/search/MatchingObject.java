@@ -112,8 +112,6 @@ public final class MatchingObject implements Comparable<MatchingObject>,
     /** */
     private Node nodeDelegate = null;
     /** */
-    private String relativeSearchPath = null;
-    /** */
     List<TextDetail> textDetails;
     
     /**
@@ -199,7 +197,6 @@ public final class MatchingObject implements Comparable<MatchingObject>,
         if (dataObject != null) {
             matchesCount = computeMatchesCount();
             nodeDelegate = dataObject.getNodeDelegate();
-            relativeSearchPath = computeRelativeSearchPath();
         }
         setUpDataObjValidityChecking();
         if (textDetails != null && !textDetails.isEmpty()) {
@@ -977,19 +974,6 @@ public final class MatchingObject implements Comparable<MatchingObject>,
         return resultModel.getDetailsCount(this);
     }
 
-    private String computeRelativeSearchPath() {
-
-        FileObject searchRoot = resultModel.getCommonSearchFolder();
-        FileObject fileFolder = fileObject.getParent();
-
-        if (searchRoot == null) {
-            return FileUtil.getFileDisplayName(fileFolder);
-        } else {
-            String p = FileUtil.getRelativePath(searchRoot, fileFolder);
-            return p == null ? FileUtil.getFileDisplayName(fileFolder) : p;
-        }
-    }
-
     /** Get file display name, e.g. for JTree tooltip. */
     String getFileDisplayName() {
         return FileUtil.getFileDisplayName(fileObject);
@@ -998,11 +982,6 @@ public final class MatchingObject implements Comparable<MatchingObject>,
     /** Return pre-computed matches count. */
     int getMatchesCount() {
         return matchesCount;
-    }
-
-    /** Return pre-computed search path. */
-    String getRelativeSearchPath() {
-        return relativeSearchPath;
     }
 
     /** Return node delegate. */

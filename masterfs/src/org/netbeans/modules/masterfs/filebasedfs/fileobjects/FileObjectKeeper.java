@@ -118,6 +118,9 @@ final class FileObjectKeeper implements FileChangeListener {
              if (timeStamp > 0) {
                  timeStamp = -timeStamp;
              }
+             if (timeStamp == 0) {
+                 timeStamp = -2;
+             }
          }
 
          File file = Watcher.wrap(root.getFileName().getFile(), root);
@@ -349,7 +352,7 @@ final class FileObjectKeeper implements FileChangeListener {
     }
 
     long childrenLastModified() {
-        return Math.abs(timeStamp);
+        return timeStamp == -2 ? 0 : Math.abs(timeStamp);
     }
 
     boolean isOn() {

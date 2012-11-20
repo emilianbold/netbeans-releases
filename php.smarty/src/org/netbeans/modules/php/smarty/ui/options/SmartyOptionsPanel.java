@@ -68,8 +68,10 @@ import javax.swing.UIManager;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import org.netbeans.modules.php.api.util.UiUtils;
 import org.netbeans.modules.php.smarty.SmartyFramework;
 import org.netbeans.modules.php.smarty.SmartyFramework.ToggleCommentOption;
+import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.awt.HtmlBrowser;
 import org.openide.awt.Mnemonics;
 import org.openide.util.ChangeSupport;
@@ -79,6 +81,15 @@ import org.openide.util.NbBundle;
 /**
  * @author Martin Fousek
  */
+@NbBundle.Messages({
+    "SmartyOptionsPanel.keywords.template=template",
+    "SmartyOptionsPanel.keywords.framework=framework"
+})
+@OptionsPanelController.Keywords(
+        keywords = {"php", "smarty", "framework", "template", "tpl",
+            "#SmartyOptionsPanel.keywords.template", "#SmartyOptionsPanel.keywords.framework"},
+        location = UiUtils.OPTIONS_PATH,
+        tabTitle = "#LBL_PHPSmartyOptionsName")
 public class SmartyOptionsPanel extends JPanel {
     private static final long serialVersionUID = -1384644114740L;
 

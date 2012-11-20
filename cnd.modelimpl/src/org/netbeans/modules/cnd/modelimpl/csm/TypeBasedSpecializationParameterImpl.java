@@ -62,9 +62,9 @@ import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmSpecializationParameter;
 import org.netbeans.modules.cnd.api.model.CsmType;
 import org.netbeans.modules.cnd.api.model.CsmTypeBasedSpecializationParameter;
+import org.netbeans.modules.cnd.modelimpl.csm.SpecializationDescriptor.SpecializationParameterBuilder;
 import org.netbeans.modules.cnd.modelimpl.csm.TypeFactory.TypeBuilder;
 import org.netbeans.modules.cnd.modelimpl.csm.core.OffsetableBase;
-import org.netbeans.modules.cnd.modelimpl.csm.core.OffsetableDeclarationBase.ScopedDeclarationBuilder;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
@@ -164,7 +164,7 @@ public final class TypeBasedSpecializationParameterImpl extends OffsetableBase i
         return type.toString();
     }
 
-    public static class TypeBasedSpecializationParameterBuilder extends ScopedDeclarationBuilder {
+    public static class TypeBasedSpecializationParameterBuilder extends SpecializationParameterBuilder {
 
         private TypeBuilder typeBuilder;
 
@@ -172,6 +172,7 @@ public final class TypeBasedSpecializationParameterImpl extends OffsetableBase i
             this.typeBuilder = type;
         }
 
+        @Override
         public TypeBasedSpecializationParameterImpl create() {
             TypeBasedSpecializationParameterImpl param = new TypeBasedSpecializationParameterImpl(getType(), getFile(), getStartOffset(), getEndOffset());
             return param;

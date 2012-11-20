@@ -501,6 +501,8 @@ public final class CsmTracer {
             dumpStatement((CsmLoopStatement) stmt);
         } else if (kind == CsmStatement.Kind.FOR) {
             dumpStatement((CsmForStatement) stmt);
+        } else if (kind == CsmStatement.Kind.RANGE_FOR) {
+            dumpStatement((CsmForStatement) stmt);
         } else if (kind == CsmStatement.Kind.SWITCH) {
             dumpStatement((CsmSwitchStatement) stmt);
         } else if (kind == CsmStatement.Kind.CASE) {

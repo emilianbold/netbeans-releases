@@ -118,6 +118,12 @@ public class ExposeBusinessMethod implements Fix {
         ClasspathInfo cpInfo = ClasspathInfo.create(fileObject);
         FileObject targetFileObject = SourceUtils.getFile(targetClassHandle, cpInfo);
 
+        // target file can't be found, don't offer the fix
+        if (targetFileObject == null) {
+            EJBProblemFinder.LOG.log(Level.WARNING,
+                    "ExposeBusinessMethod not offered: targetFile={0} not found", targetClassHandle.getQualifiedName());
+            return null;
+        }
         JavaSource javaSource = JavaSource.create(cpInfo, fileObject, targetFileObject);
 
         try {

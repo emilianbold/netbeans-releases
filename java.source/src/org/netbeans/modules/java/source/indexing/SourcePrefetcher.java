@@ -41,7 +41,8 @@
  */
 package org.netbeans.modules.java.source.indexing;
 
-import java.io.FileNotFoundException;
+import java.io.Closeable;
+import java.io.IOException;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.concurrent.*;
@@ -58,7 +59,7 @@ import org.openide.util.RequestProcessor;
  *
  * @author Tomas Zezula
  */
-class SourcePrefetcher implements Iterator<CompileTuple> {
+class SourcePrefetcher implements Iterator<CompileTuple>, /*Auto*/Closeable {
     
     private static final Logger LOG = Logger.getLogger(SourcePrefetcher.class.getName());
     private static final int DEFAULT_PROC_COUNT = 2;
@@ -107,6 +108,13 @@ class SourcePrefetcher implements Iterator<CompileTuple> {
             iterator.remove();
         } finally {
             active = false;
+        }
+    }
+
+    @Override
+    public void close() throws IOException {
+        if (iterator instanceof Closeable) {
+            ((Closeable)iterator).close();
         }
     }
     
@@ -163,7 +171,7 @@ class SourcePrefetcher implements Iterator<CompileTuple> {
         
     }
     
-    private static final class ConcurrentIterator extends SuspendableIterator {
+    private static final class ConcurrentIterator extends SuspendableIterator implements /*Auto*/Closeable {
         
         private static final CompileTuple DUMMY = new CompileTuple(null, null);
         
@@ -179,6 +187,7 @@ class SourcePrefetcher implements Iterator<CompileTuple> {
         private int count;
         //@NotThreadSafe
         private CompileTuple active;
+        private volatile boolean closed;
         
 
         private ConcurrentIterator(
@@ -190,9 +199,14 @@ class SourcePrefetcher implements Iterator<CompileTuple> {
             
             for (final CompileTuple ct : files) {
                 cs.submit(new Callable<CompileTuple>() {
+                    @NonNull
                     @Override
                     public CompileTuple call() throws Exception {
                         safePark();
+                        if (closed) {
+                            LOG.finest("Skipping prefetch due to close.");  //NOI18N
+                            return ct;
+                        }
                         final int len = Math.min(BUFFER_SIZE,ct.jfo.prefetch());
                         if (LOG.isLoggable(Level.FINEST) && 
                             (sem.availablePermits() - len) < 0) {
@@ -208,11 +222,13 @@ class SourcePrefetcher implements Iterator<CompileTuple> {
         
         @Override
         public boolean hasNext() {
+            ensureNotClosed();
             return count > 0;
         }
 
         @Override
         public CompileTuple next() {
+            ensureNotClosed();
             if (active != null) {
                 throw new IllegalStateException("Call remove to free resources");   //NOI18N
             }
@@ -228,7 +244,7 @@ class SourcePrefetcher implements Iterator<CompileTuple> {
             } catch (ExecutionException ex) {
                 active = DUMMY;
                 final Throwable rootCause = ex.getCause();
-                if (rootCause instanceof FileNotFoundException) {
+                if (rootCause instanceof IOException) {
                     LOG.log(Level.INFO, rootCause.getLocalizedMessage());
                 } else {
                     Exceptions.printStackTrace(ex);
@@ -241,16 +257,33 @@ class SourcePrefetcher implements Iterator<CompileTuple> {
         
         @Override
         public void remove() {
+            ensureNotClosed();
             if (active == null) {
                 throw new IllegalStateException("Call next before remove");   //NOI18N
             }
             try {
-                if (active != DUMMY) {
+                if (active != DUMMY) {                    
                     final int len = Math.min(BUFFER_SIZE, active.jfo.dispose());
                     sem.release(len);
                 }
             } finally {
                 active = null;
+            }
+        }
+
+        @Override
+        public void close() throws IOException {
+            ensureNotClosed();
+            closed = true;
+            //Actually the threads may be blocked in semaphore requiring at most PROC_COUNT * BUFFER_SIZE grants
+            //as we are at the end of the life cycle it's safe to break invariants and unblock the
+            //threads.
+            sem.release(PROC_COUNT * BUFFER_SIZE);
+        }
+
+        private void ensureNotClosed() {
+            if (closed) {
+                throw new IllegalStateException("Already closed SourcePrefetcher instance.");
             }
         }
         

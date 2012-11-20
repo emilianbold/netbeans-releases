@@ -193,7 +193,7 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
                 final File location = productToIntegrate.getInstallationLocation();
                 //registerJavaDB(location, new File(directory, "javadb"));
                 LogManager.log("... integrate " + getProduct().getDisplayName() + " with " + productToIntegrate.getDisplayName() + " installed at " + location);
-                if(!registerWebLogic(location, directory, domaindir, username, "")) {
+                if(!registerWebLogic(location, directory, domaindir, username, SystemUtils.isWindows() ? "\"\"" : "")) {
                     continue;
                 }
                 

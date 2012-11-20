@@ -45,16 +45,33 @@ package org.netbeans.modules.subversion.options;
 
 import java.awt.Color;
 import java.awt.Font;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
 import javax.swing.UIManager;
 import javax.swing.text.Document;
 import javax.swing.text.html.HTMLDocument;
+import org.netbeans.api.options.OptionsDisplayer;
+import org.netbeans.spi.options.OptionsPanelController;
+import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
 /**
  *
  * @author Tomas Stupka
  */
+@OptionsPanelController.Keywords(keywords={"svn", "subversion", "#SvnOptionsPanel.kw1", "#SvnOptionsPanel.kw2", "#SvnOptionsPanel.kw3",
+    "#SvnOptionsPanel.kw4", "#SvnOptionsPanel.kw5"}, location=OptionsDisplayer.ADVANCED, tabTitle="#CTL_OptionsPanel.title")
+@NbBundle.Messages({
+    "CTL_OptionsPanel.title=Versioning",
+    "SvnOptionsPanel.kw1=versioning",
+    "SvnOptionsPanel.kw2=preferred client",
+    "SvnOptionsPanel.kw3=connection settings",
+    "SvnOptionsPanel.kw4=status labels",
+    "SvnOptionsPanel.kw5=locking settings"
+})
 public class SvnOptionsPanel extends javax.swing.JPanel {
+    private String[] keywords;
 
     /** Creates new form SvnOptionsPanel */
     public SvnOptionsPanel() {
@@ -76,6 +93,21 @@ public class SvnOptionsPanel extends javax.swing.JPanel {
         }
         textPaneClient.setOpaque(false);
         textPaneClient.setBackground(new Color(0,0,0,0)); // windows and nimbus workaround see issue 145826
+    }
+
+    Collection<String> getKeywords () {
+        if (keywords == null) {
+            keywords = new String[] {
+                "SVN",
+                "SUBVERSION",
+                Bundle.SvnOptionsPanel_kw1().toUpperCase(),
+                Bundle.SvnOptionsPanel_kw2().toUpperCase(),
+                Bundle.SvnOptionsPanel_kw3().toUpperCase(),
+                Bundle.SvnOptionsPanel_kw4().toUpperCase(),
+                Bundle.SvnOptionsPanel_kw5().toUpperCase()
+            };
+        }
+        return Collections.unmodifiableList(Arrays.asList(keywords));
     }
 
     /** This method is called from within the constructor to

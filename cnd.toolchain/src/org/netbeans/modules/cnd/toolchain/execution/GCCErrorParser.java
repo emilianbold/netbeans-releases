@@ -272,7 +272,7 @@ public final class GCCErrorParser extends ErrorParser {
                 if (relativeDir != null) {
                     //FileObject fo = relativeDir.getFileObject(file);
                     FileObject fo = resolveRelativePath(relativeDir, file);
-                    boolean important = m.group(3).indexOf("error") != (-1); // NOI18N
+                    boolean important = m.group(3).toLowerCase().indexOf("error") != (-1); // NOI18N
                     if (fo != null && fo.isValid()) {
                         for (Iterator<StackIncludeItem> it = errorInludes.iterator(); it.hasNext();) {
                             StackIncludeItem item = it.next();

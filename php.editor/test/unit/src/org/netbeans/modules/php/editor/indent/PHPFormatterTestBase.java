@@ -108,8 +108,8 @@ public abstract class PHPFormatterTestBase extends PHPCodeCompletionTestBase {
         setupDocumentIndentation(doc, preferences);
 
         Preferences prefs = CodeStylePreferences.get(doc).getPreferences();
-        prefs.putInt(FmtOptions.initialIndent, initialIndent);
-        prefs.putInt(FmtOptions.continuationIndentSize, 4);
+        prefs.putInt(FmtOptions.INITIAL_INDENT, initialIndent);
+        prefs.putInt(FmtOptions.CONTINUATION_INDENT_SIZE, 4);
 
         format(doc, formatter, formatStart, formatEnd, false);
 
@@ -161,7 +161,7 @@ public abstract class PHPFormatterTestBase extends PHPCodeCompletionTestBase {
                 text = text.substring(0, carretPosition) + text.substring(carretPosition + 1);
             }
 
-            TokenFormatter.unitTestCarretPosition = carretPosition;
+            TokenFormatter.setUnitTestCarretPosition(carretPosition);
             doc.remove(0, doc.getLength());
             doc.insertString(0, text, null);
             doc.putProperty(TokenFormatter.TEMPLATE_HANDLER_PROPERTY, new Object());

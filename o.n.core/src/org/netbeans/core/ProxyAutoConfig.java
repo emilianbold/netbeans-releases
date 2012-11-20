@@ -55,6 +55,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
 import org.openide.util.RequestProcessor;
 import org.openide.util.RequestProcessor.Task;
+import org.openide.util.Utilities;
 
 /**
  *
@@ -65,6 +66,7 @@ public class ProxyAutoConfig {
     private static final Map<String, ProxyAutoConfig> file2pac = new HashMap<String, ProxyAutoConfig>(2);
     private static RequestProcessor RP = new RequestProcessor(ProxyAutoConfig.class);
     private static final String NS_PROXY_AUTO_CONFIG_URL = "nbinst://org.netbeans.core/modules/ext/nsProxyAutoConfig.js"; // NOI18N
+    private static final String PROTO_FILE = "file://";
 
     /**
      * 
@@ -92,13 +94,13 @@ public class ProxyAutoConfig {
 
     private ProxyAutoConfig(final String pacURL) throws URISyntaxException {
         assert file2pac.get(pacURL) == null : "Only once object for " + pacURL + " must exist.";
-        final String normPAC = normalizePAC(pacURL);
+        String normPAC = normalizePAC(pacURL);
         pacURI = new URI(normPAC);
         initTask = RP.post(new Runnable() {
 
             @Override
             public void run() {
-                initEngine(normPAC);
+                initEngine();
             }
         });
     }
@@ -107,12 +109,16 @@ public class ProxyAutoConfig {
         return pacURI;
     }
 
-    private void initEngine(String pacURL) {
+    private void initEngine() {
         InputStream pacIS;
         try {
-            pacIS = downloadPAC(pacURL);
+            if (pacURI.isAbsolute()) {
+                pacIS = downloadPAC(pacURI.toURL());
+            } else {
+                pacIS = null;
+            }
         } catch (IOException ex) {
-            LOGGER.log(Level.INFO, "InputStream for " + pacURL + " throws " + ex, ex);
+            LOGGER.log(Level.INFO, "InputStream for " + pacURI + " throws " + ex, ex);
             return;
         }
         if (pacIS == null) {
@@ -182,16 +188,9 @@ public class ProxyAutoConfig {
         return res;
     }
 
-    private static InputStream downloadPAC(String pacURL) throws IOException {
+    private static InputStream downloadPAC (URL pacURL) throws IOException {
         InputStream is;
-        URL url;
-        try {
-            url = new URL(pacURL);
-        } catch (MalformedURLException ex) {
-            LOGGER.log(Level.INFO, "Malformed " + pacURL, ex);
-            return null;
-        }
-        URLConnection conn = url.openConnection(Proxy.NO_PROXY);
+        URLConnection conn = pacURL.openConnection(Proxy.NO_PROXY);
         is = conn.getInputStream();
         return is;
     }
@@ -330,6 +329,16 @@ public class ProxyAutoConfig {
         }
         if ((index = pacURL.indexOf("\r")) != -1) { // NOI18N
             pacURL = pacURL.substring(0, index);
+        }
+        String fileLocation = pacURL;
+        if (fileLocation.startsWith(PROTO_FILE)) {
+            fileLocation = fileLocation.substring(PROTO_FILE.length());
+        }
+        File f = new File(fileLocation);
+        if (f.canRead()) {
+            pacURL = Utilities.toURI(f).toString();
+        } else {
+            pacURL = pacURL.replaceAll("\\\\", "/"); //NOI18N
         }
         if ((index = pacURL.indexOf(" ")) != -1) { // NOI18N
             pacURL = pacURL.substring(0, index);

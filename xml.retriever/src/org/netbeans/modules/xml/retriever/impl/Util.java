@@ -62,6 +62,7 @@ import org.netbeans.spi.project.CacheDirectoryProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.Places;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -72,6 +73,23 @@ public class Util {
     private static final String SYSTEM_PRIVATE_CATALOG_DIR = "xml.retriever";
 
     private Util() {
+    }
+    
+    private static String findProjectCacheRelative(Project p) throws IOException {
+        FileObject projectDirFO = p.getProjectDirectory();
+        CacheDirectoryProvider cdp = p.getLookup().lookup(CacheDirectoryProvider.class);
+        FileObject cacheFO = null;
+        
+        if (cdp == null || (cacheFO = cdp.getCacheDirectory()) == null) {
+            return null;
+        }
+        if (FileUtil.isParentOf(projectDirFO, cacheFO)) {
+            return FileUtil.getRelativePath(projectDirFO, cacheFO);
+        } else {
+            String s = cacheFO.toURI().toString();
+            // strip the trailing / marking a directory
+            return s.substring(0, s.length() - 1);
+        }
     }
     
     /**
@@ -93,14 +111,10 @@ public class Util {
         if(prjrt == null)
             return null;
         
-        CacheDirectoryProvider cdp = (CacheDirectoryProvider) prj.getLookup().
-                lookup(CacheDirectoryProvider.class);
         String catalogstr = Utilities.DEFAULT_PRIVATE_CATALOG_URI_STR;
         try{
-            if( (cdp != null) && (cdp.getCacheDirectory() != null) ){
-                URI prjrturi = prjrt.toURI();
-                URI cpduri = FileUtil.toFile(cdp.getCacheDirectory()).toURI();
-                String cachedirstr = Utilities.relativize(prjrturi, cpduri);
+            String cachedirstr = findProjectCacheRelative(prj);
+            if (cachedirstr != null) {
                 catalogstr = cachedirstr+"/"+Utilities.PRIVATE_CATALOG_URI_STR;
             }
             privateCatalogURI = new URI(catalogstr);
@@ -147,15 +161,11 @@ public class Util {
                 return false;
 
             //determine the cache dir
-            CacheDirectoryProvider cdp = (CacheDirectoryProvider) prj.getLookup().
-                    lookup(CacheDirectoryProvider.class);
             String catalogstr = Utilities.DEFAULT_PRIVATE_CATALOG_URI_STR;
             String cachestr = Utilities.DEFAULT_PRIVATE_CAHCE_URI_STR;
             try{
-                if( (cdp != null) && (cdp.getCacheDirectory() != null) ){
-                    URI prjrturi = prjrt.toURI();
-                    URI cpduri = FileUtil.toFile(cdp.getCacheDirectory()).toURI();
-                    String cachedirstr = Utilities.relativize(prjrturi, cpduri);
+                String cachedirstr = findProjectCacheRelative(prj);
+                if(cachedirstr != null) {
                     catalogstr = cachedirstr+"/"+Utilities.PRIVATE_CATALOG_URI_STR;
                     cachestr = cachedirstr+"/"+Utilities.PRIVATE_CAHCE_URI_STR;
                 }

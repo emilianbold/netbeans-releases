@@ -48,12 +48,13 @@ import java.util.ArrayList;
 import java.util.List;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.html.editor.api.index.HtmlIndex;
 import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.spi.ParseException;
-import org.netbeans.modules.web.clientproject.ClientSideProject;
+import org.netbeans.modules.web.common.api.RemoteFileCache;
 import org.openide.util.ChangeSupport;
 import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
@@ -65,12 +66,12 @@ public class RemoteFiles {
 
     private static RequestProcessor RP = new RequestProcessor(RemoteFiles.class);
     
-    private ClientSideProject project;
+    private Project project;
     private List<URL> urls;
     private ChangeSupport changeSupport = new ChangeSupport(this);
     private HtmlIndex index;
     
-    public RemoteFiles(ClientSideProject project) {
+    public RemoteFiles(Project project) {
         this.project = project;
     }
     
@@ -159,7 +160,7 @@ public class RemoteFiles {
     private void prefetchRemoteFiles(final List<URL> urls) {
         for (final URL u : urls) {
             try {
-                RemoteFilesCache.getDefault().getRemoteFile(u);
+                RemoteFileCache.getRemoteFile(u);
             } catch (IOException ex) {
                 Exceptions.printStackTrace(ex);
             }

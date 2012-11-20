@@ -60,6 +60,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Level;
 import org.netbeans.modules.cnd.dwarfdump.CompilationUnit;
+import org.netbeans.modules.cnd.dwarfdump.CompilationUnitInterface;
+import org.netbeans.modules.cnd.dwarfdump.CompilationUnitStab;
 import org.netbeans.modules.cnd.dwarfdump.Dwarf;
 import org.netbeans.modules.cnd.dwarfdump.Dwarf.CompilationUnitIterator;
 import org.netbeans.modules.cnd.dwarfdump.dwarfconsts.SECTIONS;
@@ -72,7 +74,7 @@ import org.netbeans.modules.cnd.dwarfdump.reader.ElfReader;
  * @author ak119685
  */
 public class DwarfDebugInfoSection extends ElfSection {
-    private List<CompilationUnit> compilationUnits;
+    private List<CompilationUnitInterface> compilationUnits;
     //DwarfRelaDebugInfoSection rela;
     
     public DwarfDebugInfoSection(DwarfReader reader, int sectionIdx) throws IOException {
@@ -85,9 +87,12 @@ public class DwarfDebugInfoSection extends ElfSection {
     }
     
     public CompilationUnit getCompilationUnit(long unit_offset) throws IOException {
-        for (CompilationUnit unit : getCompilationUnits()) {
-            if (unit.unit_offset == unit_offset) {
-                return unit;
+        for (CompilationUnitInterface unit : getCompilationUnits()) {
+            if (unit instanceof CompilationUnit) {
+                CompilationUnit cu = (CompilationUnit) unit;
+                if (cu.unit_offset == unit_offset) {
+                    return cu;
+                }
             }
         }
         return null;
@@ -100,11 +105,11 @@ public class DwarfDebugInfoSection extends ElfSection {
         return new UnitIterator();
     }
     
-    public List<CompilationUnit> getCompilationUnits() throws IOException {
+    public List<CompilationUnitInterface> getCompilationUnits() throws IOException {
         if (compilationUnits != null) {
             return compilationUnits;
         }
-        compilationUnits = new ArrayList<CompilationUnit>();
+        compilationUnits = new ArrayList<CompilationUnitInterface>();
         int cuOffset = 0;
         while (cuOffset != header.sh_size) {
             ((DwarfReader)reader).seek(header.getSectionOffset() + cuOffset);
@@ -121,8 +126,12 @@ public class DwarfDebugInfoSection extends ElfSection {
     @Override
     public void dump(PrintStream out) {
         try {
-            for (CompilationUnit unit : getCompilationUnits()) {
-                unit.dump(out);
+            for (CompilationUnitInterface unit : getCompilationUnits()) {
+                if (unit instanceof CompilationUnit) {
+                    ((CompilationUnit)unit).dump(out);
+                } else if (unit instanceof CompilationUnitStab) {
+                    ((CompilationUnitStab)unit).dump(out);
+                }
             }
         } catch (IOException ex) {
             Dwarf.LOG.log(Level.OFF, "Cannot dump compilation unit "+reader.getFileName(), ex); //NOI18N
@@ -170,9 +179,9 @@ public class DwarfDebugInfoSection extends ElfSection {
         }
     }
     
-    private static class ListIterator implements CompilationUnitIterator {
-        private final Iterator<CompilationUnit> it;
-        private ListIterator(Iterator<CompilationUnit> it) {
+    public static class ListIterator implements CompilationUnitIterator {
+        private final Iterator<CompilationUnitInterface> it;
+        public ListIterator(Iterator<CompilationUnitInterface> it) {
             this.it = it;
         }
 
@@ -180,7 +189,7 @@ public class DwarfDebugInfoSection extends ElfSection {
             return it.hasNext();
         }
 
-        public CompilationUnit next() throws IOException {
+        public CompilationUnitInterface next() throws IOException {
             return it.next();
         }
     }

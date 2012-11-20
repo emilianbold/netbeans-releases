@@ -49,8 +49,11 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.BackingStoreException;
 import javax.swing.event.ChangeListener;
+import org.glassfish.tools.ide.data.GlassFishVersion;
+import org.glassfish.tools.ide.utils.ServerUtils;
 import org.netbeans.api.keyring.Keyring;
 import org.netbeans.api.server.ServerInstance;
+import org.netbeans.modules.glassfish.common.ui.WarnPanel;
 import org.netbeans.modules.glassfish.spi.CommandFactory;
 import org.netbeans.modules.glassfish.spi.GlassfishModule;
 import org.netbeans.modules.glassfish.spi.RegisteredDDCatalog;
@@ -325,7 +328,6 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider, 
 
     public <T> T getInstanceByCapability(String uri, Class <T> serverFacadeClass) {
         T result = null;
-        //init();
         GlassfishInstance instance = instanceMap.get(uri);
         if(instance != null) {
             result = instance.getLookup().lookup(serverFacadeClass);
@@ -335,7 +337,6 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider, 
     
     public <T> List<T> getInstancesByCapability(Class<T> serverFacadeClass) {
         List<T> result = new ArrayList<T>();
-        //init();
         synchronized (instanceMap) {
             for (GlassfishInstance instance : instanceMap.values()) {
                 T serverFacade = instance.getLookup().lookup(serverFacadeClass);
@@ -352,9 +353,7 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider, 
     // ------------------------------------------------------------------------
     @Override
     public List<ServerInstance> getInstances() {
-//        return new ArrayList<ServerInstance>(instanceMap.values());
         List<ServerInstance> result = new  ArrayList<ServerInstance>();
-        //init();
         synchronized (instanceMap) {
             for (GlassfishInstance instance : instanceMap.values()) {
                 ServerInstance si = instance.getCommonInstance();
@@ -387,8 +386,6 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider, 
     }
     
     public ServerInstance getInstance(String uri) {
-//        return instanceMap.get(uri);
-        //init();
         ServerInstance rv = null;
         GlassfishInstance instance = instanceMap.get(uri);
         if (null != instance) {
@@ -412,7 +409,6 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider, 
     // shutdown any instances we started during this IDE session.
     // ------------------------------------------------------------------------
     Collection<GlassfishInstance> getInternalInstances() {
-        //init();
         return instanceMap.values();
     }
 
@@ -422,22 +418,24 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider, 
 
     private void init() {
         synchronized (instanceMap) {
-                try {
-                    loadServerInstances();
-                } catch (RuntimeException ex) {
-                    getLogger().log(Level.INFO, null, ex);
+            try {
+                loadServerInstances();
+            } catch (RuntimeException ex) {
+                getLogger().log(Level.INFO, null, ex);
+            }
+            RegisteredDDCatalog catalog = getDDCatalog();
+            if (null != catalog) {
+                if (this.equals(preludeProvider)) {
+                    catalog.registerPreludeRunTimeDDCatalog(this);
+                } else {
+                    catalog.registerEE6RunTimeDDCatalog(this);
                 }
-                RegisteredDDCatalog catalog = getDDCatalog();
-                if (null != catalog) {
-                    if (this.equals(preludeProvider)) {
-                        catalog.registerPreludeRunTimeDDCatalog(this);
-                    } else {
-                        catalog.registerEE6RunTimeDDCatalog(this);
-                    }
-                    refreshCatalogFromFirstInstance(this, catalog);
-                }
+                refreshCatalogFromFirstInstance(this, catalog);
+            }
         }
-
+        for (GlassfishInstance gi : instanceMap.values()) {
+            GlassfishInstance.updateModuleSupport(gi);
+        }
     }
     
     // ------------------------------------------------------------------------
@@ -446,48 +444,54 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider, 
     private void loadServerInstances() {
         FileObject installedInstance = null;
         int savedj = -1;
-        for (int j = 0; j < instancesDirNames.length ; j++ ) {
+        for (int j = 0; j < instancesDirNames.length; j++) {
             FileObject dir = getRepositoryDir(instancesDirNames[j], false);
-            if(dir != null) {
+            if (dir != null) {
                 FileObject[] instanceFOs = dir.getChildren();
-                if(instanceFOs != null && instanceFOs.length > 0) {
-                    for(int i = 0; i < instanceFOs.length; i++) {
+                if (instanceFOs != null && instanceFOs.length > 0) {
+                    for (int i = 0; i < instanceFOs.length; i++) {
                         try {
-                            if (GLASSFISH_AUTOREGISTERED_INSTANCE.equals(instanceFOs[i].getName())) {
+                            if (GLASSFISH_AUTOREGISTERED_INSTANCE
+                                    .equals(instanceFOs[i].getName())) {
                                 installedInstance = instanceFOs[i];
                                 savedj = j;
                                 continue;
                             }
-                            GlassfishInstance si = readInstanceFromFile(instanceFOs[i],uriFragments[j]);
-                            if(si != null) {
+                            GlassfishInstance si
+                                    = readInstanceFromFile(instanceFOs[i],
+                                    uriFragments[j]);
+                            if (si != null) {
                                 activeDisplayNames.add(si.getDisplayName());
                             } else {
-                                getLogger().log(Level.FINER, "Unable to create glassfish instance for {0}", // NOI18N
-                                        instanceFOs[i].getPath()); 
+                                getLogger().log(Level.FINER,
+                                        "Unable to create glassfish instance for {0}", // NOI18N
+                                        instanceFOs[i].getPath());
                             }
-                        } catch(IOException ex) {
+                        } catch (IOException ex) {
                             getLogger().log(Level.INFO, null, ex);
                         }
                     }
                 }
             }
         }
-        if (null != installedInstance && null == NbPreferences.forModule(this.getClass()).get(AUTOINSTANCECOPIED,null)) {
+        if (null != installedInstance
+                && null == NbPreferences.forModule(this.getClass())
+                .get(AUTOINSTANCECOPIED, null)) {
             try {
-                GlassfishInstance igi = readInstanceFromFile(installedInstance, uriFragments[savedj]);
+                GlassfishInstance igi = readInstanceFromFile(installedInstance,
+                        uriFragments[savedj]);
                 try {
-                    NbPreferences.forModule(this.getClass()).put(AUTOINSTANCECOPIED, "true"); // NOI18N
+                    NbPreferences.forModule(this.getClass())
+                            .put(AUTOINSTANCECOPIED, "true"); // NOI18N
                     NbPreferences.forModule(this.getClass()).flush();
                 } catch (BackingStoreException ex) {
-                    Logger.getLogger("glassfish").log(Level.INFO, "auto-registered instance may reappear", ex); // NOI18N
+                    Logger.getLogger("glassfish").log(Level.INFO,
+                            "auto-registered instance may reappear", ex); // NOI18N
                 }
                 activeDisplayNames.add(igi.getDisplayName());
             } catch (IOException ex) {
                 getLogger().log(Level.INFO, null, ex);
             }
-        }
-        for (GlassfishInstance gi : instanceMap.values()) {
-            GlassfishInstance.updateModuleSupport(gi);
         }
     }
 
@@ -553,6 +557,12 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider, 
             ip.put(INSTANCE_FO_ATTR, instanceFO.getName());
             fixImportedAttributes(ip, instanceFO);
             instance = GlassfishInstance.create(ip,this,false);
+            // Display warning popup message for GlassFish 3.1.2 which is known
+            // to have bug in WS.
+            if (ServerUtils.getServerVersion(glassfishRoot)
+                    == GlassFishVersion.GF_3_1_2) {
+                WarnPanel.gf312WSWarning(instance.getName());
+            }
         } else {
             getLogger().log(Level.FINER,
                     "GlassFish folder {0} is not a valid install.",

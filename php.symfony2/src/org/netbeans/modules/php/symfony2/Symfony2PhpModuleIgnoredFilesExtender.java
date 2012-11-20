@@ -70,8 +70,13 @@ public class Symfony2PhpModuleIgnoredFilesExtender extends PhpModuleIgnoredFiles
     }
 
     private File findCacheDir(PhpModule phpModule) {
-        final File defaultCacheDir = new File(FileUtil.toFile(phpModule.getSourceDirectory()), DEFAULT_CACHE_DIR.replace('/', File.separatorChar)); // NOI18N
-        FileObject appDir = phpModule.getSourceDirectory().getFileObject(Symfony2Preferences.getAppDir(phpModule));
+        FileObject sourceDirectory = phpModule.getSourceDirectory();
+        if (sourceDirectory == null) {
+            // broken project
+            return null;
+        }
+        final File defaultCacheDir = new File(FileUtil.toFile(sourceDirectory), DEFAULT_CACHE_DIR.replace('/', File.separatorChar)); // NOI18N
+        FileObject appDir = sourceDirectory.getFileObject(Symfony2Preferences.getAppDir(phpModule));
         if (appDir == null) {
             // not found, simply return the default location
             return defaultCacheDir;
@@ -85,6 +90,10 @@ public class Symfony2PhpModuleIgnoredFilesExtender extends PhpModuleIgnoredFiles
 
     @Override
     public Set<File> getIgnoredFiles() {
+        if (cache == null) {
+            // broken project
+            return Collections.<File>emptySet();
+        }
         boolean cacheIgnored = Symfony2Preferences.isCacheDirIgnored(phpModule);
         return cacheIgnored ? Collections.singleton(cache) : Collections.<File>emptySet();
     }

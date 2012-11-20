@@ -135,7 +135,7 @@ public class WebLogicUtils {
         domainBuilder.command(commands).directory(domainDir);   
         final ExecutionResults domainResults = 
                 executeCommandWithDestroyTag(domainBuilder, SERVER_RUNNING_TAG, adminPassword);
-        if (domainResults.getErrorCode() > 0) {
+        if (domainResults.getErrorCode() == 0) {
             throw new DomainCreationException(domainResults.getErrorCode());
         }
 

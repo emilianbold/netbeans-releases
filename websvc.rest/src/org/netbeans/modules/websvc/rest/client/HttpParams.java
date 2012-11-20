@@ -51,7 +51,7 @@ import org.netbeans.modules.websvc.saas.model.WadlSaasMethod;
 import org.netbeans.modules.websvc.saas.model.WadlSaasResource;
 import org.netbeans.modules.websvc.saas.model.wadl.Param;
 import org.netbeans.modules.websvc.saas.model.wadl.ParamStyle;
-import org.netbeans.modules.websvc.saas.model.wadl.RepresentationType;
+import org.netbeans.modules.websvc.saas.model.wadl.Representation;
 import org.netbeans.modules.websvc.saas.model.wadl.Request;
 
 /** Information about Query, Form and Header parameters
@@ -87,9 +87,9 @@ public class HttpParams {
     HttpParams(WadlSaasMethod saasMethod) {
         Request request = saasMethod.getWadlMethod().getRequest();
         if (request != null) {
-            RepresentationType formType = null;
-            List<RepresentationType> representations = request.getRepresentation();
-            for (RepresentationType repr: representations) {
+            Representation formType = null;
+            List<Representation> representations = request.getRepresentation();
+            for (Representation repr: representations) {
                 if (HttpMimeType.FORM.getMimeType().equals(repr.getMediaType())) {
                     formType = repr;
                     break;
@@ -99,7 +99,7 @@ public class HttpParams {
         }
     }
 
-    private void initParams (List<Param> params, RepresentationType formType) {
+    private void initParams (List<Param> params, Representation formType) {
         // form params
         if (formType != null) {
             List<Param> formParamList = formType.getParam();

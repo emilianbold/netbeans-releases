@@ -50,6 +50,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.util.ElementFilter;
@@ -77,7 +79,7 @@ import org.openide.util.ImageUtilities;
  * @author Martin Adamek
  */
 public class MethodChildren extends ComponentMethodModel {
-
+    private static final Logger LOG = Logger.getLogger(MethodChildren.class.getName());
     private ComponentMethodViewStrategy mvs;
     private final SessionMethodController controller;
     private final MethodsNode.ViewType viewType;
@@ -140,6 +142,9 @@ public class MethodChildren extends ComponentMethodModel {
         public void openMethod(final MethodModel me, final String implClass, FileObject implClassFO, Collection interfaces) {
             final List<ElementHandle<ExecutableElement>> methodHandle = new ArrayList<ElementHandle<ExecutableElement>>();
             try {
+                if (implClassFO == null) {
+                    LOG.log(Level.WARNING, "No fileObject found for class={0}.", implClass);
+                }
                 JavaSource javaSource = JavaSource.forFileObject(implClassFO);
                 javaSource.runUserActionTask(new Task<CompilationController>() {
                     @Override

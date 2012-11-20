@@ -59,8 +59,12 @@ import org.netbeans.modules.cnd.dwarfdiscovery.provider.LogReader.CommandLineSou
  */
 public class LogReaderTest extends TestCase {
 
+    public void testNotCompilerInvocation() {
+        testCompilerInvocation(ItemProperties.LanguageKind.Unknown, "CXX --mode=compile -I/export/home/gcc/gccobj/gcc/xgcc ../../../libjava/gnu/gcj/natCore.cc", 1);
+    }
+
     public void testWrongLibtoolCompilerInvocation() {
-        testCompilerInvocation(ItemProperties.LanguageKind.Unknown, "/bin/sh ./libtool --tag=CXX --mode=compile /export/home/gcc/gccobj/gcc/xgcc ../../../libjava/gnu/gcj/natCore.cc", 1);
+        testCompilerInvocation(ItemProperties.LanguageKind.CPP, "/bin/sh ./libtool --tag=CXX --mode=compile /export/home/gcc/gccobj/gcc/xgcc ../../../libjava/gnu/gcj/natCore.cc", 1);
     }
 
     public void testLibtoolCCompilerInvocation() {
@@ -271,6 +275,66 @@ public class LogReaderTest extends TestCase {
             res = res.substring(0,res.length()-1);
         }
        assertEquals(res, "D:/cygwin_dir");
+    }
+    
+    public void testCygwinCommandLine() {
+        String line = "gcc -g -O3 -Ospace --diag_suppress=1295   --thumb --apcs=/interwork --cpu Cortex-M3 "
+                + "-DENABLE_RTX -D__RTX -DUSE_PROPERTIES_FROM_FS -DUSE_MCBSTM32F200 -DUSE_MDK -DENABLE_JSR_75=1  "
+                + "-DENABLE_CBS=1  -DENABLE_JAVA_LOGGING=1          -I`cygpath -m  /tools/taiga/output/esa_rtx_mdk_impng/javacall/inc` "
+                + "-I/tools/taiga/platform/modules/stm32f2xx/inc -I/tools/taiga/platform/modules/mcbstm32f200/inc "
+                + "-I\"/tools/taiga/cldc/src/anilib/share\" "
+                + "-I/tools/taiga/platform/modules/usbd/inc  --default_extension=o  -c "
+                + "-o`cygpath -m  /tools/taiga/output/esa_rtx_mdk_impng/javacall/obj/device_info.o`  "
+                + "'D:\\tools\\taiga\\deviceaccess\\src\\native\\KNI_I2C.c'";
+          String expResult =
+                      "Source:D:\\tools\\taiga\\deviceaccess\\src\\native\\KNI_I2C.c\n"+
+                      "Macros:\n"+
+                      "ENABLE_CBS=1\n"+
+                      "ENABLE_JAVA_LOGGING=1\n"+
+                      "ENABLE_JSR_75=1\n"+
+                      "ENABLE_RTX\n"+
+                      "USE_MCBSTM32F200\n"+
+                      "USE_MDK\n"+
+                      "USE_PROPERTIES_FROM_FS\n"+
+                      "__RTX\n"+
+                      "Paths:\n"+
+                      "/tools/taiga/output/esa_rtx_mdk_impng/javacall/inc\n"+
+                      "/tools/taiga/platform/modules/stm32f2xx/inc\n"+
+                      "/tools/taiga/platform/modules/mcbstm32f200/inc\n"+
+                      "/tools/taiga/cldc/src/anilib/share\n"+
+                      "/tools/taiga/platform/modules/usbd/inc";
+        String result = processLine(line, DiscoveryUtils.LogOrigin.BuildLog);
+        assertDocumentText(line, expResult, result);
+    }
+
+    public void testCygwinCommandLine2() {
+        String line = "gcc -g -O3 -Ospace --diag_suppress=1295   --thumb --apcs=/interwork --cpu Cortex-M3 "
+                + "-DENABLE_RTX -D__RTX -DUSE_PROPERTIES_FROM_FS -DUSE_MCBSTM32F200 -DUSE_MDK -DENABLE_JSR_75=1  "
+                + "-DENABLE_CBS=1  -DENABLE_JAVA_LOGGING=1          -I`cygpath -m  /tools/taiga/output/esa_rtx_mdk_impng/javacall/inc` "
+                + "-I/tools/taiga/platform/modules/stm32f2xx/inc -I/tools/taiga/platform/modules/mcbstm32f200/inc "
+                + "-I\"/tools/taiga/cldc/src/anilib/share\" "
+                + "-I/tools/taiga/platform/modules/usbd/inc  --default_extension=o  -c "
+                + "-o`cygpath -m  /tools/taiga/output/esa_rtx_mdk_impng/javacall/obj/device_info.o`  "
+                + "`cygpath -m  /tools/taiga/javacall-com/implementation/rtx/midp/device_info.c`";
+          String expResult =
+                      "Source:/tools/taiga/javacall-com/implementation/rtx/midp/device_info.c\n"+
+                      "Macros:\n"+
+                      "ENABLE_CBS=1\n"+
+                      "ENABLE_JAVA_LOGGING=1\n"+
+                      "ENABLE_JSR_75=1\n"+
+                      "ENABLE_RTX\n"+
+                      "USE_MCBSTM32F200\n"+
+                      "USE_MDK\n"+
+                      "USE_PROPERTIES_FROM_FS\n"+
+                      "__RTX\n"+
+                      "Paths:\n"+
+                      "/tools/taiga/output/esa_rtx_mdk_impng/javacall/inc\n"+
+                      "/tools/taiga/platform/modules/stm32f2xx/inc\n"+
+                      "/tools/taiga/platform/modules/mcbstm32f200/inc\n"+
+                      "/tools/taiga/cldc/src/anilib/share\n"+
+                      "/tools/taiga/platform/modules/usbd/inc";
+        String result = processLine(line, DiscoveryUtils.LogOrigin.BuildLog);
+        assertDocumentText(line, expResult, result);
     }
 
     /**
@@ -724,7 +788,8 @@ public class LogReaderTest extends TestCase {
                 "/ws/cheetah/jsr135/src/share/components/direct-player/native";
         String result = processLine(line, DiscoveryUtils.LogOrigin.BuildLog);
         assertDocumentText(line, expResult, result);
-        LogReader.LineInfo li = LogReader.testCompilerInvocation(line);
+        LogReader reader = new LogReader(line, "", null, null, null);
+        LogReader.LineInfo li = reader.testCompilerInvocation(line);
         assert li.compilerType == LogReader.CompilerType.CPP;
     }
 
@@ -755,8 +820,9 @@ public class LogReaderTest extends TestCase {
         String result = processLine(line, DiscoveryUtils.LogOrigin.BuildLog);
         assertTrue(result.startsWith("Source:xsolmod.cpp"));
         //assertDocumentText(line, expResult, result);
-        LogReader.LineInfo li = LogReader.testCompilerInvocation(line);
-        assertEquals(li.compilerType, LogReader.CompilerType.CPP);
+        LogReader reader = new LogReader(line, "", null, null, null);
+        LogReader.LineInfo li = reader.testCompilerInvocation(line);
+        assertEquals(LogReader.CompilerType.CPP, li.compilerType);
     }
 
     private String processLine(String line, DiscoveryUtils.LogOrigin isScriptOutput) {
@@ -831,12 +897,15 @@ public class LogReaderTest extends TestCase {
         }
         assertFalse(sb.toString(), true);
     }
-
+    
     private void testCompilerInvocation(ItemProperties.LanguageKind ct, String line, int size) {
-        LogReader.LineInfo li = LogReader.testCompilerInvocation(line);
+        LogReader reader = new LogReader(line, "", null, null, null);
+        LogReader.LineInfo li = reader.testCompilerInvocation(line);
         if (ct == ItemProperties.LanguageKind.Unknown) {
-            assertEquals(li.getLanguage(), ct);
+            assertEquals(ct, li.getLanguage());
             return;
+        } else {
+            assertNotSame(ItemProperties.LanguageKind.Unknown, li.getLanguage());
         }
         List<String> userIncludes = new ArrayList<String>();
         Map<String, String> userMacros = new HashMap<String, String>();
@@ -846,7 +915,7 @@ public class LogReaderTest extends TestCase {
         assertTrue(sourcesList.size() == size);
         for(String what :sourcesList) {
             CommandLineSource cs = new CommandLineSource(li, languageArtifacts, "/", what, userIncludes, userMacros, undefs, null);
-            assertEquals(cs.getLanguageKind(), ct);
+            assertEquals(ct, cs.getLanguageKind());
         }
     }
 

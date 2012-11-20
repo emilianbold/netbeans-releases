@@ -53,8 +53,7 @@ package org.netbeans.lib.lexer;
 
 public final class IntegerCache {
 
-    // Should cache the same what Integer.valueOf(int) does on 1.5
-    private static final int MAX_CACHED_INTEGER = 127;
+    private static final int MAX_CACHED_INTEGER = 511;
 
     private static final Integer[] cache = new Integer[MAX_CACHED_INTEGER + 1];
 

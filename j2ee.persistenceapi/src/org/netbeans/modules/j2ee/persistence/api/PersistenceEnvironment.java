@@ -72,7 +72,7 @@ public interface PersistenceEnvironment {
      * Returns the project classpath including project build paths.
      * Can be used to set classpath for custom classloader.
      *
-     * @param projectFile file in current project.
+     * @param projectFile file in current project, may not be used in method realization
      * @return List of java.io.File objects representing each entry on the classpath.
      */
     List<URL> getProjectClassPath(FileObject projectFile);

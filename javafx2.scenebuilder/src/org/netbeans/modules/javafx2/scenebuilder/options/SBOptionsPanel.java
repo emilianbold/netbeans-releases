@@ -49,10 +49,14 @@ import javax.swing.AbstractAction;
 import javax.swing.JFileChooser;
 import org.netbeans.modules.javafx2.scenebuilder.Home;
 import org.netbeans.modules.javafx2.scenebuilder.impl.SBHomeFactory;
+import org.netbeans.modules.options.java.api.JavaOptions;
+import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
 
+@OptionsPanelController.Keywords(keywords={"#KW_JavaFXOptions"}, location=JavaOptions.JAVA, tabTitle= "JavaFX")
+@NbBundle.Messages("KW_JavaFXOptions=JavaFX,Scene Builder")
 final class SBOptionsPanel extends javax.swing.JPanel {    
     private final SBOptionsPanelController controller;
     

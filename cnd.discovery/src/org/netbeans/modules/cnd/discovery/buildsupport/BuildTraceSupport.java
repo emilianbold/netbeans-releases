@@ -42,6 +42,13 @@
 package org.netbeans.modules.cnd.discovery.buildsupport;
 
 import java.io.IOException;
+import java.util.HashSet;
+import java.util.Set;
+import org.netbeans.api.project.Project;
+import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
+import org.netbeans.modules.cnd.api.toolchain.PredefinedToolKind;
+import org.netbeans.modules.cnd.api.toolchain.Tool;
+import org.netbeans.modules.cnd.discovery.wizard.api.support.ProjectBridge;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.HostInfo;
@@ -52,18 +59,27 @@ import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
  *
  * @author Alexander Simon
  */
-public class BuildTraceSupport {
+public final class BuildTraceSupport {
     public static final String CND_TOOLS = "__CND_TOOLS__"; //NOI18N
     public static final String CND_BUILD_LOG = "__CND_BUILD_LOG__"; //NOI18N
+    private static final String SEPARATOR = ":"; //NOI18N
+    
+    private BuildTraceSupport() {
+    }
     
     public static boolean useBuildTrace(MakeConfiguration conf) {
         return conf.getCodeAssistanceConfiguration().getBuildAnalyzer().getValue();
     }
     
     public static String getTools(MakeConfiguration conf) {
-        return conf.getCodeAssistanceConfiguration().getTools().getValue();
+        String res = conf.getCodeAssistanceConfiguration().getTools().getValue();
+        CompilerSet compilerSet = conf.getCompilerSet().getCompilerSet();
+        res = prepengTool(compilerSet, PredefinedToolKind.CCompiler, res);
+        res = prepengTool(compilerSet, PredefinedToolKind.CCCompiler, res);
+        res = prepengTool(compilerSet, PredefinedToolKind.FortranCompiler, res);
+        return res;
     }
-    
+
     public static boolean supportedPlatforms(ExecutionEnvironment execEnv) {
         try {
             HostInfo hostInfo = HostInfoUtils.getHostInfo(execEnv);
@@ -78,4 +94,89 @@ public class BuildTraceSupport {
         }
         return false;
     }
+
+    public static Set<String> getCompilerNames(Project project, PredefinedToolKind kind) {
+        Set<String> res = new HashSet<String>();
+        switch(kind) {
+            case CCompiler:
+            {
+                res.add("cc"); //NOI18N
+                res.add("gcc"); //NOI18N
+                res.add("xgcc"); //NOI18N
+                res.add("clang"); //NOI18N
+                res.add("icc"); //NOI18N
+                addTool(project, kind, res);
+                break;
+            }
+            case CCCompiler:
+            {
+                res.add("CC"); //NOI18N
+                res.add("g++"); //NOI18N
+                res.add("c++"); //NOI18N
+                res.add("clang++"); //NOI18N
+                res.add("icpc"); //NOI18N
+                res.add("cl"); //NOI18N
+                addTool(project, kind, res);
+                break;
+            }
+            case FortranCompiler:
+            {
+                res.add("ffortran"); //NOI18N
+                res.add("f77"); //NOI18N
+                res.add("f90"); //NOI18N
+                res.add("f95"); //NOI18N
+                res.add("gfortran"); //NOI18N
+                res.add("g77"); //NOI18N
+                res.add("g90"); //NOI18N
+                res.add("g95"); //NOI18N
+                res.add("ifort"); //NOI18N
+                addTool(project, kind, res);
+            }
+        }
+        return res;
+    }
+    
+    private static String prepengTool(CompilerSet compilerSet, PredefinedToolKind kind, String res) {
+        if (compilerSet == null) {
+            return res;
+        }
+        Tool tool = compilerSet.getTool(kind);
+        if (tool == null) {
+            return res;
+        }
+        String name = tool.getName();
+        if (name == null || name.isEmpty()) {
+            return res;
+        }
+        for(String s : res.split(SEPARATOR)) { 
+            if (s.equals(name)) {
+                return res;
+            }
+        }
+        if (res.isEmpty()) {
+            return name;
+        }
+        return name + SEPARATOR + res; 
+    }
+    
+    private static void addTool(Project project, PredefinedToolKind kind, Set<String> res) {
+        if (project != null) {
+            ProjectBridge projectBridge = new ProjectBridge(project);
+            if (projectBridge.isValid()) {
+                CompilerSet compilerSet = projectBridge.getCompilerSet();
+                if (compilerSet != null) {
+                    Tool tool = compilerSet.getTool(kind);
+                    if (tool != null) {
+                        String name = tool.getName();
+                        if (name != null && !name.isEmpty()) {
+                            if (name.endsWith(".exe")) { //NOI18N
+                                name = name.substring(0,name.length()-4);
+                            }
+                            res.add(name);
+                        }
+                    }
+                }
+            }
+        }
+    }    
 }

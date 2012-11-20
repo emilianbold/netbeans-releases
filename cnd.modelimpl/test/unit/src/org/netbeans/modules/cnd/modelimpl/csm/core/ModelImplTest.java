@@ -52,7 +52,6 @@ import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.modelimpl.test.ModelImplBaseTestCase;
 import org.netbeans.modules.cnd.modelimpl.trace.NativeProjectProvider;
 import org.netbeans.modules.cnd.modelimpl.trace.NativeProjectProvider.NativeProjectImpl;
-import org.netbeans.modules.cnd.modelimpl.trace.TraceModelBase;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -81,6 +80,9 @@ public class ModelImplTest extends ModelImplBaseTestCase {
         if (platform instanceof NativeProjectProvider.NativeProjectImpl) {
             NativeProjectProvider.NativeProjectImpl nativeProject = (NativeProjectImpl) platform;
             nativeProject.fireFileAdded(sourceFileObject);
+        }
+        if (project instanceof ProjectBase) {
+            ((ProjectBase)project).onFileObjectExternalCreate(sourceFileObject);
         }
     }
 

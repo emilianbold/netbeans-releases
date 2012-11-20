@@ -61,16 +61,17 @@ public class NameKind {
 
     public static Exact forElement(final PhpElement element) {
         if (element instanceof FullyQualifiedElement) {
-            return new Exact(((FullyQualifiedElement)element).getFullyQualifiedName());
+            return new Exact(((FullyQualifiedElement) element).getFullyQualifiedName());
         }
         return new Exact(QualifiedName.create(element.getName()));
     }
 
     public static Empty empty() {
-        return new Empty();//NOI18N
+        return new Empty(); //NOI18N
     }
 
     public static Exact exact(String query) {
+        Parameters.notWhitespace("String query: can't be null or empty", query); //NOI18N
         return new Exact(query);
     }
 
@@ -95,13 +96,16 @@ public class NameKind {
     }
 
     public static NameKind create(String query, Kind queryKind) {
-        switch(queryKind) {
+        switch (queryKind) {
             case PREFIX:
                 return new Prefix(query);
             case EXACT:
+                Parameters.notWhitespace("String query: can't be null or empty", query); //NOI18N
                 return new Exact(query);
             case CASE_INSENSITIVE_PREFIX:
                 return new CaseInsensitivePrefix(query);
+            default:
+                //no-op
         }
         if (query == null || query.isEmpty()) {
             assert queryKind.equals(Kind.PREFIX) || queryKind.equals(Kind.CASE_INSENSITIVE_PREFIX) : queryKind.toString();
@@ -111,13 +115,15 @@ public class NameKind {
     }
 
     public static NameKind create(QualifiedName query, Kind queryKind) {
-        switch(queryKind) {
+        switch (queryKind) {
             case PREFIX:
                 return new Prefix(query);
             case EXACT:
                 return new Exact(query);
             case CASE_INSENSITIVE_PREFIX:
                 return new CaseInsensitivePrefix(query);
+            default:
+                //no-op
         }
         return new NameKind(query, queryKind);
     }
@@ -165,8 +171,8 @@ public class NameKind {
         if (element instanceof FullyQualifiedElement) {
             FullyQualifiedElement fqe = (FullyQualifiedElement) element;
             if (fqe instanceof AliasedElement) {
-                return matchesName(element.getPhpElementKind(), fqe.getFullyQualifiedName()) ||
-                        matchesName(element.getPhpElementKind(), ((AliasedElement)fqe).getFullyQualifiedName(Trait.ALIAS));
+                return matchesName(element.getPhpElementKind(), fqe.getFullyQualifiedName())
+                        || matchesName(element.getPhpElementKind(), ((AliasedElement) fqe).getFullyQualifiedName(Trait.ALIAS));
             }
             return matchesName(element.getPhpElementKind(), fqe.getFullyQualifiedName());
         }
@@ -184,13 +190,13 @@ public class NameKind {
 
     NameKind(String name, Kind kind) {
         this(QualifiedName.create(name), kind);
-        Parameters.notNull("name", query);//NOI18N
+        Parameters.notNull("name", query); //NOI18N
     }
 
     NameKind(QualifiedName name, Kind kind) {
         this.query = name;
         this.queryKind = kind;
-        Parameters.notNull("name", query);//NOI18N
+        Parameters.notNull("name", query); //NOI18N
     }
 
     public Kind getQueryKind() {
@@ -230,6 +236,8 @@ public class NameKind {
                         ? text.toLowerCase().startsWith(query.toLowerCase()) : text.startsWith(query);
             case EXACT:
                 return (forceCaseInsensitivity) ? text.equalsIgnoreCase(query) : text.equals(query);
+            default:
+                assert false : nameKind;
         }
         return false;
     }
@@ -243,7 +251,7 @@ public class NameKind {
     }
 
     private static boolean isDollared(final String name) {
-        return name.startsWith("$");//NOI18N
+        return name.startsWith("$"); //NOI18N
     }
 
     private static Pattern camelCaseQueryToPattern(String query, boolean isCaseInsensitive) {
@@ -251,37 +259,36 @@ public class NameKind {
         char[] chars = query.toCharArray();
         boolean incamel = false;
         if (!query.startsWith("$")) {
-            sb.append("[$]*");//NOI18N
+            sb.append("[$]*"); //NOI18N
         }
         for (int i = 0; i < chars.length; i++) {
-            if (chars[i] == '?') {//NOI18N
-                sb.append('.');//NOI18N
+            if (chars[i] == '?') {
+                sb.append('.');
             } else if (chars[i] == '*') {
-                sb.append(".*");//NOI18N
+                sb.append(".*"); //NOI18N
             } else if (Character.isUpperCase(chars[i])) {
                 if (incamel) {
-                    sb.append("[a-z0-9_]*");//NOI18N
+                    sb.append("[a-z0-9_]*"); //NOI18N
                 }
                 sb.append(chars[i]);
                 incamel = true;
             } else if (i == 0 && chars[i] == '$') {
-                sb.append('\\').append(chars[i]);//NOI18N
+                sb.append('\\').append(chars[i]);
             } else {
                 sb.append(Pattern.quote(String.valueOf(chars[i])));
             }
         }
-        sb.append(".*");//NOI18N
+        sb.append(".*"); //NOI18N
         String patternString = sb.toString();
-        patternString = patternString.replaceAll(Pattern.quote(".."), ".");//NOI18N
+        patternString = patternString.replaceAll(Pattern.quote(".."), "."); //NOI18N
         return isCaseInsensitive ? Pattern.compile(patternString, Pattern.CASE_INSENSITIVE)
                 : Pattern.compile(patternString);
     }
 
-    public final static class Exact extends NameKind {
+    public static final class Exact extends NameKind {
 
         private Exact(String name) {
             super(name, Kind.EXACT);
-            Parameters.notWhitespace("String name: can't be null or empty", name);//NOI18N
         }
 
         private Exact(QualifiedName name) {
@@ -289,7 +296,7 @@ public class NameKind {
         }
     }
 
-    public final static class Prefix extends NameKind {
+    public static final class Prefix extends NameKind {
 
         private Prefix(String name) {
             super(name, Kind.PREFIX);
@@ -300,7 +307,7 @@ public class NameKind {
         }
     }
 
-    public final static class CaseInsensitivePrefix extends NameKind {
+    public static final class CaseInsensitivePrefix extends NameKind {
 
         private CaseInsensitivePrefix(String name) {
             super(name, Kind.CASE_INSENSITIVE_PREFIX);
@@ -311,7 +318,7 @@ public class NameKind {
         }
     }
 
-    public final static class Empty extends NameKind {
+    public static final class Empty extends NameKind {
         private Empty() {
             super("", Kind.PREFIX);
         }

@@ -322,6 +322,10 @@ import org.openide.util.Utilities;
     public String readlink(long pid) {
         return PathUtils.getExePath(pid, exEnv);
     }
+    
+    public String readDirLink(long pid) {
+        return PathUtils.getCwdPath(pid, exEnv);
+    }
 
     public boolean is_64(String filep) {
 	ExitStatus status = ProcessUtils.execute(exEnv, "/usr/bin/file", filep); //NOI18N

@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.editor.java;
 
+import java.util.ArrayList;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.NewClassTree;
 import com.sun.source.util.TreePathScanner;
@@ -178,12 +179,15 @@ public class UtilitiesTest extends NbTestCase {
                     @Override
                     public Void visitMethodInvocation(MethodInvocationTree node, Void p) {
                         if (!cc.getTreeUtilities().isSynthetic(getCurrentPath())) {
-                            ExecutableElement ee = Utilities.fuzzyResolveMethodInvocation(cc, getCurrentPath(), new TypeMirror[1], new int[1]);
-
-                            if (ee != null) {
-                                result.add(ee.toString()); //XXX
-                            } else {
+                            List<ExecutableElement> elements = Utilities.fuzzyResolveMethodInvocation(cc, getCurrentPath(), new ArrayList<TypeMirror>(), new int[1]);
+                            if (elements.isEmpty()) {
                                 result.add("<not resolved>");
+                            } else {
+                                for (ExecutableElement ee : elements) {
+                                    if (ee != null) {
+                                        result.add(ee.toString()); //XXX
+                                    }
+                                }
                             }
                         }
                         
@@ -193,12 +197,15 @@ public class UtilitiesTest extends NbTestCase {
                     @Override
                     public Void visitNewClass(NewClassTree node, Void p) {
                         if (!cc.getTreeUtilities().isSynthetic(getCurrentPath())) {
-                            ExecutableElement ee = Utilities.fuzzyResolveMethodInvocation(cc, getCurrentPath(), new TypeMirror[1], new int[1]);
-
-                            if (ee != null) {
-                                result.add(ee.toString()); //XXX
-                            } else {
+                            List<ExecutableElement> elements = Utilities.fuzzyResolveMethodInvocation(cc, getCurrentPath(), new ArrayList<TypeMirror>(), new int[1]);
+                            if (elements.isEmpty()) {
                                 result.add("<not resolved>");
+                            } else {
+                                for (ExecutableElement ee : elements) {
+                                    if (ee != null) {
+                                        result.add(ee.toString()); //XXX
+                                    }
+                                }
                             }
                         }
                         

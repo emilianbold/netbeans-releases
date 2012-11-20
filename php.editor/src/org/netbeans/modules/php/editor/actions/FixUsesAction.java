@@ -66,6 +66,7 @@ import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.parsing.spi.Parser.Result;
 import static org.netbeans.modules.php.api.util.FileUtils.PHP_MIME_TYPE;
+import org.netbeans.modules.php.editor.actions.ImportData.ItemVariant;
 import org.netbeans.modules.php.editor.api.ElementQuery.Index;
 import org.netbeans.modules.php.editor.indent.CodeStyle;
 import org.netbeans.modules.php.editor.model.ModelUtils;
@@ -129,7 +130,7 @@ public class FixUsesAction extends BaseAction {
                                 importData.set(data);
                             }
                         } else {
-                            performFixUses((PHPParseResult) parserResult, data, data.defaults, isRemoveUnusedUses());
+                            performFixUses((PHPParseResult) parserResult, data, data.getDefaultVariants(), isRemoveUnusedUses());
                         }
                     }
                 }
@@ -175,12 +176,17 @@ public class FixUsesAction extends BaseAction {
         Map<String, List<UsedNamespaceName>> filteredExistingNames = new UsedNamesComputer(parserResult, caretPosition).computeNames();
         Index index = parserResult.getModel().getIndexScope().getIndex();
         NamespaceScope namespaceScope = ModelUtils.getNamespaceScope(parserResult.getModel().getFileScope(), caretPosition);
+        assert namespaceScope != null;
         ImportData importData = new ImportDataCreator(filteredExistingNames, index, namespaceScope.getNamespaceName(), createOptions(parserResult)).create();
         importData.caretPosition = caretPosition;
         return importData;
     }
 
-    private static void performFixUses(final PHPParseResult parserResult, final ImportData importData, final String[] selections, final boolean removeUnusedUses) {
+    private static void performFixUses(
+            final PHPParseResult parserResult,
+            final ImportData importData,
+            final List<ImportData.ItemVariant> selections,
+            final boolean removeUnusedUses) {
         new FixUsesPerformer(parserResult, importData, selections, removeUnusedUses, createOptions(parserResult)).perform();
     }
 
@@ -197,8 +203,8 @@ public class FixUsesAction extends BaseAction {
         "LBL_Cancel=Cancel"
     })
     private static void showFixUsesDialog(final JTextComponent target, final ImportData importData) {
-        final FixDuplicateImportStmts panel = new FixDuplicateImportStmts();
-        panel.initPanel(importData.names, importData.variants, importData.icons, importData.defaults, isRemoveUnusedUses());
+    final FixDuplicateImportStmts panel = new FixDuplicateImportStmts();
+        panel.initPanel(importData, isRemoveUnusedUses());
         final JButton ok = new JButton(Bundle.LBL_Ok());
         final JButton cancel = new JButton(Bundle.LBL_Cancel());
         final AtomicBoolean stop = new AtomicBoolean();
@@ -206,13 +212,13 @@ public class FixUsesAction extends BaseAction {
                 HelpCtx.DEFAULT_HELP, new ActionListener() {
                                           @Override
                                           public void actionPerformed(ActionEvent e) {}
-                                      }, true );
+                                      }, true);
         final Dialog d = DialogDisplayer.getDefault().createDialog(dd);
         ok.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 ok.setEnabled(false);
-                final String[] selections = panel.getSelections();
+                final List<ItemVariant> selections = panel.getSelections();
                 final boolean removeUnusedUses = panel.getRemoveUnusedImports();
                 WORKER.post(new Runnable() {
 
@@ -294,7 +300,11 @@ public class FixUsesAction extends BaseAction {
         private final boolean startUseWithNamespaceSeparator;
         private final boolean aliasesCapitalsOfNamespaces;
 
-        public Options(boolean preferFullyQualifiedNames, boolean preferMultipleUseStatementsCombined, boolean startUseWithNamespaceSeparator, boolean aliasesCapitalsOfNamespaces) {
+        public Options(
+                boolean preferFullyQualifiedNames,
+                boolean preferMultipleUseStatementsCombined,
+                boolean startUseWithNamespaceSeparator,
+                boolean aliasesCapitalsOfNamespaces) {
             this.preferFullyQualifiedNames = preferFullyQualifiedNames;
             this.preferMultipleUseStatementsCombined = preferMultipleUseStatementsCombined;
             this.startUseWithNamespaceSeparator = startUseWithNamespaceSeparator;

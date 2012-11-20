@@ -48,18 +48,16 @@
  */
 package org.openide.explorer.propertysheet;
 
-import org.openide.nodes.Node.Property;
-import org.openide.nodes.Node.PropertySet;
-import org.openide.util.NbBundle;
-
 import java.beans.*;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.event.*;
 import javax.swing.table.*;
+import org.openide.nodes.Node.Property;
+import org.openide.nodes.Node.PropertySet;
+import org.openide.util.NbBundle;
 
 
 /** Table model for property sheet. Note that sort order and management of
@@ -69,7 +67,7 @@ import javax.swing.table.*;
  *  PropertySetModel, which also handles expansion/closing of sets.
  * @author  Tim Boudreau
  */
-final class SheetTableModel implements TableModel, PropertyChangeListener, PropertySetModelListener {
+final class SheetTableModel implements TableModel, PropertySetModelListener {
     /** Utility field holding list of TableModelListeners. */
     private transient List<TableModelListener> tableModelListenerList;
 
@@ -119,6 +117,7 @@ final class SheetTableModel implements TableModel, PropertyChangeListener, Prope
 
     /** Returns String for the names column, and Object for the
      *  values column. */
+    @Override
     public Class getColumnClass(int columnIndex) {
         switch (columnIndex) {
         case 0:
@@ -132,6 +131,7 @@ final class SheetTableModel implements TableModel, PropertyChangeListener, Prope
     }
 
     /** The column count will always be 2 - names and values.  */
+    @Override
     public int getColumnCount() {
         return 2;
     }
@@ -139,6 +139,7 @@ final class SheetTableModel implements TableModel, PropertyChangeListener, Prope
     /** This is not really used for anything in property sheet, since
      *  column headings aren't displayed - but an alternative look and
      *  feel might have other ideas.*/
+    @Override
     public String getColumnName(int columnIndex) {
         if (columnIndex == 0) {
             return NbBundle.getMessage(SheetTableModel.class, "COLUMN_NAMES"); //NOI18N
@@ -147,6 +148,7 @@ final class SheetTableModel implements TableModel, PropertyChangeListener, Prope
         return NbBundle.getMessage(SheetTableModel.class, "COLUMN_VALUES"); //NOI18N
     }
 
+    @Override
     public int getRowCount() {
         //JTable init will call this before the constructor is 
         //completed (!!), so handle this case
@@ -158,6 +160,7 @@ final class SheetTableModel implements TableModel, PropertyChangeListener, Prope
         return model.getCount();
     }
 
+    @Override
     public Object getValueAt(int rowIndex, int columnIndex) {
         Object result;
 
@@ -170,6 +173,7 @@ final class SheetTableModel implements TableModel, PropertyChangeListener, Prope
         return result;
     }
 
+    @Override
     public boolean isCellEditable(int rowIndex, int columnIndex) {
         //if column is 0, it's the property name - can't edit that
         if (columnIndex == 0) {
@@ -193,6 +197,7 @@ final class SheetTableModel implements TableModel, PropertyChangeListener, Prope
         ); //NOI18N
     }
 
+    @Override
     public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
         if (columnIndex == 0) {
             throw new IllegalArgumentException("Cannot set property names.");
@@ -268,6 +273,7 @@ final class SheetTableModel implements TableModel, PropertyChangeListener, Prope
     }
 
     //**************Table model listener support *************************
+    @Override
     public synchronized void addTableModelListener(TableModelListener listener) {
         if (tableModelListenerList == null) {
             tableModelListenerList = new java.util.ArrayList<TableModelListener>();
@@ -276,6 +282,7 @@ final class SheetTableModel implements TableModel, PropertyChangeListener, Prope
         tableModelListenerList.add(listener);
     }
 
+    @Override
     public synchronized void removeTableModelListener(TableModelListener listener) {
         if (tableModelListenerList != null) {
             tableModelListenerList.remove(listener);
@@ -299,25 +306,10 @@ final class SheetTableModel implements TableModel, PropertyChangeListener, Prope
         }
     }
 
-    //*************PropertyChangeListener implementation***********
-
-    /** Called when a property value changes, in order to update
-     *  the UI with the new value. */
-    public void propertyChange(PropertyChangeEvent evt) {
-        int index = getPropertySetModel().indexOf((FeatureDescriptor) evt.getSource());
-
-        if (index == -1) {
-            //We don't know what happened, do a generic change event
-            fireTableChanged(new TableModelEvent(this));
-        } else {
-            TableModelEvent tme = new TableModelEvent(this, index);
-            fireTableChanged(tme);
-        }
-    }
-
     //*************PropertySetModelListener implementation***********
 
     /**Implementation of PropertySetModelListener.boundedChange() */
+    @Override
     public void boundedChange(PropertySetModelEvent e) {
         //XXX should just have the set model fire a tablemodelevent
         TableModelEvent tme = new TableModelEvent(
@@ -328,11 +320,13 @@ final class SheetTableModel implements TableModel, PropertyChangeListener, Prope
     }
 
     /**Implementation of PropertySetModelListener.wholesaleChange() */
+    @Override
     public void wholesaleChange(PropertySetModelEvent e) {
         fireTableChanged(new TableModelEvent(this) //XXX optimize rows & stuff
         );
     }
 
+    @Override
     public void pendingChange(PropertySetModelEvent e) {
         //Do nothing, the table is also listening in order to save
         //its editing state if appropriate

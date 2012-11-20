@@ -91,6 +91,7 @@ public final class AddCast implements ErrorRule<Void> {
     private static final Set<String> ERROR_CODES = new HashSet<String>(Arrays.asList(
             "compiler.err.prob.found.req", // NOI18N
             "compiler.err.cant.apply.symbol", // NOI18N
+            "compiler.err.cant.apply.symbol.1", // NOI18N
             "compiler.err.cant.resolve.location.args")); // NOI18N
     
     static void computeType(CompilationInfo info, int offset, TypeMirror[] tm, Tree[] typeTree, ExpressionTree[] expression, Tree[] leaf) {
@@ -135,11 +136,11 @@ public final class AddCast implements ErrorRule<Void> {
             }
             
             if (scope.getKind() == Kind.METHOD_INVOCATION || scope.getKind() == Kind.NEW_CLASS) {
-                TypeMirror[] proposed = new TypeMirror[1];
+                List<TypeMirror> proposed = new ArrayList<TypeMirror>();
                 int[] index = new int[1];
                 
-                if (Utilities.fuzzyResolveMethodInvocation(info, path, proposed, index) != null) {
-                    expected = proposed[0];
+                if (!Utilities.fuzzyResolveMethodInvocation(info, path, proposed, index).isEmpty()) {
+                    expected = proposed.get(0);
                     found = scope.getKind() == Kind.METHOD_INVOCATION ? ((MethodInvocationTree) scope).getArguments().get(index[0]) : ((NewClassTree) scope).getArguments().get(index[0]);
                     resolved = info.getTrees().getTypeMirror(new TreePath(path, found));
                 }
@@ -179,7 +180,7 @@ public final class AddCast implements ErrorRule<Void> {
                 }
             }
             
-            if (info.getTrees().getSourcePositions().getStartPosition(info.getCompilationUnit(), scope) < start) {
+            if (info.getTrees().getSourcePositions().getStartPosition(info.getCompilationUnit(), scope) < start && scope.getKind() != Kind.PARENTHESIZED) {
                 break;
             }
 

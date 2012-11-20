@@ -45,9 +45,12 @@
 package org.netbeans.modules.php.editor.indent.ui;
 
 import java.io.IOException;
-import static org.netbeans.modules.php.editor.indent.FmtOptions.*;
-import static org.netbeans.modules.php.editor.indent.FmtOptions.CategorySupport.OPTION_ID;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.modules.options.editor.spi.PreferencesCustomizer;
+import static org.netbeans.modules.php.editor.indent.FmtOptions.*;
+import org.netbeans.modules.php.editor.indent.FmtOptions.CategorySupport;
+import static org.netbeans.modules.php.editor.indent.FmtOptions.CategorySupport.OPTION_ID;
 
 
 /**
@@ -56,26 +59,27 @@ import org.netbeans.modules.options.editor.spi.PreferencesCustomizer;
  */
 public class FmtBraces extends javax.swing.JPanel {
 
-    /** Creates new form FmtAlignmentBraces */
+    private static final Logger LOGGER = Logger.getLogger(FmtBraces.class.getName());
+
     public FmtBraces() {
         initComponents();
-        classDeclCombo.putClientProperty(OPTION_ID, classDeclBracePlacement);
-        methodDeclCombo.putClientProperty(OPTION_ID, methodDeclBracePlacement);
-	ifCombo.putClientProperty(OPTION_ID, ifBracePlacement);
-	forCombo.putClientProperty(OPTION_ID, forBracePlacement);
-	switchCombo.putClientProperty(OPTION_ID, switchBracePlacement);
-	whileCombo.putClientProperty(OPTION_ID, whileBracePlacement);
-	catchCombo.putClientProperty(OPTION_ID, catchBracePlacement);
-	useTraitCombo.putClientProperty(OPTION_ID, useTraitBodyBracePlacement);
-        otherCombo.putClientProperty(OPTION_ID, otherBracePlacement);
+        classDeclCombo.putClientProperty(OPTION_ID, CLASS_DECL_BRACE_PLACEMENT);
+        methodDeclCombo.putClientProperty(OPTION_ID, METHOD_DECL_BRACE_PLACEMENT);
+        ifCombo.putClientProperty(OPTION_ID, IF_BRACE_PLACEMENT);
+        forCombo.putClientProperty(OPTION_ID, FOR_BRACE_PLACEMENT);
+        switchCombo.putClientProperty(OPTION_ID, SWITCH_BRACE_PLACEMENT);
+        whileCombo.putClientProperty(OPTION_ID, WHILE_BRACE_PLACEMENT);
+        catchCombo.putClientProperty(OPTION_ID, CATCH_BRACE_PLACEMENT);
+        useTraitCombo.putClientProperty(OPTION_ID, USE_TRAIT_BODY_BRACE_PLACEMENT);
+        otherCombo.putClientProperty(OPTION_ID, OTHER_BRACE_PLACEMENT);
     }
 
     public static PreferencesCustomizer.Factory getController() {
-	String preview = "";
+        String preview = "";
         try {
             preview = Utils.loadPreviewText(FmtBlankLines.class.getClassLoader().getResourceAsStream("org/netbeans/modules/php/editor/indent/ui/Spaces.php"));
         } catch (IOException ex) {
-            // TODO log it
+            LOGGER.log(Level.WARNING, null, ex);
         }
         return new CategorySupport.Factory("braces", FmtBraces.class, //NOI18N
                 preview);

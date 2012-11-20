@@ -41,9 +41,9 @@
  */
 package org.netbeans.modules.php.editor.actions;
 
-import java.util.HashMap;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 import javax.swing.Icon;
 
 /**
@@ -51,19 +51,181 @@ import javax.swing.Icon;
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
 public class ImportData {
-    public boolean shouldShowUsesPanel;
-    public final String[] names;
-    public final String[][] variants;
-    public final Icon[][] icons;
-    public final String[] defaults;
-    public Map<Integer, List<UsedNamespaceName>> usedNamespaceNames;
-    public int caretPosition;
+    public volatile boolean shouldShowUsesPanel;
+    public volatile int caretPosition;
+    private final List<DataItem> dataItems = new ArrayList<DataItem>();
 
-    public ImportData(int size) {
-        names = new String[size];
-        variants = new String[size][];
-        icons = new Icon[size][];
-        defaults = new String[size];
-        usedNamespaceNames = new HashMap<Integer, List<UsedNamespaceName>>();
+    public void add(DataItem item) {
+        dataItems.add(item);
+    }
+
+    public List<DataItem> getItems() {
+        return new ArrayList<DataItem>(dataItems);
+    }
+
+    public List<ItemVariant> getDefaultVariants() {
+        List<ItemVariant> result = new ArrayList<ItemVariant>();
+        for (DataItem dataItem : dataItems) {
+            result.add(dataItem.getDefaultVariant());
+        }
+        return result;
+    }
+
+    public static class DataItem {
+        private final String typeName;
+        private final List<ItemVariant> variants;
+        private final ItemVariant defaultVariant;
+        private final List<UsedNamespaceName> usedNamespaceNames;
+
+        public DataItem(String typeName, List<ItemVariant> variants, ItemVariant defaultVariant) {
+            this(typeName, variants, defaultVariant, Collections.EMPTY_LIST);
+        }
+
+        public DataItem(String typeName, List<ItemVariant> variants, ItemVariant defaultVariant, List<UsedNamespaceName> usedNamespaceNames) {
+            this.typeName = typeName;
+            this.variants = variants;
+            this.defaultVariant = defaultVariant;
+            this.usedNamespaceNames = usedNamespaceNames;
+        }
+
+        public String getTypeName() {
+            return typeName;
+        }
+
+        public List<ItemVariant> getVariants() {
+            return new ArrayList<ItemVariant>(variants);
+        }
+
+        public Icon[] getVariantIcons() {
+            Icon[] variantIcons = new Icon[variants.size()];
+            for (int i = 0; i < variants.size(); i++) {
+                ItemVariant itemVariant = variants.get(i);
+                variantIcons[i] = itemVariant.getIcon();
+            }
+            return variantIcons;
+        }
+
+        public ItemVariant getDefaultVariant() {
+            return defaultVariant;
+        }
+
+        public List<UsedNamespaceName> getUsedNamespaceNames() {
+            return new ArrayList<UsedNamespaceName>(usedNamespaceNames);
+        }
+
+        @Override
+        public int hashCode() {
+            int hash = 7;
+            hash = 37 * hash + (this.typeName != null ? this.typeName.hashCode() : 0);
+            hash = 37 * hash + (this.variants != null ? this.variants.hashCode() : 0);
+            hash = 37 * hash + (this.defaultVariant != null ? this.defaultVariant.hashCode() : 0);
+            return hash;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (obj == null) {
+                return false;
+            }
+            if (getClass() != obj.getClass()) {
+                return false;
+            }
+            final DataItem other = (DataItem) obj;
+            if ((this.typeName == null) ? (other.typeName != null) : !this.typeName.equals(other.typeName)) {
+                return false;
+            }
+            if (this.variants != other.variants && (this.variants == null || !this.variants.equals(other.variants))) {
+                return false;
+            }
+            if ((this.defaultVariant == null) ? (other.defaultVariant != null) : !this.defaultVariant.equals(other.defaultVariant)) {
+                return false;
+            }
+            return true;
+        }
+
+    }
+
+    public static class ItemVariant {
+
+        public static enum UsagePolicy {
+            CAN_BE_USED() {
+
+                @Override
+                boolean canBeUsed() {
+                    return true;
+                }
+
+            },
+
+            CAN_NOT_BE_USED() {
+
+                @Override
+                boolean canBeUsed() {
+                    return false;
+                }
+
+            };
+
+            abstract boolean canBeUsed();
+        }
+
+        private final String name;
+        private final UsagePolicy usagePolicy;
+        private final Icon icon;
+
+        public ItemVariant(String name, UsagePolicy usagePolicy) {
+            this(name, usagePolicy, null);
+        }
+
+        public ItemVariant(String name, UsagePolicy usagePolicy, Icon icon) {
+            assert name != null;
+            this.name = name;
+            this.usagePolicy = usagePolicy;
+            this.icon = icon;
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        public Icon getIcon() {
+            return icon;
+        }
+
+        public boolean canBeUsed() {
+            return usagePolicy.canBeUsed();
+        }
+
+        @Override
+        public String toString() {
+            return getName();
+        }
+
+        @Override
+        public int hashCode() {
+            int hash = 7;
+            hash = 59 * hash + (this.name != null ? this.name.hashCode() : 0);
+            hash = 59 * hash + (this.icon != null ? this.icon.hashCode() : 0);
+            return hash;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (obj == null) {
+                return false;
+            }
+            if (getClass() != obj.getClass()) {
+                return false;
+            }
+            final ItemVariant other = (ItemVariant) obj;
+            if ((this.name == null) ? (other.name != null) : !this.name.equals(other.name)) {
+                return false;
+            }
+            if (this.icon != other.icon && (this.icon == null || !this.icon.equals(other.icon))) {
+                return false;
+            }
+            return true;
+        }
+
     }
 }

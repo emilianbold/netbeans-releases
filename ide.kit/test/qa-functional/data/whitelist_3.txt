@@ -5,9 +5,6 @@ org.netbeans.spi.debugger.ui.MethodChooser
 org.netbeans.spi.debugger.ui.MethodChooser$ReleaseListener
 org.netbeans.spi.debugger.ui.MethodChooser$Segment
 
-#218045
-org.netbeans.modules.php.twig.editor.gsf.TwigLanguage
-
 #218044
 org.netbeans.modules.javascript2.editor.JsLanguage
 org.netbeans.modules.javascript2.editor.classpath.ClassPathProviderImpl
@@ -73,12 +70,10 @@ org.netbeans.modules.j2ee.spi.ejbjar.CarsInProject
 org.netbeans.modules.j2ee.spi.ejbjar.EjbJarProvider
 org.netbeans.modules.j2ee.spi.ejbjar.EjbJarsInProject
 
-#204439
+#204439 - three services correctly loaded with j2se project
 org.netbeans.modules.javafx2.project.JFXActionProvider
 org.netbeans.modules.javafx2.project.JFXProjectIconAnnotator
 org.netbeans.modules.javafx2.project.JFXProjectOpenedHook
-org.netbeans.modules.javafx2.project.JFXProjectProperties
-org.netbeans.modules.javafx2.project.JFXProjectUtils
 
 #204438
 org.netbeans.modules.java.hints.declarative.ClassPathProviderImpl
@@ -1823,7 +1818,7 @@ org.netbeans.spi.java.queries.AnnotationProcessingQueryImplementation
 org.netbeans.spi.java.queries.SourceLevelQueryImplementation2
 org.netbeans.spi.java.queries.SourceLevelQueryImplementation2$Result
 org.openide.modules.Modules
-    
+
 # OK on Nov 8, 2010:
 org.netbeans.modules.parsing.impl.TaskProcessor$ReschedulePolicy
 org.netbeans.modules.parsing.impl.indexing.lucene.DocumentBasedIndex

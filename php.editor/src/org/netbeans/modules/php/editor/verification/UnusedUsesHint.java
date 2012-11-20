@@ -43,17 +43,19 @@ package org.netbeans.modules.php.editor.verification;
 
 import java.util.Collections;
 import java.util.List;
-import javax.swing.text.BadLocationException;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
-import org.netbeans.modules.csl.api.*;
+import org.netbeans.modules.csl.api.EditList;
+import org.netbeans.modules.csl.api.Hint;
+import org.netbeans.modules.csl.api.HintFix;
+import org.netbeans.modules.csl.api.HintSeverity;
+import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.php.editor.CodeUtils;
 import org.netbeans.modules.php.editor.lexer.LexUtilities;
 import org.netbeans.modules.php.editor.lexer.PHPTokenId;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
 import org.netbeans.modules.php.editor.parser.SemanticAnalysis;
 import org.netbeans.modules.php.editor.parser.UnusedOffsetRanges;
-import org.netbeans.modules.php.editor.verification.PHPHintsProvider.Kind;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle.Messages;
 
@@ -62,22 +64,28 @@ import org.openide.util.NbBundle.Messages;
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
 @Messages("UnsedUsesHintDisp=Unused Use Statement")
-public class UnusedUsesHint extends AbstractRule {
+public class UnusedUsesHint extends AbstractHint {
 
     private static final String HINT_ID = "Unused.Uses.Hint"; //NOI18N
 
     @Override
-    void computeHintsImpl(PHPRuleContext context, List<Hint> hints, Kind kind) throws BadLocationException {
+    void compute(PHPRuleContext context, List<Hint> hints) {
         PHPParseResult phpParseResult = (PHPParseResult) context.parserResult;
         if (phpParseResult.getProgram() == null) {
             return;
         }
         FileObject fileObject = phpParseResult.getSnapshot().getSource().getFileObject();
-        if (CodeUtils.isPhp_52(fileObject)) {
+        if (CodeUtils.isPhp52(fileObject)) {
             return;
         }
         for (UnusedOffsetRanges unusedOffsetRanges : SemanticAnalysis.computeUnusedUsesOffsetRanges(phpParseResult)) {
-            hints.add(new Hint(UnusedUsesHint.this, Bundle.UnsedUsesHintDisp(), fileObject, unusedOffsetRanges.getRangeToVisualise(), createHintFixes(context.doc, unusedOffsetRanges), 500));
+            hints.add(new Hint(
+                    UnusedUsesHint.this,
+                    Bundle.UnsedUsesHintDisp(),
+                    fileObject,
+                    unusedOffsetRanges.getRangeToVisualise(),
+                    createHintFixes(context.doc, unusedOffsetRanges),
+                    500));
         }
     }
 

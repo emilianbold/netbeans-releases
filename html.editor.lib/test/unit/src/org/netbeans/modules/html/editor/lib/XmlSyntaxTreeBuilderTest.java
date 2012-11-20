@@ -73,7 +73,7 @@ public class XmlSyntaxTreeBuilderTest extends TestBase {
 
     public void testBasic() {
         String code = "<x></x>";
-        Node root = parse(code);
+        Node root = parse(code, HtmlModelFactory.getModel(HtmlVersion.HTML5));
 
         Element div = ElementUtils.query(root, "x"); 
         assertNotNull(div);
@@ -81,7 +81,7 @@ public class XmlSyntaxTreeBuilderTest extends TestBase {
     
     public void testNodesHasParentsSet() {
         String code = "<x><y><z/></y></x>";
-        Node root = parse(code);
+        Node root = parse(code, HtmlModelFactory.getModel(HtmlVersion.HTML5));
 
         Element x = ElementUtils.query(root, "x"); 
         assertNotNull(x);
@@ -99,7 +99,7 @@ public class XmlSyntaxTreeBuilderTest extends TestBase {
      //Bug 197608 - Non-html tags offered as closing tags using code completion
     public void testIssue197608() throws ParseException, BadLocationException {
         String code = "<div></di";
-        Node root = parse(code);
+        Node root = parse(code, HtmlModelFactory.getModel(HtmlVersion.HTML5));
 
         Element div = ElementUtils.query(root, "div"); 
         assertNotNull(div);
@@ -114,7 +114,7 @@ public class XmlSyntaxTreeBuilderTest extends TestBase {
         Properties p = new Properties();
         p.setProperty("add_text_nodes", "true");
         
-        Node root = parse(code, p);
+        Node root = parse(code, p, HtmlModelFactory.getModel(HtmlVersion.HTML5));
 //        ElementUtils.dumpTree(root);
         
         OpenTag html = ElementUtils.query(root, "html");

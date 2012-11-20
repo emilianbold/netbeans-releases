@@ -64,7 +64,6 @@ import com.sun.tools.javac.comp.Env;
 import com.sun.tools.javac.main.JavaCompiler;
 import com.sun.tools.javac.model.LazyTreeLoader;
 import com.sun.tools.javac.tree.JCTree;
-import com.sun.tools.javac.tree.JCTree.JCBlock;
 import com.sun.tools.javac.tree.JCTree.JCClassDecl;
 import com.sun.tools.javac.tree.JCTree.JCMethodDecl;
 import com.sun.tools.javac.tree.JCTree.JCVariableDecl;
@@ -91,6 +90,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.text.ChangedCharSetException;
@@ -280,15 +280,20 @@ public class TreeLoader extends LazyTreeLoader {
         Env<AttrContext> env = Enter.instance(jti.getContext()).getEnv(clazz);
         if (env == null)
             return;
+        final AtomicBoolean cancel = new AtomicBoolean();
         new TreeScanner() {
             @Override
             public void visitMethodDef(JCMethodDecl tree) {
                 super.visitMethodDef(tree);
+                if (tree.sym == null || tree.type == null)
+                    cancel.set(true);
                 tree.body = null;
             }
             @Override
             public void visitVarDef(JCVariableDecl tree) {
                 super.visitVarDef(tree);
+                if (tree.sym == null || tree.type == null)
+                    cancel.set(true);
                 tree.init = null;
             }
             @Override
@@ -312,6 +317,8 @@ public class TreeLoader extends LazyTreeLoader {
                 }
             }
         }.scan(env.toplevel);
+        if (cancel.get())
+            return;
         Log log = Log.instance(jti.getContext());
         JavaFileObject prevLogTo = log.useSource(null);
         boolean oldSuppress = log.suppressErrorsAndWarnings;

@@ -97,6 +97,13 @@ public abstract class APTProjectFileBasedWalker extends APTAbstractWalker {
                 if (aStartProject != null){
                     if (aStartProject.isValid()) {
                         ProjectBase inclFileOwner = LibraryManager.getInstance(aStartProject).resolveFileProjectOnInclude(aStartProject, getFile(), resolvedPath);
+                        if (inclFileOwner == null) {
+                            if (aStartProject.getFileSystem() == resolvedPath.getFileSystem()) {
+                                inclFileOwner = aStartProject;
+                            } else {
+                                return false;
+                            }
+                        }
                         if (CndUtils.isDebugMode()) {
                             CndUtils.assertTrue(inclFileOwner.getFileSystem() == resolvedPath.getFileSystem(), "Different FS for " + path + ": " + inclFileOwner.getFileSystem() + " vs " + resolvedPath.getFileSystem()); // NOI18N
                         }

@@ -41,7 +41,6 @@
  */
 package org.netbeans.modules.php.editor.parser.astnodes.visitors;
 
-import java.util.List;
 import org.netbeans.modules.php.editor.CodeUtils;
 import org.netbeans.modules.php.editor.api.ElementQuery;
 import org.netbeans.modules.php.editor.api.FileElementQuery;
@@ -158,7 +157,7 @@ public class PhpElementVisitor extends DefaultTreePathVisitor {
     @Override
     public void visit(Variable node) {
         String extractVariableName = CodeUtils.extractVariableName(node);
-        if (extractVariableName != null && !extractVariableName.startsWith("$")) {//NOI18N
+        if (extractVariableName != null && !extractVariableName.startsWith("$")) { //NOI18N
             super.visit(node);
             return;
         }
@@ -172,10 +171,8 @@ public class PhpElementVisitor extends DefaultTreePathVisitor {
             } else if (scopeNode instanceof FunctionDeclaration) {
                 isFunctionDeclaration = true;
                 break;
-            } else if (scopeNode instanceof TypeDeclaration ||
-                    scopeNode instanceof SingleFieldDeclaration ||
-                    scopeNode instanceof StaticFieldAccess ||
-                    scopeNode instanceof FieldsDeclaration) {
+            } else if (scopeNode instanceof TypeDeclaration || scopeNode instanceof SingleFieldDeclaration
+                    || scopeNode instanceof StaticFieldAccess || scopeNode instanceof FieldsDeclaration) {
                 isTopLevelVariable = false;
                 break;
             }

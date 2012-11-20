@@ -41,7 +41,7 @@
  */
 package org.netbeans.modules.css.model.impl.semantic.box;
 
-import org.netbeans.modules.css.model.ModelTestBase;
+import org.netbeans.modules.css.model.api.ModelTestBase;
 import org.netbeans.modules.css.model.api.Declarations;
 import org.netbeans.modules.css.model.api.Model;
 import org.netbeans.modules.css.model.api.StyleSheet;

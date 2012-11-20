@@ -41,9 +41,12 @@
  */
 package org.netbeans.modules.java.hints.suggestions;
 
+import com.sun.source.tree.ArrayTypeTree;
 import com.sun.source.tree.BlockTree;
 import com.sun.source.tree.ClassTree;
+import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.MethodTree;
+import com.sun.source.tree.NewArrayTree;
 import com.sun.source.tree.StatementTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.VariableTree;
@@ -136,7 +139,8 @@ public class Move {
                     
                     List<StatementTree> statements = new LinkedList<StatementTree>(body.getStatements());
                     statements.add(1, make.ExpressionStatement(make.Assignment(
-                            make.Identifier((isStatic? parent.getSimpleName().toString() : "this") + "." + var.getName()), var.getInitializer())));
+                            make.Identifier((isStatic? parent.getSimpleName().toString() : "this") + "." + var.getName()),
+                            transformInitializer(var.getInitializer(), var.getType(), make))));
                     
                     if(synthetic) {
                         translated = GeneratorUtilities.get(wc).insertClassMember(translated, make.Constructor(
@@ -150,6 +154,20 @@ public class Move {
             
             translated = (ClassTree) wc.getTreeUtilities().translate(translated, original2translated);
             wc.rewrite(parent, translated);
+        }
+
+        private ExpressionTree transformInitializer(ExpressionTree initializer, Tree type, TreeMaker make) {
+            if(initializer.getKind() == Tree.Kind.NEW_ARRAY) {
+                NewArrayTree nat = (NewArrayTree) initializer;
+                if(nat.getType() == null) {
+                    if(type.getKind() == Tree.Kind.ARRAY_TYPE) {
+                        ArrayTypeTree arrayTypeTree = (ArrayTypeTree) type;
+                        type = arrayTypeTree.getType();
+                    }
+                    return make.NewArray(type, nat.getDimensions(), nat.getInitializers());
+                }
+            }
+            return initializer;
         }
 
     }

@@ -62,6 +62,8 @@ import org.netbeans.modules.j2ee.core.api.support.java.JavaIdentifiers;
 import org.netbeans.modules.j2ee.persistence.wizard.Util;
 import org.netbeans.modules.j2ee.persistence.wizard.jpacontroller.JpaControllerIterator;
 import org.netbeans.modules.j2ee.persistence.wizard.jpacontroller.ProgressReporter;
+import org.netbeans.modules.websvc.rest.codegen.model.EntityClassInfo;
+import org.netbeans.modules.websvc.rest.codegen.model.EntityClassInfo.FieldInfo;
 import org.netbeans.modules.websvc.rest.support.JavaSourceHelper;
 import org.netbeans.modules.websvc.rest.support.WebXmlHelper;
 import org.openide.filesystems.FileObject;
@@ -83,11 +85,14 @@ import com.sun.source.tree.VariableTree;
 public class J2eeEntityResourcesGenerator extends EntityResourcesGenerator {
     
     protected boolean  generateInfrastracture( final Set<FileObject> createdFiles,
-            final String entitySimpleName, final FileObject facade ) throws IOException
+            final String entityFqn, final FileObject facade ) throws IOException
     {
+        if ( !super.generateInfrastracture(createdFiles, entityFqn, facade) ){
+            return false;
+        }
         String entityManagerAccessor = generateEntityManagerFactoryAccess( facade );
-        return generateJpaControllerAccess( facade , entitySimpleName , 
-                entityManagerAccessor);
+        return generateJpaControllerAccess( facade , 
+                JavaIdentifiers.unqualify(entityFqn) , entityManagerAccessor);
     }
     
     /* (non-Javadoc)
@@ -112,6 +117,7 @@ public class J2eeEntityResourcesGenerator extends EntityResourcesGenerator {
             +getEntitiesCount() ;
     }
     
+    @Override
     protected RestGenerationOptions getGenerationOptions(
             RestFacadeMethod method, String entityFQN, String paramArg,
             String idType )
@@ -119,6 +125,13 @@ public class J2eeEntityResourcesGenerator extends EntityResourcesGenerator {
         String entitySimpleName = JavaIdentifiers.unqualify(entityFQN);
         RestGenerationOptions options = super.getGenerationOptions(method, 
                 entityFQN, paramArg, idType);
+        boolean needPathSegment = false;
+        EntityClassInfo entityInfo = getModel().getEntityInfo(entityFQN);
+        if ( entityInfo!= null ){
+            FieldInfo idFieldInfo = entityInfo.getIdFieldInfo();
+            needPathSegment = idFieldInfo!= null && idFieldInfo.isEmbeddedId()&& 
+                    idFieldInfo.getType()!= null;
+        }
         StringBuilder builder ;
         switch ( method ){
             case CREATE:
@@ -143,6 +156,11 @@ public class J2eeEntityResourcesGenerator extends EntityResourcesGenerator {
                 return options;
             case REMOVE:
                 builder = new StringBuilder("try { ");                          // NOI18N
+                if ( needPathSegment ){
+                    builder.append(idType);
+                    builder.append( " key=getPrimaryKey(id);\n");               // NOI18N
+                    paramArg = "key";                                           // NOI18N
+                }
                 builder.append("getJpaController().destroy(");                  // NOI18N
                 builder.append( paramArg );
                 builder.append("; return Response.ok().build();");              //NOI18N
@@ -151,7 +169,13 @@ public class J2eeEntityResourcesGenerator extends EntityResourcesGenerator {
                 options.setBody(builder.toString());
                 return options;
             case FIND:
-                builder = new StringBuilder("return getJpaController().find");  // NOI18N
+                builder = new StringBuilder();
+                if ( needPathSegment ){
+                    builder.append(idType);
+                    builder.append( " key=getPrimaryKey(id);\n");               // NOI18N
+                    paramArg = "key";                                           // NOI18N
+                }
+                builder.append("return getJpaController().find");  // NOI18N
                 builder.append(entitySimpleName);
                 builder.append('(');
                 builder.append(paramArg);

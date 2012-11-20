@@ -57,6 +57,7 @@ import javax.swing.event.ListSelectionListener;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableCellEditor;
 import javax.swing.text.JTextComponent;
+import org.netbeans.api.options.OptionsDisplayer;
 import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.util.NbBundle;
 
@@ -64,6 +65,7 @@ import org.openide.util.NbBundle;
  *
  * @author S. Aubrecht
  */
+@OptionsPanelController.Keywords(keywords={"#KW_ToDo", "action", "items"}, location=OptionsDisplayer.ADVANCED, tabTitle="#LBL_Options")
 class ToDoCustomizer extends javax.swing.JPanel {
     
     private boolean changed = false;

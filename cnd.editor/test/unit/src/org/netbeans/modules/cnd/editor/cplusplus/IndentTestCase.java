@@ -1216,4 +1216,67 @@ public class IndentTestCase extends EditorBase {
                 + "\n"
                 );
     }
+
+    public void testEnterAfterLambdaHalf() {
+        setDefaultsOptions();
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
+                put(EditorOptions.newLineBeforeBraceLambda, 
+                CodeStyle.BracePlacement.NEW_LINE_HALF_INDENTED.name());
+        typeCharactersInText(
+                "for_each(v.begin(), v.end(),\n" +
+                "         [] (int val) {|\n",
+                "\n",
+                "for_each(v.begin(), v.end(),\n" +
+                "         [] (int val) {\n"+
+                "             |\n"+
+                "           }\n"
+                );
+    }
+
+    public void testEnterAfterLambdaHalf_1() {
+        setDefaultsOptions();
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
+                put(EditorOptions.newLineBeforeBraceLambda, 
+                CodeStyle.BracePlacement.NEW_LINE_HALF_INDENTED.name());
+        typeCharactersInText(
+                "for_each(v.begin(), v.end(),\n" +
+                "         [] (int val)|\n",
+                "\n",
+                "for_each(v.begin(), v.end(),\n" +
+                "         [] (int val)\n"+
+                "           |\n"
+                );
+    }
+
+    public void testEnterAfterLambdaHalf_2() {
+        setDefaultsOptions();
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
+                put(EditorOptions.newLineBeforeBraceLambda, 
+                CodeStyle.BracePlacement.NEW_LINE_HALF_INDENTED.name());
+        typeCharactersInText(
+                "for_each(v.begin(), v.end(),\n" +
+                "         [] (int val)\n" +
+                "           |\n",
+                "{",
+                "for_each(v.begin(), v.end(),\n" +
+                "         [] (int val)\n"+
+                "           {|\n"
+                );
+    }
+
+    public void testEnterAfterLambdaHalf_3() {
+        setDefaultsOptions();
+        EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
+                put(EditorOptions.newLineBeforeBraceLambda, 
+                CodeStyle.BracePlacement.NEW_LINE_HALF_INDENTED.name());
+        typeCharactersInText(
+                "for_each(v.begin(), v.end(),\n" +
+                "         [] (int val)\n" +
+                "           |\n",
+                "{",
+                "for_each(v.begin(), v.end(),\n" +
+                "         [] (int val)\n"+
+                "           {|\n"
+                );
+    }
 }

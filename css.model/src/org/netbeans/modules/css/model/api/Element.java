@@ -117,4 +117,10 @@ public interface Element {
      */
     public boolean isValid();
     
+    /**
+     * @since 1.6
+     * @return Non-null instance of {@link Model} containing this element.
+     */
+    public Model getModel();
+    
 }

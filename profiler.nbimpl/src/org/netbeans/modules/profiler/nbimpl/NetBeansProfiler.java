@@ -120,8 +120,7 @@ public class NetBeansProfiler extends org.netbeans.modules.profiler.NetBeansProf
             profilingSettings.store(properties); // Fix for http://www.netbeans.org/issues/show_bug.cgi?id=95651, update settings for ReRun
         }
         ProfilerLauncher.Session s = ProfilerLauncher.getLastSession();
-        assert s != null;
-        s.setProfilingSettings(profilingSettings);
+        if (s != null) s.setProfilingSettings(profilingSettings);
 
         super.modifyCurrentProfiling(profilingSettings);
     }

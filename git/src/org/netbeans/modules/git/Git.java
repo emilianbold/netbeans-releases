@@ -145,8 +145,9 @@ public final class Git {
     void getOriginalFile (File workingCopy, File originalFile) {
         File repository = getRepositoryRoot(workingCopy);
         if (repository != null) {
+            GitClient client = null;
             try {
-                GitClient client = getClient(repository);
+                client = getClient(repository);
                 FileOutputStream fos = new FileOutputStream(originalFile);
                 boolean ok;                
                 try {
@@ -168,6 +169,10 @@ public final class Git {
                 originalFile.delete();
             } catch (IOException ex) {
                 LOG.log(Level.INFO, "IO exception", ex); //NOI18N
+            } finally {
+                if (client != null) {
+                    client.release();
+                }
             }
         }
     }
@@ -312,6 +317,9 @@ public final class Git {
                 LOG.log(Level.FINE, " found managed parent {0}", new Object[] { file });
                 done.clear();   // all folders added before must be removed, they ARE in fact managed by git
                 topmost =  file;
+                if (topmost.getParentFile() == null) {
+                    LOG.log(Level.WARNING, "found managed root folder {0}", file); //NOI18N
+                }
             } else {
                 LOG.log(Level.FINE, " found unversioned {0}", new Object[] { file });
                 if(file.exists()) { // could be created later ...

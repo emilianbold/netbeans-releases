@@ -57,28 +57,29 @@ import javax.swing.SwingUtilities;
 import javax.swing.text.Document;
 import org.netbeans.modules.parsing.api.indexing.IndexingManager;
 import org.netbeans.modules.php.api.util.FileUtils;
-import org.openide.nodes.Node;
-import org.openide.util.Exceptions;
-import org.openide.util.ImageUtilities;
-import org.openide.util.NbBundle;
-import org.openide.util.RequestProcessor.Task;
-import org.openide.windows.TopComponent;
-import org.openide.windows.WindowManager;
 import org.netbeans.modules.php.editor.model.Model;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
+import org.openide.nodes.Node;
+import org.openide.util.Exceptions;
+import org.openide.util.ImageUtilities;
+import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
+import org.openide.util.RequestProcessor.Task;
 import org.openide.util.Union2;
+import org.openide.windows.TopComponent;
+import org.openide.windows.WindowManager;
 
 /**
  * Top component which displays PHP class hierarchy.
  * @author Radek Matous
  */
+@org.netbeans.api.annotations.common.SuppressWarnings({"SE_NO_SUITABLE_CONSTRUCTOR_FOR_EXTERNALIZATION"})
 final class PhpHierarchyTopComponent extends TopComponent implements PropertyChangeListener {
 
     private static PhpHierarchyTopComponent instance;
-    /** path to the icon used by the component and its open action */
+    /* path to the icon used by the component and its open action */
     static final String ICON_PATH = "org/netbeans/modules/php/editor/nav/resources/subtypehierarchy.gif"; // NOI18N
     private static final String PREFERRED_ID = "PhpHierarchyTopComponent"; // NOI18N
     private JComponent last = null;
@@ -94,7 +95,8 @@ final class PhpHierarchyTopComponent extends TopComponent implements PropertyCha
     }
 
     private void setModel(Model model) {
-        setName(model.getFileScope().getFileObject().getNameExt() + " - " + NbBundle.getMessage(getClass(), "CTL_HierarchyTopComponent")); // NOI18N
+        FileObject fileObject = model.getFileScope().getFileObject();
+        setName(fileObject == null ? "?" : fileObject.getNameExt() + " - " + NbBundle.getMessage(getClass(), "CTL_HierarchyTopComponent")); // NOI18N
         setToolTipText(NbBundle.getMessage(getClass(), "HINT_HierarchyTopComponent")); // NOI18N
         if (!(last instanceof ClassHierarchyPanel)) {
             removeAll();
@@ -167,37 +169,32 @@ final class PhpHierarchyTopComponent extends TopComponent implements PropertyCha
         return getDefault();
     }
 
-    public
     @Override
-    int getPersistenceType() {
+    public int getPersistenceType() {
         return TopComponent.PERSISTENCE_ONLY_OPENED;
     }
 
-    public
     @Override
-    void componentOpened() {
+    public void componentOpened() {
         TopComponent.getRegistry().addPropertyChangeListener(this);
     }
 
-    public
     @Override
-    void componentClosed() {
+    public void componentClosed() {
         removeAll();
         initComponents();
         last = null;
         TopComponent.getRegistry().removePropertyChangeListener(this);
     }
 
-    /** replaces this in object stream */
-    public
+    /* replaces this in object stream */
     @Override
-    Object writeReplace() {
+    public Object writeReplace() {
         return new ResolvableHelper();
     }
 
-    protected
     @Override
-    String preferredID() {
+    protected String preferredID() {
         return PREFERRED_ID;
     }
 
@@ -230,7 +227,7 @@ final class PhpHierarchyTopComponent extends TopComponent implements PropertyCha
                                     public void run() {
                                         final Node[] activatedNodes = TopComponent.getRegistry().getActivatedNodes();
                                         if (activatedNodes.length > 0) {
-                                            EditorCookie c = activatedNodes[0].getCookie(EditorCookie.class);
+                                            EditorCookie c = activatedNodes[0].getLookup().lookup(EditorCookie.class);
                                             if (ShowPhpClassHierarchyAction.isFromEditor(c)) {
                                                 Union2<Document, FileObject> first = Union2.createFirst(c.getOpenedPanes()[0].getDocument());
                                                 fromNode.add(first);
@@ -274,7 +271,7 @@ final class PhpHierarchyTopComponent extends TopComponent implements PropertyCha
         task.schedule(500);
     }
 
-    final static class ResolvableHelper implements Serializable {
+    static final class ResolvableHelper implements Serializable {
 
         private static final long serialVersionUID = 1L;
 

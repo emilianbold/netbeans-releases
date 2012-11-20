@@ -48,8 +48,10 @@ import org.netbeans.modules.cnd.api.model.*;
 import org.netbeans.modules.cnd.antlr.collections.AST;
 import java.io.IOException;
 import org.netbeans.modules.cnd.api.model.util.CsmBaseUtilities;
+import org.netbeans.modules.cnd.modelimpl.csm.TypeFactory.TypeBuilder;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 import org.netbeans.modules.cnd.modelimpl.csm.core.*;
+import org.netbeans.modules.cnd.modelimpl.csm.core.OffsetableDeclarationBase.ScopedDeclarationBuilder;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
@@ -101,6 +103,14 @@ public final class InheritanceImpl extends OffsetableIdentifiableBase<CsmInherit
         }
     }
 
+    private InheritanceImpl(CsmType type, CsmVisibility visibility, boolean virtual, CsmScope scope, CsmFile file, int startOffset, int endOffset) {
+        super(file, startOffset, endOffset);
+        this.scope = UIDCsmConverter.scopeToUID(scope);
+        this.visibility = visibility;
+        this.virtual = virtual;
+        this.ancestorType = TemplateUtils.checkTemplateType(type, scope);
+    }
+    
     public static InheritanceImpl create(AST ast, CsmFile file, CsmScope scope, boolean isGlobal) {
         InheritanceImpl inheritanceImpl = new InheritanceImpl(ast, file, scope);
         if (!isGlobal) {
@@ -183,6 +193,51 @@ public final class InheritanceImpl extends OffsetableIdentifiableBase<CsmInherit
         }
         return true;
     }
+    
+    
+    public static class InheritanceBuilder extends ScopedDeclarationBuilder {
+
+        private CsmVisibility visibility = CsmVisibility.PUBLIC;
+        private boolean _virtual = false;
+        private TypeBuilder typeBuilder;
+
+        public void setTypeBuilder(TypeBuilder type) {
+            this.typeBuilder = type;
+        }
+
+        public CsmVisibility getVisibility() {
+            return visibility;
+        }
+
+        public void setVisibility(CsmVisibility visibility) {
+            this.visibility = visibility;
+        }
+
+        public boolean isVirtual() {
+            return _virtual;
+        }
+
+        public void setVirtual() {
+            this._virtual = true;
+        }
+        
+        public InheritanceImpl create() {
+            InheritanceImpl impl = new InheritanceImpl(getType(), getVisibility(), _virtual, getScope(), getFile(), getStartOffset(), getEndOffset());
+            return impl;
+        }
+        
+        private CsmType getType() {
+            CsmType type = null;
+            if (typeBuilder != null) {
+                typeBuilder.setScope(getScope());
+                type = typeBuilder.create();
+            }
+            if (type == null) {
+                type = TypeFactory.createSimpleType(BuiltinTypes.getBuiltIn("int"), getFile(), getStartOffset(), getStartOffset()); // NOI18N
+            }
+            return type;
+        }         
+    }     
 
     ////////////////////////////////////////////////////////////////////////////
     // impl of persistent

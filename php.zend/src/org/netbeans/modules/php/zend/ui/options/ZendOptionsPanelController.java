@@ -59,7 +59,7 @@ import org.openide.util.Lookup;
 @OptionsPanelController.SubRegistration(
     location=UiUtils.OPTIONS_PATH,
     id=ZendScript.OPTIONS_SUB_PATH,
-    displayName="#LBL_OptionsName",
+    displayName="#LBL_PHPZendOptionsName",
 //    toolTip="#LBL_OptionsTooltip"
     position=300
 )

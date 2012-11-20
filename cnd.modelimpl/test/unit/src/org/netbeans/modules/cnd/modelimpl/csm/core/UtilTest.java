@@ -54,6 +54,7 @@ import org.netbeans.modules.cnd.api.model.CsmType;
 import org.netbeans.modules.cnd.api.model.CsmVisibility;
 import org.netbeans.modules.cnd.modelimpl.repository.KeyPresentationFactoryImpl;
 import org.netbeans.modules.cnd.modelimpl.repository.KeyUtilities;
+import org.netbeans.modules.cnd.modelimpl.test.ModelBasedTestCase;
 import org.netbeans.modules.cnd.repository.spi.Key;
 import org.netbeans.modules.cnd.repository.spi.KeyDataPresentation;
 import org.openide.util.CharSequences;
@@ -62,10 +63,14 @@ import org.openide.util.CharSequences;
  *
  * @author Alexander Simon
  */
-public class UtilTest {
+public class UtilTest extends ModelBasedTestCase {
+
+    public UtilTest(String testName) {
+        super(testName);
+    }
 
     @Test
-    public void consistency() {
+    public void testConsistency() throws Exception {
         Set<String> set = new HashSet<String>();
         for(CsmDeclaration.Kind kind : CsmDeclaration.Kind.values()) {
             String csmDeclarationKindkey = Utils.getCsmDeclarationKindkey(kind);
@@ -167,6 +172,7 @@ public class UtilTest {
         aKey = presentationFactory((short)key.charAt(0));
         assert aKey != null;
         assert KeyUtilities.getKeyChar(aKey) == key.charAt(0);
+        assertNoExceptions();
     }
 
     private Key presentationFactory(final short kind) {
@@ -174,7 +180,7 @@ public class UtilTest {
 
             @Override
             public int getUnitPresentation() {
-                return 0;
+                return 10000+1;
             }
 
             @Override

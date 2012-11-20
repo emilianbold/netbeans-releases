@@ -305,12 +305,26 @@ scope Declaration;
     :                                                                           {action.condition(input.LT(1));}
     (
         (type_specifier+ declarator EQUAL)=>
-            type_specifier+ declarator 
-            EQUAL                                                               {action.condition(action.CONDITION__EQUAL, input.LT(0));}
-            assignment_expression
+            condition_declaration
     |
-        expression
+        condition_expression
     )                                                                           {action.end_condition(input.LT(0));}
+    ;
+
+condition_declaration
+@init                                                                           {if(state.backtracking == 0){action.condition_declaration(input.LT(1));}}
+@after                                                                          {if(state.backtracking == 0){action.end_condition_declaration(input.LT(0));}}
+    :
+        type_specifier+ declarator 
+        EQUAL                                                                   {action.condition(action.CONDITION__EQUAL, input.LT(0));}
+        assignment_expression
+    ;
+
+condition_expression
+@init                                                                           {if(state.backtracking == 0){action.condition_expression(input.LT(1));}}
+@after                                                                          {if(state.backtracking == 0){action.end_condition_expression(input.LT(0));}}
+    :
+        expression
     ;
 
 iteration_statement
@@ -460,7 +474,7 @@ id_expression
         ((simple_template_id_or_IDENT)? SCOPE) => qualified_id
     |
         unqualified_id
-    )                                                                           {action.id_expression(input.LT(0));}
+    )                                                                           {action.end_id_expression(input.LT(0));}
     ;
 
 unqualified_id:
@@ -612,7 +626,11 @@ scope Declaration;
                 constructor_declarator
                 (
                     // this is a continuation of init_declarator_list after constructor_declarator
-                    ( COMMA init_declarator )* SEMICOLON
+                    ( 
+                        COMMA                                                   {action.simple_declaration(action.SIMPLE_DECLARATION__COMMA2, input.LT(0));}
+                        init_declarator 
+                    )* 
+                    SEMICOLON                                                   {action.simple_declaration(action.SIMPLE_DECLARATION__SEMICOLON, input.LT(0));}
                 |
                     function_definition_after_declarator
                 )
@@ -737,8 +755,8 @@ trailing_type_specifier
 
 simple_type_specifier returns [type_specifier_t ts_val]
 scope QualName;
-@init {action.simple_type_specifier(input.LT(1));}
-@after {action.end_simple_type_specifier(input.LT(0));}
+@init {if(state.backtracking == 0){action.simple_type_specifier(input.LT(1));}}
+@after {if(state.backtracking == 0){action.end_simple_type_specifier(input.LT(0));}}
     :
         LITERAL_char                                                            {action.simple_type_specifier(action.SIMPLE_TYPE_SPECIFIER__CHAR, input.LT(0));}
     |
@@ -825,6 +843,8 @@ decltype_specifier
     ;
 
 elaborated_type_specifier
+@init {if(state.backtracking == 0){action.elaborated_type_specifier(input.LT(1));}}
+@after {if(state.backtracking == 0){action.end_elaborated_type_specifier(input.LT(0));}}
     :                                                                           //{action.elaborated_type_specifier(input.LT(1));}
     (
         class_key SCOPE?         
@@ -833,7 +853,7 @@ elaborated_type_specifier
                 nested_name_specifier (simple_template_id_or_IDENT | LITERAL_template simple_template_id_nocheck)
         |
             (
-                simple_template_id_or_IDENT                                     {action.elaborated_type_specifier(input.LT(0));}
+                simple_template_id_or_IDENT                                     //{action.elaborated_type_specifier(input.LT(0));}
             | 
                 LITERAL_template simple_template_id_nocheck
             )
@@ -1589,37 +1609,7 @@ member_declaration [decl_kind kind]
 @init                                                                           {if(state.backtracking == 0){action.member_declaration(input.LT(1));}}
 @after                                                                          {if(state.backtracking == 0){action.end_member_declaration(input.LT(0));}}
     :
-                                                                                {action.decl_specifiers(input.LT(1));}
-        decl_specifier*                                                         {action.end_decl_specifiers(input.LT(0));}
-        (
-            (IDENT? COLON)=>
-                member_bitfield_declarator ( COMMA member_declarator )* SEMICOLON
-        |
-            (constructor_declarator)=>
-                constructor_declarator
-                (
-                    // this was member_declarator_list
-                    ( COMMA member_declarator )* SEMICOLON
-                |
-                    function_definition_after_declarator
-                )
-        |
-            declarator
-            (
-                { /*$declarator.type.is_function()*/ (input.LA(1) != ASSIGNEQUAL && (input.LA(1) != COLON || input.LA(0) == RPAREN)) }?
-                    function_definition_after_declarator
-            |
-                // this was member_declarator_list
-                constant_initializer? 
-                ( 
-                    COMMA                                                       {action.member_declaration(action.MEMBER_DECLARATION__COMMA2, input.LT(0));}
-                    member_declarator 
-                )* 
-                SEMICOLON                                                       {action.member_declaration(action.MEMBER_DECLARATION__SEMICOLON, input.LT(0));}
-            )
-        |
-            SEMICOLON
-        )
+        simple_member_declaration_or_function_definition[kind]
     |
         /* this is likely to be covered by decl_specifier/declarator part of member_declarator
             SCOPE? nested_name_specifier LITERAL_template? unqualified_id SEMICOLON
@@ -1633,6 +1623,47 @@ member_declaration [decl_kind kind]
         static_assert_declaration
     |
         alias_declaration
+    ;
+
+simple_member_declaration_or_function_definition[decl_kind kind]
+@init                                                                           {if(state.backtracking == 0){action.simple_member_declaration(input.LT(1));}}
+@after                                                                          {if(state.backtracking == 0){action.end_simple_member_declaration(input.LT(0));}}
+    :
+                                                                                {action.decl_specifiers(input.LT(1));}
+        decl_specifier*                                                         {action.end_decl_specifiers(input.LT(0));}
+        (
+            (IDENT? COLON)=>
+                member_bitfield_declarator ( COMMA member_declarator )* SEMICOLON
+        |
+            (constructor_declarator)=>
+                constructor_declarator
+                (
+                    // this was member_declarator_list
+                    ( 
+                        COMMA                                                   {action.simple_member_declaration(action.SIMPLE_MEMBER_DECLARATION__COMMA2, input.LT(0));}
+                        member_declarator 
+                    )* 
+                    SEMICOLON                                                   {action.simple_member_declaration(action.SIMPLE_MEMBER_DECLARATION__SEMICOLON, input.LT(0));}
+                |
+                    function_definition_after_declarator
+                )
+        |
+            declarator
+            (
+                { /*$declarator.type.is_function()*/ (input.LA(1) != ASSIGNEQUAL && (input.LA(1) != COLON || input.LA(0) == RPAREN)) }?
+                    function_definition_after_declarator
+            |
+                // this was member_declarator_list
+                constant_initializer? 
+                ( 
+                    COMMA                                                       {action.simple_member_declaration(action.SIMPLE_MEMBER_DECLARATION__COMMA2, input.LT(0));}
+                    member_declarator 
+                )* 
+                SEMICOLON                                                       {action.simple_member_declaration(action.SIMPLE_MEMBER_DECLARATION__SEMICOLON, input.LT(0));}
+            )
+        |
+            SEMICOLON
+        )
     ;
 
 member_bitfield_declarator
@@ -2455,7 +2486,10 @@ assignment_expression:
  * Ambiguity on logical_or_expression in assignment vs conditional_expression.
  * Resolved by unpretty rule-splitting and left-factoring.
  */
-assignment_expression:
+assignment_expression
+@init                                                                           {if(state.backtracking == 0){action.assignment_expression(input.LT(1));}}
+@after                                                                          {if(state.backtracking == 0){action.end_assignment_expression(input.LT(0));}}
+    :
         // this is taken from conditional_expression
         QUESTIONMARK expression COLON assignment_expression
     |
@@ -2474,11 +2508,16 @@ assignment_operator:
         BITWISEANDEQUAL | BITWISEXOREQUAL | BITWISEOREQUAL
     ;
 
-expression:
+expression
+@init                                                                           {if(state.backtracking == 0){action.expression(input.LT(1));}}
+@after                                                                          {if(state.backtracking == 0){action.end_expression(input.LT(0));}}
+    :
         assignment_expression ( COMMA assignment_expression )*
     ;
 
 constant_expression returns [ expression_t expr ]
+@init                                                                           {if(state.backtracking == 0){action.constant_expression(input.LT(1));}}
+@after                                                                          {if(state.backtracking == 0){action.end_constant_expression(input.LT(0));}}
     :
         conditional_expression
     ;

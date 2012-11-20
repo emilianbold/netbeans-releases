@@ -43,8 +43,13 @@ package org.netbeans.modules.websvc.saas.model;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
+
+import javax.xml.ws.Response;
+
 import org.netbeans.modules.websvc.saas.model.jaxb.Method;
 import org.netbeans.modules.websvc.saas.model.wadl.Application;
 import org.netbeans.modules.websvc.saas.model.wadl.Resource;
@@ -88,8 +93,13 @@ public class WadlSaasMethod extends SaasMethod {
                     Set<String> medias = null;
 
                     if (GET.equals(name)) {
-                        medias = SaasUtil.getMediaTypesFromJAXBElement(
-                                wadlMethod.getResponse().getRepresentationOrFault());
+                        medias = new HashSet<String>();
+                        for( org.netbeans.modules.websvc.saas.model.wadl.Response 
+                                response :wadlMethod.getResponse())
+                        {
+                            medias.addAll(SaasUtil.getMediaTypes(
+                                    response.getRepresentation()));
+                        }
                     } else if (PUT.equals(name) || POST.equals(name)) {
                         medias = SaasUtil.getMediaTypes(
                                 wadlMethod.getRequest().getRepresentation());
@@ -122,8 +132,13 @@ public class WadlSaasMethod extends SaasMethod {
                     Set<String> medias = null;
 
                     if (GET.equals(displayName)) {
-                        medias = SaasUtil.getMediaTypesFromJAXBElement(
-                                wadlMethod.getResponse().getRepresentationOrFault());
+                        medias = new HashSet<String>();
+                        for( org.netbeans.modules.websvc.saas.model.wadl.Response 
+                                response :wadlMethod.getResponse())
+                        {
+                            medias.addAll(SaasUtil.getMediaTypes(
+                                    response.getRepresentation()));
+                        }
                     } else if (PUT.equals(displayName) || POST.equals(displayName)) {
                         medias = SaasUtil.getMediaTypes(
                                 wadlMethod.getRequest().getRepresentation());
@@ -168,10 +183,14 @@ public class WadlSaasMethod extends SaasMethod {
                     current = current.getParent();
                 }
             } else {
-                for (Resource r : wadl.getResources().getResource()) {
-                    findPathToMethod(r, result);
-                    if (r.getMethodOrResource().contains(getWadlMethod())) {
-                        break;
+                for(org.netbeans.modules.websvc.saas.model.wadl.Resources wadlResources : 
+                    wadl.getResources())
+                {
+                    for (Resource r : wadlResources.getResource()) {
+                        findPathToMethod(r, result);
+                        if (r.getMethodOrResource().contains(getWadlMethod())) {
+                            break;
+                        }
                     }
                 }
             }

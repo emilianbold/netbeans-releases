@@ -51,6 +51,7 @@
 #include "StringUtils.h"
 #include "ExtractUtils.h"
 #include "Main.h"
+#include "shlobj.h"
 
 const DWORD NUMBER_OF_HELP_ARGUMENTS = 11;
 const DWORD READ_WRITE_BUFSIZE = 65536;
@@ -170,13 +171,13 @@ void loadLocalizationStrings(LauncherProperties *props) {
     }
 }
 
-void readDefaultRoots(LauncherProperties *props) {
-    WCHAR * appDataValue = getStringValue(HKEY_CURRENT_USER,
-                        toWCHAR("Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Shell Folders"),
-                        toWCHAR("AppData"), 0);    
-    WCHAR * localAppDataValue = getStringValue(HKEY_CURRENT_USER,
-                        toWCHAR("Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Shell Folders"),
-                        toWCHAR("Local AppData"), 0);
+void readDefaultRoots(LauncherProperties *props) {                       
+    TCHAR appDataValueTChar[MAX_PATH];
+    TCHAR localAppDataValueTChar[MAX_PATH];    
+    SHGetFolderPath(NULL, CSIDL_APPDATA, NULL, 0, appDataValueTChar);
+    SHGetFolderPath(NULL, CSIDL_LOCAL_APPDATA, NULL, 0, localAppDataValueTChar);    
+    WCHAR* appDataValue = toWCHAR(appDataValueTChar);
+    WCHAR* localAppDataValue = toWCHAR(localAppDataValueTChar);
                         
     writeMessageA(props, OUTPUT_LEVEL_DEBUG, 0, "Reading Default Userdir and Cachedir roots...", 1);
     

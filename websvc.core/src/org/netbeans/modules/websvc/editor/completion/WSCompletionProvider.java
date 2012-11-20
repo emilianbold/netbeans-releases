@@ -212,7 +212,9 @@ public class WSCompletionProvider implements CompletionProvider {
                     successfullyMoved = ts.moveNext(); // otherwise move to the token that "contains" the offset
                 
                 if (successfullyMoved && ts.offset() < offset) {
-                    prefix = ts.token().toString().substring(0, offset - ts.offset());
+                    String token = ts.token().text().toString();
+                    int length = Math.min( offset - ts.offset() , token.length());
+                    prefix = token.substring(0, length);
                     offset=ts.offset();
                     if (ts.token().id() == JavaTokenId.STRING_LITERAL && prefix.startsWith("\"")) { //NOI18N
                         prefix = prefix.substring(1);

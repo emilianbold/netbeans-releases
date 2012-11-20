@@ -63,8 +63,11 @@ import java.util.prefs.Preferences;
 import javax.swing.JComponent;
 import javax.swing.JEditorPane;
 import javax.swing.JScrollPane;
+import javax.swing.JViewport;
 import javax.swing.SwingUtilities;
 import javax.swing.border.LineBorder;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import javax.swing.plaf.TextUI;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.BadLocationException;
@@ -94,13 +97,18 @@ import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
+import org.openide.util.RequestProcessor;
+import org.openide.util.RequestProcessor.Task;
 import org.openide.util.WeakListeners;
 
 /**
  *
  * @author sdedic
  */
-public class BraceMatchingSidebarComponent extends JComponent implements MatchListener, FocusListener, ViewHierarchyListener {
+public class BraceMatchingSidebarComponent extends JComponent implements 
+        MatchListener, FocusListener, ViewHierarchyListener, ChangeListener {
+    
+    private static final int TOOLTIP_CHECK_DELAY = 700;
     
     public static final String BRACES_COLORING = "nbeditor-bracesMatching-sidebar"; // NOI18N
 
@@ -165,11 +173,14 @@ public class BraceMatchingSidebarComponent extends JComponent implements MatchLi
      */
     private LookupListener  lookupListenerGC;
     private PreferenceChangeListener prefListenerGC;
+    private JViewport viewport;
 
     /**
      * Coloring from user settings. Updated in {@link #updateColors}.
      */
     private Coloring coloring;
+    
+    private static final RequestProcessor RP = new RequestProcessor(BraceMatchingSidebarComponent.class);
     
     public BraceMatchingSidebarComponent(JTextComponent editor) {
         this.editor = editor;
@@ -194,6 +205,12 @@ public class BraceMatchingSidebarComponent extends JComponent implements MatchLi
         loadPreferences();
         
         editorPane = findEditorPane(editor);
+        Component parent = editor.getParent();
+        if (parent instanceof JViewport) {
+            this.viewport = (JViewport)parent;
+            // see #219015; need to listen on viewport change to show/hide the tooltip
+            viewport.addChangeListener(this);
+        }
         TextUI ui = editor.getUI();
         if (ui instanceof BaseTextUI) {
             baseUI = (BaseTextUI)ui;
@@ -208,6 +225,36 @@ public class BraceMatchingSidebarComponent extends JComponent implements MatchLi
     private void loadPreferences() {
         showOutline = prefs.getBoolean(SimpleValueNames.BRACE_SHOW_OUTLINE, true);
         showToolTip = prefs.getBoolean(SimpleValueNames.BRACE_FIRST_TOOLTIP, true);
+    }
+    
+    /**
+     * Updates the tooltip as a response to viewport scroll event. The actual
+     * update is yet another runnable replanned to AWT, the Updater only 
+     * provides coalescing of the scroll events.
+     */
+    private Task scrollUpdater = RP.create(new Runnable() {
+        @Override
+        // delayed runnable
+        public void run() {
+            SwingUtilities.invokeLater(new Runnable() {
+               // runnable that can access visual hierearchy
+               public void run() {
+                    Rectangle visible = getVisibleRect();
+                    if (tooltipYAnchor < Integer.MAX_VALUE) {
+                        if (visible.y <= tooltipYAnchor) {
+                            hideToolTip(true);
+                        } else if (autoHidden) {
+                            showTooltip();
+                        }
+                    }
+               } 
+            });
+        }
+    });
+
+    @Override
+    public void stateChanged(ChangeEvent e) {
+        scrollUpdater.schedule(TOOLTIP_CHECK_DELAY);
     }
     
     private class PrefListener implements PreferenceChangeListener {
@@ -236,7 +283,7 @@ public class BraceMatchingSidebarComponent extends JComponent implements MatchLi
 
     @Override
     public void focusLost(FocusEvent e) {
-        hideToolTip();
+        hideToolTip(false);
     }
 
     @Override
@@ -431,10 +478,12 @@ public class BraceMatchingSidebarComponent extends JComponent implements MatchLi
         return new int[] { minY, maxY };
     }
     
-    private void hideToolTip() {
-        ToolTipSupport tts = baseUI.getEditorUI().getToolTipSupport();
-        if (tts.getToolTip() instanceof BraceToolTip) {
+    private void hideToolTip(boolean autoHidden) {
+        if (isMatcherTooltipVisible()) {
+            ToolTipSupport tts = baseUI.getEditorUI().getToolTipSupport();
             tts.setToolTipVisible(false);
+            this.autoHidden = autoHidden;
+//            this.tooltipVisible = false;
         }
     }
     
@@ -445,7 +494,10 @@ public class BraceMatchingSidebarComponent extends JComponent implements MatchLi
         int start = Integer.MAX_VALUE;
         int end = -1;
         
-        for (int i = 0; i < matches.length; i += 2) {
+        // See issue #219683: in if-then-elif-else constructs, only the 2 initial pairs
+        // (start and end of the initial tag/construct) are interesting. For finer control,
+        // a language SPI has to be created.
+        for (int i = 0; i < Math.min(matches.length, 4); i += 2) {
             int s = matches[i];
             int e = matches[i+1];
             
@@ -510,7 +562,7 @@ public class BraceMatchingSidebarComponent extends JComponent implements MatchLi
 
                     @Override
                     public void mouseEntered(MouseEvent e) {
-                        hideToolTip();
+                        hideToolTip(false);
                     }
                     
                 });
@@ -532,12 +584,35 @@ public class BraceMatchingSidebarComponent extends JComponent implements MatchLi
         return null;
     }
     
+    private boolean isMatcherTooltipVisible() {
+        ToolTipSupport tts = baseUI.getEditorUI().getToolTipSupport();
+        if (!(tts.isEnabled() && tts.isToolTipVisible())) {
+            return false;
+        }
+        return tts.getToolTip() instanceof BraceToolTip;
+    }
+    
+    /**
+     * If automatically hidden because of visibility in of the anchor point in
+     * the viewport. Allows to determine whether the tooltip should be shown
+     * again if the anchor scrolls outside viewport
+     */
+    private boolean autoHidden;
+    
+    /**
+     * Y view coordinate of the highlight range start; updated on tooltip show,
+     * Integer.MAX when the range is empty.
+     */
+    private int tooltipYAnchor;
+    
     private void showTooltip() {
         if (!showToolTip) {
             return;
         }
         int[] range = findTooltipRange();
         if (range == null) {
+            autoHidden = false;
+            tooltipYAnchor = Integer.MAX_VALUE;
             return;
         }
         
@@ -547,8 +622,9 @@ public class BraceMatchingSidebarComponent extends JComponent implements MatchLi
         
         try {
             int yPos = baseUI.getYFromPos(range[0]);
-            
+            tooltipYAnchor = yPos;
             if (yPos >= visible.y) {
+                autoHidden = true;
                 return;
             }
             int yPos2 = baseUI.getYFromPos(range[1]);
@@ -578,7 +654,8 @@ public class BraceMatchingSidebarComponent extends JComponent implements MatchLi
         tts.setToolTip(tooltip, 
                 PopupManager.ScrollBarBounds, 
                 new Point(-x, -y),
-                0, 0,
-                ToolTipSupport.FLAG_PERMANENT);
+                0, 0, 0);
+        tts.setToolTipVisible(true, false);
+//        this.tooltipVisible = true;
     }
 }

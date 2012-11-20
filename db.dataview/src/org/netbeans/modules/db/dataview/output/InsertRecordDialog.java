@@ -100,17 +100,17 @@ import org.openide.windows.WindowManager;
 class InsertRecordDialog extends javax.swing.JDialog {
 
     private final DataView dataView;
-    InsertRecordTableUI jTable1;
+    InsertRecordTableUI insertRecordTableUI;
     private JXTableRowHeader rowHeader;
 
     public InsertRecordDialog(DataView dataView) {
         super(WindowManager.getDefault().getMainWindow(), true);
         this.dataView = dataView;
-        jTable1 = new InsertRecordTableUI(dataView) {
+        insertRecordTableUI = new InsertRecordTableUI(dataView) {
 
             @Override
             public void changeSelection(int rowIndex, int columnIndex, boolean toggle, boolean extend) {
-                if (rowIndex != -1 && columnIndex != -1 && ((DefaultTableModel) jTable1.getModel()).getRowCount() > 1) {
+                if (rowIndex != -1 && columnIndex != -1 && ((DefaultTableModel) insertRecordTableUI.getModel()).getRowCount() > 1) {
                     removeBtn.setEnabled(true);
                 }
                 AWTEvent awtEvent = EventQueue.getCurrentEvent();
@@ -135,9 +135,9 @@ class InsertRecordDialog extends javax.swing.JDialog {
         };
         initComponents();
         addInputFields();
-        jTable1.addKeyListener(new TableKeyListener());
+        insertRecordTableUI.addKeyListener(new TableKeyListener());
 
-        jTable1.getModel().addTableModelListener(new TableListener());
+        insertRecordTableUI.getModel().addTableModelListener(new TableListener());
 
         jSplitPane1.setBottomComponent(null);
 
@@ -331,12 +331,12 @@ class InsertRecordDialog extends javax.swing.JDialog {
     }// </editor-fold>//GEN-END:initComponents
 
 private void addBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addBtnActionPerformed
-    DefaultTableModel model = (DefaultTableModel) jTable1.getModel();
-    model.addRow(jTable1.createNewRow());
+    DefaultTableModel model = (DefaultTableModel) insertRecordTableUI.getModel();
+    model.addRow(insertRecordTableUI.createNewRow());
 }//GEN-LAST:event_addBtnActionPerformed
 
 private void removeBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_removeBtnActionPerformed
-    jTable1.removeRows();
+    insertRecordTableUI.removeRows();
     removeBtn.setEnabled(false);
 }//GEN-LAST:event_removeBtnActionPerformed
 
@@ -362,8 +362,8 @@ private void removeBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
     }
 
     private void executeBtnActionPerformed(java.awt.event.ActionEvent evt) {
-        if (jTable1.isEditing()) {
-            jTable1.getCellEditor().stopCellEditing();
+        if (insertRecordTableUI.isEditing()) {
+            insertRecordTableUI.getCellEditor().stopCellEditing();
         }
         // Get out of AWT thread because SQLExecutionHelper does calls to AWT
         // and we need to wait here to show possible exceptions.
@@ -374,7 +374,7 @@ private void removeBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
                 String insertSQL = null;
                 SQLStatementGenerator stmtBldr = dataView.getSQLStatementGenerator();
                 SQLExecutionHelper execHelper = dataView.getSQLExecutionHelper();
-                for (int i = 0; i < jTable1.getRowCount(); i++) {
+                for (int i = 0; i < insertRecordTableUI.getRowCount(); i++) {
                     boolean wasException = false;
                     try {
                         Object[] insertedRow = getInsertValues(i);
@@ -390,7 +390,7 @@ private void removeBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
                     if (wasException) {
                         // remove i already inserted
                         for (int j = 0; j < i; j++) {
-                            ((DefaultTableModel) jTable1.getModel()).removeRow(0);
+                            ((DefaultTableModel) insertRecordTableUI.getModel()).removeRow(0);
                         }
                         // return without closing
                         return;
@@ -419,7 +419,7 @@ private void removeBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
             String sqlText = "";
             if (jSplitPane1.getBottomComponent() != null) {
                 SQLStatementGenerator stmtBldr = dataView.getSQLStatementGenerator();
-                for (int i = 0; i < jTable1.getRowCount(); i++) {
+                for (int i = 0; i < insertRecordTableUI.getRowCount(); i++) {
                     String sql = stmtBldr.generateRawInsertStatement(getInsertValues(i));
                     sqlText = sqlText + sql + "\n";
                 }
@@ -442,10 +442,10 @@ private void removeBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
 
     private void addInputFields() {
         List<Object[]> rows = new ArrayList<Object[]>();
-        rows.add(jTable1.createNewRow());
-        jScrollPane1.setViewportView(jTable1);
-        rowHeader = new JXTableRowHeader(jTable1);
-        final Component order[] = new Component[]{rowHeader, jTable1};
+        rows.add(insertRecordTableUI.createNewRow());
+        jScrollPane1.setViewportView(insertRecordTableUI);
+        rowHeader = new JXTableRowHeader(insertRecordTableUI);
+        final Component order[] = new Component[]{rowHeader, insertRecordTableUI};
         FocusTraversalPolicy policy = new FocusTraversalPolicy() {
 
             List componentList = Arrays.asList(order);
@@ -463,11 +463,11 @@ private void removeBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
             @Override
             public Component getComponentAfter(Container focusCycleRoot, Component aComponent) {              
                 if (aComponent instanceof JXTableRowHeader) {
-                    int rowIndex = jTable1.getRowCount() - 1;
-                    jTable1.editCellAt(rowIndex, 0);
-                    jTable1.setRowSelectionInterval(rowIndex, 0);
+                    int rowIndex = insertRecordTableUI.getRowCount() - 1;
+                    insertRecordTableUI.editCellAt(rowIndex, 0);
+                    insertRecordTableUI.setRowSelectionInterval(rowIndex, 0);
                 }
-                return jTable1;
+                return insertRecordTableUI;
             }
 
             @Override
@@ -484,18 +484,18 @@ private void removeBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
         setFocusTraversalPolicy(policy);
         jScrollPane1.setRowHeaderView(rowHeader);
         jScrollPane1.setCorner(JScrollPane.UPPER_LEFT_CORNER, rowHeader.getTableHeader());
-        jTable1.createTableModel(rows, rowHeader);
+        insertRecordTableUI.createTableModel(rows, rowHeader);
     }
 
     private Object[] getInsertValues(int row) throws DBException {
-        DefaultTableModel model = (DefaultTableModel) jTable1.getModel();
-        int rsColumnCount = jTable1.getRSColumnCount();
+        DefaultTableModel model = (DefaultTableModel) insertRecordTableUI.getModel();
+        int rsColumnCount = insertRecordTableUI.getRSColumnCount();
         Object[] insertData = new Object[rsColumnCount];
-        if (jTable1.getRowCount() <= 0) {
+        if (insertRecordTableUI.getRowCount() <= 0) {
             return insertData;
         }
         for (int i = 0; i < rsColumnCount; i++) {
-            DBColumn col = jTable1.getDBColumn(i);
+            DBColumn col = insertRecordTableUI.getDBColumn(i);
             Object val = model.getValueAt(row, i);
 
             // Check for Constant e.g <NULL>, <DEFAULT>, <CURRENT_TIMESTAMP> etc
@@ -541,7 +541,7 @@ private void removeBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
             paste();
         }
         if (e.isControlDown() && e.getKeyCode() == KeyEvent.VK_DELETE) {
-            jTable1.removeRows();
+            insertRecordTableUI.removeRows();
         } else if (e.getKeyCode() == KeyEvent.VK_ENTER) {
             setFocusable(false);
         } else if (e.isControlDown() && e.getKeyChar() == KeyEvent.VK_0) {
@@ -555,10 +555,10 @@ private void removeBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
 
     private void copy() {
         StringBuilder strBuffer = new StringBuilder();
-        int numcols = jTable1.getSelectedColumnCount();
-        int numrows = jTable1.getSelectedRowCount();
-        int[] rowsselected = jTable1.getSelectedRows();
-        int[] colsselected = jTable1.getSelectedColumns();
+        int numcols = insertRecordTableUI.getSelectedColumnCount();
+        int numrows = insertRecordTableUI.getSelectedRowCount();
+        int[] rowsselected = insertRecordTableUI.getSelectedRows();
+        int[] colsselected = insertRecordTableUI.getSelectedColumns();
         if (!((numrows - 1 == rowsselected[rowsselected.length - 1] - rowsselected[0] && numrows == rowsselected.length) &&
                 (numcols - 1 == colsselected[colsselected.length - 1] - colsselected[0] && numcols == colsselected.length))) {
             JOptionPane.showMessageDialog(null, "Invalid Copy Selection", "Invalid Copy Selection", JOptionPane.ERROR_MESSAGE);
@@ -566,7 +566,7 @@ private void removeBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
         }
         for (int i = 0; i < numrows; i++) {
             for (int j = 0; j < numcols; j++) {
-                strBuffer.append(jTable1.getValueAt(rowsselected[i], colsselected[j]));
+                strBuffer.append(insertRecordTableUI.getValueAt(rowsselected[i], colsselected[j]));
                 if (j < numcols - 1) {
                     strBuffer.append("\t");
                 }
@@ -580,13 +580,13 @@ private void removeBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
 
     private void paste() {
         String rowstring, value;
-        int startRow = (jTable1.getSelectedRows())[0];
-        int startCol = (jTable1.getSelectedColumns())[0];
+        int startRow = (insertRecordTableUI.getSelectedRows())[0];
+        int startCol = (insertRecordTableUI.getSelectedColumns())[0];
         try {
             String trstring = (String) (clipBoard.getContents(this).getTransferData(DataFlavor.stringFlavor));
             StringTokenizer st1 = new StringTokenizer(trstring, "\n");
-            if (jTable1.getSelectedRows().length < st1.countTokens()) {
-                int rowCnt = st1.countTokens() - jTable1.getSelectedRows().length;
+            if (insertRecordTableUI.getSelectedRows().length < st1.countTokens()) {
+                int rowCnt = st1.countTokens() - insertRecordTableUI.getSelectedRows().length;
                 for (int cnt = 0; cnt < rowCnt; cnt++) {
                     addBtnActionPerformed(null);
                 }
@@ -596,8 +596,8 @@ private void removeBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
                 StringTokenizer st2 = new StringTokenizer(rowstring, "\t");
                 for (int j = 0; st2.hasMoreTokens(); j++) {
                     value = st2.nextToken();
-                    if (startRow + i < jTable1.getRowCount() && startCol + j < jTable1.getColumnCount()) {
-                        jTable1.setValueAt(value, startRow + i, startCol + j);
+                    if (startRow + i < insertRecordTableUI.getRowCount() && startCol + j < insertRecordTableUI.getColumnCount()) {
+                        insertRecordTableUI.setValueAt(value, startRow + i, startCol + j);
                     }
                 }
             }
@@ -607,51 +607,51 @@ private void removeBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
     }
 
     private void control0Event() {
-        int row = jTable1.getSelectedRow();
-        int col = jTable1.getSelectedColumn();
+        int row = insertRecordTableUI.getSelectedRow();
+        int col = insertRecordTableUI.getSelectedColumn();
         if (row == -1) {
             return;
         }
-        jTable1.editCellAt(row, col);
-        TableCellEditor editor = jTable1.getCellEditor();
+        insertRecordTableUI.editCellAt(row, col);
+        TableCellEditor editor = insertRecordTableUI.getCellEditor();
         if (editor != null) {
             DBColumn dbcol = dataView.getDataViewDBTable().getColumn(col);
             if (dbcol.isGenerated() || !dbcol.isNullable()) {
                 Toolkit.getDefaultToolkit().beep();
                 editor.stopCellEditing();
             } else {
-                editor.getTableCellEditorComponent(jTable1, null, jTable1.isRowSelectionAllowed, row, col);
-                jTable1.setValueAt(null, row, col);
+                editor.getTableCellEditorComponent(insertRecordTableUI, null, insertRecordTableUI.isRowSelectionAllowed, row, col);
+                insertRecordTableUI.setValueAt(null, row, col);
                 editor.stopCellEditing();
             }
-            jTable1.setRowSelectionInterval(row, row);
+            insertRecordTableUI.setRowSelectionInterval(row, row);
         }
     }
 
     private void control1Event() {
-        int row = jTable1.getSelectedRow();
-        int col = jTable1.getSelectedColumn();
+        int row = insertRecordTableUI.getSelectedRow();
+        int col = insertRecordTableUI.getSelectedColumn();
         if (row == -1) {
             return;
         }
-        jTable1.editCellAt(row, col);
-        TableCellEditor editor = jTable1.getCellEditor();
+        insertRecordTableUI.editCellAt(row, col);
+        TableCellEditor editor = insertRecordTableUI.getCellEditor();
         if (editor != null) {
             DBColumn dbcol = dataView.getDataViewDBTable().getColumn(col);
-            Object val = jTable1.getValueAt(row, col);
+            Object val = insertRecordTableUI.getValueAt(row, col);
             if (dbcol.isGenerated() || !dbcol.hasDefault()) {
                 Toolkit.getDefaultToolkit().beep();
                 editor.stopCellEditing();
             } else if (val != null && val instanceof String && ((String) val).equals("<DEFAULT>")) {
-                editor.getTableCellEditorComponent(jTable1, "", jTable1.isRowSelectionAllowed, row, col);
-                jTable1.setValueAt(null, row, col);
+                editor.getTableCellEditorComponent(insertRecordTableUI, "", insertRecordTableUI.isRowSelectionAllowed, row, col);
+                insertRecordTableUI.setValueAt(null, row, col);
                 editor.stopCellEditing();
             } else {
-                editor.getTableCellEditorComponent(jTable1, "<DEFAULT>", jTable1.isRowSelectionAllowed, row, col);
-                jTable1.setValueAt("<DEFAULT>", row, col);
+                editor.getTableCellEditorComponent(insertRecordTableUI, "<DEFAULT>", insertRecordTableUI.isRowSelectionAllowed, row, col);
+                insertRecordTableUI.setValueAt("<DEFAULT>", row, col);
                 editor.stopCellEditing();
             }
-            jTable1.setRowSelectionInterval(row, row);
+            insertRecordTableUI.setRowSelectionInterval(row, row);
         }
     }
     // Variables declaration - do not modify//GEN-BEGIN:variables

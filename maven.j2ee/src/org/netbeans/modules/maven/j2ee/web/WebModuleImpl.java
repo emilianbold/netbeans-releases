@@ -73,6 +73,8 @@ import org.netbeans.modules.maven.j2ee.MavenJavaEEConstants;
 import org.netbeans.modules.web.spi.webmodule.WebModuleImplementation2;
 import org.netbeans.spi.project.AuxiliaryProperties;
 import org.openide.ErrorManager;
+import org.openide.filesystems.FileChangeAdapter;
+import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
@@ -329,18 +331,47 @@ public class WebModuleImpl extends BaseEEModuleImpl implements WebModuleImplemen
     @Override
     public synchronized MetadataModel<WebAppMetadata> getMetadataModel() {
         if (webAppMetadataModel == null) {
-            FileObject ddFO = getDeploymentDescriptor();
+            final FileObject ddFO = getDeploymentDescriptor();
+            final FileObject webInf = getOrCreateWebInf();
+
+            if (ddFO == null && webInf != null) {
+                webInf.addFileChangeListener(new FileChangeAdapter() {
+                    @Override
+                    public void fileDataCreated(FileEvent fe) {
+                        if ("web.xml".equals(fe.getFile().getNameExt())) { // NOI18N
+                            webInf.removeFileChangeListener(this);
+                            resetMetadataModel();
+                        }
+                    }
+                });
+            }
+
             File ddFile = ddFO != null ? FileUtil.toFile(ddFO) : null;
             ProjectSourcesClassPathProvider cpProvider = project.getLookup().lookup(ProjectSourcesClassPathProvider.class);
             MetadataUnit metadataUnit = MetadataUnit.create(
                 cpProvider.getProjectSourcesClassPath(ClassPath.BOOT),
                 cpProvider.getProjectSourcesClassPath(ClassPath.COMPILE),
                 cpProvider.getProjectSourcesClassPath(ClassPath.SOURCE),
-                // XXX: add listening on deplymentDescriptor
                 ddFile);
             webAppMetadataModel = WebAppMetadataModelFactory.createMetadataModel(metadataUnit, true);
         }
         return webAppMetadataModel;
+    }
+
+    private FileObject getOrCreateWebInf() {
+        FileObject webInf = getWebInf();
+        if (webInf == null) {
+            try {
+                webInf = createWebInf();
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
+        return webInf;
+    }
+
+    private synchronized void resetMetadataModel() {
+        webAppMetadataModel = null;
     }
     
     private synchronized MetadataModel<WebservicesMetadata> getWebservicesMetadataModel() {

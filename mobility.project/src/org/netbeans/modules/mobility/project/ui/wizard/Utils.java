@@ -61,6 +61,9 @@ import org.openide.util.NbBundle;
  */
 public class Utils {
     
+    public static final String IS_LIBRARY = "is_library"; // NOI18N
+    public static final String IS_EMBEDDED = "is_embedded"; // NOI18N
+
     private Utils()
     {
         //To avoid instantiation

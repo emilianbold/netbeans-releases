@@ -51,7 +51,7 @@ import org.netbeans.modules.php.twig.editor.util.TestUtils;
 /**
  * Tests for Twig top lexer.
  */
-public class TwigTopLexerTest extends TwigTestBase {
+public class TwigTopLexerTest extends TwigLexerTestBase {
 
     public TwigTopLexerTest(String testName) {
         super(testName);

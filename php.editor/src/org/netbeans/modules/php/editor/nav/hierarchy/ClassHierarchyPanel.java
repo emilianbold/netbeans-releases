@@ -48,9 +48,24 @@ import java.awt.Component;
 import java.awt.Image;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.util.*;
-import javax.swing.*;
-import javax.swing.tree.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Comparator;
+import java.util.Enumeration;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Set;
+import javax.swing.ImageIcon;
+import javax.swing.JLabel;
+import javax.swing.JList;
+import javax.swing.JPanel;
+import javax.swing.JTree;
+import javax.swing.tree.DefaultMutableTreeNode;
+import javax.swing.tree.DefaultTreeModel;
+import javax.swing.tree.TreeCellRenderer;
+import javax.swing.tree.TreeNode;
+import javax.swing.tree.TreePath;
 import org.netbeans.modules.csl.api.UiUtils;
 import org.netbeans.modules.php.editor.api.ElementQuery.Index;
 import org.netbeans.modules.php.editor.api.QualifiedName;
@@ -69,6 +84,7 @@ import org.openide.util.NbBundle.Messages;
 /**
  * @author Radek Matous
  */
+@org.netbeans.api.annotations.common.SuppressWarnings({"SE_BAD_FIELD_STORE"})
 public class ClassHierarchyPanel extends JPanel implements HelpCtx.Provider {
 
     private static final int MAX_STACK_DEPTH = 250;
@@ -94,7 +110,6 @@ public class ClassHierarchyPanel extends JPanel implements HelpCtx.Provider {
         }
     };
 
-    /** Creates new form ClassHierarchyPanel */
     public ClassHierarchyPanel(boolean isView) {
         initComponents();
         if (!isView) {
@@ -106,7 +121,8 @@ public class ClassHierarchyPanel extends JPanel implements HelpCtx.Provider {
         setName(NbBundle.getMessage(getClass(), "CTL_ClassHierarchyTopComponent")); // NOI18N
         setToolTipText(NbBundle.getMessage(getClass(), "HINT_ClassHierarchyTopComponent")); // NOI18N
         tree = new JTree();
-        tree.setModel(treeModel = new DefaultTreeModel(new DefaultMutableTreeNode()));
+        treeModel = new DefaultTreeModel(new DefaultMutableTreeNode());
+        tree.setModel(treeModel);
         tree.setToggleClickCount(0);
         tree.setCellRenderer(new TreeRenderer());
         tree.putClientProperty("JTree.lineStyle", "Angled");  //NOI18N
@@ -276,10 +292,11 @@ public class ClassHierarchyPanel extends JPanel implements HelpCtx.Provider {
         return new HelpCtx("PhpTypeView"); // NOI18N
     }
 
-    protected static abstract class AbstractTypeNode implements TreeNode {
+    @org.netbeans.api.annotations.common.SuppressWarnings({"EI_EXPOSE_REP2"})
+    protected abstract static class AbstractTypeNode implements TreeNode {
 
-        static String ICON_BASE = "org/netbeans/modules/php/editor/resources/";     //NOI18N
-        static String ICON_EXTENSION = ".png";  //NOI18N
+        static final String ICON_BASE = "org/netbeans/modules/php/editor/resources/"; //NOI18N
+        static final String ICON_EXTENSION = ".png"; //NOI18N
         private AbstractTypeNode[] childern;
 
         protected AbstractTypeNode() {
@@ -349,7 +366,7 @@ public class ClassHierarchyPanel extends JPanel implements HelpCtx.Provider {
         Arrays.<TypeNode>sort(types, new Comparator<TypeNode>() {
             @Override
             public int compare(TypeNode o1, TypeNode o2) {
-                int compareTo = new Boolean(o1.isClass).compareTo(o2.isClass);
+                int compareTo = Boolean.valueOf(o1.isClass).compareTo(o2.isClass);
                 return compareTo == 0 ? o1.toString().compareToIgnoreCase(o2.toString()) : compareTo;
             }
         });
@@ -380,6 +397,7 @@ public class ClassHierarchyPanel extends JPanel implements HelpCtx.Provider {
         return retval;
     }
 
+    @org.netbeans.api.annotations.common.SuppressWarnings({"DLS_DEAD_LOCAL_STORE"})
     private static TypeNode createTypeNode(
             final TreeNode parent, final TreeElement<TypeElement> classElement, Set<TypeElement> recursionDetection, Integer stackDepth) {
         stackDepth++;
@@ -405,7 +423,8 @@ public class ClassHierarchyPanel extends JPanel implements HelpCtx.Provider {
         private final String filename;
 
         private FileRootNode(final Model model) {
-            filename = model.getFileScope().getFileObject().getNameExt();
+            FileObject fileObject = model.getFileScope().getFileObject();
+            filename = fileObject == null ? "?" : fileObject.getNameExt(); //NOI18N
         }
 
         @Override
@@ -432,8 +451,7 @@ public class ClassHierarchyPanel extends JPanel implements HelpCtx.Provider {
 
     private static class TypeNode extends AbstractTypeNode {
         private static final String FONT_GRAY_COLOR = "<font color=\"#999999\">"; //NOI18N
-        private static final String CLOSE_FONT = "</font>";//NOI18N
-
+        private static final String CLOSE_FONT = "</font>"; //NOI18N
         private final TreeNode parent;
         private final String name;
         private final List<String> superTypes;
@@ -441,7 +459,7 @@ public class ClassHierarchyPanel extends JPanel implements HelpCtx.Provider {
         private final int offset;
         private final boolean isClass;
 
-        private TypeNode(final TreeNode parent, final TreeElement<TypeElement> classElement) {
+        public TypeNode(final TreeNode parent, final TreeElement<TypeElement> classElement) {
             this.parent = parent;
             TypeElement type = classElement.getElement();
             this.name = type.getName();
@@ -471,7 +489,7 @@ public class ClassHierarchyPanel extends JPanel implements HelpCtx.Provider {
 
         @Override
         public String toString() {
-            return String.format("%s%s", name, superTypes);//NOI18N
+            return String.format("%s%s", name, superTypes); //NOI18N
         }
 
 
@@ -485,13 +503,13 @@ public class ClassHierarchyPanel extends JPanel implements HelpCtx.Provider {
             StringBuilder superTypeString = new StringBuilder();
             for (String superTypeName : superTypes) {
                 if (superTypeString.length() != 0) {
-                    superTypeString.append(", ");//NOI18N
+                    superTypeString.append(", "); //NOI18N
                 } else {
-                    superTypeString.append("::");//NOI18N
+                    superTypeString.append("::"); //NOI18N
                 }
                 superTypeString.append(superTypeName);
             }
-            return String.format("<html>%s%s%s%s </html>", name,//NOI18N
+            return String.format("<html>%s%s%s%s </html>", name, //NOI18N
                     TypeNode.FONT_GRAY_COLOR, superTypeString.toString(),
                     TypeNode.CLOSE_FONT);
         }

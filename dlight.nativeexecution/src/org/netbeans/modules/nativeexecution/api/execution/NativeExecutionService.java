@@ -408,9 +408,8 @@ public final class NativeExecutionService {
 //                Exceptions.printStackTrace(ex);
             } finally {
                 if (descriptor.postMessageDisplayer != null) {
-                    final NativeProcess.State state = process.getState();
                     final long time = System.currentTimeMillis() - startTimeMillis;
-                    String postMsg = descriptor.postMessageDisplayer.getPostMessage(state, rc, time);
+                    String postMsg = descriptor.postMessageDisplayer.getPostMessage(process, time);
 
                     PrintWriter pw = (rc == 0)
                             ? descriptor.inputOutput.getOut()
@@ -419,7 +418,7 @@ public final class NativeExecutionService {
                     // use \n\r to correctly move cursor in terminals as well
                     pw.printf("\n\r%s\n\r", postMsg); // NOI18N
 
-                    StatusDisplayer.getDefault().setStatusText(descriptor.postMessageDisplayer.getPostStatusString(state, rc));
+                    StatusDisplayer.getDefault().setStatusText(descriptor.postMessageDisplayer.getPostStatusString(process));
                 }
 
                 if (descriptor.closeInputOutputOnFinish) {

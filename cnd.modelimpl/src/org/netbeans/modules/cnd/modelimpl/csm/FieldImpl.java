@@ -47,6 +47,7 @@ import org.netbeans.modules.cnd.api.model.*;
 import org.netbeans.modules.cnd.antlr.collections.AST;
 import java.io.IOException;
 import org.netbeans.modules.cnd.modelimpl.content.file.FileContent;
+import org.netbeans.modules.cnd.modelimpl.csm.ClassImpl.MemberBuilder;
 import org.netbeans.modules.cnd.modelimpl.csm.core.AstUtil;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
@@ -107,7 +108,7 @@ public final class FieldImpl extends VariableImpl<CsmField> implements CsmField 
         return "FIELD " + super.toString(); // NOI18N
     }
     
-    public static class FieldBuilder implements CsmObjectBuilder {
+    public static class FieldBuilder extends SimpleDeclarationBuilder implements MemberBuilder {
         
         private CharSequence name;// = CharSequences.empty();
         private boolean _static = false;
@@ -218,16 +219,6 @@ public final class FieldImpl extends VariableImpl<CsmField> implements CsmField 
                 NameHolder.createName(name).addReference(fileContent, field);;
                 //name.addReference(fileContent, field);
                 
-                if(parent != null) {
-                    if(parent instanceof ClassImpl.ClassBuilder) {
-                        ((ClassImpl.ClassBuilder)parent).getClassDefinitionInstance().addMember(field, true);
-                    }
-                } else {
-                    fileContent.addDeclaration(field);
-                }
-            }
-            if(getScope() instanceof CsmNamespace) {
-                ((NamespaceImpl)getScope()).addDeclaration(field);
             }
             return field;
         }

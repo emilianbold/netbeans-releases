@@ -47,7 +47,7 @@ import org.netbeans.modules.css.model.api.semantic.box.BoxType;
 import org.netbeans.modules.css.model.api.semantic.Edge;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import org.netbeans.modules.css.model.ModelTestBase;
+import org.netbeans.modules.css.model.api.ModelTestBase;
 import org.netbeans.modules.css.model.api.Declarations;
 import org.netbeans.modules.css.model.api.Model;
 import org.netbeans.modules.css.model.api.StyleSheet;

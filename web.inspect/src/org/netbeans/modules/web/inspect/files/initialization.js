@@ -65,15 +65,29 @@ NetBeans.selection = [];
 // Next selection (under construction)
 NetBeans.nextSelection = [];
 
+// Selected elements that match the selected rule
+NetBeans.ruleSelection = [];
+
+// Next selection (under construction)
+NetBeans.nextRuleSelection = [];
+
 // Highlighted elements
 NetBeans.highlight = [];
 
 // Next highlight (under construction)
 NetBeans.nextHighlight = [];
 
+// Determines whether the enclosing browser window is active
+NetBeans.windowActive = true;
+
 // Initializes/clears the next selection
 NetBeans.initNextSelection = function() {
     this.nextSelection = [];
+};
+
+// Initializes/clears the next selection
+NetBeans.initNextRuleSelection = function() {
+    this.nextRuleSelection = [];
 };
 
 // Initializes/clears the next highlight
@@ -89,6 +103,13 @@ NetBeans.addElementToNextSelection = function(element) {
     }
 };
 
+// Adds an element into the next selection
+NetBeans.addElementToNextRuleSelection = function(element) {
+    if (this.nextRuleSelection.indexOf(element) === -1) {
+        this.nextRuleSelection.push(element);
+    }
+};
+
 // Adds an element into the next highlight
 NetBeans.addElementToNextHighlight = function(element) {
     if (this.nextHighlight.indexOf(element) === -1) {
@@ -100,6 +121,12 @@ NetBeans.addElementToNextHighlight = function(element) {
 // Finishes the next selection, i.e., switches the next selection to current selection
 NetBeans.finishNextSelection = function() {
     this.selection = this.nextSelection;
+    this.repaintGlassPane();
+};
+
+// Finishes the next selection, i.e., switches the next selection to current selection
+NetBeans.finishNextRuleSelection = function() {
+    this.ruleSelection = this.nextRuleSelection;
     this.repaintGlassPane();
 };
 
@@ -160,29 +187,35 @@ NetBeans.insertGlassPane = function() {
 
     // Mouse-over highlight
     canvas.addEventListener('mousemove', function(event) {
-        var element = getElementForEvent(event);
-        if (self.lastHighlighted !== element) {
-            self.lastHighlighted = element;
-            // HACK: notify NetBeans
-            element.setAttribute(self.ATTR_HIGHLIGHTED, 'set');
-            element.removeAttribute(self.ATTR_HIGHLIGHTED);
+        if (self.windowActive) {
+            var element = getElementForEvent(event);
+            if (self.lastHighlighted !== element) {
+                self.lastHighlighted = element;
+                // HACK: notify NetBeans
+                element.setAttribute(self.ATTR_HIGHLIGHTED, 'set');
+                element.removeAttribute(self.ATTR_HIGHLIGHTED);
+            }
         }
     });
 
     // Clear highlight when the mouse leaves the window
-    canvas.addEventListener('mouseout', function(e) {
+    window.addEventListener('mouseout', function(e) {
         if (e.toElement === null) {
-            self.lastHighlighted = null;
-            // HACK notify NetBeans
-            canvas.setAttribute(self.ATTR_HIGHLIGHTED, 'clear');
-            canvas.removeAttribute(self.ATTR_HIGHLIGHTED);
+            NetBeans.clearHighlight();
         }
+    });
+
+    // Clear highlight when a context menu is shown
+    window.addEventListener('contextmenu', function() {
+        // Some mouse move events are fired shortly after
+        // this event => postpone processing of this event a bit
+        setTimeout(NetBeans.clearHighlight, 100);
     });
 
     document.body.appendChild(canvas);
 
-    window.addEventListener('scroll', this.repaintGlassPane);
-    window.addEventListener('resize', this.repaintGlassPane);
+    window.addEventListener('scroll', this.paintGlassPane);
+    window.addEventListener('resize', this.paintGlassPane);
     var MutationObserver = window.MutationObserver || window.WebKitMutationObserver;
     if (MutationObserver) {
         var observer = new MutationObserver(function(mutations) {
@@ -206,6 +239,16 @@ NetBeans.insertGlassPane = function() {
     this.repaintGlassPane();
 };
 
+NetBeans.clearHighlight = function() {
+    NetBeans.lastHighlighted = null;
+    // Notify NetBeans
+    var canvas = document.getElementById(NetBeans.GLASSPANE_ID);
+    if (canvas !== null) {
+        canvas.setAttribute(NetBeans.ATTR_HIGHLIGHTED, 'clear');
+        canvas.removeAttribute(NetBeans.ATTR_HIGHLIGHTED);
+    }
+};
+
 NetBeans.setSelectionMode = function(selectionMode) {
     var value = selectionMode ? 'auto' : 'none';
     var canvas = document.getElementById(NetBeans.GLASSPANE_ID);
@@ -214,9 +257,20 @@ NetBeans.setSelectionMode = function(selectionMode) {
 };
 
 // Repaints the glass-pane
+NetBeans.repaintRequested = false;
 NetBeans.repaintGlassPane = function() {
+    if (!NetBeans.repaintRequested) {
+        NetBeans.repaintRequested = true;
+        setTimeout(NetBeans.paintGlassPane, 100);
+    }
+};
+
+NetBeans.paintGlassPane = function() {
+    NetBeans.repaintRequested = false;
     var canvas = document.getElementById(NetBeans.GLASSPANE_ID); 
-    if (canvas.getContext) {
+    if (canvas === null) {
+        console.log("canvas not found!");
+    } else if (canvas.getContext) {
         var ctx = canvas.getContext('2d'); 
         var width = window.innerWidth;
         var height = window.innerHeight;
@@ -227,8 +281,8 @@ NetBeans.repaintGlassPane = function() {
             ctx.canvas.height = height;
         }
         ctx.globalAlpha = 0.5;
-        ctx.fillStyle = "#0000FF";
-        NetBeans.paintSelectedElements(ctx, NetBeans.selection);
+        NetBeans.paintSelectedElements(ctx, NetBeans.ruleSelection, '#00FF00');
+        NetBeans.paintSelectedElements(ctx, NetBeans.selection, '#0000FF');
         ctx.globalAlpha = 0.25;
         NetBeans.paintHighlightedElements(ctx, NetBeans.highlight);
     } else {
@@ -236,7 +290,8 @@ NetBeans.repaintGlassPane = function() {
     }
 };
 
-NetBeans.paintSelectedElements = function(ctx, elements) {
+NetBeans.paintSelectedElements = function(ctx, elements, color) {
+    ctx.fillStyle = color;
     ctx.lineWidth = 2;
     var dash = 3;
     var dashedLine = function(x, y, dx, dy, length) {
@@ -252,7 +307,7 @@ NetBeans.paintSelectedElements = function(ctx, elements) {
         var rects = selectedElement.getClientRects();
         for (var j=0; j<rects.length; j++) {
             var rect = rects[j];
-            ctx.strokeStyle = '#0000FF';
+            ctx.strokeStyle = color;
             ctx.beginPath();
             dashedLine(rect.left,rect.top,dash,0,rect.width);
             dashedLine(rect.left,rect.top+rect.height,dash,0,rect.width);
@@ -282,6 +337,13 @@ NetBeans.paintHighlightedElements = function(ctx, elements) {
             ctx.fillRect(rect.left, rect.top, rect.width, rect.height);
             ctx.stroke();
         }
+    }
+};
+
+NetBeans.setWindowActive = function(active) {
+    this.windowActive = active;
+    if (!active) {
+        this.clearHighlight();
     }
 };
 

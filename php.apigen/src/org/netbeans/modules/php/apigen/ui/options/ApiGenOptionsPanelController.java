@@ -59,7 +59,7 @@ import org.openide.util.Lookup;
 @OptionsPanelController.SubRegistration(
     location=UiUtils.OPTIONS_PATH,
     id=ApiGenOptionsPanelController.OPTIONS_SUBPATH,
-    displayName="#LBL_OptionsName",
+    displayName="#LBL_PHPGenOptionsName",
 //    toolTip="#LBL_OptionsTooltip"
     position=165
 )

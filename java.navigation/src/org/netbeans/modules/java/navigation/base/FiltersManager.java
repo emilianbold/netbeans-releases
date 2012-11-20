@@ -44,7 +44,6 @@
 
 package org.netbeans.modules.java.navigation.base;
 
-import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
@@ -60,14 +59,12 @@ import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.Icon;
 import javax.swing.JComponent;
-import javax.swing.JPanel;
-import javax.swing.JSeparator;
 import javax.swing.JToggleButton;
 import javax.swing.JToolBar;
 import javax.swing.SwingUtilities;
-import javax.swing.UIManager;
 import javax.swing.border.EmptyBorder;
 import javax.swing.event.ChangeEvent;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.modules.java.navigation.NoBorderToolBar;
 import org.openide.util.Mutex;
 import org.openide.util.NbPreferences;
@@ -100,7 +97,7 @@ public final class FiltersManager {
     }
 
     /** @return component instance visually representing filters */ 
-    public JComponent getComponent ( AbstractButton[] sortButtons ) {
+    public JComponent getComponent (@NonNull final Iterable<? extends AbstractButton> sortButtons ) {
         comp.addSortButtons( sortButtons );
         return comp;
     }
@@ -259,21 +256,32 @@ public final class FiltersManager {
             }
         }
         
-        private void addSortButtons( AbstractButton[] sortButtons ) {
+        private void addSortButtons(@NonNull final Iterable<? extends AbstractButton> buttons ) {
             if (!toggles.isEmpty()) {
                 toolbar.addSeparator();
             }
             final Dimension space = new Dimension(3, 0);
-            for(int i=0; i< sortButtons.length; i++) {
-                if (i!=0) {
-                    toolbar.addSeparator(space);
+            boolean addSeparator = false;
+            for(AbstractButton button : buttons) {
+                if (button == null) {
+                    if (addSeparator) {
+                        toolbar.addSeparator();
+                        addSeparator = false;
+                    } else {
+                        addSeparator = true;
+                    }
+                } else {
+                    if (addSeparator) {
+                        toolbar.addSeparator(space);
+                    } else {
+                        addSeparator = true;
+                    }
+                    Icon icon = button.getIcon();
+                    Dimension size = new Dimension(icon.getIconWidth() + 6, icon.getIconHeight() + 4);
+                    button.setPreferredSize(size);
+                    button.setMargin(new Insets(2,3,2,3));
+                    toolbar.add( button );
                 }
-                final AbstractButton button = sortButtons[i];
-                Icon icon = button.getIcon();
-                Dimension size = new Dimension(icon.getIconWidth() + 6, icon.getIconHeight() + 4);
-                button.setPreferredSize(size);
-                button.setMargin(new Insets(2,3,2,3));                
-                toolbar.add( button );
             }
         }
         

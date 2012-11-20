@@ -43,23 +43,33 @@
  */
 package org.netbeans.modules.autoupdate.cli;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.io.PrintStream;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.StringTokenizer;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
+import javax.swing.JLabel;
 import org.netbeans.api.autoupdate.*;
 import org.netbeans.api.autoupdate.InstallSupport.Installer;
 import org.netbeans.api.autoupdate.InstallSupport.Validator;
 import org.netbeans.api.autoupdate.OperationContainer.OperationInfo;
 import org.netbeans.api.autoupdate.OperationSupport.Restarter;
+import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.api.sendopts.CommandException;
 import org.netbeans.spi.sendopts.Env;
 import org.netbeans.spi.sendopts.Option;
@@ -85,6 +95,9 @@ public class ModuleOptions extends OptionProcessor {
     private Option refresh;
     private Option updateAll;
     private Option both;
+    private Option extraUC;
+    
+    private Collection<UpdateUnitProvider> ownUUP = new HashSet<UpdateUnitProvider> ();
     
     /** Creates a new instance of ModuleOptions */
     public ModuleOptions() {
@@ -93,7 +106,8 @@ public class ModuleOptions extends OptionProcessor {
     @NbBundle.Messages({
         "MSG_UpdateModules=Updates all or specified modules",
         "MSG_UpdateAll=Updates all modules",
-        "MSG_Refresh=Refresh all catalogs"
+        "MSG_Refresh=Refresh all catalogs",
+        "MSG_ExtraUC=Add a extra Update Center (URL)"
     })
     private Option init() {
         if (both != null) {
@@ -115,8 +129,10 @@ public class ModuleOptions extends OptionProcessor {
             Option.withoutArgument(Option.NO_SHORT_NAME, "refresh"), b, "MSG_Refresh"); // NOI18N
         updateAll = Option.shortDescription(
             Option.withoutArgument(Option.NO_SHORT_NAME, "update-all"), b, "MSG_UpdateAll"); // NOI18N
+        extraUC = Option.shortDescription(
+            Option.requiredArgument(Option.NO_SHORT_NAME, "extra-uc"), b, "MSG_ExtraUC"); // NOI18N
         
-        Option oper = OptionGroups.someOf(refresh, list, install, disable, enable, update, updateAll);
+        Option oper = OptionGroups.someOf(refresh, list, install, disable, enable, update, updateAll, extraUC);
         Option modules = Option.withoutArgument(Option.NO_SHORT_NAME, "modules");
         both = OptionGroups.allOf(modules, oper);
         return both;
@@ -164,41 +180,51 @@ public class ModuleOptions extends OptionProcessor {
 
     @Override
     protected void process(Env env, Map<Option, String[]> optionValues) throws CommandException {
-        if (optionValues.containsKey(refresh)) {
-            refresh(env);
-        }
-        
-        if (optionValues.containsKey(list)) {
-            listAllModules(env.getOutputStream());
-        }
-    
-        if (optionValues.containsKey(install)) {
-            install(env, optionValues.get(install));
-        }
-        
         try {
-
-            if (optionValues.containsKey(disable)) {
-                changeModuleState(optionValues.get(disable), false);
+            if (optionValues.containsKey(extraUC)) {
+                extraUC(env, optionValues.get(extraUC));
+            }
+            if (optionValues.containsKey(refresh)) {
+                refresh(env);
             }
 
-            if (optionValues.containsKey(enable)) {
-                changeModuleState(optionValues.get(enable), true);
+            if (optionValues.containsKey(list)) {
+                listAllModules(env.getOutputStream());
             }
-        } catch (InterruptedException ex) {
-            throw initCause(new CommandException(4), ex);
-        } catch (IOException ex) {
-            throw initCause(new CommandException(4), ex);
-        } catch (OperationException ex) {
-            throw initCause(new CommandException(4), ex);
+
+            if (optionValues.containsKey(install)) {
+                install(env, optionValues.get(install));
+            }
+
+            try {
+
+                if (optionValues.containsKey(disable)) {
+                    changeModuleState(optionValues.get(disable), false);
+                }
+
+                if (optionValues.containsKey(enable)) {
+                    changeModuleState(optionValues.get(enable), true);
+                }
+            } catch (InterruptedException ex) {
+                throw initCause(new CommandException(4), ex);
+            } catch (IOException ex) {
+                throw initCause(new CommandException(4), ex);
+            } catch (OperationException ex) {
+                throw initCause(new CommandException(4), ex);
+            }
+
+            if (optionValues.containsKey(updateAll)) {
+                updateAll(env);
+            }
+            if (optionValues.containsKey(update)) {
+                updateModules(env, optionValues.get(update));
+            }
+        } finally {
+            for (UpdateUnitProvider uuc : ownUUP) {
+                UpdateUnitProviderFactory.getDefault().remove(uuc);
+            }
         }
         
-        if (optionValues.containsKey(updateAll)) {
-            updateAll(env);
-        }
-        if (optionValues.containsKey(update)) {
-            updateModules(env, optionValues.get(update));
-        }
     }
 
     private void changeModuleState(String[] cnbs, boolean enable) throws IOException, CommandException, InterruptedException, OperationException {
@@ -233,53 +259,119 @@ public class ModuleOptions extends OptionProcessor {
         "# {0} - module name",
         "# {1} - installed version",
         "# {2} - available version",
-        "MSG_Update=Will update {0}@{1} to version {2}"
+        "MSG_Update=Will update {0}@{1} to version {2}",
+        "# {0} - plugin name",
+        "MSG_Download=Downloading {0}"
     })
-    private void updateModules(Env env, String... pattern) throws CommandException {
+    private void updateModules(final Env env, String... pattern) throws CommandException {
         if (! initialized()) {
             refresh(env);
         }
         Pattern[] pats = findMatcher(env, pattern);
         
-        List<UpdateUnit> units = UpdateManager.getDefault().getUpdateUnits();
-        OperationContainer<InstallSupport> operate = OperationContainer.createForInternalUpdate();
-        for (UpdateUnit uu : units) {
-            if (uu.getInstalled() == null) {
-                continue;
+        List<UpdateUnit> units = UpdateManager.getDefault().getUpdateUnits(UpdateManager.TYPE.MODULE);
+        final Collection <String> firstClass = getFirstClassModules();
+        boolean firstClassHasUpdates = false;
+        OperationContainer<InstallSupport> operate = OperationContainer.createForUpdate();
+        if (! firstClass.isEmpty() && pattern.length == 0) {
+            for (UpdateUnit uu : units) {
+                if (uu.getInstalled() == null) {
+                    continue;
+                }
+                if (! uu.getInstalled().isEnabled()) {
+                    continue;
+                }
+                final List<UpdateElement> updates = uu.getAvailableUpdates();
+                if (updates.isEmpty()) {
+                    continue;
+                }
+                if (! firstClass.contains (uu.getCodeName ())) {
+                    continue;
+                }
+                final UpdateElement ue = updates.get(0);
+                env.getOutputStream().println(
+                    Bundle.MSG_Update(uu.getCodeName(), uu.getInstalled().getSpecificationVersion(), ue.getSpecificationVersion()
+                ));
+                if (operate.canBeAdded(uu, ue)) {
+                    LOG.fine("  ... update " + uu.getInstalled() + " -> " + ue);
+                    firstClassHasUpdates = true;
+                    OperationInfo<InstallSupport> info = operate.add(ue);
+                    if (info != null) {
+                        Set<UpdateElement> requiredElements = info.getRequiredElements();
+                        LOG.fine("      ... add required elements: " + requiredElements);
+                        operate.add(requiredElements);
+                    }
+                }
             }
-            if (! uu.getInstalled().isEnabled()) {
-                continue;
-            }
-            final List<UpdateElement> updates = uu.getAvailableUpdates();
-            if (updates.isEmpty()) {
-                continue;
-            }
-            if (pattern.length > 0 && !matches(uu.getCodeName(), pats)) {
-                continue;
-            }
-            final UpdateElement ue = updates.get(0);
-            env.getOutputStream().println(
-                Bundle.MSG_Update(uu.getCodeName(), uu.getInstalled().getSpecificationVersion(), ue.getSpecificationVersion()
-            ));
-            if (operate.canBeAdded(uu, ue)) {
-                LOG.fine("  ... update " + uu.getInstalled() + " -> " + ue);
-                OperationInfo<InstallSupport> info = operate.add(ue);
-                if (info != null) {
-                    Set<UpdateElement> requiredElements = info.getRequiredElements();
-                    LOG.fine("      ... add required elements: " + requiredElements);
-                    operate.add(requiredElements);
+        } 
+        if (! firstClassHasUpdates) {
+            for (UpdateUnit uu : units) {
+                if (uu.getInstalled() == null) {
+                    continue;
+                }
+                if (! uu.getInstalled().isEnabled()) {
+                    continue;
+                }
+                final List<UpdateElement> updates = uu.getAvailableUpdates();
+                if (updates.isEmpty()) {
+                    continue;
+                }
+                if (pattern.length > 0 && !matches(uu.getCodeName(), pats)) {
+                    continue;
+                }
+                final UpdateElement ue = updates.get(0);
+                env.getOutputStream().println(
+                    Bundle.MSG_Update(uu.getCodeName(), uu.getInstalled().getSpecificationVersion(), ue.getSpecificationVersion()
+                ));
+                if (operate.canBeAdded(uu, ue)) {
+                    LOG.fine("  ... update " + uu.getInstalled() + " -> " + ue);
+                    OperationInfo<InstallSupport> info = operate.add(ue);
+                    if (info != null) {
+                        Set<UpdateElement> requiredElements = info.getRequiredElements();
+                        LOG.fine("      ... add required elements: " + requiredElements);
+                        operate.add(requiredElements);
+                    }
                 }
             }
         }
         final InstallSupport support = operate.getSupport();
         if (support == null) {
             env.getOutputStream().println(pats == null || pats.length == 0 ? Bundle.MSG_UpdateNotFound() : Bundle.MSG_UpdateNoMatchPattern(Arrays.asList(pats)));
+            env.getOutputStream().println("updates=0"); // NOI18N
             return;
         }
         try {
-            final Validator res1 = support.doDownload(null, null, false);
+            env.getOutputStream().println("updates=" + operate.listAll().size()); // NOI18N
+            ProgressHandle downloadHandle = ProgressHandleFactory.createHandle("downloading-updates"); // NOI18N
+            downloadHandle.setInitialDelay(0);
+            JLabel downloadDetailLabel = ProgressHandleFactory.createDetailLabelComponent(downloadHandle);
+            downloadDetailLabel.addPropertyChangeListener(new PropertyChangeListener() {
+                @Override
+                public void propertyChange(PropertyChangeEvent evt) {
+                    if ("text".equals(evt.getPropertyName())) { // NOI18N
+                        env.getOutputStream().println(
+                                Bundle.MSG_Download(evt.getNewValue()));
+                        LOG.fine("  ... downloading update " + evt.getNewValue());
+                    }
+                }
+            });
+            final Validator res1 = support.doDownload(downloadHandle, null, false);
+
             Installer res2 = support.doValidate(res1, null);
-            Restarter res3 = support.doInstall(res2, null);
+
+            ProgressHandle installHandle = ProgressHandleFactory.createHandle("installing-updates"); // NOI18N
+            installHandle.setInitialDelay(0);
+            JLabel installDetailLabel = ProgressHandleFactory.createDetailLabelComponent(installHandle);
+            installDetailLabel.addPropertyChangeListener(new PropertyChangeListener() {
+                @Override
+                public void propertyChange(PropertyChangeEvent evt) {
+                    if ("text".equals(evt.getPropertyName())) {
+                        env.getOutputStream().println(evt.getNewValue());
+                        LOG.fine("  ... installing update " + evt.getNewValue());
+                    }
+                }
+            });
+            Restarter res3 = support.doInstall(res2, installHandle);
             if (res3 != null) {
                 support.doRestart(res3, null);
             }
@@ -323,7 +415,7 @@ public class ModuleOptions extends OptionProcessor {
         "# {0} - paterns",
         "MSG_InstallNoMatch=Cannot install. No match for {0}."
     })
-    private void install(Env env, String... pattern) throws CommandException {
+    private void install(final Env env, String... pattern) throws CommandException {
         if (! initialized()) {
             refresh(env);
         }
@@ -353,9 +445,37 @@ public class ModuleOptions extends OptionProcessor {
             return;
         }
         try {
-            final Validator res1 = support.doDownload(null, null, false);
+            env.getOutputStream().println("modules=" + operate.listAll().size()); // NOI18N
+            ProgressHandle downloadHandle = ProgressHandleFactory.createHandle("downloading-modules"); // NOI18N
+            downloadHandle.setInitialDelay(0);
+            JLabel downloadDetailLabel = ProgressHandleFactory.createDetailLabelComponent(downloadHandle);
+            downloadDetailLabel.addPropertyChangeListener(new PropertyChangeListener() {
+                @Override
+                public void propertyChange(PropertyChangeEvent evt) {
+                    if ("text".equals(evt.getPropertyName())) { // NOI18N
+                        env.getOutputStream().println(
+                                Bundle.MSG_Download(evt.getNewValue()));
+                        LOG.fine("  ... downloading module " + evt.getNewValue());
+                    }
+                }
+            });
+            final Validator res1 = support.doDownload(downloadHandle, null, false);
+
             Installer res2 = support.doValidate(res1, null);
-            Restarter res3 = support.doInstall(res2, null);
+
+            ProgressHandle installHandle = ProgressHandleFactory.createHandle("installing-modules"); // NOI18N
+            installHandle.setInitialDelay(0);
+            JLabel installDetailLabel = ProgressHandleFactory.createDetailLabelComponent(installHandle);
+            installDetailLabel.addPropertyChangeListener(new PropertyChangeListener() {
+                @Override
+                public void propertyChange(PropertyChangeEvent evt) {
+                    if ("text".equals(evt.getPropertyName())) { // NOI18N
+                        env.getOutputStream().println(evt.getNewValue());
+                        LOG.fine("  ... installing module " + evt.getNewValue());
+                    }
+                }
+            });
+            Restarter res3 = support.doInstall(res2, installHandle);
             if (res3 != null) {
                 support.doRestart(res3, null);
             }
@@ -375,10 +495,42 @@ public class ModuleOptions extends OptionProcessor {
         updateModules(env);
     }
 
+    
+    @NbBundle.Messages({
+        "MSG_NoURL=None extra Update Center (URL) specified."
+    })
+    private void extraUC(Env env, String... urls) throws CommandException {
+        List<URL> url2UC = new ArrayList<URL> (urls.length);
+        for (String spec : urls) {
+            try {
+                url2UC.add(new URL(spec));
+            } catch (MalformedURLException ex) {
+                throw initCause(new CommandException(4), ex);
+            }
+        }
+        for (URL url : url2UC) {
+            ownUUP.add(UpdateUnitProviderFactory.getDefault().create(Long.toString(System.currentTimeMillis()), url.toExternalForm(), url));
+        }
+        refresh(env);        
+    }
+
     private boolean initialized() {
         Preferences pref = NbPreferences.root ().node ("/org/netbeans/modules/autoupdate");
         long last = pref.getLong("lastCheckTime", -1);
         return last != -1;
     }    
+
+    private static final String PLUGIN_MANAGER_FIRST_CLASS_MODULES = "plugin.manager.first.class.modules"; // NOI18N
+    
+    private Collection<String> getFirstClassModules() {
+        Preferences p = NbPreferences.root().node("/org/netbeans/modules/autoupdate"); // NOI18N
+        String names = p.get(PLUGIN_MANAGER_FIRST_CLASS_MODULES, "");
+        Set<String> res = new HashSet<String> ();
+        StringTokenizer en = new StringTokenizer (names, ","); // NOI18N
+        while (en.hasMoreTokens ()) {
+            res.add (en.nextToken ().trim ());
+        }
+        return res;
+    }
     
 }

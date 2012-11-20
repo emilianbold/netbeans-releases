@@ -51,12 +51,10 @@ import org.netbeans.modules.javafx2.editor.completion.model.FxNodeVisitor;
 import org.netbeans.modules.javafx2.editor.completion.model.TextPositions;
 import org.netbeans.modules.javafx2.editor.parser.BuildEnvironment;
 import org.netbeans.modules.javafx2.editor.parser.ModelBuilderStep;
-import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 import static org.netbeans.modules.javafx2.editor.parser.processors.Bundle.*;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
 /**
  *

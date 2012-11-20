@@ -85,8 +85,6 @@ class OthersRootNode extends AnnotatedAbstractNode {
         super(new OthersRootChildren(mavproject, testResource), Lookups.fixed(fo, DataFolder.findFolder(fo), new ChildDelegateFind()));
         setName(testResource ? "OtherTestRoots" : "OtherRoots"); //NOI18N
         setDisplayName(testResource ? LBL_Other_Test_Sources() : LBL_Other_Sources());
-        // can do so, since we depend on it..
-//        setIconBase("org/mevenide/netbeans/project/resources/defaultFolder"); //NOI18N
         file = fo;
     }
     

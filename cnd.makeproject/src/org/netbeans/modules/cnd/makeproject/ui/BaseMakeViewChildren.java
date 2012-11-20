@@ -61,7 +61,7 @@ import org.openide.util.RequestProcessor;
 abstract class BaseMakeViewChildren extends Children.Keys<Object>
         implements ChangeListener, RefreshableItemsContainer {
 
-    private final static RequestProcessor LOAD_NODES_RP = new RequestProcessor("MakeLogicalViewProvider.LoadingNodes", 10); // NOI18N
+    private final static RequestProcessor LOAD_NODES_RP = new RequestProcessor("MakeLogicalViewProvider.LoadingNodes", 1); // NOI18N
     private static final int WAIT_DELAY = 50;
 
     private Folder folder;

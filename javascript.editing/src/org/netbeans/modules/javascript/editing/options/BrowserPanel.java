@@ -46,15 +46,19 @@ import java.util.EnumSet;
 import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
 import org.mozilla.nb.javascript.Context;
+import org.netbeans.api.options.OptionsDisplayer;
 import org.netbeans.modules.javascript.editing.BrowserVersion;
 import org.netbeans.modules.javascript.editing.SupportedBrowsers;
 import org.netbeans.modules.javascript.editing.spi.JSPreferencesPanel;
+import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.util.NbBundle;
 
 /**
  *
  * @author  Tor Norbye
  */
+@OptionsPanelController.Keywords(keywords={"#KW_JavascriptOptions"}, location=OptionsDisplayer.ADVANCED, tabTitle="#JsOptions.displayName")
+@NbBundle.Messages("KW_JavascriptOptions=JavaScript,JavaScript Version,JavaScript Options,Targeted Browsers")
 public class BrowserPanel extends JSPreferencesPanel {
 
 

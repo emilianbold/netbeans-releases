@@ -61,7 +61,7 @@ import org.openide.util.NbBundle;
 public class OracleWizardComponent extends javax.swing.JPanel implements DocumentListener {
 
     private ChangeListener l;
-    private static final String ADMIN_URL = "https://javaservices.{0}.cloud.oracle.com"; // NOI18N
+    private static final String ADMIN_URL = "https://javaservices.%s.cloud.oracle.com"; // NOI18N
     
     static final boolean SHOW_CLOUD_URLS = Boolean.getBoolean("oracle.cloud.dev");
     
@@ -364,7 +364,7 @@ private void jLabel1MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:eve
     }
     
     private void update(DocumentEvent e) {
-        if (!SHOW_CLOUD_URLS) {
+        if (!SHOW_CLOUD_URLS && e.getDocument() != adminURLTextField.getDocument()) {
             adminURLTextField.setText(String.format(ADMIN_URL, getDataCenterCode())); // NOI18N
         }
         if (l != null) {

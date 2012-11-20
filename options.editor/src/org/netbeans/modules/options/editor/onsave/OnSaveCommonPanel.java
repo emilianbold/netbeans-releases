@@ -49,6 +49,8 @@ import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.ListCellRenderer;
 import org.netbeans.api.editor.settings.SimpleValueNames;
+import org.netbeans.api.options.OptionsDisplayer;
+import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.awt.Mnemonics;
 import org.openide.util.NbBundle;
 
@@ -57,6 +59,7 @@ import org.openide.util.NbBundle;
  *
  * @author Miloslav Metelka
  */
+@OptionsPanelController.Keywords(keywords = {"#KW_OnSave"}, location = OptionsDisplayer.EDITOR, tabTitle="#CTL_OnSave_DisplayName")
 public class OnSaveCommonPanel extends javax.swing.JPanel {
     
     private static final String[] LINE_OPTIONS = new String[] { "never", "always", "modified-lines" }; // NOI18N

@@ -460,7 +460,12 @@ public class GdbHandlerExpert implements HandlerExpert {
             // try pending
             MIValue fullnameValue = props.valueOf("pending"); // NOI18N
             if (fullnameValue == null) {
-                return Integer.parseInt(originalBreakpoint.getPos().propertyByName("lineNumber").toString()); // NOI18N
+                Property lineProperty = originalBreakpoint.getPos().propertyByName("lineNumber"); // NOI18N
+                if (lineProperty == null) {
+                    return 0;
+                } else {
+                    return Integer.parseInt(lineProperty.toString());
+                } 
             }
             String lineStr = fullnameValue.asConst().value();
             // remove line number

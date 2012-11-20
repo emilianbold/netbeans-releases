@@ -64,6 +64,7 @@ import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
+import org.openide.util.CharSequences;
 
 /**
  *
@@ -165,7 +166,7 @@ public final class TemplateDescriptor {
                 }
             }
             
-            TemplateDescriptor descriptor = new TemplateDescriptor(templateParams, "<T>", 0, false); // NOI18N
+            TemplateDescriptor descriptor = new TemplateDescriptor(templateParams, NameCache.getManager().getString(CharSequences.create("<T>")), 0, false); // NOI18N
             return descriptor;
         }
     }      

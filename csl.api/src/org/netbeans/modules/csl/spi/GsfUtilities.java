@@ -286,13 +286,13 @@ public final class GsfUtilities {
 
             // If the caller hasn't specified an offset, and the document is
             // already open, don't jump to a particular line!
-            if (offset == -1 && ec.getDocument() != null && search == null) {
+            if (ec != null && offset == -1 && ec.getDocument() != null && search == null) {
                 ec.open();
                 return true;
             }
 
             // Simple text search if no known offset (e.g. broken/unparseable source)
-            if ((ec != null) && (search != null) && (offset == -1)) {
+            if ((search != null) && (offset == -1)) {
                 StyledDocument doc = NbDocument.getDocument(od);
 
                 try {
@@ -577,9 +577,34 @@ public final class GsfUtilities {
         if (event instanceof CursorMovedSchedulerEvent) {
             return ((CursorMovedSchedulerEvent) event).getCaretOffset();
         }
-
-        // Then look through all existing editor panes
-        Document snapshotDoc = snapshot.getSource().getDocument(false);
+        
+        // defect #221922: getDocument() false forces DObj construction, which I'd like to avoid
+        // during parsing. Since != -1 is only returned iff opened Editor component is found, 
+        // we can as well search in the opposite direction, starting from opened editors.
+        FileObject snapshotFile = snapshot.getSource().getFileObject();
+        Document snapshotDoc = null;
+        
+        if (snapshotFile != null) {
+            for(JTextComponent jtc : EditorRegistry.componentList()) {
+                if (snapshotFile == NbEditorUtilities.getFileObject(jtc.getDocument())) {
+                    
+                    // double check: check the document is the same:
+                    snapshotDoc = snapshot.getSource().getDocument(false);
+                    if (snapshotDoc == null || snapshotDoc == jtc.getDocument()) {
+                        Caret c = jtc.getCaret();
+                        if (c != null) {
+                            return c.getDot();
+                        }
+                    }
+                    break;
+                }
+            }
+        }
+        // if the file was NOT null, the document is not opened in any editor (result of the previous search)
+        // so in that case we leave snapshotDoc null and avoid creation of DObj.
+        if (snapshotDoc == null && snapshotFile == null) {
+            snapshotDoc = snapshot.getSource().getDocument(false);
+        }
         if (snapshotDoc != null) {
             for(JTextComponent jtc : EditorRegistry.componentList()) {
                 if (snapshotDoc == jtc.getDocument()) {
@@ -589,19 +614,7 @@ public final class GsfUtilities {
                     }
                 }
             }
-        } else {
-            FileObject snapshotFile = snapshot.getSource().getFileObject();
-            if (snapshotFile != null) {
-                for(JTextComponent jtc : EditorRegistry.componentList()) {
-                    if (snapshotFile == NbEditorUtilities.getFileObject(jtc.getDocument())) {
-                        Caret c = jtc.getCaret();
-                        if (c != null) {
-                            return c.getDot();
-                        }
-                    }
-                }
-            }
-        }
+        }        
 
         // Finally, try the enforced caret offset (eg. enforced by tests)
         Integer enforcedCaretOffset = enforcedCaretOffsets.get(snapshot.getSource());

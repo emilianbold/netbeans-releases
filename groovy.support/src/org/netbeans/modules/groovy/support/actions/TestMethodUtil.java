@@ -74,9 +74,11 @@ public final class TestMethodUtil {
             JavaSource js = JavaSource.forDocument(doc);
             GroovyTestClassInfoTask task = new GroovyTestClassInfoTask(cursor);
             try {
-                Future<Void> f = js.runWhenScanFinished(task, true);
-                if (f.isDone() && task.getFileObject() != null && task.getMethodName() != null){
-                    sm = new SingleMethod(task.getFileObject(), task.getMethodName());
+                if (js != null) {
+                    Future<Void> f = js.runWhenScanFinished(task, true);
+                    if (f.isDone() && task.getFileObject() != null && task.getMethodName() != null){
+                        sm = new SingleMethod(task.getFileObject(), task.getMethodName());
+                    }
                 }
             } catch (IOException ex) {
                 LOGGER.log(Level.WARNING, null, ex);

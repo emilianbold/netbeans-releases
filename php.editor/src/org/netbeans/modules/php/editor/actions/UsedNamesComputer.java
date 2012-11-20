@@ -41,7 +41,12 @@
  */
 package org.netbeans.modules.php.editor.actions;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.php.editor.api.AliasedName;
 import org.netbeans.modules.php.editor.api.QualifiedName;
@@ -50,7 +55,13 @@ import org.netbeans.modules.php.editor.model.NamespaceScope;
 import org.netbeans.modules.php.editor.model.UseScope;
 import org.netbeans.modules.php.editor.model.impl.VariousUtils;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
-import org.netbeans.modules.php.editor.parser.astnodes.*;
+import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
+import org.netbeans.modules.php.editor.parser.astnodes.FunctionInvocation;
+import org.netbeans.modules.php.editor.parser.astnodes.NamespaceDeclaration;
+import org.netbeans.modules.php.editor.parser.astnodes.NamespaceName;
+import org.netbeans.modules.php.editor.parser.astnodes.PHPDocTypeNode;
+import org.netbeans.modules.php.editor.parser.astnodes.Program;
+import org.netbeans.modules.php.editor.parser.astnodes.UseStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.visitors.DefaultVisitor;
 
 /**
@@ -61,12 +72,12 @@ public class UsedNamesComputer {
     private final PHPParseResult parserResult;
     private final int caretPosition;
     private Map<String, List<UsedNamespaceName>> possibleNames;
-    private static final List<String> specialNames = new LinkedList<String>();
+    private static final List<String> SPECIAL_NAMES = new LinkedList<String>();
 
     static {
-        specialNames.add("parent"); //NOI18N
-        specialNames.add("self"); //NOI18N
-        specialNames.add("static"); //NOI18N
+        SPECIAL_NAMES.add("parent"); //NOI18N
+        SPECIAL_NAMES.add("self"); //NOI18N
+        SPECIAL_NAMES.add("static"); //NOI18N
     }
 
     public UsedNamesComputer(final PHPParseResult parserResult, final int caretPosition) {
@@ -76,6 +87,7 @@ public class UsedNamesComputer {
 
     public Map<String, List<UsedNamespaceName>> computeNames() {
         NamespaceScope namespaceScope = ModelUtils.getNamespaceScope(parserResult.getModel().getFileScope(), caretPosition);
+        assert namespaceScope != null;
         OffsetRange offsetRange = namespaceScope.getBlockRange();
         Collection<? extends UseScope> declaredUses = namespaceScope.getDeclaredUses();
         NamespaceNameVisitor namespaceNameVisitor = new NamespaceNameVisitor(offsetRange);
@@ -114,7 +126,7 @@ public class UsedNamesComputer {
         return result;
     }
 
-    private class NamespaceNameVisitor extends DefaultVisitor {
+    private static class NamespaceNameVisitor extends DefaultVisitor {
         private final OffsetRange offsetRange;
         private final Map<String, List<UsedNamespaceName>> existingNames = new HashMap<String, List<UsedNamespaceName>>();
 
@@ -170,7 +182,7 @@ public class UsedNamesComputer {
         }
 
         private boolean isValidTypeName(final String typeName) {
-            return !specialNames.contains(typeName) && !VariousUtils.isPrimitiveType(typeName);
+            return !SPECIAL_NAMES.contains(typeName) && !VariousUtils.isPrimitiveType(typeName);
         }
 
         private void processUsedName(final UsedNamespaceName usedName) {

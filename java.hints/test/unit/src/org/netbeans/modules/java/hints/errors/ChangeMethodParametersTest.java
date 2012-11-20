@@ -90,7 +90,7 @@ public class ChangeMethodParametersTest extends HintsTestBase {
     public void test204556() throws Exception {
         performTestAnalysisTest("org.netbeans.test.java.hints.Test204556",
                     130,  new HashSet<String>(Arrays.asList(
-                "Change Method Signature from getColor(boolean b) to getColor(T number)"
+                "Change Method Signature from getColor(boolean b) to getColor(T b)"
         )));
     }
     

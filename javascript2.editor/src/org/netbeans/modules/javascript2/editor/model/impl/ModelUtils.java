@@ -55,7 +55,6 @@ import org.netbeans.modules.javascript2.editor.jquery.JQueryModel;
 import org.netbeans.modules.javascript2.editor.lexer.JsTokenId;
 import org.netbeans.modules.javascript2.editor.lexer.LexUtilities;
 import org.netbeans.modules.javascript2.editor.model.*;
-import org.netbeans.modules.javascript2.editor.model.JsElement.Kind;
 import org.netbeans.modules.javascript2.editor.parser.JsParserResult;
 import org.netbeans.modules.parsing.spi.indexing.support.IndexResult;
 
@@ -70,7 +69,7 @@ public class ModelUtils {
         JsObject tmpObject = null;
         String firstName = fqName.get(0).getName();
         
-        while (tmpObject == null && result.getParent() != null) {
+        while (tmpObject == null && result != null && result.getParent() != null) {
             if (result instanceof JsFunctionImpl) {
                 tmpObject = ((JsFunctionImpl)result).getParameter(firstName);
             }
@@ -84,7 +83,16 @@ public class ModelUtils {
             }
         }
         if (tmpObject == null) {
-            tmpObject = builder.getGlobal();
+            DeclarationScope scope = builder.getCurrentDeclarationScope();
+            while (tmpObject == null && scope.getInScope() != null) {
+                tmpObject = ((JsFunction)scope).getParameter(firstName);
+                scope = scope.getInScope();
+            }
+            if (tmpObject == null) {
+                tmpObject = builder.getGlobal();
+            } else {
+                result = tmpObject;
+            }
         }
         for (int index = (tmpObject instanceof ParameterObject ? 1 : 0); index < fqName.size() ; index++) {
             Identifier name = fqName.get(index);
@@ -135,11 +143,19 @@ public class ModelUtils {
     
     public static JsObject findJsObjectByName(JsObject global, String fqName) {
         JsObject result = global;
+        JsObject property = result;
         for (StringTokenizer stringTokenizer = new StringTokenizer(fqName, "."); stringTokenizer.hasMoreTokens() && result != null;) {
             String token = stringTokenizer.nextToken();
-            result = result.getProperty(token);
-            if (result == null) {
-                break;
+            property = result.getProperty(token);
+            if (property == null) {
+                result = (result instanceof JsFunction)
+                        ? ((JsFunction)result).getParameter(token)
+                        : null;
+                if (result == null) {
+                    break;
+                }
+            } else {
+                result = property;
             }
         }
         return result;
@@ -362,7 +378,7 @@ public class ModelUtils {
             String name = type.getType().substring(5);
             JsFunction declarationScope = (JsFunction)getDeclarationScope(object);
 
-            //if(parent != null && parent.getJSKind().isFunction()) {
+            if (declarationScope != null) {
                 Collection<? extends JsObject> parameters = declarationScope.getParameters();
                 boolean isParameter = false;
                 for (JsObject parameter : parameters) {
@@ -376,9 +392,7 @@ public class ModelUtils {
                 if (!isParameter) {
                     result.add(new TypeUsageImpl(name, type.getOffset(), false));
                 }
-//            } else {
-//                result.add(new TypeUsageImpl(name, type.getOffset(), false));
-//            }
+            }
         } else if(type.getType().startsWith("@param;")) {   //NOI18N
             String functionName = type.getType().substring(7);
             int index = functionName.indexOf(":");
@@ -409,6 +423,22 @@ public class ModelUtils {
             for (int i = exp.size() - 1; i > -1; i--) {
                 String kind = exp.get(i);
                 String name = exp.get(--i);
+                if ("this".equals(name)) {
+                    JsObject thisObject = ModelUtils.findJsObject(model, offset);
+                    JsObject first = thisObject;
+                    while (thisObject != null && thisObject.getParent() != null
+                            && thisObject.getJSKind() != JsElement.Kind.CONSTRUCTOR
+                            && thisObject.getJSKind() != JsElement.Kind.ANONYMOUS_OBJECT
+                            && thisObject.getJSKind() != JsElement.Kind.OBJECT_LITERAL) {
+                        thisObject = thisObject.getParent();
+                    }
+                    if ((thisObject == null || thisObject.getParent() == null) && first != null) {
+                        thisObject = first;
+                    }
+                    if (thisObject != null) {
+                        name = thisObject.getName();
+                    }
+                }
                 if (i == (exp.size() - 2)) {
                     JsObject localObject = null;
                     // resolving the first part of expression

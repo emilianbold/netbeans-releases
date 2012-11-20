@@ -224,18 +224,14 @@ public class RepositorySelectorTest extends NbTestCase {
         }
 
         public Lookup getLookup() {
-            throw new UnsupportedOperationException("Not supported yet.");
+            return Lookup.EMPTY;
         }
 
         @Override
-        public void removePropertyChangeListener(PropertyChangeListener listener) {
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
+        public void removePropertyChangeListener(PropertyChangeListener listener) { }
 
         @Override
-        public void addPropertyChangeListener(PropertyChangeListener listener) {
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
+        public void addPropertyChangeListener(PropertyChangeListener listener) { }
 
     }
 

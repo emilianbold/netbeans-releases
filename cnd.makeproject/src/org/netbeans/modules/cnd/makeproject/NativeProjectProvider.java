@@ -57,6 +57,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -347,6 +348,33 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
         }
     }
 
+    private final AtomicBoolean fileOperationsProgress = new AtomicBoolean(false);
+    @Override
+    public void fireFileOperationsStarted() {
+        if (TRACE) {
+            new Exception().printStackTrace(System.err);
+            System.out.println("fireFileOperationsStarted " + fileOperationsProgress); // NOI18N
+        }
+        if (fileOperationsProgress.compareAndSet(false, true)) {
+            for (NativeProjectItemsListener listener : getListenersCopy()) {
+                listener.fileOperationsStarted(this);
+            }
+        }
+    }
+
+    @Override
+    public void fireFileOperationsFinished() {
+        if (TRACE) {
+            new Exception().printStackTrace(System.err);
+            System.out.println("fireFileOperationsFinished " + fileOperationsProgress); // NOI18N
+        }
+        if (fileOperationsProgress.compareAndSet(true, false)) {
+            for (NativeProjectItemsListener listener : getListenersCopy()) {
+                listener.fileOperationsFinished(this);
+            }
+        }
+    }
+    
     public void fireProjectDeleted() {
         if (TRACE) {
             System.out.println("fireProjectDeleted "); // NOI18N
@@ -428,14 +456,19 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
             return;
         }
 
+        boolean toolColectionChanged = false;
         // Check compiler collection. Fire if different (IZ 131825)
         if (!oldMConf.getCompilerSet().getName().equals(newMConf.getCompilerSet().getName())
                 || !oldMConf.getDevelopmentHost().getExecutionEnvironment().equals(newMConf.getDevelopmentHost().getExecutionEnvironment())) {
-            fireFilesPropertiesChanged(); // firePropertiesChanged(getAllFiles(), true);
             MakeLogicalViewProvider.checkForChangedViewItemNodes(proj, null, null);
             if (!oldMConf.getDevelopmentHost().getExecutionEnvironment().equals(newMConf.getDevelopmentHost().getExecutionEnvironment())) {
                 MakeLogicalViewProvider.checkForChangedName(proj);
             }
+            toolColectionChanged = true;
+        }
+        
+        if (toolColectionChanged && newConf.getName().equals(oldConf.getName())) {
+            fireFilesPropertiesChanged();
             return;
         }
 
@@ -462,9 +495,6 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
                     added.add(items[i]);
                 }
                 MakeLogicalViewProvider.checkForChangedViewItemNodes(proj, null, items[i]);
-            }
-
-            if (newItemConf.getExcluded().getValue()) {
                 continue;
             }
 
@@ -487,8 +517,7 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
                     list.add(items[i]);
                     continue;
                 }
-            }
-            if (newItemConf.getTool() == PredefinedToolKind.CCCompiler) {
+            } else if (newItemConf.getTool() == PredefinedToolKind.CCCompiler) {
                 if (oldItemConf.getTool() != PredefinedToolKind.CCCompiler) {
                     list.add(items[i]);
                     continue;
@@ -512,7 +541,10 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
         fireFilesRemoved(deleted);
         fireFilesAdded(added);
         if (!list.isEmpty()) {
-            this.fireFilesPropertiesChanged(list);
+            fireFilesPropertiesChanged(list);
+        }
+        if (toolColectionChanged) {
+            fireFilesPropertiesChanged();
         }
     }
 

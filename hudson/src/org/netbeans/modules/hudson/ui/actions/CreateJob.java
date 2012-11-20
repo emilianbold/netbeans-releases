@@ -173,6 +173,8 @@ public class CreateJob implements ActionListener {
             // stats
             UsageLogging.logUI(NbBundle.getBundle(CreateJob.class), "UI_HUDSON_JOB_CREATED", project.getClass().getName()); // NOI18N
             UsageLogging.logUsage(CreateJob.class, "USG_HUDSON_JOB_CREATED", project.getClass().getName()); // NOI18N
+        } catch (ProjectHudsonJobCreator.SilentIOException x) {
+            Logger.getLogger(CreateJob.class.getName()).log(Level.INFO, null, x);
         } catch (IOException x) {
             Exceptions.attachLocalizedMessage(x, CreateJob_failure());
             Logger.getLogger(CreateJob.class.getName()).log(Level.WARNING, null, x);

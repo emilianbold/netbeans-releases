@@ -105,6 +105,7 @@ public class MakeConfiguration extends Configuration implements Cloneable {
     public static final String CND_DISTDIR_MACRO = "${CND_DISTDIR}"; // NOI18N
     public static final String CND_BUILDDIR_MACRO = "${CND_BUILDDIR}"; // NOI18N
     public static final String CND_DLIB_EXT_MACRO = "${CND_DLIB_EXT}"; // NOI18N
+    public static final String CND_OUTPUT_PATH_MACRO = "${OUTPUT_PATH}"; // NOI18N
     // Project Types
     private static String[] TYPE_NAMES_UNMANAGED = {
         getString("MakefileName")
@@ -711,7 +712,7 @@ public class MakeConfiguration extends Configuration implements Cloneable {
         clone.setRequiredProjectsConfiguration(getRequiredProjectsConfiguration().clone());
         clone.setDebuggerChooserConfiguration(getDebuggerChooserConfiguration().clone());
         clone.setQmakeConfiguration(getQmakeConfiguration().clone());
-        clone.setCodeAssistanceConfiguration(getCodeAssistanceConfiguration());
+        clone.setCodeAssistanceConfiguration(getCodeAssistanceConfiguration().clone());
 
         dhconf.addPropertyChangeListener(csconf);
 
@@ -900,16 +901,17 @@ public class MakeConfiguration extends Configuration implements Cloneable {
                         || itemConfiguration.getExcluded().getValue()) {
                     continue;
                 }
-                if (itemConfiguration.getTool() == PredefinedToolKind.CCompiler) {
+                PredefinedToolKind tool = itemConfiguration.getTool();
+                if (tool == PredefinedToolKind.CCompiler) {
                     hasCFiles = true;
                 }
-                if (itemConfiguration.getTool() == PredefinedToolKind.CCCompiler) {
+                if (tool == PredefinedToolKind.CCCompiler) {
                     hasCPPFiles = true;
                 }
-                if (itemConfiguration.getTool() == PredefinedToolKind.FortranCompiler) {
+                if (tool == PredefinedToolKind.FortranCompiler) {
                     hasFortranFiles = true;
                 }
-                if (itemConfiguration.getTool() == PredefinedToolKind.Assembler) {
+                if (tool == PredefinedToolKind.Assembler) {
                     hasAssemblerFiles = true;
                 }
                 //            if (itemConfiguration.getTool() == Tool.AsmCompiler) {

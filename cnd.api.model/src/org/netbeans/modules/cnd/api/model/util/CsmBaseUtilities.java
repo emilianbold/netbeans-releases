@@ -44,6 +44,8 @@
 
 package org.netbeans.modules.cnd.api.model.util;
 
+import java.util.Collection;
+import java.util.Collections;
 import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmClassForwardDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmClassifier;
@@ -208,20 +210,21 @@ public class CsmBaseUtilities {
             }
         } else if (CsmKindUtilities.isClass(target)) {
             CsmClass cls = (CsmClass)target;
-            CsmClassifier c = null;
+            Collection<CsmClassifier> classifiers = Collections.emptySet();
             CsmFile file = cls.getContainingFile();
             if(file != null) {
                 CsmProject project = file.getProject();
                 if(project != null) {
-                    c = project.findClassifier(cls.getQualifiedName());
+                    classifiers = project.findClassifiers(cls.getQualifiedName());
                 }
             }
-            if (cls.equals(c)) {
+            if (classifiers.contains(cls)) {
                 decl = target;
                 def = null;
-            } else if (c != null){
-                decl = c;
+            } else if (!classifiers.isEmpty()) {
+                decl = classifiers.iterator().next();
                 def = cls;
+                System.err.printf("not found declaration for self: %s; use %s\n", target, decl);
             } else {
                 decl = target;
                 def = null;

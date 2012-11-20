@@ -121,13 +121,17 @@ public class FolderConfiguration implements ConfigurationAuxObject {
     // interface ConfigurationAuxObject
     @Override
     public boolean shared() {
-        if (((MakeConfiguration) configuration).isMakefileConfiguration()) {
-            return false;
-        } else {
-            return true;
-        }
+        return true;
     }
 
+    public boolean isVCSVisible() {
+        assert org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider.VCS_WRITE;
+        if (folder != null) {
+            return folder.hasAttributedItems();
+        }
+        return shared();
+    }
+    
     // interface ConfigurationAuxObject
     @Override
     public boolean hasChanged() {

@@ -65,6 +65,7 @@ import org.netbeans.modules.turbo.CacheIndex;
 import org.netbeans.modules.versioning.spi.VCSContext;
 import org.netbeans.modules.versioning.spi.VersioningSupport;
 import org.netbeans.modules.git.FileInformation.Status;
+import org.netbeans.modules.git.client.GitClient;
 import org.netbeans.modules.git.utils.GitUtils;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.RequestProcessor;
@@ -90,7 +91,7 @@ public class FileStatusCache {
      */
     private final Map<File, FileInformation> cachedFiles;
     private final LinkedHashSet<File> upToDateFiles = new LinkedHashSet<File>(MAX_COUNT_UPTODATE_FILES);
-    private final RequestProcessor rp = new RequestProcessor("Git.cache", 1, true);
+    private final RequestProcessor rp = new RequestProcessor("Git.cache", 1, true, false);
     private final HashSet<File> nestedRepositories = new HashSet<File>(2); // mainly for logging
     private PropertyChangeSupport listenerSupport = new PropertyChangeSupport(this);
 
@@ -205,9 +206,11 @@ public class FileStatusCache {
                     LOG.log(Level.FINE, "refreshAllRoots() roots: {0}, repositoryRoot: {1} ", new Object[] {refreshEntry.getValue(), repository.getAbsolutePath()}); // NOI18N
                 }
                 Map<File, GitStatus> interestingFiles;
+                GitClient client = null;
                 try {
                     // find all files with not up-to-date or ignored status
-                    interestingFiles = Git.getInstance().getClient(repository).getStatus(refreshEntry.getValue().toArray(new File[refreshEntry.getValue().size()]), pm);
+                    client = Git.getInstance().getClient(repository);
+                    interestingFiles = client.getStatus(refreshEntry.getValue().toArray(new File[refreshEntry.getValue().size()]), pm);
                     if (pm.isCanceled()) {
                         return;
                     }
@@ -258,6 +261,9 @@ public class FileStatusCache {
                 } catch (GitException ex) {
                     LOG.log(Level.INFO, "refreshAllRoots() file: {0} {1} {2} ", new Object[] {repository.getAbsolutePath(), refreshEntry.getValue(), ex.toString()}); //NOI18N
                 } finally {
+                    if (client != null) {
+                        client.release();
+                    }
                     if (LOG.isLoggable(Level.FINE)) {
                         LOG.log(Level.FINE, "refreshAllRoots() roots: finished repositoryRoot: {0} ", new Object[] { repository.getAbsolutePath() } ); // NOI18N
                     }

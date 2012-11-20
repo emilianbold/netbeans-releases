@@ -55,7 +55,7 @@ import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
- * Inspired by org.netbeans.modules.java.editor.codegen.InsertSemicolonAction
+ * Inspired by org.netbeans.modules.java.editor.codegen.InsertSemicolonAction.
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
@@ -97,7 +97,7 @@ public abstract class InsertSemicolonAction extends BaseAction {
                     try {
                         Caret caret = target.getCaret();
                         int caretPosition = caret.getDot();
-                        int eolOffset = Utilities.getRowEnd(target, caretPosition);
+                        int eolOffset = Utilities.getRowEnd(doc, caretPosition);
                         doc.insertString(eolOffset, SEMICOLON, null);
                         newLineProcessor.processNewLine(eolOffset, caret, indenter);
                     } catch (BadLocationException ex) {

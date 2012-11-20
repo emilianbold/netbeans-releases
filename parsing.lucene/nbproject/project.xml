@@ -68,6 +68,7 @@
                 <friend>org.netbeans.modules.java.sourceui</friend>
                 <friend>org.netbeans.modules.parsing.api</friend>
                 <friend>org.netbeans.modules.whitelist</friend>
+                <friend>org.netbeans.modules.cnd.indexing</friend>
                 <package>org.netbeans.modules.parsing.lucene.spi</package>
                 <package>org.netbeans.modules.parsing.lucene.support</package>
             </friend-packages>

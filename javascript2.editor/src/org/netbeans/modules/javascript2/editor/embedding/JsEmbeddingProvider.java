@@ -528,7 +528,7 @@ public final class JsEmbeddingProvider extends EmbeddingProvider {
         }
     } // End of HtmlTranslator class
 
-    /** @return True iff we're still in the middle of an embedded token */
+    /** @return True if we're still in the middle of an embedded token */
     private static void extractJavaScriptFromHtml(Snapshot snapshot, TokenSequence<? extends HTMLTokenId> ts, JsAnalyzerState state, List<Embedding> embeddings) {
         // NOI18N
         // Process the HTML content: look for embedded script blocks,
@@ -647,7 +647,7 @@ public final class JsEmbeddingProvider extends EmbeddingProvider {
                 if (!state.in_inlined_javascript) {
                     //first inlined javascript token
 
-                    String value = htmlToken.toString();
+                    String value = htmlToken.text().toString();
                     // Strip opening "'s
                     if (value.length() > 0) {
                         char fch = value.charAt(0); //get first char
@@ -661,7 +661,7 @@ public final class JsEmbeddingProvider extends EmbeddingProvider {
                     // Add a function context around the event handler
                     // such that it gets proper function context (e.g.
                     // it can return values, the way event handlers can)
-                    embeddings.add(snapshot.create(";(function(){\n", JsTokenId.JAVASCRIPT_MIME_TYPE)); //NOI18N
+                    embeddings.add(snapshot.create("(function(){\n", JsTokenId.JAVASCRIPT_MIME_TYPE)); //NOI18N
                 }
 
                 state.in_inlined_javascript = true;
@@ -720,7 +720,7 @@ public final class JsEmbeddingProvider extends EmbeddingProvider {
                 state.inlined_javascript_pieces = 0;
 
                 // Finish the surrounding function context
-                embeddings.add(snapshot.create("\n})\n", JsTokenId.JAVASCRIPT_MIME_TYPE)); //NOI18N
+                embeddings.add(snapshot.create("\n});\n", JsTokenId.JAVASCRIPT_MIME_TYPE)); //NOI18N
 
             } else if (htmlId == HTMLTokenId.TAG_CLOSE && "script".equals(htmlToken.toString())) {
                 embeddings.add(snapshot.create("\n", JsTokenId.JAVASCRIPT_MIME_TYPE)); //NOI18N

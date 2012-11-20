@@ -153,6 +153,7 @@ public final class OpenProjectList {
     private static final int NUM_TEMPLATES = 15;
     
     public static final RequestProcessor OPENING_RP = new RequestProcessor("Opening projects", 1);
+    private static final RequestProcessor FILE_DELETED_RP = new RequestProcessor(OpenProjectList.class);
 
     static final Logger LOGGER = Logger.getLogger(OpenProjectList.class.getName());
     static void log(LogRecord r) {
@@ -1512,6 +1513,10 @@ public final class OpenProjectList {
         }
 
         public void refresh() {
+            FILE_DELETED_RP.post(new Runnable() {
+                @Override
+                public void run () {
+          
             ProjectManager.mutex().writeAccess(new Runnable() {
                 @Override
                 public void run () {
@@ -1546,6 +1551,8 @@ public final class OpenProjectList {
                             pchSupport.firePropertyChange(PROPERTY_RECENT_PROJECTS, null, null);
                             save();
                         }
+                }
+            });
                 }
             });
         }

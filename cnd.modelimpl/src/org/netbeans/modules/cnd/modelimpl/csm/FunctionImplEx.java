@@ -412,6 +412,36 @@ public class FunctionImplEx<T>  extends FunctionImpl<T> {
         }
     }
 
+    public static class FunctionExBuilder extends FunctionBuilder {
+    
+        @Override
+        public FunctionImplEx create() {
+            FunctionImplEx fun = new FunctionImplEx(getName(), getRawName(), getScope(), isStatic(), isConst(), getFile(), getStartOffset(), getEndOffset(), isGlobal());
+            init(fun);
+            return fun;
+        }
+        
+        protected void init(FunctionImplEx fun) {
+            temporaryRepositoryRegistration(isGlobal(), fun);
+
+            setTemplateDescriptor(fun);
+            setReturnType(fun);
+            setParameters(fun);
+            setScopeNames(fun);
+
+            postObjectCreateRegistration(isGlobal(), fun);
+            postFunctionImpExCreateRegistration(getFileContent(), isGlobal(), fun);
+            addReference(fun);
+            
+            addDeclaration(fun);
+        }
+        
+        protected void setScopeNames(FunctionImplEx fun) {
+            fun.setClassOrNspNames(getScopeNames());
+        }
+        
+    }    
+    
     ////////////////////////////////////////////////////////////////////////////
     // impl of SelfPersistent
     

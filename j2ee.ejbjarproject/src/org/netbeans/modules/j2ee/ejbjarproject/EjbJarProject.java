@@ -429,7 +429,6 @@ public class EjbJarProject implements Project, FileChangeListener {
                 // FIXME this is just fallback for code searching for the old SPI in lookup
                 // remove in next release
                 new EjbJarImpl(apiEjbJar),
-                new EjbJarActionProvider(this, updateHelper),
                 new EjbJarLogicalViewProvider(this, updateHelper, evaluator(), spp, refHelper, ejbModule),
                 new CustomizerProviderImpl( this, updateHelper, evaluator(), refHelper ),
                 LookupMergerSupport.createClassPathProviderMerger(cpProvider),
@@ -464,6 +463,7 @@ public class EjbJarProject implements Project, FileChangeListener {
                 UILookupMergerSupport.createPrivilegedTemplatesMerger(),
                 UILookupMergerSupport.createRecommendedTemplatesMerger(),
                 LookupProviderSupport.createSourcesMerger(),
+                LookupProviderSupport.createActionProviderMerger(),
                 WhiteListQueryMergerSupport.createWhiteListQueryMerger(),
                 QuerySupport.createTemplateAttributesProvider(helper, encodingQuery),
                 ExtraSourceJavadocSupport.createExtraSourceQueryImplementation(this, helper, eval),
@@ -1535,7 +1535,7 @@ public class EjbJarProject implements Project, FileChangeListener {
             if (!checked){
                 Profile version=Profile.fromPropertiesString(evaluator().getProperty(EjbJarProjectProperties.J2EE_PLATFORM));
                 isEE5 = Profile.JAVA_EE_5==version;
-                isEE6 = Profile.JAVA_EE_6_FULL==version;
+                isEE6 = Profile.JAVA_EE_6_FULL==version || Profile.JAVA_EE_7_FULL==version;
                 final Object srcType = helper.getAntProjectHelper().
                         getStandardPropertyEvaluator().getProperty(EjbJarProjectProperties.JAVA_SOURCE_BASED);
                 if ("false".equals(srcType)) {

@@ -74,6 +74,7 @@ import org.netbeans.modules.cnd.actions.ShellRunAction;
 import org.netbeans.modules.cnd.api.model.CsmListeners;
 import org.netbeans.modules.cnd.api.model.CsmModel;
 import org.netbeans.modules.cnd.api.model.CsmModelAccessor;
+import org.netbeans.modules.cnd.api.model.CsmModelState;
 import org.netbeans.modules.cnd.api.model.CsmProgressAdapter;
 import org.netbeans.modules.cnd.api.model.CsmProgressListener;
 import org.netbeans.modules.cnd.api.model.CsmProject;
@@ -1102,7 +1103,6 @@ public class ImportProject implements PropertyChangeListener {
         }
         if (changed) {
             DiscoveryProjectGenerator.saveMakeConfigurationDescriptor(makeProject, true);
-            DiscoveryProjectGenerator.writeDefaultVersionedConfigurations(makeProject);
         } else {
             pdp.endModifications(false, null);
         }
@@ -1227,7 +1227,6 @@ public class ImportProject implements PropertyChangeListener {
             logger.log(Level.INFO, "#start fixing excluded header files by model"); // NOI18N
         }
         if (DiscoveryProjectGenerator.fixExcludedHeaderFiles(makeProject, logger)) {
-            DiscoveryProjectGenerator.writeDefaultVersionedConfigurations(makeProject);
         }
         importResult.put(Step.FixExcluded, State.Successful);
     }
@@ -1281,6 +1280,12 @@ public class ImportProject implements PropertyChangeListener {
     }
 
     private boolean isModelAvaliable(){
+        if (CsmModelAccessor.getModelState() != CsmModelState.ON) {
+            if (TRACE) {
+                logger.log(Level.INFO, "#model is not ON: {0}", CsmModelAccessor.getModelState()); // NOI18N
+            }
+            return false;
+        }
         CsmModel model = CsmModelAccessor.getModel();
         if (model != null && makeProject != null) {
             return CsmModelAccessor.getModel().getProject(makeProject) != null;
@@ -1304,7 +1309,6 @@ public class ImportProject implements PropertyChangeListener {
                 try {
                     done = true;
                     extension.apply(map, makeProject);
-                    DiscoveryProjectGenerator.writeDefaultVersionedConfigurations(makeProject);
                     importResult.put(Step.DiscoveryLog, State.Successful);
                 } catch (IOException ex) {
                     ex.printStackTrace(System.err);
@@ -1339,7 +1343,6 @@ public class ImportProject implements PropertyChangeListener {
                 try {
                     done = true;
                     extension.apply(map, makeProject);
-                    DiscoveryProjectGenerator.writeDefaultVersionedConfigurations(makeProject);
                     if (provider != null && "make-log".equals(provider.getID())) { // NOI18N
                         importResult.put(Step.DiscoveryLog, State.Successful);
                     } else {
@@ -1371,7 +1374,6 @@ public class ImportProject implements PropertyChangeListener {
                 try {
                     done = true;
                     extension.apply(map, makeProject);
-                    DiscoveryProjectGenerator.writeDefaultVersionedConfigurations(makeProject);
                     importResult.put(Step.DiscoveryLog, State.Successful);
                 } catch (IOException ex) {
                     ex.printStackTrace(System.err);

@@ -37,6 +37,7 @@
  */
 package org.netbeans.modules.javafx2.project;
 
+import java.awt.EventQueue;
 import java.awt.Image;
 import java.util.concurrent.atomic.AtomicReference;
 import javax.swing.event.ChangeListener;
@@ -46,18 +47,22 @@ import org.netbeans.api.annotations.common.NullUnknown;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.java.j2seproject.api.J2SEPropertyEvaluator;
 import org.netbeans.spi.project.ProjectIconAnnotator;
+import org.openide.util.ChangeSupport;
 import org.openide.util.ImageUtilities;
+import org.openide.util.RequestProcessor;
 import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
  * @author Tomas Zezula
+ * @author Petr Somol
  */
 @ServiceProvider(service=ProjectIconAnnotator.class, position=10)
 public class JFXProjectIconAnnotator implements ProjectIconAnnotator {
 
     private static final String JFX_BADGE_PATH = "org/netbeans/modules/javafx2/project/ui/resources/jfx_overlay.png";    //NOI18N
     private final AtomicReference<Image> badgeCache = new AtomicReference<Image>();
+    private final ChangeSupport cs = new ChangeSupport(this);
 
     @Override
     @NonNull
@@ -76,12 +81,13 @@ public class JFXProjectIconAnnotator implements ProjectIconAnnotator {
 
     @Override
     public void addChangeListener(ChangeListener listener) {
-        //Todo: Probably not needed change of JFX project -> non JFX is not supported
+        cs.addChangeListener(listener);
+        assert cs.hasListeners();
     }
 
     @Override
     public void removeChangeListener(ChangeListener listener) {
-        //Todo: Probably not needed change of JFX project -> non JFX is not supported
+        cs.removeChangeListener(listener);
     }
 
 
@@ -93,8 +99,20 @@ public class JFXProjectIconAnnotator implements ProjectIconAnnotator {
     private Image getJFXBadge() {
         Image img = badgeCache.get();
         if (img == null) {
-            img = ImageUtilities.loadImage(JFX_BADGE_PATH);
-            badgeCache.set(img);
+            if(!EventQueue.isDispatchThread()) {
+                img = ImageUtilities.loadImage(JFX_BADGE_PATH);
+                badgeCache.set(img);
+            } else {
+                final Runnable runLoadIcon = new Runnable() {
+                    @Override
+                    public void run() {            
+                        badgeCache.set(ImageUtilities.loadImage(JFX_BADGE_PATH));
+                        cs.fireChange();
+                    }
+                };
+                final RequestProcessor RP = new RequestProcessor(JFXProjectIconAnnotator.class.getName());
+                RP.post(runLoadIcon);
+            }
         }
         return img;
     }
@@ -104,7 +122,7 @@ public class JFXProjectIconAnnotator implements ProjectIconAnnotator {
         if (eval == null) {
             return false;
         }
-        //Don't use to prevent JFXProjectProperties.isTrue to be loaded
+        //Don't use JFXProjectProperties.isTrue to prevent JFXProjectProperties from being loaded
         //JFXProjectProperties.JAVAFX_ENABLED is inlined by compliler
         return isTrue(eval.evaluator().getProperty(JFXProjectProperties.JAVAFX_ENABLED));
     }

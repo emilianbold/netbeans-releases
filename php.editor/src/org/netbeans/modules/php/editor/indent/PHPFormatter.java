@@ -55,7 +55,7 @@ import org.netbeans.modules.editor.indent.spi.Context;
 import org.netbeans.modules.php.api.util.FileUtils;
 
 /**
- * Formatting and indentation for PHP
+ * Formatting and indentation for PHP.
  *
  * @author Tor Norbye
  * @author Tomasz.Slota@Sun.COM

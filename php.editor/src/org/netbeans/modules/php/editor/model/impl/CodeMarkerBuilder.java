@@ -84,7 +84,7 @@ class CodeMarkerBuilder {
 
     void prepare(MethodDeclaration node, Scope scope) {
         if (scope instanceof MethodScope && scope.getInScope() instanceof TypeScope) {
-            MethodDeclarationInfo nodeInfo = MethodDeclarationInfo.create(node, (TypeScope)scope.getInScope());
+            MethodDeclarationInfo nodeInfo = MethodDeclarationInfo.create(node, (TypeScope) scope.getInScope());
             if (canBePrepared(node, scope)) {
                 methodDeclarations.put(nodeInfo, scope);
             }
@@ -138,8 +138,7 @@ class CodeMarkerBuilder {
 
             MethodDeclarationInfo nodInfo = entry.getKey();
             if (scopeName.equalsIgnoreCase(scope.getName())) {
-                if (parentCurrentScope != null && parentScope != null &&
-                        parentCurrentScope.getName().equalsIgnoreCase(parentScope.getName())) {
+                if (parentCurrentScope != null && parentScope != null && parentCurrentScope.getName().equalsIgnoreCase(parentScope.getName())) {
                     FunctionDeclaration function = nodInfo.getOriginalNode().getFunction();
                     Identifier functionName = function.getFunctionName();
                     OffsetRange range = new OffsetRange(function.getStartOffset(), functionName.getStartOffset());
@@ -159,8 +158,7 @@ class CodeMarkerBuilder {
 
             ASTNodeInfo<ReturnStatement> nodInfo = entry.getKey();
             if (scopeName.equalsIgnoreCase(scope.getName())) {
-                if (parentCurrentScope != null && parentScope != null &&
-                        parentCurrentScope.getName().equalsIgnoreCase(parentScope.getName())) {
+                if (parentCurrentScope != null && parentScope != null && parentCurrentScope.getName().equalsIgnoreCase(parentScope.getName())) {
                     fileScope.addCodeMarker(new CodeMarkerImpl(scope, nodInfo, fileScope));
                 }
             }
@@ -213,7 +211,7 @@ class CodeMarkerBuilder {
                 range = new OffsetRange(returnStatement.getStartOffset(), expression.getStartOffset());
             }
         } else if (originalNode instanceof MethodDeclaration) {
-                FunctionDeclaration function = ((MethodDeclaration)originalNode).getFunction();
+                FunctionDeclaration function = ((MethodDeclaration) originalNode).getFunction();
                 Identifier functionName = function.getFunctionName();
                 range = new OffsetRange(function.getStartOffset(), functionName.getStartOffset());
 

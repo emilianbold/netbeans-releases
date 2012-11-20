@@ -46,18 +46,17 @@ package org.netbeans.modules.css.model.api;
  * @author marekfukala
  */
 public interface ModelVisitor {
-    
-    public void visitElement(Element element);
+  
+    //!!!
+    //Do not forget to update ModelElement.acceptVisitorGeneric(...) when 
+    //adding or removing the visitXXX(...) methods
+    //!!!
     
     public void visitRule(Rule rule);
     
     public void visitMedia(Media media);
  
     public static class Adapter implements ModelVisitor {
-
-        @Override
-        public void visitElement(Element element) {
-        }
 
         @Override
         public void visitRule(Rule rule) {

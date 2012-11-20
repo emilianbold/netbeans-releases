@@ -450,7 +450,7 @@ class VersioningPanel extends JPanel implements ExplorerManager.Provider, Prefer
         } else {
             if ((oldInfo.getStatus() & displayStatuses) + (newInfo.getStatus() & displayStatuses) == 0) return false;
         }
-        return context == null? false: context.contains(file);
+        return context == null? false: HgUtils.contains(context.getRootFiles(), file);
     }
 
     /** Reloads data from cache */

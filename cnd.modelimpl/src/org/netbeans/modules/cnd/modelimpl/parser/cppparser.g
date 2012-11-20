@@ -1883,6 +1883,7 @@ declaration_specifiers [boolean allowTypedef, boolean noTypeId]
         (   options {warnWhenFollowAmbig = false;} : sc = storage_class_specifier
         |   tq = cv_qualifier 
         |   literal_inline {ds = dsINLINE;}
+        |   LITERAL__Noreturn
         |   LITERAL_virtual {ds = dsVIRTUAL;}
         |   LITERAL_explicit {ds = dsEXPLICIT;}
         |   LITERAL_final
@@ -1907,6 +1908,8 @@ declaration_specifiers [boolean allowTypedef, boolean noTypeId]
             (literal_inline {ds = dsINLINE;})
         |
             (sc = storage_class_specifier)
+        | 
+            LITERAL_virtual
         )*
         (options {greedy=true;} :type_attribute_specification)?
 
@@ -2006,11 +2009,15 @@ simple_type_specifier[boolean noTypeId] returns [/*TypeSpecifier*/int ts = tsInv
 	;
 
 builtin_cv_type_specifier[/*TypeSpecifier*/int old_ts] returns [/*TypeSpecifier*/int ts = old_ts]
-{TypeQualifier tq;}
+{TypeQualifier tq;StorageClass sc;}
     :
         (options{greedy = true;}: ts = builtin_type[ts])+
         ((cv_qualifier builtin_type[ts]) => 
         tq = cv_qualifier ts = builtin_cv_type_specifier[ts])?
+        ((storage_class_specifier builtin_type[ts]) => 
+        sc = storage_class_specifier ts = builtin_cv_type_specifier[ts])?
+        ((LITERAL_virtual builtin_type[ts]) => 
+        LITERAL_virtual ts = builtin_cv_type_specifier[ts])?
     ;
 
 builtin_type[/*TypeSpecifier*/int old_ts] returns [/*TypeSpecifier*/int ts = old_ts]
@@ -2427,8 +2434,8 @@ access_specifier
 	;
 
 member_declarator_list
-	:	member_declarator (ASSIGNEQUAL constant_expression)?
-		(COMMA member_declarator (ASSIGNEQUAL constant_expression)?)*
+	:	member_declarator (ASSIGNEQUAL initializer)?
+		(COMMA member_declarator (ASSIGNEQUAL initializer)?)*
 	;
 
 member_declarator
@@ -2645,7 +2652,7 @@ function_direct_declarator [boolean definition, boolean symTabCheck]
 		)
         // IZ#134182 : missed const in function parameter
         // we should add "const" to function only if it's not K&R style function
-        (   ((cv_qualifier)* (LITERAL_override | LITERAL_final | LITERAL_new)? (LCURLY | LITERAL_throw | RPAREN | SEMICOLON | ASSIGNEQUAL | EOF | literal_attribute | POINTERTO))
+        (   ((cv_qualifier)* (LITERAL_override | LITERAL_final | LITERAL_new)? (LCURLY | LITERAL_throw | LITERAL_noexcept | RPAREN | SEMICOLON | ASSIGNEQUAL | EOF | literal_attribute | POINTERTO))
             =>
             (options{warnWhenFollowAmbig = false;}: tq = cv_qualifier)*
         )?
@@ -3251,7 +3258,7 @@ lazy_template_argument_list
 
 lazy_template_argument
     :
-        {(isTemplateTooDeep(1, 20))}? 
+        {(isTemplateTooDeep(1, 10))}? 
         (~(GREATERTHAN | LESSTHAN | RCURLY | LCURLY))* 
         (
             lazy_template 
@@ -3268,7 +3275,7 @@ lazy_template_argument
  */
 template_argument
     :
-        {(isTemplateTooDeep(1, 20))}? 
+        {(isTemplateTooDeep(1, 10))}? 
         (~(GREATERTHAN | LESSTHAN | RCURLY | LCURLY))* 
         (
             lazy_template 
@@ -4083,7 +4090,7 @@ balanceSquaresInExpression
 protected    
 balanceLessthanGreaterthanInExpression[int templateLevel]
     :
-        {(isTemplateTooDeep(templateLevel, 20))}? lazy_template
+        {(isTemplateTooDeep(templateLevel, 10))}? lazy_template
     |
         // IZ 167547 : 100% CPU core usage with C++ project.
         // This is check for too complicated tecmplates.

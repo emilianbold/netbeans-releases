@@ -47,7 +47,6 @@ package org.netbeans.modules.git.ui.menu;
 import javax.swing.Action;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
-import javax.swing.JSeparator;
 import org.netbeans.modules.git.Annotator;
 import org.netbeans.modules.git.ui.fetch.FetchAction;
 import org.netbeans.modules.git.ui.fetch.FetchFromUpstreamAction;
@@ -107,7 +106,7 @@ public final class RemoteMenu extends DynamicMenu {
             Actions.connect(item, action, false);
             menu.add(item);
             
-            menu.add(new JSeparator());
+            menu.addSeparator();
             
             item = new JMenuItem();
             action = (Action) SystemAction.get(PushAction.class);
@@ -130,7 +129,7 @@ public final class RemoteMenu extends DynamicMenu {
             item = menu.add(SystemActionBridge.createAction(SystemAction.get(PullFromUpstreamAction.class), NbBundle.getMessage(PullFromUpstreamAction.class, "LBL_PullFromUpstreamAction_PopupName"), lkp)); //NOI18N
             org.openide.awt.Mnemonics.setLocalizedText(item, item.getText());
             
-            menu.add(new JSeparator());
+            menu.addSeparator();
             item = menu.add(SystemActionBridge.createAction(SystemAction.get(PushAction.class), NbBundle.getMessage(PushAction.class, "LBL_PushAction_PopupName"), lkp)); //NOI18N
             org.openide.awt.Mnemonics.setLocalizedText(item, item.getText());
             item = menu.add(SystemActionBridge.createAction(SystemAction.get(PushToUpstreamAction.class), NbBundle.getMessage(PushToUpstreamAction.class, "LBL_PushToUpstreamAction_PopupName"), lkp)); //NOI18N

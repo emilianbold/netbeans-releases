@@ -85,13 +85,19 @@ public class HistoryRegistry {
         crit.setFiles(files);
         crit.setFollowRenames(true);
         crit.setIncludeMerges(false);
-        GitRevisionInfo[] history = client.log(crit, pm);
-        if (!pm.isCanceled() && history.length > 0) {
-            for (File f : files) {
-                logs.put(f, Arrays.asList(history));
+        try {
+            GitRevisionInfo[] history = client.log(crit, pm);
+            if (!pm.isCanceled() && history.length > 0) {
+                for (File f : files) {
+                    logs.put(f, Arrays.asList(history));
+                }
+            }
+            return history;
+        } finally {
+            if (client != null) {
+                client.release();
             }
         }
-        return history;
     }
     
     public File getHistoryFile(final File repository, final File originalFile, final String revision, final boolean dryTry) {
@@ -150,13 +156,18 @@ public class HistoryRegistry {
             if(changePaths == null && !dryTry) {
                 long t1 = System.currentTimeMillis();
                 Map<File, GitFileInfo> cps = null;
+                GitClient client = null;
                 try {
-                    GitClient client = Git.getInstance().getClient(repository);
+                    client = Git.getInstance().getClient(repository);
                     GitRevisionInfo lms = client.log(historyRevision, pm);
                     assert lms != null;
                     cps = lms.getModifiedFiles();
                 } catch (GitException ex) {
                     LOG.log(Level.INFO, null, ex);
+                } finally {
+                    if (client != null) {
+                        client.release();
+                    }
                 }
                 if (cps == null) {
                     changePaths = Collections.<GitFileInfo>emptyList();

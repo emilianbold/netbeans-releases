@@ -41,7 +41,6 @@
  */
 package org.netbeans.modules.web.inspect.webkit;
 
-import java.awt.EventQueue;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
@@ -55,7 +54,6 @@ import javax.swing.JToolBar;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.web.inspect.PageModel;
 import org.netbeans.modules.web.inspect.files.Files;
-import org.netbeans.modules.web.inspect.ui.MatchedRulesTC;
 import org.netbeans.modules.web.inspect.webkit.ui.CSSStylesPanel;
 import org.netbeans.modules.web.webkit.debugging.api.TransportStateException;
 import org.netbeans.modules.web.webkit.debugging.api.dom.DOM;
@@ -65,8 +63,6 @@ import org.netbeans.modules.web.webkit.debugging.api.debugger.RemoteObject;
 import org.netbeans.modules.web.webkit.debugging.api.dom.Node;
 import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
-import org.openide.windows.TopComponent;
-import org.openide.windows.WindowManager;
 
 /**
  * WebKit-based implementation of {@code PageModel}.
@@ -86,6 +82,12 @@ public class WebKitPageModel extends PageModel {
     private List<? extends org.openide.nodes.Node> selectedNodes = Collections.EMPTY_LIST;
     /** Highlighted nodes. */
     private List<? extends org.openide.nodes.Node> highlightedNodes = Collections.EMPTY_LIST;
+    /** Nodes matching the selected rule. */
+    private List<? extends org.openide.nodes.Node> nodesMatchingSelectedRule = Collections.EMPTY_LIST;
+    /** Selector of the selected rule. */
+    private String selectedSelector;
+    /** Selector of the highlighted rule. */
+    private String highlightedSelector;
     /** WebKit DOM domain listener. */
     private DOM.Listener domListener;
     /** WebKit CSS domain listener. */
@@ -215,6 +217,16 @@ public class WebKitPageModel extends PageModel {
     }
 
     @Override
+    public void removeNode(org.openide.nodes.Node node) {
+        try {
+            Node webKitNode = node.getLookup().lookup(Node.class);
+            if (webKitNode != null) {
+                webKit.getDOM().removeNode(webKitNode);
+            }
+        } catch (TransportStateException tsex) {}
+    }
+
+    @Override
     public String getDocumentURL() {
         String documentURL = null;
         org.openide.nodes.Node node = getDocumentNode();
@@ -337,6 +349,7 @@ public class WebKitPageModel extends PageModel {
                             public void run() {
                                 if (selected) {
                                     setSelectedNodes(selection);
+                                    firePropertyChange(PageModel.PROP_BROWSER_SELECTED_NODES, null, null);
                                     activateStylesView();
                                 } else {
                                     setHighlightedNodesImpl(selection);
@@ -421,13 +434,7 @@ public class WebKitPageModel extends PageModel {
             nodes.put(nodeId, domNode);
         }
         boolean updateChildren = false;
-        List<Node> subNodes = null;
-        synchronized (node) {
-            List<Node> origSubNodes = node.getChildren();
-            if (origSubNodes != null) {
-                subNodes = new ArrayList<Node>(origSubNodes);
-            }
-        }
+        List<Node> subNodes = node.getChildren();
         if (subNodes == null) {
             int nodeType = node.getNodeType();
             if (nodeType == org.w3c.dom.Node.ELEMENT_NODE || nodeType == org.w3c.dom.Node.DOCUMENT_NODE) {
@@ -482,9 +489,28 @@ public class WebKitPageModel extends PageModel {
             if (selectedNodes.equals(nodes)) {
                 return;
             }
-            selectedNodes = nodes;
+            selectedNodes = knownNodes(nodes);
         }
         firePropertyChange(PROP_SELECTED_NODES, null, null);
+    }
+
+    private List<? extends org.openide.nodes.Node> knownNodes(List<? extends org.openide.nodes.Node> nodeList) {
+        List<org.openide.nodes.Node> knownNodes = new ArrayList<org.openide.nodes.Node>(nodeList.size());
+        for (org.openide.nodes.Node node : nodeList) {
+            Node webKitNode = node.getLookup().lookup(Node.class);
+            if (webKitNode == null) {
+                LOG.log(Level.INFO, "Not a wrapper of a WebKit node: {0}.", node); // NOI18N
+            } else {
+                int nodeId = webKitNode.getNodeId();
+                org.openide.nodes.Node knownNode = nodes.get(nodeId);
+                if (knownNode == null) {
+                    LOG.log(Level.INFO, "Ignoring node that is not (no longer?) valid: {0}.", node); // NOI18N
+                } else {
+                    knownNodes.add(knownNode);
+                }
+            }
+        }
+        return knownNodes;
     }
 
     @Override
@@ -516,6 +542,77 @@ public class WebKitPageModel extends PageModel {
         synchronized (this) {
             return Collections.unmodifiableList(highlightedNodes);
         }
+    }
+
+    @Override
+    public void setSelectedSelector(String selector) {
+        synchronized (this) {
+            selectedSelector = selector;
+        }
+        setNodesMatchingSelectedRule(matchingNodes(selector));
+        firePropertyChange(PROP_SELECTED_RULE, null, null);
+    }
+
+    @Override
+    public String getSelectedSelector() {
+        synchronized (this) {
+            return selectedSelector;
+        }
+    }
+
+    private void setNodesMatchingSelectedRule(List<? extends org.openide.nodes.Node> nodes) {
+        synchronized (this) {
+            nodesMatchingSelectedRule = nodes;
+        }
+    }
+
+    @Override
+    public List<? extends org.openide.nodes.Node> getNodesMatchingSelectedRule() {
+        synchronized (this) {
+            return nodesMatchingSelectedRule;
+        }
+    }
+
+    @Override
+    public void setHighlightedSelector(String selector) {
+        synchronized (this) {
+            highlightedSelector = selector;
+        }
+        setHighlightedNodes(matchingNodes(selector));
+        firePropertyChange(PROP_HIGHLIGHTED_RULE, null, null);
+    }
+
+    @Override
+    public String getHighlightedSelector() {
+        synchronized (this) {
+            return highlightedSelector;
+        }
+    }
+
+    /**
+     * Returns the nodes matching the specified selector.
+     *
+     * @param selector selector that should match the nodes.
+     * @return nodes matching the specified selector.
+     */
+    List<DOMNode> matchingNodes(String selector) {
+        List<DOMNode> domNodes = Collections.EMPTY_LIST;
+        if (selector != null) {
+            DOM dom = webKit.getDOM();
+            Node documentElement = dom.getDocument();
+            if (documentElement != null) {
+                List<Node> matchingNodes = dom.querySelectorAll(documentElement, selector);
+                domNodes = new ArrayList<DOMNode>(matchingNodes.size());
+                for (Node node : matchingNodes) {
+                    int nodeId = node.getNodeId();
+                    DOMNode domNode = getNode(nodeId);
+                    if (domNode != null) {
+                        domNodes.add(domNode);
+                    }
+                }
+            }
+        }
+        return domNodes;
     }
 
     @Override
@@ -593,15 +690,13 @@ public class WebKitPageModel extends PageModel {
         int type = node.getNodeType();
         if (type == org.w3c.dom.Node.DOCUMENT_NODE) {
             // Highlight/select document element
-            synchronized (node) {
-                List<Node> subNodes = node.getChildren();
-                if (subNodes != null) {
-                    for (Node subNode : subNodes) {
-                        // There should be just one element
-                        if (subNode.getNodeType() == org.w3c.dom.Node.ELEMENT_NODE) {
-                            result = subNode;
-                            break;
-                        }
+            List<Node> subNodes = node.getChildren();
+            if (subNodes != null) {
+                for (Node subNode : subNodes) {
+                    // There should be just one element
+                    if (subNode.getNodeType() == org.w3c.dom.Node.ELEMENT_NODE) {
+                        result = subNode;
+                        break;
                     }
                 }
             }
@@ -633,23 +728,23 @@ public class WebKitPageModel extends PageModel {
      * Activates CSS Styles view (to fill the content of Navigator).
      */
     void activateStylesView() {
-        if (!isExternal()) {
-            return;
-        }
-        if (EventQueue.isDispatchThread()) {
-            WindowManager manager = WindowManager.getDefault();
-            TopComponent stylesTC = manager.findTopComponent(MatchedRulesTC.ID);
-            if (stylesTC != null) {
-                stylesTC.requestActive();
-            }
-        } else {
-            EventQueue.invokeLater(new Runnable() {
-                @Override
-                public void run() {
-                    activateStylesView();
-                }
-            });
-        }
+//        if (!isExternal()) {
+//            return;
+//        }
+//        if (EventQueue.isDispatchThread()) {
+//            WindowManager manager = WindowManager.getDefault();
+//            TopComponent stylesTC = manager.findTopComponent(MatchedRules.ID);
+//            if (stylesTC != null) {
+//                stylesTC.requestActive();
+//            }
+//        } else {
+//            EventQueue.invokeLater(new Runnable() {
+//                @Override
+//                public void run() {
+//                    activateStylesView();
+//                }
+//            });
+//        }
     }
 
     class WebPaneSynchronizer implements PropertyChangeListener {
@@ -667,6 +762,10 @@ public class WebKitPageModel extends PageModel {
                 } else if (propName.equals(PageModel.PROP_SELECTED_NODES)) {
                     if (shouldSynchronizeSelection()) {
                         updateSelection();
+                    }
+                } else if (propName.equals(PageModel.PROP_SELECTED_RULE)) {
+                    if (shouldSynchronizeSelection()) {
+                        updateSelectedRule(getNodesMatchingSelectedRule());
                     }
                 } else if (propName.equals(PageModel.PROP_SELECTION_MODE)) {
                     updateSelectionMode();
@@ -696,8 +795,10 @@ public class WebKitPageModel extends PageModel {
         private void updateSynchronization() {
             if (shouldSynchronizeSelection()) {
                 updateSelection();
+                updateSelectedRule(getNodesMatchingSelectedRule());
             } else {
                 updateSelection(Collections.EMPTY_LIST);
+                updateSelectedRule(Collections.EMPTY_LIST);
             }
             if (shouldSynchronizeHighlight()) {
                 updateHighlight();
@@ -737,9 +838,13 @@ public class WebKitPageModel extends PageModel {
         }
 
         private void updateSelection(List<? extends org.openide.nodes.Node> nodes) {
+            updateSelection(nodes, ""); // NOI18N
+        }
+        
+        private void updateSelection(List<? extends org.openide.nodes.Node> nodes, String type) {
             synchronized (LOCK_SELECTION) {
                 // Initialize the next selection in all content documents
-                invokeInAllDocuments("NetBeans.initNextSelection();"); // NOI18N
+                invokeInAllDocuments("NetBeans.initNext" + type + "Selection();"); // NOI18N
 
                 // Add selected nodes into the next selection (in their document)
                 for (org.openide.nodes.Node node : nodes) {
@@ -747,13 +852,17 @@ public class WebKitPageModel extends PageModel {
                     webKitNode = convertNode(webKitNode);
                     RemoteObject remote = webKit.getDOM().resolveNode(webKitNode, null);
                     if (remote != null) {
-                        webKit.getRuntime().callFunctionOn(remote, "function() {NetBeans.addElementToNextSelection(this);}"); // NOI18N
+                        webKit.getRuntime().callFunctionOn(remote, "function() {NetBeans.addElementToNext" + type + "Selection(this);}"); // NOI18N
                     }
                 }
 
                 // Finalize the next selection in all content documents
-                invokeInAllDocuments("NetBeans.finishNextSelection();"); // NOI18N
+                invokeInAllDocuments("NetBeans.finishNext" + type + "Selection();"); // NOI18N
             }
+        }
+
+        private void updateSelectedRule(List<? extends org.openide.nodes.Node> nodes) {
+            updateSelection(nodes, "Rule"); // NOI18N
         }
 
         private synchronized void updateSelectionMode() {

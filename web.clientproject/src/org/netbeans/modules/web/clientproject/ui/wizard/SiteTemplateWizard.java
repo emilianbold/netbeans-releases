@@ -62,7 +62,7 @@ import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.web.clientproject.sites.SiteZip;
 import org.netbeans.modules.web.clientproject.spi.SiteTemplateImplementation;
-import org.netbeans.spi.project.support.ant.AntProjectHelper;
+import org.openide.filesystems.FileObject;
 import org.openide.util.ChangeSupport;
 import org.openide.util.Lookup;
 import org.openide.util.Mutex;
@@ -87,8 +87,7 @@ public class SiteTemplateWizard extends JPanel {
 
     // @GuardedBy("siteTemplateLock")
     SiteTemplateImplementation siteTemplate = NO_SITE_TEMPLATE;
-
-
+    
     public SiteTemplateWizard() {
         assert EventQueue.isDispatchThread();
 
@@ -212,7 +211,7 @@ public class SiteTemplateWizard extends JPanel {
         });
     }
 
-    @NbBundle.Messages("SiteTemplateWizard.error.noTemplateSelected=No online template selected.")
+    @NbBundle.Messages({"SiteTemplateWizard.error.noTemplateSelected=No online template selected."})
     public String getErrorMessage() {
         boolean isArchiveSiteTemplate;
         synchronized (siteTemplateLock) {
@@ -355,21 +354,23 @@ public class SiteTemplateWizard extends JPanel {
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addComponent(infoLabel, javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(noTemplateRadioButton, javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(archiveTemplateRadioButton, javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(onlineTemplateRadioButton, javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
-                        .addGap(21, 21, 21)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addGroup(layout.createSequentialGroup()
-                                .addComponent(onlineTemplateDescriptionLabel)
-                                .addGap(0, 0, Short.MAX_VALUE))
-                            .addComponent(archiveTemplatePanel, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addComponent(onlineTemplateScrollPane)
-                            .addComponent(onlineTemplateDescriptionScrollPane))))
-                .addGap(0, 0, 0))
+                .addComponent(infoLabel)
+                .addGap(0, 0, Short.MAX_VALUE))
+            .addGroup(layout.createSequentialGroup()
+                .addGap(21, 21, 21)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(onlineTemplateDescriptionLabel)
+                        .addGap(0, 0, Short.MAX_VALUE))
+                    .addComponent(archiveTemplatePanel, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(onlineTemplateScrollPane)
+                    .addComponent(onlineTemplateDescriptionScrollPane, javax.swing.GroupLayout.Alignment.TRAILING)))
+            .addGroup(layout.createSequentialGroup()
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(noTemplateRadioButton)
+                    .addComponent(archiveTemplateRadioButton)
+                    .addComponent(onlineTemplateRadioButton))
+                .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -384,14 +385,14 @@ public class SiteTemplateWizard extends JPanel {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(onlineTemplateRadioButton)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(onlineTemplateScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 106, Short.MAX_VALUE)
+                .addComponent(onlineTemplateScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 76, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(onlineTemplateDescriptionLabel)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(onlineTemplateDescriptionScrollPane, javax.swing.GroupLayout.PREFERRED_SIZE, 60, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap())
+                .addComponent(onlineTemplateDescriptionScrollPane, javax.swing.GroupLayout.PREFERRED_SIZE, 76, javax.swing.GroupLayout.PREFERRED_SIZE))
         );
     }// </editor-fold>//GEN-END:initComponents
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JPanel archiveTemplatePanel;
     private javax.swing.JRadioButton archiveTemplateRadioButton;
@@ -438,7 +439,12 @@ public class SiteTemplateWizard extends JPanel {
         }
 
         @Override
-        public void apply(AntProjectHelper helper, ProgressHandle handle) {
+        public void configure(ProjectProperties properties) {
+            // noop
+        }
+
+        @Override
+        public void apply(FileObject projectDir, ProjectProperties projectProperties, ProgressHandle handle) throws IOException {
             // noop
         }
 

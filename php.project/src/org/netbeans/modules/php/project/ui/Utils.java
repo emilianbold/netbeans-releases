@@ -56,6 +56,7 @@ import javax.swing.JComboBox;
 import javax.swing.JTextField;
 import javax.swing.MutableComboBoxModel;
 import javax.swing.UIManager;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.ui.ProjectProblems;
 import org.netbeans.modules.php.api.util.FileUtils;
@@ -109,6 +110,16 @@ public final class Utils {
         if (DialogDisplayer.getDefault().notify(descriptor) == NotifyDescriptor.YES_OPTION) {
             ProjectProblems.showCustomizer(project);
         }
+    }
+
+    // XXX use everywhere
+    @NonNull
+    public static Color getErrorForeground() {
+        Color result = UIManager.getDefaults().getColor("nb.errorForeground");  //NOI18N
+        if (result == null) {
+            result = Color.RED;
+        }
+        return getSafeColor(result.getRed(), result.getGreen(), result.getBlue());
     }
 
     public static Color getSafeColor(int red, int green, int blue) {

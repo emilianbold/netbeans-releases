@@ -56,6 +56,22 @@ made subject to such option by the copyright holder.
 <!-- ACTUAL CHANGES BEGIN HERE: -->
 
   <changes>
+     <change id="async-shutdown">
+        <api name="bridge"/>
+        <summary>getDefault</summary>
+        <version major="1" minor="44"/>
+        <date day="12" month="11" year="2012"/>
+        <author login="jtulach"/>
+        <compatibility addition="yes" binary="compatible" semantic="compatible" />
+        <description>
+        <p>
+            Method <code>shutDownAsync</code> to allow asynchronous tasks to
+            accessp EDT. Also in <code>ModuleInstaller</code> and 
+            <code>ModuleManager</code>.
+        </p>
+        </description>
+        <class package="org.netbeans.core.startup" name="ModuleSystem"/>
+    </change>
      <change id="get-default-automatic-dependencies">
         <api name="bridge"/>
         <summary>getDefault</summary>

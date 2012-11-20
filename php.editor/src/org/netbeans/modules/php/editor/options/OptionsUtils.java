@@ -132,8 +132,8 @@ public final class OptionsUtils {
     private OptionsUtils() {
     }
 
-     /**
-     * Code Completion after typing
+    /**
+     * Code Completion after typing.
      */
     public static boolean autoCompletionFull() {
         lazyInit();
@@ -142,7 +142,7 @@ public final class OptionsUtils {
     }
 
     /**
-     * Variables after "$"
+     * Variables after "$".
      */
     public static boolean autoCompletionVariables() {
         lazyInit();
@@ -166,7 +166,7 @@ public final class OptionsUtils {
     }
 
     /**
-     * Namespaces after "\\" (PHP 5.3 only)
+     * Namespaces after "\\" (PHP 5.3 only).
      */
     public static boolean autoCompletionNamespaces() {
         lazyInit();
@@ -178,7 +178,7 @@ public final class OptionsUtils {
     }
 
     /**
-     * Also Static Methods after "->"
+     * Also Static Methods after "->".
      */
     public static boolean codeCompletionStaticMethods() {
         lazyInit();
@@ -187,7 +187,7 @@ public final class OptionsUtils {
     }
 
     /**
-     * Also Non-Static Methods after "::"
+     * Also Non-Static Methods after "::".
      */
     public static boolean codeCompletionNonStaticMethods() {
         lazyInit();
@@ -196,7 +196,7 @@ public final class OptionsUtils {
     }
 
     /**
-     * Parameters of methods/functions apre pre-filled by preceeding declared variables
+     * Parameters of methods/functions apre pre-filled by preceeding declared variables.
      */
     public static boolean codeCompletionSmartParametersPreFilling() {
         lazyInit();
@@ -205,7 +205,7 @@ public final class OptionsUtils {
     }
 
     /**
-     * Parameters of methods/functions apre pre-filled by preceeding declared variables
+     * Parameters of methods/functions apre pre-filled by preceeding declared variables.
      */
     public static boolean autoCompletionSmartQuotes() {
         lazyInit();
@@ -223,7 +223,7 @@ public final class OptionsUtils {
     }
 
     /**
-     * Type of Code Completion (PHP 5.3 only)
+     * Type of Code Completion (PHP 5.3 only).
      */
     public static CodeCompletionPanel.CodeCompletionType codeCompletionType() {
         lazyInit();

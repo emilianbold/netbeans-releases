@@ -61,16 +61,6 @@ public final class Query {
      */
     public final static String EVENT_QUERY_ISSUES_CHANGED = QueryProvider.EVENT_QUERY_ISSUES_CHANGED;
 
-    /**
-     * query was saved
-     */
-    public final static String EVENT_QUERY_SAVED = QueryProvider.EVENT_QUERY_SAVED;
-
-    /**
-     * query was removed
-     */
-    public final static String EVENT_QUERY_REMOVED = QueryProvider.EVENT_QUERY_REMOVED;
-
     public enum QueryMode {
         SHOW_ALL,
         SHOW_NEW_OR_CHANGED,

@@ -65,41 +65,6 @@ public final class Css3Utils {
     
     public static final String GENERATED_CODE_MARK = "@@@"; //NOI18N
    
-    public static List<Error> getCslErrorForCss3ProblemDescription(FileObject file, List<ProblemDescription> pds) {
-        List<Error> errors = new ArrayList<Error>();
-        for(ProblemDescription pd : pds) {
-            errors.add(getCslErrorForCss3ProblemDescription(file, pd));
-        }
-        return errors;
-    }
-    
-    private static Error getCslErrorForCss3ProblemDescription(FileObject file, ProblemDescription pd) {
-        return CssErrorFactory.createError(
-                pd.getKey(), 
-                pd.getDescription(), 
-                pd.getDescription(), 
-                file, 
-                pd.getFrom(), 
-                pd.getTo(),
-                false,
-                getCslSeverityForCss3ProblemType(pd.getType()));
-    }
-
-    public static Severity getCslSeverityForCss3ProblemType(ProblemDescription.Type problemType) {
-        switch(problemType) {
-            case ERROR:
-                return Severity.ERROR;
-            case FATAL:
-                    return Severity.FATAL;
-            case INFO:
-                    return Severity.INFO;
-            case WARNING:
-                return Severity.WARNING;
-        }
-        
-        return Severity.ERROR;
-    }
-    
     public static OffsetRange getOffsetRange(Node node) {
         return new OffsetRange(node.from(), node.to());
     }
@@ -124,14 +89,14 @@ public final class Css3Utils {
         return CharSequenceUtilities.startsWith(propertyName, "_") || CharSequenceUtilities.startsWith(propertyName, "-"); //NOI18N
     }
     
-    public static boolean isVendorSpecificPropertyValue(CharSequence value) {
+    public static boolean isVendorSpecificPropertyValue(FileObject file, CharSequence value) {
         if(value == null) {
             throw new NullPointerException();
         }
         if(value.length() == 0) {
             return false;
         }
-        for(Browser b : CssModuleSupport.getBrowsers()) {
+        for(Browser b : CssModuleSupport.getBrowsers(file)) {
             if(LexerUtils.startsWith(value, b.getVendorSpecificPropertyPrefix(), true, false)) {
                 return true;
             }

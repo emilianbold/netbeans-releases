@@ -149,7 +149,7 @@ public class ConfigurationXMLReader extends XMLDocReader {
 
         boolean success;
 
-        XMLDecoder decoder = new ConfigurationXMLCodec(tag, true, projectDirectory, configurationDescriptor, relativeOffset);
+        XMLDecoder decoder = new ConfigurationXMLCodec(tag, projectDirectory, configurationDescriptor, relativeOffset);
         registerXMLDecoder(decoder);
         InputStream inputStream = null;
         try {
@@ -176,14 +176,14 @@ public class ConfigurationXMLReader extends XMLDocReader {
         if (xml != null) {
             // Don't post an error.
             // It's OK to sometimes not have a private config
-            decoder = new ConfigurationXMLCodec(tag, false, projectDirectory, configurationDescriptor, relativeOffset);
-            registerXMLDecoder(decoder);
+            XMLDecoder auxDecoder = new AuxConfigurationXMLCodec(tag, configurationDescriptor);
+            registerXMLDecoder(auxDecoder);
             inputStream = null;
             try {
                 inputStream = xml.getInputStream();
                 success = read(inputStream, projectDirectory.getName());
             } finally {
-                deregisterXMLDecoder(decoder);
+                deregisterXMLDecoder(auxDecoder);
                 if (inputStream != null) {
                     inputStream.close();
                 }
@@ -191,27 +191,6 @@ public class ConfigurationXMLReader extends XMLDocReader {
 
             if (!success) {
                 return null;
-            }
-        } else {
-            xml = projectDirectory.getFileObject("nbproject/default_configurations.xml"); // NOI18N
-            if (xml != null) {
-                decoder = new ConfigurationXMLCodec(tag, false, projectDirectory, configurationDescriptor, relativeOffset);
-                registerXMLDecoder(decoder);
-                inputStream = null;
-                try {
-                    inputStream = xml.getInputStream();
-                    success = read(inputStream, projectDirectory.getName());
-                    SPIAccessor.get().setDefaultConfigurationsRestored(configurationDescriptor, true);
-                } finally {
-                    deregisterXMLDecoder(decoder);
-                    if (inputStream != null) {
-                        inputStream.close();
-                    }
-                }
-
-                //if (!success) {
-                //    return null;
-                //}
             }
         }
 
@@ -228,12 +207,23 @@ public class ConfigurationXMLReader extends XMLDocReader {
         for (Configuration configuration : configurationDescriptor.getConfs().getConfigurations()) {
             for (Item item : projectItems) {
                 if (item.getItemConfiguration(configuration) == null) {
-                    configuration.addAuxObject(new ItemConfiguration(configuration, item));
+                    ItemConfiguration itemConfiguration = new ItemConfiguration(configuration, item);
+                    configuration.addAuxObject(itemConfiguration);
+                    // in version with inverted serialization all items not seen 
+                    // during deserialization of current 'configuration' are 
+                    // considered as excluded by default => set exclude state to 'true'
+                    if (configurationDescriptor.getVersion() >= CommonConfigurationXMLCodec.VERSION_WITH_INVERTED_SERIALIZATION) {
+                        itemConfiguration.getExcluded().setValue(true);
+                    }
                 }
             }
         }
 
-        attachListeners(configurationDescriptor);
+        boolean schemeWithExcludedItems = false;
+        if (configurationDescriptor.getVersion() >= 0 && configurationDescriptor.getVersion() < CommonConfigurationXMLCodec.VERSION_WITH_INVERTED_SERIALIZATION) {
+            schemeWithExcludedItems = true;
+        }
+        attachListeners(configurationDescriptor, schemeWithExcludedItems);
         configurationDescriptor.setState(State.READY);
 
         // Some samples are generated without generated makefile. Don't mark these 'not modified'. Then
@@ -290,7 +280,7 @@ public class ConfigurationXMLReader extends XMLDocReader {
     }
 
     // Attach listeners to all disk folders
-    private void attachListeners(final MakeConfigurationDescriptor configurationDescriptor) {
+    private void attachListeners(final MakeConfigurationDescriptor configurationDescriptor, final boolean oldSchemeWasRestored) {
         Task task = REQUEST_PROCESSOR.post(new Runnable() {
 
             @Override
@@ -304,8 +294,13 @@ public class ConfigurationXMLReader extends XMLDocReader {
                     List<Folder> firstLevelFolders = configurationDescriptor.getLogicalFolders().getFolders();
                     for (Folder f : firstLevelFolders) {
                         if (f.isDiskFolder()) {
-                            // need to set modified descriptor for store new/deleted items in the folder
-                            f.refreshDiskFolder(true);
+                            if (oldSchemeWasRestored) {
+                                LOGGER.log(Level.FINE, "Restore based on old scheme");
+                                f.refreshDiskFolderAfterRestoringOldScheme();
+                            } else {
+                                LOGGER.log(Level.FINE, "Restore based on new scheme");
+                                f.refreshDiskFolder();
+                            }
                             f.attachListeners();
                         }
                     }

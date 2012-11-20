@@ -43,11 +43,15 @@ package org.netbeans.modules.web.clientproject.ui.wizard;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
+import java.awt.EventQueue;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.text.MessageFormat;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Set;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
@@ -57,14 +61,17 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import org.netbeans.api.queries.VisibilityQuery;
 import org.netbeans.modules.web.clientproject.ClientSideProject;
 import org.netbeans.modules.web.clientproject.ClientSideProjectConstants;
 import org.netbeans.modules.web.clientproject.sites.SiteZip;
+import org.netbeans.modules.web.clientproject.ui.customizer.ClientSideProjectProperties;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.WizardDescriptor;
 import org.openide.WizardDescriptor.Panel;
+import org.openide.awt.StatusDisplayer;
 import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.view.CheckableNode;
 import org.openide.explorer.view.OutlineView;
@@ -86,6 +93,7 @@ import org.openide.util.lookup.Lookups;
     "CreateSiteTemplate_Label=Name template and select files",
     "CreateSiteTemplate_WizardTitle=Create Site Template from current project",
     "CreateSiteTemplate_Error1=Template name must be specified",
+    "CreateSiteTemplate_Error1_extension=Template name must be a ZIP file (*.zip).",
     "CreateSiteTemplate_Error2=Destination name must be specified",
     "CreateSiteTemplate_Error3=Destination is not a valid folder",
     "CreateSiteTemplate_Error4=Template file {0} already exists. Do you want to override it?",
@@ -98,13 +106,18 @@ public class CreateSiteTemplate extends javax.swing.JPanel implements ExplorerMa
     private OutlineView tree;
     private ExplorerManager manager;
     private WizardPanel wp;
-    
-    public CreateSiteTemplate(FileObject root, WizardPanel wp) {
+
+    public CreateSiteTemplate(FileObject root, FileObject externalSiteRoot, WizardPanel wp) {
         this.root = root;
         this.manager = new ExplorerManager();
         this.wp = wp;
         try {
-            manager.setRootContext(new FNode(DataObject.find(root).getNodeDelegate(), root.isFolder()));
+            if (externalSiteRoot != null) {
+                ExternalSiteRootNode externalSiteRootNode = new ExternalSiteRootNode(DataObject.find(externalSiteRoot).getNodeDelegate(), externalSiteRoot.isFolder());
+                manager.setRootContext(new OurFilteredNode(DataObject.find(root).getNodeDelegate(), externalSiteRootNode));
+            } else {
+                manager.setRootContext(new OurFilteredNode(DataObject.find(root).getNodeDelegate(), root.isFolder()));
+            }
         } catch (DataObjectNotFoundException ex) {
             Exceptions.printStackTrace(ex);
         }
@@ -115,12 +128,14 @@ public class CreateSiteTemplate extends javax.swing.JPanel implements ExplorerMa
         placeholder.add(tree, BorderLayout.CENTER);
         nameTextField.getDocument().addDocumentListener(this);
         fileTextField.getDocument().addDocumentListener(this);
+        fileTextField.setText(new File(System.getProperty("user.home")).getAbsolutePath()); // NOI18N
     }
 
+    @Override
     public String getName() {
         return Bundle.CreateSiteTemplate_Label();
     }
-    
+
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -230,8 +245,13 @@ public class CreateSiteTemplate extends javax.swing.JPanel implements ExplorerMa
     // End of variables declaration//GEN-END:variables
 
     private String getErrorMessage() {
-        if (getTemplateName().trim().length() == 0) {
+        String tplName = getTemplateName().trim();
+        if (tplName.length() == 0) {
             return Bundle.CreateSiteTemplate_Error1();
+        }
+        if (tplName.indexOf('.') != -1 // NOI18N
+                && !tplName.endsWith(".zip")) { // NOI18N
+            return Bundle.CreateSiteTemplate_Error1_extension();
         }
         if (getTemplateFolder().trim().length() == 0) {
             return Bundle.CreateSiteTemplate_Error2();
@@ -241,7 +261,7 @@ public class CreateSiteTemplate extends javax.swing.JPanel implements ExplorerMa
         }
         return ""; //NOI18N
     }
-    
+
     public String getTemplateName() {
         return nameTextField.getText();
     }
@@ -270,14 +290,16 @@ public class CreateSiteTemplate extends javax.swing.JPanel implements ExplorerMa
         wp.fireChange();
     }
 
-    private static class WizardPanel implements WizardDescriptor.Panel, WizardDescriptor.FinishablePanel {
+    private static class WizardPanel implements WizardDescriptor.Panel<WizardDescriptor>, WizardDescriptor.FinishablePanel<WizardDescriptor> {
 
-        private CreateSiteTemplate comp;
-        private ChangeSupport sup = new ChangeSupport(this);
+        private final CreateSiteTemplate comp;
+        private final ChangeSupport sup = new ChangeSupport(this);
         private WizardDescriptor wd;
 
         public WizardPanel(ClientSideProject p) {
-            comp = new CreateSiteTemplate(p.getProjectDirectory(), this);
+            FileObject siteRoot = p.getSiteRootFolder();
+            comp = new CreateSiteTemplate(p.getProjectDirectory(),
+                    siteRoot != null && !FileUtil.isParentOf(p.getProjectDirectory(), siteRoot) ? siteRoot : null, this);
             comp.putClientProperty("WizardPanel_contentSelectedIndex", new Integer(0)); //NOI18N
             // Sets steps names for a panel
             comp.putClientProperty("WizardPanel_contentData", new String[]{Bundle.CreateSiteTemplate_Title()}); //NOI18N
@@ -288,7 +310,7 @@ public class CreateSiteTemplate extends javax.swing.JPanel implements ExplorerMa
             // Turn on numbering of all steps
             comp.putClientProperty("WizardPanel_contentNumbered", Boolean.TRUE); //NOI18N
         }
-        
+
         @Override
         public Component getComponent() {
             return comp;
@@ -296,7 +318,7 @@ public class CreateSiteTemplate extends javax.swing.JPanel implements ExplorerMa
 
         @Override
         public HelpCtx getHelp() {
-            return new HelpCtx(CreateSiteTemplate.class);
+            return new HelpCtx("org.netbeans.modules.web.clientproject.ui.wizard.CreateSiteTemplate"); // NOI18N
         }
 
         @Override
@@ -311,7 +333,7 @@ public class CreateSiteTemplate extends javax.swing.JPanel implements ExplorerMa
                 wd.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, message);
             }
         }
-        
+
         @Override
         public void addChangeListener(ChangeListener l) {
             sup.addChangeListener(l);
@@ -325,27 +347,27 @@ public class CreateSiteTemplate extends javax.swing.JPanel implements ExplorerMa
         void fireChange() {
             sup.fireChange();
         }
-        
+
         @Override
         public boolean isFinishPanel() {
             return true;
         }
 
         @Override
-        public void readSettings(Object settings) {
-            this.wd = (WizardDescriptor)settings;
+        public void readSettings(WizardDescriptor settings) {
+            this.wd = settings;
         }
 
         @Override
-        public void storeSettings(Object settings) {
+        public void storeSettings(WizardDescriptor settings) {
         }
     }
-    
-    private static class WizardIterator implements WizardDescriptor.InstantiatingIterator {
 
-        private WizardPanel panel;
-        private ClientSideProject p;
-        private ChangeSupport sup = new ChangeSupport(this);
+    private static class WizardIterator implements WizardDescriptor.BackgroundInstantiatingIterator<WizardDescriptor> {
+
+        private final WizardPanel panel;
+        private final ClientSideProject p;
+        private final ChangeSupport sup = new ChangeSupport(this);
 
         public WizardIterator(ClientSideProject p) {
             this.p = p;
@@ -358,9 +380,15 @@ public class CreateSiteTemplate extends javax.swing.JPanel implements ExplorerMa
                 }
             });
         }
-        
+
+        @NbBundle.Messages({
+            "# {0} - template name",
+            "CreateSiteTemplate.info.templateCreated=Template {0} successfully created."
+        })
         @Override
-        public Set instantiate() throws IOException {
+        public Set<FileObject> instantiate() throws IOException {
+            assert !EventQueue.isDispatchThread();
+            // threading model of WizardPanel is broken and cannot be properly used
             String name = panel.comp.getTemplateName();
             if (!name.endsWith(".zip")) { //NOI18N
                 name += ".zip"; //NOI18N
@@ -373,6 +401,7 @@ public class CreateSiteTemplate extends javax.swing.JPanel implements ExplorerMa
                 }
             }
             createZipFile(f, p, panel.comp.manager.getRootContext());
+            StatusDisplayer.getDefault().setStatusText(Bundle.CreateSiteTemplate_info_templateCreated(name));
             return null;
         }
 
@@ -385,7 +414,7 @@ public class CreateSiteTemplate extends javax.swing.JPanel implements ExplorerMa
         }
 
         @Override
-        public Panel current() {
+        public Panel<WizardDescriptor> current() {
             return panel;
         }
 
@@ -421,9 +450,9 @@ public class CreateSiteTemplate extends javax.swing.JPanel implements ExplorerMa
         public void removeChangeListener(ChangeListener l) {
             sup.removeChangeListener(l);
         }
-        
+
     }
-    
+
     public static void showWizard(ClientSideProject p) {
         WizardDescriptor wd = new WizardDescriptor(new WizardIterator(p));
         wd.setTitleFormat(new MessageFormat("{0}")); //NOI18N
@@ -431,56 +460,142 @@ public class CreateSiteTemplate extends javax.swing.JPanel implements ExplorerMa
         DialogDisplayer.getDefault().notify(wd);
     }
 
-    private class FNode extends FilterNode {
+    /**
+     * Filter node which shows filtered list of children and has ability to be
+     * "selected" via Checkable instance in its lookup.
+     */
+    private class OurFilteredNode extends FilterNode {
 
-        public FNode(Node original, boolean hasChildren) {
-            super(original, hasChildren ? new FChildren(original) : Children.LEAF, 
+        public OurFilteredNode(Node projectNode, ExternalSiteRootNode externalSiteRoot) {
+            super(projectNode, new ProjectChildren(projectNode, externalSiteRoot),
+                    Lookups.fixed(new Checkable(), projectNode.getLookup().lookup(FileObject.class)));
+            Checkable ch = getLookup().lookup(Checkable.class);
+            ch.setOwner(this);
+            ch.setComponent(tree);
+        }
+
+        public OurFilteredNode(Node original, boolean hasChildren) {
+            super(original, hasChildren ? new FilteredChildren(original) : Children.LEAF,
                     Lookups.fixed(new Checkable(), original.getLookup().lookup(FileObject.class)));
             Checkable ch = getLookup().lookup(Checkable.class);
             ch.setOwner(this);
             ch.setComponent(tree);
         }
-        
+
         public void refresh() {
             fireIconChange();
         }
-        
-        
+
+
     }
-    
-    private class FChildren extends FilterNode.Children {
-        
-        public FChildren(Node owner) {
-            super(owner);
+
+    /**
+     * Special children list which merges 'external site root node' and
+     * project's folder natural children.
+     */
+    private class ProjectChildren extends Children.Keys<Node> {
+
+        private Node projectNode;
+        private Node externalSiteRoot;
+
+        public ProjectChildren(Node projectNode, Node externalSiteRoot) {
+            this.projectNode = projectNode;
+            this.externalSiteRoot = externalSiteRoot;
         }
- 
+
         @Override
-        protected Node copyNode(Node node) {
-            FileObject fo = node.getLookup().lookup(FileObject.class);
-            assert fo != null;
-            return new FNode(node, fo.isFolder());
+        protected void addNotify() {
+            super.addNotify();
+            List<Node> res = new ArrayList<Node>();
+            res.add(externalSiteRoot);
+            res.addAll(Arrays.asList(projectNode.getChildren().getNodes(true)));
+            setKeys(res);
         }
 
         @Override
         protected Node[] createNodes(Node key) {
-            FileObject fo = key.getLookup().lookup(FileObject.class);
-            if (fo == null) {
+            if (!isValidChild(key)) {
                 return new Node[0];
             }
-            if ("nbproject".equals(fo.getName())) { //NOI18N
+            FileObject fo = key.getLookup().lookup(FileObject.class);
+            assert fo != null;
+            return new Node[] {new OurFilteredNode(key, fo.isFolder())};
+        }
+
+    }
+
+    /**
+     * Filtered node's children, see {@link #isValidChild(org.openide.nodes.Node)}
+     * for applied filter.
+     */
+    private class FilteredChildren extends FilterNode.Children {
+
+        public FilteredChildren(Node owner) {
+            super(owner);
+        }
+
+        @Override
+        protected Node copyNode(Node node) {
+            FileObject fo = node.getLookup().lookup(FileObject.class);
+            assert fo != null;
+            return new OurFilteredNode(node, fo.isFolder());
+        }
+
+        @Override
+        protected Node[] createNodes(Node key) {
+            if (!isValidChild(key)) {
                 return new Node[0];
             }
             return super.createNodes(key);
         }
     }
-    
-    
+
+    /**
+     * Checks whether given node represents a folder/file suitable to be
+     * exported into site template.
+     */
+    private static boolean isValidChild(Node n) {
+        FileObject fo = n.getLookup().lookup(FileObject.class);
+        if (fo == null) {
+            return false;
+        }
+        if ("nbproject".equals(fo.getName())) { //NOI18N
+            return false;
+        }
+        if (!VisibilityQuery.getDefault().isVisible(fo)) {
+            return false;
+        }
+        return true;
+    }
+
+    /**
+     * This node wraps 'external site root folder node' and gives it
+     * display name of {@value ClientSideProjectConstants#DEFAULT_SITE_ROOT_FOLDER}.
+     */
+    private class ExternalSiteRootNode extends OurFilteredNode {
+
+        public ExternalSiteRootNode(Node original, boolean hasChildren) {
+            super(original, hasChildren);
+        }
+
+        @Override
+        public String getDisplayName() {
+            return ClientSideProjectConstants.DEFAULT_SITE_ROOT_FOLDER;
+        }
+
+        @Override
+        public String getShortDescription() {
+            return getDisplayName();
+        }
+
+    }
+
     private static class Checkable implements CheckableNode {
 
         private static boolean internalUpdate = false;
-        
+
         private Boolean checked = Boolean.TRUE;
-        private FNode node;
+        private OurFilteredNode node;
         private JComponent comp;
 
         @Override
@@ -514,13 +629,13 @@ public class CreateSiteTemplate extends javax.swing.JPanel implements ExplorerMa
                 }
             }
         }
-        
-        private static void propagateChanges(FNode node, boolean checked) {
+
+        private static void propagateChanges(OurFilteredNode node, boolean checked) {
             if (checked) {
                 tick(node.getChildren(), true);
-                FNode n = node;
+                OurFilteredNode n = node;
                 while (n.getParentNode() != null) {
-                    n = (FNode)n.getParentNode();
+                    n = (OurFilteredNode)n.getParentNode();
                     n.getLookup().lookup(Checkable.class).setSelected(Boolean.TRUE);
                     n.refresh();
                 }
@@ -528,28 +643,28 @@ public class CreateSiteTemplate extends javax.swing.JPanel implements ExplorerMa
                 tick(node.getChildren(), false);
             }
         }
-        
+
         private static void tick(Children ch, boolean tick) {
             if (ch == null) {
                 return;
             }
             for (Node n : ch.getNodes(true)) {
                 n.getLookup().lookup(Checkable.class).setSelected(tick ? Boolean.TRUE : Boolean.FALSE);
-                ((FNode)n).refresh();
+                ((OurFilteredNode)n).refresh();
                 tick(n.getChildren(), tick);
             }
         }
 
-        private void setOwner(FNode aThis) {
+        private void setOwner(OurFilteredNode aThis) {
             node = aThis;
         }
 
         public void setComponent(JComponent comp) {
             this.comp = comp;
         }
-        
+
     }
-    
+
     private static void createZipFile(File templateFile, ClientSideProject project, Node rootNode) throws IOException {
         if (!templateFile.exists()) {
             templateFile.createNewFile();
@@ -557,7 +672,7 @@ public class CreateSiteTemplate extends javax.swing.JPanel implements ExplorerMa
         ZipOutputStream str = new ZipOutputStream(new FileOutputStream(templateFile));
         try {
             writeProjectMetadata(str, project);
-            writeChildren(str, project.getProjectDirectory(), rootNode.getChildren());
+            writeChildren(str, project.getProjectDirectory(), project.getSiteRootFolder(), rootNode.getChildren());
         } finally {
             str.close();
         }
@@ -568,25 +683,20 @@ public class CreateSiteTemplate extends javax.swing.JPanel implements ExplorerMa
         ZipEntry ze = new ZipEntry(ClientSideProjectConstants.TEMPLATE_DESCRIPTOR);
         str.putNextEntry(ze);
         EditableProperties ep = new EditableProperties(false);
-        String s = project.getEvaluator().getProperty(ClientSideProjectConstants.PROJECT_SITE_ROOT_FOLDER);
-        if (s == null) {
-            s = ""; //NOI18N
+        ClientSideProjectProperties projectProperties = new ClientSideProjectProperties(project);
+        String siteRoot;
+        if (isSiteRootExternal(project.getProjectDirectory(), project.getSiteRootFolder())) {
+            siteRoot = ClientSideProjectConstants.DEFAULT_SITE_ROOT_FOLDER;
+        } else {
+            siteRoot = projectProperties.getSiteRootFolder();
         }
-        ep.setProperty(ClientSideProjectConstants.PROJECT_SITE_ROOT_FOLDER, s);
-        s = project.getEvaluator().getProperty(ClientSideProjectConstants.PROJECT_TEST_FOLDER);
-        if (s == null) {
-            s = ""; //NOI18N
-        }
-        ep.setProperty(ClientSideProjectConstants.PROJECT_TEST_FOLDER, s);
-        s = project.getEvaluator().getProperty(ClientSideProjectConstants.PROJECT_CONFIG_FOLDER);
-        if (s == null) {
-            s = ""; //NOI18N
-        }
-        ep.setProperty(ClientSideProjectConstants.PROJECT_CONFIG_FOLDER, s);
+        ep.setProperty(ClientSideProjectConstants.PROJECT_SITE_ROOT_FOLDER, siteRoot);
+        ep.setProperty(ClientSideProjectConstants.PROJECT_TEST_FOLDER, projectProperties.getTestFolder());
+        ep.setProperty(ClientSideProjectConstants.PROJECT_CONFIG_FOLDER, projectProperties.getConfigFolder());
         ep.store(str);
     }
 
-    private static void writeChildren(ZipOutputStream str, FileObject root, Children children) throws IOException {
+    private static void writeChildren(ZipOutputStream str, FileObject projectDirectory, FileObject siteRoot, Children children) throws IOException {
         for (Node node : children.getNodes(true)) {
             FileObject fo = node.getLookup().lookup(FileObject.class);
             InputStream is = null;
@@ -598,7 +708,7 @@ public class CreateSiteTemplate extends javax.swing.JPanel implements ExplorerMa
                 if (Boolean.TRUE != ch.isSelected()) {
                     continue;
                 }
-                String relPath = FileUtil.getRelativePath(root, fo);
+                String relPath = getRelativePath(projectDirectory, siteRoot, fo);
                 if (fo.isFolder()) {
                     relPath += "/"; //NOI18N
                 }
@@ -613,9 +723,32 @@ public class CreateSiteTemplate extends javax.swing.JPanel implements ExplorerMa
                 }
             }
             if (!node.isLeaf()) {
-                writeChildren(str, root, node.getChildren());
+                writeChildren(str, projectDirectory, siteRoot, node.getChildren());
             }
         }
+    }
+
+    private static boolean isSiteRootExternal(FileObject projectDirectory, FileObject siteRootFolder) {
+        if (projectDirectory.equals(siteRootFolder)
+                || FileUtil.isParentOf(projectDirectory, siteRootFolder)) {
+            return false;
+        }
+        return true;
+    }
+
+    private static String getRelativePath(FileObject projectDirectory, FileObject siteRoot, FileObject fo) {
+        String relativePath = FileUtil.getRelativePath(projectDirectory, fo);
+        if (relativePath != null) {
+            return relativePath;
+        }
+        if (fo.equals(siteRoot)) {
+            // site root itself
+            return ClientSideProjectConstants.DEFAULT_SITE_ROOT_FOLDER;
+        }
+        relativePath = FileUtil.getRelativePath(siteRoot, fo);
+        assert relativePath != null : "File '" + fo + "' not underneath site root '" + siteRoot + "'";
+        assert !relativePath.isEmpty() : "Some relative path expected for '" + fo + "' and site root '" + siteRoot + "'";
+        return ClientSideProjectConstants.DEFAULT_SITE_ROOT_FOLDER + "/" + relativePath; // NOI18N
     }
 
 }

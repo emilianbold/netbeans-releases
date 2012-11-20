@@ -52,6 +52,7 @@ import org.netbeans.modules.html.navigator.Description;
 import org.netbeans.modules.html.navigator.HtmlElementDescription;
 import org.netbeans.modules.html.navigator.HtmlElementNode;
 import org.netbeans.modules.parsing.spi.ParseException;
+import org.openide.nodes.Node;
 import org.openide.util.*;
 
 @NbBundle.Messages(
@@ -66,8 +67,44 @@ public final class OpenAction extends AbstractAction {
     }
 
     private HtmlElementDescription getDesDescription() {
-        return (HtmlElementDescription)node.getDescription(Description.SOURCE);
+        HtmlElementDescription desc = (HtmlElementDescription) node.getDescription(Description.SOURCE);
+        if (desc!=null) {
+            return desc;
+        }
+                
+        HtmlElementNode n = node;
+        HtmlElementNode prev = node;
+        while (desc == null) {
+            prev = n;
+            n = (HtmlElementNode) n.getParentNode();
+            if (n==null)
+                return null;
+            desc = (HtmlElementDescription) n.getDescription(Description.SOURCE);
+            
+        }
+        HtmlElementNode result = findPrevSource(n, prev);
+        if (result!=null) {
+            return (HtmlElementDescription) result.getDescription(Description.SOURCE);
+        } else {
+            return null;
+        }
+        
     }
+    
+    private HtmlElementNode findPrevSource(HtmlElementNode root, HtmlElementNode prev) {
+        HtmlElementNode last = null;
+        for (Node no : root.getChildren().getNodes()) {
+            HtmlElementNode htmlNode = (HtmlElementNode) no;
+            if (htmlNode.getDescription(Description.SOURCE) != null) {
+                last = htmlNode;
+            }
+            if (prev.equals(htmlNode)) {
+                return last==null?root:last;
+            }
+        }
+        return null;
+    }
+    
     
     @Override
     public void actionPerformed(ActionEvent ev) {
@@ -88,6 +125,7 @@ public final class OpenAction extends AbstractAction {
 
     @Override
     public boolean isEnabled() {
-        return getDesDescription() != null;
+        return true;
     }
+
 }

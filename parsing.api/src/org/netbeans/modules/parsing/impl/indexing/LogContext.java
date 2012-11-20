@@ -38,8 +38,6 @@
 package org.netbeans.modules.parsing.impl.indexing;
 
 import java.io.File;
-import java.lang.ref.Reference;
-import java.lang.ref.WeakReference;
 import java.net.URI;
 import java.net.URL;
 import java.util.*;
@@ -60,10 +58,14 @@ import org.openide.util.Utilities;
  * @author Tomas Zezula
  */
  public class LogContext {
+     
+    private static final Logger TEST_LOGGER = Logger.getLogger(RepositoryUpdater.class.getName() + ".tests"); //NOI18N
     
     private static final RequestProcessor RP = new RequestProcessor("Thread dump shooter", 1); // NOI18N
     
     private static final int SECOND_DUMP_DELAY = 5 * 1000; 
+    
+    private static int serial;
     
     public enum EventType {
         PATH(1, 10),
@@ -117,10 +119,30 @@ import org.openide.util.Utilities;
             parent);
     }
 
+    /**
+     * Creates a new {@link LogContext} with type and stack trace taken from the prototype,
+     * the prototype is absorbed by the newly created {@link LogContext}.
+     * @param prototype to absorb
+     * @return newly created {@link LogContext}
+     */
+    @NonNull
+    public static LogContext createAndAbsorb(@NonNull final LogContext prototype) {
+        final LogContext ctx = new LogContext(
+                prototype.eventType,
+                prototype.stackTrace,
+                String.format(
+                    "Replacement of LogContext: [type: %s, message: %s]",   //NOI18N
+                    prototype.eventType,
+                    prototype.message),
+                null);
+        ctx.absorb(prototype);
+        return ctx;
+    }
+
     @Override
     public String toString() {
         final StringBuilder msg = new StringBuilder();
-        createLogMessage(msg);
+        createLogMessage(msg, new HashSet<LogContext>(), 0);
         return msg.toString();
     }
     
@@ -144,13 +166,16 @@ import org.openide.util.Utilities;
     }
     
     void log() {
-        log(true);
+        log(true, true);
     }
 
-    void log(boolean cancel) {
+    void log(boolean cancel, boolean logAbsorbed) {
         freeze();
         final LogRecord r = new LogRecord(Level.INFO, 
                 cancel ? LOG_MESSAGE : LOG_EXCEEDS_RATE); //NOI18N
+        if (!logAbsorbed) {
+            this.absorbed = null;
+        }
         r.setParameters(new Object[]{this});
         r.setResourceBundle(NbBundle.getBundle(LogContext.class));
         r.setResourceBundleName(LogContext.class.getPackage().getName() + ".Bundle"); //NOI18N
@@ -194,14 +219,40 @@ import org.openide.util.Utilities;
      */
     void recordExecuted() {
         executed = System.currentTimeMillis();
-        STATS.record(this);
+        // Hack for unit tests, which watch the test logger and wait for RepoUpdater. Do not measure stats, so the test output is not obscured.
+        if (!TEST_LOGGER.isLoggable(Level.FINEST)) {
+            STATS.record(this);
+        }
+    }
+    
+    void recordFinished() {
+        finished = System.currentTimeMillis();
+    }
+    
+    void setPredecessor(LogContext pred) {
+        this.predecessor = pred;
+    }
+    
+    long getScheduledTime() {
+        return timestamp;
+    }
+    
+    long getExecutedTime() {
+        return executed;
+    }
+    
+    long getFinishedTime() {
+        return finished;
     }
 
+    private int mySerial;
+    private long storeTime;
     private final long timestamp;
     private long executed;
     private final EventType eventType;
     private final String message;
     private final StackTraceElement[] stackTrace;
+    private LogContext predecessor;
     private final LogContext parent;
     //@GuardedBy("this")
     private Queue<LogContext> absorbed;
@@ -218,7 +269,12 @@ import org.openide.util.Utilities;
     /**
      * Source roots, which have been scanned so far in this LogContext
      */
-    private Map<URL, Long>   scannedSourceRoots = new LinkedHashMap<URL, Long>();
+    private Map<URL, RootInfo>   scannedSourceRoots = new LinkedHashMap<URL, RootInfo>();
+    
+    /**
+     * Time crawling between files
+     */
+    private long        crawlerTime;
     
     /**
      * Time spent in scanning source roots listed in {@link #scannedSourceRoots}
@@ -226,6 +282,8 @@ import org.openide.util.Utilities;
     private long        totalScanningTime;
     
     private long        timeCutOff;
+    
+    private long        finished;        
     
     /**
      * The current source root being scanned
@@ -247,6 +305,12 @@ import org.openide.util.Utilities;
     private class RootInfo {
         private URL     url;
         private long    startTime;
+        private long    spent;
+        private Map<String, Long>   rootIndexerTime = new HashMap<String, Long>();
+        private int count;
+        private long    crawlerTime;
+        private int     resCount = -1;
+        private int     allResCount = -1;
 
         public RootInfo(URL url, long startTime) {
             this.url = url;
@@ -254,7 +318,23 @@ import org.openide.util.Utilities;
         }
         
         public String toString() {
-            return "< root = " + url.toString() + ", spent = " + (timeCutOff - startTime) + " >";
+            long time = spent == 0 ? timeCutOff - startTime : spent;
+            return "< root = " + url.toString() + "; spent = " + time + "; crawler = " + crawlerTime + "; res = "
+                    + resCount + "; allRes = " + allResCount + " >";
+        }
+        
+        public void merge(RootInfo ri) {
+            if (!url.equals(ri.url)) {
+                throw new IllegalArgumentException();
+            }
+            this.spent += ri.spent;
+            this.crawlerTime += ri.crawlerTime;
+            if (ri.resCount > -1) {
+                this.resCount = ri.resCount;
+            }
+            if (ri.allResCount > -1) {
+                this.allResCount = ri.allResCount;
+            }
         }
     }
     
@@ -264,10 +344,37 @@ import org.openide.util.Utilities;
         }
         RootInfo ri = allCurrentRoots.get(Thread.currentThread());
         assert ri == null;
-        allCurrentRoots.put(Thread.currentThread(), new RootInfo(
+        allCurrentRoots.put(Thread.currentThread(), ri = new RootInfo(
                     currentRoot,
                     System.currentTimeMillis()
         ));
+        scannedSourceRoots.put(currentRoot, ri);
+    }
+    
+    public synchronized void addCrawlerTime(long time, int resCount, int allResCount) {
+        if (frozen) {
+            return;
+        }
+        this.crawlerTime += time;
+        RootInfo ri = allCurrentRoots.get(Thread.currentThread());
+        if (ri == null) {
+            LOG.log(Level.FINE, "No root specified for crawler run", new Throwable());
+            return;
+        }
+        ri.crawlerTime += time;
+        if (resCount != -1) {
+            ri.resCount = resCount;
+        }
+        if (allResCount != -1) {
+            ri.allResCount = allResCount;
+        }
+    }
+    
+    public synchronized void addStoreTime(long time) {
+        if (frozen) {
+            return;
+        }
+        this.storeTime += time;
     }
     
     public synchronized void finishScannedRoot(URL scannedRoot) {
@@ -281,8 +388,16 @@ import org.openide.util.Utilities;
         long time = System.currentTimeMillis();
         long diff = time - ri.startTime;
         totalScanningTime += diff;
-        scannedSourceRoots.put(scannedRoot, diff);
+        // support multiple entries
+        ri.spent += diff;
         allCurrentRoots.remove(Thread.currentThread());
+
+        RootInfo ri2 = scannedSourceRoots.get(ri.url);
+        if (ri2 == null) {
+            ri2 = new RootInfo(ri.url, ri.startTime);
+            scannedSourceRoots.put(ri.url, ri2);
+        }
+        ri2.merge(ri);
     }
     
     public synchronized void addIndexerTime(String fName, long addTime) {
@@ -294,6 +409,17 @@ import org.openide.util.Utilities;
             t = Long.valueOf(0);
         }
         totalIndexerTime.put(fName, t + addTime);
+        RootInfo ri = allCurrentRoots.get(Thread.currentThread());
+        if (ri == null) {
+            LOG.log(Level.FINE, "Unreported root for running indexer: " + fName, new Throwable());
+        } else {
+             t = ri.rootIndexerTime.get(fName);
+            if (t == null) {
+                t = Long.valueOf(0);
+            }
+            t += addTime;
+            ri.rootIndexerTime.put(fName, t);
+        }
     }
     
     public synchronized LogContext withRoot(URL root) {
@@ -301,15 +427,19 @@ import org.openide.util.Utilities;
         return this;
     }
     
-    public synchronized LogContext addPaths(Collection<? extends ClassPath> paths) {
+    public LogContext addPaths(Collection<? extends ClassPath> paths) {
         if (paths == null || paths.isEmpty()) {
             return this;
         }
-        if (classPathsChanged.isEmpty()) {
-            classPathsChanged = new HashSet<String>(paths.size());
-        }
+        final Set<String> toAdd = new HashSet<String>();
         for (ClassPath cp : paths) {
-            classPathsChanged.add(cp.toString());
+            toAdd.add(cp.toString());
+        }
+        synchronized (this) {
+            if (classPathsChanged.isEmpty()) {
+                classPathsChanged = new HashSet<String>(paths.size());
+            }
+            classPathsChanged.addAll(toAdd);
         }
         return this;
     }
@@ -378,24 +508,46 @@ import org.openide.util.Utilities;
         this.message = message;
         this.parent = parent;
         this.timestamp = System.currentTimeMillis();
+        synchronized (LogContext.class) {
+            this.mySerial = serial++;
+        }
     }
-
-    private synchronized void createLogMessage(@NonNull final StringBuilder sb) {
-        sb.append("Type:").append(eventType);   //NOI18N
+    
+    private synchronized void createLogMessage(@NonNull final StringBuilder sb, Set<LogContext> reported, int depth) {
+        sb.append("ID: ").append(mySerial).append(", Type:").append(eventType);   //NOI18N
+        if (reported.contains(this)) {
+            sb.append(" -- see above\n");
+            return;
+        }
+        if (depth > 5) {
+            sb.append("-- too deep nesting");
+            return;
+        }
+        reported.add(this);
         if (message != null) {
             sb.append(" Description:").append(message); //NOI18N
         }
         sb.append("\nTime scheduled: ").append(new Date(timestamp));
         if (executed > 0) {
             sb.append("\nTime executed: ").append(new Date(executed));
+            if (finished > 0) {
+                sb.append("\nTime finished: ").append(new Date(finished));
+            }
         } else {
             sb.append("\nNOT executed");
         }
-        sb.append("\nScanned roots: ").append(scannedSourceRoots).
+        sb.append("\nScanned roots: ").append(scannedSourceRoots.values().toString().replaceAll(",", "\n\t")).
                 append("\n, total time: ").append(totalScanningTime);
         
-        sb.append("\nCurrent root(s): ").append(allCurrentRoots.values());
-        
+        sb.append("\nCurrent root(s): ").append(allCurrentRoots.values().toString().replaceAll(",", "\n\t"));
+        sb.append("\nCurrent indexer(s): ");
+        for (RootInfo ri : allCurrentRoots.values()) {
+            sb.append("\n\t").append(ri.url);
+            for (Map.Entry<String, Long> indexTime : ri.rootIndexerTime.entrySet()) {
+                sb.append("\n\t\t").append(indexTime.getKey()).
+                        append(": ").append(indexTime.getValue());
+            }
+        }
         sb.append("\nTime spent in indexers:");
         List<String> iNames = new ArrayList<String>(totalIndexerTime.keySet());
         Collections.sort(iNames);
@@ -403,7 +555,18 @@ import org.openide.util.Utilities;
             sb.append("\n\t").append(indexTime.getKey()).
                     append(": ").append(indexTime.getValue());
         }
+        sb.append("\nTime spent in indexers, in individual roots:");
+        for (Map.Entry<URL, RootInfo> rootEn : scannedSourceRoots.entrySet()) {
+            sb.append("\n\t").append(rootEn.getKey());
+            RootInfo ri = rootEn.getValue();
+            for (Map.Entry<String, Long> indexTime : ri.rootIndexerTime.entrySet()) {
+                sb.append("\n\t\t").append(indexTime.getKey()).
+                        append(": ").append(indexTime.getValue());
+            }
+        }
         
+        sb.append("\nTime in index store: " + storeTime);
+        sb.append("\nTime crawling: " + crawlerTime);
         sb.append("\nStacktrace:\n");    //NOI18N
         for (StackTraceElement se : stackTrace) {
             sb.append('\t').append(se).append('\n'); //NOI18N
@@ -440,7 +603,7 @@ import org.openide.util.Utilities;
         }
         if (parent != null) {
             sb.append("Parent {");  //NOI18N
-            parent.createLogMessage(sb);
+            parent.createLogMessage(sb, reported, depth + 1);
             sb.append("}\n"); //NOI18N
         }
         
@@ -453,11 +616,17 @@ import org.openide.util.Utilities;
                     append(" seconds):\n").
                     append(secondDump).append("\n");
         }
+        
+        if (predecessor != null) {
+            sb.append("Predecessor: {");
+            predecessor.createLogMessage(sb, reported, depth + 1);
+            sb.append("}\n");
+        }
 
         if (absorbed != null) {
             sb.append("Absorbed {");    //NOI18N
             for (LogContext a : absorbed) {
-                a.createLogMessage(sb);
+                a.createLogMessage(sb, reported, depth + 1);
             }
             sb.append("}\n");             //NOI18N
         }
@@ -607,7 +776,7 @@ import org.openide.util.Utilities;
         }
         
         private Pair<Integer, Integer> findHigherRate(long minTime, int minutes, int treshold) {
-            int s = start;
+            int s = reportedEnd == -1 ? start : reportedEnd;
             int l = -1;
             
             // skip events earlier than history limit; should be already cleared.
@@ -648,13 +817,14 @@ import org.openide.util.Utilities;
                 return;
             }
             
-            LOG.log(Level.WARNING, "Excessive indexing rate detected. Dumping suspicious contexts");
+            LOG.log(Level.WARNING, "Excessive indexing rate detected: " + dataSize(found.first, found.second) + " in " + minutes + "mins, treshold is " + treshold + 
+                    ". Dumping suspicious contexts");
             int index;
             
-            for (index = found.first; index != found.second; index = (index + 1) % times.length) {
-                contexts[index].log(false);
+             for (index = found.first; index != found.second; index = (index + 1) % times.length) {
+                contexts[index].log(false, false);
             }
-            LOG.log(Level.WARNING, "=== End excessive contexts");
+            LOG.log(Level.WARNING, "=== End excessive indexing");
             this.reportedEnd = index;
         }
     }
@@ -666,41 +836,57 @@ import org.openide.util.Utilities;
         private Map<EventType, RingTimeBuffer>  history = new HashMap<EventType, RingTimeBuffer>(7);
         
         /**
-         * For each root, one ring-buffer. Items are removed using least recently accessed strategy. Once an
+         * For each root, one ring-buffer per event type. Items are removed using least recently accessed strategy. Once an
          * item is touched, it is removed and re-added so it is at the tail of the entry iterator.
          */
-        private LinkedHashMap<URL, RingTimeBuffer> rootHistory = new LinkedHashMap<URL, RingTimeBuffer>(9, 0.7f, true);
+        private LinkedHashMap<URL, Map<EventType, RingTimeBuffer>> rootHistory = new LinkedHashMap<URL, Map<EventType, RingTimeBuffer>>(9, 0.7f, true);
         
         public synchronized void record(LogContext ctx) {
             EventType type = ctx.eventType;
             
-            if (type == EventType.INDEXER && ctx.root != null) {
-                recordIndexer(ctx.root, ctx);
-            } else {
-                recordRegular(type, ctx);
+            if (ctx.root != null) {
+                if (type == EventType.INDEXER || type == EventType.MANAGER) {
+                    recordIndexer(type, ctx.root, ctx);
+                    return;
+                }
             }
+            recordRegular(type, ctx);
         }
         
         private void expireRoots() {
             long l = System.currentTimeMillis();
-            l -= fromMinutes(EventType.INDEXER.getMinutes());
             
-            for (Iterator<RingTimeBuffer> it = rootHistory.values().iterator(); it.hasNext(); ) {
-                RingTimeBuffer rb = it.next();
-                if (rb.lastTime < l) {
-                    it.remove();
+            for (Iterator mapIt = rootHistory.values().iterator(); mapIt.hasNext(); ) {
+                Map<EventType, RingTimeBuffer> map = (Map<EventType, RingTimeBuffer>)mapIt.next();
+                for (Iterator<Map.Entry<EventType, RingTimeBuffer>> it = map.entrySet().iterator(); it.hasNext(); ) {
+                    Map.Entry<EventType, RingTimeBuffer> entry = it.next();
+                    EventType et = entry.getKey();
+                    RingTimeBuffer rb = entry.getValue();
+                    long limit = l - fromMinutes(et.getMinutes());
+                    if (rb.lastTime < limit) {
+                        it.remove();
+                    }
+                }
+                if (map.isEmpty()) {
+                    mapIt.remove();
                 } else {
                     break;
                 }
             }
         }
         
-        private void recordIndexer(URL root, LogContext ctx) {
+        private void recordIndexer(EventType et, URL root, LogContext ctx) {
             expireRoots();
-            RingTimeBuffer existing = rootHistory.get(root);
+            // re-adding maintains LRU order of the LinkedHM
+            Map<EventType, RingTimeBuffer> map = rootHistory.remove(root);
+            if (map == null) {
+                map = new EnumMap<EventType, RingTimeBuffer>(EventType.class);
+            }
+            rootHistory.put(root, map);
+            RingTimeBuffer existing = map.get(et);
             if (existing == null) {
-                existing = new RingTimeBuffer(EventType.INDEXER.getMinutes() * 2);
-                rootHistory.put(root, existing);
+                existing = new RingTimeBuffer(et.getMinutes() * 2);
+                map.put(et, existing);
             }
             existing.mark(ctx);
         }

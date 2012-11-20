@@ -111,6 +111,11 @@ public class Actions {
                 DashboardViewer.getInstance().removeTask(taskNode);
             }
         }
+
+        @Override
+        public boolean isEnabled() {
+            return true;
+        }
     }
 
     private static class ScheduleTaskAction extends TaskAction {
@@ -253,6 +258,11 @@ public class Actions {
         public void actionPerformed(ActionEvent e) {
             DashboardViewer.getInstance().deleteCategory(getCategoryNodes());
         }
+
+        @Override
+        public boolean isEnabled() {
+            return true;
+        }
     }
 
     private static class NotificationCategoryAction extends CategoryAction {
@@ -380,6 +390,11 @@ public class Actions {
         public void actionPerformed(ActionEvent e) {
             DashboardViewer.getInstance().removeRepository(getRepositoryNodes());
         }
+
+        @Override
+        public boolean isEnabled() {
+            return true;
+        }
     }
 
     public static class RefreshRepositoryAction extends RepositoryAction {
@@ -499,6 +514,11 @@ public class Actions {
                     DashboardViewer.getInstance().deleteQuery(getQueryNodes());
                 }
             });
+        }
+
+        @Override
+        public boolean isEnabled() {
+            return true;
         }
     }
 

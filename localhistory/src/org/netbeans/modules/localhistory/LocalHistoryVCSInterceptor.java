@@ -45,7 +45,9 @@ package org.netbeans.modules.localhistory;
 
 import java.util.HashMap;
 import java.io.File;
+import java.io.IOException;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
@@ -103,6 +105,7 @@ class LocalHistoryVCSInterceptor extends VCSInterceptor {
     // ==================================================================================================
     // DELETE
     // ==================================================================================================
+    
     @Override
     public boolean beforeDelete(File file) {
         LOG.log(Level.FINE, "beforeDelete {0}", file); // NOI18N
@@ -150,7 +153,7 @@ class LocalHistoryVCSInterceptor extends VCSInterceptor {
         if(!accept(from)) {
             return false;
         }
-
+        getStore().waitForProcessedStoring(from, "beforeMove"); // NOI18N
         // moving a package comes either like
         // - create(to) and delete(from)
         // - or the files from the package come like move(from, to)
@@ -180,6 +183,16 @@ class LocalHistoryVCSInterceptor extends VCSInterceptor {
     }
 
     // ==================================================================================================
+    // COPY
+    // ==================================================================================================
+    
+    @Override
+    public boolean beforeCopy(File from, File to) {
+        getStore().waitForProcessedStoring(from, "beforeCopy"); // NOI18N
+        return super.beforeCopy(from, to); 
+    }
+    
+    // ==================================================================================================
     // CREATE
     // ==================================================================================================
 
@@ -190,6 +203,7 @@ class LocalHistoryVCSInterceptor extends VCSInterceptor {
             return false;
         } 
         toBeCreated.add(file);
+        getStore().waitForProcessedStoring(file, "beforeCreate"); // NOI18N
         return false;
     }
 

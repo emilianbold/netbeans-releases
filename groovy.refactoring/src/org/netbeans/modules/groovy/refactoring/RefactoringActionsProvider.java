@@ -71,7 +71,7 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider {
     @Override
     public boolean canMove(Lookup lookup) {
         return false;
-//        return canBeDone(lookup, RefactoringType.MOVE);
+        //return canBeDone(lookup, RefactoringType.MOVE);
     }
 
     @Override

@@ -179,8 +179,14 @@ public class IndexedElement extends JsElementImpl {
                 int index = token.indexOf(':');
                 if (index > -1) {
                     String type = token.substring(0, index);
-                    String offset = token.substring(index + 1);
-                    result.add(new TypeUsageImpl(type, Integer.parseInt(offset), true));
+                    String sOffset = token.substring(index + 1);
+                    int offset;
+                    try {
+                        offset = Integer.parseInt(sOffset);
+                    } catch (NumberFormatException nfe) {
+                        offset = -1;
+                    }
+                    result.add(new TypeUsageImpl(type, offset, true));
                 }
             }
         }
@@ -196,8 +202,14 @@ public class IndexedElement extends JsElementImpl {
                 int index = token.indexOf(',');
                 if(index > -1) {
                     String type = token.substring(0, index);
-                    String offset = token.substring(index + 1);
-                    result.add(new TypeUsageImpl(type, Integer.parseInt(offset), true));
+                    String sOffset = token.substring(index + 1);
+                    int offset;
+                    try {
+                        offset = Integer.parseInt(sOffset);
+                    } catch (NumberFormatException nfe) {
+                        offset = -1;
+                    }
+                    result.add(new TypeUsageImpl(type, offset, true));
                 }
             }
         }

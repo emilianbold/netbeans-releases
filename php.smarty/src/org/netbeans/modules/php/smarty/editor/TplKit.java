@@ -83,11 +83,6 @@ public class TplKit extends NbEditorKit implements org.openide.util.HelpCtx.Prov
     }
 
     @Override
-    public Object clone() {
-        return new TplKit();
-    }
-
-    @Override
     public Document createDefaultDocument() {
         final Document doc = super.createDefaultDocument();
         // see TplEditorSupport.createStyledDocument;

@@ -50,6 +50,7 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.*;
+import javax.swing.border.Border;
 import javax.swing.border.EmptyBorder;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -57,6 +58,7 @@ import javax.swing.text.*;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.editor.EditorUI;
 import org.netbeans.editor.MultiKeymap;
+import org.netbeans.editor.ext.ExtKit;
 import org.netbeans.lib.editor.util.swing.DocumentListenerPriority;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 import org.openide.util.Exceptions;
@@ -80,7 +82,6 @@ public class SearchComboBoxEditor implements ComboBoxEditor {
         editorPane.setFont(referenceTextField.getFont());
         LOG.log(Level.FINE, "Constructor - Set Font: Name: {0}, Size: {1}\n", new Object[]{editorPane.getFont().getFontName(), editorPane.getFont().getSize()}); //NOI18N
         final Insets margin = referenceTextField.getMargin();
-        final Insets borderInsets = referenceTextField.getBorder().getBorderInsets(referenceTextField);
 
         scrollPane = new JScrollPane(JScrollPane.VERTICAL_SCROLLBAR_NEVER,
                                                JScrollPane.HORIZONTAL_SCROLLBAR_NEVER) {
@@ -105,7 +106,11 @@ public class SearchComboBoxEditor implements ComboBoxEditor {
             }
         });
 
-        scrollPane.setBorder(new EmptyBorder(borderInsets));
+        final Border border = referenceTextField.getBorder();
+        if (border != null) {
+            final Insets borderInsets = border.getBorderInsets(referenceTextField);
+            scrollPane.setBorder(new EmptyBorder(borderInsets));
+        }
         scrollPane.setFont(referenceTextField.getFont());
         scrollPane.setBackground(referenceTextField.getBackground());
         int preferredHeight = referenceTextField.getPreferredSize().height;
@@ -150,8 +155,9 @@ public class SearchComboBoxEditor implements ComboBoxEditor {
 
         editorPane.setEditorKit(kit);
 
-        ActionInvoker.putActionToComponent(new ActionInvoker(SearchNbEditorKit.INCREMENTAL_SEARCH_FORWARD, editorPane), editorPane);
+        ActionInvoker.putActionToComponent(new ActionInvoker(SearchNbEditorKit.SEARCH_ACTION, editorPane), editorPane);
         ActionInvoker.putActionToComponent(new ActionInvoker(SearchNbEditorKit.REPLACE_ACTION, editorPane), editorPane);
+        ActionInvoker.putActionToComponent(new ActionInvoker(ExtKit.gotoAction, editorPane), editorPane);
 
         InputMap im = editorPane.getInputMap();
         im.put(KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), NO_ACTION);

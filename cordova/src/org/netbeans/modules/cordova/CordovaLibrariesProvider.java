@@ -82,18 +82,18 @@ public class CordovaLibrariesProvider implements LibraryProvider<LibraryImplemen
             lib.setDisplayName("Cordova"); // NOI18N
             Map<String, String> p = new HashMap<String, String>();
             final String version = CordovaPlatform.getDefault().getVersion();
-            p.put("version", version);
-            p.put("name", "Cordova");
-            p.put("displayname", "Cordova");
+            p.put("version", version);//NOI18N
+            p.put("name", "Cordova"); //NOI18N
+            p.put("displayname", "Cordova"); //NOI18N
             p.put("cdn", "Phonegap"); // NOI18N
-            p.put("site", "http://phonegap.com");
+            p.put("site", "http://phonegap.com");//NOI18N
             lib.setProperties(p);
         try {
             final String sdkLocation = CordovaPlatform.getDefault().getSdkLocation();
-            final List<URL> libs = Collections.singletonList(new URL("file://" + sdkLocation + "/lib/android/cordova-"+version +".js"));
-            lib.setContent("regular", libs);
-            lib.setContent("minified", libs);
-            lib.setContent("documented", libs);
+            final List<URL> libs = Collections.singletonList(new URL("file://" + sdkLocation + "/lib/android/cordova-"+version +".js")); //NOI18N
+            lib.setContent("regular", libs);//NOI18N
+            lib.setContent("minified", libs);//NOI18N
+            lib.setContent("documented", libs);//NOI18N
         } catch (MalformedURLException ex) {
             Exceptions.printStackTrace(ex);
         }

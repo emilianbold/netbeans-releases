@@ -46,12 +46,13 @@ package org.netbeans.modules.cnd.completion.cplusplus.hyperlink;
 
 import java.io.File;
 import org.netbeans.api.lexer.TokenId;
-import org.netbeans.cnd.api.lexer.CppTokenId;
 import org.netbeans.cnd.api.lexer.TokenItem;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.lib.editor.hyperlink.spi.HyperlinkType;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable.Position;
+import org.netbeans.modules.cnd.modelimpl.csm.FieldImpl;
+import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import org.netbeans.modules.cnd.modelimpl.test.ProjectBasedTestCase;
 import org.netbeans.modules.cnd.test.CndCoreTestUtils;
 
@@ -73,6 +74,7 @@ public abstract class HyperlinkBaseTestCase extends ProjectBasedTestCase {
         
     private CsmHyperlinkProvider declarationsProvider;
     private CsmIncludeHyperlinkProvider includeProvider;
+    private CsmDefineHyperlinkProvider defineProvider;
 
     private static boolean GENERATE_GOLDEN_DATA = false;
     public HyperlinkBaseTestCase(String testName) {
@@ -91,6 +93,7 @@ public abstract class HyperlinkBaseTestCase extends ProjectBasedTestCase {
         
         declarationsProvider = new CsmHyperlinkProvider();
         includeProvider = new CsmIncludeHyperlinkProvider();
+        defineProvider = new CsmDefineHyperlinkProvider();
 
         log("CndHyperlinkBaseTestCase.setUp finished.");
         log("Test "+getName()+  " started");
@@ -145,6 +148,11 @@ public abstract class HyperlinkBaseTestCase extends ProjectBasedTestCase {
         int resultOffset = resultPos.getOffset();
         int resultLine = resultPos.getLine();
         int resultColumn = resultPos.getColumn();
+        if(resultLine == -1 && resultColumn == -1 && resultOffset == -1) {
+            int[] lc = ((FileImpl)targetObject.getContainingFile()).getLineColumn(targetObject.getStartOffset());
+            resultLine = lc[0];
+            resultColumn = lc[1];
+        }
         if (GENERATE_GOLDEN_DATA) {
             System.err.println("result file " + goldenFileAbsPath);
             System.err.println("result position " + resultPos);
@@ -168,6 +176,10 @@ public abstract class HyperlinkBaseTestCase extends ProjectBasedTestCase {
         // first ask includes handler
         if (includeProvider.isValidToken(jumpToken, HyperlinkType.GO_TO_DECLARATION)) {
             csmItem = includeProvider.findTargetObject(doc, offset);
+        }
+        // if failed => ask define handler
+        if (csmItem == null && defineProvider.isValidToken(jumpToken, HyperlinkType.GO_TO_DECLARATION)) {
+            csmItem = (CsmOffsetable) defineProvider.findTargetObject(doc, jumpToken, offset, true);
         }
         // if failed => ask declarations handler
         if (csmItem == null && declarationsProvider.isValidToken(jumpToken, HyperlinkType.GO_TO_DECLARATION)) {

@@ -26,21 +26,19 @@
                   <Group type="102" attributes="0">
                       <Component id="librariesLabel" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
-                      <Component id="librariesFilterTextField" pref="159" max="32767" attributes="0"/>
+                      <Component id="librariesFilterTextField" pref="164" max="32767" attributes="0"/>
                   </Group>
                   <Component id="librariesScrollPane" pref="0" max="32767" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Component id="selectAllButton" linkSize="2" min="-2" max="-2" attributes="0"/>
                   <Component id="selectSelectedButton" linkSize="2" min="-2" max="-2" attributes="0"/>
                   <Component id="deselectSelectedButton" linkSize="2" min="-2" max="-2" attributes="0"/>
-                  <Component id="deselectAllButton" linkSize="2" min="-2" max="-2" attributes="0"/>
               </Group>
-              <EmptySpace min="-2" max="-2" attributes="0"/>
+              <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
                   <Component id="selectedLabel" min="-2" max="-2" attributes="0"/>
-                  <Component id="selectedLibrariesScrollPane" pref="216" max="32767" attributes="0"/>
+                  <Component id="selectedLibrariesScrollPane" pref="221" max="32767" attributes="0"/>
               </Group>
           </Group>
           <Group type="102" alignment="0" attributes="0">
@@ -70,14 +68,11 @@
                   <Component id="selectedLibrariesScrollPane" pref="160" max="32767" attributes="0"/>
                   <Component id="librariesScrollPane" pref="0" max="32767" attributes="0"/>
                   <Group type="102" attributes="0">
-                      <Component id="selectAllButton" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace max="-2" attributes="0"/>
+                      <EmptySpace min="0" pref="0" max="-2" attributes="0"/>
                       <Component id="selectSelectedButton" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="deselectSelectedButton" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace max="-2" attributes="0"/>
-                      <Component id="deselectAllButton" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace min="0" pref="57" max="32767" attributes="0"/>
+                      <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
                   </Group>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
@@ -128,13 +123,6 @@
         </Component>
       </SubComponents>
     </Container>
-    <Component class="javax.swing.JButton" name="selectAllButton">
-      <Properties>
-        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/web/clientproject/ui/Bundle.properties" key="JavaScriptLibrarySelection.selectAllButton.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
-        </Property>
-      </Properties>
-    </Component>
     <Component class="javax.swing.JButton" name="selectSelectedButton">
       <Properties>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
@@ -146,13 +134,6 @@
       <Properties>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
           <ResourceString bundle="org/netbeans/modules/web/clientproject/ui/Bundle.properties" key="JavaScriptLibrarySelection.deselectSelectedButton.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
-        </Property>
-      </Properties>
-    </Component>
-    <Component class="javax.swing.JButton" name="deselectAllButton">
-      <Properties>
-        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/web/clientproject/ui/Bundle.properties" key="JavaScriptLibrarySelection.deselectAllButton.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </Properties>
     </Component>

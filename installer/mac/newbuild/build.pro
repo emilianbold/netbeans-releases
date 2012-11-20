@@ -22,8 +22,8 @@
     <property name="nb.display.version.short" value="Dev"/>
 
     <!-- Tomcat properties   -->    
-    <property name="tomcat.version" value="7.0.27"/>
-    <property name="tomcat.id" value="7.0.27"/>
+    <property name="tomcat.version" value="7.0.32"/>
+    <property name="tomcat.id" value="7.0.32"/>
     <property name="tomcat.install.dir" value="${install.dir}/apache-tomcat-${tomcat.version}"/>
     <property name="tomcat_location" value="${binary_cache_host}/tomcat/apache-tomcat-${tomcat.version}.zip"/> 
             
@@ -64,19 +64,16 @@
     <property name="javame_sdk30_bits_update_location" value="${binary_cache_host}/wtk/javame_sdk_30/mac/java-me-sdk-mac-update.zip"/>
     <property name="javame_sdk30_xml_location"  value="${binary_cache_host}/wtk/javame_sdk_30/mac/Java_TM__Platform_Micro_Edition_SDK_3_0.xml"/>
 
-    <!-- Java FX Runtime -->
-    <property name="javafx_runtime_location" value="${jdk_builds_host}/java/re/javafx/2.2.0/promoted/fcs/b21/bundles/macosx-x86_64/javafx-runtime-for-cobundle.zip"/>
-
     <property name="dmg.prefix.name" value="${prefix}-${buildnumber}"/>                         
 
     <!-- JDK Properties-->    
     <property name="mpkg.prefix_nb_jdk" value=" with JDK"/> 
-    <property name="mpkg.version_jdk" value=" 7 Update 09"/> 
-    <property name="jdk.bundle.files.prefix" value="jdk-7u9"/>
+    <property name="mpkg.version_jdk" value=" 7 Update 10"/> 
+    <property name="jdk.bundle.files.prefix" value="jdk-7u10"/>
     <property name="jdk.bundle.files.suffix" value="nb-dev"/>
     <property name="output.jdk7.dir" value="jdk/"/>
-    <property name="default.jdk7.home" value="/Library/Java/JavaVirtualMachines/jdk1.7.0_09.jdk/Contents/Home"/>
-    <property name="jdk_bits_location" value="${jdk_builds_host}/java/re/jdk/7u9/promoted/fcs/b05/bundles/macosx-x64/jdk-7u9-macosx-x64.dmg"/>
-    <property name="jdk.package.name" value="JDK\ 7\ Update\ 09"/>
+    <property name="default.jdk7.home" value="/Library/Java/JavaVirtualMachines/jdk1.7.0_10.jdk/Contents/Home"/>
+    <property name="jdk_bits_location" value="${jdk_builds_host}/java/re/jdk/7u10/promoted/ea/b16/bundles/macosx-x64/jdk-7u10-ea-macosx-x64.dmg"/>
+    <property name="jdk.package.name" value="JDK\ 7\ Update\ 10"/>
 
 </project>

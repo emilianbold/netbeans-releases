@@ -44,6 +44,7 @@ package org.netbeans.modules.parsing.impl;
 
 import java.util.Map;
 import java.util.Set;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.api.Source;
@@ -134,7 +135,10 @@ public abstract class SourceAccessor {
 
     public abstract void parsed (Source source);
 
-    public abstract void setSchedulerEvents (Source source, Map<Class<? extends Scheduler>,? extends SchedulerEvent> events);
+    @NonNull
+    public abstract Map<Class<? extends Scheduler>,SchedulerEvent> createSchedulerEvents(@NonNull Source source, @NonNull Iterable<? extends Scheduler> schedulers, @NonNull SourceModificationEvent sourceModificationEvent);
+
+    public abstract void setSchedulerEvent(@NonNull Source source, @NonNull Scheduler scheduler, @NonNull SchedulerEvent event);
     
     public abstract SchedulerEvent getSchedulerEvent (Source source, Class<? extends Scheduler> schedulerType);
     

@@ -1572,6 +1572,13 @@ public class HgCommand {
      */
     public static List<String> doOutForSearch(File repository, String to, boolean bShowMerges, int limit, OutputLogger logger) throws HgException {
         if (repository == null ) return null;
+        String defaultPush = new HgConfigFiles(repository).getDefaultPush(false);
+        try {
+            HgURL pushUrl = new HgURL(defaultPush);
+            return doOutForSearch(repository, pushUrl, to, bShowMerges, limit, logger);
+        } catch (URISyntaxException ex) {
+            Mercurial.LOG.log(Level.INFO, "Invalid push url: {0}, falling back to command without target", defaultPush);
+        }
 
         List<String> command = new ArrayList<String>();
 
@@ -1597,7 +1604,6 @@ public class HgCommand {
         try {
             command.add(prepareLogTemplate(tempFolder, HG_LOG_BASIC_CHANGESET_NAME));
             List<String> list;
-            String defaultPush = new HgConfigFiles(repository).getDefaultPush(false);
             String proxy = getGlobalProxyIfNeeded(defaultPush, false, null);
             if(proxy != null){
                 List<String> env = new ArrayList<String>();
@@ -1623,6 +1629,44 @@ public class HgCommand {
             Utils.deleteRecursively(tempFolder);
         }
     }
+    
+    private static List<String> doOutForSearch (File repository, HgURL repositoryUrl, String to, boolean bShowMerges, int limit, OutputLogger logger) throws HgException {
+        InterRepositoryCommand command = new InterRepositoryCommand();
+        command.defaultUrl = new HgConfigFiles(repository).getDefaultPush(false);
+        command.hgCommandType = HG_OUTGOING_CMD;
+        command.logger = logger;
+        command.outputDetails = false;
+        command.remoteUrl = repositoryUrl;
+        command.repository = repository;
+        command.additionalOptions.add(HG_OPT_REPOSITORY);
+        command.additionalOptions.add(repository.getAbsolutePath());
+        command.additionalOptions.add(HG_NEWEST_FIRST);
+        if(!bShowMerges){
+            command.additionalOptions.add(HG_LOG_NO_MERGES_CMD);
+        }
+        command.additionalOptions.add(HG_LOG_DEBUG_CMD);
+        String revStr = handleIncomingRev(to);
+        if(revStr != null){
+            command.additionalOptions.add(HG_FLAG_REV_CMD);
+            command.additionalOptions.add(revStr);
+        }
+        if (limit > 0) {
+            command.additionalOptions.add(HG_LOG_LIMIT_CMD);
+            command.additionalOptions.add(Integer.toString(limit));
+        }
+        File tempFolder = Utils.getTempFolder(false);
+        try {
+            command.additionalOptions.add(prepareLogTemplate(tempFolder, HG_LOG_BASIC_CHANGESET_NAME));
+            command.showSaveOption = true;
+            command.urlPathProperties = new String[] {HgConfigFiles.HG_DEFAULT_PUSH};
+            return command.invoke();
+        } catch (IOException ex) {
+            Mercurial.LOG.log(Level.INFO, null, ex);
+            throw new HgException(ex.getMessage());
+        } finally {
+            Utils.deleteRecursively(tempFolder);
+        }
+    }
 
         /**
      * Retrives the Incoming changeset information for the specified repository
@@ -1633,6 +1677,13 @@ public class HgCommand {
      */
     public static List<String> doIncomingForSearch(File repository, String to, boolean bShowMerges, boolean bGetFileInfo, boolean getParents, int limit, OutputLogger logger) throws HgException {
         if (repository == null ) return null;
+        String defaultPull = new HgConfigFiles(repository).getDefaultPull(false);
+        try {
+            HgURL pullUrl = new HgURL(defaultPull);
+            return doIncomingForSearch(repository, pullUrl, to, bShowMerges, bGetFileInfo, getParents, limit, logger);
+        } catch (URISyntaxException ex) {
+            Mercurial.LOG.log(Level.INFO, "Invalid push url: {0}, falling back to command without target", defaultPull);
+        }
 
         List<String> command = new ArrayList<String>();
 
@@ -1660,7 +1711,6 @@ public class HgCommand {
         try {
             command.add(prepareLogTemplate(tempFolder, bGetFileInfo ? HG_LOG_FULL_CHANGESET_NAME : HG_LOG_BASIC_CHANGESET_NAME));
             List<String> list;
-            String defaultPull = new HgConfigFiles(repository).getDefaultPull(false);
             String proxy = getGlobalProxyIfNeeded(defaultPull, false, null);
             if (proxy != null) {
                 List<String> env = new ArrayList<String>();
@@ -1680,6 +1730,47 @@ public class HgCommand {
                 }
             }
             return list;
+        } catch (IOException ex) {
+            Mercurial.LOG.log(Level.INFO, null, ex);
+            throw new HgException(ex.getMessage());
+        } finally {
+            Utils.deleteRecursively(tempFolder);
+        }
+    }
+    
+    private static List<String> doIncomingForSearch (File repository, HgURL repositoryUrl, String to, boolean bShowMerges, boolean bGetFileInfo, boolean getParents, int limit, OutputLogger logger) throws HgException {
+        InterRepositoryCommand command = new InterRepositoryCommand();
+        command.defaultUrl = new HgConfigFiles(repository).getDefaultPull(false);
+        command.hgCommandType = HG_INCOMING_CMD;
+        command.logger = logger;
+        command.outputDetails = false;
+        command.remoteUrl = repositoryUrl;
+        command.repository = repository;
+        command.additionalOptions.add(HG_VERBOSE_CMD);
+        command.additionalOptions.add(HG_OPT_REPOSITORY);
+        command.additionalOptions.add(repository.getAbsolutePath());
+        command.additionalOptions.add(HG_NEWEST_FIRST);
+        if(!bShowMerges){
+            command.additionalOptions.add(HG_LOG_NO_MERGES_CMD);
+        }
+        if (getParents) {
+            command.additionalOptions.add(HG_LOG_DEBUG_CMD);
+        }
+        String revStr = handleIncomingRev(to);
+        if(revStr != null){
+            command.additionalOptions.add(HG_FLAG_REV_CMD);
+            command.additionalOptions.add(revStr);
+        }
+        if (limit > 0) {
+            command.additionalOptions.add(HG_LOG_LIMIT_CMD);
+            command.additionalOptions.add(Integer.toString(limit));
+        }
+        command.showSaveOption = true;
+        command.urlPathProperties = new String[] {HgConfigFiles.HG_DEFAULT_PULL_VALUE, HgConfigFiles.HG_DEFAULT_PULL};
+        File tempFolder = Utils.getTempFolder(false);
+        try {
+            command.additionalOptions.add(prepareLogTemplate(tempFolder, bGetFileInfo ? HG_LOG_FULL_CHANGESET_NAME : HG_LOG_BASIC_CHANGESET_NAME));
+            return command.invoke();
         } catch (IOException ex) {
             Mercurial.LOG.log(Level.INFO, null, ex);
             throw new HgException(ex.getMessage());

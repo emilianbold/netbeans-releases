@@ -69,7 +69,7 @@ import org.openide.util.Utilities;
 
 /**
  *
- * @author  David Kaspar
+ * @author  David Kaspar, Petr Somol
  */
 public class ProjectPanel extends javax.swing.JPanel {
     
@@ -80,7 +80,6 @@ public class ProjectPanel extends javax.swing.JPanel {
     public static final String PROJECT_LOCATION = "ProjectLocation"; // NOI18N
     public static final String PROJECT_CREATE_MIDLET = "CreateMidlet"; // NOI18N
     public static final String PROJECT_COPY_SOURCES = "CopySources"; //NOI18N
-    public static final String IS_EMBEDDED = "is_embedded";//NOI18N
 
     /** path length limitation for Windows OS */
     private static final int WINDOWS_MAX_PATH_LENGTH = 255;
@@ -95,6 +94,7 @@ public class ProjectPanel extends javax.swing.JPanel {
         jRadioEmptySrc.setVisible(showCopySources);
     }
     
+    @Override
     public void addNotify() {
         super.addNotify();
         //same problem as in 31086, initial focus on Cancel button
@@ -136,8 +136,9 @@ public class ProjectPanel extends javax.swing.JPanel {
         Boolean b;
         
         tmp = (String) object.getProperty(PROJECT_NAME);
-        if (tmp == null)
+        if (tmp == null) {
             tmp = "My Project"; // NOI18N
+        }
         tName.setText(camelize(tmp));
         
         File location = (File) object.getProperty(PROJECT_LOCATION);
@@ -149,19 +150,22 @@ public class ProjectPanel extends javax.swing.JPanel {
 
             if (testIfProjectNameExists()) {
                 String name = getProjectName();
-                if (name.endsWith("1")) name = name.substring(0, name.length() - 1); //NOI18N
+                if (name.endsWith("1")) { // NOI18N
+                    name = name.substring(0, name.length() - 1);
+                }
                 int i = 2;
                 for (;;) {
                     tName.setText(name + i); // NOI18N
-                    if (! testIfProjectNameExists())
+                    if (! testIfProjectNameExists()) {
                         break;
+                    }
                     i ++;
                 }
             }
             tName.selectAll();
         }
 
-        b = (Boolean) object.getProperty(IS_EMBEDDED);
+        b = (Boolean) object.getProperty(Utils.IS_EMBEDDED);
         boolean embedded = b == null ? false : b.booleanValue();
         if(embedded) {
             org.openide.awt.Mnemonics.setLocalizedText(cCreateMIDlet, org.openide.util.NbBundle.getMessage(ProjectPanel.class, "LBL_Project_CreateIMlet")); // NOI18N
@@ -178,8 +182,9 @@ public class ProjectPanel extends javax.swing.JPanel {
         boolean valid;
         final File home = new File(getProjectsHome());
         valid = home.exists() && home.isDirectory() && home.canWrite();
-        if (! valid)
+        if (! valid) {
             return false;
+        }
         
         return new File(home, getProjectName()).exists();
     }
@@ -356,14 +361,16 @@ public class ProjectPanel extends javax.swing.JPanel {
         getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(ProjectPanel.class, "ACSD_Project"));
     }
     
+    @Override
     public java.awt.Dimension getPreferredSize() {
         return PREF_DIM;
     }
     
     private void bBrowseActionPerformed (java.awt.event.ActionEvent evt) {//GEN-FIRST:event_bBrowseActionPerformed
         final String folder = Utils.browseFolder(this, tHome.getText(), NbBundle.getMessage(ProjectPanel.class, "TITLE_Project_Home"));
-        if (folder != null)
+        if (folder != null) {
             tHome.setText(folder);
+        }
     }//GEN-LAST:event_bBrowseActionPerformed
     
     
@@ -388,6 +395,7 @@ public class ProjectPanel extends javax.swing.JPanel {
         
         ProjectPanel component;
         TemplateWizard wizard;
+        private boolean embedded;
         Collection<ChangeListener> listeners = new ArrayList<ChangeListener>();
         boolean valid = false;
         boolean showCreateMIDlet;
@@ -401,14 +409,17 @@ public class ProjectPanel extends javax.swing.JPanel {
             this.showCopySources = showCopySources;
         }
         
+        @Override
         public void addChangeListener(final javax.swing.event.ChangeListener changeListener) {
             listeners.add(changeListener);
         }
         
+        @Override
         public void removeChangeListener(final javax.swing.event.ChangeListener changeListener) {
             listeners.remove(changeListener);
         }
         
+        @Override
         public java.awt.Component getComponent() {
             if (component == null) {
                 component = new ProjectPanel(showCreateMIDlet, showCopySources); // NOI18N
@@ -418,23 +429,28 @@ public class ProjectPanel extends javax.swing.JPanel {
             return component;
         }
         
+        @Override
         public org.openide.util.HelpCtx getHelp() {
-            return new HelpCtx(ProjectPanel.class);
+            return new HelpCtx(ProjectPanel.class.getName() + (embedded ? "Embedded" : "") ); // NOI18N
         }
         
+        @Override
         public boolean isFinishPanel() {
             return true;
         }
         
         public void showError(final String message) {
-            if (wizard != null)
-                wizard.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, message); // NOI18N
+            if (wizard != null) {
+                wizard.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, message);
+            }
         }
         
         private boolean isLatin1(final String s) {
             for (int i=0; i<s.length(); i++) {
                 final char c = s.charAt(i);
-                if (c < 32 || c > 127) return false;
+                if (c < 32 || c > 127) {
+                    return false;
+                }
             }
             return true;
         }
@@ -446,6 +462,7 @@ public class ProjectPanel extends javax.swing.JPanel {
             return null;
         }
         
+        @Override
         public boolean isValid() {
             String projectName = component.getProjectName();
             if (isIllegalName(projectName)) {
@@ -493,9 +510,11 @@ public class ProjectPanel extends javax.swing.JPanel {
             return true;
         }
         
+        @Override
         public void readSettings(final Object obj) {
             wizard = (TemplateWizard) obj;
             ((ProjectPanel) getComponent()).readData(wizard);
+            embedded = wizard.getProperty(Utils.IS_EMBEDDED) == null ? false : (Boolean)wizard.getProperty(Utils.IS_EMBEDDED);
             Component component = getComponent();
             Object substitute = ((JComponent)component).getClientProperty ("NewProjectWizard_Title"); // NOI18N
             if (substitute != null) {
@@ -503,6 +522,7 @@ public class ProjectPanel extends javax.swing.JPanel {
             }
         }
         
+        @Override
         public void storeSettings(final Object obj) {
             wizard = (TemplateWizard) obj;
             ((ProjectPanel) getComponent()).storeData(wizard);
@@ -511,13 +531,15 @@ public class ProjectPanel extends javax.swing.JPanel {
         void fireStateChange() {
             ChangeListener[] ll;
             synchronized (this) {
-                if (listeners.isEmpty())
+                if (listeners.isEmpty()) {
                     return;
+                }
                 ll = listeners.toArray(new ChangeListener[listeners.size()]);
             }
             final ChangeEvent ev = new ChangeEvent(this);
-            for (int i = 0; i < ll.length; i++)
+            for (int i = 0; i < ll.length; i++) {
                 ll[i].stateChanged(ev);
+            }
         }
         
         void checkValid() {
@@ -539,21 +561,25 @@ public class ProjectPanel extends javax.swing.JPanel {
             }
         }
         
+        @Override
         public void changedUpdate(@SuppressWarnings("unused")
 		final javax.swing.event.DocumentEvent e) {
             checkValid();
         }
         
+        @Override
         public void insertUpdate(@SuppressWarnings("unused")
 		final javax.swing.event.DocumentEvent e) {
             checkValid();
         }
         
+        @Override
         public void removeUpdate(@SuppressWarnings("unused")
 		final javax.swing.event.DocumentEvent e) {
             checkValid();
         }
         
+        @Override
         public void itemStateChanged(@SuppressWarnings("unused")
 		final java.awt.event.ItemEvent e) {
         }

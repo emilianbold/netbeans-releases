@@ -75,21 +75,21 @@ public class EditorActionRegistrationTest extends NbTestCase {
     public void testRegistration() throws Exception {
         FileObject fo = FileUtil.getConfigFile("/Editors/Actions/" + NAME1 + ".instance");
         assertNotNull(fo);
-        assertEquals(NAME1, fo.getAttribute("displayName"));
+        assertEquals(fo.getAttribute(Action.SHORT_DESCRIPTION), fo.getAttribute("displayName"));
         assertEquals("Short Desc1", fo.getAttribute(Action.SHORT_DESCRIPTION));
         assertEquals("Short Desc1", fo.getAttribute("menuText"));
         assertEquals("Short Desc1", fo.getAttribute("popupText"));
 
         fo = FileUtil.getConfigFile("/Editors/Actions/" + NAME2 + ".instance");
         assertNotNull(fo);
-        assertEquals(NAME2, fo.getAttribute("displayName"));
+        assertEquals(fo.getAttribute(Action.SHORT_DESCRIPTION), fo.getAttribute("displayName"));
         assertEquals("Short Desc2", fo.getAttribute(Action.SHORT_DESCRIPTION));
         assertEquals("Menu Text2", fo.getAttribute("menuText"));
         assertEquals("Menu Text2", fo.getAttribute("popupText"));
 
         fo = FileUtil.getConfigFile("/Editors/Actions/" + NAME3 + ".instance");
         assertNotNull(fo);
-        assertEquals(NAME3, fo.getAttribute("displayName"));
+        assertEquals(fo.getAttribute(Action.SHORT_DESCRIPTION), fo.getAttribute("displayName"));
         assertEquals("Short Desc3", fo.getAttribute(Action.SHORT_DESCRIPTION));
         assertEquals("Menu Text3", fo.getAttribute("menuText"));
         assertEquals("Popup Text3", fo.getAttribute("popupText"));

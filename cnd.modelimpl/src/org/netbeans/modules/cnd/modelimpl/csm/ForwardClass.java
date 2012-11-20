@@ -74,6 +74,10 @@ public final class ForwardClass extends ClassImpl {
         super(name, ast, file, start, end);
     }
 
+    private ForwardClass(NameHolder name, CsmDeclaration.Kind kind, CsmFile file, int start, int end) {
+        super(name, kind, file, start, end);
+    }
+    
     public static boolean isForwardClass(CsmObject cls) {
         return cls instanceof ForwardClass;
     }
@@ -134,6 +138,36 @@ public final class ForwardClass extends ClassImpl {
     public String toString() {
         return "DUMMY_FORWARD " + super.toString(); // NOI18N
     }
+    
+    public static class ForwardClassBuilder extends SimpleDeclarationBuilder {
+
+        private CsmDeclaration.Kind kind = CsmDeclaration.Kind.CLASS;
+
+        public void setKind(Kind kind) {
+            this.kind = kind;
+        }
+
+        @Override
+        public ForwardClass create() {
+            ForwardClass fwd = new ForwardClass(getNameHolder(), kind, getFile(), getStartOffset(), getEndOffset());
+            fwd.initQualifiedName(getScope());
+            if(getTemplateDescriptorBuilder() != null) {
+                getTemplateDescriptorBuilder().setScope(getScope());
+                fwd.setTemplateDescriptor(getTemplateDescriptorBuilder().create());
+            }
+            if (fwd.getProject().findClassifier(fwd.getQualifiedName()) == null) {
+                fwd.initScope(getScope());
+                if(isGlobal()) {
+                    fwd.register(getScope(), false);
+                } else {
+                    Utils.setSelfUID(fwd);
+                }
+                return fwd;
+            }
+            return null;            
+        }
+        
+    }    
     
     ////////////////////////////////////////////////////////////////////////////
     // impl of SelfPersistent

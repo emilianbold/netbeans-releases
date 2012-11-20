@@ -54,7 +54,7 @@ public class JsObjectImpl extends JsElementImpl implements JsObject {
 
     final private HashMap<String, JsObject> properties;
     final private Identifier declarationName;
-    final private JsObject parent;
+    private JsObject parent;
     final private List<Occurrence> occurrences;
     final private Map<Integer, Collection<TypeUsage>> assignments;
     final private boolean hasName;
@@ -175,7 +175,11 @@ public class JsObjectImpl extends JsElementImpl implements JsObject {
     public JsObject getParent() {
         return parent;
     }
-    
+
+    public void setParent(JsObject newParent) {
+        this.parent = newParent;
+    }
+
     @Override
     public int getOffset() {
         return declarationName.getOffsetRange().getStart();
@@ -337,7 +341,10 @@ public class JsObjectImpl extends JsElementImpl implements JsObject {
                 if (type.getOffset() > 0) {
                     JsObject jsObject = ModelUtils.findJsObjectByName(global, type.getType());
                     if (jsObject == null && type.getType().indexOf('.') == -1) {
-                        JsObject decParent = this.parent;
+                        JsObject decParent = (
+                                this.parent.getJSKind() != JsElement.Kind.ANONYMOUS_OBJECT
+                                && this.parent.getJSKind() != JsElement.Kind.OBJECT_LITERAL) 
+                                ? this.parent : this.parent.getParent();
                         while (jsObject == null && decParent != null) {
                             jsObject = decParent.getProperty(type.getType());
                             decParent = decParent.getParent();

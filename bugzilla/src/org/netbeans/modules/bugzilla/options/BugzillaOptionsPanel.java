@@ -46,12 +46,15 @@ package org.netbeans.modules.bugzilla.options;
 import java.awt.Color;
 import java.awt.Image;
 import javax.swing.ImageIcon;
+import org.netbeans.api.options.OptionsDisplayer;
+import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.util.ImageUtilities;
 
 /**
  *
  * @author Tomas Stupka
  */
+@OptionsPanelController.Keywords(keywords={"bugzilla", "#KW_IssueTracking"}, location=OptionsDisplayer.ADVANCED, tabTitle="#LBL_IssueTracking")
 public class BugzillaOptionsPanel extends javax.swing.JPanel {
 
     /** Creates new form SvnOptionsPanel */

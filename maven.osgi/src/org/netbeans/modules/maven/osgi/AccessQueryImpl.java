@@ -51,7 +51,6 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.maven.api.PluginPropertyUtils;
 import org.netbeans.modules.maven.osgi.util.PackageDefinitionUtil;
 import org.netbeans.spi.java.queries.AccessibilityQueryImplementation;
-import org.netbeans.spi.project.ProjectServiceProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
@@ -59,7 +58,6 @@ import org.openide.filesystems.FileUtil;
  *
  * @author mkleint
  */
-@ProjectServiceProvider(service=AccessibilityQueryImplementation.class, projectType="org-netbeans-modules-maven/" + NbMavenProject.TYPE_OSGI)
 public class AccessQueryImpl implements AccessibilityQueryImplementation {
 
     private final Project prj;
@@ -107,22 +105,22 @@ public class AccessQueryImpl implements AccessibilityQueryImplementation {
             imp = imps[0];
         }
         if (exp != null) {
-			if (testPackagePatterns(exp, value)) {
-				return Boolean.TRUE;
-			}
+            if (testPackagePatterns(exp, value)) {
+                return Boolean.TRUE;
+            }
         }
-		if (testPackagePatterns(imp != null ? imp : DEFAULT_IMP, value)) {
-			return Boolean.FALSE;
-		}
+        Boolean result = null;
+        if (testPackagePatterns(imp != null ? imp : DEFAULT_IMP, value)) {
+            result = Boolean.FALSE;
+        }
         if (exp == null) {
             //handle default behaviour if not defined..
             //TODO handle 1.x bundle plugin defaults..
             if (!value.contains(".impl") && !value.contains(".internal")) { //NOI18N
-                return Boolean.TRUE;
+                result = Boolean.TRUE;
             }
-
         }
-        return null;
+        return result;
     }
     
 	static boolean testPackagePatterns(String patterns, String value) {

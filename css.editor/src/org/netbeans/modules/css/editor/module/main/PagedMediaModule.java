@@ -54,13 +54,11 @@ import org.netbeans.modules.csl.api.CompletionProposal;
 import org.netbeans.modules.csl.api.ElementKind;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.css.editor.Css3Utils;
-import org.netbeans.modules.css.editor.module.CssModuleSupport;
 import org.netbeans.modules.css.editor.module.spi.CompletionContext;
 import org.netbeans.modules.css.editor.module.spi.CssEditorModule;
-import org.netbeans.modules.css.lib.api.CssModule;
 import org.netbeans.modules.css.editor.module.spi.FeatureContext;
-import org.netbeans.modules.css.lib.api.properties.PropertyDefinition;
 import org.netbeans.modules.css.editor.module.spi.Utilities;
+import org.netbeans.modules.css.lib.api.CssModule;
 import org.netbeans.modules.css.lib.api.CssTokenId;
 import org.netbeans.modules.css.lib.api.Node;
 import org.netbeans.modules.css.lib.api.NodeType;
@@ -75,10 +73,9 @@ import org.openide.util.lookup.ServiceProvider;
  * @author mfukala@netbeans.org
  */
 @ServiceProvider(service = CssEditorModule.class)
-public class PagedMediaModule extends CssEditorModule implements CssModule {
+public class PagedMediaModule extends ExtCssEditorModule implements CssModule {
 
     private static final String PROPERTIES_DEFINITION_PATH = "org/netbeans/modules/css/editor/module/main/properties/paged_media"; //NOI18N
-    private static Collection<PropertyDefinition> propertyDescriptors;
     private static final Collection<String> PAGE_PSEUDO_CLASSES = Arrays.asList(new String[]{"first", "left", "right"}); //NOI18N
     private static final Collection<String> PAGE_MARGIN_SYMBOLS =
             Arrays.asList(new String[]{
@@ -100,14 +97,7 @@ public class PagedMediaModule extends CssEditorModule implements CssModule {
                 "right-bottom" //NOI18N
             });
 
-    @Override
-    public synchronized Collection<PropertyDefinition> getProperties() {
-        if (propertyDescriptors == null) {
-            propertyDescriptors = Utilities.parsePropertyDefinitionFile(PROPERTIES_DEFINITION_PATH, this);
-        }
-        return propertyDescriptors;
-    }
-
+  
     @Override
     public List<CompletionProposal> getCompletionProposals(CompletionContext context) {
         List<CompletionProposal> proposals = new ArrayList<CompletionProposal>();
@@ -185,7 +175,7 @@ public class PagedMediaModule extends CssEditorModule implements CssModule {
     }
 
     private static List<CompletionProposal> getPropertiesCompletionProposals(CompletionContext context) {
-        return Utilities.wrapProperties(Properties.getProperties(), context.getAnchorOffset());
+        return Utilities.wrapProperties(Properties.getPropertyDefinitions(context.getFileObject()), context.getAnchorOffset());
     }
 
     @Override
@@ -217,5 +207,15 @@ public class PagedMediaModule extends CssEditorModule implements CssModule {
     @Override
     public String getSpecificationURL() {
         return "http://www.w3.org/TR/css3-page";
+    }
+
+    @Override
+    protected String getPropertyDefinitionsResourcePath() {
+        return PROPERTIES_DEFINITION_PATH;
+    }
+
+    @Override
+    protected CssModule getCssModule() {
+        return this;
     }
 }

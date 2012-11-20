@@ -59,6 +59,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.java.api.common.ant.UpdateHelper;
@@ -228,28 +229,29 @@ public final class SourceRoots extends Roots {
                 public FileObject[] run() {
                     synchronized (SourceRoots.this) {
                         // local caching
-                        if (sourceRoots == null) {
-                            URL [] rootURLs = getRootURLs();
-                            List<FileObject> result = new ArrayList<FileObject>(rootURLs.length);
-                            for(URL url : rootURLs) {
-                                FileObject f = URLMapper.findFileObject(url);
-                                if (f == null) {
-                                    continue;
-                                }
-                                if (FileUtil.isArchiveFile(f)) {
-                                    f = FileUtil.getArchiveRoot(f);
-                                }
-                                result.add(f);
-                            }
-                            sourceRoots = Collections.unmodifiableList(result);
-                            LOG.log(
-                                Level.FINE,
-                                "Instance ({0}) setting roots to: {1}", //NOI18N
-                                new Object[]{
-                                    System.identityHashCode(SourceRoots.this),
-                                    sourceRoots
-                            });
+                        if (sourceRoots != null && validFiles(sourceRoots)) {
+                            return sourceRoots.toArray(new FileObject[sourceRoots.size()]);
                         }
+                        URL [] rootURLs = getRootURLs();
+                        List<FileObject> result = new ArrayList<FileObject>(rootURLs.length);
+                        for(URL url : rootURLs) {
+                            FileObject f = URLMapper.findFileObject(url);
+                            if (f == null) {
+                                continue;
+                            }
+                            if (FileUtil.isArchiveFile(f)) {
+                                f = FileUtil.getArchiveRoot(f);
+                            }
+                            result.add(f);
+                        }
+                        sourceRoots = Collections.unmodifiableList(result);
+                        LOG.log(
+                            Level.FINE,
+                            "Instance ({0}) setting roots to: {1}", //NOI18N
+                            new Object[]{
+                                System.identityHashCode(SourceRoots.this),
+                                sourceRoots
+                        });
                         return sourceRoots.toArray(new FileObject[sourceRoots.size()]);
                     }
                 }
@@ -523,6 +525,15 @@ public final class SourceRoots extends Roots {
         }
         sourceRootProperties = Collections.unmodifiableList(rootProps);
         sourceRootNames = Collections.unmodifiableList(rootNames);
+    }
+
+    private static boolean validFiles(@NonNull Iterable<? extends FileObject> files) {
+        for (FileObject file : files) {
+            if (!file.isValid()) {
+                return false;
+            }
+        }
+        return true;
     }
 
     private class ProjectMetadataListener implements PropertyChangeListener, AntProjectListener, FileChangeListener {

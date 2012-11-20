@@ -190,7 +190,9 @@ public class SaasServicesModel {
     }
 
     private Saas createService(SaasGroup parent, SaasServices jaxbServiceObject) {
-        if (Saas.NS_WADL.equals(jaxbServiceObject.getType())) {
+        if (Saas.NS_WADL.equals(jaxbServiceObject.getType()) 
+                ||Saas.NS_WADL_09.equals(jaxbServiceObject.getType())) 
+        {
             return new WadlSaas(parent, jaxbServiceObject);
         } else if (Saas.NS_WSDL.equals(jaxbServiceObject.getType())) {
             if (WsdlUtil.hasWsdlSupport())
@@ -350,7 +352,7 @@ public class SaasServicesModel {
             } else {
                 throw new RuntimeException(NbBundle.getMessage(SaasServicesModel.class, "MSG_WsdlServiceNotSupported"));
             }
-        } else if (Saas.NS_WADL.equals(saasType)) {
+        } else if (Saas.NS_WADL.equals(saasType)||Saas.NS_WADL_09.equals(saasType)) {
             return createWadlService(parent, url, packageName);
         } else {
             throw new RuntimeException(NbBundle.getMessage(SaasServicesModel.class, "MSG_UnknownSaasType"));

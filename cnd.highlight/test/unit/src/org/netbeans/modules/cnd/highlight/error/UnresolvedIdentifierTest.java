@@ -352,6 +352,11 @@ public class UnresolvedIdentifierTest extends ErrorHighlightingBaseTestCase {
         // Bug 215225 - Infinite loop in TemplateUtils.checkTemplateType
         performStaticTest("bug215225_2.cpp");
     }      
+
+    public void testBug218759() throws Exception {
+        // Bug 218759 - inaccuracy tests: a lot of parser errors in some files (a order of declaration specifiers)
+        performStaticTest("bug218759.cpp");
+    }      
     
     /////////////////////////////////////////////////////////////////////
     // FAILS

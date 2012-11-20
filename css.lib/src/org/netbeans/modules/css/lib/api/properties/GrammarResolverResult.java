@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.css.lib.api.properties;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
@@ -68,7 +69,11 @@ public final class GrammarResolverResult {
      * returns a list of value items not parsed
      */
     public List<Token> left() {
-        return tokenizer.tokensList().subList(tokenizer.tokenIndex(), tokenizer.tokensCount());
+        if(tokenizer.tokensList().isEmpty()) {
+            return Collections.emptyList();
+        } else {
+            return tokenizer.tokensList().subList(tokenizer.tokenIndex(), tokenizer.tokensCount());
+        }
     }
     
     public List<Token> tokens() {

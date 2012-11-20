@@ -174,7 +174,7 @@ public class ParseTreeBuilder extends CoalescingTreeBuilder<Named> implements Tr
 
         ModifiableCloseTag match = null;
         for (ModifiableCloseTag n : physicalEndTagsQueue) {
-            if (LexerUtils.equals(n.name(), t.name(), false, false)) {
+            if (LexerUtils.equals(n.name(), t.name(), true, false)) {
                 match = n;
                 break;
             }
@@ -592,22 +592,20 @@ public class ParseTreeBuilder extends CoalescingTreeBuilder<Named> implements Tr
             if(attrNameEndOffset > sourceCode.length()) {
                 continue; //bad attribute
             }
-                    
-            int attributeValueLength;
+            
+            Attribute attr;
             if(attrInfo.valueOffset == -1) {
                 //no value
-                attributeValueLength = -1;
+                attr = factory.createAttribute(attrInfo.nameOffset, (short)attributeNameLength);
             } else {
-                attributeValueLength = attributes.getValue(i).length() 
+                int attributeValueLength = attributes.getValue(i).length() 
                         + (attrInfo.valueQuotationType == AttrInfo.ValueQuotation.NONE ? 0 : 2);
-            }
-            
-            Attribute attr = factory.createAttribute(
+                attr = factory.createAttribute(
                     attrInfo.nameOffset,
                     attrInfo.valueOffset,
                     (short)attributeNameLength,
                     attributeValueLength);
-                    
+            }
             mot.setAttribute(attr);
         }
     }

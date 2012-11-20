@@ -42,7 +42,6 @@
 package org.netbeans.modules.maven.j2ee.utils;
 
 import java.awt.event.ActionEvent;
-import java.io.File;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.logging.Level;
@@ -115,7 +114,7 @@ public class MavenProjectSupport {
             
         // We don't know anything which means we want to assign <No Server> value to the project
         } else if (instanceID == null && serverID == null) {
-            assignServer(project, instanceID, initContextPath);
+            assignServer(project, null, initContextPath);
 
         // We don't know server instance - inform user about that
         } else if (instanceID == null && serverID != null) {
@@ -217,7 +216,7 @@ public class MavenProjectSupport {
         NbMavenProject proj = project.getLookup().lookup(NbMavenProject.class);
         
         boolean isBundlePackaging = "bundle".equals(packaging); // NOI18N
-        boolean webAppDirExists = new File(proj.getWebAppDirectory()).exists();
+        boolean webAppDirExists = org.openide.util.Utilities.toFile(proj.getWebAppDirectory()).exists();
         
         if (isBundlePackaging && webAppDirExists) {
             return true;
@@ -354,8 +353,10 @@ public class MavenProjectSupport {
                 FileObject webInf = webModuleImpl.getWebInf();
                 if (webInf == null) {
                     webInf = webModuleImpl.createWebInf();
+                    if (webInf == null) {
+                        return;
+                    }
                 }
-                assert webInf != null;
                 
                 FileObject webXml = webModuleImpl.getDeploymentDescriptor();
                 if (webXml == null) {

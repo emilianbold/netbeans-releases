@@ -56,6 +56,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.j2ee.dd.api.webservices.WebservicesMetadata;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.netbeans.modules.maven.api.FileUtilities;
 import org.netbeans.modules.websvc.jaxws.light.spi.JAXWSLightSupportImpl;
@@ -236,8 +237,15 @@ public class MavenJAXWSSupportImpl implements JAXWSLightSupportImpl {
 
     @Override
     public MetadataModel<WebservicesMetadata> getWebservicesMetadataModel() {
-        return WSUtils.getModuleProvider(prj).getJ2eeModule().getMetadataModel(
-                WebservicesMetadata.class);
+        J2eeModuleProvider provider = WSUtils.getModuleProvider(prj);
+        if ( provider == null ){
+            return null;
+        }
+        J2eeModule module = provider.getJ2eeModule();
+        if (module==null){
+            return null;
+        }
+        return module.getMetadataModel(WebservicesMetadata.class);
     }
     
 }

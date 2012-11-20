@@ -51,7 +51,10 @@ import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -621,7 +624,8 @@ public class TomcatProperties {
         };
         
         // tomcat libs
-        List retValue = listUrls(new File(homeDir, tm.libFolder()),  nbFilter);    // NOI18N
+        List<URL> retValue = new ArrayList<URL>();
+        retValue.addAll(listUrls(new File(homeDir, tm.libFolder()), nbFilter));
         
         if (tm.isTomcat60()) {
             try {
@@ -774,7 +778,7 @@ public class TomcatProperties {
     
     // private helper methods -------------------------------------------------
     
-    private static List/*<URL>*/ listUrls(final File folder, final String[] filter) {
+    private static List<URL> listUrls(final File folder, final String[] filter) {
         File[] jars = folder.listFiles(new FilenameFilter() {
             public boolean accept(File dir, String name) {
                 if (!name.endsWith(".jar") || !dir.equals(folder)) {
@@ -789,8 +793,9 @@ public class TomcatProperties {
             }
         });
         if (jars == null) {
-            return new ArrayList();
+            return Collections.emptyList();
         }
+        Arrays.sort(jars);
         List/*<URL>*/ urls = new ArrayList(jars.length);
         for (int i = 0; i < jars.length; i++) {
             try {

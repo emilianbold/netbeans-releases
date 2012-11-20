@@ -53,8 +53,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.channels.FileChannel;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Locale;
+import java.util.Set;
 import java.util.jar.JarOutputStream;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -66,6 +68,7 @@ import org.openide.util.NbBundle;
 import javax.enterprise.deploy.shared.CommandType;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeApplication;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule.RootedEntry;
 import org.netbeans.modules.j2ee.deployment.impl.projects.DeploymentTarget;
 import org.netbeans.modules.j2ee.deployment.plugins.api.ServerProgress;
 import org.openide.filesystems.FileObject;
@@ -121,7 +124,7 @@ public class InitialServerFileDistributor extends ServerProgress {
             setStatusDistributeRunning(NbBundle.getMessage(
                 InitialServerFileDistributor.class, "MSG_RunningInitialDeploy", dtarget.getDeploymentName(), dir));
 
-            _distribute(source.getArchiveContents(), dir, null);
+            _distribute(source.getArchiveContents(), dir);
 
             if (source instanceof J2eeApplication) {
                 J2eeModule[] childModules = ((J2eeApplication)source).getModules();
@@ -129,7 +132,7 @@ public class InitialServerFileDistributor extends ServerProgress {
                     String uri = childModules[i].getUrl();
                     J2eeModule childModule = deployment.getJ2eeModule(uri);
                     File subdir = incDeployment.getDirectoryForNewModule(dir, uri, childModule, deployment.getModuleConfiguration());
-                    _distribute(childModules[i].getArchiveContents(), subdir, uri);
+                    _distribute(childModules[i].getArchiveContents(), subdir);
                 }
             }
 
@@ -147,19 +150,7 @@ public class InitialServerFileDistributor extends ServerProgress {
         }
         return null;
     }
-    
-    public void cleanup () {
-        if (inPlace)
-            return;
-        
-        ModuleConfigurationProvider deployment = dtarget.getModuleConfigurationProvider();
-        J2eeModule deployable = deployment.getJ2eeModule(null);
-        File dir = incDeployment.getDirectoryForNewApplication (target, deployable, deployment.getModuleConfiguration());
-        if (!cleanup (dir)) {
-            setStatusDistributeFailed ("Failed to cleanup the data after unsucesful distribution");
-        }
-    }
-    
+
     private boolean cleanup (File f) {
         String chNames[] = f.list ();
         boolean deleted = true;
@@ -175,10 +166,17 @@ public class InitialServerFileDistributor extends ServerProgress {
         return deleted;
     }
     
-    private void _distribute(Iterator<J2eeModule.RootedEntry> rootedEntries, File dir, String childModuleUri) {
+    private void _distribute(Iterator<J2eeModule.RootedEntry> rootedEntries, File dir) {
         FileLock lock = null;
 
         try {
+            // this is just safeguard - should not happen anymore
+            // used to happen in EAR when folder had a same name as jar
+            // and jar was copied to exploded dir
+            if (dir.exists() && dir.isFile()) {
+                dir.delete();
+            }
+
             // mkdirs()/toFileObject is not not tolerated any more.
             FileObject destRoot = FileUtil.createFolder(dir);
             
@@ -200,14 +198,21 @@ public class InitialServerFileDistributor extends ServerProgress {
                     }
                 }
             }
-            
-            while(rootedEntries.hasNext()) {
-                J2eeModule.RootedEntry entry = rootedEntries.next();
-                String relativePath = entry.getRelativePath();
-                FileObject sourceFO = entry.getFileObject();
-                FileObject destFolder = ServerFileDistributor.findOrCreateParentFolder(destRoot, relativePath);
-                if (sourceFO.isData ()) {
-                    copyFile(sourceFO, dir, relativePath);
+
+            if (rootedEntries.hasNext()) {
+                final FileObject root = rootedEntries.next().getFileObject();
+                
+                while (rootedEntries.hasNext()) {
+                    J2eeModule.RootedEntry entry = rootedEntries.next();
+                    String relativePath = entry.getRelativePath();
+                    FileObject sourceFO = entry.getFileObject();
+                    if (sourceFO.isData() && isArchiveInRootDir(root, sourceFO)) {
+                        continue;
+                    }
+                    FileObject destFolder = ServerFileDistributor.findOrCreateParentFolder(destRoot, relativePath);
+                    if (sourceFO.isData ()) {
+                        copyFile(sourceFO, dir, relativePath);
+                    }
                 }
             }
             
@@ -221,8 +226,15 @@ public class InitialServerFileDistributor extends ServerProgress {
                 try { lock.releaseLock(); } catch(Exception ex) {}
             }
         }
-    }    
-    
+    }
+
+    private boolean isArchiveInRootDir(FileObject root, FileObject sourceFO) {
+        if (sourceFO.getParent().equals(root) && ("jar".equals(sourceFO.getExt()) || "war".equals(sourceFO.getExt()))) {
+            return true;
+        }
+        return false;
+    }
+
     //ServerProgress methods
     private void setStatusDistributeRunning(String message) {
         notify(createRunningProgressEvent(CommandType.DISTRIBUTE, message));
@@ -270,12 +282,42 @@ public class InitialServerFileDistributor extends ServerProgress {
                 FileUtil.copy(is, os);
             }
         } finally {
-            if (null != out) { try { out.close(); } catch (IOException ioe) {} }
-            if (null != in) {try { in.close(); } catch (IOException ioe) {} }
-            if (null != is) { try { is.close(); } catch (IOException ioe) {} }
-            if (null != fis) { try { fis.close(); } catch (IOException ioe) {} }
-            if (null != os) { try { os.close(); } catch (IOException ioe) {} }
-         }
+            if (null != out) {
+                try {
+                    out.close();
+                } catch (IOException ioe) {
+                    LOGGER.log(Level.INFO, null, ioe);
+                }
+            }
+            if (null != in) {
+                try {
+                    in.close();
+                } catch (IOException ioe) {
+                    LOGGER.log(Level.INFO, null, ioe);
+                }
+            }
+            if (null != is) {
+                try {
+                    is.close();
+                } catch (IOException ioe) {
+                    LOGGER.log(Level.INFO, null, ioe);
+                }
+            }
+            if (null != fis) {
+                try {
+                    fis.close();
+                } catch (IOException ioe) {
+                    LOGGER.log(Level.INFO, null, ioe);
+                }
+            }
+            if (null != os) {
+                try {
+                    os.close();
+                } catch (IOException ioe) {
+                    LOGGER.log(Level.INFO, null, ioe);
+                }
+            }
+        }
     }
 
     private void zeroOutArchive(FileObject garbage) throws IOException, FileAlreadyLockedException {

@@ -74,6 +74,7 @@ import org.netbeans.spi.viewmodel.UnknownTypeException;
 import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
 import org.netbeans.modules.debugger.jpda.jdi.ThreadGroupReferenceWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.ThreadReferenceWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.VMOutOfMemoryExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.VirtualMachineWrapper;
 import org.netbeans.spi.debugger.DebuggerServiceRegistration;
 import org.openide.util.Exceptions;
@@ -329,6 +330,8 @@ public class ThreadsTreeModel implements TreeModel {
                     tg = null;
                 } catch (VMDisconnectedExceptionWrapper ex) {
                     return ;
+                } catch (VMOutOfMemoryExceptionWrapper ex) {
+                    return ;
                 } catch (ObjectCollectedExceptionWrapper ex) {
                     return ;
                 } catch (IllegalThreadStateExceptionWrapper ex) {
@@ -342,6 +345,8 @@ public class ThreadsTreeModel implements TreeModel {
                     tg = null;
                 } catch (VMDisconnectedExceptionWrapper ex) {
                     return ;
+                } catch (VMOutOfMemoryExceptionWrapper ex) {
+                    tg = null;
                 } catch (ObjectCollectedExceptionWrapper ex) {
                     tg = null;
                 } catch (IllegalThreadStateExceptionWrapper ex) {

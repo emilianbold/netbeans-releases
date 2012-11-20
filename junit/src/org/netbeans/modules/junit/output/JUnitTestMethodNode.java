@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.junit.output;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -57,6 +58,7 @@ import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;
 import static org.netbeans.spi.project.SingleMethod.COMMAND_RUN_SINGLE_METHOD;
 import static org.netbeans.spi.project.SingleMethod.COMMAND_DEBUG_SINGLE_METHOD;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -82,27 +84,43 @@ public class JUnitTestMethodNode extends TestMethodNode{
 //        FileObject suiteFile = ((JUnitTestcase)testcase).getTestSuite().getSuiteFile();
         FileObject testFO = ((JUnitTestcase)testcase).getClassFileObject();
         if (testFO != null){
-            ActionProvider actionProvider = OutputUtils.getActionProvider(testFO);
-            if (actionProvider != null){
-                List supportedActions = Arrays.asList(actionProvider.getSupportedActions());
+	    boolean parameterized = false;
+	    try {
+		String text = testFO.asText();
+		if (text != null) {
+		    text = text.replaceAll("\n", "").replaceAll(" ", "");
+		    if ((text.contains("@RunWith") || text.contains("@org.junit.runner.RunWith")) //NOI18N
+			    && text.contains("Parameterized.class)")) {  //NOI18N
+			parameterized = true;
+		    }
+		}
+	    } catch (IOException ex) {
+		Exceptions.printStackTrace(ex);
+	    }
+	    
+	    if (!parameterized) {
+		ActionProvider actionProvider = OutputUtils.getActionProvider(testFO);
+		if (actionProvider != null) {
+		    List supportedActions = Arrays.asList(actionProvider.getSupportedActions());
 
-                SingleMethod methodSpec = new SingleMethod(testFO, testcase.getName());
-                Lookup nodeContext = Lookups.singleton(methodSpec);
-                if (supportedActions.contains(COMMAND_RUN_SINGLE_METHOD) &&
-                        actionProvider.isActionEnabled(COMMAND_RUN_SINGLE_METHOD, nodeContext)) {
-                    actions.add(new TestMethodNodeAction(actionProvider,
-                                                         nodeContext,
-                                                         COMMAND_RUN_SINGLE_METHOD,
-                                                         "LBL_RerunTest"));     //NOI18N
-                }
-                if (supportedActions.contains(COMMAND_DEBUG_SINGLE_METHOD) &&
-                        actionProvider.isActionEnabled(COMMAND_DEBUG_SINGLE_METHOD, nodeContext)) {
-                    actions.add(new TestMethodNodeAction(actionProvider,
-                                                         nodeContext,
-                                                         COMMAND_DEBUG_SINGLE_METHOD,
-                                                         "LBL_DebugTest"));     //NOI18N
-                }
-            }
+		    SingleMethod methodSpec = new SingleMethod(testFO, testcase.getName());
+		    Lookup nodeContext = Lookups.singleton(methodSpec);
+		    if (supportedActions.contains(COMMAND_RUN_SINGLE_METHOD)
+			    && actionProvider.isActionEnabled(COMMAND_RUN_SINGLE_METHOD, nodeContext)) {
+			actions.add(new TestMethodNodeAction(actionProvider,
+				nodeContext,
+				COMMAND_RUN_SINGLE_METHOD,
+				"LBL_RerunTest"));     //NOI18N
+		    }
+		    if (supportedActions.contains(COMMAND_DEBUG_SINGLE_METHOD)
+			    && actionProvider.isActionEnabled(COMMAND_DEBUG_SINGLE_METHOD, nodeContext)) {
+			actions.add(new TestMethodNodeAction(actionProvider,
+				nodeContext,
+				COMMAND_DEBUG_SINGLE_METHOD,
+				"LBL_DebugTest"));     //NOI18N
+		    }
+		}
+	    }
         }
         if ((testcase.getTrouble() != null) && (testcase.getTrouble().getComparisonFailure() != null)){
             actions.add(new DiffViewAction(testcase));

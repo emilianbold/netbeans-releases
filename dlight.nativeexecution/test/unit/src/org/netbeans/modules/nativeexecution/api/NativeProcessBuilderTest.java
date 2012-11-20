@@ -53,15 +53,14 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import junit.framework.Test;
 import org.netbeans.modules.nativeexecution.ConcurrentTasksSupport.Counters;
-import org.netbeans.modules.nativeexecution.PtyNativeProcess;
 import org.netbeans.modules.nativeexecution.api.NativeProcess.State;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager.CancellationException;
-import org.netbeans.modules.nativeexecution.test.NativeExecutionBaseTestCase;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
 import org.netbeans.modules.nativeexecution.api.util.WindowsSupport;
 import org.netbeans.modules.nativeexecution.test.ForAllEnvironments;
+import org.netbeans.modules.nativeexecution.test.NativeExecutionBaseTestCase;
 import org.netbeans.modules.nativeexecution.test.NativeExecutionBaseTestSuite;
 import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
@@ -181,11 +180,7 @@ public class NativeProcessBuilderTest extends NativeExecutionBaseTestCase {
                     return;
                 }
 
-                if (usePty) {
-                    assertTrue("Source must be a PtyNativeProcess (" + e.getSource().getClass() + ")", e.getSource() instanceof PtyNativeProcess);
-                } else {
-                    assertTrue("Source must be a sublcass of NativeProcess (" + e.getSource().getClass() + ")", NativeProcess.class.isAssignableFrom(e.getSource().getClass()));
-                }
+                assertTrue("Source must be a subclass of NativeProcess (" + e.getSource().getClass() + ")", NativeProcess.class.isAssignableFrom(e.getSource().getClass()));
 
                 final NativeProcessChangeEvent event = (NativeProcessChangeEvent) e;
                 final NativeProcess process = (NativeProcess) event.getSource();

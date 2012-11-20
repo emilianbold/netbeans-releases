@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.hudson.ui.notification;
 
+import java.awt.EventQueue;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.Icon;
@@ -151,7 +152,16 @@ class ProblemNotification {
 
     void add() {
         LOG.log(Level.FINE, "Adding {0}", this);
-        notification = NotificationDisplayer.getDefault().notify(getTitle(), getIcon(), new ProblemPanel(this), new ProblemPanel(this), getPriority());
+        EventQueue.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                notification = NotificationDisplayer.getDefault().notify(
+                        getTitle(), getIcon(),
+                        new ProblemPanel(ProblemNotification.this),
+                        new ProblemPanel(ProblemNotification.this),
+                        getPriority());
+            }
+        });
     }
 
     void remove() {

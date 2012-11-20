@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -52,7 +52,7 @@ import org.openide.util.RequestProcessor;
  * often not needed at all.
  */
 public class Installer extends ModuleInstall {
-    public static final RequestProcessor RP = new RequestProcessor("AutoUpdate-UI"); // NOI18N
+    public static final RequestProcessor RP = new RequestProcessor("AutoUpdate-UI", 10); // NOI18N
     
     @Override
     public void restored () {

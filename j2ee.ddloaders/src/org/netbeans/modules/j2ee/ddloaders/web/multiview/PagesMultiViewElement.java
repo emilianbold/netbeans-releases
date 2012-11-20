@@ -264,7 +264,7 @@ public class PagesMultiViewElement extends ToolBarMultiViewElement implements ja
         
     }
     
-    private class JspPGNode extends org.openide.nodes.AbstractNode {
+    private static class JspPGNode extends org.openide.nodes.AbstractNode {
         JspPGNode(PagesView view, JspPropertyGroup group) {
             super(org.openide.nodes.Children.LEAF);
             setDisplayName(view.getJspGroupNodeName(group));
@@ -276,7 +276,7 @@ public class PagesMultiViewElement extends ToolBarMultiViewElement implements ja
         }
     }
     
-    private class WelcomeFilesNode extends org.openide.nodes.AbstractNode {
+    private static class WelcomeFilesNode extends org.openide.nodes.AbstractNode {
         WelcomeFilesNode() {
             super(org.openide.nodes.Children.LEAF);
             setDisplayName(NbBundle.getMessage(PagesMultiViewElement.class,"TTL_welcomeFiles"));
@@ -288,7 +288,7 @@ public class PagesMultiViewElement extends ToolBarMultiViewElement implements ja
         }
     }
     
-    private class ErrorPagesNode extends org.openide.nodes.AbstractNode {
+    private static class ErrorPagesNode extends org.openide.nodes.AbstractNode {
         ErrorPagesNode() {
             super(org.openide.nodes.Children.LEAF);
             setDisplayName(NbBundle.getMessage(PagesMultiViewElement.class,"TTL_errorPages"));

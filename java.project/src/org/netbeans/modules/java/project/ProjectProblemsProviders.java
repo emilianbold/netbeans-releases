@@ -43,7 +43,6 @@ package org.netbeans.modules.java.project;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.beans.PropertyChangeSupport;
 import java.io.File;
 import java.io.IOException;
 import java.lang.ref.Reference;
@@ -105,6 +104,7 @@ import org.netbeans.spi.project.support.ant.ui.VariablesSupport;
 import org.netbeans.spi.project.ui.ProjectProblemResolver;
 import org.netbeans.spi.project.ui.ProjectProblemsProvider.Result;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
+import org.netbeans.spi.project.ui.support.ProjectProblemsProviderSupport;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.modules.SpecificationVersion;
@@ -128,7 +128,7 @@ public class ProjectProblemsProviders {
         throw new IllegalStateException(String.format("The %s cannot be instantiated.",this.getClass().getName())); //NOI18N
     }
 
-   
+
 
     public static ProjectProblemsProvider createReferenceProblemProvider(
             @NonNull final AntProjectHelper projectHelper,
@@ -140,7 +140,7 @@ public class ProjectProblemsProviders {
         pp.attachListeners();
         return pp;
     }
-    
+
     public static ProjectProblemsProvider createPlatformVersionProblemProvider(
             @NonNull final AntProjectHelper helper,
             @NonNull final PropertyEvaluator evaluator,
@@ -551,7 +551,7 @@ public class ProjectProblemsProviders {
     }
     //</editor-fold>
 
-    
+
     //<editor-fold defaultstate="collapsed" desc="Resolver implementations">
     private static abstract class BaseResolver implements ProjectProblemResolver {
 
@@ -566,7 +566,7 @@ public class ProjectProblemsProviders {
             this.type = type;
             this.id = id;
         }
-        
+
         @Override
         public final int hashCode() {
             int result = 17;
@@ -574,7 +574,7 @@ public class ProjectProblemsProviders {
             result = 31 * result + id.hashCode();
             return result;
         }
-        
+
         @Override
         public final boolean equals(@NullAllowed final Object other) {
             if (!(other instanceof BaseResolver)) {
@@ -611,7 +611,7 @@ public class ProjectProblemsProviders {
         }
 
     }
-    
+
     private static class LibraryResolver extends BaseResolver {
 
         private final Callable<Library> definer;
@@ -702,7 +702,7 @@ public class ProjectProblemsProviders {
             }
             return new Object[] {original, null};
         }
-    }    
+    }
 
     private static class VariableResolver extends BaseResolver {
         VariableResolver(@NonNull final RefType type, @NonNull final String id) {
@@ -996,13 +996,7 @@ public class ProjectProblemsProviders {
     //<editor-fold defaultstate="collapsed" desc="ProjectProblemsProvider implementations">
     private static final class ReferenceProblemProviderImpl implements ProjectProblemsProvider, PropertyChangeListener {
 
-        private final PropertyChangeSupport support = new PropertyChangeSupport(this);
-
-        private final Object problemsLock = new Object();
-        //@GuardedBy("problemsLock")
-        private Collection<? extends ProjectProblem> problems;
-        //@GuardedBy("problemsLock")
-        private long eventId;
+        private final ProjectProblemsProviderSupport problemsProviderSupport = new ProjectProblemsProviderSupport(this);
         private final AtomicBoolean listenersInitialized = new AtomicBoolean();
 
         private final AntProjectHelper helper;
@@ -1035,46 +1029,33 @@ public class ProjectProblemsProviders {
         @Override
         public void addPropertyChangeListener(@NonNull final PropertyChangeListener listener) {
             Parameters.notNull("listener", listener);   //NOI18N
-            support.addPropertyChangeListener(listener);
+            problemsProviderSupport.addPropertyChangeListener(listener);
         }
 
         @Override
         public void removePropertyChangeListener(@NonNull final PropertyChangeListener listener) {
             Parameters.notNull("listener", listener);   //NOI18N
-            support.removePropertyChangeListener(listener);
+            problemsProviderSupport.removePropertyChangeListener(listener);
         }
 
         @Override
         public Collection<? extends ProjectProblem> getProblems() {
-            Collection<? extends ProjectProblem> curProblems;
-            long curEventId;
-            synchronized (problemsLock) {
-                curProblems = problems;
-                curEventId = eventId;
-            }
-            if (curProblems != null) {
-                return curProblems;
-            }
-            curProblems = ProjectManager.mutex().readAccess(
-                new Mutex.Action<Collection<? extends ProjectProblem>>(){
-                    @Override
-                    public Collection<? extends ProjectProblem> run() {
-                        final Set<ProjectProblem> newProblems = new LinkedHashSet<ProjectProblem>();
-                        newProblems.addAll(getReferenceProblems(helper,eval,refHelper,refProps,false));
-                        newProblems.addAll(getPlatformProblems(eval,platformProps,false));
-                        return Collections.unmodifiableSet(newProblems);
-                    }
-                });
-            synchronized (problemsLock){
-                if (curEventId == eventId) {
-                    //No canonical mapping needed
-                    problems = curProblems;
-                } else if (problems != null) {
-                    curProblems = problems;
+            return problemsProviderSupport.getProblems(new ProjectProblemsProviderSupport.ProblemsCollector() {
+                @Override
+                public Collection<? extends ProjectProblemsProvider.ProjectProblem> collectProblems() {
+                    Collection<? extends ProjectProblemsProvider.ProjectProblem> currentProblems = ProjectManager.mutex().readAccess(
+                            new Mutex.Action<Collection<? extends ProjectProblem>>() {
+                                @Override
+                                public Collection<? extends ProjectProblem> run() {
+                                    final Set<ProjectProblem> newProblems = new LinkedHashSet<ProjectProblem>();
+                                    newProblems.addAll(getReferenceProblems(helper,eval,refHelper,refProps,false));
+                                    newProblems.addAll(getPlatformProblems(eval,platformProps,false));
+                                    return Collections.unmodifiableSet(newProblems);
+                                }
+                            });
+                    return currentProblems;
                 }
-            }
-            assert curProblems != null;
-            return curProblems;
+            });
         }
 
         @Override
@@ -1082,11 +1063,7 @@ public class ProjectProblemsProviders {
             if (LibraryManager.PROP_OPEN_LIBRARY_MANAGERS.equals(evt.getPropertyName())) {
                 addLibraryManagerListener();
             }
-            synchronized (problemsLock) {
-                problems = null;
-                eventId++;
-            }
-            support.firePropertyChange(PROP_PROBLEMS,null,null);
+            problemsProviderSupport.fireProblemsChange();
         }
 
         void attachListeners() {
@@ -1145,12 +1122,7 @@ public class ProjectProblemsProviders {
 
     private static final class PlatformVersionProblemProviderImpl implements ProjectProblemsProvider, PropertyChangeListener {
 
-        private final PropertyChangeSupport support = new PropertyChangeSupport(this);
-        private final Object problemsLock = new Object();
-        //@GuardedBy("problemsLock")
-        private Collection<? extends ProjectProblem> problems;
-        //@GuardedBy("problemsLock")
-        private long eventId;
+        private final ProjectProblemsProviderSupport problemsProviderSupport = new ProjectProblemsProviderSupport(this);
         private final AtomicBoolean listenersInitialized = new AtomicBoolean();
 
         private final AntProjectHelper helper;
@@ -1183,13 +1155,13 @@ public class ProjectProblemsProviders {
         @Override
         public void addPropertyChangeListener(@NonNull final PropertyChangeListener listener) {
             Parameters.notNull("listener", listener);   //NOI18N
-            support.addPropertyChangeListener(listener);
+            problemsProviderSupport.addPropertyChangeListener(listener);
         }
 
         @Override
         public void removePropertyChangeListener(@NonNull final PropertyChangeListener listener) {
             Parameters.notNull("listener", listener);   //NOI18N
-            support.removePropertyChangeListener(listener);
+            problemsProviderSupport.removePropertyChangeListener(listener);
         }
 
         @Override
@@ -1198,63 +1170,46 @@ public class ProjectProblemsProviders {
             "HINT_Invalid_JDK_Vernsion=The active project platform is an older version than it's required by project source/binary format."
         })
         public Collection<? extends ProjectProblem> getProblems() {
-            Collection<? extends ProjectProblem> curProblems;
-            long curEventId;
-            synchronized (problemsLock) {
-                curProblems = problems;
-                curEventId = eventId;
-            }
-            if (curProblems != null) {
-                return curProblems;
-            }
-            curProblems = ProjectManager.mutex().readAccess(
-                new Mutex.Action<Collection<? extends ProjectProblem>>() {
-                    @Override
-                    public Collection<? extends ProjectProblem> run() {
-                        final JavaPlatform activePlatform = getActivePlatform();
-                        final SpecificationVersion platformVersion = activePlatform == null ?
-                            null:
-                            activePlatform.getSpecification().getVersion();
-                        final Collection<String> invalidVersionProps = new ArrayList<String>(versionProps.size());
-                        SpecificationVersion minVersion = getInvalidJdkVersion(
-                                platformVersion,
-                                invalidVersionProps);
-                        return minVersion != null ?
-                            Collections.singleton(ProjectProblem.createError(
-                                LBL_Invalid_JDK_Version(),
-                                HINT_Invalid_JDK_Vernsion(),
-                                new SourceTargetResolver(
-                                    helper,
-                                    hook,
-                                    platformType,
-                                    platformProp,
-                                    invalidVersionProps,
-                                    minVersion,
-                                    platformVersion))) :
-                            Collections.<ProjectProblem>emptySet();
-                    }
-            });
-            synchronized (problemsLock) {
-                if (curEventId == eventId) {
-                    //No canonical mapping needed
-                    problems = curProblems;
-                } else if (problems != null) {
-                    curProblems = problems;
+            return problemsProviderSupport.getProblems(new ProjectProblemsProviderSupport.ProblemsCollector() {
+                @Override
+                public Collection<? extends ProjectProblemsProvider.ProjectProblem> collectProblems() {
+                    Collection<? extends ProjectProblemsProvider.ProjectProblem> currentProblems = ProjectManager.mutex().readAccess(
+                            new Mutex.Action<Collection<? extends ProjectProblem>>() {
+                                @Override
+                                public Collection<? extends ProjectProblem> run() {
+                                    final JavaPlatform activePlatform = getActivePlatform();
+                                    final SpecificationVersion platformVersion = activePlatform == null ?
+                                        null:
+                                        activePlatform.getSpecification().getVersion();
+                                    final Collection<String> invalidVersionProps = new ArrayList<String>(versionProps.size());
+                                    SpecificationVersion minVersion = getInvalidJdkVersion(
+                                            platformVersion,
+                                            invalidVersionProps);
+                                    return minVersion != null ?
+                                        Collections.singleton(ProjectProblem.createError(
+                                            LBL_Invalid_JDK_Version(),
+                                            HINT_Invalid_JDK_Vernsion(),
+                                            new SourceTargetResolver(
+                                                helper,
+                                                hook,
+                                                platformType,
+                                                platformProp,
+                                                invalidVersionProps,
+                                                minVersion,
+                                                platformVersion))) :
+                                        Collections.<ProjectProblem>emptySet();
+                                }
+                        });
+                    return currentProblems;
                 }
-            }
-            assert curProblems != null;
-            return curProblems;
+            });
         }
 
         @Override
         public void propertyChange(PropertyChangeEvent evt) {
             final String propName = evt.getPropertyName();
             if (propName == null || platformProp.equals(propName) || versionProps.contains(propName)) {
-                synchronized (problemsLock) {
-                    problems = null;
-                    eventId++;
-                }
-                support.firePropertyChange(PROP_PROBLEMS,null,null);
+                problemsProviderSupport.fireProblemsChange();
             }
         }
 

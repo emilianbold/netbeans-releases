@@ -494,8 +494,11 @@ public class CompletionUtil {
         List<String> prefixes = new ArrayList<String>();
         if(cm == null) {
             ae = findOriginal(ae);
-            if(context.getDefaultNamespace() != null &&
-               !context.getDefaultNamespace().equals(ae.getTargetNamespace())) {
+            String defaultNS = context.getDefaultNamespace();
+            String targetNS = ae.getTargetNamespace();
+            if((defaultNS != targetNS) &&  // in case both are null, go away
+               (defaultNS == null || targetNS == null ||
+                !context.getDefaultNamespace().equals(ae.getTargetNamespace()))) {
                 prefixes = getPrefixesAgainstNamespace(context, ae.getTargetNamespace());
                 if(prefixes.size() != 0)
                     return prefixes;

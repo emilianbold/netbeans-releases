@@ -205,7 +205,7 @@ public class ChangeParamsTransformer extends RefactoringVisitor {
                 if (tree.getKind().equals(Kind.METHOD)) {
                     ExecutableElement element = (ExecutableElement) workingCopy.getTrees().getElement(new TreePath(getCurrentPath(), tree));
                     if (p.equals(element)) {
-                        List<ExpressionTree> paramList = getNewCompatibleArguments();
+                        List<ExpressionTree> paramList = getNewCompatibleArguments(((MethodTree)tree).getParameters());
                         MethodInvocationTree methodInvocation = make.MethodInvocation(Collections.<ExpressionTree>emptyList(),
                                 constructorRefactoring? make.Identifier("this") : make.Identifier(element),
                                 paramList);
@@ -230,34 +230,29 @@ public class ChangeParamsTransformer extends RefactoringVisitor {
                         genutils.copyComments(oldBody, body, false);
                         MethodTree newMethod;
                         if (!fromIntroduce) {
-                            List<? extends TypeParameterElement> typeParameters = element.getTypeParameters();
-                            List<TypeParameterTree> newTypeParams = new ArrayList<TypeParameterTree>(typeParameters.size());
-                            transformTypeParameters(typeParameters, make, genutils, newTypeParams);
-
-                            final List<? extends VariableElement> parameters = element.getParameters();
-                            List<VariableTree> newParameters = new ArrayList<VariableTree>(parameters.size());
-                            for (VariableElement variableElement : parameters) {
-                                newParameters.add(make.Variable(variableElement, null));
-                            }
-
-                            final List<? extends TypeMirror> thrownTypes = element.getThrownTypes();
-                            List<ExpressionTree> newThrownTypes = new ArrayList<ExpressionTree>(thrownTypes.size());
-                            for (TypeMirror typeMirror : thrownTypes) {
-                                newThrownTypes.add((ExpressionTree) make.Type(typeMirror));
-                            }
-
                             newMethod = make.Method(
                                     make.Modifiers(element.getModifiers()),
                                     newName == null ? element.getSimpleName() : newName,
-                                    make.Type(methodReturnType),
-                                    newTypeParams,
-                                    newParameters,
-                                    newThrownTypes,
+                                    ((MethodTree)tree).getReturnType(),
+                                    ((MethodTree)tree).getTypeParameters(),
+                                    ((MethodTree)tree).getParameters(),
+                                    ((MethodTree)tree).getThrows(),
                                     body,
                                     null,
                                     element.isVarArgs());
                         } else {
                             newMethod = make.Method(element, body);
+                            if(element.getKind() == ElementKind.CONSTRUCTOR) {
+                                newMethod = make.Method(newMethod.getModifiers(),
+                                        newMethod.getName(),
+                                        null, // workaround: make.Method(element, body) uses void as return type for contructors
+                                        newMethod.getTypeParameters(),
+                                        newMethod.getParameters(),
+                                        newMethod.getThrows(),
+                                        newMethod.getBody(),
+                                        (ExpressionTree)newMethod.getDefaultValue(),
+                                        element.isVarArgs());
+                            }
                         }
                         genutils.copyComments(tree, newMethod, true);
                         genutils.copyComments(tree, newMethod, false);
@@ -313,7 +308,7 @@ public class ChangeParamsTransformer extends RefactoringVisitor {
         return el;
     }
     
-    private List<ExpressionTree> getNewCompatibleArguments() {
+    private List<ExpressionTree> getNewCompatibleArguments(List<? extends VariableTree> parameters) {
         List<ExpressionTree> arguments = new ArrayList();
         ParameterInfo[] pi = paramInfos;
         for (int i = 0; i < pi.length; i++) {
@@ -323,7 +318,7 @@ public class ChangeParamsTransformer extends RefactoringVisitor {
             if (originalIndex < 0) {
                 value = pi[i].getDefaultValue();
             } else {
-                value = pi[i].getName();
+                value = parameters.get(originalIndex).getName().toString();
             }
             SourcePositions pos[] = new SourcePositions[1];
             vt = workingCopy.getTreeUtilities().parseExpression(value, pos);
@@ -773,24 +768,5 @@ public class ChangeParamsTransformer extends RefactoringVisitor {
         } while(changed);
 
         return expressionTree;
-    }
-    
-    private void transformTypeParameters(List<? extends TypeParameterElement> source, TreeMaker make, GeneratorUtilities genUtils, List<TypeParameterTree> newTypeParams) {
-        for (TypeParameterElement typeParam : source) {
-            List<? extends TypeMirror> bounds = typeParam.getBounds();
-            List<ExpressionTree> newBounds = new ArrayList<ExpressionTree>(bounds.size());
-            for (TypeMirror typeMirror : bounds) {
-                TypeMirror typeObject = workingCopy.getElements().getTypeElement("java.lang.Object").asType();
-                if (!workingCopy.getTypes().isSameType(typeMirror, typeObject)) {
-                    ExpressionTree type = (ExpressionTree) make.Type(typeMirror);
-                    newBounds.add(type);
-                }
-            }
-            TypeParameterTree typeParameterTree = make.TypeParameter(typeParam.getSimpleName(), newBounds);
-            if (!typeParameterTree.getBounds().isEmpty()) {
-                typeParameterTree = (TypeParameterTree) genUtils.importFQNs(typeParameterTree);
-            }
-            newTypeParams.add(typeParameterTree);
-        }
     }
 }

@@ -110,6 +110,10 @@ public final class SymfonyPhpFrameworkProvider extends PhpFrameworkProvider {
      */
     public static FileObject locate(PhpModule phpModule, String relativePath, boolean subdirs) {
         FileObject sourceDirectory = phpModule.getSourceDirectory();
+        if (sourceDirectory == null) {
+            // broken project
+            return null;
+        }
 
         FileObject fileObject = sourceDirectory.getFileObject(relativePath);
         if (fileObject != null || !subdirs) {
@@ -138,8 +142,14 @@ public final class SymfonyPhpFrameworkProvider extends PhpFrameworkProvider {
 
     @Override
     public File[] getConfigurationFiles(PhpModule phpModule) {
+        FileObject sourceDirectory = phpModule.getSourceDirectory();
+        if (sourceDirectory == null) {
+            // broken project
+            return new File[0];
+        }
+
         List<File> files = new LinkedList<File>();
-        FileObject appConfig = phpModule.getSourceDirectory().getFileObject("config"); // NOI18N
+        FileObject appConfig = sourceDirectory.getFileObject("config"); // NOI18N
         if (appConfig != null) {
             List<FileObject> fileObjects = getConfigFilesRecursively(appConfig);
             Collections.sort(fileObjects, new Comparator<FileObject>() {

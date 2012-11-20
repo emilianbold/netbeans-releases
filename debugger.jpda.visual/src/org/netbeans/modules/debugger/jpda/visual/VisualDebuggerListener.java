@@ -288,6 +288,7 @@ public class VisualDebuggerListener extends DebuggerManagerAdapter {
             
             ClassType serviceClass = (ClassType) ClassObjectReferenceWrapper.reflectedType(cor);//RemoteServices.getClass(vm, "org.netbeans.modules.debugger.jpda.visual.remote.RemoteService");
 
+            InvocationExceptionTranslated iextr = null;
             Method startMethod = ClassTypeWrapper.concreteMethodByName(serviceClass, "startAccessLoop", "()V");
             try {
                 t.notifyMethodInvoking();
@@ -300,12 +301,23 @@ public class VisualDebuggerListener extends DebuggerManagerAdapter {
                         ClassTypeWrapper.invokeMethod(serviceClass, tr, startHierarchyListenerMethod, Collections.EMPTY_LIST, ObjectReference.INVOKE_SINGLE_THREADED);
                     }
                 }
-            } catch (VMDisconnectedExceptionWrapper vmd) {                
+            } catch (VMDisconnectedExceptionWrapper vmd) {
+            } catch (InvocationException iex) {
+                iextr = new InvocationExceptionTranslated(iex, t.getDebugger());
+                Exceptions.printStackTrace(iex);
             } catch (Exception ex) {
                 Exceptions.printStackTrace(ex);
             } finally {
                 t.notifyMethodInvokeDone();
                 ObjectReferenceWrapper.enableCollection(cor); // While AWTAccessLoop is running, it should not be collected.
+            }
+            if (iextr != null) {
+                iextr.setPreferredThread(t);
+                iextr.getMessage();
+                iextr.getLocalizedMessage();
+                iextr.getCause();
+                iextr.getStackTrace();
+                Exceptions.printStackTrace(iextr);
             }
         } catch (InternalExceptionWrapper iex) {
         } catch (ClassNotPreparedExceptionWrapper cnpex) {
@@ -340,8 +352,8 @@ public class VisualDebuggerListener extends DebuggerManagerAdapter {
             Iterator<Breakpoint> it = helperComponentBreakpoints.iterator();
             while (it.hasNext()) {
                 DebuggerManager.getDebuggerManager().removeBreakpoint(it.next());
-                it.remove();
             }
+            helperComponentBreakpoints.clear();
         }
         synchronized (componentsAndStackTraces) {
             componentsAndStackTraces.remove(debugger);

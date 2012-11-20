@@ -78,11 +78,9 @@ import javax.swing.JSeparator;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeListener;
-import org.netbeans.api.progress.ProgressUtils;
 import org.netbeans.lib.profiler.common.CommonUtils;
 import org.netbeans.lib.profiler.common.ProfilingSettingsPresets;
 import org.netbeans.lib.profiler.ui.UIUtils;
-import org.netbeans.modules.profiler.api.ProfilerDialogs;
 import org.netbeans.modules.profiler.api.ProfilingSettingsManager;
 import org.netbeans.modules.profiler.api.icons.GeneralIcons;
 import org.netbeans.modules.profiler.api.icons.Icons;
@@ -95,7 +93,6 @@ import org.netbeans.modules.profiler.api.ProjectUtilities;
 import org.netbeans.modules.profiler.api.TaskConfigurator.Configuration;
 import org.netbeans.modules.profiler.spi.TaskConfiguratorProvider;
 import org.netbeans.modules.profiler.stp.icons.STPIcons;
-import org.netbeans.modules.profiler.utilities.ProfilerUtils;
 import org.openide.DialogDisplayer;
 import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
@@ -313,15 +310,16 @@ public class SelectProfilingTask extends JPanel implements TaskChooser.Listener,
         spt.setSubmitButton(spt.attachButton);
         spt.setupAttachProfiler(project);
 
-        spt.dd = new DialogDescriptor(spt, Bundle.SelectProfilingTask_AttachDialogCaption(), true, new Object[] { spt.attachButton, spt.cancelButton },
+        final DialogDescriptor dd = new DialogDescriptor(spt, Bundle.SelectProfilingTask_AttachDialogCaption(), true, new Object[] { spt.attachButton, spt.cancelButton },
                                       spt.attachButton, 0, null, null);
+        spt.dd = dd;
 
         final CountDownLatch latch = new CountDownLatch(1);
 
         SwingUtilities.invokeLater(new Runnable() {
 
             public void run() {
-                Dialog d = DialogDisplayer.getDefault().createDialog(spt.dd);
+                Dialog d = DialogDisplayer.getDefault().createDialog(dd);
                 d.pack();
                 d.setVisible(true);
                 latch.countDown();
@@ -333,7 +331,7 @@ public class SelectProfilingTask extends JPanel implements TaskChooser.Listener,
 
             Configuration result = null;
 
-            if (spt.dd.getValue() == spt.attachButton) {
+            if (dd.getValue() == spt.attachButton) {
                 result = new Configuration(spt.project, spt.createFinalSettings(), spt.getAttachSettings());
             }
 
@@ -355,16 +353,17 @@ public class SelectProfilingTask extends JPanel implements TaskChooser.Listener,
         spt.setSubmitButton(spt.modifyButton);
         spt.setupModifyProfiling(project, profiledFile, isAttach);
 
-        spt.dd = new DialogDescriptor(spt,
+        final DialogDescriptor dd = new DialogDescriptor(spt,
                                       Bundle.SelectProfilingTask_ModifyDialogCaption(Utils.getProjectName(project)),
                                       true, new Object[] { spt.modifyButton, spt.cancelButton }, spt.modifyButton, 0, null, null);
+        spt.dd = dd;
 
         final CountDownLatch latch = new CountDownLatch(1);
 
         SwingUtilities.invokeLater(new Runnable() {
 
             public void run() {
-                Dialog d = DialogDisplayer.getDefault().createDialog(spt.dd);
+                Dialog d = DialogDisplayer.getDefault().createDialog(dd);
                 d.pack();
                 d.setVisible(true);
                 latch.countDown();
@@ -376,7 +375,7 @@ public class SelectProfilingTask extends JPanel implements TaskChooser.Listener,
 
             Configuration result = null;
 
-            if (spt.dd.getValue() == spt.modifyButton) {
+            if (dd.getValue() == spt.modifyButton) {
                 result = new Configuration(project, spt.createFinalSettings(), null);
             }
 
@@ -396,6 +395,7 @@ public class SelectProfilingTask extends JPanel implements TaskChooser.Listener,
 //        assert !SwingUtilities.isEventDispatchThread();
         
         final SelectProfilingTask[] spt = new SelectProfilingTask[1];
+        final DialogDescriptor[] dd = new DialogDescriptor[1];
 
         final CountDownLatch latch = new CountDownLatch(1);
 
@@ -407,8 +407,9 @@ public class SelectProfilingTask extends JPanel implements TaskChooser.Listener,
                 spt[0].setupProfileProject(project, profiledFile, enableOverride);
 
                 String targetName = Utils.getProjectName(project) + ((profiledFile == null) ? "" : (": " + profiledFile.getNameExt())); // NOI18N
-                spt[0].dd = new DialogDescriptor(spt[0], Bundle.SelectProfilingTask_ProfileDialogCaption(targetName), true,
+                dd[0] = new DialogDescriptor(spt[0], Bundle.SelectProfilingTask_ProfileDialogCaption(targetName), true,
                                             new Object[] { spt[0].runButton, spt[0].cancelButton }, spt[0].runButton, 0, null, null);
+                spt[0].dd = dd[0];
                 Dialog d = DialogDisplayer.getDefault().createDialog(spt[0].dd);
                 d.getAccessibleContext().setAccessibleDescription(d.getTitle());
                 d.pack();
@@ -428,7 +429,7 @@ public class SelectProfilingTask extends JPanel implements TaskChooser.Listener,
 
             Configuration result = null;
 
-            if (spt[0].dd.getValue() == spt[0].runButton) {
+            if (dd[0].getValue() == spt[0].runButton) {
                 ProfilingSettings settings = spt[0].createFinalSettings();
                 result = new Configuration(project, settings, null);
                 
@@ -557,6 +558,7 @@ public class SelectProfilingTask extends JPanel implements TaskChooser.Listener,
             welcomePanel = welcomePanelReference.get();
         }
 
+        welcomePanel.displaying();
         return welcomePanel;
     }
 
@@ -640,7 +642,16 @@ public class SelectProfilingTask extends JPanel implements TaskChooser.Listener,
         projectsChooserLabel.setOpaque(false);
 
         // projectsChoserCombo
-        projectsChooserCombo = new JComboBox();
+        projectsChooserCombo = new JComboBox() {
+            public Dimension getPreferredSize() {
+                Dimension dim = super.getPreferredSize();
+                dim.width = 1;
+                return dim;
+            }
+            public Dimension getMinimumSize() {
+                return getPreferredSize();
+            }
+        };
         projectsChooserCombo.setRenderer(org.netbeans.modules.profiler.ppoints.Utils.getProjectListRenderer());
         projectsChooserLabel.setLabelFor(projectsChooserCombo);
         projectsChooserCombo.getAccessibleContext().setAccessibleDescription(Bundle.SelectProfilingTask_ChooserComboAccessDescr());
@@ -984,8 +995,7 @@ public class SelectProfilingTask extends JPanel implements TaskChooser.Listener,
         final ProfilingSettings selectedProfilingSettings = (selectedTask == null) ? null
                                                                                    : ((TaskPresenter) selectedTask)
                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             .getSelectedProfilingSettings();
-
-        ProfilerUtils.runInProfilerRequestProcessor(new Runnable() {
+        RequestProcessor.getDefault().post(new Runnable() {
                 public void run() {
                     ProfilingSettingsManager.storeProfilingSettings(profilingSettings.toArray(new ProfilingSettings[profilingSettings
                                                                                                                     .size()]),
@@ -1032,12 +1042,6 @@ public class SelectProfilingTask extends JPanel implements TaskChooser.Listener,
         if (!hasContext) {
             // Attach, no project selected
             taskChooser.setEnabled(false);
-
-            // TODO: cleanup
-            contentsPanel.removeAll();
-            contentsPanel.add(getWelcomePanel(), BorderLayout.CENTER);
-            contentsPanel.doLayout();
-            contentsPanel.repaint();
         } else {
             configurator = Utils.getSettingsConfigurator(project);
             configurator.setContext(project, profiledFile, isAttach, isModify, enableOverride);
@@ -1059,13 +1063,20 @@ public class SelectProfilingTask extends JPanel implements TaskChooser.Listener,
             taskChooser.setEnabled(true);
         }
         
-        ProfilerUtils.runInProfilerRequestProcessor(new Runnable() {
+        contentsPanel.removeAll();
+        contentsPanel.add(getWelcomePanel(), BorderLayout.CENTER);
+        contentsPanel.doLayout();
+        contentsPanel.repaint();
+        
+        RequestProcessor.getDefault().post(new Runnable() {
             @Override
             public void run() {
                 final ProfilingSettingsManager.ProfilingSettingsDescriptor profilingSettingsDescriptor =
                         ProfilingSettingsManager.getProfilingSettings(project);
                 Runnable projectUpdater = new Runnable() {
                     public void run() {
+                        if (SelectProfilingTask.this.dd == null) return; // STP has already been closed when loading settings
+                        
                         if (hasContext) {
                             ProfilingSettings[] profilingSettings = profilingSettingsDescriptor.getProfilingSettings();
                             ProfilingSettings lastSelectedSettings = profilingSettingsDescriptor.getLastSelectedProfilingSettings();

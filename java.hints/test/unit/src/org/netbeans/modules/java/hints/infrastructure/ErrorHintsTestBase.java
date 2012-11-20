@@ -45,11 +45,14 @@ package org.netbeans.modules.java.hints.infrastructure;
 
 import com.sun.source.util.TreePath;
 import java.io.File;
+import java.net.URL;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 import javax.swing.text.Document;
+import javax.tools.Diagnostic;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.java.source.CompilationInfo;
@@ -66,7 +69,9 @@ import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.editor.java.JavaKit;
 import org.netbeans.modules.java.JavaDataLoader;
 import org.netbeans.modules.java.source.indexing.JavaCustomIndexer;
+import org.netbeans.modules.java.source.indexing.TransactionContext;
 import org.netbeans.modules.java.source.parsing.JavacParserFactory;
+import org.netbeans.modules.java.source.usages.ClassIndexManager;
 import org.netbeans.modules.java.source.usages.IndexUtil;
 import org.netbeans.modules.parsing.api.indexing.IndexingManager;
 import org.netbeans.spi.editor.hints.Fix;
@@ -138,6 +143,19 @@ public abstract class ErrorHintsTestBase extends NbTestCase {
         }
         
         Main.initializeURLFactory();
+    }
+
+    @Override
+    protected void tearDown() throws Exception {
+        for (URL bootCP : SourceUtilsTestUtil.getBootClassPath()) {
+            TransactionContext ctx = TransactionContext.beginStandardTransaction(bootCP, false, false);
+            try {
+                ClassIndexManager.getDefault().removeRoot(bootCP);
+            } finally {
+                ctx.commit();
+            }
+        }
+        super.tearDown();
     }
 
     protected final void prepareTest(String fileName, String code) throws Exception {
@@ -246,6 +264,19 @@ public abstract class ErrorHintsTestBase extends NbTestCase {
     protected void performFixTest(String fileName, String code, int pos, String fixCode, String goldenFileName, String golden) throws Exception {
         prepareTest(fileName, code);
         
+        if (pos == (-1)) {
+            Set<String> supportedErrorKeys = getSupportedErrorKeys();
+            for (Diagnostic<?> d : info.getDiagnostics()) {
+                if (d.getKind() == Diagnostic.Kind.ERROR && (supportedErrorKeys == null || supportedErrorKeys.contains(d.getCode()))) {
+                    if (pos == (-1)) {
+                        pos = (int) d.getPosition();
+                    } else {
+                        throw new IllegalStateException("More than one error: " + info.getDiagnostics().toString());
+                    }
+                }
+            }
+        }
+        
         TreePath path = info.getTreeUtilities().pathFor(pos);
 
         List<Fix> fixes = computeFixes(info, pos, path);
@@ -286,4 +317,7 @@ public abstract class ErrorHintsTestBase extends NbTestCase {
         LifecycleManager.getDefault().saveAll();
     }
     
+    protected Set<String> getSupportedErrorKeys() {
+        return null;
+    }
 }

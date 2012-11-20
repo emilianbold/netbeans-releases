@@ -99,6 +99,9 @@ public class AvailableTableModel extends UnitCategoryTableModel {
         //assert getCategoryAtRow (row).isExpanded ();
         Unit.Available u = (Unit.Available) getUnitAtRow(row);
         assert anValue instanceof Boolean : anValue + " must be instanceof Boolean.";
+        if (u == null) {
+            return ;
+        }
         boolean beforeMarked = u.isMarked();
         if ((Boolean) anValue != beforeMarked) {
             u.setMarked(! beforeMarked);

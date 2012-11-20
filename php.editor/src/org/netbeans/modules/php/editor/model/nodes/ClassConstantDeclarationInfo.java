@@ -74,7 +74,7 @@ public class ClassConstantDeclarationInfo extends ASTNodeInfo<Identifier> {
             name = iteratorNames.next();
             Expression initializer = iteratorInitializers.next();
             if (initializer instanceof Scalar) {
-                value = ((Scalar)initializer).getStringValue();
+                value = ((Scalar) initializer).getStringValue();
             } else if (initializer instanceof UnaryOperation) {
                 UnaryOperation unaryOperation = (UnaryOperation) initializer;
                 Expression expression = unaryOperation.getExpression();

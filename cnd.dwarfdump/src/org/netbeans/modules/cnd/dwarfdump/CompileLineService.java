@@ -145,7 +145,7 @@ public class CompileLineService {
             dump = new Dwarf(objFileName);
             Dwarf.CompilationUnitIterator iterator = dump.iteratorCompilationUnits();
             while (iterator.hasNext()) {
-                CompilationUnit cu = iterator.next();
+                CompilationUnitInterface cu = iterator.next();
                 if (cu != null) {
                     if (cu.getRoot() == null || cu.getSourceFileName() == null) {
                         if (Dwarf.LOG.isLoggable(Level.FINE)) {
@@ -206,7 +206,7 @@ public class CompileLineService {
         return new SourceFile(compileDir, sourceFile, compileLine);
     }
 
-    public static SourceFile createSourceFile(CompilationUnit cu) throws IOException, Exception {
+    public static SourceFile createSourceFile(CompilationUnitInterface cu) throws IOException, Exception {
         return new SourceFile(cu);
     }
 
@@ -218,7 +218,7 @@ public class CompileLineService {
         private Map<String,String> userMacros;
         private List<String> userPaths;
 
-        private SourceFile(CompilationUnit cu) throws IOException, Exception {
+        private SourceFile(CompilationUnitInterface cu) throws IOException, Exception {
             String s = cu.getCommandLine();
             if (s == null) {
                 // client may be interested in compilation units also

@@ -45,18 +45,21 @@ import java.beans.PropertyVetoException;
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 import org.junit.Test;
+import org.netbeans.api.project.Project;
 import org.netbeans.junit.NbTestCase;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataShadow;
+import org.openide.util.Lookup;
 
 /**
  *
@@ -66,6 +69,7 @@ public class CopyPathToClipboardActionTest extends NbTestCase {
 
     List<DataObject> dataObjects;
     CopyPathToClipboardAction action;
+    List<Project> projects = new ArrayList<Project>();
 
     public CopyPathToClipboardActionTest(String name) {
         super(name);
@@ -73,6 +77,11 @@ public class CopyPathToClipboardActionTest extends NbTestCase {
 
     @Override
     public void setUp() throws IOException, PropertyVetoException {
+
+        // create projects
+        projects.add(createProject("projectDir1"));
+        projects.add(createProject("projectDir2"));
+
         List l = new LinkedList<DataObject>();
         clearWorkDir();
         FileObject root = FileUtil.toFileObject(getWorkDir());
@@ -99,7 +108,10 @@ public class CopyPathToClipboardActionTest extends NbTestCase {
         // /testDataShadows/testShadowFile -> test2/data.txt
         l.add(shadowFile);
         dataObjects = l;
-        action = new CopyPathToClipboardAction(dataObjects);
+        List<Lookup.Provider> context = new LinkedList<Lookup.Provider>();
+        context.addAll(projects);
+        context.addAll(dataObjects);
+        action = new CopyPathToClipboardAction(context);
     }
 
     @Override
@@ -132,6 +144,14 @@ public class CopyPathToClipboardActionTest extends NbTestCase {
                 + "b\\.txt$")); // ZIP file
         assertTrue(action.getAbsolutePath(dataObjects.get(3)).matches(
                 ".*test2[/\\\\]data\\.txt$")); // Shadow File for data.txt
+    }
+
+    @Test
+    public void testGetSelectedPathsForProjects() {
+        List<String> paths = new ArrayList<String>(
+                action.getSelectedPathsForProjects());
+        assertTrue(paths.get(0).endsWith("projectDir1")); // path for project 1
+        assertTrue(paths.get(1).endsWith("projectDir2")); // path for project 2
     }
 
     /**
@@ -168,8 +188,8 @@ public class CopyPathToClipboardActionTest extends NbTestCase {
         return testShadowFile;
     }
 
-    public void testGetSelectedPaths() {
-        Collection<String> paths = action.getSelectedPaths();
+    public void testGetSelectedDataObjectPaths() {
+        Collection<String> paths = action.getSelectedPathsForDataObjects();
         assertEquals("Duplicate shadow file should be ignored",
                 3, paths.size());
         String[] pathsArray = paths.toArray(new String[paths.size()]);
@@ -177,5 +197,31 @@ public class CopyPathToClipboardActionTest extends NbTestCase {
         assertTrue(pathsArray[0].contains("test1")); //test1/A/TestClass.java
         assertTrue(pathsArray[1].contains("archive.zip")); //test2/archive.zip?
         assertTrue(pathsArray[2].contains("data.txt")); //test2/data.txt
+    }
+
+    /**
+     * Creates a mocked {@link Project} with the given dir.
+     *
+     * @param projectDir
+     * @return
+     */
+    private Project createProject(String projectDir) {
+        try {
+            FileObject root = FileUtil.toFileObject(getWorkDir());
+            final FileObject dir = root.createFolder(projectDir);
+            return new Project() {
+                @Override
+                public FileObject getProjectDirectory() {
+                    return dir;
+                }
+
+                @Override
+                public Lookup getLookup() {
+                    throw new UnsupportedOperationException("Not supported.");
+                }
+            };
+        } catch (IOException ex) {
+            throw new IllegalArgumentException("should not happen in test");
+        }
     }
 }

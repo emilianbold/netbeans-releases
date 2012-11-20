@@ -48,8 +48,10 @@ import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -64,6 +66,8 @@ import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.api.project.ui.OpenProjects;
+import org.netbeans.modules.cnd.api.project.NativeProject;
+import org.netbeans.modules.cnd.api.project.NativeProjectChangeSupport;
 import org.netbeans.modules.cnd.api.remote.PathMap;
 import org.netbeans.modules.cnd.api.remote.RemoteFileUtil;
 import org.netbeans.modules.cnd.api.remote.RemoteSyncSupport;
@@ -72,7 +76,6 @@ import org.netbeans.modules.cnd.makeproject.api.BuildActionsProvider.BuildAction
 import org.netbeans.modules.cnd.makeproject.api.BuildActionsProvider.OutputStreamHandler;
 import org.netbeans.modules.cnd.makeproject.api.ProjectActionEvent.PredefinedType;
 import org.netbeans.modules.cnd.makeproject.api.ProjectActionEvent.Type;
-import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.DebuggerChooserConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ui.CustomizerNode;
@@ -134,8 +137,20 @@ public class ProjectActionSupport {
         return instance;
     }
 
-    private static void refreshProjectFiles(final Project project) {
+    private static boolean isFileOperationsIntensive(ProjectActionEvent pae) {
+        Type type = pae.getType();
+        if (type == PredefinedType.BUILD || type == PredefinedType.CLEAN || type == PredefinedType.BUILD_TESTS) {
+            return true;
+        }
+        return false;
+    }
+    
+    private static void refreshProjectFilesOnFinish(final ProjectActionEvent curPAE, final FileOperationsNotifier fon) {
         try {
+            if (curPAE.getType() != PredefinedType.RUN && !fon.isLastExpectedEvent(curPAE)) {
+                return;
+            }
+            final Project project = curPAE.getProject();
             final Set<File> files = new HashSet<File>();
             final Set<FileObject> fileObjects = new HashSet<FileObject>();
             FileObject projectFileObject = project.getProjectDirectory();
@@ -160,7 +175,7 @@ public class ProjectActionSupport {
             // refresh can take a lot of time for slow file systems
             // so we use worker and schedule it out of build process if auto refresh
             // is turned off by user in Tools->Options->Misk->Files->Enable auto-scanning of sources
-            Runnable refresher = new Runnable() {
+            final Runnable refresher = new Runnable() {
                 @Override
                 public void run() {
                     final File[] array = files.toArray(new File[files.size()]);
@@ -172,15 +187,23 @@ public class ProjectActionSupport {
                             FileSystemProvider.scheduleRefresh(fo);
                         }
                     }
-                    MakeLogicalViewProvider.refreshBrokenItems(project);
                 }
             };
             final Preferences nd = NbPreferences.root().node("org/openide/actions/FileSystemRefreshAction"); // NOI18N
             boolean manual = (nd != null) && nd.getBoolean("manual", false);// NOI18N
             if (manual) {
-                RP.post(refresher);
+                RP.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        FileUtil.runAtomicAction(refresher);
+                        fon.onFinish(curPAE);
+                        MakeLogicalViewProvider.refreshBrokenItems(project);
+                    }
+                });
             } else {
-                refresher.run();
+                FileUtil.runAtomicAction(refresher);
+                fon.onFinish(curPAE);
+                MakeLogicalViewProvider.refreshBrokenItems(project);
             }
         } catch (Exception e) {
             LOGGER.log(Level.INFO, "Cannot refresh project files", e);
@@ -233,6 +256,60 @@ public class ProjectActionSupport {
     private ArrayList<String> tabNames = new ArrayList<String>();
     private final Object lock = new Object();
 
+    private final class ProjectFileOperationsNotifier {
+        private final NativeProjectChangeSupport npcs;
+        private final ProjectActionEvent startPAE;
+        private ProjectActionEvent finishPAE;
+
+        public ProjectFileOperationsNotifier(NativeProjectChangeSupport npcs, ProjectActionEvent startPAE) {
+            this.npcs = npcs;
+            this.startPAE = startPAE;
+        }
+
+        @Override
+        public String toString() {
+            return "ProjectFileOperationsNotifier{" + "npcs=" + npcs + ", startPAE=" + startPAE + ", finishPAE=" + finishPAE + '}'; // NOI18N
+        }
+    }
+    
+    private final class FileOperationsNotifier {
+        private final Map<Project, ProjectFileOperationsNotifier> prjNotifier;
+
+        public FileOperationsNotifier(Map<Project, ProjectFileOperationsNotifier> prjNotifier) {
+            this.prjNotifier = prjNotifier;
+        }
+
+        private void onStart(ProjectActionEvent curPAE) {
+            ProjectFileOperationsNotifier notifier = prjNotifier.get(curPAE.getProject());
+            if (notifier != null && (notifier.npcs != null) && (curPAE == notifier.startPAE)) {
+                notifier.npcs.fireFileOperationsStarted();
+            }
+        }
+
+        public void onFinish(ProjectActionEvent curPAE) {
+            ProjectFileOperationsNotifier notifier = prjNotifier.get(curPAE.getProject());
+            if (notifier != null && (notifier.npcs != null) && (curPAE == notifier.finishPAE)) {
+                notifier.npcs.fireFileOperationsFinished();
+            }
+        }
+
+        private void finishAll() {
+            for (ProjectFileOperationsNotifier notifier : prjNotifier.values()) {
+                if (notifier.npcs != null) {
+                    notifier.npcs.fireFileOperationsFinished();
+                }
+            }
+        }
+
+        private boolean isLastExpectedEvent(ProjectActionEvent curPAE) {
+            ProjectFileOperationsNotifier notifier = prjNotifier.get(curPAE.getProject());
+            if (notifier != null && (notifier.npcs != null) && (curPAE == notifier.finishPAE)) {
+                return true;
+            }
+            return false;
+        }
+    }
+    
     private final class HandleEvents implements ExecutionListener {
 
         private InputOutput ioTab = null;
@@ -249,12 +326,14 @@ public class ProjectActionSupport {
         private final ProjectActionHandler customHandler;
         private ProjectActionHandler currentHandler = null;
         private final boolean reuseTabs;
+        private final FileOperationsNotifier fon;
 
         public HandleEvents(ProjectActionEvent[] paes, ProjectActionHandler customHandler) {
             this.paes = paes;
             this.customHandler = customHandler;
             currentAction = 0;
             reuseTabs = MakeOptions.getInstance().getReuse();
+            fon = getFileOperationsNotifier(paes);
             if (reuseTabs) {
                 synchronized (lock) {
                     if (mainTabHandler == null) {
@@ -477,6 +556,7 @@ public class ProjectActionSupport {
                     out.close();
                 }
             }
+            fon.finishAll();
         }
         
         private void go() {
@@ -606,8 +686,53 @@ public class ProjectActionSupport {
                     action.executionStarted(pid);
                 }
             }
+            fon.onStart(paes[currentAction]);
         }
 
+        private FileOperationsNotifier getFileOperationsNotifier(ProjectActionEvent[] paes) {
+            Map<Project, ProjectFileOperationsNotifier> prj2Notifier = new HashMap<Project, ProjectFileOperationsNotifier>();
+            for (ProjectActionEvent pae : paes) {
+                if (isFileOperationsIntensive(pae)) {
+                    Project project = pae.getProject();
+                    ProjectFileOperationsNotifier notifer = prj2Notifier.get(project);
+                    if (notifer == null) {
+                        NativeProjectChangeSupport npcs = null;
+                        try {
+                            npcs = project.getLookup().lookup(NativeProjectChangeSupport.class);
+                            if (npcs == null) {
+                                NativeProject nativeProject = project.getLookup().lookup(NativeProject.class);
+                                if (nativeProject instanceof NativeProjectChangeSupport) {
+                                    npcs = (NativeProjectChangeSupport)nativeProject;
+                                }
+                            }
+                        } catch (Exception e) {
+                            // This may be ok. The project could have been removed ....
+                            System.err.println("getNativeProject " + e);
+                        }                        
+                        notifer = new ProjectFileOperationsNotifier(npcs, pae);
+                        prj2Notifier.put(project, notifer);
+                    }
+                    notifer.finishPAE = pae;
+                }
+            }
+            return new FileOperationsNotifier(prj2Notifier);
+        }
+        
+        public NativeProjectChangeSupport getNativeProjectChangeSupport(Project project) {
+            NativeProject nativeProject = null;
+            try {
+                nativeProject = project.getLookup().lookup(NativeProject.class);
+            } catch (Exception e) {
+                // This may be ok. The project could have been removed ....
+                System.err.println("getNativeProject " + e);
+            }
+            if (nativeProject instanceof NativeProjectChangeSupport) {
+                return (NativeProjectChangeSupport) nativeProject;
+            } else {
+                return null;
+            }
+        }
+        
         @Override
         public void executionFinished(int rc) {
             if (additional != null) {
@@ -615,11 +740,9 @@ public class ProjectActionSupport {
                     ((ExecutionListener) action).executionFinished(rc);
                 }
             }
-            Type type = paes[currentAction].getType();
-            if (type == PredefinedType.BUILD || type == PredefinedType.CLEAN || type == PredefinedType.BUILD_TESTS || type == PredefinedType.RUN) {
-                // Refresh all files
-                refreshProjectFiles(paes[currentAction].getProject());
-            }
+            ProjectActionEvent curPAE = paes[currentAction];
+            // Refresh FS
+            refreshProjectFilesOnFinish(curPAE, fon);
             if (currentAction >= paes.length - 1 || rc != 0) {
                 synchronized (lock) {
                     if (mainTabHandler == this) {
@@ -677,42 +800,37 @@ public class ProjectActionSupport {
             String executable = pae.getExecutable();
             if (executable.length() == 0) {
                 SelectExecutablePanel panel = new SelectExecutablePanel(pae);
-                DialogDescriptor descriptor = new DialogDescriptor(panel, getString("SELECT_EXECUTABLE"));
+                DialogDescriptor descriptor = new DialogDescriptor(panel, getString("SELECT_EXECUTABLE")); // NOI18N
                 panel.setDialogDescriptor(descriptor);
                 DialogDisplayer.getDefault().notify(descriptor);
                 if (descriptor.getValue() == DialogDescriptor.OK_OPTION) {
-                    // Set executable in configuration
-                    MakeConfiguration makeConfiguration = pae.getConfiguration();
-                    executable = panel.getExecutable();
-                    executable = CndPathUtilitities.naturalizeSlashes(executable);
-                    //executable = CndPathUtilitities.toRelativePath(makeConfiguration.getBaseDir(), executable);
-                    executable = ProjectSupport.toProperPath(makeConfiguration.getBaseDir(), executable, pae.getProject());
-                    executable = CndPathUtilitities.normalizeSlashes(executable);
-                    if (makeConfiguration.isMakefileConfiguration()) {
-                        makeConfiguration.getMakefileConfiguration().getOutput().setValue(executable);
+                    final String selectedExecutable = panel.getExecutable();
+                    final MakeConfiguration projectConfiguration = pae.getConfiguration();
+
+                    // Modify Configuration ...
+                    RunProfile runProfile = projectConfiguration.getProfile();
+                    if (runProfile != null) {
+                        String currentValue = runProfile.getRunCommand().getValue();
+                        if (currentValue.isEmpty()) {
+                            // Will set this field to default macro
+                            runProfile.getRunCommand().setValue("\"" + MakeConfiguration.CND_OUTPUT_PATH_MACRO + "\""); // NOI18N
+                        }
+//                      } else if (currentValue.indexOf(CND_OUTPUT_PATH_MACRO) < 0) {
+//                          String relativeToRunDir = ProjectSupport.toProperPath(runProfile.getRunDirectory(), executable, MakeProjectOptions.getPathMode());
+//                          runProfile.getRunCommand().setValue(relativeToRunDir);
+//                          return;
+//                      }
                     }
-                    else if (makeConfiguration.isLibraryConfiguration()) {
-                        makeConfiguration.getProfile().getRunCommand().setValue(executable);
-                    }
-                    ConfigurationDescriptorProvider pdp = pae.getProject().getLookup().lookup(ConfigurationDescriptorProvider.class);
-                    if (pdp != null) {
-                        pdp.getConfigurationDescriptor().setModified();
-                    }
-                    // Set executable in pae
-                    if (pae.getType() == PredefinedType.RUN) {
-                        // Next block is commented out due to IZ120794
-                        /*CompilerSet compilerSet = CompilerSetManager.getDefault(makeConfiguration.getDevelopmentHost().getName()).getCompilerSet(makeConfiguration.getCompilerSet().getValue());
-                        if (compilerSet != null && compilerSet.getCompilerFlavor() != CompilerFlavor.MinGW) {
-                        // IZ 120352
-                        executable = FilePathAdaptor.naturalize(executable);
-                        }*/
-                        pae.setExecutable(executable);
-                    } else {
-                        pae.setExecutable(makeConfiguration.getMakefileConfiguration().getAbsOutput());
-                    }
-                } else {
-                    return false;
+
+                    String relativeToBaseDir = ProjectSupport.toProperPath(projectConfiguration.getBaseDir(), selectedExecutable, pae.getProject());
+                    projectConfiguration.getMakefileConfiguration().getOutput().setValue(relativeToBaseDir);
+
+                    // Modify pae ...
+                    pae.setExecutable(selectedExecutable);
+                    pae.setFinalExecutable();
+                    return true;
                 }
+                return false;
             }
             // Check existence of executable
             if (!CndPathUtilitities.isPathAbsolute(executable)) { // NOI18N

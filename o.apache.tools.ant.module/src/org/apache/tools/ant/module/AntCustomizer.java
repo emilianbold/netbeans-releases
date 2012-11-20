@@ -59,6 +59,8 @@ import javax.swing.DefaultComboBoxModel;
 import javax.swing.JFileChooser;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
+import org.netbeans.modules.options.java.api.JavaOptions;
+import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.execution.NbClassPath;
@@ -73,8 +75,11 @@ import org.openide.util.RequestProcessor;
  * Implementation of one panel in Options Dialog.
  * @author Jan Jancura, Jesse Glick
  */
+@OptionsPanelController.Keywords(keywords={"ant"}, location=JavaOptions.JAVA, tabTitle= "#Ant")
 public class AntCustomizer extends JPanel implements ActionListener {
     
+    private static final RequestProcessor RP = new RequestProcessor(AntCustomizer.class);
+
     private List<File> classpath = Collections.emptyList();
     private Map<String,String> properties = Collections.emptyMap();
     private boolean         changed = false;
@@ -157,7 +162,7 @@ public class AntCustomizer extends JPanel implements ActionListener {
     
     private void updateAntVersion() { // #107094: asynch, since it can be slow
         lAntVersion.setText(NbBundle.getMessage(AntCustomizer.class, "LBL_please_wait"));
-        RequestProcessor.getDefault().post(new Runnable() {
+        RP.post(new Runnable() {
             public void run() {
                 final String version = AntSettings.getAntVersion();
                 EventQueue.invokeLater(new Runnable() {

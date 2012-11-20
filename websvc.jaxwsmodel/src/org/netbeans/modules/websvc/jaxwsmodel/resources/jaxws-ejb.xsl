@@ -50,6 +50,7 @@ made subject to such option by the copyright holder.
                 xmlns:jaxws="http://www.netbeans.org/ns/jax-ws/1"> 
     <xsl:output method="xml" indent="yes" encoding="UTF-8" xalan:indent-amount="4"/>
     <xsl:param name="jaxwsversion">jaxws21lib</xsl:param>
+    <xsl:param name="xjcencoding">false</xsl:param>
     <xsl:template match="/">
 
         <xsl:comment><![CDATA[
@@ -169,6 +170,11 @@ made subject to such option by the copyright holder.
                         destdir="${{build.generated.dir}}/jax-wsCache/{$wsname}"
                         wsdl="${{wsdl-{$wsname}}}"
                         catalog="{$catalog}">
+						<xsl:if test="$xjcencoding='true'">
+							<xsl:attribute name="encoding">
+								<xsl:text>${source.encoding}</xsl:text>
+                     		</xsl:attribute>
+             			</xsl:if>
                         <xsl:if test="$wsimportoptions">
                             <xsl:for-each select="$wsimportoptions/jaxws:wsimport-option">
                                 <xsl:variable name="wsoptionname" select="jaxws:wsimport-option-name"/>
@@ -247,6 +253,11 @@ made subject to such option by the copyright holder.
                             destdir="${{build.generated.dir}}/jax-wsCache/service/{$wsname}"
                             wsdl="${{service-wsdl-{$wsname}}}"
                             catalog="{$catalog}">
+                            <xsl:if test="$xjcencoding='true'">
+								<xsl:attribute name="encoding">
+									<xsl:text>${source.encoding}</xsl:text>
+                     			</xsl:attribute>
+             				</xsl:if>
                             <xsl:if test="$wsimportoptions">
                                 <xsl:for-each select="$wsimportoptions/jaxws:wsimport-option">
                                     <xsl:variable name="wsoptionname" select="jaxws:wsimport-option-name"/>

@@ -64,6 +64,7 @@ import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmScope;
 import org.netbeans.modules.cnd.api.model.CsmSpecializationParameter;
 import org.netbeans.modules.cnd.modelimpl.csm.core.AstUtil;
+import org.netbeans.modules.cnd.modelimpl.csm.core.OffsetableDeclarationBase.ScopedDeclarationBuilder;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
@@ -111,7 +112,30 @@ public class SpecializationDescriptor {
     public String toString() {
         return specializationParams.toString();
     }
+    
+    public static abstract class SpecializationParameterBuilder extends ScopedDeclarationBuilder {
+        public abstract CsmSpecializationParameter create();
+    }
 
+    public static class SpecializationDescriptorBuilder extends ScopedDeclarationBuilder {
+
+        private List<SpecializationParameterBuilder> parameterBuilders = new ArrayList<SpecializationParameterBuilder>();
+        
+        public void addParameterBuilder(SpecializationParameterBuilder parameterBuilser) {
+            parameterBuilders.add(parameterBuilser);
+        }
+        
+        public SpecializationDescriptor create() {
+            List<CsmSpecializationParameter> params = new ArrayList<CsmSpecializationParameter>();
+            for (SpecializationParameterBuilder paramBuilder : parameterBuilders) {
+                paramBuilder.setScope(getScope());
+                params.add(paramBuilder.create());
+            }
+            SpecializationDescriptor descriptor = new SpecializationDescriptor(params, isGlobal());
+            return descriptor;
+        }
+    }    
+    
     ////////////////////////////////////////////////////////////////////////////
     // impl of SelfPersistent
 

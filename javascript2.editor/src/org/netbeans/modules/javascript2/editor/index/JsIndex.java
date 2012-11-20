@@ -45,6 +45,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.WeakHashMap;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.javascript2.editor.model.TypeUsage;
@@ -84,10 +86,23 @@ public class JsIndex {
         LOG.log(Level.FINE, "JsIndex for roots: {0}", roots); //NOI18N
         return new JsIndex(QuerySupportFactory.get(roots));
     }
-    
+
+    private static WeakHashMap<FileObject, JsIndex> cache = new WeakHashMap<FileObject, JsIndex>();
+
+    private static AtomicBoolean isIndexChanged = new AtomicBoolean(true);
+
+    public static synchronized void changeInIndex() {
+        isIndexChanged.set(true);
+    }
+
     public static JsIndex get(FileObject fo) {
-        LOG.log(Level.FINE, "JsIndex for FileObject: {0}", fo); //NOI18N
-        return new JsIndex(QuerySupportFactory.get(fo));
+        JsIndex index = cache.get(fo);
+        if (index == null) {
+            LOG.log(Level.FINE, "Creating JsIndex for FileObject: {0}", fo); //NOI18N
+            index = new JsIndex(QuerySupportFactory.get(fo));
+            cache.put(fo, index);
+        }
+        return index;
     }
 
     public Collection<? extends IndexResult> query(
@@ -103,19 +118,33 @@ public class JsIndex {
 
         return Collections.<IndexResult>emptySet();
     }
-    
+
+    private Collection<IndexedElement> allGlobalItems = new ArrayList<IndexedElement>();
+    private static final Object LOCK = new Object();
+
     public Collection <IndexedElement> getGlobalVar(String prefix) {
-        Collection<IndexedElement> allGlobalItems = new ArrayList<IndexedElement>();
-        prefix = prefix == null ? "" : prefix; //NOI18N
-
-        Collection<? extends IndexResult> globalObjects = query(
-                JsIndex.FIELD_IS_GLOBAL, "1", QuerySupport.Kind.EXACT, TERMS_BASIC_INFO); //NOI18N
-        for (IndexResult indexResult : globalObjects) {
-            IndexedElement indexedElement = IndexedElement.create(indexResult);
-            allGlobalItems.add(indexedElement);
+        if (isIndexChanged.get()) {
+            synchronized(LOCK) {
+                if (isIndexChanged.get()) {
+                    ArrayList<IndexedElement> globals = new ArrayList<IndexedElement>();
+                    Collection<? extends IndexResult> globalObjects = query(
+                            JsIndex.FIELD_IS_GLOBAL, "1", QuerySupport.Kind.EXACT, TERMS_BASIC_INFO); //NOI18N
+                    for (IndexResult indexResult : globalObjects) {
+                        IndexedElement indexedElement = IndexedElement.create(indexResult);
+                        globals.add(indexedElement);
+                    }
+                    allGlobalItems.clear();
+                    allGlobalItems.addAll(globals);
+                    isIndexChanged.set(false);
+                }
+            }
         }
-
-        return getElementsByPrefix(prefix, allGlobalItems);
+        prefix = prefix == null ? "" : prefix; //NOI18N
+        Collection<IndexedElement>sortedItems;
+        synchronized(LOCK) {
+            sortedItems = getElementsByPrefix(prefix, allGlobalItems);
+        }
+        return sortedItems;
     }
 
     private static Collection<IndexedElement> getElementsByPrefix(String prefix, Collection<IndexedElement> items) {

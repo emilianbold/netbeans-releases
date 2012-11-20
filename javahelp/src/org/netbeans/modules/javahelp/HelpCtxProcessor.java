@@ -44,6 +44,7 @@
 
 package org.netbeans.modules.javahelp;
 
+import java.awt.EventQueue;
 import java.awt.Image;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
@@ -67,6 +68,7 @@ import org.openide.nodes.NodeEvent;
 import org.openide.nodes.NodeListener;
 import org.openide.nodes.NodeMemberEvent;
 import org.openide.nodes.NodeReorderEvent;
+import org.openide.util.RequestProcessor;
 import org.openide.util.WeakListeners;
 import org.openide.util.lookup.Lookups;
 import org.openide.xml.EntityCatalog;
@@ -102,7 +104,11 @@ public final class HelpCtxProcessor implements Environment.Provider {
                     if (!el.getNodeName().equals("helpctx")) { // NOI18N
                         throw new IOException();
                     }
-                    return new ShortcutAction(obj, el.getAttribute("id"), Boolean.valueOf(el.getAttribute("showmaster")));
+                    Action a = new ShortcutAction(obj, el.getAttribute("id"), Boolean.valueOf(el.getAttribute("showmaster")));
+                    if (obj.getPrimaryFile().getAttribute("iconBase") != null) { //NOI18N
+                        a.putValue("iconBase", obj.getPrimaryFile().getAttribute("iconBase")); //NOI18N
+                    }
+                    return a;
                 } catch (IOException x) {
                     throw x;
                 } catch (Exception x) {
@@ -116,6 +122,9 @@ public final class HelpCtxProcessor implements Environment.Provider {
      */
     private static final class ShortcutAction extends AbstractAction implements HelpCtx.Provider, NodeListener, ChangeListener {
         
+        private static final RequestProcessor RP =
+                new RequestProcessor(ShortcutAction.class);
+
         /** associated XML file representing it
          */
         private final DataObject obj;
@@ -223,12 +232,25 @@ public final class HelpCtxProcessor implements Environment.Provider {
         }
 
         private void updateEnabled() {
-            Help h = findHelp();
-            Boolean valid = h == null ? Boolean.FALSE : h.isValidID(helpID, false);
-            if (valid != null) {
-                setEnabled(valid.booleanValue());
-            }
-            Installer.log.log(Level.FINE, "enabled: xml={0} id={1} enabled={2}", new Object[] {obj.getPrimaryFile(), helpID, valid});
+            RP.post(new Runnable() {
+                @Override
+                public void run() {
+                    Help h = findHelp();
+                    final Boolean valid = h == null
+                            ? Boolean.FALSE : h.isValidID(helpID, false);
+                    if (valid != null) {
+                        EventQueue.invokeLater(new Runnable() {
+                            @Override
+                            public void run() {
+                                setEnabled(valid.booleanValue());
+                            }
+                        });
+                    }
+                    Installer.log.log(Level.FINE,
+                            "enabled: xml={0} id={1} enabled={2}", //NOI18N
+                            new Object[]{obj.getPrimaryFile(), helpID, valid});
+                }
+            });
         }
 
         public @Override void nodeDestroyed(NodeEvent ev) {

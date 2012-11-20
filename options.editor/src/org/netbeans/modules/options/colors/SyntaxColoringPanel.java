@@ -46,6 +46,7 @@ package org.netbeans.modules.options.colors;
 
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.EventQueue;
 import java.awt.Font;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
@@ -83,8 +84,10 @@ import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.settings.EditorStyleConstants;
 import org.netbeans.api.editor.settings.FontColorNames;
 import org.netbeans.api.editor.settings.FontColorSettings;
+import org.netbeans.api.options.OptionsDisplayer;
 import org.netbeans.modules.options.colors.ColorModel.Preview;
 import org.netbeans.modules.options.colors.spi.FontsColorsController;
+import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.awt.ColorComboBox;
@@ -97,6 +100,7 @@ import org.openide.util.RequestProcessor.Task;
  *
  * @author  Jan Jancura
  */
+@OptionsPanelController.Keywords(keywords={"#KW_SyntaxColoringPanel"}, location=OptionsDisplayer.FONTSANDCOLORS, tabTitle= "#Syntax_coloring_tab.displayName")
 public class SyntaxColoringPanel extends JPanel implements ActionListener, 
     PropertyChangeListener, FontsColorsController, ItemListener {
     
@@ -175,9 +179,15 @@ public class SyntaxColoringPanel extends JPanel implements ActionListener,
             new Runnable () {
             @Override
                 public void run () {
-                    refreshUI ();
-                    if (!blink) return;
-                    startBlinking ();
+                    if(EventQueue.isDispatchThread()) {
+                        refreshUI ();
+                        if (!blink) {
+                            return;
+                        }
+                        startBlinking ();
+                    } else {
+                        EventQueue.invokeLater(this);
+                    }
                 }
             }
         );
@@ -655,10 +665,16 @@ public class SyntaxColoringPanel extends JPanel implements ActionListener,
         ("SyntaxColoringPanel").create (new Runnable () {
         @Override
         public void run () {
-            updatePreview ();
-            if (blinkSequence == 0) return;
-            blinkSequence --;
-            task.schedule (250);
+            if (EventQueue.isDispatchThread()) {
+                updatePreview ();
+                if (blinkSequence == 0) {
+                    return;
+                }
+                blinkSequence --;
+                task.schedule (250);
+            } else {
+                EventQueue.invokeLater(this);
+            }
         }
     });
     

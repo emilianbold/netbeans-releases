@@ -55,7 +55,6 @@ import org.netbeans.modules.tasks.ui.model.Category;
 import org.netbeans.modules.tasks.ui.treelist.TreeLabel;
 import org.netbeans.modules.tasks.ui.treelist.TreeListNode;
 import org.netbeans.modules.tasks.ui.utils.Utils;
-import org.openide.util.ImageUtilities;
 
 public class ClosedCategoryNode extends CategoryNode {
 
@@ -90,8 +89,7 @@ public class ClosedCategoryNode extends CategoryNode {
     }
 
     @Override
-    protected List<Issue> load() {
-        return Collections.emptyList();
+    void refreshTaskContainer() {
     }
 
     @Override
@@ -104,7 +102,6 @@ public class ClosedCategoryNode extends CategoryNode {
 
     @Override
     protected JComponent createComponent(List<Issue> data) {
-        updateNodes();
         panel = new JPanel(new GridBagLayout());
         panel.setOpaque(false);
         synchronized (LOCK) {

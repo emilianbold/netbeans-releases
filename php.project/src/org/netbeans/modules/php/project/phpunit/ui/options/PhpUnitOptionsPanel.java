@@ -71,6 +71,7 @@ import org.netbeans.modules.php.project.phpunit.PhpUnit;
 import org.netbeans.modules.php.project.phpunit.PhpUnitSkelGen;
 import org.netbeans.modules.php.project.ui.LastUsedFolders;
 import org.netbeans.modules.php.project.ui.Utils;
+import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.awt.HtmlBrowser;
 import org.openide.awt.Mnemonics;
 import org.openide.filesystems.FileChooserBuilder;
@@ -82,6 +83,9 @@ import org.openide.util.NbBundle;
 /**
  * @author Tomas Mysik
  */
+@NbBundle.Messages("PhpUnitOptionsPanel.keywords.coverage=coverage")
+@OptionsPanelController.Keywords(keywords={"php", "phpunit", "unit testing", "framework", "coverage", "#PhpUnitOptionsPanel.keywords.coverage"},
+        location=UiUtils.OPTIONS_PATH, tabTitle= "#LBL_PHPUnitOptionsName")
 public class PhpUnitOptionsPanel extends JPanel {
 
     private static final long serialVersionUID = -6453232134654321L;

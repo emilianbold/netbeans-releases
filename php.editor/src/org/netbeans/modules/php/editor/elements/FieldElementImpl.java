@@ -48,11 +48,11 @@ import java.util.Set;
 import org.netbeans.modules.parsing.spi.indexing.support.IndexResult;
 import org.netbeans.modules.php.api.editor.PhpClass;
 import org.netbeans.modules.php.api.editor.PhpClass.Field;
+import org.netbeans.modules.php.editor.api.ElementQuery;
 import org.netbeans.modules.php.editor.api.FileElementQuery;
 import org.netbeans.modules.php.editor.api.NameKind;
 import org.netbeans.modules.php.editor.api.PhpElementKind;
 import org.netbeans.modules.php.editor.api.PhpModifiers;
-import org.netbeans.modules.php.editor.api.ElementQuery;
 import org.netbeans.modules.php.editor.api.elements.FieldElement;
 import org.netbeans.modules.php.editor.api.elements.TypeElement;
 import org.netbeans.modules.php.editor.api.elements.TypeResolver;
@@ -68,7 +68,7 @@ import org.openide.util.Parameters;
 /**
  * @author Radek Matous
  */
-public class FieldElementImpl extends PhpElementImpl implements FieldElement {
+public final class FieldElementImpl extends PhpElementImpl implements FieldElement {
 
     public static final String IDX_FIELD = PHPIndexer.FIELD_FIELD;
 
@@ -115,7 +115,7 @@ public class FieldElementImpl extends PhpElementImpl implements FieldElement {
 
     public static FieldElement fromSignature(final TypeElement type, final NameKind query,
             final IndexQueryImpl indexScopeQuery, final IndexResult indexResult, final Signature sig) {
-        Parameters.notNull("query", query);//NOI18N
+        Parameters.notNull("query", query); //NOI18N
         final FieldSignatureParser signParser = new FieldSignatureParser(sig);
         FieldElement retval = null;
         if (matchesQuery(query, signParser)) {
@@ -134,7 +134,7 @@ public class FieldElementImpl extends PhpElementImpl implements FieldElement {
         final List<? extends SingleFieldDeclarationInfo> fields = SingleFieldDeclarationInfo.create(node);
         final Set<FieldElement> retval = new HashSet<FieldElement>();
         for (SingleFieldDeclarationInfo info : fields) {
-            final String returnType = VariousUtils.getFieldTypeFromPHPDoc(fileQuery.getResult().getProgram(),info.getOriginalNode());
+            final String returnType = VariousUtils.getFieldTypeFromPHPDoc(fileQuery.getResult().getProgram(), info.getOriginalNode());
             Set<TypeResolver> types = returnType != null ? TypeResolverImpl.parseTypes(returnType) : null;
             retval.add(new FieldElementImpl(type, info.getName(), info.getRange().getStart(),
                     info.getAccessModifiers().toFlags(), fileQuery.getURL().toString(), fileQuery,
@@ -150,8 +150,15 @@ public class FieldElementImpl extends PhpElementImpl implements FieldElement {
         Parameters.notNull("node", node);
         Parameters.notNull("fileQuery", fileQuery);
         final ASTNodeInfo<FieldAccess> info = ASTNodeInfo.create(node);
-        return new FieldElementImpl(type, info.getName(), info.getRange().getStart(),
-                    PhpModifiers.PUBLIC, fileQuery.getURL().toString(), fileQuery,resolvers, resolvers);
+        return new FieldElementImpl(
+                type,
+                info.getName(),
+                info.getRange().getStart(),
+                PhpModifiers.PUBLIC,
+                fileQuery.getURL().toString(),
+                fileQuery,
+                resolvers,
+                resolvers);
     }
 
     static FieldElement fromFrameworks(final TypeElement type, final Field field, final ElementQuery elementQuery) {
@@ -163,7 +170,7 @@ public class FieldElementImpl extends PhpElementImpl implements FieldElement {
                 : Collections.<TypeResolver>emptySet();
         FieldElementImpl retval = new FieldElementImpl(type, field.getName(), field.getOffset(),
                 PhpModifiers.NO_FLAGS, null, elementQuery, typeResolvers, typeResolvers);
-        retval.fileObject = field.getFile();
+        retval.setFileObject(field.getFile());
         return retval;
     }
 
@@ -175,44 +182,44 @@ public class FieldElementImpl extends PhpElementImpl implements FieldElement {
 
 
     @Override
-    public final String getSignature() {
+    public String getSignature() {
         StringBuilder sb = new StringBuilder();
         final String noDollarName = getName().substring(1);
-        sb.append(noDollarName.toLowerCase()).append(SEPARATOR.SEMICOLON);//NOI18N
-        sb.append(noDollarName).append(SEPARATOR.SEMICOLON);//NOI18N
-        sb.append(getOffset()).append(SEPARATOR.SEMICOLON);//NOI18N
-        sb.append(getPhpModifiers().toFlags()).append(SEPARATOR.SEMICOLON);
+        sb.append(noDollarName.toLowerCase()).append(Separator.SEMICOLON); //NOI18N
+        sb.append(noDollarName).append(Separator.SEMICOLON); //NOI18N
+        sb.append(getOffset()).append(Separator.SEMICOLON); //NOI18N
+        sb.append(getPhpModifiers().toFlags()).append(Separator.SEMICOLON);
         for (TypeResolver typeResolver : getInstanceTypes()) {
             TypeResolverImpl resolverImpl = (TypeResolverImpl) typeResolver;
             sb.append(resolverImpl.getSignature());
         }
-        sb.append(SEPARATOR.SEMICOLON);//NOI18N
+        sb.append(Separator.SEMICOLON); //NOI18N
         checkSignature(sb);
         return sb.toString();
     }
 
     @Override
-    public final PhpElementKind getPhpElementKind() {
+    public PhpElementKind getPhpElementKind() {
         return FieldElement.KIND;
     }
 
     @Override
-    public final PhpModifiers getPhpModifiers() {
+    public PhpModifiers getPhpModifiers() {
         return modifiers;
     }
 
     @Override
-    public final TypeElement getType() {
+    public TypeElement getType() {
         return enclosingType;
     }
 
     @Override
-    public final Set<TypeResolver> getInstanceTypes() {
+    public Set<TypeResolver> getInstanceTypes() {
         return instanceTypes;
     }
 
     @Override
-    public final Set<TypeResolver> getInstanceFQTypes() {
+    public Set<TypeResolver> getInstanceFQTypes() {
         return instanceFQTypes;
     }
 
@@ -231,7 +238,7 @@ public class FieldElementImpl extends PhpElementImpl implements FieldElement {
     }
 
     @Override
-    public final String getName(final boolean dollared) {
+    public String getName(final boolean dollared) {
         return getName(getName(), dollared);
     }
 

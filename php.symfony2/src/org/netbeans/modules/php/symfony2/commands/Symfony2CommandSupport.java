@@ -91,7 +91,12 @@ public final class Symfony2CommandSupport extends FrameworkCommandSupport {
 
     @Override
     protected File getPluginsDirectory() {
-        FileObject vendor = phpModule.getSourceDirectory().getFileObject("vendor"); // NOI18N
+        FileObject sourceDirectory = phpModule.getSourceDirectory();
+        if (sourceDirectory == null) {
+            // broken project
+            return null;
+        }
+        FileObject vendor = sourceDirectory.getFileObject("vendor"); // NOI18N
         if (vendor != null && vendor.isFolder()) {
             return FileUtil.toFile(vendor);
         }

@@ -164,8 +164,8 @@ public interface CXXParserAction extends CsmParserProvider.CsmParseCallback {
     public static int CLASS_VIRTUAL_SPECIFIER__FINAL = 99;
     public static int CLASS_VIRTUAL_SPECIFIER__EXPLICIT = 100;
     public static int MEMBER_SPECIFICATION__COLON = 101;
-    public static int MEMBER_DECLARATION__COMMA2 = 101;
-    public static int MEMBER_DECLARATION__SEMICOLON = 102;
+    public static int SIMPLE_MEMBER_DECLARATION__COMMA2 = 101;
+    public static int SIMPLE_MEMBER_DECLARATION__SEMICOLON = 102;
     public static int VIRT_SPECIFIER__OVERRIDE = 102;
     public static int VIRT_SPECIFIER__FINAL = 103;
     public static int VIRT_SPECIFIER__NEW = 104;
@@ -307,6 +307,10 @@ public interface CXXParserAction extends CsmParserProvider.CsmParseCallback {
     void condition(Token token);
     void condition(int kind, Token token);
     void end_condition(Token token);
+    void condition_declaration(Token token);
+    void end_condition_declaration(Token token);
+    void condition_expression(Token token);
+    void end_condition_expression(Token token);    
     void iteration_statement(Token token);
     void iteration_statement(int kind, Token token);
     void end_iteration_statement(Token token);
@@ -327,6 +331,7 @@ public interface CXXParserAction extends CsmParserProvider.CsmParseCallback {
     void block_declaration(Token token);
     void end_block_declaration(Token token);
     void id_expression(Token token);
+    void end_id_expression(Token token);
     void alias_declaration(Token usingToken, Token identToken, Token assignequalToken);
     void end_alias_declaration(Token token);
     void function_specifier(int kind, Token token);
@@ -424,6 +429,9 @@ public interface CXXParserAction extends CsmParserProvider.CsmParseCallback {
     void member_declaration(Token token);
     void member_declaration(int kind, Token token);
     void end_member_declaration(Token token);    
+    void simple_member_declaration(Token token);
+    void simple_member_declaration(int kind, Token token);
+    void end_simple_member_declaration(Token token);
     void member_declarator(Token token);
     void end_member_declarator(Token token);
     void pure_specifier(Token token);
@@ -487,4 +495,10 @@ public interface CXXParserAction extends CsmParserProvider.CsmParseCallback {
     void handler(Token token);
     void handler(int kind, Token token);
     void end_handler(Token token);
+    void assignment_expression(Token token);
+    void end_assignment_expression(Token token);
+    void expression(Token token);
+    void end_expression(Token token);
+    void constant_expression(Token token);
+    void end_constant_expression(Token token);
 }

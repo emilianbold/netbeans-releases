@@ -151,7 +151,7 @@ public class JpaControllerUtil {
     
     public static String readResource(InputStream is, String encoding) throws IOException {
         // read the config from resource first
-        StringBuffer sbuffer = new StringBuffer();
+        StringBuilder sbuffer = new StringBuilder();
         String lineSep = System.getProperty("line.separator");//NOI18N
         BufferedReader br = new BufferedReader(new InputStreamReader(is, encoding));
         String line = br.readLine();
@@ -197,7 +197,7 @@ public class JpaControllerUtil {
             typeElement = getSuperclassTypeElement(typeElement);
         }
         if (!accessTypeDetected) {
-            Logger.getLogger(JpaControllerUtil.class.getName()).log(Level.WARNING, "Failed to detect correct access type for class: " + qualifiedName); // NOI18N
+            Logger.getLogger(JpaControllerUtil.class.getName()).log(Level.WARNING, "Failed to detect correct access type for class: {0}", qualifiedName); // NOI18N
         }
         return fieldAccess;
     }
@@ -389,7 +389,7 @@ public class JpaControllerUtil {
         }
         if (passedTypeClass != null && Collection.class.isAssignableFrom(passedTypeClass)) {
             List<? extends TypeMirror> passedTypeArgs = ((DeclaredType)passedType).getTypeArguments();
-            if (passedTypeArgs.size() == 0) {
+            if (passedTypeArgs.isEmpty()) {
                 return passedType;
             }
             return passedTypeArgs.get(0);
@@ -399,7 +399,7 @@ public class JpaControllerUtil {
     
     public static boolean isFieldOptionalAndNullable(ExecutableElement method, boolean fieldAccess) {
         boolean isFieldOptional = true;
-        Boolean isFieldNullable = null;
+        Boolean isFieldNullable;
         Element fieldElement = fieldAccess ? JpaControllerUtil.guessField(method) : method;
         if (fieldElement == null) {
             fieldElement = method;
@@ -498,7 +498,7 @@ public class JpaControllerUtil {
                 }
             }
         }
-        Logger.getLogger(JpaControllerUtil.class.getName()).log(Level.WARNING, "Cannot find ID getter in class: " + typeElement.getQualifiedName());
+        Logger.getLogger(JpaControllerUtil.class.getName()).log(Level.WARNING, "Cannot find ID getter in class: {0}", typeElement.getQualifiedName());
         return null;
     }
     
@@ -586,7 +586,7 @@ public class JpaControllerUtil {
                 return variableElement;
             }
         }
-        Logger.getLogger(JpaControllerUtil.class.getName()).log(Level.WARNING, "Cannot detect the field associated with property: " + guessFieldName);
+        Logger.getLogger(JpaControllerUtil.class.getName()).log(Level.WARNING, "Cannot detect the field associated with property: {0}", guessFieldName);
         return null;
     }
 
@@ -604,7 +604,7 @@ public class JpaControllerUtil {
                 return variableElement;
             }
         }
-        Logger.getLogger(JpaControllerUtil.class.getName()).log(Level.INFO, "Cannot detect setter associated with getter: " + guessGetterName);
+        Logger.getLogger(JpaControllerUtil.class.getName()).log(Level.INFO, "Cannot detect setter associated with getter: {0}", guessGetterName);
         return null;
     }
     
@@ -679,7 +679,6 @@ public class JpaControllerUtil {
     }
     
     private static class EmbeddedPkSupportInfo {
-        private TypeElement type;
         private Map<String,ExecutableElement> joinColumnNameToRelationshipMethod = new HashMap<String,ExecutableElement>();
         private Map<ExecutableElement,List<String>> relationshipMethodToJoinColumnNames = new HashMap<ExecutableElement,List<String>>(); //used only in isRedundantWithPkFields
         private Map<String,String> joinColumnNameToReferencedColumnName = new HashMap<String,String>();
@@ -741,7 +740,6 @@ public class JpaControllerUtil {
         }
         
         EmbeddedPkSupportInfo(TypeElement type) {
-            this.type = type;
             isFieldAccess = isFieldAccess(type);
             for (ExecutableElement method : getEntityMethods(type)) {
                 String methodName = method.getSimpleName().toString();
@@ -819,7 +817,9 @@ public class JpaControllerUtil {
         private String guessColumnName(ExecutableElement pkMethod){
             Element pkFieldvariable = guessField(pkMethod);
             Element pkFieldElement = isFieldAccess ? pkFieldvariable : guessGetter(pkMethod);
-            if(pkFieldElement == null) return null;//something is missed, may be getter name do not match variable name, see #190854
+            if(pkFieldElement == null) {
+                return null;
+            }//something is missed, may be getter name do not match variable name, see #190854
             String pkMethodName = pkMethod.getSimpleName().toString();
             String columnName = null;
             AnnotationMirror columnAnnotation = findAnnotation(pkFieldElement, "javax.persistence.Column"); //NOI18N
@@ -828,7 +828,9 @@ public class JpaControllerUtil {
             }
             if(columnName == null){
                 //it's not necessary to annotate with @Column and have name also, it;s optional in JPA1.0/2.0 and may be later
-                if(pkFieldvariable.getModifiers().contains(Modifier.TRANSIENT)) return null;//do not store transient fields
+                if(pkFieldvariable.getModifiers().contains(Modifier.TRANSIENT)) {
+                    return null;
+                }//do not store transient fields
                 if(isFieldAccess) {
                     columnName = pkFieldvariable.getSimpleName().toString().toUpperCase();
                 } else {

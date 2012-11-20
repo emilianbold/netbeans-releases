@@ -191,7 +191,13 @@ public class Css3LexerTest extends NbTestCase {
         assertANTLRToken(null ,Css3Lexer.WS, lexer.nextToken());
         
     }
-    
+
+     public void testLexingURLToken() throws Exception {
+        String source = "url(http://fonts.googleapis.com/css?family=Syncopate) ";
+        Lexer lexer = createLexer(source);
+        assertANTLRToken(null ,Css3Lexer.URI, lexer.nextToken());
+    }
+     
      /**
     * @param expectedImage - use null if you do not want to check the image
     */

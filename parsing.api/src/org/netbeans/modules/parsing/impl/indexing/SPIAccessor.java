@@ -130,4 +130,7 @@ public abstract class SPIAccessor {
 
     public abstract Object getProperty(@NonNull Context context, @NonNull String propName);
 
+    public abstract boolean isTypeOf (@NonNull Indexable indexable, @NonNull String mimeType);
+
+    public abstract FileObject getFileObject(@NonNull Indexable indexable);
 }

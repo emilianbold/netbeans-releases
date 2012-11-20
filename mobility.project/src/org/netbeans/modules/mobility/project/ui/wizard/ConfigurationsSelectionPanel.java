@@ -62,53 +62,69 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author Adam Sotona
+ * @author Adam Sotona, Petr Somol
  */
 public class ConfigurationsSelectionPanel implements WizardDescriptor.FinishablePanel {
     
-    public static final String CONFIGURATION_TEMPLATES = "configuration_templates"; //NOI18N
+    public static final String CONFIGURATION_TEMPLATES = "configuration_templates"; // NOI18N
     
     private ConfigurationsSelectionPanelGUI gui = null;
+    private boolean embedded;
     private TemplateWizard wiz;
     
+    @Override
     public void readSettings(final Object settings) {
         wiz = (TemplateWizard)settings;
+        embedded = wiz.getProperty(Utils.IS_EMBEDDED) == null ? false : (Boolean)wiz.getProperty(Utils.IS_EMBEDDED);
         Set s = (Set<ConfigurationTemplateDescriptor>)wiz.getProperty(CONFIGURATION_TEMPLATES);
         getComponent();
         gui.setSelectedTemplates(s == null ? new HashSet() : s);
     }
     
+    @Override
     public void storeSettings(final Object settings) {
         getComponent();
         ((TemplateWizard)settings).putProperty(CONFIGURATION_TEMPLATES, gui.getSelectedTemplates());
     }
     
+    @Override
     public void addChangeListener(final ChangeListener l) {
         getComponent();
         gui.addChangeListener(l);
     }
     
+    @Override
     public void removeChangeListener(final ChangeListener l) {
-        if (gui != null) gui.removeChangeListener(l);
+        if (gui != null) {
+            gui.removeChangeListener(l);
+        }
     }
     
+    @Override
     public Component getComponent() {
-        if (gui == null) gui = new ConfigurationsSelectionPanelGUI();
+        if (gui == null) {
+            gui = new ConfigurationsSelectionPanelGUI();
+        }
         return gui;
     }
     
+    @Override
     public HelpCtx getHelp() {
-        return new HelpCtx(ConfigurationsSelectionPanel.class);
+        return new HelpCtx(ConfigurationsSelectionPanel.class.getName() + (embedded ? "Embedded" : "") ); // NOI18N
     }
     
+    @Override
     public boolean isFinishPanel() {
         return true;
     }
     
+    @Override
     public boolean isValid() {
         getComponent();
         boolean valid = gui.valid();
-        if (wiz != null) wiz.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, valid ? null : NbBundle.getMessage(ConfigurationsSelectionPanel.class, "ERR_CfgSelPanel_NameCollision")); // NOI18N
+        if (wiz != null) {
+            wiz.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, valid ? null : NbBundle.getMessage(ConfigurationsSelectionPanel.class, "ERR_CfgSelPanel_NameCollision")); // NOI18N
+        }
         return valid;
     }
 }

@@ -227,12 +227,14 @@ public abstract class JsDocumentationHolder {
         TokenSequence<? extends JsTokenId> ts = LexUtilities.getJsTokenSequence(tokenHierarchy, offset);
         if (ts != null) {
             ts.move(offset);
+            ts.moveNext();
 
             // get to first EOL
             while (ts.movePrevious()
                     && ts.token().id() != JsTokenId.DOC_COMMENT
                     && ts.token().id() != JsTokenId.BLOCK_COMMENT
                     && ts.token().id() != JsTokenId.BRACKET_RIGHT_CURLY
+                    && ts.token().id() != JsTokenId.BRACKET_LEFT_CURLY
                     && ts.token().id() != JsTokenId.OPERATOR_SEMICOLON) {
                 // do nothing - just search for interesting tokens
             }

@@ -63,16 +63,16 @@ import org.netbeans.modules.cnd.repository.util.UnitCodec;
  *
  * @author Vladimir Kvashin
  */
-public class DoubleFileStorage extends FileStorage {
+public final class DoubleFileStorage extends FileStorage {
     
-    private Map<Key, Persistent> fickleMap = new HashMap<Key, Persistent>();
-    private File basePath;
+    private final Map<Key, Persistent> fickleMap = new HashMap<Key, Persistent>();
+    private final File basePath;
     
-    private IndexedStorageFile cache_0_dataFile;
-    private IndexedStorageFile cache_1_dataFile;
+    private final IndexedStorageFile cache_0_dataFile;
+    private final IndexedStorageFile cache_1_dataFile;
     
     private boolean defragmenting = false;
-    private AtomicBoolean cache_1_dataFileIsActive = new AtomicBoolean(false);
+    private final AtomicBoolean cache_1_dataFileIsActive = new AtomicBoolean(false);
 
     private boolean getFlag () {
         return cache_1_dataFileIsActive.get();
@@ -298,5 +298,10 @@ public class DoubleFileStorage extends FileStorage {
     public int getObjectsCount() {
         boolean activeFlag = getFlag();
         return getFileByFlag(activeFlag).getObjectsCount() + getFileByFlag(!activeFlag).getObjectsCount();
+    }
+
+    @Override
+    public void debugDump(Key key) {
+        // not implemented so far
     }
 }

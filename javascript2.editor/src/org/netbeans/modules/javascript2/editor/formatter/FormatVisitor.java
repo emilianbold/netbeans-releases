@@ -280,7 +280,9 @@ public class FormatVisitor extends NodeVisitor {
 
             if (body.getStart() == body.getFinish()) {
                 // do the standard block related things
-                if (body.getStatements().get(0) instanceof IfNode) {
+                List<Node> statements = body.getStatements();
+                // there might be no statements when code is broken
+                if (!statements.isEmpty() && (statements.get(0) instanceof IfNode)) {
                     // we mark else if statement here
                     handleVirtualBlock(body, FormatToken.Kind.ELSE_IF_INDENTATION_INC,
                             FormatToken.Kind.ELSE_IF_INDENTATION_DEC, FormatToken.Kind.ELSE_IF_AFTER_BLOCK_START);
@@ -389,7 +391,8 @@ public class FormatVisitor extends NodeVisitor {
 
                 if (functionNode.isStatement()) {
                     FormatToken rightBrace = getPreviousToken(getFinish(functionNode),
-                            JsTokenId.BRACKET_RIGHT_CURLY, leftBrace.getOffset());
+                            JsTokenId.BRACKET_RIGHT_CURLY,
+                            leftBrace != null ? leftBrace.getOffset() : start);
                     if (rightBrace != null) {
                         appendToken(rightBrace, FormatToken.forFormat(
                                 FormatToken.Kind.AFTER_STATEMENT));
@@ -912,7 +915,7 @@ public class FormatVisitor extends NodeVisitor {
                     lastVarNode = next;
                 }
 
-                for (int j = index; j < i; j++) {
+                for (int j = index; j < i + 1; j++) {
                     Node skipped = statements.get(j);
                     skipped.accept(this);
                 }

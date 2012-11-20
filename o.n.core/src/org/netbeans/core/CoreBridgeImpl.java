@@ -48,10 +48,12 @@ import java.beans.PropertyEditorManager;
 import java.io.File;
 import java.io.InputStream;
 import java.io.OutputStream;
+import javax.swing.SwingUtilities;
 import org.netbeans.core.startup.CoreBridge;
 import org.netbeans.core.startup.MainLookup;
 import org.netbeans.core.startup.ManifestSection;
 import org.netbeans.swing.plaf.Startup;
+import org.openide.nodes.NodeOp;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.lookup.ServiceProvider;
@@ -172,21 +174,29 @@ public final class CoreBridgeImpl extends CoreBridge {
      *  @since 1.98 */
     private static final void doRegisterPropertyEditors() {
         //issue 31879
-        if (editorsRegistered) return;
-        String[] syspesp = PropertyEditorManager.getEditorSearchPath();
-        String[] nbpesp = new String[] {
-            "org.netbeans.beaninfo.editors", // NOI18N
-            "org.openide.explorer.propertysheet.editors", // NOI18N
-        };
-        String[] allpesp = new String[syspesp.length + nbpesp.length];
-        System.arraycopy(nbpesp, 0, allpesp, 0, nbpesp.length);
-        System.arraycopy(syspesp, 0, allpesp, nbpesp.length, syspesp.length);
-        PropertyEditorManager.setEditorSearchPath(allpesp);
-        PropertyEditorManager.registerEditor (java.lang.Character.TYPE, org.netbeans.beaninfo.editors.CharEditor.class);
-        PropertyEditorManager.registerEditor(String[].class, org.netbeans.beaninfo.editors.StringArrayEditor.class); 
-        // use replacement hintable/internationalizable primitive editors - issues 20376, 5278
-        PropertyEditorManager.registerEditor (Integer.TYPE, org.netbeans.beaninfo.editors.IntEditor.class);
-        PropertyEditorManager.registerEditor (Boolean.TYPE, org.netbeans.beaninfo.editors.BoolEditor.class);
+//        if (editorsRegistered) return;
+//        String[] syspesp = PropertyEditorManager.getEditorSearchPath();
+//        String[] nbpesp = new String[] {
+//            "org.netbeans.beaninfo.editors", // NOI18N
+//            "org.openide.explorer.propertysheet.editors", // NOI18N
+//        };
+//        String[] allpesp = new String[syspesp.length + nbpesp.length];
+//        System.arraycopy(nbpesp, 0, allpesp, 0, nbpesp.length);
+//        System.arraycopy(syspesp, 0, allpesp, nbpesp.length, syspesp.length);
+//        PropertyEditorManager.setEditorSearchPath(allpesp);
+//        PropertyEditorManager.registerEditor (java.lang.Character.TYPE, org.netbeans.beaninfo.editors.CharEditor.class);
+//        PropertyEditorManager.registerEditor(String[].class, org.netbeans.beaninfo.editors.StringArrayEditor.class); 
+//        // use replacement hintable/internationalizable primitive editors - issues 20376, 5278
+//        PropertyEditorManager.registerEditor (Integer.TYPE, org.netbeans.beaninfo.editors.IntEditor.class);
+//        PropertyEditorManager.registerEditor (Boolean.TYPE, org.netbeans.beaninfo.editors.BoolEditor.class);
+        
+        NodeOp.registerPropertyEditors();
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                NodeOp.registerPropertyEditors();
+            }
+        });
         
         // install java.net.ProxySelector
         NbProxySelector.register();

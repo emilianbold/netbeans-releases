@@ -45,55 +45,41 @@ package org.netbeans.modules.groovy.refactoring.findusages.impl;
 import java.util.List;
 import org.codehaus.groovy.ast.ClassNode;
 import org.codehaus.groovy.ast.ModuleNode;
-import org.netbeans.modules.csl.api.ElementKind;
-import org.netbeans.modules.groovy.editor.api.ASTUtils.FakeASTNode;
-import org.netbeans.modules.groovy.refactoring.GroovyRefactoringElement;
+import org.netbeans.modules.groovy.refactoring.findusages.model.RefactoringElement;
 
 /**
+ * Finds all subtypes for the given super-type. It goes through the whole
+ * inheritance tree, not only direct super-types.
  *
  * @author Martin Janicek
  */
 public class FindAllSubtypes extends AbstractFindUsages {
 
-    public FindAllSubtypes(GroovyRefactoringElement element) {
+    public FindAllSubtypes(RefactoringElement element) {
         super(element);
     }
 
     @Override
     protected List<AbstractFindUsagesVisitor> getVisitors(ModuleNode moduleNode, String defClass) {
-        return singleVisitor(new FindAllSubtypesVisitor(moduleNode, defClass));
-    }
-
-    @Override
-    protected ElementKind getElementKind() {
-        return ElementKind.CLASS;
+        return singleVisitor(new FindAllSubtypesVisitor(moduleNode, element));
     }
 
     
-    private class FindAllSubtypesVisitor extends AbstractFindUsagesVisitor {
+    private static class FindAllSubtypesVisitor extends AbstractFindUsagesVisitor {
 
-        private final String findingFqn;
+        private final ClassNode findingParent;
 
         
-        public FindAllSubtypesVisitor(ModuleNode moduleNode, String findingFqn) {
+        public FindAllSubtypesVisitor(ModuleNode moduleNode, RefactoringElement element) {
             super(moduleNode);
-            this.findingFqn = findingFqn;
+            assert element.getNode() instanceof ClassNode;
+            this.findingParent = (ClassNode) element.getNode();
         }
 
         @Override
         public void visitClass(final ClassNode node) {
-            ClassNode superClass = node.getUnresolvedSuperClass(false);
-
-            while (superClass != null) {
-                if (findingFqn.equals(superClass.getName())) {
-                    usages.add(new FakeASTNode(superClass, superClass.getNameWithoutPackage()));
-                    break;
-                } else {
-                    // FIXME: This doesn't work again ?! .. the weird groovy lazy initiation
-                    // don't want to make this happen and getSuperClass seems to be working
-                    // with respect to the weather
-                    superClass = superClass.getSuperClass();
-                }
+            if (node.isDerivedFrom(findingParent) && !node.equals(findingParent)) {
+                usages.add(node);
             }
             super.visitClass(node);
         }

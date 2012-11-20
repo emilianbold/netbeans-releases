@@ -110,7 +110,6 @@ public class MavenTestNGSupport extends TestNGSupportImplementation {
                 }
             };
             Utilities.performPOMModelOperations(pom, Collections.singletonList(operation));
-            MavenModelUtils.addProfile(pom, "target/nb-private/testng-suite.xml"); //NOI18N
             RequestProcessor RP = new RequestProcessor("Configure TestNG project task", 1, true); //NOI18N
             RP.post(new Runnable() {
 

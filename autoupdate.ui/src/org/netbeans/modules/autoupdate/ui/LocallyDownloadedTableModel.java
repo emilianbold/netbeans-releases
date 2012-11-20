@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -70,6 +70,7 @@ public class LocallyDownloadedTableModel extends UnitCategoryTableModel {
         this.localDownloadSupport = localDownloadSupport;
     }
     
+    @Override
     public final void setUnits(final List<UpdateUnit> unused) {
         getLocalDownloadSupport ().removeInstalledUnit ();
         Collection<UpdateUnit> units = getLocalDownloadSupport().getUpdateUnits();
@@ -125,6 +126,7 @@ public class LocallyDownloadedTableModel extends UnitCategoryTableModel {
     }
 
     
+    @Override
     public Object getValueAt(int row, int col) {
         Object res = null;
         Unit u = getUnitAtRow(row);
@@ -160,10 +162,12 @@ public class LocallyDownloadedTableModel extends UnitCategoryTableModel {
         return res;
     }
     
+    @Override
     public int getColumnCount() {
         return 2;
     }
 
+    @Override
     public Class getColumnClass(int c) {
         Class res = null;
         
@@ -207,6 +211,7 @@ public class LocallyDownloadedTableModel extends UnitCategoryTableModel {
         return super.getColumnName( column );
     }
 
+    @Override
     public int getPreferredWidth(JTableHeader header, int col) {
         switch (col) {
                 case 1:
@@ -217,6 +222,7 @@ public class LocallyDownloadedTableModel extends UnitCategoryTableModel {
         return super.getMinWidth(header, col);
     }
     
+    @Override
     public Type getType () {
         return UnitCategoryTableModel.Type.LOCAL;
     }
@@ -226,6 +232,7 @@ public class LocallyDownloadedTableModel extends UnitCategoryTableModel {
             
         }
     }
+    @Override
     public boolean isSortAllowed(Object columnIdentifier) {
         boolean isInstall = getColumnName(0).equals(columnIdentifier);
         boolean isSize = getColumnName(4).equals(columnIdentifier);                        
@@ -235,14 +242,17 @@ public class LocallyDownloadedTableModel extends UnitCategoryTableModel {
     @Override
     protected Comparator<Unit> getDefaultComparator () {
         return new Comparator<Unit> ()  {
+            @Override
             public int compare (Unit o1, Unit o2) {
                 return Unit.compareDisplayNames(o1, o2);
             }           
         };
     }
     
+    @Override
     protected Comparator<Unit> getComparator(final Object columnIdentifier, final boolean sortAscending) {
         return new Comparator<Unit>(){
+            @Override
             public int compare(Unit o1, Unit o2) {
                 Unit unit1 = sortAscending ? o1 : o2;
                 Unit unit2 = sortAscending ? o2 : o1;
@@ -262,6 +272,7 @@ public class LocallyDownloadedTableModel extends UnitCategoryTableModel {
         };
     }
 
+    @Override
     public int getDownloadSize () {
         // no need to download anything in Locally Downloaded tab
         return 0;
@@ -271,10 +282,12 @@ public class LocallyDownloadedTableModel extends UnitCategoryTableModel {
         return NbBundle.getMessage (this.getClass (), key);
     }
 
+    @Override
     public String getTabTitle() {
         return NbBundle.getMessage (PluginManagerUI.class, "PluginManagerUI_UnitTab_Local_Title");//NOI18N
     }
 
+    @Override
     public int getTabIndex() {
         return PluginManagerUI.INDEX_OF_DOWNLOAD_TAB;
     }
@@ -284,6 +297,7 @@ public class LocallyDownloadedTableModel extends UnitCategoryTableModel {
         return false;
     }
 
+    @Override
     public boolean needsRestart () {
         return false;
     }

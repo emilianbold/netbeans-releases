@@ -85,4 +85,16 @@ public interface NativeProjectItemsListener {
      * @param nativeProject project that is closed
      */
     void projectDeleted(NativeProject nativeProject);
+    
+    /**
+     * notifies about intensive file operations to be started.
+     * @param nativeProject 
+     */
+    void fileOperationsStarted(NativeProject nativeProject);
+
+    /**
+     * notifies about intensive file operations finished.
+     * @param nativeProject
+     */
+    void fileOperationsFinished(NativeProject nativeProject);
 }

@@ -463,11 +463,16 @@ public class JavaUtils {
         private String arch;
         
         public JavaInfo(Version version, String vendor) {
+            if (version.toString().endsWith("64")) {
+                this.arch = "x64";
+            } else {
+                this.arch = "";
+            }
+            
             this.version = version;
             this.vendor = vendor;
             
-            this.nonFinal = false;
-            this.arch = "";
+            this.nonFinal = false;            
         }
         
         public JavaInfo(Version version, String vendor, boolean nonFinal) {

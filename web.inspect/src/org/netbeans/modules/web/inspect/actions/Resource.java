@@ -49,7 +49,7 @@ import java.net.URL;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.web.clientproject.api.ServerURLMapping;
+import org.netbeans.modules.web.common.api.ServerURLMapping;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 

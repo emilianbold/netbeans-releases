@@ -46,7 +46,7 @@ import javax.swing.text.Position;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.groovy.editor.api.ASTUtils;
-import org.netbeans.modules.groovy.refactoring.GroovyRefactoringElement;
+import org.netbeans.modules.groovy.refactoring.findusages.model.RefactoringElement;
 import org.netbeans.modules.groovy.refactoring.utils.GroovyProjectUtil;
 import org.netbeans.modules.refactoring.spi.SimpleRefactoringElementImplementation;
 import org.openide.filesystems.FileObject;
@@ -62,14 +62,14 @@ import org.openide.util.Lookup;
  */
 public class FindUsagesElement extends SimpleRefactoringElementImplementation implements Comparable<FindUsagesElement> {
 
-    private final GroovyRefactoringElement element;
+    private final RefactoringElement usageElement;
     private final BaseDocument doc;
     private final Line line;
     private final int lineNumber;
 
 
-    public FindUsagesElement(GroovyRefactoringElement element, BaseDocument doc) {
-        this.element = element;
+    public FindUsagesElement(RefactoringElement element, BaseDocument doc) {
+        this.usageElement = element;
         this.doc = doc;
         this.line = GroovyProjectUtil.getLine(element.getFileObject(), element.getNode().getLineNumber() - 1);
         this.lineNumber = line.getLineNumber();
@@ -81,16 +81,16 @@ public class FindUsagesElement extends SimpleRefactoringElementImplementation im
 
     @Override
     public String getText() {
-        return element.getName() + " -";
+        return usageElement.getName() + " -";
     }
 
     @Override
     public String getDisplayText() {
-        return FindUsagesPainter.colorASTNode(element.getNode(), line);
+        return FindUsagesPainter.colorASTNode(usageElement.getNode(), line);
     }
 
     public String getName() {
-        return element.getName();
+        return usageElement.getName();
     }
 
     @Override
@@ -104,17 +104,17 @@ public class FindUsagesElement extends SimpleRefactoringElementImplementation im
 
     @Override
     public FileObject getParentFile() {
-        return element.getFileObject();
+        return usageElement.getFileObject();
     }
 
     @Override
     public PositionBounds getPosition() {
-        OffsetRange range = ASTUtils.getRange(element.getNode(), doc);
+        OffsetRange range = ASTUtils.getRange(usageElement.getNode(), doc);
         if (range == OffsetRange.NONE) {
             return null;
         }
 
-        CloneableEditorSupport ces = GroovyProjectUtil.findCloneableEditorSupport(element.getFileObject());
+        CloneableEditorSupport ces = GroovyProjectUtil.findCloneableEditorSupport(usageElement.getFileObject());
         PositionRef ref1 = ces.createPositionRef(range.getStart(), Position.Bias.Forward);
         PositionRef ref2 = ces.createPositionRef(range.getEnd(), Position.Bias.Forward);
         return new PositionBounds(ref1, ref2);
@@ -123,5 +123,39 @@ public class FindUsagesElement extends SimpleRefactoringElementImplementation im
     @Override
     public int compareTo(FindUsagesElement comparedElement) {
         return this.lineNumber - comparedElement.lineNumber;
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 7;
+        hash = 29 * hash + (this.usageElement != null ? this.usageElement.hashCode() : 0);
+        hash = 29 * hash + (this.doc != null ? this.doc.hashCode() : 0);
+        hash = 29 * hash + (this.line != null ? this.line.hashCode() : 0);
+        hash = 29 * hash + this.lineNumber;
+        return hash;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final FindUsagesElement other = (FindUsagesElement) obj;
+        if (this.usageElement != other.usageElement && (this.usageElement == null || !this.usageElement.equals(other.usageElement))) {
+            return false;
+        }
+        if (this.doc != other.doc && (this.doc == null || !this.doc.equals(other.doc))) {
+            return false;
+        }
+        if (this.line != other.line && (this.line == null || !this.line.equals(other.line))) {
+            return false;
+        }
+        if (this.lineNumber != other.lineNumber) {
+            return false;
+        }
+        return true;
     }
 }

@@ -47,14 +47,22 @@ import java.util.Set;
 import javax.swing.ImageIcon;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
-import org.netbeans.modules.csl.api.*;
+import org.netbeans.modules.csl.api.CompletionProposal;
+import org.netbeans.modules.csl.api.ElementHandle;
+import org.netbeans.modules.csl.api.ElementKind;
+import org.netbeans.modules.csl.api.HtmlFormatter;
+import org.netbeans.modules.csl.api.Modifier;
 import org.netbeans.modules.php.editor.PHPCompletionItem.CompletionRequest;
 import org.netbeans.modules.php.editor.index.PHPDOCTagElement;
 import org.netbeans.modules.php.editor.lexer.LexUtilities;
 import org.netbeans.modules.php.editor.lexer.PHPDocCommentTokenId;
 import org.netbeans.modules.php.editor.lexer.PHPTokenId;
 import org.netbeans.modules.php.editor.parser.api.Utils;
-import org.netbeans.modules.php.editor.parser.astnodes.*;
+import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
+import org.netbeans.modules.php.editor.parser.astnodes.FieldsDeclaration;
+import org.netbeans.modules.php.editor.parser.astnodes.FunctionDeclaration;
+import org.netbeans.modules.php.editor.parser.astnodes.MethodDeclaration;
+import org.netbeans.modules.php.editor.parser.astnodes.TypeDeclaration;
 import org.netbeans.modules.php.project.api.PhpAnnotations;
 import org.netbeans.modules.php.spi.annotation.AnnotationCompletionTag;
 import org.netbeans.modules.php.spi.annotation.AnnotationCompletionTagProvider;
@@ -64,12 +72,14 @@ import org.openide.util.ImageUtilities;
  *
  * @author tomslot
  */
-public class PHPDOCCodeCompletion {
+public final class PHPDOCCodeCompletion {
 
     private static final String TAG_PREFIX = "@"; //NOI18N
 
-    static boolean isTypeCtx(PHPCompletionItem.CompletionRequest request){
-        //TODO: get rid of the document
+    private PHPDOCCodeCompletion() {
+    }
+
+    static boolean isTypeCtx(PHPCompletionItem.CompletionRequest request) {
         TokenHierarchy<?> th = request.info.getSnapshot().getTokenHierarchy();
         TokenSequence<PHPTokenId> phpTS = (th != null) ? LexUtilities.getPHPTokenSequence(th, request.anchor) : null;
         if (phpTS != null) {
@@ -142,7 +152,7 @@ public class PHPDOCCodeCompletion {
 
     public static class PHPDOCCodeCompletionItem implements CompletionProposal {
         private static final String PHP_ANNOTATION_ICON = "org/netbeans/modules/php/editor/resources/annotation.png"; //NOI18N
-        private static ImageIcon ANNOTATION_ICON = new ImageIcon(ImageUtilities.loadImage(PHP_ANNOTATION_ICON));
+        private static final ImageIcon ANNOTATION_ICON = new ImageIcon(ImageUtilities.loadImage(PHP_ANNOTATION_ICON));
         private final AnnotationCompletionTag tag;
         private final int anchorOffset;
         private final PHPDOCTagElement elem;
@@ -152,7 +162,7 @@ public class PHPDOCCodeCompletion {
         public PHPDOCCodeCompletionItem(int anchorOffset, AnnotationCompletionTag tag, String providerName, int priority) {
             this.tag = tag;
             this.anchorOffset = anchorOffset;
-            this.providerName= providerName;
+            this.providerName = providerName;
             this.priority = priority;
             elem = new PHPDOCTagElement(tag.getName(), tag.getDocumentation());
         }

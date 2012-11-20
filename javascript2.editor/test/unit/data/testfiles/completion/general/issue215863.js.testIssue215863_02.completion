@@ -69,6 +69,7 @@ METHOD     unescape(escaped: String): Str  [PUBLIC]   stub_DOM_window.js
 METHOD     updateCommands(sCommandName):   [PUBLIC]   stub_DOM_window.js
 METHOD     valueOf(): Object               [PUBLIC]   stub_CORE_Object.js
 FIELD      Components: window.Components   [PUBLIC]   stub_DOM_window.js
+FIELD      TEST: Test                      [PUBLIC]   issue220101.js
 FIELD      applicationCache: Object        [PUBLIC]   stub_DOM_window.js
 FIELD      closed: Boolean                 [PUBLIC]   stub_DOM_window.js
 FIELD      console: Console                [PUBLIC]   stub_DOM_window.js

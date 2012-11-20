@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.groovy.refactoring;
 
+import org.netbeans.modules.groovy.refactoring.findusages.model.RefactoringElement;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.spi.ProgressProviderAdapter;
@@ -55,12 +56,12 @@ import org.openide.filesystems.FileObject;
  */
 public abstract class GroovyRefactoringPlugin extends ProgressProviderAdapter implements RefactoringPlugin {
 
-    protected final GroovyRefactoringElement element;
+    protected final RefactoringElement element;
     protected final FileObject fileObject;
     protected final AbstractRefactoring refactoring;
 
 
-    protected GroovyRefactoringPlugin(GroovyRefactoringElement element, FileObject fileObject, AbstractRefactoring refactoring) {
+    protected GroovyRefactoringPlugin(RefactoringElement element, FileObject fileObject, AbstractRefactoring refactoring) {
         this.element = element;
         this.fileObject = fileObject;
         this.refactoring = refactoring;

@@ -147,6 +147,7 @@ public class CsmOffsetUtilities {
                     return CsmKindUtilities.isCompoundStatement(((CsmIfStatement)stmt).getThen());
                 }
             case FOR:
+            case RANGE_FOR:
             case WHILE:
                 // loop statement ends with '}' if its body ends with '}'
                 return CsmKindUtilities.isCompoundStatement(((CsmLoopStatement)stmt).getBody());

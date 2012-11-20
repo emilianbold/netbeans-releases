@@ -53,6 +53,7 @@ import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashSet;
@@ -89,6 +90,14 @@ public class JBProperties {
     private static final String PROP_JAVA_PLATFORM = "java_platform";   // NOI18N
     private static final String PROP_SOURCES       = "sources";         // NOI18N
     private static final String PROP_JAVADOCS      = "javadocs";        // NOI18N
+
+    private static final FilenameFilter CP_FILENAME_FILTER = new FilenameFilter() {
+
+        @Override
+        public boolean accept(File dir, String name) {
+            return name.endsWith(".jar") || new File(dir, name).isDirectory(); // NOI18N
+        }
+    };
 
     // default values
     private static final String DEF_VALUE_JAVA_OPTS = ""; // NOI18N
@@ -368,25 +377,27 @@ public class JBProperties {
         return list;
     }
 
-    private static class FF implements FilenameFilter {
-        public boolean accept(File dir, String name) {
-            return name.endsWith(".jar") || new File(dir, name).isDirectory(); // NOI18N
-        }
-    }
-
     private void addFiles(File folder, List l) {
-        File files [] = folder.listFiles(new FF());
-        if (files == null)
+        File[] files = folder.listFiles(CP_FILENAME_FILTER);
+        if (files == null) {
             return;
+        }
+        Arrays.sort(files);
+        
+        // directories first
+        List<File> realFiles = new ArrayList<File>(files.length);
         for (int i = 0; i < files.length; i++) {
             if (files[i].isDirectory()) {
                 addFiles(files[i], l);
             } else {
-                try {
-                    l.add(Util.fileToUrl(files[i]));
-                } catch (MalformedURLException e) {
-                    Logger.getLogger("global").log(Level.INFO, null, e);
-                }
+                realFiles.add(files[i]);
+            }
+        }
+        for (File file : realFiles) {
+            try {
+                l.add(Util.fileToUrl(file));
+            } catch (MalformedURLException e) {
+                Logger.getLogger("global").log(Level.INFO, null, e);
             }
         }
     }

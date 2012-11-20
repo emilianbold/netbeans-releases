@@ -88,7 +88,9 @@ public class FileEncodingQuery {
      * @throws IllegalArgumentException if file parameter is null.
      */
     public static Charset getEncoding (FileObject file) {
-        if (file == null) throw new IllegalArgumentException();
+        if (file == null) {
+            throw new IllegalArgumentException();
+        }
         List<Charset> delegates = new ArrayList<Charset>();
         for (FileEncodingQueryImplementation impl : Lookup.getDefault().lookupAll(FileEncodingQueryImplementation.class)) {
             Charset encoding = impl.getEncoding(file);
@@ -135,7 +137,9 @@ public class FileEncodingQuery {
      *
      */
     public static void setDefaultEncoding (final Charset encoding) {
-        if (encoding == null) throw new IllegalArgumentException();
+        if (encoding == null) {
+            throw new IllegalArgumentException();
+        }
         Preferences prefs = NbPreferences.forModule(FileEncodingQuery.class);
         prefs.put(DEFAULT_ENCODING, encoding.name());
     }
@@ -152,14 +156,17 @@ public class FileEncodingQuery {
             this.delegates = delegates;
         }
 
+        @Override
         public boolean contains(Charset charset) {
             return this.delegates.get(0).contains(charset);
         }
 
+        @Override
         public CharsetDecoder newDecoder() {
             return new ProxyDecoder (delegates.get(0).newDecoder());
         }
 
+        @Override
         public CharsetEncoder newEncoder() {
             return new ProxyEncoder (delegates.get(0).newEncoder());
         }
@@ -181,6 +188,7 @@ public class FileEncodingQuery {
                 initialized = true;
             }
 
+            @Override
             protected CoderResult decodeLoop(ByteBuffer in, CharBuffer out) {
                 lastCharBuffer = out;
                 if (buffer == null) {
@@ -339,6 +347,7 @@ public class FileEncodingQuery {
                 this.initialized = true;
             }
 
+            @Override
             protected CoderResult encodeLoop(CharBuffer in, ByteBuffer out) {
                 lastByteBuffer = out;
                 if (buffer == null) {
@@ -346,6 +355,10 @@ public class FileEncodingQuery {
                         CoderResult result = currentEncoder.encode(remainder,out,false);
                         if (!remainder.hasRemaining()) {
                             remainder = null;
+                        }
+                        if (!result.isUnderflow()) {
+                            // perhaps did not fit into 'out'
+                            return result;
                         }
                     }
                     CoderResult result = currentEncoder.encode(in, out, false);
@@ -368,7 +381,9 @@ public class FileEncodingQuery {
             }
 
             private CoderResult encodeHead (CharBuffer in, ByteBuffer out, boolean flush) {
-                buffer.flip();
+                // if buffer is missing, get data from the remainder, case for repeated implFlush() call.
+                CharBuffer b = buffer == null ? remainder : buffer;
+                b.flip();
                 CoderResult result = null;
                 for (int i=0; i<delegates.size(); i++) {
                     currentEncoder=delegates.get(i).newEncoder();
@@ -383,13 +398,10 @@ public class FileEncodingQuery {
                     }
                     int outPos = out.position();
                     try {
-                        CharBuffer view = buffer.asReadOnlyBuffer();
+                        CharBuffer view = b.asReadOnlyBuffer();
                         result = currentEncoder.encode(view, out, in==null);
                         if (result.isOverflow()) {
-                            //Should never happen
-                            if (flush) {
-                                currentEncoder.flush(out);
-                            }
+                            // the output is smaller, interrupt encoding the head.
                             LOG.log(Level.FINEST, ENCODER_SELECTED, currentEncoder);
                             remainder = view;
                             buffer = null;
@@ -402,8 +414,10 @@ public class FileEncodingQuery {
                             if (in != null) {
                                 result = currentEncoder.encode(in, out, false);
                             }
-                            if (flush) {
-                                result = currentEncoder.flush(out);
+                            if (result.isUnderflow()) {
+                                if (flush) {
+                                    result = currentEncoder.flush(out);
+                                }
                             }
                             LOG.log(Level.FINEST, ENCODER_SELECTED, currentEncoder);
                             buffer = null;
@@ -425,7 +439,9 @@ public class FileEncodingQuery {
             @Override
             protected CoderResult implFlush(ByteBuffer out) {
                 lastByteBuffer = null;
-                if (buffer != null) {
+                // if the previous encodeHead overflew, the caller should probably call encodeLoop, but is also
+                // permitted to call flush -> implFlush again.
+                if (buffer != null || remainder != null) {
                     return encodeHead(null, out, true);
                 }
                 else {

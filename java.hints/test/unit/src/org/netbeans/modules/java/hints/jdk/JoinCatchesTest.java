@@ -225,4 +225,22 @@ public class JoinCatchesTest extends NbTestCase {
                 .run(JoinCatches.class)
                 .assertWarnings();
     }
+    public void test219636() throws Exception {
+        HintTest
+                .create()
+                .input("package test;\n" +
+                       "import java.util.concurrent.*;\n" +
+                       "public class Test {\n" +
+                       "    public void taragui() {\n" +
+                       "        try {\n" +
+                       "            throw new Exception();\n" +
+                       "        } catch (RuntimeException | IOException ex) {\n" +
+                       "        } catch (Exception ex) {\n" +
+                       "        }\n" +
+                       "    }\n" +
+                       "}\n", false)
+                .sourceLevel("1.7")
+                .run(JoinCatches.class)
+                .assertWarnings();
+    }
 }

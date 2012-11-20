@@ -48,7 +48,6 @@ import java.util.List;
 import org.codehaus.groovy.ast.ASTNode;
 import org.codehaus.groovy.ast.ClassNode;
 import org.netbeans.modules.csl.api.ElementKind;
-import org.netbeans.modules.groovy.refactoring.GroovyRefactoringElement;
 import org.netbeans.modules.groovy.refactoring.GroovyRefactoringPlugin;
 import org.netbeans.modules.groovy.refactoring.findusages.impl.AbstractFindUsages;
 import org.netbeans.modules.groovy.refactoring.findusages.impl.FindAllSubtypes;
@@ -58,6 +57,7 @@ import org.netbeans.modules.groovy.refactoring.findusages.impl.FindMethodUsages;
 import org.netbeans.modules.groovy.refactoring.findusages.impl.FindOverridingMethods;
 import org.netbeans.modules.groovy.refactoring.findusages.impl.FindTypeUsages;
 import org.netbeans.modules.groovy.refactoring.findusages.impl.FindVariableUsages;
+import org.netbeans.modules.groovy.refactoring.findusages.model.RefactoringElement;
 import org.netbeans.modules.groovy.refactoring.utils.GroovyProjectUtil;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.netbeans.modules.refactoring.api.Problem;
@@ -75,7 +75,7 @@ import org.openide.filesystems.FileObject;
  */
 public class FindUsagesPlugin extends GroovyRefactoringPlugin {
     
-    public FindUsagesPlugin(FileObject fileObject, GroovyRefactoringElement element, AbstractRefactoring whereUsedQuery) {
+    public FindUsagesPlugin(FileObject fileObject, RefactoringElement element, AbstractRefactoring whereUsedQuery) {
         super(element, fileObject, whereUsedQuery);
     }
     

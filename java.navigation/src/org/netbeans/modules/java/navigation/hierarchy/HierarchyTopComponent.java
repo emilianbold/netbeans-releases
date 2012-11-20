@@ -88,6 +88,8 @@ import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.Task;
+import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.api.settings.ConvertAsProperties;
 import org.netbeans.editor.Utilities;
 import org.netbeans.modules.java.navigation.JavadocTopComponent;
@@ -106,6 +108,7 @@ import org.openide.filesystems.URLMapper;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
+import org.openide.util.Cancellable;
 import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
@@ -520,7 +523,8 @@ public final class HierarchyTopComponent extends TopComponent implements Explore
         @NbBundle.Messages({
         "ERR_Cannot_Resolve_File=Cannot resolve type: {0}.",
         "ERR_Not_Declared_Type=Not a declared type.",
-        "WARN_Object=<html>The subtypes of java.lang.Object are not supported."})
+        "WARN_Object=<html>The subtypes of java.lang.Object are not supported.",
+        "INFO_SubClassesComputation=Computing Subtypes of {0}"})
         public void run() {
             try {
                 final Pair<URI,ElementHandle<TypeElement>> pair = toShow.get();
@@ -548,9 +552,23 @@ public final class HierarchyTopComponent extends TopComponent implements Explore
                                                 cc.getClasspathInfo(),
                                                 filters);
                                         } else {
-                                            Node subTypes = Nodes.subTypeHierarchy(te, cc, filters, new AtomicBoolean());
-
-                                            root = subTypes != null ? subTypes : /*XXX:*/new AbstractNode(Children.LEAF);
+                                            final AtomicBoolean cancel = new AtomicBoolean();
+                                            final ProgressHandle  progress = ProgressHandleFactory.createHandle(
+                                                Bundle.INFO_SubClassesComputation(te.getQualifiedName()),
+                                                new Cancellable() {
+                                                    @Override
+                                                    public boolean cancel() {
+                                                        cancel.set(true);
+                                                        return true;
+                                                    }
+                                                });
+                                            progress.start();
+                                            try {
+                                                Node subTypes = Nodes.subTypeHierarchy(te, cc, filters, cancel);
+                                                root = subTypes != null ? subTypes : /*XXX:*/new AbstractNode(Children.LEAF);
+                                            } finally {
+                                                progress.finish();
+                                            }
                                         }
                                         SwingUtilities.invokeLater(new Runnable() {
                                             @Override

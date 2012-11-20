@@ -1,10 +1,7 @@
 #UID=<list of products separated by comma-space>
 javase=nb-base, nb-javase, nb-platform-sdk, nb-javafx-mod
-javaee=nb-base, nb-javase, nb-platform-sdk, nb-javafx-mod, nb-javaee, glassfish-mod, tomcat
-#javafx=nb-base, nb-javase, nb-platform-sdk, nb-javafx
-#java=nb-base, nb-javase, nb-platform-sdk, nb-javaee, nb-javacard, nb-groovy, nb-javame, nb-ergonomics, glassfish-mod, tomcat
-#ruby=nb-base, nb-ruby, glassfish-mod
+javaee=nb-base, nb-javase, nb-platform-sdk, nb-javafx-mod, nb-javaee, nb-webcommon, glassfish-mod, tomcat
 cpp=nb-base, nb-cnd
-php=nb-base, nb-php
-all=nb-base, nb-javase, nb-platform-sdk, nb-javafx-mod, nb-javaee, nb-javacard, nb-javame, nb-cnd, nb-groovy, nb-php, nb-ergonomics, glassfish-mod, tomcat
-hidden=nb-base, nb-ergonomics, nb-javafx, nb-ruby, nb-webcommon
+php=nb-base, nb-php, nb-webcommon
+all=nb-base, nb-javase, nb-platform-sdk, nb-javafx-mod, nb-javaee, nb-webcommon, nb-javacard, nb-javame, nb-cnd, nb-groovy, nb-php, nb-ergonomics, glassfish-mod, tomcat
+hidden=nb-base, nb-ergonomics, nb-javafx, nb-ruby

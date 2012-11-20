@@ -75,6 +75,7 @@ import org.netbeans.modules.cnd.modelimpl.textcache.NameCache;
 import org.netbeans.modules.cnd.modelimpl.textcache.QualifiedNameCache;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
+import org.openide.util.CharSequences;
 
 /**
  * Implements both CsmFunction and CsmFunctionDefinition -
@@ -276,6 +277,10 @@ public class FunctionDDImpl<T> extends FunctionImpl<T> implements CsmFunctionDef
 //            CharSequence classTemplateSuffix = NameCache.getManager().getString(clsTemplateSuffix);
 //
 //            functionDDImpl.setTemplateDescriptor(templateDescriptor, classTemplateSuffix);
+            if(getTemplateDescriptorBuilder() != null) {
+                functionDDImpl.setTemplateDescriptor(getTemplateDescriptor(), NameCache.getManager().getString(CharSequences.create(""))); // NOI18N
+            }
+            
             functionDDImpl.setReturnType(getType());
             ((FunctionParameterListBuilder)getParametersListBuilder()).setScope(functionDDImpl);
             functionDDImpl.setParameters(((FunctionParameterListBuilder)getParametersListBuilder()).create(), false);
@@ -296,7 +301,11 @@ public class FunctionDDImpl<T> extends FunctionImpl<T> implements CsmFunctionDef
             assert builder instanceof CompoundStatementBuilder;
             setBodyBuilder((CompoundStatementBuilder)builder);
         }
-
+        
+        protected void setBody(FunctionDDImpl fun) {
+            bodyBuilder.setScope(fun);
+            fun.setCompoundStatement(bodyBuilder.create());
+        }        
     }
     
     ////////////////////////////////////////////////////////////////////////////

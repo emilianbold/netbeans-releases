@@ -368,7 +368,7 @@ public class JsDocModelTest extends JsDocumentationTestBase {
 
     public void test217949() throws Exception {
         Source source = getTestSource(getTestFile("testfiles/jsdoc/modelTestFile.js"));
-        final int caretOffset = getCaretOffset(source, "function test(p1, p2) {^");
+        final int caretOffset = getCaretOffset(source, "function test(p1, p2) ^{");
         checkJsDocBlock(source, caretOffset, "@param||type=NULL:name=p1:desc=textA;@param||type=Cislo:name=p2:desc=text2");
     }
 

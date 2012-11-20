@@ -89,7 +89,7 @@ public class TplCompletionQueryTest extends CslTestBase {
         //remove the pipe
         doc.remove(pipeOffset, 1);
 
-        TplCompletionQuery query = new TplCompletionQuery(doc, pipeOffset);
+        TplCompletionQuery query = new TplCompletionQuery(doc);
         JEditorPane component = new JEditorPane();
         component.setDocument(doc);
 

@@ -54,7 +54,7 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 import javax.swing.JToolTip;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.web.clientproject.api.ServerURLMapping;
+import org.netbeans.modules.web.common.api.ServerURLMapping;
 
 import org.netbeans.modules.web.javascript.debugger.ViewModelSupport;
 import org.netbeans.modules.web.javascript.debugger.browser.ProjectContext;
@@ -162,6 +162,7 @@ public final class CallStackModel extends ViewModelSupport implements TreeModel,
         throw new UnknownTypeException(node);
     }
 
+    @NbBundle.Messages("LBL_AnonymousFunction=(anonymous function)")
     @Override
     public String getDisplayName(Object node) throws UnknownTypeException {
         if (node == ROOT) {
@@ -169,6 +170,9 @@ public final class CallStackModel extends ViewModelSupport implements TreeModel,
         } else if (node instanceof CallFrame) {
             CallFrame frame = (CallFrame) node;
             String frameName = frame.getFunctionName();
+            if (frameName.isEmpty()) {
+                frameName = Bundle.LBL_AnonymousFunction();
+            }
             if (frame == debugger.getCurrentCallFrame()) {
                 return toHTML(frameName, true, false, null);
             } else {

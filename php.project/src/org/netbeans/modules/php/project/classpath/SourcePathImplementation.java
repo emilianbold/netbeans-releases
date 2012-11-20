@@ -247,9 +247,7 @@ final class SourcePathImplementation implements ClassPathImplementation, Propert
         @Override
         public void propertyChange(PropertyChangeEvent ev) {
             String prop = ev.getPropertyName();
-            // listen only on IGNORE_PATH, VisibilityQuery changes should be checked by parsing & indexing automatically
             if (prop == null
-                    || prop.equals(PhpProjectProperties.IGNORE_PATH)
                     || prop.equals(PhpProjectProperties.TEST_SRC_DIR)
                     || prop.equals(PhpProjectProperties.SELENIUM_SRC_DIR)) {
                 fireChange(ev);

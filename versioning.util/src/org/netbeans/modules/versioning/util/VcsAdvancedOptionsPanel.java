@@ -46,11 +46,14 @@ import java.awt.BorderLayout;
 import java.util.HashMap;
 import javax.swing.DefaultListModel;
 import javax.swing.JComponent;
+import org.netbeans.api.options.OptionsDisplayer;
+import org.netbeans.spi.options.OptionsPanelController;
 
 /**
  *
  * @author  pbuzek
  */
+@OptionsPanelController.Keywords(keywords={"systems", "versioning", "#KW_VersioningOptions"}, location=OptionsDisplayer.ADVANCED, tabTitle="Versioning")
 public class VcsAdvancedOptionsPanel extends javax.swing.JPanel {
 
     HashMap<String, JComponent> versioningPanels = new HashMap<String, JComponent>();
@@ -62,11 +65,15 @@ public class VcsAdvancedOptionsPanel extends javax.swing.JPanel {
     
     public void addPanel(String name, JComponent component) {
         if (versioningPanels.containsKey(name)) {
-            versioningSystemsList.setSelectedValue(name, true);
+            selectCategory(name);
         } else {
             ((DefaultListModel) versioningSystemsList.getModel()).addElement(name);
             versioningPanels.put(name, component);
         }
+    }
+
+    void selectCategory (String name) {
+        versioningSystemsList.setSelectedValue(name, true);
     }
     
     /** This method is called from within the constructor to

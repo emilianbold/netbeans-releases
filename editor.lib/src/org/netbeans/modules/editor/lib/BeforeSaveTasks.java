@@ -49,11 +49,14 @@ import java.util.Collection;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.undo.CompoundEdit;
 import javax.swing.undo.UndoableEdit;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 import org.netbeans.modules.editor.lib2.document.DocumentSpiPackageAccessor;
+import org.netbeans.modules.editor.lib2.document.EditorDocumentHandler;
+import org.netbeans.modules.editor.lib2.document.EditorDocumentServices;
 import org.netbeans.modules.editor.lib2.document.ModRootElement;
 import org.netbeans.spi.editor.document.OnSaveTask;
 
@@ -106,9 +109,7 @@ public final class BeforeSaveTasks {
                 tasks.add(task);
             }
         }
-        if (tasks.size() > 0) {
-            new TaskRunnable(doc, tasks, context).run();
-        }
+        new TaskRunnable(doc, tasks, context).run();
     }
 
     private static final class TaskRunnable implements Runnable {
@@ -134,35 +135,45 @@ public final class BeforeSaveTasks {
                 task.runLocked(this);
 
             } else {
-                try {
-                    doc.runAtomicAsUser(new Runnable() {
-                        public @Override
-                        void run() {
-                            UndoableEdit atomicEdit = EditorPackageAccessor.get().BaseDocument_markAtomicEditsNonSignificant(doc);
-                            DocumentSpiPackageAccessor.get().setUndoEdit(context, atomicEdit);
-
-                            // Since these are before-save actions they should generally not prevent
-                            // the save operation to succeed. Thus the possible exceptions thrown
-                            // by the tasks will be notified but they will not prevent the save to succeed.
-                            try {
-                                for (int i = 0; i < tasks.size(); i++) {
-                                    OnSaveTask task = tasks.get(i);
-                                    DocumentSpiPackageAccessor.get().setTaskStarted(context, true);
-                                    task.performTask();
-                                }
-                                ModRootElement modRootElement = ModRootElement.get(doc);
-                                if (modRootElement != null) {
-                                    modRootElement.resetMods(atomicEdit);
-                                }
-                            } catch (Exception e) {
-                                LOG.log(Level.WARNING, "Exception thrown in before-save tasks", e); // NOI18N
-                            }
-
+                doc.runAtomicAsUser(new Runnable() {
+                    @Override
+                    public void run() {
+                        // See CloneableEditorSupport for property explanation
+                        Runnable beforeSaveStart = (Runnable) doc.getProperty("beforeSaveStart");
+                        if (beforeSaveStart != null) {
+                            beforeSaveStart.run();
                         }
-                    });
-                } finally {
-                    EditorPackageAccessor.get().BaseDocument_clearAtomicEdits(doc);
-                }
+
+                        UndoableEdit atomicEdit = EditorDocumentHandler.startOnSaveTasks(doc);
+                        assert (atomicEdit != null) : "Null atomic edit"; // NOI18N
+                        boolean success = false;
+                        try {
+                            DocumentSpiPackageAccessor.get().setUndoEdit(context, atomicEdit);
+                            for (int i = 0; i < tasks.size(); i++) {
+                                OnSaveTask task = tasks.get(i);
+                                DocumentSpiPackageAccessor.get().setTaskStarted(context, true);
+                                task.performTask();
+                            }
+                            ModRootElement modRootElement = ModRootElement.get(doc);
+                            if (modRootElement != null) {
+                                modRootElement.resetMods(atomicEdit);
+                            }
+                            success = true;
+
+                        } finally {
+                            // The save should be done even if the save tasks fail so that the user
+                            // is not left with an unsaved document.
+                            // Just undo an effect of the failed save tasks.
+                            EditorDocumentHandler.endOnSaveTasks(doc, success);
+
+                            // See CloneableEditorSupport for property explanation
+                            Runnable beforeSaveEnd = (Runnable) doc.getProperty("beforeSaveEnd");
+                            if (beforeSaveEnd != null) {
+                                beforeSaveEnd.run();
+                            }
+                        }
+                    }
+                });
             }
         }
 

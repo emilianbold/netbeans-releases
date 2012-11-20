@@ -283,7 +283,7 @@ public final class HudsonJobCreator extends JPanel implements ProjectHudsonJobCr
 
     private void errorOccured(String error, String logMessage, JButton extraButton) throws IOException {
         informUser(error, true, extraButton);
-        throw new IOException(logMessage);
+        throw new SilentIOException(logMessage);
     }
 
     private void informUser(String message, boolean error, JButton extraButton) {

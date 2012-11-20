@@ -434,6 +434,8 @@ public class IndentSupport {
         TokenItem lit = null; // last important token
         boolean firstColon = true;
         TokenItem t = getPreviousToken(token);
+        int paren = 0;
+        int bracket = 0;
 
         while (t != null) {
             TokenId tTokenID = t.getTokenID();
@@ -443,6 +445,32 @@ public class IndentSupport {
                         if (!isForLoopSemicolon(t)) {
                             return (lit != null) ? lit : t;
                         }
+                        break;
+                    
+                    case LPAREN:
+                        paren--;
+                        break;
+                    case RPAREN:
+                        paren++;
+                        break;
+                    case LBRACKET:
+                        bracket--;
+                        if (bracket == 0 && paren == 0) {// && wasRbracketAndLparen) {
+                            TokenItem prev = findImportantToken(t, null, true);
+                            if (prev != null && (prev.getTokenID() instanceof CppTokenId)) {
+                                switch ((CppTokenId)prev.getTokenID()) {
+                                    case IDENTIFIER:
+                                    case LBRACKET:
+                                    case RBRACKET:
+                                        break;
+                                    default:
+                                        return t;
+                                }
+                            }
+                        }
+                        break;
+                    case RBRACKET:
+                        bracket++;
                         break;
 
                     case LBRACE:
@@ -1119,6 +1147,14 @@ public class IndentSupport {
         return i;
     }
 
+    protected int getRightIndentLambda(){
+        int i = getShiftWidth();
+        if (isHalfIndentNewlineBeforeBraceLambda()){
+            return i/2;
+        }
+        return i;
+    }
+
     protected boolean indentCasesFromSwitch() {
         return getCodeStyle().indentCasesFromSwitch();
     }
@@ -1141,6 +1177,14 @@ public class IndentSupport {
 
     protected boolean isFullIndentNewlineBeforeBraceSwitch() {
         return getCodeStyle().getFormatNewLineBeforeBraceSwitch() == CodeStyle.BracePlacement.NEW_LINE_FULL_INDENTED;
+    }
+
+    protected boolean isHalfIndentNewlineBeforeBraceLambda() {
+        return getCodeStyle().getFormatNewlineBeforeBraceLambda() == CodeStyle.BracePlacement.NEW_LINE_HALF_INDENTED;
+    }
+
+    protected boolean isFullIndentNewlineBeforeBraceLambda() {
+        return getCodeStyle().getFormatNewlineBeforeBraceLambda() == CodeStyle.BracePlacement.NEW_LINE_FULL_INDENTED;
     }
 
     protected boolean isHalfIndentNewlineBeforeBraceDeclaration() {

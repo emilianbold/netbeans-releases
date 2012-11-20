@@ -44,7 +44,6 @@ package org.netbeans.modules.javascript.jstestdriver.api;
 
 import java.io.File;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.javascript.jstestdriver.JSTestDriverCustomizerPanel;
 import org.netbeans.modules.javascript.jstestdriver.JSTestDriverSupport;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -60,9 +59,7 @@ public final class RunTests {
     public static void runAllTests(Project p, FileObject baseDirectory, FileObject configurationFile) {
         File base = FileUtil.toFile(baseDirectory);
         File config = FileUtil.toFile(configurationFile);
-        JSTestDriverSupport.getDefault().runAllTests(p, JSTestDriverCustomizerPanel.getServerURL(), 
-                JSTestDriverCustomizerPanel.getPort(), JSTestDriverCustomizerPanel.isStricModel(),
-                base, config, "all");
+        JSTestDriverSupport.getDefault().runAllTests(p, base, config, "all");
     }
     
 }

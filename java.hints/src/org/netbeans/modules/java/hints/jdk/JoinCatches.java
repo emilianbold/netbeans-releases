@@ -155,6 +155,7 @@ public class JoinCatches {
                             if (ctx.getInfo().getTypes().isSubtype(caught, varType)) {
                                 subtype = true;
                                 it.remove();
+                                break;
                             }
                         }
                     }

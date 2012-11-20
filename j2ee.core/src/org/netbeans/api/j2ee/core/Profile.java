@@ -76,6 +76,10 @@ public final class Profile {
 
     public static final Profile JAVA_EE_6_WEB  = new Profile(5, "1.6", "web", "JavaEE6Web.displayName");
 
+    public static final Profile JAVA_EE_7_FULL  = new Profile(6, "1.7", null, "JavaEE7Full.displayName");
+
+    public static final Profile JAVA_EE_7_WEB  = new Profile(7, "1.7", "web", "JavaEE7Web.displayName");
+    
     private final int order;
 
     // cache
@@ -128,6 +132,12 @@ public final class Profile {
         } else if (JAVA_EE_6_WEB.toPropertiesString().equals(value)
                 || "EE_6_WEB".equals(value)) {
             return JAVA_EE_6_WEB;
+        } else if (JAVA_EE_7_FULL.toPropertiesString().equals(value)
+                || "EE_7_FULL".equals(value)) { // NOI18N
+            return JAVA_EE_7_FULL;
+        } else if (JAVA_EE_7_WEB.toPropertiesString().equals(value)
+                || "EE_7_WEB".equals(value)) {
+            return JAVA_EE_7_WEB;
         } else {
             return null;
         }

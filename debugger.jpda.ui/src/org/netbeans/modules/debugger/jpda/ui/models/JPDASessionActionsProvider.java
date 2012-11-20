@@ -93,13 +93,18 @@ public class JPDASessionActionsProvider implements NodeActionsProviderFilter {
             actions = new Action[0];
         }
         List myActions = new ArrayList();
+        if (actions.length > 0) {
+            myActions.add(actions[0]); // Keep the first action as the first one.
+        }
         DebuggerEngine e = session.getCurrentEngine ();
         if (e != null) {
             JPDADebugger d = e.lookupFirst(null, JPDADebugger.class);
             myActions.add(new CustomizeSession(d));
         }
         myActions.add(new LanguageSelection(session));
-        myActions.addAll(Arrays.asList(actions));
+        for (int i = 1; i < actions.length; i++) {
+            myActions.add(actions[i]);
+        }
         return (Action[]) myActions.toArray(new Action[myActions.size()]);
     }
 

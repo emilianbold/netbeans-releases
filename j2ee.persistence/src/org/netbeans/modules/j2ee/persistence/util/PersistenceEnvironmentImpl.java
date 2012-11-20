@@ -56,6 +56,7 @@ import org.netbeans.api.project.SourceGroupModifier;
 import org.netbeans.api.project.Sources;
 import org.netbeans.modules.j2ee.persistence.api.PersistenceEnvironment;
 import org.netbeans.modules.j2ee.persistence.api.PersistenceLocation;
+import org.netbeans.spi.java.classpath.ClassPathProvider;
 import org.netbeans.spi.project.ProjectServiceProvider;
 import org.openide.filesystems.FileObject;
 
@@ -66,7 +67,8 @@ import org.openide.filesystems.FileObject;
 @ProjectServiceProvider(service=PersistenceEnvironment.class, projectType={
     "org-netbeans-modules-maven",
     "org-netbeans-modules-java-j2seproject",
-    "org-netbeans-modules-web-project"
+    "org-netbeans-modules-web-project",
+    "org-netbeans-modules-j2ee-ejbjarproject"
 })
 public class PersistenceEnvironmentImpl implements PersistenceEnvironment{
         /** Handle to the current project to which this HibernateEnvironment is bound*/
@@ -109,18 +111,27 @@ public class PersistenceEnvironmentImpl implements PersistenceEnvironment{
      * Returns the project classpath including project build paths.
      * Can be used to set classpath for custom classloader.
      * 
-     * @param projectFile file in current project.
+     * @param projectFile may not be used in method realization
      * @return List of java.io.File objects representing each entry on the classpath.
      */
     @Override
     public List<URL> getProjectClassPath(FileObject projectFile) {
         List<URL> projectClassPathEntries = new ArrayList<URL>();
-        ClassPath cp = ClassPath.getClassPath(projectFile, ClassPath.EXECUTE);
+        SourceGroup[] sgs = ProjectUtils.getSources(project).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
+        if (sgs.length < 1) {
+            return projectClassPathEntries;
+        }
+        FileObject sourceRoot = sgs[0].getRootFolder();
+        ClassPathProvider cpProv = project.getLookup().lookup(ClassPathProvider.class);
+        ClassPath cp = cpProv.findClassPath(sourceRoot, ClassPath.EXECUTE);
         if(cp == null){
-            cp = ClassPath.getClassPath(projectFile, ClassPath.COMPILE);
+            cp = cpProv.findClassPath(sourceRoot, ClassPath.COMPILE);
         }
         for (ClassPath.Entry cpEntry : cp.entries()) {
-            projectClassPathEntries.add(cpEntry.getURL());
+            if(cpEntry.isValid()){
+                //if project isn't build, there may be number of invalid entries and may be in some other cases
+                projectClassPathEntries.add(cpEntry.getURL());
+            }
         }
 
         return projectClassPathEntries;

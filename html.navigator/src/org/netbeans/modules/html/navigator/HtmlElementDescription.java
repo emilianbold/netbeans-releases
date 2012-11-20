@@ -79,7 +79,7 @@ public class HtmlElementDescription extends SourceDescription {
 
     private HtmlElementDescription parent;
     
-    public HtmlElementDescription(HtmlElementDescription parent, Element element, FileObject file) {
+    public HtmlElementDescription(HtmlElementDescription parent, Node element, FileObject file) {
         this.parent = parent;
         this.file = file;
         this.type = element.type();
@@ -112,6 +112,15 @@ public class HtmlElementDescription extends SourceDescription {
         
         this.to = openTag != null ? openTag.semanticEnd() : element.to();
         this.name = openTag != null ? openTag.name().toString() : null;
+        
+        //init children
+        if (element != null) {
+            children = new ArrayList<HtmlElementDescription>();
+            List<OpenTag> nonVirtualChildren = gatherNonVirtualChildren(element);
+            for (OpenTag child : nonVirtualChildren) {
+                children.add(new HtmlElementDescription(HtmlElementDescription.this, child, file));
+            }
+        }
         
     }
 
@@ -219,28 +228,6 @@ public class HtmlElementDescription extends SourceDescription {
 
     @Override
     public synchronized List<HtmlElementDescription> getChildren() {
-        if (children == null) {
-            //lazy load the nested items
-            //we need a parser result to be able to find Element for the ElementHandle
-            try {
-                runTask(new Task() {
-                    @Override
-                    public void run(HtmlParserResult result) {
-                        Node node = resolve(result);
-                        if (node != null) {
-                            children = new ArrayList<HtmlElementDescription>();
-                            List<OpenTag> nonVirtualChildren = gatherNonVirtualChildren(node);
-                            for (OpenTag child : nonVirtualChildren) {
-                                children.add(new HtmlElementDescription(HtmlElementDescription.this, child, file));
-                            }
-                        }
-                    }
-                });
-
-            } catch (ParseException ex) {
-                Exceptions.printStackTrace(ex);
-            }
-        }
         return children==null?Collections.EMPTY_LIST:children;
     }
     

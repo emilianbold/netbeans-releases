@@ -205,7 +205,8 @@ public class EjbJarProjectGenerator {
         
         // create ejb-jar.xml
         Profile profile = createData.getJavaEEProfile();
-        if (!Profile.JAVA_EE_5.equals(profile) && !Profile.JAVA_EE_6_FULL.equals(profile) && !Profile.JAVA_EE_6_WEB.equals(profile)) {
+        if (!Profile.JAVA_EE_5.equals(profile) && !Profile.JAVA_EE_6_FULL.equals(profile) && !Profile.JAVA_EE_6_WEB.equals(profile) &&
+                !Profile.JAVA_EE_7_FULL.equals(profile) && !Profile.JAVA_EE_7_WEB.equals(profile)) {
             String resource = "org-netbeans-modules-j2ee-ejbjarproject/ejb-jar-2.1.xml";
             FileObject ddFile = FileUtil.copyFile(FileUtil.getConfigFile(resource), confRoot, "ejb-jar"); //NOI18N
             EjbJar ejbJar = DDProvider.getDefault().getDDRoot(ddFile);
@@ -434,7 +435,8 @@ public class EjbJarProjectGenerator {
             }
         }
         Profile j2eeProfile = data.getJavaEEProfile();
-        if (j2eeProfile.equals(Profile.JAVA_EE_6_FULL) || j2eeProfile.equals(Profile.JAVA_EE_6_WEB)) {
+        if (j2eeProfile.equals(Profile.JAVA_EE_6_FULL) || j2eeProfile.equals(Profile.JAVA_EE_6_WEB) ||
+                j2eeProfile.equals(Profile.JAVA_EE_7_FULL) || j2eeProfile.equals(Profile.JAVA_EE_7_WEB)) {
             if (rh.getProjectLibraryManager().getLibrary(Util.ENDORSED_LIBRARY_NAME) == null) { // NOI18N
                 rh.copyLibrary(LibraryManager.getDefault().getLibrary(Util.ENDORSED_LIBRARY_NAME)); // NOI18N
             }
@@ -616,7 +618,8 @@ public class EjbJarProjectGenerator {
         Charset enc = FileEncodingQuery.getDefaultEncoding();
         ep.setProperty(EjbJarProjectProperties.SOURCE_ENCODING, enc.name());
         
-        if (j2eeProfile.equals(Profile.JAVA_EE_6_FULL) || j2eeProfile.equals(Profile.JAVA_EE_6_WEB)) {
+        if (j2eeProfile.equals(Profile.JAVA_EE_6_FULL) || j2eeProfile.equals(Profile.JAVA_EE_6_WEB) ||
+                j2eeProfile.equals(Profile.JAVA_EE_7_FULL) || j2eeProfile.equals(Profile.JAVA_EE_7_WEB)) {
             ep.setProperty(ProjectProperties.ENDORSED_CLASSPATH, new String[]{Util.ENDORSED_LIBRARY_CLASSPATH});
         }
         

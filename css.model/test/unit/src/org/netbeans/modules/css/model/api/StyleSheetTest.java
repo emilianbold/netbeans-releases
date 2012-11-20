@@ -42,7 +42,6 @@
 package org.netbeans.modules.css.model.api;
 
 import java.io.IOException;
-import org.netbeans.modules.css.model.ModelTestBase;
 
 /**
  *
@@ -55,7 +54,7 @@ public class StyleSheetTest extends ModelTestBase {
     }
     
     public void testCreateStyleSheet() throws IOException, InterruptedException {
-        Model model = new Model();
+        Model model = createModel();
         StyleSheet styleSheet = model.getStyleSheet();
 
         ElementFactory factory = model.getElementFactory();

@@ -46,9 +46,12 @@ package org.netbeans.modules.groovy.refactoring;
 
 import org.netbeans.api.fileinfo.NonRecursiveFolder;
 import org.netbeans.modules.groovy.refactoring.findusages.FindUsagesPlugin;
-import org.netbeans.modules.groovy.refactoring.move.MoveRefactoringPlugin;
+import org.netbeans.modules.groovy.refactoring.findusages.model.RefactoringElement;
+import org.netbeans.modules.groovy.refactoring.move.MoveFileRefactoringPlugin;
+import org.netbeans.modules.groovy.refactoring.rename.RenamePackagePlugin;
 import org.netbeans.modules.groovy.refactoring.rename.RenameRefactoringPlugin;
 import org.netbeans.modules.groovy.refactoring.utils.GroovyProjectUtil;
+import org.netbeans.modules.groovy.refactoring.utils.IdentifiersUtil;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.netbeans.modules.refactoring.api.MoveRefactoring;
 import org.netbeans.modules.refactoring.api.RenameRefactoring;
@@ -72,33 +75,39 @@ public class GroovyRefactoringFactory implements RefactoringPluginFactory {
     public RefactoringPlugin createInstance(AbstractRefactoring refactoring) {
         final Lookup lookup = refactoring.getRefactoringSource();
         final NonRecursiveFolder pkg = lookup.lookup(NonRecursiveFolder.class);
-        final GroovyRefactoringElement element = lookup.lookup(GroovyRefactoringElement.class);
+        final RefactoringElement element = lookup.lookup(RefactoringElement.class);
         FileObject sourceFO = lookup.lookup(FileObject.class);
 
         if (sourceFO == null){
             if (pkg != null){
                 sourceFO = pkg.getFolder();
-            } else if (element != null) {
-                sourceFO = element.getFileObject();
+            } else {
+                if (element != null) {
+                    sourceFO = element.getFileObject();
+                } else {
+                    return null; // Might happened #221580
+                }
             }
         }
 
-        if (sourceFO == null){
+        if (sourceFO == null || !GroovyProjectUtil.isInGroovyProject(sourceFO)) {
             return null;
         }
 
-        boolean supportedFile = GroovyProjectUtil.isInGroovyProject(sourceFO) && GroovyProjectUtil.isGroovyFile(sourceFO);
+        if (refactoring instanceof WhereUsedQuery){
+            return new FindUsagesPlugin(sourceFO, element, refactoring);
+        }
+        if (refactoring instanceof RenameRefactoring) {
+            final RenameRefactoring renameRefactoring = (RenameRefactoring) refactoring;
 
-        if (supportedFile) {
-            if (refactoring instanceof WhereUsedQuery){
-                return new FindUsagesPlugin(sourceFO, element, refactoring);
+            if (IdentifiersUtil.isPackageRename(renameRefactoring)) {
+//                return new RenamePackagePlugin(sourceFO, renameRefactoring);
+            } else {
+                return new RenameRefactoringPlugin(sourceFO, element, renameRefactoring);
             }
-            if (refactoring instanceof RenameRefactoring) {
-                return new RenameRefactoringPlugin(sourceFO, element, refactoring);
-            }
-            if (refactoring instanceof MoveRefactoring) {
-                return new MoveRefactoringPlugin(sourceFO, element, refactoring);
-            }
+        }
+        if (refactoring instanceof MoveRefactoring) {
+            return new MoveFileRefactoringPlugin(sourceFO, element, refactoring);
         }
         return null;
     }

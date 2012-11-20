@@ -46,7 +46,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.Map;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.cnd.dwarfdump.CompilationUnit;
+import org.netbeans.modules.cnd.dwarfdump.CompilationUnitInterface;
 import org.netbeans.modules.cnd.dwarfdump.Dwarf;
 import org.netbeans.modules.cnd.dwarfdump.Dwarf.CompilationUnitIterator;
 import org.netbeans.modules.cnd.dwarfdump.dwarfconsts.LANG;
@@ -113,7 +113,7 @@ public class LiteModel extends ModelAccessor {
             dump = new Dwarf(objFileName);
             CompilationUnitIterator iterator = dump.iteratorCompilationUnits();
             while (iterator.hasNext()) {
-                CompilationUnit cu = iterator.next();
+                CompilationUnitInterface cu = iterator.next();
                 if (cu != null) {
                     if (cu.getRoot() == null || cu.getSourceFileName() == null) {
                         continue;

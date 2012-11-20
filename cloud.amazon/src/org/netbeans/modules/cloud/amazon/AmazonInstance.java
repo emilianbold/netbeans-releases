@@ -102,13 +102,15 @@ public class AmazonInstance {
     private final String keyId;
     private final String key;
     private final String name;
+    private final String regionUrl;
     
     private ServerInstance serverInstance;
 
-    public AmazonInstance(String name, String keyId, String key) {
+    public AmazonInstance(String name, String keyId, String key, String regionURL) {
         this.keyId = keyId;
         this.key = key;
         this.name = name;
+        this.regionUrl = regionURL;
     }
 
     void setServerInstance(ServerInstance serverInstance) {
@@ -131,6 +133,10 @@ public class AmazonInstance {
         return key;
     }
 
+    public String getRegionURL() {
+        return regionUrl;
+    }
+    
     private AWSCredentials getCredentials() {
         return new BasicAWSCredentials(keyId, key);
     }
@@ -142,6 +148,9 @@ public class AmazonInstance {
     public void testConnection() {
         assert !SwingUtilities.isEventDispatchThread();
         AWSElasticBeanstalk client = new AWSElasticBeanstalkClient(getCredentials());
+        if (regionUrl != null) {
+            client.setEndpoint(regionUrl);
+        }
         client.createStorageLocation();
     }
     
@@ -152,6 +161,9 @@ public class AmazonInstance {
 //        try {
             LOG.log(Level.INFO, "read AWS environments"); // NOI18N
             AWSElasticBeanstalk client = new AWSElasticBeanstalkClient(getCredentials());
+            if (regionUrl != null) {
+                client.setEndpoint(regionUrl);
+            }
             for (EnvironmentDescription ed : client.describeEnvironments().getEnvironments()) {
                 AmazonJ2EEInstance inst = new AmazonJ2EEInstance(this, ed.getApplicationName(), 
                         ed.getEnvironmentName(), ed.getEnvironmentId(),
@@ -177,6 +189,9 @@ public class AmazonInstance {
         try {
             LOG.log(Level.INFO, "read AWS applications"); // NOI18N
             AWSElasticBeanstalk client = new AWSElasticBeanstalkClient(getCredentials());
+            if (regionUrl != null) {
+                client.setEndpoint(regionUrl);
+            }
             for (ApplicationDescription ad : client.describeApplications().getApplications()) {
                 res.add(ad.getApplicationName());
             }
@@ -198,6 +213,9 @@ public class AmazonInstance {
         try {
             LOG.log(Level.INFO, "read AWS application templates"); // NOI18N
             AWSElasticBeanstalk client = new AWSElasticBeanstalkClient(getCredentials());
+            if (regionUrl != null) {
+                client.setEndpoint(regionUrl);
+            }
             for (ApplicationDescription ad : client.describeApplications().getApplications()) {
                 res.put(ad.getApplicationName(), ad.getConfigurationTemplates());
             }
@@ -216,6 +234,9 @@ public class AmazonInstance {
         try {
             LOG.log(Level.INFO, "read AWS solution stacks"); // NOI18N
             AWSElasticBeanstalk client = new AWSElasticBeanstalkClient(getCredentials());
+            if (regionUrl != null) {
+                client.setEndpoint(regionUrl);
+            }
             res = client.listAvailableSolutionStacks().getSolutionStacks();
             LOG.log(Level.INFO, "solution stacks available: "+res); // NOI18N
         } catch (AmazonClientException ex) {
@@ -228,6 +249,9 @@ public class AmazonInstance {
     public boolean checkURLValidity(String url) {
         assert !SwingUtilities.isEventDispatchThread();
         AWSElasticBeanstalk client = new AWSElasticBeanstalkClient(getCredentials());
+        if (regionUrl != null) {
+            client.setEndpoint(regionUrl);
+        }
         CheckDNSAvailabilityResult res = client.checkDNSAvailability(new CheckDNSAvailabilityRequest(url));
         return res.isAvailable();
     }
@@ -235,6 +259,9 @@ public class AmazonInstance {
     public void createApplication(String appName) {
         assert !SwingUtilities.isEventDispatchThread();
         AWSElasticBeanstalk client = new AWSElasticBeanstalkClient(getCredentials());
+        if (regionUrl != null) {
+            client.setEndpoint(regionUrl);
+        }
         CreateApplicationRequest req = new CreateApplicationRequest(appName);
         client.createApplication(req).getApplication();
     }
@@ -242,6 +269,9 @@ public class AmazonInstance {
     public S3Location createDefaultEmptyApplication() {
         assert !SwingUtilities.isEventDispatchThread();
         AWSElasticBeanstalk client = new AWSElasticBeanstalkClient(getCredentials());
+        if (regionUrl != null) {
+            client.setEndpoint(regionUrl);
+        }
         AmazonS3 s3 = new AmazonS3Client(getCredentials(keyId, key));
         
         String bucket = client.createStorageLocation().getS3Bucket();
@@ -267,6 +297,9 @@ public class AmazonInstance {
     public void createInitialEmptyApplication(String appName) {
         assert !SwingUtilities.isEventDispatchThread();
         AWSElasticBeanstalk client = new AWSElasticBeanstalkClient(getCredentials());
+        if (regionUrl != null) {
+            client.setEndpoint(regionUrl);
+        }
         S3Location slocation = createDefaultEmptyApplication();
         
         CreateApplicationVersionRequest req = new CreateApplicationVersionRequest(appName, "blank application from NetBeans").
@@ -277,6 +310,9 @@ public class AmazonInstance {
     public String createEnvironment(String appName, String envName, String url, String containerType, String template) {
         assert !SwingUtilities.isEventDispatchThread();
         AWSElasticBeanstalk client = new AWSElasticBeanstalkClient(getCredentials());
+        if (regionUrl != null) {
+            client.setEndpoint(regionUrl);
+        }
         CreateEnvironmentRequest req = new CreateEnvironmentRequest(appName, envName).
                 withCNAMEPrefix(url).
                 withSolutionStackName(containerType);
@@ -288,12 +324,12 @@ public class AmazonInstance {
 
     public static Future<DeploymentStatus> deployAsync(final File f, final String applicationName, 
                          final String environmentId, final String keyId, final String key,
-                         final ProgressObjectImpl po) {
+                         final ProgressObjectImpl po, final String regionUrl) {
         return runAsynchronously(new Callable<DeploymentStatus>() {
             @Override
             public DeploymentStatus call() throws Exception {
                 String url[] = new String[1];
-                DeploymentStatus ds = deploy(f, applicationName, environmentId, keyId, key, po, url);
+                DeploymentStatus ds = deploy(f, applicationName, environmentId, keyId, key, po, url, regionUrl);
                 LOG.log(Level.INFO, "deployment result: "+ds); // NOI18N
                 po.updateDepoymentResult(ds, url[0]);
                 return ds;
@@ -303,7 +339,7 @@ public class AmazonInstance {
     
     public static DeploymentStatus deploy(File f, String applicationName, 
                           String environmentId, String keyId, String key,
-                          ProgressObjectImpl po, String[] url) {
+                          ProgressObjectImpl po, String[] url, String regionUrl) {
         assert !SwingUtilities.isEventDispatchThread();
         try {
             if (po != null) {
@@ -315,6 +351,9 @@ public class AmazonInstance {
             }
             LOG.log(Level.INFO, "deploy to AWS["+environmentId+"] "+f); // NOI18N
             AWSElasticBeanstalk client = new AWSElasticBeanstalkClient(getCredentials(keyId, key));
+            if (regionUrl != null) {
+                client.setEndpoint(regionUrl);
+            }
             AmazonS3 s3 = new AmazonS3Client(getCredentials(keyId, key));
 
             if (po != null) {

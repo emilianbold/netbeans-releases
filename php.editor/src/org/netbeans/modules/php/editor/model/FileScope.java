@@ -49,7 +49,9 @@ import java.util.Collection;
  * @author Radek Matous
  */
 public interface  FileScope extends Scope  {
+
     Collection<? extends NamespaceScope> getDeclaredNamespaces();
     NamespaceScope getDefaultDeclaredNamespace();
     IndexScope getIndexScope();
+
 }

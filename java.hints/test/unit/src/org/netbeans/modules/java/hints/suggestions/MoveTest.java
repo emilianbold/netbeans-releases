@@ -53,6 +53,28 @@ public class MoveTest extends NbTestCase {
     public MoveTest(String name) {
         super(name);
     }
+    
+    public void test219932() throws Exception { // #219932 - Move initializer to constructor
+        HintTest.create()
+                .setCaretMarker('|')
+                .input("package test;\n"
+                + "public class Test {\n"
+                + "    private int[] mess|age = {1,2,3,4};\n"
+                + "    public Test() {\n"
+                + "    }\n"
+                + "}\n")
+                .run(Move.class)
+                .findWarning("2:22-2:22:hint:Move initializer to constructor(s)")
+                .applyFix("Move initializer to constructor(s)")
+                .assertCompilable()
+                .assertOutput("package test;\n"
+                + "public class Test {\n"
+                + "    private int[] message;\n"
+                + "    public Test() {\n"
+                + "        this.message = new int[]{1, 2, 3, 4};\n"
+                + "    }\n"
+                + "}\n");
+    }
 
     public void testMoveToConstructor() throws Exception {
         HintTest.create()

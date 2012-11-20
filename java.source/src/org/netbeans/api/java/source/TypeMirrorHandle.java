@@ -417,17 +417,21 @@ public final class TypeMirrorHandle<T extends TypeMirror> {
 
         @Override
         public Void visitArrayType(Type.ArrayType t, Void s) {
-            t.elemtype.accept(this, s);
+            if (t.elemtype != null)
+                t.elemtype.accept(this, s);
             return null;
         }
 
         @Override
         public Void visitClassType(ClassType t, Void s) {
-            t.supertype_field.accept(this, s);
-            for (com.sun.tools.javac.util.List<Type> l = t.interfaces_field; l.nonEmpty(); l = l.tail)
-                l.head.accept(this, s);
-            for (com.sun.tools.javac.util.List<Type> l = t.typarams_field; l.nonEmpty(); l = l.tail)
-                l.head.accept(this, s);
+            if (t.supertype_field != null)
+                t.supertype_field.accept(this, s);
+            if (t.interfaces_field != null)
+                for (com.sun.tools.javac.util.List<Type> l = t.interfaces_field; l.nonEmpty(); l = l.tail)
+                    l.head.accept(this, s);
+            if (t.typarams_field != null)
+                for (com.sun.tools.javac.util.List<Type> l = t.typarams_field; l.nonEmpty(); l = l.tail)
+                    l.head.accept(this, s);
             return null;
         }
 
@@ -435,11 +439,11 @@ public final class TypeMirrorHandle<T extends TypeMirror> {
         public Void visitTypeVar(TypeVar t, Void s) {
             if (t.bound instanceof PlaceholderType)
                 t.bound = ((PlaceholderType)t.bound).delegate;
-            else
+            else if (t.bound != null)
                 t.bound.accept(this, s);
             if (t.lower instanceof PlaceholderType)
                 t.lower = ((PlaceholderType)t.lower).delegate;
-            else
+            else if (t.lower != null)
                 t.lower.accept(this, s);
             return null;
         }
@@ -448,7 +452,7 @@ public final class TypeMirrorHandle<T extends TypeMirror> {
         public Void visitWildcardType(Type.WildcardType t, Void s) {
             if (t.type instanceof PlaceholderType)
                 t.type = ((PlaceholderType)t.type).delegate;
-            else
+            else if (t.type != null)
                 t.type.accept(this, s);
             if (t.bound != null)
                 t.bound.accept(this, s);

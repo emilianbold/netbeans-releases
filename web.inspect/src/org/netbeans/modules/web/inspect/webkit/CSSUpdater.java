@@ -49,7 +49,7 @@ import javax.swing.text.Document;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.css.live.LiveUpdater;
-import org.netbeans.modules.web.clientproject.api.ServerURLMapping;
+import org.netbeans.modules.web.common.api.ServerURLMapping;
 import org.netbeans.modules.web.webkit.debugging.api.WebKitDebugging;
 import org.netbeans.modules.web.webkit.debugging.api.css.StyleSheetHeader;
 import org.openide.filesystems.FileObject;

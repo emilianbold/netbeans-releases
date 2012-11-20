@@ -112,7 +112,7 @@ class FieldElementImpl extends ScopeImpl implements FieldElement {
         for (TypeResolver typeResolver : instanceTypes) {
             if (typeResolver.isResolved()) {
                 QualifiedName typeName = typeResolver.getTypeName(false);
-                String type = typeName.toNamespaceName() + "\\" + typeName.getName(); // NOI18N
+                String type = typeName == null ? "" : typeName.toNamespaceName() + "\\" + typeName.getName(); // NOI18N
                 if (this.defaultType != null) {
                     this.defaultType += String.format("|%s", type); //NOI18N
                 } else {
@@ -124,7 +124,7 @@ class FieldElementImpl extends ScopeImpl implements FieldElement {
         for (TypeResolver typeResolver : instanceFQTypes) {
             if (typeResolver.isResolved()) {
                 QualifiedName typeName = typeResolver.getTypeName(false);
-                String type = typeName.toNamespaceName() + "\\" + typeName.getName(); // NOI18N
+                String type = typeName == null ? "" : typeName.toNamespaceName() + "\\" + typeName.getName(); // NOI18N
                 if (this.defaultFQType != null) {
                     this.defaultFQType += String.format("|%s", type); //NOI18N
                 } else {
@@ -176,7 +176,7 @@ class FieldElementImpl extends ScopeImpl implements FieldElement {
     }
     @Override
     public String getNormalizedName() {
-        return className+super.getNormalizedName();
+        return className + super.getNormalizedName();
     }
 
     @Override
@@ -197,7 +197,7 @@ class FieldElementImpl extends ScopeImpl implements FieldElement {
         return retval;
     }
 
-    private static Set<String> recursionDetection = new HashSet<String>();//#168868
+    private static Set<String> recursionDetection = new HashSet<String>(); //#168868
     @Override
     public Collection<? extends TypeScope> getArrayAccessTypes(int offset) {
         return getTypes(offset);
@@ -234,8 +234,8 @@ class FieldElementImpl extends ScopeImpl implements FieldElement {
         Collection<String> retval = Collections.<String>emptyList();
         if (defaultType != null && defaultType.length() > 0) {
             retval = new ArrayList<String>();
-            for (String typeName : defaultType.split("\\|")) {//NOI18N
-                if (!typeName.contains(VariousUtils.PRE_OPERATION_TYPE_DELIMITER)) {//NOI18N
+            for (String typeName : defaultType.split("\\|")) { //NOI18N
+                if (!typeName.contains(VariousUtils.PRE_OPERATION_TYPE_DELIMITER)) { //NOI18N
                     retval.add(typeName);
                 }
             }

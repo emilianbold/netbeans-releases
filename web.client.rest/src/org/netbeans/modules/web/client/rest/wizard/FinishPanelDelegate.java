@@ -81,7 +81,7 @@ class FinishPanelDelegate implements WizardDescriptor.FinishablePanel<WizardDesc
      */
     @Override
     public HelpCtx getHelp() {
-        return myDelegate.getHelp();
+        return new HelpCtx(JSClientIterator.HELP_ID);
     }
 
     /* (non-Javadoc)

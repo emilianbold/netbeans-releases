@@ -42,7 +42,9 @@
 
 package org.netbeans.modules.db.dataview.util;
 
+import java.io.UnsupportedEncodingException;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.db.dataview.meta.DBException;
 
 /**
  *
@@ -73,7 +75,7 @@ public class BinaryToStringConverterTest extends NbTestCase {
      * Test of convertToString method, of class BinaryToStringConverter.
      */
     public void testConvertToString() {
-        Byte[] data = new Byte[1];
+        byte[] data = new byte[1];
         int base = 10;
         boolean showAscii = false;
         String expResult = "022";
@@ -82,4 +84,23 @@ public class BinaryToStringConverterTest extends NbTestCase {
         assertEquals(expResult, result);
     }
 
+    /**
+     * Test SQL hexadecimal encoding - adapted from
+     * http://dev.mysql.com/doc/refman/5.0/en/hexadecimal-literals.html
+     */
+    public void testConvertToString2() throws UnsupportedEncodingException,
+            DBException {
+        byte[] data = "\u0000MySQL".getBytes("ASCII");
+        int base = 16;
+        boolean showAscii = false;
+        String expResult = "004d7953514c";
+        String result = BinaryToStringConverter.convertToString(
+                data, base, showAscii);
+        assertEquals(expResult, result);
+
+        data = "Paul".getBytes("ASCII");
+        expResult = "5061756c";
+        result = BinaryToStringConverter.convertToString(data, base, showAscii);
+        assertEquals(expResult, result);
+    }
 }

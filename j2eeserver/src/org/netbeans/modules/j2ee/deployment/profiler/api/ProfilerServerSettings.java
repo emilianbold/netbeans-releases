@@ -60,9 +60,9 @@ import org.openide.filesystems.FileUtil;
 @Deprecated
 public final class ProfilerServerSettings {
 
-    private JavaPlatform    javaPlatform;
-    private String[]        jvmArgs;
-    private String[]        env;
+    private final JavaPlatform    javaPlatform;
+    private final String[]        jvmArgs;
+    private final String[]        env;
 
     /**
      * Creates new ProfilerServerSettings.
@@ -84,8 +84,8 @@ public final class ProfilerServerSettings {
             throw new NullPointerException("The env argument must not be null.");           // NOI18N
         }
         this.javaPlatform   = javaPlatform;
-        this.jvmArgs        = jvmArgs;
-        this.env            = env;
+        this.jvmArgs        = jvmArgs.clone();
+        this.env            = env.clone();
     }
 
     /**

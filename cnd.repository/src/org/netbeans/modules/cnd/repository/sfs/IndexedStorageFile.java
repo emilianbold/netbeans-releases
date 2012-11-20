@@ -171,15 +171,17 @@ class IndexedStorageFile extends FileStorage {
             fileStatistics.removeNotify(key);
         }
 
-        final int oldSize = index.remove(key);
+        synchronized (writeLock) {
+            final int oldSize = index.remove(key);
 
-        if (oldSize != 0) {
-            if (index.size() == 0) {
-                fileRWAccess.truncate(0);
-                fileRWAccessSize.set(0);
-                usedSize = 0;
-            } else {
-                usedSize -= -oldSize;
+            if (oldSize != 0) {
+                if (index.size() == 0) {
+                    fileRWAccess.truncate(0);
+                    fileRWAccessSize.set(0);
+                    usedSize = 0;
+                } else {
+                    usedSize -= -oldSize;
+                }
             }
         }
     }
@@ -364,9 +366,6 @@ class IndexedStorageFile extends FileStorage {
             case 0:
                 result = new BufferedRWAccess(file, unitCodec);
                 break;
-            case 1:
-                result = new SimpleRWAccess(file, unitCodec);
-                break;
             default:
                 result = new BufferedRWAccess(file, unitCodec);
         }
@@ -443,19 +442,25 @@ class IndexedStorageFile extends FileStorage {
             assert currentKey != null;
             final ChunkInfo chi = getChunkInfo(currentKey);
             indexIterator.remove();
-
-            if (index.size() == 0) {
-                try {
-                    fileRWAccess.truncate(0);
-                    fileRWAccessSize.set(0);
-                } catch (IOException ex) {
-                    ex.printStackTrace();
+            synchronized (writeLock) {
+                if (index.size() == 0) {
+                    try {
+                        fileRWAccess.truncate(0);
+                        fileRWAccessSize.set(0);
+                    } catch (IOException ex) {
+                        ex.printStackTrace();
+                    }
+                    usedSize = 0;
+                } else {
+                    final int size = chi.getSize();
+                    usedSize -= size;
                 }
-                usedSize = 0;
-            } else {
-                final int size = chi.getSize();
-                usedSize -= size;
             }
         }
+    }
+
+    @Override
+    public void debugDump(Key key) {
+        // not implemented so far
     }
 }

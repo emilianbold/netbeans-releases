@@ -42,7 +42,7 @@
 
 package org.netbeans.modules.languages.ini;
 
-public class StateStack implements Cloneable {
+public class StateStack {
 
     public byte[] stack;
     private int lastIn = -1;

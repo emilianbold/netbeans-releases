@@ -47,6 +47,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import org.netbeans.modules.cnd.api.model.CsmFile;
+import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmUID;
 import org.netbeans.modules.cnd.modelimpl.csm.CsmObjectBuilder;
 import org.netbeans.modules.cnd.modelimpl.csm.NameHolder;
@@ -186,6 +187,10 @@ public abstract class OffsetableIdentifiableBase<T> extends OffsetableBase imple
             }
         }
 
+        protected void addReference(CsmObject obj) {
+            getNameHolder().addReference(getFileContent(), obj);
+        }
+        
     }    
     
     ////////////////////////////////////////////////////////////////////////////

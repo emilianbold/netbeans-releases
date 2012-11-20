@@ -54,7 +54,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
@@ -94,6 +93,31 @@ public class StartTask extends BasicTask<OperationState> {
     static final private int LOWEST_USER_PORT = org.openide.util.Utilities.isWindows() ? 1 : 1025;
     private final VMIntrospector vmi;
     private static RequestProcessor NODE_REFRESHER = new RequestProcessor("nodes to refresh");
+
+    ////////////////////////////////////////////////////////////////////////////
+    // Static methods                                                         //
+    ////////////////////////////////////////////////////////////////////////////
+
+    private static String[] removeEscapes(String[] args) {
+        for (int i = 0; i < args.length; i++) {
+            args[i] = args[i].replace("\\\"", ""); // NOI18N
+        }
+        return args;
+    }
+
+    private static StartupExtender.StartMode getMode(String gfMode) {
+        if (GlassfishModule.PROFILE_MODE.equals(gfMode)) {
+            return StartupExtender.StartMode.PROFILE;
+        } else if (GlassfishModule.DEBUG_MODE.equals(gfMode)) {
+            return StartupExtender.StartMode.DEBUG;
+        } else {
+            return StartupExtender.StartMode.NORMAL;
+        }
+    }
+
+    ////////////////////////////////////////////////////////////////////////////
+    // Constructors                                                           //
+    ////////////////////////////////////////////////////////////////////////////
 
     /**
      *
@@ -142,12 +166,9 @@ public class StartTask extends BasicTask<OperationState> {
         Logger.getLogger("glassfish").log(Level.FINE, "VMI == {0}", vmi);
     }
 
-    private static String[] removeEscapes(String[] args) {
-        for (int i = 0; i < args.length; i++) {
-            args[i] = args[i].replace("\\\"", ""); // NOI18N
-        }
-        return args;
-    }
+    ////////////////////////////////////////////////////////////////////////////
+    // ExecutorService call() Method                                          //
+    ////////////////////////////////////////////////////////////////////////////
 
     /**
      *
@@ -176,7 +197,7 @@ public class StartTask extends BasicTask<OperationState> {
         }
 
         if (support.isRemote()) {
-            if (support.isReallyRunning()) {
+            if (GlassFishStatus.isReady(instance, false)) {
                 if (Util.isDefaultOrServerTarget(instance.getProperties())) {
                     return restartDAS(adminHost, adminPort, start);
                 } else {
@@ -186,12 +207,16 @@ public class StartTask extends BasicTask<OperationState> {
                 return fireOperationStateChanged(OperationState.FAILED,
                         "MSG_START_SERVER_FAILED_DASDOWN", instanceName); //NOI18N
             }
-        } else if (!support.isReallyRunning()) {
+        } else if (!GlassFishStatus.isReady(instance, false)) {
             return startDASAndClusterOrInstance(adminHost, adminPort);
         } else {
             return startClusterOrInstance(adminHost, adminPort);
         }
     }
+
+    ////////////////////////////////////////////////////////////////////////////
+    // Methods                                                                //
+    ////////////////////////////////////////////////////////////////////////////
 
     private OperationState restartDAS(String adminHost, int adminPort, final long start) {
         // deal with the remote case here...
@@ -225,7 +250,7 @@ public class StartTask extends BasicTask<OperationState> {
                             }
                             while (OperationState.RUNNING == state && System.currentTimeMillis() - start < START_TIMEOUT) {
                                 // Send the 'completed' event and return when the server is running
-                                boolean httpLive = support.isReady(false, 2000, TIMEUNIT); //CommonServerSupport.isRunning(host, port,instance.getProperty(GlassfishModule.DISPLAY_NAME_ATTR));
+                                boolean httpLive = GlassFishStatus.isReady(instance, false); //CommonServerSupport.isRunning(host, port,instance.getProperty(GlassfishModule.DISPLAY_NAME_ATTR));
 
                                 // Sleep for a little so that we do not make our checks too often
                                 //
@@ -308,7 +333,7 @@ public class StartTask extends BasicTask<OperationState> {
             Logger.getLogger("glassfish").log(Level.FINEST,
                     "Checking if GlassFish {0} is running. Timeout set to 20000 ms",
                     instance.getName());
-            if (support.isReady(false, 20000, TIMEUNIT)) {
+            if (GlassFishStatus.isReady(instance, false)) {
                 OperationState result = OperationState.COMPLETED;
                 if (GlassfishModule.PROFILE_MODE.equals(instance.getProperty(GlassfishModule.JVM_MODE))) {
                     result = OperationState.FAILED;
@@ -370,7 +395,8 @@ public class StartTask extends BasicTask<OperationState> {
             }
 
             if (httpLive) {
-                if (!support.isReady(true, 3, TimeUnit.HOURS)) {
+                if (!GlassFishStatus.isReady(
+                        instance, true, GlassFishStatus.Mode.STARTUP)) {
                     OperationState  state = OperationState.FAILED;
                     String messageKey = "MSG_START_SERVER_FAILED"; // NOI18N
                     Logger.getLogger("glassfish").log(Level.INFO,
@@ -396,7 +422,7 @@ public class StartTask extends BasicTask<OperationState> {
 
                     @Override
                     public void run() {
-                        while (!support.isReady(false, 2000, TIMEUNIT)) { // !CommonServerSupport.isRunning(support.getHostName(), support.getAdminPortNumber(),                                instance.getProperty(GlassfishModule.DISPLAY_NAME_ATTR))) {
+                        while (!GlassFishStatus.isReady(instance, false)) { // !CommonServerSupport.isRunning(support.getHostName(), support.getAdminPortNumber(),                                instance.getProperty(GlassfishModule.DISPLAY_NAME_ATTR))) {
                             try {
                                 Thread.sleep(200);
                             } catch (InterruptedException ex) {
@@ -744,13 +770,4 @@ public class StartTask extends BasicTask<OperationState> {
         return result;
     }
     
-    private static StartupExtender.StartMode getMode(String gfMode) {
-        if (GlassfishModule.PROFILE_MODE.equals(gfMode)) {
-            return StartupExtender.StartMode.PROFILE;
-        } else if (GlassfishModule.DEBUG_MODE.equals(gfMode)) {
-            return StartupExtender.StartMode.DEBUG;
-        } else {
-            return StartupExtender.StartMode.NORMAL;
-        }
-    }
 }

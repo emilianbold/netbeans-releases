@@ -104,6 +104,29 @@ public class LexerUtilsTest extends CslTestBase {
         } catch (IllegalArgumentException e) {}
     }
 
-   
+    public void testTrim() {
+        assertEquals("cau", LexerUtils.trim("cau"));
+        assertEquals("", LexerUtils.trim(""));
+        
+        assertNotEquals("cau", LexerUtils.trim("cau2"));
+        assertNotEquals("", LexerUtils.trim("x"));
+        assertNotEquals("x", LexerUtils.trim(""));
+        
+        assertEquals("x", LexerUtils.trim(" x"));
+        assertEquals("x", LexerUtils.trim("x "));
+        assertEquals("x", LexerUtils.trim("   x    "));
+        
+        assertEquals("hello world", LexerUtils.trim("   hello world "));
+        
+        assertEquals(".aaa", LexerUtils.trim(".aaa "));
+    }
+
+    public void assertEquals(CharSequence ch1, CharSequence ch2) {
+        assertTrue(String.format("'%s' != '%s'", ch1.toString(), ch2.toString()), LexerUtils.equals(ch1, ch2, false, false));
+    }
+    
+    public void assertNotEquals(CharSequence ch1, CharSequence ch2) {
+        assertFalse(String.format("'%s' == '%s'", ch1.toString(), ch2.toString()), LexerUtils.equals(ch1, ch2, false, false));
+    }
 
 }

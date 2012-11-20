@@ -44,6 +44,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Logger;
@@ -107,8 +108,13 @@ public class EditorTestPerformer extends ParserResultTask<TestResult>{
         try {
             List<ErrorDescription> errors = new LinkedList<ErrorDescription>();
             OffsetsBag bag = new OffsetsBag(doc);
+            Map<TestCase, Collection<String>> testResults = TestPerformer.performTest(ruleFile, file, tests, cancel);
 
-            for (Entry<TestCase, Collection<String>> e : TestPerformer.performTest(ruleFile, file, tests, cancel).entrySet()) {
+            if (testResults == null || cancel.get()) return ;
+            
+            for (Entry<TestCase, Collection<String>> e : testResults.entrySet()) {
+                if (cancel.get()) return ;
+                
                 TestCase tc = e.getKey();
                 String[] golden = tc.getResults();
                 String[] real = e.getValue().toArray(new String[0]);
@@ -137,10 +143,9 @@ public class EditorTestPerformer extends ParserResultTask<TestResult>{
                 }
 
                 bag.addHighlight(tc.getTestCaseStart() + "%%TestCase ".length(), tc.getCodeStart() - 1, passed ? PASSED : FAILED);
-
-                getBag(doc).setHighlights(bag);
             }
 
+            getBag(doc).setHighlights(bag);
             HintsController.setErrors(doc, EditorTestPerformer.class.getName(), errors);
         } catch (Exception ex) {
             Exceptions.printStackTrace(ex);

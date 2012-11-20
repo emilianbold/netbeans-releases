@@ -1533,6 +1533,7 @@ public abstract class TreeView extends JScrollPane {
 
         @Override
         protected void showPopup(MouseEvent e) {
+            tree.cancelEditing();
             int selRow = tree.getRowForLocation(e.getX(), e.getY());
 
             if ((selRow == -1) && !isRootVisible()) {

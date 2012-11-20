@@ -42,21 +42,22 @@
 package org.netbeans.modules.cnd.debugger.common2.utils;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Vector;
 import java.util.regex.Pattern;
 import org.junit.Test;
 import static org.junit.Assert.*;
 import org.netbeans.modules.cnd.debugger.common2.debugger.remote.Host;
+import org.netbeans.modules.cnd.debugger.common2.debugger.test.CndBaseTestCase;
 
 /**
  *
  * @author
  * Egor Ushakov
  */
-public class PsProviderTest {
+public class PsProviderTest extends CndBaseTestCase {
     
-    public PsProviderTest() {
+    public PsProviderTest(String name) {
+        super(name);
     }
     
     private PsProvider.PsData prepareWinData() {

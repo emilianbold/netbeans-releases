@@ -334,6 +334,11 @@ public class ScannerTestCase extends NbTestCase {
         doTest(getLogs(), toolchain.getScanner(), getRef());
     }
 
+    public void testArmLogs() throws Exception {
+        ToolchainDescriptor toolchain = ToolchainManagerImpl.getImpl().getToolchain("Cygwin", PlatformTypes.PLATFORM_WINDOWS);
+        doTest(getLogs(), toolchain.getScanner(), getRef());
+    }
+
     public void testDJGPPLogs() throws Exception {
         ToolchainDescriptor toolchain = ToolchainManagerImpl.getImpl().getToolchain("GNU", PlatformTypes.PLATFORM_WINDOWS);
         doTest(getLogs(), toolchain.getScanner(), getRef());

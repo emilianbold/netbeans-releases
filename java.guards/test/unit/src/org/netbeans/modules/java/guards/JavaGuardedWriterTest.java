@@ -226,5 +226,21 @@ public class JavaGuardedWriterTest extends TestCase {
         char[] result = instance.translate(writeBuff);
         assertEquals(expStr, String.valueOf(result));
     }
-    
+
+    public void testTranslateWithoutDuplicating() throws BadLocationException {
+        System.out.println("write with guard comments already in place");
+
+        String writeStr = "\nclass A {//"+"GEN-BEGIN:hu\n\n}//"+"GEN-END:hu\n";
+        String expStr =   "\nclass A {//"+"GEN-BEGIN:hu\n\n}//"+"GEN-END:hu\n";
+        char[] writeBuff = writeStr.toCharArray();
+        
+        JavaGuardedWriter instance = new JavaGuardedWriter();
+        JavaGuardedSectionsProvider provider = new JavaGuardedSectionsProvider(new Editor());
+        List<GuardedSection> sections = new ArrayList<GuardedSection>();
+        sections.add(provider.createSimpleSection("hu", 1, writeStr.length() - 1));
+        
+        instance.setGuardedSection(sections);
+        char[] result = instance.translate(writeBuff);
+        assertEquals(expStr, String.valueOf(result));
+    }
 }

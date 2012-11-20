@@ -51,13 +51,12 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.web.inspect.CSSUtils;
 import org.netbeans.modules.web.inspect.actions.OpenResourceAction;
 import org.netbeans.modules.web.inspect.actions.Resource;
+import org.netbeans.modules.web.inspect.webkit.Utilities;
 import org.netbeans.modules.web.webkit.debugging.api.TransportStateException;
 import org.netbeans.modules.web.webkit.debugging.api.css.CSS;
 import org.netbeans.modules.web.webkit.debugging.api.css.Rule;
 import org.netbeans.modules.web.webkit.debugging.api.css.StyleSheetBody;
 import org.netbeans.modules.web.webkit.debugging.api.css.StyleSheetHeader;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.ChildFactory;
 import org.openide.nodes.Children;
@@ -100,15 +99,7 @@ public class StyleSheetNode extends AbstractNode {
      */
     private void updateDisplayName() {
         String sourceURL = header.getSourceURL();
-        String displayName = sourceURL;
-        if (project != null) {
-            FileObject fob = new Resource(project, sourceURL).toFileObject();
-            if (fob != null) {
-                FileObject projectDir = project.getProjectDirectory();
-                String relativePath = FileUtil.getRelativePath(projectDir, fob);
-                displayName = relativePath;                
-            }
-        }
+        String displayName = Utilities.relativeResourceName(sourceURL, project);
         String title = header.getTitle();
         if (title != null && !title.trim().isEmpty()) {
             displayName = title + " (" + displayName + ")"; // NOI18N

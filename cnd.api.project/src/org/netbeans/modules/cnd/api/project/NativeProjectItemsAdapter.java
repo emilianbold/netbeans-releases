@@ -72,4 +72,12 @@ public class NativeProjectItemsAdapter implements NativeProjectItemsListener {
     @Override
     public void projectDeleted(NativeProject nativeProject) {
     }
+
+    @Override
+    public void fileOperationsStarted(NativeProject nativeProject) {
+    }
+
+    @Override
+    public void fileOperationsFinished(NativeProject nativeProject) {
+    }
 }

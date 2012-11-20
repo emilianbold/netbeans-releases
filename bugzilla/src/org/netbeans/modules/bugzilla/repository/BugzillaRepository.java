@@ -45,6 +45,8 @@ package org.netbeans.modules.bugzilla.repository;
 import java.awt.EventQueue;
 import org.netbeans.modules.bugzilla.*;
 import java.awt.Image;
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
@@ -116,10 +118,13 @@ public class BugzillaRepository {
     private Task refreshIssuesTask;
     private Task refreshQueryTask;
 
+    private PropertyChangeSupport support;
+    
     private Lookup lookup;
 
     public BugzillaRepository() {
         icon = ImageUtilities.loadImage(ICON_PATH, true);
+        support = new PropertyChangeSupport(this);
     }
 
     public BugzillaRepository(RepositoryInfo info) {
@@ -389,19 +394,36 @@ public class BugzillaRepository {
         return cache;
     }
 
-    public void removeQuery(BugzillaQuery query) {
+    public void removeQuery(BugzillaQuery query) {        
+        Bugzilla.LOG.log(Level.FINE, "removing query {0} for repository {1}", new Object[]{query.getDisplayName(), getDisplayName()}); // NOI18N
         BugzillaConfig.getInstance().removeQuery(this, query);
         getIssueCache().removeQuery(query.getStoredQueryName());
         getQueriesIntern().remove(query);
         stopRefreshing(query);
+        fireQueryListChanged();
     }
 
     public void saveQuery(BugzillaQuery query) {
         assert info != null;
+        Bugzilla.LOG.log(Level.FINE, "saving query {0} for repository {1}", new Object[]{query.getDisplayName(), getDisplayName()}); // NOI18N
         BugzillaConfig.getInstance().putQuery(this, query); 
         getQueriesIntern().add(query);
+        fireQueryListChanged();
     }
 
+    public synchronized void addPropertyChangeListener(PropertyChangeListener listener) {
+        support.addPropertyChangeListener(listener);
+    }
+
+    public synchronized void removePropertyChangeListener(PropertyChangeListener listener) {
+        support.removePropertyChangeListener(listener);
+    }
+    
+    private void fireQueryListChanged() {
+        Bugzilla.LOG.log(Level.FINER, "firing query list changed for repository {0}", new Object[]{getDisplayName()}); // NOI18N
+        support.firePropertyChange(RepositoryProvider.EVENT_QUERY_LIST_CHANGED, null, null);
+    }
+    
     private Set<BugzillaQuery> getQueriesIntern() {
         if(queries == null) {
             queries = new HashSet<BugzillaQuery>(10);
@@ -418,13 +440,12 @@ public class BugzillaRepository {
         return queries;
     }
 
-    public synchronized void setInfoValues(String user, char[] password, String httpUser, char[] httpPassword) {
-        setTaskRepository(info.getDisplayName(), info.getUrl(), user, password, httpUser, httpPassword, Boolean.parseBoolean(info.getValue(IBugzillaConstants.REPOSITORY_SETTING_SHORT_LOGIN)));
+    public synchronized void setInfoValues(String user, char[] password) {
+        setTaskRepository(info.getDisplayName(), info.getUrl(), user, password, null, null, Boolean.parseBoolean(info.getValue(IBugzillaConstants.REPOSITORY_SETTING_SHORT_LOGIN)));
         info = new RepositoryInfo(
                         info.getId(), info.getConnectorId(), 
                         info.getUrl(), info.getDisplayName(), info.getTooltip(), 
-                        user, httpUser, 
-                        password, httpPassword);
+                        user, null, password, null);
     }
     
     synchronized void setInfoValues(String name, String url, String user, char[] password, String httpUser, char[] httpPassword, boolean localUserEnabled) {
@@ -446,7 +467,11 @@ public class BugzillaRepository {
         resetRepository(keepConfiguration);
     }
 
-    protected void setTaskRepository(String name, String url, String user, char[] password, String httpUser, char[] httpPassword, boolean shortLoginEnabled) {
+    protected synchronized void setTaskRepository(String user, char[] password) {
+        setTaskRepository(info.getDisplayName(), info.getUrl(), user, password, null, null, Boolean.parseBoolean(info.getValue(IBugzillaConstants.REPOSITORY_SETTING_SHORT_LOGIN)));
+    }
+    
+    private void setTaskRepository(String name, String url, String user, char[] password, String httpUser, char[] httpPassword, boolean shortLoginEnabled) {
 
         String oldUrl = taskRepository != null ? taskRepository.getUrl() : "";
         AuthenticationCredentials c = taskRepository != null ? taskRepository.getCredentials(AuthenticationType.REPOSITORY) : null;

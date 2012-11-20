@@ -60,6 +60,7 @@ import org.netbeans.modules.parsing.lucene.DocumentIndexImpl;
 import org.netbeans.modules.parsing.lucene.IndexDocumentImpl;
 import org.netbeans.modules.parsing.lucene.IndexFactory;
 import org.netbeans.modules.parsing.lucene.LuceneIndexFactory;
+import org.netbeans.modules.parsing.lucene.SimpleDocumentIndexCache;
 import org.netbeans.modules.parsing.lucene.SupportAccessor;
 import org.netbeans.modules.parsing.lucene.spi.ScanSuspendImplementation;
 import org.netbeans.modules.parsing.lucene.support.Index.WithTermFrequencies.TermFreq;
@@ -237,6 +238,12 @@ public final class IndexManager {
     public static Index createIndex(final @NonNull File cacheFolder, final @NonNull Analyzer analyzer) throws IOException {        
         Parameters.notNull("cacheFolder", cacheFolder); //NOI18N
         Parameters.notNull("analyzer", analyzer);       //NOI18N
+        if (!cacheFolder.canRead()) {
+            throw new IOException(String.format("Cannot read cache folder: %s.", cacheFolder.getAbsolutePath()));   //NOI18N
+        }
+        if (!cacheFolder.canWrite()) {
+            throw new IOException(String.format("Cannot write to cache folder: %s.", cacheFolder.getAbsolutePath()));   //NOI18N
+        }
         final Index index = factory.createIndex(cacheFolder, analyzer);
         assert index != null;
         indexes.put(cacheFolder, new Ref(cacheFolder,index));
@@ -287,7 +294,24 @@ public final class IndexManager {
      */
     public static DocumentIndex createDocumentIndex (final @NonNull Index index) {
         Parameters.notNull("index", index);
-        return new DocumentIndexImpl(index);
+        return createDocumentIndex(index, new SimpleDocumentIndexCache());
+    }
+
+    /**
+     * Creates a document based index
+     * The returned {@link Index} is not cached, next call with the same arguments returns a different instance
+     * of {@link Index}. The caller is responsible to cache the returned {@link DocumentIndex}.
+     * @param index the low level index to which the document based index delegates
+     * @param cache the document caching provider
+     * @return the document based index
+     * @since 2.18.0
+     */
+    public static DocumentIndex createDocumentIndex (
+            final @NonNull Index index,
+            final @NonNull DocumentIndexCache cache) {
+        Parameters.notNull("index", index);     //NOI18N
+        Parameters.notNull("cache", cache);     //NOI18N
+        return new DocumentIndexImpl(index, cache);
     }
     
     /**
@@ -301,6 +325,23 @@ public final class IndexManager {
     public static DocumentIndex createDocumentIndex (final @NonNull File cacheFolder) throws IOException {
         Parameters.notNull("cacheFolder", cacheFolder);
         return createDocumentIndex(createIndex(cacheFolder, new KeywordAnalyzer()));
+    }
+
+    /**
+     * Creates a document based index
+     * The returned {@link Index} is not cached, next call with the same arguments returns a different instance
+     * of {@link Index}. The caller is responsible to cache the returned {@link DocumentIndex}.
+     * @param cacheFolder the folder in which the index should be stored
+     * @param cache the document caching provider
+     * @return the document based index
+     * @since 2.18.0
+     */
+    public static DocumentIndex createDocumentIndex (
+            final @NonNull File cacheFolder,
+            final @NonNull DocumentIndexCache cache) throws IOException {
+        Parameters.notNull("cacheFolder", cacheFolder);     //NOI18N
+        Parameters.notNull("cache", cache);                 //NOI18N
+        return createDocumentIndex(createIndex(cacheFolder, new KeywordAnalyzer()), cache);
     }
 
     /**

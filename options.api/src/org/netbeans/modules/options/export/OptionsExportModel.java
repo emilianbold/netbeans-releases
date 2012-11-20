@@ -568,7 +568,8 @@ public final class OptionsExportModel {
         }
 
         public boolean isApplicable() {
-            for (Item item : getItems()) {
+            List<Item> allItems = getItems();
+            for (Item item : allItems) {
                 if (item.isApplicable()) {
                     return true;
                 }
@@ -583,7 +584,8 @@ public final class OptionsExportModel {
         }
 
         private void updateItems(State state) {
-            for (Item item : getItems()) {
+            List<Item> allItems = getItems();
+            for (Item item : allItems) {
                 if (state != State.PARTIAL && item.isApplicable()) {
                     item.setEnabled(state.toBoolean());
                 }

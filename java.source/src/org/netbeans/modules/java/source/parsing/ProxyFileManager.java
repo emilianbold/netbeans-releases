@@ -48,6 +48,7 @@ import com.sun.tools.javac.api.ClientCodeWrapper.Trusted;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.ArrayDeque;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -265,50 +266,49 @@ public final class ProxyFileManager implements JavaFileManager {
     public boolean handleOption (
             @NonNull final String current,
             @NonNull final Iterator<String> remains) {
-        boolean isSourceElement;
-        final Collection<String> defensiveCopy = copy(remains);
+        boolean isSourceElement;        
         if (AptSourceFileManager.ORIGIN_FILE.equals(current)) {
-            final Iterator<String> it = defensiveCopy.iterator();
-            if (!it.hasNext()) {
+            if (!remains.hasNext()) {
                 throw new IllegalArgumentException("The apt-source-root requires folder.");    //NOI18N
             }
-            final String sib = it.next();
+            final String sib = remains.next();
             if(sib.length() != 0) {                
-                siblings.push(asURL(sib));                
+                siblings.push(asURL(sib));
             } else {
                 siblings.pop();
             }
+            return true;
         } else if ((isSourceElement=AptSourceFileManager.ORIGIN_SOURCE_ELEMENT_URL.equals(current)) || 
                    AptSourceFileManager.ORIGIN_RESOURCE_ELEMENT_URL.equals(current)) {
-            if (!defensiveCopy.isEmpty()) {
-                URL bestSoFar = siblings.getProvider().getSibling();
-                for  (String surl : defensiveCopy) {
-                    if (FileObjects.JAVA.equals(FileObjects.getExtension(surl))) {
-                        bestSoFar = asURL(surl);
-                        break;
-                    }
+            if (remains.hasNext()) {
+                final Collection<? extends URL> urls = asURLs(remains);
+                URL sibling = processorGeneratedFiles.findSibling(urls);
+                if (sibling == null) {
+                    sibling = siblings.getProvider().getSibling();
                 }
-                if (LOG.isLoggable(Level.INFO) && isSourceElement && defensiveCopy.size() > 1) {
+                siblings.push(sibling);
+                if (LOG.isLoggable(Level.INFO) && isSourceElement && urls.size() > 1) {
                     final StringBuilder sb = new StringBuilder();
-                    for (String surl : defensiveCopy) {
+                    for (URL url : urls) {
                         if (sb.length() > 0) {
                             sb.append(", ");    //NOI18N
                         }
-                        sb.append(surl);
+                        sb.append(url);
                     }
                     LOG.log(
                         Level.FINE,
                         "Multiple source files passed as ORIGIN_SOURCE_ELEMENT_URL: {0}; using: {1}",  //NOI18N
                         new Object[]{
                             sb,
-                            bestSoFar
+                            siblings.getProvider().getSibling()
                         });
                 }
-                siblings.push(bestSoFar);
             } else {
                 siblings.pop();
             }
+            return true;
         }
+        final Collection<String> defensiveCopy = copy(remains);
         for (JavaFileManager m : getFileManagers(ALL)) {
             if (m.handleOption(current, defensiveCopy.iterator())) {
                 return true;
@@ -447,6 +447,17 @@ public final class ProxyFileManager implements JavaFileManager {
         } catch (MalformedURLException ex) {
             throw new IllegalArgumentException("Invalid path argument: " + url, ex);    //NOI18N
         }
+    }
+
+    private static Collection<? extends URL> asURLs(Iterator<? extends String> surls) {
+        final ArrayDeque<URL> result = new ArrayDeque<URL>();
+        while (surls.hasNext()) {
+            final String surl = surls.next();
+            if (FileObjects.JAVA.equals(FileObjects.getExtension(surl))) {
+                result.add(asURL(surl));
+            }
+        }
+        return result;
     }
 
     private static Collection<String> copy(final Iterator<String> from) {

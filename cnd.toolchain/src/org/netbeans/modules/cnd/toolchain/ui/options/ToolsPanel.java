@@ -77,11 +77,13 @@ import org.netbeans.modules.cnd.api.toolchain.ui.ToolsPanelModel;
 import org.netbeans.modules.cnd.api.toolchain.ui.ToolsPanelSupport;
 import org.netbeans.modules.cnd.toolchain.compilerset.CompilerSetImpl;
 import org.netbeans.modules.cnd.toolchain.compilerset.CompilerSetManagerImpl;
+import org.netbeans.modules.cnd.utils.ui.CndUIConstants;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager.CancellationException;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
+import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -94,6 +96,7 @@ import org.openide.util.NbPreferences;
 import org.openide.util.RequestProcessor;
 
 /** Display the "Tools Default" panel */
+@OptionsPanelController.Keywords(keywords={"#ToolsPanelKeywords"}, location=CndUIConstants.TOOLS_OPTIONS_CND_CATEGORY_ID, tabTitle= "#TAB_ToolsTab")
 public final class ToolsPanel extends JPanel implements ActionListener,
         ListSelectionListener, ItemListener {
 
@@ -120,7 +123,7 @@ public final class ToolsPanel extends JPanel implements ActionListener,
     private static final Logger log = Logger.getLogger("cnd.remote.logger"); // NOI18N
     private static final RequestProcessor RP = new RequestProcessor(ToolsPanel.class.getName(), 1);
     //See Bug #215447
-    private static final boolean ENABLED_EDIT_HOST = false;
+    private static final boolean ENABLED_EDIT_HOST = true;
 
     /** Creates new form ToolsPanel */
     public ToolsPanel(String helpContext) {
@@ -987,23 +990,16 @@ private void btVersionsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
     setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
     RP.post(new Runnable() {
 
-            @Override
+        @Override
         public void run() {
-            if (!ConnectionManager.getInstance().isConnectedTo(getSelectedRecord().getExecutionEnvironment())) {
-                try {
-                    ConnectionManager.getInstance().connectTo(getSelectedRecord().getExecutionEnvironment());
-                } catch (IOException ex) {
-                    Exceptions.printStackTrace(ex);
-                } catch (CancellationException ex) {
-                    // don't report CancellationException
-                }
+            final ExecutionEnvironment env = getSelectedRecord().getExecutionEnvironment();
+            if (!ConnectionManager.getInstance().connect(env)) {
+                return;
             }
-            String versions = null;
-            if (ConnectionManager.getInstance().isConnectedTo(getSelectedRecord().getExecutionEnvironment())) {
-                versions = getToolCollectionPanel().getVersion(set);
-            }
+            String versions = getToolCollectionPanel().getVersion(set);
             SwingUtilities.invokeLater(new Runnable() {
-                    @Override
+
+                @Override
                 public void run() {
                     btVersions.setEnabled(true);
                     setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));

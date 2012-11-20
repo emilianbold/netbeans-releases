@@ -153,12 +153,12 @@ public class RepositoryRegistryTest extends NbTestCase {
         RepositoryImpl repo1 = getRepository(new MyRepository("1"));
         RepositoryImpl repo2 = getRepository(new MyRepository("2"));
         class L implements PropertyChangeListener {
-            private Collection<RepositoryImpl> newRepos;
-            private Collection<RepositoryImpl> oldRepos;
+            private Collection<RepositoryImpl> addedRepos;
+            private Collection<RepositoryImpl> removedRepos;
             @Override
             public void propertyChange(PropertyChangeEvent evt) {
-                oldRepos = (Collection<RepositoryImpl>) evt.getOldValue();
-                newRepos = (Collection<RepositoryImpl>) evt.getNewValue();
+                removedRepos = (Collection<RepositoryImpl>) evt.getOldValue();
+                addedRepos = (Collection<RepositoryImpl>) evt.getNewValue();
             }
         };
         L l = new L();
@@ -167,39 +167,37 @@ public class RepositoryRegistryTest extends NbTestCase {
         
         // add 1.
         RepositoryRegistry.getInstance().addRepository(repo1);
-        assertEquals(0, l.oldRepos.size());
-        assertEquals(1, l.newRepos.size());
-        assertTrue(l.newRepos.contains(repo1));
+        assertNull(l.removedRepos);
+        assertEquals(1, l.addedRepos.size());
+        assertTrue(l.addedRepos.contains(repo1));
         
         // add 2.
         RepositoryRegistry.getInstance().addRepository(repo2);
-        assertEquals(1, l.oldRepos.size());
-        assertEquals(2, l.newRepos.size());
-        assertTrue(l.oldRepos.contains(repo1));
-        assertTrue(l.newRepos.contains(repo1));
-        assertTrue(l.newRepos.contains(repo2));
+        assertNull(l.removedRepos);
+        assertEquals(1, l.addedRepos.size());
+        assertFalse(l.addedRepos.contains(repo1));
+        assertTrue(l.addedRepos.contains(repo2));
         
         // remove 1.
         RepositoryRegistry.getInstance().removeRepository(repo1);
-        assertEquals(2, l.oldRepos.size());
-        assertEquals(1, l.newRepos.size());
-        assertTrue(l.oldRepos.contains(repo1));
-        assertTrue(l.oldRepos.contains(repo2));
-        assertTrue(l.newRepos.contains(repo2));
+        assertEquals(1, l.removedRepos.size());
+        assertNull(l.addedRepos);
+        assertTrue(l.removedRepos.contains(repo1));
+        assertFalse(l.removedRepos.contains(repo2));
         
         // remove 1.
         RepositoryRegistry.getInstance().removeRepository(repo2);
-        assertEquals(1, l.oldRepos.size());
-        assertEquals(0, l.newRepos.size());
-        assertTrue(l.oldRepos.contains(repo2));
+        assertEquals(1, l.removedRepos.size());
+        assertNull(l.addedRepos);
+        assertTrue(l.removedRepos.contains(repo2));
         
         // remove listner
         RepositoryRegistry.getInstance().removePropertyChangeListener(l);
-        l.newRepos = null;
-        l.oldRepos = null;
+        l.addedRepos = null;
+        l.removedRepos = null;
         RepositoryRegistry.getInstance().addRepository(repo2);
-        assertNull(l.newRepos);
-        assertNull(l.oldRepos);
+        assertNull(l.addedRepos);
+        assertNull(l.removedRepos);
     }
     
     public void testStoredRepository() {
@@ -282,14 +280,10 @@ public class RepositoryRegistryTest extends NbTestCase {
         }
 
         @Override
-        public void removePropertyChangeListener(PropertyChangeListener listener) {
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
+        public void removePropertyChangeListener(PropertyChangeListener listener) { }
 
         @Override
-        public void addPropertyChangeListener(PropertyChangeListener listener) {
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
+        public void addPropertyChangeListener(PropertyChangeListener listener) { }
     }
     
     private static final String ID_CONNECTOR1 = "RepositoryRegistryTestConector1";

@@ -114,7 +114,7 @@ public class JPQLEditorController {
         //
         final boolean containerManaged = Util.isSupportedJavaEEVersion(pe.getProject());
         final Provider provider = ProviderUtil.getProvider(pu.getProvider(), pe.getProject());
-        if (containerManaged) {
+        if (containerManaged && provider!=null) {
             Utils.substitutePersistenceProperties(pe, pu, dbconn, props);
         }
         final ClassLoader defClassLoader = Thread.currentThread().getContextClassLoader();
@@ -132,7 +132,7 @@ public class JPQLEditorController {
                 public void run() {
                     ClassLoader customClassLoader = Thread.currentThread().getContextClassLoader();
                     JPQLResult jpqlResult = new JPQLResult();
-                    if (initialProblems.size() == 0) {
+                    if (initialProblems.isEmpty()) {
                         JPQLExecutor queryExecutor = new JPQLExecutor();
                         try {
                             // Parse POJOs from JPQL

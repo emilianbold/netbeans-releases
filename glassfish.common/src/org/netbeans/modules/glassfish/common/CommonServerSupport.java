@@ -55,8 +55,9 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.event.ChangeListener;
-import org.glassfish.tools.ide.admin.*;
-import org.glassfish.tools.ide.data.IdeContext;
+import org.glassfish.tools.ide.admin.TaskEvent;
+import org.glassfish.tools.ide.admin.TaskState;
+import org.glassfish.tools.ide.admin.TaskStateListener;
 import org.netbeans.modules.glassfish.common.nodes.actions.RefreshModulesCookie;
 import org.netbeans.modules.glassfish.spi.GlassfishModule.OperationState;
 import org.netbeans.modules.glassfish.spi.GlassfishModule.ServerState;
@@ -76,11 +77,12 @@ import org.openide.util.lookup.Lookups;
  *
  * @author Peter Williams
  */
-public class CommonServerSupport implements GlassfishModule3, RefreshModulesCookie {
+public class CommonServerSupport
+        implements GlassfishModule3, RefreshModulesCookie {
 
 
     ////////////////////////////////////////////////////////////////////////////
-    // Inner methods                                                         //
+    // Inner classes                                                         //
     ////////////////////////////////////////////////////////////////////////////
 
     /**
@@ -102,37 +104,109 @@ public class CommonServerSupport implements GlassfishModule3, RefreshModulesCook
             this.css = css;
         }
 
+        private String adminCommandFailedMsg(String resName, String[] args) {
+            String serverName = args[0];
+            String command = args[1];
+            String exMessage = args.length > 2 ? args[2] : null;
+            return args.length > 2
+                    ? NbBundle.getMessage(CommonServerSupport.class, resName,
+                    args[0], args[1], args[2])
+                    : NbBundle.getMessage(CommonServerSupport.class, resName,
+                    args[0], args[1]);
+        }
         /**
          * Callback to notify about GlassFish __locations command execution
          * state change.
          * <p/>
+         * <code>String</codce> arguments passed to state listener
+         * from runner:<ul>
+         *   <li><code>args[0]</code> server name</li>
+         *   <li><code>args[1]</code> administration command</li>
+         *   <li><code>args[2]</code> exception message</li>
+         *   <li><code>args[3]</code> display message in GUI</li></ul>
+         * <p/>
          * @param newState New command execution state.
          * @param event    Event related to execution state change.
-         * @param args     Additional String arguments.
+         * @param args     <code>String</codce> arguments passed to state
+         *                 listener.
          */
         @Override
         public void operationStateChanged(
                 TaskState newState, TaskEvent event,
                 String[] args) {
-            String message = args.length > 0 ? args[0] : null;
-            synchronized (css) {
-                long lastDisplayed = css.getLatestWarningDisplayTime();
-                long currentTime = System.currentTimeMillis();
-                if (TaskState.FAILED == newState
-                        && !"".equals(message)
-                        && currentTime - lastDisplayed > 5000) {
-                    NotifyDescriptor nd = new NotifyDescriptor.Message(message);
-                    DialogDisplayer.getDefault().notifyLater(nd);
-                    css.setLatestWarningDisplayTime(currentTime);
-                    Logger.getLogger("glassfish").log(Level.INFO, message);
+            // Server name and command are mandatory.
+            if (args.length > 1) {
+                String exMessage = args.length > 2 ? args[2] : null;
+                boolean display = args.length > 3
+                        ? Boolean.parseBoolean(args[3]) : false;
+                if (display) {
+                    long lastDisplayed = css.getLatestWarningDisplayTime();
+                    long currentTime = System.currentTimeMillis();
+                    if (TaskState.FAILED == newState
+                            && currentTime - lastDisplayed > 5000) {
+                        String message;
+
+                        switch (event) {
+                            case EXCEPTION:
+                                if (exMessage != null
+                                        && exMessage.length() > 0) {
+                                    message = adminCommandFailedMsg(
+                                            "MSG_ADMIN_EXCEPTION", args);
+                                } else {
+                                    message = adminCommandFailedMsg(
+                                            "MSG_ADMIN_FAILED", args);
+                                }
+                                break;
+                            case LOCAL_AUTH_FAILED:
+                                message = adminCommandFailedMsg(
+                                        "MSG_ADMIN_LOCAL_AUTH_FAILED", args);
+                                break;
+                            case REMOTE_AUTH_FAILED:
+                                message = adminCommandFailedMsg(
+                                        "MSG_ADMIN_LOCAL_AUTH_FAILED", args);
+                                break;
+                            default:
+                                message = adminCommandFailedMsg(
+                                        "MSG_ADMIN_FAILED", args);
+                        }
+                        displayPopUpMessage(css, message);
+                    }
                 }
             }
         }
     }
 
     ////////////////////////////////////////////////////////////////////////////
+    // Class attributes                                                       //
+    ////////////////////////////////////////////////////////////////////////////
+
+    /** Keep trying for up to 10 minutes while server is initializing [ms]. */
+    private static final int STARTUP_TIMEOUT = 600000;
+
+    /** Delay before next try while server is initializing [ms]. */
+    private static final int STARTUP_RETRY_DELAY = 2000;
+
+    ////////////////////////////////////////////////////////////////////////////
     // Static methods                                                         //
     ////////////////////////////////////////////////////////////////////////////
+
+    /**
+     * Display pop up window with given message.
+     * <p/>
+     * Method is thread safe.
+     * <p/>
+     * @param css     GlassFish server support object.
+     * @param message Message to be displayed.
+     */
+    public static void displayPopUpMessage(final CommonServerSupport css,
+            final String message) {
+        synchronized (css) {
+            NotifyDescriptor nd = new NotifyDescriptor.Message(message);
+            DialogDisplayer.getDefault().notifyLater(nd);
+            css.setLatestWarningDisplayTime(System.currentTimeMillis());
+            Logger.getLogger("glassfish").log(Level.INFO, message);
+        }
+    }
 
     ////////////////////////////////////////////////////////////////////////////
     // Instance attributes                                                    //
@@ -149,7 +223,10 @@ public class CommonServerSupport implements GlassfishModule3, RefreshModulesCook
     private FileObject instanceFO;
 
     private volatile boolean startedByIde = false;
+
+    /** Cache local/remote test for instance. */
     private transient boolean isRemote = false;
+
     // prevent j2eeserver from stopping an authenticated domain that
     // the IDE did not start.
     private boolean stopDisabled = false;
@@ -158,17 +235,10 @@ public class CommonServerSupport implements GlassfishModule3, RefreshModulesCook
 
     CommonServerSupport(GlassfishInstance instance) {
         this.instance = instance;
-        this.isRemote = instance.getProperties().get(
-                GlassfishModule.DOMAINS_FOLDER_ATTR) == null;
-        // !PW FIXME hopefully temporary patch for JavaONE 2008 to make it easier
+        this.isRemote = instance.isRemote();
+        // !PW FIXME temporary patch for JavaONE 2008 to make it easier
         // to persist per-instance property changes made by the user.
         instanceFO = getInstanceFileObject();
- 
-        // Bug# 218526 - Refresh (admin command call) on startup causes deadlock
-        //               because of Keryring access.
-        //if (!isRemote) {
-        //    refresh();
-        //}
     }
 
     /**
@@ -184,7 +254,8 @@ public class CommonServerSupport implements GlassfishModule3, RefreshModulesCook
         FileObject dir = FileUtil.getConfigFile(
                 instance.getInstanceProvider().getInstancesDirName());
         if(dir != null) {
-            String instanceFN = instance.getProperty(GlassfishInstanceProvider.INSTANCE_FO_ATTR);
+            String instanceFN = instance
+                    .getProperty(GlassfishInstanceProvider.INSTANCE_FO_ATTR);
             if(instanceFN != null) {
                 return dir.getFileObject(instanceFN);
             }
@@ -416,7 +487,8 @@ public class CommonServerSupport implements GlassfishModule3, RefreshModulesCook
     public Future<OperationState> deploy(OperationStateListener stateListener,
             File application, String name, String contextRoot,
             Map<String, String> properties, File[] libraries) {
-        CommandRunner mgr = new CommandRunner(isReallyRunning(),
+        CommandRunner mgr = new CommandRunner(
+                GlassFishStatus.isReady(instance, false),
                 getCommandFactory(), instance, stateListener);
         return mgr.deploy(application, name, contextRoot, properties,
                 libraries);
@@ -442,7 +514,8 @@ public class CommonServerSupport implements GlassfishModule3, RefreshModulesCook
     public Future<OperationState> redeploy(OperationStateListener stateListener,
     String name, String contextRoot, File[] libraries,
     boolean resourcesChanged) {
-        CommandRunner mgr = new CommandRunner(isReallyRunning(),
+        CommandRunner mgr = new CommandRunner(
+                GlassFishStatus.isReady(instance, false),
                 getCommandFactory(), instance, stateListener);
         return mgr.redeploy(name, contextRoot, libraries, resourcesChanged);
     }
@@ -450,7 +523,8 @@ public class CommonServerSupport implements GlassfishModule3, RefreshModulesCook
     @Override
     public Future<OperationState> undeploy(
             final OperationStateListener stateListener, final String name) {
-        CommandRunner mgr = new CommandRunner(isReallyRunning(),
+        CommandRunner mgr = new CommandRunner(
+                GlassFishStatus.isReady(instance, false),
                 getCommandFactory(), instance, stateListener);
         return mgr.undeploy(name);
     }
@@ -458,21 +532,24 @@ public class CommonServerSupport implements GlassfishModule3, RefreshModulesCook
     @Override
     public Future<OperationState> enable(
             final OperationStateListener stateListener, final String name) {
-        CommandRunner mgr = new CommandRunner(isReallyRunning(),
+        CommandRunner mgr = new CommandRunner(
+                GlassFishStatus.isReady(instance, false),
                 getCommandFactory(), instance, stateListener);
         return mgr.enable(name);
     }
     @Override
     public Future<OperationState> disable(
             final OperationStateListener stateListener, final String name) {
-        CommandRunner mgr = new CommandRunner(isReallyRunning(),
+        CommandRunner mgr = new CommandRunner(
+                GlassFishStatus.isReady(instance, false),
                 getCommandFactory(), instance, stateListener);
         return mgr.disable(name);
     }
 
     @Override
     public Future<OperationState> execute(ServerCommand command) {
-        CommandRunner mgr = new CommandRunner(isReallyRunning(),
+        CommandRunner mgr = new CommandRunner(
+                GlassFishStatus.isReady(instance, false),
                 getCommandFactory(), instance);
         return mgr.execute(command);
     }
@@ -491,7 +568,8 @@ public class CommonServerSupport implements GlassfishModule3, RefreshModulesCook
 
     @Override
     public AppDesc [] getModuleList(String container) {
-        CommandRunner mgr = new CommandRunner(isReallyRunning(),
+        CommandRunner mgr = new CommandRunner(
+                GlassFishStatus.isReady(instance, false),
                 getCommandFactory(), instance);
         int total = 0;
         Map<String, List<AppDesc>> appMap = mgr.getApplications(container);
@@ -511,7 +589,8 @@ public class CommonServerSupport implements GlassfishModule3, RefreshModulesCook
 
     @Override
     public Map<String, ResourceDesc> getResourcesMap(String type) {
-        CommandRunner mgr = new CommandRunner(isReallyRunning(),
+        CommandRunner mgr = new CommandRunner(
+                GlassFishStatus.isReady(instance, false),
                 getCommandFactory(), instance);
         Map<String, ResourceDesc> resourcesMap
                 = new HashMap<String, ResourceDesc>();
@@ -603,25 +682,25 @@ public class CommonServerSupport implements GlassfishModule3, RefreshModulesCook
         instanceFO = fo;
     }
 
+   
     public static boolean isRunning(final String host, final int port,
-            String name) {
+            final String name, final int timeout) {
         if(null == host)
             return false;
 
         try {
             InetSocketAddress isa = new InetSocketAddress(host, port);
             Socket socket = new Socket();
-            int timeout = 2000;
-            if ("localhost".equals(host) || "127.0.0.1".equals(host)) {
-                timeout = 2000;
-            }
             Logger.getLogger("glassfish-socket-connect-diagnostic").log(
                     Level.FINE, "Using socket.connect", new Exception());
             socket.connect(isa, timeout);
             socket.setSoTimeout(timeout);
-            try { socket.close(); } catch (IOException ioe) {
+            try {
+                socket.close();
+            } catch (IOException ioe) {
                 Logger.getLogger("glassfish").log(
-                        Level.INFO, "closing after test", ioe);
+                        Level.INFO, "Socket closing failed: {0}",
+                        ioe.getMessage());
             }
             return true;
         } catch (java.net.ConnectException ex) {
@@ -629,167 +708,456 @@ public class CommonServerSupport implements GlassfishModule3, RefreshModulesCook
         } catch (java.net.SocketTimeoutException ste) {
             return false;
         } catch (IOException ioe) {
-            String message;
-            if (name == null || "".equals(name.trim())) {
-                message = NbBundle.getMessage(CommonServerSupport.class,
-                        "MSG_FLAKEY_NETWORK", host, ""+port,
-                        ioe.getLocalizedMessage());
-            } else {
-                message = NbBundle.getMessage(CommonServerSupport.class,
-                        "MSG_FLAKEY_NETWORK2", host, ""+port,
-                        ioe.getLocalizedMessage(), name);
-            }
+            String message = NbBundle.getMessage(CommonServerSupport.class,
+                    name == null || "".equals(name.trim())
+                    ? "MSG_FLAKEY_NETWORK" : "MSG_FLAKEY_NETWORK2",
+                    host, Integer.toString(port), ioe.getLocalizedMessage());
             NotifyDescriptor nd = new NotifyDescriptor.Message(message);
             DialogDisplayer.getDefault().notifyLater(nd);
             Logger.getLogger("glassfish").log(Level.INFO,
-                    "evidence of network flakiness", ioe);
+                    "Evidence of network flakiness: {0}", ioe.getMessage());
             return false;
         }
     }
 
-    public boolean isReallyRunning() {
-        return isReady(false,30,TimeUnit.SECONDS);
+    public static boolean isRunning(final String host, final int port,
+            final String name) {
+        return isRunning(host, port, name, 2000);
     }
 
-    @SuppressWarnings("SleepWhileInLoop")
-    public boolean isReady(boolean retry, int timeout, TimeUnit units) {
-        boolean isReady = false;
-        int maxtries = retry ? 3 : 1;
-        int tries = 0;
-        Logger.getLogger("glassfish").log(Level.FINEST,
-                "GlassFish status check: retries = {0} timeout = {1} [{2}]",
-                new Object[]{maxtries, timeout, units.toString()});
-        while(!isReady && tries++ < maxtries) {
-            if (tries > 1) {
-                try {
-                        Thread.sleep(2000);
-                } catch (InterruptedException ex) {
-                     Logger.getLogger("glassfish").log(Level.INFO, null,ex);
-                }
-            }
-            CommandLocation commandLocation = new CommandLocation();
-            try {
-                //Future<OperationState> result;
-                Future<ResultMap<String, String>> futureLocation;
-                Logger.getLogger("glassfish").log(Level.FINEST,
-                        "Running admin interface Location command on {0}",
-                        instance.getName());
-                long start = System.nanoTime();
-                if (isRemote) {
-                    TaskStateListener[] listenersLocation
-                            = new TaskStateListener[]{
-                        new LocationsTaskStateListener(this)};
-                    futureLocation
-                            = ServerAdmin.<ResultMap<String, String>>exec(
-                            instance, commandLocation, new IdeContext(),
-                            listenersLocation);
-                } else {
-                    futureLocation
-                            = ServerAdmin.<ResultMap<String, String>>exec(
-                            instance, commandLocation, new IdeContext());
-                }
-                Logger.getLogger("glassfish").log(Level.FINEST,
-                        "Waiting for Location command to finish on {0} with timeout {1} [{2}]",
-                        new Object[]{instance.getName(), timeout, units.toString()});
-                ResultMap<String, String> resultLocation
-                        = futureLocation.get(timeout, units);
-                Logger.getLogger("glassfish").log(Level.FINEST,
-                        "{0} responded in {1} ms with result {2}",
-                        new Object[]{commandLocation.getCommand(),
-                            (System.nanoTime() - start) / 1000000,
-                            resultLocation.getState().toString()});
-                if (resultLocation.getState() == TaskState.COMPLETED) {
-                    String domainRoot = getDomainsRoot() + File.separator
-                            + getDomainName();
-                    String targetDomainRoot
-                            = resultLocation.getValue().get(
-                            "Domain-Root_value");
-                    if (getDomainsRoot() != null && targetDomainRoot != null) {
-                        File installDir
-                                = FileUtil.normalizeFile(new File(domainRoot));
-                        File targetInstallDir
-                                = FileUtil.normalizeFile(
-                                new File(targetDomainRoot));
-                        isReady = installDir.equals(targetInstallDir);
-                    } else {
-                        // if we got a response from the server... we are going
-                        // to trust that it is the 'right one'
-                        // TODO -- better edge case detection/protection
-                        isReady = null != targetDomainRoot;
-                    }
-                    if (isReady) {
-                        // make sure the http port info is corrected
-                        updateHttpPort();
-                    }
-                    break;
-                } else if (!commandLocation.retry()) {
-                    // !PW temporary while some server versions support
-                    // __locationsband some do not but are still V3 and might
-                    // the ones the user is using.
-                    Logger.getLogger("glassfish").log(Level.FINEST,
-                            "Waiting for Version command to finish on {0} with timeout {1} [{2}]",
-                            new Object[]{instance.getName(), timeout, units.toString()});
-                    start = System.nanoTime();
-                    CommandVersion commandVersion = new CommandVersion();
-                    Future<ResultString> future = 
-                            ServerAdmin.<ResultString>exec(instance,
-                            commandVersion, new IdeContext());
-                    ResultString resultVersion
-                            = future.get(timeout, units);
-                    Logger.getLogger("glassfish").log(Level.FINEST,
-                        "{0} responded in {1} ms with result {2} and response {3}",
-                        new Object[]{commandVersion.getCommand(),
-                            (System.nanoTime() - start) / 1000000,
-                            resultVersion != null && resultVersion.getState() != null
-                            ? resultVersion.getState().toString() : "null",
-                            resultVersion != null ? resultVersion.getValue() : "null"});
-                    isReady = resultVersion.getState() == TaskState.COMPLETED;
-                    break;
-                } else {
-                    // keep trying for 10 minutes if the server is stuck between
-                    // httpLive and server ready state. We have to give up
-                    // sometime, though.
-                    VMIntrospector vmi = Lookups.forPath(Util.GF_LOOKUP_PATH)
-                            .lookup(VMIntrospector.class);
-                    boolean suspended = null == vmi
-                            ? false
-                            : vmi.isSuspended(getHostName(),
-                            (String) instance.getProperty(
-                            GlassfishModule.DEBUG_PORT));
-                    if (suspended) {
-                        tries--;
-                    } else if (maxtries < 20) {
-                        maxtries++;
-                    }
-                }
-            } catch(TimeoutException ex) {
-                Logger.getLogger("glassfish").log(Level.INFO,
-                        "Server {0} {1}:{2} user {3}",
-                        new Object[]{instance.getName(),
-                            instance.getHost(),
-                            instance.getHttpAdminPort(),
-                            instance.getAdminUser()});
-                Logger.getLogger("glassfish").log(Level.INFO,
-                        commandLocation.getCommand() + " timed out. "
-                        +tries+" of "+maxtries, ex);
-                isReady = false;
-            } catch (Exception ex) {
-                Logger.getLogger("glassfish").log(Level.INFO,
-                        "Server {0} {1}:{2} user {3}",
-                        new Object[]{instance.getName(),
-                            instance.getHost(),
-                            instance.getHttpAdminPort(),
-                            instance.getAdminUser()});
-                Logger.getLogger("glassfish").log(Level.INFO,
-                        commandLocation.getCommand() + " failed at  "
-                        +tries+" of "+maxtries, ex);
-                isReady = false;
-                break;
-            }
-        }
+////////////////////////////////////////////////////////////////////////////////
+// MOVED TO GlassFishStatus                                             START //
+////////////////////////////////////////////////////////////////////////////////
 
-        return isReady;
-    }
+//    public boolean isReallyRunning() {
+//        return isReady(false,30,TimeUnit.SECONDS);
+//    }
+//
+//    /**
+//     * Suspend thread execution for {@link #STARTUP_RETRY_DELAY} ms.
+//     * <p/>
+//     * Internal {@link #isReady(boolean, int, TimeUnit)} helper.
+//     * <p/>
+//     * @param begTm {@link #isReady(boolean, int, TimeUnit)} execution
+//     *              start time.
+//     * @param actTm Actual time.
+//     * @param tries Number of retries.
+//     */
+//    private void retrySleep(long begTm, long actTm, int tries) {
+//        Logger.getLogger("glassfish").log(Level.FINEST,
+//                "Keep trying while server is not yet ready. Time until giving it up: {0}, retry {1}",
+//                new Object[]{
+//                    Long.toString(STARTUP_TIMEOUT - actTm + begTm),
+//                    Integer.toString(tries)});
+//        try {
+//            Thread.sleep(STARTUP_RETRY_DELAY);
+//        } catch (InterruptedException ie) {
+//            Logger.getLogger("glassfish").log(Level.INFO,
+//                    "Thread sleep interrupted: {0}", ie.getLocalizedMessage());
+//        }
+//    }
+//
+//    /**
+//     * Execute Location command on GlassFish instance.
+//     * <p/>
+//     * Internal {@link #isReady(boolean, int, TimeUnit)} helper.
+//     * <p/>
+//     * @param command Location command entity.
+//     * @param timeout Execution timeout value.
+//     * @param units   Execution timeout units.
+//     * @return Location command asynchronous execution future result object.
+//     */
+//    private Future<ResultMap<String, String>> execLocation(
+//            CommandLocation command, int timeout, TimeUnit units) {
+//        Logger.getLogger("glassfish").log(Level.FINEST,
+//                "Running admin interface Location command on {0} with timeout {1} [{2}]",
+//                new Object[]{instance.getName(), Integer.toString(timeout),
+//                    units.toString()});
+//        if (isRemote) {
+//            TaskStateListener[] listenersLocation = new TaskStateListener[]{
+//                new LocationsTaskStateListener(this)};
+//            return ServerAdmin.<ResultMap<String, String>>exec(
+//                    instance, new CommandLocation(), new IdeContext(),
+//                    listenersLocation);
+//        } else {
+//            return ServerAdmin.<ResultMap<String, String>>exec(
+//                    instance, new CommandLocation(), new IdeContext());
+//        }
+//    }
+//
+//    /**
+//     * Execute Version command on GlassFish instance.
+//     * <p/>
+//     * Internal {@link #isReady(boolean, int, TimeUnit)} helper.
+//     * <p/>
+//     * @param command Version command entity.
+//     * @param timeout Execution timeout value.
+//     * @param units   Execution timeout units.
+//     * @return Version command asynchronous execution future result object.
+//     */
+//    private Future<ResultString> execVersion( CommandVersion command,
+//            int timeout, TimeUnit units) {
+//        Logger.getLogger("glassfish").log(Level.FINEST,
+//                "Running admin interface Version command on {0} with timeout {1} [{2}]",
+//                new Object[]{instance.getName(), Integer.toString(timeout),
+//                    units.toString()});
+//        return ServerAdmin.<ResultString>exec(
+//                instance, command, new IdeContext());
+//    }
+//
+//    /**
+//     * Wait for Location command execution result and return it.
+//     * <p/>
+//     * Command execution timeout should be specified.
+//     * Internal {@link #isReady(boolean, int, TimeUnit)} helper.
+//     * <p/>
+//     * @param futureLocation Location command asynchronous execution
+//     *                       future result object
+//     * @param command        Location command entity.
+//     * @param timeout        Execution timeout value (only for logging).
+//     * @param units          Execution timeout units (only for logging).
+//     * @param maxtries       Maximum retries allowed (only for logging).
+//     * @param tries          Current retries count (only for logging).
+//     * @return Location command asynchronous execution final result.
+//     * @throws InterruptedException If the current thread was interrupted
+//     *                              while waiting
+//     * @throws ExecutionException   If the Location command asynchronous
+//     *                              execution threw an exception.
+//     * @throws TimeoutException     If the wait timed out.
+//     */
+//    private ResultMap<String, String> resultLocation(
+//            Future<ResultMap<String, String>> futureLocation,
+//            CommandLocation command, int timeout, TimeUnit units,
+//            int maxtries, int tries)
+//            throws InterruptedException, ExecutionException, TimeoutException {
+//        try {
+//            return futureLocation.get(timeout, units);
+//        } catch (TimeoutException ex) {
+//            Logger.getLogger("glassfish").log(Level.INFO,
+//                    "Server {0} {1}:{2} user {3}: {4} timed out. Try {5} of {6}.",
+//                    new Object[]{instance.getName(), instance.getHost(),
+//                        instance.getHttpAdminPort(), instance.getAdminUser(),
+//                        command.getCommand(), Integer.toString(tries),
+//                        Integer.toString(maxtries)});
+//            throw ex;
+//        } catch (InterruptedException ex) {
+//            Logger.getLogger("glassfish").log(Level.INFO,
+//                    "Server {0} {1}:{2} user {3}: {4} interrupted. Try {5} of {6}.",
+//                    new Object[]{instance.getName(), instance.getHost(),
+//                        instance.getHttpAdminPort(), instance.getAdminUser(),
+//                        command.getCommand(), Integer.toString(tries),
+//                        Integer.toString(maxtries)});
+//            throw ex;
+//        } catch (ExecutionException ex) {
+//            Logger.getLogger("glassfish").log(Level.INFO,
+//                    "Server {0} {1}:{2} user {3}: {4} threw an exception. Try {5} of {6}.",
+//                    new Object[]{instance.getName(), instance.getHost(),
+//                        instance.getHttpAdminPort(), instance.getAdminUser(),
+//                        command.getCommand(), Integer.toString(tries),
+//                        Integer.toString(maxtries)});
+//            throw ex;
+//        }
+//    }
+//
+//    /**
+//     * Wait for Version command execution result and return it.
+//     * <p/>
+//     * Command execution timeout should be specified.
+//     * Internal {@link #isReady(boolean, int, TimeUnit)} helper.
+//     * <p/>
+//     * @param futureVersion Version command asynchronous execution
+//     *                      future result object
+//     * @param command       Version command entity.
+//     * @param timeout       Execution timeout value (only for logging).
+//     * @param units         Execution timeout units (only for logging).
+//     * @param maxtries      Maximum retries allowed (only for logging).
+//     * @param tries         Current retries count (only for logging).
+//     * @return Version command asynchronous execution final result.
+//     * @throws InterruptedException If the current thread was interrupted
+//     *                              while waiting
+//     * @throws ExecutionException   If the Version command asynchronous
+//     *                              execution threw an exception.
+//     * @throws TimeoutException     If the wait timed out.
+//     */
+//    private ResultString resultVersion(
+//            Future<ResultString> futureVersion,
+//            CommandVersion command, int timeout, TimeUnit units,
+//            int maxtries, int tries)
+//            throws InterruptedException, ExecutionException, TimeoutException {
+//        try {
+//            return futureVersion.get(timeout, units);
+//        } catch (TimeoutException ex) {
+//            Logger.getLogger("glassfish").log(Level.INFO,
+//                    "Server {0} {1}:{2} user {3}: {4} timed out. Try {5} of {6}.",
+//                    new Object[]{instance.getName(), instance.getHost(),
+//                        instance.getHttpAdminPort(), instance.getAdminUser(),
+//                        command.getCommand(), Integer.toString(tries),
+//                        Integer.toString(maxtries)});
+//            throw ex;
+//        } catch (InterruptedException ex) {
+//            Logger.getLogger("glassfish").log(Level.INFO,
+//                    "Server {0} {1}:{2} user {3}: {4} interrupted. Try {5} of {6}.",
+//                    new Object[]{instance.getName(), instance.getHost(),
+//                        instance.getHttpAdminPort(), instance.getAdminUser(),
+//                        command.getCommand(), Integer.toString(tries),
+//                        Integer.toString(maxtries)});
+//            throw ex;
+//        } catch (ExecutionException ex) {
+//            Logger.getLogger("glassfish").log(Level.INFO,
+//                    "Server {0} {1}:{2} user {3}: {4} threw an exception. Try {5} of {6}.",
+//                    new Object[]{instance.getName(), instance.getHost(),
+//                        instance.getHttpAdminPort(), instance.getAdminUser(),
+//                        command.getCommand(), Integer.toString(tries),
+//                        Integer.toString(maxtries)});
+//            throw ex;
+//        }
+//    }
+//
+//    /**
+//     * Log Location command execution result.
+//     * <p/>
+//     * Internal {@link #isReady(boolean, int, TimeUnit)} helper.
+//     * <p/>
+//     * @param result Location command asynchronous execution final result.
+//     * @param start  Location command asynchronous execution start time.
+//     */
+//    private void logLocationResult(
+//            ResultMap<String, String> result, long start) {
+//        if (Logger.getLogger("glassfish").isLoggable(Level.FINEST)) {
+//            String message;
+//            if (result != null && result.getValue() != null) {
+//                if (result.getValue().get("message") != null) {
+//                    message = result.getValue().get("message");
+//                } else {
+//                    String baseRootValue = result
+//                            .getValue().get("Base-Root_value");
+//                    String domainRootValue = result
+//                            .getValue().get("Domain-Root_value");
+//                    if (baseRootValue == null) {
+//                        baseRootValue = "null";
+//                    }
+//                    if (domainRootValue == null) {
+//                        domainRootValue = "null";
+//                    }
+//                    StringBuilder sb = new StringBuilder(baseRootValue.length()
+//                            + 1 + domainRootValue.length());
+//                    sb.append(baseRootValue);
+//                    sb.append(' ');
+//                    sb.append(domainRootValue);
+//                    message = sb.toString();
+//                }
+//            } else {
+//                message = null;
+//            }
+//            Logger.getLogger("glassfish").log(Level.FINEST,
+//                    "Location command responded in {0} ms with result {1} and response {2}",
+//                    new Object[]{
+//                        Long.toString((System.nanoTime() - start) / 1000000),
+//                        result.getState().toString(), message});
+//        }
+//    }
+//
+//    /**
+//    * Log Version command execution result.
+//     * <p/>
+//     * Internal {@link #isReady(boolean, int, TimeUnit)} helper.
+//     * <p/>
+//     * @param result Version command asynchronous execution final result.
+//     * @param start  Version command asynchronous execution start time.
+//     */
+//    private void logVersionResult(ResultString result, long start) {
+//        if (Logger.getLogger("glassfish").isLoggable(Level.FINEST)) {
+//            String resultState = result != null && result.getState() != null
+//                        ? result.getState().toString() : "null";
+//            String resultValue = result != null ? result.getValue() : "null";
+//            Logger.getLogger("glassfish").log(Level.FINEST,
+//                    "Version command responded in {0} ms with result {1} and response {2}",
+//                    new Object[]{
+//                        Long.toString((System.nanoTime() - start) / 1000000),
+//                        resultState, resultValue});
+//        }
+//    }
+//
+//    /**
+//     * Verify GlassFish server installation and domain directories and update
+//     * HTTP port.
+//     * <p/>
+//     * Internal {@link #isReady(boolean, int, TimeUnit)} helper.
+//     * <p/>
+//     * @param result Location command asynchronous execution final result. 
+//     * @return Returns <code>true</code> when server is ready or
+//     *         <code>false</code> otherwise.
+//     */
+//    private boolean processReadyLocationresult(
+//            ResultMap<String, String> result) {
+//        boolean isReady;
+//        String domainRoot = instance.getDomainsRoot()
+//                + File.separator + instance.getDomainName();
+//        String targetDomainRoot = result.getValue().get("Domain-Root_value");
+//        if (instance.getDomainsRoot() != null
+//                && targetDomainRoot != null) {
+//            File installDir = FileUtil.normalizeFile(new File(domainRoot));
+//            File targetInstallDir = FileUtil.normalizeFile(
+//                    new File(targetDomainRoot));
+//            isReady = installDir.equals(targetInstallDir);
+//        } else {
+//            // if we got a response from the server... we are going
+//            // to trust that it is the 'right one'
+//            // TODO -- better edge case detection/protection
+//            isReady = null != targetDomainRoot;
+//        }
+//        if (isReady) {
+//            // Make sure the http port info is corrected
+//            updateHttpPort();
+//        }
+//        return isReady;
+//    }
+//
+//    /**
+//     * When command asynchronous execution failed with TimeoutException, check
+//     * if server administration port is alive and if so, display pop up
+//     * window with error message.
+//     * <p/>
+//     * Port connect timeout is set to 15 seconds.
+//     * Internal {@link #isReady(boolean, int, TimeUnit)} helper.
+//     * <p/>
+//     * @param command Command entity.
+//     */
+//    private void checkPortAndDisplayWarning(Command command) {
+//        if (isRunning(instance.getHost(), instance.getAdminPort(),
+//                instance.getName(), 15000)) {
+//            String message = NbBundle.getMessage(
+//                    CommonServerSupport.class, "MSG_COMMAND_SSL_ERROR",
+//                    command.getCommand(), instance.getName(),
+//                    Integer.toString(instance.getAdminPort()));
+//            displayPopUpMessage(this, message);
+//        }
+//    }
+//
+//
+//    /**
+//     * Check if GlassFish server is ready using Location command and
+//     * Version command as fallback option.
+//     * <p/>
+//     * @param retry   Maximum number of administration command retries.
+//     * @param timeout Administration command execution timeout value.
+//     * @param units   Administration command execution timeout units .
+//     * @return Returns <code>true</code> when GlassFish server is ready
+//     *         or <code>false</code> otherwise.
+//     */
+//    @SuppressWarnings("SleepWhileInLoop")
+//    private boolean isReady(boolean retry, int timeout, TimeUnit units) {
+//        boolean isReady = false;
+//        int maxtries = retry ? 3 : 1;
+//        int tries = 0;
+//        boolean notYetReadyResponse = false;
+//        long begTm = System.currentTimeMillis();
+//        long actTm = begTm;
+//        Logger.getLogger("glassfish").log(Level.FINEST,
+//                "GlassFish status check: retries = {0} timeout = {1} [{2}]",
+//                new Object[]{Integer.toString(maxtries),
+//                    Integer.toString(timeout), units.toString()});
+//        while (!isReady && (
+//                tries++ < maxtries || (
+//                notYetReadyResponse && (actTm - begTm) < STARTUP_TIMEOUT))) {
+//            if (tries > 1 || notYetReadyResponse) {
+//                retrySleep(begTm, actTm, tries);
+//            }
+//            // Location command check
+//            long start = System.nanoTime();
+//            CommandLocation commandLocation = new CommandLocation();
+//            Future<ResultMap<String, String>> futureLocation
+//                    = execLocation(commandLocation, timeout, units);
+//            ResultMap<String, String> resultLocation;
+//            try {
+//                resultLocation = resultLocation(futureLocation,
+//                        commandLocation, timeout, units, maxtries, tries);
+//            // Retry next cycle on TimeoutException.
+//            } catch (TimeoutException ex) {
+//                isReady = false;
+//                checkPortAndDisplayWarning(commandLocation);
+//                continue;
+//            // Give it up on other exceptions.
+//            } catch (InterruptedException ex) {
+//                isReady = false;
+//                break;
+//            } catch (ExecutionException ex) {
+//                isReady = false;
+//                break;
+//            }
+//            String message = resultLocation != null
+//                    && resultLocation.getValue() != null
+//                    ? resultLocation.getValue().get("message") : null;
+//            // Not ready response and timer update belongs to each other.
+//            notYetReadyResponse = ServerUtils.notYetReadyMsg(message);
+//            actTm = System.currentTimeMillis();
+//            logLocationResult(resultLocation, start);
+//
+//            if (resultLocation.getState() == TaskState.COMPLETED) {
+//                isReady = processReadyLocationresult(resultLocation);
+//                break;
+//            // Version command check
+//            } else if (!commandLocation.retry()) {
+//                // !PW temporary while some server versions support
+//                // __locationsband some do not but are still V3 and might
+//                // the ones the user is using.
+//                start = System.nanoTime();
+//                CommandVersion commandVersion = new CommandVersion();
+//                Future<ResultString> futureVersion
+//                        = execVersion(commandVersion, timeout, units);
+//                ResultString resultVersion;
+//                try {
+//                    resultVersion = resultVersion(futureVersion,
+//                            commandVersion, timeout, units, maxtries, tries);
+//                // Retry next cycle on TimeoutException.
+//                } catch (TimeoutException ex) {
+//                    isReady = false;
+//                    checkPortAndDisplayWarning(commandVersion);
+//                    continue;
+//                    // Give it up on other exceptions.
+//                } catch (InterruptedException ex) {
+//                    isReady = false;
+//                    break;
+//                } catch (ExecutionException ex) {
+//                    isReady = false;
+//                    break;
+//                }
+//                message = resultVersion.getValue();
+//                // Not ready response and timer update belongs to each other.
+//                notYetReadyResponse = ServerUtils.notYetReadyMsg(message);
+//                actTm = System.currentTimeMillis();
+//                logVersionResult(resultVersion, start);
+//
+//                isReady = resultVersion.getState() == TaskState.COMPLETED;
+//                if (notYetReadyResponse) {
+//                    continue;
+//                }
+//                break;
+//            } else {
+//                // keep trying for 10 minutes if the server is stuck between
+//                // httpLive and server ready state. We have to give up
+//                // sometime, though.
+//                VMIntrospector vmi = Lookups.forPath(Util.GF_LOOKUP_PATH)
+//                        .lookup(VMIntrospector.class);
+//                boolean suspended = null == vmi
+//                        ? false
+//                        : vmi.isSuspended(getHostName(),
+//                        (String) instance.getProperty(
+//                        GlassfishModule.DEBUG_PORT));
+//                if (suspended) {
+//                    tries--;
+//                } else if (maxtries < 20) {
+//                    maxtries++;
+//                }
+//            }
+//        } // while
+//
+//        return isReady;
+//    }
+
+////////////////////////////////////////////////////////////////////////////////
+// MOVED TO GlassFishStatus                                               END //
+////////////////////////////////////////////////////////////////////////////////
 
     // ------------------------------------------------------------------------
     //  RefreshModulesCookie implementation (for refreshing server state)
@@ -812,7 +1180,8 @@ public class CommonServerSupport implements GlassfishModule3, RefreshModulesCook
                 public void run() {
                     try {
                         // Can block for up to a few seconds...
-                        boolean isRunning = isReallyRunning();
+                        boolean isRunning = GlassFishStatus.isReady(
+                                instance, false, GlassFishStatus.Mode.REFRESH);
                         if (isRunning && !Util.isDefaultOrServerTarget(
                                 instance.getProperties())) {
                             isRunning = pingHttp(1);
@@ -902,7 +1271,8 @@ public class CommonServerSupport implements GlassfishModule3, RefreshModulesCook
             if(newState == OperationState.RUNNING) {
                 setServerState(ServerState.STARTING);
             } else if(newState == OperationState.COMPLETED) {
-                startedByIde = isRemote ? false : isReady(false,300,TimeUnit.MILLISECONDS);
+                startedByIde = isRemote
+                        ? false : GlassFishStatus.isReady(instance, false);
                 setServerState(endState);
             } else if(newState == OperationState.FAILED) {
                 setServerState(ServerState.STOPPED);

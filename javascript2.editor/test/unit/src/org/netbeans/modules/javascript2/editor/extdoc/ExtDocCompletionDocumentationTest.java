@@ -86,24 +86,24 @@ public class ExtDocCompletionDocumentationTest extends JsDocumentationTestBase {
     }
 
     public void testCompletionDocumentation01() throws Exception {
-        checkCompletionDocumentation(BASE_PATH + "completionDocumentation01.js", "function Shape(){^");
+        checkCompletionDocumentation(BASE_PATH + "completionDocumentation01.js", "function Shape()^{");
     }
 
     public void testCompletionDocumentation02() throws Exception {
-        checkCompletionDocumentation(BASE_PATH + "completionDocumentation01.js", "function addReference(){^");
+        checkCompletionDocumentation(BASE_PATH + "completionDocumentation01.js", "function addReference()^{");
     }
 
     public void testCompletionDocumentation03() throws Exception {
-        checkCompletionDocumentation(BASE_PATH + "completionDocumentation01.js", "function Hexagon(sideLength) {^");
+        checkCompletionDocumentation(BASE_PATH + "completionDocumentation01.js", "function Hexagon(sideLength) ^{");
     }
 
     public void testCompletionDocumentation04() throws Exception {
-        checkCompletionDocumentation(BASE_PATH + "completionDocumentation01.js", "function Circle(radius){^");
+        checkCompletionDocumentation(BASE_PATH + "completionDocumentation01.js", "function Circle(radius)^{");
     }
 
     public void testCompletionDocumentation05() throws Exception {
         // check extends
-        checkCompletionDocumentation(BASE_PATH + "completionDocumentation01.js", "function Triangle() {^");
+        checkCompletionDocumentation(BASE_PATH + "completionDocumentation01.js", "function Triangle() ^{");
     }
 
 }

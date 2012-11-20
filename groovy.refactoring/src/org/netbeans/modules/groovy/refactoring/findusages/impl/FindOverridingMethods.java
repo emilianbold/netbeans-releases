@@ -44,8 +44,7 @@ package org.netbeans.modules.groovy.refactoring.findusages.impl;
 
 import java.util.List;
 import org.codehaus.groovy.ast.ModuleNode;
-import org.netbeans.modules.csl.api.ElementKind;
-import org.netbeans.modules.groovy.refactoring.GroovyRefactoringElement;
+import org.netbeans.modules.groovy.refactoring.findusages.model.RefactoringElement;
 
 /**
  *
@@ -53,16 +52,11 @@ import org.netbeans.modules.groovy.refactoring.GroovyRefactoringElement;
  */
 public class FindOverridingMethods extends AbstractFindUsages {
 
-    public FindOverridingMethods(GroovyRefactoringElement element) {
+    public FindOverridingMethods(RefactoringElement element) {
         super(element);
     }
 
-
-    @Override
-    protected ElementKind getElementKind() {
-        return ElementKind.METHOD;
-    }
-
+    
     @Override
     protected List<AbstractFindUsagesVisitor> getVisitors(ModuleNode moduleNode, String defClass) {
         throw new UnsupportedOperationException("Not supported yet.");

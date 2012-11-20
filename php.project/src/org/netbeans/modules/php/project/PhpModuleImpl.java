@@ -139,8 +139,9 @@ public class PhpModuleImpl extends PhpModule {
 
     private PhpModuleProperties setIndexFile(PhpModuleProperties properties) {
         String indexFile = ProjectPropertiesSupport.getIndexFile(phpProject);
-        if (indexFile != null) {
-            FileObject index = getSourceDirectory().getFileObject(indexFile);
+        FileObject sourceDirectory = getSourceDirectory();
+        if (indexFile != null && sourceDirectory != null) {
+            FileObject index = sourceDirectory.getFileObject(indexFile);
             if (index != null
                     && index.isData()
                     && index.isValid()) {

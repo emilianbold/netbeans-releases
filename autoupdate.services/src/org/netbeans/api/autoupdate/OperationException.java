@@ -127,5 +127,13 @@ public final class OperationException extends Exception {
      * @return the definition of failure
      */
     public ERROR_TYPE getErrorType() {return error;}
+
+    @Override
+    public String toString() {
+        String s = getClass().getName();
+        return (msg != null) ? (s + "[" + error + "]: " + msg) : s;
+    }
+    
+    
     
 }

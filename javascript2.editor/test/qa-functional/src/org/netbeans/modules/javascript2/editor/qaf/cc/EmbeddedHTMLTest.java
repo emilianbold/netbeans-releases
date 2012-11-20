@@ -64,23 +64,22 @@ public class EmbeddedHTMLTest extends GeneralJavaScript {
         return NbModuleSuite.create(
                 NbModuleSuite.createConfiguration(EmbeddedHTMLTest.class).addTest(
                 "createApplication",
-//                "testSimplePrototype",
-//                "testObjectFunction",
-//                "testObjectLiteral",
-//                "testPrototypeInheritance",
-//                "testObjectLiteral",
+                "testSimplePrototype",
+                "testObjectFunction",
+                "testObjectLiteral",
+                "testPrototypeInheritance",
                 "testAllCompletionMultipleFiles",
                 "testLearning",
-                "testSetterGetter"
-                ).enableModules(".*").clusters(".*").honorAutoloadEager(true));
+                "testDOMReferences",
+                "testSetterGetter").enableModules(".*").clusters(".*").honorAutoloadEager(true));
     }
 
     public void createApplication() {
         startTest();
-        this.name_iterator++;
-        createPhpApplication(TEST_BASE_NAME + name_iterator);
+        EmbeddedHTMLTest.NAME_ITERATOR++;
+        createPhpApplication(TEST_BASE_NAME + NAME_ITERATOR);
 
-        EditorOperator eo = createWebFile("cc", TEST_BASE_NAME + name_iterator, "HTML File");
+        EditorOperator eo = createWebFile("cc", TEST_BASE_NAME + NAME_ITERATOR, "HTML File");
         EmbeddedHTMLTest.currentFile = "cc.html";
         eo.setCaretPosition("</body>", true);
         type(eo, "\n <script>\n \n </script>");
@@ -90,15 +89,14 @@ public class EmbeddedHTMLTest extends GeneralJavaScript {
 
     public void testSimplePrototype() {
         startTest();
-        
+
         EditorOperator eo = new EditorOperator(EmbeddedHTMLTest.currentFile);
-        
+
         cleanFile(eo);
-        type(eo, "function Foo(){\n this.x=1; \n var foo = 2;");
-        eo.setCaretPosition("}", false);
-        type(eo, "\n Foo.prototype.add = function(i){\n this.x+=y;");
+        type(eo, "function Foo(){\n this.x=1; \n var foo = 2; \n");
+        type(eo, "\n Foo.prototype.add = function(i){\n this.x+=y;};\n");
         eo.setCaretPositionToEndOfLine(eo.getLineNumber() + 1);
-        type(eo, "\n obj = new Foo();\n obj.");
+        type(eo, "} \n obj = new Foo();\n obj.");
 
         try {
             waitScanFinished();
@@ -128,21 +126,17 @@ public class EmbeddedHTMLTest extends GeneralJavaScript {
         EditorOperator eo = new EditorOperator(EmbeddedHTMLTest.currentFile);
         cleanFile(eo);
 
-        type(eo, "var A = function(){\n this.value=1; ");
-        eo.setCaretPositionToEndOfLine(eo.getLineNumber() + 1);
-        type(eo, "\n A.prototype.constructor = A; \n A.prototype.test = function () {\n ");
-        eo.setCaretPositionToEndOfLine(eo.getLineNumber() + 1);
-        type(eo, "\n var B = function () {\n A.call(this);");
-        eo.setCaretPositionToEndOfLine(eo.getLineNumber() + 1);
+        type(eo, "var A = function(){ this.value=1; }");
+        type(eo, "\n A.prototype.constructor = A; \n A.prototype.test = function () {}; ");
+        type(eo, "\n var B = function () {A.call(this);}");
         type(eo, "\n B.prototype = new A; \n B.prototype.constructor = B; \n");
-        type(eo, "B.prototype.test = function () {\n  A.prototype.test.call(this);");
-        eo.setCaretPositionToEndOfLine(eo.getLineNumber() + 1);
+        type(eo, "B.prototype.test = function () {A.prototype.test.call(this);}\n");
         type(eo, "\n var b = new B(); \n");
         type(eo, "b.\n");// workaround for #215394
         eo.setCaretPosition("b.", false);
+        evt.waitNoEvent(400);
         eo.typeKey(' ', InputEvent.CTRL_MASK);
-        evt.waitNoEvent(100);
-        System.out.println(eo.getText());
+        evt.waitNoEvent(200);
         CompletionInfo completion = getCompletion();
         String[] res = {"test", "value"};
         CompletionJListOperator cjo = completion.listItself;
@@ -154,7 +148,6 @@ public class EmbeddedHTMLTest extends GeneralJavaScript {
 
     public void testLearning() {
         startTest();
-        System.out.println("------------  "+EmbeddedHTMLTest.currentFile);
         EditorOperator eo = new EditorOperator(EmbeddedHTMLTest.currentFile);
         cleanFile(eo);
 
@@ -181,10 +174,7 @@ public class EmbeddedHTMLTest extends GeneralJavaScript {
         EditorOperator eo = new EditorOperator(EmbeddedHTMLTest.currentFile);
         cleanFile(eo);
 
-        type(eo, "var person = {\n \n get name(){return this.myname;");
-        eo.setCaretPositionToEndOfLine(eo.getLineNumber());
-        type(eo, ",\n set name(n){this.myname=n;");
-        eo.setCaretPositionToEndOfLine(eo.getLineNumber() + 1);
+        type(eo, "var person = { get name(){return this.myname;}, set name(n){this.myname=n;}}");
         type(eo, ";\n person.");
         eo.typeKey(' ', InputEvent.CTRL_MASK);
         evt.waitNoEvent(100);
@@ -224,11 +214,9 @@ public class EmbeddedHTMLTest extends GeneralJavaScript {
 
         EditorOperator eo = new EditorOperator(EmbeddedHTMLTest.currentFile);
         cleanFile(eo);
-        type(eo, "var foo = {\n value:0,\nincrement: function(inc){\nthis.value += typeof inc === 'number' ? inc : 1;");
-        eo.setCaretPositionToEndOfLine(eo.getLineNumber() + 2);
-        type(eo, ";\n\n");
-        eo.setCaretPositionToLine(eo.getLineNumber() - 1);
-        type(eo, "foo.");
+        type(eo, "var foo = {\n value:0,\nincrement: function(inc){\nthis.value += typeof inc === 'number' ? inc : 1;}");
+        eo.setCaretPosition("</script>", true);
+        type(eo, "} foo.");
         eo.typeKey(' ', InputEvent.CTRL_MASK);
         evt.waitNoEvent(100);
 
@@ -246,7 +234,9 @@ public class EmbeddedHTMLTest extends GeneralJavaScript {
 
         EditorOperator eo = new EditorOperator(EmbeddedHTMLTest.currentFile);
         cleanFile(eo);
-        type(eo, "function Foo(param1){\n this.name = ");
+        type(eo, "function Foo(param1){ }");
+        eo.setCaretPosition("}", true);
+        type(eo, "this.name = ");
         eo.typeKey(' ', InputEvent.CTRL_MASK);
         evt.waitNoEvent(100);
 
@@ -257,11 +247,9 @@ public class EmbeddedHTMLTest extends GeneralJavaScript {
         checkCompletionItems(cjo, res);
         completion.listItself.hideAll();
 
-        type(eo, "param1;\n var pr = 1;\n this.start = function(){\n");
-        eo.setCaretPositionToEndOfLine(eo.getLineNumber() + 1);
-        type(eo, ";\n function secret(){\n");
-        eo.setCaretPositionToEndOfLine(eo.getLineNumber() + 1);
-        type(eo, "\n ");
+        type(eo, "param1; var pr = 1; this.start = function(){}; ");
+        type(eo, " function secret(){};\n  } ");
+        eo.setCaretPosition("}", true);
         eo.typeKey(' ', InputEvent.CTRL_MASK);
         evt.waitNoEvent(100);
 
@@ -272,21 +260,21 @@ public class EmbeddedHTMLTest extends GeneralJavaScript {
         checkCompletionItems(cjo, res5);
         completion.listItself.hideAll();
 
-        type(eo, "\n Foo.prototype.setName = function(n){\n this.");
+        type(eo, "Foo.prototype.setName = function(n){ this.;}");
 
         // cc inside function's prototype
+        eo.setCaretPosition(";}", true);
         eo.typeKey(' ', InputEvent.CTRL_MASK);
         evt.waitNoEvent(100);
         completion = getCompletion();
-        String[] res4 = {"name", "start", "setName"};
+        String[] res4 = {"name", "start"};
         cjo = completion.listItself;
         checkCompletionItems(cjo, res4);
         completion.listItself.hideAll();
-        type(eo, "name;");
+        type(eo, "name");
 
-        eo.setCaretPositionToEndOfLine(eo.getLineNumber() + 2);
-        type(eo, "\n\n");
-        eo.setCaretPositionToLine(eo.getLineNumber() - 1);
+        eo.setCaretPosition("</script>", true);
+        type(eo, " \n");
         type(eo, "var o = new ");
 
         // constructor function
@@ -298,7 +286,7 @@ public class EmbeddedHTMLTest extends GeneralJavaScript {
         checkCompletionItems(cjo, res6);
         completion.listItself.hideAll();
 
-        type(eo, "Foo();\n o.");
+        type(eo, "Foo(); o.");
         // public variable & method & prototype
         eo.typeKey(' ', InputEvent.CTRL_MASK);
         evt.waitNoEvent(100);
@@ -315,10 +303,10 @@ public class EmbeddedHTMLTest extends GeneralJavaScript {
 
         endTest();
     }
-    
+
     public void testAllCompletionMultipleFiles() {
         startTest();
-        EditorOperator eo = createWebFile("other", TEST_BASE_NAME + name_iterator, "JavaScript File");
+        EditorOperator eo = createWebFile("other", TEST_BASE_NAME + NAME_ITERATOR, "JavaScript File");
         eo.typeKey('a', InputEvent.CTRL_MASK);
         eo.pressKey(java.awt.event.KeyEvent.VK_DELETE);
         eo.setCaretPositionToLine(1);
@@ -329,7 +317,7 @@ public class EmbeddedHTMLTest extends GeneralJavaScript {
         eo.save();
         evt.waitNoEvent(100);
 
-        
+
         eo = new EditorOperator(EmbeddedHTMLTest.currentFile);
         cleanFile(eo);
 

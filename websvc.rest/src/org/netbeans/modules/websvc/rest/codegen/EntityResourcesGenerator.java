@@ -49,6 +49,7 @@ import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -63,6 +64,7 @@ import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.TreeMaker;
+import org.netbeans.api.java.source.TreeUtilities;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.project.Project;
@@ -215,7 +217,7 @@ public abstract class EntityResourcesGenerator extends AbstractGenerator
                 entitySimpleName + REST_FACADE_SUFFIX, null);
         createdFiles.add(facade);
         
-        if ( !generateInfrastracture(createdFiles, entitySimpleName, facade) ){
+        if ( !generateInfrastracture(createdFiles, entityFQN, facade) ){
             return createdFiles;
         }
         
@@ -232,9 +234,10 @@ public abstract class EntityResourcesGenerator extends AbstractGenerator
     }
 
     protected boolean  generateInfrastracture( final Set<FileObject> createdFiles,
-            final String entitySimpleName, final FileObject facade )
+            final String entityFqn, final FileObject facade )
             throws IOException
     {
+        Util.generatePrimaryKeyMethod(facade, entityFqn, model);
         return true;
     }
 
@@ -431,6 +434,13 @@ public abstract class EntityResourcesGenerator extends AbstractGenerator
             RestFacadeMethod method, String entityFQN, String paramArg,
             String idType )
     {
+        boolean needPathSegment = false;
+        EntityClassInfo entityInfo = model.getEntityInfo(entityFQN);
+        if ( entityInfo!= null ){
+            FieldInfo idFieldInfo = entityInfo.getIdFieldInfo();
+            needPathSegment = idFieldInfo!= null && idFieldInfo.isEmbeddedId()&& 
+                    idFieldInfo.getType()!= null;
+        }
         RestGenerationOptions options = new RestGenerationOptions();
         switch ( method ){
             case CREATE:
@@ -453,7 +463,12 @@ public abstract class EntityResourcesGenerator extends AbstractGenerator
                 options.setRestMethod(RestFacadeMethod.REMOVE);
                 options.setReturnType(RestConstants.HTTP_RESPONSE);
                 options.setParameterNames(new String[]{"id"}); //NOI18N
-                options.setParameterTypes(new String[]{idType}); //NOI18N
+                if ( needPathSegment ){
+                    options.setParameterTypes(new String[]{"javax.ws.rs.core.PathSegment"}); //NOI18N
+                }
+                else {
+                    options.setParameterTypes(new String[]{idType}); //NOI18N
+                }
                 options.setPathParams(new String[]{"id"}); //NOI18N
                 return options;
             case FIND:
@@ -462,7 +477,12 @@ public abstract class EntityResourcesGenerator extends AbstractGenerator
                 options.setProduces(new String[]{Constants.MimeType.XML.value(), 
                         Constants.MimeType.JSON.value()}); 
                 options.setParameterNames(new String[]{"id"}); //NOI18N
-                options.setParameterTypes(new String[]{idType}); //NOI18N
+                if ( needPathSegment ){
+                    options.setParameterTypes(new String[]{"javax.ws.rs.core.PathSegment"}); //NOI18N
+                }
+                else {
+                    options.setParameterTypes(new String[]{idType}); //NOI18N
+                }
                 options.setPathParams(new String[]{"id"}); //NOI18N
                 return options;
             case FIND_ALL:
@@ -565,10 +585,6 @@ public abstract class EntityResourcesGenerator extends AbstractGenerator
         return getEntitiesCount();
     }
     
-    protected String capitalizeFirstLetter(String str) {
-        return str.substring(0, 1).toUpperCase() + str.substring(1, str.length());
-    }
-    
     protected void createFolders() {
         createFolders( true );
     }
@@ -661,8 +677,7 @@ public abstract class EntityResourcesGenerator extends AbstractGenerator
     }
     
     private String getGetterName(FieldInfo fieldInfo) {
-        return "get" + capitalizeFirstLetter(fieldInfo.getName());      //NOI18N
-
+        return Util.getGetterName(fieldInfo);
     }
     
     private String toFilePath(String packageName) {

@@ -47,7 +47,6 @@ import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.modules.websvc.rest.spi.RestSupport;
 import org.netbeans.modules.websvc.rest.support.*;
 
-import com.sun.source.tree.ClassTree;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -63,6 +62,7 @@ import javax.lang.model.element.Modifier;
 import javax.lang.model.element.Name;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.ArrayType;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.ExecutableType;
 import javax.lang.model.type.TypeKind;
@@ -190,7 +190,8 @@ public class EntityClassInfo {
 
             fieldInfos.add(fieldInfo);
             fieldInfo.setName(field.getSimpleName().toString());
-            fieldInfo.setType(controller.getTypes().asMemberOf(originalEntity, field));
+            fieldInfo.setType(controller.getTypes().
+                    asMemberOf(originalEntity, field), controller);
 
             if (fieldInfo.isId() && idFieldInfo == null ) {
                 idFieldInfo = fieldInfo;
@@ -232,7 +233,7 @@ public class EntityClassInfo {
             fieldInfo.setName(name);
             TypeMirror methodType = controller.getTypes().asMemberOf(
                     originalEntity, method);
-            fieldInfo.setType(((ExecutableType)methodType).getReturnType());
+            fieldInfo.setType(((ExecutableType)methodType).getReturnType(), controller);
 
             if (fieldInfo.isId()) {
                 idFieldInfo = fieldInfo;
@@ -261,7 +262,7 @@ public class EntityClassInfo {
                         public void run(CompilationController controller) throws IOException {
                             controller.toPhase(Phase.RESOLVED);
                             TypeElement classElement = controller.getElements().getTypeElement(idFieldInfo.getType());
-                            extractPKFields(classElement);
+                            extractPKFields(classElement, controller);
                         }
                     }, true);
                 } catch (IOException ex) {
@@ -273,7 +274,9 @@ public class EntityClassInfo {
         }
     }
 
-    protected void extractPKFields(TypeElement typeElement) {
+    protected void extractPKFields(TypeElement typeElement, 
+            CompilationController controller) 
+    {
         List<VariableElement> fields = ElementFilter.fieldsIn(typeElement.getEnclosedElements());
 
         for (VariableElement field : fields) {
@@ -286,7 +289,7 @@ public class EntityClassInfo {
 
             idFieldInfo.addFieldInfo(fieldInfo);
             fieldInfo.setName(field.getSimpleName().toString());
-            fieldInfo.setType(field.asType());
+            fieldInfo.setType(field.asType(), controller);
         }
     }
     
@@ -456,6 +459,17 @@ public class EntityClassInfo {
 
             OneToOne, OneToMany, ManyToOne, ManyToMany
         };
+        
+        /**
+         * Define a way to convert String into  
+         * 'field info' type instance.
+         */
+        private enum StringConverter {
+            CTOR,       // Constructor with String as a single argument
+            VALUE_OF,   // static valueOf method
+            FROM_STRING;// static fromString method
+        }
+        
         private String name;
         private String type;
         private String simpleTypeName;
@@ -469,6 +483,10 @@ public class EntityClassInfo {
         private boolean isGeneratedValue = false;
         private String mappedBy = null;
         private Collection<FieldInfo> fieldInfos;
+        private StringConverter stringConverter;
+        private boolean hasEmptyCtor;
+        private String stringConverterClassName;
+        private boolean isArray;
 
         public void setName(String name) {
             this.name = name;
@@ -478,36 +496,32 @@ public class EntityClassInfo {
             return name;
         }
 
-        public void setType(TypeMirror type) {
+        public void setType(TypeMirror type, CompilationController controller) {
             if (type.getKind() == TypeKind.DECLARED) {
                 DeclaredType declType = (DeclaredType) type;
-                setType(declType.asElement().toString());
-
+                Element typeElement = declType.asElement();
+                
+                initTypeElement(type, controller);
+                
+                setType(typeElement.toString(), controller);
                 for (TypeMirror arg : declType.getTypeArguments()) {
                     setTypeArg(arg.toString());
                 }
-            } else {
-                setType(type.toString());
+            }
+            else if(type.getKind() == TypeKind.ARRAY) {
+                isArray = true;
+                TypeMirror componentType = ((ArrayType)type).getComponentType();
+                
+                if ( componentType.getKind() == TypeKind.DECLARED){
+                    initTypeElement(componentType, controller);
+                }
+                setType(type.toString(), controller);
+            }
+            else {
+                setType(type.toString(), controller);
             }
         }
-
-        private void setType(String type) {
-            Class primitiveType = Util.getPrimitiveType(type);
-
-            if (primitiveType != null) {
-                this.type = primitiveType.getSimpleName();
-                this.simpleTypeName = primitiveType.getSimpleName();
-            } else {
-                this.type = type;
-                this.simpleTypeName = type.substring(type.lastIndexOf(".") + 1);
-            }
-        }
-
-        private void setTypeArg(String typeArg) {
-            this.typeArg = typeArg;
-            this.simpleTypeArgName = typeArg.substring(typeArg.lastIndexOf(".") + 1);
-        }
-
+        
         public String getType() {
             return type;
         }
@@ -636,5 +650,131 @@ public class EntityClassInfo {
         public Collection<FieldInfo> getFieldInfos() {
             return fieldInfos;
         }
+        
+        public boolean hasEmptyCtor(){
+            return hasEmptyCtor;
+        }
+        
+        public boolean isArray(){
+            return isArray;
+        }
+        
+        public String getStringConverterMethod(){
+            if ( stringConverterClassName == null ){
+                return null;
+            }
+            switch(stringConverter){
+                case CTOR:
+                    return "new "+stringConverterClassName;         // NOI18N
+                case VALUE_OF:
+                    return stringConverterClassName+".valueOf";     // NOI18N
+                case FROM_STRING:
+                    return stringConverterClassName+".fromString";  // NOI18N
+            }
+            return null;
+        }
+        
+        private StringConverter getStringConverter(){
+            return stringConverter;
+        }
+        
+        private void initTypeElement(TypeMirror type, CompilationController controller){
+            DeclaredType declType = (DeclaredType) type;
+            Element typeElement = declType.asElement();
+            
+            List<ExecutableElement> constructors = ElementFilter.
+                    constructorsIn(typeElement.getEnclosedElements());
+            for (ExecutableElement constructor : constructors) {
+                List<? extends VariableElement> parameters = constructor.getParameters();
+                if ( parameters.size()==0){
+                    hasEmptyCtor = true;
+                }
+                else if (parameters.size()==1){
+                    if ( hasSingleStringParam(constructor)){
+                        stringConverter = StringConverter.CTOR;
+                    }
+                }
+            }
+            if ( stringConverter == null ){
+                setStringConverter(typeElement);
+            }
+            if ( typeElement instanceof TypeElement ){
+                stringConverterClassName = ((TypeElement)typeElement).
+                        getQualifiedName().toString();
+            }
+        }
+
+        private void setStringConverter( Element typeElement ) {
+            List<ExecutableElement> methods = ElementFilter.methodsIn( 
+                    typeElement.getEnclosedElements());
+            for (ExecutableElement method : methods) {
+                Set<Modifier> modifiers = method.getModifiers();
+                if ( !modifiers.contains(Modifier.STATIC) || 
+                        !modifiers.contains(Modifier.PUBLIC))
+                {
+                    continue;
+                }
+                List<? extends VariableElement> parameters = method.getParameters();
+                if ( parameters.size()!= 1){
+                    continue;
+                }
+                
+                if ( method.getSimpleName().contentEquals("valueOf")){
+                    stringConverter = StringConverter.VALUE_OF;
+                }
+                else if ( method.getSimpleName().contentEquals("fromString")){
+                    stringConverter = StringConverter.FROM_STRING;
+                }
+            }
+        }
+        
+        private boolean hasSingleStringParam(ExecutableElement method){
+            List<? extends VariableElement> parameters = method.getParameters();
+            if ( parameters.size() != 1){
+                return false;
+            }
+            VariableElement variableElement = parameters.get(0);
+            TypeMirror paramType = variableElement.asType();
+            if ( paramType.getKind() == TypeKind.DECLARED){
+                Element paramElement = ((DeclaredType)paramType).asElement();
+                if ( paramElement instanceof TypeElement) {
+                    String fqn = ((TypeElement)paramElement).
+                            getQualifiedName().toString();
+                    if ( fqn.equals(String.class.getCanonicalName())){
+                        return true;
+                    }
+                }
+            }
+            return false;
+        }
+
+        private void setType(String type, CompilationController controller) {
+            Class<?> primitiveType = Util.getPrimitiveType(type);
+
+            if (primitiveType != null) {
+                this.type = primitiveType.getSimpleName();
+                this.simpleTypeName = primitiveType.getSimpleName();
+                Class<?> clazz = primitiveType;
+                if ( primitiveType.isArray()){
+                    isArray = true;
+                    clazz = primitiveType.getComponentType();
+                }
+                stringConverterClassName = clazz.getCanonicalName();
+                TypeElement typeElement = controller.getElements().
+                        getTypeElement( stringConverterClassName );
+                if ( typeElement!= null ){
+                    initTypeElement(typeElement.asType(), controller);
+                }
+            } else {
+                this.type = type;
+                this.simpleTypeName = type.substring(type.lastIndexOf(".") + 1);
+            }
+        }
+
+        private void setTypeArg(String typeArg) {
+            this.typeArg = typeArg;
+            this.simpleTypeArgName = typeArg.substring(typeArg.lastIndexOf(".") + 1);
+        }
+
     }
 }

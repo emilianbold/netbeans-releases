@@ -81,31 +81,31 @@ public class JsDocumentationHolderTest extends JsDocumentationTestBase {
 
     public void testGetCommentWithBracesOnNextLine() throws Exception {
         Source source = getTestSource(getTestFile("testfiles/doc/holder/testGetCommentWithBracesOnVariousLine.js"));
-        final int caretOffset = getCaretOffset(source, "{^");
+        final int caretOffset = getCaretOffset(source, "^{");
         checkCommentExist(source, caretOffset, true, 2);
     }
 
     public void testGetCommentWithBracesOnTheSameLine() throws Exception {
         Source source = getTestSource(getTestFile("testfiles/doc/holder/testGetCommentWithBracesOnVariousLine.js"));
-        final int caretOffset = getCaretOffset(source, "function test2 (a) {^");
+        final int caretOffset = getCaretOffset(source, "function test2 (a) ^{");
         checkCommentExist(source, caretOffset, true, 1);
     }
 
     public void testGetCommentWhereNotPossible_1() throws Exception {
         Source source = getTestSource(getTestFile("testfiles/doc/holder/testGetCommentWhereNotPossible.js"));
-        final int caretOffset = getCaretOffset(source, "function test2 (a) {^");
+        final int caretOffset = getCaretOffset(source, "function test2 (a) ^{");
         checkCommentExist(source, caretOffset, false, 0);
     }
 
     public void testGetCommentWhereNotPossible_2() throws Exception {
         Source source = getTestSource(getTestFile("testfiles/doc/holder/testGetCommentWhereNotPossible.js"));
-        final int caretOffset = getCaretOffset(source, "function test3 (a) {^");
+        final int caretOffset = getCaretOffset(source, "function test3 (a) ^{");
         checkCommentExist(source, caretOffset, false, 0);
     }
 
     public void testGetCorrectComment_1() throws Exception {
         Source source = getTestSource(getTestFile("testfiles/doc/holder/testGetCorrectComment.js"));
-        final int caretOffset = getCaretOffset(source, "function test3 (a, b) {^");
+        final int caretOffset = getCaretOffset(source, "function test3 (a, b) ^{");
         checkCommentExist(source, caretOffset, false, 0);
     }
 }

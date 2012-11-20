@@ -45,7 +45,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import org.json.simple.JSONObject;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.web.clientproject.api.ServerURLMapping;
+import org.netbeans.modules.web.common.api.ServerURLMapping;
 import org.netbeans.modules.web.livehtml.StackTrace;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;

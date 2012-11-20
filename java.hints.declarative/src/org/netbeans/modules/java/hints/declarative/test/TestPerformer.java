@@ -56,6 +56,7 @@ import java.util.Map;
 import java.util.TreeMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 import javax.lang.model.SourceVersion;
+import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
@@ -81,6 +82,7 @@ import org.openide.util.lookup.ServiceProviders;
  */
 public class TestPerformer {
 
+    @CheckForNull
     public static Map<TestCase, Collection<String>> performTest(FileObject ruleFile, FileObject test, TestCase[] tests, AtomicBoolean cancel) throws Exception {
         try {
             return performTestImpl(ruleFile, test, tests, cancel);
@@ -144,8 +146,12 @@ public class TestPerformer {
                             return hints.indexOf(o1) - hints.indexOf(o2);
                         }
                     });
+                    
+                    Map<HintDescription, List<ErrorDescription>> computedHints = HintsRunner.computeErrors(parameter, hints, cancel);
 
-                    sortedByHintDescription.putAll(HintsRunner.computeErrors(parameter, hints, cancel));
+                    if (computedHints == null || cancel.get()) return;
+                    
+                    sortedByHintDescription.putAll(computedHints);
 
                     for (Entry<HintDescription, List<ErrorDescription>> e : sortedByHintDescription.entrySet()) {
                         errors.addAll(e.getValue());
@@ -153,6 +159,8 @@ public class TestPerformer {
                 }
             }, true);
 
+            if (cancel.get()) return null;
+            
             LinkedList<String> currentResults = new LinkedList<String>();
 
             result.put(tests[cntr],currentResults);

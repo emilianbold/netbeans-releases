@@ -48,10 +48,15 @@ import org.netbeans.api.extexecution.ProcessBuilder;
 import org.netbeans.modules.versioning.core.APIAccessor;
 import org.netbeans.modules.versioning.core.FlatFolder;
 import org.netbeans.modules.versioning.core.filesystems.VCSFileProxyOperations;
+import org.openide.filesystems.FileAttributeEvent;
+import org.openide.filesystems.FileChangeListener;
+import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.WeakListeners;
 
 /**
  * Represents a file on a file system. 
@@ -75,6 +80,12 @@ public final class VCSFileProxy {
      * this value is already cached as well so we are able to avoid unnecessary io access.
      */
     private Boolean isDirectory = null; // XXX might change for a file!!!
+    
+    /**
+     * Listen on the FileObject this VCSFileProxy was created from. Some fields are cached 
+     * (e.g. isDirectory) and changes in the FileObject-s state should be reflected accordingly.
+     */
+    private FileChangeListener fileChangeListener = null;
     
     static {
         APIAccessor.IMPL = new APIAccessorImpl();
@@ -135,7 +146,20 @@ public final class VCSFileProxy {
             if (fileProxyOperations == null) {
                 File file = FileUtil.toFile(fileObject);
                 if(file != null) {
-                    return createFileProxy(file, fileObject.isFolder());
+                    final VCSFileProxy p = createFileProxy(file);
+                    p.isDirectory = fileObject.isFolder();
+                    p.fileChangeListener = new FileChangeListener() {
+                        @Override public void fileDeleted(FileEvent fe) {
+                            p.isDirectory = null;
+                        }
+                        @Override public void fileFolderCreated(FileEvent fe) { }
+                        @Override public void fileDataCreated(FileEvent fe) { }
+                        @Override public void fileChanged(FileEvent fe) { }
+                        @Override public void fileRenamed(FileRenameEvent fe) { }
+                        @Override public void fileAttributeChanged(FileAttributeEvent fe) { }
+                    };
+                    fileObject.addFileChangeListener(WeakListeners.create(FileChangeListener.class, p.fileChangeListener, fileObject));
+                    return p;
                 } else {
                     return null; // e.g. FileObject from a jar filesystem
                 }
@@ -146,12 +170,6 @@ public final class VCSFileProxy {
             Logger.getLogger(VCSFileProxy.class.getName()).log(Level.SEVERE, null, ex);
         }
         return new VCSFileProxy(fileObject.getPath(), null);
-    }
-
-    static VCSFileProxy createFileProxy(File file, boolean isDirectory) {
-        VCSFileProxy p = createFileProxy(file);
-        p.isDirectory = isDirectory;
-        return p;
     }
     
     /**

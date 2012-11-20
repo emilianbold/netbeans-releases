@@ -78,18 +78,15 @@ public class MvnPatternsTest extends PatternsTest {
                 "testSingletonDef", //NOI18N
                 "testContainerIDef", //NOI18N
                 "testCcContainerIDef", //NOI18N
-                // jersey library not in Maven dependencies
-                //"testSingleton1", //NOI18N
-                //"testCcContainerI1", //NOI18N
+                "testSingleton1", //NOI18N
+                "testCcContainerI1", //NOI18N
                 "testSingleton2", //NOI18N
-                // jersey library not in Maven dependencies
-                //"testContainerI1", //NOI18N
+                "testContainerI1", //NOI18N
                 "testContainerI2", //NOI18N
                 "testSingleton3", //NOI18N
                 "testContainerI3", //NOI18N
                 "testCcContainerI2", //NOI18N
                 "testCcContainerI3", //NOI18N
-                "testNodes", //NOI18N
                 "testRun", //NOI18N
                 "testUndeploy" //NOI18N
                 );

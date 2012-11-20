@@ -45,23 +45,21 @@
 package org.netbeans.modules.java.source.ui;
 
 import java.awt.Toolkit;
-import java.io.IOException;
-import java.util.logging.Logger;
-import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
 import javax.swing.Icon;
+import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.NullAllowed;
+import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.java.source.ClasspathInfo;
-import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.ElementHandle;
-import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.SourceUtils;
-import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.ui.ElementOpen;
 import org.netbeans.modules.java.ui.Icons;
+import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.netbeans.spi.jumpto.type.TypeDescriptor;
 import org.openide.awt.StatusDisplayer;
 import org.openide.filesystems.FileObject;
-import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
@@ -70,10 +68,8 @@ import org.openide.util.NbBundle;
  *
  * @author Petr Hrebejk
  */
-public class JavaTypeDescription extends TypeDescriptor {
-        
-    private static final String EMPTY_STRING = ""; // NOI18N
-    
+public class JavaTypeDescription extends TypeDescriptor {        
+
     private Icon icon;
     
     private final JavaTypeProvider.CacheItem cacheItem;
@@ -83,12 +79,15 @@ public class JavaTypeDescription extends TypeDescriptor {
     private String outerName;
     private String packageName;
 
-    public JavaTypeDescription(JavaTypeProvider.CacheItem cacheItem, final ElementHandle<TypeElement> handle ) {
+    JavaTypeDescription(
+            @NonNull final JavaTypeProvider.CacheItem cacheItem,
+            @NonNull final ElementHandle<TypeElement> handle ) {
        this.cacheItem = cacheItem;
        this.handle = handle; 
        init();
     }
     
+    @Override
     public void open() {        
         final FileObject root = cacheItem.getRoot();
         if (root == null) {
@@ -97,7 +96,25 @@ public class JavaTypeDescription extends TypeDescriptor {
             Toolkit.getDefaultToolkit().beep();
             return;
         }
-        final ClasspathInfo ci = ClasspathInfo.create(root);
+
+        ClassPath bootPath = ClassPath.getClassPath(root, ClassPath.BOOT);
+        if (bootPath == null) {
+            bootPath = JavaPlatformManager.getDefault().getDefaultPlatform().getBootstrapLibraries();
+        }
+        final ClasspathInfo ci;
+        if (cacheItem.isBinary()) {
+            final ClassPath compilePath = ClassPathSupport.createClassPath(root);
+            ci = ClasspathInfo.create(
+                bootPath,
+                compilePath,
+                ClassPath.EMPTY);
+        } else {
+            final ClassPath sourcePath = ClassPathSupport.createClassPath(root);
+            ci = ClasspathInfo.create(
+                bootPath,
+                ClassPath.EMPTY,
+                sourcePath);
+        }
         if ( cacheItem.isBinary() ) {            
             final ElementHandle<TypeElement> eh = handle;
             if (!ElementOpen.open(ci, eh)) {
@@ -131,18 +148,22 @@ public class JavaTypeDescription extends TypeDescriptor {
         }
     }
 
+    @Override
     public String getSimpleName() {
         return simpleName;
     }
     
+    @Override
     public String getOuterName() {
         return outerName;
     }
 
+    @Override
     public FileObject getFileObject() {
         return cacheItem.getRoot();
     }
 
+    @Override
     public String getTypeName() {
         StringBuilder sb = new StringBuilder( simpleName );
         if( outerName != null  ) {
@@ -151,6 +172,7 @@ public class JavaTypeDescription extends TypeDescriptor {
         return sb.toString();
     }
     
+    @Override
     public String getContextName() {
         StringBuilder sb = new StringBuilder();
         sb.append( " (").append( packageName == null ? "Default Package" : packageName).append(")");
@@ -159,13 +181,59 @@ public class JavaTypeDescription extends TypeDescriptor {
         
     }
     
+    @Override
     public String getProjectName() {
         String projectName = cacheItem.getProjectName();
         return projectName == null ? "" : projectName; // NOI18N        
     }
     
+    @Override
     public Icon getProjectIcon() {        
         return cacheItem.getProjectIcon();
+    }
+
+    @Override
+    public synchronized Icon getIcon() {
+        return icon;
+    }
+
+    @Override
+    public int getOffset() {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder( simpleName );
+        if( outerName != null  ) {
+            sb.append(" in ").append( outerName );
+        }
+        sb.append( " (").append( packageName == null ? "Default Package" : packageName).append(")");
+        if (cacheItem.getProjectName() != null ) {
+            sb.append( " [").append( cacheItem.getProjectName()).append("]");
+        }
+        return sb.toString();
+    }
+
+    @Override
+    public int hashCode() {
+        int hc = 17;
+        hc = hc * 31 + handle.hashCode();
+        hc = hc * 31 + handle.hashCode();
+        return hc;
+    }
+
+    @Override
+    public boolean equals (@NullAllowed final Object other) {
+        if (other == this) {
+            return true;
+        }
+        if (!(other instanceof JavaTypeDescription)) {
+            return false;
+        }
+        JavaTypeDescription otherJTD = (JavaTypeDescription) other;
+        return handle.equals(otherJTD.handle) && cacheItem.equals(otherJTD.cacheItem);
     }
     
     public ElementHandle<TypeElement> getHandle() {
@@ -198,60 +266,5 @@ public class JavaTypeDescription extends TypeDescriptor {
                         
         }
         icon = Icons.getElementIcon (handle.getKind(), null);
-    }
-
-    public String toString() {
-        
-        StringBuilder sb = new StringBuilder( simpleName );
-        if( outerName != null  ) {
-            sb.append(" in ").append( outerName );
-        }
-        sb.append( " (").append( packageName == null ? "Default Package" : packageName).append(")");
-        if (cacheItem.getProjectName() != null ) {
-            sb.append( " [").append( cacheItem.getProjectName()).append("]");
-        }
-        
-        return sb.toString();
-    }
-
-//    
-//    //public int compareTo( JavaTypeDescription td ) {
-//    public int compareTo( TypeDescriptor descriptor ) {
-//        if (descriptor instanceof JavaTypeDescription) {
-//            JavaTypeDescription td = (JavaTypeDescription)descriptor;
-//           int cmpr = compareStrings( simpleName, td.simpleName );
-//           if ( cmpr != 0 ) {
-//               return cmpr;
-//           }
-//           cmpr = compareStrings( outerName, td.outerName );
-//           if ( cmpr != 0 ) {
-//               return cmpr;
-//           }
-//           return compareStrings( packageName, td.packageName );
-//        } else {
-//           int cmpr = compareStrings(simpleName, descriptor.getTypeName());
-//           if (cmpr != 0) {
-//               return cmpr;
-//           }
-//           return compareStrings(outerName, descriptor.getPackageName());
-//        }
-//    }
-    
-    public synchronized Icon getIcon() {
-        return icon;
-    }
-        
-//    private int compareStrings(String s1, String s2) {
-//        if( s1 == null ) {
-//            s1 = EMPTY_STRING;
-//        }
-//        if ( s2 == null ) {
-//            s2 = EMPTY_STRING;
-//        }
-//        return s1.compareTo( s2 );
-//    }
-
-    public int getOffset() {
-        throw new UnsupportedOperationException("Not supported yet.");
     }
 }

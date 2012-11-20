@@ -697,7 +697,7 @@ public class ConfigurationMakefileWriter {
         LinkerConfiguration linkerConfiguration = conf.getLinkerConfiguration();
         String command = getLinkerTool(projectDescriptor, conf, conf.getLinkerConfiguration(), compilerSet);
         if (conf.getDevelopmentHost().isLocalhost()) {
-            command += linkerConfiguration.getOptions() + " "; // NOI18N
+            command += linkerConfiguration.getOutputOptions() + " "; // NOI18N
         } else {
             // This hack is used to workaround the following issue:
             // the linker options contains linker output file
@@ -705,10 +705,18 @@ public class ConfigurationMakefileWriter {
             // It's quite hard to implement mapping in the LinkerConfiguration class,
             // as it's not quite clear when we should do this.
             // See Bug 193797 - '... does not exists or is not an executable' when remote mode and not default linker output
-            command += linkerConfiguration.getOptions().replace(conf.getOutputValue(), output) + " "; // NOI18N
+            command += linkerConfiguration.getOutputOptions().replace(conf.getOutputValue(), output) + " "; // NOI18N
         }
         command += "${OBJECTFILES}" + " "; // NOI18N
-        command += "${LDLIBSOPTIONS}" + " "; // NOI18N
+        command += "${LDLIBSOPTIONS}"; // NOI18N
+        String options = linkerConfiguration.getCommandLineConfiguration().getValue();
+        if (options.length() > 0) {
+            command += " " + options; // NOI18N
+        }
+        options = linkerConfiguration.getBasicOptions();
+        if (options.length() > 0) {
+            command += " " + options; // NOI18N
+        }
         String[] additionalDependencies = linkerConfiguration.getAdditionalDependencies().getValues();
         for (int i = 0; i < additionalDependencies.length; i++) {
             bw.write(output + ": " + additionalDependencies[i] + "\n\n"); // NOI18N
@@ -912,8 +920,9 @@ public class ConfigurationMakefileWriter {
                 command = ""; // NOI18N
                 comment = null;
                 additionalDep = null;
+                PredefinedToolKind tool = itemConfiguration.getTool();
                 if (itemConfiguration.isCompilerToolConfiguration()) {
-                    AbstractCompiler compiler = (AbstractCompiler) compilerSet.getTool(itemConfiguration.getTool());
+                    AbstractCompiler compiler = (AbstractCompiler) compilerSet.getTool(tool);
                     BasicCompilerConfiguration compilerConfiguration = itemConfiguration.getCompilerConfiguration();
                     target = compilerConfiguration.getOutputFile(items[i], conf, false);
                     if (compiler != null && compiler.getDescriptor() != null) {
@@ -949,7 +958,7 @@ public class ConfigurationMakefileWriter {
                         command += file;
                     }
                     additionalDep = compilerConfiguration.getAdditionalDependencies().getValue();
-                } else if (itemConfiguration.getTool() == PredefinedToolKind.CustomTool) {
+                } else if (tool == PredefinedToolKind.CustomTool) {
                     CustomToolConfiguration customToolConfiguration = itemConfiguration.getCustomToolConfiguration();
                     if (customToolConfiguration.getModified()) {
                         target = customToolConfiguration.getOutputs().getValue();

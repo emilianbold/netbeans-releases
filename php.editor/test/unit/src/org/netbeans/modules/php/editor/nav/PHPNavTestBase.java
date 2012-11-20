@@ -131,7 +131,6 @@ public abstract class PHPNavTestBase extends PHPTestBase {
     }
 
     protected void performTest(String[] code, final UserTask task, boolean waitFinished) throws Exception {
-        clearWorkDir();
         FileUtil.refreshAll();
 
         FileObject workDir = FileUtil.toFileObject(getWorkDir());

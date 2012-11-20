@@ -299,7 +299,7 @@ public class ProcedureNodeProvider extends NodeProvider {
     }
 
     public ProcedureNode.Type getType(String name) {
-        if (object2type == null) {
+        if (object2type == null || object2type.get(name) == null) {
             refreshObjects();
         }
         return object2type.get(name);

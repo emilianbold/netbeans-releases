@@ -53,6 +53,7 @@ import java.net.URL;
 import java.text.MessageFormat;
 import java.util.*;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.accessibility.Accessible;
@@ -271,6 +272,8 @@ public class WizardDescriptor extends DialogDescriptor {
     private boolean changeStateInProgress = false;
     private boolean addedWindowListener;
     private boolean currentPanelWasChangedWhileStoreSettings = false;
+
+    private final AtomicBoolean initialized = new AtomicBoolean( true );
 
     /** Whether wizard panel will be constructed from <CODE>WizardDescriptor.getProperty()</CODE>/
      * <CODE>(JComponent)Panel.getComponent()</CODE> client properties or returned
@@ -831,6 +834,9 @@ public class WizardDescriptor extends DialogDescriptor {
     }
 
     private <A> void updateStateOpen(SettingsAndIterator<A> data) {
+        if( !initialized.get() ) //#220286
+            return;
+        
         Panel<A> p = data.getIterator(this).current();
         checkComponent(p);
         // listeners on the panel
@@ -1449,8 +1455,10 @@ public class WizardDescriptor extends DialogDescriptor {
                         SwingUtilities.invokeLater (new Runnable () {
                             @Override
                             public void run () {
-                                err.log (Level.FINE, "Runs onValidPerformer from invokeLater."); // NOI18N
-                                onValidPerformer.run();
+                                if( initialized.get() ) {  //#220286
+                                    err.log (Level.FINE, "Runs onValidPerformer from invokeLater."); // NOI18N
+                                    onValidPerformer.run();
+                                }
                             }
                         });
                     }
@@ -1498,6 +1506,8 @@ public class WizardDescriptor extends DialogDescriptor {
     private void callInitialize() {
         assert data.getIterator(this) != null;
 
+        initialized.set( true );
+
         if (data.getIterator(this) instanceof InstantiatingIterator) {
             ((InstantiatingIterator) data.getIterator(this)).initialize(this);
         }
@@ -1507,6 +1517,8 @@ public class WizardDescriptor extends DialogDescriptor {
 
     private void callUninitialize() {
         assert data.getIterator(this) != null;
+
+        initialized.set( false );
 
         if (data.getIterator(this) instanceof InstantiatingIterator) {
             ((InstantiatingIterator) data.getIterator(this)).uninitialize(this);

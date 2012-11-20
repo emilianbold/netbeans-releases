@@ -61,11 +61,9 @@ public class RemoteApiTest extends NativeExecutionBaseTestSuite {
     @SuppressWarnings("unchecked")
     /*package*/ static Class<? extends NativeExecutionBaseTestCase>[] getTestClasses() {
         return new Class[] {
+           // some tests moved to RemoteApiLinksAndListenersTest
            AdeMockupTestCase.class,
            RemoteFileSystemTestCase.class,
-           RemoteLinksTestCase.class,
-           RemoteLinksChangeLinkTestCase.class,
-           RemoteLinksChangeLinkTestCase2.class,
            RemotePathTestCase.class,
            RemoteURLTestCase.class,
            RenameTestCase.class,
@@ -79,9 +77,7 @@ public class RemoteApiTest extends NativeExecutionBaseTestSuite {
            RefreshDirSyncCountTestCase.class,
            CanonicalTestCase.class,
            CreateDataAndFolderTestCase.class,
-           ListenersTestCase.class,
            NormalizationTestCase.class,
-           ListenersParityTestCase.class,
            ReadOnlyDirTestCase.class,
            ScheduleRefreshParityTestCase.class,
            WritingQueueTestCase.class,

@@ -67,6 +67,7 @@ import org.netbeans.modules.form.editors.PrimitiveTypeArrayEditor;
 import org.netbeans.modules.form.layoutsupport.griddesigner.GridDesignerWindow;
 import org.netbeans.modules.form.project.ClassPathUtils;
 import org.openide.filesystems.FileObject;
+import org.openide.util.Utilities;
 
 /**
  * Support class for GridBagLayout. This is an example of support for layout
@@ -77,8 +78,10 @@ import org.openide.filesystems.FileObject;
  * @author Tran Duc Trung, Tomas Pavek
  */
 
-public class GridBagLayoutSupport extends AbstractLayoutSupport
-{
+public class GridBagLayoutSupport extends AbstractLayoutSupport {
+
+    private GridBagLayout initialLayout;
+
     private static Reference<GridBagCustomizer.Window> customizerRef;
     private FormProperty[] layoutProperties;
 
@@ -169,6 +172,31 @@ public class GridBagLayoutSupport extends AbstractLayoutSupport
         return layout;
     }
 
+    @Override
+    protected void initializeInstance(LayoutManager initialInstance, boolean initializeProperties)
+            throws Exception {
+        super.initializeInstance(initialInstance, initializeProperties);
+        // the four property we may set are not bean properties, so not handled in AbstractLayoutSupport
+        if (initialInstance instanceof GridBagLayout) {
+            initialLayout = (GridBagLayout) initialInstance;
+            if (initializeProperties) {
+                for (FormProperty prop : getProperties()) {
+                    if (prop instanceof GBLProperty) {
+                        ((GBLProperty)prop).setFromInitial();
+                    }
+                }
+            }
+        }
+    }
+
+    @Override
+    protected boolean isPropertyChangedFromInitial(FormProperty prop) {
+        if (prop instanceof GBLProperty) {
+            return ((GBLProperty)prop).isChangedFromInitial();
+        }
+        return prop.isChanged();
+    }
+
     private CodeGroup layoutCode;
     private CodeExpression layoutExpression;
     @Override
@@ -177,7 +205,7 @@ public class GridBagLayoutSupport extends AbstractLayoutSupport
         layoutExpression = getCodeStructure().createExpression(
                 getLayoutConstructor(),
                 CodeStructure.EMPTY_PARAMS);
-
+        updateLayoutExpression();
         return layoutExpression;
     }
 
@@ -1485,6 +1513,35 @@ public class GridBagLayoutSupport extends AbstractLayoutSupport
             } catch (IllegalAccessException ex) {
                 Exceptions.printStackTrace(ex);
             }
+        }
+
+        void setFromInitial() throws IllegalArgumentException, IllegalAccessException, InvocationTargetException {
+            if (initialLayout != null) {
+                Object initValue = getField().get(initialLayout);
+                if (initValue != null) {
+                    boolean firing = isChangeFiring();
+                    try {
+                        setChangeFiring(false);
+                        setValue(initValue);
+                    } finally {
+                        setChangeFiring(firing);
+                    }
+                }
+            }
+        }
+
+        boolean isChangedFromInitial() {
+            if (initialLayout != null) {
+                try {
+                    Object initValue = getField().get(initialLayout);
+                    return !Utilities.compareObjects(value, initValue);
+                } catch (IllegalArgumentException ex) {
+                    Exceptions.printStackTrace(ex);
+                } catch (IllegalAccessException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+            return isChanged();
         }
 
         Field getField() {

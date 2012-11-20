@@ -46,7 +46,7 @@ import org.openide.filesystems.FileObject;
  *
  * @author Petr Pisl
  */
-public class JsParserError implements Error {
+public class JsParserError implements Error.Badging {
 
     public static final Comparator<JsParserError> POSITION_COMPARATOR = new Comparator<JsParserError>() {
 
@@ -125,5 +125,10 @@ public class JsParserError implements Error {
     @Override
     public Object[] getParameters() {
         return parameters;
+    }
+
+    @Override
+    public boolean showExplorerBadge() {
+        return true;
     }
 }

@@ -2598,11 +2598,12 @@ public class FormDesigner {
                 else if (type == FormModelEvent.COMPONENT_PROPERTY_CHANGED) {
                     RADProperty eventProperty = ev.getComponentProperty();
                     RADComponent eventComponent = ev.getComponent();
-                    
-                    replicator.updateComponentProperty(eventProperty);
-                    updateConnectedProperties(eventProperty, eventComponent);
-                    if (layoutDesigner != null && formModel.isCompoundEditInProgress()) {
-                        layoutDesigner.componentDefaultSizeChanged(eventComponent.getId());
+                    if (eventProperty != null) { // bug #220513, don't update anything e.g. for a11y properties
+                        replicator.updateComponentProperty(eventProperty);
+                        updateConnectedProperties(eventProperty, eventComponent);
+                        if (layoutDesigner != null && formModel.isCompoundEditInProgress()) {
+                            layoutDesigner.componentDefaultSizeChanged(eventComponent.getId());
+                        }
                     }
                     
                     updateDone = true;

@@ -48,6 +48,8 @@ import com.sun.source.util.TreePath;
 import java.io.IOException;
 import java.net.URL;
 import java.util.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.lang.model.SourceVersion;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
@@ -58,6 +60,7 @@ import org.netbeans.api.java.source.ClasspathInfo.PathKind;
 import org.netbeans.api.java.source.*;
 import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.java.RefactoringUtils;
+import org.netbeans.modules.refactoring.java.api.JavaRefactoringUtils;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -68,17 +71,33 @@ import org.openide.util.NbBundle;
  * Utility class for java plugins.
  */
 public final class JavaPluginUtils {
+    private static final Logger LOG = Logger.getLogger(JavaPluginUtils.class.getName());
 
-    public static final Problem isSourceElement(Element el, CompilationInfo info) {
-        Problem preCheckProblem = null;
-        if (RefactoringUtils.isFromLibrary(el, info.getClasspathInfo())) { //NOI18N
+    public static Problem isSourceElement(Element el, CompilationInfo info) {
+        Problem preCheckProblem;
+        Element typeElement;
+        if(el.getKind() != ElementKind.PACKAGE) {
+            typeElement = info.getElementUtilities().enclosingTypeElement(el);
+            if(typeElement == null) {
+                typeElement = el;
+            }
+        } else {
+            typeElement = el;
+        }
+        ElementHandle<Element> handle = null;
+        try {
+            handle = ElementHandle.create(typeElement);
+        } catch (IllegalArgumentException ex) {
+            LOG.log(Level.WARNING, "Cannot create handle for source element", ex);
+        }
+        if (handle == null || JavaRefactoringUtils.isFromLibrary(handle, info.getClasspathInfo())) { //NOI18N
             preCheckProblem = new Problem(true, NbBundle.getMessage(
                     JavaPluginUtils.class, "ERR_CannotRefactorLibraryClass",
                     el.getKind()==ElementKind.PACKAGE?el:el.getEnclosingElement()
                     ));
             return preCheckProblem;
         }
-        FileObject file = SourceUtils.getFile(el,info.getClasspathInfo());
+        FileObject file = SourceUtils.getFile(handle, info.getClasspathInfo());
         // RefactoringUtils.isFromLibrary already checked file for null
         if (!RefactoringUtils.isFileInOpenProject(file)) {
             preCheckProblem =new Problem(true, NbBundle.getMessage(

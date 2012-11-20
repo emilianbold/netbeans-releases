@@ -84,8 +84,11 @@ public final class TwigLexerUtils {
     }
 
     public static boolean isDelimiter(final TwigTokenId tokenId) {
-        return TwigTokenId.T_TWIG_VAR_START.equals(tokenId) || TwigTokenId.T_TWIG_VAR_END.equals(tokenId)
-                || TwigTokenId.T_TWIG_BLOCK_START.equals(tokenId) || TwigTokenId.T_TWIG_BLOCK_END.equals(tokenId);
+        return TwigTokenId.T_TWIG_VAR_START.equals(tokenId) || TwigTokenId.T_TWIG_BLOCK_START.equals(tokenId) || isEndingDelimiter(tokenId);
+    }
+
+    public static boolean isEndingDelimiter(final TwigTokenId tokenId) {
+        return TwigTokenId.T_TWIG_BLOCK_END.equals(tokenId) || TwigTokenId.T_TWIG_VAR_END.equals(tokenId);
     }
 
 }

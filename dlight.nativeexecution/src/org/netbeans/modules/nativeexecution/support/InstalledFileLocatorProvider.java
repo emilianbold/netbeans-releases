@@ -41,43 +41,11 @@
  */
 package org.netbeans.modules.nativeexecution.support;
 
-import java.io.File;
 import org.openide.modules.InstalledFileLocator;
 
 public final class InstalledFileLocatorProvider {
 
-    static {
-        String nbjunitWorkdir = System.getProperty("nbjunit.workdir"); // NOI18N
-        if (nbjunitWorkdir != null) {
-            String dirs = System.getProperty("netbeans.dirs", ""); // NOI18N
-            File junitWorkdir = new File(nbjunitWorkdir); // NOI18N
-
-            while (true) {
-                String dirName = junitWorkdir.getName();
-                junitWorkdir = junitWorkdir.getParentFile();
-                if ("unit".equals(dirName) || "".equals(dirName)) { // NOI18N
-                    break;
-                }
-            }
-
-            File dlightDir = new File(junitWorkdir, "../../../nbbuild/netbeans/dlight"); // NOI18N
-
-            if (!dlightDir.exists()) {
-                dlightDir = new File(junitWorkdir, "netbeans/dlight"); // NOI18N
-            }
-
-            File ideDir = new File(junitWorkdir, "../../../nbbuild/netbeans/ide"); // NOI18N
-
-            if (!ideDir.exists()) {
-                ideDir = new File(junitWorkdir, "netbeans/ide"); // NOI18N
-            }
-
-            System.setProperty("netbeans.dirs", dlightDir.getAbsolutePath() + File.pathSeparator + // NOI18N
-                    ideDir.getAbsolutePath() + File.pathSeparator + dirs); // NOI18N
-        }
-    }
-
-    public static final InstalledFileLocator getDefault() {
+    public static InstalledFileLocator getDefault() {
         return InstalledFileLocator.getDefault();
     }
 }

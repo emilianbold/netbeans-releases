@@ -45,7 +45,7 @@ import java.awt.EventQueue;
 import java.util.Collections;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.netbeans.modules.css.editor.api.CssCslParserResult;
+import org.netbeans.modules.css.lib.api.CssParserResult;
 import org.netbeans.modules.css.model.api.Declaration;
 import org.netbeans.modules.css.model.api.Model;
 import org.netbeans.modules.css.model.api.Rule;
@@ -148,8 +148,8 @@ public class GoToPropertySourceAction extends NodeAction {
         @Override
         public void run(ResultIterator resultIterator) throws Exception {
             final boolean[] found = new boolean[1];
-            for (final CssCslParserResult result : Utilities.cssParserResults(resultIterator)) {
-                final Model sourceModel = result.getModel();
+            for (final CssParserResult result : Utilities.cssParserResults(resultIterator)) {
+                final Model sourceModel = Model.getModel(result);
                 sourceModel.runReadTask(new Model.ModelTask() {
                     @Override
                     public void run(StyleSheet styleSheet) {

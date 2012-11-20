@@ -46,16 +46,14 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import org.netbeans.modules.parsing.spi.indexing.support.IndexResult;
+import org.netbeans.modules.php.editor.api.ElementQuery;
 import org.netbeans.modules.php.editor.api.NameKind;
 import org.netbeans.modules.php.editor.api.PhpElementKind;
-import org.netbeans.modules.php.editor.api.ElementQuery;
-import org.netbeans.modules.php.editor.parser.astnodes.visitors.PhpElementVisitor;
 import org.netbeans.modules.php.editor.api.elements.TypeConstantElement;
 import org.netbeans.modules.php.editor.api.elements.TypeElement;
 import org.netbeans.modules.php.editor.index.PHPIndexer;
 import org.netbeans.modules.php.editor.index.Signature;
 import org.netbeans.modules.php.editor.model.nodes.ClassConstantDeclarationInfo;
-import org.netbeans.modules.php.editor.model.nodes.SingleFieldDeclarationInfo;
 import org.netbeans.modules.php.editor.parser.astnodes.ConstantDeclaration;
 import org.openide.util.Parameters;
 
@@ -104,8 +102,12 @@ public final class TypeConstantElementImpl extends PhpElementImpl implements Typ
         final ConstantSignatureParser signParser = new ConstantSignatureParser(signature);
         TypeConstantElement retval = null;
         if (matchesQuery(query, signParser)) {
-            retval = new TypeConstantElementImpl(type, signParser.getConstantName(),signParser.getValue(),
-                    signParser.getOffset(), indexResult.getUrl().toString(),
+            retval = new TypeConstantElementImpl(
+                    type,
+                    signParser.getConstantName(),
+                    signParser.getValue(),
+                    signParser.getOffset(),
+                    indexResult.getUrl().toString(),
                     indexScopeQuery);
         }
         return retval;
@@ -126,7 +128,7 @@ public final class TypeConstantElementImpl extends PhpElementImpl implements Typ
     }
 
     private static boolean matchesQuery(final NameKind query, ConstantSignatureParser signParser) {
-        Parameters.notNull("query", query);//NOI18N
+        Parameters.notNull("query", query); //NOI18N
         return (query instanceof NameKind.Empty)
                 || query.matchesName(TypeConstantElement.KIND, signParser.getConstantName());
     }
@@ -134,21 +136,21 @@ public final class TypeConstantElementImpl extends PhpElementImpl implements Typ
     @Override
     public String getSignature() {
         StringBuilder sb = new StringBuilder();
-        sb.append(getName().toLowerCase()).append(SEPARATOR.SEMICOLON);//NOI18N
-        sb.append(getName()).append(SEPARATOR.SEMICOLON);//NOI18N
-        sb.append(getOffset()).append(SEPARATOR.SEMICOLON);//NOI18N
-        sb.append(getValue()).append(SEPARATOR.SEMICOLON);//NOI18N
+        sb.append(getName().toLowerCase()).append(Separator.SEMICOLON); //NOI18N
+        sb.append(getName()).append(Separator.SEMICOLON); //NOI18N
+        sb.append(getOffset()).append(Separator.SEMICOLON); //NOI18N
+        sb.append(getValue()).append(Separator.SEMICOLON); //NOI18N
         checkSignature(sb);
         return sb.toString();
     }
 
     @Override
-    public final PhpElementKind getPhpElementKind() {
+    public PhpElementKind getPhpElementKind() {
         return TypeConstantElement.KIND;
     }
 
     @Override
-    public final TypeElement getType() {
+    public TypeElement getType() {
         return enclosingType;
     }
 
@@ -169,32 +171,32 @@ public final class TypeConstantElementImpl extends PhpElementImpl implements Typ
     }
 
     @Override
-    public final boolean isStatic() {
+    public boolean isStatic() {
         return getPhpModifiers().isStatic();
     }
 
     @Override
-    public final boolean isPublic() {
+    public boolean isPublic() {
         return getPhpModifiers().isPublic();
     }
 
     @Override
-    public final boolean isProtected() {
+    public boolean isProtected() {
         return getPhpModifiers().isProtected();
     }
 
     @Override
-    public final boolean isPrivate() {
+    public boolean isPrivate() {
         return getPhpModifiers().isPrivate();
     }
 
     @Override
-    public final boolean isFinal() {
+    public boolean isFinal() {
         return getPhpModifiers().isFinal();
     }
 
     @Override
-    public final boolean isAbstract() {
+    public boolean isAbstract() {
         return getPhpModifiers().isAbstract();
     }
 

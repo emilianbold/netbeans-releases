@@ -43,9 +43,12 @@
  */
 package org.netbeans.modules.cnd.makeproject.configurations;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import org.netbeans.modules.cnd.api.xml.AttrValuePair;
 import org.netbeans.modules.cnd.api.xml.XMLDecoder;
 import org.netbeans.modules.cnd.api.xml.XMLEncoder;
@@ -67,10 +70,8 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.Configurations;
 import org.netbeans.modules.cnd.makeproject.api.configurations.CustomToolConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Folder.Kind;
-import org.netbeans.modules.cnd.makeproject.api.configurations.FolderConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.FortranCompilerConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Item;
-import org.netbeans.modules.cnd.makeproject.api.configurations.ItemConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.LibrariesConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.LibraryItem;
 import org.netbeans.modules.cnd.makeproject.api.configurations.LinkerConfiguration;
@@ -79,11 +80,26 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration
 import org.netbeans.modules.cnd.makeproject.api.configurations.PackagingConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.QmakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.RequiredProjectsConfiguration;
+import org.netbeans.modules.cnd.utils.CndPathUtilitities;
+import org.netbeans.modules.nativeexecution.api.HostInfo;
+import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
+import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
+import org.openide.util.Exceptions;
 
 /**
  * Common subclass to ConfigurationXMLCodec and AuxConfigurationXMLCodec.
  * 
  * Change History:
+ * V88 - NB 7.3 (!!!!!!!!!!INVERTED SERIALIZATION!!!!!!!!!!!!)
+ *    1) This is the version where serialization of unmanaged projects were inverted
+ *    instead of excluded items and personally attributed items we store all 
+ *    non-excluded or non-default attributed items. 
+ *    2) To support include paths and macro values we keep user specified 
+ *       CODE_ASSISTANCE_TRANSIENT_MACROS_ELEMENT and CODE_ASSISTANCE_ENVIRONMENT_ELEMENT
+ * V87 - NB 7.3 
+ *    roll back default value in BooleanConfiguration for ItemConfiguration (69fa2dbc8b7c)
+ * V86 - NB 7.3
+ *    roll back changes introduced in V85
  * V85 - NB 7.3
  *    Configurations descriptor is divided on three parts (public, default public and private).
  *    Actual for unmanaged projects.
@@ -247,8 +263,9 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.RequiredProjectsC
 public abstract class CommonConfigurationXMLCodec
         extends XMLDecoder
         implements XMLEncoder {
-
-    public final static int CURRENT_VERSION = 85;
+    
+    public final static int VERSION_WITH_INVERTED_SERIALIZATION = 88;
+    public final static int CURRENT_VERSION = 88;
     // Generic
     protected final static String PROJECT_DESCRIPTOR_ELEMENT = "projectDescriptor"; // NOI18N
     protected final static String DEBUGGING_ELEMENT = "justfordebugging"; // NOI18N
@@ -308,6 +325,8 @@ public abstract class CommonConfigurationXMLCodec
     protected final static String CODE_ASSISTANCE_ELEMENT = "codeAssistance"; // NOI18N
     protected final static String BUILD_ANALAZYER_ELEMENT = "buildAnalyzer"; // NOI18N
     protected final static String BUILD_ANALAZYER_TOOLS_ELEMENT = "buildAnalyzerTools"; // NOI18N
+    protected final static String CODE_ASSISTANCE_ENVIRONMENT_ELEMENT = "envVariables"; // NOI18N
+    protected final static String CODE_ASSISTANCE_TRANSIENT_MACROS_ELEMENT = "transientMacros"; // NOI18N
     // Compiler (Generic) Tool
     protected final static String INCLUDE_DIRECTORIES_ELEMENT = "includeDirectories"; // NOI18N
     protected final static String INCLUDE_DIRECTORIES_ELEMENT2 = "incDir"; // NOI18N
@@ -423,55 +442,33 @@ public abstract class CommonConfigurationXMLCodec
     protected final static String QT_QMAKE_SPEC_ELEMENT = "qmakeSpec"; // NOI18N
     private final ConfigurationDescriptor projectDescriptor;
     private final boolean publicLocation;
-    private final boolean versionedLocation;
     
     public static final int PROJECT_LEVEL = 0;
     public static final int FOLDER_LEVEL = 1;
     public static final int ITEM_LEVEL = 2;
 
-    protected CommonConfigurationXMLCodec(ConfigurationDescriptor projectDescriptor, boolean publicLocation, boolean versionedLocation) {
+    protected CommonConfigurationXMLCodec(ConfigurationDescriptor projectDescriptor, boolean publicLocation) {
         this.projectDescriptor = projectDescriptor;
         this.publicLocation = publicLocation;
-        this.versionedLocation = versionedLocation;
     }
 
     // interface XMLEncoder
     @Override
-    public void encode(XMLEncoderStream xes) {
+   public void encode(XMLEncoderStream xes) {
         xes.elementOpen(CONFIGURATION_DESCRIPTOR_ELEMENT, CURRENT_VERSION);
-        boolean isMakefileConfiguration = false;
-        MakeConfiguration activeConfiguration = ((MakeConfigurationDescriptor) projectDescriptor).getActiveConfiguration();
-        if (activeConfiguration != null) {
-            isMakefileConfiguration = activeConfiguration.isMakefileConfiguration();
+        if (publicLocation) {
+            writeLogicalFolders(xes);
+            writeSourceRoots(xes);
+            //writeSourceEncoding(xes);
         }
-        if (versionedLocation) {
-            if (isMakefileConfiguration) {
-                writeLogicalFolders(xes, true, isMakefileConfiguration);
-                writeConfsBlock(xes);
-            }
-        } else {
-            if (publicLocation) {
-                if (isMakefileConfiguration) {
-                    writeLogicalFolders(xes, false, isMakefileConfiguration);
-                } else {
-                    writeLogicalFolders(xes, true, isMakefileConfiguration);
-                }
-                writeSourceRoots(xes);
-                //writeSourceEncoding(xes);
-            } else {
-                if (isMakefileConfiguration) {
-                    writeLogicalFolders(xes, true, isMakefileConfiguration);
-                }
-            }
-            xes.element(PROJECT_MAKEFILE_ELEMENT, ((MakeConfigurationDescriptor) projectDescriptor).getProjectMakefileName());
-            //if (!publicLocation) {
-            //    xes.element(DEFAULT_CONF_ELEMENT, "" + projectDescriptor.getConfs().getActiveAsIndex()); // NOI18N
-            //}
-            writeConfsBlock(xes);
-        }
+        xes.element(PROJECT_MAKEFILE_ELEMENT, ((MakeConfigurationDescriptor) projectDescriptor).getProjectMakefileName());
+//        if (!publicLocation) {
+//            xes.element(DEFAULT_CONF_ELEMENT, "" + projectDescriptor.getConfs().getActiveAsIndex()); // NOI18N
+//        }
+        writeConfsBlock(xes);
         xes.elementClose(CONFIGURATION_DESCRIPTOR_ELEMENT);
     }
-
+    
     private void writeConfsBlock(XMLEncoderStream xes) {
         xes.elementOpen(CONFS_ELEMENT);
 
@@ -497,53 +494,33 @@ public abstract class CommonConfigurationXMLCodec
 
             }
 
-            if (versionedLocation) {
+            writeToolsSetBlock(xes, makeConfiguration);
+            if (publicLocation) {
+                if (makeConfiguration.isQmakeConfiguration()) {
+                    writeQmakeConfiguration(xes, makeConfiguration.getQmakeConfiguration());
+                }
                 if (makeConfiguration.isMakefileConfiguration()) {
+                    writeCodeAssistanceConfiguration(xes, makeConfiguration.getCodeAssistanceConfiguration());
                     writeMakefileProjectConfBlock(xes, makeConfiguration);
-                    ConfigurationAuxObject[] profileAuxObjects = confs.getConf(i).getAuxObjects();
-                    for (int j = 0; j < profileAuxObjects.length; j++) {
-                        ConfigurationAuxObject auxObject = profileAuxObjects[j];
-                        if (!auxObject.shared()) {
-                            if ((auxObject instanceof ItemConfiguration) ||
-                                (auxObject instanceof FolderConfiguration)) {
-                                XMLEncoder encoder = auxObject.getXMLEncoder();
-                                encoder.encode(xes);
-                            }
-                        }
+                } else {
+                    writeCompiledProjectConfBlock(xes, makeConfiguration);
+                }
+                writePackaging(xes, makeConfiguration.getPackagingConfiguration());
+                ConfigurationAuxObject[] profileAuxObjects = confs.getConf(i).getAuxObjects();
+                for (int j = 0; j < profileAuxObjects.length; j++) {
+                    ConfigurationAuxObject auxObject = profileAuxObjects[j];
+                    if (publicallyVisible(auxObject)) {
+                        XMLEncoder encoder = auxObject.getXMLEncoder();
+                        encoder.encode(xes);
                     }
                 }
             } else {
-                writeToolsSetBlock(xes, makeConfiguration);
-                if (publicLocation) {
-                    if (makeConfiguration.isQmakeConfiguration()) {
-                        writeQmakeConfiguration(xes, makeConfiguration.getQmakeConfiguration());
-                    }
-                    if (makeConfiguration.isMakefileConfiguration()) {
-                        writeCodeAssistanceConfiguration(xes, makeConfiguration.getCodeAssistanceConfiguration());
-                        writeMakefileProjectConfBlock(xes, makeConfiguration);
-                    } else {
-                        writeCompiledProjectConfBlock(xes, makeConfiguration);
-                    }
-                    writePackaging(xes, makeConfiguration.getPackagingConfiguration());
-                    ConfigurationAuxObject[] profileAuxObjects = confs.getConf(i).getAuxObjects();
-                    for (int j = 0; j < profileAuxObjects.length; j++) {
-                        ConfigurationAuxObject auxObject = profileAuxObjects[j];
-                        if (auxObject.shared()) {
-                            XMLEncoder encoder = auxObject.getXMLEncoder();
-                            encoder.encode(xes);
-                        }
-                    }
-                } else {
-                    if (makeConfiguration.isMakefileConfiguration()) {
-                        writeMakefileProjectConfBlock(xes, makeConfiguration);
-                    }
-                    ConfigurationAuxObject[] profileAuxObjects = confs.getConf(i).getAuxObjects();
-                    for (int j = 0; j < profileAuxObjects.length; j++) {
-                        ConfigurationAuxObject auxObject = profileAuxObjects[j];
-                        if (!auxObject.shared()) {
-                            XMLEncoder encoder = auxObject.getXMLEncoder();
-                            encoder.encode(xes);
-                        }
+                ConfigurationAuxObject[] profileAuxObjects = confs.getConf(i).getAuxObjects();
+                for (int j = 0; j < profileAuxObjects.length; j++) {
+                    ConfigurationAuxObject auxObject = profileAuxObjects[j];
+                    if (!auxObject.shared()) {
+                        XMLEncoder encoder = auxObject.getXMLEncoder();
+                        encoder.encode(xes);
                     }
                 }
             }
@@ -619,47 +596,30 @@ public abstract class CommonConfigurationXMLCodec
     private void writeMakefileProjectConfBlock(XMLEncoderStream xes,
             MakeConfiguration makeConfiguration) {
         xes.elementOpen(MAKEFILE_TYPE_ELEMENT);
-        if (versionedLocation) {
-            xes.elementOpen(MAKETOOL_ELEMENT);
-                writeCCompilerConfiguration(xes, makeConfiguration.getCCompilerConfiguration(), PROJECT_LEVEL);
-                writeCCCompilerConfiguration(xes, makeConfiguration.getCCCompilerConfiguration(), PROJECT_LEVEL);
-                writeFortranCompilerConfiguration(xes, makeConfiguration.getFortranCompilerConfiguration());
-                writeAsmCompilerConfiguration(xes, makeConfiguration.getAssemblerConfiguration());
-            xes.elementClose(MAKETOOL_ELEMENT);
-        } else {
-            xes.elementOpen(MAKETOOL_ELEMENT);
-            if (publicLocation) {
-                xes.element(BUILD_COMMAND_WORKING_DIR_ELEMENT, makeConfiguration.getMakefileConfiguration().getBuildCommandWorkingDir().getValue());
-                xes.element(BUILD_COMMAND_ELEMENT, makeConfiguration.getMakefileConfiguration().getBuildCommand().getValue());
-                xes.element(CLEAN_COMMAND_ELEMENT, makeConfiguration.getMakefileConfiguration().getCleanCommand().getValue());
-                xes.element(EXECUTABLE_PATH_ELEMENT, makeConfiguration.getMakefileConfiguration().getOutput().getValue());
-            } else {
-                writeCCompilerConfiguration(xes, makeConfiguration.getCCompilerConfiguration(), PROJECT_LEVEL);
-                writeCCCompilerConfiguration(xes, makeConfiguration.getCCCompilerConfiguration(), PROJECT_LEVEL);
-                writeFortranCompilerConfiguration(xes, makeConfiguration.getFortranCompilerConfiguration());
-                writeAsmCompilerConfiguration(xes, makeConfiguration.getAssemblerConfiguration());
-            }
-            //IZ#110443:Adding "Dependencies" node for makefile projects property is premature
-            //if (makeConfiguration.getLinkerConfiguration() != null)
-            //    writeLinkerConfiguration(xes, makeConfiguration.getLinkerConfiguration());
-            xes.elementClose(MAKETOOL_ELEMENT);
-            if (publicLocation) {
-                writeRequiredProjects(xes, makeConfiguration.getRequiredProjectsConfiguration());
-            }
-        }
+        xes.elementOpen(MAKETOOL_ELEMENT);
+        xes.element(BUILD_COMMAND_WORKING_DIR_ELEMENT, makeConfiguration.getMakefileConfiguration().getBuildCommandWorkingDir().getValue());
+        xes.element(BUILD_COMMAND_ELEMENT, makeConfiguration.getMakefileConfiguration().getBuildCommand().getValue());
+        xes.element(CLEAN_COMMAND_ELEMENT, makeConfiguration.getMakefileConfiguration().getCleanCommand().getValue());
+        xes.element(EXECUTABLE_PATH_ELEMENT, makeConfiguration.getMakefileConfiguration().getOutput().getValue());
+        writeCCompilerConfiguration(xes, makeConfiguration.getCCompilerConfiguration(), PROJECT_LEVEL);
+        writeCCCompilerConfiguration(xes, makeConfiguration.getCCCompilerConfiguration(), PROJECT_LEVEL);
+        writeFortranCompilerConfiguration(xes, makeConfiguration.getFortranCompilerConfiguration());
+        writeAsmCompilerConfiguration(xes, makeConfiguration.getAssemblerConfiguration());
+        //IZ#110443:Adding "Dependencies" node for makefile projects property is premature
+        //if (makeConfiguration.getLinkerConfiguration() != null)
+        //    writeLinkerConfiguration(xes, makeConfiguration.getLinkerConfiguration());
+        xes.elementClose(MAKETOOL_ELEMENT);
+        writeRequiredProjects(xes, makeConfiguration.getRequiredProjectsConfiguration());
         xes.elementClose(MAKEFILE_TYPE_ELEMENT);
     }
 
-    private void writeLogicalFolders(XMLEncoderStream xes, boolean recursive, boolean isMakefileConfiguration) {
-        writeLogicalFolder(xes, ((MakeConfigurationDescriptor) projectDescriptor).getLogicalFolders(), 0, recursive, isMakefileConfiguration);
+
+    private void writeLogicalFolders(XMLEncoderStream xes) {
+        writeLogicalFolder(xes, ((MakeConfigurationDescriptor) projectDescriptor).getLogicalFolders(), 0);
     }
 
-    private void writeLogicalFolder(XMLEncoderStream xes, Folder folder, final int level, boolean recursive, boolean isMakefileConfiguration) {
+    private void writeLogicalFolder(XMLEncoderStream xes, Folder folder, final int level) {
         Kind kind = folder.getKind();
-        if (isMakefileConfiguration && recursive && kind == Kind.IMPORTANT_FILES_FOLDER) {
-            // important items belong to public area
-            return;
-        }
         Kind storedKind = null;
         if (kind != null) {
             switch (kind) {
@@ -681,46 +641,46 @@ public abstract class CommonConfigurationXMLCodec
             attrList.add(new AttrValuePair(ROOT_ATTR, "" + folder.getRoot())); // NOI18N
         }
         xes.elementOpen(LOGICAL_FOLDER_ELEMENT, attrList.toArray(new AttrValuePair[attrList.size()]));
-        if (recursive || level == 0 ||
-            (level == 1 && kind == Kind.IMPORTANT_FILES_FOLDER)) {
-            // write out subfolders
-            Folder[] subfolders = folder.getFoldersAsArray();
-            for (int i = 0; i < subfolders.length; i++) {
-                if (subfolders[i].isDiskFolder()) {
-                    writeDiskFolder(xes, subfolders[i], recursive);
-                } else {
-                    writeLogicalFolder(xes, subfolders[i], level + 1, recursive, isMakefileConfiguration);
-                }
+        // write out subfolders
+        Folder[] subfolders = folder.getFoldersAsArray();
+        for (int i = 0; i < subfolders.length; i++) {
+            if (subfolders[i].isDiskFolder()) {
+                writeDiskFolder(xes, subfolders[i]);
+            } else {
+                writeLogicalFolder(xes, subfolders[i], level + 1);
             }
-            // write out items
-            Item[] items = folder.getItemsAsArray();
-            for (int i = 0; i < items.length; i++) {
-                xes.element(ITEM_PATH_ELEMENT, items[i].getPath());
-            }
+        }
+        // write out items
+        // we always write all items of logical folder
+        Item[] items = folder.getItemsAsArray();
+        for (int i = 0; i < items.length; i++) {
+            Item item = items[i];
+            xes.element(ITEM_PATH_ELEMENT, item.getPath());
         }
         xes.elementClose(LOGICAL_FOLDER_ELEMENT);
     }
 
-    private void writeDiskFolder(XMLEncoderStream xes, Folder folder, boolean recursive) {
+    private void writeDiskFolder(XMLEncoderStream xes, Folder folder) {
+        if (org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider.VCS_WRITE && !folder.hasAttributedItems()) {
+            return;
+        }
         List<AttrValuePair> attrList = new ArrayList<AttrValuePair>();
         if (folder.getRoot() != null) {
-            // Do not store source root name. See bug #216604
-            //attrList.add(new AttrValuePair(NAME_ATTR, "" + folder.getDiskName())); // NOI18N    
             attrList.add(new AttrValuePair(ROOT_ATTR, "" + folder.getRoot())); // NOI18N
-        } else {
-            attrList.add(new AttrValuePair(NAME_ATTR, "" + folder.getName())); // NOI18N    
         }
+        attrList.add(new AttrValuePair(NAME_ATTR, "" + folder.getName())); // NOI18N
         xes.elementOpen(DISK_FOLDER_ELEMENT, attrList.toArray(new AttrValuePair[attrList.size()]));
-        if (recursive) {
-            // write out subfolders
-            Folder[] subfolders = folder.getFoldersAsArray();
-            for (int i = 0; i < subfolders.length; i++) {
-                writeDiskFolder(xes, subfolders[i], recursive);
-            }
-            // write out items
-            Item[] items = folder.getItemsAsArray();
-            for (int i = 0; i < items.length; i++) {
-                xes.element(ITEM_NAME_ELEMENT, items[i].getName());
+        // write out subfolders
+        Folder[] subfolders = folder.getFoldersAsArray();
+        for (int i = 0; i < subfolders.length; i++) {
+            writeDiskFolder(xes, subfolders[i]);
+        }
+        // write out items
+        Item[] items = folder.getItemsAsArray();
+        for (int i = 0; i < items.length; i++) {
+            Item item = items[i];
+            if (!org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider.VCS_WRITE || item.hasImportantAttributes()) {
+                xes.element(ITEM_NAME_ELEMENT, item.getName());
             }
         }
         xes.elementClose(DISK_FOLDER_ELEMENT);
@@ -780,7 +740,7 @@ public abstract class CommonConfigurationXMLCodec
             xes.element(COMMANDLINE_TOOL_ELEMENT, "" + cCompilerConfiguration.getTool().getValue()); // NOI18N
         }
         if (cCompilerConfiguration.getIncludeDirectories().getModified()) {
-            writeDirectories(xes, INCLUDE_DIRECTORIES_ELEMENT2, cCompilerConfiguration.getIncludeDirectories().getValue());
+            writeDirectoriesWithConversion(xes, INCLUDE_DIRECTORIES_ELEMENT2, cCompilerConfiguration.getIncludeDirectories().getValue(), getIncludeConverter(cCompilerConfiguration.getOwner()));
         }
         if (cCompilerConfiguration.getStandardsEvolution().getModified()) {
             xes.element(STANDARDS_EVOLUTION_ELEMENT, "" + cCompilerConfiguration.getStandardsEvolution().getValue()); // NOI18N
@@ -796,8 +756,7 @@ public abstract class CommonConfigurationXMLCodec
         }
         if (cCompilerConfiguration.getPreprocessorConfiguration().getModified()) {
             List<String> sortedList = new ArrayList<String>(cCompilerConfiguration.getPreprocessorConfiguration().getValue());
-            Collections.sort(sortedList);
-            writeList(xes, PREPROCESSOR_LIST_ELEMENT, sortedList);
+            writeSortedListWithConversion(xes, PREPROCESSOR_LIST_ELEMENT, sortedList, getMacroConverter(cCompilerConfiguration.getOwner()));
         }
         if (cCompilerConfiguration.getInheritPreprocessor().getModified()) {
             xes.element(INHERIT_PRE_VALUES_ELEMENT, "" + cCompilerConfiguration.getInheritPreprocessor().getValue()); // NOI18N
@@ -848,7 +807,7 @@ public abstract class CommonConfigurationXMLCodec
             xes.element(COMMANDLINE_TOOL_ELEMENT, "" + ccCompilerConfiguration.getTool().getValue()); // NOI18N
         }
         if (ccCompilerConfiguration.getIncludeDirectories().getModified()) {
-            writeDirectories(xes, INCLUDE_DIRECTORIES_ELEMENT2, ccCompilerConfiguration.getIncludeDirectories().getValue()); // NOI18N
+            writeDirectoriesWithConversion(xes, INCLUDE_DIRECTORIES_ELEMENT2, ccCompilerConfiguration.getIncludeDirectories().getValue(), getIncludeConverter(ccCompilerConfiguration.getOwner())); // NOI18N
         }
         if (ccCompilerConfiguration.getStandardsEvolution().getModified()) {
             xes.element(STANDARDS_EVOLUTION_ELEMENT, "" + ccCompilerConfiguration.getStandardsEvolution().getValue()); // NOI18N
@@ -864,8 +823,7 @@ public abstract class CommonConfigurationXMLCodec
         }
         if (ccCompilerConfiguration.getPreprocessorConfiguration().getModified()) {
             List<String> sortedList = new ArrayList<String>(ccCompilerConfiguration.getPreprocessorConfiguration().getValue());
-            Collections.sort(sortedList);
-            writeList(xes, PREPROCESSOR_LIST_ELEMENT, sortedList);
+            writeSortedListWithConversion(xes, PREPROCESSOR_LIST_ELEMENT, sortedList, getMacroConverter(ccCompilerConfiguration.getOwner()));
         }
         if (ccCompilerConfiguration.getInheritPreprocessor().getModified()) {
             xes.element(INHERIT_PRE_VALUES_ELEMENT, "" + ccCompilerConfiguration.getInheritPreprocessor().getValue()); // NOI18N
@@ -1152,25 +1110,6 @@ public abstract class CommonConfigurationXMLCodec
         xes.elementClose(ARCHIVERTOOL_ELEMENT);
     }
 
-    public static void writeList(XMLEncoderStream xes, String tag, List<String> list) {
-        writeList(xes, tag, LIST_ELEMENT, list);
-    }
-
-    public static void writeDirectories(XMLEncoderStream xes, String tag, List<String> directories) {
-        writeList(xes, tag, PATH_ELEMENT, directories);
-    }
-
-    public static void writeList(XMLEncoderStream xes, String tag, String listTag, List<String> directories) {
-        if (directories.isEmpty()) {
-            return;
-        }
-        xes.elementOpen(tag);
-        for (String dir : directories) {
-            xes.element(listTag, dir);
-        }
-        xes.elementClose(tag);
-    }
-
     private void writeCodeAssistanceConfiguration(XMLEncoderStream xes, CodeAssistanceConfiguration codeAssistanceConfiguration) {
         xes.elementOpen(CODE_ASSISTANCE_ELEMENT);
         if (codeAssistanceConfiguration.getBuildAnalyzer().getModified()) {
@@ -1179,6 +1118,170 @@ public abstract class CommonConfigurationXMLCodec
         if (codeAssistanceConfiguration.getTools().getModified()) {
             xes.element(BUILD_ANALAZYER_TOOLS_ELEMENT, "" + codeAssistanceConfiguration.getTools().getValue()); // NOI18N
         }
+        if (org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider.VCS_WRITE) {
+            if (codeAssistanceConfiguration.getEnvironmentVariables().getModified()) {
+                List<String> sortedList = new ArrayList<String>(codeAssistanceConfiguration.getEnvironmentVariables().getValue());
+                Collections.sort(sortedList);
+                writeList(xes, CODE_ASSISTANCE_ENVIRONMENT_ELEMENT, sortedList);
+            }
+            if (codeAssistanceConfiguration.getTransientMacros().getModified()) {
+                List<String> sortedList = new ArrayList<String>(codeAssistanceConfiguration.getTransientMacros().getValue());
+                Collections.sort(sortedList);
+                writeList(xes, CODE_ASSISTANCE_TRANSIENT_MACROS_ELEMENT, sortedList);
+            }
+        }
         xes.elementClose(CODE_ASSISTANCE_ELEMENT);
+    }
+    
+    private static void writeSortedListWithConversion(XMLEncoderStream xes, String tag, List<String> list, StringConverter conv) {
+        Collections.sort(list);
+        writeList(xes, tag, LIST_ELEMENT, list, conv);
+    }
+
+    private static void writeDirectoriesWithConversion(XMLEncoderStream xes, String tag, List<String> directories, StringConverter conv) {
+        writeList(xes, tag, PATH_ELEMENT, directories, conv);
+    }
+
+    private static void writeList(XMLEncoderStream xes, String tag, List<String> list) {
+        writeList(xes, tag, LIST_ELEMENT, list, EMPTY_CONVERTER);
+    }
+
+    private static void writeDirectories(XMLEncoderStream xes, String tag, List<String> directories) {
+        writeList(xes, tag, PATH_ELEMENT, directories, EMPTY_CONVERTER);
+    }
+
+    private static void writeList(XMLEncoderStream xes, String tag, String listTag, List<String> list, StringConverter conv) {
+        if (list.isEmpty()) {
+            return;
+        }
+        xes.elementOpen(tag);
+        for (String entry : list) {
+            xes.element(listTag, conv.convert(entry));
+        }
+        xes.elementClose(tag);
+    }
+
+    private boolean publicallyVisible(ConfigurationAuxObject auxObject) {
+        if (org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider.VCS_WRITE) {
+            if (auxObject instanceof org.netbeans.modules.cnd.makeproject.api.configurations.ItemConfiguration) {
+                return ((org.netbeans.modules.cnd.makeproject.api.configurations.ItemConfiguration)auxObject).isVCSVisible();
+            } else if (auxObject instanceof org.netbeans.modules.cnd.makeproject.api.configurations.FolderConfiguration) {
+                return ((org.netbeans.modules.cnd.makeproject.api.configurations.FolderConfiguration)auxObject).isVCSVisible();
+            }
+        }
+        return auxObject.shared();
+    }
+    
+    private static StringConverter getMacroConverter(MakeConfiguration conf) {
+        if (conf != null && org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider.VCS_WRITE) {
+            final CodeAssistanceConfiguration caConf = conf.getCodeAssistanceConfiguration();
+            if (caConf != null && caConf.getTransientMacros().getModified()) {
+                return new MacroConverterImpl(caConf);
+            }
+        }
+        return EMPTY_CONVERTER;
+    }
+    
+    private static StringConverter getIncludeConverter(final MakeConfiguration conf) {
+        if (conf != null && org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider.VCS_WRITE) {
+            final CodeAssistanceConfiguration caConf = conf.getCodeAssistanceConfiguration();
+            if (caConf != null && caConf.getEnvironmentVariables().getModified()) {
+                return new IncludeConverterImpl(conf, caConf);
+            }
+        }
+        return EMPTY_CONVERTER;
+    }
+    
+    private interface StringConverter {
+        /**
+         * convert original string if needed
+         * @param orig string to convert
+         * @param shared public or private serialization
+         * @return converted string
+         */
+        public String convert(String orig);
+    }
+    
+    private static final StringConverter EMPTY_CONVERTER = new StringConverter() {
+
+        @Override
+        public String convert(String orig) {
+            return orig;
+        }
+    };    
+
+    private static final class IncludeConverterImpl implements StringConverter {
+
+        private final Map<String, String> replacements = new HashMap<String, String>();
+
+        public IncludeConverterImpl(MakeConfiguration conf, CodeAssistanceConfiguration caConf) {
+            Map<String, String> environment = Collections.emptyMap();
+            try {
+                HostInfo hostInfo = HostInfoUtils.getHostInfo(conf.getFileSystemHost());
+                environment = hostInfo.getEnvironment();
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            } catch (ConnectionManager.CancellationException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+            if (!environment.isEmpty()) {
+                for (String envVariableName : caConf.getEnvironmentVariables().getValue()) {
+                    String toReplace = environment.get(envVariableName);
+                    // for now we support abs paths replacements
+                    if (toReplace != null && !toReplace.isEmpty() && 
+                        CndPathUtilitities.isPathAbsolute(toReplace)) { 
+                        replacements.put(toReplace, "${" + envVariableName + "}"); // NOI18N
+                        toReplace = toReplace.replace('\\', '/');
+                        replacements.put(toReplace, "${" + envVariableName + "}"); // NOI18N
+                    } else {
+                        System.err.println("env Variable " + envVariableName + " with unexpected value: " + toReplace);
+                    }
+                }
+            }
+        }
+        
+        @Override
+        public String convert(String orig) {
+            String out = orig;
+            int len = -1;
+            for (Map.Entry<String, String> entry : replacements.entrySet()) {
+                String key = entry.getKey();
+                if (orig.startsWith(key)) {
+                    if (len < key.length()) {
+                        len = key.length();
+                        out = entry.getValue() + orig.substring(len);
+                    }
+                }
+            }
+            return out;
+        }
+    }
+
+    private static final class MacroConverterImpl implements StringConverter {
+
+        private final Map<String, String> replacements = new HashMap<String, String>();
+
+        public MacroConverterImpl(CodeAssistanceConfiguration caConf) {
+            for (String macroWithDefaultValue : caConf.getTransientMacros().getValue()) {
+                int idx = macroWithDefaultValue.indexOf('=');
+                if (idx < 0) {
+                    System.err.println("macro without default value " + macroWithDefaultValue);
+                } else {
+                    String prefix = macroWithDefaultValue.substring(0, idx);
+                    replacements.put(prefix, macroWithDefaultValue);
+                }
+            }
+        }
+
+        @Override
+        public String convert(String orig) {
+            String out = orig;
+            for (Map.Entry<String, String> entry : replacements.entrySet()) {
+                if (orig.startsWith(entry.getKey())) {
+                    return entry.getValue();
+                }
+            }
+            return out;
+        }
     }
 }

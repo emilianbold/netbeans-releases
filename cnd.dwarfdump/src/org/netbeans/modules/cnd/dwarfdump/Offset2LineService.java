@@ -187,12 +187,15 @@ public class Offset2LineService {
         try {
             Dwarf.CompilationUnitIterator iterator = dwarf.iteratorCompilationUnits();
             while(iterator.hasNext()) {
-                CompilationUnit compilationUnit = iterator.next();
-                TreeSet<LineNumber> lineNumbers = getCompilationUnitLines(compilationUnit);
-                String filePath = compilationUnit.getSourceFileAbsolutePath();
-                String compDir = compilationUnit.getCompilationDir();
-                Set<Long> antiLoop = new HashSet<Long>();
-                processEntries(compilationUnit, compilationUnit.getDeclarations(false), filePath, compDir, lineNumbers, sourceInfoMap, antiLoop);
+                CompilationUnitInterface compilationUnit = iterator.next();
+                if (compilationUnit instanceof CompilationUnit) {
+                    CompilationUnit cu = (CompilationUnit) compilationUnit;
+                    TreeSet<LineNumber> lineNumbers = getCompilationUnitLines(cu);
+                    String filePath = cu.getSourceFileAbsolutePath();
+                    String compDir = cu.getCompilationDir();
+                    Set<Long> antiLoop = new HashSet<Long>();
+                    processEntries(cu, cu.getDeclarations(false), filePath, compDir, lineNumbers, sourceInfoMap, antiLoop);
+                }
             }
         } finally {
             dwarf.dispose();

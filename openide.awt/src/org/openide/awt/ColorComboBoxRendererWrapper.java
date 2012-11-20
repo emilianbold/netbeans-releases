@@ -71,21 +71,23 @@ class ColorComboBoxRendererWrapper implements ListCellRenderer, UIResource {
     public Component getListCellRendererComponent( JList list, Object value, int index, boolean isSelected, boolean cellHasFocus ) {
         Component res = renderer.getListCellRendererComponent( list, value, index, isSelected, cellHasFocus );
         if( res instanceof JLabel ) {
-            JLabel label = ( JLabel ) res;
-            int height = isGTK ? 10 : Math.max( res.getPreferredSize().height - 4, 4 );
-            Icon icon = null;
-            if( value instanceof ColorValue ) {
-                ColorValue color = ( ColorValue ) value;
-                if( value == ColorValue.CUSTOM_COLOR ) {
-                    icon = null;
+            synchronized( renderer ) {
+                JLabel label = ( JLabel ) res;
+                int height = isGTK ? 10 : Math.max( res.getPreferredSize().height - 4, 4 );
+                Icon icon = null;
+                if( value instanceof ColorValue ) {
+                    ColorValue color = ( ColorValue ) value;
+                    if( value == ColorValue.CUSTOM_COLOR ) {
+                        icon = null;
+                    } else {
+                        icon = new ColorIcon( color.color, height );
+                    }
+                    label.setText( color.text );
                 } else {
-                    icon = new ColorIcon( color.color, height );
+                    icon = null;
                 }
-                label.setText( color.text );
-            } else {
-                icon = null;
+                label.setIcon( icon );
             }
-            label.setIcon( icon );
         }
         return res;
     }

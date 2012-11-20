@@ -58,6 +58,7 @@ import org.netbeans.core.windows.options.WinSysPrefs;
 import org.netbeans.core.windows.persistence.PersistenceManager;
 import org.netbeans.core.windows.view.dnd.TopComponentDraggable;
 import org.netbeans.core.windows.view.ui.MainWindow;
+import org.netbeans.swing.tabcontrol.plaf.BusyTabsSupport;
 import org.openide.nodes.Node;
 import org.openide.util.*;
 import org.openide.windows.*;
@@ -135,6 +136,7 @@ public final class WindowManagerImpl extends WindowManager implements Workspace 
             }
             defaultInstance = this;
         }
+        busyIconWarmUp();
     }
     
     /** Singleton accessor, returns instance of window manager implementation */
@@ -1480,6 +1482,24 @@ public final class WindowManagerImpl extends WindowManager implements Workspace 
         }
     }
 
+    /**
+     * #220599
+     */
+    private void busyIconWarmUp() {
+        invokeWhenUIReady( new Runnable() {
+
+            @Override
+            public void run() {
+                RequestProcessor.getDefault().post( new Runnable() {
+
+                    @Override
+                    public void run() {
+                        BusyTabsSupport.getDefault().getBusyIcon( false );
+                    }
+                });
+            }
+        });
+    }
 
     /** Handles exclusive invocation of Runnables.
      */

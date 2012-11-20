@@ -617,7 +617,7 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
                     Map<String, IndexingContext> indexingContexts = indexer.getIndexingContexts();
                     IndexingContext indexingContext = indexingContexts.get(repo.getId());
                     if (indexingContext == null) {
-                        LOGGER.log(Level.WARNING, "Indexing context chould not be created: {0}", repo.getId());
+                        LOGGER.log(Level.WARNING, "Indexing context could not be created: {0}", repo.getId());
                         return null;
                     }
                     if (!indexingContext.getRepository().exists()) {
@@ -710,7 +710,9 @@ public class NexusRepositoryIndexerImpl implements RepositoryIndexerImplementati
                         }
                         IndexingContext context = indexer.getIndexingContexts().get(repo.getId());
                         if (context == null) {
-                            actionSkip.run(repo, null);
+                            if (skipUnIndexed) {
+                                actionSkip.run(repo, null);
+                            }
                             return null;
                         }
                         action.run(repo, context);

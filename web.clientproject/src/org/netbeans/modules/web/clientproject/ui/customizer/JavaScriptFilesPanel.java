@@ -43,9 +43,11 @@ package org.netbeans.modules.web.clientproject.ui.customizer;
 
 import java.awt.BorderLayout;
 import java.awt.EventQueue;
+import java.io.File;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Enumeration;
+import java.util.HashSet;
 import java.util.Set;
 import java.util.TreeSet;
 import javax.swing.GroupLayout;
@@ -53,10 +55,12 @@ import javax.swing.GroupLayout.Alignment;
 import javax.swing.JPanel;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import javax.swing.event.ListDataEvent;
-import javax.swing.event.ListDataListener;
 import org.netbeans.api.progress.ProgressUtils;
 import org.netbeans.modules.web.clientproject.ui.JavaScriptLibrarySelection;
+import org.netbeans.modules.web.clientproject.ui.JavaScriptLibrarySelection.SelectedLibrary;
+import org.netbeans.modules.web.clientproject.validation.ProjectFoldersValidator;
+import org.netbeans.modules.web.clientproject.validation.ValidationResult;
+import org.netbeans.modules.web.common.api.Pair;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -85,19 +89,13 @@ public final class JavaScriptFilesPanel extends JPanel implements HelpCtx.Provid
 
         this.category = category;
         this.uiProperties = uiProperties;
-        javaScriptLibrarySelection = new JavaScriptLibrarySelection();
+        javaScriptLibrarySelection = new JavaScriptLibrarySelection(new LibraryValidator(uiProperties));
 
         initComponents();
-
-        initJsFiles();
-        // initial data validation
-        validateData();
+        init();
     }
 
-    private void initJsFiles() {
-        assert EventQueue.isDispatchThread();
-        // add js files
-        javaScriptLibrarySelection.updateDefaults(findProjectJsFiles());
+    private void init() {
         // add listener
         javaScriptLibrarySelection.addChangeListener(new ChangeListener() {
             @Override
@@ -105,25 +103,31 @@ public final class JavaScriptFilesPanel extends JPanel implements HelpCtx.Provid
                 validateAndStore();
             }
         });
-        javaScriptLibrarySelection.addJsLibsListener(new ListDataListener() {
-            @Override
-            public void intervalAdded(ListDataEvent e) {
-                processChange();
-            }
-            @Override
-            public void intervalRemoved(ListDataEvent e) {
-                processChange();
-            }
-            @Override
-            public void contentsChanged(ListDataEvent e) {
-                processChange();
-            }
-            private void processChange() {
-                validateAndStore();
-            }
-        });
         // add to placeholder
         placeholderPanel.add(javaScriptLibrarySelection, BorderLayout.CENTER);
+    }
+
+    @Override
+    public void addNotify() {
+        super.addNotify();
+        setJsFiles();
+        validateData();
+    }
+
+    private void setJsFiles() {
+        assert EventQueue.isDispatchThread();
+        // set js files
+        File siteRootFolder = uiProperties.getResolvedSiteRootFolder();
+        ProjectFoldersValidator projectFoldersValidator = new ProjectFoldersValidator();
+        projectFoldersValidator.validateSiteRootFolder(siteRootFolder);
+        ValidationResult result = projectFoldersValidator.getResult();
+        Collection<String> jsFiles;
+        if (result.hasErrors()) {
+            jsFiles = Collections.<String>emptyList();
+        } else {
+            jsFiles = findProjectJsFiles(FileUtil.toFileObject(siteRootFolder));
+        }
+        javaScriptLibrarySelection.updateDefaultLibraries(jsFiles);
     }
 
     void validateAndStore() {
@@ -159,17 +163,16 @@ public final class JavaScriptFilesPanel extends JPanel implements HelpCtx.Provid
     }
 
     @NbBundle.Messages("JavaScriptFilesPanel.progress.detectingJsFiles=Detecting JavaScript files...")
-    private Collection<String> findProjectJsFiles() {
+    private Collection<String> findProjectJsFiles(final FileObject siteRoot) {
         final Set<String> jsFiles = Collections.synchronizedSortedSet(new TreeSet<String>());
         ProgressUtils.showProgressDialogAndRun(new Runnable() {
             @Override
             public void run() {
-                FileObject siteRoot = uiProperties.getProject().getSiteRootFolder();
                 Enumeration<? extends FileObject> children = siteRoot.getChildren(true);
                 while (children.hasMoreElements()) {
                     FileObject child = children.nextElement();
                     if (JS_MIME_TYPE.equals(FileUtil.getMIMEType(child, JS_MIME_TYPE))) {
-                        jsFiles.add(child.getNameExt());
+                        jsFiles.add(FileUtil.getRelativePath(siteRoot, child));
                     }
                 }
             }
@@ -208,5 +211,56 @@ public final class JavaScriptFilesPanel extends JPanel implements HelpCtx.Provid
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private JPanel placeholderPanel;
     // End of variables declaration//GEN-END:variables
+
+    //~ Inner classes
+
+    private static final class LibraryValidator implements JavaScriptLibrarySelection.JavaScriptLibrariesValidator {
+
+        private final ClientSideProjectProperties uiProperties;
+
+
+        private LibraryValidator(ClientSideProjectProperties uiProperties) {
+            assert uiProperties != null;
+            this.uiProperties = uiProperties;
+        }
+
+        @NbBundle.Messages("JavaScriptFilesPanel.error.jsLibsAlreadyExist=Some of the selected libraries already exist.")
+        @Override
+        public Pair<Set<SelectedLibrary>, String> validate(String librariesFolder, Set<SelectedLibrary> newLibraries) {
+            if (newLibraries.isEmpty()) {
+                // nothing to validate
+                return VALID_RESULT;
+            }
+            FileObject libsFolder = getLibsFolder(librariesFolder);
+            if (libsFolder == null) {
+                // non-existing or invalid js libs folder
+                return VALID_RESULT;
+            }
+            Set<SelectedLibrary> existing = new HashSet<SelectedLibrary>();
+            for (SelectedLibrary selectedLibrary : newLibraries) {
+                for (String filePath : selectedLibrary.getFilePaths()) {
+                    if (libsFolder.getFileObject(filePath) != null) {
+                        existing.add(selectedLibrary);
+                    }
+                }
+            }
+            if (!existing.isEmpty()) {
+                // validation failed
+                return Pair.of(existing, Bundle.JavaScriptFilesPanel_error_jsLibsAlreadyExist());
+            }
+            // all ok
+            return VALID_RESULT;
+        }
+
+        private FileObject getLibsFolder(String librariesFolder) {
+            FileObject siteRootFolder = FileUtil.toFileObject(uiProperties.getResolvedSiteRootFolder());
+            if (siteRootFolder == null) {
+                // non-existing folder
+                return null;
+            }
+            return siteRootFolder.getFileObject(librariesFolder);
+        }
+
+    }
 
 }

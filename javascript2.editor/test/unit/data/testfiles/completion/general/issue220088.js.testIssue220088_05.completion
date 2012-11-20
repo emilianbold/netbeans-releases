@@ -1,0 +1,11 @@
+Code completion result for source line:
+var issue220088 = new S|ynergy();
+(QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
+------------------------------------
+CONSTRUCTO String(): String                [PUBLIC]   stub_CORE_String.js
+CONSTRUCTO Synergy(): Synergy              [PUBLIC]   issue220088.js
+CONSTRUCTO SyntaxError(): Error            [PUBLIC]   stub_CORE_SyntaxError.js
+VARIABLE   Screen                          [PUBLIC]   stub_DOM_Screen.js
+VARIABLE   Storage                         [PUBLIC]   stub_DOM_Storage.js
+VARIABLE   StyleSheet                      [PUBLIC]   stub_DOM_StyleSheet.js
+VARIABLE   StyleSheetList                  [PUBLIC]   stub_DOM_StyleSheetList.js

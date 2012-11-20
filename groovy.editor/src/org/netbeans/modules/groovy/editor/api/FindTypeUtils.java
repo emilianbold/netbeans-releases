@@ -49,21 +49,19 @@ import org.codehaus.groovy.ast.GenericsType;
 import org.codehaus.groovy.ast.ImportNode;
 import org.codehaus.groovy.ast.MethodNode;
 import org.codehaus.groovy.ast.ModuleNode;
+import org.codehaus.groovy.ast.PackageNode;
 import org.codehaus.groovy.ast.Parameter;
 import org.codehaus.groovy.ast.PropertyNode;
 import org.codehaus.groovy.ast.expr.ArrayExpression;
 import org.codehaus.groovy.ast.expr.ClassExpression;
-import org.codehaus.groovy.ast.expr.ConstantExpression;
 import org.codehaus.groovy.ast.expr.ConstructorCallExpression;
 import org.codehaus.groovy.ast.expr.DeclarationExpression;
-import org.codehaus.groovy.ast.expr.MethodCallExpression;
 import org.codehaus.groovy.ast.expr.VariableExpression;
 import org.codehaus.groovy.ast.stmt.BlockStatement;
 import org.codehaus.groovy.ast.stmt.CatchStatement;
 import org.codehaus.groovy.ast.stmt.ForStatement;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.csl.api.OffsetRange;
-import org.netbeans.modules.groovy.editor.utils.FindMethodUtils;
 
 /**
  * Utility class for "find type usages". It provides some method for the correct
@@ -107,10 +105,13 @@ public final class FindTypeUtils {
 
     public static ASTNode findCurrentNode(AstPath path, BaseDocument doc, int caret) {
         ASTNode leaf = path.leaf();
-        ASTNode leafParent = path.leafParent();
 
         if (isOnImportNode(path, doc, caret)) {
             return getCurrentImportNode(getCurrentModuleNode(path), doc, caret);
+        }
+
+        if (isOnPackageNode(path, doc, caret)) {
+            return getCurrentModuleNode(path).getPackage();
         }
 
         if (leaf instanceof ClassNode) {
@@ -147,6 +148,8 @@ public final class FindTypeUtils {
                 return ElementUtils.getType(leaf);
             } else if (isCaretOnGenericType(method.getReturnType(), doc, caret)) {
                 return getGenericType(method.getReturnType(), doc, caret);
+            } else {
+                return method;
             }
         } else if (leaf instanceof Parameter) {
             Parameter param = (Parameter) leaf;
@@ -192,11 +195,6 @@ public final class FindTypeUtils {
         } else if (leaf instanceof ArrayExpression) {
             if (isCaretOnArrayExpressionType(((ArrayExpression) leaf), doc, caret)) {
                 return ElementUtils.getType(leaf);
-            }
-        } else if (leaf instanceof ConstantExpression && leafParent instanceof MethodCallExpression) {
-            MethodNode method = FindMethodUtils.findMethod(path, (MethodCallExpression) leafParent);
-            if (method != null) {
-                return method;
             }
         } else if (leaf instanceof ConstructorCallExpression) {
             ClassNode constructorType = ((ConstructorCallExpression) leaf).getType();
@@ -249,6 +247,18 @@ public final class FindTypeUtils {
         return null;
     }
 
+    private static boolean isOnPackageNode(AstPath path, BaseDocument doc, int caret) {
+        ModuleNode moduleNode = getCurrentModuleNode(path);
+        if (moduleNode == null || moduleNode.getPackage() == null) {
+            return false;
+        }
+
+        if (isCaretOnPackageStatement(moduleNode.getPackage(), doc, caret)) {
+            return true;
+        }
+        return false;
+    }
+    
     private static boolean isCaretOnClassNode(ClassNode classNode, BaseDocument doc, int cursorOffset) {
         if (getClassNodeRange(classNode, doc, cursorOffset) != OffsetRange.NONE) {
             return true;
@@ -293,6 +303,13 @@ public final class FindTypeUtils {
 
     private static boolean isCaretOnImportStatement(ImportNode importNode, BaseDocument doc, int cursorOffset) {
         if (getImportRange(importNode, doc, cursorOffset) != OffsetRange.NONE) {
+            return true;
+        }
+        return false;
+    }
+
+    private static boolean isCaretOnPackageStatement(PackageNode packageNode, BaseDocument doc, int cursorOffset) {
+        if (getPackageRange(packageNode, doc, cursorOffset) != OffsetRange.NONE) {
             return true;
         }
         return false;
@@ -422,8 +439,16 @@ public final class FindTypeUtils {
         return getRange(importNode.getType(), doc, cursorOffset);
     }
 
+    private static OffsetRange getPackageRange(PackageNode packageNode, BaseDocument doc, int cursorOffset) {
+        OffsetRange range = ASTUtils.getNextIdentifierByName(doc, packageNode.getName().substring(0, packageNode.getName().length() - 1), getOffset(packageNode, doc));
+        if (range.containsInclusive(cursorOffset)) {
+            return range;
+        }
+        return OffsetRange.NONE;
+    }
+
     private static OffsetRange getVariableRange(VariableExpression variable, BaseDocument doc, int cursorOffset) {
-        if (variable.isDynamicTyped()) {
+        if (variable == null || variable.isDynamicTyped()) {
             return OffsetRange.NONE;
         }
         return getRange(variable.getAccessedVariable().getOriginType(), doc, cursorOffset);

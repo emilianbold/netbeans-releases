@@ -263,9 +263,12 @@ public abstract class TokenAcceptor {
          * mm: millimeters pt: points -- the points used by CSS2 are equal to
          * 1/72th of an inch. pc: picas -- 1 pica is equal to 12 points.
          */
+        
+        //!!! if a longer postfix has sub-postfix which equals to any of the shortest
+        //postfixes, then it needs to be before the sub-postfix postfix (e.g. rem - em)!!!
         private static final List<String> POSTFIXES = Arrays.asList(new String[]{
-            "px", "ex", "em", "in", "gd", "rem", 
-            "vw", "vh", "vm", "ch", "cm", "mm", "pt", "pc"}); //NOI18N
+            "rem", "vmin", "vmax", "ex", "em", "vw", "vh", "ch",
+            "cm", "mm", "in", "pt", "pc", "px"}); //NOI18N
 
         public Length(String id) {
             super(id);
@@ -276,6 +279,11 @@ public abstract class TokenAcceptor {
             return POSTFIXES;
         }
 
+        //http://www.w3.org/TR/css3-values/#lengths
+        //Lengths refer to distance measurements and are denoted by <length> 
+        //in the property definitions. A length is a dimension. A zero length 
+        //may be represented instead as the <number> ‘0’. (In other words, 
+        //for zero lengths the unit identifier is optional.) 
         @Override
         public boolean accepts(String text) {
             boolean sa = super.accepts(text);
@@ -285,6 +293,19 @@ public abstract class TokenAcceptor {
                 return sa;
             }
         }
+
+        @Override
+        public Float getNumberValue(CharSequence image) {
+            Float f = super.getNumberValue(image);
+            if(f == null) {
+                if(image.length() > 0 && image.charAt(0) == '0') {
+                    f = new Float(0);
+                }
+            } 
+            return f;
+        }
+        
+        
     }
 
     public static class NonNegativeInteger extends TokenImageAcceptor {

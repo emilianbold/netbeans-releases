@@ -52,10 +52,7 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.CompilerSet2Confi
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
-import org.netbeans.modules.cnd.makeproject.configurations.SPIAccessor;
-import org.netbeans.spi.project.ActionProvider;
 import org.openide.util.NbBundle;
-import org.openide.util.lookup.Lookups;
 
 /**
  *
@@ -76,9 +73,6 @@ public class BrokenLinks {
                 if (cs == null || cs.getDirectory() == null || cs.getDirectory().isEmpty()) {
                     errs.add(new BrokenToolCollection(project, csname));
                 }
-            }
-            if (SPIAccessor.get().isDefaultConfigurationsRestored(makeConfigurationDescriptor)) {
-                errs.add(new DefaultConfigurationsRestored(project));
             }
         }
         return errs;
@@ -170,53 +164,4 @@ public class BrokenLinks {
             return solutions;
         }
     }
-
-    private static final class RebuildProject implements Solution {
-        private final Project project;
-        
-        private RebuildProject(Project project) {
-            this.project = project;
-        }
-
-        @Override
-        public String getDescription() {
-            return NbBundle.getMessage(BrokenLinks.class, "Link_Solution_RebuildProject"); // NOI18N
-        }
-
-        @Override
-        public Runnable resolve() {
-            return new Runnable() {
-
-                @Override
-                public void run() {
-                    ActionProvider ap = project.getLookup().lookup(ActionProvider.class);
-                    if (ap != null) {
-                        ap.invokeAction(ActionProvider.COMMAND_REBUILD, Lookups.singleton(project));
-                        ConfigurationDescriptorProvider pdp = project.getLookup().lookup(ConfigurationDescriptorProvider.class);
-                        MakeConfigurationDescriptor makeConfigurationDescriptor = pdp.getConfigurationDescriptor();
-                        SPIAccessor.get().setDefaultConfigurationsRestored(makeConfigurationDescriptor, false);
-                    }
-                }
-            };
-        }
-    }
-
-    private static final class DefaultConfigurationsRestored implements BrokenLink {
-        private final List<Solution> solutions = new ArrayList<Solution>();
-        
-        private DefaultConfigurationsRestored(Project project) {
-            solutions.add(new RebuildProject(project));
-        }
-
-        @Override
-        public String getProblem() {
-            return NbBundle.getMessage(BrokenLinks.class, "Link_Problem_DefaultConfigurationsRestored"); // NOI18N
-        }
-
-        @Override
-        public List<Solution> getSolutions() {
-            return solutions;
-        }
-    }
-   
 }

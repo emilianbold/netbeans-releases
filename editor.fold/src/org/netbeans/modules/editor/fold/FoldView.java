@@ -271,7 +271,7 @@ public class FoldView extends EditorView {
                     tooltipPane.setEditorKit(kit);
                     tooltipPane.setDocument(doc);
                     tooltipPane.setEditable(false);
-                    return new FoldToolTip(editorPane, tooltipPane);
+                    return new FoldToolTip(editorPane, tooltipPane, getForegroundColor());
                 } catch (BadLocationException e) {
                     // => return null
                 }
@@ -323,7 +323,7 @@ public class FoldView extends EditorView {
                 int endYInt = (int) (allocBounds.getY() + allocBounds.getHeight() - 1);
                 g.drawRect(xInt, yInt, endXInt - xInt, endYInt - yInt);
                 g.clearRect(xInt + 1, yInt + 1, endXInt - xInt - 1, endYInt - yInt - 1);
-                g.setClip(alloc);
+                g.clip(alloc);
                 TextLayout textLayout = getTextLayout();
                 if (textLayout != null) {
                     EditorView.Parent parent = (EditorView.Parent) getParent();

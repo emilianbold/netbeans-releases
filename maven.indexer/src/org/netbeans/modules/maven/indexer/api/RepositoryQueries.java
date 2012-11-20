@@ -77,7 +77,6 @@ public final class RepositoryQueries {
     public final static class Result<T> {
         private final List<RepositoryInfo> skipped = new ArrayList<RepositoryInfo>();
         private List<T> results = new ArrayList<T>();
-        private ChangeListener listener;
         private final Redo<T> redoAction;
         
         /**
@@ -91,14 +90,14 @@ public final class RepositoryQueries {
          * returns true is one or more indexes were skipped, eg because the indexing was taking place.
          * @return 
          */
-        public boolean isPartial() {
+        public synchronized boolean isPartial() {
             return !skipped.isEmpty();
         }
         
         /**
          * used internally by the repository indexing/searching engine(s) to mark the result as partially skipped
          */
-        void addSkipped(RepositoryInfo info) {
+        synchronized void addSkipped(RepositoryInfo info) {
             skipped.add(info);
         }
         
@@ -108,7 +107,9 @@ public final class RepositoryQueries {
         public void waitForSkipped() {
             assert !SwingUtilities.isEventDispatchThread();
             redoAction.run(this);
-            skipped.clear();
+            synchronized (this) {
+                skipped.clear();
+            }
         }
         
         synchronized void setResults(Collection<T> newResults) {
@@ -124,15 +125,15 @@ public final class RepositoryQueries {
         /**
          * used internally by the repository indexing/searching engine(s) to mark the result as partially skipped
          */
-        void addSkipped(Collection<RepositoryInfo> infos) {
+        synchronized void addSkipped(Collection<RepositoryInfo> infos) {
             skipped.addAll(infos);
         }
         
         /**
          * used internally by the repository indexing/searching engine(s) to mark the result as partially skipped
          */
-        List<RepositoryInfo> getSkipped() {
-            return skipped;
+        synchronized List<RepositoryInfo> getSkipped() {
+            return Collections.unmodifiableList(skipped);
         }
         
     } 

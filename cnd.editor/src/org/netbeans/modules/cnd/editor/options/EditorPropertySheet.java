@@ -235,6 +235,7 @@ public class EditorPropertySheet extends javax.swing.JPanel
             set.put(new BracePlacementProperty(language, preferences, EditorOptions.newLineBeforeBraceClass));
             set.put(new BracePlacementProperty(language, preferences, EditorOptions.newLineBeforeBraceDeclaration));
             set.put(new BooleanNodeProp(language, preferences, EditorOptions.ignoreEmptyFunctionBody));
+            set.put(new BracePlacementProperty(language, preferences, EditorOptions.newLineBeforeBraceLambda));
             set.put(new BracePlacementProperty(language, preferences, EditorOptions.newLineBeforeBraceSwitch));
             set.put(new BracePlacementProperty(language, preferences, EditorOptions.newLineBeforeBrace));
             sheet.put(set);
@@ -307,6 +308,7 @@ public class EditorPropertySheet extends javax.swing.JPanel
             set.setShortDescription(getString("HINT_BeforeLeftBraces")); // NOI18N
             set.put(new BooleanNodeProp(language, preferences, EditorOptions.spaceBeforeClassDeclLeftBrace));
             set.put(new BooleanNodeProp(language, preferences, EditorOptions.spaceBeforeMethodDeclLeftBrace));
+            set.put(new BooleanNodeProp(language, preferences, EditorOptions.spaceBeforeLambdaLeftBrace));
             set.put(new BooleanNodeProp(language, preferences, EditorOptions.spaceBeforeArrayInitLeftBrace));
             set.put(new BooleanNodeProp(language, preferences, EditorOptions.spaceBeforeCatchLeftBrace));
             set.put(new BooleanNodeProp(language, preferences, EditorOptions.spaceBeforeDoLeftBrace));

@@ -48,13 +48,14 @@ import java.util.List;
 import org.netbeans.modules.csl.spi.support.ModificationResult;
 import org.netbeans.modules.csl.spi.support.ModificationResult.Difference;
 import org.netbeans.modules.groovy.refactoring.DiffElement;
-import org.netbeans.modules.groovy.refactoring.GroovyRefactoringElement;
 import org.netbeans.modules.groovy.refactoring.findusages.FindUsagesElement;
 import org.netbeans.modules.groovy.refactoring.findusages.FindUsagesPlugin;
+import org.netbeans.modules.groovy.refactoring.findusages.model.RefactoringElement;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.netbeans.modules.refactoring.api.RenameRefactoring;
 import org.netbeans.modules.refactoring.spi.RefactoringCommit;
 import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
+import org.netbeans.modules.refactoring.spi.ui.UI;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -65,12 +66,13 @@ import org.openide.filesystems.FileObject;
 public class RenameRefactoringPlugin extends FindUsagesPlugin {
 
 
-    public RenameRefactoringPlugin(FileObject fileObject, GroovyRefactoringElement element, AbstractRefactoring refactoring) {
+    public RenameRefactoringPlugin(FileObject fileObject, RefactoringElement element, AbstractRefactoring refactoring) {
         super(fileObject, element, refactoring);
     }
 
 
     public RenameRefactoring getRefactoring() {
+        refactoring.getContext().add(UI.Constants.REQUEST_PREVIEW);
         return (RenameRefactoring) refactoring;
     }
     
@@ -82,6 +84,7 @@ public class RenameRefactoringPlugin extends FindUsagesPlugin {
         for (FileObject fo : modificationResult.getModifiedFileObjects()) {
             for (Difference diff : modificationResult.getDifferences(fo)) {
                 elementsBag.add(refactoring, DiffElement.create(diff, fo, modificationResult));
+                fo.refresh();
             }
         }
     }

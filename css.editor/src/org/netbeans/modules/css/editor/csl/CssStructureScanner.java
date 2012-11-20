@@ -41,7 +41,6 @@
  */
 package org.netbeans.modules.css.editor.csl;
 
-import org.netbeans.modules.css.editor.api.CssCslParserResult;
 import java.util.List;
 import java.util.Map;
 import org.netbeans.modules.csl.api.OffsetRange;
@@ -61,15 +60,13 @@ public class CssStructureScanner implements StructureScanner {
 
     @Override
     public List<? extends StructureItem> scan(final ParserResult info) {
-        CssParserResult result = ((CssCslParserResult) info).getWrappedCssParserResult();        
-        FeatureContext context = new FeatureContext(result);
+        FeatureContext context = new FeatureContext((CssParserResult) info);
         return CssModuleSupport.getStructureItems(context, new FeatureCancel());
     }
 
     @Override
     public Map<String, List<OffsetRange>> folds(ParserResult info) {
-        CssCslParserResult parserResultWrapper = (CssCslParserResult)info;
-        FeatureContext context = new FeatureContext(parserResultWrapper.getWrappedCssParserResult());
+        FeatureContext context = new FeatureContext((CssParserResult)info);
         return CssModuleSupport.getFolds(context, new FeatureCancel());
     }
 

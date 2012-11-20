@@ -48,6 +48,7 @@ import org.codehaus.groovy.ast.DynamicVariable;
 import org.codehaus.groovy.ast.FieldNode;
 import org.codehaus.groovy.ast.ImportNode;
 import org.codehaus.groovy.ast.MethodNode;
+import org.codehaus.groovy.ast.PackageNode;
 import org.codehaus.groovy.ast.Parameter;
 import org.codehaus.groovy.ast.PropertyNode;
 import org.codehaus.groovy.ast.Variable;
@@ -57,6 +58,7 @@ import org.codehaus.groovy.ast.expr.ConstantExpression;
 import org.codehaus.groovy.ast.expr.ConstructorCallExpression;
 import org.codehaus.groovy.ast.expr.DeclarationExpression;
 import org.codehaus.groovy.ast.expr.MethodCallExpression;
+import org.codehaus.groovy.ast.expr.PropertyExpression;
 import org.codehaus.groovy.ast.expr.VariableExpression;
 import org.codehaus.groovy.ast.stmt.CatchStatement;
 import org.codehaus.groovy.ast.stmt.ForStatement;
@@ -80,6 +82,7 @@ public final class ElementUtils {
         if ((node instanceof ClassNode) ||
             (node instanceof ClassExpression) ||
             (node instanceof CatchStatement) ||
+            (node instanceof ConstructorCallExpression) ||
             FindTypeUtils.isCaretOnClassNode(path, doc, caret)) {
             return ElementKind.CLASS;
         } else if ((node instanceof MethodNode)) {
@@ -89,8 +92,6 @@ public final class ElementUtils {
             return ElementKind.METHOD;
         } else if ((node instanceof ConstantExpression) && (leafParent instanceof MethodCallExpression)) {
             return ElementKind.METHOD;
-        } else if (node instanceof ConstructorCallExpression) {
-            return ElementKind.CONSTRUCTOR;
         } else if (node instanceof FieldNode) {
             return ElementKind.FIELD;
         } else if (node instanceof PropertyNode) {
@@ -109,6 +110,10 @@ public final class ElementUtils {
             return ElementKind.VARIABLE;
         } else if (node instanceof DeclarationExpression) {
             return ElementKind.VARIABLE;
+        } else if ((node instanceof ConstantExpression) && (leafParent instanceof PropertyExpression)) {
+            return ElementKind.VARIABLE;
+        } else if (node instanceof PackageNode) {
+            return ElementKind.PACKAGE;
         }
         return ElementKind.OTHER;
     }
@@ -215,6 +220,8 @@ public final class ElementUtils {
             }
         } else if (node instanceof ConstantExpression) {
             name = ((ConstantExpression) node).getText();
+        } else if (node instanceof MethodCallExpression) {
+            name = ((MethodCallExpression) node).getMethodAsString();
         } else if (node instanceof ConstructorCallExpression) {
             name = ((ConstructorCallExpression) node).getType().getNameWithoutPackage();
         } else if (node instanceof ArrayExpression) {
@@ -258,6 +265,8 @@ public final class ElementUtils {
             }
         } else if (node instanceof ConstantExpression) {
             return ((ConstantExpression) node).getDeclaringClass();
+        } else if (node instanceof MethodCallExpression) {
+            return ((MethodCallExpression) node).getType();
         } else if (node instanceof ConstructorCallExpression) {
             return ((ConstructorCallExpression) node).getType();
         } else if (node instanceof ArrayExpression) {
@@ -272,7 +281,7 @@ public final class ElementUtils {
         if (declaringClass != null) {
             return declaringClass.getName();
         }
-        return "Dynamic type!"; // NOI18N
+        return null;
     }
 
     public static String getDeclaringClassNameWithoutPackage(ASTNode node) {
@@ -280,7 +289,7 @@ public final class ElementUtils {
         if (declaringClass != null) {
             return declaringClass.getNameWithoutPackage();
         }
-        return "Dynamic type!"; // NOI18N
+        return null;
     }
 
     public static String normalizeTypeName(String typeName, ClassNode type) {

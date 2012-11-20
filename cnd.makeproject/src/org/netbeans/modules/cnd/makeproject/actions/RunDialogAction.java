@@ -148,7 +148,7 @@ public class RunDialogAction extends NodeAction {
         return true;
     }
 
-    protected void perform(FileObject executableFO, boolean isRun) {
+    public void perform(FileObject executableFO, boolean isRun) {
         init(isRun);
         try {
             perform(new RunDialogPanel(executableFO, runButton, isRun), isRun);

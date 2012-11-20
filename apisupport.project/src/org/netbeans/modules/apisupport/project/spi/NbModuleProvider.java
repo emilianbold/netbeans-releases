@@ -179,8 +179,10 @@ public interface NbModuleProvider {
         private final String releaseVersion;
         private final SpecificationVersion version;
         private final boolean useInCompiler;
+        private boolean testDependency;
 
         public ModuleDependency(String codeNameBase, String releaseVersion, SpecificationVersion version, boolean useInCompiler) {
+            this.testDependency = false;
             this.codeNameBase = codeNameBase;
             this.releaseVersion = releaseVersion;
             this.version = version;
@@ -201,7 +203,17 @@ public interface NbModuleProvider {
 
         public boolean isUseInCompiler() {
             return useInCompiler;
-        }        
+        } 
+        
+        public boolean isTestDependency() {
+            return testDependency;
+        }
+
+        public void setTestDependency(boolean isTestDependency) {
+            this.testDependency = isTestDependency;
+        }
+
+ 
         
     }
 

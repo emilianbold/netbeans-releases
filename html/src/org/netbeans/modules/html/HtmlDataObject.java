@@ -50,7 +50,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
-import java.net.URL;
 import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
 import java.nio.charset.Charset;
@@ -59,8 +58,6 @@ import java.nio.charset.CharsetEncoder;
 import java.nio.charset.CoderResult;
 import java.nio.charset.IllegalCharsetNameException;
 import java.nio.charset.UnsupportedCharsetException;
-import java.util.HashSet;
-import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -69,12 +66,9 @@ import org.netbeans.api.html.lexer.HTMLTokenId;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
-import org.netbeans.api.project.FileOwnerQuery;
-import org.netbeans.api.project.Project;
 import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.core.spi.multiview.MultiViewElement;
 import org.netbeans.core.spi.multiview.text.MultiViewEditorElement;
-import org.netbeans.modules.web.browser.api.BrowserSupport;
 import org.netbeans.spi.queries.FileEncodingQueryImplementation;
 import org.netbeans.spi.xml.cookies.CheckXMLSupport;
 import org.netbeans.spi.xml.cookies.DataObjectAdapters;
@@ -84,8 +78,6 @@ import org.openide.cookies.ViewCookie;
 import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileRenameEvent;
-import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.MIMEResolver;
 import org.openide.loaders.DataNode;
@@ -98,7 +90,6 @@ import org.openide.nodes.CookieSet;
 import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
-import org.openide.util.RequestProcessor;
 import org.openide.util.UserCancelException;
 import org.openide.windows.TopComponent;
 import org.xml.sax.InputSource;
@@ -124,11 +115,6 @@ public class HtmlDataObject extends MultiDataObject implements CookieSet.Factory
     private static final String CHARSET_DECL = "CHARSET="; //NOI18N
     
     private HtmlEditorSupport htmlEditorSupport;
-    
-    private static final RequestProcessor REQUEST_PROCESSOR = 
-        new RequestProcessor( HtmlDataObject.class);
-    
-    private ThreadLocal<ReloadOnSaveSupport> rosSupport = new ThreadLocal<ReloadOnSaveSupport>();
     
     @MultiViewElement.Registration(
             displayName="#LBL_HTMLEditorTab",
@@ -200,7 +186,7 @@ public class HtmlDataObject extends MultiDataObject implements CookieSet.Factory
         if (klass.isAssignableFrom(HtmlEditorSupport.class)) {
             return getHtmlEditorSupport();
         } else if (klass.isAssignableFrom(ViewSupport.class)) {
-            return new ViewSupport(getPrimaryEntry(), this );
+            return new ViewSupport(getPrimaryEntry());
         } else {
             return null;
         }
@@ -326,144 +312,17 @@ public class HtmlDataObject extends MultiDataObject implements CookieSet.Factory
     static final class ViewSupport implements ViewCookie {
         /** entry */
         private MultiDataObject.Entry primary;
-        private HtmlDataObject dataObject;
         
         /** Constructs new ViewSupport */
-        public ViewSupport(MultiDataObject.Entry primary, 
-                HtmlDataObject dataObject) 
+        public ViewSupport(MultiDataObject.Entry primary) 
         {
             this.primary = primary;
-            this.dataObject = dataObject;
         }
         
         @Override
         public void view() {
-            try {
-                FileObject file = primary.getFile();
-                URL url = file.getURL();
-                if ( isRoSEnabled() ){
-                    BrowserSupport browserSupport = null;
-                    Project project = FileOwnerQuery.getOwner(file);
-                    if ( project != null ){
-                        browserSupport = project.getLookup().lookup(
-                                BrowserSupport.class);
-                    }
-                    if ( browserSupport == null ){
-                        browserSupport = BrowserSupport.getDefault(); 
-                        addFileSystemListener( file );
-                    }
-                    browserSupport.load(url,  file);
-                }
-                else {
-                    HtmlBrowser.URLDisplayer.getDefault().showURL(url);
-                }
-            } catch (FileStateInvalidException e) {
-            }
+            HtmlBrowser.URLDisplayer.getDefault().showURL(primary.getFile().toURL());
         }
-        
-        private void addFileSystemListener( final FileObject file ) {
-            REQUEST_PROCESSOR.post( new Runnable() {
-                
-                @Override
-                public void run() {
-                    if ( dataObject.rosSupport.get() == null ){
-                        dataObject.rosSupport.set( dataObject.new ReloadOnSaveSupport( file ));
-                    }
-                    ReloadOnSaveSupport support = dataObject.rosSupport.get();
-                    support.ensureListenersAttached( file );
-                }
-            });
-        }
-
-        private boolean isRoSEnabled(){
-            // Check settings if RoS enabled
-            return true;
-        }
-        
-    }
-    
-    private class ReloadOnSaveSupport extends FileChangeAdapter {
-        
-        private FileObject subject;
-        
-        ReloadOnSaveSupport( FileObject file){
-            subject = file;
-        }
-
-        public void ensureListenersAttached( FileObject file ) {
-            assert REQUEST_PROCESSOR.isRequestProcessorThread();
-            
-            /*if ( filesDependsOn == null ){
-                filesDependsOn = new HashSet<FileObject>();
-                file.addFileChangeListener( this );
-            }
-            else {
-                checkListeners();
-            }*/
-            if ( !added ){
-                added = true;
-                subject.addFileChangeListener( this );
-                FileObject parent = subject.getParent();
-                parent.addFileChangeListener( this  );
-            }
-        }
-
-        /*private void checkListeners( ) {
-            assert REQUEST_PROCESSOR.isRequestProcessorThread();
-            
-            Set<FileObject> files = DependentFileQuery.getDependent(subject);
-            Set<FileObject> set = new HashSet<FileObject>( filesDependsOn );
-            set.removeAll( files );
-            for (FileObject fileObject : set) {
-                fileObject.removeFileChangeListener( this );
-            }
-            set = new HashSet<FileObject>( files );
-            set.removeAll( filesDependsOn );
-            for (FileObject fileObject : set) {
-               fileObject.addFileChangeListener(this ); 
-            }
-            filesDependsOn = files;
-        }*/
-        
-        /* (non-Javadoc)
-         * @see org.openide.filesystems.FileChangeAdapter#fileChanged(org.openide.filesystems.FileEvent)
-         */
-        @Override
-        public void fileChanged( FileEvent fe ) {
-            URL u = BrowserSupport.getDefault().getBrowserURL(fe.getFile(), true);
-            if (u != null) {
-                BrowserSupport.getDefault().reload(u);
-            }
-            /*REQUEST_PROCESSOR.post( new Runnable() {
-                @Override
-                public void run() {
-                    checkListeners();
-                }
-            });*/
-        }
-
-        /* (non-Javadoc)
-         * @see org.openide.filesystems.FileChangeAdapter#fileDeleted(org.openide.filesystems.FileEvent)
-         */
-        @Override
-        public void fileDeleted( final FileEvent fe ) {
-            REQUEST_PROCESSOR.post( new Runnable() {
-                @Override
-                public void run() {
-                    fe.getFile().removeFileChangeListener( ReloadOnSaveSupport.this );
-                }
-            });
-        }
-
-        /* (non-Javadoc)
-         * @see org.openide.filesystems.FileChangeAdapter#fileRenamed(org.openide.filesystems.FileRenameEvent)
-         */
-        @Override
-        public void fileRenamed( FileRenameEvent fe ) {
-        }
-        
-        //private Set<FileObject> filesDependsOn;
-        private boolean added;
     }
     
     private class FileEncodingQueryImpl extends FileEncodingQueryImplementation {

@@ -662,7 +662,7 @@ public final class CreatedModifiedFiles {
      */
     public Operation addModuleDependency(String codeNameBase, String
             releaseVersion, SpecificationVersion version, boolean useInCompiler) {
-        return new AddModuleDependency(project, codeNameBase, releaseVersion, version, useInCompiler);
+        return new AddModuleDependency(project, codeNameBase, releaseVersion, version, useInCompiler, false);
     }
     /**
      * Delegates to {@link #addModuleDependency(String, String,
@@ -673,18 +673,31 @@ public final class CreatedModifiedFiles {
     public Operation addModuleDependency(String codeNameBase) {
         return addModuleDependency(codeNameBase, null, null, true);
     }
+    /**
+     * Adds a test dependency to list of test dependencies.
+     * @param codeNameBase
+     * @return 
+     */
+    public Operation addTestModuleDependency(String codeNameBase) {
+        return new AddModuleDependency(project, codeNameBase, null, null, true, true);
+    }
+    
     private static final class AddModuleDependency extends AbstractOperation {
         
         private List<NbModuleProvider.ModuleDependency> dependencies;
         private Map<String, ModuleDependency> codenamebaseMap;
-
+        
         
         public AddModuleDependency(Project project, String codeNameBase,
-                String releaseVersion, SpecificationVersion specVersion, boolean useInCompiler) {
+                String releaseVersion, SpecificationVersion specVersion, boolean useInCompiler, boolean test) {
             super(project);
             this.dependencies = new ArrayList<ModuleDependency>();
             this.codenamebaseMap = new HashMap<String, ModuleDependency>();
-            addDependencies(Collections.singletonList(new ModuleDependency(codeNameBase, releaseVersion, specVersion, useInCompiler)));
+            ModuleDependency module = new ModuleDependency(codeNameBase, releaseVersion, specVersion, useInCompiler);
+            if (test) {
+                module.setTestDependency(true);
+            }
+            addDependencies(Collections.singletonList(module));
             getModifiedPathsSet().add(getModuleInfo().getProjectFilePath()); // NOI18N
         }
         

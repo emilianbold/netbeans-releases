@@ -51,6 +51,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 import org.netbeans.modules.cnd.dwarfdump.CompilationUnit;
+import org.netbeans.modules.cnd.dwarfdump.CompilationUnitInterface;
 import org.netbeans.modules.cnd.dwarfdump.dwarf.DwarfEntry;
 import org.netbeans.modules.cnd.dwarfdump.dwarfconsts.TAG;
 import org.netbeans.modules.cnd.litemodel.api.Declaration;
@@ -121,14 +122,17 @@ public class DwarfRenderer {
         return res;
     }
 
-    public void process(CompilationUnit compilationUnit) throws IOException {
+    public void process(CompilationUnitInterface compilationUnit) throws IOException {
         filePath = compilationUnit.getSourceFileAbsolutePath();
         compDir = compilationUnit.getCompilationDir();
         antiLoop = new HashSet<Long>();
-        if (PROCESS_TOP_LEVEL_DECLARATIONS) {
-            processEntries(compilationUnit, compilationUnit.getTopLevelEntries(), null);
-        } else {
-            processEntries(compilationUnit, compilationUnit.getDeclarations(false), null);
+        if (compilationUnit instanceof CompilationUnit) {
+            CompilationUnit cu = (CompilationUnit) compilationUnit;
+            if (PROCESS_TOP_LEVEL_DECLARATIONS) {
+                processEntries(cu, cu.getTopLevelEntries(), null);
+            } else {
+                processEntries(cu, cu.getDeclarations(false), null);
+            }
         }
     }
 

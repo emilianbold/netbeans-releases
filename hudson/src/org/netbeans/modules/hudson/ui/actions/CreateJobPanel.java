@@ -123,9 +123,16 @@ public class CreateJobPanel extends JPanel implements ChangeListener {
         check();
     }
 
+    @NbBundle.Messages({
+        "CreateJobPanel.emptyName=Please enter a Build Name"
+    })
     private void check() {
         descriptor.setValid(false);
         notifications.clearMessages();
+        if (name.getText() == null || name.getText().trim().isEmpty()) {
+            notifications.setInformationMessage(Bundle.CreateJobPanel_emptyName());
+            return;
+        }
         if (instance == null) {
             notifications.setInformationMessage(NbBundle.getMessage(CreateJobPanel.class, "CreateJobPanel.pick_server"));
             return;
@@ -149,9 +156,11 @@ public class CreateJobPanel extends JPanel implements ChangeListener {
         ConfigurationStatus status = creator.status();
         if (status.getErrorMessage() != null) {
             notifications.setErrorMessage(status.getErrorMessage());
-            return;
-        } else if (status.getWarningMessage() != null) {
-            notifications.setWarningMessage(status.getWarningMessage());
+        } else {
+            if (status.getWarningMessage() != null) {
+                notifications.setWarningMessage(status.getWarningMessage());
+            }
+            descriptor.setValid(true);
         }
         JButton button = status.getExtraButton();
         if (button != null) {
@@ -161,7 +170,6 @@ public class CreateJobPanel extends JPanel implements ChangeListener {
             descriptor.setAdditionalOptions(new Object[0]);
             descriptor.setClosingOptions(new Object[] {NotifyDescriptor.CANCEL_OPTION});
         }
-        descriptor.setValid(true);
     }
 
     String name() {

@@ -40,11 +40,11 @@
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
 
-console.log('Sending actual viewport margins');
 chrome.extension.sendMessage({
     type: 'VIEWPORT',
     width: window.innerWidth,
     height: window.innerHeight,
     marginWidth: window.outerWidth - window.innerWidth,
-    marginHeight: window.outerHeight - window.innerHeight
+    marginHeight: window.outerHeight - window.innerHeight,
+    isMac: navigator.platform.toUpperCase().indexOf('MAC') !== -1
 });

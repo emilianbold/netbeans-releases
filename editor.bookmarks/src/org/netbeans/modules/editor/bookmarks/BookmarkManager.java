@@ -249,30 +249,25 @@ public class BookmarkManager {
                 } else { // Bookmarks not belonging to any project
                     projectBookmarks = new ProjectBookmarks(null);
                 }
-                if (projectBookmarks != null) {
-                    BookmarkChange change = new BookmarkChange(projectBookmarks.getProjectURI(), null);
-                    change.markAdded();
-                }
             }
             if (projectBookmarks == null && forceCreation) {
                 projectBookmarks = new ProjectBookmarks(projectURI);
             }
             if (projectBookmarks != null) {
                 project2Bookmarks.put(projectURI, projectBookmarks);
-                BookmarkChange change = new BookmarkChange(projectURI);
-                change.markAdded();
-                transactionChanges.add(change);
             }
         }
         return projectBookmarks;
     }
     
-    public void removeProjectBookmarks(ProjectBookmarks projectBookmarks) {
+    public void releaseProjectBookmarks(ProjectBookmarks projectBookmarks) {
         project2Bookmarks.remove(projectBookmarks.getProjectURI());
-        projectBookmarks.markRemoved();
-        BookmarkChange change = new BookmarkChange(projectBookmarks.getProjectURI());
-        change.markRemoved();
-        transactionChanges.add(change);
+        projectBookmarks.release();
+        for (BookmarkInfo bookmark : projectBookmarks.allBookmarks()) {
+            BookmarkChange change = new BookmarkChange(bookmark);
+            change.markRemoved();
+            transactionChanges.add(change);
+        }
     }
     
     public void addBookmarkNotify(BookmarkInfo bookmark) {

@@ -85,6 +85,8 @@ public class TargetModuleConverter extends DOMConvertor {
     private static final String A_CONTENT_DIR = "content-dir";
     private static final String A_CONTEXT_ROOT = "context-root";
 
+    private static final String CHARSET = "UTF-8"; // NOI18N
+
     private static final Logger LOGGER = Logger.getLogger(TargetModuleConverter.class.getName());
 
     // Better solution would be to make a limitation of usage of one thread per
@@ -186,7 +188,7 @@ public class TargetModuleConverter extends DOMConvertor {
                 public Void call() throws Exception {
                     FileLock lock = fo.lock();
                     try {
-                        Writer writer = new OutputStreamWriter(fo.getOutputStream(lock));
+                        Writer writer = new OutputStreamWriter(fo.getOutputStream(lock), CHARSET);
                         try {
                             create().write(writer, new TargetModule.List(instance));
                             return null;
@@ -225,7 +227,7 @@ public class TargetModuleConverter extends DOMConvertor {
 
                             @Override
                             public TargetModule call() throws Exception {
-                                Reader reader = new InputStreamReader(fo.getInputStream());
+                                Reader reader = new InputStreamReader(fo.getInputStream(), CHARSET);
                                 try {
                                     TargetModule.List tml = (TargetModule.List) create().read(reader);
                                     if (tml == null || tml.getTargetModules().length < 1) {
@@ -271,7 +273,7 @@ public class TargetModuleConverter extends DOMConvertor {
 
                             @Override
                             public Void call() throws Exception {
-                                Reader reader = new InputStreamReader(fo.getInputStream());
+                                Reader reader = new InputStreamReader(fo.getInputStream(), CHARSET);
                                 try {
                                     TargetModule.List tml = (TargetModule.List) create().read(reader);
                                     if (tml != null && tml.getTargetModules().length > 0) {

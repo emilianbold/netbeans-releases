@@ -9,8 +9,10 @@
     controllerClassName - controller class name (type: String)
     controllerPackageName - controller package name (type: String)
     entityClassName - entity class name without package (type: String)
+    importEntityFullClassName - whether to import entityFullClassName or not
     entityFullClassName - fully qualified entity class name (type: String)
     ejbClassName - EJB class name (type: String)
+    importEjbFullClassName - whether to import ejbFullClassName or not
     ejbFullClassName - fully qualified EJB class name (type: String)
     managedBeanName - name of managed bean (type: String)
     keyEmbedded - is entity primary key is an embeddable class (type: Boolean)
@@ -19,6 +21,7 @@
     keyStringBody - body of Controller.Converter.getStringKey() method
     keyGetter - entity getter method returning primaty key instance
     keySetter - entity setter method to set primary key instance
+    embeddedIdField - contains information about embedded primary Id
 
   This template is accessible via top level menu Tools->Templates and can
   be found in category JavaServer Faces->JSF from Entity.
@@ -26,13 +29,17 @@
 </#if>
 package ${controllerPackageName};
 
+<#if importEntityFullClassName?? && importEntityFullClassName == true>
 import ${entityFullClassName};
+</#if>
 import ${controllerPackageName}.util.JsfUtil;
 import ${controllerPackageName}.util.PaginationHelper;
-<#if ejbClassName??>
+<#if importEjbFullClassName?? && importEjbFullClassName == true>
+    <#if ejbClassName??>
 import ${ejbFullClassName};
-<#elseif jpaControllerClassName??>
+    <#elseif jpaControllerClassName??>
 import ${jpaControllerFullClassName};
+    </#if>
 </#if>
 
 import java.io.Serializable;
@@ -175,6 +182,9 @@ public class ${controllerClassName} implements Serializable {
 
     public String create() {
         try {
+<#if embeddedIdField??>
+            current.${keyGetter}().${embeddedIdField.getEmbeddedSetter()}(current.${embeddedIdField.getCodeToPopulate()});
+</#if>
 <#if ejbClassName??>
             getFacade().create(current);
 <#elseif jpaControllerClassName??>
@@ -196,6 +206,9 @@ public class ${controllerClassName} implements Serializable {
 
     public String update() {
         try {
+<#if embeddedIdField??>
+            current.${keyGetter}().${embeddedIdField.getEmbeddedSetter()}(current.${embeddedIdField.getCodeToPopulate()});
+</#if>
 <#if ejbClassName??>
             getFacade().edit(current);
 <#elseif jpaControllerClassName??>

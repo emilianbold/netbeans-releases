@@ -41,14 +41,15 @@
  */
 package org.netbeans.modules.html.editor.gsf;
 
-import org.netbeans.modules.html.editor.api.gsf.HtmlParserResult;
 import java.util.HashMap;
-import java.util.Set;
 import java.util.Map;
+import java.util.Set;
 import org.netbeans.modules.csl.api.ColoringAttributes;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.api.SemanticAnalyzer;
+import org.netbeans.modules.html.editor.HtmlExtensions;
 import org.netbeans.modules.html.editor.api.gsf.HtmlExtension;
+import org.netbeans.modules.html.editor.api.gsf.HtmlParserResult;
 import org.netbeans.modules.parsing.spi.Parser.Result;
 import org.netbeans.modules.parsing.spi.Scheduler;
 import org.netbeans.modules.parsing.spi.SchedulerEvent;
@@ -62,10 +63,12 @@ public class HtmlSemanticAnalyzer extends SemanticAnalyzer {
     private boolean cancelled;
     private Map<OffsetRange, Set<ColoringAttributes>> semanticHighlights;
 
+    @Override
     public Map<OffsetRange, Set<ColoringAttributes>> getHighlights() {
         return semanticHighlights;
     }
 
+    @Override
     public void cancel() {
         cancelled = true;
     }
@@ -78,7 +81,7 @@ public class HtmlSemanticAnalyzer extends SemanticAnalyzer {
 
         String sourceMimeType = result.getSnapshot().getSource().getMimeType();
         //process extensions
-        for (HtmlExtension ext : HtmlExtension.getRegisteredExtensions(sourceMimeType)) {
+        for (HtmlExtension ext : HtmlExtensions.getRegisteredExtensions(sourceMimeType)) {
             if (cancelled) {
                 return;
             }

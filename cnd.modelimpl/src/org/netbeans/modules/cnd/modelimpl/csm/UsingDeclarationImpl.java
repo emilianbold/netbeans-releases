@@ -267,14 +267,17 @@ public final class UsingDeclarationImpl extends OffsetableDeclarationBase<CsmUsi
             refDeclaration = new WeakReference<CsmDeclaration>(referencedDeclaration);
         }
         if (referencedDeclarationUID == null) {
-            FileImpl file = (FileImpl) getContainingFile();
-            CsmReference typeReference = file.getResolvedReference(new CsmUsingReferenceImpl(this));
-            if (typeReference != null) {
-                CsmObject referencedObject = typeReference.getReferencedObject();
-                if (CsmKindUtilities.isDeclaration(referencedObject)) {
-                    referencedDeclaration = (CsmDeclaration) referencedObject;
-                    refDeclaration = new WeakReference<CsmDeclaration>(referencedDeclaration);
-                    //System.out.println("Hit "+referencedDeclaration);
+            CsmFile csmFile = getContainingFile();
+            if(csmFile instanceof FileImpl) {
+                FileImpl fileImpl = (FileImpl) csmFile;
+                CsmReference typeReference = fileImpl.getResolvedReference(new CsmUsingReferenceImpl(this));
+                if (typeReference != null) {
+                    CsmObject referencedObject = typeReference.getReferencedObject();
+                    if (CsmKindUtilities.isDeclaration(referencedObject)) {
+                        referencedDeclaration = (CsmDeclaration) referencedObject;
+                        refDeclaration = new WeakReference<CsmDeclaration>(referencedDeclaration);
+                        //System.out.println("Hit "+referencedDeclaration);
+                    }
                 }
             }
         }
@@ -283,14 +286,17 @@ public final class UsingDeclarationImpl extends OffsetableDeclarationBase<CsmUsi
     }    
 
     private void _setReferencedDeclaration(CsmDeclaration referencedDeclaration) {
-        FileImpl file = (FileImpl) getContainingFile();
-        file.removeResolvedReference(new CsmUsingReferenceImpl(this));
-        refDeclaration = referencedDeclaration == null ? null : new WeakReference<CsmDeclaration>(referencedDeclaration);
-        this.referencedDeclarationUID = UIDCsmConverter.declarationToUID(referencedDeclaration);
-        if (referencedDeclarationUID != null && referencedDeclaration != null && CsmBaseUtilities.isValid(referencedDeclaration)) {
-            file.addResolvedReference(new CsmUsingReferenceImpl(this), referencedDeclaration);
+        CsmFile csmFile = getContainingFile();
+        if(csmFile instanceof FileImpl) {
+            FileImpl fileImpl = (FileImpl) csmFile;
+            fileImpl.removeResolvedReference(new CsmUsingReferenceImpl(this));
+            refDeclaration = referencedDeclaration == null ? null : new WeakReference<CsmDeclaration>(referencedDeclaration);
+            this.referencedDeclarationUID = UIDCsmConverter.declarationToUID(referencedDeclaration);
+            if (referencedDeclarationUID != null && referencedDeclaration != null && CsmBaseUtilities.isValid(referencedDeclaration)) {
+                fileImpl.addResolvedReference(new CsmUsingReferenceImpl(this), referencedDeclaration);
+            }
+            assert this.referencedDeclarationUID != null || referencedDeclaration == null;
         }
-        assert this.referencedDeclarationUID != null || referencedDeclaration == null;
     }
 
     @Override

@@ -49,6 +49,7 @@ import java.io.IOException;
 import java.math.BigDecimal;
 import java.text.MessageFormat;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -439,12 +440,12 @@ final class ProjectServerPanel extends javax.swing.JPanel implements DocumentLis
                     continue;
                 }
                 if (j2eeModuleType ==J2eeModule.Type.WAR) {
-                    if (Profile.JAVA_EE_6_FULL.equals(profile)) {
+                    if (Profile.JAVA_EE_6_FULL.equals(profile) || Profile.JAVA_EE_7_FULL.equals(profile)) {
                         // for web apps always offer only JAVA_EE_6_WEB profile and skip full one
                         continue;
                     }
                 } else {
-                    if (Profile.JAVA_EE_6_WEB.equals(profile)) {
+                    if (Profile.JAVA_EE_6_WEB.equals(profile) || Profile.JAVA_EE_7_WEB.equals(profile)) {
                         // for EE apps always skip web profile
                         continue;
                     }
@@ -603,7 +604,7 @@ private void serverLibraryCheckboxActionPerformed(java.awt.event.ActionEvent evt
                 J2eePlatform j2eePlatform = Deployment.getDefault().getServerInstance(serverInstanceId).getJ2eePlatform();
                 Set jdks = j2eePlatform.getSupportedJavaPlatformVersions();
                 // make sure that chosen source level is suported by server:
-                if (!jdks.contains(sourceLevel)) {
+                if (jdks != null && !jdks.contains(sourceLevel)) { // workaround for #212146 when jdks == null
                     if ("1.6".equals(sourceLevel) && jdks.contains("1.7")) {
                         sourceLevel = "1.6";
                     } else if ("1.6".equals(sourceLevel) && jdks.contains("1.5")) {
@@ -830,7 +831,8 @@ private void serverLibraryCheckboxActionPerformed(java.awt.event.ActionEvent evt
             cdiCheckbox.setVisible(false);
             return;
         }
-        cdiCheckbox.setVisible(!importScenario && (j2ee.equals(Profile.JAVA_EE_6_FULL) || j2ee.equals(Profile.JAVA_EE_6_WEB)));
+        cdiCheckbox.setVisible(!importScenario && (j2ee.equals(Profile.JAVA_EE_6_FULL) || j2ee.equals(Profile.JAVA_EE_6_WEB) ||
+                j2ee.equals(Profile.JAVA_EE_7_FULL) || j2ee.equals(Profile.JAVA_EE_7_WEB)));
         String warningType = J2eeVersionWarningPanel.findWarningType(j2ee);
         if (warningType == null && warningPanel == null) {
             warningPlaceHolderPanel.setVisible(false);

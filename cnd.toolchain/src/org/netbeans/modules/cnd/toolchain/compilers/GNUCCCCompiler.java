@@ -51,6 +51,7 @@ import org.netbeans.modules.cnd.api.toolchain.ToolKind;
 import org.netbeans.modules.cnd.api.toolchain.ToolchainManager.CompilerDescriptor;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.util.WindowsSupport;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
@@ -120,10 +121,16 @@ import org.openide.util.NbBundle;
         CompilerDescriptor compiler = getDescriptor();
         if (compiler != null && compiler.getRemoveIncludeOutputPrefix() != null) {
             String remove = compiler.getRemoveIncludeOutputPrefix();
-            if (line.toLowerCase().startsWith(getIncludeFilePathPrefix().toLowerCase())) {
+            String lline = line.toLowerCase();
+            if (lline.startsWith(getIncludeFilePathPrefix().toLowerCase())) {
                 line = line.substring(getIncludeFilePathPrefix().length());
-            } else if (line.toLowerCase().startsWith(remove)) {
-                line = line.substring(remove.length());
+            } else {
+                String wpath = WindowsSupport.getInstance().convertToShellPath(getIncludeFilePathPrefix().toLowerCase());
+                if (wpath != null && lline.startsWith(wpath)) {
+                    line = line.substring(wpath.length());
+                } else if (lline.startsWith(remove)) {
+                    line = line.substring(remove.length());
+                }
             }
         }
         return line;

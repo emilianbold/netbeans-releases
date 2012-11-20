@@ -93,9 +93,9 @@ public class UnitTestUtils extends ProxyLookup {
         Repository repository = new Repository(system);
         
         if (lkp == null) {
-            DEFAULT_LOOKUP.setLookup(new Object[] { repository }, UnitTestUtils.class.getClassLoader());
+            UnitTestUtils.setLookup(new Object[] { repository }, UnitTestUtils.class.getClassLoader());
         } else {
-            DEFAULT_LOOKUP.setLookup(new Object[] { repository }, lkp, UnitTestUtils.class.getClassLoader());
+            UnitTestUtils.setLookup(new Object[] { repository }, lkp, UnitTestUtils.class.getClassLoader());
         }
     }
     

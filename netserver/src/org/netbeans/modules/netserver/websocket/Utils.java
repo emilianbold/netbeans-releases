@@ -224,7 +224,7 @@ final class Utils {
             return MessageDigest.getInstance("MD5").digest(bytes); // NOI18N
         }
         catch (NoSuchAlgorithmException e) {
-            WebSocketServer.LOG.log(Level.WARNING, null, e);
+            WebSocketServerImpl.LOG.log(Level.WARNING, null, e);
             return null;
         }
     }

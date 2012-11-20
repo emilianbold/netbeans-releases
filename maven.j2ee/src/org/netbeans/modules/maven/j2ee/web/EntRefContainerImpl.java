@@ -52,9 +52,7 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.util.Elements;
 import org.apache.maven.artifact.Artifact;
 import org.netbeans.api.j2ee.core.Profile;
-import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.source.CancellableTask;
-import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.project.FileOwnerQuery;
@@ -79,7 +77,6 @@ import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
 import org.netbeans.modules.maven.api.ModelUtils;
 import org.netbeans.modules.maven.api.NbMavenProject;
-import org.netbeans.modules.maven.api.classpath.ProjectSourcesClassPathProvider;
 import org.netbeans.modules.maven.model.ModelOperation;
 import org.netbeans.modules.maven.model.pom.Dependency;
 import org.netbeans.modules.maven.model.pom.POMModel;
@@ -92,7 +89,14 @@ import org.openide.util.Exceptions;
  *
  * @author Milos Kleint
  */
-@ProjectServiceProvider(service = EnterpriseReferenceContainer.class, projectType = {"org-netbeans-modules-maven/" + NbMavenProject.TYPE_WAR})
+@org.netbeans.api.annotations.common.SuppressWarnings("DLS_DEAD_LOCAL_STORE")
+@ProjectServiceProvider(
+    service =
+        EnterpriseReferenceContainer.class,
+    projectType = {
+        "org-netbeans-modules-maven/" + NbMavenProject.TYPE_WAR
+    }
+)
 public class EntRefContainerImpl implements EnterpriseReferenceContainer {
     
     private Project project;
@@ -219,13 +223,6 @@ public class EntRefContainerImpl implements EnterpriseReferenceContainer {
     }
     
     private void writeDD(FileObject referencingFile, final String referencingClass) throws IOException {
-        ProjectSourcesClassPathProvider cppImpl = project.getLookup().lookup(ProjectSourcesClassPathProvider.class);
-        ClasspathInfo classpathInfo = ClasspathInfo.create(
-            cppImpl.getProjectSourcesClassPath(ClassPath.BOOT), 
-            cppImpl.getProjectSourcesClassPath(ClassPath.COMPILE), 
-            cppImpl.getProjectSourcesClassPath(ClassPath.SOURCE) 
-        );
-        JavaSource javaSource = JavaSource.create(classpathInfo, Collections.<FileObject>emptyList());
         WebModuleImpl jp = project.getLookup().lookup(WebModuleProviderImpl.class).getModuleImpl();
         
         // test if referencing class is injection target
@@ -255,8 +252,8 @@ public class EntRefContainerImpl implements EnterpriseReferenceContainer {
     
     @Override
     public String addResourceRef(ResourceReference ref, FileObject referencingFile, String referencingClass) throws IOException {
-        WebApp wa = getWebApp();
-        if (wa == null) {
+        WebApp webApp = getWebApp();
+        if (webApp == null) {
             WebModuleImpl jp = project.getLookup().lookup(WebModuleProviderImpl.class).getModuleImpl();
             // if web.xml is optional then create a blank one so that reference can be added to it;
             // if this results into unnecessary creation of web.xml then the caller of this
@@ -267,14 +264,14 @@ public class EntRefContainerImpl implements EnterpriseReferenceContainer {
                     jp.createWebInf();
                 }
                 DDHelper.createWebXml(jp.getJ2eeProfile(), jp.getWebInf());
-                wa = getWebApp();
+                webApp = getWebApp();
             }
         }
         String resourceRefName = ref.getResRefName();
         // see if jdbc resource has already been used in the app
         // this change requested by Ludo
         if (javax.sql.DataSource.class.getName().equals(ref.getResType())) {
-            ResourceRef[] refs = wa.getResourceRef();
+            ResourceRef[] refs = webApp.getResourceRef();
             for (int i=0; i < refs.length; i++) {
                 String newDefaultDescription = ref.getDefaultDescription();
                 String existingDefaultDescription = refs[i].getDefaultDescription();
@@ -286,11 +283,11 @@ public class EntRefContainerImpl implements EnterpriseReferenceContainer {
                 }
             }
         }
-        if (!isResourceRefUsed(wa, ref)) {
-            resourceRefName = getUniqueName(wa, "ResourceRef", "ResRefName", ref.getResRefName()); //NOI18N
+        if (!isResourceRefUsed(webApp, ref)) {
+            resourceRefName = getUniqueName(webApp, "ResourceRef", "ResRefName", ref.getResRefName()); //NOI18N
             ResourceRef resourceRef = createResourceRef();
             EnterpriseReferenceSupport.populate(ref, resourceRefName, resourceRef);
-            wa.addResourceRef(resourceRef);
+            webApp.addResourceRef(resourceRef);
             writeDD(referencingFile, referencingClass);
         }
         return resourceRefName;

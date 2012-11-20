@@ -61,7 +61,7 @@ function checkSystemversion() {
 	} else {				
 		try {
                     if(system.files.fileExistsAtPath('/usr/libexec/java_home')) {
-                       var res = system.runOnce("/usr/libexec/java_home");
+                       var res = system.run("/usr/libexec/java_home", "--version", "1.6+", "--failfast");                       
                        result = (0 == res);
                     }
 		} catch (e) {}

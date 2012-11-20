@@ -93,7 +93,7 @@ final class FormToolBar {
         listener = new Listener();
 
         // selection button
-        selectionButton = new JToggleButton(new ImageIcon(ImageUtilities.loadImage("/org/netbeans/modules/form/resources/selection_mode.png", true)), // NOI18N
+        selectionButton = new JToggleButton(new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/form/resources/selection_mode.png", true)), // NOI18N
                                             false);
         selectionButton.addActionListener(listener);
         selectionButton.addMouseListener(listener);
@@ -104,7 +104,7 @@ final class FormToolBar {
         initButton(selectionButton);
 
         // connection button
-        connectionButton = new JToggleButton(new ImageIcon(ImageUtilities.loadImage("/org/netbeans/modules/form/resources/connection_mode.png", true)), // NOI18N
+        connectionButton = new JToggleButton(new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/form/resources/connection_mode.png", true)), // NOI18N
                                              false);
         connectionButton.addActionListener(listener);
         connectionButton.addMouseListener(listener);

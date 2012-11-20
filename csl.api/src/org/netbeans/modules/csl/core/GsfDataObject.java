@@ -105,7 +105,7 @@ public class GsfDataObject extends MultiDataObject {
                 PrintCookie.class, CloseCookie.class, Editable.class, LineCookie.class,
                 DataEditorSupport.class, CloneableEditorSupport.class,
                 CloneableOpenSupport.class
-            }, createEditorSupport());
+            }, new EditorSupportFactory());
     }
     
     public @Override Node createNodeDelegate() {
@@ -182,16 +182,7 @@ public class GsfDataObject extends MultiDataObject {
         return jes;
     }            
     
-    public static final class GenericEditorSupport extends DataEditorSupport 
-    implements OpenCookie, EditCookie, EditorCookie, PrintCookie, 
-               EditorCookie.Observable, SaveAsCapable, LineCookie,
-               CloseCookie, CookieSet.Factory {
-
-        @Override
-        protected boolean asynchronousOpen() {
-            return true;
-        }
-        
+    public final class EditorSupportFactory implements CookieSet.Factory {
         @Override
         public <T extends Cookie> T createCookie(Class<T> klass) {
                 if (
@@ -204,9 +195,20 @@ public class GsfDataObject extends MultiDataObject {
                 klass.isAssignableFrom(CloseCookie.class) || 
                 klass.isAssignableFrom(LineCookie.class)
             ) {
-                return klass.cast(this);
+                return klass.cast(createEditorSupport());
             }
             return null;
+        }
+    }
+    
+    public static final class GenericEditorSupport extends DataEditorSupport 
+    implements OpenCookie, EditCookie, EditorCookie, PrintCookie, 
+               EditorCookie.Observable, SaveAsCapable, LineCookie,
+               CloseCookie {
+
+        @Override
+        protected boolean asynchronousOpen() {
+            return true;
         }
         
         private static class Environment extends DataEditorSupport.Env {
@@ -216,6 +218,7 @@ public class GsfDataObject extends MultiDataObject {
             private transient SaveSupport saveCookie = null;
             
             private class SaveSupport implements SaveCookie {
+                @Override
                 public void save() throws java.io.IOException {
                     ((GenericEditorSupport)findCloneableOpenSupport()).saveDocument();
                     getDataObject().setModified(false);
@@ -226,24 +229,27 @@ public class GsfDataObject extends MultiDataObject {
                 super(obj);
             }
             
+            @Override
             protected FileObject getFile() {
                 return this.getDataObject().getPrimaryFile();
             }
             
+            @Override
             protected FileLock takeLock() throws java.io.IOException {
                 return ((MultiDataObject)this.getDataObject()).getPrimaryEntry().takeLock();
             }
             
             public @Override CloneableOpenSupport findCloneableOpenSupport() {
-                return (CloneableEditorSupport) ((GsfDataObject)this.getDataObject()).getCookie(EditorCookie.class);
+                return (CloneableEditorSupport) this.getDataObject().getLookup().lookup(CloneableEditorSupport.class);
             }
             
             
             public void addSaveCookie() {
                 GsfDataObject javaData = (GsfDataObject) this.getDataObject();
                 if (javaData.getCookie(SaveCookie.class) == null) {
-                    if (this.saveCookie == null)
+                    if (this.saveCookie == null) {
                         this.saveCookie = new SaveSupport();
+                    }
                     javaData.getCookieSet().add(this.saveCookie);
                     javaData.setModified(true);
                 }
@@ -276,8 +282,9 @@ public class GsfDataObject extends MultiDataObject {
         }
         
         protected @Override boolean notifyModified() {
-            if (!super.notifyModified())
+            if (!super.notifyModified()) {
                 return false;
+            }
             ((Environment)this.env).addSaveCookie();
             return true;
         }

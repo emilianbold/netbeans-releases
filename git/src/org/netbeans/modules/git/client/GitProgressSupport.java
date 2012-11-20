@@ -105,6 +105,9 @@ public abstract class GitProgressSupport implements Runnable, Cancellable {
             LOG.log(Level.FINE, "End - {0}", originalDisplayName); //NOI18N
             finishProgress();
             getLogger().closeLog();
+            if (gitClient != null) {
+                gitClient.release();
+            }
         }
     }
 

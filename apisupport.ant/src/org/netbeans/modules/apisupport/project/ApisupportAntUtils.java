@@ -83,6 +83,8 @@ import org.netbeans.modules.apisupport.project.api.ManifestManager;
 import org.netbeans.modules.apisupport.project.api.Util;
 import org.netbeans.modules.apisupport.project.universe.LocalizedBundleInfo;
 import org.netbeans.modules.apisupport.project.universe.ModuleEntry;
+import org.netbeans.modules.apisupport.project.universe.ModuleList;
+import org.netbeans.modules.apisupport.project.universe.TestModuleDependency;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.support.ant.PropertyProvider;
@@ -99,7 +101,7 @@ import org.openide.util.Utilities;
 import org.openide.util.WeakListeners;
 
 public class ApisupportAntUtils {
-    
+
     private ApisupportAntUtils() {}
 
     /**
@@ -381,6 +383,31 @@ public class ApisupportAntUtils {
         return true;
     }
     
+    static void addTestDependency(NbModuleProject prj, String codeNameBase) throws IOException {
+        ModuleEntry me = prj.getModuleList().getEntry(codeNameBase);
+        if (me == null) { // ignore semi-silently (#72611)
+            Util.err.log(ErrorManager.INFORMATIONAL, "Trying to add " + codeNameBase + // NOI18N
+                    " which cannot be found in the module's universe."); // NOI18N
+            return;
+        }
+        ProjectXMLManager pxm = new ProjectXMLManager(prj);
+        Map<String, Set<TestModuleDependency>> map = pxm.getTestDependencies(prj.getModuleList());
+        if (map != null && map.get("unit") != null) {
+            // firstly check if the dependency is already not there
+            for (TestModuleDependency md : map.get("unit")) {
+                if (codeNameBase.equals(md.getModule().getCodeNameBase())) {
+                    Util.err.log(ErrorManager.INFORMATIONAL, codeNameBase + " already added"); // NOI18N
+                    return;
+                }
+            }
+        }
+        
+        TestModuleDependency md = new TestModuleDependency(me, true, true, true);
+        pxm.addTestDependency("unit", md);
+    }
+    
+    
+    
     public static URL findJavadocURL(final String cnbdashes, final URL[] roots) {
         URL indexURL = null;
         for (int i = 0; i < roots.length; i++) {
@@ -424,6 +451,7 @@ public class ApisupportAntUtils {
         protected abstract Map<String,String> getProperties(Map<String,String> inputPropertyValues);
         /** specify interesting input properties */
         protected abstract Collection<String> inputProperties();
+        @Override
         public final Map<String,String> getProperties() {
             Map<String,String> vals = new HashMap<String, String>();
             for (String k : inputProperties()) {
@@ -431,12 +459,15 @@ public class ApisupportAntUtils {
             }
             return getProperties(vals);
         }
+        @Override
         public final void addChangeListener(ChangeListener l) {
             cs.addChangeListener(l);
         }
+        @Override
         public final void removeChangeListener(ChangeListener l) {
             cs.removeChangeListener(l);
         }
+        @Override
         public final void propertyChange(PropertyChangeEvent evt) {
             String p = evt.getPropertyName();
             if (p != null && !inputProperties().contains(p)) {
@@ -473,6 +504,7 @@ public class ApisupportAntUtils {
             }
             delegate.addChangeListener(listener);
         }
+        @Override
         public Map<String,String> getProperties() {
             if (delegate != null) {
                 return delegate.getProperties();
@@ -480,12 +512,15 @@ public class ApisupportAntUtils {
                 return Collections.emptyMap();
             }
         }
+        @Override
         public void addChangeListener(ChangeListener l) {
             changeSupport.addChangeListener(l);
         }
+        @Override
         public void removeChangeListener(ChangeListener l) {
             changeSupport.removeChangeListener(l);
         }
+        @Override
         public void propertyChange(PropertyChangeEvent evt) {
             String p = evt.getPropertyName();
             if (p == null || p.equals("user.properties.file")) { // NOI18N
@@ -493,6 +528,7 @@ public class ApisupportAntUtils {
                 changeSupport.fireChange();
             }
         }
+        @Override
         public void stateChanged(ChangeEvent e) {
             changeSupport.fireChange();
         }

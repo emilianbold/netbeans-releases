@@ -109,6 +109,16 @@ public class FilterPanel extends javax.swing.JPanel {
             }
 
         });
+        textFilter.addFocusListener(new FocusListener() {
+            @Override
+            public void focusGained(FocusEvent e) {
+                focusChanged(true);
+            }
+
+            @Override
+            public void focusLost(FocusEvent e) {
+            }
+        });
         textFilter.setMinimumSize(new java.awt.Dimension(150, 20));
         textFilter.setPreferredSize(new java.awt.Dimension(150, 20));
         add(textFilter, new GridBagConstraints(3, 0, 1, 1, 0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(2, 5, 2, 5), 0, 0));
@@ -188,6 +198,16 @@ public class FilterPanel extends javax.swing.JPanel {
     void clear() {
         lblCount.setText("");
         lblCount.setVisible(false);
+    }
+
+    void handleFilterShortcut(){
+        textFilter.requestFocusInWindow();
+    }
+
+    private void focusChanged (boolean hasFocus) {
+        if (hasFocus) {
+            textFilter.selectAll();
+        }
     }
 
     private JPopupMenu createFilterPopup() {

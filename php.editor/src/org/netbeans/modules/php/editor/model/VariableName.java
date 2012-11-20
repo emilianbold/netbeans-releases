@@ -48,11 +48,13 @@ import org.openide.filesystems.FileObject;
  * @author Radek Matous
  */
 public interface VariableName extends  ModelElement, TypeAssignments {
+
     boolean representsThis();
     boolean isGloballyVisible();
     /**
-     * Makes sense just for virtual variables for frameworks (typically views/actions)
+     * Makes sense just for virtual variables for frameworks (typically views/actions).
      * @return instance of file object or null
      */
     FileObject getRealFileObject();
+
 }

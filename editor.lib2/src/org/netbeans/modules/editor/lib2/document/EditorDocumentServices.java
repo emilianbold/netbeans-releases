@@ -42,6 +42,8 @@
 package org.netbeans.modules.editor.lib2.document;
 
 import javax.swing.text.Document;
+import javax.swing.undo.UndoableEdit;
+import org.netbeans.api.annotations.common.NonNull;
 
 /**
  * Various services for a document implementation
@@ -57,6 +59,17 @@ public interface EditorDocumentServices {
     /**
      * @see {@link org.netbeans.api.editor.document.EditorDocumentUtils#runExclusive(java.lang.Runnable)}.
      */
-    void runExclusive(Document doc, Runnable r);
+    void runExclusive(@NonNull Document doc, @NonNull Runnable r);
     
+    /**
+     * Reset undo merging.
+     *
+     * @param doc document.
+     */
+    void resetUndoMerge(@NonNull Document doc);
+    
+    UndoableEdit startOnSaveTasks(@NonNull Document doc);
+    
+    void endOnSaveTasks(@NonNull Document doc, boolean success);
+
 }

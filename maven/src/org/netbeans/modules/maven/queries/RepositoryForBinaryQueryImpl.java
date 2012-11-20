@@ -49,22 +49,29 @@ import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.net.MalformedURLException;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
+import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.prefs.PreferenceChangeEvent;
-import java.util.prefs.PreferenceChangeListener;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipException;
+import java.util.zip.ZipFile;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.java.queries.JavadocForBinaryQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.embedder.EmbedderFactory;
+import org.netbeans.modules.maven.embedder.MavenEmbedder;
 import org.netbeans.modules.maven.spi.queries.ForeignClassBundler;
 import org.netbeans.spi.java.project.support.JavadocAndSourceRootDetection;
 import org.netbeans.spi.java.queries.JavadocForBinaryQueryImplementation;
@@ -80,6 +87,7 @@ import org.openide.modules.InstalledFileLocator;
 import org.openide.util.ChangeSupport;
 import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
+import org.openide.util.Utilities;
 import org.openide.util.WeakListeners;
 import org.openide.util.lookup.ServiceProvider;
 import org.openide.util.lookup.ServiceProviders;
@@ -102,8 +110,12 @@ public class RepositoryForBinaryQueryImpl extends AbstractMavenForBinaryQueryImp
     private final Map<URL, WeakReference<SrcResult>> srcCache = Collections.synchronizedMap(new HashMap<URL, WeakReference<SrcResult>>());
     private final Map<URL, WeakReference<JavadocResult>> javadocCache = Collections.synchronizedMap(new HashMap<URL, WeakReference<JavadocResult>>());
     
+    //http://maven.apache.org/guides/mini/guide-attached-tests.html
+    //issue 219453
+    private static final String CLASSIFIER_TESTS = "tests";
     
     private static final RequestProcessor RP = new RequestProcessor("Maven Repository SFBQ result change");
+    private static final Logger LOG = Logger.getLogger(SrcResult.class.getName());
 
     @Override
     public synchronized Result findSourceRoots2(URL url) {
@@ -133,9 +145,10 @@ public class RepositoryForBinaryQueryImpl extends AbstractMavenForBinaryQueryImp
 //                        File pom = new File(parent, artifact + "-" + version + ".pom");
 //                        // maybe this condition is already overkill..
 //                        if (pom.exists()) {
-                    if (jarFile.getName().startsWith(artifact + "-" + version)) { //one last perf check before calling the embedder
-                        URI localRepo = EmbedderFactory.getProjectEmbedder().getLocalRepositoryFile().toURI();
-                        URI rel = localRepo.relativize(parentParent.getParentFile().toURI());
+                    String start = artifact + "-" + version;
+                    if (jarFile.getName().startsWith(start)) { //one last perf check before calling the embedder
+                        URI localRepo = Utilities.toURI(EmbedderFactory.getProjectEmbedder().getLocalRepositoryFile());
+                        URI rel = localRepo.relativize(Utilities.toURI(parentParent.getParentFile()));
                         if (!rel.isAbsolute()) {
                             String groupId = rel.getPath();
                             if (groupId != null && !groupId.equals("")) {
@@ -143,8 +156,16 @@ public class RepositoryForBinaryQueryImpl extends AbstractMavenForBinaryQueryImp
                                 if (groupId.endsWith(".")) {
                                     groupId = groupId.substring(0, groupId.length() - 1);
                                 }
-                                File srcs = new File(parent, artifact + "-" + version + "-sources.jar"); //NOI18N
-                                SrcResult result = new SrcResult(groupId, artifact, version, FileUtil.getArchiveFile(url), srcs);
+                                String classifier = null;
+                                if (jarFile.getName().startsWith(start + "-")) {
+                                    //we have classifier here..
+                                    String end = jarFile.getName().substring((start + "-").length());
+                                    if (end.indexOf('.') > -1) {
+                                        classifier = end.substring(0, end.indexOf('.'));
+                                    }
+                                }
+                                File srcs = new File(parent, start + (classifier != null ? ("-" + classifier) : "") + "-sources.jar"); //NOI18N
+                                SrcResult result = new SrcResult(groupId, artifact, version, classifier, FileUtil.getArchiveFile(url), srcs);
                                 srcCache.put(url, new WeakReference<SrcResult>(result));
                                 return result;
                             }
@@ -195,9 +216,10 @@ public class RepositoryForBinaryQueryImpl extends AbstractMavenForBinaryQueryImp
                     // each repository artifact should have this structure
                     String artifact = parentParent.getName();
                     String version = parent.getName();
-                    if (jarFile.getName().startsWith(artifact + "-" + version)) { //one last perf check before calling the embedder
-                        URI localRepo = EmbedderFactory.getProjectEmbedder().getLocalRepositoryFile().toURI();
-                        URI rel = localRepo.relativize(parentParent.getParentFile().toURI());
+                    String start = artifact + "-" + version;
+                    if (jarFile.getName().startsWith(start)) { //one last perf check before calling the embedder
+                        URI localRepo = Utilities.toURI(EmbedderFactory.getProjectEmbedder().getLocalRepositoryFile());
+                        URI rel = localRepo.relativize(Utilities.toURI(parentParent.getParentFile()));
                         if (!rel.isAbsolute()) {
                             String groupId = rel.getPath();
                             if (groupId != null && !groupId.equals("")) {
@@ -205,8 +227,16 @@ public class RepositoryForBinaryQueryImpl extends AbstractMavenForBinaryQueryImp
                                 if (groupId.endsWith(".")) {
                                     groupId = groupId.substring(0, groupId.length() - 1);
                                 }
-                                File javadoc = new File(parent, artifact + "-" + version + "-javadoc.jar"); //NOI18N
-                                JavadocResult result = new JavadocResult(groupId, artifact, version, binRoot, javadoc);
+                                String classifier = null;
+                                if (jarFile.getName().startsWith(start + "-")) {
+                                    //we have classifier here..
+                                    String end = jarFile.getName().substring((start + "-").length());
+                                    if (end.indexOf('.') > -1) {
+                                        classifier = end.substring(end.indexOf('.'));
+                                    }
+                                }
+                                File javadoc = new File(parent, start + (classifier != null ? ("-" + classifier) : "") + "-javadoc.jar"); //NOI18N
+                                JavadocResult result = new JavadocResult(groupId, artifact, version, classifier, binRoot, javadoc);
                                 javadocCache.put(url, new WeakReference<JavadocResult>(result));
                                 return result;
                             }
@@ -231,24 +261,31 @@ public class RepositoryForBinaryQueryImpl extends AbstractMavenForBinaryQueryImp
         private final String groupId;
         private final String artifactId;
         private final String version;
+        private final String classifier;
         private final URL binary;
         
         private Project currentProject;
         private FileObject[] cached;
         
-        SrcResult(String groupId, String artifactId, String version, URL binary, File sourceJar) {
+        SrcResult(String groupId, String artifactId, String version, String classifier, URL binary, File sourceJar) {
             sourceJarFile = sourceJar;
             this.groupId = groupId;
             this.artifactId = artifactId;
             this.version = version;
             this.binary = binary;
+            this.classifier = classifier;
             
             support = new ChangeSupport(this);
             mfoListener = new ChangeListener() {
                 @Override
                 public void stateChanged(ChangeEvent e) {
-                        //external root in local repository changed..
-                        checkChanges();
+                    //external root in local repository changed..
+                    RP.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            checkChanges(true);
+                        }
+                    });
                 }
             };
             projectListener = new PropertyChangeListener() {
@@ -256,7 +293,12 @@ public class RepositoryForBinaryQueryImpl extends AbstractMavenForBinaryQueryImp
                 void propertyChange(PropertyChangeEvent event) {
                     if (NbMavenProject.PROP_PROJECT.equals(event.getPropertyName())) {
                         //project could have changed source roots..
-                        checkChanges();
+                        RP.post(new Runnable() {
+                            @Override
+                            public void run() {
+                                checkChanges(true);
+                            }
+                        });
                     }
                 }
             };
@@ -264,39 +306,50 @@ public class RepositoryForBinaryQueryImpl extends AbstractMavenForBinaryQueryImp
                 @Override
                 public void fileDataCreated(FileEvent fe) {
                     //source jar was created..
-                    checkChanges();
+                    RP.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            checkChanges(true);
+                        }
+                    });
                 }
  
             };
+            checkChanges(false);
+            
             MavenFileOwnerQueryImpl.getInstance().addChangeListener(
                     WeakListeners.create(ChangeListener.class, mfoListener, MavenFileOwnerQueryImpl.getInstance()));
          
             FileUtil.addFileChangeListener(FileUtil.weakFileChangeListener(sourceJarChangeListener, sourceJar));
         }
         
-        private void checkChanges() {
+        private void checkChanges(boolean fireChanges) {
             //getRoots will fire change in the result if the old cached value is different from the newly generated one
-            getRoots();
-        }
-        
-        /**
-         * use MFOQI to determine what is the current project owning our coordinates in local repository.
-         */
-        private void checkCurrentProject() {
+            FileObject[] ch;
+            FileObject[] toRet;
+            // use MFOQI to determine what is the current project owning our coordinates in local repository.
             Project owner = MavenFileOwnerQueryImpl.getInstance().getOwner(groupId, artifactId, version);
             if (owner != null && owner.getLookup().lookup(NbMavenProject.class) == null) {
                 owner = null;
             }
-            //XXX TODO should we be attaching a weak listener here?
-            if (currentProject != null && !currentProject.equals(owner)) {
-                currentProject.getLookup().lookup(NbMavenProject.class).removePropertyChangeListener(projectListener);
+            synchronized (this) {
+                ch = cached;
+                if (currentProject != null && !currentProject.equals(owner)) {
+                    currentProject.getLookup().lookup(NbMavenProject.class).removePropertyChangeListener(projectListener);
+                }
+                if (owner != null && !owner.equals(currentProject)) {
+                    owner.getLookup().lookup(NbMavenProject.class).addPropertyChangeListener(projectListener);
+                }
+                currentProject = owner;
+                toRet = getRoots();
             }
-            if (owner != null && !owner.equals(currentProject)) {
-                owner.getLookup().lookup(NbMavenProject.class).addPropertyChangeListener(projectListener);
+            
+            if (fireChanges && !Arrays.equals(ch, toRet)) {
+                support.fireChange();
             }
-            currentProject = owner;
-        }     
-
+            
+        }
+        
         @Override 
         public void addChangeListener(ChangeListener changeListener) {
             support.addChangeListener(changeListener);
@@ -308,34 +361,37 @@ public class RepositoryForBinaryQueryImpl extends AbstractMavenForBinaryQueryImp
         }
         
         @Override 
-        public synchronized FileObject[] getRoots() {
+        public FileObject[] getRoots() {
             FileObject[] toRet;
-            checkCurrentProject();
-            Project prj = currentProject;
-            if (prj != null) {
+            Project prj;
+            synchronized (this) {
+                prj = currentProject;
+            }
+            if (prj != null && classifier == null) {
                 toRet = getProjectSrcRoots(prj);
+            } else if (prj != null && CLASSIFIER_TESTS.equals(classifier)) {
+                toRet = getProjectTestSrcRoots(prj);
             } else {
-                File f = SourceJavadocByHash.find(binary, false);
-                if (f != null && f.exists()) {
-                    toRet = getSourceJarRoot(f);
+                File[] f = SourceJavadocByHash.find(binary, false);
+                if (f != null) {
+                    List<FileObject> accum = new ArrayList<FileObject>();
+                    for (File ff : f) {
+                        FileObject[] fo = getSourceJarRoot(ff);
+                        if (fo != null) {
+                            accum.addAll(Arrays.asList(fo));
+                        }
+                    }
+                    toRet = accum.toArray(new FileObject[0]);
                 }
                 else if (sourceJarFile.exists()) {
                     toRet = getSourceJarRoot(sourceJarFile);
                 } else {
-                    toRet = new FileObject[0];
+                    toRet = checkShadedMultiJars();
                 }
             }
-            if (!Arrays.equals(cached, toRet)) {
-                //how to figure otherwise that something changed, possibly multiple people hold the result instance
-                // and one asks the roots, later we get event from outside, but then the cached value already updated..
-                RP.post(new Runnable() {
-                    @Override
-                    public void run() {
-                        support.fireChange();
-                    }
-                });
+            synchronized (this) {
+                cached = toRet;
             }
-            cached = toRet;
             return toRet;
         }
         
@@ -356,6 +412,7 @@ public class RepositoryForBinaryQueryImpl extends AbstractMavenForBinaryQueryImp
         
         private FileObject[] getSourceJarRoot(File sourceJar) {
             FileObject fo = FileUtil.toFileObject(sourceJar);
+            if (fo != null) {
                 FileObject jarRoot = FileUtil.getArchiveRoot(fo);
                 if (jarRoot != null) { //#139894 it seems that sometimes it can return null.
                                   // I suppose it's in the case when the jar/zip file in repository exists
@@ -378,28 +435,113 @@ public class RepositoryForBinaryQueryImpl extends AbstractMavenForBinaryQueryImp
                     }
                     return fos;
                 }
-            
+            }
             return new FileObject[0];
         }
         
         @Override
         public boolean preferSources() {
-            Project prj = currentProject;
-            if (prj != null) {
+            Project prj;
+            synchronized (this) {
+                prj = currentProject;
+            }
+            if (prj != null && classifier == null) {
                 if (!NbMavenProject.isErrorPlaceholder(prj.getLookup().lookup(NbMavenProject.class).getMavenProject())) {
                     return prj.getLookup().lookup(ForeignClassBundler.class).preferSources();
                 }
+            } else if (prj != null && CLASSIFIER_TESTS.equals(classifier)) {
+                return true;
             }
+            
             return false;
+        }
+
+        private synchronized FileObject[] checkShadedMultiJars() {
+            try {
+                List<Coordinates> coordinates = getShadedCoordinates(Utilities.toFile(binary.toURI()));
+                File lrf = EmbedderFactory.getProjectEmbedder().getLocalRepositoryFile();
+                List<FileObject> fos = new ArrayList<FileObject>();
+                if (coordinates != null) {
+                    for (Coordinates coord : coordinates) {
+                            File sourceJar = new File(lrf, coord.groupId.replace(".", File.separator) + File.separator + coord.artifactId + File.separator + coord.version + File.separator + coord.artifactId + "-" + coord.version + "-sources.jar");
+                            FileObject[] fo = getSourceJarRoot(sourceJar);
+                            if (fo.length == 1) {
+                                fos.add(fo[0]);
+                            }
+                    }
+                }
+                if (fos.size() > 1) {
+                    FileObject[] shaded = fos.toArray(new FileObject[0]);
+                    return shaded;
+                }
+            } catch (Exception ex) {
+                LOG.log(Level.INFO, "error while examining binary " + binary, ex);
+            }
+            return new FileObject[0];
         }
         
     }  
+    
+    public static class Coordinates {
+        public final String groupId;
+        public final String artifactId;
+        public final String version;
+
+        private Coordinates(String groupId, String artifactId, String version) {
+            this.groupId = groupId;
+            this.artifactId = artifactId;
+            this.version = version;
+        }
+        
+    }
+    
+    public static List<Coordinates> getShadedCoordinates(File binaryFile) {
+            if (binaryFile == null || !binaryFile.exists() || !binaryFile.isFile()) {
+                return null;
+            }
+            ZipFile zip = null;
+            try {
+                List<Coordinates> toRet = new ArrayList<Coordinates>();
+                zip = new ZipFile(binaryFile);
+                Enumeration<? extends ZipEntry> entries = zip.entries();
+                while (entries.hasMoreElements()) {
+                    ZipEntry ent = entries.nextElement();
+                    String name = ent.getName();
+                    if (name.startsWith("META-INF") && name.endsWith("pom.properties")) {
+                        Properties p = new Properties();
+                        p.load(zip.getInputStream(ent));
+                        String groupId = p.getProperty("groupId");
+                        String artifactId = p.getProperty("artifactId");
+                        String version = p.getProperty("version");
+                        if (groupId != null && artifactId != null && version != null) {
+                            toRet.add(new Coordinates(groupId, artifactId, version));
+                        }
+                    }
+                }
+                if (toRet.size() > 1) {
+                    return toRet;
+                }
+            } catch (Exception ex) {
+                LOG.log(Level.INFO, "error while examining binary " + binaryFile, ex);
+            } finally {
+                if (zip != null) {
+                    try {
+                        zip.close();
+                    } catch (IOException ex) {
+//                        Exceptions.printStackTrace(ex);
+                    }
+                }
+            }
+            return null;
+        
+    }
     
     private static class JavadocResult implements JavadocForBinaryQuery.Result {
         private final File javadocJarFile;
         private final String groupId;
         private final String artifactId;
         private final String version;
+        private final String classifier;
         private final URL binary;
         private final String gav;
         private final ChangeSupport support;
@@ -411,14 +553,13 @@ public class RepositoryForBinaryQueryImpl extends AbstractMavenForBinaryQueryImp
         private static final String ATTR_STAMP = "lastRootCheckStamp"; //NOI18N
         private final ChangeListener mfoListener;
         
-
-        
-        JavadocResult(String groupId, String artifactId, String version, URL binary, File javadocJar) {
+        JavadocResult(String groupId, String artifactId, String version, String classifier, URL binary, File javadocJar) {
             javadocJarFile = javadocJar;
             this.groupId = groupId;
             this.artifactId = artifactId;
             this.version = version;
             this.binary = binary;
+            this.classifier = classifier;
             this.gav = MavenFileOwnerQueryImpl.cacheKey(groupId, artifactId, version);
             
             support = new ChangeSupport(this);
@@ -459,14 +600,21 @@ public class RepositoryForBinaryQueryImpl extends AbstractMavenForBinaryQueryImp
             if (prj != null) {
                 toRet = new URL[0];
             } else {
-                File f = SourceJavadocByHash.find(binary, true);
-                if (f != null && f.exists()) {
-                    toRet = getJavadocJarRoot(f);
+                File[] f = SourceJavadocByHash.find(binary, true);
+                if (f != null) {
+                    List<URL> accum = new ArrayList<URL>();
+                    for (File ff : f) {
+                        URL[] url = getJavadocJarRoot(ff);
+                        if (url != null) {
+                            accum.addAll(Arrays.asList(url));
+                        }
+                    }
+                    toRet = accum.toArray(new URL[0]);
                 }
                 else if (javadocJarFile.exists()) {
                     toRet = getJavadocJarRoot(javadocJarFile);
                 } else {
-                    toRet = new URL[0];
+                    toRet = checkShadedMultiJars();
                 }
             }
             if (!Arrays.equals(cached, toRet)) {
@@ -533,14 +681,14 @@ public class RepositoryForBinaryQueryImpl extends AbstractMavenForBinaryQueryImp
                     URL[] url;
                     if (path != null) {
                         url = new URL[1];
-                        URL root = FileUtil.getArchiveRoot(file.toURI().toURL());
+                        URL root = FileUtil.getArchiveRoot(Utilities.toURI(file).toURL());
                         if (!path.endsWith("/")) { //NOI18N
                             path = path + "/"; //NOI18N
                         }
                         url[0] = new URL(root, path);
                     } else {
                          url = new URL[1];
-                        url[0] = FileUtil.getArchiveRoot(file.toURI().toURL());
+                        url[0] = FileUtil.getArchiveRoot(Utilities.toURI(file).toURL());
                     }
                     return url;
                 }
@@ -566,6 +714,30 @@ public class RepositoryForBinaryQueryImpl extends AbstractMavenForBinaryQueryImp
             return toRet;
         }
         
+        private synchronized URL[] checkShadedMultiJars() {
+            try {
+                List<Coordinates> coordinates = getShadedCoordinates(Utilities.toFile(binary.toURI()));
+                File lrf = EmbedderFactory.getProjectEmbedder().getLocalRepositoryFile();
+                List<URL> urls = new ArrayList<URL>();
+                if (coordinates != null) {
+                    for (Coordinates coord : coordinates) {
+                            File javadocJar = new File(lrf, coord.groupId.replace(".", File.separator) + File.separator + coord.artifactId + File.separator + coord.version + File.separator + coord.artifactId + "-" + coord.version + "-javadoc.jar");
+                            URL[] fo = getJavadocJarRoot(javadocJar);
+                            if (fo.length == 1) {
+                                urls.add(fo[0]);
+                            }
+                    }
+                }
+                if (urls.size() > 1) {
+                    URL[] shaded = urls.toArray(new URL[0]);
+                    return shaded;
+                }
+            } catch (Exception ex) {
+                LOG.log(Level.INFO, "error while examining binary " + binary, ex);
+            }
+            return new URL[0];
+        }        
+        
     }    
     
 
@@ -587,7 +759,7 @@ public class RepositoryForBinaryQueryImpl extends AbstractMavenForBinaryQueryImp
             try {
                 File j2eeDoc = InstalledFileLocator.getDefault().locate("docs/javaee6-doc-api.zip", "org.netbeans.modules.j2ee.platform", false); // NOI18N
                 if (j2eeDoc != null) {
-                    URL url = FileUtil.getArchiveRoot(j2eeDoc.toURI().toURL());
+                    URL url = FileUtil.getArchiveRoot(Utilities.toURI(j2eeDoc).toURL());
                     url = new URL(url + "docs/api/"); //NOI18N
                     return new URL[]{url};
                 }

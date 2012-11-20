@@ -41,7 +41,11 @@
  */
 package org.netbeans.modules.java.navigation.base;
 
+import org.netbeans.modules.java.navigation.actions.NameActions;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.List;
 import javax.swing.AbstractButton;
 import javax.swing.JComponent;
 import javax.swing.JToggleButton;
@@ -57,17 +61,22 @@ import org.openide.util.NbPreferences;
 public abstract class Filters<T> {
     
     private static final String PROP_NATURAL_SORT = "naturalSort";  //NOI18N
+    private static final String PROP_FQN = "fqn";                   //NOI18N
 
     private volatile boolean naturalSort;
+    private volatile boolean fqn;
     //@GuardedBy("this")
     private FiltersManager filtersManager;
     //@NotThreadSafe
     private JToggleButton sortByNameButton;
     //@NotThreadSafe
     private JToggleButton sortByPositionButton;
+    //@NotThreadSafe
+    private JToggleButton fqNameButton;
 
     protected Filters() {
         naturalSort = NbPreferences.forModule(this.getClass()).getBoolean( PROP_NATURAL_SORT, false );
+        fqn = NbPreferences.forModule(this.getClass()).getBoolean(PROP_FQN, false);
     }
 
     public final boolean isNaturalSort() {
@@ -86,18 +95,34 @@ public abstract class Filters<T> {
         sortUpdated();
     }
 
+    public boolean isFqn() {
+        return fqn;
+    }
+
+    public void setFqn(final boolean fqn) {
+        this.fqn = fqn;
+        NbPreferences.forModule(this.getClass()).putBoolean(PROP_FQN, fqn);
+        if(null != fqNameButton) {
+            fqNameButton.setSelected(fqn);
+        }
+        fqnUpdated();
+    }
+
     public final JComponent getComponent() {
         final FiltersManager fm = getFiltersManager();
-        final AbstractButton[] customButtons = createCustomButtons();
+        final AbstractButton[] nameButtons = createNameButtons();
         final AbstractButton[] sortButtons = createSortButtons();
-        final AbstractButton[] buttons;
-        if (customButtons.length == 0) {
-            buttons = sortButtons;
-        } else {
-            buttons = new AbstractButton[customButtons.length + sortButtons.length];
-            System.arraycopy(customButtons, 0, buttons, 0, customButtons.length);
-            System.arraycopy(sortButtons, 0, buttons, customButtons.length, sortButtons.length);
+        final AbstractButton[] customButtons = createCustomButtons();
+        final List<AbstractButton> buttons = new ArrayList<AbstractButton>(nameButtons.length + customButtons.length + sortButtons.length + 2);
+        buttons.addAll(Arrays.asList(nameButtons));
+        if (!buttons.isEmpty() && sortButtons.length > 0) {
+            buttons.add(null);
         }
+        buttons.addAll(Arrays.asList(sortButtons));
+        if (!buttons.isEmpty() && customButtons.length > 0) {
+            buttons.add(null);
+        }
+        buttons.addAll(Arrays.asList(customButtons));
         return fm.getComponent(buttons);
     }
 
@@ -114,12 +139,25 @@ public abstract class Filters<T> {
     
     protected abstract void sortUpdated();
 
+    protected abstract void fqnUpdated();
+
     @NonNull
-    protected AbstractButton[] createCustomButtons() {
-        return new AbstractButton[0];
+    protected AbstractButton[] createNameButtons() {
+        assert SwingUtilities.isEventDispatchThread();
+        AbstractButton[] res = new AbstractButton[1];
+        if(null == fqNameButton) {
+            fqNameButton = new JToggleButton(NameActions.createFullyQualifiedNameAction(this));
+            fqNameButton.setToolTipText(fqNameButton.getText());
+            fqNameButton.setText(null);
+            fqNameButton.setSelected(isFqn());
+            fqNameButton.setFocusable( false );
+        }
+        res[0] = fqNameButton;
+        return res;
     }
 
-    private JToggleButton[] createSortButtons() {
+    @NonNull
+    protected AbstractButton[] createSortButtons() {
         assert SwingUtilities.isEventDispatchThread();
         JToggleButton[] res = new JToggleButton[2];
         if( null == sortByNameButton ) {
@@ -140,5 +178,10 @@ public abstract class Filters<T> {
         }
         res[1] = sortByPositionButton;
         return res;
+    }
+
+    @NonNull
+    protected AbstractButton[] createCustomButtons() {
+        return new AbstractButton[0];
     }
 }

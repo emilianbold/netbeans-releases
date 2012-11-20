@@ -143,55 +143,55 @@ public class ExtDocDocumentationProviderTest extends JsDocumentationTestBase {
 
     public void testGetSummaryOfClassFromContextDescription() throws Exception {
         Source testSource = getTestSource(getTestFile(FILE_NAME_GENERAL));
-        final int caretOffset = getCaretOffset(testSource, "function Rectangle2(width, height) {^");
+        final int caretOffset = getCaretOffset(testSource, "function Rectangle2(width, height) ^{");
         checkFirstSummary(testSource, caretOffset, "Create a new Rectangle instance.");
     }
 
     public void testGetSummaryOfClassFromClassDescription() throws Exception {
         Source testSource = getTestSource(getTestFile(FILE_NAME_GENERAL));
-        final int caretOffset = getCaretOffset(testSource, "function ShapeFactory(){^");
+        final int caretOffset = getCaretOffset(testSource, "function ShapeFactory()^{");
         checkFirstSummary(testSource, caretOffset, "This class exists to demonstrate the assignment of a class prototype\n  as an anonymous block.");
     }
 
     public void testGetReturnTypeForReturn() throws Exception {
         Source testSource = getTestSource(getTestFile(FILE_NAME_GENERAL));
-        final int caretOffset = getCaretOffset(testSource, "Shape.prototype.clone = function(){^");
+        final int caretOffset = getCaretOffset(testSource, "Shape.prototype.clone = function()^{");
         checkReturnType(testSource, caretOffset, Arrays.asList(new TypeImpl("Shape", 2321)));
     }
 
     public void testGetNullReturnTypeAtNoReturnTypeComment() throws Exception {
         Source testSource = getTestSource(getTestFile(FILE_NAME_GENERAL));
-        final int caretOffset = getCaretOffset(testSource, "Shape.prototype.clone3 = function(){^");
+        final int caretOffset = getCaretOffset(testSource, "Shape.prototype.clone3 = function()^{");
         checkReturnType(testSource, caretOffset, Collections.<Type>emptyList());
     }
 
     public void testGetNullReturnTypeAtMissingComment() throws Exception {
         Source testSource = getTestSource(getTestFile(FILE_NAME_GENERAL));
-        final int caretOffset = getCaretOffset(testSource, "Shape.prototype.clone4 = function(){^");
+        final int caretOffset = getCaretOffset(testSource, "Shape.prototype.clone4 = function()^{");
         checkReturnType(testSource, caretOffset, Collections.<Type>emptyList());
     }
 
     public void testGetReturnTypeAtFunction() throws Exception {
         Source testSource = getTestSource(getTestFile(FILE_NAME_GENERAL));
-        final int caretOffset = getCaretOffset(testSource, "function martion () {^");
+        final int caretOffset = getCaretOffset(testSource, "function martion () ^{");
         checkReturnType(testSource, caretOffset, Arrays.asList(new TypeImpl("Number", 8569)));
     }
 
     public void testGetReturnTypeAtObjectFunction() throws Exception {
         Source testSource = getTestSource(getTestFile(FILE_NAME_GENERAL));
-        final int caretOffset = getCaretOffset(testSource, "getVersion: function() {^");
+        final int caretOffset = getCaretOffset(testSource, "getVersion: function() ^{");
         checkReturnType(testSource, caretOffset, Arrays.asList(new TypeImpl("Number", 8863)));
     }
 
     public void testGetReturnTypeAtType() throws Exception {
         Source testSource = getTestSource(getTestFile(FILE_NAME_GENERAL));
-        final int caretOffset = getCaretOffset(testSource, "Shape.prototype.getColor = function(){^");
+        final int caretOffset = getCaretOffset(testSource, "Shape.prototype.getColor = function()^{");
         checkReturnType(testSource, caretOffset, Arrays.asList(new TypeImpl("Color", 1721)));
     }
 
     public void testGetParametersForNameAndTypeParam() throws Exception {
         Source testSource = getTestSource(getTestFile(FILE_NAME_PARAMETERS));
-        final int caretOffset = getCaretOffset(testSource, "function line1(userName){^}");
+        final int caretOffset = getCaretOffset(testSource, "function line1(userName)^{}");
         FakeDocParameter fakeDocParameter = new FakeDocParameter(new DocIdentifierImpl("userName", 23), null, "", false,
                 Arrays.<Type>asList(new TypeImpl("String", 15)));
         checkParameter(testSource, caretOffset, fakeDocParameter);
@@ -199,7 +199,7 @@ public class ExtDocDocumentationProviderTest extends JsDocumentationTestBase {
 
     public void testGetParametersForNameAndMoreTypesParam() throws Exception {
         Source testSource = getTestSource(getTestFile(FILE_NAME_PARAMETERS));
-        final int caretOffset = getCaretOffset(testSource, "function line2(product){^}");
+        final int caretOffset = getCaretOffset(testSource, "function line2(product)^{}");
         FakeDocParameter fakeDocParameter = new FakeDocParameter(new DocIdentifierImpl("product", 101), null, "", false,
                 Arrays.<Type>asList(new TypeImpl("String", 79), new TypeImpl("Number", 86), new TypeImpl("Object", 93)));
         checkParameter(testSource, caretOffset, fakeDocParameter);
@@ -207,7 +207,7 @@ public class ExtDocDocumentationProviderTest extends JsDocumentationTestBase {
 
     public void testGetParametersForFullDocOptionalParam() throws Exception {
         Source testSource = getTestSource(getTestFile(FILE_NAME_PARAMETERS));
-        final int caretOffset = getCaretOffset(testSource, "function line3(accessLevel){^}");
+        final int caretOffset = getCaretOffset(testSource, "function line3(accessLevel)^{}");
         FakeDocParameter fakeDocParameter = new FakeDocParameter(new DocIdentifierImpl("accessLevel", 164), null, "accessLevel is optional", true,
                 Arrays.<Type>asList(new TypeImpl("String", 155)));
         checkParameter(testSource, caretOffset, fakeDocParameter);
@@ -215,7 +215,7 @@ public class ExtDocDocumentationProviderTest extends JsDocumentationTestBase {
 
     public void testGetParametersForFullDocOptionalDefaultedParam() throws Exception {
         Source testSource = getTestSource(getTestFile(FILE_NAME_PARAMETERS));
-        final int caretOffset = getCaretOffset(testSource, "function line6(accessLevel){^}");
+        final int caretOffset = getCaretOffset(testSource, "function line6(accessLevel)^{}");
         FakeDocParameter fakeDocParameter = new FakeDocParameter(new DocIdentifierImpl("accessLevel", 439), "low", "accessLevel is optional with default value", true,
                 Arrays.<Type>asList(new TypeImpl("String", 430)));
         checkParameter(testSource, caretOffset, fakeDocParameter);
@@ -223,7 +223,7 @@ public class ExtDocDocumentationProviderTest extends JsDocumentationTestBase {
 
     public void testGetParametersForFullDocParam() throws Exception {
         Source testSource = getTestSource(getTestFile(FILE_NAME_PARAMETERS));
-        final int caretOffset = getCaretOffset(testSource, "function line5(accessLevel){^}");
+        final int caretOffset = getCaretOffset(testSource, "function line5(accessLevel)^{}");
         FakeDocParameter fakeDocParameter = new FakeDocParameter(new DocIdentifierImpl("accessLevel", 340), null, "accessLevel is not optional", false,
                 Arrays.<Type>asList(new TypeImpl("String", 332)));
         checkParameter(testSource, caretOffset, fakeDocParameter);
@@ -237,7 +237,7 @@ public class ExtDocDocumentationProviderTest extends JsDocumentationTestBase {
 
     public void testModifiers02() throws Exception {
         Source testSource = getTestSource(getTestFile(FILE_NAME_GENERAL));
-        final int caretOffset = getCaretOffset(testSource, "Rectangle.prototype.getWidth = function(){^");
+        final int caretOffset = getCaretOffset(testSource, "Rectangle.prototype.getWidth = function()^{");
         checkModifiers(testSource, caretOffset, null);
     }
 

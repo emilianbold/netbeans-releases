@@ -42,9 +42,12 @@
  * made subject to such option by the copyright holder.
  */
 package org.netbeans.modules.refactoring.java.plugins;
+import java.awt.event.ActionEvent;
 import java.io.IOException;
 import java.text.MessageFormat;
 import java.util.StringTokenizer;
+import javax.swing.Action;
+import javax.swing.SwingUtilities;
 import org.netbeans.api.fileinfo.NonRecursiveFolder;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.queries.VisibilityQuery;
@@ -63,6 +66,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.text.PositionBounds;
+import org.openide.util.ContextAwareAction;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -276,6 +280,7 @@ public class PackageRename implements RefactoringPluginFactory{
                         }
                     }
                     this.folder = destinationFolder.getPrimaryFile();
+                    selectInProjectsView(destinationFolder);
                 } catch (IOException ioe) {
                     ErrorManager.getDefault().notify(ioe);
                 }
@@ -284,7 +289,7 @@ public class PackageRename implements RefactoringPluginFactory{
 
             private boolean isEmpty(FileObject folder) {
                 Boolean isVersioned = (Boolean) folder.getAttribute("ProvidedExtensions.VCSManaged");//NOI18N
-                if (!isVersioned) {
+                if (Boolean.FALSE == isVersioned) {
                     return folder.getChildren().length==0;
                 }
                 for (FileObject child:folder.getChildren()) {
@@ -293,6 +298,19 @@ public class PackageRename implements RefactoringPluginFactory{
                     }
                 }
                 return true;
+            }
+
+            private void selectInProjectsView(final DataFolder destinationFolder) {
+                SwingUtilities.invokeLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        ContextAwareAction action = FileUtil.getConfigObject("Actions/Window/SelectDocumentNode/org-netbeans-modules-project-ui-SelectInProjects.instance", ContextAwareAction.class); //NOI18N
+                        if(action != null) {
+                            Action contextAction = action.createContextAwareInstance(Lookups.fixed(destinationFolder));
+                            contextAction.actionPerformed(new ActionEvent(this, ActionEvent.ACTION_PERFORMED, null));
+                        }
+                    }
+                });
             }
         }
     }

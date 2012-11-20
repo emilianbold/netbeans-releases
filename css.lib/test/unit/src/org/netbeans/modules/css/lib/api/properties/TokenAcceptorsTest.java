@@ -75,6 +75,13 @@ public class TokenAcceptorsTest extends NbTestCase {
         
     }
     
+    public void testLengthAcceptor() {
+        TokenAcceptor ta = TokenAcceptor.getAcceptor(TokenAcceptor.Length.class);
+        assertTrue(ta.accepts(getToken("1rem")));
+        assertTrue(ta.accepts(getToken("2em")));
+        assertTrue(ta.accepts(getToken("8vmin")));
+    }
+    
     private Token getToken(String tokenImg) {
         Tokenizer t = new Tokenizer(tokenImg);
         return t.token();

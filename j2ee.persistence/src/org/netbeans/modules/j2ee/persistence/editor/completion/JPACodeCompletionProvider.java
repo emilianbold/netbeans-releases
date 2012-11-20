@@ -304,7 +304,6 @@ public class JPACodeCompletionProvider implements CompletionProvider {
             return null;
         }
         boolean complQuery = (queryType & COMPLETION_QUERY_TYPE) != 0;
-        String prefix = null;
         if (offset > 0) {
             if (complQuery) {
                 TokenSequence<JavaTokenId> ts = controller.getTokenHierarchy().tokenSequence(JavaTokenId.language());
@@ -318,7 +317,6 @@ public class JPACodeCompletionProvider implements CompletionProvider {
                         ts.token().id().primaryCategory().startsWith("string") || //NOI18N
                         ts.token().id().primaryCategory().equals("literal")) //NOI18N
                         && ts.token().length() >= len) { //TODO: Use isKeyword(...) when available
-                    prefix = ts.token().toString().substring(0, len);
                     offset = ts.offset();
                 }
             } else if (queryType == DOCUMENTATION_QUERY_TYPE) {
@@ -477,7 +475,7 @@ public class JPACodeCompletionProvider implements CompletionProvider {
                     Exceptions.printStackTrace(ex);
                 }
                 //skip all annotations between the CC offset and the completed member
-                if (el.getKind() == ElementKind.ANNOTATION_TYPE) {
+                if (el!=null && el.getKind() == ElementKind.ANNOTATION_TYPE) {
                     //parse to find NN end
                     CCParser.CC parsed = nnp.parseAnnotation(ts.offset() + 1);
                     if (parsed != null) {

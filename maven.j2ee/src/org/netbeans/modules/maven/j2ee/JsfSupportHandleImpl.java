@@ -49,6 +49,8 @@ import org.netbeans.modules.web.jsfapi.spi.JsfSupportHandle;
 import org.netbeans.spi.project.ProjectServiceProvider;
 
 /**
+ * Seems that after the changes made in #213800, this whole class can be deleted.
+ * Do that after the NetBeans 7.3 final release.
  *
  * @author Martin Janicek
  */

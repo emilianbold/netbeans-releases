@@ -142,18 +142,23 @@ public class CompletionContext {
             //user enters < character
             case XMLDefaultTokenContext.TEXT_ID:
                 String chars = token.getImage().trim();
-                if (chars != null && chars.equals("") &&
-                        token.getPrevious().getImage().trim().equals("/>")) { // NOI18N
+                TokenItem previousTokenItem = token.getPrevious();
+                if (previousTokenItem == null) {
                     completionType = CompletionType.NONE;
                     break;
                 }
                 if (chars != null && chars.equals("") &&
-                        token.getPrevious().getImage().trim().equals(">")) { // NOI18N
+                        previousTokenItem.getImage().trim().equals("/>")) { // NOI18N
+                    completionType = CompletionType.NONE;
+                    break;
+                }
+                if (chars != null && chars.equals("") &&
+                        previousTokenItem.getImage().trim().equals(">")) { // NOI18N
                     completionType = CompletionType.VALUE;
                     break;
                 }
                 if (chars != null && !chars.equals("<") &&
-                        token.getPrevious().getImage().trim().equals(">")) { // NOI18N
+                        previousTokenItem.getImage().trim().equals(">")) { // NOI18N
                     completionType = CompletionType.NONE;
                     break;
                 }

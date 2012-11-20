@@ -20,12 +20,6 @@
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
                   <Group type="102" alignment="0" attributes="0">
-                      <Component id="jCheckBoxDeployOnSave" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace pref="404" max="32767" attributes="0"/>
-                  </Group>
-                  <Component id="cbBrowser" alignment="0" min="-2" max="-2" attributes="0"/>
-                  <Component id="lblHint1" alignment="0" min="-2" max="-2" attributes="0"/>
-                  <Group type="102" alignment="0" attributes="0">
                       <Component id="lblRelativeUrl" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="1" attributes="0">
@@ -54,6 +48,14 @@
                               <Component id="comProfile" pref="199" max="32767" attributes="0"/>
                           </Group>
                       </Group>
+                  </Group>
+                  <Group type="102" attributes="0">
+                      <Group type="103" groupAlignment="0" attributes="0">
+                          <Component id="jCheckBoxDeployOnSave" alignment="0" min="-2" max="-2" attributes="0"/>
+                          <Component id="cbBrowser" alignment="0" min="-2" max="-2" attributes="0"/>
+                          <Component id="lblHint1" alignment="0" min="-2" max="-2" attributes="0"/>
+                      </Group>
+                      <EmptySpace max="32767" attributes="0"/>
                   </Group>
               </Group>
           </Group>

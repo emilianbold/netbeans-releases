@@ -433,6 +433,7 @@ public class WebLogicPanel extends DestinationPanel {
             passwordField.setText(panel.getWizard().getProperty(PASSWORD_PROPERTY));
             repeatPasswordField.setText(panel.getWizard().getProperty(PASSWORD_PROPERTY));
                         
+            domainDestinationSuffix = null;
             super.initialize();
             initDomainDestinationSuffix();
         }

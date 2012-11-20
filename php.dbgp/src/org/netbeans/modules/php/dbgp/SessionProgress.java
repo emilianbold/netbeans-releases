@@ -104,6 +104,7 @@ public final class SessionProgress implements Cancellable {
         h.suspend(displayName);
     }
 
+    @org.netbeans.api.annotations.common.SuppressWarnings({"NN_NAKED_NOTIFY"})
     void finish() {
         if (isStarted && !isFinished) {
             isFinished = true;

@@ -1289,7 +1289,12 @@ public class DataEditorSupport extends CloneableEditorSupport {
         public void run() throws IOException {
             if (des.desEnv().isModified() && des.isEnvReadOnly()) {
                 IOException e = new IOException("File is read-only: " + ((Env) des.env).getFileImpl()); // NOI18N
-                UIException.annotateUser(e, null, org.openide.util.NbBundle.getMessage(org.openide.loaders.DataObject.class, "MSG_FileReadOnlySaving", new java.lang.Object[]{((org.openide.text.DataEditorSupport.Env) des.env).getFileImpl().getNameExt()}), null, null);
+                UIException.annotateUser(e, null, 
+                    org.openide.util.NbBundle.getMessage(
+                        org.openide.loaders.DataObject.class, 
+                        "MSG_FileReadOnlySaving", 
+                        new java.lang.Object[]{
+                            ((org.openide.text.DataEditorSupport.Env) des.env).getFileImpl().getNameExt()}), null, null);
                 throw e;
             }
             DataObject tmpObj = des.getDataObject();
@@ -1301,7 +1306,28 @@ public class DataEditorSupport extends CloneableEditorSupport {
                 charsets.put(tmpObj, c);
                 incrementCacheCounter(tmpObj);
                 ERR.finest("SaveImpl - charset put");
-                des.superSaveDoc();
+                try {
+                    des.superSaveDoc();
+                } catch (UserQuestionException ex) {
+                    NotifyDescriptor nd = new NotifyDescriptor.Confirmation(ex.getLocalizedMessage(),
+                            NotifyDescriptor.YES_NO_OPTION);
+                    Object res = DialogDisplayer.getDefault().notify(nd);
+
+                    if (NotifyDescriptor.OK_OPTION.equals(res)) {
+                        ex.confirmed();
+                    }
+                }
+            } catch (IOException e) {
+                UIException.annotateUser(e, null, 
+                    org.openide.util.NbBundle.getMessage(
+                        org.openide.loaders.DataObject.class, 
+                        "MSG_SaveAsFailed", 
+                        new java.lang.Object[]{
+                            ((org.openide.text.DataEditorSupport.Env) des.env).getFileImpl().getNameExt(), 
+                            e.getLocalizedMessage()}),
+                    null, new Date());
+                throw e;
+                
             } finally {
                 if (decrementCacheCounter(tmpObj) == 0) {
                     charsets.remove(tmpObj);

@@ -196,8 +196,9 @@ class CreateTag implements DocumentListener, ActionListener {
         @Override
         public void run () {
             final String tagName = CreateTag.this.branchName;
+            GitClient client = null;
             try {
-                GitClient client = Git.getInstance().getClient(repository);
+                client = Git.getInstance().getClient(repository);
                 final Map<String, GitTag> tags = client.getTags(GitUtils.NULL_PROGRESS_MONITOR, true);
                 EventQueue.invokeLater(new Runnable () {
                     @Override
@@ -214,6 +215,10 @@ class CreateTag implements DocumentListener, ActionListener {
                 });
             } catch (GitException ex) {
                 GitClientExceptionHandler.notifyException(ex, true);
+            } finally {
+                if (client != null) {
+                    client.release();
+                }
             }
         }
     }

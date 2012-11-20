@@ -102,7 +102,7 @@ public class FileBookmarks {
     }
 
     public boolean remove(BookmarkInfo bookmark) {
-        if (!projectBookmarks.isRemoved()) {
+        if (!projectBookmarks.isReleased()) {
             return bookmarks.remove(bookmark);
         }
         return false;

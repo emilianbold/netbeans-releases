@@ -45,7 +45,8 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import org.netbeans.modules.css.editor.api.CssCslParserResult;
+import org.netbeans.api.project.Project;
+import org.netbeans.modules.css.lib.api.CssParserResult;
 import org.netbeans.modules.css.model.api.Declaration;
 import org.netbeans.modules.css.model.api.Declarations;
 import org.netbeans.modules.css.model.api.Element;
@@ -60,11 +61,14 @@ import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.parsing.spi.Parser;
 import org.netbeans.modules.web.inspect.CSSUtils;
+import org.netbeans.modules.web.inspect.actions.Resource;
 import org.netbeans.modules.web.webkit.debugging.api.css.Property;
 import org.netbeans.modules.web.webkit.debugging.api.css.Rule;
 import org.netbeans.modules.web.webkit.debugging.api.css.SourceRange;
 import org.netbeans.modules.web.webkit.debugging.api.css.StyleSheetBody;
 import org.netbeans.modules.web.webkit.debugging.api.css.StyleSheetOrigin;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.nodes.Node;
 
 /**
@@ -261,14 +265,14 @@ public class Utilities {
     }
 
     /**
-     * Returns {@code CssCslParserResult}s (including the embedded ones) that
+     * Returns {@code CssParserResult}s (including the embedded ones) that
      * correspond to the given {@code ResultIterator}.
      * 
      * @param resultIterator {@code ResultIterator} to process.
-     * @return {@code CssCslParserResult}s contained in the given {@code ResultIterator}.
+     * @return {@code CssParserResult}s contained in the given {@code ResultIterator}.
      * @throws ParseException when there is a parsing problem.
      */
-    public static List<CssCslParserResult> cssParserResults(ResultIterator resultIterator)
+    public static List<CssParserResult> cssParserResults(ResultIterator resultIterator)
             throws ParseException {
         List<ResultIterator> resultIterators = new ArrayList<ResultIterator>();
         resultIterators.add(resultIterator);
@@ -278,14 +282,34 @@ public class Utilities {
                 resultIterators.add(resultIterator.getResultIterator(embedding));
             }
         }
-        List<CssCslParserResult> parserResults = new ArrayList<CssCslParserResult>(resultIterators.size());
+        List<CssParserResult> parserResults = new ArrayList<CssParserResult>(resultIterators.size());
         for (ResultIterator iterator : resultIterators) {
             Parser.Result parserResult = iterator.getParserResult();
-            if (parserResult instanceof CssCslParserResult) {
-                parserResults.add((CssCslParserResult)parserResult);
+            if (parserResult instanceof CssParserResult) {
+                parserResults.add((CssParserResult)parserResult);
             }
         }
         return parserResults;
+    }
+
+    /**
+     * Returns name of the resource relative to the project directory.
+     *
+     * @param resourceUrl absolute name/URL of the resource.
+     * @param project project owning the resource.
+     * @return relative name of the resource.
+     */
+    public static String relativeResourceName(String resourceUrl, Project project) {
+        String name = resourceUrl;
+        if (project != null) {
+            FileObject fob = new Resource(project, resourceUrl).toFileObject();
+            if (fob != null) {
+                FileObject projectDir = project.getProjectDirectory();
+                String relativePath = FileUtil.getRelativePath(projectDir, fob);
+                name = relativePath;
+            }
+        }
+        return name;
     }
 
 }

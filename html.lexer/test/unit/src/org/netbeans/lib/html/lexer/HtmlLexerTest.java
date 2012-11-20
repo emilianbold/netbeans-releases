@@ -327,6 +327,32 @@ public class HtmlLexerTest extends NbTestCase {
                 "<|TAG_OPEN_SYMBOL", "div|TAG_OPEN", " |WS", "align|ARGUMENT", "=|OPERATOR", " |WS", 
                 "</|TAG_OPEN_SYMBOL", "div|TAG_CLOSE", ">|TAG_CLOSE_SYMBOL");
     }
+
+    //Bug 218629 - Wrong syntax coloring in HTML for non-english text 
+    public void testIssue218629() {
+        String text = "<div>שלום עולם</div>";
+        //             01234567890123456789
+        TokenHierarchy<String> th = TokenHierarchy.create(text, HTMLTokenId.language());
+        TokenSequence<HTMLTokenId> ts = th.tokenSequence(HTMLTokenId.language());
+        
+        StringBuilder b = new StringBuilder();
+        ts.moveStart();
+        while(ts.moveNext()) {
+            Token<HTMLTokenId> t = ts.token();
+            b.append('"');
+            b.append(t.text());
+            b.append('"');
+            b.append("\t\t");
+            b.append(t.id().name());
+            b.append("\t\t");
+            b.append(ts.offset());
+            b.append('-');
+            b.append(ts.offset() + t.length());
+            b.append('\n');
+        }
+        
+//        System.out.println(b);
+    }
     
     //--------------------------------------------------------------------------
     

@@ -45,6 +45,7 @@ import java.awt.AWTEvent;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
+import java.awt.Insets;
 import java.awt.Toolkit;
 import java.awt.event.AWTEventListener;
 import java.awt.event.ComponentAdapter;
@@ -77,6 +78,7 @@ public class ToolbarWithOverflow extends JToolBar {
     private final String toolbarArrowVertical = "org/openide/awt/resources/toolbar_arrow_vertical.png"; //NOI18N
     private final String PROP_PREF_ICON_SIZE = "PreferredIconSize"; //NOI18N
     private final String PROP_DRAGGER = "_toolbar_dragger_"; //NOI18N
+    private AWTEventListener awtEventListener;
 
     /**
      * Creates a new tool bar; orientation defaults to
@@ -139,12 +141,14 @@ public class ToolbarWithOverflow extends JToolBar {
                 maybeAddOverflow();
             }
         });
-
-        Toolkit.getDefaultToolkit().addAWTEventListener(new AWTEventListener() {
-
+        awtEventListener = new AWTEventListener() {
             @Override
             public void eventDispatched(AWTEvent event) {
                 MouseEvent e = (MouseEvent) event;
+                if(isVisible() && !isShowing() && popup.isShowing()) {
+                    popup.setVisible(false);
+                    return;
+                }
                 if (event.getSource() == popup) {
                     if (popup.isShowing() && e.getID() == MouseEvent.MOUSE_EXITED) {
                         int minX = popup.getLocationOnScreen().x;
@@ -156,20 +160,32 @@ public class ToolbarWithOverflow extends JToolBar {
                         }
                     }
                 } else {
-                    if (popup.isShowing() && (e.getID() == MouseEvent.MOUSE_MOVED || e.getID() == MouseEvent.MOUSE_EXITED)) {
+                    if (overflowButton.isShowing() && (e.getID() == MouseEvent.MOUSE_MOVED || e.getID() == MouseEvent.MOUSE_EXITED)) {
                         int minX = overflowButton.getLocationOnScreen().x;
-                        int maxX = getOrientation() == HORIZONTAL ? minX + popup.getWidth() :
-                                minX + overflowButton.getWidth() + popup.getWidth();
+                        int maxX = getOrientation() == HORIZONTAL ? minX + popup.getWidth()
+                                : minX + overflowButton.getWidth() + popup.getWidth();
                         int minY = overflowButton.getLocationOnScreen().y;
-                        int maxY = getOrientation() == HORIZONTAL ? minY + overflowButton.getHeight() + popup.getHeight() :
-                                minY + popup.getHeight();
+                        int maxY = getOrientation() == HORIZONTAL ? minY + overflowButton.getHeight() + popup.getHeight()
+                                : minY + popup.getHeight();
                         if (e.getXOnScreen() < minX || e.getXOnScreen() > maxX || e.getYOnScreen() < minY || e.getYOnScreen() > maxY) {
                             popup.setVisible(false);
                         }
                     }
                 }
             }
-        }, AWTEvent.MOUSE_EVENT_MASK | AWTEvent.MOUSE_MOTION_EVENT_MASK);
+        };
+    }
+
+    @Override
+    public void addNotify() {
+        super.addNotify();
+        Toolkit.getDefaultToolkit().addAWTEventListener(awtEventListener, AWTEvent.MOUSE_EVENT_MASK | AWTEvent.MOUSE_MOTION_EVENT_MASK);
+    }
+
+    @Override
+    public void removeNotify() {
+        super.removeNotify();
+        Toolkit.getDefaultToolkit().removeAWTEventListener(awtEventListener);
     }
 
     /**
@@ -197,8 +213,9 @@ public class ToolbarWithOverflow extends JToolBar {
     @Override
     public Dimension getPreferredSize() {
         Component[] comps = getAllComponents();
-        int width = 0;
-        int height = 0;
+        Insets insets = getInsets();
+        int width = null == insets ? 0 : insets.left + insets.right;
+        int height = null == insets ? 0 : insets.top + insets.bottom;
         for (int i = 0; i < comps.length; i++) {
             Component comp = comps[i];
             width += getOrientation() == HORIZONTAL ? comp.getPreferredSize().width : comp.getPreferredSize().height;
@@ -239,7 +256,11 @@ public class ToolbarWithOverflow extends JToolBar {
         overflowButton.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
-                displayOverflow();
+                if(popup.isShowing()) {
+                    popup.setVisible(false);
+                } else {
+                    displayOverflow();
+                }
             }
 
             @Override
@@ -280,6 +301,10 @@ public class ToolbarWithOverflow extends JToolBar {
         int maxSize = getOrientation() == HORIZONTAL ? getWidth() : getHeight();
         int overflowButtonSize = getOrientation() == HORIZONTAL ? overflowButton.getPreferredSize().width : overflowButton.getPreferredSize().height;
         int showingButtons = 0;
+        Insets insets = getInsets();
+        if( null != insets ) {
+            sizeSoFar = getOrientation() == HORIZONTAL ? insets.left+insets.right : insets.top+insets.bottom;
+        }
         for (int i = 0; i < comps.length; i++) {
             Component comp = comps[i];
             if( !comp.isVisible() )
@@ -302,6 +327,7 @@ public class ToolbarWithOverflow extends JToolBar {
             if (comps[0] instanceof JComponent) {
                 if (Boolean.TRUE.equals(((JComponent) comps[0]).getClientProperty(PROP_DRAGGER))) {
                     visibleButtons = 1;
+                    return;
                 }
             }
         }

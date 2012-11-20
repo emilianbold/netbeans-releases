@@ -46,6 +46,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.ResourceBundle;
 import java.util.StringTokenizer;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.Action;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.web.inspect.actions.Resource;
@@ -56,6 +58,7 @@ import org.openide.nodes.Children;
 import org.openide.util.ContextAwareAction;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.lookup.Lookups;
 
@@ -65,6 +68,8 @@ import org.openide.util.lookup.Lookups;
  * @author Jan Stola
  */
 public class DOMNode extends AbstractNode {
+    /** Request processor used by this class. */
+    private static final RequestProcessor RP = new RequestProcessor(DOMNode.class.getName());
     /** Lookup path with context actions. */
     private static final String ACTIONS_PATH = "Navigation/DOM/Actions"; // NOI18N
     /** Icon base of the node. */
@@ -217,16 +222,24 @@ public class DOMNode extends AbstractNode {
     /**
      * Forces update of the children/sub-nodes.
      */
-    void updateChildren(Node node) {
-        this.node = node;
-        boolean shouldBeLeaf = shouldBeLeaf(node);
-        if (shouldBeLeaf != isLeaf()) {
-            setChildren(shouldBeLeaf ? Children.LEAF : new DOMChildren(model));
-        }
-        if (!shouldBeLeaf) {
-            DOMChildren children = (DOMChildren)getChildren();
-            children.updateKeys(node);
-        }
+    void updateChildren(final Node node) {
+        // 221712: This method is called under WebKitPageModel lock
+        // and in WebSocketServer thread => moving the update
+        // into another thread to avoid blocking of these resources.
+        RP.post(new Runnable() {
+            @Override
+            public void run() {
+                DOMNode.this.node = node;
+                boolean shouldBeLeaf = shouldBeLeaf(node);
+                if (shouldBeLeaf != isLeaf()) {
+                    setChildren(shouldBeLeaf ? Children.LEAF : new DOMChildren(model));
+                }
+                if (!shouldBeLeaf) {
+                    DOMChildren children = (DOMChildren)getChildren();
+                    children.updateKeys(node);
+                }
+            }
+        });
     }
 
     /**
@@ -240,14 +253,12 @@ public class DOMNode extends AbstractNode {
         if (node.getContentDocument() != null) {
             return false;
         }
-        synchronized (node) {
-            List<Node> subNodes = node.getChildren();
-            if (subNodes != null) {
-                for (Node subNode : subNodes) {
-                    boolean isElement = (subNode.getNodeType() == org.w3c.dom.Node.ELEMENT_NODE);
-                    if (isElement && !subNode.isInjectedByNetBeans()) {
-                        return false;
-                    }
+        List<Node> subNodes = node.getChildren();
+        if (subNodes != null) {
+            for (Node subNode : subNodes) {
+                boolean isElement = (subNode.getNodeType() == org.w3c.dom.Node.ELEMENT_NODE);
+                if (isElement && !subNode.isInjectedByNetBeans()) {
+                    return false;
                 }
             }
         }
@@ -256,7 +267,8 @@ public class DOMNode extends AbstractNode {
 
     @Override
     public String toString() {
-        return super.toString() + "[nodeId=" + getNode().getNodeId() + "]"; // NOI18N
+        return super.toString() + "[nodeId=" + getNode().getNodeId() // NOI18N
+                + ", identityHashCode=" + System.identityHashCode(this) + "]"; // NOI18N
     }
 
     @Override
@@ -300,14 +312,12 @@ public class DOMNode extends AbstractNode {
          */
         void updateKeys(Node node) {
             List<Integer> keys = new ArrayList<Integer>();
-            synchronized (node) {
-                List<Node> subNodes = node.getChildren();
-                if (subNodes != null) {
-                    for (Node subNode : subNodes) {
-                        boolean isElement = (subNode.getNodeType() == org.w3c.dom.Node.ELEMENT_NODE);
-                        if (isElement && !subNode.isInjectedByNetBeans()) {
-                            keys.add(subNode.getNodeId());
-                        }
+            List<Node> subNodes = node.getChildren();
+            if (subNodes != null) {
+                for (Node subNode : subNodes) {
+                    boolean isElement = (subNode.getNodeType() == org.w3c.dom.Node.ELEMENT_NODE);
+                    if (isElement && !subNode.isInjectedByNetBeans()) {
+                        keys.add(subNode.getNodeId());
                     }
                 }
             }
@@ -322,11 +332,23 @@ public class DOMNode extends AbstractNode {
         @Override
         protected org.openide.nodes.Node[] createNodes(Integer nodeId) {
             DOMNode node = pageModel.getNode(nodeId);
+            org.openide.nodes.Node[] result;
             if (node == null) {
-                return null;
+                result = null;
             } else {
-                return new org.openide.nodes.Node[] { node };
+                org.openide.nodes.Node oldParent = node.getParentNode();
+                org.openide.nodes.Node newParent = getNode();
+                if (oldParent == null || oldParent == newParent) {
+                    result = new org.openide.nodes.Node[] { node };
+                } else {
+                    // Should not happen - a bug in WebKit protocol ?!?
+                    Logger.getLogger(DOMChildren.class.getName()).log(Level.INFO,
+                            "Node {0} cannot be added to node {1} because it already belongs to {2}!", // NOI18N
+                            new Object[]{node, newParent, oldParent});
+                    result = null;
+                }
             }
+            return result;
         }
         
     }

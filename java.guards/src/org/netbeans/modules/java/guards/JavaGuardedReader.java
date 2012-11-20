@@ -49,14 +49,14 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.MissingResourceException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.swing.text.BadLocationException;
 import org.netbeans.api.editor.guards.GuardedSection;
-import org.netbeans.modules.java.guards.GuardTag;
-import org.netbeans.modules.java.guards.SectionDescriptor;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -70,7 +70,26 @@ final class JavaGuardedReader {
     Pattern magicsAsRE;
     
     private static final int LONGEST_ITEM = 10;
-    
+
+    /**
+     * There are three possible ways how the comments defining the guarded
+     * sections can be processed during reading through the reader:
+     * 1. Keep the comments. They will be visible to the user in source editor.
+     * 2. Replace the comments with spaces to hide them from user but to preserve
+     *    overall length and positions.
+     * 3. Remove the comments completely.
+     * Default is #3, can be changed via branding. For a long time #2 used to be
+     * the default, but neither 1 nor 2 is reliable since artificial chars are
+     * made part of the sections' content which the clients do not know about.
+     * Once a client changes the section content, the artificial comments or spaces
+     * are gone from the document, but they get written to the file on saving and
+     * so the file is then inconsistent with the document just like in case of #3.
+     */
+    private static boolean KEEP_GUARD_COMMENTS    // not final only for tests
+            = getPresetValue("KEEP_GUARD_COMMENTS", false); // NOI18N
+    private static boolean REPLACE_GUARD_COMMENTS_WITH_SPACES    // not final only for tests
+            = getPresetValue("REPLACE_GUARD_COMMENTS_WITH_SPACES", false); // NOI18N
+
     /** The list of the SectionsDesc. */
     private final LinkedList<SectionDescriptor> list;
 
@@ -197,9 +216,17 @@ final class JavaGuardedReader {
 //                        desc.name = new String(readBuff, i, toNl);
                         list.add(desc);
 //                    }
-                    i += toNl;
-                    Arrays.fill(charBuff,charBuffPtr,charBuffPtr+sectionSize,' ');
-                    charBuffPtr+=sectionSize;
+                    if (KEEP_GUARD_COMMENTS) { // keep guard comment (content unchanged)
+                        i -= match.length();
+                        charBuffPtr += MAGICLEN;
+                    } else if (REPLACE_GUARD_COMMENTS_WITH_SPACES) {
+                        i += toNl;
+                        Arrays.fill(charBuff,charBuffPtr,charBuffPtr+sectionSize,' ');
+                        charBuffPtr+=sectionSize;
+                    } else { // remove the guard comment
+                        i += toNl;
+                        desc.setEnd(charBuffPtr);
+                    }
                 }
             }
         }
@@ -242,7 +269,7 @@ final class JavaGuardedReader {
         } else {
             res = charBuff;
         }
-        return charBuff;
+        return res;
     }
 
     /** @return searching engine for magics */
@@ -363,4 +390,25 @@ final class JavaGuardedReader {
 //    static String magic(GuardTag tag) {
 //        return MAGIC_PREFIX + tag.name() + ':';
 //    }
+
+    private static boolean getPresetValue(String key, boolean defaultValue) {
+        try {
+            String s = NbBundle.getMessage(JavaGuardedReader.class, key);
+            return "true".equals(s.toLowerCase()); // NOI18N
+        } catch( MissingResourceException ex) { // ignore
+        }
+        return defaultValue;
+    }
+
+    static void setGuardCommentProcessingForTest(int type) {
+        if (type == 1) {
+            KEEP_GUARD_COMMENTS = true;
+        } else if (type == 2) {
+            KEEP_GUARD_COMMENTS = false;
+            REPLACE_GUARD_COMMENTS_WITH_SPACES = true;
+        } else if (type == 3) {
+            KEEP_GUARD_COMMENTS = false;
+            REPLACE_GUARD_COMMENTS_WITH_SPACES = false;
+        }
+    }
 }

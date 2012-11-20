@@ -43,15 +43,41 @@
  */
 package org.netbeans.modules.versioning.ui.options;
 
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import org.netbeans.api.options.OptionsDisplayer;
+import org.netbeans.spi.options.OptionsPanelController;
+import org.openide.util.NbBundle;
+
 /**
  *
  * @author Tomas Stupka
  */
+@OptionsPanelController.Keywords(keywords={"#HistoryOptionsPanel.kw1", "#HistoryOptionsPanel.kw2", "#HistoryOptionsPanel.kw2"}, location=OptionsDisplayer.ADVANCED, tabTitle="#CTL_HistoryOptionsPanel.tabName")
+@NbBundle.Messages({
+    "CTL_HistoryOptionsPanel.tabName=Versioning",
+    "HistoryOptionsPanel.kw1=history",
+    "HistoryOptionsPanel.kw2=local history",
+    "HistoryOptionsPanel.kw3=versioning history"
+})
 public class HistoryOptionsPanel extends javax.swing.JPanel {
+    private String[] keywords;
     
     /** Creates new form SvnOptionsPanel */
     public HistoryOptionsPanel() {
         initComponents();
+    }
+
+    Collection<String> getKeywords () {
+        if (keywords == null) {
+            keywords = new String[] {
+                Bundle.HistoryOptionsPanel_kw1().toUpperCase(),
+                Bundle.HistoryOptionsPanel_kw2().toUpperCase(),
+                Bundle.HistoryOptionsPanel_kw3().toUpperCase()
+            };
+        }
+        return Collections.unmodifiableList(Arrays.asList(keywords));
     }
     
     /** This method is called from within the constructor to

@@ -74,6 +74,7 @@ import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.ModifiersTree;
+import com.sun.source.tree.NewArrayTree;
 import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.ParameterizedTypeTree;
 import com.sun.source.tree.ParenthesizedTree;
@@ -515,17 +516,20 @@ public class Utilities {
     }
     
     private static TypeMirror resolveCapturedTypeInt(CompilationInfo info, TypeMirror tm) {
+        if (tm == null) return tm;
+        
         TypeMirror orig = SourceUtils.resolveCapturedType(tm);
 
         if (orig != null) {
-            if (orig.getKind() == TypeKind.WILDCARD) {
-                TypeMirror extendsBound = ((WildcardType) orig).getExtendsBound();
-                TypeMirror rct = SourceUtils.resolveCapturedType(extendsBound != null ? extendsBound : ((WildcardType) orig).getSuperBound());
-                if (rct != null) {
-                    return rct;
-                }
+            tm = orig;
+        }
+        
+        if (tm.getKind() == TypeKind.WILDCARD) {
+            TypeMirror extendsBound = ((WildcardType) tm).getExtendsBound();
+            TypeMirror rct = resolveCapturedTypeInt(info, extendsBound != null ? extendsBound : ((WildcardType) tm).getSuperBound());
+            if (rct != null) {
+                return rct.getKind() == TypeKind.WILDCARD ? rct : info.getTypes().getWildcardType(extendsBound != null ? rct : null, extendsBound == null ? rct : null);
             }
-            return orig;
         }
         
         if (tm.getKind() == TypeKind.DECLARED) {
@@ -782,6 +786,11 @@ public class Utilities {
 
         public @Override String visitNewClass(NewClassTree nct, Void p) {
             return "...new " + simpleName(nct.getIdentifier()) + "(...)"; // NOI18N
+        }
+
+        @Override
+        public String visitNewArray(NewArrayTree nct, Void p) {
+            return "...new " + simpleName(nct.getType()) + "[...]"; // NOI18N
         }
 
         @Override

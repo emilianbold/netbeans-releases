@@ -41,8 +41,11 @@
  */
 package org.netbeans.modules.versioning.ui.history;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 import javax.swing.Action;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.netbeans.modules.versioning.core.spi.VCSHistoryProvider;
@@ -55,7 +58,7 @@ import org.netbeans.modules.versioning.core.util.Utils;
 class HistoryEntry {
     private final VCSHistoryProvider.HistoryEntry entry;
     private final boolean local;
-    private HistoryEntry parent;
+    private Map<VCSFileProxy, HistoryEntry> parents;
 
     HistoryEntry(VCSHistoryProvider.HistoryEntry entry, boolean local) {
         this.entry = entry;
@@ -119,10 +122,17 @@ class HistoryEntry {
         return entry.canEdit();
     }
     
-    public HistoryEntry getParent(VCSFileProxy file) {
+    public synchronized HistoryEntry getParent(VCSFileProxy file) {
+        HistoryEntry parent = null;
+        if(parents == null) {
+            parents = new HashMap<VCSFileProxy, HistoryEntry>();
+        } else {
+            parent = parents.get(file);
+        }
         if(parent == null) {
             VCSHistoryProvider.HistoryEntry vcsParent = entry.getParentEntry(file);
             parent = vcsParent != null ? new HistoryEntry(vcsParent, local) : null;
+            parents.put(file, parent);
         }
         return parent;
     }

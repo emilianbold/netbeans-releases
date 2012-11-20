@@ -41,14 +41,6 @@
  */
 package org.netbeans.modules.css.editor.module.main;
 
-import org.netbeans.modules.css.lib.api.properties.Properties;
-import org.netbeans.modules.css.lib.api.properties.Token;
-import org.netbeans.modules.css.lib.properties.GrammarParser;
-import org.netbeans.modules.css.lib.api.properties.PropertyModel;
-import org.netbeans.modules.css.lib.api.properties.Node;
-import org.netbeans.modules.css.lib.api.properties.ResolvedProperty;
-import org.netbeans.modules.css.lib.api.properties.GroupGrammarElement;
-import org.netbeans.modules.css.lib.api.properties.FixedTextGrammarElement;
 import java.io.PrintWriter;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
@@ -66,12 +58,19 @@ import org.netbeans.modules.csl.api.Error;
 import org.netbeans.modules.csl.api.test.CslTestBase;
 import org.netbeans.modules.csl.spi.DefaultLanguageConfig;
 import org.netbeans.modules.csl.spi.ParserResult;
-import org.netbeans.modules.css.editor.api.CssCslParserResult;
 import org.netbeans.modules.css.editor.csl.CssLanguage;
 import org.netbeans.modules.css.editor.module.CssModuleSupport;
 import org.netbeans.modules.css.editor.module.spi.CssEditorModule;
+import org.netbeans.modules.css.lib.api.CssParserResult;
 import org.netbeans.modules.css.lib.api.NodeUtil;
+import org.netbeans.modules.css.lib.api.properties.GroupGrammarElement;
+import org.netbeans.modules.css.lib.api.properties.Node;
+import org.netbeans.modules.css.lib.api.properties.Properties;
+import org.netbeans.modules.css.lib.api.properties.PropertyDefinition;
+import org.netbeans.modules.css.lib.api.properties.ResolvedProperty;
+import org.netbeans.modules.css.lib.api.properties.Token;
 import org.netbeans.modules.css.lib.api.properties.ValueGrammarElement;
+import org.netbeans.modules.css.lib.properties.GrammarParser;
 import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.api.Source;
@@ -96,8 +95,8 @@ public class CssModuleTestBase extends CslTestBase {
             public void run(ResultIterator resultIterator) throws Exception {
                 Result result = resultIterator.getParserResult();
                 assertNotNull(result);
-                assertTrue(result instanceof CssCslParserResult);
-                CssCslParserResult cssresult = (CssCslParserResult) result;
+                assertTrue(result instanceof CssParserResult);
+                CssParserResult cssresult = (CssParserResult) result;
                 Collection<? extends Error> errors = cssresult.getDiagnostics();
                 if(errors.size() > 0) {
                     StringBuilder sb = new StringBuilder();
@@ -296,11 +295,11 @@ public class CssModuleTestBase extends CslTestBase {
 
     protected void assertPropertyValues(String propertyName, String... values) {
 
-        PropertyModel model = Properties.getPropertyModel(propertyName);
+        PropertyDefinition model = Properties.getPropertyDefinition( propertyName);
         assertNotNull(String.format("Cannot find property %s", propertyName), model);
 
         for (String val : values) {
-            assertNotNull(assertResolve(model.getGrammarElement(), val));
+            assertNotNull(assertResolve(model.getGrammarElement(null), val));
         }
 
     }
@@ -329,9 +328,9 @@ public class CssModuleTestBase extends CslTestBase {
             public void run(ResultIterator resultIterator) throws Exception {
                 Result result = resultIterator.getParserResult();
                 assertNotNull(result);
-                assertTrue(result instanceof CssCslParserResult);
+                assertTrue(result instanceof CssParserResult);
 
-                CssCslParserResult cssresult = (CssCslParserResult) result;
+                CssParserResult cssresult = (CssParserResult) result;
 
 
                 CodeCompletionHandler cc = getPreferredLanguage().getCompletionHandler();
@@ -377,9 +376,9 @@ public class CssModuleTestBase extends CslTestBase {
             public void run(ResultIterator resultIterator) throws Exception {
                 Result result = resultIterator.getParserResult();
                 assertNotNull(result);
-                assertTrue(result instanceof CssCslParserResult);
+                assertTrue(result instanceof CssParserResult);
 
-                CssCslParserResult cssresult = (CssCslParserResult) result;
+                CssParserResult cssresult = (CssParserResult) result;
 
                 CodeCompletionHandler cc = getPreferredLanguage().getCompletionHandler();
                 String prefix = cc.getPrefix(cssresult, pipeOffset, false);

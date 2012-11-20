@@ -46,6 +46,10 @@ import java.awt.EventQueue;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.NoSuchElementException;
 import java.util.Set;
@@ -58,11 +62,12 @@ import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.templates.TemplateRegistration;
 import org.netbeans.modules.web.clientproject.ClientSideProject;
 import org.netbeans.modules.web.clientproject.ClientSideProjectConstants;
+import org.netbeans.modules.web.clientproject.spi.ClientProjectExtender;
 import org.netbeans.modules.web.clientproject.spi.SiteTemplateImplementation;
+import org.netbeans.modules.web.clientproject.spi.SiteTemplateImplementation.ProjectProperties;
 import org.netbeans.modules.web.clientproject.util.ClientSideProjectUtilities;
 import org.netbeans.modules.web.clientproject.util.FileUtilities;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
-import org.netbeans.spi.project.support.ant.ReferenceHelper;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -72,6 +77,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
 public final class ClientSideProjectWizardIterator implements WizardDescriptor.ProgressInstantiatingIterator<WizardDescriptor> {
@@ -82,6 +88,8 @@ public final class ClientSideProjectWizardIterator implements WizardDescriptor.P
 
     private int index;
     private WizardDescriptor.Panel<WizardDescriptor>[] panels;
+    private WizardDescriptor.Panel<WizardDescriptor>[] extenderPanels;
+    private Collection<? extends ClientProjectExtender> extenders;
     private WizardDescriptor wizardDescriptor;
 
 
@@ -110,18 +118,21 @@ public final class ClientSideProjectWizardIterator implements WizardDescriptor.P
         return new ClientSideProjectWizardIterator(new ExistingProjectWizard());
     }
 
-    @NbBundle.Messages("ClientSideProjectWizardIterator.progress.creatingProject=Creating project")
+    @NbBundle.Messages({
+        "ClientSideProjectWizardIterator.progress.creatingProject=Creating project",
+        "ClientSideProjectWizardIterator.error.noSiteRoot=<html>Site Root folder cannot be created.<br><br>Use <i>Resolve Project Problems...</i> action to repair the project."
+    })
     @Override
     public Set<FileObject> instantiate(ProgressHandle handle) throws IOException {
         handle.start();
         handle.progress(Bundle.ClientSideProjectWizardIterator_progress_creatingProject());
         Set<FileObject> files = new LinkedHashSet<FileObject>();
-        File dirF = FileUtil.normalizeFile((File) wizardDescriptor.getProperty(Wizard.PROJECT_DIRECTORY));
+        File projectDirectory = FileUtil.normalizeFile((File) wizardDescriptor.getProperty(Wizard.PROJECT_DIRECTORY));
         String name = (String) wizardDescriptor.getProperty(Wizard.NAME);
-        if (!dirF.isDirectory() && !dirF.mkdirs()) {
+        if (!projectDirectory.isDirectory() && !projectDirectory.mkdirs()) {
             throw new IOException("Cannot create project directory"); //NOI18N
         }
-        FileObject dir = FileUtil.toFileObject(dirF);
+        FileObject dir = FileUtil.toFileObject(projectDirectory);
         AntProjectHelper projectHelper = ClientSideProjectUtilities.setupProject(dir, name);
         // Always open top dir as a project:
         files.add(dir);
@@ -129,13 +140,18 @@ public final class ClientSideProjectWizardIterator implements WizardDescriptor.P
         ClientSideProject project = (ClientSideProject) FileOwnerQuery.getOwner(projectHelper.getProjectDirectory());
         FileObject siteRoot = wizard.instantiate(files, handle, wizardDescriptor, project);
 
-        // index file
-        FileObject indexFile = siteRoot.getFileObject("index", "html"); // NOI18N
-        if (indexFile != null) {
-            files.add(indexFile);
+        // #221550
+        if (siteRoot != null) {
+            // index file
+            FileObject indexFile = siteRoot.getFileObject("index", "html"); // NOI18N
+            if (indexFile != null) {
+                files.add(indexFile);
+            }
+        } else {
+            errorOccured(Bundle.ClientSideProjectWizardIterator_error_noSiteRoot());
         }
 
-        File parent = dirF.getParentFile();
+        File parent = projectDirectory.getParentFile();
         if (parent != null && parent.exists()) {
             ProjectChooser.setProjectsFolder(parent);
         }
@@ -153,20 +169,53 @@ public final class ClientSideProjectWizardIterator implements WizardDescriptor.P
     public void initialize(WizardDescriptor wiz) {
         this.wizardDescriptor = wiz;
         index = 0;
+        extenders = Lookup.getDefault().lookupAll(ClientProjectExtender.class);
         panels = wizard.createPanels();
+        
         // Make sure list of steps is accurate.
-        String[] steps = wizard.createSteps();
-        for (int i = 0; i < panels.length; i++) {
+        ArrayList<String> steps = new ArrayList<String>();
+        steps.addAll(Arrays.asList(wizard.createSteps()));
+
+
+        //Compute steps from extenders
+        ArrayList<Panel<? extends WizardDescriptor>> extenderPanelsCol = new ArrayList();
+        for (ClientProjectExtender extender: extenders) {
+            for (Panel<WizardDescriptor> panel: extender.createWizardPanels()) {
+                extenderPanelsCol.add(panel);
+                steps.add(panel.getComponent().getName());
+            }
+        }
+        
+        extenderPanels = extenderPanelsCol.toArray(new Panel[0]);
+       
+        //Regular panels
+        int i = 0;
+        for (; i < panels.length; i++) {
             Component c = panels[i].getComponent();
-            assert steps[i] != null : "Missing name for step: " + i; //NOI18N
+            assert steps.get(i) != null : "Missing name for step: " + i; //NOI18N
             if (c instanceof JComponent) { // assume Swing components
                 JComponent jc = (JComponent) c;
                 // Step #.
                 jc.putClientProperty(WizardDescriptor.PROP_CONTENT_SELECTED_INDEX, Integer.valueOf(i));
                 // Step name (actually the whole list for reference).
-                jc.putClientProperty(WizardDescriptor.PROP_CONTENT_DATA, steps);
+                jc.putClientProperty(WizardDescriptor.PROP_CONTENT_DATA, steps.toArray(new String[0]));
             }
         }
+
+        
+        //Extenders
+        for (; i < extenderPanels.length + panels.length; i++) {
+            Component c = extenderPanels[i-panels.length].getComponent();
+            assert steps.get(i) != null : "Missing name for step: " + i; //NOI18N
+            if (c instanceof JComponent) { // assume Swing components
+                JComponent jc = (JComponent) c;
+                // Step #.
+                jc.putClientProperty(WizardDescriptor.PROP_CONTENT_SELECTED_INDEX, Integer.valueOf(i));
+                // Step name (actually the whole list for reference).
+                jc.putClientProperty(WizardDescriptor.PROP_CONTENT_DATA, steps.toArray());
+            }
+        }
+        
     }
 
     @Override
@@ -175,6 +224,8 @@ public final class ClientSideProjectWizardIterator implements WizardDescriptor.P
         wizardDescriptor.putProperty(Wizard.NAME, null);
         wizard.uninitialize(wizardDescriptor);
         panels = null;
+        extenders = null;
+        extenderPanels = null;
     }
 
     @NbBundle.Messages({
@@ -189,7 +240,7 @@ public final class ClientSideProjectWizardIterator implements WizardDescriptor.P
 
     @Override
     public boolean hasNext() {
-        return index < panels.length - 1;
+        return index < panels.length + extenderPanels.length -1;
     }
 
     @Override
@@ -215,6 +266,9 @@ public final class ClientSideProjectWizardIterator implements WizardDescriptor.P
 
     @Override
     public WizardDescriptor.Panel<WizardDescriptor> current() {
+        if (index>=panels.length) {
+            return extenderPanels[index-panels.length];
+        }
         return panels[index];
     }
 
@@ -227,6 +281,10 @@ public final class ClientSideProjectWizardIterator implements WizardDescriptor.P
     @Override
     public void removeChangeListener(ChangeListener l) {
         // noop
+    }
+
+    static void errorOccured(final String message) {
+        DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(message, NotifyDescriptor.ERROR_MESSAGE));
     }
 
     //~ Inner classes
@@ -246,6 +304,7 @@ public final class ClientSideProjectWizardIterator implements WizardDescriptor.P
 
         public static final String SITE_TEMPLATE = "SITE_TEMPLATE"; // NOI18N
         public static final String LIBRARIES_FOLDER = "LIBRARIES_FOLDER"; // NOI18N
+        public static final String LIBRARIES_PATH = "LIBRARIES_PATH";
 
 
         @Override
@@ -278,18 +337,27 @@ public final class ClientSideProjectWizardIterator implements WizardDescriptor.P
             AntProjectHelper projectHelper = project.getProjectHelper();
             // site template
             SiteTemplateImplementation siteTemplate = (SiteTemplateImplementation) wizardDescriptor.getProperty(SITE_TEMPLATE);
+            ProjectProperties projectProperties = new ProjectProperties()
+                    .setSiteRootFolder(ClientSideProjectConstants.DEFAULT_SITE_ROOT_FOLDER)
+                    .setTestFolder(ClientSideProjectConstants.DEFAULT_TEST_FOLDER)
+                    .setConfigFolder(ClientSideProjectConstants.DEFAULT_CONFIG_FOLDER);
             if (siteTemplate != null) {
+                // configure
+                siteTemplate.configure(projectProperties);
+                // init project
+                initProject(project, projectProperties);
                 // any site template selected
-                applySiteTemplate(projectHelper, siteTemplate, handle);
+                applySiteTemplate(projectHelper.getProjectDirectory(), projectProperties, siteTemplate, handle);
+            } else {
+                // init standard project
+                initProject(project, projectProperties);
             }
 
-            // get application dir:
-            FileObject siteRootDir = ClientSideProjectUtilities.getSiteRootFolder(projectHelper);
+            FileObject siteRootDir = project.getSiteRootFolder();
             if (siteRootDir == null) {
-                ClientSideProjectUtilities.initializeProject(projectHelper);
-                siteRootDir = ClientSideProjectUtilities.getSiteRootFolder(projectHelper);
-                assert siteRootDir != null;
-             }
+                // #221550
+                return null;
+            }
 
             // js libs
             FileObject jsLibs = (FileObject) wizardDescriptor.getProperty(LIBRARIES_FOLDER);
@@ -310,6 +378,12 @@ public final class ClientSideProjectWizardIterator implements WizardDescriptor.P
             if (htmlFiles != null && htmlFiles.length == 0) {
                 createIndexFile(siteRootDir);
             }
+
+            // apply extenders
+            for (ClientProjectExtender extender : Lookup.getDefault().lookupAll(ClientProjectExtender.class)) {
+                extender.apply(project.getProjectDirectory(), siteRootDir, (String) wizardDescriptor.getProperty(LIBRARIES_PATH));
+            }
+
             return siteRootDir;
         }
 
@@ -328,23 +402,26 @@ public final class ClientSideProjectWizardIterator implements WizardDescriptor.P
             wizardDescriptor.putProperty(LIBRARIES_FOLDER, null);
         }
 
+        private void initProject(ClientSideProject project, ProjectProperties properties) throws IOException {
+            ClientSideProjectUtilities.initializeProject(project,
+                    properties.getSiteRootFolder(),
+                    properties.getTestFolder(),
+                    properties.getConfigFolder());
+        }
+
         @NbBundle.Messages({
             "# {0} - template name",
             "ClientSideProjectWizardIterator.error.applyingSiteTemplate=Cannot apply template \"{0}\"."
         })
-        private void applySiteTemplate(AntProjectHelper helper, SiteTemplateImplementation siteTemplate, final ProgressHandle handle) {
+        private void applySiteTemplate(FileObject projectDir, ProjectProperties projectProperties, SiteTemplateImplementation siteTemplate, final ProgressHandle handle) {
             assert !EventQueue.isDispatchThread();
             final String templateName = siteTemplate.getName();
             try {
-                siteTemplate.apply(helper, handle);
+                siteTemplate.apply(projectDir, projectProperties, handle);
             } catch (IOException ex) {
                 LOGGER.log(Level.INFO, null, ex);
                 errorOccured(Bundle.ClientSideProjectWizardIterator_error_applyingSiteTemplate(templateName));
             }
-        }
-
-        private void errorOccured(String message) {
-            DialogDisplayer.getDefault().notifyLater(new NotifyDescriptor.Message(message, NotifyDescriptor.ERROR_MESSAGE));
         }
 
         private void createIndexFile(FileObject siteRoot) throws IOException {
@@ -381,13 +458,19 @@ public final class ClientSideProjectWizardIterator implements WizardDescriptor.P
 
         @Override
         public FileObject instantiate(Set<FileObject> files, ProgressHandle handle, WizardDescriptor wizardDescriptor, ClientSideProject project) throws IOException {
+            File projectDir = FileUtil.toFile(project.getProjectDirectory());
             File siteRoot = (File) wizardDescriptor.getProperty(SITE_ROOT);
-            ReferenceHelper referenceHelper = project.getReferenceHelper();
-            ClientSideProjectUtilities.initializeProject(project.getProjectHelper(),
-                    referenceHelper.createForeignFileReference(siteRoot, null),
-                    getDir(wizardDescriptor, TEST_ROOT, ClientSideProjectConstants.DEFAULT_TEST_FOLDER, referenceHelper),
-                    getDir(wizardDescriptor, CONFIG_ROOT, ClientSideProjectConstants.DEFAULT_CONFIG_FOLDER, referenceHelper),
-                    false);
+            // #218736
+            String testFolder;
+            String configFolder;
+            if (projectDir.equals(siteRoot)) {
+                testFolder = null;
+                configFolder = null;
+            } else {
+                testFolder = getExistingDir(wizardDescriptor, TEST_ROOT, ClientSideProjectConstants.DEFAULT_TEST_FOLDER);
+                configFolder = getExistingDir(wizardDescriptor, CONFIG_ROOT, ClientSideProjectConstants.DEFAULT_CONFIG_FOLDER);
+            }
+            ClientSideProjectUtilities.initializeProject(project, siteRoot.getAbsolutePath(), testFolder, configFolder);
             return FileUtil.toFileObject(siteRoot);
         }
 
@@ -398,10 +481,11 @@ public final class ClientSideProjectWizardIterator implements WizardDescriptor.P
             wizardDescriptor.putProperty(TEST_ROOT, null);
         }
 
-        private String getDir(WizardDescriptor wizardDescriptor, String property, String defaultDir, ReferenceHelper referenceHelper) {
+        private String getExistingDir(WizardDescriptor wizardDescriptor, String property, String defaultDir) throws IOException {
             File dir = (File) wizardDescriptor.getProperty(property);
             if (dir != null) {
-                return referenceHelper.createForeignFileReference(dir, null);
+                // dir set
+                return dir.getAbsolutePath();
             }
             return defaultDir;
         }

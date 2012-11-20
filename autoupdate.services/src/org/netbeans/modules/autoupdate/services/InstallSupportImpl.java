@@ -127,7 +127,7 @@ public class InstallSupportImpl {
         support = installSupport;
     }
     
-    public boolean doDownload (final ProgressHandle progress/*or null*/, Boolean isGlobal, boolean useUserdirAsFallback) throws OperationException {
+    public boolean doDownload (final ProgressHandle progress/*or null*/, final Boolean isGlobal, final boolean useUserdirAsFallback) throws OperationException {
         this.isGlobal = isGlobal;
         this.useUserdirAsFallback = useUserdirAsFallback;
         Callable<Boolean> downloadCallable = new Callable<Boolean>() {
@@ -165,9 +165,12 @@ public class InstallSupportImpl {
                 }
                 infos = newInfos;
                 
+                // check write permissions before started download and then sum download size
                 int size = 0;
                 for (OperationInfo info : infos) {
-                    size += info.getUpdateElement().getDownloadSize();
+                    UpdateElement ue = info.getUpdateElement();
+                    InstallManager.findTargetDirectory(ue.getUpdateUnit().getInstalled(), Trampoline.API.impl(ue), isGlobal, useUserdirAsFallback);
+                    size += ue.getDownloadSize();
                 }
                 
                 // start progress
@@ -181,7 +184,10 @@ public class InstallSupportImpl {
                 
                 try {
                     for (OperationInfo info : infos) {
-                        if (cancelled()) return false;
+                        if (cancelled()) {
+                            LOG.log (Level.INFO, "InstallSupport.doDownload was canceled"); // NOI18N
+                            return false;
+                        }
                         
                         int increment = doDownload(info, progress, aggregateDownload, size);
                         if (increment == -1) {
@@ -429,8 +435,8 @@ public class InstallSupportImpl {
                                                 new RefreshModulesListener (progress),
                                                 NbBundle.getBranding()
                                             );
-                                        } catch (InterruptedException ex) {
-                                            Exceptions.printStackTrace(ex);
+                                        } catch (InterruptedException ie) {
+                                            LOG.log (Level.INFO, ie.getMessage (), ie);
                                         }
                                     }
                                 });
@@ -699,7 +705,8 @@ public class InstallSupportImpl {
     
     private int doDownload (UpdateElementImpl toUpdateImpl, ProgressHandle progress, final int aggregateDownload, final int totalSize) throws OperationException {
         if (cancelled()) {
-                return -1;
+            LOG.log (Level.INFO, "InstallSupport.doDownload was canceled, returns -1"); // NOI18N
+            return -1;
         }
         
         UpdateElement installed = toUpdateImpl.getUpdateUnit ().getInstalled ();
@@ -774,6 +781,11 @@ public class InstallSupportImpl {
                             }
                             real.close();
                             if (check.getValue() != crc.get()) {
+                                LOG.log(Level.INFO, "Deleting file with uncomplete external content(cause: wrong CRC) " + dest);
+                                dest.delete();
+                                synchronized(downloadedFiles) {
+                                    downloadedFiles.remove(FileUtil.normalizeFile (dest));
+                                }
                                 external.delete();
                                 throw new IOException("Wrong CRC for " + jarEntry.getName());
                             }
@@ -997,6 +1009,7 @@ public class InstallSupportImpl {
                 c += size;
                 if (! progressRunning && progress != null) {
                     progress.switchToDeterminate (totalSize);
+                    progress.progress (label);
                     progressRunning = true;
                 }
                 if (c > 1024) {
@@ -1027,7 +1040,7 @@ public class InstallSupportImpl {
         }
         if (contentLength != -1 && increment != contentLength) {
             if(canceled) {
-                LOG.log(Level.FINE, "Download of " + source + " was cancelled");
+                LOG.log(Level.INFO, "Download of " + source + " was cancelled");
             } else {
                 LOG.log(Level.INFO, "Content length was reported as " + contentLength + " byte(s) but read " + increment + " byte(s)");
             }
@@ -1115,7 +1128,7 @@ public class InstallSupportImpl {
         public void propertyChange(final PropertyChangeEvent ev) {
             if (UpdaterInternal.RUNNING.equals (ev.getPropertyName ())) {
                 if (handle != null) {
-                    handle.progress (i++);
+                    handle.progress (ev.getNewValue() == null ? "" : ev.getNewValue().toString(), i++);
                 }
             } else if (UpdaterInternal.FINISHED.equals (ev.getPropertyName ())){
                 this.ev = ev;
@@ -1240,6 +1253,7 @@ public class InstallSupportImpl {
         BufferedReader br = new BufferedReader(new InputStreamReader(is));
         URLConnection conn;
         crc.set(-1L);
+        String url = null;
         for (;;) {
             String line = br.readLine();
             if (line == null) {
@@ -1249,7 +1263,7 @@ public class InstallSupportImpl {
                 crc.set(Long.parseLong(line.substring(4).trim()));
             }
             if (line.startsWith("URL:")) {
-                String url = line.substring(4).trim();
+                url = line.substring(4).trim();
                 for (;;) {
                     int index = url.indexOf("${");
                     if (index == -1) {
@@ -1274,7 +1288,7 @@ public class InstallSupportImpl {
                 }
             }
         }
-        throw new FileNotFoundException("Cannot resolve external reference to " + pathTo);
+        throw new FileNotFoundException("Cannot resolve external reference to " + url == null ? pathTo : url);
     }
     
     private static class UpdaterInfo {

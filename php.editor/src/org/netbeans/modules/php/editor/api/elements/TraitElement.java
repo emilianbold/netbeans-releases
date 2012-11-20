@@ -48,5 +48,5 @@ import org.netbeans.modules.php.editor.api.PhpElementKind;
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
 public interface TraitElement extends TraitedElement {
-    public final static PhpElementKind KIND = PhpElementKind.TRAIT;
+    PhpElementKind KIND = PhpElementKind.TRAIT;
 }

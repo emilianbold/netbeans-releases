@@ -49,7 +49,6 @@ import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.spi.actions.AbstractMavenActionsProvider;
 import org.netbeans.modules.maven.spi.actions.MavenActionsProvider;
 import org.netbeans.spi.project.ActionProvider;
-import org.netbeans.spi.project.LookupProvider.Registration.ProjectType;
 import org.netbeans.spi.project.ProjectServiceProvider;
 import org.openide.util.Lookup;
 
@@ -57,13 +56,16 @@ import org.openide.util.Lookup;
  * j2ee specific defaults for project running and debugging..
  * @author mkleint
  */
-@ProjectServiceProvider(service=MavenActionsProvider.class, projectTypes={
-    @ProjectType(id="org-netbeans-modules-maven/" + NbMavenProject.TYPE_WAR),
-    @ProjectType(id="org-netbeans-modules-maven/" + NbMavenProject.TYPE_EAR),
-    @ProjectType(id="org-netbeans-modules-maven/" + NbMavenProject.TYPE_EJB),
-    // XXX TYPE_APPCLIENT listed here, but webActionMappings.xml has no bindings for it
-    @ProjectType(id="org-netbeans-modules-maven/" + NbMavenProject.TYPE_APPCLIENT)
-})
+@ProjectServiceProvider(
+    service =
+        MavenActionsProvider.class,
+    projectType = {
+        "org-netbeans-modules-maven/" + NbMavenProject.TYPE_WAR,
+        "org-netbeans-modules-maven/" + NbMavenProject.TYPE_EAR,
+        "org-netbeans-modules-maven/" + NbMavenProject.TYPE_EJB,
+        "org-netbeans-modules-maven/" + NbMavenProject.TYPE_APPCLIENT
+    }
+)
 public class J2eeActionsProvider extends AbstractMavenActionsProvider {
 
     private static final String ACT_RUN = ActionProvider.COMMAND_RUN_SINGLE + ".deploy";
@@ -78,6 +80,11 @@ public class J2eeActionsProvider extends AbstractMavenActionsProvider {
 
     @Override
     public boolean isActionEnable(String action, Project project, Lookup lookup) {
+        final String packagingType = project.getLookup().lookup(NbMavenProject.class).getPackagingType();
+        if ("app-client".equals(packagingType)) {
+            return false;
+        }
+
         if (ACT_DEBUG.equals(action) ||
             ACT_RUN.equals(action) ||
             ACT_PROFILE.equals(action)) {

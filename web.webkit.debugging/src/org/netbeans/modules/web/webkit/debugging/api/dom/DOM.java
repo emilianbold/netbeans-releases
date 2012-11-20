@@ -224,7 +224,7 @@ public class DOM {
         if (response != null) {
             JSONObject result = response.getResult();
             if (result != null) {
-                int nodeId = ((Number)params.get("nodeId")).intValue(); // NOI18N
+                int nodeId = ((Number)result.get("nodeId")).intValue(); // NOI18N
                 synchronized (this) {
                     n = nodes.get(nodeId);
                 }
@@ -252,7 +252,7 @@ public class DOM {
             JSONObject result = response.getResult();
             if (result != null) {
                 list = new ArrayList<Node>();
-                JSONArray array = (JSONArray)params.get("nodeIds"); // NOI18N
+                JSONArray array = (JSONArray)result.get("nodeIds"); // NOI18N
                 synchronized (this) {
                     for (Object id : array) {
                         int nodeId = ((Number)id).intValue();
@@ -538,12 +538,18 @@ public class DOM {
         synchronized (this) {
             int parentId = ((Number)params.get("parentId")).intValue(); // NOI18N
             parent = nodes.get(parentId);
+            if (parent == null) {
+                Logger.getLogger(DOM.class.getName()).log(Level.INFO, "Nodes set to an unknown parent: {0}!", params); // NOI18N
+                return;
+            }
             JSONArray children = (JSONArray)params.get("nodes"); // NOI18N
             parent.initChildren();
+            List<Node> newChildren = new ArrayList<Node>(children.size());
             for (Object child : children) {
                 Node node = new Node((JSONObject)child);
-                parent.addChild(node);
+                newChildren.add(node);
             }
+            parent.addChildren(newChildren);
             updateNodesMap(parent);
         }
         notifyChildNodesSet(parent);

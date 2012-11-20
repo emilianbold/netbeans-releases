@@ -272,6 +272,9 @@ public class EntriesCache {
            attributes = new HashMap<String, String>();
            ea.put(fileName, attributes);
         }
+        if (!ea.containsKey(SVN_THIS_DIR)) {
+            return attributes;
+        }
         for(Map.Entry<String, String> entry : ea.get(SVN_THIS_DIR).entrySet()) {
             String key = entry.getKey();
             String value = entry.getValue();

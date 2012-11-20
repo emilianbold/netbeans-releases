@@ -47,15 +47,14 @@ import java.util.Collections;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.text.Document;
-import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.api.UserTask;
-import org.netbeans.modules.php.editor.model.Model;
-import org.netbeans.modules.php.editor.parser.PHPParseResult;
 import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.parsing.spi.Parser;
+import org.netbeans.modules.php.editor.model.Model;
+import org.netbeans.modules.php.editor.parser.PHPParseResult;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
@@ -117,7 +116,7 @@ public final class ShowPhpClassHierarchyAction extends CookieAction {
     }
 
     static Model getModel(Union2<Document, FileObject> document2Parse) {
-        Parameters.notNull("document2Parse", document2Parse);//NOI18N
+        Parameters.notNull("document2Parse", document2Parse); //NOI18N
         ModelProviderTask modelProvider = new ModelProviderTask();
         if (document2Parse.hasFirst()) {
             try {

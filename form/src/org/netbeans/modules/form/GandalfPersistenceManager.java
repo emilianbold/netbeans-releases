@@ -791,31 +791,57 @@ public class GandalfPersistenceManager extends PersistenceManager {
             return null;
         }
 
-        // initialize the metacomponent
-        try {
-            if(compClass==InvalidComponent.class){
-                newComponent.setValid(false);                            
-                newComponent.setMissingClassName(className);
+        String exMsg = null;
+        boolean repeatForFakeInvalid;
+        do {
+            repeatForFakeInvalid = false;
+            // initialize the metacomponent
+            try {
+                if (compClass == InvalidComponent.class) {
+                    newComponent.setValid(false);                            
+                    newComponent.setMissingClassName(className);
+                }
+                newComponent.initialize(formModel);
+                newComponent.setStoredName(compName);
+                newComponent.initInstance(compClass);
+                newComponent.setInModel(true);
+            } catch (Exception ex) {
+                if (compClass != InvalidComponent.class) {
+                    compEx = ex;
+                }
+            } catch (NoClassDefFoundError ex) {
+                if (compClass != InvalidComponent.class) {
+                    compEx = ex;
+                    String classNameFromException = ex.getMessage();
+                    if (classNameFromException != null) {
+                        classNameFromException = classNameFromException.replace('/', '.').replace('$', '.');
+                        exMsg = createLoadingErrorMessage(
+                            FormUtils.getFormattedBundleString("FMT_ERR_CannotLoadClass", // NOI18N
+                                                               new Object[] { classNameFromException }),
+                            node);
+                    }
+                    compClass = InvalidComponent.class;
+                    repeatForFakeInvalid = true;
+                }
+            } catch (LinkageError ex) { // loading a class the component needs failed
+                if (compClass != InvalidComponent.class) {
+                    compEx = ex;
+                }
             }
-            newComponent.initialize(formModel);
-            newComponent.setStoredName(compName);
-            newComponent.initInstance(compClass);
-            newComponent.setInModel(true);            
-        }
-        catch (Exception ex) {
-            compEx = ex;
-        }
-        catch (LinkageError ex) {
-            compEx = ex;
-        }
+        } while (repeatForFakeInvalid);
+
         if (compEx != null) { // creating component instance failed
-            String msg = createLoadingErrorMessage(
-                FormUtils.getFormattedBundleString("FMT_ERR_CannotCreateInstance", // NOI18N
-                                                   new Object[] { className }),
-                node);
-            annotateException(compEx, msg);
+            if (exMsg == null) {
+                exMsg = createLoadingErrorMessage(
+                    FormUtils.getFormattedBundleString("FMT_ERR_CannotCreateInstance", // NOI18N
+                                                       new Object[] { className }),
+                    node);
+            }
+            annotateException(compEx, exMsg);
             nonfatalErrors.add(compEx);
-            return null;
+            if (compClass != InvalidComponent.class) {
+                return null;
+            }
         }
 
         getComponentsMap().put(compName, newComponent);
@@ -1058,8 +1084,8 @@ public class GandalfPersistenceManager extends PersistenceManager {
                         }
                         else {
                             layoutSupport.setUnknownLayoutDelegate(false);
-                            System.err.println("[WARNING] Unknown layout in "+createLoadingErrorMessage((String)null, node) // NOI18N
-                                +" ("+component.getBeanClass().getName()+")"); // NOI18N
+//                            System.err.println("[WARNING] Unknown layout in "+createLoadingErrorMessage((String)null, node) // NOI18N
+//                                +" ("+component.getBeanClass().getName()+")"); // NOI18N
                         }
                         layoutInitialized = true;
                     }
@@ -5023,8 +5049,18 @@ public class GandalfPersistenceManager extends PersistenceManager {
         String name = node.getNodeValue();
 
         CodeVariable var = getCodeStructure().getVariable(name);
-        if (var != null)
-            return var;
+        if (var != null) {
+            if ((var.getType() & (CodeVariable.LOCAL|CodeVariable.EXPLICIT_DECLARATION)) == CodeVariable.LOCAL) {
+                // clashing with an implicitly created variable
+                int i = name.length();
+                while (Character.isDigit(name.charAt(i-1))) {
+                    i--;
+                }
+                getCodeStructure().renameVariable(name, getCodeStructure().findFreeVariableName(name.substring(0, i)));
+            } else {
+                return var;
+            }
+        }
 
         node = attr.getNamedItem(ATTR_VAR_TYPE);
         if (node == null)

@@ -81,7 +81,7 @@ public class ViewDataAction extends QueryAction {
                         String expression = null;
                         try {
                             expression = getDefaultQuery(activatedNodes);
-                            SQLEditorSupport.openSQLEditor(connection.getDatabaseConnection(), expression, true);
+                            SQLEditorSupport.openSQLEditor(connection.getDatabaseConnection(), expression + ";\n", true); //NOI18N
                         } catch(Exception exc) {
                             Logger.getLogger(ViewDataAction.class.getName()).log(Level.INFO, exc.getLocalizedMessage() + " while executing expression " + expression, exc); // NOI18N
                             String message = NbBundle.getMessage (ViewDataAction.class, "ShowDataError", exc.getMessage()); // NOI18N

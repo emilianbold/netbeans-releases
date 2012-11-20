@@ -79,6 +79,9 @@ public class ClassFile {
     
     /** size of buffer in buffered input streams */
     private static final int BUFFER_SIZE = 4096;
+
+     private static final Set<String> badNonJavaClassNames  =
+             new HashSet<String>(Arrays.asList(new String[] {";","[","."}));    //NOI18N
     
     /**
      * Create a new ClassFile object.
@@ -211,6 +214,12 @@ public class ClassFile {
         classInfo = pool.getClass(in.readUnsignedShort());
         if (classInfo == null)
             throw new InvalidClassFormatException();
+        if (isBadNonJavaClassName(classInfo.getName())) {
+            throw new InvalidClassFormatException(
+                String.format(
+                    "Invalid non java class name: %s", //NOI18N
+                    classInfo.getName()));
+        }
         int index = in.readUnsignedShort();
         if (index != 0) // true for java.lang.Object
             superClassInfo = pool.getClass(index);
@@ -633,5 +642,9 @@ public class ClassFile {
         } else
             sb.append("none"); //NOI18N
         return sb.toString();
+    }
+
+    private static boolean isBadNonJavaClassName(final String name) {
+        return name.length() == 1 && badNonJavaClassNames.contains(name);
     }
 }

@@ -42,6 +42,7 @@
 package org.netbeans.modules.refactoring.java.test;
 
 import java.net.URL;
+import org.netbeans.junit.RandomlyFails;
 import org.netbeans.modules.refactoring.api.Problem;
 
 /**
@@ -54,6 +55,7 @@ public class MoveClassTest extends MoveBaseTest {
         super(name);
     }
     
+    @RandomlyFails
     public void test204444() throws Exception { // #204444 - Improve Move Refactoring to support nested/inner classes
         writeFilesAndWaitForScan(src,
                 new File("t/A.java", "package t;\n"

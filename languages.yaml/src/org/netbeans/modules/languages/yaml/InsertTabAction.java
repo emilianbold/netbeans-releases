@@ -46,14 +46,10 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.prefs.Preferences;
 import javax.swing.Action;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Caret;
 import javax.swing.text.JTextComponent;
-import org.netbeans.api.editor.mimelookup.MimeLookup;
-import org.netbeans.api.editor.mimelookup.MimePath;
-import org.netbeans.api.editor.settings.SimpleValueNames;
 import org.netbeans.editor.BaseAction;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.BaseKit;
@@ -119,7 +115,7 @@ public class InsertTabAction extends BaseAction {
 
         private void replaceTab() throws BadLocationException {
             final int rowStart = Utilities.getRowStart(baseDocument, caretOffset);
-            assert caretOffset > rowStart;
+            assert caretOffset >= rowStart : "Caret: " + caretOffset + " rowStart: " + rowStart;
             final String indentString = baseDocument.getText(rowStart, caretOffset - rowStart);
             if (indentString.contains(TAB_CHARACTER)) {
                 final String newIndentString = indentString.replace(TAB_CHARACTER, IndentUtils.getIndentString(IndentUtils.getIndentSize()));

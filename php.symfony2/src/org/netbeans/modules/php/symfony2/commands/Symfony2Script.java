@@ -106,7 +106,12 @@ public final class Symfony2Script {
      * @return console script or {@code null} if not valid
      */
     public static FileObject getPath(PhpModule phpModule, String relativeAppDir) {
-        FileObject appDir = phpModule.getSourceDirectory().getFileObject(relativeAppDir);
+        FileObject sourceDirectory = phpModule.getSourceDirectory();
+        if (sourceDirectory == null) {
+            // broken project
+            return null;
+        }
+        FileObject appDir = sourceDirectory.getFileObject(relativeAppDir);
         if (appDir == null) {
             // perhaps deleted app dir? fallback to default and let it fail later...
             return null;
@@ -236,7 +241,7 @@ public final class Symfony2Script {
     private ExecutionDescriptor getDescriptor(Runnable postExecution) {
         ExecutionDescriptor executionDescriptor = PhpExecutable.DEFAULT_EXECUTION_DESCRIPTOR
                 .optionsPath(Symfony2OptionsPanelController.getOptionsPath())
-                .inputVisible(false);
+                .inputVisible(true);
         if (postExecution != null) {
             executionDescriptor = executionDescriptor.postExecution(postExecution);
         }

@@ -122,8 +122,11 @@ public final class Manager {
      * @return  singleton of this class
      */
     public static Manager getInstance() {
-        if (instanceRef != null && instanceRef.get() != null) {
-            return instanceRef.get();
+        if (instanceRef != null) {
+	    Manager manager = instanceRef.get();
+	    if (manager != null) {
+		return manager;
+	    }
         }
 
         final Manager instance = new Manager();

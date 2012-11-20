@@ -87,6 +87,14 @@ public class JsFormatterTest extends JsTestBase {
         reindentFileContents("testfiles/simple.js", null);
     }
 
+    public void testScriptInput() throws Exception {
+        reformatFileContents("testfiles/scriptInput.js",new IndentPrefs(4, 4));
+    }
+
+    public void testScriptInputBroken() throws Exception {
+        reformatFileContents("testfiles/scriptInputBroken.js",new IndentPrefs(4, 4));
+    }
+
     public void testTrailingSpaces1() throws Exception {
         format("var a = 1;   \nvar b = 3;                   \n",
                 "var a = 1;\nvar b = 3;\n", new IndentPrefs(4, 4));
@@ -1654,6 +1662,14 @@ public class JsFormatterTest extends JsTestBase {
         options.put(FmtOptions.wrapObjects, CodeStyle.WrapStyle.WRAP_ALWAYS);
         options.put(FmtOptions.wrapProperties, CodeStyle.WrapStyle.WRAP_ALWAYS);
         reformatFileContents("testfiles/formatter/issue219046.js", options);
+    }
+
+    public void testIssue220920() throws Exception {
+        reformatFileContents("testfiles/formatter/issue220920.js",new IndentPrefs(4, 4));
+    }
+
+    public void testIssue221293() throws Exception {
+        reformatFileContents("testfiles/formatter/issue221293.js",new IndentPrefs(4, 4));
     }
 
     // test from original formatter

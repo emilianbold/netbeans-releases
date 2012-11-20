@@ -72,9 +72,6 @@ public class NewProjectIterator implements TemplateWizard.Iterator {
     
     private static final long serialVersionUID = 4589834546983L;
 
-    private static final String IS_LIBRARY = "is_library";//NOI18N
-    private static final String IS_EMBEDDED = "is_embedded";//NOI18N
-    
     boolean platformInstall;
     int currentIndex;
     PlatformInstallPanel.WizardPanel platformPanel;
@@ -86,14 +83,17 @@ public class NewProjectIterator implements TemplateWizard.Iterator {
         return new NewProjectIterator();
     }
     
+    @Override
     public void addChangeListener(@SuppressWarnings("unused")
 	final javax.swing.event.ChangeListener changeListener) {
     }
     
+    @Override
     public void removeChangeListener(@SuppressWarnings("unused")
 	final javax.swing.event.ChangeListener changeListener) {
     }
     
+    @Override
     public org.openide.WizardDescriptor.Panel current() {
         if (platformInstall) {
             switch (currentIndex) {
@@ -112,6 +112,7 @@ public class NewProjectIterator implements TemplateWizard.Iterator {
         throw new IllegalStateException();
     }
     
+    @Override
     public boolean hasNext() {
         if (platformInstall) {
             return currentIndex < 3;
@@ -119,10 +120,12 @@ public class NewProjectIterator implements TemplateWizard.Iterator {
         return currentIndex < 2;
     }
     
+    @Override
     public boolean hasPrevious() {
         return currentIndex > 0;
     }
     
+    @Override
     public void initialize(final org.openide.loaders.TemplateWizard templateWizard) {
         boolean create = true;
         if (!(Templates.getTemplate(templateWizard).getAttribute("application") instanceof Boolean)) { // NOI18N
@@ -150,14 +153,15 @@ public class NewProjectIterator implements TemplateWizard.Iterator {
         templateWizard.putProperty(PlatformSelectionPanel.REQUIRED_PROFILE, embedded ? "IMP-NG" : null); // NOI18N
         templateWizard.putProperty(PlatformSelectionPanel.PLATFORM_DESCRIPTION, null);
         templateWizard.putProperty(ConfigurationsSelectionPanel.CONFIGURATION_TEMPLATES, null);
-        templateWizard.putProperty(IS_LIBRARY, !create);
-        templateWizard.putProperty(IS_EMBEDDED, embedded);
+        templateWizard.putProperty(Utils.IS_LIBRARY, !create);
+        templateWizard.putProperty(Utils.IS_EMBEDDED, embedded);
         final DataObject dao = templateWizard.getTemplate();
         templateWizard.putProperty(ProjectPanel.PROJECT_NAME, dao != null ? dao.getPrimaryFile().getName()+'1' : null);
         currentIndex = 0;
         updateStepsList();
     }
     
+    @Override
     public void uninitialize(@SuppressWarnings("unused")
 	final org.openide.loaders.TemplateWizard templateWizard) {
         platformPanel = null;
@@ -179,34 +183,42 @@ public class NewProjectIterator implements TemplateWizard.Iterator {
         final Boolean createMIDlet = (Boolean) templateWizard.getProperty(ProjectPanel.PROJECT_CREATE_MIDLET);
         HashSet<DataObject> result = createMIDlet != null && createMIDlet.booleanValue() ? new HashSet<DataObject>() : null;
         
-        final AntProjectHelper helper = J2MEProjectGenerator.createNewProject(projectLocation, name, platform, result, (Set<ConfigurationTemplateDescriptor>)templateWizard.getProperty(ConfigurationsSelectionPanel.CONFIGURATION_TEMPLATES), (Boolean)templateWizard.getProperty(IS_LIBRARY));
-        if (result == null) result = new HashSet<DataObject>();
+        final AntProjectHelper helper = J2MEProjectGenerator.createNewProject(projectLocation, name, platform, result, (Set<ConfigurationTemplateDescriptor>)templateWizard.getProperty(ConfigurationsSelectionPanel.CONFIGURATION_TEMPLATES), (Boolean)templateWizard.getProperty(Utils.IS_LIBRARY));
+        if (result == null) {
+            result = new HashSet<DataObject>();
+        }
         result.add(DataObject.find(helper.getProjectDirectory()));
         return result;
     }
     
+    @Override
     public String name() {
         return current().getComponent().getName();
     }
     
+    @Override
     public void nextPanel() {
-        if (!hasNext())
+        if (!hasNext()) {
             throw new NoSuchElementException();
+        }
         currentIndex ++;
         updateStepsList();
     }
     
+    @Override
     public void previousPanel() {
-        if (!hasPrevious())
+        if (!hasPrevious()) {
             throw new NoSuchElementException();
+        }
         currentIndex --;
         updateStepsList();
     }
     
     void updateStepsList() {
         final JComponent component = (JComponent) current().getComponent();
-        if (component == null)
+        if (component == null) {
             return;
+        }
         String[] list;
         if (platformInstall) {
             list = new String[] {

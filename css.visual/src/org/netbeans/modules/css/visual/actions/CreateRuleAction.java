@@ -41,20 +41,17 @@
  */
 package org.netbeans.modules.css.visual.actions;
 
-import java.awt.Component;
 import java.awt.Dialog;
-import java.awt.Frame;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import javax.swing.AbstractAction;
-import javax.swing.JOptionPane;
-import javax.swing.SwingUtilities;
 import org.netbeans.modules.css.visual.CreateRulePanel;
-import org.netbeans.modules.css.visual.RuleEditorPanel;
+import org.netbeans.modules.css.visual.EditRulesPanel;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
+import org.openide.filesystems.FileObject;
+import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
-import org.openide.util.RequestProcessor;
 
 /**
  *
@@ -65,17 +62,28 @@ import org.openide.util.RequestProcessor;
 })
 public class CreateRuleAction extends AbstractAction {
 
-    private RuleEditorPanel ruleEditorPanel;
+    private static final String HELP_ID = "css_visual_CreateRulePanel"; //NOI18N
+    
+    private FileObject context;
+    private FileObject targetLocation;
 
-    public CreateRuleAction(RuleEditorPanel ruleEditorPanel) {
+    public CreateRuleAction() {
         super(Bundle.label_create_rule());
-        this.ruleEditorPanel = ruleEditorPanel;
         setEnabled(false);
+    }
+    
+    public void setContext(FileObject context) {
+        this.context = context;
+        setEnabled(context != null);
+    }
+    
+    public void setTargetLocation(FileObject stylesheet) {
+        this.targetLocation = stylesheet;
     }
 
     @Override
     public void actionPerformed(ActionEvent e) {
-        final CreateRulePanel panel = new CreateRulePanel(ruleEditorPanel);
+        final CreateRulePanel panel = new CreateRulePanel(context);
         
         DialogDescriptor descriptor = new DialogDescriptor(
                 panel,
@@ -95,8 +103,10 @@ public class CreateRuleAction extends AbstractAction {
                     }
                 });
         
+        descriptor.setHelpCtx(new HelpCtx(HELP_ID));
         Dialog dialog = DialogDisplayer.getDefault().createDialog(descriptor);
         dialog.setVisible(true);
         
     }
+
 }

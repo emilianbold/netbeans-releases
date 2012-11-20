@@ -122,12 +122,12 @@ public final class ChangeParametersFix implements Fix {
     private static void doFullChangeMethodParameters(TreePathHandle tph, ParameterInfo[] newParameterInfo) {
         InstanceContent ic = new InstanceContent();
         ic.add(tph);
+        ic.add(new AbstractNode(Children.LEAF, Lookups.singleton(tph)));
         for (ParameterInfo parameterInfo : newParameterInfo) {
             ic.add(parameterInfo);
         }
-        Lookup nodeLookup = new AbstractLookup(ic);
-        Node actionContext = new AbstractNode(Children.LEAF, nodeLookup);
-        final Action a = JavaRefactoringActionsFactory.changeParametersAction().createContextAwareInstance(Lookups.singleton(actionContext));
+        Lookup actionContext = new AbstractLookup(ic);
+        final Action a = JavaRefactoringActionsFactory.changeParametersAction().createContextAwareInstance(actionContext);
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
                 a.actionPerformed(RefactoringActionsFactory.DEFAULT_EVENT);

@@ -99,6 +99,11 @@ public abstract class FxNode {
         Event,
         
         /**
+         * Script fragment
+         */
+        Script,
+        
+        /**
          * XML namespace declaration
          */
         Namespace,

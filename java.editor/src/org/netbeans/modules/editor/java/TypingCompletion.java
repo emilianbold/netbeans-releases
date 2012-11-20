@@ -57,6 +57,7 @@ import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.spi.editor.typinghooks.DeletedTextInterceptor;
+import org.netbeans.spi.editor.typinghooks.TypedBreakInterceptor;
 import org.netbeans.spi.editor.typinghooks.TypedTextInterceptor;
 
 /**
@@ -156,8 +157,9 @@ class TypingCompletion {
      * @throws BadLocationException
      */
     static void completeOpeningBracket(TypedTextInterceptor.MutableContext context) throws BadLocationException {
-        if (isStringOrComment(javaTokenSequence(context, false).token().id()))
+        if (isStringOrComment(javaTokenSequence(context, false).token().id())) {
             return;
+        }
         char chr = context.getDocument().getText(context.getOffset(), 1).charAt(0);
         if (chr == ')' || chr == ',' || chr == '\"' || chr == '\'' || chr == ' ' || chr == ']' || chr == '}' || chr == '\n' || chr == '\t' || chr == ';') {
             char insChr = context.getText().charAt(0);
@@ -297,7 +299,238 @@ class TypingCompletion {
         }
         return context.getDocument().getText(context.getOffset() - 1, 1).charAt(0) == '\\';
     }
+    
+    /**
+     * Resolve whether pairing right curly should be added automatically
+     * at the caret position or not.
+     * <br>
+     * There must be only whitespace or line comment or block comment
+     * between the caret position
+     * and the left brace and the left brace must be on the same line
+     * where the caret is located.
+     * <br>
+     * The caret must not be "contained" in the opened block comment token.
+     *
+     * @param doc document in which to operate.
+     * @param caretOffset offset of the caret.
+     * @return true if a right brace '}' should be added
+     *  or false if not.
+     */
+    static boolean isAddRightBrace(BaseDocument doc, int caretOffset) throws BadLocationException {
+        if (tokenBalance(doc, JavaTokenId.LBRACE) <= 0) {
+            return false;
+        }
+        int caretRowStartOffset = org.netbeans.editor.Utilities.getRowStart(doc, caretOffset);
+        TokenSequence<JavaTokenId> ts = javaTokenSequence(doc, caretOffset, true);
+        if (ts == null) {
+            return false;
+        }
+        boolean first = true;
+        do {
+            if (ts.offset() < caretRowStartOffset) {
+                return false;
+            }
+            switch (ts.token().id()) {
+                case WHITESPACE:
+                case LINE_COMMENT:
+                    break;
+                case BLOCK_COMMENT:
+                case JAVADOC_COMMENT:
+                    if (first && caretOffset > ts.offset() && caretOffset < ts.offset() + ts.token().length()) {
+                        // Caret contained within block comment -> do not add anything
+                        return false;
+                    }
+                    break; // Skip
+                case LBRACE:
+                    return true;
+            }
+            first = false;
+        } while (ts.movePrevious());
+        return false;
+    }
+    
+   /**
+     * Returns position of the first unpaired closing paren/brace/bracket from the caretOffset
+     * till the end of caret row. If there is no such element, position after the last non-white
+     * character on the caret row is returned.
+     */
+    static int getRowOrBlockEnd(BaseDocument doc, int caretOffset, boolean[] insert) throws BadLocationException {
+        int rowEnd = org.netbeans.editor.Utilities.getRowLastNonWhite(doc, caretOffset);
+        if (rowEnd == -1 || caretOffset >= rowEnd) {
+            return caretOffset;
+        }
+        rowEnd += 1;
+        int parenBalance = 0;
+        int braceBalance = 0;
+        int bracketBalance = 0;
+        TokenSequence<JavaTokenId> ts = javaTokenSequence(doc, caretOffset, false);
+        if (ts == null) {
+            return caretOffset;
+        }
+        while (ts.offset() < rowEnd) {
+            switch (ts.token().id()) {
+                case SEMICOLON:
+                    return ts.offset() + 1;
+                case LPAREN:
+                    parenBalance++;
+                    break;
+                case RPAREN:
+                    if (parenBalance-- == 0) {
+                        return ts.offset();
+                    }
+                    break;
+                case LBRACE:
+                    braceBalance++;
+                    break;
+                case RBRACE:
+                    if (braceBalance-- == 0) {
+                        return ts.offset();
+                    }
+                    break;
+                case LBRACKET:
+                    bracketBalance++;
+                    break;
+                case RBRACKET:
+                    if (bracketBalance-- == 0) {
+                        return ts.offset();
+                    }
+                    break;
+            }
+            if (!ts.moveNext()) {
+                break;
+            }
+        }
 
+        insert[0] = false;
+        return rowEnd;
+    }
+    
+     static boolean blockCommentCompletion(TypedBreakInterceptor.Context context) {
+        return blockCommentCompletionImpl(context, false);
+    }
+
+    static boolean javadocBlockCompletion(TypedBreakInterceptor.Context context) {
+        return blockCommentCompletionImpl(context, true);
+    }
+
+    private static boolean blockCommentCompletionImpl(TypedBreakInterceptor.Context context, boolean javadoc) {
+            TokenSequence<JavaTokenId> ts = javaTokenSequence(context, false);
+            if (ts == null) {
+                return false;
+            }
+            int dotPosition = context.getCaretOffset();
+            ts.move(dotPosition);
+            if (!((ts.moveNext() || ts.movePrevious()) && ts.token().id() == (javadoc ? JavaTokenId.JAVADOC_COMMENT : JavaTokenId.BLOCK_COMMENT))) {
+                return false;
+            }
+
+            int jdoffset = dotPosition - (javadoc ? 3 : 2);
+            if (jdoffset >= 0) {
+                CharSequence content = org.netbeans.lib.editor.util.swing.DocumentUtilities.getText(context.getDocument());
+                if (isOpenBlockComment(content, dotPosition - 1, javadoc) && !isClosedBlockComment(content, dotPosition) && isAtRowEnd(content, dotPosition)) {
+                    return true;
+                }
+            }
+        return false;
+    }
+    
+    private static boolean isOpenBlockComment(CharSequence content, int pos, boolean javadoc) {
+        for (int i = pos; i >= 0; i--) {
+            char c = content.charAt(i);
+            if (c == '*' && (javadoc ? i - 2 >= 0 && content.charAt(i - 1) == '*' && content.charAt(i - 2) == '/' : i - 1 >= 0 && content.charAt(i - 1) == '/')) {
+                // matched /*
+                return true;
+            } else if (c == '\n') {
+                // no javadoc, matched start of line
+                return false;
+            } else if (c == '/' && i - 1 >= 0 && content.charAt(i - 1) == '*') {
+                // matched javadoc enclosing tag
+                return false;
+            }
+        }
+
+        return false;
+    }
+
+    private static boolean isClosedBlockComment(CharSequence txt, int pos) {
+        int length = txt.length();
+        int quotation = 0;
+        for (int i = pos; i < length; i++) {
+            char c = txt.charAt(i);
+            if (c == '*' && i < length - 1 && txt.charAt(i + 1) == '/') {
+                if (quotation == 0 || i < length - 2) {
+                    return true;
+                }
+                // guess it is not just part of some text constant
+                boolean isClosed = true;
+                for (int j = i + 2; j < length; j++) {
+                    char cc = txt.charAt(j);
+                    if (cc == '\n') {
+                        break;
+                    } else if (cc == '"' && j < length - 1 && txt.charAt(j + 1) != '\'') {
+                        isClosed = false;
+                        break;
+                    }
+                }
+
+                if (isClosed) {
+                    return true;
+                }
+            } else if (c == '/' && i < length - 1 && txt.charAt(i + 1) == '*') {
+                // start of another comment block
+                return false;
+            } else if (c == '\n') {
+                quotation = 0;
+            } else if (c == '"' && i < length - 1 && txt.charAt(i + 1) != '\'') {
+                quotation = ++quotation % 2;
+            }
+        }
+
+        return false;
+    }
+
+    private static boolean isAtRowEnd(CharSequence txt, int pos) {
+        int length = txt.length();
+        for (int i = pos; i < length; i++) {
+            char c = txt.charAt(i);
+            if (c == '\n') {
+                return true;
+            }
+            if (!Character.isWhitespace(c)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /**
+     * Generalized posWithingString to any token and delimiting
+     * character. It works for tokens are delimited by *quote* and
+     * extend up to the other *quote* or whitespace in case of an
+     * incomplete token.
+     * @param doc the document
+     * @param caretOffset position of typed quote
+     */
+    static boolean posWithinString(Document doc, int caretOffset) {
+        return posWithinQuotes(doc, caretOffset, JavaTokenId.STRING_LITERAL);
+    }
+    
+    private static boolean posWithinQuotes(Document doc, int caretOffset, JavaTokenId tokenId) {
+        TokenSequence<JavaTokenId> javaTS = javaTokenSequence(doc, caretOffset, false);
+        if (javaTS != null) {
+            if (javaTS.token().id() != tokenId) {
+                return false;
+            }
+            else if (caretOffset > javaTS.offset() && caretOffset < javaTS.offset() + javaTS.token().length()) {
+                return true;
+            }
+            else {
+                return false;
+            }
+        }
+        return false;
+    }
+    
     private static boolean posWithinAnyQuote(TypedTextInterceptor.MutableContext context, TokenSequence<JavaTokenId> javaTS) throws BadLocationException {
         if (javaTS.token().id() == JavaTokenId.STRING_LITERAL || javaTS.token().id() == JavaTokenId.CHAR_LITERAL) {
             char chr = context.getDocument().getText(context.getOffset(), 1).charAt(0);
@@ -542,6 +775,10 @@ class TypingCompletion {
 
     private static TokenSequence<JavaTokenId> javaTokenSequence(DeletedTextInterceptor.Context context, boolean backwardBias) {
         return javaTokenSequence(context.getDocument(), context.getOffset(), backwardBias);
+    }
+    
+       private static TokenSequence<JavaTokenId> javaTokenSequence(TypedBreakInterceptor.Context context, boolean backwardBias) {
+        return javaTokenSequence(context.getDocument(), context.getCaretOffset(), backwardBias);
     }
 
     /**

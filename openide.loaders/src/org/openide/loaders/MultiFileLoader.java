@@ -49,6 +49,7 @@ import java.util.*;
 import java.util.logging.Level;
 
 import org.openide.filesystems.*;
+import org.openide.loaders.DataObjectPool.Item;
 
 /** Loader for any kind of <code>MultiDataObject</code>. It provides
 * support for recognition of a composite data object and registering
@@ -95,6 +96,9 @@ public abstract class MultiFileLoader extends DataLoader {
     @Override
     protected final DataObject handleFindDataObject (
         FileObject fo, RecognizedFiles recognized ) throws IOException {
+        if (!fo.isValid()) {
+            return null;
+        }
         // finds primary file for given file
         FileObject primary = findPrimaryFileImpl (fo);
 
@@ -140,9 +144,13 @@ public abstract class MultiFileLoader extends DataLoader {
         }
 
         MultiDataObject obj;
+        Item originalItem;
         try {
             // create the multi object
             obj = createMultiObject (primary);
+            synchronized (DataObjectPool.getPOOL()) {
+                originalItem = obj.item();
+            }
             if (willLog) {
                 ERR.log(Level.FINE, "{0} created object for: {1} obj: {2}", new Object[]{getClass().getName(), fo, obj}); // NOI18N
             }
@@ -152,6 +160,9 @@ public abstract class MultiFileLoader extends DataLoader {
         } catch (DataObjectExistsException ex) {
             // object already exists
             DataObject dataObject = ex.getDataObject ();
+            synchronized (DataObjectPool.getPOOL()) {
+                originalItem = dataObject.item();
+            }
             if (willLog) {
                 ERR.log(Level.FINE, "{0} object already exists for: {1} obj: {2}", new Object[]{getClass().getName(), fo, dataObject}); // NOI18N
             }
@@ -209,7 +220,7 @@ public abstract class MultiFileLoader extends DataLoader {
             // loader. We should not add entries to it
             return obj;
         }
-
+        
         // mark all secondary entries used
         if (willLog) {
             ERR.log(Level.FINE, "{0} marking secondary entries", getClass().getName()); // NOI18N
@@ -220,7 +231,14 @@ public abstract class MultiFileLoader extends DataLoader {
         if (willLog) {
             ERR.log(Level.FINE, "{0} register entry: {1}", new Object[]{getClass().getName(), fo}); // NOI18N
         }
-        org.openide.loaders.MultiDataObject.Entry e = obj.registerEntry (fo);
+        org.openide.loaders.MultiDataObject.Entry e;
+        synchronized (DataObjectPool.getPOOL()) {
+            if (originalItem != obj.item() || !originalItem.isValid()) {
+                // try again
+                return handleFindDataObject(fo, recognized);
+            }
+            e = obj.registerEntry (fo);
+        }
         if (willLog) {
             ERR.log(Level.FINE, "{0} success: {1}", new Object[]{getClass().getName(), e}); // NOI18N
         }

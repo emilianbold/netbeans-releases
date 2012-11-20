@@ -410,8 +410,14 @@ class DiffSidebar extends JPanel implements DocumentListener, ComponentListener,
             Rectangle visibleRect = new Rectangle(startRect.x - visibleBorder, startRect.y - visibleBorder, 
                                                   startRect.x, endRect.y - startRect.y + endRect.height + visibleBorder * 2);
             textComponent.scrollRectToVisible(visibleRect);
+           
+            //make sure the y coordinate isn't outside the editor bounds otherwise the popup will 'float' beneath the editor
+            Rectangle extent = editorUI.getExtentBounds();
+            int maxVisibleY = extent.y + extent.height;
             
-            Point p = new Point(endRect.x, endRect.y + endRect.height + 1);
+            Point p = new Point(endRect.x, Math.min(maxVisibleY, endRect.y + endRect.height + 1));
+            
+            //XXX: The resulting screen coordinates could still be outside the main screen
             SwingUtilities.convertPointToScreen(p, textComponent);
             return p;
         } catch (BadLocationException e) {
@@ -654,6 +660,12 @@ class DiffSidebar extends JPanel implements DocumentListener, ComponentListener,
         JTextComponent component = textComponent;
         TextUI textUI = component.getUI();
         EditorUI editorUI = Utilities.getEditorUI(textComponent);
+        if (editorUI == null) {
+            LOG.log(Level.WARNING, "No editor UI for file {0}, has {1} text UI", new Object[] { //NOI18N
+                fileObject == null ? null : fileObject.getPath(),
+                textComponent.getUI() });
+            return;
+        }
         View rootView = Utilities.getDocumentView(component);
         if (rootView == null) {
             return;

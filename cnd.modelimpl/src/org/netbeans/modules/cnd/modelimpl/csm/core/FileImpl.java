@@ -93,6 +93,7 @@ import org.netbeans.modules.cnd.debug.CndTraceFlags;
 import org.netbeans.modules.cnd.modelimpl.content.file.FakeIncludePair;
 import org.netbeans.modules.cnd.modelimpl.content.file.FileContentSignature;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
+import org.netbeans.modules.cnd.modelimpl.parser.apt.APTIndexingWalker;
 import org.netbeans.modules.cnd.modelimpl.parser.apt.APTParseFileWalker;
 import org.netbeans.modules.cnd.modelimpl.parser.spi.CsmParserProvider;
 import org.netbeans.modules.cnd.modelimpl.parser.spi.CsmParserProvider.ParserError;
@@ -204,6 +205,10 @@ public final class FileImpl implements CsmFile,
     
     FileContentSignature getSignature() {
         return FileContentSignature.create(this);
+    }
+
+    /*tests-only*/void debugInvalidate() {
+        this.state = State.INITIAL;
     }
 
     public static enum State {
@@ -529,6 +534,12 @@ public final class FileImpl implements CsmFile,
                         // probably file was removed
                         return;
                     }
+                    
+                    if (CndTraceFlags.TEXT_INDEX) {
+                        APTIndexingWalker aptIndexingWalker = new APTIndexingWalker(fullAPT);
+                        aptIndexingWalker.index();
+                    }
+                    
                     switch (curState) {
                         case PARSED: // even if it was parsed, but there was entry in queue with handler => need additional parse
                         case INITIAL:
@@ -1928,13 +1939,9 @@ public final class FileImpl implements CsmFile,
         State curState = state;
         if (curState != State.PARSED && curState != State.INITIAL) {
             if (TraceFlags.TIMING) {
-                System.err.printf("file is written in intermediate state %s, switching to PARSED: %s \n", curState, getAbsolutePath());
-                //if (CndUtils.isDebugMode() && !firstDump) {
-                //    firstDump = true;
-                //    CndUtils.threadsDump();
-                //}
+                System.err.printf("file is written in intermediate state %s, switching to INITIAL: %s \n", curState, getAbsolutePath());
             }
-            curState = State.PARSED;
+            curState = State.INITIAL;
         }
         output.writeByte(curState.ordinal());
     }

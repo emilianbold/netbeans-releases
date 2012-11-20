@@ -18,47 +18,47 @@
 
         <ol>
             <li>In the Projects window, right-click the application's node and select Properties.</li>
-            <li>In the Project Properties, select the Run category.</li>
-            <li>From the Server drop-down list, select the server you want.
-                <!--(either Oracle Cloud Remote or an Amazon Beanstalk Tomcat environment).--> 
-                If the cloud account is registered in the IDE, the server is listed.
+            <li>Select the Run category in the project's Properties window.</li>
+            <li>Select the target server from the Server drop-down list.
+                <p>The remote cloud server will be listed in the drop-down list if the cloud account is registered in the IDE.</p>
                 <ul class="note">
                     <li>Alternatively, you can select a cloud server when you create the web application and
-                        develop it entirely on the cloud. However this is not recommended. See <a href="develop-locally.html">
-                            Developing Cloud Applications Locally</a>.</li>
-                </ul></li>
-<!--            <li>For CRUD applications on Oracle Cloud: In the Projects window, expand the project's Configuration Files node and double-click <tt>
-                    persistence.xml</tt>. The file opens in the XML Editor's Design view. Under Table Generation Strategy, select Create. 
-                <ul class="note">
-                    <li>If you developed the application on a local WebLogic server 
-                        that has JPA 2.0 enabled, you must change the persistence
-                        provider from the default EclipseLink, which uses JPA 2.0, to a JPA 
-                        1.0 provider such as OpenJPA.</li>
-                </ul></li>-->
-            <li>In the Projects window, right-click the project's root node and select Run. The IDE builds the project
-                and deploys it to the cloud server. You can follow the progress of deployment in the IDE's
-                Output window. The application's landing page opens in a browser window.</li>
-        </ol>
+                        develop it entirely on the cloud. However this is not recommended. 
+                        See <a href="develop-locally.html">Developing Cloud Applications Locally</a>.</li>
+                </ul>
+            </li>
 
-        <dl>
-            <dt><a name="seealso">See Also</a></dt>
-            <dd><a href="nbdocs://org.netbeans.modules.web.helpset/org/netbeans/modules/web/helpset/docs/web/deploy/deploy_webapp.html">Deploying Web Applications</a></dd>
-            <dd><a href="nbdocs://org.netbeans.modules.web.helpset/org/netbeans/modules/web/helpset/docs/web/deploy/deploy_changeserver.html">Changing the Target Server</a></dd>
-<!--            <dd><object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+            <li>In the Projects window, right-click the project's root node and select Run. 
+                <p>When you click Run the IDE builds the project
+                and deploys it to the cloud server. You can follow the progress of deployment in the IDE's
+                Output window. The application's landing page opens in a browser window.</p></li>
+        </ol>
+        
+        <p>For more details about working with cloud providers supported in the IDE, see the following documents.</p>
+        <ul>
+            <li><object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
                     <param name="content" value="http://www.netbeans.org/kb/docs/web/oracle-cloud.html">
                     <param name="text" value="<html><u>Running Web Applications on Oracle Cloud</u></html>">
                     <param name="textFontSize" value="medium">
                     <param name="textColor" value="blue">
-                </object></dd>-->
-            <dd><object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+                </object></li>
+            <li><object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
                     <param name="content" value="http://wiki.netbeans.org/AmazonBeanstalkSupport">
                     <param name="text" value="<html><u>NetBeans Wiki: Amazon Beanstalk Support</u></html>">
                     <param name="textFontSize" value="medium">
                     <param name="textColor" value="blue">
-                </object></dd></dl>
+                </object></li>
+            </ul>
+
+        <dl>
+            <dt><a name="seealso">See Also</a></dt>
+            <dd><a href="about-cloud.html">About Web Applications on the Cloud</a></dd>
+            <dd><a href="register-cloud.html">Registering a Cloud Account</a></dd>
+            <dd><a href="../deploy/deploy_webapp.html">Deploying Web Applications</a></dd>
+        </dl>
         <hr>
         <p>
-            <small><a href="../credits.html">Legal Notices</a></small>
+            <small><a href="../../credits.html">Legal Notices</a></small>
         </p>
     </body> 
 </html>

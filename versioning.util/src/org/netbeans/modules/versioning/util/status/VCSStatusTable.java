@@ -80,6 +80,7 @@ import javax.swing.event.ListSelectionListener;
 import javax.swing.table.TableCellRenderer;
 import org.netbeans.swing.etable.ETable;
 import org.netbeans.swing.etable.ETableColumn;
+import org.netbeans.swing.etable.ETableColumnModel;
 import org.openide.awt.MouseUtils;
 import org.openide.nodes.Node;
 import org.openide.nodes.PropertySupport.ReadOnly;
@@ -376,6 +377,7 @@ public abstract class VCSStatusTable<T extends VCSStatusNode> implements MouseLi
 
     private void initColumns () {
         setModelProperties();
+        table.setColumnHidingAllowed(false);
         for (int i = 0; i < table.getColumnCount(); ++i) {
             ((ETableColumn) table.getColumnModel().getColumn(i)).setNestedComparator(NodeComparator);
         }

@@ -376,7 +376,7 @@ implements BookmarkManagerListener, PropertyChangeListener, ExplorerManager.Prov
         ETable table = tableView.getTable();
         Font font = tableView.getFont();
         FontMetrics fm = tableView.getFontMetrics(font);
-        int maxCharWidth = fm.getMaxAdvance();
+        int maxCharWidth = fm.charWidth('A');
         int editingBorder = 4;
         TableColumnModel columnModel = table.getColumnModel();
 
@@ -384,7 +384,8 @@ implements BookmarkManagerListener, PropertyChangeListener, ExplorerManager.Prov
         nameColumn.setPreferredWidth(8 * maxCharWidth + editingBorder); // 8 chars for name
 
         TableColumn keyColumn = columnModel.getColumn(1);
-        keyColumn.setPreferredWidth(1 * maxCharWidth + editingBorder); // single char for key
+        // Single char for key (but 3 chars to prevent "..." in column header)
+        keyColumn.setPreferredWidth(3 * maxCharWidth + editingBorder);
         keyColumn.setMinWidth(keyColumn.getPreferredWidth());
 
         TableColumn locationColumn = columnModel.getColumn(2);

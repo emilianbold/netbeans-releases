@@ -218,22 +218,6 @@ public class RefactoringUtils {
         }
         return FileUtil.getArchiveFile(file) != null;
     }
-    
-    /**
-     * @param element
-     * @param info
-     * @return true if given element comes from library
-     * @deprecated
-     */
-    @SuppressWarnings("deprecation")
-    public static boolean isFromLibrary(Element element, ClasspathInfo info) {
-        FileObject file = SourceUtils.getFile(element, info);
-        if (file == null) {
-            //no source for given element. Element is from library
-            return true;
-        }
-        return FileUtil.getArchiveFile(file) != null;
-    }
 
     /**
      * is given name valid package name
@@ -885,8 +869,11 @@ public class RefactoringUtils {
         LocalVarScanner lookup = new LocalVarScanner(info, newName);
         TreePath scopeBlok = tp;
         EnumSet set = EnumSet.of(Tree.Kind.BLOCK, Tree.Kind.FOR_LOOP, Tree.Kind.METHOD);
-        while (!set.contains(scopeBlok.getLeaf().getKind())) {
+        while (scopeBlok != null && !set.contains(scopeBlok.getLeaf().getKind())) {
             scopeBlok = scopeBlok.getParentPath();
+        }
+        if(scopeBlok == null) {
+            return null;
         }
         Element var = info.getTrees().getElement(tp);
         lookup.scan(scopeBlok, var);

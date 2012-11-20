@@ -43,6 +43,8 @@ package org.netbeans.modules.maven.j2ee.osgi;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.j2ee.*;
@@ -50,8 +52,6 @@ import org.netbeans.modules.maven.j2ee.utils.MavenProjectSupport;
 import org.netbeans.modules.maven.j2ee.web.*;
 import org.netbeans.modules.web.jsfapi.spi.JsfSupportHandle;
 import org.netbeans.spi.project.LookupProvider;
-import org.openide.filesystems.FileStateInvalidException;
-import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
@@ -63,9 +63,13 @@ import org.openide.util.lookup.InstanceContent;
 @LookupProvider.Registration(projectType = {"org-netbeans-modules-maven/" + NbMavenProject.TYPE_OSGI})
 public class OsgiLookupProvider implements LookupProvider, PropertyChangeListener {
 
+    // More logging for issue: #216942
+    private static final Logger LOGGER = Logger.getLogger(OsgiLookupProvider.class.getName());
+    private StackTraceElement[] stackTrace;
+
     private Project project;
     private InstanceContent ic;
-    
+
     private MavenPersistenceProviderSupplier mavenPersistenceProviderSupplier;
     private MavenWebProjectWebRootProvider mavenWebProjectWebRootProvider;
     private WebReplaceTokenProvider webReplaceTokenProvider;
@@ -91,11 +95,29 @@ public class OsgiLookupProvider implements LookupProvider, PropertyChangeListene
         jPAStuffImpl = new JPAStuffImpl(project);
         copyOnSave = new WebCopyOnSave(project);
         provider = new WebModuleProviderImpl(project);
-        
+
         addLookupInstances();
         NbMavenProject.addPropertyChangeListener(project, this);
+
+        if (stackTrace == null) {
+            // Save the stackTrace for the first access
+            stackTrace = Thread.currentThread().getStackTrace();
+        } else {
+            // If the second access occurs, log it (it most probably will lead to the ISA - see #216942)
+            LOGGER.log(Level.WARNING, "When the first InstanceContent was created, the StackTrace was: \n\n");
+            logStackTrace(stackTrace);
+
+            LOGGER.log(Level.WARNING, "When the second InstanceContent was created, the StackTrace was: \n\n");
+            logStackTrace(Thread.currentThread().getStackTrace());
+        }
         
         return new AbstractLookup(ic);
+    }
+
+    private void logStackTrace(StackTraceElement[] stackTraceElements) {
+        for (StackTraceElement element : stackTraceElements) {
+            LOGGER.log(Level.WARNING, "Line: {2}, ClassName.methodName: {0}.{1}\n", new Object[] {element.getClassName(), element.getMethodName(), element.getLineNumber()});
+        }
     }
 
     @Override
@@ -130,13 +152,8 @@ public class OsgiLookupProvider implements LookupProvider, PropertyChangeListene
         ic.remove(provider);
 
         if (copyOnSave != null) {
-            try {
-                copyOnSave.cleanup();
-                ic.remove(copyOnSave);
-                
-            } catch (FileStateInvalidException ex) {
-                Exceptions.printStackTrace(ex);
-            }
+            copyOnSave.cleanup();
+            ic.remove(copyOnSave);
         }
     }
     
@@ -144,15 +161,9 @@ public class OsgiLookupProvider implements LookupProvider, PropertyChangeListene
         String packaging = project.getLookup().lookup(NbMavenProject.class).getPackagingType();
         
         if (MavenProjectSupport.isBundlePackaging(project, packaging)) {
+            copyOnSave.initialize();
             
-            try {
-                copyOnSave.initialize();
-                ic.add(copyOnSave);
-
-            } catch (FileStateInvalidException ex) {
-                Exceptions.printStackTrace(ex);
-            }
-            
+            ic.add(copyOnSave);
             ic.add(provider);
             ic.add(webReplaceTokenProvider);
             ic.add(entRefContainerImpl);

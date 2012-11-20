@@ -44,6 +44,7 @@ package org.netbeans.modules.web.inspect.webkit.ui;
 import java.lang.reflect.InvocationTargetException;
 import javax.swing.Action;
 import org.netbeans.modules.web.inspect.actions.Resource;
+import org.netbeans.modules.web.inspect.webkit.Utilities;
 import org.netbeans.modules.web.inspect.webkit.actions.GoToPropertySourceAction;
 import org.netbeans.modules.web.webkit.debugging.api.css.Rule;
 import org.openide.nodes.AbstractNode;
@@ -79,6 +80,10 @@ public class MatchedPropertyNode extends AbstractNode {
         super(Children.LEAF, Lookups.fixed(rule, ruleOrigin, property));
         this.property = property;
         setDisplayName(property.getName());
+        String stylesheet = Utilities.relativeResourceName(rule.getSourceURL(), ruleOrigin.getProject());
+        String description = NbBundle.getMessage(MatchedPropertyNode.class,
+            "MatchedPropertyNode.description", rule.getSelector(), stylesheet); // NOI18N
+        setShortDescription(description);
     }
 
     /**
@@ -117,6 +122,10 @@ public class MatchedPropertyNode extends AbstractNode {
                 @Override
                 public String getValue() throws IllegalAccessException, InvocationTargetException {
                     return property.getValue();
+                }
+                @Override
+                public String getShortDescription() {
+                    return MatchedPropertyNode.this.getShortDescription();
                 }
             };
             @Override

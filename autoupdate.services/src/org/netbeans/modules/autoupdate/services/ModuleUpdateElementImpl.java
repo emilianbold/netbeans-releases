@@ -132,8 +132,9 @@ public class ModuleUpdateElementImpl extends UpdateElementImpl {
     @Override
     public String getNotification() {
         String notification = item.getModuleNotification ();
-        if (notification != null)
+        if (notification != null) {
             notification = notification.trim();
+        }
         return notification;
     }
     
@@ -253,6 +254,7 @@ public class ModuleUpdateElementImpl extends UpdateElementImpl {
         return isEager;
     }
     
+    @Override
     public boolean isPreferredUpdate() {
         return isPreferredUpdate;
     }
@@ -264,19 +266,23 @@ public class ModuleUpdateElementImpl extends UpdateElementImpl {
     
     @Override
     public boolean equals(Object obj) {
-        if (obj == null)
+        if (obj == null) {
             return false;
-        if (getClass() != obj.getClass())
+        }
+        if (getClass() != obj.getClass()) {
             return false;
+        }
         final ModuleUpdateElementImpl other = (ModuleUpdateElementImpl) obj;
 
         if (this.specVersion != other.specVersion &&
             (this.specVersion == null ||
-             !this.specVersion.equals(other.specVersion)))
+             !this.specVersion.equals(other.specVersion))) {
             return false;
+        }
         if (this.codeName != other.codeName &&
-            (this.codeName == null || !this.codeName.equals(other.codeName)))
+            (this.codeName == null || !this.codeName.equals(other.codeName))) {
             return false;
+        }
         return true;
     }
 

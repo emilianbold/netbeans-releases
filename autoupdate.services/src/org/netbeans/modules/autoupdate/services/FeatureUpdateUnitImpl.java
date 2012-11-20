@@ -53,6 +53,7 @@ import java.util.logging.Logger;
 import org.netbeans.api.autoupdate.UpdateElement;
 import org.netbeans.api.autoupdate.UpdateManager;
 import org.netbeans.api.autoupdate.UpdateManager.TYPE;
+import org.netbeans.api.autoupdate.UpdateUnit;
 import org.netbeans.modules.autoupdate.updateprovider.ArtificialFeaturesProvider;
 import org.netbeans.modules.autoupdate.updateprovider.FeatureItem;
 import org.openide.util.NbBundle;
@@ -272,5 +273,10 @@ public class FeatureUpdateUnitImpl extends UpdateUnitImpl {
     @Override
     public boolean isPending () {
         return UpdateUnitFactory.getDefault().isScheduledForRestart (getUpdateUnit ());
+    }
+
+    @Override
+    public UpdateUnit getVisibleAncestor() {
+        return this.getUpdateUnit();
     }
 }

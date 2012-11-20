@@ -182,10 +182,11 @@ public class CloneAction extends ContextAction {
                             NbBundle.getMessage(CloneAction.class,
                             "MSG_CLONE_TITLE_SEP")); // NOI18N
                     List<String> list = HgCommand.doClone(source, target, logger);
-                    if (!HgUtils.getHgFolderForRoot(target).isDirectory()) {
+                    if (!HgUtils.getHgFolderForRoot(target).isDirectory() || list.contains("transaction abort!")) { //NOI18N
                         // does not seem to be really cloned
                         logger.output(list);
                         Mercurial.LOG.log(Level.WARNING, "Hg clone seems to fail: {0}", list); //NOI18N
+                        return;
                     }
                     if(list != null && !list.isEmpty()){
                         HgUtils.createIgnored(target);

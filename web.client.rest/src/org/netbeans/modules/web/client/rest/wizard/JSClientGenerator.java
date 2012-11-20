@@ -662,7 +662,7 @@ class JSClientGenerator {
             hasUi = true;
             mySidebar.append("<table id='");                                 // NOI18N
             mySidebar.append(generator.getSideBarId());
-            mySidebar.append("' class='tablesorter' >\n</table>\n");         // NOI18N
+            mySidebar.append("' class='tablesorter-blue'>\n</table>\n");         // NOI18N
             mySidebar.append("<div class='pager' id='pager'>\n");            // NOI18N
             mySidebar.append("<img src='");                                  // NOI18N
             mySidebar.append(TABLESORTER_URL);

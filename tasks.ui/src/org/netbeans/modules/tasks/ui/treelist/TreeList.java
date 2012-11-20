@@ -72,8 +72,8 @@ import org.openide.util.Utilities;
  */
 public class TreeList extends JList {
 
-    static final int INSETS_TOP = 3;
-    static final int INSETS_BOTTOM = 3;
+    static final int INSETS_TOP = 2;
+    static final int INSETS_BOTTOM = 2;
     static final int INSETS_LEFT = 4;
     static final int INSETS_RIGHT = 4;
     /**
@@ -97,12 +97,12 @@ public class TreeList extends JList {
     private Action defaultAction;
     private Action showPopupAction;
     private final TreeListRenderer renderer = new TreeListRenderer();
-    static final int ROW_HEIGHT = Math.max(16, Math.max(RendererPanel.getExpandedIcon().getIconHeight(), new JLabel("X").getPreferredSize().height + INSETS_TOP + INSETS_BOTTOM)); // NOI18N
+    static final int ROW_HEIGHT = Math.max(16, Math.max(RendererPanel.getExpandedIcon().getIconHeight(), new JLabel("X").getPreferredSize().height)); // NOI18N
 
     public TreeList(TreeListModel model) {
         super(model);
         setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
-        setFixedCellHeight(ROW_HEIGHT + 2);
+        setFixedCellHeight(ROW_HEIGHT + INSETS_TOP + INSETS_BOTTOM + 2);
         setCellRenderer(renderer);
         setBackground(ColorManager.getDefault().getDefaultBackground());
         ToolTipManager.sharedInstance().registerComponent(this);

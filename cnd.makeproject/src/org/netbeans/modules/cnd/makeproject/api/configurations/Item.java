@@ -47,6 +47,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.IOException;
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -76,12 +77,20 @@ import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.modules.cnd.utils.MIMESupport;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.dlight.libs.common.InvalidFileObjectSupport;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.HostInfo;
+import org.netbeans.modules.nativeexecution.api.util.ConnectionManager.CancellationException;
+import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
+import org.netbeans.modules.nativeexecution.api.util.MacroExpanderFactory;
+import org.netbeans.modules.nativeexecution.api.util.MacroExpanderFactory.MacroExpander;
 import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileSystem;
+import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 
 public final class Item implements NativeFileItem, PropertyChangeListener {
@@ -403,7 +412,7 @@ public final class Item implements NativeFileItem, PropertyChangeListener {
         FileObject fo = getFileObjectImpl();
         if (fo == null) {
             String p = (normalizedPath != null) ? normalizedPath : getAbsPath();
-            return InvalidFileObjectSupport.getInvalidFileObject(fileSystem, normalizedPath);
+            return InvalidFileObjectSupport.getInvalidFileObject(fileSystem, p);
         }
         return fo;
     }
@@ -491,23 +500,28 @@ public final class Item implements NativeFileItem, PropertyChangeListener {
     }
     
     public final String getMIMEType() {
-        DataObject dataObject = getDataObject();
-        FileObject fo = dataObject == null ? null : dataObject.getPrimaryFile();
-        if (fo == null) {
-            fo = getFileObjectImpl();
+        // use file object of this item
+        return getMIMETypeImpl(this.getDataObject(), this);
+    }
+    
+    private static String getMIMETypeImpl(DataObject dataObject, Item item) {
+        FileObject fobj = dataObject == null ? null : dataObject.getPrimaryFile();
+        if (fobj == null) {
+            fobj = item.getFileObjectImpl();
         }
         String mimeType;
-        if (fo == null || ! fo.isValid()) {
-            mimeType = MIMESupport.getKnownSourceFileMIMETypeByExtension(getName());
+        if (fobj == null || ! fobj.isValid()) {
+            mimeType = MIMESupport.getKnownSourceFileMIMETypeByExtension(item.getName());
         } else {
-            mimeType = MIMESupport.getSourceFileMIMEType(fo);
+            mimeType = MIMESupport.getSourceFileMIMEType(fobj);
         }
         return mimeType;
     }
 
-    public PredefinedToolKind getDefaultTool() {
+    /*package*/ static PredefinedToolKind getDefaultToolForItem(DataObject dataObject, Item item) {
         PredefinedToolKind tool;
-        String mimeType = getMIMEType();
+        // use mime type of passed data object
+        String mimeType = getMIMETypeImpl(dataObject, item);
         if (MIMENames.C_MIME_TYPE.equals(mimeType)) {
 //            DataObject dataObject = getDataObject();
 //            FileObject fo = dataObject == null ? null : dataObject.getPrimaryFile();
@@ -515,7 +529,7 @@ public final class Item implements NativeFileItem, PropertyChangeListener {
 //            if (fo != null && "pc".equals(fo.getExt())) { //NOI18N
 //                tool = PredefinedToolKind.CustomTool;
 //            } else {
-                tool = PredefinedToolKind.CCompiler;
+            tool = PredefinedToolKind.CCompiler;
 //            }
         } else if (MIMENames.HEADER_MIME_TYPE.equals(mimeType)) {
             tool = PredefinedToolKind.CustomTool;
@@ -524,10 +538,12 @@ public final class Item implements NativeFileItem, PropertyChangeListener {
         } else if (MIMENames.FORTRAN_MIME_TYPE.equals(mimeType)) {
             tool = PredefinedToolKind.FortranCompiler;
         } else if (MIMENames.ASM_MIME_TYPE.equals(mimeType)) {
-            DataObject dataObject = getDataObject();
-            FileObject fo = dataObject == null ? null : dataObject.getPrimaryFile();
+            FileObject fobj = dataObject == null ? null : dataObject.getPrimaryFile();
+            if (fobj == null) {
+                fobj = item.getFileObjectImpl();
+            }
             // Do not use assembler for .il files
-            if (fo != null && "il".equals(fo.getExt())) { //NOI18N
+            if (fobj != null && "il".equals(fobj.getExt())) { //NOI18N
                 tool = PredefinedToolKind.CustomTool;
             } else {
                 tool = PredefinedToolKind.Assembler;
@@ -537,7 +553,12 @@ public final class Item implements NativeFileItem, PropertyChangeListener {
         }
         return tool;
     }
-
+    
+    public PredefinedToolKind getDefaultTool() {
+        // use data object of this item
+        return getDefaultToolForItem(this.getDataObject(), this);
+    }
+    
     public boolean canHaveConfiguration() {
         return ConfigurationRequirementProvider.askAllProviders(this);
     }
@@ -626,11 +647,20 @@ public final class Item implements NativeFileItem, PropertyChangeListener {
                 vec2.addAll(list.get(i));
             }
             vec2.addAll(cccCompilerConfiguration.getIncludeDirectories().getValue());
+            ExecutionEnvironment env = compiler.getExecutionEnvironment();            
+            MacroConverter macroConverter = null;
             // Convert all paths to absolute paths
-            FileSystem compilerFS = FileSystemProvider.getFileSystem(compiler.getExecutionEnvironment());
+            FileSystem compilerFS = FileSystemProvider.getFileSystem(env);
             FileSystem projectFS = fileSystem;
             List<FSPath> result = new ArrayList<FSPath>();            
             for (String p : vec2) {
+                if (ConfigurationDescriptorProvider.VCS_WRITE && p.contains("$")) { // NOI18N
+                    // macro based path
+                    if (macroConverter == null) {
+                        macroConverter = new MacroConverter(env);
+                    }
+                    p = macroConverter.expand(p);
+                }
                 String absPath = CndPathUtilitities.toAbsolutePath(getFolder().getConfigurationDescriptor().getBaseDirFileObject(), p);
                 result.add(new FSPath(projectFS, absPath));
             }
@@ -931,6 +961,16 @@ public final class Item implements NativeFileItem, PropertyChangeListener {
     }
     private static final SpiAccessor SPI_ACCESSOR = new SpiAccessor();
 
+    public boolean hasImportantAttributes() {
+        assert org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider.VCS_WRITE;
+        for (ItemConfiguration conf : getItemConfigurations()) {
+            if (conf != null && !conf.isDefaultConfiguration() ) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     private static final class SpiAccessor {
 
         private Collection<? extends UserOptionsProvider> uoProviders;
@@ -1008,6 +1048,32 @@ public final class Item implements NativeFileItem, PropertyChangeListener {
                 includes = provider.expandIncludePaths(includes, compilerOptions, compiler, makeConfiguration);
             }
             return includes;
+        }
+    }
+    
+    private static final class MacroConverter {
+        private MacroExpander expander = null;
+        private Map<String, String> envVariables = Collections.emptyMap();
+
+        public MacroConverter(ExecutionEnvironment env) {
+            try {
+                HostInfo hostInfo = HostInfoUtils.getHostInfo(env);
+                this.envVariables = hostInfo.getEnvironment();
+                this.expander = MacroExpanderFactory.getExpander(env);
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            } catch (CancellationException ex) {
+                Exceptions.printStackTrace(ex);
+            }            
+        }
+        
+        public String expand(String in) {
+            try {
+                return expander != null ? expander.expandMacros(in, envVariables) : in;
+            } catch (ParseException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+            return in;
         }
     }
 }

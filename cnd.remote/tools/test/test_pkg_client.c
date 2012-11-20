@@ -1,3 +1,7 @@
+/**
+ * Copyright (c) 2009, 2012, Oracle and/or its affiliates. All rights reserved.
+ */
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <pthread.h>

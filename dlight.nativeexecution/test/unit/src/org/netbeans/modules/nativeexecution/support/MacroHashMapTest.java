@@ -42,23 +42,23 @@
 
 package org.netbeans.modules.nativeexecution.support;
 
-import org.netbeans.modules.nativeexecution.api.util.MacroMap;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
-import org.netbeans.modules.nativeexecution.api.util.MacroExpanderFactory;
-import org.netbeans.modules.nativeexecution.api.util.MacroExpanderFactory.MacroExpander;
+import org.netbeans.modules.nativeexecution.api.util.MacroMap;
+import org.netbeans.modules.nativeexecution.test.NativeExecutionBaseTestCase;
 
 /**
  *
  * @author ak119685
  */
-public class MacroHashMapTest {
+public class MacroHashMapTest extends NativeExecutionBaseTestCase {
 
-    public MacroHashMapTest() {
+    public MacroHashMapTest(String name) {
+        super(name);
     }
 
     @BeforeClass
@@ -70,10 +70,12 @@ public class MacroHashMapTest {
     }
 
     @Before
+    @Override
     public void setUp() {
     }
 
     @After
+    @Override
     public void tearDown() {
     }
 

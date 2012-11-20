@@ -44,14 +44,26 @@ package org.netbeans.modules.php.editor.verification;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
-import javax.swing.text.BadLocationException;
 import org.netbeans.editor.BaseDocument;
-import org.netbeans.modules.csl.api.*;
+import org.netbeans.modules.csl.api.EditList;
+import org.netbeans.modules.csl.api.Hint;
+import org.netbeans.modules.csl.api.HintFix;
+import org.netbeans.modules.csl.api.HintSeverity;
+import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
+import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
+import org.netbeans.modules.php.editor.parser.astnodes.Assignment;
+import org.netbeans.modules.php.editor.parser.astnodes.Block;
+import org.netbeans.modules.php.editor.parser.astnodes.ConditionalExpression;
+import org.netbeans.modules.php.editor.parser.astnodes.DoStatement;
+import org.netbeans.modules.php.editor.parser.astnodes.ForEachStatement;
+import org.netbeans.modules.php.editor.parser.astnodes.ForStatement;
+import org.netbeans.modules.php.editor.parser.astnodes.IfStatement;
+import org.netbeans.modules.php.editor.parser.astnodes.InfixExpression;
 import org.netbeans.modules.php.editor.parser.astnodes.InfixExpression.OperatorType;
-import org.netbeans.modules.php.editor.parser.astnodes.*;
+import org.netbeans.modules.php.editor.parser.astnodes.ReturnStatement;
+import org.netbeans.modules.php.editor.parser.astnodes.WhileStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.visitors.DefaultTreePathVisitor;
-import org.netbeans.modules.php.editor.verification.PHPHintsProvider.Kind;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle.Messages;
 
@@ -59,12 +71,12 @@ import org.openide.util.NbBundle.Messages;
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public class AmbiguousComparisonHint extends AbstractRule {
+public class AmbiguousComparisonHint extends AbstractHint {
 
     private static final String HINT_ID = "Ambiguous.Comparison.Hint"; //NOI18N
 
     @Override
-    void computeHintsImpl(final PHPRuleContext context, final List<Hint> hints, final Kind kind) throws BadLocationException {
+    void compute(final PHPRuleContext context, final List<Hint> hints) {
         final PHPParseResult phpParseResult = (PHPParseResult) context.parserResult;
         if (phpParseResult.getProgram() == null) {
             return;
@@ -93,10 +105,16 @@ public class AmbiguousComparisonHint extends AbstractRule {
             return hints;
         }
 
-        @Messages("AmbiguousComparisonHintCustom=Possible ambiguous comparison")
+        @Messages("AmbiguousComparisonHintCustom=Possible accidental comparison found. Check if you wanted to use '=' instead.")
         private void createHint(final InfixExpression node) {
             final OffsetRange offsetRange = new OffsetRange(node.getStartOffset(), node.getEndOffset());
-            hints.add(new Hint(AmbiguousComparisonHint.this, Bundle.AmbiguousComparisonHintCustom(), fileObject, offsetRange, Collections.<HintFix>singletonList(new AssignmentHintFix(doc, node)), 500));
+            hints.add(new Hint(
+                    AmbiguousComparisonHint.this,
+                    Bundle.AmbiguousComparisonHintCustom(),
+                    fileObject,
+                    offsetRange,
+                    Collections.<HintFix>singletonList(new AssignmentHintFix(doc, node)),
+                    500));
         }
 
         @Override

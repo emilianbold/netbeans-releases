@@ -165,7 +165,7 @@ public class NamespacesModule extends CssEditorModule {
     private static List<CompletionProposal> getNamespaceCompletionProposals(final CompletionContext context) {
         final List<CompletionProposal> proposals = new ArrayList<CompletionProposal>();
         //todo: rewrite to use index later
-        Model sourceModel = Model.getModel(context.getParserResult());
+        Model sourceModel = context.getSourceModel();
         sourceModel.runReadTask(new Model.ModelTask() {
             @Override
             public void run(StyleSheet styleSheet) {

@@ -62,5 +62,7 @@ public interface SECTIONS {
     String DEBUG_PUBNAMES = ".debug_pubnames"; // NOI18N
     String RELA_DEBUG_INFO = ".rela.debug_info"; // NOI18N
     String SYM_TAB = ".symtab"; // NOI18N
-
+    String STAB_INDEX = ".stab.index"; // NOI18N
+    String STAB_INDEXSTR = ".stab.indexstr"; // NOI18N
+    
 }

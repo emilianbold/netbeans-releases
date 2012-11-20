@@ -48,7 +48,7 @@ import java.util.ResourceBundle;
 import javax.swing.Action;
 import javax.swing.text.JTextComponent;
 import org.netbeans.modules.editor.lib2.EditorImplementation;
-import org.netbeans.spi.editor.EditorImplementationProvider;
+import org.netbeans.modules.editor.lib2.EditorImplementationProvider;
 
 /** This is provider of implementation. This package (org.netbeans.editor)
  * represent editor core which can be used independently on the rest of NetBeans.

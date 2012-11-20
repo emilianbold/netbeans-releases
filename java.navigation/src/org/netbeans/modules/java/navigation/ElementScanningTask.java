@@ -73,6 +73,7 @@ import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.ElementHandle;
+import org.netbeans.api.java.source.TypeUtilities.TypeNameOptions;
 import org.netbeans.modules.java.navigation.ElementNode.Description;
 
 /** XXX Remove the ElementScanner class from here it should be wenough to
@@ -135,15 +136,15 @@ public class ElementScanningTask implements CancellableTask<CompilationInfo>{
             PositionVisitor posVis = new PositionVisitor (trees, canceled);
             posVis.scan(cuTree, pos);
         }
-        
+        final boolean fqn = ui.getFilters().isFqn();
         if ( !canceled.get() && elements != null) {
             for (Element element : elements) {
-                Description topLevel = element2description(element, null, false, info, pos);
+                Description topLevel = element2description(element, null, false, info, pos, fqn);
                 if( null != topLevel ) {
                     if (!rootDescription.subs.add( topLevel )) {
                         LOG.log(Level.INFO, "Duplicate top level class: {0}", topLevel.name);   //NOI18N
                     }
-                    addMembers( (TypeElement)element, topLevel, info, pos);
+                    addMembers( (TypeElement)element, topLevel, info, pos, fqn);
                 }
             }
         }
@@ -218,19 +219,19 @@ public class ElementScanningTask implements CancellableTask<CompilationInfo>{
         }        
     }
      
-    private void addMembers( final TypeElement e, final Description parentDescription, final CompilationInfo info, final Map<Element,Long> pos) {        
+    private void addMembers( final TypeElement e, final Description parentDescription, final CompilationInfo info, final Map<Element,Long> pos, boolean fqn) {
         List<? extends Element> members = info.getElements().getAllMembers( e );
         for( Element m : members ) {
             if( canceled.get() )
                 return;
             
-            Description d = element2description(m, e, parentDescription.isInherited, info, pos);
+            Description d = element2description(m, e, parentDescription.isInherited, info, pos, fqn);
             if( null != d ) {
                 if (!parentDescription.subs.add( d )) {
                     LOG.log(Level.INFO, "Duplicate enclosed element: {0}", d.name);   //NOI18N  Should never happen
                 }
                 if( m instanceof TypeElement && !d.isInherited ) {
-                    addMembers( (TypeElement)m, d, info, pos);
+                    addMembers( (TypeElement)m, d, info, pos, fqn);
                 }
             }
         }
@@ -238,7 +239,7 @@ public class ElementScanningTask implements CancellableTask<CompilationInfo>{
     
     private Description element2description(final Element e, final Element parent,
             final boolean isParentInherited, final CompilationInfo info,
-            final Map<Element,Long> pos) {
+            final Map<Element,Long> pos, boolean  fqn) {
         if( info.getElementUtilities().isSynthetic(e) )
             return null;
         
@@ -254,13 +255,13 @@ public class ElementScanningTask implements CancellableTask<CompilationInfo>{
         
         if( e instanceof TypeElement ) {
             d.subs = new HashSet<Description>();
-            d.htmlHeader = createHtmlHeader(info,  (TypeElement)e, info.getElements().isDeprecated(e),d.isInherited );
+            d.htmlHeader = createHtmlHeader(info,  (TypeElement)e, info.getElements().isDeprecated(e),d.isInherited, fqn );
         } else if( e instanceof ExecutableElement ) {
-            d.htmlHeader = createHtmlHeader(info,  (ExecutableElement)e, info.getElements().isDeprecated(e),d.isInherited );
+            d.htmlHeader = createHtmlHeader(info,  (ExecutableElement)e, info.getElements().isDeprecated(e),d.isInherited, fqn );
         } else if( e instanceof VariableElement ) {
             if( !(e.getKind() == ElementKind.FIELD || e.getKind() == ElementKind.ENUM_CONSTANT) )
                 return null;
-            d.htmlHeader = createHtmlHeader(info,  (VariableElement)e, info.getElements().isDeprecated(e),d.isInherited );
+            d.htmlHeader = createHtmlHeader(info,  (VariableElement)e, info.getElements().isDeprecated(e),d.isInherited, fqn );
         }
         
         d.modifiers = e.getModifiers();
@@ -288,7 +289,7 @@ public class ElementScanningTask implements CancellableTask<CompilationInfo>{
     }
         
    /** Creates HTML display name of the Executable element */
-    private String createHtmlHeader(CompilationInfo info, ExecutableElement e, boolean isDeprecated,boolean isInherited ) {
+    private String createHtmlHeader(CompilationInfo info, ExecutableElement e, boolean isDeprecated,boolean isInherited, boolean fqn ) {
 
         StringBuilder sb = new StringBuilder();
         if ( isDeprecated ) {
@@ -310,7 +311,7 @@ public class ElementScanningTask implements CancellableTask<CompilationInfo>{
             VariableElement param = it.next(); 
             sb.append( "<font color=" + TYPE_COLOR + ">" ); // NOI18N
             final boolean vararg = !it.hasNext() && e.isVarArgs();
-            sb.append(printArg(info, param.asType(),vararg));
+            sb.append(printArg(info, param.asType(),vararg, fqn));
             sb.append("</font>"); // NOI18N
             sb.append(" "); // NOI18N
             sb.append(Utils.escape(param.getSimpleName().toString()));
@@ -327,7 +328,7 @@ public class ElementScanningTask implements CancellableTask<CompilationInfo>{
             if ( rt.getKind() != TypeKind.VOID ) {                               
                 sb.append(" : "); // NOI18N     
                 sb.append( "<font color=" + TYPE_COLOR + ">" ); // NOI18N
-                sb.append(print(info, e.getReturnType()));
+                sb.append(print(info, e.getReturnType(), fqn));
                 sb.append("</font>"); // NOI18N                    
             }
         }
@@ -335,7 +336,7 @@ public class ElementScanningTask implements CancellableTask<CompilationInfo>{
         return sb.toString();
     }
 
-    private String createHtmlHeader(CompilationInfo info, VariableElement e, boolean isDeprecated,boolean isInherited) {
+    private String createHtmlHeader(CompilationInfo info, VariableElement e, boolean isDeprecated,boolean isInherited, boolean fqn) {
 
         StringBuilder sb = new StringBuilder();
 
@@ -353,14 +354,14 @@ public class ElementScanningTask implements CancellableTask<CompilationInfo>{
         if ( e.getKind() != ElementKind.ENUM_CONSTANT ) {
             sb.append( " : " ); // NOI18N
             sb.append( "<font color=" + TYPE_COLOR + ">" ); // NOI18N
-            sb.append(print(info, e.asType()));
+            sb.append(print(info, e.asType(), fqn));
             sb.append("</font>"); // NOI18N
         }
 
         return sb.toString();            
     }
 
-    private String createHtmlHeader(CompilationInfo info, TypeElement e, boolean isDeprecated, boolean isInherited) {
+    private String createHtmlHeader(CompilationInfo info, TypeElement e, boolean isDeprecated, boolean isInherited, boolean fqn) {
 
         StringBuilder sb = new StringBuilder();            
         if ( isDeprecated ) {
@@ -369,7 +370,10 @@ public class ElementScanningTask implements CancellableTask<CompilationInfo>{
         if( isInherited ) {
             sb.append( "<font color=" + INHERITED_COLOR + ">" ); // NOI18N
         }
-        sb.append(Utils.escape(e.getSimpleName().toString()));
+        sb.append(Utils.escape(
+            fqn?
+            e.getQualifiedName().toString():
+            e.getSimpleName().toString()));
         if ( isDeprecated ) {
             sb.append("</s>"); // NOI18N
         }
@@ -388,7 +392,7 @@ public class ElementScanningTask implements CancellableTask<CompilationInfo>{
                     List<? extends TypeMirror> bounds = tp.getBounds();
                     //System.out.println( tp.getSimpleName() + "   bounds size " + bounds.size() );
                     if ( !bounds.isEmpty() ) {
-                        sb.append(printBounds(info, bounds));
+                        sb.append(printBounds(info, bounds, fqn));
                     }
                 }
                 catch ( NullPointerException npe ) {
@@ -406,7 +410,7 @@ public class ElementScanningTask implements CancellableTask<CompilationInfo>{
         // Add superclass and implemented interfaces
 
         TypeMirror sc = e.getSuperclass();
-        String scName = print(info,  sc );
+        String scName = print(info, sc, fqn);
 
         if ( sc == null || 
              e.getKind() == ElementKind.ENUM ||
@@ -433,7 +437,7 @@ public class ElementScanningTask implements CancellableTask<CompilationInfo>{
                 for (Iterator<? extends TypeMirror> it = ifaces.iterator(); it.hasNext();) {
                     TypeMirror typeMirror = it.next();
                     sb.append( "<font color=" + TYPE_COLOR + ">" ); // NOI18N                
-                    sb.append( print(info, typeMirror) );
+                    sb.append( print(info, typeMirror, fqn) );
                     sb.append("</font>"); // NOI18N
                     if ( it.hasNext() ) {
                         sb.append(", "); // NOI18N
@@ -446,7 +450,7 @@ public class ElementScanningTask implements CancellableTask<CompilationInfo>{
         return sb.toString();            
     }
 
-    private String printBounds(CompilationInfo info, List<? extends TypeMirror> bounds) {
+    private String printBounds(CompilationInfo info,  List<? extends TypeMirror> bounds, boolean fqn) {
         if ( bounds.size() == 1 && "java.lang.Object".equals( bounds.get(0).toString() ) ) {
             return "";
         }
@@ -457,7 +461,7 @@ public class ElementScanningTask implements CancellableTask<CompilationInfo>{
 
         for (Iterator<? extends TypeMirror> it = bounds.iterator(); it.hasNext();) {
             TypeMirror bound = it.next();
-            sb.append(print(info, bound));
+            sb.append(print(info, bound, fqn));
             if ( it.hasNext() ) {
                 sb.append(" & " ); // NOI18N
             }
@@ -467,21 +471,22 @@ public class ElementScanningTask implements CancellableTask<CompilationInfo>{
         return sb.toString();
     }
 
-    private String printArg(CompilationInfo info, final TypeMirror tm, final boolean varArg) {
+    private String printArg(CompilationInfo info, final TypeMirror tm, final boolean varArg, boolean fqn) {
         if (varArg) {
             if (tm.getKind() == TypeKind.ARRAY) {
                 final ArrayType at = (ArrayType)tm;
-                final StringBuilder sb = new StringBuilder( print(info, at.getComponentType()) );
+                final StringBuilder sb = new StringBuilder( print(info, at.getComponentType(), fqn) );
                 sb.append("...");   //NOI18N
                 return sb.toString();
             } else {
                 assert false : "Expected array: " + tm.toString() + " ( " +tm.getKind() + " )"; //NOI18N
             }
         }
-        return print(info, tm);
+        return print(info, tm, fqn);
     }
 
-    private String print(CompilationInfo info, TypeMirror tm ) {
-        return info.getTypeUtilities().getTypeName(tm).toString();
+    private String print(CompilationInfo info, TypeMirror tm, boolean fqn) {
+        return fqn ? info.getTypeUtilities().getTypeName(tm, TypeNameOptions.PRINT_FQN).toString()
+                   : info.getTypeUtilities().getTypeName(tm).toString();
     }
 }

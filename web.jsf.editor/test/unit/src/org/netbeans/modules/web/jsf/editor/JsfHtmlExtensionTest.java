@@ -62,7 +62,6 @@ public class JsfHtmlExtensionTest extends TestBaseForTestProject {
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        JsfHtmlExtension.activate();
     }
     
 

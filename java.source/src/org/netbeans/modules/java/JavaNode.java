@@ -51,6 +51,7 @@ import java.io.File;
 import java.lang.reflect.InvocationTargetException;
 import java.net.URI;
 import java.net.URL;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
@@ -173,6 +174,17 @@ public final class JavaNode extends DataNode implements ChangeListener {
             LOG.warning("Multiple instances of RenameHandler found in Lookup; only using first one: " + handlers); //NOI18N
         return handlers.iterator().next();
     }
+
+    private PropertySet[] propertySets;
+    
+    @Override
+    public PropertySet[] getPropertySets() {
+        getSheet(); //force initialization
+        
+        synchronized (this) {
+            return Arrays.copyOf(propertySets, propertySets.length);
+        }
+    }
     
     /** Create the property sheet.
      * @return the sheet
@@ -203,6 +215,14 @@ public final class JavaNode extends DataNode implements ChangeListener {
                     getMessage(JavaNode.class, "HINT_JavaNode_boot_classpath")),
         });
         sheet.put(ps);
+        
+        @SuppressWarnings("LocalVariableHidesMemberVariable")
+        PropertySet[] propertySets = sheet.toArray();
+        
+        synchronized (this) {
+            this.propertySets = propertySets;
+        }
+        
         return sheet;
     }
     

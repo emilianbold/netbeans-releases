@@ -91,14 +91,24 @@ public final class ZendPhpFrameworkProvider extends PhpFrameworkProvider {
 
     @Override
     public boolean isInPhpModule(PhpModule phpModule) {
-        FileObject zfProject = phpModule.getSourceDirectory().getFileObject(".zfproject.xml"); // NOI18N
+        FileObject sourceDirectory = phpModule.getSourceDirectory();
+        if (sourceDirectory == null) {
+            // broken project
+            return false;
+        }
+        FileObject zfProject = sourceDirectory.getFileObject(".zfproject.xml"); // NOI18N
         return zfProject != null && zfProject.isData() && zfProject.isValid();
     }
 
     @Override
     public File[] getConfigurationFiles(PhpModule phpModule) {
+        FileObject sourceDirectory = phpModule.getSourceDirectory();
+        if (sourceDirectory == null) {
+            // broken project
+            return new File[0];
+        }
         List<File> files = new LinkedList<File>();
-        FileObject appConfig = phpModule.getSourceDirectory().getFileObject("application/configs"); // NOI18N
+        FileObject appConfig = sourceDirectory.getFileObject("application/configs"); // NOI18N
         if (appConfig != null) {
             for (FileObject child : appConfig.getChildren()) {
                 if (child.isData()) {
@@ -107,7 +117,7 @@ public final class ZendPhpFrameworkProvider extends PhpFrameworkProvider {
             }
             Collections.sort(files);
         }
-        FileObject bootstrap = phpModule.getSourceDirectory().getFileObject("application/Bootstrap.php"); // NOI18N
+        FileObject bootstrap = sourceDirectory.getFileObject("application/Bootstrap.php"); // NOI18N
         if (bootstrap != null) {
             files.add(FileUtil.toFile(bootstrap));
         }
@@ -121,8 +131,12 @@ public final class ZendPhpFrameworkProvider extends PhpFrameworkProvider {
 
     @Override
     public PhpModuleProperties getPhpModuleProperties(PhpModule phpModule) {
-        FileObject sourceDirectory = phpModule.getSourceDirectory();
         PhpModuleProperties properties = new PhpModuleProperties();
+        FileObject sourceDirectory = phpModule.getSourceDirectory();
+        if (sourceDirectory == null) {
+            // broken project
+            return properties;
+        }
         FileObject web = sourceDirectory.getFileObject("public"); // NOI18N
         if (web != null) {
             properties = properties.setWebRoot(web);

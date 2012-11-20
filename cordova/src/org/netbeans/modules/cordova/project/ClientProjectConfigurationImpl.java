@@ -46,18 +46,13 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.cordova.android.AndroidActionProvider;
-import org.netbeans.modules.cordova.android.AndroidConfigurationPanel;
-import org.netbeans.modules.cordova.android.AndroidPlatform;
-import org.netbeans.modules.cordova.ios.IOSActionProvider;
-import org.netbeans.modules.cordova.ios.IOSConfigurationPanel;
-import org.netbeans.modules.cordova.ios.IOSPlatform;
-import org.netbeans.modules.web.browser.api.BrowserSupport;
-import org.netbeans.modules.web.browser.api.WebBrowser;
+import org.netbeans.modules.cordova.platforms.Device;
+import org.netbeans.modules.cordova.platforms.MobilePlatform;
+import org.netbeans.modules.cordova.platforms.PlatformManager;
+import org.netbeans.modules.cordova.platforms.PropertyProvider;
 import org.netbeans.modules.web.clientproject.spi.platform.ClientProjectConfigurationImplementation;
 import org.netbeans.modules.web.clientproject.spi.platform.ProjectConfigurationCustomizer;
 import org.netbeans.modules.web.clientproject.spi.platform.RefreshOnSaveListener;
-import org.netbeans.modules.web.clientproject.spi.webserver.ServerURLMappingImplementation;
 import org.netbeans.spi.project.ActionProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.util.EditableProperties;
@@ -66,7 +61,7 @@ import org.openide.util.Exceptions;
 /**
  *
  */
-public class ClientProjectConfigurationImpl implements ClientProjectConfigurationImplementation {
+public class ClientProjectConfigurationImpl implements ClientProjectConfigurationImplementation, PropertyProvider {
 
     final private Project project;
     //final private ClientProjectPlatformImpl platform;
@@ -80,7 +75,6 @@ public class ClientProjectConfigurationImpl implements ClientProjectConfiguratio
         this.project = project;
         this.name = id;
         this.displayName = displayName;
-        assert type.equals(AndroidPlatform.TYPE) || type.equals(IOSPlatform.TYPE);
         this.type = type;
         this.props = ep;
         this.file = kid;
@@ -118,11 +112,17 @@ public class ClientProjectConfigurationImpl implements ClientProjectConfiguratio
     public String getType() {
         return type;
     }
+    
+    public Device getDevice() {
+        return PlatformManager.getPlatform(type).getDevice(name, props);
+    }
 
+    @Override
     public String getProperty(String prop) {
         return props.getProperty(prop);
     }
     
+    @Override
     public String putProperty(String prop, String value) {
         return props.put(prop, value);
     }
@@ -136,7 +136,7 @@ public class ClientProjectConfigurationImpl implements ClientProjectConfiguratio
                 p.load(is);
                 String id = configFile.getName();
                 String label = p.getProperty("display.name"); // NOI18N
-                String type = p.getProperty("type");
+                String type = p.getProperty("type"); //NOI18N
                 return new ClientProjectConfigurationImpl(proj, configFile, id, label != null ? label : id, type, p);
             } finally {
                 is.close();
@@ -158,20 +158,12 @@ public class ClientProjectConfigurationImpl implements ClientProjectConfiguratio
 
     @Override
     public ActionProvider getActionProvider() {
-        if (type.equals(AndroidPlatform.TYPE)) {
-            return new AndroidActionProvider(project);
-        } else {
-            return new IOSActionProvider(project);
-        }
+        return getDevice().getActionProvider(project);
     }
 
     @Override
     public ProjectConfigurationCustomizer getProjectConfigurationCustomizer() {
-        if (type.equals(AndroidPlatform.TYPE)) {
-            return new AndroidConfigurationPanel.AndroidConfigurationCustomizer(project, this);
-        } else {
-            return new IOSConfigurationPanel.IOSConfigurationCustomizer(project, this);
-        }
+        return getDevice().getProjectConfigurationCustomizer(project, this);
     }
     
     @Override

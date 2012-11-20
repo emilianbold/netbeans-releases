@@ -188,7 +188,7 @@ public class CPExtender extends ProjectClassPathModifierImplementation {
                         model.removeChildComponent(dep);
                         modified = true;
                     }
-                    break;
+                    continue;
                 }
                 if (dep == null) {
                     dep = ModelUtils.checkModelDependency(model, result.getGroupId(), result.getArtifactId(), true);

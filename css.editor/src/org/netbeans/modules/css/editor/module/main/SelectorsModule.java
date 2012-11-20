@@ -106,12 +106,12 @@ public class SelectorsModule extends CssEditorModule {
     static ElementKind PSEUDO_CLASS_KIND = ElementKind.GLOBAL;
 
     @Override
-    public Collection<String> getPseudoClasses() {
+    public Collection<String> getPseudoClasses(EditorFeatureContext context) {
         return PSEUDO_CLASSES;
     }
 
     @Override
-    public Collection<String> getPseudoElements() {
+    public Collection<String> getPseudoElements(EditorFeatureContext context) {
         return PSEUDO_ELEMENTS;
     }
 
@@ -184,11 +184,11 @@ public class SelectorsModule extends CssEditorModule {
     }
 
     private static List<CompletionProposal> getPseudoClasses(CompletionContext context) {
-        return Utilities.createRAWCompletionProposals(CssModuleSupport.getPseudoClasses(), ElementKind.FIELD, context.getAnchorOffset());
+        return Utilities.createRAWCompletionProposals(CssModuleSupport.getPseudoClasses(context), ElementKind.FIELD, context.getAnchorOffset());
     }
 
     private static List<CompletionProposal> getPseudoElements(CompletionContext context) {
-        return Utilities.createRAWCompletionProposals(CssModuleSupport.getPseudoElements(), ElementKind.FIELD, context.getAnchorOffset());
+        return Utilities.createRAWCompletionProposals(CssModuleSupport.getPseudoElements(context), ElementKind.FIELD, context.getAnchorOffset());
     }
 
     @Override

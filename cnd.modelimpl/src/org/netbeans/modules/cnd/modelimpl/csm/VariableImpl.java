@@ -471,141 +471,16 @@ public class VariableImpl<T> extends OffsetableDeclarationBase<T> implements Csm
     
     public static class VariableBuilder extends SimpleDeclarationBuilder implements CsmObjectBuilder {
         
-        private CharSequence name;// = CharSequences.empty();
-        private boolean _static = false;
-        private boolean _extern = false;
-        private CsmDeclaration.Kind kind = CsmDeclaration.Kind.CLASS;
-        private CsmFile file;
-        private final FileContent fileContent;
-        private int startOffset;
-        private int endOffset;
-        private CsmObjectBuilder parent;
-
-        private TypeBuilder typeBuilder;
-        
-        private CsmScope scope;
-        private VariableImpl instance;
-
-        public VariableBuilder(FileContent fileContent) {
-            assert fileContent != null;
-            this.fileContent = fileContent;
-        }
-        
-        public void setKind(Kind kind) {
-            this.kind = kind;
-        }
-        
-        public void setName(CharSequence name) {
-            if(this.name == null) {
-                this.name = name;
-            }
-        }
-        
-        public CharSequence getName() {
-            return name;
-        }
-        
-        public CharSequence getRawName() {
-            return NameCache.getManager().getString(CharSequences.create(name.toString().replace("::", "."))); //NOI18N
-        }
-        
-        public void setFile(CsmFile file) {
-            this.file = file;
-        }
-        
-        public void setEndOffset(int endOffset) {
-            this.endOffset = endOffset;
-        }
-
-        public void setStartOffset(int startOffset) {
-            this.startOffset = startOffset;
-        }
-
-        public void setStatic() {
-            this._static = true;
-        }
-
-        public void setExtern() {
-            this._extern = true;
-        }
-
-        public void setParent(CsmObjectBuilder parent) {
-            this.parent = parent;
-        }
-
-        public void setTypeBuilder(TypeBuilder typeBuilder) {
-            this.typeBuilder = typeBuilder;
-        }
-
-        private VariableImpl getVariableInstance() {
-            if(instance != null) {
-                return instance;
-            }
-            MutableDeclarationsContainer container = null;
-            if (parent == null) {
-                container = fileContent;
-            } else {
-                if(parent instanceof NamespaceDefinitionImpl.NamespaceBuilder) {
-                    container = ((NamespaceDefinitionImpl.NamespaceBuilder)parent).getNamespaceDefinitionInstance();
-                }
-            }
-            if(container != null && name != null) {
-                CsmOffsetableDeclaration decl = container.findExistingDeclaration(startOffset, name, kind);
-                if (decl != null && VariableImpl.class.equals(decl.getClass())) {
-                    instance = (VariableImpl) decl;
-                }
-            }
-            return instance;
-        }
-        
-        public void setScope(CsmScope scope) {
-            assert scope != null;
-            this.scope = scope;
-        }
-        
-        public CsmScope getScope() {
-            if(scope != null) {
-                return scope;
-            }
-            if (parent == null) {
-                scope = (NamespaceImpl) file.getProject().getGlobalNamespace();
-            } else {
-                if(parent instanceof NamespaceDefinitionImpl.NamespaceBuilder) {
-                    scope = ((NamespaceDefinitionImpl.NamespaceBuilder)parent).getNamespace();
-                }
-            }
-            return scope;
-        }
-        
         @Override
         public VariableImpl create() {
-            VariableImpl var = getVariableInstance();
+            VariableImpl var = null;
             CsmScope s = getScope();
-            if (var == null && s != null && name != null && getScope() != null) {
-                CsmType type = null;
-                if(typeBuilder != null) {
-                    typeBuilder.setScope(s);
-                    type = typeBuilder.create();
-                }
-                if(type == null) {
-                    type = TypeFactory.createSimpleType(BuiltinTypes.getBuiltIn("int"), file, startOffset, endOffset); // NOI18N
-                }
+            if (var == null && s != null && getName() != null && getScope() != null) {
+                var = new VariableImpl(getType(), getName(), getScope(), isStatic(), isExtern(), null, getFile(), getStartOffset(), getEndOffset());
                 
-                var = new VariableImpl(type, name, scope, _static, _extern, null, file, startOffset, endOffset);
+                postObjectCreateRegistration(isGlobal(), var);
                 
-                boolean global = !(scope instanceof CompoundStatementImpl);
-                postObjectCreateRegistration(global, var);
-                
-                if(parent != null) {
-                    if(parent instanceof NamespaceDefinitionImpl.NamespaceBuilder) {
-                        ((NamespaceDefinitionImpl.NamespaceBuilder)parent).addDeclaration(var);
-                    }
-                } else {
-                    fileContent.addDeclaration(var);
-                }
-            }
-            if(getScope() instanceof CsmNamespace) {
-                ((NamespaceImpl)getScope()).addDeclaration(var);
+                addDeclaration(var);
             }
             return var;
         }

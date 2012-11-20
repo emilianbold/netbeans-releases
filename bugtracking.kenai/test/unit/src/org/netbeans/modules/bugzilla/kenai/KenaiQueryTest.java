@@ -108,21 +108,4 @@ public class KenaiQueryTest extends NbTestCase implements TestConstants, QueryCo
         QueryTestUtil.getRepository().getIssueCache().storeQueryIssues(QUERY_NAME, new String[0]);
     }
 
-    private class QueryListener implements PropertyChangeListener {
-        int saved = 0;
-        int removed = 0;
-        public void propertyChange(PropertyChangeEvent evt) {
-            if(evt.getPropertyName().equals(Query.EVENT_QUERY_REMOVED)) {
-                removed++;
-            }
-            if(evt.getPropertyName().equals(Query.EVENT_QUERY_SAVED)) {
-                saved++;
-            }
-        }
-        void reset() {
-            saved = 0;
-            removed = 0;
-        }
-
-    }
 }

@@ -117,19 +117,19 @@ public class WrappedTextView extends View implements TabExpander {
 
     static final Color arrowColor = new Color (80, 162, 80);
 
-    private static Map hintsMap = null;
+    private static Map<RenderingHints.Key, Object> hintsMap = null;
     
     int tabSize;
     int tabBase;
     private int tabOffsetX = 0;
     
     @SuppressWarnings("unchecked")
-    static final Map getHints() {
+    static Map<RenderingHints.Key, Object> getHints() {
         if (hintsMap == null) {
             //Thanks to Phil Race for making this possible
             hintsMap = (Map)(Toolkit.getDefaultToolkit().getDesktopProperty("awt.font.desktophints")); //NOI18N
             if (hintsMap == null) {
-                hintsMap = new HashMap();
+                hintsMap = new HashMap<RenderingHints.Key, Object>();
                 if (antialias) {
                     hintsMap.put(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
                     hintsMap.put(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);

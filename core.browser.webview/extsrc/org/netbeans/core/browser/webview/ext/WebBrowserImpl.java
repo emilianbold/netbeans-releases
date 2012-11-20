@@ -45,6 +45,7 @@ package org.netbeans.core.browser.webview.ext;
 import java.awt.AWTEvent;
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
@@ -67,6 +68,8 @@ import javafx.embed.swing.JFXPanel;
 import javafx.event.EventHandler;
 import javafx.scene.Scene;
 import javafx.scene.control.ScrollPane;
+import javafx.scene.input.ContextMenuEvent;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.web.*;
 import javafx.scene.web.WebHistory.Entry;
@@ -96,6 +99,7 @@ import org.openide.util.lookup.InstanceContent;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ProxyLookup;
 import org.w3c.dom.Document;
+import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
 /**
@@ -104,7 +108,7 @@ import org.w3c.dom.Node;
  * @author S. Aubrecht, Jan Stola
  */
 public class WebBrowserImpl extends WebBrowser implements BrowserCallback, EnhancedBrowser {
-    
+
     private JFXPanel container;
     private String urlToLoad;
     private final PropertyChangeSupport propSupport = new PropertyChangeSupport(this);
@@ -124,6 +128,7 @@ public class WebBrowserImpl extends WebBrowser implements BrowserCallback, Enhan
     private boolean isForward = false;
     //toolbar for extra buttons (e.g. for developer tools)
     private final JToolBar toolbar = new JToolBar();
+    private final JPopupMenu contextMenu = new JPopupMenu();
 
     private final Semaphore INIT_LOCK = new Semaphore( -1 );
     private boolean enhancedMode;
@@ -154,8 +159,8 @@ public class WebBrowserImpl extends WebBrowser implements BrowserCallback, Enhan
         }
         return res;
     }
-    
-    
+
+
     @Override
     public Component getComponent() {
         synchronized( LOCK ) {
@@ -168,7 +173,7 @@ public class WebBrowserImpl extends WebBrowser implements BrowserCallback, Enhan
                         createBrowser();
                     }
                 });
-                //initComponentPopupMenu(container);
+                initContextMenu();
                 initialized = true;
             }
         }
@@ -176,8 +181,30 @@ public class WebBrowserImpl extends WebBrowser implements BrowserCallback, Enhan
     }
 
     /**
+     * Workarounds issue 217410 that is caused by a bug in WebView.
+     *
+     * @param view view where the issue 217410 should be workarounded.
+     */
+    private void issue217410Hack(final WebView view) {
+        view.setOnMouseExited(new EventHandler<MouseEvent>() {
+            @Override
+            public void handle(MouseEvent event) {
+                // Deliver an artificial mouseout event to window
+                String script = "var event = document.createEvent('MouseEvents');\n" // NOI18N
+                    + "event.initMouseEvent(\n" // NOI18N
+                    + "    'mouseout', true, true, window,\n" // NOI18N
+                    + "    0, 0, 0, 0, 0,\n" // NOI18N
+                    + "    false, false, false, false,\n" // NOI18N
+                    + "    0, null);\n" // NOI18N
+                    + "window.dispatchEvent(event);"; // NOI18N
+                view.getEngine().executeScript(script);
+            }
+        });
+    }
+
+    /**
      * Returns the lookup of this web-browser tab.
-     * 
+     *
      * @return lookup of this web-browser tab.
      */
     @Override
@@ -214,11 +241,12 @@ public class WebBrowserImpl extends WebBrowser implements BrowserCallback, Enhan
                 transport,
                 Factory.createWebKitDebugging(transport),
                 new ZoomAndResizeImpl(this),
-                toolbar
+                toolbar,
+                contextMenu
         );
         return new ProxyLookup( l, new AbstractLookup( lookupContent ) );
     }
-    
+
     @Override
     public void reloadDocument() {
         if( !isInitialized() )
@@ -251,14 +279,14 @@ public class WebBrowserImpl extends WebBrowser implements BrowserCallback, Enhan
         }
         _setURL( url );
     }
-    
+
     private void _setURL( final String url ) {
         javafx.application.Platform.runLater( new Runnable() {
             @Override
             public void run() {
                 String fullUrl = url;
                 if (!(url.startsWith( "http://") || url.startsWith( "https://") || url.startsWith("file:/"))) { // NOI18N
-                    fullUrl = "http://" + url; // NOI18N
+                    fullUrl = "http://" + url; // NOI18N //NOI18N
                 }
                 getEngine().load( fullUrl );
             }
@@ -465,6 +493,7 @@ public class WebBrowserImpl extends WebBrowser implements BrowserCallback, Enhan
         if( null == browser ) {
             WebView view = new WebView();
             initBrowser( view );
+            issue217410Hack(view);
 
             browser = view;
             INIT_LOCK.release();
@@ -482,8 +511,9 @@ public class WebBrowserImpl extends WebBrowser implements BrowserCallback, Enhan
         }
     }
 
-    private void initBrowser( WebView view ) {
+    private void initBrowser( final WebView view ) {
         view.setMinSize(100, 100);
+        view.setContextMenuEnabled( false );
         final WebEngine eng = view.getEngine();
         eng.setOnStatusChanged( new EventHandler<WebEvent<String>> () {
             @Override
@@ -576,13 +606,32 @@ public class WebBrowserImpl extends WebBrowser implements BrowserCallback, Enhan
                 return eng;
             }
         });
+        view.setOnContextMenuRequested( new EventHandler<ContextMenuEvent> () {
+            @Override
+            public void handle( ContextMenuEvent t ) {
+                int x = (int)t.getX();
+                int y = (int)t.getY();
+                final int screenX = (int)t.getScreenX();
+                final int screenY = (int)t.getScreenY();
+                String script = "document.elementFromPoint(" + x + ", " + y + ")"; //NOI18N
+                Object res = eng.executeScript( script );
+                final Element elemUnderCursor = res instanceof Element ? ( Element ) res : null;
+                SwingUtilities.invokeLater( new Runnable() {
+
+                    @Override
+                    public void run() {
+                        showContextMenu( screenX, screenY, elemUnderCursor );
+                    }
+                });
+            }
+        });
     }
 
     /** Alert message with this prefix are used for page inspection-related communication. */
     static final String PAGE_INSPECTION_PREFIX = "NetBeans-Page-Inspection"; // NOI18N
     /**
      * Processing of alert messages from this web-browser pane.
-     * 
+     *
      * @param message alert message.
      */
     private void processAlert(String message) {
@@ -632,7 +681,7 @@ public class WebBrowserImpl extends WebBrowser implements BrowserCallback, Enhan
 
     /**
      * Initializes popup-menu of the web-browser component.
-     * 
+     *
      * @param browserComponent component whose popup-menu should be initialized.
      */
     private void initComponentPopupMenu(JComponent browserComponent) {
@@ -655,6 +704,46 @@ public class WebBrowserImpl extends WebBrowser implements BrowserCallback, Enhan
             });
             browserComponent.setComponentPopupMenu(menu);
         }
+    }
+
+    private void showContextMenu( int screenX, int screenY, Element elementUnderCursor ) {
+        if( null == browser )
+            return; //wait till the browser is actually initialized
+        
+        Point p = new Point( screenX, screenY );
+        SwingUtilities.convertPointFromScreen( p, container );
+        contextMenu.show( container, p.x, p.y );
+    }
+
+    private void initContextMenu() {
+        contextMenu.add( new AbstractAction( NbBundle.getMessage(WebBrowserImpl.class, "Menu_BACK") ) {
+            @Override
+            public void actionPerformed( ActionEvent e ) {
+                backward();
+            }
+
+            @Override
+            public boolean isEnabled() {
+                return isBackward();
+            }
+        });
+        contextMenu.add( new AbstractAction( NbBundle.getMessage(WebBrowserImpl.class, "Menu_FORWARD") ) {
+            @Override
+            public void actionPerformed( ActionEvent e ) {
+                forward();
+            }
+
+            @Override
+            public boolean isEnabled() {
+                return isForward();
+            }
+        });
+        contextMenu.add( new AbstractAction( NbBundle.getMessage(WebBrowserImpl.class, "Menu_RELOAD") ) {
+            @Override
+            public void actionPerformed( ActionEvent e ) {
+                reloadDocument();
+            }
+        });
     }
 
     /**
@@ -699,16 +788,21 @@ public class WebBrowserImpl extends WebBrowser implements BrowserCallback, Enhan
     private WebEngine _createNewBrowserWindow() {
         final WebView newView = new WebView();
         final WebEngine newEngine = newView.getEngine();
-        Platform.runLater( new Runnable() {
+        SwingUtilities.invokeLater( new Runnable() {
             @Override
             public void run() {
                 final WebBrowserImpl browserImpl = new WebBrowserImpl( newView );
-                browserImpl.initBrowser( newView );
-                SwingUtilities.invokeLater( new Runnable() {
-
+                browserImpl.INIT_LOCK.release();
+                Platform.runLater( new Runnable() {
                     @Override
                     public void run() {
-                        openNewBrowserWindow( browserImpl );
+                        browserImpl.initBrowser( newView );
+                        SwingUtilities.invokeLater( new Runnable() {
+                            @Override
+                            public void run() {
+                                openNewBrowserWindow( browserImpl );
+                            }
+                        });
                     }
                 });
             }
@@ -782,7 +876,7 @@ public class WebBrowserImpl extends WebBrowser implements BrowserCallback, Enhan
         }
         return res;
     }
-    
+
     @Override
     public void setProjectContext(Lookup projectContext) {
         synchronized( LOOKUP_LOCK ) {
@@ -814,7 +908,7 @@ public class WebBrowserImpl extends WebBrowser implements BrowserCallback, Enhan
     }
 
     private void reportInvalidUrl( String location ) {
-        NotifyDescriptor nd = new NotifyDescriptor.Message( 
+        NotifyDescriptor nd = new NotifyDescriptor.Message(
                 NbBundle.getMessage( WebBrowserImpl.class, "Err_InvalidURL", location),
                 NotifyDescriptor.PLAIN_MESSAGE );
         DialogDisplayer.getDefault().notifyLater( nd );

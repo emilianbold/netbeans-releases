@@ -44,10 +44,13 @@ package org.netbeans.modules.css.model.impl;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.util.*;
+import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import org.netbeans.modules.css.lib.api.Node;
 import org.netbeans.modules.css.lib.api.NodeType;
 import org.netbeans.modules.css.lib.api.NodeUtil;
+import org.netbeans.modules.css.model.api.Media;
+import org.netbeans.modules.css.model.api.Rule;
 import org.netbeans.modules.css.model.api.semantic.PModel;
 import org.netbeans.modules.css.model.api.Element;
 import org.netbeans.modules.css.model.api.ElementListener;
@@ -55,6 +58,8 @@ import org.netbeans.modules.css.model.api.Model;
 import org.netbeans.modules.css.model.api.ModelVisitor;
 import org.netbeans.modules.css.model.api.PlainElement;
 import org.netbeans.modules.editor.indent.api.IndentUtils;
+import org.netbeans.modules.web.common.api.LexerUtils;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -80,6 +85,11 @@ public abstract class ModelElement implements Element {
     }
 
     @Override
+    public Model getModel() {
+        return this.model;
+    }
+
+    @Override
     public void accept(ModelVisitor modelVisitor) {
         for (int i = 0; i < getElementsCount(); i++) {
             Element child = getElementAt(i);
@@ -93,25 +103,34 @@ public abstract class ModelElement implements Element {
     public void acceptVisitorGeneric(Element element, ModelVisitor modelVisitor) {
         try {
             Class<?> elementClass = getModelClass(element);
-            String elementClassSimpleName = elementClass.getSimpleName();
-
-            Class<?> visitorClass = modelVisitor.getClass();
-            StringBuilder sb = new StringBuilder();
-            sb.append("visit"); //NOI18N
-            sb.append(elementClassSimpleName);
-
-//            System.out.println("trying to call ModelVisitor." + sb.toString() + "(" + elementClass.getSimpleName() + ")");
             
-            Method method = visitorClass.getMethod(sb.toString(), elementClass);
-            method.setAccessible(true);
+            if(Rule.class.equals(elementClass)) {
+                modelVisitor.visitRule((Rule)element);
+            } else if(Media.class.equals(elementClass)) {
+                modelVisitor.visitMedia((Media)element);
+            }
             
-            method.invoke(modelVisitor, element);
-        } catch (NoSuchMethodException nsme) {
+            //The reflection approach is horribly slow
+            
+//            String elementClassSimpleName = elementClass.getSimpleName();
+//
+//            Class<?> visitorClass = modelVisitor.getClass();
+//            StringBuilder sb = new StringBuilder();
+//            sb.append("visit"); //NOI18N
+//            sb.append(elementClassSimpleName);
+//
+////            System.out.println("trying to call ModelVisitor." + sb.toString() + "(" + elementClass.getSimpleName() + ")");
+//            
+//            Method method = visitorClass.getMethod(sb.toString(), elementClass);
+//            method.setAccessible(true);
+//            
+//            method.invoke(modelVisitor, element);
+//        } catch (NoSuchMethodException nsme) {
             //the visitor doesn't contain such method, delegate to the generic
             //ModelVisitor.visitElement(...)
             //XXX ideally the ModelVisitor interface is generated so it contain
             //all the methods
-            modelVisitor.visitElement(element);
+//            modelVisitor.visitElement(element);
         } catch (/* NoSuchMethodException, SecurityException,
                  InstantiationException, IllegalAccessException, IllegalArgumentException, 
                  InvocationTargetException */Exception ex) {
@@ -332,8 +351,30 @@ public abstract class ModelElement implements Element {
     public String toString() {
         StringBuilder sb = new StringBuilder();
         sb.append(getModelClass(this).getSimpleName());
-        sb.append(":");
+        sb.append("(model=");
+        sb.append(model);
+        sb.append(",sihc=");
         sb.append(System.identityHashCode(this));
+        sb.append(",type=");
+        if(node != null) {
+            sb.append("source[ofs=");
+            sb.append(node.from());
+            sb.append('-');
+            sb.append(node.to());
+            sb.append(";line=");
+            try {
+                sb.append(1 + LexerUtils.getLineOffset(model.getOriginalSource(), node.from()));
+                sb.append('-');
+                sb.append(1 + LexerUtils.getLineOffset(model.getOriginalSource(), node.to()));
+            } catch (BadLocationException ex) {
+                sb.append("BLE!");
+            }
+            sb.append(']');
+        } else {
+            sb.append("AI");
+        }
+        sb.append(')');
+        
         return sb.toString();
     }
 

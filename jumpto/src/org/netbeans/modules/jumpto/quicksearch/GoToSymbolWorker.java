@@ -52,7 +52,7 @@ import java.util.logging.Logger;
 import javax.swing.ListModel;
 import org.netbeans.modules.jumpto.symbol.SymbolComparator;
 import org.netbeans.modules.jumpto.symbol.SymbolProviderAccessor;
-import org.netbeans.modules.jumpto.type.Models;
+import org.netbeans.modules.jumpto.common.Models;
 import org.netbeans.spi.jumpto.symbol.SymbolDescriptor;
 import org.netbeans.spi.jumpto.symbol.SymbolProvider;
 import org.netbeans.spi.jumpto.type.SearchType;

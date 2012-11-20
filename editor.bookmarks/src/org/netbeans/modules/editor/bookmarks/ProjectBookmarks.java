@@ -48,6 +48,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.WeakHashMap;
 
 /**
  * Bookmarks for a project consist of bookmarks for all URLs (where the bookmarks exist)
@@ -63,7 +64,9 @@ public final class ProjectBookmarks {
 
     private final Map<URL,FileBookmarks> url2FileBookmarks;
     
-    private boolean removed;
+    private boolean released;
+
+    private final Map<Object,Boolean> activeClients = new WeakHashMap<Object, Boolean>();
     
     public ProjectBookmarks(URI projectURI) {
         this(projectURI, 0);
@@ -128,17 +131,32 @@ public final class ProjectBookmarks {
        return allBookmarks;
     }
     
-    public void markRemoved() {
-        removed = true;
+    public void release() {
+        released = true;
     }
 
-    public boolean isRemoved() {
-        return removed;
+    public boolean isReleased() {
+        return released;
+    }
+
+    /**
+     * Clients notify itself into this method so that the bookmarks are aware
+     * of them and create a weak reference to them. Once all the clients get released
+     * the projects bookmarks may be released as well.
+     *
+     * @param activeClient
+     */
+    public void activeClientNotify(Object activeClient) {
+        activeClients.put(activeClient, Boolean.TRUE);
+    }
+
+    public boolean hasActiveClients() {
+        return (activeClients.size() > 0);
     }
 
     @Override
     public String toString() {
-        return "project=" + projectURI + ", lastBId=" + lastBookmarkId + ", removed=" + removed; // NOI18N
+        return "project=" + projectURI + ", lastBId=" + lastBookmarkId + ", removed=" + released; // NOI18N
     }
 
 }

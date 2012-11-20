@@ -51,7 +51,7 @@ import org.netbeans.modules.web.clientproject.ClientSideProjectConstants;
 import org.netbeans.modules.web.clientproject.spi.platform.ClientProjectConfigurationImplementation;
 import org.netbeans.modules.web.clientproject.spi.platform.ProjectConfigurationCustomizer;
 import org.netbeans.modules.web.clientproject.spi.platform.RefreshOnSaveListener;
-import org.netbeans.modules.web.clientproject.spi.webserver.ServerURLMappingImplementation;
+import org.netbeans.modules.web.common.spi.ServerURLMappingImplementation;
 import org.netbeans.modules.web.clientproject.ui.browser.BrowserConfigurationPanel;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;

@@ -83,22 +83,20 @@ public class PHPParseResult extends ParserResult {
      *
      * @return
      */
-    public Model getModel() {
+    public synchronized Model getModel() {
         return getModel(Type.EXTENDED);
     }
 
     /**
      * @deprecated Use {@link #getModel(org.netbeans.modules.php.editor.model.Model.Type)} instead.
      */
-    public Model getModel(boolean extended) {
+    public synchronized Model getModel(boolean extended) {
         return extended ? getModel(Type.EXTENDED) : getModel(Type.COMMON);
     }
 
-    public Model getModel(Type type) {
-        synchronized(this) {
-            if (model == null) {
-                model = ModelFactory.getModel(this);
-            }
+    public synchronized Model getModel(Type type) {
+        if (model == null) {
+            model = ModelFactory.getModel(this);
         }
         type.process(model);
         return model;

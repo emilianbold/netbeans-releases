@@ -72,10 +72,12 @@ public class ReplaceConstructorWithBuilderPanel extends javax.swing.JPanel imple
         String.class, String.class, String.class, Boolean.class
     };
     private List<String> parameterTypes;
+    private final boolean varargs;
 
-    public ReplaceConstructorWithBuilderPanel(final @NonNull ChangeListener parent, String initialFQN, List<String> paramaterNames, List<String> parameterTypes) {
+    public ReplaceConstructorWithBuilderPanel(final @NonNull ChangeListener parent, String initialFQN, List<String> paramaterNames, List<String> parameterTypes, boolean varargs) {
         initComponents();
         this.parameterTypes = parameterTypes;
+        this.varargs = varargs;
         nameField.setText(initialFQN);
         nameField.setSelectionStart(0);
         nameField.setSelectionEnd(nameField.getText().length());
@@ -98,7 +100,11 @@ public class ReplaceConstructorWithBuilderPanel extends javax.swing.JPanel imple
         DefaultTableModel model = (DefaultTableModel) paramTable.getModel();
         Iterator<String> typesIt = parameterTypes.iterator();
         for (String name : paramaterNames) {
-            model.addRow(new Object[]{typesIt.next() + " " + name, "set" + Character.toUpperCase(name.charAt(0)) + name.substring(1), null, false}); //NOI18N
+            String paramType = typesIt.next();
+            if(varargs && !typesIt.hasNext()) {
+                paramType += "..."; //NOI18N
+            }
+            model.addRow(new Object[]{paramType + " " + name, "set" + Character.toUpperCase(name.charAt(0)) + name.substring(1), null, false}); //NOI18N
         }
         model.addTableModelListener(new TableModelListener() {
             @Override
@@ -181,13 +187,15 @@ public class ReplaceConstructorWithBuilderPanel extends javax.swing.JPanel imple
 
     public List<ReplaceConstructorWithBuilderRefactoring.Setter> getSetters() {
         List<ReplaceConstructorWithBuilderRefactoring.Setter> result = new ArrayList();
-        for (int i = 0; i < parameterTypes.size(); i++) {
+        int size = parameterTypes.size();
+        for (int i = 0; i < size; i++) {
             final String name = (String) ((DefaultTableModel) paramTable.getModel()).getValueAt(i, 0);
             result.add(new ReplaceConstructorWithBuilderRefactoring.Setter(
                     (String) ((DefaultTableModel) paramTable.getModel()).getValueAt(i, 1),
                     parameterTypes.get(i),
                     (String) ((DefaultTableModel) paramTable.getModel()).getValueAt(i, 2),
                     name.substring(name.lastIndexOf(' ')).trim(),
+                    varargs && size == i + 1 ? true : false,
                     (Boolean) ((DefaultTableModel) paramTable.getModel()).getValueAt(i, 3)));
         }
         return result;

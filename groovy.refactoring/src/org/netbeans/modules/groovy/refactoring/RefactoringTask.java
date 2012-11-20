@@ -43,8 +43,18 @@
 package org.netbeans.modules.groovy.refactoring;
 
 import java.util.Collection;
+import java.util.Set;
 import javax.swing.text.JTextComponent;
 import org.codehaus.groovy.ast.ASTNode;
+import org.codehaus.groovy.ast.ClassNode;
+import org.codehaus.groovy.ast.ConstructorNode;
+import org.codehaus.groovy.ast.FieldNode;
+import org.codehaus.groovy.ast.MethodNode;
+import org.codehaus.groovy.ast.PackageNode;
+import org.codehaus.groovy.ast.PropertyNode;
+import org.codehaus.groovy.ast.expr.ConstantExpression;
+import org.codehaus.groovy.ast.expr.ConstructorCallExpression;
+import org.codehaus.groovy.ast.expr.MethodCallExpression;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.csl.api.ElementKind;
 import org.netbeans.modules.groovy.editor.api.ASTUtils;
@@ -53,7 +63,15 @@ import org.netbeans.modules.groovy.editor.api.ElementUtils;
 import org.netbeans.modules.groovy.editor.api.FindTypeUtils;
 import org.netbeans.modules.groovy.editor.api.parser.GroovyParserResult;
 import org.netbeans.modules.groovy.editor.api.parser.SourceUtils;
+import org.netbeans.modules.groovy.refactoring.findusages.model.ClassRefactoringElement;
+import org.netbeans.modules.groovy.refactoring.findusages.model.MethodRefactoringElement;
+//import org.netbeans.modules.groovy.refactoring.findusages.model.PackageRefactoringElement;
+import org.netbeans.modules.groovy.refactoring.findusages.model.RefactoringElement;
+import org.netbeans.modules.groovy.refactoring.findusages.model.VariableRefactoringElement;
+import org.netbeans.modules.groovy.refactoring.utils.FindMethodUtils;
+import org.netbeans.modules.groovy.refactoring.utils.FindPossibleMethods;
 import org.netbeans.modules.groovy.refactoring.utils.GroovyProjectUtil;
+import org.netbeans.modules.groovy.refactoring.utils.TypeResolver;
 import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.refactoring.spi.ui.RefactoringUI;
@@ -86,7 +104,7 @@ public abstract class RefactoringTask extends UserTask implements Runnable {
         private JTextComponent textC;
         private RefactoringUI ui;
 
-        
+
         protected TextComponentTask(EditorCookie ec, FileObject fileObject) {
             this.textC = ec.getOpenedPanes()[0];
             this.fileObject = fileObject;
@@ -114,7 +132,7 @@ public abstract class RefactoringTask extends UserTask implements Runnable {
             final GroovyParserResult parserResult = ASTUtils.getParseResult(resultIterator.getParserResult());
             final ASTNode root = ASTUtils.getRoot(parserResult);
             if (root == null) {
-                return;
+                throw new IllegalStateException("Not possible to get correct AST!"); // NOI18N
             }
 
             final int caret = textC.getCaretPosition();
@@ -124,14 +142,88 @@ public abstract class RefactoringTask extends UserTask implements Runnable {
             final BaseDocument doc = GroovyProjectUtil.getDocument(parserResult, fileObject);
             final AstPath path = new AstPath(root, caret, doc);
             final ASTNode findingNode = FindTypeUtils.findCurrentNode(path, doc, caret);
-            final ElementKind kind = ElementUtils.getKind(path, doc, caret);
-            if (kind != ElementKind.CLASS) {
-                throw new IllegalStateException("Unknown element kind. Refactoring shouldn't be enabled in this context !");
+            final ElementKind kind;
+            if (findingNode instanceof PackageNode) {
+                kind = ElementKind.PACKAGE;
+            } else {
+                kind = ElementUtils.getKind(path, doc, caret);
             }
 
-            final GroovyRefactoringElement element = new GroovyRefactoringElement(parserResult, findingNode, fileObject, kind);
-            if (element != null && element.getName() != null) {
+            final RefactoringElement element = createRefactoringElement(path, findingNode, kind);
+            if (element != null && element.getName() != null && element.getFileObject() != null) {
                 ui = createRefactoringUI(element, start, end, parserResult);
+            } else {
+                throw new IllegalStateException("RefactoringElement isn't initiated correctly!"); // NOI18N
+            }
+        }
+
+        private RefactoringElement createRefactoringElement(AstPath path, ASTNode currentNode, ElementKind kind) {
+            switch (kind) {
+                case CLASS:
+                case INTERFACE:
+                    return new ClassRefactoringElement(fileObject, currentNode);
+                case METHOD:
+                case CONSTRUCTOR:
+                    final ASTNode leaf = path.leaf();
+                    final ASTNode leafParent = path.leafParent();
+
+                    if (leaf instanceof MethodNode || leaf instanceof ConstructorNode) {
+                        return new MethodRefactoringElement(fileObject, leaf, ElementUtils.getDeclaringClass(leaf));
+                    }
+
+                    if (leaf instanceof ConstructorCallExpression) {
+                        final ConstructorCallExpression constructorCall = (ConstructorCallExpression) leaf;
+                        return new ClassRefactoringElement(fileObject, constructorCall.getType());
+                    }
+
+                    if (leaf instanceof ConstantExpression && leafParent instanceof MethodCallExpression) {
+                        final MethodNode methodNode = FindMethodUtils.findMethod(path, (MethodCallExpression) leafParent);
+                        final ClassNode methodType = FindMethodUtils.findMethodType(path, (MethodCallExpression) leafParent);
+                        final String methodName = ((ConstantExpression) leaf).getText();
+
+                        if (methodType != null) {
+                            if (methodNode != null) {
+                                // This can happen in situations:
+                                //    * method()
+                                //    * this.method()
+                                //    * new SomeClassName().method()
+                                return new MethodRefactoringElement(fileObject, methodNode, methodType);
+                            } else {
+                                // This can happen in situation:
+                                //    * SomeClassName abc = new SomeClassName()
+                                //    * abc.method()
+                                final Set<MethodNode> possibleMethods = FindPossibleMethods.findPossibleMethods(fileObject, methodType.getName(), methodName);
+                                if (possibleMethods.size() > 0) {
+                                    return new MethodRefactoringElement(fileObject, possibleMethods.iterator().next(), methodType);
+                                }
+                            }
+                        } else {
+                            // This can happen in situation with dynamic type:
+                            //    * def abc = new SomeClassName()
+                            //    * abc.method()
+                            return new MethodRefactoringElement(fileObject, leafParent);
+                        }
+                    }
+
+                    assert false; // Should never happened!
+                case VARIABLE:
+                    final ClassNode variableType = TypeResolver.resolveType(path);
+                    return new VariableRefactoringElement(fileObject, variableType, currentNode.getText());
+                case PROPERTY:
+                case FIELD:
+                    if (currentNode instanceof ClassNode) {
+                        return new ClassRefactoringElement(fileObject, currentNode);
+                    } else if (currentNode instanceof FieldNode) {
+                        final FieldNode field = (FieldNode) currentNode;
+                        return new VariableRefactoringElement(fileObject, field.getOwner(), field.getName());
+                    } else if (currentNode instanceof PropertyNode) {
+                        final FieldNode field = ((PropertyNode) currentNode).getField();
+                        return new VariableRefactoringElement(fileObject, field.getOwner(), field.getName());
+                    }
+                case PACKAGE:
+//                    return new PackageRefactoringElement(fileObject, currentNode);
+                default:
+                    throw new IllegalStateException("Unknown element kind. Refactoring shouldn't be enabled in this context !"); // NOI18N
             }
         }
 
@@ -146,7 +238,7 @@ public abstract class RefactoringTask extends UserTask implements Runnable {
             UI.openRefactoringUI(ui, TopComponent.getRegistry().getActivated());
         }
 
-        protected abstract RefactoringUI createRefactoringUI(GroovyRefactoringElement selectedElement,int startOffset,int endOffset, GroovyParserResult info);
+        protected abstract RefactoringUI createRefactoringUI(RefactoringElement selectedElement,int startOffset,int endOffset, GroovyParserResult info);
     }
 
     protected static abstract class NodeToElementTask extends RefactoringTask {
@@ -172,8 +264,8 @@ public abstract class RefactoringTask extends UserTask implements Runnable {
             if (root == null) {
                 return;
             }
-            
-            final GroovyRefactoringElement element = new GroovyRefactoringElement(parserResult, root, fileObject, ElementKind.CLASS);
+
+            final RefactoringElement element = new ClassRefactoringElement(fileObject, root);
             if (element != null && element.getName() != null) {
                 ui = createRefactoringUI(element, parserResult);
             }
@@ -189,6 +281,6 @@ public abstract class RefactoringTask extends UserTask implements Runnable {
             UI.openRefactoringUI(ui);
         }
 
-        protected abstract RefactoringUI createRefactoringUI(GroovyRefactoringElement selectedElement, GroovyParserResult info);
+        protected abstract RefactoringUI createRefactoringUI(RefactoringElement selectedElement, GroovyParserResult info);
     }
 }

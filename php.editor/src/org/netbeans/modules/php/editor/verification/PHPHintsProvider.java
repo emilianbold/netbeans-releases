@@ -42,43 +42,40 @@
 
 package org.netbeans.modules.php.editor.verification;
 
-import java.util.Calendar;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.swing.text.BadLocationException;
+import org.netbeans.modules.csl.api.Error;
 import org.netbeans.modules.csl.api.Hint;
 import org.netbeans.modules.csl.api.HintsProvider;
 import org.netbeans.modules.csl.api.Rule;
 import org.netbeans.modules.csl.api.Rule.AstRule;
+import org.netbeans.modules.csl.api.Rule.ErrorRule;
 import org.netbeans.modules.csl.api.RuleContext;
 import org.netbeans.modules.csl.spi.ParserResult;
-import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.php.editor.model.FileScope;
 import org.netbeans.modules.php.editor.model.Model;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
-import org.openide.filesystems.FileObject;
 
 /**
  *
  * @author Tomasz.Slota@Sun.COM
  */
 public class PHPHintsProvider implements HintsProvider {
-    public static final String FIRST_PASS_HINTS = "1st pass"; //NOI18N
-    public static final String SECOND_PASS_HINTS = "2nd pass"; //NOI18N
-    public static final String DEFAULT_LINE_HINTS = "default.line.hints"; //NOI18N
-    private static final Logger LOGGER = Logger.getLogger(PHPHintsProvider.class.getName());
-    enum Kind {HINT, SUGGESTION, SELECTION, ERROR};
+    public static final String DEFAULT_HINTS = "default.hints"; //NOI18N
+    public static final String DEFAULT_SUGGESTIONS = "default.suggestions"; //NOI18N
+
+    enum ErrorType {
+        UNHANDLED_ERRORS,
+        HINT_ERRORS
+    }
 
     @Override
     public void computeHints(HintsManager mgr, RuleContext context, List<Hint> hints) {
-        long startTime = (LOGGER.isLoggable(Level.FINE)) ? System.currentTimeMillis() : 0;
         ParserResult info = context.parserResult;
-
         Map<?, List<? extends Rule.AstRule>> allHints = mgr.getHints(false, context);
-        List<? extends AstRule> modelHints = allHints.get(DEFAULT_LINE_HINTS);
+        List<? extends AstRule> modelHints = allHints.get(DEFAULT_HINTS);
         if (modelHints != null) {
             assert (context instanceof PHPRuleContext);
             PHPRuleContext ruleContext = (PHPRuleContext) context;
@@ -92,28 +89,19 @@ public class PHPHintsProvider implements HintsProvider {
                         PHPRuleWithPreferences icm = (PHPRuleWithPreferences) astRule;
                         icm.setPreferences(mgr.getPreferences(astRule));
                     }
-                    if (astRule instanceof AbstractRule) {
-                        AbstractRule icm = (AbstractRule) astRule;
-                        try {
-                            icm.computeHintsImpl(ruleContext, hints, PHPHintsProvider.Kind.HINT);
-                        } catch (BadLocationException ex) {
-                           return;// #172881
-                        }
+                    if (astRule instanceof AbstractHint) {
+                        AbstractHint icm = (AbstractHint) astRule;
+                        icm.compute(ruleContext, hints);
                     }
                 }
             }
-        }
-        if (LOGGER.isLoggable(Level.FINE)) {
-            long execTime = Calendar.getInstance().getTimeInMillis() - startTime;
-            FileObject fobj = info.getSnapshot().getSource().getFileObject();
-            LOGGER.fine(String.format("Computing PHP hints for %s.%s took %d ms", fobj.getName(), fobj.getExt(), execTime));
         }
     }
 
     @Override
     public void computeSuggestions(HintsManager mgr, RuleContext context, List<Hint> suggestions, int caretOffset) {
-        Map<?, List<? extends Rule.AstRule>> allHints = mgr.getHints(true, context);
-        List<? extends AstRule> modelHints = allHints.get(DEFAULT_LINE_HINTS);
+        Map<?, List<? extends Rule.AstRule>> allHints = mgr.getSuggestions();
+        List<? extends AstRule> modelHints = allHints.get(DEFAULT_SUGGESTIONS);
         if (modelHints != null) {
             assert (context instanceof PHPRuleContext);
             PHPRuleContext ruleContext = (PHPRuleContext) context;
@@ -127,16 +115,12 @@ public class PHPHintsProvider implements HintsProvider {
             ruleContext.fileScope = modelScope;
             for (AstRule astRule : modelHints) {
                 if (mgr.isEnabled(astRule)) {
-                    if (astRule instanceof PHPRuleWithPreferences) {
-                        PHPRuleWithPreferences icm = (PHPRuleWithPreferences) astRule;
-                        icm.setPreferences(mgr.getPreferences(astRule));
-                    }
-                    if (astRule instanceof AbstractRule) {
-                        AbstractRule icm = (AbstractRule) astRule;
+                    if (astRule instanceof AbstractSuggestion) {
+                        AbstractSuggestion suggestion = (AbstractSuggestion) astRule;
                         try {
-                            icm.computeHintsImpl(ruleContext, suggestions, PHPHintsProvider.Kind.SUGGESTION);
+                            suggestion.compute(ruleContext, suggestions, caretOffset);
                         } catch (BadLocationException ex) {
-                            return;// #172881
+                            return; // #172881
                         }
                     }
                 }
@@ -145,40 +129,53 @@ public class PHPHintsProvider implements HintsProvider {
     }
 
     @Override
-    public void computeSelectionHints(HintsManager manager, RuleContext context, List<Hint> suggestions, int start, int end) {
-
+    public void computeSelectionHints(HintsManager manager, RuleContext context, List<Hint> selections, int start, int end) {
     }
 
     @Override
-    public void computeErrors(HintsManager manager, RuleContext context, List<Hint> hints, List<org.netbeans.modules.csl.api.Error> unhandled) {
+    public void computeErrors(HintsManager manager, RuleContext context, List<Hint> hints, List<Error> unhandled) {
         ParserResult parserResult = context.parserResult;
         if (parserResult != null) {
-            List<? extends org.netbeans.modules.csl.api.Error> errors = parserResult.getDiagnostics();
+            List<? extends Error> errors = parserResult.getDiagnostics();
             unhandled.addAll(errors);
         }
-
-        FileObject fobj = NbEditorUtilities.getFileObject(context.doc);
-        PHPParseResult phpParseResult = (PHPParseResult) context.parserResult;
-        if (phpParseResult.getProgram() != null && fobj != null) {
-            if (CheckPHPVersionVisitor.appliesTo(fobj)) {
-                CheckPHPVersionVisitor visitor = new CheckPHPVersionVisitor(fobj);
-                phpParseResult.getProgram().accept(visitor);
-                unhandled.addAll(visitor.getErrors());
+        Map<?, List<? extends ErrorRule>> allErrors = manager.getErrors();
+        if (allErrors != null) {
+            List<? extends ErrorRule> unhandledErrors = allErrors.get(ErrorType.UNHANDLED_ERRORS);
+            if (unhandledErrors != null) {
+                PHPRuleContext phpRuleContext = initializeContext(context);
+                for (ErrorRule errorRule : unhandledErrors) {
+                    if (errorRule instanceof AbstractUnhandledError) {
+                        AbstractUnhandledError abstractUnhandledError = (AbstractUnhandledError) errorRule;
+                        abstractUnhandledError.compute(phpRuleContext, unhandled);
+                    }
+                }
             }
-            if (PHP54UnhandledError.appliesTo(fobj)) {
-                PHP54UnhandledError php54Visitor = new PHP54UnhandledError(fobj);
-                phpParseResult.getProgram().accept(php54Visitor);
-                unhandled.addAll(php54Visitor.getErrors());
+            List<? extends ErrorRule> hintErrors = allErrors.get(ErrorType.HINT_ERRORS);
+            if (hintErrors != null) {
+                PHPRuleContext phpRuleContext = initializeContext(context);
+                for (ErrorRule errorRule : hintErrors) {
+                    if (errorRule instanceof AbstractHintError) {
+                        AbstractHintError abstractHintError = (AbstractHintError) errorRule;
+                        abstractHintError.compute(phpRuleContext, hints);
+                    }
+                }
             }
-            LoopOnlyKeywordsUnhandledError loopOnlyKeywords = new LoopOnlyKeywordsUnhandledError(fobj);
-            phpParseResult.getProgram().accept(loopOnlyKeywords);
-            unhandled.addAll(loopOnlyKeywords.getErrors());
         }
+    }
+
+    private PHPRuleContext initializeContext(RuleContext context) {
+        PHPRuleContext phpRuleContext = (PHPRuleContext) context;
+        ParserResult info = context.parserResult;
+        PHPParseResult result = (PHPParseResult) info;
+        final Model model = result.getModel();
+        FileScope modelScope = model.getFileScope();
+        phpRuleContext.fileScope = modelScope;
+        return phpRuleContext;
     }
 
     @Override
     public void cancel() {
-
     }
 
     @Override

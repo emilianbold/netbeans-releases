@@ -58,8 +58,8 @@ import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.logging.Level;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.netbeans.modules.nativeexecution.api.util.PasswordManager;
+import org.netbeans.modules.nativeexecution.api.util.RemoteStatistics;
 import org.netbeans.modules.nativeexecution.support.Logger;
 import org.netbeans.modules.nativeexecution.support.RemoteUserInfo;
 import org.openide.util.Cancellable;
@@ -219,7 +219,6 @@ public final class JSchChannelsSupport {
         final AtomicBoolean cancelled = new AtomicBoolean(false);
 
         ConnectingProgressHandle.startHandle(env, new Cancellable() {
-
             @Override
             public boolean cancel() {
                 cancelled.set(true);
@@ -241,6 +240,10 @@ public final class JSchChannelsSupport {
                         newSession.setConfig("compression.s2c", "zlib@openssh.com,zlib,none"); // NOI18N
                         newSession.setConfig("compression.c2s", "zlib@openssh.com,zlib,none"); // NOI18N
                         newSession.setConfig("compression_level", "9"); // NOI18N
+                    }
+
+                    if (RemoteStatistics.COLLECT_STATISTICS) {
+                        newSession.setSocketFactory(MeasurableSocketFactory.getInstance());
                     }
 
                     newSession.connect(JSCH_CONNECTION_TIMEOUT);

@@ -77,7 +77,7 @@ class SampleAppWizardPanel implements WizardDescriptor.Panel,
     
     @Override
     public HelpCtx getHelp() {
-        return new HelpCtx(SampleAppWizardPanel.class);
+        return null;
     }
     
     @Override
@@ -113,12 +113,15 @@ class SampleAppWizardPanel implements WizardDescriptor.Panel,
     public void readSettings(Object settings) {
         wizardDescriptor = (WizardDescriptor) settings;
         component.read(wizardDescriptor);
+        wizardDescriptor.putProperty("NewProjectWizard_Title", //NOI18N
+                wizardDescriptor.getProperty("NewFileWizard_Title"));   //NOI18N
     }
     
     @Override
     public void storeSettings(Object settings) {
         WizardDescriptor d = (WizardDescriptor) settings;
         component.store(d);
+        d.putProperty("NewProjectWizard_Title", null);                  //NOI18N
     }
     
     @Override

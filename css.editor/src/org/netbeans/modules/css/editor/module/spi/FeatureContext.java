@@ -45,6 +45,7 @@ import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.css.lib.api.CssParserResult;
 import org.netbeans.modules.css.lib.api.CssTokenId;
 import org.netbeans.modules.css.lib.api.Node;
+import org.netbeans.modules.css.model.api.Model;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.api.Source;
 import org.openide.filesystems.FileObject;
@@ -106,6 +107,13 @@ public class FeatureContext {
      */
     public TokenSequence<CssTokenId> getTokenSequence() {
         return getSnapshot().getTokenHierarchy().tokenSequence(CssTokenId.language());
+    }
+    
+    /**
+     * @return an instance of {@link Model}.
+     */
+    public Model getSourceModel() {
+        return Model.getModel(result);
     }
     
 }

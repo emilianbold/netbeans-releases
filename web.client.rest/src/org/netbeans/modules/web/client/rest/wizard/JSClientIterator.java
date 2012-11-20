@@ -84,6 +84,8 @@ import org.openide.util.NbBundle;
  */
 public class JSClientIterator implements ProgressInstantiatingIterator<WizardDescriptor>{
     
+    public static final String HELP_ID = "js.client.rest";               // NOI18N
+    
     private static final Logger LOGGER = Logger.getLogger(JSClientIterator.class.getName());
 
     /* (non-Javadoc)
@@ -289,7 +291,7 @@ public class JSClientIterator implements ProgressInstantiatingIterator<WizardDes
         if ( generator.hasUi() ){
             builder.append("<link rel='stylesheet' href='");                // NOI18N
             builder.append(JSClientGenerator.TABLESORTER_URL);
-            builder.append("css/blue/style.css'>\n");                       // NOI18N
+            builder.append("css/theme.blue.css'>\n");                       // NOI18N
             builder.append("<link rel='stylesheet' href='");                // NOI18N
             builder.append(JSClientGenerator.TABLESORTER_URL);
             builder.append("addons/pager/jquery.tablesorter.pager.css'>\n");// NOI18N

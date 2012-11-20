@@ -49,8 +49,8 @@ import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.php.editor.api.QualifiedName;
 import org.netbeans.modules.php.editor.parser.astnodes.Identifier;
 import org.netbeans.modules.php.editor.parser.astnodes.TraitDeclaration;
-import org.netbeans.modules.php.editor.parser.astnodes.UseTraitStatementPart;
 import org.netbeans.modules.php.editor.parser.astnodes.UseTraitStatement;
+import org.netbeans.modules.php.editor.parser.astnodes.UseTraitStatementPart;
 import org.netbeans.modules.php.editor.parser.astnodes.visitors.DefaultVisitor;
 
 /**
@@ -95,7 +95,7 @@ public class TraitDeclarationInfo extends ASTNodeInfo<TraitDeclaration>  {
         return visitor.getUsedTraits();
     }
 
-    private class UsedTraitsVisitor extends DefaultVisitor {
+    private static class UsedTraitsVisitor extends DefaultVisitor {
         private List<UseTraitStatementPart> useParts = new LinkedList<UseTraitStatementPart>();
 
         @Override

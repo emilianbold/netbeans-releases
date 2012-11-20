@@ -45,10 +45,9 @@ package org.netbeans.modules.groovy.refactoring.findusages.impl;
 import java.util.List;
 import org.codehaus.groovy.ast.ClassNode;
 import org.codehaus.groovy.ast.ModuleNode;
-import org.netbeans.modules.csl.api.ElementKind;
 import org.netbeans.modules.groovy.editor.api.ASTUtils.FakeASTNode;
 import org.netbeans.modules.groovy.editor.api.ElementUtils;
-import org.netbeans.modules.groovy.refactoring.GroovyRefactoringElement;
+import org.netbeans.modules.groovy.refactoring.findusages.model.RefactoringElement;
 
 /**
  * Find only direct subtypes for the given declaration class.
@@ -57,7 +56,7 @@ import org.netbeans.modules.groovy.refactoring.GroovyRefactoringElement;
  */
 public class FindDirectSubtypesOnly extends AbstractFindUsages {
 
-    public FindDirectSubtypesOnly(GroovyRefactoringElement element) {
+    public FindDirectSubtypesOnly(RefactoringElement element) {
         super(element);
     }
 
@@ -66,13 +65,8 @@ public class FindDirectSubtypesOnly extends AbstractFindUsages {
         return singleVisitor(new FindDirectSubtypesOnlyVisitor(moduleNode, defClass));
     }
 
-    @Override
-    protected ElementKind getElementKind() {
-        return ElementKind.CLASS;
-    }
 
-
-    private class FindDirectSubtypesOnlyVisitor extends AbstractFindUsagesVisitor {
+    private static class FindDirectSubtypesOnlyVisitor extends AbstractFindUsagesVisitor {
 
         private final String findingFqn;
 

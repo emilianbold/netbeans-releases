@@ -74,21 +74,12 @@ public class ConfigurationXMLWriter extends XMLDocWriter {
 
         String tag = CommonConfigurationXMLCodec.CONFIGURATION_DESCRIPTOR_ELEMENT;
 
-        encoder = new ConfigurationXMLCodec(tag, true, null, projectDescriptor, null);
+        encoder = new ConfigurationXMLCodec(tag, null, projectDescriptor, null);
         assert projectDescriptor.getState() != State.READING;
         write("nbproject/configurations.xml"); // NOI18N
 
-        encoder = new AuxConfigurationXMLCodec(tag, projectDescriptor, false);
+        encoder = new AuxConfigurationXMLCodec(tag, projectDescriptor);
         write("nbproject/private/configurations.xml"); // NOI18N
-    }
-
-    public void writeDefaultCondigurations() throws IOException {
-        if (projectDescriptor == null) {
-            return;
-        }
-        String tag = CommonConfigurationXMLCodec.CONFIGURATION_DESCRIPTOR_ELEMENT;
-        encoder = new AuxConfigurationXMLCodec(tag, projectDescriptor, true);
-        write("nbproject/default_configurations.xml"); // NOI18N
     }
 
     /*

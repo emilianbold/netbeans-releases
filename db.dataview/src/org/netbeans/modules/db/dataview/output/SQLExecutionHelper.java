@@ -129,7 +129,8 @@ class SQLExecutionHelper {
                         NotifyDescriptor nd = new NotifyDescriptor.Message(msg,
                                 NotifyDescriptor.ERROR_MESSAGE);
                         DialogDisplayer.getDefault().notifyLater(nd);
-                        throw new IllegalStateException(msg);
+                        LOGGER.log(Level.INFO, msg, t);
+                        throw new SQLException(msg, t);
                     }
                     DBMetaDataFactory dbMeta = new DBMetaDataFactory(conn);
                     dataView.setLimitSupported(dbMeta.supportsLimit());

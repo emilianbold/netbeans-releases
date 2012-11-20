@@ -39,7 +39,6 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.cnd.remote.actions;
 
 import java.io.File;
@@ -48,7 +47,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.Action;
 import javax.swing.Icon;
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
@@ -58,13 +56,15 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.cnd.api.remote.RemoteFileUtil;
-import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager.CancellationException;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
+import org.openide.DialogDescriptor;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
@@ -81,15 +81,14 @@ import org.openide.windows.WindowManager;
  * @author Vladimir Kvashin
  */
 public class RemoteOpenHelper {
-    
-    private final ExecutionEnvironment env;
 
+    private final ExecutionEnvironment env;
     private static final Logger LOGGER = Logger.getLogger("cnd.remote.logger"); //NOI18N
     private static boolean isRunning = false;
     private static final Object lock = new Object();
     private static RequestProcessor RP = new RequestProcessor("Opening remote project", 1); //NOI18N
     private static Map<ExecutionEnvironment, String> lastUsedDirs = new HashMap<ExecutionEnvironment, String>();
-    
+
     private RemoteOpenHelper(ExecutionEnvironment env) {
         this.env = env;
     }
@@ -101,49 +100,31 @@ public class RemoteOpenHelper {
     public static void openProject(ExecutionEnvironment env) {
         new RemoteOpenHelper(env).openProject();
     }
-    
+
     private void openFile() {
-        Runnable edtWorker = new Runnable() {
-            @Override
-            public void run() {
-                openRemoteFile(env);
-            }
-        };
-        openImpl(edtWorker);
+        openImpl(getOpenRemoteFileWorker(env));
     }
 
     private void openProject() {
-        Runnable edtWorker = new Runnable() {
-            @Override
-            public void run() {
-                openRemoteProject(env);
-            }
-        };
-        openImpl(edtWorker);
+        openImpl(getOpenRemoteProjectWorker(env));
     }
-    
-    private void openImpl(final Runnable edtWorker) {        
+
+    private void openImpl(final Runnable worker) {
         final Runnable connectWrapper = new Runnable() {
             @Override
             public void run() {
                 try {
                     ConnectionManager.getInstance().connectTo(env);
-                    SwingUtilities.invokeLater(edtWorker);
+                    worker.run();
                 } catch (final IOException ex) {
                     LOGGER.log(Level.INFO, "Error connecting " + env, ex);
-                    SwingUtilities.invokeLater(new Runnable() {
-                        @Override
-                        public void run() {
-                            JOptionPane.showMessageDialog(WindowManager.getDefault().getMainWindow(), 
-                                NbBundle.getMessage(OpenRemoteProjectAction.class, "ErrorConnectingHost", env.getDisplayName(), ex.getMessage()));
-                        }
-                    });
+                    DialogDisplayer.getDefault().notify(new DialogDescriptor.Message(NbBundle.getMessage(OpenRemoteProjectAction.class, "ErrorConnectingHost", env.getDisplayName(), ex.getMessage()), DialogDescriptor.ERROR_MESSAGE));
                 } catch (CancellationException ex) {
                     // don't report CancellationException
                 } finally {
                     synchronized (lock) {
                         isRunning = false;
-                    }                    
+                    }
                 }
             }
         };
@@ -152,9 +133,9 @@ public class RemoteOpenHelper {
                 isRunning = true;
                 RP.post(connectWrapper);
             }
-        }        
+        }
     }
-    
+
     private static String getCurrentDirectory(ExecutionEnvironment env) {
         if (Boolean.getBoolean("netbeans.openfile.197063")) {
             // Prefer to open from parent of active editor, if any.
@@ -181,80 +162,129 @@ public class RemoteOpenHelper {
         String homeDir = lastUsedDirs.get(env);
         if (homeDir == null) {
             homeDir = getRemoteHomeDir(env);
-        }            
+        }
         return homeDir;
     }
 
-    private void openRemoteFile(final ExecutionEnvironment env) {            
-        String homeDir = getCurrentDirectory(env);
-        final JFileChooser fileChooser = RemoteFileUtil.createFileChooser(env,
-            NbBundle.getMessage(OpenRemoteProjectAction.class, "OpenFileTitle"),
-            NbBundle.getMessage(OpenRemoteProjectAction.class, "OpenFileButtonText"),
-            JFileChooser.FILES_ONLY, null, homeDir, true);
-        int ret = fileChooser.showOpenDialog(WindowManager.getDefault().getMainWindow());
-        if (ret == JFileChooser.CANCEL_OPTION) {
-            return;
-        }
+    /**
+     * Returns Runnable which should be ran in non-UI thread
+     * @param env
+     * @return 
+     */
+    private Runnable getOpenRemoteFileWorker(final ExecutionEnvironment env) {
         Runnable worker = new Runnable() {
             @Override
             public void run() {
-                FileObject fo = FileSystemProvider.fileToFileObject(fileChooser.getSelectedFile());
-                lastUsedDirs.put(env, fo.getParent().getPath());
-                if (fo == null || !fo.isValid() || ! fo.isData()) {
-                    return;
-                }
-                try {
-                    DataObject dob = DataObject.find(fo);
-                    EditorCookie ec = dob.getCookie(EditorCookie.class);
-                    if (ec != null) {
-                        ec.open();
+                final String homeDir = getCurrentDirectory(env);
+                SwingUtilities.invokeLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        final JFileChooser fileChooser = RemoteFileUtil.createFileChooser(env,
+                                NbBundle.getMessage(OpenRemoteProjectAction.class, "OpenFileTitle"),
+                                NbBundle.getMessage(OpenRemoteProjectAction.class, "OpenFileButtonText"),
+                                JFileChooser.FILES_ONLY, null, homeDir, true);
+                        int ret = fileChooser.showOpenDialog(WindowManager.getDefault().getMainWindow());
+                        if (ret == JFileChooser.CANCEL_OPTION) {
+                            return;
+                        }
+                        Runnable worker = new Runnable() {
+                            @Override
+                            public void run() {
+                                FileObject fo = FileSystemProvider.fileToFileObject(fileChooser.getSelectedFile());
+                                if (fo == null) {
+                                    return;
+                                }
+                                FileObject parent = fo.getParent();
+                                if (parent != null) {
+                                    lastUsedDirs.put(env, parent.getPath());
+                                }
+                                if (!fo.isValid() || !fo.isData()) {
+                                    return;
+                                }
+                                try {
+                                    DataObject dob = DataObject.find(fo);
+                                    EditorCookie ec = dob.getCookie(EditorCookie.class);
+                                    if (ec != null) {
+                                        ec.open();
+                                    }
+                                } catch (DataObjectNotFoundException ex) {
+                                    Exceptions.printStackTrace(ex);
+                                }
+                            }
+                        };
+                        RP.post(worker);
                     }
-                } catch (DataObjectNotFoundException ex) {
-                    Exceptions.printStackTrace(ex);
-                }
+                });
+
             }
         };
-        RP.post(worker);
+        return worker;
+
     }
 
-    private void openRemoteProject(final ExecutionEnvironment env) {            
-        String homeDir = lastUsedDirs.get(env);
-        if (homeDir == null) {
-            homeDir = getRemoteProjectDir(env);
-        }            
-        final JFileChooser fileChooser = RemoteFileUtil.createFileChooser(env,
-            NbBundle.getMessage(OpenRemoteProjectAction.class, "OpenProjectTitle"),
-            NbBundle.getMessage(OpenRemoteProjectAction.class, "OpenProjectButtonText"),
-            JFileChooser.DIRECTORIES_ONLY, null, homeDir, true);
-        fileChooser.setFileView(new ProjectSelectionFileView(fileChooser));
-        int ret = fileChooser.showOpenDialog(WindowManager.getDefault().getMainWindow());
-        if (ret == JFileChooser.CANCEL_OPTION) {
-            return;
-        }
+    /**
+     * Returns Runnable which should be ran in non-UI thread
+     * @param env
+     * @return 
+     */
+    private Runnable getOpenRemoteProjectWorker(final ExecutionEnvironment env) {
         Runnable worker = new Runnable() {
             @Override
             public void run() {
-                FileObject remoteProjectFO = FileSystemProvider.fileToFileObject(fileChooser.getSelectedFile());
-                lastUsedDirs.put(env, remoteProjectFO.getParent().getPath());
-                if (remoteProjectFO == null || !remoteProjectFO.isFolder()) {
-                    return;
+                String home = lastUsedDirs.get(env);
+                if (home == null) {
+                    home = getRemoteProjectDir(env);
                 }
-                Project project;
-                try {
-                    project = ProjectManager.getDefault().findProject(remoteProjectFO);
-                    if (project != null) {
-                        OpenProjects.getDefault().open(new Project[] {project}, false, true);
+                final String homeDir = home;
+                SwingUtilities.invokeLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        final JFileChooser fileChooser = RemoteFileUtil.createFileChooser(env,
+                                NbBundle.getMessage(OpenRemoteProjectAction.class, "OpenProjectTitle"),
+                                NbBundle.getMessage(OpenRemoteProjectAction.class, "OpenProjectButtonText"),
+                                JFileChooser.DIRECTORIES_ONLY, null, homeDir, true);
+                        fileChooser.setFileView(new ProjectSelectionFileView(fileChooser));
+                        int ret = fileChooser.showOpenDialog(WindowManager.getDefault().getMainWindow());
+                        if (ret == JFileChooser.CANCEL_OPTION) {
+                            return;
+                        }
+                        Runnable worker = new Runnable() {
+                            @Override
+                            public void run() {
+                                FileObject remoteProjectFO = FileSystemProvider.fileToFileObject(fileChooser.getSelectedFile());
+                                if (remoteProjectFO == null) {
+                                    return;
+                                }
+                                FileObject parent = remoteProjectFO.getParent();
+                                if (parent != null) {
+                                    lastUsedDirs.put(env, parent.getPath());
+                                }
+                                if (!remoteProjectFO.isValid() || !remoteProjectFO.isFolder()) {
+                                    return;
+                                }
+                                Project project;
+                                try {
+                                    project = ProjectManager.getDefault().findProject(remoteProjectFO);
+                                    if (project != null) {
+                                        OpenProjects.getDefault().open(new Project[]{project}, false, true);
+                                    }
+                                } catch (IOException ex) {
+                                    Exceptions.printStackTrace(ex);
+                                } catch (IllegalArgumentException ex) {
+                                    Exceptions.printStackTrace(ex);
+                                }
+                            }
+                        };
+                        RP.post(worker);
                     }
-                } catch (IOException ex) {
-                    Exceptions.printStackTrace(ex);
-                } catch (IllegalArgumentException ex) {
-                    Exceptions.printStackTrace(ex);
-                }
+                });
+
             }
         };
-        RP.post(worker);
+        return worker;
     }
-    
+
+
     private static String getRemoteProjectDir(ExecutionEnvironment env) {
         try {
             return HostInfoUtils.getHostInfo(env).getUserDir() + '/' + ProjectChooser.getProjectsFolder().getName() + '/';  //NOI18N
@@ -265,7 +295,7 @@ public class RemoteOpenHelper {
         }
         return null;
     }
-    
+
     private static String getRemoteHomeDir(ExecutionEnvironment env) {
         try {
             return HostInfoUtils.getHostInfo(env).getUserDir() + '/';  //NOI18N
@@ -332,5 +362,5 @@ public class RemoteOpenHelper {
             }
             chooser.repaint();
         }
-    }    
+    }
 }

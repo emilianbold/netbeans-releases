@@ -144,10 +144,15 @@ public abstract class ExtBrowserImpl extends HtmlBrowser.Impl
                     new RemoteScriptExecutor(this),
                     new PageInspectionHandleImpl(this)
                 ));
-        if (extBrowserFactory.getBrowserFamilyId() == BrowserFamilyId.CHROME || 
-                extBrowserFactory.getBrowserFamilyId() == BrowserFamilyId.CHROMIUM) {
-            WebKitDebuggingTransport transport = new WebKitDebuggingTransport(this);
-            lookups.add(Lookups.fixed(transport, Factory.createWebKitDebugging(transport)));
+        if (hasEnhancedMode()) {
+            BrowserFamilyId id = extBrowserFactory.getBrowserFamilyId();
+            if (id == BrowserFamilyId.CHROME || id == BrowserFamilyId.CHROMIUM)
+            {
+                WebKitDebuggingTransport transport = new WebKitDebuggingTransport(
+                        this);
+                lookups.add(Lookups.fixed(transport,
+                        Factory.createWebKitDebugging(transport)));
+            }
         }
         
         return new ProxyLookup(lookups.toArray(new Lookup[lookups.size()]));

@@ -52,6 +52,8 @@ import java.util.List;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmScope;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
+import org.netbeans.modules.cnd.modelimpl.csm.InheritanceImpl.InheritanceBuilder;
+import org.netbeans.modules.cnd.modelimpl.csm.SpecializationDescriptor.SpecializationDescriptorBuilder;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 import org.netbeans.modules.cnd.modelimpl.csm.core.*;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
@@ -59,6 +61,7 @@ import org.netbeans.modules.cnd.modelimpl.textcache.NameCache;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
 import org.openide.util.CharSequences;
+import org.openide.util.Exceptions;
 
 /**
  * Implements 
@@ -78,6 +81,10 @@ public class ClassImplSpecialization extends ClassImpl implements CsmTemplate {
         super(name, ast, file, start, end);
     }
 
+    protected ClassImplSpecialization(NameHolder name, CsmDeclaration.Kind kind, CsmFile file, int start, int end) {
+        super(name, kind, file, start, end);
+    }
+    
     @Override
     public final void init(CsmScope scope, AST ast, CsmFile file, FileContent fileContent, boolean register) throws AstRendererException {
         // does not call super.init(), but copies super.init() with some changes:
@@ -94,6 +101,23 @@ public class ClassImplSpecialization extends ClassImpl implements CsmTemplate {
             register(getScope(), false);
         }
     }
+    
+    public final void init2(SpecializationDescriptor specializationDesctiptor, CharSequence qualifiedNameSuffix, CsmScope scope, CsmFile file, FileContent fileContent, boolean register) throws AstRendererException {
+        // does not call super.init(), but copies super.init() with some changes:
+        // it needs to initialize qualifiedNameSuffix
+        // after rendering, but before calling initQualifiedName() and register()
+
+        initScope(scope);
+        temporaryRepositoryRegistration(register, this);
+        
+        this.qualifiedNameSuffix = qualifiedNameSuffix;
+        initQualifiedName(scope);
+        this.specializationDesctiptor = specializationDesctiptor;
+
+        if (register) {
+            register(getScope(), false);
+        }
+    }    
 
     protected final void initQualifiedName(AST ast, CsmScope scope, boolean register, CsmFile file) throws AstRendererException {
         AST qIdToken = AstUtil.findChildOfType(ast, CPPTokenTypes.CSM_QUALIFIED_ID);
@@ -175,6 +199,78 @@ public class ClassImplSpecialization extends ClassImpl implements CsmTemplate {
         return (specializationDesctiptor != null) ? specializationDesctiptor.getSpecializationParameters() : Collections.<CsmSpecializationParameter>emptyList();
     }
 
+    
+    public static class ClassSpecializationBuilder extends ClassBuilder {
+
+        private SpecializationDescriptorBuilder specializationDescriptorBuilder;
+        
+        private ClassImplSpecialization instance;
+
+        public void setSpecializationDescriptorBuilder(SpecializationDescriptorBuilder specializationDescriptorBuilder) {
+            this.specializationDescriptorBuilder = specializationDescriptorBuilder;
+        }
+
+        public SpecializationDescriptor getSpecializationDescriptor() {
+            if(specializationDescriptorBuilder != null) {
+                specializationDescriptorBuilder.setScope(instance);
+                return specializationDescriptorBuilder.create();
+            }
+            return null;
+        }
+        
+        private ClassImplSpecialization getInstance() {
+            if(instance != null) {
+                return instance;
+            }
+            MutableDeclarationsContainer container = null;
+            if (getParent() == null) {
+                container = getFileContent();
+            } else {
+                if(getParent() instanceof NamespaceDefinitionImpl.NamespaceBuilder) {
+                    container = ((NamespaceDefinitionImpl.NamespaceBuilder)getParent()).getNamespaceDefinitionInstance();
+                }
+            }
+            if(container != null && getName() != null) {
+                CsmOffsetableDeclaration decl = container.findExistingDeclaration(getStartOffset(), getName(), getKind());
+                if (decl != null && ClassImplSpecialization.class.equals(decl.getClass())) {
+                    instance = (ClassImplSpecialization) decl;
+                }
+            }
+            return instance;
+        }
+        
+        @Override
+        public ClassImpl create() {
+            ClassImplSpecialization cls = getInstance();
+            CsmScope s = getScope();
+            if (cls == null && s != null && getName() != null && getEndOffset() != 0) {
+                instance = cls = new ClassImplSpecialization(getNameHolder(), getKind(), getFile(), getStartOffset(), getEndOffset());
+                try {
+                    cls.init2(getSpecializationDescriptor(), NameCache.getManager().getString(CharSequences.create("")), s, getFile(), getFileContent(), isGlobal()); // NOI18N
+                } catch (AstRendererException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+                
+                if(getTemplateDescriptorBuilder() != null) {
+                    cls.setTemplateDescriptor(getTemplateDescriptor());
+                }
+                for (InheritanceBuilder inheritanceBuilder : getInheritanceBuilders()) {
+                    inheritanceBuilder.setScope(cls);
+                    cls.addInheritance(inheritanceBuilder.create(), isGlobal());
+                }
+                for (MemberBuilder builder : getMemberBuilders()) {
+                    builder.setScope(cls);
+                    cls.addMember(builder.create(), isGlobal());
+                }                
+                getNameHolder().addReference(getFileContent(), cls);
+                addDeclaration(cls);
+            }
+            return cls;
+        }
+        
+    }
+    
+    
     ////////////////////////////////////////////////////////////////////////////
     // impl of SelfPersistent
     @Override

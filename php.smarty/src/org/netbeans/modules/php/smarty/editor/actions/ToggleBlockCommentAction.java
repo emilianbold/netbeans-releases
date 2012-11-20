@@ -130,12 +130,13 @@ public class ToggleBlockCommentAction extends BaseAction {
                     // comment just the actual TPL tag
                     ts.move(caretOffset);
                     ts.moveNext();
-                    if (ts.token().id() == TplTopTokenId.T_COMMENT) {
-                        commentIt.set(false);
-                    }
+                    commentIt.set(!uncommentIt(ts));
+
+                    // reset the tokenSequence state
+                    ts.move(caretOffset);
+                    ts.moveNext();
                     if (ts.token().id() == TplTopTokenId.T_COMMENT || ts.token().id() == TplTopTokenId.T_SMARTY
-                            || ts.token().id() == TplTopTokenId.T_SMARTY_CLOSE_DELIMITER
-                            || ts.token().id() == TplTopTokenId.T_SMARTY_OPEN_DELIMITER) {
+                            || ts.token().id() == TplTopTokenId.T_SMARTY_CLOSE_DELIMITER) {
                         applied = true;
                         doc.runAtomic(
                                 new Runnable() {
@@ -210,5 +211,16 @@ public class ToggleBlockCommentAction extends BaseAction {
         }
         positions[1] = ts.offset() - tplMetaData.getCloseDelimiter().length() - 1;
         return positions;
+    }
+
+    private static boolean uncommentIt(TokenSequence<TplTopTokenId> ts) {
+        if (ts.token().id() == TplTopTokenId.T_COMMENT) {
+            return true;
+        } else if (ts.token().id() == TplTopTokenId.T_SMARTY_OPEN_DELIMITER) {
+            return ts.moveNext() && ts.token().id() == TplTopTokenId.T_COMMENT;
+        } else if (ts.token().id() == TplTopTokenId.T_SMARTY_CLOSE_DELIMITER) {
+            return ts.movePrevious() && ts.token().id() == TplTopTokenId.T_COMMENT;
+        }
+        return false;
     }
 }

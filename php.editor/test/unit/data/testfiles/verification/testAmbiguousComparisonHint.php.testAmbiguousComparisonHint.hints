@@ -1,24 +1,24 @@
     $a === "";
     ---------
-HINT:Possible ambiguous comparison
+HINT:Possible accidental comparison found. Check if you wanted to use '=' instead.
 FIX:Change Comparison to Assignment
     $b == "";
     --------
-HINT:Possible ambiguous comparison
+HINT:Possible accidental comparison found. Check if you wanted to use '=' instead.
 FIX:Change Comparison to Assignment
     $c === "";
     ---------
-HINT:Possible ambiguous comparison
+HINT:Possible accidental comparison found. Check if you wanted to use '=' instead.
 FIX:Change Comparison to Assignment
     $d == "";
     --------
-HINT:Possible ambiguous comparison
+HINT:Possible accidental comparison found. Check if you wanted to use '=' instead.
 FIX:Change Comparison to Assignment
 $e === "";
 ---------
-HINT:Possible ambiguous comparison
+HINT:Possible accidental comparison found. Check if you wanted to use '=' instead.
 FIX:Change Comparison to Assignment
 $f == "";
 --------
-HINT:Possible ambiguous comparison
+HINT:Possible accidental comparison found. Check if you wanted to use '=' instead.
 FIX:Change Comparison to Assignment

@@ -43,7 +43,7 @@
 package org.netbeans.modules.php.editor.model;
 
 /**
- * just marker interface now
+ * just marker interface now.
  * @author rmatous
  */
 public interface ClassMemberElement extends ModelElement {

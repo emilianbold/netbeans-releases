@@ -51,13 +51,16 @@ import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.css.editor.Css3Utils;
 import org.netbeans.modules.css.editor.csl.CssElement;
 import org.netbeans.modules.css.editor.csl.CssPropertyElement;
+import org.netbeans.modules.css.editor.module.CssModuleSupport;
 import org.netbeans.modules.css.editor.module.PropertiesReader;
 import org.netbeans.modules.css.lib.api.*;
 import org.netbeans.modules.css.lib.api.properties.GrammarElement;
 import org.netbeans.modules.css.lib.api.properties.PropertyCategory;
 import org.netbeans.modules.css.lib.api.properties.PropertyDefinition;
 import org.netbeans.modules.parsing.api.Snapshot;
+import org.netbeans.modules.web.common.api.LexerUtils;
 import org.netbeans.modules.web.common.api.Pair;
+import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
 
 /**
@@ -153,10 +156,10 @@ public class Utilities {
             } 
         }
         return proposals;
-    }
+    } 
     
     /**
-     * Utility method which creates a collection of PropertyDescriptor-s for 
+     * Utility method which creates a map of property name to PropertyDefinition for 
      * a properties file defining the css properties
      * 
      * the syntax of the file:
@@ -169,8 +172,8 @@ public class Utilities {
      * 
      * @param sourcePath - an absolute path to the resource properties file relative to the module base
      */
-    public static Collection<PropertyDefinition> parsePropertyDefinitionFile(String sourcePath, CssModule module) {
-        Collection<PropertyDefinition> properties = new ArrayList<PropertyDefinition>();
+    public static Map<String, PropertyDefinition> parsePropertyDefinitionFile(String sourcePath, CssModule module) {
+        Map<String, PropertyDefinition> properties = new HashMap<String, PropertyDefinition>();
         
         //why not use NbBundle.getBundle()? - we need the items in the natural source order
         Collection<Pair<String, String>> parseBundle = PropertiesReader.parseBundle(sourcePath);
@@ -203,7 +206,7 @@ public class Utilities {
                 while (nameTokenizer.hasMoreTokens()) {
                     String parsed_name = nameTokenizer.nextToken().trim();
                     PropertyDefinition prop = new PropertyDefinition(parsed_name, value, category, module);
-                    properties.add(prop);
+                    properties.put(parsed_name, prop);
                 }
             }
 
@@ -212,4 +215,26 @@ public class Utilities {
         return properties;
     }
 
+    /**
+     * Resolves whether the given property value contains a vendor specific code.
+     * 
+     * Each property value can be divided into parts/tokens typically by whitespaces.
+     * Any of these tokens may contain a vendor specific code.
+     * 
+     * This method resolves whether the given property value token contains a vendor
+     * specific code. It tests if the property token starts with any of the registered
+     * browser specific prefixes.
+     * 
+     * Example: background-image: -webkit-linear-gradient(top, #0088cc, #0055cc);
+     * 
+     * The method will return true for the "-webkit-linear-gradient(top, #0088cc, #0055cc)" token.
+     * 
+     * @param file context file
+     * @param value the value of the resolved property
+     * @since 1.38
+     */
+    public static boolean isVendorSpecificPropertyValueToken(FileObject file, CharSequence value) {
+        return Css3Utils.isVendorSpecificPropertyValue(file, value);
+    }
+    
 }

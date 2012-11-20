@@ -101,9 +101,7 @@ public final class BugtrackingManager implements LookupListener {
         return instance;
     }
 
-    private BugtrackingManager() { 
-        WindowManager.getDefault().getRegistry().addPropertyChangeListener(new ActivatedTCListener());
-    }
+    private BugtrackingManager() { }
 
     public RequestProcessor getRequestProcessor() {
         return rp;
@@ -204,27 +202,6 @@ public final class BugtrackingManager implements LookupListener {
             }
             connectors.clear();
             connectors.addAll(conns);
-        }
-    }
-
-    private class ActivatedTCListener implements PropertyChangeListener {
-        @Override
-        public void propertyChange(PropertyChangeEvent evt) {
-            Registry registry = WindowManager.getDefault().getRegistry();
-            if (registry.PROP_ACTIVATED.equals(evt.getPropertyName())) {
-                TopComponent tc = registry.getActivated();
-                LOG.log(Level.FINER, "activated TC : {0}", tc); // NOI18N
-                if(!(tc instanceof IssueTopComponent)) {
-                    return;
-                }
-                IssueTopComponent itc = (IssueTopComponent) tc;
-                IssueImpl issue = itc.getIssue();
-                LOG.log(Level.FINE, "activated issue : {0}", issue); // NOI18N
-                if(issue == null || issue.isNew()) {
-                    return;
-                }
-                addRecentIssue(issue.getRepositoryImpl(), issue);
-            } 
         }
     }
 

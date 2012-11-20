@@ -70,6 +70,7 @@ import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.text.Line;
 import org.openide.util.Exceptions;
+import org.openide.util.RequestProcessor;
 
 /**
  * Services to update or save bookmarks to persistent format.
@@ -82,6 +83,8 @@ public final class BookmarkUtils {
     
     // -J-Dorg.netbeans.modules.editor.bookmarks.BookmarkUtils.level=FINE
     private static final Logger LOG = Logger.getLogger(BookmarkUtils.class.getName());
+
+    private static RequestProcessor RP = new RequestProcessor("Bookmarks loader and saver", 1, false, false); // NOI18N
 
     private BookmarkUtils() {
         // no instances
@@ -240,4 +243,7 @@ public final class BookmarkUtils {
         return null;
     }
 
+    public static RequestProcessor.Task postTask(Runnable run) {
+        return RP.post(run);
+    }
 }

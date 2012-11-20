@@ -119,6 +119,10 @@ public class SyncFileNode extends AbstractNode {
     public String getName() {
         return node.getName();
     }
+    
+    public String getCopy() {
+        return node.getCopy();
+    }
 
     @Override
     public Action getPreferredAction() {
@@ -213,7 +217,7 @@ public class SyncFileNode extends AbstractNode {
 
         @Override
         public String getValue() {
-            String copyName = SvnUtils.getCopy(node.getFile());
+            String copyName = node.getCopy();
             return copyName == null ? "" : copyName;
         }
     }

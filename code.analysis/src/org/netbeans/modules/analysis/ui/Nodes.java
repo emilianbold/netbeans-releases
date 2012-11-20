@@ -45,10 +45,12 @@ package org.netbeans.modules.analysis.ui;
 import java.awt.Image;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -82,7 +84,6 @@ import org.openide.text.Line.ShowOpenType;
 import org.openide.text.Line.ShowVisibilityType;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
-import org.openide.util.NbBundle;
 import org.openide.util.lookup.Lookups;
 
 /**
@@ -278,7 +279,7 @@ public class Nodes {
     }
 
     private static List<Node> constructSemiLogicalViewNodes(LogicalViewCache lvc, Map<FileObject, Map<AnalyzerFactory, List<ErrorDescription>>> errors) {
-        Map<Project, Map<FileObject, Map<AnalyzerFactory, List<ErrorDescription>>>> projects = new HashMap<Project, Map<FileObject, Map<AnalyzerFactory, List<ErrorDescription>>>>();
+        Map<Project, Map<FileObject, Map<AnalyzerFactory, List<ErrorDescription>>>> projects = new IdentityHashMap<Project, Map<FileObject, Map<AnalyzerFactory, List<ErrorDescription>>>>();
         
         for (FileObject file : errors.keySet()) {
             Project project = FileOwnerQuery.getOwner(file);
@@ -318,7 +319,7 @@ public class Nodes {
     }
     
     private static Node constructSemiLogicalView(final Project p, LogicalViewCache lvc, final Map<FileObject, Map<AnalyzerFactory, List<ErrorDescription>>> errors) {
-        Node view = lvc.project2LogicalViewRootNode.get(p.getProjectDirectory());
+        Node view = lvc.project2LogicalViewRootNode.get(p);
         final LogicalViewProvider lvp = p.getLookup().lookup(LogicalViewProvider.class);
         
         if (view == null) {
@@ -333,7 +334,7 @@ public class Nodes {
                 }
             }
             
-            lvc.project2LogicalViewRootNode.put(p.getProjectDirectory(), view);
+            lvc.project2LogicalViewRootNode.put(p, view);
         }
 
         int warnings = 0;
@@ -346,22 +347,7 @@ public class Nodes {
         
         Map<Node, Map<AnalyzerFactory, List<ErrorDescription>>> foundNodes = resolveFileNodes(lvp, lvc, view, errors);
 
-        if (foundNodes == null) {
-            final Node viewNode = view;
-            AbstractNode pnsNode = new AbstractNode(Children.LEAF) {
-                @Override public Image getIcon(int type) {
-                    return viewNode.getIcon(type);
-                }
-                @Override public Image getOpenedIcon(int type) {
-                    return viewNode.getOpenedIcon(type);
-                }
-            };
-            pnsNode.setDisplayName(NbBundle.getMessage(Nodes.class, "ERR_ProjectNotSupported", view.getDisplayName()));
-
-            return pnsNode;
-        }
-        
-        return new Wrapper(view, warnings, foundNodes);
+        return new Wrapper(view, warnings, foundNodes, true);
     }
 
     private static Map<Node, Map<AnalyzerFactory, List<ErrorDescription>>> resolveFileNodes(LogicalViewProvider lvp, LogicalViewCache lvc, final Node view, Map<FileObject, Map<AnalyzerFactory, List<ErrorDescription>>> errors) {
@@ -373,9 +359,15 @@ public class Nodes {
             
             if (foundChild == null) {
                 foundChild = locateChild(view, lvp, file);
-                if (foundChild != null) {
-                    lvc.file2FileNode.put(file, foundChild);
+                if (foundChild == null) {
+                    try {
+                        foundChild = DataObject.find(file).getNodeDelegate();
+                    } catch (DataObjectNotFoundException ex) {
+                        LOG.log(Level.FINE, null, ex);
+                        continue;
+                    }
                 }
+                lvc.file2FileNode.put(file, foundChild);
             }
 
             if (foundChild == null) {
@@ -400,8 +392,8 @@ public class Nodes {
 
         private final int warningsCount;
 
-        public Wrapper(Node orig, int warningsCount, Map<Node, Map<AnalyzerFactory, List<ErrorDescription>>> fileNodes) {
-            super(orig, new WrapperChildren(orig, fileNodes), Lookup.EMPTY);
+        public Wrapper(Node orig, int warningsCount, Map<Node, Map<AnalyzerFactory, List<ErrorDescription>>> fileNodes, boolean topLevel) {
+            super(orig, new WrapperChildren(orig, fileNodes, topLevel), Lookup.EMPTY);
             this.warningsCount = warningsCount;
         }
         
@@ -466,19 +458,48 @@ public class Nodes {
         return isParent(parent, p);
     }
         
-    private static class WrapperChildren extends FilterNode.Children {
+    private static class WrapperChildren extends Children.Keys<Node> {
 
+        private final Node orig;
         private final java.util.Map<Node, java.util.Map<AnalyzerFactory, List<ErrorDescription>>> fileNodes;
+        private final List<Node> extraNodes;
 
-        public WrapperChildren(Node orig, java.util.Map<Node, java.util.Map<AnalyzerFactory, List<ErrorDescription>>> fileNodes) {
-            super(orig);
+        public WrapperChildren(Node orig, java.util.Map<Node, java.util.Map<AnalyzerFactory, List<ErrorDescription>>> fileNodes, boolean topLevel) {
+            super();
+            this.orig = orig;
             this.fileNodes = fileNodes;
+            if (topLevel) {
+                extraNodes = new ArrayList<Node>();
+                for (Node n : fileNodes.keySet()) {
+                    if (!isParent(orig, n)) {
+                        extraNodes.add(n);
+                    }
+                }
+            } else {
+                extraNodes = Collections.emptyList();
+            }
+        }
+
+        @Override
+        protected void addNotify() {
+            if (extraNodes.isEmpty()) {
+                setKeys(orig.getChildren().getNodes(true));
+            } else {
+                List<Node> children = new ArrayList<Node>();
+                children.addAll(Arrays.asList(orig.getChildren().getNodes(true)));
+                children.addAll(extraNodes);
+                setKeys(children);
+            }
+        }
+
+        @Override
+        protected void removeNotify() {
+            setKeys(Collections.<Node>emptyList());
         }
         
         @Override
         protected synchronized Node[] createNodes(Node key) {
             if (fileNodes.containsKey(key)) {
-                
                 return new Node[] {new Wrapper(key, fileNodes.get(key), true)};
             }
             final java.util.Map<Node, java.util.Map<AnalyzerFactory, List<ErrorDescription>>> fileNodesInside = new HashMap<Node, java.util.Map<AnalyzerFactory, List<ErrorDescription>>>();
@@ -494,7 +515,7 @@ public class Nodes {
             if (fileNodesInside.isEmpty()) {
                 return new Node[0];
             }
-            return new Node[] {new Wrapper(key, warnings, fileNodesInside)};
+            return new Node[] {new Wrapper(key, warnings, fileNodesInside, false)};
         }
         
     }
@@ -629,7 +650,7 @@ public class Nodes {
     }
     
     public static final class LogicalViewCache {
-        private final Map<FileObject, Node> project2LogicalViewRootNode = new HashMap<FileObject, Node>();
+        private final Map<Project, Node> project2LogicalViewRootNode = new IdentityHashMap<Project, Node>();
         private final Map<FileObject, Node> file2FileNode = new HashMap<FileObject, Node>();
     }
 

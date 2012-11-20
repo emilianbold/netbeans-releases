@@ -550,7 +550,6 @@ public final class WebProject implements Project {
             // remove in next release
             new WebModuleImpl(apiWebModule),
             enterpriseResourceSupport,
-            new WebActionProvider( this, this.updateHelper, this.eval ),
             new WebLogicalViewProvider(this, this.updateHelper, evaluator (), refHelper, webModule),
             new CustomizerProviderImpl(this, this.updateHelper, evaluator(), refHelper),        
             LookupMergerSupport.createClassPathProviderMerger(cpProvider),
@@ -589,6 +588,7 @@ public final class WebProject implements Project {
             UILookupMergerSupport.createPrivilegedTemplatesMerger(),
             UILookupMergerSupport.createRecommendedTemplatesMerger(),
             LookupProviderSupport.createSourcesMerger(),
+            LookupProviderSupport.createActionProviderMerger(),
             WhiteListQueryMergerSupport.createWhiteListQueryMerger(),
             new WebPropertyEvaluatorImpl(evaluator()),
             WebProject.this, // never cast an externally obtained Project to WebProject - use lookup instead
@@ -1472,7 +1472,8 @@ public final class WebProject implements Project {
                 projectCap = J2eeProjectCapabilities.forProject(project);
                 Profile profile = Profile.fromPropertiesString(eval.getProperty(WebProjectProperties.J2EE_PLATFORM));
                 isEE5 = profile == Profile.JAVA_EE_5;
-                serverSupportsEJB31 = Util.getSupportedProfiles(project).contains(Profile.JAVA_EE_6_FULL);
+                serverSupportsEJB31 = Util.getSupportedProfiles(project).contains(Profile.JAVA_EE_6_FULL) ||
+                        Util.getSupportedProfiles(project).contains(Profile.JAVA_EE_7_FULL);
                 checked = true;
             }
         }
@@ -2234,7 +2235,8 @@ public final class WebProject implements Project {
 
         private void updateLookup(){
             Profile profile = Profile.fromPropertiesString(project.evaluator().getProperty(WebProjectProperties.J2EE_PLATFORM));
-            if (Profile.JAVA_EE_6_FULL.equals(profile) || Profile.JAVA_EE_6_WEB.equals(profile)){
+            if (Profile.JAVA_EE_6_FULL.equals(profile) || Profile.JAVA_EE_6_WEB.equals(profile) ||
+                    Profile.JAVA_EE_7_FULL.equals(profile) || Profile.JAVA_EE_7_WEB.equals(profile)){
                 setLookups(base, ee6);
             }else{
                 setLookups(base);

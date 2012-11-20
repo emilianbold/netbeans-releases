@@ -60,13 +60,18 @@ import javax.swing.text.Element;
 import org.netbeans.api.annotations.common.NonNull;
 
 import org.netbeans.modules.editor.NbEditorUtilities;
+import org.netbeans.modules.editor.bookmarks.BookmarkChange;
 import org.netbeans.modules.editor.bookmarks.BookmarkHistory;
 import org.netbeans.modules.editor.bookmarks.BookmarkInfo;
 import org.netbeans.modules.editor.bookmarks.BookmarkManager;
+import org.netbeans.modules.editor.bookmarks.BookmarkManagerEvent;
+import org.netbeans.modules.editor.bookmarks.BookmarkManagerListener;
 import org.netbeans.modules.editor.bookmarks.BookmarkUtils;
 import org.netbeans.modules.editor.bookmarks.FileBookmarks;
+import org.netbeans.modules.editor.bookmarks.ProjectBookmarks;
 import org.openide.cookies.EditorCookie.Observable;
 import org.openide.loaders.DataObject;
+import org.openide.util.WeakListeners;
 import org.openide.util.WeakSet;
 
 
@@ -107,30 +112,58 @@ public final class BookmarkList {
     private Map<BookmarkInfo, Bookmark> info2bookmark;
     
     private final PropertyChangeSupport propertyChangeSupport = new PropertyChangeSupport (this);
+
+    private final BookmarkManagerListener bmListener = new BookmarkManagerListener() {
+
+        @Override
+        public void bookmarksChanged(BookmarkManagerEvent evt) {
+            for (BookmarkChange change : evt.getBookmarkChanges()) {
+                BookmarkInfo bInfo = change.getBookmark();
+                if (change.isRemoved()) {
+                    removeBookmarkImpl(bInfo);
+                }
+            }
+        }
+
+    };
+
+    private boolean pendingFireChange;
     
-    private BookmarkList (Document document) {
+    private BookmarkList(final Document document) {
         if (document == null) {
             throw new NullPointerException ("Document cannot be null"); // NOI18N
         }
         this.document = document;
         this.bookmarks = new ArrayList<Bookmark> ();
         this.info2bookmark = new HashMap<BookmarkInfo, Bookmark>();
-        BookmarkManager lockedBookmarkManager = BookmarkManager.getLocked();
-        try {
-            FileBookmarks fileBookmarks = lockedBookmarkManager.getFileBookmarks(document);
-            if (fileBookmarks != null) {
-                for (BookmarkInfo bookmarkInfo : fileBookmarks.getBookmarks()) {
-                    try {
-                        addBookmarkForInfo(bookmarkInfo, -1);
-                    } catch (IndexOutOfBoundsException ex) {
-                        // line does not exists now (some external changes)
+
+        BookmarkUtils.postTask(new Runnable() {
+            @Override
+            public void run() {
+                BookmarkManager lockedBookmarkManager = BookmarkManager.getLocked();
+                try {
+                    FileBookmarks fileBookmarks = lockedBookmarkManager.getFileBookmarks(document);
+                    if (fileBookmarks != null) {
+                        ProjectBookmarks projectBookmarks = fileBookmarks.getProjectBookmarks();
+                        projectBookmarks.activeClientNotify(this);
+
+                        for (BookmarkInfo bookmarkInfo : fileBookmarks.getBookmarks()) {
+                            try {
+                                addBookmarkForInfo(bookmarkInfo, -1);
+                            } catch (IndexOutOfBoundsException ex) {
+                                // line does not exists now (some external changes)
+                            }
+                        }
                     }
+                    // Passing lockedBookmarkManager as "source" parameter is unclean
+                    lockedBookmarkManager.addBookmarkManagerListener(WeakListeners.create(
+                            BookmarkManagerListener.class, bmListener, lockedBookmarkManager));
+                } finally {
+                    lockedBookmarkManager.unlock();
                 }
             }
-        } finally {
-            lockedBookmarkManager.unlock();
-        }
-        
+        });
+
         DataObject dataObject = NbEditorUtilities.getDataObject (document);
         if (dataObject != null) {
             Observable observable = dataObject.getCookie (Observable.class);
@@ -317,32 +350,28 @@ public final class BookmarkList {
      * @return removed (and invalidated) bookmark
      */
     public synchronized boolean removeBookmark (Bookmark bookmark) {
-        boolean removed = bookmarks.remove (bookmark);
-        if (removed) {
-            info2bookmark.remove(bookmark.info());
+        boolean removed = bookmarks.contains(bookmark);
+        BookmarkUtils.removeBookmarkUnderLock(bookmark.info());
+        // Rest will be done by BookmarkManagerListener
+        return removed;
+    }
+
+    private synchronized void removeBookmarkImpl(BookmarkInfo bInfo) {
+        Bookmark bookmark = info2bookmark.remove(bInfo);
+        if (bookmark != null) {
+            bookmarks.remove(bookmark);
             bookmark.release();
-            BookmarkUtils.removeBookmarkUnderLock(bookmark.info());
             fireChange();
         }
-        return removed;
     }
     
     /** Removes all bookmarks */
     public synchronized void removeAllBookmarks (){
-        if (!bookmarks.isEmpty()) {
-            for (int i = 0; i < bookmarks.size (); i++){
-                Bookmark bookmark = bookmarks.get (i);
-                bookmark.release();
-            }
-            bookmarks.clear();
-            info2bookmark.clear();
-            BookmarkManager lockedBookmarkManager = BookmarkManager.getLocked();
-            try {
-                lockedBookmarkManager.removeBookmarks(new ArrayList<BookmarkInfo>(info2bookmark.keySet()));
-            } finally {
-                lockedBookmarkManager.unlock();
-            }
-            fireChange();
+        BookmarkManager lockedBookmarkManager = BookmarkManager.getLocked();
+        try {
+            lockedBookmarkManager.removeBookmarks(new ArrayList<BookmarkInfo>(info2bookmark.keySet()));
+        } finally {
+            lockedBookmarkManager.unlock();
         }
     }
     
@@ -390,9 +419,18 @@ public final class BookmarkList {
     }
 
     private void fireChange() {
+        synchronized (bmListener) {
+            if (pendingFireChange) {
+                return;
+            }
+            pendingFireChange = true;
+        }
         SwingUtilities.invokeLater (new Runnable () {
             @Override
             public void run() {
+                synchronized (bmListener) {
+                    pendingFireChange = false;
+                }
                 propertyChangeSupport.firePropertyChange (PROP_BOOKMARKS, null, null);
             }
         });

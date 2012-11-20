@@ -29,6 +29,7 @@
                 <friend>org.netbeans.modules.cnd.apt</friend>
                 <friend>org.netbeans.modules.cnd.berkeley.storage</friend>
                 <friend>org.netbeans.modules.cnd.discovery</friend>
+                <friend>org.netbeans.modules.cnd.indexing</friend>
                 <friend>org.netbeans.modules.cnd.kit</friend>
                 <friend>org.netbeans.modules.cnd.makeproject</friend>
                 <friend>org.netbeans.modules.cnd.modelimpl</friend>

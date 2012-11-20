@@ -129,7 +129,7 @@ import org.openide.util.Utilities;
  */
 public class JavaCustomIndexer extends CustomIndexer {
 
-            static final boolean NO_ONE_PASS_COMPILE_WORKER = Boolean.getBoolean(JavaCustomIndexer.class.getName() + ".no.one.pass.compile.worker");
+            static       boolean NO_ONE_PASS_COMPILE_WORKER = Boolean.getBoolean(JavaCustomIndexer.class.getName() + ".no.one.pass.compile.worker");
     private static final String SOURCE_PATH = "sourcePath"; //NOI18N
     private static final Pattern ANONYMOUS = Pattern.compile("\\$[0-9]"); //NOI18N
     private static final ClassPath EMPTY = ClassPathSupport.createClassPath(new URL[0]);
@@ -481,15 +481,23 @@ public class JavaCustomIndexer extends CustomIndexer {
                 if (javaContext.getFQNs().remove(FileObjects.getBinaryName(file, classFolder), relURLPair.second)) {
                     String fileName = file.getName();
                     fileName = fileName.substring(0, fileName.lastIndexOf('.'));
-                    final String[] patterns = new String[]{fileName + '.', fileName + '$'}; //NOI18N
+                    final String[][] patterns = new String[][]{
+                        new String[]{fileName + '.', "", FileObjects.SIG, FileObjects.RS, FileObjects.RAPT, FileObjects.RX},    //NOI18N
+                        new String[]{fileName + '$', null, FileObjects.SIG}                                                       //NOI18N
+                    };
                     File parent = file.getParentFile();
                     FilenameFilter filter = new FilenameFilter() {
 
                         @Override
                         public boolean accept(File dir, String name) {
-                            for (int i = 0; i < patterns.length; i++) {
-                                if (name.startsWith(patterns[i])) {
-                                    return true;
+                            for (final String[] pattern : patterns) {
+                                if (name.startsWith(pattern[0])) {
+                                    final String ext = FileObjects.getExtension(name);
+                                    for (int i = 2; i< pattern.length; i++) {
+                                        if (pattern[i].equals(ext) && (pattern[1] == null || name.length() == pattern[0].length() + pattern[i].length())) {
+                                            return true;
+                                        }
+                                    }
                                 }
                             }
                             return false;
@@ -896,7 +904,7 @@ public class JavaCustomIndexer extends CustomIndexer {
         @Override
         public boolean scanStarted(final Context context) {
             JavaIndex.LOG.log(Level.FINE, "scan started for root ({0})", context.getRootURI()); //NOI18N
-            TransactionContext.beginStandardTransaction(true, context.getRootURI());
+            TransactionContext.beginStandardTransaction(context.getRootURI(), true, context.isAllFilesIndexing());
             boolean vote = true;
             try {
                 final ClassIndexImpl uq = ClassIndexManager.getDefault().createUsagesQuery(context.getRootURI(), true);
@@ -944,29 +952,17 @@ public class JavaCustomIndexer extends CustomIndexer {
         }        
 
         @Override
-        public void scanFinished(final Context context) {
+        public void scanFinished(final Context context) {            
+            final TransactionContext txCtx = TransactionContext.get();
+            assert txCtx != null;
             try {
-                final ClassIndexImpl uq = ClassIndexManager.getDefault().getUsagesQuery(context.getRootURI(), false);
-                if (uq == null) {
-                    //Closing
-                    return;
-                }
-                if (uq.getState() == ClassIndexImpl.State.NEW) {
-                    if (uq.getType() != ClassIndexImpl.Type.SOURCE) {
-                        JavaIndex.setAttribute(context.getRootURI(), ClassIndexManager.PROP_SOURCE_ROOT, Boolean.TRUE.toString());
-                    }
-                    uq.setState(ClassIndexImpl.State.INITIALIZED);
-                }
-            } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
-            } finally {
-                final TransactionContext txCtx = TransactionContext.get();
-                assert txCtx != null;
-                try {
+                if (context.isCancelled()) {
+                    txCtx.rollBack();
+                } else {
                     txCtx.commit();
-                } catch (IOException ioe) {
-                    Exceptions.printStackTrace(ioe);
                 }
+            } catch (IOException ioe) {
+                Exceptions.printStackTrace(ioe);
             }
         }
         

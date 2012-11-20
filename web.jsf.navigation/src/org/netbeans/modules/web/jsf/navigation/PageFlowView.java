@@ -43,14 +43,19 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.Action;
+import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JScrollPane;
 import javax.swing.JToolBar;
+import javax.swing.SwingUtilities;
 import javax.swing.border.EmptyBorder;
+import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
@@ -92,33 +97,26 @@ import org.openide.windows.TopComponent;
  */
 public class PageFlowView extends TopComponent implements Lookup.Provider {
 
+    private static final RequestProcessor RP = new RequestProcessor(PageFlowView.class.getSimpleName(), 3);
+
+    /** GuardedBy("this") */
+    private volatile PageFlowController pfc;
+
     private JSFConfigEditorContext context;
     private PageFlowScene scene;
-    private PageFlowController pfc;
     private PageFlowSceneData sceneData;
-    private ThreadPoolExecutor executor;
     private static final Logger LOG = Logger.getLogger("org.netbeans.web.jsf.navigation");
     private static final String ACN_PAGEVIEW_TC = NbBundle.getMessage(PageFlowView.class, "ACN_PageView_TC");
     private static final String ACDS_PAGEVIEW_TC = NbBundle.getMessage(PageFlowView.class, "ACDS_PageView_TC");
+
+    /** Guards finished initialization */
+    private Future initTask;
 
     PageFlowView(PageFlowElement multiview, JSFConfigEditorContext context) {
         setMultiview(multiview);
         this.context = context;
         initializeScene(); /* setScene is called inside this method */
-        pfc = new PageFlowController(context, this);
-        sceneData = new PageFlowSceneData(PageFlowToolbarUtilities.getInstance(this));
-
-        deserializeNodeLocation(getStorageFile(context.getFacesConfigFile()));
-        pfc.setupGraphNoSaveData(); /* I don't want to override the loaded locations with empy sceneData */
-        LOG.fine("Initializing Page Flow SetupGraph");
-
-        setFocusable(true);
-
-
-        LOG.finest("Create Executor Thread");
-
-        getAccessibleContext().setAccessibleDescription(ACDS_PAGEVIEW_TC);
-        getAccessibleContext().setAccessibleName(ACN_PAGEVIEW_TC);
+        processScene();
     }
 
     public void requestMultiViewActive() {
@@ -130,7 +128,7 @@ public class PageFlowView extends TopComponent implements Lookup.Provider {
      *
      * @return PageFlowController
      */
-    public PageFlowController getPageFlowController() {
+    public synchronized PageFlowController getPageFlowController() {
         return pfc;
     }
     /** Weak reference to the lookup. */
@@ -170,7 +168,7 @@ public class PageFlowView extends TopComponent implements Lookup.Provider {
     /**
      * Unregister all the listeners.  See "registerListeners()".
      **/
-    public void unregstierListeners() {
+    public synchronized void unregstierListeners() {
         if (pfc != null) {
             pfc.unregisterListeners();
         }
@@ -179,7 +177,7 @@ public class PageFlowView extends TopComponent implements Lookup.Provider {
     /**
      * Regsiter all the Page Flow Controller Listeners. Ie FileSystem, FacesModel, etc
      **/
-    public void registerListeners() {
+    public synchronized void registerListeners() {
         if (pfc != null) {
             pfc.registerListeners();
         }
@@ -203,7 +201,7 @@ public class PageFlowView extends TopComponent implements Lookup.Provider {
         return getScene();
     }
 
-    public void destroyScene() {
+    public synchronized void destroyScene() {
         clearGraph();
         getScene().destoryPageFlowScene();
         setScene(null);
@@ -246,6 +244,37 @@ public class PageFlowView extends TopComponent implements Lookup.Provider {
     public void setScene(PageFlowScene scene) {
         sceneAssgn++;
         this.scene = scene;
+    }
+
+    @NbBundle.Messages({
+        "PageFlowView.lbl.graph.initialization=Initializing PageFlow Graph"
+    })
+    private synchronized void processScene() {
+        final ProgressHandle progressHandle = ProgressHandleFactory.createHandle(Bundle.PageFlowView_lbl_graph_initialization());
+        progressHandle.start();
+        initTask = RP.submit(new Runnable() {
+            @Override
+            public void run() {
+                pfc = new PageFlowController(PageFlowView.this.context, PageFlowView.this);
+                sceneData = new PageFlowSceneData(PageFlowToolbarUtilities.getInstance(PageFlowView.this));
+                deserializeNodeLocation(getStorageFile(PageFlowView.this.context.getFacesConfigFile()));
+                SwingUtilities.invokeLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        pfc.setupGraphNoSaveData(); /* I don't want to override the loaded locations with empy sceneData */
+                        LOG.fine("Initializing Page Flow SetupGraph");
+                        setFocusable(true);
+                        LOG.finest("Create Executor Thread");
+                        getAccessibleContext().setAccessibleDescription(ACDS_PAGEVIEW_TC);
+                        getAccessibleContext().setAccessibleName(ACN_PAGEVIEW_TC);
+                        pfc.registerListeners();
+                        // check that the listener is registered
+                        assert pfc.isListenerRegistered();
+                        progressHandle.finish();
+                    }
+                });
+            }
+        });
     }
 
 /* In order to prevent modifications of tab names when a page was selected, I needed to
@@ -528,7 +557,32 @@ public class PageFlowView extends TopComponent implements Lookup.Provider {
 
         toolbar.addSeparator();
         PageFlowToolbarUtilities utilities = PageFlowToolbarUtilities.getInstance(this);
-        toolbar.add(utilities.createScopeComboBox());
+        final JComboBox scopeComboBox = utilities.createScopeComboBox();
+        // scene wasn't initialized yet
+        if (sceneData == null) {
+            scopeComboBox.setEnabled(false);
+            RP.post(new Runnable() {
+                @Override
+                public void run() {
+                    if (initTask != null) {
+                        try {
+                            initTask.get();
+                            SwingUtilities.invokeLater(new Runnable() {
+                                @Override
+                                public void run() {
+                                    scopeComboBox.setEnabled(true);
+                                }
+                            });
+                        } catch (InterruptedException ex) {
+                            Exceptions.printStackTrace(ex);
+                        } catch (ExecutionException ex) {
+                            Exceptions.printStackTrace(ex);
+                        }
+                    }
+                }
+            });
+        }
+        toolbar.add(scopeComboBox);
         toolbar.addSeparator();
         toolbar.add(utilities.createLayoutButton());
 
@@ -618,7 +672,7 @@ public class PageFlowView extends TopComponent implements Lookup.Provider {
      * also passed if it is suspected the page content items have been modified.
      * If this is suspected, it will then call redrawPinsAndEdges.
      **/
-    public void resetNodeWidget(Page pageNode, boolean contentItemsChanged) {
+    public synchronized void resetNodeWidget(Page pageNode, boolean contentItemsChanged) {
 
         if (pageNode == null) {
             throw new RuntimeException("PageFlowEditor: Cannot set node to null");

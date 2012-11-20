@@ -53,6 +53,7 @@ import org.netbeans.modules.php.editor.parser.astnodes.Include;
  * @author Radek Matous
  */
 public class IncludeInfo extends ASTNodeInfo<Include> {
+
     IncludeInfo(Include node) {
         super(node);
     }
@@ -87,4 +88,5 @@ public class IncludeInfo extends ASTNodeInfo<Include> {
     public String getFileName() {
         return VariousUtils.resolveFileName(getOriginalNode());
     }
+
 }
