@@ -253,7 +253,12 @@ public abstract class RefactoringTask extends UserTask implements Runnable {
 
         @Override
         public boolean isValid() {
-            return true; // At the moment I can't imagine case where a refactoring on the node element isn't valid
+            try {
+                SourceUtils.runUserActionTask(fileObject, this);
+            } catch (Exception ex) {
+                return false;
+            }
+            return true;
         }
 
         @Override
@@ -268,6 +273,10 @@ public abstract class RefactoringTask extends UserTask implements Runnable {
             if (element != null && element.getName() != null) {
                 ui = createRefactoringUI(element, parserResult);
             }
+
+            if (ui == null) {
+                throw new IllegalStateException();
+            }
         }
 
         @Override
@@ -275,7 +284,7 @@ public abstract class RefactoringTask extends UserTask implements Runnable {
             try {
                 SourceUtils.runUserActionTask(fileObject, this);
             } catch (Exception ex) {
-                Exceptions.printStackTrace(ex);
+                return;
             }
             UI.openRefactoringUI(ui);
         }
