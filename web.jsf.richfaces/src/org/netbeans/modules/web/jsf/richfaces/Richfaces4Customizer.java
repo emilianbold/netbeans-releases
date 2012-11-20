@@ -72,6 +72,7 @@ import org.openide.util.RequestProcessor;
  */
 public class Richfaces4Customizer implements JsfComponentCustomizer {
 
+    private static final RequestProcessor RP = new RequestProcessor(Richfaces4Customizer.class);
     private Richfaces4CustomizerPanelVisual panel;
     private ChangeSupport changeSupport = new ChangeSupport(this);
     private Future<Boolean> result = null;
@@ -111,7 +112,7 @@ public class Richfaces4Customizer implements JsfComponentCustomizer {
 
         synchronized (this) {
             if (result == null) {
-                result = RequestProcessor.getDefault().submit(new Callable<Boolean>() {
+                result = RP.submit(new Callable<Boolean>() {
                     @Override
                     public Boolean call() throws Exception {
                         Thread.sleep(4000);
