@@ -169,13 +169,10 @@ public class ReplaceConstructorWithBuilderPlugin extends JavaRefactoringPlugin {
                     StringBuilder args = null;
 
                     for (Setter set : refactoring.getSetters()) {
-                        ExpressionTree ident = make.QualIdent(set.getType());
-                        if(set.isVarargs()) {
-                            ident = (ExpressionTree) make.ArrayType(ident);
-                        }
                         members.add(make.Variable(
                                 make.Modifiers(Collections.singleton(Modifier.PRIVATE)),
-                                set.getVarName(), ident,
+                                set.getVarName(),
+                                make.QualIdent(set.getType()),
                                 set.getDefaultValue() == null ? null : make.Identifier(set.getDefaultValue())));
                         if (args == null) {
                             args = new StringBuilder();
@@ -193,10 +190,6 @@ public class ReplaceConstructorWithBuilderPlugin extends JavaRefactoringPlugin {
                             "{}")); //NOI18N
 
                     for (Setter set : refactoring.getSetters()) {
-                        List<StatementTree> stmts = new LinkedList<StatementTree>();
-                        stmts.add(make.ExpressionStatement(make.Assignment(make.Identifier("this." + set.getVarName()), make.Identifier(set.getVarName())))); //NOI18N
-                        stmts.add(make.Return(make.Identifier("this"))); //NOI18N
-                        BlockTree body = make.Block(stmts, false);
                         members.add(make.Method(
                                 make.Modifiers(EnumSet.of(Modifier.PUBLIC)),
                                 set.getName(),
@@ -204,9 +197,8 @@ public class ReplaceConstructorWithBuilderPlugin extends JavaRefactoringPlugin {
                                 Collections.<TypeParameterTree>emptyList(),
                                 Collections.<VariableTree>singletonList(make.Variable(make.Modifiers(Collections.<Modifier>emptySet()), set.getVarName(), make.QualIdent(set.getType()), null)),
                                 Collections.<ExpressionTree>emptyList(),
-                                body,
-                                null,
-                                set.isVarargs()));
+                                "{this." + set.getVarName() + " = " + set.getVarName() + ";\nreturn this;}", //NOI18N
+                                null));
                     }
                     
                     ClassTree parentTree = (ClassTree) constrPath.getParentPath().getLeaf();

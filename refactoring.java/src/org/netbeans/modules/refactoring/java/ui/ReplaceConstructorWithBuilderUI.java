@@ -42,7 +42,6 @@
 
 package org.netbeans.modules.refactoring.java.ui;
 
-import com.sun.source.tree.ArrayTypeTree;
 import org.netbeans.modules.refactoring.java.api.ReplaceConstructorWithBuilderRefactoring;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.Tree;
@@ -54,7 +53,6 @@ import java.util.List;
 import java.util.Set;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
-import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import javax.swing.event.ChangeListener;
@@ -81,30 +79,18 @@ public class ReplaceConstructorWithBuilderUI implements RefactoringUI, JavaRefac
     private String name;
     private List <String> paramaterNames;
     private List <String> parameterTypes; 
-    private boolean varargs;
 
     private ReplaceConstructorWithBuilderUI(TreePathHandle constructor, CompilationInfo info) {
         this.refactoring = new ReplaceConstructorWithBuilderRefactoring(constructor);
-        ExecutableElement contructorElement = (ExecutableElement) constructor.resolveElement(info);
-        this.name = contructorElement.getSimpleName().toString();
+        this.name = constructor.resolveElement(info).getSimpleName().toString();
         MethodTree constTree = (MethodTree) constructor.resolve(info).getLeaf();
         paramaterNames = new ArrayList();
         parameterTypes = new ArrayList();
-        varargs = contructorElement.isVarArgs();
-        List<? extends VariableTree> parameters = constTree.getParameters();
-        for (int i = 0; i < parameters.size(); i++) {
-            VariableTree var = parameters.get(i);
+        for (VariableTree var:constTree.getParameters()) {
             paramaterNames.add(var.getName().toString());
-            String type = var.getType().toString();
-            if(varargs && i+1 == parameters.size()) {
-                if(var.getType().getKind() == Tree.Kind.ARRAY_TYPE) {
-                    ArrayTypeTree att = (ArrayTypeTree) var.getType();
-                    type = att.getType().toString();
-                }
-            }
-            parameterTypes.add(type);
+            parameterTypes.add(var.getType().toString());
         }
-        builderFQN = ((TypeElement) contructorElement.getEnclosingElement()).getQualifiedName().toString();
+        builderFQN = ((TypeElement) constructor.resolveElement(info).getEnclosingElement()).getQualifiedName().toString();
     }
 
     private ReplaceConstructorWithBuilderUI() {
@@ -128,7 +114,7 @@ public class ReplaceConstructorWithBuilderUI implements RefactoringUI, JavaRefac
     @Override
     public CustomRefactoringPanel getPanel(final ChangeListener parent) {
         if (panel == null) {
-            panel = new ReplaceConstructorWithBuilderPanel(parent, builderFQN + "Builder", paramaterNames, parameterTypes, varargs);
+            panel = new ReplaceConstructorWithBuilderPanel(parent, builderFQN + "Builder", paramaterNames, parameterTypes);
         }
         return panel;
     }
