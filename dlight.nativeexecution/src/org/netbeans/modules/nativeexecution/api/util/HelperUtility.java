@@ -175,7 +175,12 @@ public class HelperUtility {
                                 remoteSize = -1;
                             }
                             if (remoteSize < 0) {
-                                channel.mkdir(remoteDir);
+                                try {
+                                    channel.lstat(remoteDir);
+                                } catch (SftpException ex) {
+                                    channel.mkdir(remoteDir);
+                                }
+
                                 channel.put(safeLocalFile.getAbsolutePath(), remoteFile);
                                 channel.chmod(0700, remoteFile);
                             }
