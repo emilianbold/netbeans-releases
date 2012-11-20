@@ -53,6 +53,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.List;
+import java.util.Map;
 import javax.swing.BorderFactory;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.GroupLayout;
@@ -80,12 +81,12 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.web.inspect.PageModel;
 import org.netbeans.modules.web.inspect.webkit.Utilities;
 import org.netbeans.modules.web.inspect.webkit.WebKitPageModel;
-import org.netbeans.modules.web.webkit.debugging.api.TransportStateException;
 import org.netbeans.modules.web.webkit.debugging.api.WebKitDebugging;
 import org.netbeans.modules.web.webkit.debugging.api.css.CSS;
 import org.netbeans.modules.web.webkit.debugging.api.css.MatchedStyles;
 import org.netbeans.modules.web.webkit.debugging.api.css.Media;
 import org.netbeans.modules.web.webkit.debugging.api.css.Property;
+import org.netbeans.modules.web.webkit.debugging.api.css.PropertyInfo;
 import org.netbeans.modules.web.webkit.debugging.api.css.Rule;
 import org.netbeans.modules.web.webkit.debugging.api.css.RuleId;
 import org.openide.awt.HtmlRenderer;
@@ -333,19 +334,15 @@ public class CSSStylesSelectionPanel extends JPanel {
                         public void run() {
                             WebKitDebugging webKit = pageModel.getWebKit();
                             CSS css = webKit.getCSS();
-                            MatchedStyles matchedStyles;
-                            try {
-                                matchedStyles = css.getMatchedStyles(node, null, false, true);
-                            } catch (TransportStateException tsex) {
-                                matchedStyles = null;
-                            }
+                            MatchedStyles matchedStyles = css.getMatchedStyles(node, null, false, true);
+                            Map<String,PropertyInfo> propertyInfos = css.getSupportedCSSProperties();
                             if (matchedStyles != null) {
                                 final Node[] selectedRules = rulePaneManager.getSelectedNodes();
                                 final Node[] selectedProperties = propertyPaneManager.getSelectedNodes();
                                 Project project = pageModel.getProject();
                                 final Node rulePaneRoot = new MatchedRulesNode(project, selectedNode, matchedStyles);
                                 rulePaneManager.setRootContext(rulePaneRoot);
-                                final Node propertyPaneRoot = new MatchedPropertiesNode(project, matchedStyles);
+                                final Node propertyPaneRoot = new MatchedPropertiesNode(project, matchedStyles, propertyInfos);
                                 propertyPaneManager.setRootContext(propertyPaneRoot);
                                 if (keepSelection) {
                                     EventQueue.invokeLater(new Runnable() {

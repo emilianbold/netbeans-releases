@@ -174,8 +174,6 @@ public class EntityClosure {
             Exceptions.printStackTrace(ex);
         }
 
-        final Set<String> result = new HashSet<String>();
-
         if( source!=null ) {
             try {
                 ClassPath classPath = source.getClasspathInfo().getClassPath(ClasspathInfo.PathKind.COMPILE);

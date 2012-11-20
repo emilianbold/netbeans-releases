@@ -104,7 +104,7 @@ import org.openide.util.NbBundle;
  * @author marekfukala
  */
 @NbBundle.Messages({
-    "EditRulesPanel.none.item=<none>",
+    "EditRulesPanel.none.item=<none>"
 })
 public class EditRulesPanel extends javax.swing.JPanel {
 

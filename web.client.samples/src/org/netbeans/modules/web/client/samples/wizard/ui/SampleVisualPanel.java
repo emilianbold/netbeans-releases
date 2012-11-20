@@ -39,7 +39,7 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.web.client.samples.ui;
+package org.netbeans.modules.web.client.samples.wizard.ui;
 
 import java.io.File;
 import java.io.IOException;
@@ -61,8 +61,8 @@ import org.openide.util.NbBundle;
 class SampleVisualPanel extends JPanel {
 
     private static final long serialVersionUID = 6783546871135477L;
-    private List<ChangeListener> listeners;
-    
+    private final List<ChangeListener> listeners;
+
 
     public SampleVisualPanel(WizardDescriptor descriptor) {
         initComponents();
@@ -91,7 +91,7 @@ class SampleVisualPanel extends JPanel {
         DocumentListener documentListener = new DefaultDocumentListener();
         projectNameTextField.getDocument().addDocumentListener(documentListener);
         projectLocationTextField.getDocument().addDocumentListener(documentListener);
-        setName(NbBundle.getMessage(SampleVisualPanel.class, "LBL_NameNLocation")); // NOI18N
+        setName(NbBundle.getMessage(OnlineSampleVisualPanel.class, "LBL_NameAndLocation"));
     }
 
     @Override

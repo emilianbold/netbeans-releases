@@ -121,10 +121,11 @@ public class ETCompletionContextResolver implements CompletionContextResolver {
             } catch (IOException ex) {
             }
         }
-        if(entities != null)
-        for (Entity entity : entities) {
-            for(NamedQuery nq:entity.getNamedQuery()){
-                results.add(new JPACompletionItem.NamedQueryNameItem(nq.getName(), entity.getName(), nq.getQuery(), ctx.getMethod().isWithQ(), ctx.getMethod().getValueOffset()));
+        if(entities != null) {
+            for (Entity entity : entities) {
+                for(NamedQuery nq:entity.getNamedQuery()){
+                    results.add(new JPACompletionItem.NamedQueryNameItem(nq.getName(), entity.getName(), nq.getQuery(), ctx.getMethod().isWithQ(), ctx.getMethod().getValueOffset()));
+                }
             }
         }
         return results;
