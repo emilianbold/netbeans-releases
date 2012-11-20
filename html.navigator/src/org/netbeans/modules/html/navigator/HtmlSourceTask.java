@@ -80,18 +80,16 @@ public final class HtmlSourceTask extends ParserResultTask<HtmlParserResult> {
 
     @Override
     public void run(HtmlParserResult result, SchedulerEvent event) {
-        if(last != result) {
+        if (last != result) {
             //set new parser result to the UI
             HtmlNavigatorPanel.ui.setParserResult(result);
             last = result;
-        } else {
-            //still the same parsing result
-            int caret = ((CursorMovedSchedulerEvent) event).getCaretOffset();
-            if(lastCaret != caret) {
-                //update the caret position
-                HtmlNavigatorPanel.ui.setCaretOffset(caret);
-                lastCaret = caret;
-            }
+        }
+        int caret = ((CursorMovedSchedulerEvent) event).getCaretOffset();
+        if (lastCaret != caret) {
+            //update the caret position
+            HtmlNavigatorPanel.ui.setCaretOffset(caret);
+            lastCaret = caret;
         }
     }
 

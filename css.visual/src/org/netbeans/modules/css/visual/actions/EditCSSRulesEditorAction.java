@@ -39,7 +39,7 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.html.editor.api.actions;
+package org.netbeans.modules.css.visual.actions;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -48,14 +48,12 @@ import java.util.Collections;
 import javax.swing.JEditorPane;
 import javax.swing.text.Document;
 import org.netbeans.modules.csl.api.DataLoadersBridge;
+import org.netbeans.modules.css.visual.HtmlSourceElementHandle;
 import org.netbeans.modules.html.editor.api.gsf.HtmlParserResult;
-import org.netbeans.modules.html.editor.lib.api.elements.ElementUtils;
 import org.netbeans.modules.html.editor.lib.api.elements.Node;
 import org.netbeans.modules.html.editor.lib.api.elements.OpenTag;
-import org.netbeans.modules.html.editor.lib.api.elements.TreePath;
 import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
-import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.spi.ParseException;
@@ -70,16 +68,16 @@ import org.openide.util.NbBundle.Messages;
 
 @ActionID(
     category = "Source",
-id = "org.netbeans.modules.html.editor.api.actions.ModifyElementRulesEditorAction")
+id = "org.netbeans.modules.css.visual.actions.EditCSSRulesEditorAction")
 @ActionRegistration(
-    displayName = "#CTL_ModifyElementRulesEditorAction")
+    displayName = "#CTL_EditElementRulesEditorAction")
 @ActionReference(path = "Editors/text/html/Popup", position = 1300)
-@Messages("CTL_ModifyElementRulesEditorAction=Modify Rules")
-public final class ModifyElementRulesEditorAction implements ActionListener {
+@Messages("CTL_EditElementRulesEditorAction=Edit CSS Rules")
+public final class EditCSSRulesEditorAction implements ActionListener {
 
     private final EditorCookie context;
 
-    public ModifyElementRulesEditorAction(EditorCookie context) {
+    public EditCSSRulesEditorAction(EditorCookie context) {
         this.context = context;
     }
 
@@ -115,10 +113,15 @@ public final class ModifyElementRulesEditorAction implements ActionListener {
                     if(element instanceof OpenTag) {
                         //not the root element
                         OpenTag tag = (OpenTag)element;
-                        String elementPath = ElementUtils.encodeToString(new TreePath(tag));
                         
-                        //delegate to the node action
-                        new ModifyElementRulesAction(file, elementPath).actionPerformed(null);
+                        CreateRuleAction action = CreateRuleAction.getDefault();
+                        action.setContext(file);
+                        
+                        HtmlSourceElementHandle handle = new HtmlSourceElementHandle(tag, result.getSnapshot(), file );
+                        action.setHtmlSourceElementHandle(handle);
+                        
+                        action.actionPerformed(null);
+                        
                     }
                 }
             });

@@ -40,7 +40,7 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.web.client.samples.ui;
+package org.netbeans.modules.web.client.samples.wizard.ui;
 
 import java.io.File;
 import javax.swing.event.ChangeListener;
@@ -56,9 +56,13 @@ import org.openide.util.HelpCtx;
  * @author ads
  *
  */
-class SamplePanel implements Panel<WizardDescriptor> {
+public class SamplePanel implements Panel<WizardDescriptor> {
 
-    SamplePanel(WizardDescriptor descriptor) {
+    private SampleVisualPanel myPanel;
+    private WizardDescriptor myDescriptor;
+
+
+    public SamplePanel(WizardDescriptor descriptor) {
         myDescriptor = descriptor;
     }
 
@@ -77,7 +81,7 @@ class SamplePanel implements Panel<WizardDescriptor> {
 
     @Override
     public HelpCtx getHelp() {
-        return new HelpCtx(SampleWizardIterator.HELP_CTX);
+        return new HelpCtx("html5.samples"); // NOI18N
     }
 
     @Override
@@ -101,9 +105,6 @@ class SamplePanel implements Panel<WizardDescriptor> {
         getComponent().removeChangeListener(listener);
     }
 
-    /* (non-Javadoc)
-     * @see org.openide.WizardDescriptor.Panel#storeSettings(java.lang.Object)
-     */
     @Override
     public void storeSettings(WizardDescriptor descriptor) {
         File projectLocation = new File(getComponent().getProjectLocation());
@@ -115,7 +116,4 @@ class SamplePanel implements Panel<WizardDescriptor> {
     private void setErrorMessage(String message) {
         myDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, message);
     }
-
-    private SampleVisualPanel myPanel;
-    private WizardDescriptor myDescriptor;
 }

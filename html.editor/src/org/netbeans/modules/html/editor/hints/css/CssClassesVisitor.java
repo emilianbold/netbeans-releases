@@ -48,6 +48,7 @@ import java.util.regex.Pattern;
 import org.netbeans.modules.csl.api.Hint;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.api.Rule;
+import org.netbeans.modules.css.indexing.api.CssIndex;
 import org.netbeans.modules.css.refactoring.api.RefactoringElementType;
 import org.netbeans.modules.html.editor.hints.EmbeddingUtil;
 import org.netbeans.modules.html.editor.hints.HtmlRuleContext;
@@ -77,7 +78,7 @@ public class CssClassesVisitor implements ElementVisitor {
         this.context = context;
         this.hints = hints;
         this.rule = rule;
-
+        
         referredFiles = context.getCssDependenciesGraph().getAllReferedFiles();
         classes = context.getCssIndex().findAllClassDeclarations();
         classes2files = createReversedMap(classes);
