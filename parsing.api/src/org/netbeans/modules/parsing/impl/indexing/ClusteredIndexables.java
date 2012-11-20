@@ -56,6 +56,7 @@ import java.util.Map;
 import java.util.NoSuchElementException;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
+import org.netbeans.modules.parsing.lucene.support.DocumentIndexCache;
 import org.netbeans.modules.parsing.lucene.support.IndexDocument;
 import org.netbeans.modules.parsing.spi.indexing.Indexable;
 import org.openide.util.Parameters;
@@ -111,8 +112,13 @@ public final class ClusteredIndexables {
             return new BitSetIterable(cluster);
     }
 
-    public static DocumentIndexCache createDocumentIndexCache() {
-        return new DocumentIndexCache();
+    public static AttachableDocumentIndexCache createDocumentIndexCache() {
+        return new DocumentIndexCacheImpl();
+    }
+
+    public static interface AttachableDocumentIndexCache extends DocumentIndexCache {
+        void attach(@NonNull final String mode, @NonNull final ClusteredIndexables ci);
+        void detach();
     }
 
     // -----------------------------------------------------------------------
@@ -232,7 +238,7 @@ public final class ClusteredIndexables {
         }
     }
 
-    public static final class DocumentIndexCache implements org.netbeans.modules.parsing.lucene.support.DocumentIndexCache {
+    private static final class DocumentIndexCacheImpl implements AttachableDocumentIndexCache {
       
         private ClusteredIndexables deleteIndexables;
         private ClusteredIndexables indexIndexables;
@@ -242,8 +248,9 @@ public final class ClusteredIndexables {
         private List<String> toDeleteOutOfOrder;
         private Reference<List[]> dataRef;
 
-        private DocumentIndexCache() {}
+        private DocumentIndexCacheImpl() {}
 
+        @Override
         public void attach(
             @NonNull final String mode,
             @NonNull final ClusteredIndexables ci) {
@@ -267,6 +274,7 @@ public final class ClusteredIndexables {
             }
         }
 
+        @Override
         public void detach() {
             if (TransientUpdateSupport.isTransientUpdate()) {
                 return;

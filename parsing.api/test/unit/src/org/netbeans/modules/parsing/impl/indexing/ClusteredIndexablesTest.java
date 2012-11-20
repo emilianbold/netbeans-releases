@@ -137,7 +137,7 @@ public class ClusteredIndexablesTest {
 
     @Test
     public void testRaceIssue222383() throws Exception {
-        final ClusteredIndexables.DocumentIndexCache cache = ClusteredIndexables.createDocumentIndexCache();
+        final ClusteredIndexables.AttachableDocumentIndexCache cache = ClusteredIndexables.createDocumentIndexCache();
         final ClusteredIndexables indexables1 = new ClusteredIndexables(Collections.<Indexable>emptyList());
         final ClusteredIndexables indexables2 = new ClusteredIndexables(Collections.<Indexable>emptyList());
         final CountDownLatch indexing = new CountDownLatch(1);
@@ -173,7 +173,7 @@ public class ClusteredIndexablesTest {
 
     @Test
     public void testRaceIssue222383TransientUpdate() throws Exception {
-        final ClusteredIndexables.DocumentIndexCache cache = ClusteredIndexables.createDocumentIndexCache();
+        final ClusteredIndexables.AttachableDocumentIndexCache cache = ClusteredIndexables.createDocumentIndexCache();
         final ClusteredIndexables indexables1 = new ClusteredIndexables(Collections.<Indexable>emptyList());
         final ClusteredIndexables indexables2 = new ClusteredIndexables(Collections.<Indexable>emptyList());
         final CountDownLatch indexing = new CountDownLatch(1);
@@ -206,9 +206,10 @@ public class ClusteredIndexablesTest {
     }
 
     private Object getCacheField(
-       @NonNull final ClusteredIndexables.DocumentIndexCache cache,
-       @NonNull final String fieldName) throws NoSuchFieldException, IllegalArgumentException, IllegalAccessException {
-        final Field f = ClusteredIndexables.DocumentIndexCache.class.getDeclaredField(fieldName);
+       @NonNull final ClusteredIndexables.AttachableDocumentIndexCache cache,
+       @NonNull final String fieldName) throws NoSuchFieldException, IllegalArgumentException, IllegalAccessException, ClassNotFoundException {
+        final Class<?> clz = Class.forName("org.netbeans.modules.parsing.impl.indexing.ClusteredIndexables$DocumentIndexCacheImpl");    //NOI18N
+        final Field f = clz.getDeclaredField(fieldName);
         if (f == null) {
             return null;
         }
