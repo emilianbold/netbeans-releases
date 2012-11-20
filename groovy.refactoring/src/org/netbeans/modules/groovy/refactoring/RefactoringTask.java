@@ -247,8 +247,7 @@ public abstract class RefactoringTask extends UserTask implements Runnable {
         private RefactoringUI ui;
 
 
-        protected NodeToElementTask(Collection<? extends Node> nodes, FileObject fileObject) {
-            assert nodes.size() == 1;
+        protected NodeToElementTask(FileObject fileObject) {
             this.fileObject = fileObject;
         }
 
