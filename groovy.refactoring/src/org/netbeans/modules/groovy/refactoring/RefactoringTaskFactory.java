@@ -154,7 +154,7 @@ public final class RefactoringTaskFactory {
     private static class FindUsagesNodeToElementTask extends NodeToElementTask {
 
         public FindUsagesNodeToElementTask(Collection<? extends Node> nodes, FileObject fileObject) {
-            super(nodes, fileObject);
+            super(fileObject);
         }
 
         @Override
@@ -199,7 +199,7 @@ public final class RefactoringTaskFactory {
     private static class MoveNodeToElementTask extends NodeToElementTask {
 
         public MoveNodeToElementTask(Collection<? extends Node> nodes, FileObject fileObject) {
-            super(nodes, fileObject);
+            super(fileObject);
         }
 
         @Override
