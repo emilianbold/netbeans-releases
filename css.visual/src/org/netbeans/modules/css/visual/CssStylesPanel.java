@@ -41,7 +41,6 @@
  */
 package org.netbeans.modules.css.visual;
 
-import com.apple.laf.AquaLookAndFeel;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
@@ -60,9 +59,7 @@ import javax.swing.JToggleButton;
 import javax.swing.JToolBar;
 import javax.swing.UIManager;
 import javax.swing.border.Border;
-import javax.swing.border.LineBorder;
 import javax.swing.plaf.basic.BasicSplitPaneUI;
-import javax.swing.plaf.metal.MetalLookAndFeel;
 import org.netbeans.modules.css.visual.api.RuleEditorController;
 import org.netbeans.modules.css.visual.spi.CssStylesPanelProvider;
 import org.openide.filesystems.FileObject;
