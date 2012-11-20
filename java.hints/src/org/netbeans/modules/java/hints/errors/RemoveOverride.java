@@ -64,7 +64,7 @@ import org.openide.util.NbBundle.Messages;
  */
 @Messages({
     "DN_RemoveOverride=Remove @Override Annotation",
-    "FIX_RemoveOverride=Remove @Override Annotation",
+    "FIX_RemoveOverride=Remove @Override Annotation"
 })
 public class RemoveOverride implements ErrorRule<Void> {
 
