@@ -43,9 +43,10 @@
 package org.netbeans.modules.j2ee.persistence.editor.completion;
 
 import java.io.IOException;
-import org.netbeans.modules.j2ee.persistence.editor.completion.db.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.text.BadLocationException;
 import org.eclipse.persistence.jpa.jpql.ContentAssistProposals;
 import org.eclipse.persistence.jpa.jpql.JPQLQueryHelper;
@@ -67,7 +68,7 @@ import org.netbeans.modules.j2ee.persistence.spi.jpql.Query;
  */
 public class ETCompletionContextResolver implements CompletionContextResolver {
     
-    private static final String PERSISTENCE_PKG = "javax.persistence";
+    private static final Logger LOGGER = Logger.getLogger(ETCompletionContextResolver.class.getName());
     
     @Override
     public List resolve(JPACodeCompletionProvider.Context ctx) {
@@ -141,7 +142,13 @@ public class ETCompletionContextResolver implements CompletionContextResolver {
             Project project = FileOwnerQuery.getOwner(ctx.getFileObject());
             helper.setQuery(new Query(null, completedValue, new ManagedTypeProvider(project, ctx.getEntityMappings(), ctx.getController().getElements())));
             int offset = ctx.getCompletionOffset() - nnattr.getValueOffset() - (nnattr.isValueQuoted() ? 1 : 0);
-            ContentAssistProposals buildContentAssistProposals = ((offset<=completedValue.length()) ? helper.buildContentAssistProposals(offset) : null);
+            ContentAssistProposals buildContentAssistProposals = null;
+            try{
+                buildContentAssistProposals = ((offset<=completedValue.length()) ? helper.buildContentAssistProposals(offset) : null);
+            } catch (NullPointerException ex) {
+                //al npe from 3rd party lib shouldn't affect nb much, see #222208
+                LOGGER.log(Level.INFO, "exception in eclipsleink", ex);//NOI18N
+            }
             
             if(buildContentAssistProposals!=null && buildContentAssistProposals.hasProposals()){
                 for (String var : buildContentAssistProposals.identificationVariables()) {
