@@ -125,9 +125,10 @@ public final class ReplaceConstructorWithBuilderRefactoring extends AbstractRefa
 
         private final String name;
         private final String type;
-        private final boolean optional;
         private final String defaultValue;
         private final String varName;
+        private final boolean varargs;
+        private final boolean optional;
 
         /**
          * The only way how to create setter.
@@ -142,12 +143,14 @@ public final class ReplaceConstructorWithBuilderRefactoring extends AbstractRefa
                 @NonNull String type,
                 @NullAllowed String defaultValue,
                 @NonNull String varName,
+                boolean varargs,
                 boolean optional) {
             this.name = name;
             this.type = type;
-            this.optional = optional;
             this.defaultValue = defaultValue;
             this.varName = varName;
+            this.varargs = varargs;
+            this.optional = optional;
         }
 
         /**
@@ -156,6 +159,14 @@ public final class ReplaceConstructorWithBuilderRefactoring extends AbstractRefa
          */
         public @NonNull String getName() {
             return name;
+        }
+
+        /**
+         * Getter for isVarargs
+         * @return
+         */
+        public boolean isVarargs() {
+            return varargs;
         }
 
         /**
