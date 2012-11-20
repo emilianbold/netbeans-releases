@@ -59,7 +59,6 @@ import org.netbeans.modules.j2ee.ejbjar.project.ui.ServerResourceNode;
 import org.netbeans.modules.j2ee.spi.ejbjar.EjbNodesFactory;
 import org.openide.actions.FindAction;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileStateInvalidException;
 import org.openide.loaders.ChangeableDataFilter;
 import org.openide.loaders.DataFilter;
 import org.openide.loaders.DataFolder;
