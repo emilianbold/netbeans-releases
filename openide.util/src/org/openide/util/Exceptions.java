@@ -184,6 +184,14 @@ public final class Exceptions extends Object {
     /** Notifies an exception with a severe level. Such exception is going
      * to be printed to log file and possibly also notified to alarm the
      * user somehow.
+     * <p class="nonnormative">
+     * Since version 8.29 the default implementation of this method inside
+     * a NetBeans Platform based application understands 
+     * {@link UserQuestionException}. If the exception is thrown and later
+     * reported via this method, it is properly shown to the user as a 
+     * dialog with approve/reject buttons. If approved, the infrastructure
+     * calls {@link UserQuestionException#confirmed()} method.
+     * </p>
      *
      * @param t the exception to notify
      */
