@@ -82,13 +82,19 @@ public class ETCompletionContextResolver implements CompletionContextResolver {
         CCParser.NNAttr nnattr = null;
         if (methodName == null){
             parsedNN = ctx.getParsedAnnotation();
-            if (parsedNN == null) return result;
+            if (parsedNN == null) {
+                return result;
+            }
 
             nnattr = parsedNN.getAttributeForOffset(ctx.getCompletionOffset());
-            if(nnattr == null) return result;
+            if(nnattr == null) {
+                return result;
+            }
 
             annotationName = parsedNN.getName();
-            if(annotationName == null) return result;
+            if(annotationName == null) {
+                return result;
+            }
         }
         if(CCParser.CREATE_NAMEDQUERY.equals(methodName)) {
             result = completecreateNamedQueryparameters(ctx, result);
@@ -171,7 +177,9 @@ public class ETCompletionContextResolver implements CompletionContextResolver {
      private List completeJPQLContext(JPACodeCompletionProvider.Context ctx, CCParser.MD method, List<JPACompletionItem> results) {
 
             String completedValue = method.getValue();
-            if(completedValue == null)return results;//do not support case if "" isn't typed yet (there should be quite a lot of general java items, avoid mixing
+            if(completedValue == null) {
+                return results;
+            }//do not support case if "" isn't typed yet (there should be quite a lot of general java items, avoid mixing
             JPQLQueryHelper helper = new JPQLQueryHelper();
             completedValue = org.netbeans.modules.j2ee.persistence.editor.completion.Utils.unquote(completedValue);
 
@@ -214,7 +222,9 @@ public class ETCompletionContextResolver implements CompletionContextResolver {
         
         @Override
         public boolean add(Object o) {
-            if(!(o instanceof JPACompletionItem)) return false;
+            if(!(o instanceof JPACompletionItem)) {
+                return false;
+            }
             
             JPACompletionItem ri = (JPACompletionItem)o;
             //check if the pretext corresponds to the result item text
