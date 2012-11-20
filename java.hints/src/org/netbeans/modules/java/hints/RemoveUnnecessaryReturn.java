@@ -143,7 +143,11 @@ public class RemoveUnnecessaryReturn {
                 }
 
                 if (next.getKind() == Kind.BREAK) {
-                    tp = TreePath.getPath(ctx.getInfo().getCompilationUnit(), ctx.getInfo().getTreeUtilities().getBreakContinueTarget(new TreePath(tp, next)));
+                    StatementTree target = ctx.getInfo().getTreeUtilities().getBreakContinueTarget(new TreePath(tp, next));
+                    
+                    if (target == null) return null;
+                    
+                    tp = TreePath.getPath(ctx.getInfo().getCompilationUnit(), target);
                     continue OUTER;
                 }
 
