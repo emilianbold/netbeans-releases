@@ -192,19 +192,15 @@ public final class IndexingSupport {
         }
         boolean res = false;
         final ClusteredIndexables.DocumentIndexCache ciCache = (ClusteredIndexables.DocumentIndexCache) cache;
-        if (!ciCache.isAttached(ClusteredIndexables.DELETE)) {
-            final ClusteredIndexables delCi = (ClusteredIndexables) SPIAccessor.getInstance().getProperty(context, ClusteredIndexables.DELETE);
-            if (delCi != null) {
-                ciCache.attach(ClusteredIndexables.DELETE, delCi);
-                res = true;
-            }
+        final ClusteredIndexables delCi = (ClusteredIndexables) SPIAccessor.getInstance().getProperty(context, ClusteredIndexables.DELETE);
+        if (delCi != null) {
+            ciCache.attach(ClusteredIndexables.DELETE, delCi);
+            res = true;
         }
-        if (!ciCache.isAttached(ClusteredIndexables.INDEX)) {
-            final ClusteredIndexables indexCi = (ClusteredIndexables) SPIAccessor.getInstance().getProperty(context, ClusteredIndexables.INDEX);
-            if (indexCi != null) {
-                ciCache.attach(ClusteredIndexables.INDEX, indexCi);
-                res = true;
-            }
+        final ClusteredIndexables indexCi = (ClusteredIndexables) SPIAccessor.getInstance().getProperty(context, ClusteredIndexables.INDEX);
+        if (indexCi != null) {
+            ciCache.attach(ClusteredIndexables.INDEX, indexCi);
+            res = true;
         }
         return res;
     }
