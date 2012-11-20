@@ -114,6 +114,7 @@ public final class DashboardTopComponent extends TopComponent {
     private DashboardSelectionListener dashboardSelectionListener;
     private Timer dashboardRefreshTime;
     private final DashboardRefresher refresher;
+    private final DashboardViewer dashboard;
 
     public DashboardTopComponent() {
         initComponents();
@@ -121,6 +122,12 @@ public final class DashboardTopComponent extends TopComponent {
         filterTimer = new Timer(500, new FilterTimerListener());
         filterTimer.stop();
         refresher = DashboardRefresher.getInstance();
+        filterPanel = new FilterPanel();
+        if (filterListener == null) {
+            filterListener = new FilterDocumentListener(filterTimer);
+        }
+        dashboard = DashboardViewer.getInstance();
+        dashboardComponent = dashboard.getComponent();
         dashboardRefreshTime = new Timer(10000, new RefreshTimerListener());
         dashboardSelectionListener = new DashboardSelectionListener();
         activeTaskConstrains = new GridBagConstraints(0, 1, 2, 1, 1.0, 0, GridBagConstraints.NORTH, GridBagConstraints.HORIZONTAL, new Insets(0, 3, 0, 0), 0, 0);
@@ -171,7 +178,7 @@ public final class DashboardTopComponent extends TopComponent {
 
     public void activateTask(TaskNode taskNode) {
         deactivateTask();
-        DashboardViewer.getInstance().setActiveTaskNode(taskNode);
+        dashboard.setActiveTaskNode(taskNode);
         if (activeTaskPanel == null) {
             activeTaskPanel = new ActiveTaskPanel(taskNode);
         } else {
@@ -184,7 +191,7 @@ public final class DashboardTopComponent extends TopComponent {
 
     public void deactivateTask() {
         if (activeTaskPanel != null) {
-            DashboardViewer.getInstance().setActiveTaskNode(null);
+            dashboard.setActiveTaskNode(null);
             this.remove(activeTaskPanel);
             repaint();
             validate();
@@ -214,15 +221,9 @@ public final class DashboardTopComponent extends TopComponent {
     @Override
     public void componentOpened() {
         removeAll();
-        filterPanel = new FilterPanel();
-        if (filterListener == null) {
-            filterListener = new FilterDocumentListener(filterTimer);
-        }
         filterPanel.addDocumentListener(filterListener);
         add(filterPanel, new GridBagConstraints(0, 3, 2, 1, 1.0, 0, GridBagConstraints.NORTH, GridBagConstraints.HORIZONTAL, new Insets(0, 1, 0, 0), 0, 0));
 
-        final DashboardViewer dashboard = DashboardViewer.getInstance();
-        dashboardComponent = dashboard.getComponent();
         add(dashboardComponent, new GridBagConstraints(0, 5, 2, 1, 1.0, 0.8, GridBagConstraints.NORTH, GridBagConstraints.BOTH, new Insets(1, 1, 0, 0), 0, 0));
         RepositoryManager.getInstance().addPropertChangeListener(dashboard);
 
@@ -244,10 +245,12 @@ public final class DashboardTopComponent extends TopComponent {
     @Override
     protected void componentClosed() {
         filterPanel.removeDocumentListener(filterListener);
-        RepositoryManager.getInstance().removePropertChangeListener(DashboardViewer.getInstance());
-        DashboardSettings.getInstance().removePropertyChangedListener(DashboardViewer.getInstance());
-        DashboardViewer.getInstance().removeDashboardSelectionListener(dashboardSelectionListener);
-        DashboardViewer.getInstance().removeModelListener(dashboardSelectionListener);
+        RepositoryManager.getInstance().removePropertChangeListener(dashboard);
+        DashboardSettings.getInstance().removePropertyChangedListener(dashboard);
+        dashboard.removeDashboardSelectionListener(dashboardSelectionListener);
+        dashboard.removeModelListener(dashboardSelectionListener);
+        filterPanel.clear();
+        dashboard.clearFilters();
         refresher.setRefreshEnabled(false);
         dashboardRefreshTime.stop();
         super.componentClosed();
@@ -280,7 +283,7 @@ public final class DashboardTopComponent extends TopComponent {
         boolean confirm = showCategoryNameDialog(categoryNamePanel, NbBundle.getMessage(DashboardTopComponent.class, "LBL_CreateCatTitle")); //NOI18N
         if (confirm) {
             Category category = new Category(categoryNamePanel.getCategoryName());
-            DashboardViewer.getInstance().addCategory(category);
+            dashboard.addCategory(category);
             return category;
         }
         return null;
@@ -291,7 +294,7 @@ public final class DashboardTopComponent extends TopComponent {
 
         boolean confirm = showCategoryNameDialog(categoryNamePanel, NbBundle.getMessage(DashboardTopComponent.class, "LBL_RenameCatTitle")); //NOI18N
         if (confirm) {
-            DashboardViewer.getInstance().renameCategory(category, categoryNamePanel.getCategoryName());
+            dashboard.renameCategory(category, categoryNamePanel.getCategoryName());
         }
     }
 
@@ -314,7 +317,7 @@ public final class DashboardTopComponent extends TopComponent {
     }
 
     public void addTask(TaskNode... taskNodes) {
-        List<Category> categories = DashboardViewer.getInstance().getCategories(true);
+        List<Category> categories = dashboard.getCategories(true);
         for (TaskNode taskNode : taskNodes) {
             if (taskNode.isCategorized()) {
                 categories.remove(taskNode.getCategory());
@@ -331,7 +334,7 @@ public final class DashboardTopComponent extends TopComponent {
 
         if (DialogDisplayer.getDefault().notify(nd) == NotifyDescriptor.OK_OPTION) {
             Category category = picker.getChosenCategory();
-            DashboardViewer.getInstance().addTaskToCategory(category, taskNodes);
+            dashboard.addTaskToCategory(category, taskNodes);
         }
 
     }
@@ -357,7 +360,6 @@ public final class DashboardTopComponent extends TopComponent {
         @Override
         public void actionPerformed(ActionEvent e) {
             if (e.getSource() == filterTimer) {
-                DashboardViewer dashboard = DashboardViewer.getInstance();
                 filterTimer.stop();
                 if (!filterPanel.getFilterText().isEmpty()) {
                     DisplayTextTaskFilter newTaskFilter = new DisplayTextTaskFilter(filterPanel.getFilterText());
@@ -423,7 +425,7 @@ public final class DashboardTopComponent extends TopComponent {
             if (categoryNamePanel.getCategoryName().isEmpty()) {
                 categoryNamePanel.setErrorText(NbBundle.getMessage(DashboardTopComponent.class, "LBL_CatNameErrEmpty")); //NOI18N
                 categoryNameDialog.setValid(false);
-            } else if (!DashboardViewer.getInstance().isCategoryNameUnique(categoryNamePanel.getCategoryName())) {
+            } else if (!dashboard.isCategoryNameUnique(categoryNamePanel.getCategoryName())) {
                 categoryNamePanel.setErrorText(NbBundle.getMessage(DashboardTopComponent.class, "LBL_CatNameErrUnique")); //NOI18N
                 categoryNameDialog.setValid(false);
             } else {

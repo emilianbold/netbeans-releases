@@ -131,11 +131,22 @@ public final class SubmitAction extends CallableSystemAction {
             setEnabled(true);
             timer.restart();
             
-            setToolTipText(NbBundle.getMessage(
-                SubmitAction.class, 
-                "MSG_SubmitAction", 
-                Controller.getDefault().getLogRecordsCount()
-            )); // NOI18N
+            logRecordsCountRP.post(new Runnable() {
+                @Override
+                public void run() {
+                    final int logRecordsCount = Controller.getDefault().getLogRecordsCount();
+                    SwingUtilities.invokeLater(new Runnable() {
+                        @Override
+                        public void run() {
+                            setToolTipText(NbBundle.getMessage(
+                                SubmitAction.class,
+                                "MSG_SubmitAction",
+                                logRecordsCount
+                            )); // NOI18N
+                        }
+                    });
+                }
+            });
         }
     
         public void actionPerformed(ActionEvent arg0) {
