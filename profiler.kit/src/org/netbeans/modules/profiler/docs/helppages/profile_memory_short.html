@@ -21,12 +21,18 @@
             <li>Click Memory in the left pane of the Select Profiling Task window to expand the button.<br> 
             You can use the default configuration, create a new custom configuration
             or use an existing custom configuration.</li>
-            <li>Select one of the following profiling options:
-                <ul><li>Record object creation only</li>
-                    <li>Record both object creation and garbage collection</li>
+            <li>Select one of the following profiling options.
+                <ul><li>Quick</li>
+                    <li>Advanced</li>
                 </ul>
             </li>
-            <li>Select Record Stack Traces (optional).</li>
+            <li>Select any additional options (only available when you select the Advanced profiling option)
+                <ul>
+                    <li>Record Full Object Lifestyle (optional).</li>
+                    <li>Select Record Stack Traces (optional).</li>
+                    <li>Use defined Profiling Points (optional).</li>
+                </ul>
+            </li>
             <li>Click Run.</li>
         </ol>
         <p>When you click Run, the target application launches and the profiling session starts.</p>
@@ -47,14 +53,16 @@
             <li>Click Create Custom.</li>
             <li>Type a name for the configuration.</li>
             <li>Select the initial settings for the configuration and click OK. 
-            You then modify the initial settings when you customize the configuration.</li>
-            <li>Select one of the following profiling options:
+                <p>You then modify the initial settings when you customize the configuration.</p></li>
+            <li>Select one of the following profiling options.
                 <ul>
-                    <li>Record object creation only</li>
-                    <li>Record both object creation and garbage collection</li>
+                    <li>Quick</li>
+                    <li>Advanced</li>
                 </ul>
-            <li>Select Record Stack Traces (optional).</li>
-            <li>Click Advanced Settings and modify any of the advanced settings.</li>
+            <li>Select any additional options in the Basic Settings pane.</li>
+            <li>Click Advanced Settings and modify any of the advanced settings.
+                <p>The options that are available in the Advanced Settings pane
+                depend upon the options that you select in the Basic Settings pane.</p></li>
             <li>Click Run.</li>
         </ol>
         <p>When you click Run, the target application launches and the profiling task starts.</p>
