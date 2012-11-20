@@ -48,8 +48,13 @@ import org.netbeans.modules.clearcase.ClearcaseModuleConfig;
 
 import java.util.logging.Logger;
 import java.io.*;
+import java.util.logging.Level;
+import org.netbeans.modules.clearcase.Clearcase;
 import org.netbeans.modules.clearcase.client.mockup.CleartoolMockup;
 import org.netbeans.modules.versioning.util.Utils;
+import org.openide.util.Exceptions;
+import org.openide.util.RequestProcessor;
+import org.openide.util.RequestProcessor.Task;
 
 /**
  * Encapsulates Clearcase shell process. 
@@ -71,17 +76,23 @@ class Cleartool {
     private final BufferedReader    ctOutput;
     private final BufferedReader    ctError;
     private final PrintWriter       ctInput;
+    private final RequestProcessor rp;
 
     /**
      * Creates a new cleartool shell process.
      */
     public Cleartool() throws IOException {
         Logger.getLogger(Cleartool.class.getName()).fine("Cleartool: Creating cleartool process...");
-        ct = createCleartoolProcess();        
-        ctOutput = new BufferedReader(new InputStreamReader(ct.getInputStream()));
-        ctError = new BufferedReader(new InputStreamReader(ct.getErrorStream()));
-        ctInput = new PrintWriter(ct.getOutputStream());
-        checkReady();
+        rp = new RequestProcessor("Cleartool");
+        ct = createCleartoolProcess();     
+        if(ct != null) {
+            ctOutput = new BufferedReader(new InputStreamReader(ct.getInputStream()));
+            ctError = new BufferedReader(new InputStreamReader(ct.getErrorStream()));
+            ctInput = new PrintWriter(ct.getOutputStream());
+            checkReady();
+        } else {
+            throw new IOException("cleartool process couldn't be started.");
+        }
         Logger.getLogger(Cleartool.class.getName()).fine("Cleartool: cleartool process created");
     }    
     
@@ -149,18 +160,52 @@ class Cleartool {
      * @return
      * @throws java.io.IOException
      */
-    private static Process createCleartoolProcess() throws IOException {
-        String vobRoot = System.getProperty("org.netbeans.modules.clearcase.client.mockup.vobRoot");
-        Process ct;
-        if (vobRoot == null || vobRoot.trim().equals("")) {
-            ct = Runtime.getRuntime().exec(ClearcaseModuleConfig.getExecutablePath());
-            Logger.getLogger(Cleartool.class.getName()).fine("Cleartool: shell process running");
-        } else {
-            ct = new CleartoolMockup(vobRoot);
-            ((CleartoolMockup) ct).start();
-            Logger.getLogger(Cleartool.class.getName()).fine("Cleartool: mockup process running");    
+    private Process createCleartoolProcess() throws IOException {
+        final Process[] cleartoolProcess = new Process[] {null};
+        final Throwable[] catched = new Throwable[] {null};
+        
+        long t = System.currentTimeMillis();
+        Clearcase.LOG.fine(" cleartool initialization start");
+        Task task = rp.post(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    String vobRoot = System.getProperty("org.netbeans.modules.clearcase.client.mockup.vobRoot");
+                    if (vobRoot == null || vobRoot.trim().equals("")) {
+                        cleartoolProcess[0] = Runtime.getRuntime().exec(ClearcaseModuleConfig.getExecutablePath());
+                        Logger.getLogger(Cleartool.class.getName()).fine("Cleartool: shell process running");
+                    } else {
+                        cleartoolProcess[0] = new CleartoolMockup(vobRoot);
+                        ((CleartoolMockup)cleartoolProcess[0]).start();
+                        Logger.getLogger(Cleartool.class.getName()).fine("Cleartool: mockup process running");                        
+                    }
+                } catch (Throwable t) {
+                    catched[0] = t;
+                }
+            }
+        });
+        try {
+            String v = System.getProperty("clearcase.init.timeout", "-1");
+            long to;
+            try {
+                to = Long.parseLong(v);
+            } catch (NumberFormatException e) {
+                to = -1;
+            }
+            task.waitFinished(to > 0 ? to : DEFAULT_TIMEOUT_MS);
+        } catch (InterruptedException ex) {
+            Clearcase.LOG.log(Level.WARNING, null, ex);
         }
-        return ct;
+        Clearcase.LOG.log(Level.FINE, "cleartool initialization took {0}", (System.currentTimeMillis() - t));
+        
+        if(catched[0] != null){
+            if(catched[0] instanceof IOException) {
+                throw (IOException) catched[0];
+            } else {
+                Clearcase.LOG.log(Level.WARNING, null, catched[0]);
+            }
+        }
+        return cleartoolProcess[0];
     }
     
     /**
@@ -207,11 +252,19 @@ class Cleartool {
     }
 
     private void destroy() throws IOException {
-        ctInput.close();
-        ctOutput.close();
-        ctError.close();
-        ct.destroy();
-        Logger.getLogger(Cleartool.class.getName()).fine("Cleartool: Process destroyed");
+        if(ctInput != null) {
+            ctInput.close();
+        }
+        if(ctOutput != null) {
+            ctOutput.close();
+        }
+        if(ctError != null) {
+            ctError.close();
+        }
+        if(ct != null) {
+            ct.destroy();
+            Logger.getLogger(Cleartool.class.getName()).fine("Cleartool: Process destroyed");
+        }
     }
     
     public synchronized void exec(ClearcaseCommand command) throws IOException, ClearcaseException {

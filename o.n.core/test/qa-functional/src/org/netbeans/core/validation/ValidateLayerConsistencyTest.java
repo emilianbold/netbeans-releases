@@ -1000,7 +1000,6 @@ public class ValidateLayerConsistencyTest extends NbTestCase {
     }
     */
 
-    /* XXX currently fails
     public void testTemplates() throws Exception { // #167205
         List<String> warnings = new ArrayList<String>();
         for (FileObject f : NbCollections.iterable(FileUtil.getConfigFile("Templates").getData(true))) {
@@ -1024,6 +1023,5 @@ public class ValidateLayerConsistencyTest extends NbTestCase {
         }
         assertNoErrors("Problems in templates", warnings);
     }
-    */
 
 }

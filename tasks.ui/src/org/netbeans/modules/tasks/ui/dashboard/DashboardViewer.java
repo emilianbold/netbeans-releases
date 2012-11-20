@@ -430,13 +430,11 @@ public final class DashboardViewer implements PropertyChangeListener {
     }
 
     public void deleteCategory(final CategoryNode... toDelete) {
-        String names = "";
-        for (int i = 0; i < toDelete.length; i++) {
-            CategoryNode categoryNode = toDelete[i];
-            names += categoryNode.getCategory().getName();
-            if (i != toDelete.length - 1) {
-                names += ", ";
-            }
+        String names;
+        if (toDelete.length == 1) {
+            names = toDelete[0].getCategory().getName();
+        } else {
+            names = toDelete.length + " " + NbBundle.getMessage(DashboardViewer.class, "LBL_Categories").toLowerCase();
         }
         String title = NbBundle.getMessage(DashboardViewer.class, "LBL_DeleteCatTitle");
         String message = NbBundle.getMessage(DashboardViewer.class, "LBL_DeleteQuestion", names);
@@ -581,13 +579,11 @@ public final class DashboardViewer implements PropertyChangeListener {
     }
 
     public void removeRepository(final RepositoryNode... toRemove) {
-        String names = "";
-        for (int i = 0; i < toRemove.length; i++) {
-            RepositoryNode repositoryNode = toRemove[i];
-            names += repositoryNode.getRepository().getDisplayName();
-            if (i != toRemove.length - 1) {
-                names += ", ";
-            }
+        String names;
+        if (toRemove.length == 1) {
+            names = toRemove[0].getRepository().getDisplayName();
+        } else {
+            names = toRemove.length + " " + NbBundle.getMessage(DashboardViewer.class, "LBL_Repositories").toLowerCase();
         }
         String title = NbBundle.getMessage(DashboardViewer.class, "LBL_RemoveRepoTitle");
         String message = NbBundle.getMessage(DashboardViewer.class, "LBL_RemoveQuestion", names);
@@ -740,6 +736,12 @@ public final class DashboardViewer implements PropertyChangeListener {
     public int removeRepositoryFilter(DashboardFilter<RepositoryNode> repositoryFilter, boolean refresh) {
         appliedRepositoryFilters.removeFilter(repositoryFilter);
         return manageRemoveFilter(refresh, !repositoryFilter.expandNodes());
+    }
+
+    public void clearFilters() {
+        appliedCategoryFilters.clear();
+        appliedRepositoryFilters.clear();
+        appliedTaskFilters.clear();
     }
 
     private int manageRemoveFilter(boolean refresh, boolean wasForceExpand) {
@@ -1089,7 +1091,7 @@ public final class DashboardViewer implements PropertyChangeListener {
     }
 
     private boolean isRepositoryInFilter(RepositoryNode repositoryNode) {
-        return expandNodes() ? !repositoryNode.getFilteredQueryNodes().isEmpty() && appliedRepositoryFilters.isInFilter(repositoryNode) : appliedRepositoryFilters.isInFilter(repositoryNode);
+        return expandNodes() ? repositoryNode.getFilteredQueryCount() > 0 && appliedRepositoryFilters.isInFilter(repositoryNode) : appliedRepositoryFilters.isInFilter(repositoryNode);
     }
 
     private void removeNodesFromModel(Class nodeClass) {

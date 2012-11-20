@@ -68,12 +68,16 @@ public class WeakHashMapActiveTest extends NbTestCase {
         assertEquals("Size", 2, whma.size());
         assertEquals(v1, whma.get(k1));
         assertEquals(v2, whma.get(k2));
+        Reference rk1 = new WeakReference(k1);
+        Reference rk2 = new WeakReference(k2);
         k1 = k2 = null;
         System.gc();
         int[] arr = new int[10000000];
         arr[1000000] = 10;
         arr = null;
         System.gc();
+        assertGC("WeakHashMapActive's key is not released from memory", rk1);
+        assertGC("WeakHashMapActive's key is not released from memory", rk2);
         assertEquals("Size", 0, whma.size());
         v1 = v2 = null;
         System.gc();
@@ -81,7 +85,7 @@ public class WeakHashMapActiveTest extends NbTestCase {
         arr[1000000] = 10;
         arr = null;
         System.gc();
-        assertNull(rv1.get());
-        assertNull(rv2.get());
+        assertGC("WeakHashMapActive's value is not released from memory", rv1);
+        assertGC("WeakHashMapActive's value is not released from memory", rv2);
     }
 }
