@@ -58,44 +58,62 @@ import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.modules.glassfish.spi.GlassfishModule;
 
 /**
- * GlassFish bundled Jersey library provider.
+ * GlassFish bundled libraries provider.
  * <p/>
- * Builds <code>LibraryImplementation3</code> instance containing Jersey
- * library from GlassFish modules.
- * Actually only GlassFish v3 and v4 are supported.
+ * Builds <code>Library</code> instance containing Jersey library from GlassFish
+ * modules. Actually only GlassFish v3 and v4 are supported.
  * <p/>
  * @author Tomas Kraus, Peter Benedikovic
  */
-public class JerseyLibrary /*implements JaxRsStackSupportImplementation*/ {
+public class Hk2LibraryProvider /*implements JaxRsStackSupportImplementation*/ {
 
     ////////////////////////////////////////////////////////////////////////////
     // Class attributes                                                       //
     ////////////////////////////////////////////////////////////////////////////
 
-    /** Jersey library provider type. */
-    private static final String JERSEY_PROVIDER_TYPE = "j2se";
+    /** Library provider type. */
+    private static final String PROVIDER_TYPE = "j2se";
 
-    /** Jersey library name suffix to be added after server instance name.
+    /** Java EE library name suffix to be added after server instance name.
+     *  Java EE library name must be unique so combination of instance name
+     *  and some common suffix is used. */
+    private static final String JAVAEE_NAME_SUFFIX = " Java EE";
+
+    /** Java EE library name suffix to be added after server instance name.
      *  Jersey library name must be unique so combination of instance name
      *  and some common suffix is used. */
     private static final String JERSEY_NAME_SUFFIX = " Jersey";
 
+    /** JAX-RS library name suffix to be added after server instance name.
+     *  JAX-RS library name must be unique so combination of instance name
+     *  and some common suffix is used. */
+    private static final String JAXRS_NAME_SUFFIX = " JAX-RS";
+
     /** Library builder default configuration file. */
     private static final URL LIBRARY_BUILDER_CONFIG_DEFAULT
-            = JerseyLibrary.class.getResource("JerseyLibsDefault.xml");
+            = Hk2LibraryProvider.class.getResource("GlassFishLibsDefault.xml");
 
     /** Library builder configuration since GlassFish 4. */
     private static final LibraryConfig.Next LIBRARY_BUILDER_CONFIG_V2
             = new LibraryConfig.Next(GlassFishVersion.GF_4,
-            JerseyLibrary.class.getResource("JerseyLibs2.xml"));
+            Hk2LibraryProvider.class.getResource("GlassFishLibs2.xml"));
 
     /** Library builder configuration for GlassFish cloud. */
     private static final LibraryConfig libraryConfig = new LibraryConfig(
             LIBRARY_BUILDER_CONFIG_DEFAULT, LIBRARY_BUILDER_CONFIG_V2);
 
+    /** Java EE library name pattern to search for it in
+     *  <code>GlassFishLibrary</code> list. */
+    private Pattern JAVAEE_PATTERN = Pattern.compile("[jJ]ava {0,1}[eE]{2}");
+
     /** Jersey library name pattern to search for it in
      *  <code>GlassFishLibrary</code> list. */
-    private Pattern JERSEY_PATTERN = Pattern.compile(".*[jJ]ersey.*");
+    private Pattern JERSEY_PATTERN = Pattern.compile("[jJ]ersey.*");
+
+    /** JAX-RS library name pattern to search for it in
+     *  <code>GlassFishLibrary</code> list. */
+    private Pattern JAXRS_PATTERN
+            = Pattern.compile("[jJ][aA][xX][ -]{0,1}[rR][sS]");
 
     ////////////////////////////////////////////////////////////////////////////
     // Instance attributes                                                    //
@@ -112,10 +130,20 @@ public class JerseyLibrary /*implements JaxRsStackSupportImplementation*/ {
     /** GlassFish server name. */
     private final String serverName;
 
+    /** Java EE library name associated with current GlassFish server context.
+     *  This is lazy initialized internal cache. Do not access this attribute
+     *  outside {@see #getJavaEEName()} method! */
+    private volatile String javaEEName = null;
+
     /** Jersey library name associated with current GlassFish server context.
      *  This is lazy initialized internal cache. Do not access this attribute
-     *  outside {@see #getName()} method! */
+     *  outside {@see #getJerseyName()} method! */
     private volatile String jerseyName = null;
+
+    /** Jersey JAX-RS name associated with current GlassFish server context.
+     *  This is lazy initialized internal cache. Do not access this attribute
+     *  outside {@see #getJaxRsName()} method! */
+    private volatile String jaxRsName = null;
 
     ////////////////////////////////////////////////////////////////////////////
     // Constructors                                                           //
@@ -126,7 +154,7 @@ public class JerseyLibrary /*implements JaxRsStackSupportImplementation*/ {
      * <p/>
      * @param url GlassFish server URL.
      */
-    JerseyLibrary(Hk2DeploymentManager dm) {
+    Hk2LibraryProvider(Hk2DeploymentManager dm) {
         if (dm == null) {
             throw new IllegalArgumentException(
                     "GlassFish server deployment manager shall not be null.");
@@ -142,6 +170,29 @@ public class JerseyLibrary /*implements JaxRsStackSupportImplementation*/ {
     ////////////////////////////////////////////////////////////////////////////
 
     /**
+     * Get Java EE library name for this server context.
+     * <p/>
+     * This library name shall be registered in default {@see LibraryManager}
+     * and is unique for Jersey modules of given GlassFish server instance.
+     * Library name is cached after first usage.
+     * <p/>
+     * @return Java EE library name for this server context.
+     */
+    public String getJavaEEName() {
+        if (javaEEName != null) {
+            return javaEEName;
+        }
+        synchronized (this) {
+            StringBuilder sb = new StringBuilder(
+                    serverName.length() + JAVAEE_NAME_SUFFIX.length());
+            sb.append(serverName);
+            sb.append(JAVAEE_NAME_SUFFIX);
+            javaEEName = sb.toString();
+        }
+        return javaEEName;
+    }
+
+    /**
      * Get Jersey library name for this server context.
      * <p/>
      * This library name shall be registered in default {@see LibraryManager}
@@ -150,7 +201,7 @@ public class JerseyLibrary /*implements JaxRsStackSupportImplementation*/ {
      * <p/>
      * @return Jersey library name for this server context.
      */
-    public String getName() {
+    public String getJerseyName() {
         if (jerseyName != null) {
             return jerseyName;
         }
@@ -165,40 +216,53 @@ public class JerseyLibrary /*implements JaxRsStackSupportImplementation*/ {
     }
 
     /**
-     * Return Jersey libraries available in GlassFish v3.
+     * Get JAX-RS library name for this server context.
+     * <p/>
+     * This library name shall be registered in default {@see LibraryManager}
+     * and is unique for Jersey modules of given GlassFish server instance.
+     * Library name is cached after first usage.
+     * <p/>
+     * @return JAX-RS library name for this server context.
      */
-    public Library getLibrary() {
-        Library lib = LibraryManager.getDefault().getLibrary(getName());
-        if (lib != null) {
-            return lib;
+    public String getJaxRsName() {
+        if (jaxRsName != null) {
+            return jaxRsName;
         }
-        LibraryBuilder lb = getBuilder();
-        List<GlassFishLibrary> gfLibs = lb.getLibraries(GlassFishVersion.GF_3);
-        for (GlassFishLibrary gfLib : gfLibs) {
-            if (JERSEY_PATTERN.matcher(gfLib.getLibraryID()).matches()) {
-                Map<String,List<URL>> contents
-                        = new HashMap<String, List<URL>>(1);
-                Map<String, String> properties = new HashMap<String, String>(2);
-                contents.put("classpath", gfLib.getClasspath());
-                contents.put("javadoc", gfLib.getJavadocs());
-                properties.put("maven-dependencies", gfLib.getMavenDeps());
-                properties.put("maven-repositories", "default");
-                try {
-                    return LibraryManager.getDefault().createLibrary(
-                            JERSEY_PROVIDER_TYPE,
-                            getName(),
-                            null,
-                            null,
-                            contents,
-                            properties);
-                } catch (IOException ioe) {
-                    Logger.getLogger("glassfish-javaee").log(Level.WARNING,
-                            "Could not create Jersey library for "
-                            + serverName + ": ", ioe);
-                }
-            }
+        synchronized (this) {
+            StringBuilder sb = new StringBuilder(
+                    serverName.length() + JAXRS_NAME_SUFFIX.length());
+            sb.append(serverName);
+            sb.append(JAXRS_NAME_SUFFIX);
+            jaxRsName = sb.toString();
         }
-        return null;
+        return jaxRsName;
+    }
+
+    /**
+     * Return Jersey libraries available in GlassFish.
+     * <p/>
+     * @return Jersey libraries available in GlassFish.
+     */
+    public Library getJerseyLibrary() {
+        return getLibrary(JERSEY_PATTERN, getJerseyName());
+    }
+
+    /**
+     * Return JAX-RS libraries available in GlassFish.
+     * <p/>
+     * @return JAX-RS libraries available in GlassFish.
+     */
+    public Library getJaxRsLibrary() {
+        return getLibrary(JAXRS_PATTERN, getJaxRsName());
+    }
+
+    /**
+     * Return Java EE libraries available in GlassFish.
+     * <p/>
+     * @return Java EE libraries available in GlassFish\.
+     */
+    public Library getJavaEELibrary() {
+        return getLibrary(JAVAEE_PATTERN, getJavaEEName());
     }
 
     /**
@@ -221,6 +285,48 @@ public class JerseyLibrary /*implements JaxRsStackSupportImplementation*/ {
             }
         }
         return builder;
+    }
+
+    /**
+     * Return libraries available in GlassFish.
+     * <p/>
+     * @param namePattern Library name pattern to search for it in
+     *                    <code>GlassFishLibrary</code> list.
+     * @param libraryName Library name in returned Library instance.
+     * @return Requested GlassFish library.
+     */
+    private Library getLibrary(Pattern namePattern, String libraryName) {
+        Library lib = LibraryManager.getDefault().getLibrary(libraryName);
+        if (lib != null) {
+            return lib;
+        }
+        LibraryBuilder lb = getBuilder();
+        List<GlassFishLibrary> gfLibs = lb.getLibraries(GlassFishVersion.GF_3);
+        for (GlassFishLibrary gfLib : gfLibs) {
+            if (namePattern.matcher(gfLib.getLibraryID()).matches()) {
+                Map<String,List<URL>> contents
+                        = new HashMap<String, List<URL>>(1);
+                Map<String, String> properties = new HashMap<String, String>(2);
+                contents.put("classpath", gfLib.getClasspath());
+                contents.put("javadoc", gfLib.getJavadocs());
+                properties.put("maven-dependencies", gfLib.getMavenDeps());
+                properties.put("maven-repositories", "default");
+                try {
+                    return LibraryManager.getDefault().createLibrary(
+                            PROVIDER_TYPE,
+                            libraryName,
+                            null,
+                            null,
+                            contents,
+                            properties);
+                } catch (IOException ioe) {
+                    Logger.getLogger("glassfish-javaee").log(Level.WARNING,
+                            "Could not create Jersey library for "
+                            + serverName + ": ", ioe);
+                }
+            }
+        }
+        return null;
     }
 
 }
