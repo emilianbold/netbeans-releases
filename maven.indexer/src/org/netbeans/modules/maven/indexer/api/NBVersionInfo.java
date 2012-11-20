@@ -239,7 +239,7 @@ public final class NBVersionInfo implements Comparable<NBVersionInfo> {
         if (c != 0) {
             return c;
         }
-        c = comparableVersion.compareTo(comparableVersion);
+        c = comparableVersion.compareTo(o.comparableVersion);
         if (c != 0) {
             return -c; // show newest versions first!
         }
