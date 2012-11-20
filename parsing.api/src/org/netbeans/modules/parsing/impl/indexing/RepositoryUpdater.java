@@ -3161,8 +3161,8 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
                     storeChanges(index, optimize, indexables);
                 } finally {
                     final DocumentIndexCache cache = SPIAccessor.getInstance().getIndexFactory(ctx).getCache(ctx);
-                    if (cache instanceof ClusteredIndexables.DocumentIndexCache) {
-                        ((ClusteredIndexables.DocumentIndexCache)cache).detach();
+                    if (cache instanceof ClusteredIndexables.AttachableDocumentIndexCache) {
+                        ((ClusteredIndexables.AttachableDocumentIndexCache)cache).detach();
                     }
                 }
             }

@@ -110,7 +110,7 @@ public final class DocumentBasedIndexManager {
                     {
                         final File file = Utilities.toFile(root.toURI());
                         file.mkdir();
-                        final ClusteredIndexables.DocumentIndexCache cache = ClusteredIndexables.createDocumentIndexCache();
+                        final DocumentIndexCache cache = ClusteredIndexables.createDocumentIndexCache();
                         final DocumentIndex index = IndexManager.createDocumentIndex(file, cache);
                         li = Pair.<DocumentIndex, DocumentIndexCache>of(index, cache);
 
@@ -122,7 +122,7 @@ public final class DocumentBasedIndexManager {
                         final File file = Utilities.toFile(root.toURI());
                         String[] children;
                         if (file.isDirectory() && (children=file.list())!= null && children.length > 0) {
-                            final ClusteredIndexables.DocumentIndexCache cache = ClusteredIndexables.createDocumentIndexCache();
+                            final DocumentIndexCache cache = ClusteredIndexables.createDocumentIndexCache();
                             final DocumentIndex index = IndexManager.createDocumentIndex(file, cache);
                             li = Pair.<DocumentIndex, DocumentIndexCache>of(index, cache);
                             indexes.put(root,li);
