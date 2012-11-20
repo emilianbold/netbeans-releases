@@ -956,8 +956,11 @@ public class NbModuleSuite {
             Object life = getDefault.invoke(null);
             if (!life.getClass().getName().startsWith("org.openide.LifecycleManager")) { // NOI18N
                 System.setProperty("netbeans.close.no.exit", "true"); // NOI18N
+                System.setProperty("netbeans.close", "true"); // NOI18N
                 exit.invoke(life);
                 waitForAWT();
+                System.getProperties().remove("netbeans.close"); // NOI18N
+                System.getProperties().remove("netbeans.close.no.exit"); // NOI18N
             }
         }
 
