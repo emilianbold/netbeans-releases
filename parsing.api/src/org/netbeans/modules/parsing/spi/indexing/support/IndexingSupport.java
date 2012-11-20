@@ -187,24 +187,20 @@ public final class IndexingSupport {
 
     private boolean attachToCacheIfNeeded() throws IOException {
         final DocumentIndexCache cache = spiFactory.getCache(context);
-        if (!(cache instanceof ClusteredIndexables.DocumentIndexCache)) {
+        if (!(cache instanceof ClusteredIndexables.AttachableDocumentIndexCache)) {
             return false;
         }
         boolean res = false;
-        final ClusteredIndexables.DocumentIndexCache ciCache = (ClusteredIndexables.DocumentIndexCache) cache;
-        if (!ciCache.isAttached(ClusteredIndexables.DELETE)) {
-            final ClusteredIndexables delCi = (ClusteredIndexables) SPIAccessor.getInstance().getProperty(context, ClusteredIndexables.DELETE);
-            if (delCi != null) {
-                ciCache.attach(ClusteredIndexables.DELETE, delCi);
-                res = true;
-            }
+        final ClusteredIndexables.AttachableDocumentIndexCache ciCache = (ClusteredIndexables.AttachableDocumentIndexCache) cache;
+        final ClusteredIndexables delCi = (ClusteredIndexables) SPIAccessor.getInstance().getProperty(context, ClusteredIndexables.DELETE);
+        if (delCi != null) {
+            ciCache.attach(ClusteredIndexables.DELETE, delCi);
+            res = true;
         }
-        if (!ciCache.isAttached(ClusteredIndexables.INDEX)) {
-            final ClusteredIndexables indexCi = (ClusteredIndexables) SPIAccessor.getInstance().getProperty(context, ClusteredIndexables.INDEX);
-            if (indexCi != null) {
-                ciCache.attach(ClusteredIndexables.INDEX, indexCi);
-                res = true;
-            }
+        final ClusteredIndexables indexCi = (ClusteredIndexables) SPIAccessor.getInstance().getProperty(context, ClusteredIndexables.INDEX);
+        if (indexCi != null) {
+            ciCache.attach(ClusteredIndexables.INDEX, indexCi);
+            res = true;
         }
         return res;
     }
