@@ -130,7 +130,7 @@ public class AddDependencyPanel extends javax.swing.JPanel {
      * @param selectedScope an initial scope selection (such as {@code compile})
      * @return groupId + artifactId + version + scope + type + classifier, or null if canceled
      */
-    @Messages("TIT_Add_Library=Add Library")
+    @Messages("TIT_Add_Library=Add Dependency")
     public static @CheckForNull String[] show(Project prj, boolean showDepMan, String selectedScope) {
         NbMavenProject nbproj = prj.getLookup().lookup(NbMavenProject.class);
         AddDependencyPanel pnl = new AddDependencyPanel(nbproj.getMavenProject(), showDepMan, prj);
