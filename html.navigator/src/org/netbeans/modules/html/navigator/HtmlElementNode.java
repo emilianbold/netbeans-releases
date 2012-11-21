@@ -56,7 +56,6 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.Action;
-import org.netbeans.modules.html.editor.api.actions.DeleteElementAction;
 import org.netbeans.modules.html.editor.api.actions.ModifyElementRulesAction;
 import org.netbeans.modules.html.editor.api.gsf.HtmlParserResult;
 import org.netbeans.modules.html.editor.lib.api.elements.ElementType;
@@ -71,6 +70,8 @@ import org.openide.util.ContextAwareAction;
 import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
+import org.openide.util.lookup.AbstractLookup;
+import org.openide.util.lookup.InstanceContent;
 import org.openide.util.lookup.Lookups;
 
 /**
@@ -97,7 +98,6 @@ public class HtmlElementNode extends AbstractNode {
     
     //actions
     private OpenAction openAction;
-    private ModifyElementRulesAction editRulesAction;
     
     //static description (of the source element)
     private SourceDescription source;
@@ -115,19 +115,15 @@ public class HtmlElementNode extends AbstractNode {
     public HtmlElementNode(SourceDescription sourceDescription, HtmlNavigatorPanelUI ui, FileObject fileObject) {
         this(ui, fileObject);
         this.source = sourceDescription;
+        updateNodeLookup(null);
         getElementChildren().setStaticKeys(sourceDescription.getChildren(), true);
-        
-        editRulesAction = new ModifyElementRulesAction(fileObject, sourceDescription.getElementPath());
     }
     
     public HtmlElementNode(Description domDescription, HtmlNavigatorPanelUI ui, FileObject fileObject) {
         this(ui, fileObject);
         this.dom = domDescription;
         updateNodeLookup(domDescription);
-        
         getElementChildren().setDynamicKeys(domDescription.getChildren(), true);
-        
-        editRulesAction = new ModifyElementRulesAction(fileObject, domDescription.getElementPath());
     }
     
     private HtmlElementNode(HtmlNavigatorPanelUI ui, FileObject fileObject) {
@@ -138,11 +134,8 @@ public class HtmlElementNode extends AbstractNode {
         super(new ElementChildren(ui, fileObject), Lookups.proxy(lookupProvider));
         this.ui = ui;
         this.fileObject = fileObject;
-
         this.lookupProvider = lookupProvider;
-        updateNodeLookup(null);
-        
-        
+
         openAction = new OpenAction(this);
     }
     
@@ -156,18 +149,19 @@ public class HtmlElementNode extends AbstractNode {
             domNode = ((WebKitNodeDescription) newDescription).getOONNode().getLookup().
                         lookup(org.netbeans.modules.web.webkit.debugging.api.dom.Node.class);
         }
-        if (domNode != null) {
-            if (fileObject==null) {
-                lookupProvider.setLookup(Lookups.fixed(this, domNode));
-            } else {
-                lookupProvider.setLookup(Lookups.fixed(this, fileObject, domNode));
-            }
-        } else {
-            if (fileObject!=null)
-                lookupProvider.setLookup(Lookups.fixed(this, fileObject));
-            else 
-                lookupProvider.setLookup(Lookups.singleton(this));
+        
+        InstanceContent ic = new InstanceContent();
+        ic.add(this);
+        if(fileObject != null) {
+            ic.add(fileObject);
         }
+        if(domNode != null) {
+            ic.add(domNode);
+        }
+        if(source != null) {
+            ic.add(source); //add source description if available
+        }
+        lookupProvider.setLookup(new AbstractLookup(ic));
     }
     
     public Node getDOMNode() {
@@ -416,14 +410,14 @@ public class HtmlElementNode extends AbstractNode {
         } else {
             
             actions.add(openAction);
-//            actions.add(null);
-//            actions.add(editRulesAction);
             actions.add(null);
             actions.addAll(Arrays.asList(ui.getActions()));
         }
         for (Action action : org.openide.util.Utilities.actionsForPath(DOM_ACTIONS_PATH)) {
             if (action instanceof ContextAwareAction) {
                 actions.add(((ContextAwareAction) action).createContextAwareInstance(getLookup()));
+            } else {
+                actions.add(action);
             }
         }
         return actions.toArray(new Action[]{});        

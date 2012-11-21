@@ -72,6 +72,10 @@
   .visible-desktop {
     display: none !important;
   }
+  .row-fluid .span4 .thumb {
+      width: 100px;
+      height: 100px;
+  }
 }
 
 @media (min-width: 768px) and (max-width: 979px) {
@@ -134,6 +138,10 @@
   }
   .carousel-caption {
     position: static;
+  }
+  .row-fluid .span4 .thumb {
+      width: 50px;
+      height: 50px;
   }
 }
 
@@ -726,7 +734,7 @@
   }
   .nav-collapse .nav .nav-header {
     color: #999999;
-    /* text-shadow: none; */
+    text-shadow: none;
   }
   .nav-collapse .nav > li > a,
   .nav-collapse .dropdown-menu a {

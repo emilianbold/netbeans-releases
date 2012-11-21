@@ -110,6 +110,7 @@ import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.web.common.api.DependenciesGraph;
+import org.netbeans.modules.web.common.api.LexerUtils;
 import org.netbeans.modules.web.common.api.WebUtils;
 import org.openide.cookies.EditorCookie;
 import org.openide.cookies.SaveCookie;
@@ -985,9 +986,12 @@ public class CreateRulePanel extends javax.swing.JPanel {
     /**
      * Changes the class and id attributes of the active html source element.
      */
-    private void modifySourceElement() {
+    private void modifySourceElement() throws DataObjectNotFoundException, IOException {
         final BaseDocument doc = (BaseDocument) getDocument(activeElement.getFile());
         final AtomicBoolean success = new AtomicBoolean();
+
+        DataObject dataObject = DataObject.find(activeElement.getFile());
+        boolean modified = dataObject.getLookup().lookup(SaveCookie.class) != null;
 
         pos = Integer.MAX_VALUE;
         diff = -1;
@@ -1011,16 +1015,12 @@ public class CreateRulePanel extends javax.swing.JPanel {
 
         //possibly save the document if not opened in editor
         if (success.get()) {
-            SwingUtilities.invokeLater(new Runnable() {
-                @Override
-                public void run() {
-                    try {
-                        saveDocumentIfNotOpened(doc);
-                    } catch (IOException ex) {
-                        Exceptions.printStackTrace(ex);
-                    }
+            if (!modified) { //wasn't modified before applying the changes, save...
+                SaveCookie saveCookie = dataObject.getLookup().lookup(SaveCookie.class);
+                if (saveCookie != null) { //the "changes" may not modify the document
+                    saveCookie.save();
                 }
-            });
+            }
         }
     }
 
@@ -1117,6 +1117,14 @@ public class CreateRulePanel extends javax.swing.JPanel {
 
         } else {
             //change
+            CharSequence existingValue = a.unquotedValue();
+            if(existingValue != null) {
+                if(LexerUtils.equals(existingValue, value, false, false)) {
+                    //same values, ignore
+                    return ;
+                }
+            }
+            
             int removeFrom = a.from();
             int removeTo = a.to();
 
@@ -1168,7 +1176,8 @@ public class CreateRulePanel extends javax.swing.JPanel {
                 case 0:
                     //class
                     items.add(NO_CLASS);
-                    String selectedClassName = selectedClazz == null ? getSelectedElementClassName() : null;
+                    String selectedElementClassName = getSelectedElementClassName();
+                    SelectorItem existingClassSI = null;
                     Map<FileObject, Collection<String>> findAllClassDeclarations = index.findAllClassDeclarations();
                     for (FileObject file : findAllClassDeclarations.keySet()) {
                         if (allReferedFiles.contains(file)) { //only refered files
@@ -1176,26 +1185,33 @@ public class CreateRulePanel extends javax.swing.JPanel {
                             for (String clz : classes) {
                                 SelectorItem classSelectorItem = SelectorItem.createClass(clz, file);
                                 items.add(classSelectorItem);
-                                if (clz.equals(selectedClassName)) {
+                                if (clz.equals(selectedElementClassName)) {
                                     //remember the element matching the selected html source element class
                                     //if not already modified (selectedClazz != null)
-                                    selection = classSelectorItem;
+                                    existingClassSI = classSelectorItem;
                                 }
                             }
                         }
                     }
+                    
+                    if(selectedElementClassName != null) {
+                        //some class refered in the source element
+                        
+                        if(existingClassSI == null) {
+                            //the class refered in the html source element doesn't exist ->
+                            //create an item for it and make it default
+                            SelectorItem classSelectorItem = SelectorItem.createClass(selectedElementClassName, null);
+                            classSelectorItem.setCreateInFile(getActiveStylesheet());
+                            classSelectorItem.setCreateInAtRule(getActiveAtRule());
 
-                    if (selectedClassName != null && (selectedClazz == null || !selectedClazz.getItemName().equals(getSelectedElementClassName()))) {
-                        //add special item for the class name preset in the html source element code but w/o
-                        //a corresponding css rule
-                        SelectorItem classSelectorItem = SelectorItem.createClass(selectedClassName, null);
-                        classSelectorItem.setCreateInFile(getActiveStylesheet());
-                        classSelectorItem.setCreateInAtRule(getActiveAtRule());
-
-                        items.add(classSelectorItem);
-                        selection = classSelectorItem;
+                            items.add(classSelectorItem);
+                            selection = classSelectorItem; //make it selected
+                        } else {
+                            //the class exists, preselect it
+                            selection = existingClassSI;
+                        }
                     }
-
+            
                     if (selectedClazz != null) {
                         selection = selectedClazz;
                     }
@@ -1204,7 +1220,8 @@ public class CreateRulePanel extends javax.swing.JPanel {
                 case 1:
                     //id
                     items.add(NO_ID);
-                    String selectedIdName = selectedId == null ? getSelectedElementIdName() : null;
+                    String selectedElementIdName = getSelectedElementIdName();
+                    SelectorItem existingIdSI = null;
                     Map<FileObject, Collection<String>> findAllIdDeclarations = index.findAllIdDeclarations();
                     for (FileObject file : findAllIdDeclarations.keySet()) {
                         if (allReferedFiles.contains(file)) { //only refered files
@@ -1212,22 +1229,29 @@ public class CreateRulePanel extends javax.swing.JPanel {
                             for (String id : ids) {
                                 SelectorItem idSelectorItem = SelectorItem.createId(id, file);
                                 items.add(idSelectorItem);
-                                if (id.equals(selectedIdName)) {
-                                    selection = idSelectorItem;
+                                if (id.equals(selectedElementIdName)) {
+                                    existingIdSI = idSelectorItem;
                                 }
                             }
                         }
                     }
 
-                    if (selectedIdName != null && (selectedId == null || !selectedId.getItemName().equals(getSelectedElementIdName()))) {
-                        //add special item for the class name preset in the html source element code but w/o
-                        //a corresponding css rule
-                        SelectorItem idSelectorItem = SelectorItem.createId(selectedIdName, null);
-                        idSelectorItem.setCreateInFile(getActiveStylesheet());
-                        idSelectorItem.setCreateInAtRule(getActiveAtRule());
+                     if(selectedElementIdName != null) {
+                        //some class refered in the source element
+                        
+                        if(existingIdSI == null) {
+                            //the class refered in the html source element doesn't exist ->
+                            //create an item for it and make it default
+                            SelectorItem idSelectorItem = SelectorItem.createId(selectedElementIdName, null);
+                            idSelectorItem.setCreateInFile(getActiveStylesheet());
+                            idSelectorItem.setCreateInAtRule(getActiveAtRule());
 
-                        items.add(idSelectorItem);
-                        selection = idSelectorItem;
+                            items.add(idSelectorItem);
+                            selection = idSelectorItem; //make it selected
+                        } else {
+                            //the class exists, preselect it
+                            selection = existingIdSI;
+                        }
                     }
 
                     if (selectedId != null) {

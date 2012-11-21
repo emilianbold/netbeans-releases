@@ -419,6 +419,11 @@ public class SiteTemplateWizard extends JPanel {
         }
 
         @Override
+        public String getId() {
+            return "NONE"; // NOI18N
+        }
+
+        @Override
         public String getName() {
             return name;
         }

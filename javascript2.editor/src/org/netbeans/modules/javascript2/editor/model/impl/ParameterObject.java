@@ -53,6 +53,9 @@ public class ParameterObject extends JsObjectImpl {
 
     public ParameterObject(JsObject parent, Identifier name) {
         super(parent, name, name.getOffsetRange());
+        if (hasExactName()) {
+            addOccurrence(name.getOffsetRange());
+        }
     }
 
     @Override

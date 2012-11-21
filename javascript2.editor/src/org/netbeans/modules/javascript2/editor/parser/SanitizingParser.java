@@ -75,7 +75,7 @@ public abstract class SanitizingParser extends Parser {
     @Override
     public final void parse(Snapshot snapshot, Task task, SourceModificationEvent event) throws ParseException {
         try {
-            JsErrorManager errorManager = new JsErrorManager(snapshot.getSource().getFileObject());
+            JsErrorManager errorManager = new JsErrorManager(snapshot);
             lastResult = parseSource(snapshot, event, Sanitize.NONE, errorManager);
             lastResult.setErrors(errorManager.getErrors());
         } catch (Exception ex) {
@@ -129,12 +129,12 @@ public abstract class SanitizingParser extends Parser {
             }
         }
         
-        JsErrorManager current = new JsErrorManager(context.getSnapshot().getSource().getFileObject());
+        JsErrorManager current = new JsErrorManager(context.getSnapshot());
         com.oracle.nashorn.ir.FunctionNode node = parseSource(context.getSnapshot(), context.getName(),
                 context.getSource(), current);
 
         if (copyErrors) {
-            errorManager.fill(current);
+            errorManager.fillErrors(current);
         }
         
         if (sanitizing != Sanitize.NEVER) {

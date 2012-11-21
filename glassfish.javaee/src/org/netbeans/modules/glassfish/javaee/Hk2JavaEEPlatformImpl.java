@@ -76,6 +76,7 @@ import org.netbeans.modules.javaee.specs.support.api.JaxWs;
 import org.netbeans.modules.javaee.specs.support.spi.JaxRsStackSupportImplementation;
 import org.netbeans.modules.websvc.wsstack.api.WSStack;
 import org.netbeans.modules.websvc.wsstack.spi.WSStackFactory;
+import org.netbeans.api.project.libraries.Library;
 import org.netbeans.spi.project.libraries.LibraryImplementation;
 import org.openide.filesystems.*;
 import org.openide.util.ImageUtilities;
@@ -576,20 +577,34 @@ public class Hk2JavaEEPlatformImpl extends J2eePlatformImpl2 {
          */
         @Override
         public boolean addJsr311Api( Project project ) {
+            Library library = libraryProvider.getJaxRsLibrary();
+            if ( library!= null ){
+                try {
+                    return ProjectClassPathModifier.addLibraries(
+                            new Library[] { library }, getSourceRoot(project), 
+                            ClassPath.COMPILE);
+                }
+                catch (UnsupportedOperationException ex) {
+                    return false;
+                }
+                catch (IOException e) {
+                    return false;
+                }
+            }
             String version = getGFVersion();
             try {
                 if (version == null) {
                     return false;
-                } 
+                }
                 else if (version.startsWith(VERSION_30X)) {
-                    File jsr311 = ServerUtilities.getJarName(dm.getProperties().
-                            getGlassfishRoot(), "jsr311-api.jar");          // NOI18N
-                    if ( jsr311== null || !jsr311.exists()){
+                    File jsr311 = ServerUtilities.getJarName(dm.getProperties()
+                            .getGlassfishRoot(), "jsr311-api.jar"); // NOI18N
+                    if (jsr311 == null || !jsr311.exists()) {
                         return false;
                     }
-                    return addJars(project, Collections.singletonList(
-                            Utilities.toURI(jsr311).toURL()));
-                } 
+                    return addJars(project, Collections.singletonList(Utilities
+                            .toURI(jsr311).toURL()));
+                }
                 else if (version.startsWith(VERSION_31X)) {
                     File jerseyCore = ServerUtilities.getJarName(dm.getProperties().
                             getGlassfishRoot(), "jersey-core.jar");          // NOI18N
@@ -610,16 +625,57 @@ public class Hk2JavaEEPlatformImpl extends J2eePlatformImpl2 {
          */
         @Override
         public boolean extendsJerseyProjectClasspath( Project project ) {
-            List<URL> urls = getJerseyLibraryURLs();
+            Library library = libraryProvider.getJerseyLibrary();
+            FileObject sourceRoot = getSourceRoot(project);
+            if (sourceRoot == null) {
+                return false;
+            }
+            try {
+                String classPathType;
+                if (hasJee6Profile()) {
+                    classPathType = JavaClassPathConstants.COMPILE_ONLY;
+                }
+                else {
+                    classPathType = ClassPath.COMPILE;
+                }
+                return ProjectClassPathModifier.addLibraries(
+                        new Library[] { library }, sourceRoot, classPathType);
+            }
+            catch (UnsupportedOperationException ex) {
+                return false;
+            }
+            catch (IOException e) {
+                return false;
+            }
+            /*List<URL> urls = getJerseyLibraryURLs();
             if ( urls.size() >0 ){
                 return addJars( project , urls );
-            }
-            return false;
+            }*/
         }
         
         @Override
         public void removeJaxRsLibraries(Project project) {
-            List<URL> urls = getJerseyLibraryURLs();
+            Library library = libraryProvider.getJerseyLibrary();
+            FileObject sourceRoot = getSourceRoot(project);
+            if ( sourceRoot != null){
+                String[] classPathTypes = new String[]{ ClassPath.COMPILE , 
+                        JavaClassPathConstants.COMPILE_ONLY };
+                for (String type : classPathTypes) {
+                    try {
+                        ProjectClassPathModifier.removeLibraries( new Library[]{
+                                library} ,sourceRoot, type);
+                    }    
+                    catch(UnsupportedOperationException ex) {
+                        Logger.getLogger( JaxRsStackSupportImpl.class.getName() ).
+                                log (Level.INFO, null , ex );
+                    }
+                    catch( IOException e ){
+                        Logger.getLogger( JaxRsStackSupportImpl.class.getName() ).
+                                log(Level.INFO, null , e );
+                    }
+                }     
+            }
+            /*List<URL> urls = getJerseyLibraryURLs();
             if ( urls.size() >0 ){
                 SourceGroup[] sourceGroups = ProjectUtils.getSources(project).getSourceGroups(
                     JavaProjectConstants.SOURCES_TYPE_JAVA);
@@ -642,7 +698,7 @@ public class Hk2JavaEEPlatformImpl extends J2eePlatformImpl2 {
                                 log(Level.INFO, null , e );
                     }
                 }     
-            }
+            }*/
         }
         
         @Override
@@ -666,6 +722,15 @@ public class Hk2JavaEEPlatformImpl extends J2eePlatformImpl2 {
                 }
             }
             return false;
+        }
+
+        private FileObject getSourceRoot(Project project) {
+            SourceGroup[] sourceGroups = ProjectUtils.getSources(project)
+                    .getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
+            if (sourceGroups == null || sourceGroups.length < 1) {
+                return null;
+            }
+            return sourceGroups[0].getRootFolder();
         }
         
         private boolean hasJee6Profile(){
