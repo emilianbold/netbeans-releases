@@ -59,7 +59,7 @@ import org.netbeans.modules.odcs.ui.OpenProjectAction;
 import org.netbeans.modules.odcs.ui.Utilities;
 import org.netbeans.modules.team.ui.spi.LoginHandle;
 import org.netbeans.modules.team.ui.spi.ProjectAccessor;
-import org.netbeans.modules.odcs.ui.api.CloudUiServer;
+import org.netbeans.modules.odcs.ui.api.ODCSUiServer;
 import org.netbeans.modules.odcs.ui.api.OdcsUIUtil;
 import org.netbeans.modules.team.ui.spi.ProjectHandle;
 import org.openide.util.NbBundle;
@@ -77,16 +77,16 @@ import org.openide.util.NbBundle.Messages;
  * @author Jan Becicka
  */
 // XXX not properly implemented yet
-public class ProjectAccessorImpl extends ProjectAccessor<CloudUiServer, ODCSProject> {
+public class ProjectAccessorImpl extends ProjectAccessor<ODCSUiServer, ODCSProject> {
     
-    private final CloudUiServer uiServer;
+    private final ODCSUiServer uiServer;
 
-    ProjectAccessorImpl(CloudUiServer uiServer) {
+    ProjectAccessorImpl(ODCSUiServer uiServer) {
         this.uiServer = uiServer;
     }
     
     @Override
-    public List<ProjectHandle<ODCSProject>> getMemberProjects(CloudUiServer uiServer, LoginHandle login, boolean force) {
+    public List<ProjectHandle<ODCSProject>> getMemberProjects(ODCSUiServer uiServer, LoginHandle login, boolean force) {
         try {
              return Utilities.getMyProjects(uiServer, force);
         } catch (ODCSException ex) {
@@ -96,7 +96,7 @@ public class ProjectAccessorImpl extends ProjectAccessor<CloudUiServer, ODCSProj
     }
 
     @Override
-    public ProjectHandleImpl getNonMemberProject(CloudUiServer server, String projectId, boolean force) {
+    public ProjectHandleImpl getNonMemberProject(ODCSUiServer server, String projectId, boolean force) {
         try {
             ODCSServer odcsServer = server.getServer();
             if (odcsServer != null) {
@@ -120,8 +120,8 @@ public class ProjectAccessorImpl extends ProjectAccessor<CloudUiServer, ODCSProj
             @Override
             public void actionPerformed(ActionEvent e) {
                 TeamServer ts = org.netbeans.modules.team.ui.spi.TeamUIUtils.getSelectedServer();
-                assert ts instanceof CloudUiServer;
-                new OpenProjectAction((CloudUiServer) ts).actionPerformed(new ActionEvent(ts, ActionEvent.ACTION_PERFORMED, null));
+                assert ts instanceof ODCSUiServer;
+                new OpenProjectAction((ODCSUiServer) ts).actionPerformed(new ActionEvent(ts, ActionEvent.ACTION_PERFORMED, null));
             }
         };
     }
@@ -199,7 +199,7 @@ public class ProjectAccessorImpl extends ProjectAccessor<CloudUiServer, ODCSProj
                 } catch (ODCSException ex) {
                     Exceptions.printStackTrace(ex);
                 }
-                final DefaultDashboard<CloudUiServer, ODCSProject> dashboard = CloudUiServer.forServer(server).getDashboard();
+                final DefaultDashboard<ODCSUiServer, ODCSProject> dashboard = ODCSUiServer.forServer(server).getDashboard();
                 dashboard.bookmarkingStarted();
                 RequestProcessor.getDefault().post(new Runnable() {
                     @Override

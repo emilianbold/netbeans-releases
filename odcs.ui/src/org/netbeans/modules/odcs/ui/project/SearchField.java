@@ -61,7 +61,7 @@ import javax.swing.text.JTextComponent;
 import org.netbeans.modules.odcs.api.ODCSServer;
 import org.netbeans.modules.odcs.api.ODCSManager;
 import org.netbeans.modules.odcs.ui.ODCSServerProviderImpl;
-import org.netbeans.modules.odcs.ui.api.CloudUiServer;
+import org.netbeans.modules.odcs.ui.api.ODCSUiServer;
 import org.netbeans.modules.team.ui.common.AddInstanceAction;
 import org.netbeans.modules.team.ui.spi.TeamUIUtils;
 import org.openide.util.ImageUtilities;
@@ -218,7 +218,7 @@ public class SearchField extends JPanel implements ActionListener {
         for (ODCSServer odcsServer : ODCSManager.getDefault().getServers()) {
             JRadioButtonMenuItem item = new JRadioButtonMenuItem(getODCSDisplayName(odcsServer));
             item.setIcon(odcsServer.getIcon());
-            item.setSelected(odcsServer == getSelectedCloud());
+            item.setSelected(odcsServer == getSelectedServer());
             item.putClientProperty(ODCS, odcsServer);
             item.addActionListener(this);
             pm.add(item);
@@ -230,7 +230,7 @@ public class SearchField extends JPanel implements ActionListener {
             public void actionPerformed(ActionEvent e) {
                 AddInstanceAction addInstanceAction = new AddInstanceAction(ODCSServerProviderImpl.getDefault());
                 addInstanceAction.actionPerformed(e);
-                CloudUiServer teamServer = (CloudUiServer) addInstanceAction.getTeamServer();
+                ODCSUiServer teamServer = (ODCSUiServer) addInstanceAction.getTeamServer();
                 if (teamServer != null) {
                     ODCSServer last = (teamServer).getServer();
                     if (last != null) {
@@ -269,7 +269,7 @@ public class SearchField extends JPanel implements ActionListener {
         if (k != null) {
             ODCSServer toBeSelected = (ODCSServer) k;
             if (!toBeSelected.isLoggedIn()) {
-                if (TeamUIUtils.showLogin(CloudUiServer.forServer(toBeSelected), false) == null) {
+                if (TeamUIUtils.showLogin(ODCSUiServer.forServer(toBeSelected), false) == null) {
                     return;
                 }
             }
@@ -302,7 +302,7 @@ public class SearchField extends JPanel implements ActionListener {
         listenerList.remove(ActionListener.class, l);
     }
 
-    public ODCSServer getSelectedCloud() {
+    public ODCSServer getSelectedServer() {
         return selected;
     }
 }

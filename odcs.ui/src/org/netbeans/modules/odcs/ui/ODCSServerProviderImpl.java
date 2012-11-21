@@ -42,7 +42,7 @@
 package org.netbeans.modules.odcs.ui;
 
 import java.awt.EventQueue;
-import org.netbeans.modules.odcs.ui.api.CloudUiServer;
+import org.netbeans.modules.odcs.ui.api.ODCSUiServer;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
@@ -85,12 +85,12 @@ public class ODCSServerProviderImpl implements TeamServerProvider {
             @Override
             public void propertyChange (PropertyChangeEvent pce) {
                 if (ODCSManager.PROP_INSTANCES.equals(pce.getPropertyName())) {
-                    CloudUiServer oldValue = null, newValue = null;
+                    ODCSUiServer oldValue = null, newValue = null;
                     if (pce.getOldValue() instanceof ODCSServer) {
-                        oldValue = CloudUiServer.forServer(((ODCSServer) pce.getOldValue()));
+                        oldValue = ODCSUiServer.forServer(((ODCSServer) pce.getOldValue()));
                     }
                     if (pce.getNewValue() instanceof ODCSServer) {
-                        newValue = CloudUiServer.forServer(((ODCSServer) pce.getNewValue()));
+                        newValue = ODCSUiServer.forServer(((ODCSServer) pce.getNewValue()));
                     }
                     propertyChangeSupport.firePropertyChange(TeamServerProvider.PROP_INSTANCES, oldValue, newValue);
                 }
@@ -108,9 +108,9 @@ public class ODCSServerProviderImpl implements TeamServerProvider {
     @Override
     public Collection<? extends TeamServer> getTeamServers () {
         Collection<ODCSServer> servers = ODCSManager.getDefault().getServers();
-        List<CloudUiServer> uiServers = new ArrayList<CloudUiServer>(servers.size());
+        List<ODCSUiServer> uiServers = new ArrayList<ODCSUiServer>(servers.size());
         for (ODCSServer server : servers) {
-            uiServers.add(CloudUiServer.forServer(server));
+            uiServers.add(ODCSUiServer.forServer(server));
         }
         return uiServers;
     }
@@ -118,13 +118,13 @@ public class ODCSServerProviderImpl implements TeamServerProvider {
     @Override
     public TeamServer getTeamServer (String url) {
         ODCSServer server = ODCSManager.getDefault().getServer(url);
-        return server == null ? null : CloudUiServer.forServer(server);
+        return server == null ? null : ODCSUiServer.forServer(server);
     }
 
     @Override
     public void removeTeamServer (TeamServer instance) {
-        if (instance instanceof CloudUiServer) {
-            ODCSServer server = ((CloudUiServer) instance).getServer();
+        if (instance instanceof ODCSUiServer) {
+            ODCSServer server = ((ODCSUiServer) instance).getServer();
             if (server != null) {
                 ODCSManager.getDefault().removeServer(server);
             }
@@ -149,7 +149,7 @@ public class ODCSServerProviderImpl implements TeamServerProvider {
         if (server != null) {
             //TODO how to check the url is valid??
         }
-        return server == null ? null : CloudUiServer.forServer(server);
+        return server == null ? null : ODCSUiServer.forServer(server);
     }
 
     @Override

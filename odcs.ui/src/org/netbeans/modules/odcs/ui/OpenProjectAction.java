@@ -48,7 +48,7 @@ import java.beans.PropertyChangeListener;
 import javax.swing.JButton;
 import org.netbeans.modules.odcs.api.ODCSServer;
 import org.netbeans.modules.odcs.api.ODCSProject;
-import org.netbeans.modules.odcs.ui.api.CloudUiServer;
+import org.netbeans.modules.odcs.ui.api.ODCSUiServer;
 import org.netbeans.modules.odcs.ui.dashboard.ProjectHandleImpl;
 import org.netbeans.modules.odcs.ui.project.ODCSSearchPanel;
 import org.netbeans.modules.team.ui.spi.TeamUIUtils;
@@ -71,7 +71,7 @@ public final class OpenProjectAction implements ActionListener {
 
     private ODCSServer server;
 
-    public OpenProjectAction(CloudUiServer server) {
+    public OpenProjectAction(ODCSUiServer server) {
         this.server = server.getServer();
     }
 
@@ -117,7 +117,7 @@ public final class OpenProjectAction implements ActionListener {
         if (open.equals(option)) {
             ODCSProject selProjects[] = openPanel.getSelectedProjects();
             if (null != selProjects && selProjects.length > 0) {
-                CloudUiServer uiServer = CloudUiServer.forServer(selProjects[0].getServer());
+                ODCSUiServer uiServer = ODCSUiServer.forServer(selProjects[0].getServer());
                 for (ODCSProject prj : selProjects) {
                     ProjectHandleImpl pHandle = new ProjectHandleImpl(uiServer, prj);
                     uiServer.getDashboard().addProject(pHandle, false, true);

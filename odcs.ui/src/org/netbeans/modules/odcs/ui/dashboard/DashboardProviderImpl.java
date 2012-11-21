@@ -48,7 +48,7 @@ import javax.swing.Action;
 import org.netbeans.modules.odcs.api.ODCSProject;
 import org.netbeans.modules.odcs.client.api.ODCSException;
 import org.netbeans.modules.odcs.ui.Utilities;
-import org.netbeans.modules.odcs.ui.api.CloudUiServer;
+import org.netbeans.modules.odcs.ui.api.ODCSUiServer;
 import org.netbeans.modules.team.ui.common.ProjectNode;
 import org.netbeans.modules.team.ui.common.SourceListNode;
 import org.netbeans.modules.team.ui.spi.BuilderAccessor;
@@ -70,12 +70,12 @@ import org.openide.util.RequestProcessor;
  *
  * @author Tomas Stupka
  */
-public class DashboardProviderImpl extends DashboardProvider<CloudUiServer, ODCSProject> {
+public class DashboardProviderImpl extends DashboardProvider<ODCSUiServer, ODCSProject> {
 
-    private final CloudUiServer server;
+    private final ODCSUiServer server;
     private ProjectAccessorImpl projectAccessor;
 
-    public DashboardProviderImpl(CloudUiServer server) {
+    public DashboardProviderImpl(ODCSUiServer server) {
         this.server = server;
     }
     
@@ -173,7 +173,7 @@ public class DashboardProviderImpl extends DashboardProvider<CloudUiServer, ODCS
     }
 
     @Override
-    public CloudUiServer forProject(ProjectHandle<ODCSProject> project) {
+    public ODCSUiServer forProject(ProjectHandle<ODCSProject> project) {
 //        return server; // should be save as long as there is one dashboardprovider for each dashboard
         return ((ProjectHandleImpl) project).getTeamServer();
     }

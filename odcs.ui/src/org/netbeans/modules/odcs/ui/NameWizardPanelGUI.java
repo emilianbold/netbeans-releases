@@ -83,7 +83,7 @@ import javax.swing.event.DocumentListener;
 import org.netbeans.api.options.OptionsDisplayer;
 import org.netbeans.modules.odcs.api.ODCSProject;
 import org.netbeans.modules.odcs.client.api.ODCSException;
-import org.netbeans.modules.odcs.ui.api.CloudUiServer;
+import org.netbeans.modules.odcs.ui.api.ODCSUiServer;
 import org.netbeans.modules.team.ui.common.AddInstanceAction;
 import org.openide.WizardDescriptor;
 import org.openide.WizardValidationException;
@@ -115,19 +115,19 @@ public class NameWizardPanelGUI extends JPanel {
         panel = pnl;
         initComponents();
 
-        teamCombo.setSelectedItem(CloudUiServer.forServer(panel.getServer()));
+        teamCombo.setSelectedItem(ODCSUiServer.forServer(panel.getServer()));
         teamCombo.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed (final ActionEvent e) {
-                if (teamCombo.getSelectedItem() instanceof CloudUiServer) {
-                    panel.setServer(((CloudUiServer) teamCombo.getSelectedItem()).getServer());
+                if (teamCombo.getSelectedItem() instanceof ODCSUiServer) {
+                    panel.setServer(((ODCSUiServer) teamCombo.getSelectedItem()).getServer());
                     refreshUsername();
                 } else if (teamCombo.getSelectedItem() instanceof String) {
                     EventQueue.invokeLater(new Runnable() {
                         @Override
                         public void run () {
                             new AddInstanceAction(ODCSServerProviderImpl.getDefault(), Bundle.CTL_AddInstance()).actionPerformed(e);
-                            panel.setServer(((CloudUiServer) teamCombo.getSelectedItem()).getServer());
+                            panel.setServer(((ODCSUiServer) teamCombo.getSelectedItem()).getServer());
                             refreshUsername();
                         }
                     });

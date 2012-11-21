@@ -63,7 +63,7 @@ import org.netbeans.modules.odcs.api.ODCSServer;
 import org.netbeans.modules.odcs.api.ODCSManager;
 import org.netbeans.modules.odcs.api.ODCSProject;
 import org.netbeans.modules.odcs.client.api.ODCSException;
-import org.netbeans.modules.odcs.ui.api.CloudUiServer;
+import org.netbeans.modules.odcs.ui.api.ODCSUiServer;
 import org.netbeans.modules.odcs.ui.api.OdcsUIUtil;
 import org.netbeans.modules.team.ui.common.DefaultDashboard;
 import org.netbeans.modules.team.ui.common.NbModuleOwnerSupport;
@@ -185,7 +185,7 @@ public class KenaiAccessorImpl extends KenaiAccessor {
 
     @Override
     public KenaiProject[] getDashboardProjects(boolean onlyOpened) {
-        ProjectHandle<ODCSProject>[] handles = CloudUiServer.getOpenProjects();
+        ProjectHandle<ODCSProject>[] handles = ODCSUiServer.getOpenProjects();
         if ((handles == null) || (handles.length == 0)) {
             return new KenaiProjectImpl[0];
         }

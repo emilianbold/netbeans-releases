@@ -59,7 +59,7 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 import org.netbeans.modules.odcs.api.ODCSProject;
-import org.netbeans.modules.odcs.ui.api.CloudUiServer;
+import org.netbeans.modules.odcs.ui.api.ODCSUiServer;
 import org.netbeans.modules.odcs.ui.project.LinkLabel;
 import org.netbeans.modules.team.ui.spi.BuildHandle;
 import org.netbeans.modules.team.ui.spi.BuilderAccessor;
@@ -190,7 +190,7 @@ public class BuildActivityDisplayer extends ActivityDisplayer {
 
     private Action getOpenJobIDEAction(boolean force) {
         if (openJobIDEAction == null || force) {
-            BuilderAccessor<ODCSProject> buildAccessor = CloudUiServer.forServer(projectHandle.getTeamProject().getServer()).getDashboard().getDashboardProvider().getBuildAccessor(ODCSProject.class);
+            BuilderAccessor<ODCSProject> buildAccessor = ODCSUiServer.forServer(projectHandle.getTeamProject().getServer()).getDashboard().getDashboardProvider().getBuildAccessor(ODCSProject.class);
             final Action action;
             if (buildAccessor != null) {
                 action = buildAccessor.getJob(projectHandle, activity.getJobSummary().getName()).getDefaultAction();
@@ -216,7 +216,7 @@ public class BuildActivityDisplayer extends ActivityDisplayer {
 
     private Action getOpenBuildIDEAction(boolean force) {
         if (openBuildIDEAction == null || force) {
-            BuilderAccessor<ODCSProject> buildAccessor = CloudUiServer.forServer(projectHandle.getTeamProject().getServer()).getDashboard().getDashboardProvider().getBuildAccessor(ODCSProject.class);
+            BuilderAccessor<ODCSProject> buildAccessor = ODCSUiServer.forServer(projectHandle.getTeamProject().getServer()).getDashboard().getDashboardProvider().getBuildAccessor(ODCSProject.class);
             final Action action;
             if (buildAccessor != null) {
                 String buildId = Integer.toString(activity.getBuildDetails().getNumber());

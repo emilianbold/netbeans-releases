@@ -73,11 +73,11 @@ public final class OdcsUIUtil {
     private OdcsUIUtil() { }
     
     public static void addDashboardListener(ODCSServer server, PropertyChangeListener propertyChangeListener) {
-        CloudUiServer.forServer(server).getDashboard().addPropertyChangeListener(propertyChangeListener);
+        ODCSUiServer.forServer(server).getDashboard().addPropertyChangeListener(propertyChangeListener);
     }
     
     public static void removeDashboardListener(ODCSServer server, PropertyChangeListener propertyChangeListener) {
-        CloudUiServer.forServer(server).getDashboard().removePropertyChangeListener(propertyChangeListener);
+        ODCSUiServer.forServer(server).getDashboard().removePropertyChangeListener(propertyChangeListener);
     }
     
     @NbBundle.Messages("CTL_AddInstance=Add ODCS Server")
@@ -139,9 +139,9 @@ public final class OdcsUIUtil {
      * canceled
      */
     public static ODCSServer showServerLogin(final ODCSServer odcsServer) {
-        TeamServer server = CloudUiServer.forServer(odcsServer);
+        TeamServer server = ODCSUiServer.forServer(odcsServer);
         server = org.netbeans.modules.team.ui.spi.TeamUIUtils.showLogin(server, false);
-        return (server instanceof CloudUiServer) ? ((CloudUiServer) server).getServer() : null;
+        return (server instanceof ODCSUiServer) ? ((ODCSUiServer) server).getServer() : null;
     }
 
     private static String getParamString(Object... parameters) {

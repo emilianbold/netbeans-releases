@@ -48,7 +48,7 @@ import java.beans.PropertyChangeListener;
 import java.util.List;
 import javax.swing.*;
 import org.netbeans.modules.odcs.api.ODCSProject;
-import org.netbeans.modules.odcs.ui.api.CloudUiServer;
+import org.netbeans.modules.odcs.ui.api.ODCSUiServer;
 import org.netbeans.modules.team.ui.common.DefaultDashboard;
 import org.netbeans.modules.team.ui.common.LinkButton;
 import org.netbeans.modules.team.ui.common.ProjectProvider;
@@ -112,9 +112,9 @@ public class MyProjectNode extends LeafNode implements ProjectProvider {
     private TreeLabel leftPar;
     private TreeLabel delim;
     private RequestProcessor issuesRP = new RequestProcessor(MyProjectNode.class);
-    private final DefaultDashboard<CloudUiServer, ODCSProject> dashboard;
+    private final DefaultDashboard<ODCSUiServer, ODCSProject> dashboard;
 
-    public MyProjectNode( final ProjectHandle<ODCSProject> project, final DefaultDashboard<CloudUiServer, ODCSProject> dashboard) {
+    public MyProjectNode( final ProjectHandle<ODCSProject> project, final DefaultDashboard<ODCSUiServer, ODCSProject> dashboard) {
         super( null );
         if (project==null) {
             throw new IllegalArgumentException("project cannot be null"); // NOI18N

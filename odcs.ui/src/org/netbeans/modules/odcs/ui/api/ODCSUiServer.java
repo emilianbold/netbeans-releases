@@ -72,17 +72,17 @@ import org.openide.util.NbPreferences;
  *
  * @author Ondrej Vrabec
  */
-public class CloudUiServer implements TeamServer {
+public class ODCSUiServer implements TeamServer {
 
-    private static final Map<ODCSServer, CloudUiServer> serverMap = new WeakHashMap<ODCSServer, CloudUiServer>(3);
+    private static final Map<ODCSServer, ODCSUiServer> serverMap = new WeakHashMap<ODCSServer, ODCSUiServer>(3);
     private final WeakReference<ODCSServer> impl;
     private PropertyChangeListener l;
     private java.beans.PropertyChangeSupport propertyChangeSupport = new java.beans.PropertyChangeSupport(this);
-    private final DefaultDashboard<CloudUiServer, ODCSProject> dashboard;
+    private final DefaultDashboard<ODCSUiServer, ODCSProject> dashboard;
 
-    private CloudUiServer (ODCSServer server) {
+    private ODCSUiServer (ODCSServer server) {
         this.impl = new WeakReference<ODCSServer>(server);
-        dashboard = new DefaultDashboard<CloudUiServer, ODCSProject>(this, new DashboardProviderImpl(this));
+        dashboard = new DefaultDashboard<ODCSUiServer, ODCSProject>(this, new DashboardProviderImpl(this));
         server.addPropertyChangeListener(WeakListeners.propertyChange(l=new PropertyChangeListener() {
             @Override
             public void propertyChange(PropertyChangeEvent pce) {
@@ -102,12 +102,12 @@ public class CloudUiServer implements TeamServer {
         }, server));
     }
 
-    public static CloudUiServer forServer (ODCSServer server) {
-        CloudUiServer serverUi;
+    public static ODCSUiServer forServer (ODCSServer server) {
+        ODCSUiServer serverUi;
         synchronized (serverMap) {
             serverUi = serverMap.get(server);
             if (serverUi == null) {
-                serverUi = new CloudUiServer(server);
+                serverUi = new ODCSUiServer(server);
                 serverMap.put(server, serverUi);
             }
         }
@@ -115,12 +115,12 @@ public class CloudUiServer implements TeamServer {
     }
     
     public static ProjectHandle<ODCSProject>[] getOpenProjects() {
-        ArrayList<CloudUiServer> servers;
+        ArrayList<ODCSUiServer> servers;
         synchronized (serverMap) {
-            servers = new ArrayList<CloudUiServer>(serverMap.values());
+            servers = new ArrayList<ODCSUiServer>(serverMap.values());
         }
         LinkedList<ProjectHandle<ODCSProject>> ret = new LinkedList<ProjectHandle<ODCSProject>>();
-        for (CloudUiServer s : servers) {
+        for (ODCSUiServer s : servers) {
             ProjectHandle<ODCSProject>[] projects = s.getDashboard().getProjects(true);
             if(projects != null) {
                 ret.addAll(Arrays.asList(projects));
@@ -129,7 +129,7 @@ public class CloudUiServer implements TeamServer {
         return ret.toArray(new ProjectHandle[ret.size()]);
     }
     
-    public DefaultDashboard<CloudUiServer, ODCSProject> getDashboard() {
+    public DefaultDashboard<ODCSUiServer, ODCSProject> getDashboard() {
         return dashboard;
     }    
 
@@ -190,7 +190,7 @@ public class CloudUiServer implements TeamServer {
     private ODCSServer getImpl (boolean checkOriginal) {
         ODCSServer server = impl.get();
         if (checkOriginal && server == null) {
-            throw new IllegalStateException("Original cloud server no longer exists.");
+            throw new IllegalStateException("Original ODCS server no longer exists.");
         }
         return server;
     }

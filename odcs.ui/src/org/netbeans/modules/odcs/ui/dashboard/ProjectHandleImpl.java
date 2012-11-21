@@ -42,7 +42,7 @@
 package org.netbeans.modules.odcs.ui.dashboard;
 
 import org.netbeans.modules.odcs.api.ODCSProject;
-import org.netbeans.modules.odcs.ui.api.CloudUiServer;
+import org.netbeans.modules.odcs.ui.api.ODCSUiServer;
 import org.netbeans.modules.team.ui.spi.ProjectHandle;
 
 /**
@@ -51,9 +51,9 @@ import org.netbeans.modules.team.ui.spi.ProjectHandle;
  */
 public class ProjectHandleImpl extends ProjectHandle<ODCSProject> {
     private final ODCSProject project;
-    private final CloudUiServer server;
+    private final ODCSUiServer server;
 
-    public ProjectHandleImpl(CloudUiServer server, ODCSProject project) {
+    public ProjectHandleImpl(ODCSUiServer server, ODCSProject project) {
         super(String.valueOf(project.getId()));
         this.project = project;
         this.server = server;
@@ -74,7 +74,7 @@ public class ProjectHandleImpl extends ProjectHandle<ODCSProject> {
         return false;
     }
 
-    public CloudUiServer getTeamServer() {
+    public ODCSUiServer getTeamServer() {
         return server;
     }
     

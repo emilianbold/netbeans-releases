@@ -47,9 +47,9 @@ import java.awt.event.ActionEvent;
 import java.io.File;
 import java.net.PasswordAuthentication;
 import javax.swing.AbstractAction;
-import org.netbeans.modules.odcs.ui.api.CloudUiServer;
+import org.netbeans.modules.odcs.ui.api.ODCSUiServer;
 import org.netbeans.modules.odcs.ui.api.OdcsUIUtil;
-import org.netbeans.modules.odcs.versioning.GetSourcesFromCloudPanel.GetSourcesInfo;
+import org.netbeans.modules.odcs.versioning.GetSourcesFromODCSPanel.GetSourcesInfo;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.util.NbBundle;
@@ -62,24 +62,24 @@ import org.openide.util.NbBundle.Messages;
 import org.openide.util.NbPreferences;
 import org.openide.util.RequestProcessor;
 
-@ActionID(id = "org.netbeans.modules.odcs.versioning.GetSourcesFromCloudAction", category = "Team")
-@ActionRegistration(displayName = "#Actions/Team/org-netbeans-modules-odcs-versioning-GetSourcesFromCloudAction.instance")
+@ActionID(id = "org.netbeans.modules.odcs.versioning.GetSourcesFromODCSAction", category = "Team")
+@ActionRegistration(displayName = "#Actions/Team/org-netbeans-modules-odcs-versioning-GetSourcesFromODCSAction.instance")
 @ActionReference(path="Menu/Versioning/Team/ODCS", position=400)
-@Messages("Actions/Team/org-netbeans-modules-odcs-versioning-GetSourcesFromCloudAction.instance=&Get Sources...")
-public final class GetSourcesFromCloudAction extends AbstractAction {
+@Messages("Actions/Team/org-netbeans-modules-odcs-versioning-GetSourcesFromODCSAction.instance=&Get Sources...")
+public final class GetSourcesFromODCSAction extends AbstractAction {
 
     private ProjectAndRepository prjAndRepository;
     private SourceHandleImpl srcHandle;
 
-    private String dialogTitle = NbBundle.getMessage(GetSourcesFromCloudAction.class, "GetSourcesFromCloudTitle");
-    private String getOption = NbBundle.getMessage(GetSourcesFromCloudAction.class, "GetSourcesFromCloudAction.GetFromKenai.option");
-    private String cancelOption = NbBundle.getMessage(GetSourcesFromCloudAction.class, "GetSourcesFromCloudAction.Cancel.option");
+    private String dialogTitle = NbBundle.getMessage(GetSourcesFromODCSAction.class, "GetSourcesFromODCSTitle");
+    private String getOption = NbBundle.getMessage(GetSourcesFromODCSAction.class, "GetSourcesFromODCSAction.GetFromKenai.option");
+    private String cancelOption = NbBundle.getMessage(GetSourcesFromODCSAction.class, "GetSourcesFromODCSAction.Cancel.option");
     
-    public GetSourcesFromCloudAction () {
+    public GetSourcesFromODCSAction () {
         this(null, null);
     }
 
-    public GetSourcesFromCloudAction(ProjectAndRepository prjRepo, SourceHandleImpl src) {
+    public GetSourcesFromODCSAction(ProjectAndRepository prjRepo, SourceHandleImpl src) {
         prjAndRepository = prjRepo;
         this.srcHandle = src;
     }
@@ -93,7 +93,7 @@ public final class GetSourcesFromCloudAction extends AbstractAction {
 
         org.netbeans.modules.team.ui.spi.TeamUIUtils.activateTeamDashboard();
 
-        GetSourcesFromCloudPanel getSourcesPanel = new GetSourcesFromCloudPanel(prjAndRepository);
+        GetSourcesFromODCSPanel getSourcesPanel = new GetSourcesFromODCSPanel(prjAndRepository);
 
         DialogDescriptor dialogDesc = new DialogDescriptor(getSourcesPanel, dialogTitle,
             true, options, options[0], DialogDescriptor.DEFAULT_ALIGN, null, null);
@@ -112,14 +112,14 @@ public final class GetSourcesFromCloudAction extends AbstractAction {
             final ScmRepository repository = sourcesInfo.repository;
             final String url = sourcesInfo.url;
             final PasswordAuthentication passwdAuth = repository.getScmLocation() == ScmLocation.CODE2CLOUD
-                    ? CloudUiServer.forServer(sourcesInfo.projectHandle.getTeamProject().getServer()).getPasswordAuthentication()
+                    ? ODCSUiServer.forServer(sourcesInfo.projectHandle.getTeamProject().getServer()).getPasswordAuthentication()
                     : null;
             // XXX   UIUtils.logKenaiUsage("KENAI_HG_CLONE"); // NOI18N
             RequestProcessor.getDefault().post(new Runnable() {
                 @Override
                 public void run() {
                     OdcsUIUtil.logODCSUsage("CLONE" + prov.getName()); //NOI18N
-                    NbPreferences.forModule(GetSourcesFromCloudAction.class).put("repository.scm.provider." + url, prov.getClass().getName()); //NOI18N
+                    NbPreferences.forModule(GetSourcesFromODCSAction.class).put("repository.scm.provider." + url, prov.getClass().getName()); //NOI18N
                     File cloneDest = prov.getSources(url, passwdAuth);
                     if (cloneDest != null && srcHandle != null) {
                         srcHandle.setWorkingDirectory(url, cloneDest);

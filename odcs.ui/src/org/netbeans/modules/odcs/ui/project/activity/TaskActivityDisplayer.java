@@ -63,7 +63,7 @@ import javax.swing.SwingConstants;
 import org.netbeans.modules.mylyn.util.WikiPanel;
 import org.netbeans.modules.mylyn.util.WikiUtils;
 import org.netbeans.modules.odcs.api.ODCSProject;
-import org.netbeans.modules.odcs.ui.api.CloudUiServer;
+import org.netbeans.modules.odcs.ui.api.ODCSUiServer;
 import org.netbeans.modules.odcs.ui.project.LinkLabel;
 import org.netbeans.modules.odcs.ui.utils.Utils;
 import org.netbeans.modules.team.ui.spi.ProjectHandle;
@@ -232,7 +232,7 @@ public class TaskActivityDisplayer extends ActivityDisplayer {
 
     private Action getOpenIDEAction() {
         if (openIDEAction == null) {
-            QueryAccessor<ODCSProject> queryAccessor = CloudUiServer.forServer(projectHandle.getTeamProject().getServer()).getDashboard().getDashboardProvider().getQueryAccessor(ODCSProject.class);
+            QueryAccessor<ODCSProject> queryAccessor = ODCSUiServer.forServer(projectHandle.getTeamProject().getServer()).getDashboard().getDashboardProvider().getQueryAccessor(ODCSProject.class);
             final Action action;
             if (queryAccessor != null) {
                 action = queryAccessor.getOpenTaskAction(projectHandle, activity.getActivity().getTask().getId().toString());

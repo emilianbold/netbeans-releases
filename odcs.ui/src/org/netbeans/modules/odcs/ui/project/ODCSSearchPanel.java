@@ -109,7 +109,7 @@ public class ODCSSearchPanel extends JPanel {
                 if (SearchField.SEARCH.equals(e.getActionCommand())) {
                     invokeSearch();
                 } else {
-                    ODCSSearchPanel.odcsServer = ((ODCSServer) searchTextField.getSelectedCloud());
+                    ODCSSearchPanel.odcsServer = ((ODCSServer) searchTextField.getSelectedServer());
                     setChildrenEnabled(ODCSSearchPanel.this, ODCSSearchPanel.odcsServer != null);
                 }
             }

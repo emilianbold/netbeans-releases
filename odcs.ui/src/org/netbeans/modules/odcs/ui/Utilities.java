@@ -55,7 +55,7 @@ import org.netbeans.modules.odcs.api.ODCSProject;
 import org.netbeans.modules.odcs.client.api.ODCSException;
 import org.openide.util.NbPreferences;
 import static org.netbeans.modules.odcs.ui.Bundle.*;
-import org.netbeans.modules.odcs.ui.api.CloudUiServer;
+import org.netbeans.modules.odcs.ui.api.ODCSUiServer;
 import org.netbeans.modules.odcs.ui.dashboard.ProjectHandleImpl;
 import org.netbeans.modules.team.ui.spi.ProjectHandle;
 import org.netbeans.modules.team.ui.spi.TeamServer;
@@ -69,8 +69,8 @@ import org.openide.util.NbBundle.Messages;
 public class Utilities {
     
     public final static String LOGIN_STATUS_PREF = ".login"; //NOI18N
-    final static String CLOUD_USERNAME_PREF = ".username"; //NOI18N
-    private final static String CLOUD_PASSWORD_PREF = ".password"; //NOI18N
+    final static String ODCS_USERNAME_PREF = ".username"; //NOI18N
+    private final static String ODCS_PASSWORD_PREF = ".password"; //NOI18N
     
     private Utilities () {
         
@@ -86,21 +86,21 @@ public class Utilities {
      */
     @SuppressWarnings("deprecation")
     private static char[] loadPassword (ODCSServer server, Preferences preferences) {
-        String passwordPref = Utilities.getPrefName(server, CLOUD_PASSWORD_PREF);
+        String passwordPref = Utilities.getPrefName(server, ODCS_PASSWORD_PREF);
         char[] newPassword = Keyring.read(passwordPref);
         return newPassword;
     }
 
-    @Messages({"# {0} - cloud server name", "Utilities.password_keyring_description=Password for {0}"})
+    @Messages({"# {0} - ODCS server name", "Utilities.password_keyring_description=Password for {0}"})
     static void savePassword (ODCSServer server, String username, char[] password) {
-        String passwordPref = Utilities.getPrefName(server, CLOUD_PASSWORD_PREF);
+        String passwordPref = Utilities.getPrefName(server, ODCS_PASSWORD_PREF);
         Preferences preferences = NbPreferences.forModule(Utilities.class);
         if (password != null) {
-            preferences.put(Utilities.getPrefName(server, CLOUD_USERNAME_PREF), username); //NOI18N
+            preferences.put(Utilities.getPrefName(server, ODCS_USERNAME_PREF), username); //NOI18N
             Keyring.save(passwordPref, password,
                     Utilities_password_keyring_description(server.getUrl().getHost()));
         } else {
-            preferences.remove(Utilities.getPrefName(server, CLOUD_USERNAME_PREF)); //NOI18N
+            preferences.remove(Utilities.getPrefName(server, ODCS_USERNAME_PREF)); //NOI18N
             Keyring.delete(passwordPref);
         }
         preferences.remove(passwordPref);
@@ -111,7 +111,7 @@ public class Utilities {
         @Override
         public String getUsername (ODCSServer server) {
             final Preferences preferences = NbPreferences.forModule(Utilities.class);
-            String uname = preferences.get(Utilities.getPrefName(server, CLOUD_USERNAME_PREF), ""); // NOI18N
+            String uname = preferences.get(Utilities.getPrefName(server, ODCS_USERNAME_PREF), ""); // NOI18N
             if (uname==null) {
                 return "";
             }
@@ -135,7 +135,7 @@ public class Utilities {
             if (!preferences.getBoolean(getPrefName(server, LOGIN_STATUS_PREF), false)) {
                 return false;
             }
-            String uname = preferences.get(Utilities.getPrefName(server, CLOUD_USERNAME_PREF), ""); //NOI18N
+            String uname = preferences.get(Utilities.getPrefName(server, ODCS_USERNAME_PREF), ""); //NOI18N
             if (uname.isEmpty()) {
                 return false;
             }
@@ -153,19 +153,19 @@ public class Utilities {
         return false;
     }
     
-    public static List<ProjectHandle<ODCSProject>> getMyProjects(CloudUiServer uiServer, boolean force) throws ODCSException {
+    public static List<ProjectHandle<ODCSProject>> getMyProjects(ODCSUiServer uiServer, boolean force) throws ODCSException {
         return toODCSProjects(uiServer, uiServer.getServer().getMyProjects(force));
     }
 
-    public static List<ProjectHandle<ODCSProject>> getMyProjects(CloudUiServer uiServer) throws ODCSException {
+    public static List<ProjectHandle<ODCSProject>> getMyProjects(ODCSUiServer uiServer) throws ODCSException {
         return toODCSProjects(uiServer, uiServer.getServer().getMyProjects());
     }
 
     public static ODCSServer getActiveServer (boolean loggedInExpected) {
         ODCSServer server = null;
         TeamServer selectedServer = TeamUIUtils.getSelectedServer();
-        if (selectedServer instanceof CloudUiServer) {
-            server = ((CloudUiServer) selectedServer).getServer();
+        if (selectedServer instanceof ODCSUiServer) {
+            server = ((ODCSUiServer) selectedServer).getServer();
         } else {
             Collection<ODCSServer> servers = ODCSManager.getDefault().getServers();
             for (ODCSServer s : servers) {
@@ -182,16 +182,16 @@ public class Utilities {
             return null;
         }
         if (loggedInExpected && !server.isLoggedIn()) {
-            TeamServer uiServer = TeamUIUtils.showLogin(CloudUiServer.forServer(server), false);
-            if (uiServer instanceof CloudUiServer) {
-                server = ((CloudUiServer) uiServer).getServer();
+            TeamServer uiServer = TeamUIUtils.showLogin(ODCSUiServer.forServer(server), false);
+            if (uiServer instanceof ODCSUiServer) {
+                server = ((ODCSUiServer) uiServer).getServer();
             }
         }
         return server;
     }
 
 
-    private static List<ProjectHandle<ODCSProject>> toODCSProjects(CloudUiServer uiServer, Collection<ODCSProject> projects) {
+    private static List<ProjectHandle<ODCSProject>> toODCSProjects(ODCSUiServer uiServer, Collection<ODCSProject> projects) {
         if(projects == null) {
             return Collections.emptyList();
         }

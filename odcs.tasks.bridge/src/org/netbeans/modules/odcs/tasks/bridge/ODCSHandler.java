@@ -65,7 +65,7 @@ import org.netbeans.modules.team.ui.spi.ProjectHandle;
 import org.netbeans.modules.team.ui.spi.QueryHandle;
 import org.netbeans.modules.team.ui.spi.QueryResultHandle;
 import static org.netbeans.modules.odcs.tasks.bridge.Bundle.*;
-import org.netbeans.modules.odcs.ui.api.CloudUiServer;
+import org.netbeans.modules.odcs.ui.api.ODCSUiServer;
 import org.netbeans.modules.team.ui.common.DefaultDashboard;
 import org.netbeans.modules.team.ui.spi.TeamServer;
 import org.openide.util.NbBundle.Messages;
@@ -124,7 +124,7 @@ public class ODCSHandler {
                 }
             }
         };
-        CloudUiServer.forServer(server).getDashboard().addPropertyChangeListener(WeakListeners.propertyChange(list, CloudUiServer.forServer(server).getDashboard()));
+        ODCSUiServer.forServer(server).getDashboard().addPropertyChangeListener(WeakListeners.propertyChange(list, ODCSUiServer.forServer(server).getDashboard()));
         lastLoggedUser = getKenaiUser();
     }
 

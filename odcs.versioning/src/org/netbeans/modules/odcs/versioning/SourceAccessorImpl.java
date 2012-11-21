@@ -116,7 +116,7 @@ public class SourceAccessorImpl extends VCSAccessor {
     public Action getDefaultAction(SourceHandle srcHandle) {
         assert srcHandle instanceof SourceHandleImpl;
         SourceHandleImpl impl = (SourceHandleImpl) srcHandle;
-        return new GetSourcesFromCloudAction(new ProjectAndRepository(impl.getProjectHandle(), impl.getRepository()), impl);
+        return new GetSourcesFromODCSAction(new ProjectAndRepository(impl.getProjectHandle(), impl.getRepository()), impl);
     }
 
     @Override

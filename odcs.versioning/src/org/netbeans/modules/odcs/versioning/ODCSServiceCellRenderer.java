@@ -49,7 +49,7 @@
 package org.netbeans.modules.odcs.versioning;
 
 import com.tasktop.c2c.server.scm.domain.ScmRepository;
-import org.netbeans.modules.odcs.versioning.GetSourcesFromCloudPanel.ScmRepositoryListItem;
+import org.netbeans.modules.odcs.versioning.GetSourcesFromODCSPanel.ScmRepositoryListItem;
 import java.awt.Component;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -67,9 +67,9 @@ import org.openide.util.NbBundle;
  *
  * @author Milan Kubec
  */
-public class CloudServiceCellRenderer extends JPanel implements ListCellRenderer {
+public class ODCSServiceCellRenderer extends JPanel implements ListCellRenderer {
 
-    public CloudServiceCellRenderer() {
+    public ODCSServiceCellRenderer() {
         initComponents();
     }
 
@@ -90,7 +90,7 @@ public class CloudServiceCellRenderer extends JPanel implements ListCellRenderer
         setName("Form"); // NOI18N
         setLayout(new GridBagLayout());
 
-        projectNameLabel.setText(NbBundle.getMessage(CloudServiceCellRenderer.class, "CloudServiceCellRenderer.projectNameLabel.text")); // NOI18N
+        projectNameLabel.setText(NbBundle.getMessage(ODCSServiceCellRenderer.class, "ODCSServiceCellRenderer.projectNameLabel.text")); // NOI18N
         projectNameLabel.setName("projectNameLabel"); // NOI18N
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -102,7 +102,7 @@ public class CloudServiceCellRenderer extends JPanel implements ListCellRenderer
         gridBagConstraints.insets = new Insets(0, 4, 0, 0);
         add(projectNameLabel, gridBagConstraints);
 
-        projectRepoLabel.setText(NbBundle.getMessage(CloudServiceCellRenderer.class, "CloudServiceCellRenderer.projectRepoLabel.text")); // NOI18N
+        projectRepoLabel.setText(NbBundle.getMessage(ODCSServiceCellRenderer.class, "ODCSServiceCellRenderer.projectRepoLabel.text")); // NOI18N
         projectRepoLabel.setName("projectRepoLabel"); // NOI18N
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -112,7 +112,7 @@ public class CloudServiceCellRenderer extends JPanel implements ListCellRenderer
         gridBagConstraints.insets = new Insets(0, 4, 0, 0);
         add(projectRepoLabel, gridBagConstraints);
 
-        repoTypeLabel.setText(NbBundle.getMessage(CloudServiceCellRenderer.class, "CloudServiceCellRenderer.repoTypeLabel.text")); // NOI18N
+        repoTypeLabel.setText(NbBundle.getMessage(ODCSServiceCellRenderer.class, "ODCSServiceCellRenderer.repoTypeLabel.text")); // NOI18N
         repoTypeLabel.setName("repoTypeLabel"); // NOI18N
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 1;

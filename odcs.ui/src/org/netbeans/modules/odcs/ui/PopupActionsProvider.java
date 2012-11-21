@@ -51,7 +51,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.odcs.api.ODCSServer;
 import org.netbeans.modules.odcs.api.ODCSProject;
 import org.netbeans.modules.odcs.client.api.ODCSException;
-import org.netbeans.modules.odcs.ui.api.CloudUiServer;
+import org.netbeans.modules.odcs.ui.api.ODCSUiServer;
 import org.netbeans.modules.odcs.ui.dashboard.ProjectHandleImpl;
 import org.netbeans.modules.odcs.ui.utils.Utils;
 import org.netbeans.modules.team.ui.common.DefaultDashboard;
@@ -112,7 +112,7 @@ class PopupActionsProvider implements PopupMenuProvider {
                     try {
                         ODCSServer server = ODCSServer.findServerForRepository(repositoryUrl);
                         if (server != null) {
-                            CloudUiServer uiServer = CloudUiServer.forServer(server);
+                            ODCSUiServer uiServer = ODCSUiServer.forServer(server);
                             if (!server.isLoggedIn()) {
                                 if (uiServer != TeamUIUtils.showLogin(uiServer, false)) {
                                     return;
@@ -122,7 +122,7 @@ class PopupActionsProvider implements PopupMenuProvider {
                             if (project != null) {
                                 if (project.hasTasks()) {
                                     final ProjectHandleImpl pHandle = new ProjectHandleImpl(uiServer, project);
-                                    final DefaultDashboard<CloudUiServer, ODCSProject> dashboard = uiServer.getDashboard();
+                                    final DefaultDashboard<ODCSUiServer, ODCSProject> dashboard = uiServer.getDashboard();
                                     EventQueue.invokeLater(new Runnable() {
                                         @Override
                                         public void run() {
@@ -153,7 +153,7 @@ class PopupActionsProvider implements PopupMenuProvider {
             });
         }
         
-        protected abstract void performAction (DefaultDashboard<CloudUiServer, ODCSProject> dashboard, ProjectHandle<ODCSProject> pHandle, ActionEvent e);
+        protected abstract void performAction (DefaultDashboard<ODCSUiServer, ODCSProject> dashboard, ProjectHandle<ODCSProject> pHandle, ActionEvent e);
     }
     
     class LazyFindIssuesAction extends LazyProjectAction {
@@ -164,7 +164,7 @@ class PopupActionsProvider implements PopupMenuProvider {
         }
 
         @Override
-        protected void performAction (DefaultDashboard<CloudUiServer, ODCSProject> dashboard, ProjectHandle<ODCSProject> pHandle, ActionEvent e) {
+        protected void performAction (DefaultDashboard<ODCSUiServer, ODCSProject> dashboard, ProjectHandle<ODCSProject> pHandle, ActionEvent e) {
             dashboard.getDashboardProvider().getQueryAccessor(ODCSProject.class).getFindIssueAction(pHandle).actionPerformed(e);
         }
     }
@@ -177,7 +177,7 @@ class PopupActionsProvider implements PopupMenuProvider {
         }
 
         @Override
-        protected void performAction (DefaultDashboard<CloudUiServer, ODCSProject> dashboard, ProjectHandle<ODCSProject> pHandle, ActionEvent e) {
+        protected void performAction (DefaultDashboard<ODCSUiServer, ODCSProject> dashboard, ProjectHandle<ODCSProject> pHandle, ActionEvent e) {
             dashboard.getDashboardProvider().getQueryAccessor(ODCSProject.class).getCreateIssueAction(pHandle).actionPerformed(e);
         }
 
@@ -193,7 +193,7 @@ class PopupActionsProvider implements PopupMenuProvider {
         }
 
         @Override
-        protected void performAction (DefaultDashboard<CloudUiServer, ODCSProject> dashboard, ProjectHandle<ODCSProject> pHandle, ActionEvent e) {
+        protected void performAction (DefaultDashboard<ODCSUiServer, ODCSProject> dashboard, ProjectHandle<ODCSProject> pHandle, ActionEvent e) {
             EventQueue.invokeLater(new Runnable() {
                 @Override
                 public void run() {

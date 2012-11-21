@@ -85,7 +85,7 @@ import org.netbeans.modules.odcs.client.api.ODCSException;
 import org.netbeans.modules.team.ui.spi.TeamUIUtils;
 import org.openide.util.NbBundle;
 import org.openide.util.WeakListeners;
-import org.netbeans.modules.odcs.ui.api.CloudUiServer;
+import org.netbeans.modules.odcs.ui.api.ODCSUiServer;
 import org.netbeans.modules.team.ui.spi.TeamServer;
 import org.netbeans.modules.odcs.versioning.SourceAccessorImpl.ProjectAndRepository;
 import org.netbeans.modules.odcs.ui.api.OdcsUIUtil;
@@ -106,34 +106,34 @@ import org.openide.util.NbPreferences;
  *
  * @author Milan Kubec, Tomas Stupka
  */
-public class GetSourcesFromCloudPanel extends javax.swing.JPanel {
+public class GetSourcesFromODCSPanel extends javax.swing.JPanel {
 
     private SourceAccessorImpl.ProjectAndRepository prjAndRepository;
     private boolean localFolderPathEdited = false;
 
     private DefaultComboBoxModel comboModel;
-    private CloudUiServer server;
+    private ODCSUiServer server;
     private PropertyChangeListener listener;
     private ArrayList<ApiProvider> providerList;
 
-    public GetSourcesFromCloudPanel(ProjectAndRepository prjFtr) {
+    public GetSourcesFromODCSPanel(ProjectAndRepository prjFtr) {
         this.prjAndRepository = prjFtr;
         initComponents();
         if (prjAndRepository==null) {
-            server = ((CloudUiServer) cloudCombo.getSelectedItem());
+            server = ((ODCSUiServer) odcsCombo.getSelectedItem());
         } else {
-            server = CloudUiServer.forServer(prjAndRepository.project.getTeamProject().getServer());
-            cloudCombo.setSelectedItem(server);
-            cloudCombo.setEnabled(false);
+            server = ODCSUiServer.forServer(prjAndRepository.project.getTeamProject().getServer());
+            odcsCombo.setSelectedItem(server);
+            odcsCombo.setEnabled(false);
         }
 
         refreshUsername();
 
         initializeProviders();
         
-        comboModel = new CloudRepositoriesComboModel();
-        cloudRepoComboBox.setModel(comboModel);
-        cloudRepoComboBox.setRenderer(new CloudServiceCellRenderer());
+        comboModel = new ODCSRepositoriesComboModel();
+        odcsRepoComboBox.setModel(comboModel);
+        odcsRepoComboBox.setRenderer(new ODCSServiceCellRenderer());
 
         updatePanelUI();
         updateRepoPath();
@@ -155,7 +155,7 @@ public class GetSourcesFromCloudPanel extends javax.swing.JPanel {
     }
 
     public GetSourcesInfo getSelectedSourcesInfo() {
-        ScmRepositoryListItem item = (ScmRepositoryListItem) cloudRepoComboBox.getSelectedItem();
+        ScmRepositoryListItem item = (ScmRepositoryListItem) odcsRepoComboBox.getSelectedItem();
         return (item != null) ? new GetSourcesInfo(item.projectHandle, item.repository, item.getUrl()) : null;
     }
 
@@ -176,50 +176,49 @@ public class GetSourcesFromCloudPanel extends javax.swing.JPanel {
         loggedInLabel = new JLabel();
         usernameLabel = new JLabel();
         loginButton = new JButton();
-        cloudRepoLabel = new JLabel();
-        cloudRepoComboBox = new JComboBox();
+        odcsRepoLabel = new JLabel();
+        odcsRepoComboBox = new JComboBox();
         projectPreviewLabel = new JLabel();
-        cloudCombo = OdcsUIUtil.createTeamCombo();
+        odcsCombo = OdcsUIUtil.createTeamCombo();
         jLabel2 = new JLabel();
         lblError = new JLabel();
 
-        Mnemonics.setLocalizedText(jLabel1, NbBundle.getMessage(GetSourcesFromCloudPanel.class, "GetSourcesFromCloudPanel.jLabel1.text")); // NOI18N
+        Mnemonics.setLocalizedText(jLabel1, NbBundle.getMessage(GetSourcesFromODCSPanel.class, "GetSourcesFromODCSPanel.jLabel1.text")); // NOI18N
 
         setBorder(BorderFactory.createEmptyBorder(10, 12, 0, 12));
         setMinimumSize(new Dimension(600, 100));
         setRequestFocusEnabled(false);
 
-        Mnemonics.setLocalizedText(loggedInLabel, NbBundle.getMessage(GetSourcesFromCloudPanel.class, "GetSourcesFromCloudPanel.loggedInLabel.text")); // NOI18N
+        Mnemonics.setLocalizedText(loggedInLabel, NbBundle.getMessage(GetSourcesFromODCSPanel.class, "GetSourcesFromODCSPanel.loggedInLabel.text")); // NOI18N
 
-        Mnemonics.setLocalizedText(usernameLabel, NbBundle.getMessage(GetSourcesFromCloudPanel.class, "GetFromCloudPanel.notLoggedIn")); // NOI18N
+        Mnemonics.setLocalizedText(usernameLabel, NbBundle.getMessage(GetSourcesFromODCSPanel.class, "GetFromODCSPanel.notLoggedIn")); // NOI18N
 
-        Mnemonics.setLocalizedText(loginButton, NbBundle.getMessage(GetSourcesFromCloudPanel.class, "GetSourcesFromCloudPanel.loginButton.text")); // NOI18N
+        Mnemonics.setLocalizedText(loginButton, NbBundle.getMessage(GetSourcesFromODCSPanel.class, "GetSourcesFromODCSPanel.loginButton.text")); // NOI18N
         loginButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
                 loginButtonActionPerformed(evt);
             }
         });
 
-        cloudRepoLabel.setLabelFor(cloudRepoComboBox);
-        Mnemonics.setLocalizedText(cloudRepoLabel, NbBundle.getMessage(GetSourcesFromCloudPanel.class, "GetSourcesFromCloudPanel.cloudRepoLabel.text")); // NOI18N
+        Mnemonics.setLocalizedText(odcsRepoLabel, NbBundle.getMessage(GetSourcesFromODCSPanel.class, "GetSourcesFromODCSPanel.odcsRepoLabel.text")); // NOI18N
 
-        cloudRepoComboBox.addActionListener(new ActionListener() {
+        odcsRepoComboBox.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
-                cloudRepoComboBoxActionPerformed(evt);
+                odcsRepoComboBoxActionPerformed(evt);
             }
         });
 
-        Mnemonics.setLocalizedText(projectPreviewLabel, NbBundle.getMessage(GetSourcesFromCloudPanel.class, "GetSourcesFromCloudPanel.projectPreviewLabel.text")); // NOI18N
+        Mnemonics.setLocalizedText(projectPreviewLabel, NbBundle.getMessage(GetSourcesFromODCSPanel.class, "GetSourcesFromODCSPanel.projectPreviewLabel.text")); // NOI18N
 
-        cloudCombo.addActionListener(new ActionListener() {
+        odcsCombo.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
-                cloudComboActionPerformed(evt);
+                odcsComboActionPerformed(evt);
             }
         });
 
-        cmbProvider.setToolTipText(NbBundle.getMessage(GetSourcesFromCloudPanel.class, "GetSourcesFromCloudPanel.cmbProvider.toolTipText")); // NOI18N
+        cmbProvider.setToolTipText(NbBundle.getMessage(GetSourcesFromODCSPanel.class, "GetSourcesFromODCSPanel.cmbProvider.toolTipText")); // NOI18N
 
-        Mnemonics.setLocalizedText(jLabel2, NbBundle.getMessage(GetSourcesFromCloudPanel.class, "GetSourcesFromCloudPanel.jLabel2.text")); // NOI18N
+        Mnemonics.setLocalizedText(jLabel2, NbBundle.getMessage(GetSourcesFromODCSPanel.class, "GetSourcesFromODCSPanel.jLabel2.text")); // NOI18N
 
         GroupLayout panelProviderLayout = new GroupLayout(panelProvider);
         panelProvider.setLayout(panelProviderLayout);
@@ -243,7 +242,7 @@ public class GetSourcesFromCloudPanel extends javax.swing.JPanel {
         );
 
         lblError.setIcon(new ImageIcon(getClass().getResource("/org/netbeans/modules/odcs/versioning/resources/error.png"))); // NOI18N
-        Mnemonics.setLocalizedText(lblError, NbBundle.getMessage(GetSourcesFromCloudPanel.class, "GetSourcesFromCloudPanel.lblError.text")); // NOI18N
+        Mnemonics.setLocalizedText(lblError, NbBundle.getMessage(GetSourcesFromODCSPanel.class, "GetSourcesFromODCSPanel.lblError.text")); // NOI18N
 
         GroupLayout layout = new GroupLayout(this);
         this.setLayout(layout);
@@ -251,12 +250,12 @@ public class GetSourcesFromCloudPanel extends javax.swing.JPanel {
             layout.createParallelGroup(Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addGroup(layout.createParallelGroup(Alignment.LEADING)
-                    .addComponent(cloudRepoLabel)
+                    .addComponent(odcsRepoLabel)
                     .addComponent(loggedInLabel))
                 .addGap(4, 4, 4)
                 .addGroup(layout.createParallelGroup(Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
-                        .addComponent(cloudCombo, 0, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(odcsCombo, 0, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addPreferredGap(ComponentPlacement.RELATED)
                         .addComponent(usernameLabel)
                         .addGap(4, 4, 4)
@@ -264,7 +263,7 @@ public class GetSourcesFromCloudPanel extends javax.swing.JPanel {
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(projectPreviewLabel, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addContainerGap())
-                    .addComponent(cloudRepoComboBox, 0, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(odcsRepoComboBox, 0, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addGroup(layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(Alignment.LEADING)
                             .addComponent(panelProvider, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
@@ -284,14 +283,14 @@ public class GetSourcesFromCloudPanel extends javax.swing.JPanel {
                     .addComponent(loginButton)
                     .addGroup(layout.createSequentialGroup()
                         .addGap(1, 1, 1)
-                        .addComponent(cloudCombo, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)))
+                        .addComponent(odcsCombo, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)))
                 .addGroup(layout.createParallelGroup(Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
                         .addGap(18, 18, 18)
-                        .addComponent(cloudRepoLabel))
+                        .addComponent(odcsRepoLabel))
                     .addGroup(layout.createSequentialGroup()
                         .addGap(13, 13, 13)
-                        .addComponent(cloudRepoComboBox, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)))
+                        .addComponent(odcsRepoComboBox, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)))
                 .addGap(7, 7, 7)
                 .addComponent(projectPreviewLabel, GroupLayout.PREFERRED_SIZE, 26, GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(ComponentPlacement.UNRELATED)
@@ -301,16 +300,16 @@ public class GetSourcesFromCloudPanel extends javax.swing.JPanel {
                 .addContainerGap(GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
-        loggedInLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(GetSourcesFromCloudPanel.class, "GetSourcesFromCloudPanel.loggedInLabel.AccessibleContext.accessibleDescription")); // NOI18N
-        usernameLabel.getAccessibleContext().setAccessibleName(NbBundle.getMessage(GetSourcesFromCloudPanel.class, "GetSourcesFromCloudPanel.usernameLabel.AccessibleContext.accessibleName")); // NOI18N
-        usernameLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(GetSourcesFromCloudPanel.class, "GetSourcesFromCloudPanel.usernameLabel.AccessibleContext.accessibleDescription")); // NOI18N
-        loginButton.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(GetSourcesFromCloudPanel.class, "GetSourcesFromCloudPanel.loginButton.AccessibleContext.accessibleDescription")); // NOI18N
-        cloudRepoLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(GetSourcesFromCloudPanel.class, "GetSourcesFromCloudPanel.cloudRepoLabel.AccessibleContext.accessibleDescription")); // NOI18N
-        cloudRepoComboBox.getAccessibleContext().setAccessibleName(NbBundle.getMessage(GetSourcesFromCloudPanel.class, "GetSourcesFromCloudPanel.cloudRepoComboBox.AccessibleContext.accessibleName")); // NOI18N
-        cloudRepoComboBox.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(GetSourcesFromCloudPanel.class, "GetSourcesFromCloudPanel.cloudRepoComboBox.AccessibleContext.accessibleDescription")); // NOI18N
+        loggedInLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(GetSourcesFromODCSPanel.class, "GetSourcesFromODCSPanel.loggedInLabel.AccessibleContext.accessibleDescription")); // NOI18N
+        usernameLabel.getAccessibleContext().setAccessibleName(NbBundle.getMessage(GetSourcesFromODCSPanel.class, "GetSourcesFromODCSPanel.usernameLabel.AccessibleContext.accessibleName")); // NOI18N
+        usernameLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(GetSourcesFromODCSPanel.class, "GetSourcesFromODCSPanel.usernameLabel.AccessibleContext.accessibleDescription")); // NOI18N
+        loginButton.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(GetSourcesFromODCSPanel.class, "GetSourcesFromODCSPanel.loginButton.AccessibleContext.accessibleDescription")); // NOI18N
+        odcsRepoLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(GetSourcesFromODCSPanel.class, "GetSourcesFromODCSPanel.odcsRepoLabel.AccessibleContext.accessibleDescription")); // NOI18N
+        odcsRepoComboBox.getAccessibleContext().setAccessibleName(NbBundle.getMessage(GetSourcesFromODCSPanel.class, "GetSourcesFromODCSPanel.odcsRepoComboBox.AccessibleContext.accessibleName")); // NOI18N
+        odcsRepoComboBox.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(GetSourcesFromODCSPanel.class, "GetSourcesFromODCSPanel.odcsRepoComboBox.AccessibleContext.accessibleDescription")); // NOI18N
 
-        getAccessibleContext().setAccessibleName(NbBundle.getMessage(GetSourcesFromCloudPanel.class, "GetSourcesFromCloudPanel.AccessibleContext.accessibleName")); // NOI18N
-        getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(GetSourcesFromCloudPanel.class, "GetSourcesFromCloudPanel.AccessibleContext.accessibleDescription")); // NOI18N
+        getAccessibleContext().setAccessibleName(NbBundle.getMessage(GetSourcesFromODCSPanel.class, "GetSourcesFromODCSPanel.AccessibleContext.accessibleName")); // NOI18N
+        getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(GetSourcesFromODCSPanel.class, "GetSourcesFromODCSPanel.AccessibleContext.accessibleDescription")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
     private void loginButtonActionPerformed(ActionEvent evt) {//GEN-FIRST:event_loginButtonActionPerformed
@@ -318,34 +317,34 @@ public class GetSourcesFromCloudPanel extends javax.swing.JPanel {
         if (loginSuccess) {
             refreshUsername();
             TeamUIUtils.activateTeamDashboard();
-            comboModel = new CloudRepositoriesComboModel();
-            cloudRepoComboBox.setModel(comboModel);
-            cloudRepoComboBox.setSelectedItem(server);
+            comboModel = new ODCSRepositoriesComboModel();
+            odcsRepoComboBox.setModel(comboModel);
+            odcsRepoComboBox.setSelectedItem(server);
         } else {
             // login failed, do nothing
         }
 }//GEN-LAST:event_loginButtonActionPerformed
 
-    private void cloudRepoComboBoxActionPerformed(ActionEvent evt) {//GEN-FIRST:event_cloudRepoComboBoxActionPerformed
+    private void odcsRepoComboBoxActionPerformed(ActionEvent evt) {//GEN-FIRST:event_odcsRepoComboBoxActionPerformed
         updatePanelUI();
         updateRepoPath();
-    }//GEN-LAST:event_cloudRepoComboBoxActionPerformed
+    }//GEN-LAST:event_odcsRepoComboBoxActionPerformed
 
-    private void cloudComboActionPerformed(ActionEvent evt) {//GEN-FIRST:event_cloudComboActionPerformed
+    private void odcsComboActionPerformed(ActionEvent evt) {//GEN-FIRST:event_odcsComboActionPerformed
         final ActionEvent e = evt;
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
-                Object item = cloudCombo.getSelectedItem();
-                if (item != null && !(item instanceof CloudUiServer)) {
+                Object item = odcsCombo.getSelectedItem();
+                if (item != null && !(item instanceof ODCSUiServer)) {
                     OdcsUIUtil.createAddInstanceAction().actionPerformed(e);
                 }
-                server = ((CloudUiServer) cloudCombo.getSelectedItem());
-                cloudRepoComboBox.setModel(new CloudRepositoriesComboModel());
+                server = ((ODCSUiServer) odcsCombo.getSelectedItem());
+                odcsRepoComboBox.setModel(new ODCSRepositoriesComboModel());
                 refreshUsername();
             }
         });
-    }//GEN-LAST:event_cloudComboActionPerformed
+    }//GEN-LAST:event_odcsComboActionPerformed
 
     private void initializeProviders () {
         cmbProvider.setRenderer(new DefaultListCellRenderer() {
@@ -372,7 +371,7 @@ public class GetSourcesFromCloudPanel extends javax.swing.JPanel {
     private void updateProviders (ScmRepository repository, String url) {
         List<ApiProvider> providers = new ArrayList<ApiProvider>(providerList.size());
         ApiProvider preferredProvider = null, gitProvider = null;
-        Preferences prefs = NbPreferences.forModule(GetSourcesFromCloudPanel.class);
+        Preferences prefs = NbPreferences.forModule(GetSourcesFromODCSPanel.class);
         String className = prefs.get("repository.scm.provider." + url, ""); //NOI18N
         for (ApiProvider p : providerList) {
             if (repository.getScmLocation() != ScmLocation.CODE2CLOUD || p.accepts(repository.getType().name())) {
@@ -402,9 +401,9 @@ public class GetSourcesFromCloudPanel extends javax.swing.JPanel {
         }
     }
 
-    private class CloudRepositoriesComboModel extends DefaultComboBoxModel  {
+    private class ODCSRepositoriesComboModel extends DefaultComboBoxModel  {
 
-        public CloudRepositoriesComboModel() {
+        public ODCSRepositoriesComboModel() {
             addOpenedProjects();
         }
 
@@ -466,11 +465,11 @@ public class GetSourcesFromCloudPanel extends javax.swing.JPanel {
                     if (server == null) {
                         return new ProjectHandle[0];
                     }
-                    String cloudName = server.getUrl().getHost();
+                    String odcsName = server.getUrl().getHost();
                     
                     // XXX do we need this for ODCS projects? >>>>>>>>>>>>>>>>>>>>>>>>>>
                     // XXX define a different place for preferences. here as well as at all other places.
-                    Preferences prefs = NbPreferences.forModule(DefaultDashboard.class).node(DefaultDashboard.PREF_ALL_PROJECTS + ("kenai.com".equals(cloudName) ? "" : "-" + cloudName)); //NOI18N
+                    Preferences prefs = NbPreferences.forModule(DefaultDashboard.class).node(DefaultDashboard.PREF_ALL_PROJECTS + ("kenai.com".equals(odcsName) ? "" : "-" + odcsName)); //NOI18N
                     int count = prefs.getInt(DefaultDashboard.PREF_COUNT, 0); //NOI18N
                     ProjectHandle[] handles = new ProjectHandle[count];
                     ArrayList<String> ids = new ArrayList<String>(count);
@@ -482,7 +481,7 @@ public class GetSourcesFromCloudPanel extends javax.swing.JPanel {
                     }
 
                     HashSet<ProjectHandle> projects = new HashSet<ProjectHandle>(ids.size());
-                    ProjectAccessor<CloudUiServer, ODCSProject> projectAcccessor = server.getDashboard().getDashboardProvider().getProjectAccessor();
+                    ProjectAccessor<ODCSUiServer, ODCSProject> projectAcccessor = server.getDashboard().getDashboardProvider().getProjectAccessor();
                     for (String id : ids) {
                         ProjectHandle handle = projectAcccessor.getNonMemberProject(server, id, false);
                         if (handle != null) {
@@ -540,31 +539,31 @@ public class GetSourcesFromCloudPanel extends javax.swing.JPanel {
     }
 
     @Messages({"# {0} - project name", "# {1} - repository type",
-        "LBL_GetSourceFromCloudPanel.repositoryLabel=({0}; {1} repository)",
-        "LBL_GetSourceFromCloudPanel.repository.external=External",
-        "LBL_GetSourceFromCloudPanel.repository.svn=Subversion",
-        "LBL_GetSourceFromCloudPanel.repository.git=Git"})
+        "LBL_GetSourceFromODCSPanel.repositoryLabel=({0}; {1} repository)",
+        "LBL_GetSourceFromODCSPanel.repository.external=External",
+        "LBL_GetSourceFromODCSPanel.repository.svn=Subversion",
+        "LBL_GetSourceFromODCSPanel.repository.git=Git"})
     private void updatePanelUI() {
-        ScmRepositoryListItem item = (ScmRepositoryListItem) cloudRepoComboBox.getSelectedItem();
+        ScmRepositoryListItem item = (ScmRepositoryListItem) odcsRepoComboBox.getSelectedItem();
         if (item != null) {
             String repositoryType = null;
             if (item.repository.getScmLocation() == ScmLocation.CODE2CLOUD) {
                 if (item.repository.getType() == ScmType.GIT) {
-                    repositoryType = LBL_GetSourceFromCloudPanel_repository_git();
+                    repositoryType = LBL_GetSourceFromODCSPanel_repository_git();
                 } else if (item.repository.getType() == ScmType.SVN) {
-                    repositoryType = LBL_GetSourceFromCloudPanel_repository_svn();
+                    repositoryType = LBL_GetSourceFromODCSPanel_repository_svn();
                 }
             }
             updateProviders(item.repository, item.getUrl());
             if (repositoryType == null) {
-                repositoryType = LBL_GetSourceFromCloudPanel_repository_external();
+                repositoryType = LBL_GetSourceFromODCSPanel_repository_external();
             }
-            projectPreviewLabel.setText(LBL_GetSourceFromCloudPanel_repositoryLabel(item.projectHandle.getDisplayName(), repositoryType));
+            projectPreviewLabel.setText(LBL_GetSourceFromODCSPanel_repositoryLabel(item.projectHandle.getDisplayName(), repositoryType));
         }
     }
 
     private void updateRepoPath() {
-        ScmRepositoryListItem selItem = (ScmRepositoryListItem) cloudRepoComboBox.getSelectedItem();
+        ScmRepositoryListItem selItem = (ScmRepositoryListItem) odcsRepoComboBox.getSelectedItem();
         if (!localFolderPathEdited && selItem != null) {
             String urlString = selItem.getUrl();
             String repoName = urlString.substring(urlString.lastIndexOf("/") + 1); // NOI18N
@@ -572,15 +571,15 @@ public class GetSourcesFromCloudPanel extends javax.swing.JPanel {
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private JComboBox cloudCombo;
-    private JComboBox cloudRepoComboBox;
-    private JLabel cloudRepoLabel;
     final JComboBox cmbProvider = new JComboBox();
     private JLabel jLabel1;
     private JLabel jLabel2;
     private JLabel lblError;
     private JLabel loggedInLabel;
     private JButton loginButton;
+    private JComboBox odcsCombo;
+    private JComboBox odcsRepoComboBox;
+    private JLabel odcsRepoLabel;
     final JPanel panelProvider = new JPanel();
     private JLabel projectPreviewLabel;
     private JLabel usernameLabel;
@@ -603,7 +602,7 @@ public class GetSourcesFromCloudPanel extends javax.swing.JPanel {
         root.setEnabled(enabled);
         if (root instanceof java.awt.Container) {
             for (Component c : ((java.awt.Container) root).getComponents()) {
-                if (c != cloudCombo) {
+                if (c != odcsCombo) {
                     setChildrenEnabled(c, enabled);
                 }
             }
@@ -617,8 +616,8 @@ public class GetSourcesFromCloudPanel extends javax.swing.JPanel {
             usernameLabel.setForeground(new Color(0, 102, 0));
             usernameLabel.setEnabled(true);
         } else {
-            usernameLabel.setText(NbBundle.getMessage(GetSourcesFromCloudPanel.class,
-                    "GetFromCloudPanel.notLoggedIn")); // NOI18N
+            usernameLabel.setText(NbBundle.getMessage(GetSourcesFromODCSPanel.class,
+                    "GetFromODCSPanel.notLoggedIn")); // NOI18N
             usernameLabel.setForeground(Color.BLACK);
             usernameLabel.setEnabled(false);
         }

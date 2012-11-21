@@ -55,7 +55,7 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 import org.netbeans.modules.odcs.api.ODCSProject;
-import org.netbeans.modules.odcs.ui.api.CloudUiServer;
+import org.netbeans.modules.odcs.ui.api.ODCSUiServer;
 import org.netbeans.modules.team.ui.spi.BuilderAccessor;
 import org.netbeans.modules.team.ui.spi.JobHandle;
 import org.netbeans.modules.team.ui.spi.ProjectHandle;
@@ -179,7 +179,7 @@ public class BuildStatusPanel extends javax.swing.JPanel {
         RP.post(new Runnable() {
             @Override
             public void run() {
-                BuilderAccessor<ODCSProject> buildAccessor = CloudUiServer.forServer(projectHandle.getTeamProject().getServer()).getDashboard().getDashboardProvider().getBuildAccessor(ODCSProject.class);
+                BuilderAccessor<ODCSProject> buildAccessor = ODCSUiServer.forServer(projectHandle.getTeamProject().getServer()).getDashboard().getDashboardProvider().getBuildAccessor(ODCSProject.class);
                 final List<JobHandle> jobs = buildAccessor.getJobs(projectHandle);
                 SwingUtilities.invokeLater(new Runnable() {
                     @Override

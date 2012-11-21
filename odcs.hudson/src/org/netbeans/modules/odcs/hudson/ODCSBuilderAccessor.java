@@ -114,7 +114,7 @@ public class ODCSBuilderAccessor extends BuilderAccessor<ODCSProject> {
     }
 
     @NbBundle.Messages(
-            {"MSG_from_cloud_project=(from cloud project)"}
+            {"MSG_from_odcs_project=(from ODCS project)"}
     )
     private List<JobHandle> getJobs(ProjectHandle<ODCSProject> projectHandle,
             boolean onlyWatched) {
@@ -123,7 +123,7 @@ public class ODCSBuilderAccessor extends BuilderAccessor<ODCSProject> {
         HudsonInstance hi = HudsonManager.addInstance(
                 projectHandle.getDisplayName(),
                 projectHandle.getTeamProject().getBuildUrl(),
-                1, Persistence.tranzient(Bundle.MSG_from_cloud_project()));
+                1, Persistence.tranzient(Bundle.MSG_from_odcs_project()));
         if (hi == null) {
             return Collections.emptyList();
         }

@@ -60,7 +60,7 @@ import javax.swing.SwingUtilities;
 import org.netbeans.modules.odcs.api.ODCSProject;
 import org.netbeans.modules.odcs.client.api.ODCSClient;
 import org.netbeans.modules.odcs.client.api.ODCSException;
-import org.netbeans.modules.odcs.ui.api.CloudUiServer;
+import org.netbeans.modules.odcs.ui.api.ODCSUiServer;
 import org.netbeans.modules.odcs.ui.utils.Utils;
 import org.netbeans.modules.team.ui.spi.BuilderAccessor;
 import org.netbeans.modules.team.ui.spi.JobHandle;
@@ -92,7 +92,7 @@ public class RecentActivitiesPanel extends javax.swing.JPanel {
     public RecentActivitiesPanel(ODCSClient client, ProjectHandle<ODCSProject> projectHandle) {
         this.client = client;
         this.projectHandle = projectHandle;
-        buildAccessor = CloudUiServer.forServer(projectHandle.getTeamProject().getServer()).getDashboard().getDashboardProvider().getBuildAccessor(ODCSProject.class);
+        buildAccessor = ODCSUiServer.forServer(projectHandle.getTeamProject().getServer()).getDashboard().getDashboardProvider().getBuildAccessor(ODCSProject.class);
         initComponents();
         createShowButtons();
         loadRecentActivities();

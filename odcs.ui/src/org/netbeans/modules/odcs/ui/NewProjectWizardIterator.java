@@ -64,7 +64,7 @@ import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.odcs.api.ODCSServer;
 import org.netbeans.modules.odcs.api.ODCSProject;
 import org.netbeans.modules.odcs.client.api.ODCSException;
-import org.netbeans.modules.odcs.ui.api.CloudUiServer;
+import org.netbeans.modules.odcs.ui.api.ODCSUiServer;
 import org.netbeans.modules.odcs.ui.dashboard.ProjectHandleImpl;
 import org.openide.WizardDescriptor;
 import org.openide.WizardDescriptor.Panel;
@@ -172,7 +172,7 @@ public class NewProjectWizardIterator implements WizardDescriptor.ProgressInstan
             }
         }
         
-        final CloudUiServer uiServer = CloudUiServer.forServer(server);
+        final ODCSUiServer uiServer = ODCSUiServer.forServer(server);
         final ProjectHandleImpl projectHandle = new ProjectHandleImpl(uiServer, project);
         
         // After the repository is created it must be checked out
