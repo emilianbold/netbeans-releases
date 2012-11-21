@@ -55,7 +55,7 @@ public abstract class KenaiBugtrackingConnector extends BugtrackingConnector {
     public enum BugtrackingType {
         BUGZILLA,
         JIRA,
-        ODS
+        ODCS
     }
         
     /**

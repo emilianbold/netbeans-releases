@@ -173,10 +173,10 @@
             <friend-packages>
                 <friend>org.netbeans.modules.bugtracking.kenai</friend>
                 <friend>org.netbeans.modules.kenai.ui</friend>
-                <friend>org.netbeans.modules.ods.hudson</friend>
-                <friend>org.netbeans.modules.ods.tasks.bridge</friend>
-                <friend>org.netbeans.modules.ods.ui</friend>
-                <friend>org.netbeans.modules.ods.versioning</friend>
+                <friend>org.netbeans.modules.odcs.hudson</friend>
+                <friend>org.netbeans.modules.odcs.tasks.bridge</friend>
+                <friend>org.netbeans.modules.odcs.ui</friend>
+                <friend>org.netbeans.modules.odcs.versioning</friend>
                 <friend>org.netbeans.modules.versioning.kenai</friend>
                 <package>org.netbeans.modules.team.ui.common</package>
                 <package>org.netbeans.modules.team.ui.spi</package>
