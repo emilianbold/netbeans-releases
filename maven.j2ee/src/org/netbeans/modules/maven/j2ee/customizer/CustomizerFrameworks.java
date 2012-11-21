@@ -48,7 +48,11 @@ import java.util.IdentityHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.*;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.FutureTask;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.DefaultListModel;
 import javax.swing.JLabel;
@@ -439,7 +443,7 @@ public class CustomizerFrameworks extends JPanel implements ApplyChangesCustomiz
             }
             WebModuleExtender extender = extenders.get(framework);
             if (extender != null) {
-                String message = MessageFormat.format(NbBundle.getMessage(CustomizerFrameworks.class, "LBL_FrameworkConfiguration"), new Object[]{framework.getName()}); //NOI18N
+                String message = NbBundle.getMessage(CustomizerFrameworks.class, "LBL_FrameworkConfiguration", framework.getName()); //NOI18N
                 jLabelConfig.setText(message);
                 jPanelConfig.removeAll();
 
