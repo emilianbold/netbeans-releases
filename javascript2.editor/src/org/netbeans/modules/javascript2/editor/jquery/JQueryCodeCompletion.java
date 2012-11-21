@@ -50,6 +50,7 @@ import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
+import org.netbeans.lib.editor.util.CharSequenceUtilities;
 import org.netbeans.modules.csl.api.CodeCompletionContext;
 import org.netbeans.modules.csl.api.CompletionProposal;
 import org.netbeans.modules.csl.api.ElementHandle;
@@ -167,15 +168,19 @@ public class JQueryCodeCompletion {
             if (index > -1) {
                 name = name.substring(0, index);
             }
-            File apiFile = InstalledFileLocator.getDefault().locate(HELP_LOCATION, null, false); //NoI18N
+            File apiFile = InstalledFileLocator.getDefault().locate(HELP_LOCATION, "org.netbeans.modules.javascript2.editor", false); //NoI18N
             return SelectorsLoader.getDocumentation(apiFile, name);
         } else if (element.getKind() == ElementKind.METHOD) {
             if (JQueryUtils.isJQuery(info, lastTsOffset)) {
-                File apiFile = InstalledFileLocator.getDefault().locate(HELP_LOCATION, null, false); //NoI18N
+                File apiFile = InstalledFileLocator.getDefault().locate(HELP_LOCATION, "org.netbeans.modules.javascript2.editor", false); //NoI18N
                 return SelectorsLoader.getMethodDocumentation(apiFile, element.getName());
             }
         }
         return null;
+    }
+
+    private static int getNearestAnchor(CharSequence text) {
+        return CharSequenceUtilities.lastIndexOf(text, " ") + 1; //NOI18N
     }
 
     private enum SelectorKind {
@@ -248,7 +253,7 @@ public class JQueryCodeCompletion {
     protected static final String HELP_LOCATION = "docs/jquery-api.xml";
     private void fillAfterColonList() {
         SelectorItem item;
-        File apiFile = InstalledFileLocator.getDefault().locate(HELP_LOCATION, null, false); //NoI18N
+        File apiFile = InstalledFileLocator.getDefault().locate(HELP_LOCATION, "org.netbeans.modules.javascript2.editor", false); //NoI18N
         if(apiFile != null) {
             afterColonList = SelectorsLoader.getSelectors(apiFile);
         }
@@ -302,6 +307,12 @@ public class JQueryCodeCompletion {
         String wrapup = ""; //NOI18N
         String prefixText = prefix;
         int anchorOffsetDelta = 0;
+        if (ts.token().id() == JsTokenId.STRING) {
+            anchorOffsetDelta = getNearestAnchor(ts.token().text());
+            if (anchorOffsetDelta < 0) {
+                anchorOffsetDelta = 0;
+            }
+        }
 //        if (!(ts.token().id() == JsTokenId.STRING || ts.token().id() == JsTokenId.STRING_END || ts.token().id() == JsTokenId.STRING_BEGIN)) {
 //            wrapup = "'"; //NOI18N
 //            if (ts.token().id() == JsTokenId.IDENTIFIER) {
@@ -332,19 +343,20 @@ public class JQueryCodeCompletion {
         
         if (context != null) {
             int docOffset = parserResult.getSnapshot().getOriginalOffset(offset) - prefixText.length();
+            int anchorOffset = docOffset + anchorOffsetDelta;
             for (SelectorKind selectorKind : context.kinds) {
                 switch (selectorKind) {
                     case TAG:
                         Collection<HtmlTag> tags = getHtmlTags(context.prefix);
                         for (HtmlTag htmlTag : tags) {
-                            result.add(JQueryCompletionItem.create(htmlTag, docOffset, wrapup));
+                            result.add(JQueryCompletionItem.create(htmlTag, anchorOffset, wrapup));
                         }
                         break;
                     case TAG_ATTRIBUTE:
                         // provide attributes
-                        String tagName = prefix.substring(0, context.prefixIndex);
+                        String tagName = prefix.substring(anchorOffsetDelta, context.prefixIndex);
                         String attributePrefix = prefix.substring(context.prefixIndex + 1);
-                        int anchorOffset = docOffset + prefix.length() - context.prefix.length();
+                        anchorOffset = docOffset + prefix.length() - context.prefix.length();
                         Collection<HtmlTagAttribute> attributes = getHtmlAttributes(tagName, attributePrefix);
                         for (HtmlTagAttribute htmlTagAttribute : attributes) {
                             result.add(JQueryCompletionItem.create(htmlTagAttribute, anchorOffset, ""));
@@ -353,12 +365,11 @@ public class JQueryCodeCompletion {
                     case ID:
                         Collection<String> tagIds = getTagIds(context.prefix, parserResult);
                         for (String tagId : tagIds) {
-                            result.add(JQueryCompletionItem.createCSSItem("#" + tagId, docOffset + anchorOffsetDelta, wrapup));
+                            result.add(JQueryCompletionItem.createCSSItem("#" + tagId, anchorOffset, wrapup));
                         }
                         break;
                     case CLASS:
                         Collection<String> classes = getCSSClasses(context.prefix, parserResult);
-                        anchorOffset = docOffset + anchorOffsetDelta;
                         for (String cl : classes) {
                             result.add(JQueryCompletionItem.createCSSItem("." + cl, anchorOffset, wrapup));
                         }
@@ -369,7 +380,6 @@ public class JQueryCodeCompletion {
                         }
                         for (SelectorItem selector : afterColonList) {
                             if (selector.getDisplayText().startsWith(context.prefix)) {
-                                anchorOffset = docOffset + anchorOffsetDelta;
                                 result.add(JQueryCompletionItem.createJQueryItem(":" + selector.displayText, anchorOffset, wrapup, selector.getInsertTemplate()));
                             }
                         }
