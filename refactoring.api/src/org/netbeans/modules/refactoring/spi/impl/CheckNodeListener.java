@@ -102,15 +102,25 @@ class CheckNodeListener implements MouseListener, KeyListener {
             if (isQuery) {
                 if (e.getClickCount() == 2) {
                     Object o = node.getUserObject();
-                    if (o instanceof TreeElement) {
-                        o = ((TreeElement) o).getUserObject();
-                        if (o instanceof RefactoringElement || o instanceof FileObject) {
-                            findInSource(node);
-                        } else if (o instanceof Openable) {
-                            ((Openable) o).open();
-                        }
-                    } else if (o instanceof Openable) {
+                    if (o instanceof Openable) {
                         ((Openable) o).open();
+                    } else if (o instanceof TreeElement) {
+                        o = ((TreeElement) o).getUserObject();
+                        if (o instanceof RefactoringElement || o instanceof FileObject || o instanceof Openable) {
+                            if(!findInSource(node)) {
+                                if (tree.isCollapsed(row)) {
+                                    tree.expandRow(row);
+                                } else {
+                                    tree.collapseRow(row);
+                                }
+                            }
+                        } else {
+                            if (tree.isCollapsed(row)) {
+                                tree.expandRow(row);
+                            } else {
+                                tree.collapseRow(row);
+                            }
+                        }
                     } else {
                         if (tree.isCollapsed(row)) {
                             tree.expandRow(row);
@@ -303,23 +313,34 @@ class CheckNodeListener implements MouseListener, KeyListener {
 
     }
 
-    static void findInSource(CheckNode node) {
+    static boolean findInSource(CheckNode node) {
         Object o = node.getUserObject();
         if (o instanceof TreeElement) {
+            if (o instanceof Openable) {
+                ((Openable) o).open();
+                return true;
+            } else {
             o = ((TreeElement) o).getUserObject();
             if (o instanceof RefactoringElement) {
                 APIAccessor.DEFAULT.getRefactoringElementImplementation((RefactoringElement) o).openInEditor();
+                return true;
+            } else if (o instanceof Openable) {
+                ((Openable) o).open();
+                return true;
             } else if (o instanceof FileObject) {
                 try {
                     OpenCookie oc = DataObject.find((FileObject) o).getCookie(OpenCookie.class);
                     if (oc != null) {
                         oc.open();
+                        return true;
                     }
                 } catch (DataObjectNotFoundException ex) {
                     //ignore, unknown file, do nothing
                 }
             }
+            }
         }
+        return false;
     }
 
     static void openDiff(CheckNode node) {
