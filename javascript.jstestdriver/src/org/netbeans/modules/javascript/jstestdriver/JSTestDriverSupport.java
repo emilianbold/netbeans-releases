@@ -42,8 +42,10 @@
 package org.netbeans.modules.javascript.jstestdriver;
 
 import java.io.File;
+import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.net.MalformedURLException;
+import java.net.URI;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -69,6 +71,8 @@ import org.netbeans.modules.gsf.testrunner.api.TestSuite;
 import org.netbeans.modules.gsf.testrunner.api.Testcase;
 import org.netbeans.modules.gsf.testrunner.api.Trouble;
 import org.netbeans.modules.web.browser.api.WebBrowserPane;
+import org.netbeans.modules.web.common.api.RemoteFileCache;
+import org.netbeans.modules.web.common.api.ServerURLMapping;
 import org.openide.cookies.LineCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.MIMEResolver;
@@ -358,7 +362,7 @@ public class JSTestDriverSupport {
             // pattern is "at ...... (file:line:column)"
             // file can be also http:// url
             if (!line.endsWith(")")) {
-                return null;
+                return convertLineURL(line);
             }
             int start = line.lastIndexOf('(');
             if (start == -1) {
@@ -370,6 +374,9 @@ public class JSTestDriverSupport {
             }
             int fileEnd = line.lastIndexOf(':', lineNumberEnd-1);
             if (fileEnd == -1) {
+                return null;
+            }
+            if (start >= fileEnd) {
                 return null;
             }
             int lineNumber = -1;
@@ -403,6 +410,67 @@ public class JSTestDriverSupport {
             return res;
         }
         
+        private List<ConvertedLine> convertLineURL(String line) {
+            int u1 = line.indexOf("http://");   // NOI18N
+            if (u1 < 0) {
+                u1 = line.indexOf("https://");  // NOI18N
+            }
+            if (u1 < 0) {
+                return null;
+            }
+            int ue = line.indexOf(' ', u1);
+            if (ue < 0) {
+                ue = line.length();
+            }
+            int col2 = line.lastIndexOf(':', ue);
+            if (col2 < 0) {
+                return null;
+            }
+            int col1 = line.lastIndexOf(':', col2 - 1);
+            if (col1 < 0) {
+                return null;
+            }
+            int lineNumber = -1;
+            int columnNumber = -1;
+            try {
+                lineNumber = Integer.parseInt(line.substring(col1+1, col2));
+                columnNumber = Integer.parseInt(line.substring(col2+1, ue));
+            } catch (NumberFormatException e) {
+                //ignore
+            }
+            if (columnNumber != -1 && lineNumber == -1) {
+                // perhaps stack trace had only line number:
+                lineNumber = columnNumber;
+            }
+            if (lineNumber == -1) {
+                return null;
+            }
+            String file = line.substring(u1, col1);
+            if (file.length() == 0) {
+                return null;
+            }
+            
+            FileObject fo = null;
+            try {
+                URL url = URI.create(file).toURL();
+                fo = ServerURLMapping.fromServer(p, url);
+                if (fo == null) {
+                    fo = RemoteFileCache.getRemoteFile(url);
+                }
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+            if (fo == null) {
+                return null;
+            }
+            List<ConvertedLine> res = new ArrayList<ConvertedLine>();
+            //res.add(ConvertedLine.forText(line.substring(0, start), null));
+            ListenerImpl l = new ListenerImpl(fo, lineNumber, columnNumber);
+            res.add(ConvertedLine.forText(/*line.substring(start, line.length()-1)*/line, l.isValidHyperlink() ? l : null));
+            //res.add(ConvertedLine.forText(line.substring(line.length()-1, line.length()), null));
+            return res;
+        }
+    
     }
     
     private static class ListenerImpl implements OutputListener {

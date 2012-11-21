@@ -216,6 +216,27 @@ public class CSS {
     }
 
     /**
+     * Ensures that the given node will have the specified pseudo-classes
+     * whenever its style is computed by the browser.
+     *
+     * @param node node for which to force the pseudo-classes.
+     * @param forcedPseudoClasses pseudo-classes to force.
+     * @since 1.5
+     */
+    public void forcePseudoState(Node node, PseudoClass[] forcedPseudoClasses) {
+        JSONObject params = new JSONObject();
+        params.put("nodeId", node.getNodeId()); // NOI18N
+        if (forcedPseudoClasses != null && forcedPseudoClasses.length != 0) {
+            JSONArray pseudoClasses = new JSONArray();
+            for (PseudoClass pseudoClass : forcedPseudoClasses) {
+                pseudoClasses.add(pseudoClass.getCode());
+            }
+            params.put("forcedPseudoClasses", pseudoClasses); // NOI18N
+        }
+        transport.sendCommand(new Command("CSS.forcePseudoState", params)); // NOI18N
+    }
+
+    /**
      * Returns CSS rules matching the specified node.
      *
      * @param node node whose matching style should be returned.
