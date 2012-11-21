@@ -61,7 +61,10 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import javax.swing.Icon;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
@@ -71,7 +74,13 @@ import javax.swing.PopupFactory;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.border.LineBorder;
+import javax.swing.text.AttributeSet;
 import org.netbeans.api.actions.Openable;
+import org.netbeans.api.editor.mimelookup.MimeLookup;
+import org.netbeans.api.editor.mimelookup.MimePath;
+import org.netbeans.api.editor.settings.EditorStyleConstants;
+import org.netbeans.api.editor.settings.FontColorNames;
+import org.netbeans.api.editor.settings.FontColorSettings;
 import org.netbeans.editor.JumpList;
 import org.netbeans.modules.editor.breadcrumbs.spi.BreadcrumbsController;
 import org.openide.awt.HtmlRenderer;
@@ -81,14 +90,21 @@ import org.openide.explorer.view.ListView;
 import org.openide.explorer.view.NodeRenderer;
 import org.openide.nodes.Node;
 import org.openide.util.ImageUtilities;
+import org.openide.util.Lookup.Result;
+import org.openide.util.LookupEvent;
+import org.openide.util.LookupListener;
+import org.openide.util.WeakListeners;
 
 /**
  *
  * @author lahvac
  */
-public class BreadCrumbComponent<T extends JLabel&Renderer> extends JComponent implements PropertyChangeListener {
+public class BreadCrumbComponent<T extends JLabel&Renderer> extends JComponent implements PropertyChangeListener, LookupListener {
 
     private final Image SEPARATOR = ImageUtilities.loadImage("org/netbeans/modules/editor/breadcrumbs/resources/separator.png");
+    
+    private Result<FontColorSettings> result;
+    private Map<?, ?> renderingHints;
     
     public BreadCrumbComponent() {
         setPreferredSize(new Dimension(0, COMPONENT_HEIGHT));
@@ -97,6 +113,10 @@ public class BreadCrumbComponent<T extends JLabel&Renderer> extends JComponent i
                 expand(e);
             }
         });
+        
+        result = MimeLookup.getLookup(MimePath.EMPTY).lookupResult(FontColorSettings.class);
+        result.addLookupListener(WeakListeners.create(LookupListener.class, this, result));
+        resultChanged(null);
     }
 
     private static final int USABLE_HEIGHT = 19;
@@ -136,9 +156,15 @@ public class BreadCrumbComponent<T extends JLabel&Renderer> extends JComponent i
         if( "Aqua".equals(UIManager.getLookAndFeel().getID()) ) //NOI18N
             setBackground(UIManager.getColor("NbExplorerView.background")); //NOI18N
         
+        Map<?, ?> renderingHintsTemp;
+        
+        synchronized (this) {
+            renderingHintsTemp = new HashMap<Object, Object>(renderingHints);
+        }
+
         int height = getHeight();
         
-        ((Graphics2D) g).addRenderingHints(Collections.singletonMap(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON));
+        ((Graphics2D) g).addRenderingHints(renderingHintsTemp);
         
         if (nodes.length == 0) {
             g.drawImage(SEPARATOR, START_INSET, (height - SEPARATOR.getHeight(null)) / 2, null);
@@ -369,6 +395,34 @@ public class BreadCrumbComponent<T extends JLabel&Renderer> extends JComponent i
             renderer.setHtml(false);
             renderer.setText(node.getDisplayName());
         }
-//        renderer.setFont(getFont());
+        renderer.setFont(getFont());
     }
+
+    @Override
+    public void resultChanged(LookupEvent ev) {
+        Iterator<? extends FontColorSettings> it = result.allInstances().iterator();
+        
+        if (!it.hasNext()) {
+            synchronized (this) {
+                renderingHints = Collections.emptyMap();
+            }
+            return ;
+        }
+        
+        FontColorSettings fcs = it.next();
+        AttributeSet defaultColoring = fcs.getFontColors(FontColorNames.DEFAULT_COLORING);
+        Map<?, ?> renderingHintsTemp;
+        
+        if (defaultColoring != null) {
+            renderingHintsTemp = (Map<?, ?>) defaultColoring.getAttribute(EditorStyleConstants.RenderingHints);
+        } else {
+            Map<?, ?> desktopHints = (Map<?, ?>) Toolkit.getDefaultToolkit().getDesktopProperty("awt.font.desktophints"); //NOI18N
+            renderingHintsTemp = desktopHints;
+        }
+        
+        synchronized (this) {
+            renderingHints = renderingHintsTemp;
+        }
+    }
+    
 }
