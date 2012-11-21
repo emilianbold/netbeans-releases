@@ -43,7 +43,7 @@
 package org.netbeans.modules.maven.j2ee.customizer;
 import java.awt.Component;
 import java.awt.Font;
-import java.text.MessageFormat;
+import java.io.File;
 import java.util.IdentityHashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -186,6 +186,7 @@ public class CustomizerFrameworks extends JPanel implements ApplyChangesCustomiz
         jListFrameworks.setModel(new DefaultListModel());
         jListFrameworks.getSelectionModel().setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         jListFrameworks.addListSelectionListener(this);
+        ((DefaultListModel) jListFrameworks.getModel()).addElement(new LoadingFrameworksFakeProvider());
 
         loadFrameworks();
     }
@@ -203,6 +204,7 @@ public class CustomizerFrameworks extends JPanel implements ApplyChangesCustomiz
                     @Override
                     public void run() {
                         final DefaultListModel model = (DefaultListModel) jListFrameworks.getModel();
+                        model.clear();
                         for (WebFrameworkProvider framework : usedFrameworks) {
                             model.addElement(framework);
                         }
@@ -227,23 +229,21 @@ public class CustomizerFrameworks extends JPanel implements ApplyChangesCustomiz
 
             @Override
             public void run() {
-                ProgressUtils.showProgressDialogAndRun(new Runnable() {
-
-                    @Override
-                    public void run() {
-                        for (WebFrameworkProvider framework : WebFrameworks.getFrameworks()) {
-                            if (framework.isInWebModule(webModule)) {
-                                usedFrameworks.add(framework);
-                                WebModuleExtender extender = framework.createWebModuleExtender(webModule, controller);
-                                extenders.put(framework, extender);
-                                existingExtenders.add(extender);
-                                extender.addChangeListener(new ExtenderListener(extender));
-                            }
-                        }
-                    }
-                }, Bundle.CustomizerFrameworks_label_loading_frameworks());
+                loadFrameworksFor(webModule);
             }
         });
+    }
+
+    private void loadFrameworksFor(final WebModule webModule) {
+        for (WebFrameworkProvider framework : WebFrameworks.getFrameworks()) {
+            if (framework.isInWebModule(webModule)) {
+                usedFrameworks.add(framework);
+                WebModuleExtender extender = framework.createWebModuleExtender(webModule, controller);
+                extenders.put(framework, extender);
+                existingExtenders.add(extender);
+                extender.addChangeListener(new ExtenderListener(extender));
+            }
+        }
     }
 
     /** This method is called from within the constructor to
@@ -589,5 +589,22 @@ public class CustomizerFrameworks extends JPanel implements ApplyChangesCustomiz
 	jPanelConfig.removeAll();
 	jPanelConfig.repaint();
 	jPanelConfig.revalidate();
+    }
+
+    private static class LoadingFrameworksFakeProvider extends WebFrameworkProvider {
+
+        public LoadingFrameworksFakeProvider() {
+            super(Bundle.CustomizerFrameworks_label_loading_frameworks(), ""); // NOI18N
+        }
+
+        @Override
+        public boolean isInWebModule(WebModule wm) {
+            return true;
+        }
+
+        @Override
+        public File[] getConfigurationFiles(WebModule wm) {
+            return null;
+        }
     }
 }
