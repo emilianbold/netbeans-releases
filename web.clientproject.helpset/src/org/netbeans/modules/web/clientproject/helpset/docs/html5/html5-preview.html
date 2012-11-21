@@ -13,42 +13,55 @@
 <h2>Previewing an HTML5 Application</h2>
 <p> <small><a href="#seealso">See Also</a>&nbsp; </small> 
 
-<p>An HTML5 application project is typically run in a browser on your desktop or a mobile device.
+<p>A single HTML5 application might be viewed on various devices with different screen sizes.
     The IDE can help you develop projects that can respond and adapt to different
     display devices by enabling you to preview pages at different screen sizes.
     When you run the HTML5 application from the IDE you can choose to view the pages 
-    in one of the default screen sizes or create a custom screen size. </p>
+    in one of the default screen sizes or create a custom screen size.</p>
 
-<p>To preview the project at different screen sizes you need to specify one of the following 
-as the target browser.</p>
+<p>You can view your application in any browser, but if you want to 
+   be able to quickly switch between screen sizes to preview the application 
+   you need to specify one of the following integrated browsers as the target browser.</p>
+
 <ul>
-    <li><strong>Chrome with NetBeans Integration.</strong></li>
-    <li><strong>Embedded WebKit Browser.</strong></li>
+    <li><strong>Chrome with NetBeans Integration</strong></li>
+    <li><strong>Embedded WebKit Browser</strong></li>
 </ul>
 
-<p>Perform the following steps to select a screen size.</p>
+<p>When you preview the application in one of the integrated browsers you can choose 
+    the display size in a menu in the browser.</p>
 
-<ol>
-    <li>Run the application to open the application in the target browser.</li>
-    <li>In the browser, select a screen size from the menu.
-        <p>The location of the menu for selecting the screen size options depends upon the target browser.</p>
-        <ul>
-            <li><strong>Chrome with NetBeans Integration.</strong>
-            Click the NetBeans icon in the URL location bar to open the menu and select a screen size.</li>
-            <li><strong>Embedded WebKit Browser.</strong>
-            Click the Other Options menu icon and select a screen size from the dropdown list.
-            <p>Alternatively, you can click a screen size icon in the toolbar.</p></li>
-        </ul>
-        <p>You can Select Customize in the menu to create custom sizes for windows
-            and to edit the contents on the menu.</p>
-    </li>
-</ol>
+<ul class="note">
+    <li>You can specify the target browser for the application in the Project Properties window
+    or in the Set Project Configuration dropdown list in the toolbar of the IDE.</li>
+</ul>
 
-<p>When you select a new screen size the display area of the browser resizes to 
+
+<h3>Switching Between Screen Sizes</h3>
+<p>The integrated browsers provide menus that enable you to switch between
+    common screen sizes that are pre-configured in the menu.
+    When you select a new screen size the display area of the browser resizes to 
     the selected size. 
-    You can easily preview how the application responds to changes in the size
-    of the display that might be specified in media queries in your style sheet.
-</p>
+    By changing the screen size you can preview how the layout of the application
+    responds to different sizes, for example, as a result of media queries that
+    are specified in the style sheet.</p>
+
+<p>After you launch the application you can select a screen size from the menu in the browser.
+    The location of the menu for selecting the screen size options depends upon the target browser.</p>
+        <ul>
+            <li>If the target browser is Chrome with NetBeans Integration,
+            click the NetBeans icon in the URL location bar to open the menu and select a screen size.</li>
+            <li>If the target browser is Embedded WebKit Browser,
+            click the Other Options menu icon in the Web Browser window toolbar and select a screen size from the dropdown list.
+            <p>Alternatively, you can click a screen size icon in the toolbar in the Web Browser window.</p></li>
+        </ul>
+
+<h3>Creating a Custom Screen Size</h3>
+<p>You can create custom sizes for windows by selecting Customize in the screen size menu.
+    When you select Customize the browser displays a window that enables you to
+    create a new size and to modify the default screen size options.
+    You can also edit the contents of the menu.</p>
+
 
 <dl>
     <dt><a name="seealso">See Also</a></dt>

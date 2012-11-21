@@ -53,6 +53,7 @@ import java.util.List;
 import java.util.Set;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.fileinfo.NonRecursiveFolder;
@@ -60,7 +61,6 @@ import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.netbeans.modules.refactoring.api.Problem;
-import org.netbeans.modules.refactoring.java.ui.JavaRefactoringUIFactory;
 import org.netbeans.modules.refactoring.spi.ui.CustomRefactoringPanel;
 import org.netbeans.modules.refactoring.spi.ui.RefactoringUI;
 import org.openide.filesystems.FileObject;
@@ -162,7 +162,8 @@ public class ReplaceConstructorWithBuilderUI implements RefactoringUI, JavaRefac
         }
         if (path != null && treeKinds.contains(path.getLeaf().getKind())) {
             Element selected = info.getTrees().getElement(path);
-            if (selected.getKind() == ElementKind.CONSTRUCTOR && selected.getEnclosingElement().getKind() != ElementKind.ENUM) {
+            if (selected.getKind() == ElementKind.CONSTRUCTOR &&
+                    selected.getEnclosingElement().getKind() != ElementKind.ENUM) {
                 return new ReplaceConstructorWithBuilderUI(TreePathHandle.create(selected, info), info);
             }
         }

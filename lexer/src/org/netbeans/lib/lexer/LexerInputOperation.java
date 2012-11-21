@@ -189,6 +189,9 @@ public abstract class LexerInputOperation<T extends TokenId> {
     }
 
     public AbstractToken<T> nextToken() {
+        if (lexer == null) {
+            return null;
+        }
         while (true) {
             AbstractToken<T> token = (AbstractToken<T>)lexer.nextToken();
             if (token == null) {
