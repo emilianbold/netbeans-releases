@@ -125,7 +125,7 @@ public final class ProxyFileManager implements JavaFileManager {
             StandardLocation.CLASS_PATH,
             outputhPath == null ?
                 new JavaFileManager[] {classPath}:
-                new JavaFileManager[] {classPath, outputhPath});
+                new JavaFileManager[] {outputhPath, classPath});
         this.fileManagers.put(
             StandardLocation.PLATFORM_CLASS_PATH,
             new JavaFileManager[] {bootPath});
