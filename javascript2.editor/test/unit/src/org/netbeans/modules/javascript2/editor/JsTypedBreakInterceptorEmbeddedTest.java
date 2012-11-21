@@ -42,70 +42,46 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.lib.lexer.lang;
+package org.netbeans.modules.javascript2.editor;
 
-import java.util.Collection;
-import java.util.EnumSet;
-import org.netbeans.api.lexer.InputAttributes;
-import org.netbeans.api.lexer.Language;
-import org.netbeans.api.lexer.LanguagePath;
-import org.netbeans.api.lexer.Token;
-import org.netbeans.api.lexer.TokenId;
-import org.netbeans.spi.lexer.LanguageEmbedding;
-import org.netbeans.spi.lexer.LanguageHierarchy;
-import org.netbeans.spi.lexer.Lexer;
-import org.netbeans.spi.lexer.LexerRestartInfo;
+import org.netbeans.api.editor.mimelookup.MimePath;
+import org.netbeans.api.editor.mimelookup.test.MockMimeLookup;
+import org.netbeans.api.html.lexer.HTMLTokenId;
+import org.netbeans.modules.csl.api.Formatter;
+import org.netbeans.modules.html.editor.api.HtmlKit;
+import org.netbeans.modules.html.editor.indent.HtmlIndentTaskFactory;
+import org.netbeans.modules.javascript2.editor.lexer.JsTokenId;
+import org.netbeans.modules.web.indent.api.support.AbstractIndenter;
 
-/**
- * Token identifications of the simple plain language.
- *
- * @author mmetelka
- */
-public enum TestCharTokenId implements TokenId {
+public class JsTypedBreakInterceptorEmbeddedTest extends JsTestBase {
 
-    CHARACTER,
-    DIGIT;
-
-    TestCharTokenId() {
+    public JsTypedBreakInterceptorEmbeddedTest(String testName) {
+        super(testName);
     }
 
-    public String primaryCategory() {
-        return "chars";
+    @Override
+    protected Formatter getFormatter(IndentPrefs preferences) {
+        return null;
     }
 
-    public static final String MIME_TYPE = "text/x-simple-char";
-    
-    private static final Language<TestCharTokenId> language = createLanguage(MIME_TYPE);
-
-    public static Language<TestCharTokenId> createLanguage(final String mimeType) {
-        return new LanguageHierarchy<TestCharTokenId>() {
-
-            @Override
-            protected Collection<TestCharTokenId> createTokenIds() {
-                return EnumSet.allOf(TestCharTokenId.class);
-            }
-
-            @Override
-            protected Lexer<TestCharTokenId> createLexer(LexerRestartInfo<TestCharTokenId> info) {
-                return new TestCharLexer(info);
-            }
-
-            @Override
-            protected LanguageEmbedding<?> embedding(
-            Token<TestCharTokenId> token, LanguagePath languagePath, InputAttributes inputAttributes) {
-                return null; // No embedding
-            }
-
-            @Override
-            protected String mimeType() {
-                return mimeType;
-            }
-
-        }.language();
+    @Override
+    protected String getPreferredMimeType() {
+        return "text/html";
     }
 
-    public static Language<TestCharTokenId> language() {
-        return language;
+    @Override
+    protected void setUp() throws Exception {
+        super.setUp();
+        AbstractIndenter.inUnitTestRun = true;
+
+        MockMimeLookup.setInstances(MimePath.parse("text/javascript"), JsTokenId.javascriptLanguage());
+        HtmlIndentTaskFactory htmlReformatFactory = new HtmlIndentTaskFactory();
+        MockMimeLookup.setInstances(MimePath.parse("text/html"), htmlReformatFactory, new HtmlKit("text/html"), HTMLTokenId.language());
+    }
+
+    public void testIssue220903() throws Exception {
+        insertBreak("<!DOCTYPE html>\n<html>\n<script>function Foo(){^</script>\n</html>",
+                "<!DOCTYPE html>\n<html>\n<script>function Foo(){\n    ^\n}</script>\n</html>");
     }
 
 }

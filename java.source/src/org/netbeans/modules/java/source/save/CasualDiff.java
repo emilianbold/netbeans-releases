@@ -3190,7 +3190,7 @@ public class CasualDiff {
             return tokenSequence.offset();
         }
 
-        if (printer.handlePossibleOldTrees(Collections.singletonList(newT), false)) {
+        if (printer.handlePossibleOldTrees(Collections.singletonList(newT), true)) {
             return getCommentCorrectedEndPos(oldT);
         }
 
