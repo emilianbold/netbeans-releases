@@ -54,7 +54,7 @@ made subject to such option by the copyright holder.
         </folder>
     </folder>
     <folder name="Templates">
-        <folder name="MIDP">
+<!--        <folder name="MIDP">
             <file name="E2EWebApplication.wsclient" url="templates/MIDP/E2EWebApplication_wsclient.template">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.mobility.end2end.ui.wizard.Bundle"/>
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/mobility/end2end/resources/e2eclienticon.png"/>
@@ -65,7 +65,7 @@ made subject to such option by the copyright holder.
                 <attr name="MIDP" boolvalue="true"/>
                 <attr name="templateCategory" stringvalue="MIDP"/>
             </file>
-        </folder>
+        </folder>-->
         <!-- Javon templates -->
         <folder name="Client">
             <attr name="position" intvalue="0"/>
