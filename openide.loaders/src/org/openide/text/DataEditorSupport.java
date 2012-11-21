@@ -783,15 +783,14 @@ public class DataEditorSupport extends CloneableEditorSupport {
         /** Atomic action used to ignore fileChange event from FileObject.refresh */
         private transient FileSystem.AtomicAction action = null;
 
-        /** Holds read-only state of associated file object. */
-        private transient boolean canWrite;
+        /** Holds read-only state of associated file object. null means the state is unknown. */
+        private transient Boolean canWrite;
 
         /** Constructor.
         * @param obj this support should be associated with
         */
         public Env (DataObject obj) {
             super (obj);
-            canWrite = obj.getPrimaryFile().canWrite();
         }
         
         /** Getter for the file to work on.
@@ -874,6 +873,7 @@ public class DataEditorSupport extends CloneableEditorSupport {
             if (!warnedFiles.contains(fo) && fo.getSize () > 1024 * 1024) {
                 throw new ME (fo.getSize ());
             }
+            initCanWrite(false);
             InputStream is = getFileImpl ().getInputStream ();
             return is;
         }
@@ -988,14 +988,23 @@ public class DataEditorSupport extends CloneableEditorSupport {
                 firePropertyChange (PROP_TIME, null, new Date (fe.getTime()));
             }
         }
+        
+        /** @return true if known canWrite state changed */
+        private boolean initCanWrite(boolean refresh) {
+            if (canWrite == null || !refresh) {
+                canWrite = getFileImpl().canWrite();
+                return false;
+            }
+            boolean oldCanWrite = canWrite;
+            canWrite = getFileImpl().canWrite();
+            return oldCanWrite != canWrite;
+        }
 
         /** Called from EnvListener if read-only state is externally changed (#129178).
          * @param readOnly true if changed to read-only state, false if changed to read-write
          */
         private void readOnlyRefresh() {
-            boolean oldCanWrite = canWrite;
-            canWrite = getFileImpl().canWrite();
-            if (oldCanWrite != canWrite) {
+            if (initCanWrite(true)) {
                 if (!canWrite && isModified()) {
                     // notify user if the object is modified and externally changed to read-only
                     DialogDisplayer.getDefault().notify(
