@@ -470,6 +470,15 @@ public class MarkOccurrenceTest extends JsTestBase {
     public void testIssue222373_08() throws Exception {
         checkOccurrences("testfiles/markoccurences/issue222373.js", "function Per^son(){", true);
     }
+    
+    public void testIssue222507_01() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue222507.js", "this._addPreset^Button = document.getElementById('addPreset');", true);
+    }
+    
+    public void testIssue222507_02() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue222507.js", "NetBeans_PresetCustomizer._addPresetB^utton = null;", true);
+    }
+
 //    public void testIssue221228_02() throws Exception {
 //        checkOccurrences("testfiles/markoccurences/issue221228.js", "a.h^i(); // rename hi here", true);
 //    }
