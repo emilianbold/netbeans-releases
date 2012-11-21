@@ -423,7 +423,7 @@ NetBeans_Warnings._getKeyFor = function(ident, key) {
     return 'warning.' + ident + '.' + key;
 };
 NetBeans_Warnings._logError = function(operation, key) {
-    if (chrome.runtime.lastError) {
-        console.error('Local storage error ("' + operation + '" operation for "' + key + '"): ' + chrome.runtime.lastError);
+    if (chrome.runtime && chrome.runtime.lastError) {
+        console.error('Local storage error ("' + operation + '" operation for "' + key + '"): ' + chrome.runtime.lastError.message);
     }
 };

@@ -45,7 +45,7 @@ window.addEventListener('load', function() {
     // texts
     I18n.attribute('closePresetCustomizer', 'title');
     I18n.element('title');
-    I18n.element('perex');
+    I18n.elements(document.getElementById('perex').getElementsByClassName('i18n'));
     I18n.element('sizes');
     // table
     I18n.elements(document.getElementById('presetCustomizerTable').getElementsByTagName('thead')[0].getElementsByTagName('th'));

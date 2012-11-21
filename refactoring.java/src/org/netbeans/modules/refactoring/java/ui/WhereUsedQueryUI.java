@@ -101,7 +101,7 @@ public class WhereUsedQueryUI implements RefactoringUI, Openable, JavaRefactorin
         // API support.
         this.query.getContext().add(RefactoringUtils.getClasspathInfoFor(handle));
         this.element = handle;
-        if (UIUtilities.allowedElementKinds.contains(element.getKind())) {
+        if (UIUtilities.allowedElementKinds.contains(el.getKind())) {
             elementHandle = ElementHandle.create(el);
         }
         kind = el.getKind();
