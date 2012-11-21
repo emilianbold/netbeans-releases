@@ -90,17 +90,11 @@ public final class ReplaceBar extends JPanel {
 
         setLayout(new BoxLayout(this, BoxLayout.LINE_AXIS));
         setFocusCycleRoot(true);
-        Color bgColor = getBackground();
-        bgColor = new Color(Math.max(0, bgColor.getRed() - 20),
-                Math.max(0, bgColor.getGreen() - 20),
-                Math.max(0, bgColor.getBlue() - 20));
-        setBackground(bgColor);
         setForeground(UIManager.getColor("textText")); //NOI18N
 
         // padding at the end of the toolbar
         add(Box.createHorizontalStrut(8)); //spacer in the beginnning of the toolbar
         SearchComboBox scb = new SearchComboBox();
-        scb.getEditor().getEditorComponent().setBackground(bgColor);
         replaceComboBox = scb;
         replaceComboBox.addPopupMenuListener(new ReplacePopupMenuListener());
         replaceTextField = scb.getEditorPane();

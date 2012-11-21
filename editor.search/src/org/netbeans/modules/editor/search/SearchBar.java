@@ -148,18 +148,12 @@ public final class SearchBar extends JPanel implements PropertyChangeListener {
         addEscapeKeystrokeFocusBackTo(this);
         setLayout(new BoxLayout(this, BoxLayout.LINE_AXIS));
         setFocusCycleRoot(true);
-        Color bgColor = getBackground();
-        bgColor = new Color(Math.max(0, bgColor.getRed() - 20),
-                Math.max(0, bgColor.getGreen() - 20),
-                Math.max(0, bgColor.getBlue() - 20));
-        setBackground(bgColor);
         setForeground(DEFAULT_FG_COLOR); //NOI18N
 
         add(Box.createHorizontalStrut(8)); //spacer in the beginnning of the toolbar
 
         SearchComboBox scb = new SearchComboBox();
         incSearchComboBox = scb;
-        scb.getEditor().getEditorComponent().setBackground(bgColor);
         incSearchComboBox.setFocusable(false);
         incSearchComboBox.addPopupMenuListener(new SearchPopupMenuListener());
         incSearchTextField = scb.getEditorPane();
