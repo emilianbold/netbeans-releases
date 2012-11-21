@@ -70,6 +70,7 @@ import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle.Messages;
 import org.openide.util.RequestProcessor;
 import org.openide.util.actions.SystemAction;
+import org.openide.util.lookup.Lookups;
 
 /**
  *
@@ -85,9 +86,13 @@ public class FindResultsNode extends AbstractNode {
     
     private static final RequestProcessor queryRP = new RequestProcessor(FindResultsNode.class.getName(), 10);
     private final QueryRequest queryRequest;
+    private String toAppend;
+    private HtmlDisplayNameChanger changer = new HtmlDisplayNameChanger();
 
     FindResultsNode(QueryRequest request) {
-        super(Children.create(new FindResultsChildren(request.fields, request.infos), true));
+        super(Children.LEAF, Lookups.singleton(request));
+        changer.setNode(this);
+        setChildren(Children.create(new FindResultsChildren(request.fields, request.infos, changer), true));
         setDisplayName(request.fields.get(0).getValue());
         setIconBaseWithExtension(FIND_IN_REPO);
         queryRequest = request;
@@ -95,6 +100,11 @@ public class FindResultsNode extends AbstractNode {
 
     @Override public boolean canDestroy() {
         return true;
+    }
+    
+    private void changeHDM(String toAppend) {
+        this.toAppend = toAppend;
+        fireDisplayNameChange(null, null);
     }
 
     @Override public void destroy() throws IOException {
@@ -105,16 +115,44 @@ public class FindResultsNode extends AbstractNode {
         return new Action[] {SystemAction.get(DeleteAction.class)};
     }
 
+    @Override
+    public String getHtmlDisplayName() {
+        StringBuilder base = new StringBuilder().append(getDisplayName());
+        if (toAppend != null) {
+            base.append(" <font color='!controlShadow'>[");
+            base.append(toAppend);
+            base.append("]</font>");
+        }
+        return base.toString();
+    }
+    
+    private static class HtmlDisplayNameChanger {
+        private FindResultsNode node;
+        void changeHtmlDisplayName(String toAppend) {
+            assert node != null;
+            node.changeHDM(toAppend);
+        }
+        
+        void setNode(FindResultsNode node) {
+            this.node = node;
+        }
+    }
+    
+    
+
     // XXX clumsy, use a real key instead (NBGroupInfo?) and replace no results/too general nodes with status line notifications
     private static class FindResultsChildren extends ChildFactory.Detachable<Node> {
 
         private List<Node> nodes;
         private final List<QueryField> fields;
         private final List<RepositoryInfo> infos;
+        private final HtmlDisplayNameChanger changer;
 
-        FindResultsChildren(List<QueryField> fields, List<RepositoryInfo> infos) {
+        @Messages("MSG_Narrow={0} of {1} results shown. Narrow your search.")
+        FindResultsChildren(List<QueryField> fields, List<RepositoryInfo> infos, HtmlDisplayNameChanger changer) {
             this.fields = fields;
             this.infos = infos;
+            this.changer = changer;
         }
 
         @Override protected Node createNodeForKey(Node key) {
@@ -132,10 +170,13 @@ public class FindResultsNode extends AbstractNode {
             public void run() {
                 try {
                     Result<NBVersionInfo> result = RepositoryQueries.findResult(fields, infos);
-                    update(result.getResults(), result.isPartial());
+                    update(result, result.isPartial());
                     if (result.isPartial()) {
                         result.waitForSkipped();
-                        update(result.getResults(), false);
+                        update(result, false);
+                    }
+                    if (result.getReturnedResultCount() != result.getTotalResultCount()) {
+                        changer.changeHtmlDisplayName(MSG_Narrow(result.getReturnedResultCount(), result.getTotalResultCount()));
                     }
                 } catch (BooleanQuery.TooManyClauses exc) {
                     SwingUtilities.invokeLater(new Runnable() {
@@ -164,11 +205,11 @@ public class FindResultsNode extends AbstractNode {
             return true; // XXX queryRequest.isFinished() unsuitable here
         }
 
-    void update(List<NBVersionInfo> infos, final boolean partial) {
+    void update(Result<NBVersionInfo> result, final boolean partial) {
         final Map<String, List<NBVersionInfo>> map = new HashMap<String, List<NBVersionInfo>>();
 
-        if (infos != null) {
-            for (NBVersionInfo nbvi : infos) {
+        if (result.getResults() != null) {
+            for (NBVersionInfo nbvi : result.getResults()) {
                 String key = nbvi.getGroupId() + " : " + nbvi.getArtifactId(); //NOI18n
                 List<NBVersionInfo> get = map.get(key);
                 if (get == null) {
