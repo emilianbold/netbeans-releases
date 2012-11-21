@@ -986,9 +986,12 @@ public class CreateRulePanel extends javax.swing.JPanel {
     /**
      * Changes the class and id attributes of the active html source element.
      */
-    private void modifySourceElement() {
+    private void modifySourceElement() throws DataObjectNotFoundException, IOException {
         final BaseDocument doc = (BaseDocument) getDocument(activeElement.getFile());
         final AtomicBoolean success = new AtomicBoolean();
+
+        DataObject dataObject = DataObject.find(activeElement.getFile());
+        boolean modified = dataObject.getLookup().lookup(SaveCookie.class) != null;
 
         pos = Integer.MAX_VALUE;
         diff = -1;
@@ -1012,16 +1015,12 @@ public class CreateRulePanel extends javax.swing.JPanel {
 
         //possibly save the document if not opened in editor
         if (success.get()) {
-            SwingUtilities.invokeLater(new Runnable() {
-                @Override
-                public void run() {
-                    try {
-                        saveDocumentIfNotOpened(doc);
-                    } catch (IOException ex) {
-                        Exceptions.printStackTrace(ex);
-                    }
+            if (!modified) { //wasn't modified before applying the changes, save...
+                SaveCookie saveCookie = dataObject.getLookup().lookup(SaveCookie.class);
+                if (saveCookie != null) { //the "changes" may not modify the document
+                    saveCookie.save();
                 }
-            });
+            }
         }
     }
 
