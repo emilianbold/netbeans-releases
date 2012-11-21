@@ -79,6 +79,11 @@ public class JavaFXCSSModule extends CssEditorModule implements CssModule {
         return isJavaFXContext(file) ? getJavaFXProperties().keySet() : Collections.<String>emptyList();
     }
 
+    @Override
+    public PropertyDefinition getPropertyDefinition(String propertyName) {
+        return propertyDescriptors.get(propertyName);
+    }
+
     private synchronized Map<String, PropertyDefinition> getJavaFXProperties() {
         if (propertyDescriptors == null) {
             propertyDescriptors = Utilities.parsePropertyDefinitionFile(PROPERTIES_DEFINITION_PATH, this);

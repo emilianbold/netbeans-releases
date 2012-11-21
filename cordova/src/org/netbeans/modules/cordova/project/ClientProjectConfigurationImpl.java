@@ -86,6 +86,11 @@ public class ClientProjectConfigurationImpl implements ClientProjectConfiguratio
     }
 
     @Override
+    public String getBrowserId() {
+        return type;
+    }
+
+    @Override
     public void save() {
         if (file == null) {
             return;
