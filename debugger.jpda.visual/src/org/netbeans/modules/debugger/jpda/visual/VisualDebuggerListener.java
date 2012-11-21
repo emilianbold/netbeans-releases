@@ -112,7 +112,9 @@ import org.netbeans.modules.debugger.jpda.visual.breakpoints.AWTComponentBreakpo
 import org.netbeans.modules.debugger.jpda.visual.ui.ScreenshotComponent;
 import org.netbeans.spi.debugger.DebuggerServiceRegistration;
 import org.openide.util.Exceptions;
+import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
+import org.openide.windows.InputOutput;
 
 /**
  *
@@ -296,9 +298,17 @@ public class VisualDebuggerListener extends DebuggerManagerAdapter {
                 boolean trackComponentChanges = properties.getBoolean(PROPERTIES_TCC, true);
                 isTrackComponentChanges = trackComponentChanges;
                 if (trackComponentChanges && RemoteAWTScreenshot.FAST_SNAPSHOT_RETRIEVAL) {
-                    Method startHierarchyListenerMethod = ClassTypeWrapper.concreteMethodByName(serviceClass, "startHierarchyListener", "()V");
+                    Method startHierarchyListenerMethod = ClassTypeWrapper.concreteMethodByName(serviceClass, "startHierarchyListener", "()Ljava/lang/String;");
                     if (startHierarchyListenerMethod != null) {
-                        ClassTypeWrapper.invokeMethod(serviceClass, tr, startHierarchyListenerMethod, Collections.EMPTY_LIST, ObjectReference.INVOKE_SINGLE_THREADED);
+                        Value res = ClassTypeWrapper.invokeMethod(serviceClass, tr, startHierarchyListenerMethod, Collections.EMPTY_LIST, ObjectReference.INVOKE_SINGLE_THREADED);
+                        if (res instanceof StringReference) {
+                            String reason = ((StringReference) res).value();
+                            InputOutput io = t.getDebugger().getIO();
+                            io.getErr().println(NbBundle.getMessage(VisualDebuggerListener.class, "MSG_NoTrackingOfComponentChanges", reason));
+                            //System.err.println("isHierarchyListenerAdded = false, reason = "+reason);
+                        } else {
+                            //System.err.println("isHierarchyListenerAdded = "+true);
+                        }
                     }
                 }
             } catch (VMDisconnectedExceptionWrapper vmd) {
