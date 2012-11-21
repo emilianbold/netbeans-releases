@@ -167,11 +167,11 @@ public class JQueryCodeCompletion {
             if (index > -1) {
                 name = name.substring(0, index);
             }
-            File apiFile = InstalledFileLocator.getDefault().locate(HELP_LOCATION, null, false); //NoI18N
+            File apiFile = InstalledFileLocator.getDefault().locate(HELP_LOCATION, "org.netbeans.modules.javascript2.editor", false); //NoI18N
             return SelectorsLoader.getDocumentation(apiFile, name);
         } else if (element.getKind() == ElementKind.METHOD) {
             if (JQueryUtils.isJQuery(info, lastTsOffset)) {
-                File apiFile = InstalledFileLocator.getDefault().locate(HELP_LOCATION, null, false); //NoI18N
+                File apiFile = InstalledFileLocator.getDefault().locate(HELP_LOCATION, "org.netbeans.modules.javascript2.editor", false); //NoI18N
                 return SelectorsLoader.getMethodDocumentation(apiFile, element.getName());
             }
         }
@@ -248,7 +248,7 @@ public class JQueryCodeCompletion {
     protected static final String HELP_LOCATION = "docs/jquery-api.xml";
     private void fillAfterColonList() {
         SelectorItem item;
-        File apiFile = InstalledFileLocator.getDefault().locate(HELP_LOCATION, null, false); //NoI18N
+        File apiFile = InstalledFileLocator.getDefault().locate(HELP_LOCATION, "org.netbeans.modules.javascript2.editor", false); //NoI18N
         if(apiFile != null) {
             afterColonList = SelectorsLoader.getSelectors(apiFile);
         }
