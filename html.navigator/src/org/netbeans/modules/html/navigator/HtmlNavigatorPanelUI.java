@@ -237,9 +237,12 @@ public class HtmlNavigatorPanelUI extends JPanel implements ExplorerManager.Prov
         }
     }
 
-    private synchronized void pageModelDocumentChanged() {
+    private void pageModelDocumentChanged() {
         //try to find corresponding FileObject for the inspected document
-        inspectedFileObject = getInspectedFile(this.pageModel);
+        synchronized (this) {
+            inspectedFileObject = getInspectedFile(this.pageModel);
+        }
+        
         inspectedFileChanged();
         
         RP.post(new Runnable() {

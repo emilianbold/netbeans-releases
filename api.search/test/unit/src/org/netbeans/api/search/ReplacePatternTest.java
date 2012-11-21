@@ -39,34 +39,35 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.openidex.search;
+package org.netbeans.api.search;
 
-import org.junit.AfterClass;
 import org.junit.Test;
 import static org.junit.Assert.*;
-import org.junit.BeforeClass;
 
-/**
- *
- * @author mito
- */
-public class SearchPatternTest {
+
+public class ReplacePatternTest {
     
     @Test
     public void testManuallyParse() throws Exception {
-        String canString= "MrW-Test";
-        SearchPattern sp = SearchPattern.parseSearchPattern(canString);
-        assertTrue(sp.isMatchCase());
-        assertFalse(sp.isRegExp());
-        assertTrue(sp.isWholeWords());
-        assertEquals("Test", sp.getSearchExpression());
+        String canString= "P-Test";
+        ReplacePattern rp = ReplacePattern.parsePattern(canString);
+        assertTrue(rp.isPreserveCase());
+        assertEquals("Test", rp.getReplaceExpression());
+        
+        canString= "p--Test2";
+        rp = ReplacePattern.parsePattern(canString);
+        assertFalse(rp.isPreserveCase());
+        assertEquals("-Test2", rp.getReplaceExpression());
     }
 
     @Test
     public void testManuallyCanString() throws Exception {
-        SearchPattern sp = SearchPattern.create("ta", true, false, true);
-        String canString = sp.toCanonicalString();
+        ReplacePattern rp = ReplacePattern.create("ta", true);
+        String canString = rp.toCanonicalString();
+        assertEquals("P-ta", canString);
         
-        assertEquals("mRW-ta", canString);
+        rp = ReplacePattern.create("pa", false);
+        canString = rp.toCanonicalString();
+        assertEquals("p-pa", canString);
     }
 }

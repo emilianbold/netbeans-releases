@@ -60,6 +60,12 @@ import org.openide.util.Parameters;
  */
 public interface SiteTemplateImplementation {
 
+    /**
+     * Non localizable ID of the template; only used for tracking usage statistic.
+     */
+    @NonNull
+    String getId();
+
     @NonNull
     String getName();
 

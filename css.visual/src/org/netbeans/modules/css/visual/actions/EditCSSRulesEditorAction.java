@@ -114,7 +114,7 @@ public final class EditCSSRulesEditorAction implements ActionListener {
                         //not the root element
                         OpenTag tag = (OpenTag)element;
                         
-                        CreateRuleAction action = CreateRuleAction.getDefault();
+                        EditCSSRulesAction action = new EditCSSRulesAction();
                         action.setContext(file);
                         
                         HtmlSourceElementHandle handle = new HtmlSourceElementHandle(tag, result.getSnapshot(), file );

@@ -83,6 +83,11 @@ public class JsParserEmbeddedTest extends JsTestBase {
                 Collections.singletonList("embeddedSimple2.xhtml:5:12 Expected an operand but found error"));
     }
 
+    public void testEmbeddedSimple3() throws Exception {
+        parse("testfiles/parser/embeddedSimple3.html",
+                Collections.singletonList("embeddedSimple3.html:5:0 Expected } but found eof"));
+    }
+
     private void parse(String file, final List<String> errorStarts) throws Exception {
         FileObject f = getTestFile(file);
         Source source = Source.create(f);

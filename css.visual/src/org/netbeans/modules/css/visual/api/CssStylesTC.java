@@ -46,7 +46,7 @@ import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.SwingConstants;
 import org.netbeans.modules.css.visual.CssStylesPanel;
-import org.netbeans.modules.css.visual.actions.CreateRuleAction;
+import org.netbeans.modules.css.visual.actions.EditCSSRulesAction;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
 import org.openide.explorer.view.BeanTreeView;
@@ -156,7 +156,7 @@ public final class CssStylesTC extends TopComponent {
         cssStylesPanel.setContext(file);
         
         //hack - set context to the create rule action
-        CreateRuleAction.getDefault().setContext(file);
+        EditCSSRulesAction.getDefault().setContext(file);
     }
 
     @Override

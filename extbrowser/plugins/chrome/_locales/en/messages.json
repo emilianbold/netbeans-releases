@@ -19,6 +19,12 @@
     "_Remove": {
         "message": "Remove"
     },
+    "_More_hellip": {
+        "message": "More..."
+    },
+    "_Less_hellip": {
+        "message": "Less..."
+    },
 
     "_StartSelectMode": {
         "message": "Start Inspect in NetBeans Mode (Ctrl+Shift+S)"
@@ -57,7 +63,7 @@
         "message": "Customize Window Settings"
     },
     "_ConfigureSizesInfo": {
-        "message": "Configure window size options and control which appear in the Preview toolbar."
+        "message": "Configure window size options and control which appear in the NetBeans Actions menu."
     },
     "_DisplaySizes": {
         "message": "Display Sizes:"
@@ -103,6 +109,21 @@
     },
     "_New_hellip": {
         "message": "New..."
+    },
+    "_Help_Step1": {
+        "message": "Modify the type, name and dimensions of a display size by editing the fields in the table."
+    },
+    "_Help_Step2": {
+        "message": "Create a display size by clicking New and editing the fields in the new row."
+    },
+    "_Help_Step3": {
+        "message": "Change the order that a display size is listed in the menu by clicking in a row to select the row and using the Move Up and Move Down buttons."
+    },
+    "_Help_Step4": {
+        "message": "Remove a display size from the menu by click in a row to select the row and clicking Remove."
+    },
+    "_Help_FinalStep": {
+        "message": "Click OK to save your changes and close this tab."
     },
 
 

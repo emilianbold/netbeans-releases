@@ -47,7 +47,6 @@ package org.netbeans.modules.cnd.utils.filters;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
-import org.netbeans.modules.cnd.utils.FileFilterFactory;
 import org.netbeans.modules.cnd.utils.FileFilterFactory.AbstractFileAndFileObjectFilter;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
@@ -70,6 +69,7 @@ public class AllLibraryFileFilter extends AbstractFileAndFileObjectFilter {
         filters.add(ElfStaticLibraryFileFilter.getInstance());
         if (Utilities.isWindows()) {
             filters.add(PeDynamicLibraryFileFilter.getInstance());
+            filters.add(PeStaticLibraryFileFilter.getInstance());
         } else if (Utilities.getOperatingSystem() == Utilities.OS_MAC) {
             filters.add(MacOSXDynamicLibraryFileFilter.getInstance());
         } else {
