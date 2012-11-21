@@ -38,6 +38,7 @@
 package org.netbeans.modules.javascript2.editor.parser;
 
 import com.oracle.nashorn.parser.Token;
+import com.oracle.nashorn.parser.TokenType;
 import com.oracle.nashorn.runtime.ErrorManager;
 import com.oracle.nashorn.runtime.Source;
 import java.util.ArrayList;
@@ -47,7 +48,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.csl.api.Error;
 import org.netbeans.modules.csl.api.Severity;
-import org.openide.filesystems.FileObject;
+import org.netbeans.modules.parsing.api.Snapshot;
 
 /**
  *
@@ -57,14 +58,14 @@ public class JsErrorManager extends ErrorManager {
 
     private static final Logger LOGGER = Logger.getLogger(JsErrorManager.class.getName());
 
+    private final Snapshot snapshot;
+
     private List<ParserError> parserErrors;
 
     private List<JsParserError> convertedErrors;
 
-    private FileObject fileObject;
-
-    public JsErrorManager(FileObject fileObject) {
-        this.fileObject = fileObject;
+    public JsErrorManager(Snapshot snapshot) {
+        this.snapshot = snapshot;
     }
 
     public Error getMissingCurlyError() {
@@ -157,8 +158,8 @@ public class JsErrorManager extends ErrorManager {
         return Collections.unmodifiableList(convertedErrors);
     }
 
-    JsErrorManager fill(JsErrorManager original) {
-        this.fileObject = original.fileObject;
+    JsErrorManager fillErrors(JsErrorManager original) {
+        assert this.snapshot == original.snapshot : this.snapshot + ":" + original.snapshot;
         if (original.parserErrors != null) {
             this.parserErrors = new ArrayList<ParserError>(original.parserErrors);
         } else {
@@ -181,6 +182,9 @@ public class JsErrorManager extends ErrorManager {
         int offset = -1;
         if (error.token > 0) {
             offset = Token.descPosition(error.token);
+            if (Token.descType(error.token) == TokenType.EOF && snapshot.getOriginalOffset(offset) == -1) {
+                offset--;
+            }
         } else if (error.line == -1 && error.column == -1) {
             String parts[] = error.message.split(":");
             if (parts.length > 4) {
@@ -200,7 +204,8 @@ public class JsErrorManager extends ErrorManager {
             }
         }
 
-        return new JsParserError(message, fileObject, offset, offset, Severity.ERROR, null,  true);
+        return new JsParserError(message,
+                snapshot != null ? snapshot.getSource().getFileObject() : null, offset, offset, Severity.ERROR, null,  true);
     }
 
     private static class ParserError {

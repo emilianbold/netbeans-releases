@@ -78,7 +78,7 @@ import org.netbeans.modules.css.model.api.Rule;
 import org.netbeans.modules.css.model.api.StyleSheet;
 import org.netbeans.modules.css.visual.RuleEditorNode.DeclarationProperty;
 import org.netbeans.modules.css.visual.actions.AddPropertyAction;
-import org.netbeans.modules.css.visual.actions.CreateRuleAction;
+import org.netbeans.modules.css.visual.actions.EditCSSRulesAction;
 import org.netbeans.modules.css.visual.actions.DeleteRuleAction;
 import org.netbeans.modules.css.visual.actions.GoToSourceAction;
 import org.netbeans.modules.css.visual.actions.RemovePropertyAction;
@@ -151,7 +151,7 @@ public class RuleEditorPanel extends JPanel {
     private Model model;
     private Rule rule;
     private Action addPropertyAction;
-    private CreateRuleAction addRuleAction;
+    private EditCSSRulesAction addRuleAction;
     private Action removeRuleAction;
     private Action[] actions;
     private RuleEditorViews views;
@@ -226,7 +226,7 @@ public class RuleEditorPanel extends JPanel {
         
         //initialize actions
         addPropertyAction = new AddPropertyAction(this);
-        addRuleAction = CreateRuleAction.getDefault();
+        addRuleAction = EditCSSRulesAction.getDefault();
         removeRuleAction = new DeleteRuleAction(this);
 
         //init default components
@@ -645,7 +645,7 @@ public class RuleEditorPanel extends JPanel {
         createRuleToggleButton.setAction(addRuleAction);
         createRuleToggleButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/css/visual/resources/newRule.png"))); // NOI18N
         createRuleToggleButton.setText(null);
-        createRuleToggleButton.setToolTipText(org.openide.util.NbBundle.getMessage(RuleEditorPanel.class, "DocumentViewPanel.createRuleToggleButton.toolTipText")); // NOI18N
+        createRuleToggleButton.setToolTipText(org.openide.util.NbBundle.getMessage(RuleEditorPanel.class, "CreateRuleDialog.title")); // NOI18N
         createRuleToggleButton.setFocusable(false);
         createRuleToggleButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {

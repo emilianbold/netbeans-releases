@@ -142,10 +142,9 @@ public class SideBarFactoryImpl implements SideBarFactory {
 
         @Override
         public void paintBorder(Component c, Graphics g, int x, int y, int width, int height) {
-            ((Graphics2D) g).addRenderingHints(Collections.singletonMap(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON));
             Color originalColor = g.getColor();
             g.setColor (UIManager.getColor ("controlShadow")); //NOI18N
-            g.drawLine(0, 0, c.getWidth(), BORDER_WIDTH);
+            g.drawLine(0, 0, c.getWidth(), 0);
             g.setColor(originalColor);
         }
 

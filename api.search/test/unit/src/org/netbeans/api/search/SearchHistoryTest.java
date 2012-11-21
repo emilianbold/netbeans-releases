@@ -42,7 +42,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.api.search.provider.impl;
+package org.netbeans.api.search;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;

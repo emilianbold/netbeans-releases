@@ -191,7 +191,16 @@ public class JsObjectImpl extends JsElementImpl implements JsObject {
     }
     
     public void addOccurrence(OffsetRange offsetRange) {
-        occurrences.add(new OccurrenceImpl(offsetRange, this));
+        boolean isThere = false;
+        for (Occurrence occurrence : occurrences) {
+            if (occurrence.getOffsetRange().equals(offsetRange)) {
+                isThere = true;
+                break;
+            }
+        }
+        if (!isThere) {
+            occurrences.add(new OccurrenceImpl(offsetRange, this));
+        }
     }
     
     public void addAssignment(Collection<TypeUsage> typeNames, int offset){
@@ -352,6 +361,7 @@ public class JsObjectImpl extends JsElementImpl implements JsObject {
                     }
                     if (jsObject != null) {
                         ((JsObjectImpl)jsObject).addOccurrence(new OffsetRange(type.getOffset(), type.getOffset() + type.getType().length()));
+                        moveOccurrenceOfProperties((JsObjectImpl)jsObject, this);
                     }
                 }
             }
@@ -384,6 +394,31 @@ public class JsObjectImpl extends JsElementImpl implements JsObject {
             }
         }
         
+    }
+    
+    private void clearOccurrences() {
+        occurrences.clear();
+    }
+    
+    private void moveOccurrenceOfProperties(JsObjectImpl original, JsObject created) {
+        if (original.equals(created)) {
+            return;
+        }
+        for(JsObject origProperty : original.getProperties().values()) {
+            JsObjectImpl usedProperty = (JsObjectImpl)created.getProperty(origProperty.getName());
+            if (usedProperty != null) {
+                ((JsObjectImpl)origProperty).addOccurrence(usedProperty.getDeclarationName().getOffsetRange());
+                for(Occurrence occur : usedProperty.getOccurrences()) {
+                    ((JsObjectImpl)origProperty).addOccurrence(occur.getOffsetRange());
+                }
+                usedProperty.clearOccurrences();
+                moveOccurrenceOfProperties((JsObjectImpl)origProperty, usedProperty);
+            }
+        }
+        JsObject prototype = original.getProperty("prototype");
+        if (prototype != null) {
+            moveOccurrenceOfProperties((JsObjectImpl)prototype, created);
+        }
     }
     
     /**
