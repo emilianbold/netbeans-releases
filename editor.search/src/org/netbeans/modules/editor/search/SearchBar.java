@@ -607,6 +607,7 @@ public final class SearchBar extends JPanel implements PropertyChangeListener {
                 ImageUtilities.loadImageIcon(imageIcon, false));
         Mnemonics.setLocalizedText(button, NbBundle.getMessage(SearchBar.class, resName));
         button.setMargin(BUTTON_INSETS);
+        button.setToolTipText(NbBundle.getMessage(SearchBar.class, "TOOLTIP_IncrementalSearchText")); //NOI18N
         return button;
     }
 

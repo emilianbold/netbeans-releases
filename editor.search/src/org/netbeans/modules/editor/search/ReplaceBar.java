@@ -126,7 +126,8 @@ public final class ReplaceBar extends JPanel {
         add(leftSeparator);
 
         replaceButton = new JButton();
-        Mnemonics.setLocalizedText(replaceButton, NbBundle.getMessage(ReplaceBar.class, "CTL_ReplaceNext"));
+        Mnemonics.setLocalizedText(replaceButton, NbBundle.getMessage(ReplaceBar.class, "CTL_ReplaceNext")); // NOI18N
+        replaceButton.setToolTipText(NbBundle.getMessage(ReplaceBar.class, "TOOLTIP_ReplaceText")); // NOI18N
         replaceButton.setMargin(BUTTON_INSETS);
         replaceButton.setEnabled(!getSearchBar().getIncSearchTextField().getText().isEmpty());
         replaceButton.addActionListener(new ActionListener() {
@@ -140,6 +141,7 @@ public final class ReplaceBar extends JPanel {
 
         replaceAllButton = new JButton();
         Mnemonics.setLocalizedText(replaceAllButton, NbBundle.getMessage(ReplaceBar.class, "CTL_ReplaceAll"));
+        replaceAllButton.setToolTipText(NbBundle.getMessage(ReplaceBar.class, "TOOLTIP_ReplaceText")); // NOI18N
         replaceAllButton.setMargin(BUTTON_INSETS);
         replaceAllButton.setEnabled(!getSearchBar().getIncSearchTextField().getText().isEmpty());
         replaceAllButton.addActionListener(new ActionListener() {
