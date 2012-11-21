@@ -59,9 +59,9 @@ import org.openide.util.RequestProcessor;
  * @author marekfukala
  */
 @NbBundle.Messages({
-    "label.create.rule=Create Rule"
+    "label.create.rule=Edit CSS Rules"
 })
-public class CreateRuleAction extends AbstractAction {
+public class EditCSSRulesAction extends AbstractAction {
 
     private static final String HELP_ID = "css_visual_CreateRulePanel"; //NOI18N
     
@@ -69,16 +69,16 @@ public class CreateRuleAction extends AbstractAction {
     private FileObject targetLocation;
     private HtmlSourceElementHandle handle;
     
-    private static CreateRuleAction instance;
+    private static EditCSSRulesAction instance;
 
-    public static CreateRuleAction getDefault() {
+    public static EditCSSRulesAction getDefault() {
         if(instance == null) {
-            instance = new CreateRuleAction();
+            instance = new EditCSSRulesAction();
         }
         return instance;
     }
     
-    private CreateRuleAction() {
+    EditCSSRulesAction() {
         super(Bundle.label_create_rule());
         setEnabled(false);
     }
