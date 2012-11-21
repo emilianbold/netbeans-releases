@@ -113,6 +113,7 @@ public abstract class OnlineSampleWizardIterator extends AbstractWizardIterator 
         @Override
         protected SiteTemplateImplementation getSiteTemplate() {
             return new BaseOnlineSiteTemplate(
+                    "ANGULAR-SAMPLE", // NOI18N
                     getProjectName(),
                     getProjectURL(),
                     new File(SiteHelper.getJsLibsDirectory(), "angular-angular-phonecat-step-11-0-g9aebada.zip")); // NOI18N
@@ -131,12 +132,12 @@ public abstract class OnlineSampleWizardIterator extends AbstractWizardIterator 
 
     public static class BaseOnlineSiteTemplate extends OnlineSites {
 
-        public BaseOnlineSiteTemplate(String name, String url, File libFile) {
-            this(name, "", url, libFile); // NOI18N
+        public BaseOnlineSiteTemplate(String id, String name, String url, File libFile) {
+            this(id, name, "", url, libFile); // NOI18N
         }
 
-        public BaseOnlineSiteTemplate(String name, String description, String url, File libFile) {
-            super(name, description, url, libFile);
+        public BaseOnlineSiteTemplate(String id, String name, String description, String url, File libFile) {
+            super(id, name, description, url, libFile);
         }
     }
 
