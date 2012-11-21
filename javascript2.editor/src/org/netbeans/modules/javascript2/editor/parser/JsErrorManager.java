@@ -38,6 +38,7 @@
 package org.netbeans.modules.javascript2.editor.parser;
 
 import com.oracle.nashorn.parser.Token;
+import com.oracle.nashorn.parser.TokenType;
 import com.oracle.nashorn.runtime.ErrorManager;
 import com.oracle.nashorn.runtime.Source;
 import java.util.ArrayList;
@@ -181,6 +182,9 @@ public class JsErrorManager extends ErrorManager {
         int offset = -1;
         if (error.token > 0) {
             offset = Token.descPosition(error.token);
+            if (Token.descType(error.token) == TokenType.EOF) {
+                offset--;
+            }
         } else if (error.line == -1 && error.column == -1) {
             String parts[] = error.message.split(":");
             if (parts.length > 4) {
