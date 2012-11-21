@@ -39,28 +39,57 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.cnd.apt.support;
-
-import org.netbeans.modules.cnd.apt.support.spi.*;
-import java.util.Collection;
-import org.netbeans.modules.cnd.antlr.TokenStream;
-import org.openide.filesystems.FileSystem;
-import org.openide.util.lookup.Lookups;
+package org.netbeans.modules.cnd.indexing.api;
 
 /**
  *
  * @author Egor Ushakov
  */
-public final class APTIndexingSupport {
-    private APTIndexingSupport() {
+public final class CndTextIndexKey {
+    private final int unitId;
+    private final int fileNameIndex;
+
+    public CndTextIndexKey(int unitId, int fileNameIndex) {
+        this.unitId = unitId;
+        this.fileNameIndex = fileNameIndex;
     }
-    
-    private static final Collection<? extends APTIndexingFilterProvider> providers = Lookups.forPath(APTIndexingFilterProvider.PATH).lookupAll(APTIndexingFilterProvider.class);
-    
-    public static TokenStream index(FileSystem fs, CharSequence path, TokenStream ts) {
-        for (APTIndexingFilterProvider provider : providers) {
-            ts = provider.getIndexed(fs, path, ts);
+
+    public int getUnitId() {
+        return unitId;
+    }
+
+    public int getFileNameIndex() {
+        return fileNameIndex;
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 5;
+        hash = 59 * hash + this.unitId;
+        hash = 59 * hash + this.fileNameIndex;
+        return hash;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
         }
-        return ts;
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final CndTextIndexKey other = (CndTextIndexKey) obj;
+        if (this.unitId != other.unitId) {
+            return false;
+        }
+        if (this.fileNameIndex != other.fileNameIndex) {
+            return false;
+        }
+        return true;
+    }
+
+    @Override
+    public String toString() {
+        return "CndTextIndexKey{" + "unitId=" + unitId + ", fileNameIndex=" + fileNameIndex + '}'; //NOI18N
     }
 }

@@ -107,6 +107,7 @@ import org.netbeans.modules.cnd.apt.support.StartEntry;
 import org.netbeans.modules.cnd.apt.utils.APTSerializeUtils;
 import org.netbeans.modules.cnd.apt.utils.APTUtils;
 import org.netbeans.modules.cnd.debug.DebugUtils;
+import org.netbeans.modules.cnd.indexing.api.CndTextIndex;
 import org.netbeans.modules.cnd.modelimpl.cache.impl.WeakContainer;
 import org.netbeans.modules.cnd.modelimpl.content.project.ClassifierContainer;
 import org.netbeans.modules.cnd.modelimpl.content.project.DeclarationContainerProject;
@@ -447,7 +448,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         return getUniqueName(platformProject.getFileSystem(), platformProject);
     }
 
-    /*package*/ CacheLocation getCacheLocation() {
+    public final CacheLocation getCacheLocation() {
         return cacheLocation;
     }
 
@@ -2486,6 +2487,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
                     APTDriver.invalidateAPT(buf);
                     APTFileCacheManager.getInstance(buf.getFileSystem()).invalidate(buf.getAbsolutePath());
                     ParserQueue.instance().remove(impl);
+                    CndTextIndex.remove(impl.getProjectImpl(true).getCacheLocation(), impl.getTextIndexKey());
                 }
             }
         }
