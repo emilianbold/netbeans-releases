@@ -404,15 +404,6 @@ public abstract class SanitizingParser extends Parser {
             builder.insert(i, ' ');
         }
     }
-
-    private static void eraseWithInit(StringBuilder builder, int start, int end, char init) {
-        assert (end - start) >= 1 : start + " " + end;
-        builder.delete(start, end);
-        builder.insert(start, init);
-        for (int i = start + 1; i < end; i++) {
-            builder.insert(i, ' ');
-        }
-    }
     
     /**
      * Parsing context
