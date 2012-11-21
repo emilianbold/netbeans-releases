@@ -433,6 +433,7 @@ made subject to such option by the copyright holder.
         <property name="license.file.override" value="${license.file}"/>
         <property name="use.pack200" value="true"/>
         <property name="pack200.excludes" value=""/>
+        <property name="nbm.locales" value="${locales}"/>
         <makenbm file="${build.dir}/${nbm}"
                  productdir="${cluster}"
                  module="${module.jar}"
@@ -445,7 +446,9 @@ made subject to such option by the copyright holder.
                  pack200excludes="${pack200.excludes}"
                  targetcluster="${nbm.target.cluster}"
                  releasedate="${nbm.release.date}"
-                 moduleauthor="${nbm.module.author}">
+                 moduleauthor="${nbm.module.author}"
+                 locales="${nbm.locales}"
+                 >
             <license file="${license.file.override}"/>
             <signature keystore="${keystore}" storepass="${storepass}" alias="${nbm_alias}"/>
             <updaterjar>
