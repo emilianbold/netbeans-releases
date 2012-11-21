@@ -416,6 +416,8 @@ public class HtmlElementNode extends AbstractNode {
         for (Action action : org.openide.util.Utilities.actionsForPath(DOM_ACTIONS_PATH)) {
             if (action instanceof ContextAwareAction) {
                 actions.add(((ContextAwareAction) action).createContextAwareInstance(getLookup()));
+            } else {
+                actions.add(action);
             }
         }
         return actions.toArray(new Action[]{});        
