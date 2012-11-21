@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
 <!--
 DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
@@ -39,19 +40,58 @@ Contributor(s):
 
 Portions Copyrighted 2012 Sun Microsystems, Inc.
 -->
-<!DOCTYPE html>
-<html>
-    <head>
-        <title>_pluginName</title>
-        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-        <link rel="stylesheet" type="text/css" href="../css/warnWindowTooSmall.css">
-        <script type="text/javascript" src="../i18n/i18n.js"></script>
-        <script type="text/javascript" src="../i18n/warnWindowTooSmall.js"></script>
-        <script type="text/javascript" src="../js/warnWindowTooSmall.js"></script>
-    </head>
-    <body>
-        <h1 id="title">_WindowTooSmall</h1>
-        <p id="info">_WindowTooSmallInfo</p>
-        <button id="okButton">_OK</button>
-    </body>
-</html>
+
+
+<server>
+    <library id="Java EE">
+        <classpath>
+            <fileset dir="modules">
+                <include name="javax\..+\.jar"/>
+                <include name="bean-validator.jar"/>
+                <include name="jaxb-osgi.jar"/>
+                <include name="webservices-osgi.jar"/>
+                <include name="weld-osgi-bundle.jar"/>
+            </fileset>            
+            <fileset dir="modules/endorsed">
+                <include name=".+\.jar"/>
+            </fileset>
+            <fileset dir="../mq/lib">
+                <include name="jaxm-api.jar"/>
+            </fileset>
+        </classpath>
+        <javadocs>
+        </javadocs>
+        <sources>
+        </sources>
+    </library>
+    <library id="Jersey 1">
+        <classpath>
+            <fileset dir="modules">
+                <include name="asm-all-repackaged\.jar"/>
+                <include name="jackson.+\.jar"/>
+                <!-- include name="javax.ws.+\.jar"/ -->
+                <include name="jersey.+\.jar"/>
+                <include name="jettison.+\.jar"/>
+                <include name="jsr.+-api\.jar"/>
+                <include name="mimepull\.jar"/>
+            </fileset>
+        </classpath>
+        <javadocs> 
+            <link url="http://repo1.maven.org/maven2/com/sun/jersey/glassfish/v32/jersey-gfv3-docs-and-samples/1.13/jersey-gfv3-docs-and-samples-1.13-project.zip"/>
+        </javadocs>
+        <sources>
+        </sources>
+    </library>
+    <library id="JAX-RS">
+        <classpath>
+            <fileset dir="modules">
+                <include name="jsr311-api.jar"/>
+                <include name="jersey-core.jar"/>
+            </fileset>
+        </classpath>
+        <javadocs> 
+        </javadocs>
+        <sources>
+        </sources>
+    </library>
+</server>

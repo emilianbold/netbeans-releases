@@ -40,44 +40,74 @@
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
 
+package org.netbeans.modules.web.client.samples.wizard.ui;
+
+import javax.swing.event.ChangeListener;
+import org.netbeans.modules.web.client.samples.wizard.WizardConstants;
+import org.openide.WizardDescriptor;
+import org.openide.util.HelpCtx;
+
 /**
- * Debugger detached warning.
+ *
+ * @author Martin Janicek
  */
-var NetBeans_DebuggerDetachedWarning = {};
+public class OnlineSamplePanel implements WizardDescriptor.Panel<WizardDescriptor> {
 
-NetBeans_DebuggerDetachedWarning.CHROME_ISSUE_LINK = 'http://code.google.com/p/chromium/issues/detail?id=138258';
+    private WizardDescriptor descriptor;
+    private OnlineSampleVisualPanel myPanel;
 
-NetBeans_DebuggerDetachedWarning._okButton = null;
-NetBeans_DebuggerDetachedWarning._chromeIssueLink = null;
 
-NetBeans_DebuggerDetachedWarning.init = function() {
-    if (NetBeans_DebuggerDetachedWarning._okButton != null) {
-        return;
+    public OnlineSamplePanel(WizardDescriptor descriptor) {
+        this.descriptor = descriptor;
     }
-    NetBeans_DebuggerDetachedWarning._okButton = document.getElementById('okButton');
-    NetBeans_DebuggerDetachedWarning._chromeIssueLink = document.getElementById('chromeIssueLink');
-    this._registerEvents();
-};
-// register events
-NetBeans_DebuggerDetachedWarning._registerEvents = function() {
-    var that = this;
-    this._okButton.addEventListener('click', function() {
-        that._close();
-    }, false);
-    this._chromeIssueLink.addEventListener('click', function() {
-        that._openChromeIssueInMainWindow();
-    }, false);
-};
-NetBeans_DebuggerDetachedWarning._close = function() {
-    window.close();
-};
-NetBeans_DebuggerDetachedWarning._openChromeIssueInMainWindow = function() {
-    this._chromeIssueLink.setAttribute('href', NetBeans_DebuggerDetachedWarning.CHROME_ISSUE_LINK);
-    this._chromeIssueLink.setAttribute('target', '_blank');
-    this._close();
-};
 
-// run!
-window.addEventListener('load', function() {
-    NetBeans_DebuggerDetachedWarning.init();
-}, false);
+    @Override
+    public OnlineSampleVisualPanel getComponent() {
+        if (myPanel == null) {
+            myPanel = new OnlineSampleVisualPanel(descriptor);
+        }
+        return myPanel;
+    }
+
+    @Override
+    public void addChangeListener(ChangeListener listener) {
+        getComponent().addChangeListener(listener);
+    }
+
+    @Override
+    public void removeChangeListener(ChangeListener listener) {
+        getComponent().removeChangeListener(listener);
+    }
+
+    @Override
+    public HelpCtx getHelp() {
+        return new HelpCtx("html5.samples"); // NOI18N
+    }
+
+    @Override
+    public boolean isValid() {
+        String error = getComponent().getErrorMessage();
+        if (error != null && !error.isEmpty()) {
+            setErrorMessage(error);
+            return false;
+        }
+        setErrorMessage(""); // NOI18N
+        return true;
+    }
+
+    private void setErrorMessage(String message) {
+        descriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, message);
+    }
+
+    @Override
+    public void readSettings(WizardDescriptor descriptor) {
+        this.descriptor = descriptor;
+    }
+
+    @Override
+    public void storeSettings(WizardDescriptor descriptor) {
+        descriptor.putProperty(WizardConstants.SAMPLE_PROJECT_URL, getComponent().getProjectURL());
+        descriptor.putProperty(WizardConstants.SAMPLE_PROJECT_NAME, getComponent().getProjectName());
+        descriptor.putProperty(WizardConstants.SAMPLE_PROJECT_DIR, getComponent().getProjectDirectory());
+    }
+}

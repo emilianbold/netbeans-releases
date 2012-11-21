@@ -348,23 +348,30 @@ class DiffSidebar extends JPanel implements DocumentListener, ComponentListener,
         }
     }
 
-    boolean canRollback(Difference diff) {
-        if (!fileObject.canWrite()) {
-            LOG.log(Level.FINE, "File {0} is not writable", fileObject.getPath()); //NOI18N
-            return false;
-        }
+    boolean canRollback(final Difference diff) {
         if (!(document instanceof GuardedDocument)) {
             return true;
         }
-        int start, end;
-        if (diff.getType() == Difference.DELETE) {
-            start = end = Utilities.getRowStartFromLineOffset(document, diff.getSecondStart());
-        } else {
-            start = Utilities.getRowStartFromLineOffset(document, diff.getSecondStart() - 1);
-            end = Utilities.getRowStartFromLineOffset(document, diff.getSecondEnd());
-        }
-        MarkBlockChain mbc = ((GuardedDocument) document).getGuardedBlockChain();
-        return (mbc.compareBlock(start, end) & MarkBlock.OVERLAP) == 0;
+        final boolean[] modifiable = new boolean[1];
+        document.runAtomic(new Runnable() {
+            @Override
+            public void run () {
+                boolean canModify = document.isModifiable();
+                if (canModify) {
+                    int start, end;
+                    if (diff.getType() == Difference.DELETE) {
+                        start = end = Utilities.getRowStartFromLineOffset(document, diff.getSecondStart());
+                    } else {
+                        start = Utilities.getRowStartFromLineOffset(document, diff.getSecondStart() - 1);
+                        end = Utilities.getRowStartFromLineOffset(document, diff.getSecondEnd());
+                    }
+                    MarkBlockChain mbc = ((GuardedDocument) document).getGuardedBlockChain();
+                    canModify = (mbc.compareBlock(start, end) & MarkBlock.OVERLAP) == 0;
+                }
+                modifiable[0] = canModify;
+            }
+        });
+        return modifiable[0];
     }
     
     void onPrevious(Difference diff) {

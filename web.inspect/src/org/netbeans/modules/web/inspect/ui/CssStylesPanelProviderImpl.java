@@ -66,6 +66,7 @@ import org.netbeans.modules.css.model.api.Rule;
 import org.netbeans.modules.css.model.api.StyleSheet;
 import org.netbeans.modules.css.visual.spi.CssStylesListener;
 import org.netbeans.modules.css.visual.spi.CssStylesPanelProvider;
+import org.netbeans.modules.web.browser.api.Page;
 import org.netbeans.modules.web.common.api.ServerURLMapping;
 import org.netbeans.modules.web.inspect.PageInspectorImpl;
 import org.netbeans.modules.web.inspect.PageModel;
@@ -98,9 +99,13 @@ public abstract class CssStylesPanelProviderImpl extends JPanel implements CssSt
      */
     private FileObject lastRelatedFileObject;
     /**
-     * Page model whose styles view we are showing currently.
+     * Currently inspected page model.
      */
     private PageModel currentPageModel;
+    /**
+     * Inspected file object.
+     */
+    private FileObject inspectedFileObject;
     /**
      * Panel shown when no page model is available but when we have some
      * "related" file.
@@ -127,7 +132,6 @@ public abstract class CssStylesPanelProviderImpl extends JPanel implements CssSt
         initRunFilePanel();
         add(noStylesLabel, BorderLayout.CENTER);
         PageInspectorImpl.getDefault().addPropertyChangeListener(createInspectorListener());
-        update();
     }
 
     Lookup getMatchedRulesLookup() {
@@ -185,19 +189,20 @@ public abstract class CssStylesPanelProviderImpl extends JPanel implements CssSt
                 .addContainerGap());
     }
 
-    private void update() {
-        PageModel pageModel = PageInspectorImpl.getDefault().getPage();
-        update(pageModel);
-    }
-
     void update(FileObject fob) {
         lastRelatedFileObject = fob;
         update();
     }
 
-    private void update(final PageModel pageModel) {
+    private void update() {
         if (EventQueue.isDispatchThread()) {
-            if (pageModel == null) {
+            PageModel pageModel = PageInspectorImpl.getDefault().getPage();
+            if (pageModel != null && lastRelatedFileObject != null && lastRelatedFileObject.equals(inspectedFileObject)) {
+                removeAll();
+                PageModel.CSSStylesView stylesView = pageModel.getCSSStylesView();
+                add(stylesView.getView(), BorderLayout.CENTER);
+                lookup.setView(pageModel.getCSSStylesView());
+            } else {
                 boolean noStylesLabelShown = noStylesLabel.getParent() != null;
                 boolean runFilePanelShown = runFilePanel.getParent() != null;
                 if ((lastRelatedFileObject == null) ? !noStylesLabelShown : !runFilePanelShown) {
@@ -222,20 +227,15 @@ public abstract class CssStylesPanelProviderImpl extends JPanel implements CssSt
                     }
                     runButton.setEnabled(enabled);
                 }
-            } else if (pageModel != currentPageModel) {
-                removeAll();
-                PageModel.CSSStylesView stylesView = pageModel.getCSSStylesView();
-                add(stylesView.getView(), BorderLayout.CENTER);
+                lookup.setView(null);
             }
-            currentPageModel = pageModel;
-            lookup.setView(currentPageModel != null ? currentPageModel.getCSSStylesView() : null);
             revalidate();
             repaint();
         } else {
             EventQueue.invokeLater(new Runnable() {
                 @Override
                 public void run() {
-                    update(pageModel);
+                    update();
                 }
             });
         }
@@ -264,6 +264,30 @@ public abstract class CssStylesPanelProviderImpl extends JPanel implements CssSt
             public void propertyChange(PropertyChangeEvent evt) {
                 String propName = evt.getPropertyName();
                 if (PageInspectorImpl.PROP_MODEL.equals(propName)) {
+                    PageModel pageModel = PageInspectorImpl.getDefault().getPage();
+                    currentPageModel = pageModel;
+                    if (pageModel instanceof WebKitPageModel) {
+                        final WebKitPageModel webKitPageModel = (WebKitPageModel)pageModel;
+                        FileObject fob = inspectedFileObject(webKitPageModel, true);
+                        webKitPageModel.addPropertyChangeListener(new PropertyChangeListener() {
+                            @Override
+                            public void propertyChange(PropertyChangeEvent evt) {
+                                String propName = evt.getPropertyName();
+                                if (Page.PROP_DOCUMENT.equals(propName)) {
+                                    if (webKitPageModel == currentPageModel) {
+                                        FileObject fob = inspectedFileObject(webKitPageModel, true);
+                                        if (fob != null) {
+                                            inspectedFileObject = fob;
+                                        }
+                                        update();
+                                    }
+                                }
+                            }
+                        });
+                        if (fob != null) {
+                            inspectedFileObject = fob;
+                        }
+                    }
                     update();
                 }
             }
@@ -283,6 +307,25 @@ public abstract class CssStylesPanelProviderImpl extends JPanel implements CssSt
             provider = lkp.lookup(ActionProvider.class);
         }
         return provider;
+    }
+
+    static FileObject inspectedFileObject(WebKitPageModel pageModel, boolean inInspectedProjectOnly) {
+        try {
+            Project project = pageModel.getProject();
+            if (project != null) {
+                String documentURL = pageModel.getDocumentURL();
+                URL url = new URL(documentURL);
+                FileObject fob = ServerURLMapping.fromServer(project, url);
+                if (inInspectedProjectOnly && (fob != null)
+                        && !project.equals(FileOwnerQuery.getOwner(fob))) {
+                    fob = null;
+                }
+                return fob;
+            }
+        } catch (MalformedURLException ex) {
+            //no-op
+        }
+        return null;
     }
 
     @NbBundle.Messages({
@@ -365,7 +408,7 @@ public abstract class CssStylesPanelProviderImpl extends JPanel implements CssSt
             final PageModel pageModel = PageInspectorImpl.getDefault().getPage();
             if (pageModel != null && (pageModel instanceof WebKitPageModel)) {
                 WebKitPageModel wkPageModel = (WebKitPageModel) pageModel;
-                FileObject file = findFileObject(wkPageModel);
+                FileObject file = inspectedFileObject(wkPageModel, false);
                 if (file != null) {
                     final Model model = rule.getModel();
                     model.runReadTask(new Model.ModelTask() {
@@ -384,19 +427,6 @@ public abstract class CssStylesPanelProviderImpl extends JPanel implements CssSt
             }
         }
 
-        private FileObject findFileObject(WebKitPageModel pageModel) {
-            try {
-                Project project = pageModel.getProject();
-                if (project != null) {
-                    String documentURL = pageModel.getDocumentURL();
-                    URL url = new URL(documentURL);
-                    return ServerURLMapping.fromServer(project, url);
-                }
-            } catch (MalformedURLException ex) {
-                //no-op
-            }
-            return null;
-        }
     }
 
     /**

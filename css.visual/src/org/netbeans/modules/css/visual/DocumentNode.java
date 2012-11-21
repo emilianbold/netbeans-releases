@@ -84,7 +84,15 @@ public class DocumentNode extends AbstractNode {
     }
 
     void setModel(final DocumentViewModel model) {
-        ((DocumentChildren) getChildren()).setModel(model);
+        DocumentChildren children = (DocumentChildren) getChildren();
+        children.setModel(model); //this will re-set the children keys
+        //re-set model to all its children (stylesheets)
+        Node[] nodes = getChildren().getNodes(true); //force create nodes
+        for(Node node : nodes) {
+            StyleSheetNode sn = (StyleSheetNode)node;
+            StyleSheetNode.StyleSheetChildren snChildren = (StyleSheetNode.StyleSheetChildren)sn.getChildren();
+            snChildren.setModel(model);
+        }
     }
 
     /**

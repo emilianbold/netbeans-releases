@@ -58,6 +58,7 @@ import org.netbeans.modules.parsing.impl.indexing.lucene.DocumentBasedIndexManag
 import org.netbeans.modules.parsing.impl.indexing.lucene.LayeredDocumentIndex;
 import org.netbeans.modules.parsing.impl.indexing.lucene.LuceneIndexFactory;
 import org.netbeans.modules.parsing.lucene.support.DocumentIndex;
+import org.netbeans.modules.parsing.lucene.support.DocumentIndexCache;
 import org.netbeans.modules.parsing.lucene.support.Queries;
 import org.netbeans.modules.parsing.spi.indexing.*;
 import org.netbeans.spi.java.classpath.ClassPathProvider;
@@ -274,6 +275,11 @@ public class IndexingSupportTest extends NbTestCase {
             public LayeredDocumentIndex getIndex(FileObject indexFolder) throws IOException {
                 getIndexCalled = true;
                 return delegate.getIndex(indexFolder);
+            }
+
+            @Override
+            public DocumentIndexCache getCache(Context ctx) throws IOException {
+                return null;
             }
         }
         final LIF lif = new LIF();

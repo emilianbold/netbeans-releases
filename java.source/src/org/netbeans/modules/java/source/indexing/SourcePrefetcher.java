@@ -42,7 +42,6 @@
 package org.netbeans.modules.java.source.indexing;
 
 import java.io.Closeable;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.Iterator;
@@ -245,7 +244,7 @@ class SourcePrefetcher implements Iterator<CompileTuple>, /*Auto*/Closeable {
             } catch (ExecutionException ex) {
                 active = DUMMY;
                 final Throwable rootCause = ex.getCause();
-                if (rootCause instanceof FileNotFoundException) {
+                if (rootCause instanceof IOException) {
                     LOG.log(Level.INFO, rootCause.getLocalizedMessage());
                 } else {
                     Exceptions.printStackTrace(ex);

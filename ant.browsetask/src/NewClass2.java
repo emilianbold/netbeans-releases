@@ -40,17 +40,10 @@
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
 
-body {
-    font-family: Arial, Tahoma, Helvetica;
-    font-size: 10pt;
-    font-weight: normal;
-    color: #303942;
-    background-color: #fff;
-}
-h1 {
-    color: darkred;
-}
-
-#okButton {
-    float: right;
+/**
+ *
+ * @author stan
+ */
+public class NewClass2 {
+    NewClass1 c;
 }

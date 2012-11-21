@@ -148,7 +148,7 @@ public class DocumentViewPanel extends javax.swing.JPanel implements ExplorerMan
     public DocumentViewPanel(Lookup cssStylesLookup) {
         this.cssStylesLookup = cssStylesLookup;
 
-        createRuleAction = new CreateRuleAction();
+        createRuleAction = CreateRuleAction.getDefault();
 
         lookupFileObjectResult = cssStylesLookup.lookupResult(FileObject.class);
         lookupFileObjectResult.addLookupListener(new LookupListener() {
@@ -224,7 +224,7 @@ public class DocumentViewPanel extends javax.swing.JPanel implements ExplorerMan
             }
         });
 
-        setFilterVisible(true);
+        setFilterVisible(true, false);
         filterToggleButton.setSelected(true);
 
         initializeNodes();
@@ -524,7 +524,7 @@ public class DocumentViewPanel extends javax.swing.JPanel implements ExplorerMan
         };
     }
 
-    private void setFilterVisible(boolean visible) {
+    private void setFilterVisible(boolean visible, boolean requestFocus) {
         northPanel.remove(filterTextField);
         if (visible) {
             //update the UI
@@ -532,7 +532,9 @@ public class DocumentViewPanel extends javax.swing.JPanel implements ExplorerMan
             //set the filter text to the node
             filter.setPattern(filterTextField.getText());
 
-            filterTextField.requestFocus();
+            if(requestFocus) {
+                filterTextField.requestFocus();
+            }
         } else {
             //just remove the filter text from the node, but keep it in the field
             //so next time it is opened it will contain the old value
@@ -587,7 +589,7 @@ public class DocumentViewPanel extends javax.swing.JPanel implements ExplorerMan
     }// </editor-fold>//GEN-END:initComponents
 
     private void filterToggleButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_filterToggleButtonActionPerformed
-        setFilterVisible(filterToggleButton.isSelected());
+        setFilterVisible(filterToggleButton.isSelected(), true);
     }//GEN-LAST:event_filterToggleButtonActionPerformed
 
     private void createRuleToggleButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_createRuleToggleButtonActionPerformed

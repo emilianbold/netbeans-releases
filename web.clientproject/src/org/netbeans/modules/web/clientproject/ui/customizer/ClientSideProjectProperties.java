@@ -360,7 +360,7 @@ public final class ClientSideProjectProperties {
 
     @CheckForNull
     public File getResolvedStartFile() {
-        return resolveFile(getStartFile());
+        return resolveFile(getSiteRootFolder() + "/" + getStartFile());
     }
 
     private static void errorOccured(String message) {

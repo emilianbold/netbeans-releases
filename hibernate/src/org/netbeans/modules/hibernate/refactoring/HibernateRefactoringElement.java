@@ -79,33 +79,39 @@ public class HibernateRefactoringElement extends SimpleRefactoringElementImpleme
         this.matching = matching !=null && matching.length()>0 ? matching : oldName;
     }
     
+    @Override
     public String getText() {
         return this.text;
     }
 
+    @Override
     public String getDisplayText() {
         return fixDisplayText(getText());
     }
 
+    @Override
     public void performChange() {
         // Do nothing here.
     }
 
+    @Override
     public Lookup getLookup() {
         return Lookup.EMPTY;
     }
 
+    @Override
     public FileObject getParentFile() {
         return mappingFileObject;
     }
 
+    @Override
     public PositionBounds getPosition() {
         return position;
     }
 
     private String fixDisplayText(String displayText) {
         String finalText = displayText.replaceAll("<", "&lt;");
-        finalText.replaceAll(">", "&gt;");
+        finalText = finalText.replaceAll(">", "&gt;");
         // TODO: will not split properly for cases, such as,
         // <property column="name" name="name"/>. Will fix it later
         String[] subStrings = finalText.split(matching);

@@ -40,11 +40,10 @@
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
 
-window.addEventListener('load', function() {
-    I18n.pageTitle();
-    // texts
-    I18n.element('title');
-    I18n.element('info');
-    I18n.element('okButton');
-}, false);
-
+/**
+ *
+ * @author stan
+ */
+public class NewClass {
+    
+}

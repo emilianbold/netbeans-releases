@@ -416,8 +416,8 @@ public class HtmlElementNode extends AbstractNode {
         } else {
             
             actions.add(openAction);
-            actions.add(null);
-            actions.add(editRulesAction);
+//            actions.add(null);
+//            actions.add(editRulesAction);
             actions.add(null);
             actions.addAll(Arrays.asList(ui.getActions()));
         }
@@ -462,7 +462,14 @@ public class HtmlElementNode extends AbstractNode {
                     long start = sd.getFrom();
                     if (start <= offset) {
                         long end = sd.getTo();
-                        if (end > offset) {
+                        if (end == offset) {
+                            //look at the next one
+                            final SourceDescription sourceDescription = ((HtmlElementNode) children[i]).getSourceDescription();
+                            if (i + 1 < children.length && sourceDescription != null && sourceDescription.getFrom() == offset) {
+                                return ((HtmlElementNode) children[i]).getNodeForOffset(offset);
+                            } 
+                        }
+                        if (end >= offset) {
                             return c.getNodeForOffset(offset);
                         }
                     }

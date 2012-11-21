@@ -40,12 +40,18 @@
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
 
-window.addEventListener('load', function() {
-    I18n.pageTitle();
-    // texts
-    I18n.element('title');
-    I18n.element('info');
-    I18n.element('rerun');
-    I18n.element('chromeIssue');
-    I18n.element('okButton');
-}, false);
+package org.netbeans.modules.web.client.samples.wizard;
+
+/**
+ *
+ * @author Martin Janicek
+ */
+public final class WizardConstants {
+
+    public static final String SAMPLE_PROJECT_NAME = "sampleProjectName"; // NOI18N
+    public static final String SAMPLE_PROJECT_DIR = "sampleProjectDir"; // NOI18N
+    public static final String SAMPLE_PROJECT_URL = "sampleProjectURL"; // NOI18N
+
+    private WizardConstants() {
+    }
+}
