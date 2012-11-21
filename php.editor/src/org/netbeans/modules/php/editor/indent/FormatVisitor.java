@@ -247,6 +247,7 @@ public class FormatVisitor extends DefaultVisitor {
                 // when the array is on the beginning of the line, indent items in normal way
                 delta = options.indentArrayItems;
             }
+            delta = modifyDeltaForEnclosingFunctionInvocations(delta);
             if (path.get(1) instanceof FunctionInvocation && ((FunctionInvocation) path.get(1)).getParameters().size() == 1) {
                 int hindex = formatTokens.size() - 1;
                 while (hindex > 0 && formatTokens.get(hindex).getId() != FormatToken.Kind.TEXT
@@ -281,6 +282,19 @@ public class FormatVisitor extends DefaultVisitor {
         formatTokens.add(new FormatToken.IndentToken(ts.offset() + ts.token().length(), -1 * delta));
         addAllUntilOffset(node.getEndOffset());
         resetGroupAlignment();
+    }
+
+    private int modifyDeltaForEnclosingFunctionInvocations(int delta) {
+        int depthInFunctionInvocation = 0;
+        for (int i = 1; i < path.size(); i++) {
+            if (path.get(i) instanceof FunctionInvocation) {
+                depthInFunctionInvocation++;
+            } else {
+                break;
+            }
+        }
+        // move indenting left for every enclosing function invocation
+        return depthInFunctionInvocation > 1 ? delta + (-1 * options.continualIndentSize * (depthInFunctionInvocation - 1)) : delta;
     }
 
     @Override
@@ -938,13 +952,16 @@ public class FormatVisitor extends DefaultVisitor {
                         || ftoken.getId() == FormatToken.Kind.COMMENT
                         || ftoken.getId() == FormatToken.Kind.COMMENT_START
                         || ftoken.getId() == FormatToken.Kind.COMMENT_END
+                        || ftoken.getId() == FormatToken.Kind.INDENT
                         || (ftoken.getId() == FormatToken.Kind.TEXT && (")".equals(ftoken.getOldText().toString()) || "]".equals(ftoken.getOldText().toString())))) {
                     formatTokens.remove(formatTokens.size() - 1);
                     removed.add(ftoken);
                     ftoken = formatTokens.get(formatTokens.size() - 1);
                 }
                 if (ftoken.getId() == FormatToken.Kind.WHITESPACE_INDENT) {
+                    formatTokens.remove(formatTokens.size() - 1); // remove WHITESPACE_INDENT
                     formatTokens.add(new FormatToken.IndentToken(node.getEndOffset(), -1 * options.continualIndentSize));
+                    formatTokens.add(ftoken); // re-add WHITESPACE_INDENT
                     for (int i = removed.size() - 1; i > -1; i--) {
                         formatTokens.add(removed.get(i));
                     }
