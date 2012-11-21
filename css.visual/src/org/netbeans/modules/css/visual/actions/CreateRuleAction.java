@@ -59,7 +59,7 @@ import org.openide.util.RequestProcessor;
  * @author marekfukala
  */
 @NbBundle.Messages({
-    "label.create.rule=Create Rule"
+    "label.create.rule=Edit CSS Rules"
 })
 public class CreateRuleAction extends AbstractAction {
 

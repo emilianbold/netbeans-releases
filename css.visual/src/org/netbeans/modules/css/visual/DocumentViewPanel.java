@@ -561,7 +561,7 @@ public class DocumentViewPanel extends javax.swing.JPanel implements ExplorerMan
         createRuleToggleButton.setAction(createRuleAction);
         createRuleToggleButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/css/visual/resources/newRule.png"))); // NOI18N
         org.openide.awt.Mnemonics.setLocalizedText(createRuleToggleButton, null);
-        createRuleToggleButton.setToolTipText(org.openide.util.NbBundle.getMessage(DocumentViewPanel.class, "DocumentViewPanel.createRuleToggleButton.toolTipText")); // NOI18N
+        createRuleToggleButton.setToolTipText(org.openide.util.NbBundle.getMessage(DocumentViewPanel.class, "CreateRuleDialog.title")); // NOI18N
         createRuleToggleButton.setFocusable(false);
         createRuleToggleButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {

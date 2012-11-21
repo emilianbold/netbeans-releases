@@ -645,7 +645,7 @@ public class RuleEditorPanel extends JPanel {
         createRuleToggleButton.setAction(addRuleAction);
         createRuleToggleButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/css/visual/resources/newRule.png"))); // NOI18N
         createRuleToggleButton.setText(null);
-        createRuleToggleButton.setToolTipText(org.openide.util.NbBundle.getMessage(RuleEditorPanel.class, "DocumentViewPanel.createRuleToggleButton.toolTipText")); // NOI18N
+        createRuleToggleButton.setToolTipText(org.openide.util.NbBundle.getMessage(RuleEditorPanel.class, "CreateRuleDialog.title")); // NOI18N
         createRuleToggleButton.setFocusable(false);
         createRuleToggleButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
