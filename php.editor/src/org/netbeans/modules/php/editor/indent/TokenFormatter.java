@@ -1454,7 +1454,8 @@ public class TokenFormatter {
                                                 } while (hIndex < formatTokens.size()
                                                         && token.getId() != FormatToken.Kind.WHITESPACE_INDENT
                                                         && token.getId() != FormatToken.Kind.WHITESPACE
-                                                        && (token.isWhitespace() || token.getId() == FormatToken.Kind.INDENT));
+                                                        && (token.isWhitespace() || token.getId() == FormatToken.Kind.INDENT
+                                                                || token.getId() == FormatToken.Kind.UNBREAKABLE_SEQUENCE_END));
                                                 if (FormatToken.Kind.TEXT == token.getId()
                                                         && (")".equals(token.getOldText()) || ";".equals(token.getOldText()) || "]".equals(formatToken.getOldText()))) {
                                                     countSpaces = hindent;
