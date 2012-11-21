@@ -103,7 +103,7 @@ public class BreadCrumbComponent<T extends JLabel&Renderer> extends JComponent i
 
     private final Image SEPARATOR = ImageUtilities.loadImage("org/netbeans/modules/editor/breadcrumbs/resources/separator.png");
     
-    private Result<FontColorSettings> result;
+    private final Result<FontColorSettings> result;
     private Map<?, ?> renderingHints;
     
     public BreadCrumbComponent() {
