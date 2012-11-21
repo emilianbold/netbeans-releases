@@ -81,7 +81,7 @@ public class JavaFXCSSModule extends CssEditorModule implements CssModule {
 
     @Override
     public PropertyDefinition getPropertyDefinition(String propertyName) {
-        return propertyDescriptors.get(propertyName);
+        return getJavaFXProperties().get(propertyName);
     }
 
     private synchronized Map<String, PropertyDefinition> getJavaFXProperties() {
