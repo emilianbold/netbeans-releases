@@ -1016,7 +1016,11 @@ public class ValidateLayerConsistencyTest extends NbTestCase {
                 continue; // same
             }
             String path = f.getPath();
-            if (path.equals("Templates/Other/file")) {
+            if (path.equals("Templates/Other/file") ||
+                path.equals("Templates/Other/group.group")) {
+                
+                // If there're more files like this, consider adding an API
+                // to mark them as intentionally non-editable
                 continue; // intentionally empty and uneditable
             }
             warnings.add(path + " is empty but has no iterator and will therefore not be editable");
