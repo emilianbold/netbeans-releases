@@ -36,12 +36,11 @@ public class Installer extends ModuleInstall {
     }
 
     @Override
-    public boolean closing () {
-        final boolean ret = super.closing();
+    public void close() {
+        super.close();
         RepositoryUpdater.getDefault().stop();
         LuceneIndexFactory.getDefault().close();
         DocumentBasedIndexManager.getDefault().close();
-        return ret;
     }
 
 }
