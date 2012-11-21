@@ -4543,7 +4543,7 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
                     currentLastModified = file.lastModified().getTime();
                     upToDate = indexersUpToDate && lastState.first ==  currentLastModified;
                 } else {
-                    currentLastModified = 0L;
+                    currentLastModified = -1L;
                     upToDate = false;
                 }                
                 binaryScanStarted(root, upToDate, contexts);
@@ -4554,8 +4554,9 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
                     LOGGER.log(Level.WARNING, null, ioe);
                 } finally {
                     binaryScanFinished(binaryIndexers, contexts);
-                    if (success && file != null && !upToDate) {
-                        ArchiveTimeStamps.setLastModified(file.toURL(), createBinaryIndexersTimeStamp(currentLastModified,contexts));
+                    URL archiveFile = FileUtil.getArchiveFile(root);
+                    if (success && archiveFile != null && !upToDate) {
+                        ArchiveTimeStamps.setLastModified(archiveFile, createBinaryIndexersTimeStamp(currentLastModified,contexts));
                     }
                 }
             } catch (IOException ioe) {
