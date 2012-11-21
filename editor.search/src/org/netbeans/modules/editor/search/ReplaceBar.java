@@ -276,6 +276,7 @@ public final class ReplaceBar extends JPanel {
     }
 
     void updateReplaceComboBoxHistory(String incrementalSearchText) {
+        EditorFindSupport.getInstance().addToReplaceHistory(new EditorFindSupport.RP(incrementalSearchText, preserveCaseCheckBox.isSelected()));
         // Add the text to the top of the list
         for (int i = replaceComboBox.getItemCount() - 1; i >= 0; i--) {
             String item = (String) replaceComboBox.getItemAt(i);
@@ -357,9 +358,18 @@ public final class ReplaceBar extends JPanel {
     public void gainFocus() {
         if (!isVisible()) {
             changeSearchBarToBePartOfReplaceBar();
-            setVisible(true);
             SearchComboBoxEditor.changeToOneLineEditorPane((JEditorPane) replaceTextField);
             addEnterKeystrokeReplaceTo(replaceTextField);
+            String lastReplace = replaceTextField.getText();
+            MutableComboBoxModel comboBoxModelIncSearch = ((MutableComboBoxModel) replaceComboBox.getModel());
+            for (int i = comboBoxModelIncSearch.getSize() - 1; i >= 0; i--) {
+                comboBoxModelIncSearch.removeElementAt(i);
+            }
+            for (EditorFindSupport.RP rp : EditorFindSupport.getInstance().getReplaceHistory()) {
+                comboBoxModelIncSearch.addElement(rp.getReplaceExpression());
+            }
+            replaceTextField.setText(lastReplace);
+            setVisible(true);
         }
         searchBar.gainFocus();
         searchBar.getIncSearchTextField().requestFocusInWindow();

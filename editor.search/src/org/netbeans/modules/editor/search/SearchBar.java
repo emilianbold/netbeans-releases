@@ -44,6 +44,7 @@ import java.awt.event.*;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.lang.ref.WeakReference;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
@@ -64,6 +65,9 @@ import org.netbeans.api.editor.EditorRegistry;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.settings.SimpleValueNames;
+import org.netbeans.api.search.ReplacePattern;
+import org.netbeans.api.search.SearchHistory;
+import org.netbeans.api.search.SearchPattern;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.BaseKit;
 import org.netbeans.editor.MultiKeymap;
@@ -140,6 +144,7 @@ public final class SearchBar extends JPanel implements PropertyChangeListener {
 
     @SuppressWarnings("unchecked")
     private SearchBar() {
+        loadSearchHistory();
         addEscapeKeystrokeFocusBackTo(this);
         setLayout(new BoxLayout(this, BoxLayout.LINE_AXIS));
         setFocusCycleRoot(true);
@@ -235,6 +240,86 @@ public final class SearchBar extends JPanel implements PropertyChangeListener {
         makeBarExpandable(expandMenu);
         setVisible(false);
         usageLogging();
+    }
+    
+    private static class SearchHistoryUtility {
+
+        public static List<EditorFindSupport.SPW> convertFromSearchHistoryToEditorFindSupport(List<SearchPattern> searchPatterns) {
+            List<EditorFindSupport.SPW> history = new ArrayList<EditorFindSupport.SPW>();
+            for (int i = 0; i < searchPatterns.size(); i++) {
+                SearchPattern sptr = searchPatterns.get(i);
+                EditorFindSupport.SPW spwrap = new EditorFindSupport.SPW(sptr.getSearchExpression(),
+                        sptr.isWholeWords(), sptr.isMatchCase(), sptr.isRegExp());
+                history.add(spwrap);
+            }
+            return history;
+        }
+        
+        public static List<EditorFindSupport.RP> convertFromReplaceHistoryToEditorFindSupport(List<ReplacePattern> replacePatterns) {
+            List<EditorFindSupport.RP> history = new ArrayList<EditorFindSupport.RP>();
+            for (int i = 0; i < replacePatterns.size(); i++) {
+                ReplacePattern rp = replacePatterns.get(i);
+                EditorFindSupport.RP spwrap = new EditorFindSupport.RP(rp.getReplaceExpression(), rp.isPreserveCase());
+                history.add(spwrap);
+            }
+            return history;
+        }
+    }
+    private static PropertyChangeListener searchSelectedPatternListener;
+    private static PropertyChangeListener editorHistoryChangeListener;
+
+    private static void loadSearchHistory() {
+        searchSelectedPatternListener = new PropertyChangeListener() {
+            @Override
+            public void propertyChange(PropertyChangeEvent evt) {
+                if (evt == null) {
+                    return;
+                }
+                if (SearchHistory.ADD_TO_HISTORY.equals(evt.getPropertyName())) {
+                    EditorFindSupport.getInstance().setHistory(
+                            SearchHistoryUtility.convertFromSearchHistoryToEditorFindSupport(SearchHistory.getDefault().getSearchPatterns()));
+                }
+                
+                if (SearchHistory.ADD_TO_REPLACE.equals(evt.getPropertyName())) {
+                    EditorFindSupport.getInstance().setReplaceHistory(
+                            SearchHistoryUtility.convertFromReplaceHistoryToEditorFindSupport(SearchHistory.getDefault().getReplacePatterns()));
+                }
+            }
+        };
+
+        editorHistoryChangeListener = new PropertyChangeListener() {
+            @Override
+            public void propertyChange(PropertyChangeEvent evt) {
+                if (evt == null) {
+                    return;
+                }
+                if (EditorFindSupport.FIND_HISTORY_PROP.equals(evt.getPropertyName())) {
+                    EditorFindSupport.SPW spw = (EditorFindSupport.SPW) evt.getNewValue();
+                    if (spw == null || spw.getSearchExpression() == null || "".equals(spw.getSearchExpression())) { //NOI18N
+                        return;
+                    }
+                    SearchPattern sp = SearchPattern.create(spw.getSearchExpression(),
+                            spw.isWholeWords(), spw.isMatchCase(), spw.isRegExp());
+                    SearchHistory.getDefault().add(sp);
+                } else if (EditorFindSupport.FIND_HISTORY_CHANGED_PROP.equals(evt.getPropertyName())) {
+                    EditorFindSupport.getInstance().setHistory(
+                            SearchHistoryUtility.convertFromSearchHistoryToEditorFindSupport(SearchHistory.getDefault().getSearchPatterns()));
+                } else if (EditorFindSupport.REPLACE_HISTORY_PROP.equals(evt.getPropertyName())) {
+                    EditorFindSupport.RP rp = (EditorFindSupport.RP) evt.getNewValue();
+                    if (rp == null || rp.getReplaceExpression() == null || "".equals(rp.getReplaceExpression())) { //NOI18N
+                        return;
+                    }
+                    ReplacePattern replacePattern = ReplacePattern.create(rp.getReplaceExpression(), rp.isPreserveCase());
+                    SearchHistory.getDefault().addReplace(replacePattern);
+                } else if (EditorFindSupport.REPLACE_HISTORY_CHANGED_PROP.equals(evt.getPropertyName())) {
+                    EditorFindSupport.getInstance().setReplaceHistory(
+                            SearchHistoryUtility.convertFromReplaceHistoryToEditorFindSupport(SearchHistory.getDefault().getReplacePatterns()));
+                }
+            }
+        };
+
+        SearchHistory.getDefault().addPropertyChangeListener(searchSelectedPatternListener);
+        EditorFindSupport.getInstance().addPropertyChangeListener(editorHistoryChangeListener);
     }
 
     private static void usageLogging() {
