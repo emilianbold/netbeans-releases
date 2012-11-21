@@ -34,6 +34,7 @@ import org.netbeans.spi.editor.hints.EnhancedFix;
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.ImportTree;
 import com.sun.source.tree.MethodInvocationTree;
+import com.sun.source.tree.Scope;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
 import com.sun.source.util.TreePath;
@@ -47,6 +48,8 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.type.DeclaredType;
+import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Types;
 import org.netbeans.api.java.source.CompilationInfo;
@@ -134,6 +137,11 @@ public class StaticImport extends AbstractHint {
                 return null;
             }
             fqn = fqn1;
+        }
+        Scope currentScope = info.getTrees().getScope(treePath);
+        TypeMirror enclosingType = e.getEnclosingElement().asType();
+        if (enclosingType == null || enclosingType.getKind() != TypeKind.DECLARED || !info.getTrees().isAccessible(currentScope, e, (DeclaredType) enclosingType)) {
+            return null;
         }
         List<Fix> fixes = Collections.<Fix>singletonList(new FixImpl(TreePathHandle.create(treePath, info), fqn, sn));
         String desc = NbBundle.getMessage(StaticImport.class, "ERR_StaticImport");

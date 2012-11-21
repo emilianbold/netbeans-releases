@@ -56,6 +56,7 @@ import java.util.Map;
 import java.util.NoSuchElementException;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
+import org.netbeans.modules.parsing.lucene.support.DocumentIndexCache;
 import org.netbeans.modules.parsing.lucene.support.IndexDocument;
 import org.netbeans.modules.parsing.spi.indexing.Indexable;
 import org.openide.util.Parameters;
@@ -111,8 +112,13 @@ public final class ClusteredIndexables {
             return new BitSetIterable(cluster);
     }
 
-    public static DocumentIndexCache createDocumentIndexCache() {
-        return new DocumentIndexCache();
+    public static AttachableDocumentIndexCache createDocumentIndexCache() {
+        return new DocumentIndexCacheImpl();
+    }
+
+    public static interface AttachableDocumentIndexCache extends DocumentIndexCache {
+        void attach(@NonNull final String mode, @NonNull final ClusteredIndexables ci);
+        void detach();
     }
 
     // -----------------------------------------------------------------------
@@ -232,8 +238,8 @@ public final class ClusteredIndexables {
         }
     }
 
-    public static final class DocumentIndexCache implements org.netbeans.modules.parsing.lucene.support.DocumentIndexCache {
-
+    private static final class DocumentIndexCacheImpl implements AttachableDocumentIndexCache {
+      
         private ClusteredIndexables deleteIndexables;
         private ClusteredIndexables indexIndexables;
         private BitSet deleteFromDeleted;
@@ -242,33 +248,39 @@ public final class ClusteredIndexables {
         private List<String> toDeleteOutOfOrder;
         private Reference<List[]> dataRef;
 
-        private DocumentIndexCache() {}
+        private DocumentIndexCacheImpl() {}
 
+        @Override
         public void attach(
             @NonNull final String mode,
             @NonNull final ClusteredIndexables ci) {
+            Parameters.notNull("mode", mode);   //NOI18N
+            Parameters.notNull("ci", ci);       //NOI18N
+            if (TransientUpdateSupport.isTransientUpdate()) {
+                return;
+            }
             if (DELETE.equals(mode)) {
-                this.deleteIndexables = ci;
+                ensureNotReBound(this.deleteIndexables, ci);
+                if (!ci.equals(this.deleteIndexables)) {
+                    this.deleteIndexables = ci;
+                }
             } else if (INDEX.equals(mode)) {
-                this.indexIndexables = ci;
+                ensureNotReBound(this.indexIndexables, ci);
+                if (!ci.equals(this.indexIndexables)) {
+                    this.indexIndexables = ci;
+                }
             } else {
                 throw new IllegalArgumentException(mode);
             }
         }
 
+        @Override
         public void detach() {
+            if (TransientUpdateSupport.isTransientUpdate()) {
+                return;
+            }
             this.deleteIndexables = null;
             this.indexIndexables = null;
-        }
-
-        public boolean isAttached(String mode) {
-            if (DELETE.equals(mode)) {
-                return deleteIndexables != null;
-            } else if (INDEX.equals(mode)) {
-                return indexIndexables != null;
-            } else {
-                throw new IllegalArgumentException(mode);
-            }
         }
 
         @Override
@@ -318,6 +330,19 @@ public final class ClusteredIndexables {
         @Override
         public Collection<? extends IndexDocument> getAddedDocuments() {
             return toAdd != null ? toAdd : Collections.<IndexDocument>emptySet();
+        }
+
+        private static void ensureNotReBound(
+                @NullAllowed final ClusteredIndexables oldCi,
+                @NonNull final ClusteredIndexables newCi) {
+            if (oldCi != null && !oldCi.equals(newCi)) {
+                throw new IllegalStateException(
+                    String.format(
+                        "Cannot bind to ClusteredIndexables(%d), already bound to ClusteredIndexables(%d)", //NOI18N
+                        System.identityHashCode(newCi),
+                        System.identityHashCode(oldCi)
+                ));
+            }
         }
 
         private static void handleDelete(

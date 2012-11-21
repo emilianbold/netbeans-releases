@@ -272,6 +272,7 @@ public final class SystemUtils {
                         }
                     }
                     LogManager.log(ErrorLevel.MESSAGE, "[stdout]: " + line);
+                    endTime += MAX_EXECUTION_TIME;
                 }
                 
                 processStdOut.append(string);
@@ -292,6 +293,7 @@ public final class SystemUtils {
                         }
                     }
                     LogManager.log(ErrorLevel.MESSAGE, "[stderr]: " + line);
+                    endTime += MAX_EXECUTION_TIME;
                 }
                 
                 processStdErr.append(string);
