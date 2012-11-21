@@ -119,7 +119,6 @@ public class FormatVisitor extends DefaultVisitor {
     private final LinkedList<ASTNode> path;
     private final DocumentOptions options;
     private final Stack<GroupAlignmentTokenHolder> groupAlignmentTokenHolders;
-    private final int indentLevel;
     private final int caretOffset;
     private final int startOffset;
     private final int endOffset;
@@ -133,7 +132,6 @@ public class FormatVisitor extends DefaultVisitor {
         this.document = document;
         ts = LexUtilities.getPHPTokenSequence(document, 0);
         path = new LinkedList<ASTNode>();
-        indentLevel = 0;
         options = new DocumentOptions(document);
         includeWSBeforePHPDoc = true;
         formatTokens = new ArrayList<FormatToken>(ts == null ? 1 : ts.tokenCount() * 2);
@@ -1111,7 +1109,7 @@ public class FormatVisitor extends DefaultVisitor {
                     }
                     isMethodInvocationShifted = true;
                     super.visit(node);
-                    addAllUntilOffset(indentLevel);
+                    addAllUntilOffset(node.getEndOffset());
                     if (addIndent) {
                         formatTokens.add(new FormatToken.IndentToken(ts.offset() + ts.token().length(), -1 * options.continualIndentSize));
                     }
