@@ -42,10 +42,6 @@
 package org.netbeans.modules.css.visual;
 
 import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.Component;
-import java.awt.Graphics;
-import java.awt.Insets;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -55,11 +51,11 @@ import java.util.HashMap;
 import java.util.Map;
 import javax.swing.ButtonGroup;
 import javax.swing.JComponent;
+import javax.swing.JSplitPane;
 import javax.swing.JToggleButton;
 import javax.swing.JToolBar;
 import javax.swing.UIManager;
 import javax.swing.border.Border;
-import javax.swing.plaf.basic.BasicSplitPaneUI;
 import org.netbeans.modules.css.visual.api.RuleEditorController;
 import org.netbeans.modules.css.visual.spi.CssStylesPanelProvider;
 import org.openide.filesystems.FileObject;
@@ -149,7 +145,6 @@ public class CssStylesPanel extends javax.swing.JPanel {
             toolBar.setRollover(true);
         } else if( AQUA ) {
             toolBar.setBackground(UIManager.getColor("NbExplorerView.background"));
-            splitPane.setUI(new CleanSplitPaneUI());
         }
         
         splitPane.setResizeWeight(0.66);
@@ -169,6 +164,18 @@ public class CssStylesPanel extends javax.swing.JPanel {
         Boolean isXP = (Boolean)Toolkit.getDefaultToolkit().
                         getDesktopProperty("win.xpstyle.themeActive"); //NOI18N
         return isXP == null ? false : isXP.booleanValue();
+    }
+
+    private JSplitPane createSplitPane() {
+        return new JSplitPane() {
+
+            @Override
+            public String getUIClassID() {
+                if( AQUA && UIManager.get("Nb.SplitPaneUI.clean") != null ) //NOI18N
+                    return "Nb.SplitPaneUI.clean"; //NOI18N
+                return super.getUIClassID();
+            }
+        };
     }
         
     
@@ -317,7 +324,7 @@ public class CssStylesPanel extends javax.swing.JPanel {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        splitPane = new javax.swing.JSplitPane();
+        splitPane = createSplitPane();
         topPanel = new javax.swing.JPanel();
 
         setLayout(new java.awt.BorderLayout());
@@ -395,36 +402,5 @@ public class CssStylesPanel extends javax.swing.JPanel {
         public boolean providesContentFor(FileObject file) {
             return delegate.providesContentFor(file);
         }
-        
     }
-    
-     private static class CleanSplitPaneUI extends BasicSplitPaneUI {
-        @Override
-        protected void installDefaults() {
-            super.installDefaults();
-            divider.setBorder(new SplitBorder());
-        }
-    }
-     
-    private static class SplitBorder implements Border {
-        
-        private Color bkColor = UIManager.getColor("NbSplitPane.background");
-
-        @Override
-        public Insets getBorderInsets(Component c) {
-            return new Insets(0, 0, 0, 0);
-        }
-
-        @Override
-        public boolean isBorderOpaque() {
-            return true;
-        }
-
-        @Override
-        public void paintBorder(Component c, Graphics g, int x, int y, int width, int height) {
-            g.setColor(bkColor);
-            g.fillRect(x,y,width,height);
-        }
-    }
-
 }
