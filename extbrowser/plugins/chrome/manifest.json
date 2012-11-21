@@ -2,8 +2,9 @@
   "name": "__MSG__pluginName__",
   "description": "__MSG__pluginDescription__",
   "manifest_version": 2,
+  "minimum_chrome_version": "21",
 
-  "version": "0.6.8",
+  "version": "0.6.9",
 
   "homepage_url": "https://chrome.google.com/webstore/detail/netbeans-connector/hafdlehgocfcodbgjnpecfajgkeejnaa",
 
