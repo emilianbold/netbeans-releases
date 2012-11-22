@@ -47,6 +47,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.SwingUtilities;
 import org.apache.maven.artifact.Artifact;
 import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.api.java.classpath.ClassPath;
@@ -74,6 +75,8 @@ import org.openide.filesystems.FileObject;
     "org-netbeans-modules-maven/" + NbMavenProject.TYPE_OSGI
 })
 public class ContainerCPModifierImpl implements ContainerClassPathModifier {
+
+    private static final Logger LOGGER = Logger.getLogger(ContainerCPModifierImpl.class.getName());
     private final Project project;
 
 
@@ -122,7 +125,7 @@ public class ContainerCPModifierImpl implements ContainerClassPathModifier {
                         dep.setScope(Artifact.SCOPE_PROVIDED);
                         added[0] = Boolean.TRUE;
                     } else {
-                        Logger.getLogger(ContainerCPModifierImpl.class.getName()).log(Level.WARNING, "Cannot process api with symbolic name: {0}. Nothing will be added to project''s classpath.", name);
+                        LOGGER.log(Level.WARNING, "Cannot process api with symbolic name: {0}. Nothing will be added to project''s classpath.", name);
                     }
                 }
             }
@@ -130,7 +133,9 @@ public class ContainerCPModifierImpl implements ContainerClassPathModifier {
         FileObject pom = project.getProjectDirectory().getFileObject("pom.xml"); //NOI18N
         Utilities.performPOMModelOperations(pom, Collections.singletonList(operation));
         if (added[0]) {
-            project.getLookup().lookup(NbMavenProject.class).downloadDependencyAndJavadocSource(true);
+            if (!SwingUtilities.isEventDispatchThread()) {
+                project.getLookup().lookup(NbMavenProject.class).downloadDependencyAndJavadocSource(true);
+            }
         }
     }
 
@@ -179,6 +184,28 @@ public class ContainerCPModifierImpl implements ContainerClassPathModifier {
         item.artifactId = "jsp-api"; //NOI18N
         item.version = "2.1"; //NOI18N
         item.classToCheck = "javax/servlet/jsp/tagext/BodyContent.class"; //NOI18N
+        toRet.put(key, item);
+
+        key = ContainerClassPathModifier.API_JSF + ":" + Profile.J2EE_13.toPropertiesString(); //NOI18N
+        item = new Item();
+        item.groupId = "javax.faces"; //NOI18N
+        item.artifactId = "jsf-api"; //NOI18N
+        item.version = "1.2"; //NOI18N
+        item.classToCheck = "javax.faces.application.StateManagerWrapper"; //NOI18N
+        toRet.put(key, item);
+        key = ContainerClassPathModifier.API_JSF + ":" + Profile.J2EE_14.toPropertiesString();
+        item = new Item();
+        item.groupId = "javax.faces"; //NOI18N
+        item.artifactId = "jsf-api"; //NOI18N
+        item.version = "1.2"; //NOI18N
+        item.classToCheck = "javax.faces.application.StateManagerWrapper"; //NOI18N
+        toRet.put(key, item);
+        key = ContainerClassPathModifier.API_JSF + ":" + Profile.JAVA_EE_5.toPropertiesString(); //NOI18N
+        item = new Item();
+        item.groupId = "javax.faces"; //NOI18N
+        item.artifactId = "jsf-api"; //NOI18N
+        item.version = "2.0"; //NOI18N
+        item.classToCheck = "javax.faces.application.ProjectStage"; //NOI18N
         toRet.put(key, item);
 
         key = ContainerClassPathModifier.API_J2EE + ":" + Profile.J2EE_13.toPropertiesString(); //NOI18N
