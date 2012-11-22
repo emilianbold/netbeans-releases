@@ -69,7 +69,6 @@ public class FtpConfigurationValidator {
                 configuration.isPassiveMode());
     }
 
-    @NbBundle.Messages("FtpConfigurationValidator.warning.proxy=Configured HTTP proxy will be used only for Pure FTP.")
     public FtpConfigurationValidator validate(String host, String port, boolean isAnonymousLogin, String user, String initialDirectory,
             String timeout, String keepAliveInterval, boolean passiveMode) {
         String err = RemoteValidator.validateHost(host);
@@ -99,10 +98,7 @@ public class FtpConfigurationValidator {
             result.addError(new ValidationResult.Message("keepAliveInterval", err)); // NOI18N
         }
 
-        // #195879
-        if (RemoteUtils.hasHttpProxy()) {
-            result.addWarning(new ValidationResult.Message("proxy", Bundle.FtpConfigurationValidator_warning_proxy()));
-        }
+        validateProxy(passiveMode);
         return this;
     }
 
@@ -113,6 +109,20 @@ public class FtpConfigurationValidator {
         String err = RemoteValidator.validateUser(user);
         if (err != null) {
             result.addError(new ValidationResult.Message("user", err)); // NOI18N
+        }
+    }
+
+    // #195879
+    @NbBundle.Messages({
+        "FtpConfigurationValidator.error.proxyAndNotPassive=Only passive mode is supported with HTTP proxy.",
+        "FtpConfigurationValidator.warning.proxy=Configured HTTP proxy will be used only for Pure FTP."
+    })
+    private void validateProxy(boolean passiveMode) {
+        if (RemoteUtils.hasHttpProxy()) {
+            if (!passiveMode) {
+                result.addError(new ValidationResult.Message("proxy", Bundle.FtpConfigurationValidator_error_proxyAndNotPassive())); // NOI18N
+            }
+            result.addWarning(new ValidationResult.Message("proxy", Bundle.FtpConfigurationValidator_warning_proxy())); // NOI18N
         }
     }
 
