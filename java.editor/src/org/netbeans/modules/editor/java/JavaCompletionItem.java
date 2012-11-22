@@ -184,10 +184,10 @@ public abstract class JavaCompletionItem implements CompletionItem {
         return new VariableItem(info, null, varName, substitutionOffset, newVarName, smartType, -1);
     }
 
-    public static JavaCompletionItem createExecutableItem(CompilationInfo info, ExecutableElement elem, ExecutableType type, int substitutionOffset, ReferencesCount referencesCount, boolean isInherited, boolean isDeprecated, boolean inImport, boolean addSemicolon, boolean smartType, int assignToVarOffset, WhiteListQuery.WhiteList whiteList) {
+    public static JavaCompletionItem createExecutableItem(CompilationInfo info, ExecutableElement elem, ExecutableType type, int substitutionOffset, ReferencesCount referencesCount, boolean isInherited, boolean isDeprecated, boolean inImport, boolean addSemicolon, boolean smartType, int assignToVarOffset, boolean memberRef, WhiteListQuery.WhiteList whiteList) {
         switch (elem.getKind()) {
             case METHOD:
-                return new MethodItem(info, elem, type, substitutionOffset, referencesCount, isInherited, isDeprecated, inImport, addSemicolon, smartType, assignToVarOffset, whiteList);
+                return new MethodItem(info, elem, type, substitutionOffset, referencesCount, isInherited, isDeprecated, inImport, addSemicolon, smartType, assignToVarOffset, memberRef, whiteList);
             case CONSTRUCTOR:
                 return new ConstructorItem(info, elem, type, substitutionOffset, isDeprecated, smartType, null, whiteList);
             default:
@@ -1468,6 +1468,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
         private boolean isDeprecated;
         private boolean inImport;
         private boolean smartType;
+        private boolean memberRef;
         private String simpleName;
         protected Set<Modifier> modifiers;
         private List<ParamDesc> params;
@@ -1481,12 +1482,13 @@ public abstract class JavaCompletionItem implements CompletionItem {
         private int assignToVarOffset;
         private CharSequence assignToVarText;
 
-        private MethodItem(CompilationInfo info, ExecutableElement elem, ExecutableType type, int substitutionOffset, ReferencesCount referencesCount, boolean isInherited, boolean isDeprecated, boolean inImport, boolean addSemicolon, boolean smartType, int assignToVarOffset, WhiteListQuery.WhiteList whiteList) {
+        private MethodItem(CompilationInfo info, ExecutableElement elem, ExecutableType type, int substitutionOffset, ReferencesCount referencesCount, boolean isInherited, boolean isDeprecated, boolean inImport, boolean addSemicolon, boolean smartType, int assignToVarOffset, boolean memberRef, WhiteListQuery.WhiteList whiteList) {
             super(substitutionOffset, ElementHandle.create(elem), whiteList);
             this.isInherited = isInherited;
             this.isDeprecated = isDeprecated;
             this.inImport = inImport;
             this.smartType = smartType;
+            this.memberRef = memberRef;
             this.simpleName = elem.getSimpleName().toString();
             this.modifiers = elem.getModifiers();
             this.params = new ArrayList<ParamDesc>();
@@ -1643,7 +1645,9 @@ public abstract class JavaCompletionItem implements CompletionItem {
             if (inImport) {
                 sb.append(';');
             } else {
-                sb.append(CodeStyle.getDefault(c.getDocument()).spaceBeforeMethodCallParen() ? " ()" : "()"); //NOI18N
+                if (!memberRef) {
+                    sb.append(CodeStyle.getDefault(c.getDocument()).spaceBeforeMethodCallParen() ? " ()" : "()"); //NOI18N
+                }
                 if (addSemicolon) {
                     sb.append(';');
                 }
@@ -1773,7 +1777,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
         private String leftText;
 
         private OverrideMethodItem(CompilationInfo info, ExecutableElement elem, ExecutableType type, int substitutionOffset, boolean implement, WhiteListQuery.WhiteList whiteList) {
-            super(info, elem, type, substitutionOffset, null, false, false, false, false, false, -1, whiteList);
+            super(info, elem, type, substitutionOffset, null, false, false, false, false, false, -1, false, whiteList);
             this.implement = implement;
         }
 
