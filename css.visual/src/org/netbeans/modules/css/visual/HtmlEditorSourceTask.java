@@ -51,6 +51,7 @@ import javax.lang.model.util.Elements;
 import org.netbeans.api.editor.mimelookup.MimeRegistration;
 import org.netbeans.api.editor.mimelookup.MimeRegistrations;
 import org.netbeans.modules.html.editor.api.gsf.HtmlParserResult;
+import org.netbeans.modules.html.editor.lib.api.elements.Element;
 import org.netbeans.modules.html.editor.lib.api.elements.ElementType;
 import org.netbeans.modules.html.editor.lib.api.elements.ElementUtils;
 import org.netbeans.modules.html.editor.lib.api.elements.Node;
@@ -137,6 +138,18 @@ public final class HtmlEditorSourceTask extends ParserResultTask<HtmlParserResul
         if(embeddedCaretOffset == -1) {
             return ;
         }
+        
+        //Bug 222535 - Create rule dialog is populated with parent element
+        Element findBack = result.findByPhysicalRange(embeddedCaretOffset, false);
+        if(findBack != null 
+                && (findBack.type() == ElementType.OPEN_TAG || findBack.type() == ElementType.CLOSE_TAG) 
+                && findBack.to() == embeddedCaretOffset) {
+            // Situation:
+            // ... <div class="x">|  or ... </div>|
+            // in this case use the element before the caret
+            embeddedCaretOffset--;
+        }
+        
         Node node = result.findBySemanticRange(embeddedCaretOffset, true);
         if (node != null) {
             if (node.type() == ElementType.OPEN_TAG) { //may be root node!
