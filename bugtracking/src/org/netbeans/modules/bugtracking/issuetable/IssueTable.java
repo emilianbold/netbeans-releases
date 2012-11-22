@@ -153,6 +153,10 @@ public class IssueTable<Q> implements MouseListener, AncestorListener, KeyListen
     };
 
     public IssueTable(Repository repository, Q q, ColumnDescriptor[] descriptors) {
+        this(repository, q, descriptors, true);
+    }
+    
+    public IssueTable(Repository repository, Q q, ColumnDescriptor[] descriptors, boolean includeObsoletes) {
         assert q != null;
         assert descriptors != null;
         assert descriptors.length > 0;
@@ -165,7 +169,7 @@ public class IssueTable<Q> implements MouseListener, AncestorListener, KeyListen
         tableModel = new NodeTableModel();
         sorter = new TableSorter(tableModel, this);
         
-        initFilters();
+        initFilters(includeObsoletes);
 
         sorter.setColumnComparator(Node.Property.class, nodeComparator);
         table = new JTable(sorter);
@@ -406,10 +410,14 @@ public class IssueTable<Q> implements MouseListener, AncestorListener, KeyListen
         return map;
     }
 
-    private void initFilters() {
+    private void initFilters(boolean includeObsoletes) {
         allFilter = Filter.getAllFilter(query);
         newOrChangedFilter = Filter.getNotSeenFilter(query);
-        filters = new Filter[]{allFilter, newOrChangedFilter, Filter.getObsoleteDateFilter(query), Filter.getAllButObsoleteDateFilter(query)};
+        if(includeObsoletes) {
+            filters = new Filter[]{allFilter, newOrChangedFilter, Filter.getObsoleteDateFilter(query), Filter.getAllButObsoleteDateFilter(query)};
+        } else {
+            filters = new Filter[]{allFilter, newOrChangedFilter};
+        }
         filter = allFilter;
     }
     
