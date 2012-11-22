@@ -141,7 +141,7 @@ public final class WebServer {
             if (pair != null) {
                 String path = pair.webContextRoot + (pair.webContextRoot.equals("/") ? "" : "/") +  //NOI18N
                         FileUtil.getRelativePath(pair.siteRoot, projectFile);
-                return WebUtils.stringToUrl("http://localhost:"+PORT+path); //NOI18N
+                return WebUtils.stringToUrl("http://localhost:"+getPort()+path); //NOI18N
             }
         } else {
             // fallback if project was not found:
@@ -151,7 +151,7 @@ public final class WebServer {
                 if (relPath != null) {
                     String path = pair.webContextRoot + (pair.webContextRoot.equals("/") ? "" : "/") +  //NOI18N
                             relPath;
-                    return WebUtils.stringToUrl("http://localhost:"+PORT+path); //NOI18N
+                    return WebUtils.stringToUrl("http://localhost:"+getPort()+path); //NOI18N
                 }
             }
         }
