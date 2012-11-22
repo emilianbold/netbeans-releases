@@ -157,11 +157,6 @@ public class DependenciesNode extends AbstractNode {
         @Override
         protected Node createNodeForKey(DependencyWrapper wr) {
             Artifact art = wr.getArtifact();
-            if (art.getFile() == null) { // #140253
-                Node n = new AbstractNode(Children.LEAF);
-                n.setName("No such artifact: " + art); // XXX I18N
-                return n;
-            }
             return new DependencyNode(dependencies.project, art, true);
         }
 
@@ -241,12 +236,15 @@ public class DependenciesNode extends AbstractNode {
 
     }
     
-    private static class DependencyWrapper {
+    private final static class DependencyWrapper {
 
         private Artifact artifact;
 
         public DependencyWrapper(Artifact artifact) {
             this.artifact = artifact;
+            assert artifact.getFile() != null : "#200927 Artifact.getFile() is null: " + artifact;
+            assert artifact.getDependencyTrail() != null : "#200927 Artifact.getDependencyTrail() is null:" + artifact;
+            assert artifact.getVersion() != null : "200927 Artifact.getVersion() is null: " + artifact;
         }
 
         public Artifact getArtifact() {
