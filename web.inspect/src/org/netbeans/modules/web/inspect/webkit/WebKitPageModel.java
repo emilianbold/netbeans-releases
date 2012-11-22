@@ -499,7 +499,7 @@ public class WebKitPageModel extends PageModel {
         for (org.openide.nodes.Node node : nodeList) {
             Node webKitNode = node.getLookup().lookup(Node.class);
             if (webKitNode == null) {
-                LOG.log(Level.INFO, "Not a wrapper of a WebKit node: {0}.", node); // NOI18N
+                knownNodes.add(node);
             } else {
                 int nodeId = webKitNode.getNodeId();
                 org.openide.nodes.Node knownNode = nodes.get(nodeId);
@@ -849,6 +849,9 @@ public class WebKitPageModel extends PageModel {
                 // Add selected nodes into the next selection (in their document)
                 for (org.openide.nodes.Node node : nodes) {
                     Node webKitNode = node.getLookup().lookup(Node.class);
+                    if (webKitNode == null) {
+                        continue;
+                    }
                     webKitNode = convertNode(webKitNode);
                     RemoteObject remote = webKit.getDOM().resolveNode(webKitNode, null);
                     if (remote != null) {
