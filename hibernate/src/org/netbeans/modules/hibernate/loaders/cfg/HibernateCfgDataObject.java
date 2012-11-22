@@ -149,6 +149,7 @@ public class HibernateCfgDataObject extends XmlMultiViewDataObject {
                 }
                 if (newConfiguration != null) {
                     try {
+                        configuration.merge(new HibernateConfiguration(), BaseBean.MERGE_UPDATE);//need to refresh with inner nodes, see #187592 and PUDataObject
                         configuration.merge(newConfiguration, BaseBean.MERGE_UPDATE);
                     } catch (IllegalArgumentException iae) {
                         return false;
