@@ -51,7 +51,6 @@ import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
-import org.netbeans.modules.csl.api.EditorOptions;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.spi.GsfUtilities;
 import org.netbeans.modules.javascript2.editor.lexer.JsTokenId;
@@ -102,16 +101,6 @@ public class JsTypedTextInterceptor implements TypedTextInterceptor {
         Caret caret = context.getComponent().getCaret();
         char ch = context.getText().charAt(0);
 
-//        if (REFLOW_COMMENTS) {
-//            Token<?extends JsTokenId> token = LexUtilities.getToken(doc, dotPos);
-//            if (token != null) {
-//                TokenId id = token.id();
-//                if (id == JsTokenId.LINE_COMMENT || id == JsTokenId.DOCUMENTATION) {
-//                    new ReflowParagraphAction().reflowEditedComment(target);
-//                }
-//            }
-//        }
-
         // See if our automatic adjustment of indentation when typing (for example) "end" was
         // premature - if you were typing a longer word beginning with one of my adjustment
         // prefixes, such as "endian", then put the indentation back.
@@ -136,21 +125,6 @@ public class JsTypedTextInterceptor implements TypedTextInterceptor {
 
         //dumpTokens(doc, dotPos);
         switch (ch) {
-//        case '#': {
-//            // Automatically insert #{^} when typing "#" in a quoted string or regexp
-//            Token<?extends JsTokenId> token = LexUtilities.getToken(doc, dotPos);
-//            if (token == null) {
-//                return true;
-//            }
-//            TokenId id = token.id();
-//
-//            if (id == JsTokenId.QUOTED_STRING_LITERAL || id == JsTokenId.REGEXP_LITERAL) {
-//                document.insertString(dotPos+1, "{}", null);
-//                // Skip the "{" to place the caret between { and }
-//                caret.setDot(dotPos+2);
-//            }
-//            break;
-//        }
         case '}':
         case '{':
         case ')':
@@ -162,16 +136,6 @@ public class JsTypedTextInterceptor implements TypedTextInterceptor {
                 return;
             }
             TokenId id = token.id();
-
-//            if (id == JsTokenId.ANY_OPERATOR) {
-//                int length = token.length();
-//                String s = token.text().toString();
-//                if ((length == 2) && "[]".equals(s) || "[]=".equals(s)) { // Special case
-//                    skipClosingBracket(doc, caret, ch, JsTokenId.BRACKET_RIGHT_BRACKET);
-//
-//                    return;
-//                }
-//            }
 
             if (((id == JsTokenId.IDENTIFIER) && (token.length() == 1)) ||
                     (id == JsTokenId.BRACKET_LEFT_BRACKET) || (id == JsTokenId.BRACKET_RIGHT_BRACKET) ||
@@ -199,64 +163,6 @@ public class JsTypedTextInterceptor implements TypedTextInterceptor {
         }
 
         break;
-
-//        case 'e':
-//            // See if it's the end of an "else" or an "ensure" - if so, reindent
-//            reindent(doc, dotPos, JsTokenId.ELSE, caret);
-//            reindent(doc, dotPos, JsTokenId.ENSURE, caret);
-//            reindent(doc, dotPos, JsTokenId.RESCUE, caret);
-//
-//            break;
-//
-//        case 'f':
-//            // See if it's the end of an "else" - if so, reindent
-//            reindent(doc, dotPos, JsTokenId.ELSIF, caret);
-//
-//            break;
-//
-//        case 'n':
-//            // See if it's the end of an "when" - if so, reindent
-//            reindent(doc, dotPos, JsTokenId.WHEN, caret);
-//
-//            break;
-
-        case '/': {
-            // Bracket matching for regular expressions has to be done AFTER the
-            // character is inserted into the document such that I can use the lexer
-            // to determine whether it's a division (e.g. x/y) or a regular expression (/foo/)
-            TokenSequence<? extends JsTokenId> ts = LexUtilities.getJsPositionedSequence(doc, dotPos);
-            if (ts != null) {
-                Token token = ts.token();
-                TokenId id = token.id();
-
-                if (id == JsTokenId.LINE_COMMENT) {
-                    // Did you just type "//" - make sure this didn't turn into ///
-                    // where typing the first "/" inserted "//" and the second "/" appended
-                    // another "/" to make "///"
-                    if (dotPos == ts.offset()+1 && dotPos+1 < doc.getLength() &&
-                            doc.getText(dotPos+1,1).charAt(0) == '/') {
-                        doc.remove(dotPos, 1);
-                        caret.setDot(dotPos+1);
-                        return;
-                    }
-                }
-                // see issue #217134 - it's confusing to have it turned on by default
-//                if (id == JsTokenId.REGEXP_BEGIN || id == JsTokenId.REGEXP_END) {
-//                    TokenId[] stringTokens = REGEXP_TOKENS;
-//                    TokenId beginTokenId = JsTokenId.REGEXP_BEGIN;
-//
-//                    boolean inserted =
-//                        completeQuote(doc, dotPos, caret, ch, stringTokens, beginTokenId);
-//
-//                    if (inserted) {
-//                        caret.setDot(dotPos + 1);
-//                    }
-//
-//                    return;
-//                }
-            }
-            break;
-        }
         }
     }
 
