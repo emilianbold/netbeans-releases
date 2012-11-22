@@ -66,7 +66,12 @@ import org.netbeans.modules.groovy.grailsproject.plugins.GrailsPluginSupport;
 import org.netbeans.spi.java.classpath.ClassPathImplementation;
 import org.netbeans.spi.java.classpath.PathResourceImplementation;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
-import org.openide.filesystems.*;
+import org.openide.filesystems.FileAttributeEvent;
+import org.openide.filesystems.FileChangeListener;
+import org.openide.filesystems.FileEvent;
+import org.openide.filesystems.FileRenameEvent;
+import org.openide.filesystems.FileUtil;
+import org.openide.util.Utilities;
 import org.openide.util.WeakListeners;
 
 final class ProjectClassPathImplementation implements ClassPathImplementation {
@@ -85,7 +90,7 @@ final class ProjectClassPathImplementation implements ClassPathImplementation {
     private File globalPluginsDir;
     private PluginsLibListener listenerPluginsLib;
 
-    
+
     private ProjectClassPathImplementation(GrailsProjectConfig projectConfig) {
         this.projectConfig = projectConfig;
         this.projectRoot = FileUtil.toFile(projectConfig.getProject().getProjectDirectory());
@@ -242,7 +247,7 @@ final class ProjectClassPathImplementation implements ClassPathImplementation {
             for (File f : jars) {
                 try {
                     if (f.isFile()) {
-                        URL entry = f.toURI().toURL();
+                        URL entry = Utilities.toURI(f).toURL();
                         if (FileUtil.isArchiveFile(entry)) {
                             entry = FileUtil.getArchiveRoot(entry);
                             result.add(ClassPathSupport.createResource(entry));
