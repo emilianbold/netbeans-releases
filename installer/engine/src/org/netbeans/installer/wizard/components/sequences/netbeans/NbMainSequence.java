@@ -39,6 +39,7 @@
 package org.netbeans.installer.wizard.components.sequences.netbeans;
 
 import java.io.File;
+import java.io.FileFilter;
 import java.io.FileOutputStream;
 import java.io.FilenameFilter;
 import java.io.IOException;
@@ -49,6 +50,8 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.zip.ZipOutputStream;
 import org.netbeans.installer.product.Registry;
 import org.netbeans.installer.product.components.Product;
@@ -292,6 +295,7 @@ public class NbMainSequence extends WizardSequence {
                     LogManager.log("    .... exception ", ioe);
                     return ;
                 } finally {
+                    cleanupNBMsIfLeft(nbInstallLocation);
                     LogManager.log("    .... done. ");
                 }
             }
@@ -476,6 +480,38 @@ public class NbMainSequence extends WizardSequence {
             } finally {
                 countdownProgress.stop();
             }
+        }
+
+        private void cleanupNBMsIfLeft(File installRoot) {
+            Logger.getLogger(NbMainSequence.class.getName()).log(Level.INFO, "CleanupNBMsIfLeft(" + installRoot + ")");
+            if (installRoot == null || ! installRoot.exists()) {
+                return ;
+            }
+            final Set<File> updateDownloadDirs = new HashSet<File> ();
+            installRoot.listFiles(new FileFilter() {
+
+                                   @Override
+                                   public boolean accept(File cluster) {
+                                       if (cluster.isDirectory()) {
+                                           File update = new File(cluster, "update" + File.separator + "download"); // NOI18N
+                                           if (update.exists()) {
+                                               updateDownloadDirs.add(update);
+                                               return true;
+                                           }
+                                       }
+                                       return false;
+                                   }
+                               });
+            for (File d : updateDownloadDirs) {
+                try {
+                    LogManager.log("   ... ... deleting " + d);
+                    FileUtils.deleteFile(d, true);
+                    FileUtils.deleteEmptyParents(d);
+                } catch (IOException ex) {
+                    LogManager.log("Exception while deleting " + d, ex);
+                }
+            }
+            LogManager.log("   ... ... done");
         }
     }
     
