@@ -46,6 +46,7 @@ package org.netbeans.modules.project.libraries;
 
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import java.io.CharConversionException;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -185,6 +186,11 @@ implements WritableLibraryProvider<LibraryImplementation>, ChangeListener {
                     //The library is broken, probably edited by user
                     //just log
                     logBrokenLibraryDescripor(descriptorFile, e);
+                } catch (CharConversionException e) { {
+                    //The library is broken, probably edited by user
+                    //just log
+                    logBrokenLibraryDescripor(descriptorFile, e);
+                }
                 } catch (ParserConfigurationException e) {
                     Exceptions.printStackTrace(e);
                 } catch (IOException e) {
@@ -241,12 +247,14 @@ implements WritableLibraryProvider<LibraryImplementation>, ChangeListener {
     }
 
     private static void readLibrary (FileObject descriptorFile, LibraryDeclarationParser parser) throws SAXException, ParserConfigurationException, IOException {
-        URL baseURL = descriptorFile.getURL();
+        final URL baseURL = descriptorFile.toURL();
         InputSource input = new InputSource(baseURL.toExternalForm());
         input.setByteStream(descriptorFile.getInputStream()); // #33554 workaround
         try {
             parser.parse(input);
         } catch (SAXException e) {
+            throw Exceptions.attachMessage(e, "From: " + baseURL);  //NOI18N
+        } catch (IOException e) {
             throw Exceptions.attachMessage(e, "From: " + baseURL);  //NOI18N
         }
     }
