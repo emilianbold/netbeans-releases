@@ -131,7 +131,7 @@ public class JsTypedTextInterceptor implements TypedTextInterceptor {
         case ']':
         case '(':
         case '[': {
-            Token<? extends JsTokenId> token = LexUtilities.getToken(doc, dotPos);
+            Token<? extends JsTokenId> token = LexUtilities.getJsToken(doc, dotPos);
             if (token == null) {
                 return;
             }
@@ -424,7 +424,7 @@ public class JsTypedTextInterceptor implements TypedTextInterceptor {
             return false;
         } else if ((token.id() == JsTokenId.WHITESPACE) && eol && ((dotPos - 1) > 0)) {
             // check if the caret is at the very end of the line comment
-            token = LexUtilities.getToken(doc, dotPos - 1);
+            token = LexUtilities.getJsToken(doc, dotPos - 1);
 
             if (token.id() == JsTokenId.LINE_COMMENT) {
                 return false;
@@ -465,7 +465,7 @@ public class JsTypedTextInterceptor implements TypedTextInterceptor {
             // is an unterminated string literal
             if ((token.id() == JsTokenId.WHITESPACE) && eol) {
                 if ((dotPos - 1) > 0) {
-                    token = LexUtilities.getToken(doc, dotPos - 1);
+                    token = LexUtilities.getJsToken(doc, dotPos - 1);
                     // XXX TODO use language embedding to handle this
                     insideString = (token.id() == JsTokenId.STRING);
                 }

@@ -239,7 +239,7 @@ public class JsTypedBreakInterceptor implements TypedBreakInterceptor {
         // brace on the line below the insert position, and indent properly.
         // Catch this scenario and handle it properly.
         if ((id == JsTokenId.BRACKET_RIGHT_CURLY || id == JsTokenId.BRACKET_RIGHT_BRACKET) && offset > 0) {
-            Token<? extends JsTokenId> prevToken = LexUtilities.getToken(doc, offset - 1);
+            Token<? extends JsTokenId> prevToken = LexUtilities.getJsToken(doc, offset - 1);
             if (prevToken != null) {
                 JsTokenId prevTokenId = prevToken.id();
                 if (id == JsTokenId.BRACKET_RIGHT_CURLY && prevTokenId == JsTokenId.BRACKET_LEFT_CURLY ||
@@ -356,7 +356,7 @@ public class JsTypedBreakInterceptor implements TypedBreakInterceptor {
             if (rowStart > 0) {
                 int prevBegin = Utilities.getRowFirstNonWhite(doc, rowStart - 1);
                 if (prevBegin != -1) {
-                    Token<? extends JsTokenId> firstToken = LexUtilities.getToken(doc, prevBegin);
+                    Token<? extends JsTokenId> firstToken = LexUtilities.getJsToken(doc, prevBegin);
                     if (firstToken != null && firstToken.id() == JsTokenId.LINE_COMMENT) {
                         previousLineWasComment = true;
                     }
@@ -366,7 +366,7 @@ public class JsTypedBreakInterceptor implements TypedBreakInterceptor {
             if (rowEnd < doc.getLength()) {
                 int nextBegin = Utilities.getRowFirstNonWhite(doc, rowEnd + 1);
                 if (nextBegin != -1) {
-                    Token<? extends JsTokenId> firstToken = LexUtilities.getToken(doc, nextBegin);
+                    Token<? extends JsTokenId> firstToken = LexUtilities.getJsToken(doc, nextBegin);
                     if (firstToken != null && firstToken.id() == JsTokenId.LINE_COMMENT) {
                         nextLineIsComment = true;
                     }
@@ -387,7 +387,7 @@ public class JsTypedBreakInterceptor implements TypedBreakInterceptor {
                 } else if (CONTINUE_COMMENTS) {
                     // See if the "continue comments" options is turned on, and this is a line that
                     // contains only a comment (after leading whitespace)
-                    Token<? extends JsTokenId> firstToken = LexUtilities.getToken(doc, begin);
+                    Token<? extends JsTokenId> firstToken = LexUtilities.getJsToken(doc, begin);
                     if (firstToken.id() == JsTokenId.LINE_COMMENT) {
                         continueComment = true;
                     }
@@ -399,7 +399,7 @@ public class JsTypedBreakInterceptor implements TypedBreakInterceptor {
                     if (nextLine < doc.getLength()) {
                         int nextLineFirst = Utilities.getRowFirstNonWhite(doc, nextLine);
                         if (nextLineFirst != -1) {
-                            Token<? extends JsTokenId> firstToken = LexUtilities.getToken(doc, nextLineFirst);
+                            Token<? extends JsTokenId> firstToken = LexUtilities.getJsToken(doc, nextLineFirst);
                             if (firstToken != null && firstToken.id() == JsTokenId.LINE_COMMENT) {
                                 continueComment = true;
                             }

@@ -225,7 +225,7 @@ public final class LexUtilities {
         return OffsetRange.NONE;
     }
 
-    public static Token<? extends JsTokenId> getToken(Document doc, int offset) {
+    public static Token<? extends JsTokenId> getJsToken(Document doc, int offset) {
         TokenSequence<? extends JsTokenId> ts = getJsPositionedSequence(doc, offset);
 
         if (ts != null) {
@@ -236,7 +236,7 @@ public final class LexUtilities {
     }
 
     public static char getTokenChar(Document doc, int offset) {
-        Token<? extends JsTokenId> token = getToken(doc, offset);
+        Token<? extends JsTokenId> token = getJsToken(doc, offset);
 
         if (token != null) {
             String text = token.text().toString();
@@ -299,7 +299,7 @@ public final class LexUtilities {
             return false; // whitespace only
         }
 
-        Token<? extends JsTokenId> token = LexUtilities.getToken(doc, begin);
+        Token<? extends JsTokenId> token = LexUtilities.getJsToken(doc, begin);
         if (token != null) {
             return token.id() == JsTokenId.LINE_COMMENT;
         }
