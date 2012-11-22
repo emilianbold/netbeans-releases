@@ -558,7 +558,6 @@ public final class ModuleUpdater extends Thread {
         }
         
         for (UpdateTracking t: allTrackings) {
-            System.out.println("UT: " + t.toString());
             // update_tracking of l10n's
             for (Map.Entry<ModuleUpdate, UpdateTracking.Version> entry: l10ns.entrySet()) {
                 ModuleUpdate mod = entry.getKey();
