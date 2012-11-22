@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.css.visual.actions;
 
+import org.netbeans.modules.css.visual.api.EditCSSRulesAction;
 import java.util.Collections;
 import org.netbeans.modules.css.visual.HtmlSourceElementHandle;
 import org.netbeans.modules.html.editor.api.gsf.HtmlParserResult;

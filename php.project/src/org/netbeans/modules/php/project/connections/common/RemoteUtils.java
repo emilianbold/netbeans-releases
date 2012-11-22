@@ -229,7 +229,11 @@ public final class RemoteUtils {
             if (passwordKey == null) {
                 return null;
             }
-            return new String(Keyring.read(passwordKey));
+            char[] chars = Keyring.read(passwordKey);
+            if (chars == null) {
+                return null;
+            }
+            return new String(chars);
         }
 
     }
