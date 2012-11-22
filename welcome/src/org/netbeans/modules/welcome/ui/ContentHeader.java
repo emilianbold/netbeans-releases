@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,34 +34,69 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.welcome.ui;
 
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.Insets;
-import javax.swing.Icon;
-import javax.swing.ImageIcon;
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.GradientPaint;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.Image;
+import javax.swing.BorderFactory;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
-import org.netbeans.modules.welcome.content.BundleSupport;
 import org.netbeans.modules.welcome.content.Constants;
-import org.netbeans.modules.welcome.content.WebLink;
+import org.netbeans.modules.welcome.content.Utils;
 import org.openide.util.ImageUtilities;
 
 /**
  *
  * @author S. Aubrecht
  */
-class TopBar extends JPanel implements Constants {
+public class ContentHeader extends JPanel implements Constants {
 
-    public TopBar() {
-        super( new GridBagLayout() );
-        setOpaque(false);
-        WebLink nbLogo = new WebLink(null, BundleSupport.getURL("TopBarLogo"), false); //NOI18N
-        Icon icon = new ImageIcon( ImageUtilities.loadImage(IMAGE_TOPBAR_LOGO, true));
-        nbLogo.setIcon( icon );
-        nbLogo.setPressedIcon( icon );
-        add( nbLogo, new GridBagConstraints(0, 0, 1, 1, 0.0, 0.0, GridBagConstraints.CENTER, GridBagConstraints.NONE, new Insets(5,5,0,5), 0, 0));
+    private static final Image IMG_BANNER = ImageUtilities.loadImage(IMAGE_CONTENT_BANNER, true);;
+    private final JLabel lblTitle = new JLabel();
+    private final Color COL_BANNER_LEFT = new Color( 28, 82, 157 );
+    private final Color COL_BANNER_RIGHT = new Color( 41, 62, 109 );
+
+    private final Color COL_GRADIENT_START = new Color( 249, 255, 249 );
+    private final Color COL_GRADIENT_END = new Color( 237, 241, 244 );
+
+    public ContentHeader( String title ) {
+        setLayout( new BorderLayout() );
+        lblTitle.setText( title );
+        lblTitle.setFont( CONTENT_HEADER_FONT );
+        lblTitle.setForeground( Color.white );
+        add( lblTitle, BorderLayout.WEST );
+        setBorder( BorderFactory.createEmptyBorder( 12+18, 34, 15, 34 ) );
+    }
+
+    @Override
+    protected void paintComponent( Graphics g ) {
+        Graphics2D g2d = ( Graphics2D ) g;
+        int width = getWidth();
+        int height = getHeight();
+
+        g2d.setColor( Utils.getColor( COLOR_BORDER ) );
+        g2d.drawRect( 0, 0, width, 12 );
+
+        g2d.setPaint( new GradientPaint( 0, 0, COL_GRADIENT_START, 0, 12, COL_GRADIENT_END ) );
+        g2d.fillRect( 1, 0, width-2, 12 );
+
+        int imgWidth = IMG_BANNER.getWidth( this );
+        int imgX = (width - imgWidth)/2;
+        g2d.drawImage( IMG_BANNER, imgX, 13, imgWidth, height-13, this );
+        if( imgX > 0 ) {
+            g2d.setPaint( COL_BANNER_LEFT );
+            g2d.fillRect( 0, 13, imgX, height-13 );
+            g2d.setPaint( COL_BANNER_RIGHT );
+            g2d.fillRect( width-imgX-1, 13, imgX+1, height-13 );
+        }
     }
 }
