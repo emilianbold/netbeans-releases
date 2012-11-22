@@ -44,13 +44,11 @@ package org.netbeans.modules.cnd.indexing.api;
 import org.netbeans.modules.cnd.indexing.impl.CndTextIndexManager;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.cnd.indexing.impl.CndTextIndexImpl;
-import org.netbeans.modules.cnd.utils.FSPath;
-import org.openide.filesystems.FileSystem;
+import org.netbeans.modules.cnd.repository.api.CacheLocation;
 
 /**
  *
@@ -60,27 +58,28 @@ public final class CndTextIndex {
     private CndTextIndex() {
     }
     
-    public static void put(final FileSystem fs, final CharSequence key, final Set<String> ids) {
-        CndTextIndexImpl index = CndTextIndexManager.get(fs);
-        index.put(key.toString(), ids);
+    public static void put(final CacheLocation location, final CndTextIndexKey key, final Set<String> ids) {
+        CndTextIndexImpl index = CndTextIndexManager.get(location);
+        index.put(key, ids);
     }
     
-    public static Collection<FSPath> query(FileSystem fs, CharSequence text) {
-        CndTextIndexImpl index = CndTextIndexManager.get(fs);
+    public static Collection<CndTextIndexKey> query(final CacheLocation location, final CharSequence text) {
+        CndTextIndexImpl index = CndTextIndexManager.get(location);
         if (index == null) {
             return Collections.emptySet();
         }
         
         try {
-            Collection<String> queryRes = index.query(text.toString());
-            HashSet<FSPath> res = new HashSet<FSPath>(queryRes.size());
-            for (String val : queryRes) {
-                res.add(new FSPath(fs, val));
-            }
-            return res;
+            return index.query(text.toString());
         } catch (Exception ex) {
             Logger.getLogger(CndTextIndex.class.getName()).log(Level.SEVERE, null, ex);
             return Collections.emptySet();
         }
+    }
+    
+    public static void remove(final CacheLocation location, final CndTextIndexKey key) {
+        CndTextIndexImpl index = CndTextIndexManager.get(location);
+        // TODO: For now just write empty content, need to figure out how to remove records.
+        index.put(key, Collections.EMPTY_SET);
     }
 }
