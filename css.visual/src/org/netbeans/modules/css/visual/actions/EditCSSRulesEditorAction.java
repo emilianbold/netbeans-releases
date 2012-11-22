@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.css.visual.actions;
 
+import org.netbeans.modules.css.visual.api.EditCSSRulesAction;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;

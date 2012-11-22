@@ -64,12 +64,14 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.JTable;
+import javax.swing.JToggleButton;
 import javax.swing.JTree;
 import javax.swing.LayoutStyle;
 import javax.swing.ListCellRenderer;
 import javax.swing.SwingConstants;
 import javax.swing.UIManager;
 import javax.swing.border.Border;
+import javax.swing.border.LineBorder;
 import javax.swing.plaf.TreeUI;
 import javax.swing.plaf.basic.BasicTreeUI;
 import javax.swing.table.DefaultTableCellRenderer;
@@ -78,6 +80,7 @@ import javax.swing.text.View;
 import javax.swing.tree.TreeCellRenderer;
 import javax.swing.tree.TreeSelectionModel;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.css.visual.api.EditCSSRulesAction;
 import org.netbeans.modules.web.inspect.PageModel;
 import org.netbeans.modules.web.inspect.webkit.Utilities;
 import org.netbeans.modules.web.inspect.webkit.WebKitPageModel;
@@ -111,6 +114,9 @@ import org.w3c.dom.Document;
  * @author Jan Stola
  */
 public class CSSStylesSelectionPanel extends JPanel {
+    
+    /** Is Mac L&F? */
+    private static final boolean AQUA = "Aqua".equals(UIManager.getLookAndFeel().getID()); //NOI18N 
     /** Request processor used by this class. */
     static final RequestProcessor RP = new RequestProcessor(CSSStylesSelectionPanel.class);
     /** Lookup of this panel. */
@@ -139,9 +145,11 @@ public class CSSStylesSelectionPanel extends JPanel {
      */
     CSSStylesSelectionPanel() {
         setLayout(new BorderLayout());
-        JSplitPane splitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
+        JSplitPane splitPane = createSplitPane();
+        splitPane.setOrientation(javax.swing.JSplitPane.VERTICAL_SPLIT);
         splitPane.setTopComponent(initPropertyPane());
         splitPane.setBottomComponent(initRulePane());
+        splitPane.setDividerSize(4);
         splitPane.setResizeWeight(0.5);
         splitPane.setBorder(null);
         selectionView = splitPane;
@@ -151,6 +159,20 @@ public class CSSStylesSelectionPanel extends JPanel {
         updateContent(null, false);
     }
 
+    private JSplitPane createSplitPane() {
+        return new JSplitPane() {
+
+            @Override
+            public String getUIClassID() {
+                if( AQUA && UIManager.get("Nb.SplitPaneUI.clean") != null ) { //NOI18N
+                    return "Nb.SplitPaneUI.clean"; //NOI18N
+                } else {
+                    return super.getUIClassID();
+                }
+            }
+        };
+    }
+    
     /**
      * Initializes Property Summary section.
      *
@@ -193,11 +215,35 @@ public class CSSStylesSelectionPanel extends JPanel {
         ExplorerManagerProviderPanel rulePanePanel = new ExplorerManagerProviderPanel();
         rulePanePanel.setLayout(new BorderLayout());
         rulePanePanel.add(rulePane, BorderLayout.CENTER);
+        
+        JPanel northPanel = new JPanel();        
+        northPanel.setLayout(new BorderLayout());
+        
+        //add the info label
         JLabel rulePaneSummaryLabel = new JLabel();
         rulePaneSummaryLabel.setText(NbBundle.getMessage(
                 CSSStylesSelectionPanel.class, "CSSStylesSelectionPanel.rulePaneHeader")); // NOI18N
-        rulePaneSummaryLabel.setBorder(BorderFactory.createEmptyBorder(4, 2, 4, 0));
-        rulePanePanel.add(rulePaneSummaryLabel, BorderLayout.PAGE_START);
+        rulePaneSummaryLabel.setBorder(BorderFactory.createEmptyBorder(0, 4, 0, 0));
+        northPanel.add(rulePaneSummaryLabel, BorderLayout.CENTER);
+        
+        //add toolbar
+        CustomToolbar toolbar = new CustomToolbar();
+        final JToggleButton createRuleToggleButton = new JToggleButton();
+        createRuleToggleButton.setAction(EditCSSRulesAction.getDefault());
+        org.openide.awt.Mnemonics.setLocalizedText(createRuleToggleButton, null);
+        createRuleToggleButton.setToolTipText(EditCSSRulesAction.getDefault().getToolTip()); // NOI18N
+        createRuleToggleButton.setFocusable(false);
+        createRuleToggleButton.addActionListener(new java.awt.event.ActionListener() {
+            @Override
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                createRuleToggleButton.setSelected(false); //disable selected as it's a toggle button
+            }
+        });
+        
+        toolbar.addButton(createRuleToggleButton);
+        northPanel.add(toolbar, BorderLayout.EAST);
+        rulePanePanel.add(northPanel, BorderLayout.NORTH);
+        
         rulePanePanel.setMinimumSize(new Dimension(0,0)); // allow shrinking in JSplitPane
         rulePaneManager = rulePanePanel.getExplorerManager();
         lookup = ExplorerUtils.createLookup(rulePaneManager, getActionMap());

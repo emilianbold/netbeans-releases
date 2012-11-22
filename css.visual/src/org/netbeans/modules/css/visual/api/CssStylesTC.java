@@ -46,7 +46,6 @@ import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.SwingConstants;
 import org.netbeans.modules.css.visual.CssStylesPanel;
-import org.netbeans.modules.css.visual.actions.EditCSSRulesAction;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
 import org.openide.explorer.view.BeanTreeView;
