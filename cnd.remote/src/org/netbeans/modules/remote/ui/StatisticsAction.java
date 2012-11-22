@@ -84,7 +84,7 @@ public class StatisticsAction extends SingleHostAction {
 
     @Override
     protected void performAction(final ExecutionEnvironment env, Node node) {
-        final NotifyDescriptor notifyDescriptor = new NotifyDescriptor.InputLine("Log file:", "Turn Remote Statistics On");
+        final NotifyDescriptor notifyDescriptor = new NotifyDescriptor.InputLine("Log file:", "Turn Remote Statistics On"); // NOI18N
         DialogDisplayer.getDefault().notify(notifyDescriptor);
         if (notifyDescriptor.getValue() == NotifyDescriptor.OK_OPTION) {
             RequestProcessor.getDefault().post(new Runnable() {
