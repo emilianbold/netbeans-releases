@@ -39,23 +39,27 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.css.visual.actions;
+package org.netbeans.modules.css.visual.api;
 
 import java.awt.Dialog;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import javax.swing.AbstractAction;
+import javax.swing.Action;
+import javax.swing.ImageIcon;
 import org.netbeans.modules.css.visual.CreateRulePanel;
 import org.netbeans.modules.css.visual.HtmlSourceElementHandle;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.filesystems.FileObject;
 import org.openide.util.HelpCtx;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
 /**
  *
+ * @since 3.13
  * @author marekfukala
  */
 @NbBundle.Messages({
@@ -78,9 +82,14 @@ public class EditCSSRulesAction extends AbstractAction {
         return instance;
     }
     
-    EditCSSRulesAction() {
+    public EditCSSRulesAction() {
         super(Bundle.label_create_rule());
+        putValue(Action.SMALL_ICON, ImageUtilities.loadImageIcon("/org/netbeans/modules/css/visual/resources/newRule.png", false)); //NOI18N
         setEnabled(false);
+    }
+    
+    public String getToolTip() {
+        return Bundle.label_create_rule();
     }
     
     public void setContext(FileObject context) {
