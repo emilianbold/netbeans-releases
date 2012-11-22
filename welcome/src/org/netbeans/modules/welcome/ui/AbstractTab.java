@@ -45,6 +45,7 @@
 package org.netbeans.modules.welcome.ui;
 
 import java.awt.BorderLayout;
+import javax.swing.JComponent;
 import javax.swing.JPanel;
 import org.netbeans.modules.welcome.content.Constants;
 
@@ -57,8 +58,9 @@ abstract class AbstractTab extends JPanel implements Constants {
 
     private boolean initialized = false;
     
-    public AbstractTab() {
+    public AbstractTab( String title ) {
         super( new BorderLayout() );
+        setName( title );
         setOpaque(false);
     }
 
@@ -66,10 +68,12 @@ abstract class AbstractTab extends JPanel implements Constants {
     public void addNotify() {
         super.addNotify();
         if( !initialized ) {
-            buildContent();
+            add( new ContentHeader(getName()), BorderLayout.NORTH );
+            add( buildContent(), BorderLayout.CENTER );
+            add( new BottomBar(), BorderLayout.SOUTH );
             initialized = true;
         }
     }
 
-    protected abstract void buildContent();
+    protected abstract JComponent buildContent();
 }
