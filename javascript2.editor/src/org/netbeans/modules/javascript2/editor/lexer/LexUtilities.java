@@ -91,6 +91,13 @@ public final class LexUtilities {
     }
 
     @CheckForNull
+    public static TokenSequence<? extends JsTokenId> getTokenSequence(Document doc,
+            int offset, Language<JsTokenId> language) {
+        TokenHierarchy<Document> th = TokenHierarchy.get(doc);
+        return getTokenSequence(th, offset, language);
+    }
+
+    @CheckForNull
     public static TokenSequence<? extends JsTokenId> getJsTokenSequence(Snapshot snapshot,
             int offset) {
         TokenHierarchy<?> th = snapshot.getTokenHierarchy();
@@ -227,6 +234,16 @@ public final class LexUtilities {
 
     public static Token<? extends JsTokenId> getJsToken(Document doc, int offset) {
         TokenSequence<? extends JsTokenId> ts = getJsPositionedSequence(doc, offset);
+
+        if (ts != null) {
+            return ts.token();
+        }
+
+        return null;
+    }
+
+    public static Token<? extends JsTokenId> getToken(Document doc, int offset, Language<JsTokenId> language) {
+        TokenSequence<? extends JsTokenId> ts = getPositionedSequence(doc, offset, language);
 
         if (ts != null) {
             return ts.token();
