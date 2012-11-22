@@ -328,7 +328,7 @@ public class Util {
 
         final DialogDescriptor nd = new DialogDescriptor(
                 new WrapperPanel(panel),
-                NbBundle.getMessage(Util.class, "LBL_CreatePersistenceUnit"),
+                NbBundle.getMessage(Util.class, "LBL_CreatePersistenceUnit").replace("&", ""),//NOI18N
                 true,
                 buttons,
                 DialogDescriptor.OK_OPTION,

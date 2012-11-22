@@ -85,7 +85,7 @@ public class Rule {
     Rule(JSONObject rule) {
         this.json = rule;
         // Determines whether the given rule object is CSS.RuleMatch or CSS.CSSRule.
-        boolean isRuleMatch = rule.containsKey("rule");
+        boolean isRuleMatch = rule.containsKey("rule"); // NOI18N
         if (isRuleMatch) {
             rule = (JSONObject)json.get("rule"); // NOI18N
         }

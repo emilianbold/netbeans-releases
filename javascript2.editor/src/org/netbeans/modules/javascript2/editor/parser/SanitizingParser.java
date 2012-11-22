@@ -68,14 +68,10 @@ public abstract class SanitizingParser extends Parser {
         this.language = language;
     }
 
-    public abstract String getDefaultScriptName();
-    
-    protected abstract com.oracle.nashorn.ir.FunctionNode parseSource(Snapshot snapshot, String name, String text, JsErrorManager errorManager) throws Exception;
-
     @Override
     public final void parse(Snapshot snapshot, Task task, SourceModificationEvent event) throws ParseException {
         try {
-            JsErrorManager errorManager = new JsErrorManager(snapshot);
+            JsErrorManager errorManager = new JsErrorManager(snapshot, language);
             lastResult = parseSource(snapshot, event, Sanitize.NONE, errorManager);
             lastResult.setErrors(errorManager.getErrors());
         } catch (Exception ex) {
@@ -84,6 +80,10 @@ public abstract class SanitizingParser extends Parser {
             lastResult = new JsParserResult(snapshot, null);
         }
     }
+
+    protected abstract String getDefaultScriptName();
+
+    protected abstract com.oracle.nashorn.ir.FunctionNode parseSource(Snapshot snapshot, String name, String text, JsErrorManager errorManager) throws Exception;
 
     private JsParserResult parseSource(Snapshot snapshot, SourceModificationEvent event,
             Sanitize sanitizing, JsErrorManager errorManager) throws Exception {
@@ -129,7 +129,7 @@ public abstract class SanitizingParser extends Parser {
             }
         }
         
-        JsErrorManager current = new JsErrorManager(context.getSnapshot());
+        JsErrorManager current = new JsErrorManager(context.getSnapshot(), language);
         com.oracle.nashorn.ir.FunctionNode node = parseSource(context.getSnapshot(), context.getName(),
                 context.getSource(), current);
 
