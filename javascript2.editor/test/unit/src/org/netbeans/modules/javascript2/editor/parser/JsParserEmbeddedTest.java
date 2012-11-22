@@ -88,6 +88,11 @@ public class JsParserEmbeddedTest extends JsTestBase {
                 Collections.singletonList("embeddedSimple3.html:5:0 Expected } but found eof"));
     }
 
+    public void testEmbeddedSimple4() throws Exception {
+        parse("testfiles/parser/embeddedSimple4.html",
+                Collections.singletonList("embeddedSimple4.html:7:0 Expected } but found eof"));
+    }
+
     private void parse(String file, final List<String> errorStarts) throws Exception {
         FileObject f = getTestFile(file);
         Source source = Source.create(f);
