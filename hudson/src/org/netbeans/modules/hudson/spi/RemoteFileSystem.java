@@ -39,47 +39,19 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.bugtracking.kenai.spi;
+package org.netbeans.modules.hudson.spi;
 
-import org.netbeans.modules.bugtracking.api.Repository;
-import org.netbeans.modules.bugtracking.spi.BugtrackingConnector;
-import org.netbeans.modules.bugtracking.spi.RepositoryProvider;
+import org.openide.filesystems.AbstractFileSystem;
 
 /**
- * Provides Kenai specific functionality to a {@link BugtrackingConnector}
- * 
- * @author tomas
+ * Remote file system for workspaces and artifacts folders.
+ *
+ * @author jhavlin
  */
-public abstract class KenaiBugtrackingConnector extends BugtrackingConnector {
-    
-    public enum BugtrackingType {
-        BUGZILLA,
-        JIRA,
-        ODCS
-    }
-        
+public abstract class RemoteFileSystem extends AbstractFileSystem {
+
     /**
-     * Creates a {@link Repository} for the given {@link KenaiProject}
-     *
-     * @param project
-     * @return
+     * Refresh after builder instance synchronization.
      */
-    public abstract Repository createRepository(KenaiProject project);
-    
-    /**
-     * Creates a {@link RepositoryProvider} for the given {@link KenaiProject}
-     *
-     * @param project
-     * @return
-     */
-    public Repository findNBRepository() {
-        return null;
-    }
-    
-    /**
-     * Determines the bugtracking type
-     *
-     * @return
-     */
-    public abstract BugtrackingType getType();
+    public abstract void refreshAll();
 }
