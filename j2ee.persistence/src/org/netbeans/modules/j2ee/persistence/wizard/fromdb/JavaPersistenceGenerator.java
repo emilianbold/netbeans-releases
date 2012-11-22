@@ -1389,7 +1389,7 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
                      Logger.getLogger(JavaPersistenceGenerator.class.getName()).log(Level.WARNING, "Null typeelement for {0}", typeName); //NOI18N
                     //1: need to know if it was generated
                     for(FileObject fo : generatedFOs){
-                        Logger.getLogger(JavaPersistenceGenerator.class.getName()).log(Level.WARNING, "Next FileObject was generated: {0}", fo!=null?fo.getName():"null"); //NOI18N
+                        Logger.getLogger(JavaPersistenceGenerator.class.getName()).log(Level.WARNING, "Next FileObject was generated: {0}, valid: {1}, can read: {2}, locked: {3}", new String[]{fo!=null?fo.getName():"null", (fo!=null?fo.isValid():"null")+"", (fo!=null?fo.canRead():"null")+"", (fo!=null?fo.isLocked():"null")+""}); //NOI18N
                     }
                     //2: 
                      Logger.getLogger(JavaPersistenceGenerator.class.getName()).log(Level.WARNING, "Member name {0}", memberName); //NOI18N
