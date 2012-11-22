@@ -513,6 +513,12 @@ public class NbMainSequence extends WizardSequence {
             }
             LogManager.log("   ... ... done");
         }
+
+        @Override
+        public boolean isCancelable() {
+            return false;
+        }
+
     }
     
     // a candidate to be placed somewhere in utils
