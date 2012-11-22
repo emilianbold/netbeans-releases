@@ -94,7 +94,7 @@ public class DbExtendedDelete implements ExtendedDelete {
                     NbBundle.getMessage(DbExtendedDelete.class, "DbExtendedDelete_ConfirmationMessage_Others", others.size()), // NOI18N
                     NbBundle.getMessage(DbExtendedDelete.class, "DbExtendedDelete_ConfirmationTitle_Others", others.size())); // NOI18N
         } else if (! drivers.isEmpty()) {
-            DriverExtendedDeleteImpl.delete(nodes);
+            return DriverExtendedDeleteImpl.delete(nodes);
         }
         return false;
     }
