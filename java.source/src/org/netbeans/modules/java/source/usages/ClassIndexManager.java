@@ -192,6 +192,7 @@ public final class ClassIndexManager {
                         ClassIndexImpl.Type.SOURCE,
                         ClassIndexImpl.Type.SOURCE);
                 this.instances.put(root,qi);
+                this.transientInstances.remove(root);
                 markAddedRoot(root);
             } else if (pair.second) {
                 markAddedRoot(root);
@@ -203,6 +204,11 @@ public final class ClassIndexManager {
     public void removeRoot (final URL root) throws IOException {
         synchronized (internalLock) {
             ClassIndexImpl ci = this.instances.remove(root);
+            if (ci == null) {
+                ci = this.transientInstances.remove(root);
+            } else {
+                assert !this.transientInstances.containsKey(root);
+            }
             if (ci != null) {
                 ci.close();
                 markRemovedRoot(root);
