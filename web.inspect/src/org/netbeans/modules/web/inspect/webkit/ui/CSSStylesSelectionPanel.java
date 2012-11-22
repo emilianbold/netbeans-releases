@@ -111,6 +111,9 @@ import org.w3c.dom.Document;
  * @author Jan Stola
  */
 public class CSSStylesSelectionPanel extends JPanel {
+    
+    /** Is Mac L&F? */
+    private static final boolean AQUA = "Aqua".equals(UIManager.getLookAndFeel().getID()); //NOI18N 
     /** Request processor used by this class. */
     static final RequestProcessor RP = new RequestProcessor(CSSStylesSelectionPanel.class);
     /** Lookup of this panel. */
@@ -139,9 +142,11 @@ public class CSSStylesSelectionPanel extends JPanel {
      */
     CSSStylesSelectionPanel() {
         setLayout(new BorderLayout());
-        JSplitPane splitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
+        JSplitPane splitPane = createSplitPane();
+        splitPane.setOrientation(javax.swing.JSplitPane.VERTICAL_SPLIT);
         splitPane.setTopComponent(initPropertyPane());
         splitPane.setBottomComponent(initRulePane());
+        splitPane.setDividerSize(4);
         splitPane.setResizeWeight(0.5);
         splitPane.setBorder(null);
         selectionView = splitPane;
@@ -151,6 +156,20 @@ public class CSSStylesSelectionPanel extends JPanel {
         updateContent(null, false);
     }
 
+    private JSplitPane createSplitPane() {
+        return new JSplitPane() {
+
+            @Override
+            public String getUIClassID() {
+                if( AQUA && UIManager.get("Nb.SplitPaneUI.clean") != null ) { //NOI18N
+                    return "Nb.SplitPaneUI.clean"; //NOI18N
+                } else {
+                    return super.getUIClassID();
+                }
+            }
+        };
+    }
+    
     /**
      * Initializes Property Summary section.
      *
