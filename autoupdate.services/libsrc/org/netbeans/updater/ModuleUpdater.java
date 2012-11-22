@@ -240,14 +240,14 @@ public final class ModuleUpdater extends Thread {
         if (files2clustersForInstall == null) {
             processFilesForInstall ();
         }
-        return files2clustersForInstall.get (cluster);
+        return files2clustersForInstall == null ? null : files2clustersForInstall.get(cluster);
     }
 
     private Collection<File> getClustersForInstall () {
         if (files2clustersForInstall == null) {
             processFilesForInstall ();
         }
-        return files2clustersForInstall.keySet ();
+        return files2clustersForInstall == null ? null : files2clustersForInstall.keySet();
     }
 
     /** Determines size of unpacked modules */
@@ -428,7 +428,7 @@ public final class ModuleUpdater extends Thread {
                                         File bckFile = new File( getBackupDirectory (cluster), entry.getName() );
                                         bckFile.getParentFile ().mkdirs ();
                                         copyStreams( new FileInputStream( destFile ), context.createOS( bckFile ), -1 );
-                                    XMLUtil.LOG.info("Backup file " + destFile + " to " + bckFile);
+                                        XMLUtil.LOG.info("Backup file " + destFile + " to " + bckFile);
                                         if (!destFile.delete() && isWindows()) {
                                             trickyDeleteOnWindows(destFile);
                                         } else {
@@ -529,8 +529,9 @@ public final class ModuleUpdater extends Thread {
                 }
                 finally {
                     try {
-                        if ( jarFile != null )
+                        if ( jarFile != null ) {
                             jarFile.close();
+                        }
                     }
                     catch ( java.io.IOException e ) {
                         // We can't close the file do nothing
@@ -557,6 +558,7 @@ public final class ModuleUpdater extends Thread {
         }
         
         for (UpdateTracking t: allTrackings) {
+            System.out.println("UT: " + t.toString());
             // update_tracking of l10n's
             for (Map.Entry<ModuleUpdate, UpdateTracking.Version> entry: l10ns.entrySet()) {
                 ModuleUpdate mod = entry.getKey();
@@ -671,8 +673,9 @@ public final class ModuleUpdater extends Thread {
                         String vystup;
                         do {
                             vystup = reader.readLine();
-                            if (vystup!=null)
+                            if (vystup!=null) {
                                 XMLUtil.LOG.info(vystup);
+                            }
                         } while (vystup != null);
                     } catch (Exception e) {
                         XMLUtil.LOG.log(Level.INFO, null, e);
@@ -723,10 +726,11 @@ public final class ModuleUpdater extends Thread {
              StringBuilder sb = new StringBuilder(s);
              int i = 0;
              while ( i < sb.length() ) {
-                 if ( sb.charAt(i) == QUOTE )
+                 if ( sb.charAt(i) == QUOTE ) {
                      sb.deleteCharAt( i );
-                 else
+                 } else {
                      i++;
+                 }
              }
              sb.insert( 0, QUOTE );
              sb.append( QUOTE );
@@ -1018,7 +1022,9 @@ public final class ModuleUpdater extends Thread {
             } catch (IOException e) {            
                 return false;
             } finally {
-                if (fis != null) try { fis.close(); } catch (IOException e) { /* ignore */ };
+                if (fis != null) {
+                    try { fis.close(); } catch (IOException e) { /* ignore */ }
+                };
             }
             
             String mainclass;
@@ -1037,19 +1043,22 @@ public final class ModuleUpdater extends Thread {
         
             parameters = "";
             jvmparms = details.getProperty(PAR_JVMPAR,null);
-            if (jvmparms != null)
+            if (jvmparms != null) {
                 parameters = parameters + " " + jvmparms;  // NOI18N
+            }
             
             mainclass = details.getProperty(PAR_MAIN,null);
-            if (mainclass == null)
+            if (mainclass == null) {
                 return false;
-            else
-                parameters = parameters + " " + mainclass;  // NOI18N
+            } else {
+                parameters = parameters + " " + mainclass;
+            }  // NOI18N
             
             mainargs = details.getProperty(PAR_MAINARGS,null);
-            if (mainargs != null)
+            if (mainargs != null) {
                 parameters = parameters + " " + mainargs;  // NOI18N
-
+            }
+            
             parameters = replaceVars( parameters );
             return true;            
         }
@@ -1069,14 +1078,15 @@ public final class ModuleUpdater extends Thread {
         }
         
         private String changeRelative(String path) {
-            if ( new File( path ).isAbsolute() )
+            if ( new File( path ).isAbsolute() ) {
                 return path;
-            else
+            } else {
                 return getMainDirString (this.activeCluster) + UpdateTracking.FILE_SEPARATOR + path;
+            }
         }
         
         
-        /** replace all occurences of String what by String repl in the String sin */
+        /** replace all occurrences of String what by String repl in the String sin */
         private String replaceAll(String sin, String what, String repl) {
             StringBuilder sb = new StringBuilder(sin);
             int i = sb.toString().indexOf(what);
