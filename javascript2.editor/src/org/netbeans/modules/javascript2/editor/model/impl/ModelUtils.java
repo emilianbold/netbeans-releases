@@ -280,9 +280,9 @@ public class ModelUtils {
     public static Collection<TypeUsage> resolveSemiTypeOfExpression(JsParserResult parserResult, Node expression) {
         SemiTypeResolverVisitor visitor = new SemiTypeResolverVisitor(parserResult);
         if (expression != null) {
-            if (expression instanceof BinaryNode) {
-                expression = ((BinaryNode)expression).lhs();
-            }
+//            if (expression instanceof BinaryNode) {
+//                expression = ((BinaryNode)expression).lhs();
+//            }
             expression.accept(visitor);
             return visitor.getSemiTypes();
         }
@@ -470,11 +470,13 @@ public class ModelUtils {
                         // Add global variables from index
                         Collection<IndexedElement> globalVars = jsIndex.getGlobalVar(name);
                         for (IndexedElement globalVar : globalVars) {
-                            Collection<TypeUsage> assignments = globalVar.getAssignments();
-                            if (assignments.isEmpty()) {
-                                lastResolvedTypes.add(new TypeUsageImpl(name, -1, true));
-                            } else {
-                                lastResolvedTypes.addAll(assignments);
+                            if(name.equals(globalVar.getName())) {
+                                Collection<TypeUsage> assignments = globalVar.getAssignments();
+                                if (assignments.isEmpty()) {
+                                    lastResolvedTypes.add(new TypeUsageImpl(name, -1, true));
+                                } else {
+                                    lastResolvedTypes.addAll(assignments);
+                                }
                             }
                         }
                     }
@@ -741,6 +743,7 @@ public class ModelUtils {
 
         @Override
         public Node enter(CallNode callNode) {
+            super.enter(callNode);
             if (callNode.getFunction() instanceof ReferenceNode) {
                 FunctionNode function = (FunctionNode)((ReferenceNode)callNode.getFunction()).getReference();
                 String name = function.getIdent().getName();
@@ -764,6 +767,18 @@ public class ModelUtils {
                     result.add(new TypeUsageImpl("@this", LexUtilities.getLexerOffset(parserResult, iNode.getStart()), false));                //NOI18N
                 } else {
                     result.add(new TypeUsageImpl("@var;" + iNode.getName(), LexUtilities.getLexerOffset(parserResult, iNode.getStart()), false));
+                }
+            } else {
+                Node lastNode = getPath().get(getPath().size() - 1);
+                if (lastNode instanceof CallNode) {
+                    sb.append(iNode.getName());
+                    result.add(new TypeUsageImpl(sb.toString(), LexUtilities.getLexerOffset(parserResult, iNode.getStart()), false));
+                } else {
+                    if (iNode.getName().equals("this")) {   //NOI18N
+                        result.add(new TypeUsageImpl("@this", LexUtilities.getLexerOffset(parserResult, iNode.getStart()), false));                //NOI18N
+                    } else {
+                        result.add(new TypeUsageImpl("@var;" + iNode.getName(), LexUtilities.getLexerOffset(parserResult, iNode.getStart()), false));
+                    }
                 }
             }
             return null;

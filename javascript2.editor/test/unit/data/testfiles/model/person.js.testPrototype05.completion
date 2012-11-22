@@ -6,8 +6,8 @@ CLASS      constructor                     [PUBLIC]   person.js
 CLASS      prototype                       [PUBLIC]   person.js
 METHOD     amputate(): undefined           [PUBLIC]   person.js
 METHOD     beCool(): undefined             [PUBLIC]   person.js
-METHOD     eat()                           [PROTECTE  person.js
-METHOD     exercise()                      [PROTECTE  person.js
+METHOD     eat(): Number                   [PROTECTE  person.js
+METHOD     exercise(): Number              [PROTECTE  person.js
 METHOD     getAge()                        [PROTECTE  person.js
 METHOD     getName()                       [PROTECTE  person.js
 METHOD     getRace()                       [PROTECTE  person.js
