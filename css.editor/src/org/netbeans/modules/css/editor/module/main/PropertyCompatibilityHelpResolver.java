@@ -66,9 +66,11 @@ public class PropertyCompatibilityHelpResolver extends HelpResolver {
             URL browserIcon = CssModuleSupport.isPropertySupported(property.getName(), browser)
                     ? browser.getActiveIcon()
                     : browser.getInactiveIcon();
-            sb.append("<img src=\""); //NOI18N
-            sb.append(browserIcon.toExternalForm());
-            sb.append("\">"); // NOI18N
+            if(browserIcon != null) {
+                sb.append("<img src=\""); //NOI18N
+                sb.append(browserIcon.toExternalForm());
+                sb.append("\">"); // NOI18N
+            }
         }
         sb.append("</td></tr></table>"); //NOI18N
         

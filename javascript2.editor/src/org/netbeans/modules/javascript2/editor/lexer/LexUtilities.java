@@ -350,6 +350,11 @@ public final class LexUtilities {
         return getPositionedSequence(doc, offset, true, language);
     }
 
+    public static TokenSequence<? extends JsTokenId> getPositionedSequence(
+            Snapshot snapshot, int offset, Language<JsTokenId> language) {
+        return getPositionedSequence(snapshot, offset, true, language);
+    }
+
     public static TokenSequence<? extends JsTokenId> getJsPositionedSequence(
             Document doc, int offset) {
         return getPositionedSequence(doc, offset, true, JsTokenId.javascriptLanguage());
