@@ -200,7 +200,7 @@ public class ElementsParser implements Iterator<Element> {
                     //one part value
                     TokenInfo ti = values.get(0);
 
-                    assert key.token.length() < Byte.MAX_VALUE;
+                    assert key.token.length() < Short.MAX_VALUE;
                     Attribute ta = new AttributeElement(
                             sourceCode,
                             key.offset,
