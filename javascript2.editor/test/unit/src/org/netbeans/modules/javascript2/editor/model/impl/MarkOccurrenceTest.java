@@ -428,7 +428,63 @@ public class MarkOccurrenceTest extends JsTestBase {
     }
 
     public void testIssue221228_01() throws Exception {
-        checkOccurrences("testfiles/markoccurences/issue221228.js", "    var ms^g = \"\"; // rename here", true);
+        checkOccurrences("testfiles/markoccurences/issue221228.js", "    var ms^g = \"private\"; // private variable", true);
+    }
+    
+    public void testIssue221228_02() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue221228.js", "        formatter.println(m^sg); // uses private var", true);
+    }
+    
+    public void testIssue221228_03() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue221228.js", "    function h^i() { // private function", true);
+    }
+    
+    public void testIssue221228_04() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue221228.js", "        h^i();           // uses private function", true);
+    }
+    
+    public void testIssue221228_05() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue221228.js", "Greetings.prototype.say^Ahoj() = function () {", true);
+    }
+    
+    public void testIssue221228_06() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue221228.js", "a221228.h^i();                     // the function is not accessible here", true);
+    }
+    
+    public void testIssue221228_07() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue221228.js", "a221228.poz^drav();                // rename hi here", true);
+    }
+
+    public void testIssue221228_08() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue221228.js", "a221228.m^sg = \"Hi public\";        // creates new property of object a/", true);
+    }
+
+    public void testIssue221228_09() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue221228.js", "formatter.println(a221228.ms^g);", true);
+    }
+    
+    public void testIssue221228_10() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue221228.js", "a221228.sayA^hoj();", true);
+    }
+    
+    public void testIssue221228_11() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue221228.js", "formatter.println(b221228.ms^g);", true);
+    }
+    
+    public void testIssue221228_12() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue221228.js", "b221228.ms^g = \"from b\";           // create new property of object b", true);
+    }
+    
+    public void testIssue221228_13() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue221228.js", "b221228.h^i();", true);
+    }
+    
+    public void testIssue221228_14() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue221228.js", "b221228.sayA^hoj();", true);
+    }
+    
+    public void testIssue221228_15() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue221228.js", "b221228.pozdr^av();", true);
     }
     
     public void testIssue222250_01() throws Exception {
