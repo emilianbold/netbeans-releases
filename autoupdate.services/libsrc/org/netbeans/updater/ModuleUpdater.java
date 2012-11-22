@@ -416,14 +416,18 @@ public final class ModuleUpdater extends Thread {
                             checkStop();
                             if ( entry.getName().startsWith( UPDATE_NETBEANS_DIR ) ) {
                                 if (! entry.isDirectory ()) {
+                                    String pathTo = entry.getName().substring(UPDATE_NETBEANS_DIR.length() + 1);
+                                    File destFile = new File (cluster, pathTo);
                                     if (AUTOUPDATE_UPDATER_JAR_PATH.equals (entry.getName ()) ||
                                             entry.toString().matches(AUTOUPDATE_UPDATER_JAR_LOCALE_PATTERN)) {
+                                        
+                                        // #220807 - NoClassDefFoundError: updater/XMLUtil
+                                        version.addFileWithCrc(pathTo, Long.toString(destFile.exists() ? UpdateTracking.getFileCRC(destFile) : 0));
+                                        
                                         // skip updater.jar
                                         continue;
                                     }
-                                    String pathTo = entry.getName ().substring (UPDATE_NETBEANS_DIR.length () + 1);
                                     // path without netbeans prefix
-                                    File destFile = new File (cluster, entry.getName ().substring (UPDATE_NETBEANS_DIR.length()));
                                     if ( destFile.exists() ) {
                                         File bckFile = new File( getBackupDirectory (cluster), entry.getName() );
                                         bckFile.getParentFile ().mkdirs ();
