@@ -139,6 +139,11 @@ public class CordovaTemplate implements SiteTemplateImplementation {
         projectProperties.setTestFolder("test");//NOI18N
     }
 
+    @Override
+    public String getId() {
+        return "CORDOVA"; // NOI18N
+    }
+
     @ServiceProvider(service=ClientProjectExtender.class)
     public static class CordovaExtender implements ClientProjectExtender {
 

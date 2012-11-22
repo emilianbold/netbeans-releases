@@ -139,7 +139,7 @@
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <specification-version>1.11</specification-version>
+                        <specification-version>1.12</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -272,6 +272,10 @@
                     </run-dependency>
                 </dependency>
             </module-dependencies>
+
+            <!-- the exported API is going to be removed soon:
+                 see issue "222525 - Get rid of the web.clientproject exported API" -->
+
             <friend-packages>
                 <friend>org.netbeans.modules.web.client.samples</friend>
                 <package>org.netbeans.modules.web.clientproject</package>

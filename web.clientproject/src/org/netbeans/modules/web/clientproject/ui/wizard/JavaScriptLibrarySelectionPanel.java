@@ -59,6 +59,7 @@ import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.web.clientproject.spi.SiteTemplateImplementation;
 import org.netbeans.modules.web.clientproject.ui.JavaScriptLibrarySelection;
 import org.netbeans.modules.web.clientproject.ui.JavaScriptLibrarySelection.SelectedLibrary;
+import org.netbeans.modules.web.clientproject.ui.customizer.ClientSideProjectProperties;
 import org.netbeans.modules.web.clientproject.util.ClientSideProjectUtilities;
 import org.netbeans.modules.web.clientproject.util.FileUtilities;
 import org.netbeans.modules.web.common.api.Pair;
@@ -132,6 +133,8 @@ public class JavaScriptLibrarySelectionPanel implements WizardDescriptor.Asynchr
     public void storeSettings(WizardDescriptor settings) {
         wizardDescriptor.putProperty(ClientSideProjectWizardIterator.NewProjectWizard.LIBRARIES_FOLDER, librariesFolder);
         wizardDescriptor.putProperty(ClientSideProjectWizardIterator.NewProjectWizard.LIBRARIES_PATH, javaScriptLibrarySelection.getLibrariesFolder());
+        wizardDescriptor.putProperty(ClientSideProjectWizardIterator.NewProjectWizard.LIBRARY_NAMES, 
+                ClientSideProjectProperties.createListOfJsLibraries(getComponent().getSelectedLibraries()));
     }
 
     @Override
