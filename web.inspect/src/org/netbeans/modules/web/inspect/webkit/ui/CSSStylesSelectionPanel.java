@@ -353,15 +353,32 @@ public class CSSStylesSelectionPanel extends JPanel {
             setDummyRoots();
         } else {
             List<Node> selection = pageModel.getSelectedNodes();
-            int selectionSize = selection.size();
+            int selectionSize = 0;
+            boolean containsUnkownNode = false;
+            Node knownNode = null;
+            for (Node node : selection) {
+                Object webKitNode = node.getLookup().lookup(org.netbeans.modules.web.webkit.debugging.api.dom.Node.class);
+                if (webKitNode == null) {
+                    containsUnkownNode = true;
+                } else {
+                    knownNode = node;
+                    selectionSize++;
+                }
+            }
             if (selectionSize == 0) {
                 setDummyRoots();
-                showLabel("CSSStylesSelectionPanel.noElementSelected"); // NOI18N
+                String key;
+                if (containsUnkownNode) {
+                    key = "CSSStylesSelectionPanel.unknownElementSelected"; // NOI18N
+                } else {
+                    key = "CSSStylesSelectionPanel.noElementSelected"; // NOI18N
+                }
+                showLabel(key);
             } else if (selectionSize > 1) {
                 setDummyRoots();
                 showLabel("CSSStylesSelectionPanel.multipleElementsSelected"); // NOI18N
             } else {
-                final Node selectedNode = selection.get(0);
+                final Node selectedNode = knownNode;
                 final org.netbeans.modules.web.webkit.debugging.api.dom.Node node =
                     selectedNode.getLookup().lookup(org.netbeans.modules.web.webkit.debugging.api.dom.Node.class);
                 if (node.getNodeType() == Document.ELEMENT_NODE) {
