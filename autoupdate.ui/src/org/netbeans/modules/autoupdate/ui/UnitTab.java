@@ -473,7 +473,7 @@ public final class UnitTab extends javax.swing.JPanel {
         bTabAction.setAction (new UpdateAction ());
         bTabAction1.setVisible(false);
         bTabAction2.setVisible(false);
-        prepareTopButton (reloadAction = new ReloadAction ());
+        prepareTopButton (reloadAction = new ReloadAction ("UnitTab_ReloadActionUpdates"));
          initReloadTooltip();
         break;
         case AVAILABLE :
@@ -494,7 +494,7 @@ public final class UnitTab extends javax.swing.JPanel {
         bTabAction.setAction (new AvailableAction ());
         bTabAction1.setVisible(false);
         bTabAction2.setVisible(false);
-        prepareTopButton (reloadAction = new ReloadAction ());
+        prepareTopButton (reloadAction = new ReloadAction ("UnitTab_ReloadAction"));
         table.setEnableRenderer (new SourceCategoryRenderer ());
          initReloadTooltip();
         break;
@@ -1922,8 +1922,8 @@ public final class UnitTab extends javax.swing.JPanel {
     private class ReloadAction extends TabAction {
         Task reloadTask = null;
         @SuppressWarnings("OverridableMethodCallInConstructor")
-        public ReloadAction () {
-            super ("UnitTab_ReloadAction", KeyStroke.getKeyStroke (KeyEvent.VK_R, KeyEvent.CTRL_DOWN_MASK), null);
+        public ReloadAction (String nameKey) {            
+            super (nameKey, KeyStroke.getKeyStroke (KeyEvent.VK_R, KeyEvent.CTRL_DOWN_MASK), null);
             String tooltip = NbBundle.getMessage (UnitTab.class, "UnitTab_Tooltip_RefreshAction");//NOI18N
             putValue (TOOL_TIP_TEXT_KEY, tooltip);
             setEnabled (false);
