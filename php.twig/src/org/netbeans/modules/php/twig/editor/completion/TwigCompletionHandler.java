@@ -147,15 +147,24 @@ public class TwigCompletionHandler implements CodeCompletionHandler {
     private static final Set<TwigElement> FUNCTIONS = new HashSet<TwigElement>();
     static {
         TwigDocumentationFactory documentationFactory = FunctionDocumentationFactory.getInstance();
-        FUNCTIONS.add(TwigElement.Factory.create("attribute", documentationFactory, Arrays.asList(new Parameter[] {new Parameter("object"), new Parameter("method"), new Parameter("arguments", Parameter.Need.OPTIONAL)}))); //NOI18N
+        FUNCTIONS.add(TwigElement.Factory.create(
+                "attribute",
+                documentationFactory,
+                Arrays.asList(new Parameter[] {new Parameter("object"), new Parameter("method"), new Parameter("arguments", Parameter.Need.OPTIONAL)}))); //NOI18N
         FUNCTIONS.add(TwigElement.Factory.create("block", documentationFactory, Arrays.asList(new Parameter[] {new Parameter("'name'")}))); //NOI18N
         FUNCTIONS.add(TwigElement.Factory.create("constant", documentationFactory, Arrays.asList(new Parameter[] {new Parameter("'name'")}))); //NOI18N
         FUNCTIONS.add(TwigElement.Factory.create("cycle", documentationFactory, Arrays.asList(new Parameter[] {new Parameter("array"), new Parameter("i")}))); //NOI18N
-        FUNCTIONS.add(TwigElement.Factory.create("date", documentationFactory, Arrays.asList(new Parameter[] {new Parameter("'date'"), new Parameter("'timezone'", Parameter.Need.OPTIONAL)}))); //NOI18N
+        FUNCTIONS.add(TwigElement.Factory.create(
+                "date",
+                documentationFactory,
+                Arrays.asList(new Parameter[] {new Parameter("'date'"), new Parameter("'timezone'", Parameter.Need.OPTIONAL)}))); //NOI18N
         FUNCTIONS.add(TwigElement.Factory.create("dump", documentationFactory, Arrays.asList(new Parameter[] {new Parameter("variable", Parameter.Need.OPTIONAL)}))); //NOI18N
         FUNCTIONS.add(TwigElement.Factory.create("parent", documentationFactory, Collections.EMPTY_LIST)); //NOI18N
         FUNCTIONS.add(TwigElement.Factory.create("random", documentationFactory, Arrays.asList(new Parameter[] {new Parameter("'value'")}))); //NOI18N
-        FUNCTIONS.add(TwigElement.Factory.create("range", documentationFactory, Arrays.asList(new Parameter[] {new Parameter("start"), new Parameter("end"), new Parameter("step", Parameter.Need.OPTIONAL)}))); //NOI18N
+        FUNCTIONS.add(TwigElement.Factory.create(
+                "range",
+                documentationFactory,
+                Arrays.asList(new Parameter[] {new Parameter("start"), new Parameter("end"), new Parameter("step", Parameter.Need.OPTIONAL)}))); //NOI18N
     }
 
     private static final Set<TwigElement> TESTS = new HashSet<TwigElement>();
@@ -320,7 +329,7 @@ public class TwigCompletionHandler implements CodeCompletionHandler {
         return prefix.length() == 0 ? true : theString.toLowerCase().startsWith(prefix.toLowerCase());
     }
 
-    private static class DocumentationDecorator implements TwigDocumentation {
+    private static final class DocumentationDecorator implements TwigDocumentation {
 
         private static final DocumentationDecorator INSTANCE = new DocumentationDecorator();
         private TwigDocumentation documentation;
@@ -344,7 +353,7 @@ public class TwigCompletionHandler implements CodeCompletionHandler {
 
     }
 
-    private static class PrefixResolver {
+    private static final class PrefixResolver {
         private final ParserResult info;
         private final int offset;
         private final boolean upToOffset;
@@ -377,7 +386,7 @@ public class TwigCompletionHandler implements CodeCompletionHandler {
 
         private void processTopSequence(TokenSequence<TwigTopTokenId> tts) {
             tts.move(offset);
-            if (tts.moveNext() || tts.movePrevious() ) {
+            if (tts.moveNext() || tts.movePrevious()) {
                 processSequence(tts.embedded(TwigTokenId.language()));
             }
         }
