@@ -143,7 +143,6 @@ made subject to such option by the copyright holder.
                 </presetdef>
             </sequential>
         </macrodef>
-        <custom-javac-presetdef javacval="${nbjdk.javac}"/>
     </target>
 
     <target name="-javac-init-bootclasspath-prepend" depends="build-init" if="bootclasspath.prepend">
