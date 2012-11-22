@@ -56,8 +56,7 @@ org.netbeans.modules.whitelist.project.WhiteListLookupProvider$WhiteListLookup
 org.netbeans.modules.whitelist.project.WhiteListLookupProvider
 org.netbeans.spi.whitelist.WhiteListQueryImplementation
 
-#204446
-org.netbeans.modules.php.smarty.editor.gsf.TplLanguage
+#OK on Nov 22, 2012, was #204446
 org.netbeans.modules.php.api.util.FileUtils$ZipEntryFilter
 
 #204445
