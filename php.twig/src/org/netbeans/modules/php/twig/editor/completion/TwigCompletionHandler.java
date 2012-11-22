@@ -313,7 +313,7 @@ public class TwigCompletionHandler implements CodeCompletionHandler {
 
     @Override
     public ParameterInfo parameters(ParserResult pr, int i, CompletionProposal cp) {
-        return new ParameterInfo(new ArrayList<String>(), 0, 0);
+        return ParameterInfo.NONE;
     }
 
     private static boolean startsWith(String theString, String prefix) {
