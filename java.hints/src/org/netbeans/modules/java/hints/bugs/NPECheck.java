@@ -388,17 +388,6 @@ public class NPECheck {
             
             variable2State = oldVariable2State;
             
-            Set<VariableElement> uncertain = new HashSet<VariableElement>();
-            
-            if (node.getElseStatement() == null) {
-                for (Entry<VariableElement, State> e : variableStatesAfterThen.entrySet()) {
-                    if (testedToAfterThen.get(e.getKey()) == State.NULL
-                        && e.getValue() == State.POSSIBLE_NULL) {
-                        uncertain.add(e.getKey());
-                    }
-                }
-            }
-            
             for (Entry<VariableElement, State> e : variableStatesAfterThen.entrySet()) {
                 State t = e.getValue();
                 State el = variableStatesAfterElse.get(e.getKey());
@@ -417,13 +406,7 @@ public class NPECheck {
             
             boolean thenExitsFromAllBranches = new ExitsFromAllBranches(info).scan(new TreePath(getCurrentPath(), node.getThenStatement()), null) == Boolean.TRUE;
             
-            if (!thenExitsFromAllBranches) {
-                for (Entry<VariableElement, State> test : testedTo.entrySet()) {
-                    if ((variable2State.get(test.getKey()) == POSSIBLE_NULL || variable2State.get(test.getKey()) == null) && !uncertain.contains(test.getKey())) {
-                        variable2State.put(test.getKey(), POSSIBLE_NULL_REPORT);
-                    }
-                }
-            } else {
+            if (thenExitsFromAllBranches) {
                 variable2State.putAll(negTestedTo);
             }
             

@@ -600,6 +600,41 @@ public class NPECheckTest extends NbTestCase {
                 .assertWarnings();
     }
     
+    public void test222580a() throws Exception {
+        HintTest.create()
+                .input("package test;\n" +
+                       "class Test {\n" +
+                       "    public boolean foo(String name, String path) {\n" +
+                       "        if (path == null) {\n" +
+                       "            path = name;\n" +
+                       "        } else {\n" +
+                       "            path += \".\" + name;\n" +
+                       "        }\n" +
+                       "        return path.equals(\"bin\");\n" +
+                       "    }\n" +
+                       "}")
+                .run(NPECheck.class)
+                .assertWarnings();
+    }
+    
+    public void test222580b() throws Exception {
+        HintTest.create()
+                .input("package test;\n" +
+                       "class Test {\n" +
+                       "    public boolean foo(@NullAllowed String path) {\n" +
+                       "        if (path == null) {\n" +
+                       "            path = \"\";\n" +
+                       "        } else {\n" +
+                       "            path += \".\";\n" +
+                       "        }\n" +
+                       "        return path.equals(\"bin\");\n" +
+                       "    }\n" +
+                       "    @interface NullAllowed {}\n" +
+                       "}")
+                .run(NPECheck.class)
+                .assertWarnings();
+    }
+    
     private void performAnalysisTest(String fileName, String code, String... golden) throws Exception {
         HintTest.create()
                 .input(fileName, code)
