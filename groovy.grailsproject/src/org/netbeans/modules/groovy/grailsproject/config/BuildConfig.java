@@ -289,7 +289,6 @@ public final class BuildConfig {
     }
 
     public synchronized List<File> getCompileDependencies() {
-        assert Thread.holdsLock(this);
         try {
             if (buildSettingsInstance != null) {
                 Method getCompileDependenciesMethod = buildSettingsInstance.getClass().getMethod("getCompileDependencies", new Class[] {}); // NOI18N
