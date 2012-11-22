@@ -948,20 +948,7 @@ public class NbModuleSuite {
             if (handler != null) {
                 NbModuleLogHandler.finish();
             }
-            
-            Class<?> lifeClazz = global.loadClass("org.openide.LifecycleManager"); // NOI18N
-            Method getDefault = lifeClazz.getMethod("getDefault"); // NOI18N
-            Method exit = lifeClazz.getMethod("exit");
-            LOG.log(Level.FINE, "Closing via LifecycleManager loaded by {0}", lifeClazz.getClassLoader());
-            Object life = getDefault.invoke(null);
-            if (!life.getClass().getName().startsWith("org.openide.LifecycleManager")) { // NOI18N
-                System.setProperty("netbeans.close.no.exit", "true"); // NOI18N
-                System.setProperty("netbeans.close", "true"); // NOI18N
-                exit.invoke(life);
-                waitForAWT();
-                System.getProperties().remove("netbeans.close"); // NOI18N
-                System.getProperties().remove("netbeans.close.no.exit"); // NOI18N
-            }
+            new Shutdown(global, config.latestTestCaseClass.getName()).run(result);
         }
 
         static File findPlatform() {
@@ -1264,15 +1251,46 @@ public class NbModuleSuite {
             return false;
         }
 
-        private static void waitForAWT() throws InvocationTargetException, InterruptedException {
-            final CountDownLatch cdl = new CountDownLatch(1);
-            SwingUtilities.invokeLater(new Runnable() {
-                public @Override void run() {
-                    cdl.countDown();
+        private static class Shutdown extends NbTestCase {
+            Shutdown(ClassLoader global, String testClass) throws Exception {
+                super("shuttingDown[" + testClass + "]");
+                this.global = global;
+            }
+
+            @Override
+            protected int timeOut() {
+                return 180000; // 3 minutes for a shutdown
+            }
+            
+            private static void waitForAWT() throws InvocationTargetException, InterruptedException {
+                final CountDownLatch cdl = new CountDownLatch(1);
+                SwingUtilities.invokeLater(new Runnable() {
+                    public @Override void run() {
+                        cdl.countDown();
+                    }
+                });
+                cdl.await(10, TimeUnit.SECONDS);
+            }
+            private final ClassLoader global;
+
+            @Override
+            protected void runTest() throws Throwable {
+                Class<?> lifeClazz = global.loadClass("org.openide.LifecycleManager"); // NOI18N
+                Method getDefault = lifeClazz.getMethod("getDefault"); // NOI18N
+                Method exit = lifeClazz.getMethod("exit");
+                LOG.log(Level.FINE, "Closing via LifecycleManager loaded by {0}", lifeClazz.getClassLoader());
+                Object life = getDefault.invoke(null);
+                if (!life.getClass().getName().startsWith("org.openide.LifecycleManager")) { // NOI18N
+                    System.setProperty("netbeans.close.no.exit", "true"); // NOI18N
+                    System.setProperty("netbeans.close", "true"); // NOI18N
+                    exit.invoke(life);
+                    waitForAWT();
+                    System.getProperties().remove("netbeans.close"); // NOI18N
+                    System.getProperties().remove("netbeans.close.no.exit"); // NOI18N
                 }
-            });
-            cdl.await(10, TimeUnit.SECONDS);
+            }
         }
+        
 
         private static final class JUnitLoader extends ClassLoader {
             private final ClassLoader junit;
