@@ -66,21 +66,22 @@ public final class RunProjectValidator {
         "RunProjectValidator.error.startFile.invalid=Start File must be a valid file.",
         "RunProjectValidator.error.startFile.notUnderSiteRoot=Start File must be underneath Site Root directory."
     })
-    public void validateStartFile(File siteRootFolder, File startFile) {
-        ProjectFoldersValidator projectFoldersValidator = new ProjectFoldersValidator();
-        projectFoldersValidator.validateSiteRootFolder(siteRootFolder);
-        ValidationResult foldersResult = projectFoldersValidator.getResult();
-        if (foldersResult.hasErrors()) {
-            result.merge(foldersResult);
-            return;
+    public RunProjectValidator validateStartFile(File siteRootFolder, File startFile) {
+        ValidationResult foldersResult = new ProjectFoldersValidator()
+                .validateSiteRootFolder(siteRootFolder)
+                .getResult();
+        result.merge(foldersResult);
+        if (result.hasErrors()) {
+            return this;
         }
         if (startFile == null || !startFile.isFile()) {
             result.addError(new ValidationResult.Message(START_FILE, Bundle.RunProjectValidator_error_startFile_invalid()));
-            return;
+            return this;
         }
         if (!FileUtil.isParentOf(FileUtil.toFileObject(siteRootFolder), FileUtil.toFileObject(startFile))) {
             result.addError(new ValidationResult.Message(START_FILE, Bundle.RunProjectValidator_error_startFile_notUnderSiteRoot()));
         }
+        return this;
     }
 
     @NbBundle.Messages({
@@ -88,16 +89,16 @@ public final class RunProjectValidator {
         "RunProjectValidator.error.projectUrl.invalidProtocol=Project URL must start with http(s):// or file://.",
         "RunProjectValidator.error.projectUrl.invalid=Project URL is invalid."
     })
-    public void validateProjectUrl(String projectUrl) {
+    public RunProjectValidator validateProjectUrl(String projectUrl) {
         if (projectUrl == null || projectUrl.isEmpty()) {
             result.addError(new ValidationResult.Message(PROJECT_URL, Bundle.RunProjectValidator_error_projectUrl_missing()));
-            return;
+            return this;
         }
         if (!projectUrl.startsWith("http://") // NOI18N
                 && !projectUrl.startsWith("https://") // NOI18N
                 && !projectUrl.startsWith("file://")) { // NOI18N
             result.addError(new ValidationResult.Message(PROJECT_URL, Bundle.RunProjectValidator_error_projectUrl_invalidProtocol()));
-            return;
+            return this;
         }
         try {
             URL url = new URL(projectUrl);
@@ -108,6 +109,7 @@ public final class RunProjectValidator {
         } catch (MalformedURLException ex) {
             result.addError(new ValidationResult.Message(PROJECT_URL, Bundle.RunProjectValidator_error_projectUrl_invalid()));
         }
+        return this;
     }
 
 }
