@@ -120,9 +120,16 @@ final class ProjectClassPathImplementation implements ClassPathImplementation {
     private List<PathResourceImplementation> getPath() {
         assert Thread.holdsLock(this);
 
+        BuildConfig buildConfig = ((GrailsProject) projectConfig.getProject()).getBuildConfig();
+        buildConfig.reload();
+
         List<PathResourceImplementation> result = new ArrayList<PathResourceImplementation>();
         // lib directory from project root
         addLibs(projectRoot, result);
+
+        // compile dependencies
+        List<File> compileDeps = buildConfig.getCompileDependencies();
+        addJars(compileDeps.toArray(new File[compileDeps.size()]), result, false);
 
         // FIXME move this to plugin specific support
         // http://grails.org/GWT+Plugin
@@ -155,7 +162,7 @@ final class ProjectClassPathImplementation implements ClassPathImplementation {
         }
 
         // in-place plugins
-        List<GrailsPlugin> localPlugins = ((GrailsProject) projectConfig.getProject()).getBuildConfig().getLocalPlugins();
+        List<GrailsPlugin> localPlugins = buildConfig.getLocalPlugins();
         for (GrailsPlugin plugin : localPlugins) {
             if (plugin.getPath() != null) {
                 addLibs(plugin.getPath(), result);
@@ -165,7 +172,7 @@ final class ProjectClassPathImplementation implements ClassPathImplementation {
 
         // project plugins
         File oldPluginsDir = pluginsDir;
-        File currentPluginsDir = ((GrailsProject) projectConfig.getProject()).getBuildConfig().getProjectPluginsDir();
+        File currentPluginsDir = buildConfig.getProjectPluginsDir();
 
         if (pluginsDir == null || !pluginsDir.equals(currentPluginsDir)) {
             LOGGER.log(Level.FINE, "Project plugins dir changed from {0} to {1}",
@@ -180,7 +187,7 @@ final class ProjectClassPathImplementation implements ClassPathImplementation {
         // global plugins
         // TODO philosophical question: Is the global plugin boot or compile classpath?
         File oldGlobalPluginsDir = globalPluginsDir;
-        File currentGlobalPluginsDir = ((GrailsProject) projectConfig.getProject()).getBuildConfig().getGlobalPluginsDir();
+        File currentGlobalPluginsDir = buildConfig.getGlobalPluginsDir();
         if (globalPluginsDir == null || !globalPluginsDir.equals(currentGlobalPluginsDir)) {
             LOGGER.log(Level.FINE, "Project plugins dir changed from {0} to {1}",
                     new Object[] {pluginsDir, currentPluginsDir});
@@ -242,7 +249,10 @@ final class ProjectClassPathImplementation implements ClassPathImplementation {
     }
 
     private static void addJars(File dir, List<PathResourceImplementation> result, boolean recurse) {
-        File[] jars = dir.listFiles();
+        addJars(dir.listFiles(), result, recurse);
+    }
+
+    private static void addJars(File[] jars, List<PathResourceImplementation> result, boolean recurse) {
         if (jars != null) {
             for (File f : jars) {
                 try {
