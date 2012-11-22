@@ -880,7 +880,7 @@ public class ProvidedExtensionsTest extends NbTestCase {
         @Override
         public ProvidedExtensions.IOHandler getMoveHandler(final File from, final File to) {
             implsMoveCalls++;
-            return (!isImplsMoveRetVal()) ? null : new ProvidedExtensions.IOHandler(){
+            return (!isImplsMoveRetVal() || to == null) ? null : new ProvidedExtensions.IOHandler(){
                 public void handle() throws IOException {
                     moveImplCalls++;
                     if (to.exists()) {
@@ -913,7 +913,7 @@ public class ProvidedExtensionsTest extends NbTestCase {
         @Override
         public ProvidedExtensions.IOHandler getCopyHandler(final File from, final File to) {
             implsCopyCalls++;
-            return (!isImplsCopyRetVal()) ? null : new ProvidedExtensions.IOHandler(){
+            return (!isImplsCopyRetVal() || to == null) ? null : new ProvidedExtensions.IOHandler(){
                 @Override
                 public void handle() throws IOException {
                     copyImplCalls++;
