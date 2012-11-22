@@ -408,12 +408,18 @@ public class RuleEditorNode extends AbstractNode {
                 if (addedDeclarations.containsValue(d)) {
                     continue; //skip those added declarations
                 }
-                //check the declaration
-                org.netbeans.modules.css.model.api.Property property = d.getProperty();
-                PropertyValue propertyValue = d.getPropertyValue();
-                if (property != null && propertyValue != null) {
-                    if (matchesFilterText(property.getContent().toString())) {
-                        filtered.add(d);
+                String declarationId = PropertyUtils.getDeclarationId(getRule(), d);
+                if(panel.getCreatedDeclarationsIdsList().contains(declarationId)) {
+                    //created declaration--ignore filter
+                    filtered.add(d);
+                } else {
+                    //check the declaration
+                    org.netbeans.modules.css.model.api.Property property = d.getProperty();
+                    PropertyValue propertyValue = d.getPropertyValue();
+                    if (property != null && propertyValue != null) {
+                        if (matchesFilterText(property.getContent().toString())) {
+                            filtered.add(d);
+                        }
                     }
                 }
             }
