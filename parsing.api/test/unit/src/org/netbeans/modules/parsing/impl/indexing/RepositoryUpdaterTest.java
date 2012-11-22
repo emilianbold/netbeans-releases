@@ -161,8 +161,8 @@ import org.openide.util.RequestProcessor;
 public class RepositoryUpdaterTest extends NbTestCase {
 
 
-    private static final int TIME = Integer.getInteger("RepositoryUpdaterTest.timeout", 5000);                 //NOI18N
-    private static final int NEGATIVE_TIME = Integer.getInteger("RepositoryUpdaterTest.negative-timeout", 5000); //NOI18N
+    static final int TIME = Integer.getInteger("RepositoryUpdaterTest.timeout", 5000);                 //NOI18N
+    static final int NEGATIVE_TIME = Integer.getInteger("RepositoryUpdaterTest.negative-timeout", 5000); //NOI18N
     private static final String SOURCES = "FOO_SOURCES";
     private static final String PLATFORM = "FOO_PLATFORM";
     private static final String LIBS = "FOO_LIBS";
@@ -2546,7 +2546,11 @@ public class RepositoryUpdaterTest extends NbTestCase {
         }
 
         public boolean await () throws InterruptedException {
-            return latch.await(TIME, TimeUnit.MILLISECONDS);
+            return await(TIME);
+        }
+
+        public boolean await (long time) throws InterruptedException {
+            return latch.await(time, TimeUnit.MILLISECONDS);
         }
 
         public Set<URL> getBinaries () {

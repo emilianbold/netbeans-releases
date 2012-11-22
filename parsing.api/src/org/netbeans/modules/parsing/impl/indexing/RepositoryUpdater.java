@@ -2222,6 +2222,10 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
                 final CustomIndexerFactory factory = cifInfo.getIndexerFactory();
                 final Pair<String,Integer> key = Pair.of(factory.getIndexerName(),factory.getIndexVersion());
                 Pair<SourceIndexerFactory,Context> value = ctxToFinish.get(key);
+                if (TEST_LOGGER.isLoggable(Level.FINEST)) {
+                    TEST_LOGGER.log(Level.FINEST, "scanStarting:{0}:{1}",
+                            new Object[] { factory.getIndexerName(), root.toString() });
+                }
                 if (value == null) {
                     final Context ctx = SPIAccessor.getInstance().createContext(
                             cacheRoot,
@@ -2237,10 +2241,6 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
                             logCtx);
                     value = Pair.<SourceIndexerFactory,Context>of(factory,ctx);
                     ctxToFinish.put(key,value);
-                }
-                if (TEST_LOGGER.isLoggable(Level.FINEST)) {
-                    TEST_LOGGER.log(Level.FINEST, "scanStarting:{0}:{1}", 
-                            new Object[] { factory.getIndexerName(), root.toString() });
                 }
                 long time = System.currentTimeMillis();
                 try {
@@ -2888,9 +2888,9 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
                         final UsedIndexables usedIterables = new UsedIndexables();
                         final SourceIndexers indexers = SourceIndexers.load(false);
                         invalidateSources(resources);
-                        scanStarted (root, sourceForBinaryRoot, indexers, invalidatedMap, ctxToFinish);                        
                         boolean indexResult=false;
                         try {
+                            scanStarted (root, sourceForBinaryRoot, indexers, invalidatedMap, ctxToFinish);
                             delete(crawler.getDeletedResources(), ctxToFinish, usedIterables);
                             indexResult=index(resources, crawler.getAllResources(), root, sourceForBinaryRoot, indexers, invalidatedMap, ctxToFinish, usedIterables);
                             if (indexResult) {
@@ -3446,8 +3446,8 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
                 final Map<Pair<String,Integer>,Pair<SourceIndexerFactory,Context>> contexts = new HashMap<Pair<String,Integer>,Pair<SourceIndexerFactory,Context>>();
                 final UsedIndexables usedIterables = new UsedIndexables();
                 final SourceIndexers indexers = SourceIndexers.load(false);
-                scanStarted(root, false, indexers, votes, contexts);
                 try {
+                    scanStarted(root, false, indexers, votes, contexts);
                     delete(indexables, contexts, usedIterables);
                 } finally {
                     scanFinished(contexts.values(), usedIterables, !getCancelRequest().isRaised());
@@ -3557,8 +3557,8 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
                             final Map<Pair<String,Integer>,Pair<SourceIndexerFactory,Context>> transactionContexts = new HashMap<Pair<String,Integer>,Pair<SourceIndexerFactory,Context>>();
                             final UsedIndexables usedIterables = new UsedIndexables();
                             final Map<SourceIndexerFactory,Boolean> votes = new HashMap<SourceIndexerFactory, Boolean>();
-                            customIndexersScanStarted(root, cacheRoot, sourceForBinaryRoot, cifInfos, votes, transactionContexts);
                             try {
+                                customIndexersScanStarted(root, cacheRoot, sourceForBinaryRoot, cifInfos, votes, transactionContexts);
                                 if (deleted.size() > 0) {
                                     delete(deleted, transactionContexts, usedIterables);
                                 }
@@ -3736,8 +3736,8 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
                                     infos.add(eifInfo);
                                 }
                             }
-                            embeddingIndexersScanStarted(root, cacheRoot, sourceForBinaryRoot, eifInfosMap.values(), votes, transactionContexts);
                             try {
+                                embeddingIndexersScanStarted(root, cacheRoot, sourceForBinaryRoot, eifInfosMap.values(), votes, transactionContexts);
                                 if (deleted.size() > 0) {
                                     delete(deleted, transactionContexts, usedIterables);
                                 }
@@ -4785,8 +4785,8 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
             final UsedIndexables usedIndexables = new UsedIndexables();
             final Map<SourceIndexerFactory,Boolean> votes = new HashMap<SourceIndexerFactory, Boolean>();
             boolean indexResult = false;
-            customIndexersScanStarted(root, cacheRoot, sourceForBinaryRoot, indexers.cifInfos, votes, transactionContexts);
             try {
+                customIndexersScanStarted(root, cacheRoot, sourceForBinaryRoot, indexers.cifInfos, votes, transactionContexts);
                 for (IndexerCache.IndexerInfo<CustomIndexerFactory> info : indexers.cifInfos) {
                     if (getCancelRequest().isRaised()) {
                         break;
@@ -4897,8 +4897,8 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
                         final Map<Pair<String,Integer>,Pair<SourceIndexerFactory,Context>> ctxToFinish = new HashMap<Pair<String,Integer>,Pair<SourceIndexerFactory,Context>>();
                         final UsedIndexables usedIterables = new UsedIndexables();
                         boolean indexResult = false;
-                        scanStarted (root, sourceForBinaryRoot, indexers, invalidatedMap, ctxToFinish);
                         try {
+                            scanStarted (root, sourceForBinaryRoot, indexers, invalidatedMap, ctxToFinish);
                             delete(deleted, ctxToFinish, usedIterables);
                             invalidateSources(resources);
                             final long tm = System.currentTimeMillis();
