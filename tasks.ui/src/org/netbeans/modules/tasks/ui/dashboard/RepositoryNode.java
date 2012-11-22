@@ -74,7 +74,6 @@ public class RepositoryNode extends AsynchronousNode<Collection<Query>> implemen
     private final Repository repository;
     private List<QueryNode> queryNodes;
     private List<QueryNode> filteredQueryNodes;
-    private boolean loaded;
     private boolean refresh;
     private JPanel panel;
     private TreeLabel lblName;
@@ -87,14 +86,13 @@ public class RepositoryNode extends AsynchronousNode<Collection<Query>> implemen
     private Map<String, QueryNode> queryNodesMap;
     private RepositoryListener repositoryListener;
 
-    public RepositoryNode(Repository repository, boolean loaded) {
-        this(repository, loaded, true);
+    public RepositoryNode(Repository repository) {
+        this(repository, true);
     }
 
-    public RepositoryNode(Repository repository, boolean loaded, boolean opened) {
+    public RepositoryNode(Repository repository, boolean opened) {
         super(opened, null, repository.getDisplayName());
         this.repository = repository;
-        this.loaded = loaded;
         this.refresh = false;
         queryNodesMap = new HashMap<String, QueryNode>();
         repositoryListener = new RepositoryListener();
@@ -168,7 +166,6 @@ public class RepositoryNode extends AsynchronousNode<Collection<Query>> implemen
             if (filteredQueryNodes == null) {
                 return new ArrayList<TreeListNode>(0);
             }
-            loaded = true;
             DashboardViewer dashboard = DashboardViewer.getInstance();
             if (!filteredQueryNodes.isEmpty()) {
                 List<QueryNode> children = filteredQueryNodes;
@@ -197,7 +194,7 @@ public class RepositoryNode extends AsynchronousNode<Collection<Query>> implemen
             for (Query query : queries) {
                 QueryNode queryNode = queryNodesMap.get(query.getDisplayName());
                 if (queryNode == null) {
-                    queryNode = new QueryNode(query, this, !loaded);
+                    queryNode = new QueryNode(query, this, true);
                     queryNodesMap.put(query.getDisplayName(), queryNode);
                 }
                 queryNode.updateContent();
@@ -318,10 +315,6 @@ public class RepositoryNode extends AsynchronousNode<Collection<Query>> implemen
     @Override
     public String toString() {
         return repository.getDisplayName();
-    }
-
-    public boolean isLoaded() {
-        return loaded;
     }
 
     void updateContent() {
