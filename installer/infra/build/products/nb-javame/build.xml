@@ -2,7 +2,7 @@
 <!--
   DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-  Copyright 1997-2012 Oracle and/or its affiliates. All rights reserved.
+  Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
 
   Oracle and Java are registered trademarks of Oracle and/or its affiliates.
   Other names may be trademarks of their respective owners.
@@ -69,9 +69,6 @@
         <antcall target="clean-platform">
             <param name="product.platforms" value="linux"/>
         </antcall>
-        <antcall target="clean-platform">
-            <param name="product.platforms" value="macosx-x86 macosx-ppc"/>
-        </antcall>
     </target>
     
     <!--
@@ -83,15 +80,9 @@
     <target name="build-all">
         <antcall target="build-platform">
             <param name="product.platforms" value="windows"/>
-            <param name="product.data.2.uri" value="${product.data.2.uri.windows}"/>
         </antcall>
         <antcall target="build-platform">
             <param name="product.platforms" value="linux"/>
-            <param name="product.data.2.uri" value="${product.data.2.uri.linux}"/>
-        </antcall>
-        <antcall target="build-platform">
-            <param name="product.platforms" value="macosx-x86 macosx-ppc"/>
-            <param name="product.data.2.uri" value="${product.data.2.uri.macosx}"/>
         </antcall>
     </target>
     
@@ -104,15 +95,9 @@
     <target name="release-all">
         <antcall target="release-platform">
             <param name="product.platforms" value="windows"/>
-            <param name="product.data.2.uri" value="${product.data.2.uri.windows}"/>
         </antcall>
         <antcall target="release-platform">
             <param name="product.platforms" value="linux"/>
-            <param name="product.data.2.uri" value="${product.data.2.uri.linux}"/>
-        </antcall>
-        <antcall target="release-platform">
-            <param name="product.platforms" value="macosx-x86 macosx-ppc"/>
-            <param name="product.data.2.uri" value="${product.data.2.uri.macosx}"/>
         </antcall>
     </target>
     
@@ -149,75 +134,7 @@
       which will be used in other operations.
     -->
     <target name="release-platform" depends="build-platform,release"/>
-    
-    <!--
-      Corrects the layout of the incoming installation data files. 
-      
-      Overrides the '-pre-package' target in product.xml.
-    -->
-    <target name="-pre-package">        
-
-        <set property="mobility.cluster"    value="mobility"/>
-
-        <if property="i" value="2">
-            <if property="product.platforms" value="linux">
-            <mkdir dir="${data.directory}/${mobility.cluster}/"/>            
-            <move todir="${data.directory}/${mobility.cluster}/${wtk.directory}">
-                <fileset dir="${data.directory}">
-		    <exclude name="${mobility.cluster}"/>
-		    <exclude name="${mobility.cluster}/${wtk.directory}"/>
-                </fileset>
-            </move>
-            </if>
-
-            <if property="product.platforms" value="windows">
-            <mkdir dir="${data.directory}/${mobility.cluster}/"/>            
-            <delete dir="${data.directory}/toolbar" includeemptydirs="true"/>
-
-            <move todir="${data.directory}/${mobility.cluster}/${javamesdk.directory}">
-                <fileset dir="${data.directory}">
-		    <exclude name="${mobility.cluster}"/>
-		    <exclude name="${mobility.cluster}/${javamesdk.directory}"/>
-                </fileset>
-            </move>
-            </if>
-            <if property="product.platforms" value="macosx-x86 macosx-ppc">
-            <mkdir dir="${data.directory}/${mobility.cluster}/"/>            
-            <delete dir="${data.directory}/toolbar" includeemptydirs="true"/>
-
-            <move todir="${data.directory}/${mobility.cluster}/${javamesdk.directory}">
-                <fileset dir="${data.directory}">
-		    <exclude name="${mobility.cluster}"/>
-		    <exclude name="${mobility.cluster}/${javamesdk.directory}"/>
-                </fileset>
-            </move>
-            </if>
-        </if>
-
-
-        <condition property="is.descriptor" value="true" else="false">
-            <or>
-                <equals arg1="${i}" arg2="3"/>
-                <equals arg1="${i}" arg2="4"/>
-            </or>
-        </condition>
- 
-	<if property="is.descriptor" value="true">
-            <mkdir dir="${data.directory}/${mobility.cluster}/config/emulator-descriptor-inst"/>            
-            <move todir="${data.directory}/${mobility.cluster}/config/emulator-descriptor-inst">
-                <fileset dir="${data.directory}">
-                    <exclude name="${mobility.cluster}/config/emulator-descriptor-inst"/>
-		    <exclude name="${mobility.cluster}/config"/>
-		    <exclude name="${mobility.cluster}"/>
-                </fileset>
-            </move>
-        </if>
-
-
-
-
-    </target>
-    
+        
     <!-- ============================================================================
       Default
     ============================================================================= -->
