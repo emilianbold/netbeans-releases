@@ -184,6 +184,10 @@ public class JsCodeCompletionGeneralTest extends JsCodeComplationBase {
     public void testIssue218525_01() throws Exception {
         checkCompletion("testfiles/completion/general/issue218525.html", "<li style=\"cursor: pointer\" onclick=\"operator.r^emoveMe(this);\">Remove me (breakpoint on node removal + breakpoint on nonDOM line)</li>", false);
     }
+    
+    public void testIssue215764_01() throws Exception {
+        checkCompletion("testfiles/completion/general/issue215764.js", "e215764.get^Date();", false);
+    }
 
     @Override
     protected Map<String, ClassPath> createClassPathsForTest() {
