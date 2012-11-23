@@ -1563,7 +1563,7 @@ public class CppParserActionImpl implements CppParserActionEx {
             if(builderContext.top() instanceof SimpleDeclarationBuilder) {
                 SimpleDeclarationBuilder declBuilder = (SimpleDeclarationBuilder) builderContext.top();
                 declBuilder.setDeclaratorBuilder(declaratorBuilder);
-            }
+                    }
         } else {
             declaratorBuilder.leaveDeclarator();
         }      
@@ -1821,12 +1821,39 @@ public class CppParserActionImpl implements CppParserActionEx {
     @Override public void end_function_definition(Token token) {}
     @Override public void function_body(Token token) {}
     @Override public void end_function_body(Token token) {}
-    @Override public void initializer(Token token) {}
+    
+    @Override public void initializer(Token token) {
+        if(!(builderContext.top() instanceof ExpressionBuilder)) {
+            ExpressionBuilder builder = new ExpressionBuilder();
+            builder.setFile(currentContext.file);
+            builder.setStartOffset(((APTToken)token).getOffset());
+            builderContext.push(builder);        
+        } else {
+            ExpressionBuilder builder = (ExpressionBuilder) builderContext.top();
+            builder.enterExpression();
+        }    
+    }
     @Override public void initializer(int kind, Token token) {}
-    @Override public void end_initializer(Token token) {}
-    @Override public void brace_or_equal_initializer(Token token) {}
+    @Override public void end_initializer(Token token) {
+        ExpressionBuilder builder = (ExpressionBuilder) builderContext.top();
+        builder.setEndOffset(((APTToken)token).getEndOffset());
+        if(builder.isTopExpression()) {
+            builderContext.pop();
+            if(builderContext.top() instanceof SimpleDeclarationBuilder) {
+                SimpleDeclarationBuilder container = (SimpleDeclarationBuilder) builderContext.top();
+                container.setInitializerBuilder(builder);
+            }
+        } else {
+            builder.leaveExpression();
+        }    
+    }
+    @Override public void brace_or_equal_initializer(Token token) {
+        initializer(token);
+    }
     @Override public void brace_or_equal_initializer(int kind, Token token) {}
-    @Override public void end_brace_or_equal_initializer(Token token) {}
+    @Override public void end_brace_or_equal_initializer(Token token) {
+        end_initializer(token);
+    }
     @Override public void initializer_clause(Token token) {}
     @Override public void end_initializer_clause(Token token) {}
     @Override public void initializer_list(Token token) {}
@@ -1928,6 +1955,7 @@ public class CppParserActionImpl implements CppParserActionEx {
 
                 builder.setName(declBuilder.getDeclaratorBuilder().getName());
                 builder.setTypeBuilder(declBuilder.getTypeBuilder());
+                builder.setInitializerBuilder(declBuilder.getInitializerBuilder());
                 if(declBuilder.getTemplateDescriptorBuilder() != null) {
                     builder.setTemplateDescriptorBuilder(declBuilder.getTemplateDescriptorBuilder());        
                     builder.setStartOffset(declBuilder.getTemplateDescriptorBuilder().getStartOffset());
@@ -1963,8 +1991,12 @@ public class CppParserActionImpl implements CppParserActionEx {
     
     @Override public void pure_specifier(Token token) {}
     @Override public void end_pure_specifier(Token token) {}
-    @Override public void constant_initializer(Token token) {}
-    @Override public void end_constant_initializer(Token token) {}
+    @Override public void constant_initializer(Token token) {
+        initializer(token);
+    }
+    @Override public void end_constant_initializer(Token token) {
+        end_initializer(token);
+    }
     @Override public void virt_specifier(int kind, Token token) {}
     @Override public void base_clause(Token token) {}
     @Override public void end_base_clause(Token token) {}
