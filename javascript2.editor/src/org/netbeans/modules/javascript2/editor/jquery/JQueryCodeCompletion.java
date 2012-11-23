@@ -179,10 +179,6 @@ public class JQueryCodeCompletion {
         return null;
     }
 
-    private static int getNearestAnchor(CharSequence text) {
-        return CharSequenceUtilities.lastIndexOf(text, " ") + 1; //NOI18N
-    }
-
     private enum SelectorKind {
         TAG, TAG_ATTRIBUTE, CLASS, ID, TAG_ATTRIBUTE_COMPARATION, AFTER_COLON
     }
@@ -307,12 +303,6 @@ public class JQueryCodeCompletion {
         String wrapup = ""; //NOI18N
         String prefixText = prefix;
         int anchorOffsetDelta = 0;
-        if (ts.token().id() == JsTokenId.STRING) {
-            anchorOffsetDelta = getNearestAnchor(ts.token().text());
-            if (anchorOffsetDelta < 0) {
-                anchorOffsetDelta = 0;
-            }
-        }
 //        if (!(ts.token().id() == JsTokenId.STRING || ts.token().id() == JsTokenId.STRING_END || ts.token().id() == JsTokenId.STRING_BEGIN)) {
 //            wrapup = "'"; //NOI18N
 //            if (ts.token().id() == JsTokenId.IDENTIFIER) {
