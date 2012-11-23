@@ -51,6 +51,7 @@ import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmUID;
 import org.netbeans.modules.cnd.modelimpl.csm.CsmObjectBuilder;
 import org.netbeans.modules.cnd.modelimpl.csm.NameHolder;
+import org.netbeans.modules.cnd.modelimpl.csm.SpecializationDescriptor;
 import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
 import org.netbeans.modules.cnd.modelimpl.textcache.NameCache;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
@@ -107,13 +108,13 @@ public abstract class OffsetableIdentifiableBase<T> extends OffsetableBase imple
         // this.uid = null;
     }
 
-    public static class NameBuilder implements CsmObjectBuilder {
+    public static class NameBuilder extends OffsetableBuilder {
         
         boolean global = false;
-        List<CharSequence> nameParts = new ArrayList<CharSequence>();
+        List<NamePart> nameParts = new ArrayList<NamePart>();
         
         public void addNamePart(CharSequence part) {
-            nameParts.add(part);
+            nameParts.add(new NamePart(part));
         }
 
         public void setGlobal() {
@@ -121,25 +122,59 @@ public abstract class OffsetableIdentifiableBase<T> extends OffsetableBase imple
         }
 
         public List<CharSequence> getNameParts() {
+            List<CharSequence> names = new ArrayList<CharSequence>();
+            for (NamePart namePart : nameParts) {
+                names.add(namePart.part);
+            }
+            return names;
+        }
+
+        public List<NamePart> getNames() {
             return nameParts;
         }
         
         public CharSequence getName() {
             StringBuilder sb = new StringBuilder();
             boolean firstScope = !global;
-            for (CharSequence part : nameParts) {                
+            for (NamePart part : nameParts) {                
                 if(!firstScope) {
                     sb.append("::"); // NOI18N
                 }
-                sb.append(part);
+                sb.append(part.part);
                 firstScope = false;
             }
             return NameCache.getManager().getString(sb.toString());
         }
         
         public CharSequence getLastNamePart() {
-            return nameParts.get(nameParts.size() - 1);
-        }        
+            return nameParts.get(nameParts.size() - 1).part;
+        }
+
+        public void addParameterBuilder(SpecializationDescriptor.SpecializationParameterBuilder param) {
+            if(!nameParts.isEmpty()) {
+                nameParts.get(nameParts.size() - 1).params.add(param);
+            }
+        }
+        
+        public static class NamePart {
+            CharSequence part;
+            
+            List<SpecializationDescriptor.SpecializationParameterBuilder> params = new ArrayList<SpecializationDescriptor.SpecializationParameterBuilder>();
+
+            public NamePart(CharSequence part) {
+                this.part = part;
+            }
+
+            public CharSequence getPart() {
+                return part;
+            }
+
+            public List<SpecializationDescriptor.SpecializationParameterBuilder> getParams() {
+                return params;
+            }
+            
+        }
+        
     }
     
     public static abstract class OffsetableIdentifiableBuilder extends OffsetableBuilder implements CsmObjectBuilder {
