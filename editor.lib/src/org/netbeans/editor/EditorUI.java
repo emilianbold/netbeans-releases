@@ -1767,6 +1767,9 @@ public class EditorUI implements ChangeListener, PropertyChangeListener, MouseLi
             JPopupMenu pm = getPopupMenu();
             if (pm != null) {
                 if (c.isShowing()) { // fix of #18808
+                    if (!c.isFocusOwner()) {
+                        c.requestFocus();
+                    }
                     pm.show(c, x, y);
                 }
             }
