@@ -345,7 +345,14 @@ class JsCodeCompletion implements CodeCompletionHandler {
                     ts.moveNext();
                 }
             }
-            if (id == JsTokenId.IDENTIFIER || id.isKeyword() || id == JsTokenId.STRING) {
+            if (id == JsTokenId.STRING) {
+                prefix = token.text().toString();
+                if (upToOffset) {
+                    int prefixIndex = getPrefixIndexFromSequence(prefix.substring(0, caretOffset - ts.offset()));
+                    prefix = prefix.substring(prefixIndex, caretOffset - ts.offset());
+                }
+            }
+            if (id == JsTokenId.IDENTIFIER || id.isKeyword()) {
                 prefix = token.text().toString();
                 if (upToOffset) {
                     prefix = prefix.substring(0, caretOffset - ts.offset());
@@ -841,6 +848,14 @@ class JsCodeCompletion implements CodeCompletionHandler {
         // default window object
         result.putAll(getCompletionFromExpressionChain(request, WINDOW_EXPRESSION_CHAIN));
         return result;
+    }
+
+    /** XXX - Once the JS framework support becomes plugable, should be moved to jQueryCompletionHandler getPrefix() */
+    private static int getPrefixIndexFromSequence(String prefix) {
+        int spaceIndex = prefix.lastIndexOf(" ") + 1; //NOI18N
+        int dotIndex = prefix.lastIndexOf("."); //NOI18N
+        int hashIndex = prefix.lastIndexOf("#"); //NOI18N
+        return (Math.max(0, Math.max(hashIndex, Math.max(dotIndex, spaceIndex))));
     }
 
 }
