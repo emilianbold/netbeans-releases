@@ -1879,9 +1879,42 @@ public class CppParserActionImpl implements CppParserActionEx {
     @Override public void braced_init_list(Token token) {}
     @Override public void braced_init_list(int kind, Token token) {}
     @Override public void end_braced_init_list(Token token) {}
-    @Override public void end_class_name(Token token) {}
-    @Override public void optionally_qualified_name(Token token) {}
-    @Override public void end_optionally_qualified_name(Token token) {}
+    @Override public void optionally_qualified_name(Token token) {
+        builderContext.push(new NameBuilder());
+    }
+    
+    @Override public void end_optionally_qualified_name(Token token) {
+        NameBuilder nameBuilder = (NameBuilder) builderContext.top();
+        builderContext.pop();
+        CsmObjectBuilder top = builderContext.top();
+        if(top instanceof ClassBuilder) {
+            ClassBuilder classBuilder = (ClassBuilder) top;
+            APTToken aToken = (APTToken) token;
+            SymTabEntry classEntry = globalSymTab.lookupLocal(nameBuilder.getLastNamePart());
+            if (classEntry == null) {
+                classEntry = globalSymTab.enterLocal(nameBuilder.getLastNamePart());
+                classEntry.setAttribute(CppAttributes.TYPE, true);
+            } else {
+                // error
+            }
+
+            classBuilder.setName(nameBuilder.getName());
+            classBuilder.setNameStartOffset(aToken.getOffset());
+            classBuilder.setNameEndOffset(aToken.getEndOffset());
+            List<SpecializationParameterBuilder> params = nameBuilder.getNames().get(nameBuilder.getNames().size() - 1).getParams();
+            if(!params.isEmpty()) {
+                SpecializationDescriptorBuilder sdb = new SpecializationDescriptorBuilder();
+                for (SpecializationParameterBuilder specializationParameterBuilder : params) {
+                    sdb.addParameterBuilder(specializationParameterBuilder);
+                }
+                ClassSpecializationBuilder classSpecializationBuilder = new ClassSpecializationBuilder(classBuilder);
+                classSpecializationBuilder.setSpecializationDescriptorBuilder(sdb);
+                classSpecializationBuilder.getTemplateDescriptorBuilder().setSpecialization();
+                builderContext.pop();
+                builderContext.push(classSpecializationBuilder);
+            }
+        }
+    }
     @Override public void class_head(Token token) {}
     @Override public void end_class_head(Token token) {}
     @Override public void class_virtual_specifier(int kind, Token token) {}
