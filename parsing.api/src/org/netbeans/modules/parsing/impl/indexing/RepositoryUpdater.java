@@ -2328,6 +2328,12 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
                     cancelRequest.setResult(finished);
                     try {
                         entry.first.scanFinished(entry.second);
+                    }  catch (Throwable t) {
+                        if (t instanceof ThreadDeath) {
+                            throw (ThreadDeath) t;
+                        } else {
+                            Exceptions.printStackTrace(t);
+                        }
                     } finally {
                         cancelRequest.setResult(null);
                     }
@@ -2620,30 +2626,59 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
         protected final void binaryScanStarted(
                 @NonNull final URL root,
                 final boolean upToDate,
-                @NonNull final Map<BinaryIndexerFactory, Context> contexts) throws IOException {
+                @NonNull final LinkedHashMap<BinaryIndexerFactory, Context> contexts,
+                @NonNull final BitSet startedIndexers) throws IOException {
+            int index = 0;
             for(Map.Entry<BinaryIndexerFactory,Context> e : contexts.entrySet()) {
                 final Context ctx = e.getValue();
                 final BinaryIndexerFactory bif = e.getKey();
                 SPIAccessor.getInstance().setAllFilesJob(ctx, !upToDate);
                 parkWhileSuspended();
                 long st = System.currentTimeMillis();
-                boolean vote = bif.scanStarted(ctx);
+                boolean vote;
+                try {
+                    startedIndexers.set(index);
+                    vote = bif.scanStarted(ctx);
+                } catch (Throwable t) {
+                    if (t instanceof ThreadDeath) {
+                        throw (ThreadDeath) t;
+                    } else {
+                        vote = false;
+                        Exceptions.printStackTrace(t);
+                    }
+                }
                 long et = System.currentTimeMillis();
                 logIndexerTime(bif.getIndexerName(), (int)(et-st));
                 if (!vote) {
                     SPIAccessor.getInstance().setAllFilesJob(ctx, true);
                 }
+                index++;
             }
         }
 
-        protected final void binaryScanFinished(BinaryIndexers indexers, Map<BinaryIndexerFactory, Context> contexts) throws IOException {
+        protected final void binaryScanFinished(
+                @NonNull final BinaryIndexers indexers,
+                @NonNull final LinkedHashMap<BinaryIndexerFactory, Context> contexts,
+                @NonNull final BitSet startedIndexers) throws IOException {
             try {
+                int index = 0;
                 for (Map.Entry<BinaryIndexerFactory, Context> entry : contexts.entrySet()) {
                     parkWhileSuspended();
                     long st = System.currentTimeMillis();
-                    entry.getKey().scanFinished(entry.getValue());
+                    try {
+                        if (startedIndexers.get(index)) {
+                            entry.getKey().scanFinished(entry.getValue());
+                        }
+                    } catch (Throwable t) {
+                        if (t instanceof ThreadDeath) {
+                            throw (ThreadDeath) t;
+                        } else {
+                            Exceptions.printStackTrace(t);
+                        }
+                    }
                     long et = System.currentTimeMillis();
                     logIndexerTime(entry.getKey().getIndexerName(), (int)(et-st));
+                    index++;
                 }
             } finally {
                 for(Context ctx : contexts.values()) {
@@ -4526,7 +4561,8 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
         protected final boolean scanBinary(URL root, BinaryIndexers binaryIndexers, AtomicInteger scannedRootsCnt) {
             boolean success = false;
             final long tmStart = System.currentTimeMillis();
-            final Map<BinaryIndexerFactory, Context> contexts = new HashMap<BinaryIndexerFactory, Context>();
+            final LinkedHashMap<BinaryIndexerFactory, Context> contexts = new LinkedHashMap<BinaryIndexerFactory, Context>();
+            final BitSet startedIndexers = new BitSet(contexts.size());
             LogContext lctx = getLogContext();
             if (lctx != null) {
                 lctx.noteRootScanning(root);
@@ -4546,14 +4582,14 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
                     currentLastModified = -1L;
                     upToDate = false;
                 }                
-                binaryScanStarted(root, upToDate, contexts);
                 try {
+                    binaryScanStarted(root, upToDate, contexts, startedIndexers);
                     updateProgress(root, true);
                     success = indexBinary(root, binaryIndexers, contexts);
                 } catch (IOException ioe) {
                     LOGGER.log(Level.WARNING, null, ioe);
                 } finally {
-                    binaryScanFinished(binaryIndexers, contexts);
+                    binaryScanFinished(binaryIndexers, contexts, startedIndexers);
                     URL archiveFile = FileUtil.getArchiveFile(root);
                     if (success && archiveFile != null && !upToDate) {
                         ArchiveTimeStamps.setLastModified(archiveFile, createBinaryIndexersTimeStamp(currentLastModified,contexts));

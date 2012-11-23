@@ -107,7 +107,6 @@ public class ScanStartedTest extends NbTestCase {
     protected void setUp() throws Exception {
         super.setUp();
 
-
         this.clearWorkDir();
         final File _wd = this.getWorkDir();
         final FileObject wd = FileUtil.toFileObject(_wd);
@@ -212,6 +211,29 @@ public class ScanStartedTest extends NbTestCase {
         assertEquals(1, factory3.scanFinishedCount.get());
     }
 
+    public void testScanFinishedWithExceptionAfterScanStarted() throws Exception {
+        assertTrue(GlobalPathRegistry.getDefault().getPaths(FOO_SOURCE).isEmpty());
+        final TestHandler handler = new TestHandler();
+        final Logger logger = Logger.getLogger(RepositoryUpdater.class.getName()+".tests"); //NOI18N
+        logger.setLevel (Level.FINEST);
+        logger.addHandler(handler);
+
+        factory2.throwFromScanFinished = new RuntimeException();
+
+        //Testing classpath registration
+        globalPathRegistry_register(FOO_SOURCE,new ClassPath[]{cp1});
+        assertTrue (handler.await());
+        assertEquals(0, handler.getBinaries().size());
+        assertEquals(1, handler.getSources().size());
+        assertEquals(this.src1.toURL(), handler.getSources().get(0));
+        assertEquals(1, factory1.scanStartedCount.get());
+        assertEquals(1, factory2.scanStartedCount.get());
+        assertEquals(1, factory3.scanStartedCount.get());
+        assertEquals(1, factory1.scanFinishedCount.get());
+        assertEquals(1, factory2.scanFinishedCount.get());
+        assertEquals(1, factory3.scanFinishedCount.get());
+    }
+
 
     public void testScanFinishedAfterScanStartedWithInternalException() throws Exception {
         assertTrue(GlobalPathRegistry.getDefault().getPaths(FOO_SOURCE).isEmpty());
@@ -243,6 +265,52 @@ public class ScanStartedTest extends NbTestCase {
         final Logger logger = Logger.getLogger(RepositoryUpdater.class.getName()+".tests"); //NOI18N
         logger.setLevel (Level.FINEST);
         logger.addHandler(handler);
+
+        //Testing classpath registration
+        globalPathRegistry_register(FOO_BINARY,new ClassPath[]{bcp1});
+        assertTrue (handler.await());
+        assertEquals(1, handler.getBinaries().size());
+        assertEquals(0, handler.getSources().size());
+        assertEquals(this.bin1.toURL(), handler.getBinaries().iterator().next());
+        assertEquals(1, binFactory1.scanStartedCount.get());
+        assertEquals(1, binFactory2.scanStartedCount.get());
+        assertEquals(1, binFactory3.scanStartedCount.get());
+        assertEquals(1, binFactory1.scanFinishedCount.get());
+        assertEquals(1, binFactory2.scanFinishedCount.get());
+        assertEquals(1, binFactory3.scanFinishedCount.get());
+    }
+
+    public void testBinaryScanFinishedAfterScanStartedWithException() throws Exception {
+        assertTrue(GlobalPathRegistry.getDefault().getPaths(FOO_BINARY).isEmpty());
+        final TestHandler handler = new TestHandler();
+        final Logger logger = Logger.getLogger(RepositoryUpdater.class.getName()+".tests"); //NOI18N
+        logger.setLevel (Level.FINEST);
+        logger.addHandler(handler);
+
+        binFactory2.throwFromScanStarted = new RuntimeException();
+
+        //Testing classpath registration
+        globalPathRegistry_register(FOO_BINARY,new ClassPath[]{bcp1});
+        assertTrue (handler.await());
+        assertEquals(1, handler.getBinaries().size());
+        assertEquals(0, handler.getSources().size());
+        assertEquals(this.bin1.toURL(), handler.getBinaries().iterator().next());
+        assertEquals(1, binFactory1.scanStartedCount.get());
+        assertEquals(1, binFactory2.scanStartedCount.get());
+        assertEquals(1, binFactory3.scanStartedCount.get());
+        assertEquals(1, binFactory1.scanFinishedCount.get());
+        assertEquals(1, binFactory2.scanFinishedCount.get());
+        assertEquals(1, binFactory3.scanFinishedCount.get());
+    }
+
+    public void testBinaryScanFinishedWithExceptionAfterScanStarted() throws Exception {
+        assertTrue(GlobalPathRegistry.getDefault().getPaths(FOO_BINARY).isEmpty());
+        final TestHandler handler = new TestHandler();
+        final Logger logger = Logger.getLogger(RepositoryUpdater.class.getName()+".tests"); //NOI18N
+        logger.setLevel (Level.FINEST);
+        logger.addHandler(handler);
+
+        binFactory2.throwFromScanFinished = new RuntimeException();
 
         //Testing classpath registration
         globalPathRegistry_register(FOO_BINARY,new ClassPath[]{bcp1});
@@ -332,6 +400,7 @@ public class ScanStartedTest extends NbTestCase {
         private final AtomicInteger scanFinishedCount = new AtomicInteger();
 
         volatile RuntimeException throwFromScanStarted;
+        volatile RuntimeException throwFromScanFinished;
 
         IndexerFactory(
             @NonNull final String name,
@@ -381,6 +450,10 @@ public class ScanStartedTest extends NbTestCase {
         @Override
         public void scanFinished(Context context) {
             scanFinishedCount.incrementAndGet();
+            final RuntimeException re = throwFromScanFinished;
+            if (re != null) {
+                throw re;
+            }
         }
 
     }
@@ -399,6 +472,8 @@ public class ScanStartedTest extends NbTestCase {
         private final AtomicInteger scanStartedCount = new AtomicInteger();
         private final AtomicInteger scanFinishedCount = new AtomicInteger();
 
+        volatile RuntimeException throwFromScanStarted;
+        volatile RuntimeException throwFromScanFinished;
 
         BinIndexerFactory(
                 @NonNull final String name,
@@ -429,12 +504,20 @@ public class ScanStartedTest extends NbTestCase {
         @Override
         public boolean scanStarted(Context context) {
             scanStartedCount.incrementAndGet();
+            final RuntimeException re = throwFromScanStarted;
+            if (re != null) {
+                throw re;
+            }
             return true;
         }
 
         @Override
         public void scanFinished(Context context) {
             scanFinishedCount.incrementAndGet();
+            final RuntimeException re = throwFromScanFinished;
+            if (re != null) {
+                throw re;
+            }
         }
 
 
