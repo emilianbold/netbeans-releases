@@ -437,4 +437,46 @@ implements java.net.URLStreamHandlerFactory {
         R action = new R();
         FileUtil.runAtomicAction(action);
     }
+    
+    /**
+     * Tests the method findOriginal()
+     * @throws Exception 
+     */
+    public void testFindOriginal() throws Exception {
+        FileSystem fs = FileUtil.createMemoryFileSystem();
+        FileObject orig = FileUtil.createData(fs.getRoot(), "path/to/orig");
+        FileObject shadow = FileUtil.createData(fs.getRoot(), "link.shadow");
+        shadow.setAttribute("originalFile", "path/to/orig");
+        assertEquals("found the right original file", 
+                orig, DataShadow.findOriginal(shadow));
+    }
+    
+    /**
+     * Checks that findOriginal returns null on broken (but formally
+     * correct) shadow
+     * @throws Exception C
+     */
+    public void testFindMissingOriginal() throws Exception {
+        FileSystem fs = FileUtil.createMemoryFileSystem();
+        FileObject shadow = FileUtil.createData(fs.getRoot(), "link.shadow");
+        shadow.setAttribute("originalFile", "path/to/orig");
+        assertNull("null should be returned for missing target", DataShadow.findOriginal(shadow));
+    }
+    
+    /**
+     * Checks that findOriginal throws Exception on a malformed 
+     * shadow
+     * @throws Exception 
+     */
+    public void testFindBrokenOriginal() throws Exception {
+        FileSystem fs = FileUtil.createMemoryFileSystem();
+        FileObject orig = FileUtil.createData(fs.getRoot(), "path/to/orig");
+        FileObject shadow = FileUtil.createData(fs.getRoot(), "link.shadow");
+        try {
+            DataShadow.findOriginal(shadow);
+            fail("IOException should be thrown on malformed shadow");
+        } catch (IOException ex) {
+            // this is oK
+        }
+    }
 }
