@@ -145,6 +145,14 @@ public class JsCodeCompletionGeneralTest extends JsCodeComplationBase {
         checkCompletion("testfiles/completion/general/issue215863.js", "a^lert(\"Text\");", false);
     }
 
+    public void testIssue215863_05() throws Exception {
+        checkCompletion("testfiles/completion/general/issue215863.js", "l^", false);
+    }
+
+    public void testIssue215863_06() throws Exception {
+        checkCompletion("testfiles/completion/general/issue215863.js", "co^", false);
+    }
+
     public void testIssue218689() throws Exception {
         checkCompletion("testfiles/completion/general/issue218689.html", "            b.v^", false);
     }
