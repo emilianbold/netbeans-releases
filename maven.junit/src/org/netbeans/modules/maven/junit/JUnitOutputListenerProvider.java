@@ -84,8 +84,8 @@ import org.netbeans.modules.maven.api.execute.RunUtils;
 import org.netbeans.modules.maven.api.output.OutputProcessor;
 import org.netbeans.modules.maven.api.output.OutputVisitor;
 import org.netbeans.modules.maven.junit.nodes.JUnitTestRunnerNodeFactory;
-import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Utilities;
 
 /**
  *
@@ -169,100 +169,94 @@ public class JUnitOutputListenerProvider implements OutputProcessor {
     private void createSession(File nonNormalizedFile) {
         if (session == null) {
             File fil = FileUtil.normalizeFile(nonNormalizedFile);
-            FileObject fo = FileUtil.toFileObject(fil);
-            if (fo != null) {
-                Project prj = FileOwnerQuery.getOwner(fo);
-                if (prj != null) {
-                    NbMavenProject mvnprj = prj.getLookup().lookup(NbMavenProject.class);
-                    if (mvnprj != null) {
-                        TestSession.SessionType type = TestSession.SessionType.TEST;
-                        String action = config.getActionName();
-                        if (action != null) { //custom
-                            if (action.contains("debug")) { //NOI81N
-                                type = TestSession.SessionType.DEBUG;
-                            }
-                        }
-                        final TestSession.SessionType fType = type;
-                        session = new TestSession(createSessionName(mvnprj.getMavenProject().getId()), prj, TestSession.SessionType.TEST,
-                                new JUnitTestRunnerNodeFactory(session, prj));
-                        session.setRerunHandler(new RerunHandler() {
-                            public @Override
-                            void rerun() {
-                                RunUtils.executeMaven(config);
-                            }
+	    Project prj = FileOwnerQuery.getOwner(Utilities.toURI(fil));
+	    if (prj != null) {
+		NbMavenProject mvnprj = prj.getLookup().lookup(NbMavenProject.class);
+		if (mvnprj != null) {
+		    TestSession.SessionType type = TestSession.SessionType.TEST;
+		    String action = config.getActionName();
+		    if (action != null) { //custom
+			if (action.contains("debug")) { //NOI81N
+			    type = TestSession.SessionType.DEBUG;
+			}
+		    }
+		    final TestSession.SessionType fType = type;
+		    session = new TestSession(createSessionName(mvnprj.getMavenProject().getId()), prj, TestSession.SessionType.TEST,
+			    new JUnitTestRunnerNodeFactory(session, prj));
+		    session.setRerunHandler(new RerunHandler() {
+			public @Override
+			void rerun() {
+			    RunUtils.executeMaven(config);
+			}
 
-                            public @Override
-                            void rerun(Set<Testcase> tests) {
-                                RunConfig brc = RunUtils.cloneRunConfig(config);
-                                StringBuilder tst = new StringBuilder();
-                                Map<String, Collection<String>> methods = new HashMap<String, Collection<String>>();
-                                for (Testcase tc : tests) {
-                                    //TODO just when is the classname null??
-                                    if (tc.getClassName() != null) {
-                                        Collection<String> lst = methods.get(tc.getClassName());
-                                        if (lst == null) {
-                                            lst = new ArrayList<String>();
-                                            methods.put(tc.getClassName(), lst);
-                                        }
-                                        lst.add(tc.getName());
-                                    }
-                                }
-                                for (Map.Entry<String, Collection<String>> ent : methods.entrySet()) {
-                                        tst.append(",");
-                                        tst.append(ent.getKey());
+			public @Override
+			void rerun(Set<Testcase> tests) {
+			    RunConfig brc = RunUtils.cloneRunConfig(config);
+			    StringBuilder tst = new StringBuilder();
+			    Map<String, Collection<String>> methods = new HashMap<String, Collection<String>>();
+			    for (Testcase tc : tests) {
+				//TODO just when is the classname null??
+				if (tc.getClassName() != null) {
+				    Collection<String> lst = methods.get(tc.getClassName());
+				    if (lst == null) {
+					lst = new ArrayList<String>();
+					methods.put(tc.getClassName(), lst);
+				    }
+				    lst.add(tc.getName());
+				}
+			    }
+			    for (Map.Entry<String, Collection<String>> ent : methods.entrySet()) {
+				tst.append(",");
+				tst.append(ent.getKey());
 
-                                        //#name only in surefire > 2.7.2 and junit > 4.0 or testng
-                                        // bug works with the setting also for junit 3.x
-                                        tst.append("#");
-                                        boolean first = true;
-                                        for (String meth : ent.getValue()) {
-                                            if (!first) {
-                                                tst.append("+");
-                                            }
-                                            first = false;
-                                            tst.append(meth);
-                                        }
-                                }
-                                if (tst.length() > 0) {
-                                    brc.setProperty("test", tst.substring(1));
-                                }
-                                RunUtils.executeMaven(brc);
-                            }
+				//#name only in surefire > 2.7.2 and junit > 4.0 or testng
+				// bug works with the setting also for junit 3.x
+				tst.append("#");
+				boolean first = true;
+				for (String meth : ent.getValue()) {
+				    if (!first) {
+					tst.append("+");
+				    }
+				    first = false;
+				    tst.append(meth);
+				}
+			    }
+			    if (tst.length() > 0) {
+				brc.setProperty("test", tst.substring(1));
+			    }
+			    RunUtils.executeMaven(brc);
+			}
 
-                            public @Override
-                            boolean enabled(RerunType type) {
-                                //TODO debug doesn't property update debug port in runconfig..
-                                if (fType.equals(TestSession.SessionType.TEST)) {
-                                    if (RerunType.ALL.equals(type)) {
-                                        return true;
-                                    }
-                                    if (RerunType.CUSTOM.equals(type)) {
-                                        if (usingTestNG(config.getMavenProject())) { //#214334 test for testng has to come first, as itself depends on junit
-                                            return usingSurefire28(config.getMavenProject());
-                                        } 
-                                        else 
-                                        if (usingJUnit4(config.getMavenProject())) { //#214334
-                                            return usingSurefire2121(config.getMavenProject());
-                                        } 
-                                    }
-                                }
-                                return false;
-                            }
+			public @Override
+			boolean enabled(RerunType type) {
+			    //TODO debug doesn't property update debug port in runconfig..
+			    if (fType.equals(TestSession.SessionType.TEST)) {
+				if (RerunType.ALL.equals(type)) {
+				    return true;
+				}
+				if (RerunType.CUSTOM.equals(type)) {
+				    if (usingTestNG(config.getMavenProject())) { //#214334 test for testng has to come first, as itself depends on junit
+					return usingSurefire28(config.getMavenProject());
+				    } else if (usingJUnit4(config.getMavenProject())) { //#214334
+					return usingSurefire2121(config.getMavenProject());
+				    }
+				}
+			    }
+			    return false;
+			}
 
-                            public @Override
-                            void addChangeListener(ChangeListener listener) {
-                            }
+			public @Override
+			void addChangeListener(ChangeListener listener) {
+			}
 
-                            public @Override
-                            void removeChangeListener(ChangeListener listener) {
-                            }
-                        });
-                        Manager.getInstance().testStarted(session);
-
-                    }
-                }
-            }
-        }
+			public @Override
+			void removeChangeListener(ChangeListener listener) {
+			}
+		    });
+		    Manager.getInstance().testStarted(session);
+		}
+	    }
+	}
     }
     
     private boolean usingSurefire2121(MavenProject prj) {

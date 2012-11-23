@@ -572,7 +572,7 @@ public final class DashboardViewer implements PropertyChangeListener {
     public void addRepository(Repository repository) {
         synchronized (LOCK_REPOSITORIES) {
             //add repository to the model - sorted
-            RepositoryNode repositoryNode = new RepositoryNode(repository, false);
+            RepositoryNode repositoryNode = new RepositoryNode(repository);
             repositoryNodes.add(repositoryNode);
             addRepositoryToModel(repositoryNode);
         }
@@ -614,9 +614,9 @@ public final class DashboardViewer implements PropertyChangeListener {
             Repository repository = repositoryNode.getRepository();
             final RepositoryNode newNode;
             if (opened) {
-                newNode = new RepositoryNode(repository, repositoryNode.isLoaded());
+                newNode = new RepositoryNode(repository);
             } else {
-                newNode = new ClosedRepositoryNode(repository, repositoryNode.isLoaded());
+                newNode = new ClosedRepositoryNode(repository);
             }
             repositoryNodes.add(newNode);
             if (isRepositoryInFilter(newNode)) {
@@ -910,7 +910,7 @@ public final class DashboardViewer implements PropertyChangeListener {
                 List<Repository> oldValue = getRepositories(false);
                 for (Repository addedRepository : addedRepositories) {
                     if (!oldValue.contains(addedRepository)) {
-                        toAdd.add(new RepositoryNode(addedRepository, false));
+                        toAdd.add(new RepositoryNode(addedRepository));
                     }
                 }
             }
@@ -932,7 +932,7 @@ public final class DashboardViewer implements PropertyChangeListener {
             List<Repository> oldValue = getRepositories(false);
             for (Repository newRepository : repositories) {
                 if (!oldValue.contains(newRepository)) {
-                    toAdd.add(new RepositoryNode(newRepository, false));
+                    toAdd.add(new RepositoryNode(newRepository));
                 }
             }
             updateRepositories(toRemove, toAdd);
@@ -977,9 +977,9 @@ public final class DashboardViewer implements PropertyChangeListener {
             for (Repository repository : allRepositories) {
                 boolean open = !closedIds.contains(repository.getId());
                 if (open) {
-                    repoNodes.add(new RepositoryNode(repository, false));
+                    repoNodes.add(new RepositoryNode(repository));
                 } else {
-                    repoNodes.add(new ClosedRepositoryNode(repository, false));
+                    repoNodes.add(new ClosedRepositoryNode(repository));
                 }
             }
             if (!SwingUtilities.isEventDispatchThread()) {
