@@ -59,8 +59,10 @@ import org.netbeans.modules.cnd.apt.utils.APTUtils;
 import org.netbeans.modules.cnd.modelimpl.csm.ClassForwardDeclarationImpl.ClassForwardDeclarationBuilder;
 import org.netbeans.modules.cnd.modelimpl.csm.ClassImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.ClassImpl.ClassBuilder;
+import org.netbeans.modules.cnd.modelimpl.csm.ClassImpl.ClassMemberForwardDeclaration.ClassMemberForwardDeclarationBuilder;
 import org.netbeans.modules.cnd.modelimpl.csm.ClassImpl.MemberBuilder;
 import org.netbeans.modules.cnd.modelimpl.csm.ClassImpl.MemberTypedef.MemberTypedefBuilder;
+import org.netbeans.modules.cnd.modelimpl.csm.ClassImplSpecialization.ClassSpecializationBuilder;
 import org.netbeans.modules.cnd.modelimpl.csm.CsmObjectBuilder;
 import org.netbeans.modules.cnd.modelimpl.csm.ConstructorImpl.ConstructorBuilder;
 import org.netbeans.modules.cnd.modelimpl.csm.DestructorImpl.DestructorBuilder;
@@ -71,6 +73,7 @@ import org.netbeans.modules.cnd.modelimpl.csm.ConstructorDefinitionImpl.Construc
 import org.netbeans.modules.cnd.modelimpl.csm.EnumImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.EnumImpl.EnumBuilder;
 import org.netbeans.modules.cnd.modelimpl.csm.EnumeratorImpl.EnumeratorBuilder;
+import org.netbeans.modules.cnd.modelimpl.csm.ExpressionBasedSpecializationParameterImpl.ExpressionBasedSpecializationParameterBuilder;
 import org.netbeans.modules.cnd.modelimpl.csm.FieldImpl.FieldBuilder;
 import org.netbeans.modules.cnd.modelimpl.csm.FriendFunctionDDImpl.FriendFunctionDDBuilder;
 import org.netbeans.modules.cnd.modelimpl.csm.FriendFunctionDefinitionImpl.FriendFunctionDefinitionBuilder;
@@ -85,8 +88,11 @@ import org.netbeans.modules.cnd.modelimpl.csm.NamespaceAliasImpl.NamespaceAliasB
 import org.netbeans.modules.cnd.modelimpl.csm.NamespaceDefinitionImpl.NamespaceBuilder;
 import org.netbeans.modules.cnd.modelimpl.csm.ParameterEllipsisImpl.ParameterEllipsisBuilder;
 import org.netbeans.modules.cnd.modelimpl.csm.ParameterImpl.ParameterBuilder;
+import org.netbeans.modules.cnd.modelimpl.csm.SpecializationDescriptor.SpecializationDescriptorBuilder;
+import org.netbeans.modules.cnd.modelimpl.csm.SpecializationDescriptor.SpecializationParameterBuilder;
 import org.netbeans.modules.cnd.modelimpl.csm.TemplateDescriptor.TemplateDescriptorBuilder;
 import org.netbeans.modules.cnd.modelimpl.csm.TemplateParameterImpl.TemplateParameterBuilder;
+import org.netbeans.modules.cnd.modelimpl.csm.TypeBasedSpecializationParameterImpl.TypeBasedSpecializationParameterBuilder;
 import org.netbeans.modules.cnd.modelimpl.csm.TypeFactory.TypeBuilder;
 import org.netbeans.modules.cnd.modelimpl.csm.TypedefImpl.TypedefBuilder;
 import org.netbeans.modules.cnd.modelimpl.csm.UsingDeclarationImpl.UsingDeclarationBuilder;
@@ -126,7 +132,7 @@ import org.openide.util.CharSequences;
 public class CppParserActionImpl implements CppParserActionEx {
 
     private enum CppAttributes implements SymTabEntryKey {
-        SYM_TAB, DEFINITION, TYPE
+        SYM_TAB, DEFINITION, TYPE, TEMPLATE
     }
     
     private final CppParserBuilderContext builderContext;
@@ -160,6 +166,9 @@ public class CppParserActionImpl implements CppParserActionEx {
     public boolean type_specifier_already_present(TokenStream input) {
         if(builderContext.getSimpleDeclarationBuilderIfExist() != null) {
             if(builderContext.getSimpleDeclarationBuilderIfExist().hasTypeSpecifier()) {
+                return false;
+            }
+            if(!builderContext.getSimpleDeclarationBuilderIfExist().isInDeclSpecifiers() && builderContext.getSimpleDeclarationBuilderIfExist().hasTypedefSpecifier()) {
                 return false;
             }
         }
@@ -235,6 +244,10 @@ public class CppParserActionImpl implements CppParserActionEx {
         }
         input.rewind(index);
         if(entry != null && entry.getAttribute(CppAttributes.TYPE) != null) {
+            if(entry.toString().startsWith("Entry{name=value_type")) {
+                int i = 0;
+                globalSymTab.lookup(((APTToken) CXXParserActionImpl.convertToken(input.LT(1))).getTextID());
+            }
             return true;
         }
         return false;
@@ -273,7 +286,8 @@ public class CppParserActionImpl implements CppParserActionEx {
         }
         
         if (entry != null) {
-            if(entry.getAttribute(CppAttributes.TYPE) != null) {
+            if(entry.getAttribute(CppAttributes.TYPE) != null 
+                    || entry.getAttribute(CppAttributes.TEMPLATE) != null) {
                 return true;
             } else {
                 return false;
@@ -664,7 +678,7 @@ public class CppParserActionImpl implements CppParserActionEx {
                         builder.setStartOffset(declBuilder.getTemplateDescriptorBuilder().getStartOffset());
                     }        
 
-                    builder.create();                
+                        builder.create();                
                 } else if(declBuilder.isFunction()) {
                     FunctionBuilder builder = new FunctionBuilder();
 
@@ -727,9 +741,8 @@ public class CppParserActionImpl implements CppParserActionEx {
             SimpleDeclarationBuilder declBuilder = builderContext.getSimpleDeclarationBuilderIfExist();
             if(declBuilder != null && declBuilder.getDeclaratorBuilder() != null && declBuilder.getDeclaratorBuilder().getNameBuilder() != null) {
                 NameBuilder nameBuilder = declBuilder.getDeclaratorBuilder().getNameBuilder();
-                for (int i = 0; i < nameBuilder.getNameParts().size() - 1; i++) {
+                for (int i = nameBuilder.getNameParts().size() - 2; i >= 0 ; i--) {
                     CharSequence part = nameBuilder.getNameParts().get(i);
-
                     globalSymTab.pop(part);
                 }
             }
@@ -1971,9 +1984,8 @@ public class CppParserActionImpl implements CppParserActionEx {
             SimpleDeclarationBuilder declBuilder = builderContext.getSimpleDeclarationBuilderIfExist();
             if(declBuilder != null && declBuilder.getDeclaratorBuilder() != null && declBuilder.getDeclaratorBuilder().getNameBuilder() != null) {
                 NameBuilder nameBuilder = declBuilder.getDeclaratorBuilder().getNameBuilder();
-                for (int i = 0; i < nameBuilder.getNameParts().size() - 1; i++) {
+                for (int i = nameBuilder.getNameParts().size() - 2; i >= 0 ; i--) {
                     CharSequence part = nameBuilder.getNameParts().get(i);
-
                     globalSymTab.pop(part);
                 }
             }
