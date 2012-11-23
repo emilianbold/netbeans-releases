@@ -111,12 +111,13 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
         kind = findKind(ast);
     }
 
-    protected ClassImpl(NameHolder name, CsmDeclaration.Kind kind, CsmFile file, int startOffset, int endOffset) {
+    protected ClassImpl(NameHolder name, CsmDeclaration.Kind kind, int leftBracketPos, CsmFile file, int startOffset, int endOffset) {
         super(name, file, startOffset, endOffset);
         members = new ArrayList<CsmUID<CsmMember>>();
         friends = new ArrayList<CsmUID<CsmFriend>>(0);
         inheritances = new ArrayList<CsmUID<CsmInheritance>>(0);
         this.kind = kind;
+        this.leftBracketPos = leftBracketPos;
     }
     
     private ClassImpl(CsmFile file, CsmScope scope, String name, CsmDeclaration.Kind kind, int startOffset, int endOffset) {
@@ -451,6 +452,16 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
         
         private ClassImpl instance;
 
+        public ClassBuilder() {
+        }
+
+        protected ClassBuilder(ClassBuilder builder) {
+            super(builder);
+            kind = builder.kind;
+            memberBuilders = builder.memberBuilders;
+            inheritanceBuilders = builder.inheritanceBuilders;
+        }
+        
         public void setKind(Kind kind) {
             this.kind = kind;
         }
@@ -501,7 +512,8 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
             ClassImpl cls = getClassDefinitionInstance();
             CsmScope s = getScope();
             if (cls == null && s != null && getName() != null && getEndOffset() != 0) {
-                instance = cls = new ClassImpl(getNameHolder(), getKind(), getFile(), getStartOffset(), getEndOffset());
+                instance = cls = new ClassImpl(getNameHolder(), getKind(), getStartOffset(), getFile(), getStartOffset(), getEndOffset());
+                cls.setVisibility(CsmVisibility.PUBLIC);
                 cls.init3(s, isGlobal());
                 if(getTemplateDescriptorBuilder() != null) {
                     cls.setTemplateDescriptor(getTemplateDescriptor());
