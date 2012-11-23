@@ -1599,7 +1599,19 @@ public class CppParserActionImpl implements CppParserActionEx {
             if(builderContext.top() instanceof SimpleDeclarationBuilder) {
                 SimpleDeclarationBuilder declBuilder = (SimpleDeclarationBuilder) builderContext.top();
                 declBuilder.setDeclaratorBuilder(declaratorBuilder);
+                
+                
+                if(declBuilder.getTemplateDescriptorBuilder() != null) {
+                    SymTabEntry classEntry = globalSymTab.lookupLocal(declaratorBuilder.getName());
+                    if (classEntry == null) {
+                        classEntry = globalSymTab.enterLocal(declaratorBuilder.getName());
+                        classEntry.setAttribute(CppAttributes.TEMPLATE, true);
+                    } else {
+                        classEntry.setAttribute(CppAttributes.TEMPLATE, true);
                     }
+                }
+                
+            }
         } else {
             declaratorBuilder.leaveDeclarator();
         }      
