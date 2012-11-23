@@ -42,10 +42,10 @@
 
 package org.netbeans.modules.parsing.impl.indexing;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Set;
@@ -108,12 +108,34 @@ final class ProxyIterable<T> implements Iterable<T> {
             this.iterables = iterables;
             this.seen = allowDuplicates ? null : new HashSet<T>();
             this.cacheRef = cacheRef;
-            this.cache = this.cacheRef == null ? null : new LinkedList<T>();
+            this.cache = this.cacheRef == null ? null : new ArrayList<T>();
         }
 
         @Override
         public boolean hasNext() {
-            final boolean result = getCurrent(false) != null;
+            if (currentObject != null) {
+                return true;
+            }
+
+out:        for(;;) {
+                if (currentIterator != null) {
+                    while(currentIterator.hasNext()) {
+                        T o = currentIterator.next();
+                        if (seen == null || seen.add(o)) {
+                            currentObject = o;
+                            break out;
+                        }
+                    }
+                }
+                if (iterables.hasNext()) {
+                    currentIterator = iterables.next().iterator();
+                } else {
+                    currentIterator = null;
+                    currentObject = null;
+                    break out;
+                }
+            }
+            final boolean result = currentObject != null;
             if (!result && this.cacheRef != null) {
                 this.cacheRef.compareAndSet(null, cache);
             }
@@ -122,41 +144,17 @@ final class ProxyIterable<T> implements Iterable<T> {
 
         @Override
         public T next() {
-            T curObj =  getCurrent(true);
-            if (curObj == null) {
+            if (!hasNext()) {
                 throw new NoSuchElementException();
-            } else if (cache != null) {
-                cache.add(curObj);
             }
-            return curObj;
-        }
-
-        private T getCurrent(boolean move) {
-            if (currentObject != null && !move) {
-                return currentObject;
+            T res = currentObject;
+            currentObject = null;
+            assert res != null;
+            if (cache != null) {
+                cache.add(res);
             }
-            
-            T oldCurObj = currentObject;
-            for(;;) {
-                if (currentIterator != null) {
-                    while(currentIterator.hasNext()) {
-                        T o = currentIterator.next();
-                        if (seen == null || seen.add(o)) {
-                            currentObject = o;
-                            return oldCurObj != null ? oldCurObj : currentObject;
-                        }
-                    }
-                }
-
-                if (iterables.hasNext()) {
-                    currentIterator = iterables.next().iterator();
-                } else {
-                    currentIterator = null;
-                    currentObject = null;
-                    return oldCurObj;
-                }
-            } 
-        }
+            return res;
+        }        
 
         public void remove() {
             throw new UnsupportedOperationException();

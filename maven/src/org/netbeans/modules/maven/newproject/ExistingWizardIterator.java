@@ -124,6 +124,8 @@ public class ExistingWizardIterator implements WizardDescriptor.ProgressInstanti
     @Override
     public void initialize(WizardDescriptor wiz) {
         index = 0;
+        wiz.putProperty ("NewProjectWizard_Title", template_existing()); // NOI18N
+        
         panels = createPanels();
         // Make sure list of steps is accurate.
         String[] steps = createSteps();

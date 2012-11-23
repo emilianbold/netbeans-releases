@@ -105,6 +105,20 @@ button.disabled, button[disabled=disabled], .button.disabled {
 #perex {
     margin-top: 10px;
 }
+#perex a {
+    text-decoration: underline;
+}
+#help {
+    display: none;
+    margin-left: 40px;
+    margin-top: 10px;
+}
+#help ul {
+    margin-left: 20px;
+}
+#help p {
+    margin-top: 5px;
+}
 #sizes {
     margin-top: 20px;
     margin-bottom: 15px;

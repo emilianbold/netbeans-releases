@@ -51,6 +51,8 @@ var NetBeans_Preset = chrome.extension.getBackgroundPage().NetBeans_Preset;
 var NetBeans_PresetCustomizer = {};
 // customizer container
 NetBeans_PresetCustomizer._container = null;
+// help button
+NetBeans_PresetCustomizer._moreHelpButton = null;
 // presets container
 NetBeans_PresetCustomizer._rowContainer = null;
 // add button
@@ -82,6 +84,7 @@ NetBeans_PresetCustomizer._init = function() {
     if (!INFOBAR) {
         document.getElementById('toolbarHeader').style.display = 'none';
     }
+    this._moreHelpButton = document.getElementById('moreHelpButton');
     this._rowContainer = document.getElementById('presetCustomizerTable').getElementsByTagName('tbody')[0];
     this._addPresetButton = document.getElementById('addPreset');
     this._removePresetButton = document.getElementById('removePreset');
@@ -99,6 +102,9 @@ NetBeans_PresetCustomizer._registerEvents = function() {
     var that = this;
     document.getElementById('closePresetCustomizer').addEventListener('click', function() {
         that._cancel();
+    }, false);
+    this._moreHelpButton.addEventListener('click', function() {
+        that._switchHelp();
     }, false);
     this._addPresetButton.addEventListener('click', function() {
         that._addPreset();
@@ -286,6 +292,13 @@ NetBeans_PresetCustomizer._save = function() {
 NetBeans_PresetCustomizer._cancel = function() {
     this._cleanUp();
     this._hide();
+};
+// switch help
+NetBeans_PresetCustomizer._switchHelp = function() {
+    var help = document.getElementById('help');
+    var displayed = help.style.display == 'block';
+    help.style.display = displayed ? 'none' : 'block';
+    this._moreHelpButton.innerHTML = I18n.message(displayed ? '_More_hellip' : '_Less_hellip');
 };
 // callback when row is selected
 NetBeans_PresetCustomizer._rowSelected = function(row) {

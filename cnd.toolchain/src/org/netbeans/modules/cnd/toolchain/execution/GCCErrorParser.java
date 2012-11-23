@@ -164,7 +164,7 @@ public final class GCCErrorParser extends ErrorParser {
                 if (!ToolUtils.isPathAbsolute(directory)) {
                     if (relativeTo != null) {
                         if (relativeTo.isFolder()) {
-                            directory = relativeTo.getURL().getPath() + File.separator + directory;
+                            directory = relativeTo.toURL().getPath() + File.separator + directory;
                         }
                     }
                 }
@@ -183,7 +183,7 @@ public final class GCCErrorParser extends ErrorParser {
             if (!ToolUtils.isPathAbsolute(directory)) {
                 if (relativeTo != null) {
                     if (relativeTo.isFolder()) {
-                        directory = relativeTo.getURL().getPath() + File.separator + directory;
+                        directory = relativeTo.toURL().getPath() + File.separator + directory;
                     }
                 }
             }
@@ -199,7 +199,7 @@ public final class GCCErrorParser extends ErrorParser {
             if (!ToolUtils.isPathAbsolute(directory)) {
                 if (relativeDir != null) {
                     if (relativeDir.isFolder()) {
-                        directory = relativeDir.getURL().getPath() + File.separator + directory;
+                        directory = relativeDir.toURL().getPath() + File.separator + directory;
                     }
                 }
             }

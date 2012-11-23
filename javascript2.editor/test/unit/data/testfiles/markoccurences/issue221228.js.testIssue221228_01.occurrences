@@ -1,2 +1,3 @@
         formatter.println(|>MARK_OCCURRENCES:msg<|);
     var |>MARK_OCCURRENCES:ms^g<| = ""; // rename here
+a.|>MARK_OCCURRENCES:msg<| = "Hi"; // rename msg here

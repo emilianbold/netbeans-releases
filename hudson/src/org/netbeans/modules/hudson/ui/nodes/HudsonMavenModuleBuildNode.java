@@ -102,7 +102,9 @@ class HudsonMavenModuleBuildNode extends AbstractNode {
             final Object ARTIFACTS = new Object();
             protected boolean createKeys(List<Object> toPopulate) {
                 // XXX is it possible to cheaply check in advance if the build has any artifacts?
-                toPopulate.add(ARTIFACTS);
+                if (module.getArtifacts() != null) {
+                    toPopulate.add(ARTIFACTS);
+                }
                 return true;
             }
             protected @Override Node createNodeForKey(Object key) {

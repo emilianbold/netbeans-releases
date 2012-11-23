@@ -90,6 +90,9 @@ public class ServiceModel {
     private List<ServiceChangeListener> serviceChangeListeners
             = new ArrayList<ServiceChangeListener>();
     
+    private static final RequestProcessor FILE_CHANGE_RP = 
+            new RequestProcessor(ServiceModel.class);
+    
     /** Creates a new instance of ServiceModel */
     private ServiceModel(FileObject implementationClass, boolean populate) {
         this.implementationClass=implementationClass;
@@ -360,7 +363,7 @@ public class ServiceModel {
                     ServiceModel.this.mergeModel(newModel);
                 }
             };
-            RequestProcessor.getDefault().post(runnable);
+            FILE_CHANGE_RP.post(runnable);
         }
         
         /** Fired when a file is deleted.

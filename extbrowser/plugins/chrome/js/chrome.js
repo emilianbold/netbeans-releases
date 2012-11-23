@@ -206,7 +206,7 @@ NetBeans._resizePage = function(width, height, callback) {
             }
             // #218974
             if (NetBeans_ViewPort.isMac && width < 400) {
-                NetBeans.openPopup('html/warnWindowTooSmall.html');
+                NetBeans.openWarning('windowTooSmall', 240);
             }
         });
     });
@@ -276,17 +276,23 @@ NetBeans._checkUnexpectedDetach = function(tabId) {
             warn = true;
         }
         if (warn) {
-            NetBeans.openPopup('html/warnDebuggerDetached.html');
+            NetBeans.openWarning('disconnectedDebugger', 400);
         }
     }, 100);
 };
 
-NetBeans.openPopup = function(url) {
+NetBeans.openWarning = function(ident, height) {
+    NetBeans_Warnings.runIfEnabled(ident, function() {
+        NetBeans.openPopup('html/warning.html#' + ident, 540, height);
+    });
+};
+
+NetBeans.openPopup = function(url, width, height) {
     chrome.windows.create({
-        'url': url,
+        url: url,
         type: 'popup',
-        width: 600,
-        height: 250
+        width: width,
+        height: height
     });
 };
 
@@ -369,3 +375,55 @@ chrome.tabs.onAttached.addListener(function(tabId, attachInfo) {
         NetBeans.windowFocused(windowId);
     }
 });
+
+/**
+ * Warnings manager.
+ */
+NetBeans_Warnings = {};
+/**
+ * Runs the given task if the warning identified by the given ident is enabled.
+ * @param {String} ident warning identifier
+ * @param {function} task task to be run
+ * @returns {void}
+ */
+NetBeans_Warnings.runIfEnabled = function(ident, task) {
+    var key = NetBeans_Warnings._getKeyFor(ident, 'enabled');
+    chrome.storage.sync.get(key, function(items) {
+        NetBeans_Warnings._logError('get', key);
+        if (items[key] !== undefined && items[key] === 'false') {
+            // warning disabled
+            return;
+        }
+        task();
+    });
+};
+/**
+ * Enable/disable the given warning.
+ * @param {String} ident warning identifier
+ * @param {boolean} true for enable, false to disable
+ * @returns {void}
+ */
+NetBeans_Warnings.enable = function(ident, enabled) {
+    var key = NetBeans_Warnings._getKeyFor(ident, 'enabled');
+    if (enabled) {
+        // remove fro local storage
+        chrome.storage.sync.remove(key, function() {
+            NetBeans_Warnings._logError('remove', key);
+        });
+    } else {
+        // disable
+        var data = {};
+        data[key] = 'false';
+        chrome.storage.sync.set(data, function() {
+            NetBeans_Warnings._logError('set', key);
+        });
+    }
+};
+NetBeans_Warnings._getKeyFor = function(ident, key) {
+    return 'warning.' + ident + '.' + key;
+};
+NetBeans_Warnings._logError = function(operation, key) {
+    if (chrome.runtime && chrome.runtime.lastError) {
+        console.error('Local storage error ("' + operation + '" operation for "' + key + '"): ' + chrome.runtime.lastError.message);
+    }
+};

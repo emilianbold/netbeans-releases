@@ -92,7 +92,8 @@ Other names may be trademarks of their respective owners.
 <!--linked to from web/advanced help set - file webmod/mod_browser.html:-->
 <mapID target="webbrowser.default" url="webbrowser/default.html" />
 
-
+<!-- CSH for Web Browser window -->
+    <mapID target="org.netbeans.core.HtmlBrowserComponent" url="webbrowser/csh-webkit-browser.html" />
 
 
 
@@ -269,6 +270,8 @@ Other names may be trademarks of their respective owners.
 
 <mapID target="org.netbeans.core.services.Browsers" url="webbrowser/options.html" />
 <mapID target="org.netbeans.modules.extbrowser.ExtWebBrowser" url="webbrowser/options.html" />
+<!-- TODO : #222555 :  suggested id : WebBrowsersManager -->
+<mapID target="WebBrowsersManager" url="webbrowser/options.html" />
 
 
 

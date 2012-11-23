@@ -44,6 +44,7 @@
 
 package org.netbeans.modules.welcome.ui;
 
+import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
@@ -106,7 +107,8 @@ class Tutorials extends JPanel implements Constants {
             row = addLink( row, children[i] );
         }
 
-        WebLink link = new WebLink(BundleSupport.getLabel("AllOnlineDocs"), BundleSupport.getURL("AllOnlineDocs"), Utils.getColor(Constants.COLOR_SECTION_HEADER), false); //NOI18N
+        WebLink link = new WebLink(BundleSupport.getLabel("AllOnlineDocs"), BundleSupport.getURL("AllOnlineDocs"), Utils.getColor(Constants.LINK_COLOR), false); //NOI18N
+        link.setFont( link.getFont().deriveFont( Font.BOLD ) );
         add( link, new GridBagConstraints(0, row++, 1, 1, 0.0, 0.0,
                 GridBagConstraints.NORTHWEST, GridBagConstraints.NONE, new Insets(20,0,0,0), 0, 0 ) );
 
@@ -120,7 +122,7 @@ class Tutorials extends JPanel implements Constants {
             JPanel panel = new JPanel( new GridBagLayout() );
             panel.setOpaque(false);
             ActionButton lb = new ActionButton( action, Utils.getUrlString( dob ),
-                    Utils.getColor( COLOR_HEADER ), false, dob.getPrimaryFile().getPath() );
+                    Utils.getColor( LINK_COLOR ), false, dob.getPrimaryFile().getPath() );
             panel.add( lb, new GridBagConstraints(1,0,1,3,0.0,0.0,GridBagConstraints.WEST,GridBagConstraints.NONE,new Insets(0,0,0,0),0,0) );
             lb.setFont( BUTTON_FONT );
             

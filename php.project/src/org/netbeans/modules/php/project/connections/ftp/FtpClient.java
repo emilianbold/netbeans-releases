@@ -61,12 +61,14 @@ import org.apache.commons.net.ProtocolCommandListener;
 import org.apache.commons.net.ftp.FTP;
 import org.apache.commons.net.ftp.FTPClient;
 import org.apache.commons.net.ftp.FTPFile;
+import org.apache.commons.net.ftp.FTPHTTPClient;
 import org.apache.commons.net.ftp.FTPReply;
 import org.apache.commons.net.ftp.FTPSClient;
 import org.netbeans.modules.php.api.util.StringUtils;
 import org.netbeans.modules.php.project.connections.RemoteException;
 import org.netbeans.modules.php.project.connections.common.PasswordPanel;
 import org.netbeans.modules.php.project.connections.common.RemoteUtils;
+import org.netbeans.modules.php.project.connections.common.RemoteUtils.HttpProxyInfo;
 import org.netbeans.modules.php.project.connections.ftp.FtpConfiguration.Encryption;
 import org.netbeans.modules.php.project.connections.spi.RemoteClient;
 import org.netbeans.modules.php.project.connections.spi.RemoteFile;
@@ -134,6 +136,12 @@ public class FtpClient implements RemoteClient {
         FtpConfiguration.Security security = configuration.getSecurity();
         if (!security.isPresent()) {
             LOGGER.log(Level.FINE, "No encryption used");
+            HttpProxyInfo proxyInfo = RemoteUtils.getHttpProxy();
+            if (proxyInfo != null) {
+                LOGGER.log(Level.FINE, "HTTP proxy will be used");
+                return new FTPHTTPClient(proxyInfo.getHost(), proxyInfo.getPort(), proxyInfo.getUsername(), proxyInfo.getPassword());
+            }
+            // no proxy
             return new FTPClient();
         }
         Encryption encryption = security.getEncryption();
@@ -241,7 +249,7 @@ public class FtpClient implements RemoteClient {
             // # 169796
             if (ex instanceof UnknownHostException) {
                 // no I18N to be consistent
-                ex = new IOException("Unknown host " + configuration.getHost()); // NOI18N
+                ex = new IOException("Unknown host " + ex.getMessage()); // NOI18N
             }
             throw new RemoteException(NbBundle.getMessage(FtpClient.class, "MSG_FtpCannotConnect", configuration.getHost()), ex, getReplyString());
         }

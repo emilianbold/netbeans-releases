@@ -344,7 +344,9 @@ public abstract class FileSystem implements Serializable {
     */
     @Deprecated
     protected final void setSystemName(String name) throws PropertyVetoException {
-        synchronized (Repository.class) {
+        String o;
+        String n;
+        synchronized (PROP_SYSTEM_NAME) {
             if (systemName.equals(name)) {
                 return;
             }
@@ -353,15 +355,15 @@ public abstract class FileSystem implements Serializable {
             // on this interface
             fireVetoableChange(PROP_SYSTEM_NAME, systemName, name);
 
-            String old = systemName;
-            systemName = name.intern();
-
-            firePropertyChange(PROP_SYSTEM_NAME, old, systemName);
-
-            /** backward compatibility for FileSystems that don`t fire
-             * PROP_DISPLAY_NAME*/
-            firePropertyChange(PROP_DISPLAY_NAME, null, null);
+            o = systemName;
+            n = systemName = name.intern();
         }
+        
+        firePropertyChange(PROP_SYSTEM_NAME, o, n);
+
+        /** backward compatibility for FileSystems that don`t fire
+         * PROP_DISPLAY_NAME*/
+        firePropertyChange(PROP_DISPLAY_NAME, null, null);
     }
 
     /** Returns <code>true</code> if the filesystem is default.

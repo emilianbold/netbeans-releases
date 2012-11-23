@@ -46,6 +46,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
+import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
@@ -384,6 +386,13 @@ class JsCodeCompletion implements CodeCompletionHandler {
 
     @Override
     public QueryType getAutoQuery(JTextComponent component, String typedText) {
+        if (typedText.length() == 0) {
+            return QueryType.NONE;
+        }
+        char lastChar = typedText.charAt(typedText.length() - 1);
+        if (lastChar == '.') {
+            return QueryType.COMPLETION;
+        }
         return QueryType.NONE;
     }
 

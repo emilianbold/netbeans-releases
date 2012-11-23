@@ -43,6 +43,7 @@ package org.netbeans.modules.tasks.ui.utils;
 
 import java.awt.Font;
 import java.awt.FontMetrics;
+import java.io.CharConversionException;
 import javax.swing.JComponent;
 import org.netbeans.modules.bugtracking.api.Issue;
 import org.netbeans.modules.bugtracking.api.Issue.Status;
@@ -52,6 +53,7 @@ import org.netbeans.modules.tasks.ui.dashboard.DashboardViewer;
 import org.netbeans.modules.tasks.ui.dashboard.RepositoryNode;
 import org.openide.actions.FindAction;
 import org.openide.util.SharedClassObject;
+import org.openide.xml.XMLUtil;
 
 /**
  *
@@ -60,6 +62,8 @@ import org.openide.util.SharedClassObject;
 public class Utils {
 
     private final static int VISIBLE_START_CHARS = 5;
+    private final static String BOLD_START_SUBSTITUTE = "$$$BOLD_START$$$"; //NOI18
+    private final static String BOLD_END_SUBSTITUTE = "$$$BOLD_END$$$"; //NOI18
 
     public static String getCategoryDisplayText(CategoryNode categoryNode) {
         String categoryName = categoryNode.getCategory().getName();
@@ -76,8 +80,10 @@ public class Utils {
 
     private static String getTopLvlDisplayText(boolean containsActiveTask, String name, boolean isOpened) {
         String displayName;
-        //replace spaces to prevent line breaking
-        name = removeSpaces(name);
+        try {
+            name = XMLUtil.toElementContent(name);
+        } catch (CharConversionException ex) {
+        }
         String activeText = containsActiveTask ? "<b>" + name + "</b>" : name; //NOI18N
         if (!isOpened) {
             displayName = "<html><strike>" + activeText + "</strike><html>"; //NOI18N
@@ -95,8 +101,13 @@ public class Utils {
         String displayName;
         String fitText = computeFitText(component, maxWidth, task.getID() + " - " + task.getSummary(), active); //NOI18N
         
-        String activeText = active ? "<b>" + fitText + "</b>" : getFilterBoldText(fitText); //NOI18N
+        String activeText = active ? BOLD_START_SUBSTITUTE + fitText + BOLD_END_SUBSTITUTE : getFilterBoldText(fitText); //NOI18N
 
+        try {
+            activeText = XMLUtil.toElementContent(activeText);
+        } catch (CharConversionException ex) {
+        }
+        activeText = replaceSubstitutes(activeText);
         if (task.isFinished()) {
             activeText = "<strike>" + activeText + "</strike>"; //NOI18N
         }
@@ -108,8 +119,6 @@ public class Utils {
         } else {
             displayName = "<html>" + activeText + "</html>"; //NOI18N
         }
-        //replace spaces to prevent line breaking
-        displayName = removeSpaces(displayName);
         return displayName;
     }
 
@@ -155,13 +164,11 @@ public class Utils {
             StringBuilder sb = new StringBuilder(fitText);
 
             int index = sb.toString().toLowerCase().indexOf(filterText.toLowerCase(), searchIndex);
-            final String boldTag = "<b>"; //NOI18N
-            final String boldCloseTag = "</b>"; //NOI18N
             while (index != -1) {
-                sb.insert(index, boldTag);
-                index = index + boldTag.length() + filterText.length();
-                sb.insert(index, boldCloseTag);
-                searchIndex = index + boldCloseTag.length();
+                sb.insert(index, BOLD_START_SUBSTITUTE);
+                index = index + BOLD_START_SUBSTITUTE.length() + filterText.length();
+                sb.insert(index, BOLD_END_SUBSTITUTE);
+                searchIndex = index + BOLD_END_SUBSTITUTE.length();
                 index = sb.toString().toLowerCase().indexOf(filterText.toLowerCase(), searchIndex);
             }
             return sb.toString();
@@ -170,11 +177,12 @@ public class Utils {
         }
     }
 
-    private static String removeSpaces(String name) {
-        return name.replace(" ", "&nbsp;"); //NOI18N
-    }
-    
     public static String getFindActionMapKey(){
         return SharedClassObject.findObject(FindAction.class, true).getActionMapKey().toString();
+    }
+
+    private static String replaceSubstitutes(String text) {
+        text = text.replace(BOLD_START_SUBSTITUTE, "<b>"); //NOI18N
+        return text.replace(BOLD_END_SUBSTITUTE, "</b>"); //NOI18N
     }
 }

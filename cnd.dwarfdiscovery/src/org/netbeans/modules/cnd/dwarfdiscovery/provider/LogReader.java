@@ -641,16 +641,16 @@ public class LogReader {
     private static final String LABEL_CD        = "cd "; //NOI18N
     private static final String MAKE_DELIMITER  = ";"; //NOI18N
 
-    private String findCompiler(String line, Set<String> patterns, boolean checkExe){
+    private String[] findCompiler(String line, Set<String> patterns, boolean checkExe){
         for(String pattern : patterns)    {
             int[] find = find(line, pattern);
             if (find != null) {
-                return pattern;
+                return new String[]{pattern,line.substring(find[2])};
             }
             if (checkExe) {
                 find = find(line, pattern+".exe"); //NOI18N
                 if (find != null) {
-                    return pattern;
+                    return new String[]{pattern,line.substring(find[2])};
                 }
             }
         }
@@ -675,6 +675,7 @@ public class LogReader {
                 }
                 char next = line.charAt(start+pattern.length());
                 if (next == ' ' || next == '\t') {
+                    int binaryStart = start;
                     if (prev == '/' || prev == '\\') {
                         char first = prev;
                         for(int i = start - 2; i >= 0; i--) {
@@ -682,6 +683,7 @@ public class LogReader {
                             if (c == ' ' || c == '\t') {
                                 break;
                             }
+                            binaryStart = i;
                             first = c;
                         }
                         if (first == '-') {
@@ -689,7 +691,7 @@ public class LogReader {
                         }
                     }
                     int end = start + pattern.length();
-                    return new int[]{start,end};
+                    return new int[]{start,end, binaryStart};
                 }
             }
         }
@@ -697,20 +699,23 @@ public class LogReader {
 
     /*package-local*/ LineInfo testCompilerInvocation(String line) {
         LineInfo li = new LineInfo(line);
-        String compiler = findCompiler(line, C_NAMES, isWindows);
+        String[] compiler = findCompiler(line, C_NAMES, isWindows);
         if (compiler != null) {
             li.compilerType = CompilerType.C;
-            li.compiler = compiler;
+            li.compiler = compiler[0];
+            li.compileLine = compiler[1];
         } else {
             compiler = findCompiler(line, CPP_NAMES, isWindows);
             if (compiler != null) {
                 li.compilerType = CompilerType.CPP;
-                li.compiler = compiler;
+                li.compiler = compiler[0];
+                li.compileLine = compiler[1];
             } else {
                 compiler = findCompiler(line, FORTRAN_NAMES, isWindows);
                 if (compiler != null) {
                     li.compilerType = CompilerType.FORTRAN;
-                    li.compiler = compiler;
+                    li.compiler = compiler[0];
+                    li.compileLine = compiler[1];
                 }
             }
         }

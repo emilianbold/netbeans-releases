@@ -78,6 +78,8 @@ public final class RepositoryQueries {
         private final List<RepositoryInfo> skipped = new ArrayList<RepositoryInfo>();
         private List<T> results = new ArrayList<T>();
         private final Redo<T> redoAction;
+        int totalResults = 0;
+        int returnedResults = 0;
         
         /**
          * used internally by the repository indexing/searching engine(s)
@@ -135,6 +137,32 @@ public final class RepositoryQueries {
         synchronized List<RepositoryInfo> getSkipped() {
             return Collections.unmodifiableList(skipped);
         }
+        /**
+         * total number of hits
+         * @return
+         * @since 2.20
+         */
+        public int getTotalResultCount() {
+            return totalResults;
+        }
+
+        void addTotalResultCount(int moreTotalResults) {
+            totalResults = totalResults + moreTotalResults;
+        }
+        /**
+         * in some cases not entirely accurate number of processed and returned hits, typically should be less or equals to totalResultCount
+         * @return 
+         * @since 2.20
+         */
+        public int getReturnedResultCount() {
+            return returnedResults;
+        }
+
+        void addReturnedResultCount(int moreReturnedResults) {
+            returnedResults = returnedResults + moreReturnedResults;
+        }
+        
+        
         
     } 
     
@@ -207,6 +235,16 @@ public final class RepositoryQueries {
         @Override
         public void setClassResults(Result<ClassUsage> result, Collection<ClassUsage> newResults) {
             result.setResults(newResults);
+        }
+
+        @Override
+        public void addTotalResults(Result<?> result, int moreResults) {
+            result.addTotalResultCount(moreResults);
+        }
+
+        @Override
+        public void addReturnedResults(Result<?> result, int moreResults) {
+            result.addReturnedResultCount(moreResults);
         }
     }
     

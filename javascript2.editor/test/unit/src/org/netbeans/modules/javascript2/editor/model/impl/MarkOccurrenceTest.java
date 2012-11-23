@@ -438,6 +438,46 @@ public class MarkOccurrenceTest extends JsTestBase {
     public void testIssue222250_02() throws Exception {
         checkOccurrences("testfiles/markoccurences/issue222250.js", "       this.xhr = x^hr;", true);
     }
+    
+    public void testIssue222373_01() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue222373.js", "c.test.na^me = \"c\";", true);
+    }
+    
+    public void testIssue222373_02() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue222373.js", "c.te^st.name = \"c\";", true);
+    }
+    
+    public void testIssue222373_03() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue222373.js", "a.test.na^me = \"B\";", true);
+    }
+    
+    public void testIssue222373_04() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue222373.js", "a.te^st.name = \"B\";", true);
+    }
+    
+    public void testIssue222373_05() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue222373.js", "a^.test.name = \"B\";", true);
+    }
+
+    public void testIssue222373_06() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue222373.js", "    nam^e : \"A\"", true);
+    }
+    
+    public void testIssue222373_07() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue222373.js", "  this.te^st = {", true);
+    }
+    
+    public void testIssue222373_08() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue222373.js", "function Per^son(){", true);
+    }
+    
+    public void testIssue222507_01() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue222507.js", "this._addPreset^Button = document.getElementById('addPreset');", true);
+    }
+    
+    public void testIssue222507_02() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue222507.js", "NetBeans_PresetCustomizer._addPresetB^utton = null;", true);
+    }
 
 //    public void testIssue221228_02() throws Exception {
 //        checkOccurrences("testfiles/markoccurences/issue221228.js", "a.h^i(); // rename hi here", true);
