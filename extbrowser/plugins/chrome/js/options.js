@@ -308,6 +308,7 @@ NetBeans_PresetCustomizer._switchHelp = function() {
 NetBeans_PresetCustomizer._resetWarnings = function() {
     NetBeans_Warnings.reset();
     this._resetWarningsButton.innerHTML = I18n.message('_Done');
+    this._resetWarningsButton.setAttribute('disabled', 'disabled');
 };
 // callback when row is selected
 NetBeans_PresetCustomizer._rowSelected = function(row) {
