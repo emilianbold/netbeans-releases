@@ -233,13 +233,7 @@ public final class LexUtilities {
     }
 
     public static Token<? extends JsTokenId> getJsToken(Document doc, int offset) {
-        TokenSequence<? extends JsTokenId> ts = getJsPositionedSequence(doc, offset);
-
-        if (ts != null) {
-            return ts.token();
-        }
-
-        return null;
+        return getToken(doc, offset, JsTokenId.javascriptLanguage());
     }
 
     public static Token<? extends JsTokenId> getToken(Document doc, int offset, Language<JsTokenId> language) {
@@ -273,9 +267,21 @@ public final class LexUtilities {
      * @param open the token that increses the count
      * @param close the token that decreses the count
      */
-    public static int getTokenBalance(Document doc, TokenId open, TokenId close, int offset)
-        throws BadLocationException {
-        TokenSequence<? extends JsTokenId> ts = LexUtilities.getJsTokenSequence(doc, offset);
+    public static int getJsTokenBalance(Document doc, TokenId open,
+            TokenId close, int offset) throws BadLocationException {
+
+        return getTokenBalance(doc, open, close, offset, JsTokenId.javascriptLanguage());
+    }
+
+    /**
+     * The same as braceBalance but generalized to any pair of matching
+     * tokens.
+     * @param open the token that increses the count
+     * @param close the token that decreses the count
+     */
+    public static int getTokenBalance(Document doc, TokenId open, TokenId close,
+            int offset, Language<JsTokenId> language) throws BadLocationException {
+        TokenSequence<? extends JsTokenId> ts = LexUtilities.getTokenSequence(doc, offset, language);
         if (ts == null) {
             return 0;
         }

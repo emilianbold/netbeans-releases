@@ -99,11 +99,11 @@ public class JsDeletedTextInterceptor implements DeletedTextInterceptor {
             char tokenAtDot = LexUtilities.getTokenChar(doc, dotPos);
 
             if (((tokenAtDot == ']') &&
-                    (LexUtilities.getTokenBalance(doc, JsTokenId.BRACKET_LEFT_BRACKET, JsTokenId.BRACKET_RIGHT_BRACKET, dotPos) != 0)) ||
+                    (LexUtilities.getJsTokenBalance(doc, JsTokenId.BRACKET_LEFT_BRACKET, JsTokenId.BRACKET_RIGHT_BRACKET, dotPos) != 0)) ||
                     ((tokenAtDot == ')') &&
-                    (LexUtilities.getTokenBalance(doc, JsTokenId.BRACKET_LEFT_PAREN, JsTokenId.BRACKET_RIGHT_PAREN, dotPos) != 0)) ||
+                    (LexUtilities.getJsTokenBalance(doc, JsTokenId.BRACKET_LEFT_PAREN, JsTokenId.BRACKET_RIGHT_PAREN, dotPos) != 0)) ||
                     ((tokenAtDot == '}') &&
-                    (LexUtilities.getTokenBalance(doc, JsTokenId.BRACKET_LEFT_CURLY, JsTokenId.BRACKET_RIGHT_CURLY, dotPos) != 0))) {
+                    (LexUtilities.getJsTokenBalance(doc, JsTokenId.BRACKET_LEFT_CURLY, JsTokenId.BRACKET_RIGHT_CURLY, dotPos) != 0))) {
                 doc.remove(dotPos, 1);
             }
             break;
