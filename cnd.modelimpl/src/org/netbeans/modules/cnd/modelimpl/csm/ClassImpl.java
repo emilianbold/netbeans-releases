@@ -1216,6 +1216,12 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
             containerUID = UIDCsmConverter.declarationToUID(containingClass);
         }
 
+        private ClassMemberForwardDeclaration(CharSequence name, TemplateDescriptor templateDescriptor, CsmClass containingClass, CsmVisibility curentVisibility, CsmFile file, int startOffset, int endOffset) {
+            super(name, templateDescriptor, file, startOffset, endOffset);
+            visibility = curentVisibility;
+            containerUID = UIDCsmConverter.declarationToUID(containingClass);
+        }
+        
         public static ClassMemberForwardDeclaration create(CsmFile file, CsmClass containingClass, AST ast, CsmVisibility curentVisibility, boolean register) {
             ClassMemberForwardDeclaration res = new ClassMemberForwardDeclaration(file, containingClass, ast, curentVisibility, register);
             postObjectCreateRegistration(register, res);
@@ -1316,6 +1322,24 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
             return CharSequences.create(cls.getQualifiedName() + "::" + getName()); // NOI18N
         }
 
+        public static class ClassMemberForwardDeclarationBuilder extends ClassForwardDeclarationBuilder implements MemberBuilder {
+
+            @Override
+            public ClassMemberForwardDeclaration create() {
+                TemplateDescriptor td = null;
+                if(getTemplateDescriptorBuilder() != null) {
+                    getTemplateDescriptorBuilder().setScope(getScope());
+                    td = getTemplateDescriptorBuilder().create();
+                }
+
+                ClassMemberForwardDeclaration fc = new ClassMemberForwardDeclaration(getName(), td, (CsmClass)getScope(), CsmVisibility.PUBLIC, getFile(), getStartOffset(), getEndOffset());
+
+                postObjectCreateRegistration(isGlobal(), fc);
+
+                return fc;
+            }
+        }         
+        
         ////////////////////////////////////////////////////////////////////////////
         // impl of SelfPersistent
         @Override
