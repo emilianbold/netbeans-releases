@@ -128,7 +128,7 @@ do
                 ;;
         --yprofile|-yprofile)
                 echo "profile using YourKit Profiler, save snapshots in ${HOME}/yjp_data/IDE"
-                PROFILE="-J-Dosgi.compatibility.bootdelegation=true -J-agentlib:yjpagent=dir=${HOME}/yjp_data/IDE,disablej2ee"
+                PROFILE="-J-Dosgi.compatibility.bootdelegation=true -J-agentlib:yjpagent=dir=${HOME}/yjp_data/IDE"
 		;;
         --drd|-drd)
                 echo "DataRace check run"
