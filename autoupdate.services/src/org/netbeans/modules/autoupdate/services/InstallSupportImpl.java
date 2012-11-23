@@ -47,6 +47,7 @@ package org.netbeans.modules.autoupdate.services;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.*;
+import java.net.ConnectException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
@@ -745,6 +746,7 @@ public class InstallSupportImpl {
                 downloadedFiles.add(normalized);
             }
             c = copy (source, dest, progress, toUpdateImpl.getDownloadSize (), aggregateDownload, totalSize, label);
+            boolean wasException = false;
             JarFile nbm = new JarFile(dest);
             try {
                 Enumeration<JarEntry> en = nbm.entries();
@@ -794,8 +796,19 @@ public class InstallSupportImpl {
                         }
                     }
                 }
+            } catch (FileNotFoundException x) {
+                LOG.log(Level.INFO, x.getMessage(), x);
+                wasException = true;
+                throw new OperationException(OperationException.ERROR_TYPE.INSTALL, x.getLocalizedMessage());
+            } catch (IOException x) {
+                LOG.log(Level.INFO, x.getMessage(), x);
+                wasException = true;
+                throw new OperationException(OperationException.ERROR_TYPE.PROXY, x.getLocalizedMessage());
             } finally {
                 nbm.close();
+                if (wasException) {
+                    dest.delete();
+                }
             }
         } catch (UnknownHostException x) {
             LOG.log (Level.INFO, x.getMessage (), x);
@@ -1254,6 +1267,8 @@ public class InstallSupportImpl {
         URLConnection conn;
         crc.set(-1L);
         String url = null;
+        String externalUrl = null;
+        IOException ioe = null;
         for (;;) {
             String line = br.readLine();
             if (line == null) {
@@ -1285,10 +1300,18 @@ public class InstallSupportImpl {
                 } catch (IOException ex) {
                     LOG.log(Level.WARNING, "Cannot connect to {0}", url);
                     LOG.log(Level.INFO, "Details", ex);
+                    if (ex instanceof UnknownHostException || ex instanceof ConnectException) {
+                        ioe = ex;
+                        externalUrl = url;
+                    }
                 }
             }
         }
-        throw new FileNotFoundException("Cannot resolve external reference to " + url == null ? pathTo : url);
+        if (ioe == null) {
+            throw new FileNotFoundException("Cannot resolve external reference to " + (url == null ? pathTo : url));
+        } else {
+            throw new IOException("resolving external reference to " + (externalUrl == null ? pathTo : externalUrl));
+        }
     }
     
     private static class UpdaterInfo {
