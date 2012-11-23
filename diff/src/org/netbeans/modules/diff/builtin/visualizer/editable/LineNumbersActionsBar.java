@@ -398,6 +398,9 @@ class LineNumbersActionsBar extends JPanel implements Scrollable, MouseMotionLis
                         --lineNumber;
                     }
                     View view = rootView.getView(lineNumber);
+                    if(view == null) { // this might happen
+                        return;
+                    }
                     Rectangle rec = master.getEditorPane().modelToView(view.getStartOffset());
                     if (rec == null) {
                         return;
