@@ -174,6 +174,8 @@ public class JsTypedTextInterceptor implements TypedTextInterceptor {
         }
 
         break;
+        default:
+            break;
         }
     }
 
