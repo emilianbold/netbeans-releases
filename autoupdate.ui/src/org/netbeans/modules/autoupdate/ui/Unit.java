@@ -118,7 +118,9 @@ public abstract class Unit {
         Iterable<String> iterable = details ();
         for (String detail : iterable) {
             isVisible = filter.length () == 0 || detail.toLowerCase ().contains (filter);
-            if (isVisible) break;
+            if (isVisible) {
+                break;
+            }
         }
         return isVisible;
     }
