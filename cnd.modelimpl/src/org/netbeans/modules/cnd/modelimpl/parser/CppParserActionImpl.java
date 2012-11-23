@@ -492,6 +492,12 @@ public class CppParserActionImpl implements CppParserActionEx {
     
     @Override
     public void class_name(Token token) {
+//        builderContext.push(new NameBuilder());
+    }
+    
+    @Override public void end_class_name(Token token) {
+//        NameBuilder nameBuilder = (NameBuilder) builderContext.top();
+//        builderContext.pop();
         CsmObjectBuilder top = builderContext.top();
         if(top instanceof ClassBuilder) {
             ClassBuilder classBuilder = (ClassBuilder) top;
@@ -682,7 +688,11 @@ public class CppParserActionImpl implements CppParserActionEx {
                         builder.setStartOffset(declBuilder.getTemplateDescriptorBuilder().getStartOffset());
                     }        
 
+                    if(parent instanceof DeclarationStatementBuilder) {
+                        ((DeclarationStatementBuilder)parent).addDeclarationBuilder(builder);
+                    } else {
                         builder.create();                
+                    }
                 } else if(declBuilder.isFunction()) {
                     FunctionBuilder builder = new FunctionBuilder();
 
@@ -843,6 +853,7 @@ public class CppParserActionImpl implements CppParserActionEx {
 
     @Override
     public void nested_name_specifier(Token token) {
+        simple_template_id_or_ident(token);     
     }
 
     @Override
@@ -884,7 +895,7 @@ public class CppParserActionImpl implements CppParserActionEx {
     @Override
     public void simple_template_id_or_ident(Token token) {
         CsmObjectBuilder top = builderContext.top();
-        if(top instanceof NameBuilder && (templateLevel == 0 || builderContext.top(4) instanceof TemplateParameterBuilder)) {
+        if(top instanceof NameBuilder /*&& (templateLevel == 0 || builderContext.top(4) instanceof TemplateParameterBuilder)*/) {
             NameBuilder nameBuilder = (NameBuilder) top;
             APTToken aToken = (APTToken) token;
             CharSequence part = aToken.getTextID();
@@ -1002,8 +1013,13 @@ public class CppParserActionImpl implements CppParserActionEx {
                 if(semicolonToken instanceof APTToken) {
                     usingBuilder.setEndOffset(((APTToken)semicolonToken).getEndOffset());
                 }
-                usingBuilder.create();
                 builderContext.pop();
+                top = builderContext.top();
+                if(top instanceof ClassBuilder) {
+                    ((ClassBuilder)top).addMemberBuilder(usingBuilder);                    
+                } else {
+                    usingBuilder.create();
+                }
             }
             
             CharSequence lastName = nameBuilder.getLastNamePart();
@@ -1521,7 +1537,9 @@ public class CppParserActionImpl implements CppParserActionEx {
     }
     
     @Override public void end_type_specifier(Token token) {
-        if(builderContext.top() instanceof TypeBuilder && builderContext.top(1) instanceof SimpleDeclarationBuilder) {
+        if(builderContext.top() instanceof TypeBuilder && builderContext.top(1) instanceof SimpleDeclarationBuilder 
+                && !(builderContext.top(1) instanceof TemplateParameterBuilder)
+                && !(builderContext.top(1) instanceof ClassBuilder)) {
             TypeBuilder typeBuilder = (TypeBuilder) builderContext.top();
             typeBuilder.setEndOffset(((APTToken)token).getEndOffset());
             builderContext.pop();
@@ -1537,13 +1555,15 @@ public class CppParserActionImpl implements CppParserActionEx {
     @Override public void end_decltype_specifier(Token token) {}
     @Override
     public void elaborated_type_specifier(Token token) {
-        ClassForwardDeclarationBuilder builder = new ClassForwardDeclarationBuilder();
-        builder.setFile(currentContext.file);
-        builder.setStartOffset(((APTToken)token).getOffset());
+        ClassForwardDeclarationBuilder builder;
         CsmObjectBuilder parent = builderContext.top(2);
         if(parent instanceof ClassBuilder) {
-//            ((ClassBuilder)parent).addChild(builder);
+            builder = new ClassMemberForwardDeclarationBuilder();
+        } else {
+            builder = new ClassForwardDeclarationBuilder();
         }
+        builder.setFile(currentContext.file);
+        builder.setStartOffset(((APTToken)token).getOffset());
         builder.setParent(parent);        
         SimpleDeclarationBuilder declBuilder = (SimpleDeclarationBuilder)builderContext.top(1);
         if(declBuilder.getTemplateDescriptorBuilder() != null) {
@@ -1560,9 +1580,11 @@ public class CppParserActionImpl implements CppParserActionEx {
         builderContext.pop();
         builder.setEndOffset(((APTToken)token).getEndOffset());
         builder.setName(nameBuilder.getName());
-        CsmObjectBuilder parent = builderContext.top(3);
+        CsmObjectBuilder parent = builderContext.top(2);
         if(parent == null || parent instanceof NamespaceBuilder) {
             builder.create();
+        } else if(parent instanceof ClassBuilder) {
+            ((ClassBuilder)parent).addMemberBuilder((ClassMemberForwardDeclarationBuilder)builder);
         }
         
         CharSequence name = builder.getName();
@@ -1572,6 +1594,25 @@ public class CppParserActionImpl implements CppParserActionEx {
             classEntry.setAttribute(CppAttributes.TYPE, true);
         }    
     }
+    @Override public void typename_specifier(Token token) {
+        CsmObjectBuilder top = builderContext.top();
+        if(top instanceof TypeBuilder) {
+            builderContext.push(new NameBuilder());
+        }        
+    }
+    @Override public void end_typename_specifier(Token token) {
+        CsmObjectBuilder top = builderContext.top();
+        if(top instanceof NameBuilder && builderContext.top(1) instanceof TypeBuilder) {
+            builderContext.pop();
+            if(builderContext.top() instanceof TypeBuilder) {
+                TypeBuilder builder = (TypeBuilder)builderContext.top();
+                builder.setNameBuilder((NameBuilder)top);
+            }
+        }
+        if(builderContext.top(1) instanceof SimpleDeclarationBuilder) {
+            ((SimpleDeclarationBuilder)builderContext.top(1)).setTypeSpecifier();
+        }
+    }    
     @Override public void asm_definition(Token asmToken, Token lparenToken, Token stringToken, Token rparenToken, Token semicolonToken) {}
     @Override public void linkage_specification(Token externToken, Token stringToken) {}
     @Override public void linkage_specification(int kind, Token token) {}
