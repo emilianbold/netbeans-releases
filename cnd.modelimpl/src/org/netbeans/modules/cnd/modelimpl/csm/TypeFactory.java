@@ -378,29 +378,31 @@ public class TypeFactory {
             TypeImpl type = null;
             boolean first = true;
             if(nameBuilder != null) {
-                
-                
-                for (CharSequence namePart : nameBuilder.getNameParts()) {
+                for (NameBuilder.NamePart namePart : nameBuilder.getNames()) {
                     if(first) {
+                        first = false;
                         List<CharSequence> nameList = new ArrayList<CharSequence>();
                         type = new TypeImpl(getFile(), pointerDepth, reference, arrayDepth, _const, getStartOffset(), getEndOffset());
-                        nameList.add(namePart);
-                        type.setClassifierText(namePart);
+                        nameList.add(namePart.getPart());
+                        type.setClassifierText(namePart.getPart());
                         type.setQName(nameList.toArray(new CharSequence[nameList.size()]));
                     } else {
                         List<CharSequence> nameList = new ArrayList<CharSequence>();
                         type = NestedType.create(TemplateUtils.checkTemplateType(type, scope), getFile(), type.getPointerDepth(), type.isReference(), type.getArrayDepth(), type.isConst(), type.getStartOffset(), type.getEndOffset());
-                        nameList.add(namePart);
-                        type.setClassifierText(namePart);
+                        nameList.add(namePart.getPart());
+                        type.setClassifierText(namePart.getPart());
                         type.setQName(nameList.toArray(new CharSequence[nameList.size()]));                    
+                    }
+                    for (SpecializationDescriptor.SpecializationParameterBuilder param : namePart.getParams()) {
+                        param.setScope(getScope());
+                        type.addInstantiationParam(param.create());
                     }
                 }
             } else if (specifierBuilder != null) {
                 CsmClassifier classifier = BuiltinTypes.getBuiltIn(specifierBuilder.toString());
                 type = new TypeImpl(classifier, pointerDepth, reference, arrayDepth, _const, getFile(), getStartOffset(), getEndOffset());
             }
-            
-            return type;
+            return TemplateUtils.checkTemplateType(type, scope);
         }
     }
    
