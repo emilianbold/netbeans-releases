@@ -87,11 +87,6 @@ public class JQueryCodeCompletion {
         switch (jsCompletionContext) {
             case GLOBAL:
             case EXPRESSION:
-                if (JQueryUtils.isInJQuerySelector(parserResult, lastTsOffset)) {
-                    addSelectors(result, parserResult, prefix, lastTsOffset);
-                }
-                break;
-            // can be for the dot in selectors - (.|)
             case OBJECT_PROPERTY:
                 if (JQueryUtils.isInJQuerySelector(parserResult, lastTsOffset)) {
                     addSelectors(result, parserResult, prefix, lastTsOffset);
