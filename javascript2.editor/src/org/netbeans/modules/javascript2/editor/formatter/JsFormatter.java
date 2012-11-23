@@ -1242,7 +1242,7 @@ public class JsFormatter implements Formatter {
                     || Utilities.getFirstNonWhiteFwd(doc, startOffset) == context.caretOffset());
             if (indentOnly && indentContext.isEmbedded()) {
                 // Make sure we're not messing with indentation in HTML
-                Token<? extends JsTokenId> token = LexUtilities.getJsToken(doc, startOffset);
+                Token<? extends JsTokenId> token = LexUtilities.getToken(doc, startOffset, language);
                 if (token == null) {
                     return;
                 }
@@ -1784,7 +1784,7 @@ public class JsFormatter implements Formatter {
                 while (newOffset < lineEnd && token != null) {
                     newOffset = newOffset + token.length();
                     if (newOffset < doc.getLength()) {
-                        token = LexUtilities.getJsToken(doc, newOffset);
+                        token = LexUtilities.getToken(doc, newOffset, language);
                         if (token != null) {
                             id = token.id();
                             if (id == JsTokenId.WHITESPACE) {
@@ -1823,7 +1823,7 @@ public class JsFormatter implements Formatter {
                     return token;
                 }
             } else {
-                return LexUtilities.getJsToken(doc, lineBegin);
+                return LexUtilities.getToken(doc, lineBegin, language);
             }
         }
 
