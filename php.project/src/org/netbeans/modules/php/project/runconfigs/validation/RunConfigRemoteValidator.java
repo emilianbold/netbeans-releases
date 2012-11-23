@@ -132,8 +132,7 @@ public final class RunConfigRemoteValidator {
             return NbBundle.getMessage(RunAsRemoteWeb.class, "MSG_NonExistingConfigurationSelected");
         }
         ValidationResult validationResult = RemoteConnections.get().validateRemoteConfiguration(remoteConfiguration);
-        assert validationResult != null : "No validation found for: " + remoteConfiguration;
-        if (validationResult.hasErrors()) {
+        if (validationResult != null && validationResult.hasErrors()) {
             return Bundle.RunConfigRemoteValidator_error_remoteConnection(validationResult.getErrors().get(0).getMessage());
         }
         return null;
