@@ -338,7 +338,9 @@ public class MakeNBM extends Task {
     public void setLocales(String s) {
         locales = new ArrayList<String>();
         for (String st : s.split("[, ]+")) {
-            locales.add(st);
+            if (! st.trim().isEmpty()) {
+                locales.add(st);
+            }
         }
     }
     /** Include netbeans directory - default is true */
