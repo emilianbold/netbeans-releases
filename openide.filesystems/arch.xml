@@ -361,7 +361,17 @@ No.
 -->
 <answer id="exec-component">
   <api name="fallback" group="property" type="export" category="stable">
-      See documentation of <code>FileSystem</code>.
+    <p>
+        See documentation of <code>FileSystem</code>.
+    </p>
+  </api>
+  <api name="revealEntries" group="property" type="export" category="devel"
+    url="@TOP@/org/openide/filesystems/MultiFileSystem.html">
+    <p>
+        The MultiFileSystem defines some pseudo attributes on files and folders,
+        which provide rollback features. Please see MultiFileSystem class javadoc 
+        for more information.
+    </p>
  </api>
 </answer>
 

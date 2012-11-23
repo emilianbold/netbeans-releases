@@ -254,13 +254,12 @@ public class KeymapModel {
                 if (currentProfile == null) {
                     currentProfile = m.getCurrentProfile();
                 }
-                if (l != null) {
+                if (l != null && profilesMap.isEmpty()) {
                     for(String name : l) {
                         profilesMap.put(m.getProfileDisplayName(name), name);
                         customProfiles.put(name, Boolean.TRUE.equals(customProfiles.get(name)) || 
                                 m.isCustomProfile(name));
                     }
-                    break;
                 }
             }
             if (currentProfile == null) {

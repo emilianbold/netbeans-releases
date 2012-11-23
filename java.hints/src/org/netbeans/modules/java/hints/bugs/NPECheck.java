@@ -47,6 +47,7 @@ import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.TypeMirror;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.spi.editor.hints.ErrorDescription;
@@ -156,14 +157,16 @@ public class NPECheck {
     
     @TriggerPatterns({
         @TriggerPattern("$variable != null"),
-        @TriggerPattern("null != $variable")
+        @TriggerPattern("null != $variable"),
+        @TriggerPattern("$variable == null"),
+        @TriggerPattern("null == $variable")
     })
     public static ErrorDescription notNullWouldBeNPE(HintContext ctx) {
         TreePath variable = ctx.getVariables().get("$variable");
         State r = computeExpressionsState(ctx.getInfo()).get(variable.getLeaf());
         
-        if (r == State.NOT_NULL_BE_NPE) {
-            String displayName = NbBundle.getMessage(NPECheck.class, "ERR_NotNullWouldBeNPE");
+        if (r != null && r.isNotNull()) {
+            String displayName = NbBundle.getMessage(NPECheck.class, r == State.NOT_NULL_BE_NPE ? "ERR_NotNullWouldBeNPE" : "ERR_NotNull");
             
             return ErrorDescriptionFactory.forName(ctx, ctx.getPath(), displayName);
         }
@@ -268,6 +271,12 @@ public class NPECheck {
         @Override
         public State scan(Tree tree, Void p) {
             State r = super.scan(tree, p);
+            
+            TypeMirror currentType = tree != null ? info.getTrees().getTypeMirror(new TreePath(getCurrentPath(), tree)) : null;
+            
+            if (currentType != null && currentType.getKind().isPrimitive()) {
+                r = State.NOT_NULL;
+            }
             
             if (r != null && !doNotRecord) {
                 expressionState.put(tree, r);
@@ -379,56 +388,25 @@ public class NPECheck {
             
             variable2State = oldVariable2State;
             
-            Set<VariableElement> uncertain = new HashSet<VariableElement>();
-            
-            if (node.getElseStatement() == null) {
-                for (Entry<VariableElement, State> e : variableStatesAfterThen.entrySet()) {
-                    if (testedToAfterThen.get(e.getKey()) == State.NULL) {
-                        if (e.getValue() != null) {
-                            switch (e.getValue()) {
-                                case NOT_NULL:
-                                case NOT_NULL_BE_NPE:
-                                    variable2State.put(e.getKey(), e.getValue());
-                                    break;
-                                case POSSIBLE_NULL:
-                                    variable2State.put(e.getKey(), POSSIBLE_NULL);
-                                    uncertain.add(e.getKey());
-                                    break;
-                            }
-                        }
-                    } else {
-                        State c = collect(variable2State.get(e.getKey()), e.getValue());
-                        
-                        variable2State.put(e.getKey(), c);
+            for (Entry<VariableElement, State> e : variableStatesAfterThen.entrySet()) {
+                State t = e.getValue();
+                State el = variableStatesAfterElse.get(e.getKey());
+
+                if (t == el) {
+                    variable2State.put(e.getKey(), t);
+                } else {
+                    if (t == State.NULL && el == State.NOT_NULL) {
+                        variable2State.put(e.getKey(), State.POSSIBLE_NULL_REPORT);
                     }
-                }
-            } else {
-                for (Entry<VariableElement, State> e : variableStatesAfterThen.entrySet()) {
-                    State t = e.getValue();
-                    State el = variableStatesAfterElse.get(e.getKey());
-                    
-                    if (t == el) {
-                        variable2State.put(e.getKey(), t);
-                    } else {
-                        if (t == State.NULL && el == State.NOT_NULL) {
-                            variable2State.put(e.getKey(), State.POSSIBLE_NULL_REPORT);
-                        }
-                        if (el == State.NULL && t == State.NOT_NULL) {
-                            variable2State.put(e.getKey(), State.POSSIBLE_NULL_REPORT);
-                        }
+                    if (el == State.NULL && t == State.NOT_NULL) {
+                        variable2State.put(e.getKey(), State.POSSIBLE_NULL_REPORT);
                     }
                 }
             }
             
             boolean thenExitsFromAllBranches = new ExitsFromAllBranches(info).scan(new TreePath(getCurrentPath(), node.getThenStatement()), null) == Boolean.TRUE;
             
-            if (!thenExitsFromAllBranches) {
-                for (Entry<VariableElement, State> test : testedTo.entrySet()) {
-                    if ((variable2State.get(test.getKey()) == POSSIBLE_NULL || variable2State.get(test.getKey()) == null) && !uncertain.contains(test.getKey())) {
-                        variable2State.put(test.getKey(), POSSIBLE_NULL_REPORT);
-                    }
-                }
-            } else {
+            if (thenExitsFromAllBranches) {
                 variable2State.putAll(negTestedTo);
             }
             
