@@ -285,6 +285,7 @@ public class EnumImpl extends ClassEnumBase<CsmEnum> implements CsmEnum {
             EnumImpl impl = getEnumDefinitionInstance();
             if(impl == null) {
                 impl = new EnumImpl(getName(), getName().toString(), stronglyTyped, getFile(), getStartOffset(), getEndOffset());
+                impl.setVisibility(CsmVisibility.PUBLIC);
                 impl.initScope(getScope());
                 impl.register(getScope(), true);
                 getNameHolder().addReference(getFileContent(), impl);
