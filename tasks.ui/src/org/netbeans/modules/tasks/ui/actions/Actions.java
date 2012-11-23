@@ -421,14 +421,21 @@ public class Actions {
         @Override
         public void actionPerformed(ActionEvent e) {
             Repository repository = getRepositoryNodes()[0].getRepository();
-            RepositoryManager.getInstance().editRepository(repository);
+            repository.edit();
         }
 
         @Override
         public boolean isEnabled() {
             boolean parent = super.isEnabled();
             boolean singleNode = getRepositoryNodes().length == 1;
-            return parent && singleNode;
+            boolean allMutable = true;
+            for(RepositoryNode n : getRepositoryNodes()) {
+                allMutable = n.getRepository().isMutable();
+                if(!allMutable) {
+                    break;
+                }
+            }
+            return parent && singleNode && allMutable;
         }
     }
 
