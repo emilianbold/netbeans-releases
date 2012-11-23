@@ -2093,6 +2093,7 @@ public class CppParserActionImpl implements CppParserActionEx {
     public void expression(Token token) {
         if(!(builderContext.top() instanceof ExpressionBuilder)) {
             ExpressionBuilder builder = new ExpressionBuilder();
+            builder.setFile(currentContext.file);
             builder.setStartOffset(((APTToken)token).getOffset());
             builderContext.push(builder);        
         } else {
@@ -2109,6 +2110,15 @@ public class CppParserActionImpl implements CppParserActionEx {
             if(builderContext.top() instanceof ExpressionBuilderContainer) {
                 ExpressionBuilderContainer container = (ExpressionBuilderContainer) builderContext.top();
                 container.addExpressionBuilder(builder);
+            } else if(builderContext.top() instanceof NameBuilder) {
+                ExpressionBasedSpecializationParameterBuilder paramBuilder = new ExpressionBasedSpecializationParameterBuilder();
+                paramBuilder.setExpressionBuilder(builder);
+                paramBuilder.setFile(builder.getFile());
+                paramBuilder.setStartOffset(builder.getStartOffset());
+                paramBuilder.setEndOffset(builder.getEndOffset());
+                
+                NameBuilder nameBuilder = (NameBuilder) builderContext.top();
+                nameBuilder.addParameterBuilder(paramBuilder);
             }
         } else {
             builder.leaveExpression();
