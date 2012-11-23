@@ -42,6 +42,7 @@
 package org.netbeans.modules.parsing.impl.indexing;
 
 import java.io.File;
+import java.net.URL;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.IdentityHashMap;
@@ -58,6 +59,8 @@ import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.classpath.GlobalPathRegistry;
 import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.parsing.spi.indexing.BinaryIndexer;
+import org.netbeans.modules.parsing.spi.indexing.BinaryIndexerFactory;
 import org.netbeans.modules.parsing.spi.indexing.Context;
 import org.netbeans.modules.parsing.spi.indexing.CustomIndexer;
 import org.netbeans.modules.parsing.spi.indexing.CustomIndexerFactory;
@@ -77,6 +80,7 @@ public class ScanStartedTest extends NbTestCase {
     public static final String FOO_EXT = "foo";          //NOI18N
     public static final String FOO_MIME = "text/x-foo";  //NOI18N
     public static final String FOO_SOURCE = "foo-sources";  //NOI18N
+    public static final String FOO_BINARY = "foo-bin";      //NOI18N
 
     private final Map<String, Map<ClassPath,Void>> registeredClasspaths = new HashMap<String, Map<ClassPath,Void>>();
     
@@ -84,9 +88,16 @@ public class ScanStartedTest extends NbTestCase {
     private IndexerFactory factory2;
     private IndexerFactory factory3;
 
+    private BinIndexerFactory binFactory1;
+    private BinIndexerFactory binFactory2;
+    private BinIndexerFactory binFactory3;
+
     private FileObject src1;
     private FileObject file1;
+    private FileObject bin1;
+    private FileObject file2;
     private ClassPath cp1;
+    private ClassPath bcp1;
 
     public ScanStartedTest(@NonNull final String name) {
         super(name);
@@ -108,16 +119,30 @@ public class ScanStartedTest extends NbTestCase {
         file1 = src1.createData("test", FOO_EXT);   //NOI18N
         assertNotNull(file1);
         FileUtil.setMIMEType(FOO_EXT, FOO_MIME);
+        bin1 = wd.createFolder("bin1"); //NOI18N
+        file2 = bin1.createData("test", "bin"); //NOI18N
 
         factory1 = new IndexerFactory("factory1", 1);   //NOI18N
         factory2 = new IndexerFactory("factory2", 1);   //NOI18N
         factory3 = new IndexerFactory("factory3", 1);   //NOI18N
 
+        binFactory1 = new BinIndexerFactory("binFactory1", 1);  //NOI18N
+        binFactory2 = new BinIndexerFactory("binFactory2", 1);  //NOI18N
+        binFactory3 = new BinIndexerFactory("binFactory3", 1);  //NOI18N
+
         cp1 = ClassPathSupport.createClassPath(src1);
-        FooCPP.roots2cps = Collections.unmodifiableMap(Collections.singletonMap(src1, cp1));
+        bcp1 = ClassPathSupport.createClassPath(bin1);
+        FooCPP.roots2cps = Collections.unmodifiableMap(
+                new HashMap() {
+                    {
+                        put(src1, Collections.singletonMap(FOO_SOURCE, cp1));
+                        put(bin1, Collections.singletonMap(FOO_BINARY, bcp1));
+                    }
+                });
         MockServices.setServices(
                 FooCPP.class,
                 FooPathRecognizer.class);
+        MockMimeLookup.setInstances(MimePath.EMPTY, binFactory1, binFactory2, binFactory3);
         MockMimeLookup.setInstances(MimePath.get(FOO_MIME), factory1, factory2, factory3);
         RepositoryUpdaterTest.setMimeTypes(FOO_MIME);
         RepositoryUpdaterTest.waitForRepositoryUpdaterInit();
@@ -212,6 +237,27 @@ public class ScanStartedTest extends NbTestCase {
         assertEquals(0, factory3.scanFinishedCount.get());
     }
 
+    public void testBinaryScanFinishedAfterScanStarted() throws Exception {
+        assertTrue(GlobalPathRegistry.getDefault().getPaths(FOO_BINARY).isEmpty());
+        final TestHandler handler = new TestHandler();
+        final Logger logger = Logger.getLogger(RepositoryUpdater.class.getName()+".tests"); //NOI18N
+        logger.setLevel (Level.FINEST);
+        logger.addHandler(handler);
+
+        //Testing classpath registration
+        globalPathRegistry_register(FOO_BINARY,new ClassPath[]{bcp1});
+        assertTrue (handler.await());
+        assertEquals(1, handler.getBinaries().size());
+        assertEquals(0, handler.getSources().size());
+        assertEquals(this.bin1.toURL(), handler.getBinaries().iterator().next());
+        assertEquals(1, binFactory1.scanStartedCount.get());
+        assertEquals(1, binFactory2.scanStartedCount.get());
+        assertEquals(1, binFactory3.scanStartedCount.get());
+        assertEquals(1, binFactory1.scanFinishedCount.get());
+        assertEquals(1, binFactory2.scanFinishedCount.get());
+        assertEquals(1, binFactory3.scanFinishedCount.get());
+    }
+
 
     private void globalPathRegistry_register(String id, ClassPath [] classpaths) {
         Map<ClassPath,Void> map = registeredClasspaths.get(id);
@@ -228,20 +274,18 @@ public class ScanStartedTest extends NbTestCase {
 
     public static class FooCPP implements ClassPathProvider {
 
-        static volatile Map<FileObject,ClassPath> roots2cps;
+        static volatile Map<FileObject,Map<String,ClassPath>> roots2cps;
 
         @Override
-        public ClassPath findClassPath(FileObject file, String type) {
-            if (FOO_SOURCE.equals(type)) {
-                Map<FileObject,ClassPath> m = roots2cps;
-                if (m != null) {
-                    for (Map.Entry<FileObject,ClassPath> p : m.entrySet()) {
-                        if (p.getKey().equals(file) || FileUtil.isParentOf(p.getKey(), file)) {
-                            return p.getValue();
-                        }
+        public ClassPath findClassPath(FileObject file, String type) {            
+            final Map<FileObject,Map<String,ClassPath>> m = roots2cps;
+            if (m != null) {
+                for (Map.Entry<FileObject,Map<String,ClassPath>> p : m.entrySet()) {
+                    if (p.getKey().equals(file) || FileUtil.isParentOf(p.getKey(), file)) {
+                        return p.getValue().get(type);
                     }
                 }
-            }
+            }            
             return null;
         }
 
@@ -262,7 +306,7 @@ public class ScanStartedTest extends NbTestCase {
 
         @Override
         public Set<String> getBinaryLibraryPathIds() {
-            return Collections.<String>emptySet();
+            return Collections.<String>singleton(FOO_BINARY);
         }
 
         @Override
@@ -331,6 +375,60 @@ public class ScanStartedTest extends NbTestCase {
             if (re != null) {
                 throw re;
             }
+            return true;
+        }
+
+        @Override
+        public void scanFinished(Context context) {
+            scanFinishedCount.incrementAndGet();
+        }
+
+    }
+
+    private static class BinIndexer extends BinaryIndexer {
+        @Override
+        protected void index(Context context) {
+        }
+    }
+
+    private static class BinIndexerFactory extends BinaryIndexerFactory {
+
+        private final String name;
+        private final int version;
+
+        private final AtomicInteger scanStartedCount = new AtomicInteger();
+        private final AtomicInteger scanFinishedCount = new AtomicInteger();
+
+
+        BinIndexerFactory(
+                @NonNull final String name,
+                final int version) {
+            this.name = name;
+            this.version = version;
+        }
+
+        @Override
+        public BinaryIndexer createIndexer() {
+            return new BinIndexer();
+        }
+
+        @Override
+        public void rootsRemoved(Iterable<? extends URL> removedRoots) {
+        }
+
+        @Override
+        public String getIndexerName() {
+            return name;
+        }
+
+        @Override
+        public int getIndexVersion() {
+            return version;
+        }
+
+        @Override
+        public boolean scanStarted(Context context) {
+            scanStartedCount.incrementAndGet();
             return true;
         }
 
