@@ -2030,7 +2030,15 @@ public class CppParserActionImpl implements CppParserActionEx {
     @Override public void mem_operator_function_id(Token token) {}
     @Override public void operator_function_id(int kind, Token token) {}
     @Override public void end_operator_function_id(Token token) {}
-    @Override public void operator_id(Token token) {}
+    @Override public void operator_id(Token token) {
+        CsmObjectBuilder top = builderContext.top();
+        if(top instanceof NameBuilder /*&& (templateLevel == 0 || builderContext.top(4) instanceof TemplateParameterBuilder)*/) {
+            NameBuilder nameBuilder = (NameBuilder) top;
+            APTToken aToken = (APTToken) token;
+            CharSequence part = aToken.getTextID();
+            nameBuilder.addNamePart("operator" + part); // NOI18N
+        }        
+    }
     @Override public void end_operator_id(Token token) {}
     @Override public void literal_operator_id(Token operatorToken, Token stringToken, Token identToken) {}
     @Override public void template_declaration(Token token) {}
