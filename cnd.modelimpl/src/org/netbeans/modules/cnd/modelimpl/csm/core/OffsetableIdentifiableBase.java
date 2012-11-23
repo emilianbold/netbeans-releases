@@ -184,6 +184,17 @@ public abstract class OffsetableIdentifiableBase<T> extends OffsetableBase imple
         private int nameEndOffset = -1;
         private boolean isMacroExpanded = false;
 
+        public OffsetableIdentifiableBuilder() {
+        }
+
+        protected OffsetableIdentifiableBuilder(OffsetableIdentifiableBuilder builder) {
+            super(builder);
+            name = builder.name;
+            nameStartOffset = builder.nameStartOffset;
+            nameEndOffset = builder.nameEndOffset;
+            isMacroExpanded = builder.isMacroExpanded;
+        }
+        
         public void setName(CharSequence name) {
             this.name = name;
         }
@@ -202,14 +213,14 @@ public abstract class OffsetableIdentifiableBase<T> extends OffsetableBase imple
 
         public CharSequence getName() {
             if(name== null) {
-                return NameCache.getManager().getString("error"); //NOI18N
+                return NameCache.getManager().getString(CharSequences.empty()); //NOI18N
             } 
             return NameCache.getManager().getString(name);
         }
         
         public CharSequence getRawName() {
             if(name== null) {
-                return NameCache.getManager().getString("error"); //NOI18N
+                return NameCache.getManager().getString(CharSequences.empty()); //NOI18N
             } 
             return NameCache.getManager().getString(CharSequences.create(name.toString().replace("::", "."))); //NOI18N
         }
