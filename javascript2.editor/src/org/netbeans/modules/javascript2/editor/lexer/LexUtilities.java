@@ -246,8 +246,8 @@ public final class LexUtilities {
         return null;
     }
 
-    public static char getTokenChar(Document doc, int offset) {
-        Token<? extends JsTokenId> token = getJsToken(doc, offset);
+    public static char getTokenChar(Document doc, int offset, Language<JsTokenId> language) {
+        Token<? extends JsTokenId> token = getToken(doc, offset, language);
 
         if (token != null) {
             String text = token.text().toString();
@@ -313,7 +313,7 @@ public final class LexUtilities {
      * This will return false for lines that contain comments (even when the
      * offset is within the comment portion) but also contain code.
      */
-    public static boolean isCommentOnlyLine(BaseDocument doc, int offset)
+    public static boolean isCommentOnlyLine(BaseDocument doc, int offset, Language<JsTokenId> language)
             throws BadLocationException {
 
         int begin = Utilities.getRowFirstNonWhite(doc, offset);
@@ -322,7 +322,7 @@ public final class LexUtilities {
             return false; // whitespace only
         }
 
-        Token<? extends JsTokenId> token = LexUtilities.getJsToken(doc, begin);
+        Token<? extends JsTokenId> token = LexUtilities.getToken(doc, begin, language);
         if (token != null) {
             return token.id() == JsTokenId.LINE_COMMENT;
         }

@@ -495,12 +495,12 @@ public class JsTypedBreakInterceptor implements TypedBreakInterceptor {
      * @return indentation size
      * @throws BadLocationException 
      */
-    private static int getNextLineIndentation(BaseDocument doc, int offset) throws BadLocationException {
+    private int getNextLineIndentation(BaseDocument doc, int offset) throws BadLocationException {
         int indent = GsfUtilities.getLineIndent(doc, offset);
         int currentOffset = offset;
         while (currentOffset > 0) {
             if (!Utilities.isRowEmpty(doc, currentOffset) && !Utilities.isRowWhite(doc, currentOffset)
-                    && !LexUtilities.isCommentOnlyLine(doc, currentOffset)) {
+                    && !LexUtilities.isCommentOnlyLine(doc, currentOffset, language)) {
                 indent = GsfUtilities.getLineIndent(doc, currentOffset);
                 int parenBalance = LexUtilities.getLineBalance(doc, currentOffset,
                         JsTokenId.BRACKET_LEFT_PAREN, JsTokenId.BRACKET_RIGHT_PAREN);
