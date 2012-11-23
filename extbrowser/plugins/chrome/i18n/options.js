@@ -43,7 +43,7 @@
 window.addEventListener('load', function() {
     I18n.pageTitle();
     // texts
-    I18n.elements(document.getElementsByClassName('i18n'));
+    I18n.className('i18n');
     // table
     I18n.elements(document.getElementById('presetCustomizerTable').getElementsByTagName('thead')[0].getElementsByTagName('th'));
     // preset buttons
