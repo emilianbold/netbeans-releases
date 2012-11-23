@@ -648,6 +648,10 @@ public class CppParserActionImpl implements CppParserActionEx {
             builderContext.pop();
         }
         if(builderContext.top() instanceof TemplateDescriptorBuilder) {
+            TemplateDescriptorBuilder descriptorBuilder = (TemplateDescriptorBuilder)builderContext.top();
+            builder.setStartOffset(descriptorBuilder.getStartOffset());
+            descriptorBuilder.addTemplateDescriptorBuilder(builder.getTemplateDescriptorBuilder());
+            builder.setTemplateDescriptorBuilder(descriptorBuilder);
             builderContext.pop();
         }        
         builderContext.push(builder);        
@@ -1898,6 +1902,10 @@ public class CppParserActionImpl implements CppParserActionEx {
             builderContext.pop();
         }
         if(builderContext.top() instanceof TemplateDescriptorBuilder) {
+            TemplateDescriptorBuilder descriptorBuilder = (TemplateDescriptorBuilder)builderContext.top();
+            builder.setStartOffset(descriptorBuilder.getStartOffset());
+            descriptorBuilder.addTemplateDescriptorBuilder(builder.getTemplateDescriptorBuilder());
+            builder.setTemplateDescriptorBuilder(descriptorBuilder);
             builderContext.pop();
         }        
         builderContext.push(builder);            
