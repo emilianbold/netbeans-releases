@@ -46,6 +46,7 @@ package org.openide.filesystems;
 
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.net.URL;
@@ -182,8 +183,19 @@ public class TestUtilHid {
         
         return xfs;
     }
-
-    public static File createXMLLayer(String testName, String[] resources) throws IOException {
+    
+    public final static FileSystem createXMLFileSystem(String testName, Resource rootResource) throws IOException {
+        File xmlFile = createXMLLayer(testName, rootResource);
+        
+        XMLFileSystem xfs = new XMLFileSystem  ();
+        try {
+            xfs.setXmlUrl(Utilities.toURI(xmlFile).toURL());
+        } catch (Exception ex) {}
+        
+        return xfs;
+    }
+    
+    public static File createXMLLayer(String testName, Resource rootResource) throws IOException {
         File tempFile = TestUtilHid.locationOfTempFolder("xfstest");
         tempFile.mkdir();
         
@@ -193,17 +205,25 @@ public class TestUtilHid {
             xmlFile.createNewFile();
         } 
         FileOutputStream xos = new FileOutputStream (xmlFile);        
-        ResourceElement root =  new ResourceElement ("");        
-        
-        for (int i = 0; i < resources.length; i++)                         
-            root.add (resources[i]);
-       
         PrintWriter pw = new PrintWriter (xos); 
         pw.println("<filesystem>");
-        testStructure (pw,root.getChildren () ,"  ");
+        rootResource.serialize("", "  ", pw, xmlFile.getParentFile());
         pw.println("</filesystem>");       
         pw.close();
         return xmlFile;
+    }
+
+    public static File createXMLLayer(String testName, String[] resources) throws IOException {
+        Resource root =  createRoot();
+        
+        for (int i = 0; i < resources.length; i++)                         
+            root.add (resources[i]);
+        
+        return createXMLLayer(testName, root);
+    }
+    
+    public static Resource createRoot() {
+        return new Resource("");
     }
 
     private  static void testStructure (PrintWriter pw,ResourceElement[] childern,String tab) {
@@ -223,25 +243,28 @@ public class TestUtilHid {
         }
     }
     
-    private  static class ResourceElement {
+    static class ResourceElement {
         String element;
         ResourceElement (String element) {
             //System.out.println(element);
             this.element = element;
         }
         Map<String,ResourceElement> children = new HashMap<String,ResourceElement> ();
-        void add (String resource) {
-            add (new StringTokenizer (resource,"/"));
+        Resource add (String resource) {
+            return add (new StringTokenizer (resource,"/"));
         }
-        private void add (Enumeration en) {
+        
+        Resource add (Enumeration en) {
             //StringTokenizer tokens = StringTokenizer (resource);
             if (en.hasMoreElements()) {
                 String chldElem = (String)en.nextElement();
-                ResourceElement child = (ResourceElement)children.get(chldElem);
+                Resource child = (Resource)children.get(chldElem);
                 if (child == null)
-                    child = new ResourceElement(chldElem);
+                    child = new Resource(chldElem);
                 children.put (chldElem,child);
-                child.add (en);                
+                return child.add (en);                
+            } else {
+                return (Resource)this;
             }
         }
         ResourceElement[] getChildren () {
@@ -257,6 +280,14 @@ public class TestUtilHid {
         
         String getName () {
             return element;
+        }
+        
+        boolean isLeaf() {
+            return children.isEmpty();
+        }
+        
+        public void serialize(String path, String tab, PrintWriter pw, File baseFolder) throws IOException {
+            
         }
     }    
 
@@ -275,5 +306,90 @@ public class TestUtilHid {
             return status;
         }
         
+    }
+    
+    public static class Resource extends ResourceElement {
+        private Map<String, String> attributeTypes = new HashMap<String, String>();
+        private Map<String, String> attributeContents = new HashMap<String, String>();
+        private CharSequence fileContents = null;
+        private URL contentURL = null;
+        private boolean forceFolder;
+        
+        public Resource(String element) {
+            super(element);
+        }
+        
+        public Resource addAttribute(String name, String type, String valueContent) {
+            attributeTypes.put(name, type);
+            attributeContents.put(name, valueContent);
+            
+            return this;
+        }
+        
+        public Resource withContent(CharSequence seq) {
+            this.fileContents = seq;
+            
+            return this;
+        }
+        
+        public Resource withContentAt(URL contentURL) {
+            this.contentURL = contentURL;
+            return this;
+        }
+        
+        public Resource forceFolder() {
+            this.forceFolder = true;
+            return this;
+        }
+        
+        public boolean isLeaf() {
+            return !forceFolder && super.isLeaf();
+        }
+        
+        public void serialize(String path, String tab, PrintWriter pw, File baseFolder) throws IOException {
+            if (!getName().isEmpty()) {
+                String n = getName();
+                if (isLeaf()) {
+                    pw.print(tab+"<file name=\""+n + "\"");
+                } else {
+                    pw.print(tab+"<folder name=\""+n + "\"");
+                }
+                String urlVal = null;
+
+                if (fileContents != null) {
+                    urlVal = (path + getName()).replaceAll("/", "-");
+                    File f = new File(baseFolder, urlVal);
+                    FileWriter wr = new FileWriter(f);
+                    wr.append(fileContents);
+                    wr.close();
+                } else if (contentURL != null) {
+                    urlVal = contentURL.toExternalForm();
+                }
+                if (urlVal != null) {
+                    pw.print(" url=\"" + urlVal + "\"");
+                }
+                pw.print(">");
+
+                for (String s : attributeContents.keySet()) {
+                    pw.print("\n" + tab + "    <attr name=\"" + s + "\" " + 
+                            attributeTypes.get(s) + "=\"" + attributeContents.get(s) + "\"/>");
+                }
+                pw.println();
+            }
+            String newPath = path + getName();
+            if (!newPath.isEmpty()) {
+                newPath = newPath + "/";
+            }
+            for (ResourceElement res : children.values()) {
+                res.serialize(newPath, tab + "  ", pw, baseFolder);
+            }
+            if (!getName().isEmpty()) {
+                if (isLeaf()) {
+                    pw.println(tab+"</file>" );                            
+                } else {
+                    pw.println(tab+"</folder>" );            
+                }
+            }
+        }
     }
 }
