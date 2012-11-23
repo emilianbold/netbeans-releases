@@ -1475,17 +1475,36 @@ public class CppParserActionImpl implements CppParserActionEx {
     @Override public void block_declaration(Token token) {}
     @Override public void end_block_declaration(Token token) {}
     @Override public void id_expression(Token token) {
-        builderContext.push(new NameBuilder());
+        NameBuilder nameBuilder = new NameBuilder();
+        nameBuilder.setFile(currentContext.file);
+        nameBuilder.setStartOffset(((APTToken)token).getOffset());
+        builderContext.push(nameBuilder);
     }
     @Override public void end_id_expression(Token token) {
         NameBuilder nameBuilder = (NameBuilder)builderContext.top();
+        nameBuilder.setEndOffset(((APTToken)token).getEndOffset());
         builderContext.pop();
         if(builderContext.top() instanceof DeclaratorBuilder) {
             CharSequence name = nameBuilder.getName();
             DeclaratorBuilder declaratorBuilder = (DeclaratorBuilder) builderContext.top();        
             declaratorBuilder.setName(name);
             declaratorBuilder.setNameBuilder(nameBuilder);
-        }        
+        } else if (builderContext.top() instanceof NameBuilder) {
+            TypeBuilder typeBuilder = new TypeBuilder();
+            typeBuilder.setNameBuilder(nameBuilder);
+            typeBuilder.setFile(nameBuilder.getFile());
+            typeBuilder.setStartOffset(nameBuilder.getStartOffset());
+            typeBuilder.setEndOffset(nameBuilder.getEndOffset());
+            
+            TypeBasedSpecializationParameterBuilder paramBuilder = new TypeBasedSpecializationParameterBuilder();
+            paramBuilder.setTypeBuilder(typeBuilder);
+            paramBuilder.setFile(typeBuilder.getFile());
+            paramBuilder.setStartOffset(typeBuilder.getStartOffset());
+            paramBuilder.setEndOffset(typeBuilder.getEndOffset());
+
+            NameBuilder nameBuilder2 = (NameBuilder) builderContext.top();
+            nameBuilder2.addParameterBuilder(paramBuilder);
+        }
     }
     @Override public void alias_declaration(Token usingToken, Token identToken, Token assignequalToken) {}
     @Override public void end_alias_declaration(Token token) {}
@@ -1676,8 +1695,28 @@ public class CppParserActionImpl implements CppParserActionEx {
         }
     }
     
-    @Override public void type_id(Token token) {}
-    @Override public void end_type_id(Token token) {}
+    @Override public void type_id(Token token) {
+        TypeBuilder typeBuilder = new TypeBuilder();
+        typeBuilder.setFile(currentContext.file);
+        typeBuilder.setStartOffset(((APTToken)token).getOffset());
+        builderContext.push(typeBuilder);    
+    }
+    
+    @Override public void end_type_id(Token token) {
+        TypeBuilder typeBuilder = (TypeBuilder) builderContext.top();
+        typeBuilder.setEndOffset(((APTToken)token).getEndOffset());
+        builderContext.pop();
+        if (builderContext.top() instanceof NameBuilder) {
+            TypeBasedSpecializationParameterBuilder paramBuilder = new TypeBasedSpecializationParameterBuilder();
+            paramBuilder.setTypeBuilder(typeBuilder);
+            paramBuilder.setFile(typeBuilder.getFile());
+            paramBuilder.setStartOffset(typeBuilder.getStartOffset());
+            paramBuilder.setEndOffset(typeBuilder.getEndOffset());
+
+            NameBuilder nameBuilder2 = (NameBuilder) builderContext.top();
+            nameBuilder2.addParameterBuilder(paramBuilder);
+        }        
+    }
     
     @Override public void parameters_and_qualifiers(Token token) {}
     
