@@ -1048,7 +1048,7 @@ public class PHPBracketCompleter implements KeystrokeHandler {
             case ']':
             case '(':
             case '[':
-                if (!isInsertMatchingEnabled(doc)) {
+                if (!isInsertMatchingEnabled(doc) && ch != '{' && ch != '}') {
                     return false;
                 }
                 Token<? extends PHPTokenId> token = LexUtilities.getToken(doc, dotPos);

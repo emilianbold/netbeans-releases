@@ -272,7 +272,7 @@ public final class SystemUtils {
                         }
                     }
                     LogManager.log(ErrorLevel.MESSAGE, "[stdout]: " + line);
-                    endTime += MAX_EXECUTION_TIME;
+                    endTime = System.currentTimeMillis() + MAX_EXECUTION_TIME;
                 }
                 
                 processStdOut.append(string);
@@ -293,7 +293,7 @@ public final class SystemUtils {
                         }
                     }
                     LogManager.log(ErrorLevel.MESSAGE, "[stderr]: " + line);
-                    endTime += MAX_EXECUTION_TIME;
+                    endTime = System.currentTimeMillis() + MAX_EXECUTION_TIME;
                 }
                 
                 processStdErr.append(string);
@@ -614,7 +614,7 @@ public final class SystemUtils {
     
     /////////////////////////////////////////////////////////////////////////////////
     // Constants
-    public static final long MAX_EXECUTION_TIME = 600000;
+    public static final long MAX_EXECUTION_TIME = 10 * 60 * 1000;
     
     public static final int MAX_DELAY = 50; // NOMAGI
     public static final int INITIAL_DELAY = 5; // NOMAGI

@@ -275,7 +275,17 @@ public class CssCompletionTest extends CssModuleTestBase {
     
     //http://netbeans.org/bugzilla/show_bug.cgi?id=221349
     public void testNoCompletionAfterImport() throws ParseException, BadLocationException {
-        checkCC("@import \"s1.css\"; |  root { display: block;}", arr("body"), Match.CONTAINS);
+        checkCC("@import \"s1.css\"; |  root { display: block;}", arr("body"), Match.CONTAINS_ONCE);
+        
+    }
+    
+    //http://netbeans.org/bugzilla/show_bug.cgi?id=221461
+    //doubled items between rule w/o prefix
+    public void testDoubledItemsBetweenRulesWithoutPrefix() throws ParseException, BadLocationException {
+        //this works already (w/ prefix)
+        checkCC("root { } bo| .x {  }", arr("body"), Match.CONTAINS_ONCE);
+        //this doesn't
+        checkCC("root { } | .x {  }", arr("body"), Match.CONTAINS_ONCE);
         
     }
     
