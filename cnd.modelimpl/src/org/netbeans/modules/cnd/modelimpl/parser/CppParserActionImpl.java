@@ -2065,9 +2065,9 @@ public class CppParserActionImpl implements CppParserActionEx {
     @Override public void explicit_instantiation(int kind, Token token) {}
     @Override public void end_explicit_instantiation(Token token) {}
     @Override public void explicit_specialization(Token templateToken, Token lessthenToken, Token greaterthenToken) {
-        if(builderContext.top() instanceof TemplateDescriptorBuilder) {
-            builderContext.pop();
-        }        
+        TemplateDescriptorBuilder builder = new TemplateDescriptorBuilder();
+        builder.setStartOffset(((APTToken)templateToken).getOffset());
+        builderContext.push(builder);
     }
     @Override public void end_explicit_specialization(Token token) {}
     @Override public void try_block(Token token) {}
@@ -2088,7 +2088,7 @@ public class CppParserActionImpl implements CppParserActionEx {
     public void end_assignment_expression(Token token) {
         end_expression(token);
     }
-
+    
     @Override
     public void expression(Token token) {
         if(!(builderContext.top() instanceof ExpressionBuilder)) {
