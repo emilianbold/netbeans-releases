@@ -236,7 +236,40 @@ public class ModelUtils {
         return new OffsetRange(lStart, lEnd);
     }
     
+    /**
+     * Returns all variables that are available in the scope
+     * @param inScope
+     * @return 
+     */
+    public static Collection<? extends JsObject> getVariables(DeclarationScope inScope) {
+        List<JsObject> result = new ArrayList<JsObject>();
+        while (inScope != null) {
+            for (JsObject object : ((JsObject)inScope).getProperties().values()) {
+                result.add(object);
+            }
+            for (JsObject object : ((JsFunction)inScope).getParameters()) {
+                result.add(object);
+            }
+            inScope = inScope.getInScope();
+        }
+        return result;
+    }
     
+
+    public static Collection<? extends JsObject> getVariables(Model model, int offset) {
+        DeclarationScope scope = ModelUtils.getDeclarationScope(model, offset);
+        return  getVariables(scope);
+    }
+    
+    public static JsObject getJsObjectByName(DeclarationScope inScope, String simpleName) {
+        Collection<? extends JsObject> variables = ModelUtils.getVariables(inScope);
+        for (JsObject jsObject : variables) {
+            if (simpleName.equals(jsObject.getName())) {
+                return jsObject;
+            }
+        }
+        return null;
+    }
     private static final Collection<JsTokenId> CTX_DELIMITERS = Arrays.asList(
             JsTokenId.BRACKET_LEFT_CURLY, JsTokenId.BRACKET_RIGHT_CURLY,
             JsTokenId.OPERATOR_SEMICOLON);

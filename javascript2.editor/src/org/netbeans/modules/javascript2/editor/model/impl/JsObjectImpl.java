@@ -314,7 +314,8 @@ public class JsObjectImpl extends JsElementImpl implements JsObject {
                     if(assign.isResolved()) {
                         result.add(assign);
                     } else {
-                        JsObject object = ModelUtils.findJsObjectByName(ModelUtils.getGlobalObject(jsObject), assign.getType());
+                        DeclarationScope scope = ModelUtils.getDeclarationScope(jsObject);
+                        JsObject object = ModelUtils.getJsObjectByName(scope, assign.getType());
                         if(object != null) {
                             Collection<TypeUsage> resolvedFromObject = resolveAssignments(object, closeOffset, visited);
                             if(resolvedFromObject.isEmpty()) {
