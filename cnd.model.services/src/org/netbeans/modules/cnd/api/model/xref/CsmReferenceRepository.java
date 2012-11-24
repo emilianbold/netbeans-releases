@@ -80,7 +80,7 @@ public abstract class CsmReferenceRepository {
         return defaultRepository == null ? EMPTY : defaultRepository;
     }
     
-    public abstract Collection<CsmFile> findRelevantFiles(CsmProject project, CharSequence id);
+    public abstract Collection<CsmFile> findRelevantFiles(Collection<CsmProject> projects, CharSequence id);
     
     /**
      * look for references of target object in project
@@ -153,7 +153,7 @@ public abstract class CsmReferenceRepository {
         }
 
         @Override
-        public Collection<CsmFile> findRelevantFiles(CsmProject project, CharSequence id) {
+        public Collection<CsmFile> findRelevantFiles(Collection<CsmProject> projects, CharSequence id) {
             return Collections.emptyList();
         }
     }    

@@ -82,7 +82,7 @@ public class ClassImplSpecialization extends ClassImpl implements CsmTemplate {
     }
 
     protected ClassImplSpecialization(NameHolder name, CsmDeclaration.Kind kind, CsmFile file, int start, int end) {
-        super(name, kind, file, start, end);
+        super(name, kind, start, file, start, end);
     }
     
     @Override
@@ -206,6 +206,13 @@ public class ClassImplSpecialization extends ClassImpl implements CsmTemplate {
         
         private ClassImplSpecialization instance;
 
+        public ClassSpecializationBuilder() {
+        }
+        
+        public ClassSpecializationBuilder(ClassBuilder classBuilder) {
+            super(classBuilder);
+        }
+
         public void setSpecializationDescriptorBuilder(SpecializationDescriptorBuilder specializationDescriptorBuilder) {
             this.specializationDescriptorBuilder = specializationDescriptorBuilder;
         }
@@ -246,7 +253,19 @@ public class ClassImplSpecialization extends ClassImpl implements CsmTemplate {
             if (cls == null && s != null && getName() != null && getEndOffset() != 0) {
                 instance = cls = new ClassImplSpecialization(getNameHolder(), getKind(), getFile(), getStartOffset(), getEndOffset());
                 try {
-                    cls.init2(getSpecializationDescriptor(), NameCache.getManager().getString(CharSequences.create("")), s, getFile(), getFileContent(), isGlobal()); // NOI18N
+                    StringBuilder sb = new StringBuilder();
+                    sb.append("<"); // NOI18N
+                    boolean first = true;
+                    for (CsmSpecializationParameter param : getSpecializationDescriptor().getSpecializationParameters()) {
+                        if(!first) {
+                            sb.append(","); // NOI18N
+                        }
+                        sb.append(param.getText()); // NOI18N
+                        first = false;
+                    }
+                    sb.append(">"); // NOI18N
+                    
+                    cls.init2(getSpecializationDescriptor(), NameCache.getManager().getString(CharSequences.create(sb.toString())), s, getFile(), getFileContent(), isGlobal()); // NOI18N
                 } catch (AstRendererException ex) {
                     Exceptions.printStackTrace(ex);
                 }
