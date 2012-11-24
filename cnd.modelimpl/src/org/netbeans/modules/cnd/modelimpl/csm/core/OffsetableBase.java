@@ -266,7 +266,17 @@ public abstract class OffsetableBase implements CsmOffsetable, Disposable, CsmVa
         private FileContent fileContent;
         private int startOffset;
         private int endOffset;
-     
+
+        public OffsetableBuilder() {
+        }
+
+        protected OffsetableBuilder(OffsetableBuilder builder) {
+            file = builder.file;
+            fileContent = builder.fileContent;
+            startOffset = builder.startOffset;
+            endOffset = builder.endOffset;
+        }
+        
         public void setFile(CsmFile file) {
             this.file = file;
             this.fileContent = ((FileImpl)file).getParsingFileContent();

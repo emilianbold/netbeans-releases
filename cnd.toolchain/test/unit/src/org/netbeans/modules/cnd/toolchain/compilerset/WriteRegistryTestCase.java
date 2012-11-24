@@ -46,6 +46,7 @@ package org.netbeans.modules.cnd.toolchain.compilerset;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
@@ -53,6 +54,7 @@ import java.util.List;
 import java.util.Map;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.cnd.api.toolchain.ToolchainManager.ToolchainDescriptor;
+import org.openide.util.NbPreferences;
 
 
 /**
@@ -60,6 +62,7 @@ import org.netbeans.modules.cnd.api.toolchain.ToolchainManager.ToolchainDescript
  * @author Alexander Simon
  */
 public class WriteRegistryTestCase extends NbTestCase {
+    private static final boolean TRACE = false;
     
     public WriteRegistryTestCase(String testName) {
         super(testName);
@@ -67,6 +70,8 @@ public class WriteRegistryTestCase extends NbTestCase {
 
     @Override
     protected void setUp() throws Exception {
+        System.setProperty("cnd.toolchain.personality.create_shadow","true");
+        NbPreferences.forModule(ToolchainManagerImpl.class).putBoolean(ToolchainManagerImpl.SHADOW_KEY, false);
         super.setUp();
     }
 
@@ -85,11 +90,25 @@ public class WriteRegistryTestCase extends NbTestCase {
         ToolchainManagerImpl.getImpl().reinitToolchainManager();
         List<ToolchainDescriptor> restored = ToolchainManagerImpl.getImpl().getAllToolchains();
         for(int i = 0; i < original.size(); i++) {
-           assertTrue("Tool chain "+original.get(i)+" not equals "+restored.get(i), deepObjectComparing(original.get(i),restored.get(i),null));
+            if (TRACE) {
+                System.out.println("Tool collection "+original.get(i));
+            }
+           assertTrue("Tool chain "+original.get(i)+" not equals "+restored.get(i), deepObjectComparing(0, original.get(i),restored.get(i),null));
         }
     }
 
-    private boolean deepObjectComparing(Object original, Object restored, Field container){
+    private String wrap(int level) {
+        StringBuilder buf = new StringBuilder();
+        for(int i = 0; i < level; i++) {
+            buf.append('\t');
+        }
+        return buf.toString();
+    }
+    
+    private boolean deepObjectComparing(int level, Object original, Object restored, Field container){
+        if (TRACE) {
+            System.out.println(wrap(level)+original);
+        }
         if (!original.getClass().equals(restored.getClass())){
             System.out.println("Class "+original.getClass()+" not equals "+restored.getClass());
             return false;
@@ -99,31 +118,40 @@ public class WriteRegistryTestCase extends NbTestCase {
                 System.out.println("String fields "+container.getName()+" in class "+container.getDeclaringClass()+" not equal: "+original+" != "+restored);
                 return false;
             }
+            return true;
         } else if (original instanceof Boolean) {
             if (!original.equals(restored)){
                 System.out.println("Boolean fields "+container.getName()+" in class "+container.getDeclaringClass()+" not equal: "+original+" != "+restored);
                 return false;
             }
+            return true;
         } else if (original instanceof Integer) {
             if (!original.equals(restored)){
                 System.out.println("Integer fields "+container.getName()+" in class "+container.getDeclaringClass()+" not equal: "+original+" != "+restored);
                 return false;
             }
+            return true;
         } else if (original instanceof String[]) {
             if (!Arrays.equals((String[])original, (String[])restored)){
                 System.out.println("String[] fields "+container.getName()+" in class "+container.getDeclaringClass()+" not equal:\n\t"+
                         Arrays.toString((String[])original)+"\n\t"+Arrays.toString((String[])restored));
                 return false;
             }
+            return true;
         }
-        Field[] fields = original.getClass().getDeclaredFields();
-        for (int i = 0; i < fields.length; i++){
+        List<Field> list = new ArrayList<Field>();
+        list.addAll(Arrays.asList(original.getClass().getDeclaredFields()));
+        Class<? extends Object> superclass = original.getClass().getSuperclass();
+        if (superclass != null && !"java.lang.Object".equals(superclass.getName())) {
+            list.addAll(Arrays.asList(superclass.getDeclaredFields()));
+        }
+        for (Field field : list){
             try {
-                if ((fields[i].getModifiers() & (Modifier.PROTECTED | Modifier.PRIVATE | Modifier.STATIC)) != 0) {
+                if ((field.getModifiers() & (Modifier.PROTECTED | Modifier.PRIVATE | Modifier.STATIC)) != 0) {
                     continue;
                 }
-                Object o1 = fields[i].get(original);
-                Object o2 = fields[i].get(restored);
+                Object o1 = field.get(original);
+                Object o2 = field.get(restored);
                 if (o1 instanceof ToolchainManagerImpl.Compiler){
                      if (!((ToolchainManagerImpl.Compiler)o1).isValid() && !((ToolchainManagerImpl.Compiler)o1).isValid()){
                          continue;
@@ -133,30 +161,33 @@ public class WriteRegistryTestCase extends NbTestCase {
                     // both objects have null references
                     continue;
                 } else if (o1 != null && o2 == null) {
-                    System.out.println("Fields "+fields[i].getName()+" in class "+original.getClass()+" not equal: o1 != null && o2 == null");
+                    System.out.println("Fields "+field.getName()+" in class "+original.getClass()+" not equal: o1 != null && o2 == null o1 = " + o1);
                     return false;
                 } else if (o1 == null && o2 != null) {
-                    System.out.println("Fields "+fields[i].getName()+" in class "+original.getClass()+" not equal: o1 == null && o2 != null");
+                    System.out.println("Fields "+field.getName()+" in class "+original.getClass()+" not equal: o1 == null && o2 != null o2 = " + o2);
                     return false;
+                }
+                if (TRACE) {
+                    System.out.println(wrap(level)+o1);
                 }
                 if (o1 instanceof String) {
                     if (!o1.equals(o2)){
-                        System.out.println("String fields "+fields[i].getName()+" in class "+original.getClass()+" not equal: "+o1+" != "+o2);
+                        System.out.println("String fields "+field.getName()+" in class "+original.getClass()+" not equal: "+o1+" != "+o2);
                         return false;
                     }
                 } else if (o1 instanceof Boolean) {
                     if (!o1.equals(o2)){
-                        System.out.println("Boolean fields "+fields[i].getName()+" in class "+original.getClass()+" not equal: "+o1+" != "+o2);
+                        System.out.println("Boolean fields "+field.getName()+" in class "+original.getClass()+" not equal: "+o1+" != "+o2);
                         return false;
                     }
                 } else if (o1 instanceof Integer) {
                     if (!o1.equals(o2)){
-                        System.out.println("Integer fields "+fields[i].getName()+" in class "+original.getClass()+" not equal: "+o1+" != "+o2);
+                        System.out.println("Integer fields "+field.getName()+" in class "+original.getClass()+" not equal: "+o1+" != "+o2);
                         return false;
                     }
                 } else if (o1 instanceof String[]) {
                     if (!Arrays.equals((String[])o1, (String[])o2)){
-                        System.out.println("String[] fields "+fields[i].getName()+" in class "+original.getClass()+" not equal:\n\t"+
+                        System.out.println("String[] fields "+field.getName()+" in class "+original.getClass()+" not equal:\n\t"+
                                 Arrays.toString((String[])o1)+"\n\t"+Arrays.toString((String[])o2));
                         return false;
                     }
@@ -164,7 +195,7 @@ public class WriteRegistryTestCase extends NbTestCase {
                     Map m1 = (Map)o1;
                     Map m2 = (Map)o2;
                     if (!m1.equals(m2)){
-                        System.out.println("Map fields "+fields[i].getName()+" in class "+original.getClass()+" not equal:\n\t"+
+                        System.out.println("Map fields "+field.getName()+" in class "+original.getClass()+" not equal:\n\t"+
                                 m1+"\n\t"+m2);
                         return false;
                     }
@@ -172,25 +203,24 @@ public class WriteRegistryTestCase extends NbTestCase {
                     Iterator i1 = ((Collection)o1).iterator();
                     Iterator i2 = ((Collection)o2).iterator();
                     while(i1.hasNext() && i2.hasNext()) {
-                        if (!deepObjectComparing(i1.next(), i2.next(), fields[i])){
+                        if (!deepObjectComparing(level + 1, i1.next(), i2.next(), field)){
                             return false;
                         }
                     }
                     if (i1.hasNext() || i2.hasNext()){
-                        System.out.println("Collection fields "+fields[i].getName()+" in class "+original.getClass()+" not equal:\n\t"+
+                        System.out.println("Collection fields "+field.getName()+" in class "+original.getClass()+" not equal:\n\t"+
                                 o1+"\n\t"+o2);
                         return false;
                     }
                 } else {
-                    if (!deepObjectComparing(o1, o2, fields[i])){
+                    if (!deepObjectComparing(level + 1, o1, o2, field)){
                         return false;
                     }
                 }
-            } catch (IllegalArgumentException ex) {
-                ex.printStackTrace();
-                return false;
             } catch (IllegalAccessException ex) {
-                ex.printStackTrace();
+                ex.printStackTrace(System.err);
+            } catch (IllegalArgumentException ex) {
+                ex.printStackTrace(System.err);
                 return false;
             }
         }

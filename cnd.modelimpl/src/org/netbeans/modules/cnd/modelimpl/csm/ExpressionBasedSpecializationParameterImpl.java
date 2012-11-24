@@ -101,7 +101,7 @@ public final class ExpressionBasedSpecializationParameterImpl extends Offsetable
         return expression.toString();
     }
 
-    public static class TypeBasedSpecializationParameterBuilder extends SpecializationParameterBuilder {
+    public static class ExpressionBasedSpecializationParameterBuilder extends SpecializationParameterBuilder {
 
         ExpressionBuilder expression;
 
