@@ -160,7 +160,7 @@ public class JsFunctionImpl extends DeclarationScopeImpl implements JsFunction {
              if (((TypeUsageImpl)type).isResolved()) {
                 returns.add(type);
             } else {
-                 JsObject jsObject = ModelUtils.findJsObjectByName(ModelUtils.getGlobalObject(this), type.getType());
+                 JsObject jsObject = ModelUtils.getJsObjectByName(this,type.getType());
                  if(jsObject != null) {
                      returns.addAll(resolveAssignments(jsObject, type.getOffset()));
                  }
