@@ -13,11 +13,17 @@
     "_Cancel": {
         "message": "Cancel"
     },
+    "_Reset": {
+        "message": "Reset"
+    },
     "_New": {
         "message": "New"
     },
     "_Remove": {
         "message": "Remove"
+    },
+    "_Done": {
+        "message": "Done"
     },
     "_More_hellip": {
         "message": "More..."
@@ -124,6 +130,12 @@
     },
     "_Help_FinalStep": {
         "message": "Click OK to save your changes and close this tab."
+    },
+    "_Warnings": {
+        "message": "Warnings"
+    },
+    "_ResetAllWarningDialogs": {
+        "message": "Reset all warning dialogs"
     },
 
 

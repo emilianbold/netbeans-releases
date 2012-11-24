@@ -87,11 +87,6 @@ public class JQueryCodeCompletion {
         switch (jsCompletionContext) {
             case GLOBAL:
             case EXPRESSION:
-                if (JQueryUtils.isInJQuerySelector(parserResult, lastTsOffset)) {
-                    addSelectors(result, parserResult, prefix, lastTsOffset);
-                }
-                break;
-            // can be for the dot in selectors - (.|)
             case OBJECT_PROPERTY:
                 if (JQueryUtils.isInJQuerySelector(parserResult, lastTsOffset)) {
                     addSelectors(result, parserResult, prefix, lastTsOffset);
@@ -177,10 +172,6 @@ public class JQueryCodeCompletion {
             }
         }
         return null;
-    }
-
-    private static int getNearestAnchor(CharSequence text) {
-        return CharSequenceUtilities.lastIndexOf(text, " ") + 1; //NOI18N
     }
 
     private enum SelectorKind {
@@ -307,12 +298,6 @@ public class JQueryCodeCompletion {
         String wrapup = ""; //NOI18N
         String prefixText = prefix;
         int anchorOffsetDelta = 0;
-        if (ts.token().id() == JsTokenId.STRING) {
-            anchorOffsetDelta = getNearestAnchor(ts.token().text());
-            if (anchorOffsetDelta < 0) {
-                anchorOffsetDelta = 0;
-            }
-        }
 //        if (!(ts.token().id() == JsTokenId.STRING || ts.token().id() == JsTokenId.STRING_END || ts.token().id() == JsTokenId.STRING_BEGIN)) {
 //            wrapup = "'"; //NOI18N
 //            if (ts.token().id() == JsTokenId.IDENTIFIER) {

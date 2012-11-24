@@ -236,7 +236,40 @@ public class ModelUtils {
         return new OffsetRange(lStart, lEnd);
     }
     
+    /**
+     * Returns all variables that are available in the scope
+     * @param inScope
+     * @return 
+     */
+    public static Collection<? extends JsObject> getVariables(DeclarationScope inScope) {
+        List<JsObject> result = new ArrayList<JsObject>();
+        while (inScope != null) {
+            for (JsObject object : ((JsObject)inScope).getProperties().values()) {
+                result.add(object);
+            }
+            for (JsObject object : ((JsFunction)inScope).getParameters()) {
+                result.add(object);
+            }
+            inScope = inScope.getInScope();
+        }
+        return result;
+    }
     
+
+    public static Collection<? extends JsObject> getVariables(Model model, int offset) {
+        DeclarationScope scope = ModelUtils.getDeclarationScope(model, offset);
+        return  getVariables(scope);
+    }
+    
+    public static JsObject getJsObjectByName(DeclarationScope inScope, String simpleName) {
+        Collection<? extends JsObject> variables = ModelUtils.getVariables(inScope);
+        for (JsObject jsObject : variables) {
+            if (simpleName.equals(jsObject.getName())) {
+                return jsObject;
+            }
+        }
+        return null;
+    }
     private static final Collection<JsTokenId> CTX_DELIMITERS = Arrays.asList(
             JsTokenId.BRACKET_LEFT_CURLY, JsTokenId.BRACKET_RIGHT_CURLY,
             JsTokenId.OPERATOR_SEMICOLON);
@@ -280,9 +313,9 @@ public class ModelUtils {
     public static Collection<TypeUsage> resolveSemiTypeOfExpression(JsParserResult parserResult, Node expression) {
         SemiTypeResolverVisitor visitor = new SemiTypeResolverVisitor(parserResult);
         if (expression != null) {
-            if (expression instanceof BinaryNode) {
-                expression = ((BinaryNode)expression).lhs();
-            }
+//            if (expression instanceof BinaryNode) {
+//                expression = ((BinaryNode)expression).lhs();
+//            }
             expression.accept(visitor);
             return visitor.getSemiTypes();
         }
@@ -470,11 +503,13 @@ public class ModelUtils {
                         // Add global variables from index
                         Collection<IndexedElement> globalVars = jsIndex.getGlobalVar(name);
                         for (IndexedElement globalVar : globalVars) {
-                            Collection<TypeUsage> assignments = globalVar.getAssignments();
-                            if (assignments.isEmpty()) {
-                                lastResolvedTypes.add(new TypeUsageImpl(name, -1, true));
-                            } else {
-                                lastResolvedTypes.addAll(assignments);
+                            if(name.equals(globalVar.getName())) {
+                                Collection<TypeUsage> assignments = globalVar.getAssignments();
+                                if (assignments.isEmpty()) {
+                                    lastResolvedTypes.add(new TypeUsageImpl(name, -1, true));
+                                } else {
+                                    lastResolvedTypes.addAll(assignments);
+                                }
                             }
                         }
                     }
@@ -741,6 +776,7 @@ public class ModelUtils {
 
         @Override
         public Node enter(CallNode callNode) {
+            super.enter(callNode);
             if (callNode.getFunction() instanceof ReferenceNode) {
                 FunctionNode function = (FunctionNode)((ReferenceNode)callNode.getFunction()).getReference();
                 String name = function.getIdent().getName();
@@ -764,6 +800,18 @@ public class ModelUtils {
                     result.add(new TypeUsageImpl("@this", LexUtilities.getLexerOffset(parserResult, iNode.getStart()), false));                //NOI18N
                 } else {
                     result.add(new TypeUsageImpl("@var;" + iNode.getName(), LexUtilities.getLexerOffset(parserResult, iNode.getStart()), false));
+                }
+            } else {
+                Node lastNode = getPath().get(getPath().size() - 1);
+                if (lastNode instanceof CallNode) {
+                    sb.append(iNode.getName());
+                    result.add(new TypeUsageImpl(sb.toString(), LexUtilities.getLexerOffset(parserResult, iNode.getStart()), false));
+                } else {
+                    if (iNode.getName().equals("this")) {   //NOI18N
+                        result.add(new TypeUsageImpl("@this", LexUtilities.getLexerOffset(parserResult, iNode.getStart()), false));                //NOI18N
+                    } else {
+                        result.add(new TypeUsageImpl("@var;" + iNode.getName(), LexUtilities.getLexerOffset(parserResult, iNode.getStart()), false));
+                    }
                 }
             }
             return null;

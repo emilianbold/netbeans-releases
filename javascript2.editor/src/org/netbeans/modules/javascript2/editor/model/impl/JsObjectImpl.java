@@ -314,7 +314,8 @@ public class JsObjectImpl extends JsElementImpl implements JsObject {
                     if(assign.isResolved()) {
                         result.add(assign);
                     } else {
-                        JsObject object = ModelUtils.findJsObjectByName(ModelUtils.getGlobalObject(jsObject), assign.getType());
+                        DeclarationScope scope = ModelUtils.getDeclarationScope(jsObject);
+                        JsObject object = ModelUtils.getJsObjectByName(scope, assign.getType());
                         if(object != null) {
                             Collection<TypeUsage> resolvedFromObject = resolveAssignments(object, closeOffset, visited);
                             if(resolvedFromObject.isEmpty()) {
@@ -375,13 +376,13 @@ public class JsObjectImpl extends JsElementImpl implements JsObject {
             List<Occurrence> correctedOccurrences = new ArrayList<Occurrence>();
 
             JsObjectImpl obAssignment = findRightTypeAssignment(getDeclarationName().getOffsetRange().getStart(), global);
-            if(obAssignment != null) {
+            if(obAssignment != null && !obAssignment.getModifiers().contains(Modifier.PRIVATE)) {
                 obAssignment.addOccurrence(getDeclarationName().getOffsetRange());
             }
             
             for(Occurrence occurrence: new ArrayList<Occurrence>(occurrences)) {
                 obAssignment = findRightTypeAssignment(occurrence.getOffsetRange().getStart(), global);
-                if(obAssignment != null) {
+                if(obAssignment != null && !obAssignment.getModifiers().contains(Modifier.PRIVATE)) {
                     obAssignment.addOccurrence(occurrence.getOffsetRange());
                 } else {
                     correctedOccurrences.add(occurrence);
@@ -405,14 +406,17 @@ public class JsObjectImpl extends JsElementImpl implements JsObject {
             return;
         }
         for(JsObject origProperty : original.getProperties().values()) {
-            JsObjectImpl usedProperty = (JsObjectImpl)created.getProperty(origProperty.getName());
-            if (usedProperty != null) {
-                ((JsObjectImpl)origProperty).addOccurrence(usedProperty.getDeclarationName().getOffsetRange());
-                for(Occurrence occur : usedProperty.getOccurrences()) {
-                    ((JsObjectImpl)origProperty).addOccurrence(occur.getOffsetRange());
+            if(origProperty.getModifiers().contains(Modifier.PUBLIC)
+                    || origProperty.getModifiers().contains(Modifier.PROTECTED)) {
+                JsObjectImpl usedProperty = (JsObjectImpl)created.getProperty(origProperty.getName());
+                if (usedProperty != null) {
+                    ((JsObjectImpl)origProperty).addOccurrence(usedProperty.getDeclarationName().getOffsetRange());
+                    for(Occurrence occur : usedProperty.getOccurrences()) {
+                        ((JsObjectImpl)origProperty).addOccurrence(occur.getOffsetRange());
+                    }
+                    usedProperty.clearOccurrences();
+                    moveOccurrenceOfProperties((JsObjectImpl)origProperty, usedProperty);
                 }
-                usedProperty.clearOccurrences();
-                moveOccurrenceOfProperties((JsObjectImpl)origProperty, usedProperty);
             }
         }
         JsObject prototype = original.getProperty("prototype");

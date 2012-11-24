@@ -493,7 +493,7 @@ public class ModelVisitor extends PathNodeVisitor {
 
         if (fncScope != null) {
             // check parameters and return types of the function.
-            JsDocumentationHolder docHolder = parserResult.getDocumentationHolder();
+             JsDocumentationHolder docHolder = parserResult.getDocumentationHolder();
             List<Type> types = docHolder.getReturnType(functionNode);
             if (types != null && !types.isEmpty()) {
                 for(Type type : types) {
