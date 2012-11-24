@@ -196,6 +196,10 @@ public class JsCodeCompletionGeneralTest extends JsCodeComplationBase {
     public void testIssue215764_01() throws Exception {
         checkCompletion("testfiles/completion/general/issue215764.js", "e215764.get^Date();", false);
     }
+    
+    public void testIssue222601_01() throws Exception {
+        checkCompletion("testfiles/completion/general/issue222601.js", "b222601.get^Date()", false);
+    }
 
     @Override
     protected Map<String, ClassPath> createClassPathsForTest() {

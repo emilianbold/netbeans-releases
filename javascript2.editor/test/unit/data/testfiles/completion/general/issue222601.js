@@ -17,5 +17,7 @@ function f222650_3() {
     return b + "test";
 }
 
+var b222601 = f222650_2();
+b222601.getDate();
 
 
