@@ -139,13 +139,37 @@ public class CasualDiff {
         td.oldTopLevel =  (JCCompilationUnit) (oldTree.getKind() == Kind.COMPILATION_UNIT ? oldTree : diffContext.origUnit);
 
         for (Tree t : oldTreePath) {
-            if (t != oldTree && (TreeUtilities.CLASS_TREE_KINDS.contains(t.getKind()) || t.getKind() == Kind.BLOCK)) {
+            if (t == oldTree) continue;
+            
+            List<? extends Tree> embeddedElements;
+            
+            if (TreeUtilities.CLASS_TREE_KINDS.contains(t.getKind())) {
+                embeddedElements = ((ClassTree) t).getMembers();
+            } else if (t.getKind() == Kind.BLOCK) {
+                embeddedElements = ((BlockTree) t).getStatements();
+            } else {
+                continue;
+            }
+            
+            embeddedElements = td.filterHidden(NbCollections.checkedListByCopy(embeddedElements, JCTree.class, false));
+            
+            if (embeddedElements.isEmpty()) {
                 int indent = getOldIndent(diffContext, t);
+
                 if (indent < 0) {
                     td.printer.indent();
                 } else {
                     td.printer.setIndent(indent);
                     td.printer.indent();
+                    break;
+                }
+            } else {
+                int indent = getOldIndent(diffContext, embeddedElements.get(0));
+
+                if (indent < 0) {
+                    td.printer.indent();
+                } else {
+                    td.printer.setIndent(indent);
                     break;
                 }
             }
@@ -290,14 +314,28 @@ public class CasualDiff {
     }
     
     private static int getOldIndent(DiffContext diffContext, Tree t) {
-        if (diffContext.doc != null) {
-            try {
-                int offset = (int) diffContext.trees.getSourcePositions().getStartPosition(diffContext.origUnit, t);
-                int lineStartOffset = IndentUtils.lineStartOffset(diffContext.doc, offset);
-                return IndentUtils.lineIndent(diffContext.doc, lineStartOffset);
-            } catch (BadLocationException ex) {}
+        int offset = (int) diffContext.trees.getSourcePositions().getStartPosition(diffContext.origUnit, t);
+        
+        if (offset < 0) return -1;
+        
+        while (offset > 0 && diffContext.origText.charAt(offset - 1) != '\n')
+            offset--;
+        
+        int indent = 0;
+        
+        while (offset < diffContext.origText.length()) {
+            char c = diffContext.origText.charAt(offset++);
+            
+            if (c == '\t') {
+                indent += diffContext.style.getTabSize();
+            } else if (c == '\n' || !Character.isWhitespace(c)) {
+                break;
+            } else {
+                indent++;
+            }
         }
-        return -1;
+        
+        return indent;
     }
 
     private static enum ChangeKind {
