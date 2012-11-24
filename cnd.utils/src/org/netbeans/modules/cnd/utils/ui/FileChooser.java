@@ -44,11 +44,16 @@
 package org.netbeans.modules.cnd.utils.ui;
 
 import java.awt.Component;
+import java.awt.FileDialog;
+import java.awt.Frame;
+import java.awt.HeadlessException;
 import java.io.File;
 import java.util.prefs.Preferences;
 import javax.swing.JFileChooser;
+import javax.swing.SwingUtilities;
 import javax.swing.filechooser.FileFilter;
 import org.openide.util.NbPreferences;
+import org.openide.util.Utilities;
 
 public class FileChooser extends JFileChooser {
 
@@ -133,6 +138,66 @@ public class FileChooser extends JFileChooser {
         return res;
     }
 
+    /** 
+     * See bz#82821 for more details,
+     * C/C++ file choosers do no respect nb.native.filechooser
+     * now it will be supported  for local case, in remote case we will show file chooser 
+     * in currently used L&F
+     * 
+     */ 
+    @Override
+    public int showDialog(Component parent, String approveButtonText) throws HeadlessException {
+        if (Boolean.getBoolean("nb.native.filechooser")) { //NOI18N
+            FileDialog fileDialog = createFileDialog(parent, getCurrentDirectory());
+            if (null != fileDialog) {
+                return showFileDialog(fileDialog, FileDialog.LOAD);
+            }
+        }
+        return super.showDialog(parent, approveButtonText);
+    }
+
+    private FileDialog createFileDialog(Component parentComponent, File currentDirectory) {
+        boolean dirsOnly = getFileSelectionMode() == DIRECTORIES_ONLY;
+        if (!Boolean.getBoolean("nb.native.filechooser")) { //NOI18N
+            return null;
+        }
+        if (dirsOnly && !Utilities.isMac()) {
+            return null;
+        }
+        Frame parentFrame = (Frame) SwingUtilities.getAncestorOfClass(Frame.class, parentComponent);
+        FileDialog fileDialog = new FileDialog(parentFrame);
+        String dialogTitle = getDialogTitle();
+        if (dialogTitle != null) {
+            fileDialog.setTitle(dialogTitle);
+        }
+        if (null != currentDirectory) {
+            fileDialog.setDirectory(currentDirectory.getAbsolutePath());
+        }
+        return fileDialog;
+    }
+
+    public int showFileDialog(FileDialog fileDialog, int mode) {
+        String oldFileDialogProp = System.getProperty("apple.awt.fileDialogForDirectories"); //NOI18N
+        boolean dirsOnly = getFileSelectionMode() == DIRECTORIES_ONLY;
+        if (dirsOnly) {
+            System.setProperty("apple.awt.fileDialogForDirectories", "true"); //NOI18N
+        }
+        fileDialog.setMode(mode);
+        fileDialog.setVisible(true);
+        if (dirsOnly) {
+            if (null != oldFileDialogProp) {
+                System.setProperty("apple.awt.fileDialogForDirectories", oldFileDialogProp); //NOI18N
+            } else {
+                System.clearProperty("apple.awt.fileDialogForDirectories"); //NOI18N
+            }
+        }
+        if (fileDialog.getDirectory() != null && fileDialog.getFile() != null) {
+            setSelectedFile(new File(fileDialog.getDirectory(), fileDialog.getFile()));
+            setSelectedFiles(new File[]{new File(fileDialog.getDirectory(), fileDialog.getFile())});            
+            return JFileChooser.APPROVE_OPTION;
+        }
+        return JFileChooser.CANCEL_OPTION;
+    }
 
     @Override
     public int showOpenDialog(Component parent) {
