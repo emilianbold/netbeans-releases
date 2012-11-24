@@ -91,7 +91,8 @@ public final class SQLExecuteHelper {
         
         boolean cancelled = false;
         
-        List<StatementInfo> statements = getStatements(sqlScript, startOffset, endOffset);
+        List<StatementInfo> statements = getStatements(sqlScript, startOffset, endOffset,
+                conn.getDriverClass().contains("mysql"));               //NOI18N
         
         List<SQLExecutionResult> results = new ArrayList<SQLExecutionResult>();
         long totalExecutionTime = 0;
@@ -159,10 +160,11 @@ public final class SQLExecuteHelper {
         }
     }
     
-    private static List<StatementInfo> getStatements(String script, int startOffset, int endOffset) {
+    private static List<StatementInfo> getStatements(String script, int startOffset, int endOffset,
+            boolean useHashComments) {
         if ((startOffset == 0 && endOffset == script.length()) || (startOffset == endOffset)) {
             // Either the whole script, or the statement at offset startOffset.
-            List<StatementInfo> allStatements = split(script);
+            List<StatementInfo> allStatements = split(script, useHashComments);
             if (startOffset == 0 && endOffset == script.length()) {
                 return allStatements;
             }
@@ -175,14 +177,19 @@ public final class SQLExecuteHelper {
             return Collections.emptyList();
         } else {
             // Just execute the selected subscript.
-            return split(script.substring(startOffset, endOffset));
+            return split(script.substring(startOffset, endOffset), useHashComments);
         }
     }
         
     public static List<StatementInfo> split(String script) {
-        return new SQLSplitter(script).getStatements();
+        return split(script, true);
     }
     
+    static List<StatementInfo> split(String script,
+            boolean useHashComments) {
+        return new SQLSplitter(script, useHashComments).getStatements();
+    }
+
     private static final class SQLSplitter {
         
         private static final int STATE_MEANINGFUL_TEXT = 0;
@@ -195,6 +202,7 @@ public final class SQLExecuteHelper {
         
         private String sql;
         private int sqlLength;
+        private boolean useHashComments;
         
         private StringBuffer statement = new StringBuffer();
         private List<StatementInfo> statements = new ArrayList<StatementInfo>();
@@ -219,11 +227,14 @@ public final class SQLExecuteHelper {
         /**
          * @param sql the SQL string to parse. If it contains multiple lines
          * they have to be delimited by '\n' characters.
+         * @param useHashComments True if hash symbol (#) should be used as
+         * start of line comment (MySQL supports it).
          */
-        public SQLSplitter(String sql) {
+        public SQLSplitter(String sql, boolean useHashComments) {
             assert sql != null;
             this.sql = sql;
             sqlLength = sql.length();
+            this.useHashComments = useHashComments;
             parse();
         }
 
@@ -256,7 +267,7 @@ public final class SQLExecuteHelper {
                             state = STATE_MAYBE_LINE_COMMENT;
                         } else if (ch == '/') {
                             state = STATE_MAYBE_BLOCK_COMMENT;
-                        } else if (ch == '#') {
+                        } else if (ch == '#' && useHashComments) {
                             if (statement.length() == 0 || !Character.isLetterOrDigit(statement.charAt(statement.length() - 1))) {
                                 state = STATE_LINE_COMMENT;
                             }
