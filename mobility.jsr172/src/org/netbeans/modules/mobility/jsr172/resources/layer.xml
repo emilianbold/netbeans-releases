@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
+<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.2//EN" "http://www.netbeans.org/dtds/filesystem-1_2.dtd">
 <!--
 DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
@@ -43,28 +43,19 @@ to extend the choice of license to its licensees as provided above.
 However, if you add GPL Version 2 code and therefore, elected the GPL
 Version 2 license, then the option applies only if the new code is
 made subject to such option by the copyright holder.
---><filesystem>
-    <folder name="Templates">
+-->
+<filesystem>
+    <folder name="Brigdes">
         <folder name="MIDP">
-<!--            <file name="Jsr172Application.wsclient" url="templates/MIDP/Jsr172Application_wsclient.template">
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.mobility.jsr172.wizard.Bundle"/>
-                 icon does not seem to be present
-                <attr name="SystemFileSystem.icon" urlvalue="nbres:/org/netbeans/modules/mobility/jsr172/resources/e2eclienticon.gif"/>
-                
+            <file name="Jsr172Application.wsclient" url="templates/MIDP/Jsr172Application_wsclient.template">
+                <attr name="displayName" bundlevalue="org.netbeans.modules.mobility.jsr172.wizard.Bundle#Brigdes/MIDP/Jsr172Application.wsclient"/>
+                <attr name="iconBase" stringvalue="org/netbeans/modules/mobility/jsr172/resources/e2eclienticon.gif"/>
                 <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.mobility.jsr172.wizard.WebServiceClientWizardIterator.singleton"/>
                 <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/mobility/jsr172/resources/descriptions/MIDP/JSR172_wsclient.html"/>
                 <attr name="position" intvalue="900"/>
                 <attr boolvalue="true" name="template"/>
                 <attr name="MIDP" boolvalue="true"/>
                 <attr name="templateCategory" stringvalue="MIDP"/>
-            </file>-->
-        </folder>
-    </folder>
-    <folder name="RecommendedTemplates">
-        <folder name="org.netbeans.modules.kjava.j2meproject">
-            <file name="jsr172">
-                <attr name="PriviledgedTemplates" stringvalue="Templates/MIDP/Jsr172Application.wsclient"/>
-                <attr name="position" intvalue="600"/>
             </file>
         </folder>
     </folder>
