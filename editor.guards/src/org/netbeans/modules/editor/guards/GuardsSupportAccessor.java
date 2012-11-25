@@ -42,59 +42,27 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.api.editor.guards;
+package org.netbeans.modules.editor.guards;
 
-import org.netbeans.modules.editor.guards.SimpleSectionImpl;
+import org.netbeans.spi.editor.guards.support.AbstractGuardedSectionsProvider;
 
 /**
- * Represents a simple guarded section.
- * It consists of one contiguous block.
+ *
+ * @author Jan Pokorsky
  */
-public final class SimpleSection extends GuardedSection {
-
-    /**
-     * Creates new section.
-     * @param name Name of the new section.
-     * @param bounds The range of the section.
-     */
-    SimpleSection(SimpleSectionImpl impl) {
-        super(impl);
+public abstract class GuardsSupportAccessor {
+    
+    public static GuardsSupportAccessor DEFAULT;
+    
+    static {
+        Class clazz = AbstractGuardedSectionsProvider.class;
+        try {
+            Class.forName(clazz.getName(), true, clazz.getClassLoader());
+        } catch (ClassNotFoundException cnfe) {
+            cnfe.printStackTrace();
+        }
     }
-
-    SimpleSection(GuardedSection delegate, int offset) {
-        super(delegate, offset);
-    }
-
-    /**
-     * Sets the text of the section.
-     * @param text the new text
-     */
-    public void setText(String text) {
-        if (getImpl() == null) throw new IllegalStateException();
-        getImpl().setText(text);
-    }
-
-    /*
-    public String toString() {
-      StringBuffer buf = new StringBuffer("SimpleSection:"+name); // NOI18N
-      buf.append("\"");
-      try {
-        buf.append(bounds.getText());
-      }
-      catch (Exception e) {
-        buf.append("EXCEPTION:"); // NOI18N
-        buf.append(e.getMessage());
-      }
-      buf.append("\"");
-      return buf.toString();
-    }*/
-
-    SimpleSectionImpl getImpl() {
-        return (SimpleSectionImpl) super.getImpl();
-    }
-
-    @Override
-    GuardedSection clone(int offset) {
-        return new SimpleSection(this, offset);
-    }
+    
+    public abstract boolean isUseReadersWritersOnSet(AbstractGuardedSectionsProvider impl);
+    
 }

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,61 +34,31 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.editor.guards;
 
-package org.netbeans.api.editor.guards;
-
-import org.netbeans.modules.editor.guards.SimpleSectionImpl;
+import javax.swing.text.Position;
 
 /**
- * Represents a simple guarded section.
- * It consists of one contiguous block.
+ *
+ * @author lahvac
  */
-public final class SimpleSection extends GuardedSection {
+public class OffsetPosition implements Position {
+    private final Position delegate;
+    private final int offset;
 
-    /**
-     * Creates new section.
-     * @param name Name of the new section.
-     * @param bounds The range of the section.
-     */
-    SimpleSection(SimpleSectionImpl impl) {
-        super(impl);
-    }
-
-    SimpleSection(GuardedSection delegate, int offset) {
-        super(delegate, offset);
-    }
-
-    /**
-     * Sets the text of the section.
-     * @param text the new text
-     */
-    public void setText(String text) {
-        if (getImpl() == null) throw new IllegalStateException();
-        getImpl().setText(text);
-    }
-
-    /*
-    public String toString() {
-      StringBuffer buf = new StringBuffer("SimpleSection:"+name); // NOI18N
-      buf.append("\"");
-      try {
-        buf.append(bounds.getText());
-      }
-      catch (Exception e) {
-        buf.append("EXCEPTION:"); // NOI18N
-        buf.append(e.getMessage());
-      }
-      buf.append("\"");
-      return buf.toString();
-    }*/
-
-    SimpleSectionImpl getImpl() {
-        return (SimpleSectionImpl) super.getImpl();
+    public OffsetPosition(Position delegate, int offset) {
+        this.delegate = delegate;
+        this.offset = offset;
     }
 
     @Override
-    GuardedSection clone(int offset) {
-        return new SimpleSection(this, offset);
+    public int getOffset() {
+        return delegate.getOffset() - offset;
     }
+    
 }
