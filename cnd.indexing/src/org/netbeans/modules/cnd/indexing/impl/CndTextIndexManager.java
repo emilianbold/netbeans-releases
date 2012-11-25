@@ -48,9 +48,7 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.cnd.repository.api.CacheLocation;
-import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.parsing.lucene.support.IndexManager;
-import org.openide.filesystems.FileSystem;
 import org.openide.modules.OnStop;
 
 /**
@@ -59,8 +57,9 @@ import org.openide.modules.OnStop;
  */
 public class CndTextIndexManager {
     public static final String FIELD_IDS = "ids"; //NOI18N
-    private static final Map<String, CndTextIndexImpl> indexMap = new HashMap<String, CndTextIndexImpl>();
-    private static final File indexLocation = new File(CacheLocation.DEFAULT.getLocation(), "text_index"); //NOI18N
+    public static final String FIELD_UNIT_ID = "unitId"; //NOI18N
+    private static final Map<CacheLocation, CndTextIndexImpl> indexMap = new HashMap<CacheLocation, CndTextIndexImpl>();
+    private static final String INDEX_FOLDER_NAME = "text_index"; //NOI18N
     
     @OnStop
     public static class Cleanup implements Runnable {
@@ -72,22 +71,18 @@ public class CndTextIndexManager {
         }
     }
     
-    public static synchronized CndTextIndexImpl get(FileSystem fs) {
-        String fsKey = "local"; //NOI18N
-        if (!CndFileUtils.isLocalFileSystem(fs)) {
-            fsKey = fs.getDisplayName();
-        }
-        CndTextIndexImpl index = indexMap.get(fsKey);
+    public static synchronized CndTextIndexImpl get(final CacheLocation location) {
+        CndTextIndexImpl index = indexMap.get(location);
         if (index == null) {
-            final File indexRoot = new File(indexLocation, fsKey); //NOI18N
+            final File indexRoot = new File(location.getLocation(), INDEX_FOLDER_NAME);
             indexRoot.mkdirs();
 
             try {
                 index = new CndTextIndexImpl(IndexManager.createDocumentIndex(indexRoot));
             } catch (IOException ex) {
-                Logger.getLogger(CndIndexingFilterProviderImpl.class.getName()).log(Level.SEVERE, null, ex);
+                Logger.getLogger(CndTextIndexManager.class.getName()).log(Level.SEVERE, null, ex);
             }
-            indexMap.put(fsKey, index);
+            indexMap.put(location, index);
         }
         return index;
     }
