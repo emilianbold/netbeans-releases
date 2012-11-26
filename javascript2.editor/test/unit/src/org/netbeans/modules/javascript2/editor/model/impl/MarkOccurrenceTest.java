@@ -538,6 +538,14 @@ public class MarkOccurrenceTest extends JsTestBase {
     public void testIssue222698_01() throws Exception {
         checkOccurrences("testfiles/markoccurences/issue222698.js", "    data: js^on,", true);
     }
+    
+    public void testIssue222767_01() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue222767.js", "        var js^on = \"data=\" + angular.toJson($scope.servos);", true);
+    }
+
+    public void testIssue222767_02() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue222767.js", "            data: j^son,", true);
+    }
 
 //    public void testIssue221228_02() throws Exception {
 //        checkOccurrences("testfiles/markoccurences/issue221228.js", "a.h^i(); // rename hi here", true);

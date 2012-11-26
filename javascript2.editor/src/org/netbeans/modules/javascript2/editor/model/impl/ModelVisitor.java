@@ -673,9 +673,18 @@ public class ModelVisitor extends PathNodeVisitor {
                         if (value instanceof IdentNode) {
                             IdentNode iNode = (IdentNode)value;
                             JsFunction function = (JsFunction)ModelUtils.getDeclarationScope(property);
-                            JsObjectImpl param = (JsObjectImpl)function.getParameter(iNode.getName());
+                            String iName = iNode.getName();
+                            JsObjectImpl param = (JsObjectImpl)function.getParameter(iName);
                             if(param != null) {
                                 param.addOccurrence(ModelUtils.documentOffsetRange(parserResult, LexUtilities.getLexerOffset(parserResult, iNode.getStart()), iNode.getFinish()));
+                            } else {
+                                Collection<? extends JsObject> variables = ModelUtils.getVariables((DeclarationScope)function);
+                                for (JsObject variable : variables) {
+                                    if (iName.equals(variable.getName())) {
+                                        ((JsObjectImpl)variable).addOccurrence(ModelUtils.documentOffsetRange(parserResult, LexUtilities.getLexerOffset(parserResult, iNode.getStart()), iNode.getFinish()));
+                                        break;
+                                    }
+                                }
                             }
                         }
                     }
