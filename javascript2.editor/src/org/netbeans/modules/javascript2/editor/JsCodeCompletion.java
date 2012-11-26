@@ -391,7 +391,7 @@ class JsCodeCompletion implements CodeCompletionHandler {
             }
         }
         LOGGER.log(Level.FINE, String.format("Prefix for cc: %s", prefix));
-        return prefix.length() > 0 ? prefix : null;
+        return prefix;
     }
 
     @Override
@@ -401,7 +401,7 @@ class JsCodeCompletion implements CodeCompletionHandler {
         }
         char lastChar = typedText.charAt(typedText.length() - 1);
         if (lastChar == '.') {
-            return QueryType.COMPLETION;
+                return QueryType.COMPLETION;
         }
         return QueryType.NONE;
     }
