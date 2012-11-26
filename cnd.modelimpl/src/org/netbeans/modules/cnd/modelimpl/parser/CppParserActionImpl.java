@@ -244,10 +244,10 @@ public class CppParserActionImpl implements CppParserActionEx {
         }
         input.rewind(index);
         if(entry != null && entry.getAttribute(CppAttributes.TYPE) != null) {
-            if(entry.toString().startsWith("Entry{name=value_type")) {
-                int i = 0;
-                globalSymTab.lookup(((APTToken) CXXParserActionImpl.convertToken(input.LT(1))).getTextID());
-            }
+//            if(entry.toString().startsWith("Entry{name=value_type")) {
+//                int i = 0;
+//                globalSymTab.lookup(((APTToken) CXXParserActionImpl.convertToken(input.LT(1))).getTextID());
+//            }
             return true;
         }
         return false;
