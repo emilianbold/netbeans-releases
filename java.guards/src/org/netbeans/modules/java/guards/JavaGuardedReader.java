@@ -395,6 +395,10 @@ final class JavaGuardedReader {
         return defaultValue;
     }
 
+    static boolean getKeepGuardedComments() {
+        return KEEP_GUARD_COMMENTS;
+    }
+
     static void setKeepGuardCommentsForTest(boolean keep) {
         KEEP_GUARD_COMMENTS = keep;
     }
