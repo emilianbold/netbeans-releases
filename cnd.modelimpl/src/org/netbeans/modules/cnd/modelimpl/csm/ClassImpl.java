@@ -53,12 +53,8 @@ import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmScope;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect.CsmFilter;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
-import org.netbeans.modules.cnd.modelimpl.csm.EnumImpl.EnumBuilder;
-import org.netbeans.modules.cnd.modelimpl.csm.FieldImpl.FieldBuilder;
+import org.netbeans.modules.cnd.modelimpl.csm.FriendClassImpl.FriendClassBuilder;
 import org.netbeans.modules.cnd.modelimpl.csm.InheritanceImpl.InheritanceBuilder;
-import org.netbeans.modules.cnd.modelimpl.csm.MethodImpl.MethodBuilder;
-import org.netbeans.modules.cnd.modelimpl.csm.TemplateDescriptor.TemplateDescriptorBuilder;
-import org.netbeans.modules.cnd.modelimpl.csm.UsingDeclarationImpl.UsingDeclarationBuilder;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 import org.netbeans.modules.cnd.modelimpl.csm.core.*;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
@@ -448,6 +444,7 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
         
         private CsmDeclaration.Kind kind = CsmDeclaration.Kind.CLASS;
         private List<MemberBuilder> memberBuilders = new ArrayList<MemberBuilder>();
+        private List<FriendClassBuilder> friendBuilders = new ArrayList<FriendClassBuilder>();
         private List<InheritanceBuilder> inheritanceBuilders = new ArrayList<InheritanceBuilder>();
         
         private ClassImpl instance;
@@ -474,8 +471,16 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
             this.memberBuilders.add(builder);
         }
 
+        public void addFriendBuilder(FriendClassBuilder builder) {
+            this.friendBuilders.add(builder);
+        }        
+        
         public List<MemberBuilder> getMemberBuilders() {
             return memberBuilders;
+        }
+
+        public List<FriendClassBuilder> getFriendBuilders() {
+            return friendBuilders;
         }
         
         public void addInheritanceBuilder(InheritanceBuilder i) {
@@ -525,6 +530,10 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
                 for (MemberBuilder builder : getMemberBuilders()) {
                     builder.setScope(cls);
                     cls.addMember(builder.create(), isGlobal());
+                }                
+                for (FriendClassBuilder builder : getFriendBuilders()) {
+                    builder.setScope(cls);
+                    cls.addFriend(builder.create(), isGlobal());
                 }                
                 getNameHolder().addReference(getFileContent(), cls);
                 addDeclaration(cls);
