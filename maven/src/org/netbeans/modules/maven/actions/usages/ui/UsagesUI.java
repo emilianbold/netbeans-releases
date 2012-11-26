@@ -49,6 +49,7 @@ import java.util.List;
 import java.util.Set;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
+import javax.swing.SwingUtilities;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.project.MavenProject;
 import org.netbeans.api.project.Project;
@@ -192,6 +193,7 @@ public final class UsagesUI extends javax.swing.JPanel implements ExplorerManage
                 return NodeUtils.getTreeFolderIcon(true);
             }
         };
+        //TODO out of AWT
         Result<NBGroupInfo> result = RepositoryQueries.findDependencyUsageResult(
                                     artifact.getGroupId(),
                                         artifact.getArtifactId(), artifact.getVersion(), null);
@@ -240,8 +242,12 @@ public final class UsagesUI extends javax.swing.JPanel implements ExplorerManage
 
             @Override
             public void run() {
-                beanTreeView.expandAll();
-
+                SwingUtilities.invokeLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        beanTreeView.expandAll();
+                    }
+                });
             }
         }, 100);
          RequestProcessor.getDefault().post(new Runnable() {
