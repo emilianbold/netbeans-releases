@@ -232,14 +232,14 @@ public class JsDocumentationCompleter {
         SyntaxProvider syntaxProvider = JsDocumentationSupport.getSyntaxProvider(jsParserResult);
         // TODO - could know constructors
         JsFunction function = ((JsFunction) jsObject);
-        addParameters(doc, toAdd, syntaxProvider.paramTagTemplate(), indent, jsParserResult, function.getParameters()); //NOI18N
+        addParameters(doc, toAdd, syntaxProvider, indent, function.getParameters()); //NOI18N
         Collection<? extends TypeUsage> returnTypes = function.getReturnTypes();
         if (returnTypes.isEmpty()) {
             if (hasReturnClause(doc, jsObject)) {
-                addReturns(doc, toAdd, syntaxProvider.returnTagTemplate(), indent, jsParserResult, Collections.singleton(new TypeUsageImpl(Type.UNRESOLVED)));
+                addReturns(doc, toAdd, syntaxProvider, indent, Collections.singleton(new TypeUsageImpl(Type.UNRESOLVED)));
             }
         } else {
-            addReturns(doc, toAdd, syntaxProvider.returnTagTemplate(), indent, jsParserResult, returnTypes);
+            addReturns(doc, toAdd, syntaxProvider, indent, returnTypes);
         }
 
         doc.insertString(offset, toAdd.toString(), null);
@@ -264,15 +264,14 @@ public class JsDocumentationCompleter {
         return false;
     }
 
-    private static void addParameters(BaseDocument doc, StringBuilder toAdd, String template, int indent, JsParserResult jsParserResult, Collection<? extends JsObject> params) {
+    private static void addParameters(BaseDocument doc, StringBuilder toAdd, SyntaxProvider syntaxProvider, int indent, Collection<? extends JsObject> params) {
         for (JsObject jsObject : params) {
-            generateDocEntry(doc, toAdd, template, indent, jsObject.getName(), null);
+            generateDocEntry(doc, toAdd, syntaxProvider.paramTagTemplate(), indent, jsObject.getName(), null);
         }
     }
 
-    private static void addReturns(BaseDocument doc, StringBuilder toAdd, String template, int indent, JsParserResult jsParserResult, Collection<? extends TypeUsage> returns) {
+    private static void addReturns(BaseDocument doc, StringBuilder toAdd, SyntaxProvider syntaxProvider, int indent, Collection<? extends TypeUsage> returns) {
         StringBuilder sb = new StringBuilder();
-        SyntaxProvider syntaxProvider = JsDocumentationSupport.getSyntaxProvider(jsParserResult);
 
         for (TypeUsage typeUsage : returns) {
             if (syntaxProvider.typesSeparator() == null) {
@@ -286,7 +285,7 @@ public class JsDocumentationCompleter {
 
         int separatorLength = syntaxProvider.typesSeparator() == null ? 1 : syntaxProvider.typesSeparator().length();
         String returnString = returns.isEmpty() ? "" : sb.toString().substring(separatorLength);
-        generateDocEntry(doc, toAdd, template, indent, null, returnString);
+        generateDocEntry(doc, toAdd, syntaxProvider.returnTagTemplate(), indent, null, returnString);
     }
 
     private static void generateDocEntry(BaseDocument doc, StringBuilder toAdd, String template, int indent, String name, String type) {
