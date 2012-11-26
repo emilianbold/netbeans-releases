@@ -4,6 +4,8 @@
     <configuration>
         <data xmlns="http://www.netbeans.org/ns/nb-module-project/3">
             <code-name-base>org.netbeans.modules.web.clientproject</code-name-base>
+            <!-- the exported API is going to be removed soon:
+                 see issue "222525 - Get rid of the web.clientproject exported API" -->
             <module-dependencies>
                 <dependency>
                     <code-name-base>org.netbeans.api.annotations.common</code-name-base>
@@ -139,7 +141,7 @@
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <specification-version>1.12</specification-version>
+                        <specification-version>1.13</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -272,10 +274,6 @@
                     </run-dependency>
                 </dependency>
             </module-dependencies>
-
-            <!-- the exported API is going to be removed soon:
-                 see issue "222525 - Get rid of the web.clientproject exported API" -->
-
             <friend-packages>
                 <friend>org.netbeans.modules.web.client.samples</friend>
                 <package>org.netbeans.modules.web.clientproject</package>
