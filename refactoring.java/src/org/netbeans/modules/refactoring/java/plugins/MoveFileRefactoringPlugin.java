@@ -43,7 +43,6 @@
  */
 package org.netbeans.modules.refactoring.java.plugins;
 
-import com.sun.org.apache.bcel.internal.classfile.JavaClass;
 import com.sun.source.tree.Tree;
 import com.sun.source.util.TreePath;
 import java.io.IOException;
@@ -203,6 +202,14 @@ public class MoveFileRefactoringPlugin extends JavaRefactoringPlugin {
             try {
                 final URL targetUrl = ((MoveRefactoring)refactoring).getTarget().lookup(URL.class);
                 if(targetUrl != null) {
+                    FileObject rootFO = RefactoringUtils.getRootFileObject(targetUrl);
+                    ClassPath classPath = ClassPath.getClassPath(rootFO, ClassPath.SOURCE);
+                    if(classPath == null) {
+                        return new Problem(true, NbBundle.getMessage(
+                        MoveFileRefactoringPlugin.class,
+                        "ERR_ClasspathNotFound",
+                        rootFO));
+                    }
                     for (FileObject f: filesToMove) {
                         if (!RefactoringUtils.isJavaFile(f)) {
                             continue;
@@ -264,7 +271,7 @@ public class MoveFileRefactoringPlugin extends JavaRefactoringPlugin {
                         //                    p= new Problem(false, getString("ERR_MovingClassToDefaultPackage")); // NOI18N
                         //                }
                     }
-                }
+                } else {
                 for (TreePathHandle tph : refactoring.getRefactoringSource().lookupAll(TreePathHandle.class)) {
                     FileObject f = tph.getFileObject();
                     if (!RefactoringUtils.isJavaFile(f)) {
@@ -305,6 +312,7 @@ public class MoveFileRefactoringPlugin extends JavaRefactoringPlugin {
                             return new Problem(true, s);
                         }
                     }
+                }
                 }
             } catch (IOException ioe) {
                 //do nothing
