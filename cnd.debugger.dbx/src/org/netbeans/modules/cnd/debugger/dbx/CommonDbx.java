@@ -772,7 +772,7 @@ public abstract class CommonDbx extends GPDbxSurrogate {
 	    //
 
 	    if (NativeDebuggerManager.isAsyncStart()) {
-		RequestProcessor.getDefault().post(new Runnable() {
+		NativeDebuggerManager.getRequestProcessor().post(new Runnable() {
 		    public void run() {
 			start2(hostInfo);
 		    }
