@@ -43,6 +43,7 @@ package org.netbeans.modules.java.hints;
 
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.List;
@@ -51,10 +52,13 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 
+import com.sun.source.tree.BlockTree;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompilationUnitTree;
+import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
+import com.sun.source.tree.VariableTree;
 import com.sun.source.util.SourcePositions;
 import com.sun.source.util.TreePath;
 
@@ -132,7 +136,25 @@ public class OrganizeMembers {
         ClassTree clazz = (ClassTree) path.getLeaf();
         TreeMaker maker = copy.getTreeMaker();
         ClassTree nue = maker.Class(clazz.getModifiers(), clazz.getSimpleName(), clazz.getTypeParameters(), clazz.getExtendsClause(), clazz.getImplementsClause(), Collections.<Tree>emptyList());
-        nue = GeneratorUtilities.get(copy).insertClassMembers(nue, clazz.getMembers());
+        List<Tree> members = new ArrayList<Tree>(clazz.getMembers().size());
+        for (Tree tree : clazz.getMembers()) {
+            Tree member;
+            switch (tree.getKind()) {
+                case VARIABLE:
+                    member = maker.setLabel(tree, ((VariableTree)tree).getName());
+                    break;
+                case METHOD:
+                    member = maker.setLabel(tree, ((MethodTree)tree).getName());
+                    break;
+                case BLOCK:
+                    member = maker.Block(((BlockTree)tree).getStatements(), ((BlockTree)tree).isStatic());
+                    break;
+                default:
+                    member = tree;    
+            }
+            members.add(member);
+        }
+        nue = GeneratorUtilities.get(copy).insertClassMembers(nue, members);
         copy.rewrite(clazz, nue);
     }
     
