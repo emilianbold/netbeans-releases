@@ -122,8 +122,11 @@ public class ItemConfiguration implements ConfigurationAuxObject {
                 return false;
             }
         }
-        if (getTool() != item.getDefaultTool()) {
-            return false;
+        if (!isItemFromDiskFolder()) {
+            // we do not check tools for excluded items in unmanaged projects
+            if (getTool() != item.getDefaultTool()) {
+                return false;
+            }
         }
         if (lastConfiguration != null && lastConfiguration.getModified()) {
             return false;
@@ -356,11 +359,8 @@ public class ItemConfiguration implements ConfigurationAuxObject {
     
     public boolean isVCSVisible() {
         assert org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider.VCS_WRITE;
-        if (item != null && getExcluded() != null) {
-            Folder folder = item.getFolder();
-            if (folder != null && folder.isDiskFolder()) {
-                return !getExcluded().getValue();
-            }
+        if (item != null && getExcluded() != null && isItemFromDiskFolder()) {
+            return !getExcluded().getValue();
         }
         return shared();
     }
@@ -603,6 +603,16 @@ public class ItemConfiguration implements ConfigurationAuxObject {
                         return true;
                     }
                 }
+            }
+        }
+        return false;
+    }
+
+    private boolean isItemFromDiskFolder() {
+        if (item != null) {
+            Folder folder = item.getFolder();
+            if (folder != null && folder.isDiskFolder()) {
+                return true;
             }
         }
         return false;
