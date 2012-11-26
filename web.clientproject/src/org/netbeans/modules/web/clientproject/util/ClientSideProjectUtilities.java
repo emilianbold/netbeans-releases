@@ -98,6 +98,24 @@ public final class ClientSideProjectUtilities {
     }
 
     /**
+     * Check whether the given folder is already a project.
+     * @param folder folder to be checked
+     * @return {@code true} if the given folder is already a project, {@code false} otherwise
+     */
+    public static boolean isProject(File folder) {
+        Project prj = null;
+        boolean foundButBroken = false;
+        try {
+            prj = ProjectManager.getDefault().findProject(FileUtil.toFileObject(FileUtil.normalizeFile(folder)));
+        } catch (IOException ex) {
+            foundButBroken = true;
+        } catch (IllegalArgumentException ex) {
+            // noop
+        }
+        return prj != null || foundButBroken;
+    }
+
+    /**
      * Setup project with the given name and also set the following properties:
      * <ul>
      *   <li>file encoding - set to UTF-8 (or default charset if UTF-8 is not available)</li>
