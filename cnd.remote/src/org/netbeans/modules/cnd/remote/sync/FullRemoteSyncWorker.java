@@ -66,8 +66,10 @@ import org.openide.util.RequestProcessor;
     private final ExecutionEnvironment executionEnvironment;
     private final FileSystem sourceFileSystem;
     private final PrintWriter out;
+    
     private final PrintWriter err;
-
+    private static final RequestProcessor RP = new RequestProcessor("FullRemoteSyncWoker", 1); // NOI18N
+    
     public FullRemoteSyncWorker(ExecutionEnvironment executionEnvironment, PrintWriter out, PrintWriter err, 
             FSPath... files) {
         this.executionEnvironment = executionEnvironment;
@@ -92,7 +94,7 @@ import org.openide.util.RequestProcessor;
             final Object lock = new Object();
             final AtomicReference<Boolean> waiting = new AtomicReference<Boolean>(true);
             if (out != null) {
-                RequestProcessor.Task task = RequestProcessor.getDefault().create(new Runnable() {
+                RequestProcessor.Task task = RP.create(new Runnable() {
                     @Override
                     public void run() {
                         synchronized (lock) {

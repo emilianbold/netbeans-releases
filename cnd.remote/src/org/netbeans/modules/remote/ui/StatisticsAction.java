@@ -61,7 +61,7 @@ import org.openide.util.RequestProcessor;
 @ActionReference(path = "Remote/Host/Actions", name = "StatisticsAction", position = 99998)
 public class StatisticsAction extends SingleHostAction {
     
-    private static final RequestProcessor RP = new RequestProcessor("StatisticsAction", 2); // NOI18N
+    private static final RequestProcessor RP = new RequestProcessor("StatisticsAction", 1); // NOI18N
     
     public StatisticsAction() {
         System.err.printf("Hihi\n");

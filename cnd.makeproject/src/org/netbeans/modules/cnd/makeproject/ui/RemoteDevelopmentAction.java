@@ -81,6 +81,7 @@ public class RemoteDevelopmentAction extends AbstractAction implements Presenter
     private static final String HOST_ENV = "org.netbeans.modules.cnd.makeproject.ui.RemoteHost"; // NOI18N
     private static final String CONF = "org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration"; // NOI18N
     private static final String PROJECT = "org.netbeans.modules.cnd.makeproject.api.configurations.MakeProject"; // NOI18N
+    private static final RequestProcessor RP = new RequestProcessor("RemoteDevelopmentAction", 1); // NOI18N
     private JMenu subMenu;
     private MakeProject project;
 
@@ -154,7 +155,7 @@ public class RemoteDevelopmentAction extends AbstractAction implements Presenter
 
     private static void setRemodeDevelopmentHost(final Object source, final MakeConfiguration mconf, final ExecutionEnvironment execEnv, final Project project) {
         if (SwingUtilities.isEventDispatchThread()) {
-            RequestProcessor.getDefault().post(new Runnable(){
+            RP.post(new Runnable(){
                 public void run() {
                     _setRemodeDevelopmentHost(source, mconf, execEnv, project);
                 }

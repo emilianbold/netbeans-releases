@@ -111,6 +111,7 @@ class RfsLocalController extends NamedRunnable {
     private static final boolean USE_TIMESTAMPS = DebugUtils.getBoolean("cnd.rfs.timestamps", true);
     private static final boolean CHECK_ALIVE = DebugUtils.getBoolean("cnd.rfs.check.alive", true);
 
+    private static final RequestProcessor RP = new RequestProcessor("RfsLocalController", 1); // NOI18N    
     /**
      * Maps remote canonical remote path remote controller operates with
      * to the absolute remote path local controller uses
@@ -655,7 +656,7 @@ class RfsLocalController extends NamedRunnable {
             return addedInfos;
         }
         
-        RequestProcessor.getDefault().post(new Runnable() {
+        RP.post(new Runnable() {
             @Override
             public void run() {
                 BufferedWriter requestWriter = new BufferedWriter(new OutputStreamWriter(process.getOutputStream()));
@@ -677,7 +678,7 @@ class RfsLocalController extends NamedRunnable {
             }
         });
 
-        RequestProcessor.getDefault().post(new Runnable() {
+        RP.post(new Runnable() {
             private final BufferedReader errorReader = new BufferedReader(new InputStreamReader(process.getErrorStream()));
             @Override
             public void run() {

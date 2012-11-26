@@ -62,7 +62,7 @@ import org.openide.util.RequestProcessor;
 @ActionRegistration(displayName = "RefreshMenuItem")
 @ActionReference(path = "Remote/Host/Actions", name = "RefreshAction", position = 99999)
 public class RefreshAction extends SingleHostAction {
-    private static final RequestProcessor RP = new RequestProcessor("RefreshAction", 2); // NOI18N
+    private static final RequestProcessor RP = new RequestProcessor("RefreshAction", 1); // NOI18N
     
     @Override
     public String getName() {

@@ -63,7 +63,7 @@ import org.openide.util.RequestProcessor;
 @ActionReference(path = "Remote/Host/Actions", name = "ConnectAction", position = 100)
 public class ConnectAction extends SingleHostAction {
     
-    private static final RequestProcessor RP = new RequestProcessor("ConnectAction", 2); // NOI18N
+    private static final RequestProcessor RP = new RequestProcessor("ConnectAction", 1); // NOI18N
 
     @Override
     public String getName() {
