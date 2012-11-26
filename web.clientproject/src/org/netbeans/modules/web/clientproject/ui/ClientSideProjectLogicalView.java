@@ -673,7 +673,7 @@ public class ClientSideProjectLogicalView implements LogicalViewProvider {
             try {
                 FileObject fo = RemoteFileCache.getRemoteFile(key.getUrl());
                 DataObject dobj = DataObject.find(fo);
-                return new Node[] { dobj.getNodeDelegate().cloneNode() };
+                return new Node[] { new RemoteFileFilterNode(dobj.getNodeDelegate().cloneNode(), key.getDescription()) };
             } catch (DataObjectNotFoundException ex) {
                 return new Node[] {};
             } catch (IOException ex) {
@@ -712,6 +712,22 @@ public class ClientSideProjectLogicalView implements LogicalViewProvider {
                     }
                 });
             setKeys(keys);
+        }
+
+    }
+
+    private static class RemoteFileFilterNode extends FilterNode {
+
+        private String desc;
+
+        public RemoteFileFilterNode(Node original, String desc) {
+            super(original);
+            this.desc = desc;
+        }
+
+        @Override
+        public String getShortDescription() {
+            return desc;
         }
 
     }

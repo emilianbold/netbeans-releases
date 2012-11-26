@@ -179,7 +179,10 @@ public class WebProjectOperations implements DeleteOperationImplementation, Copy
     
     public void notifyDeleting() throws IOException {
         FileObject buildXML = project.getProjectDirectory().getFileObject(GeneratedFilesHelper.BUILD_XML_PATH);
-        ActionUtils.runTarget(buildXML, new String[]{ActionProvider.COMMAND_CLEAN}, new Properties()).waitFinished();
+        // #215290
+        if (buildXML != null) {
+            ActionUtils.runTarget(buildXML, new String[]{ActionProvider.COMMAND_CLEAN}, new Properties()).waitFinished();
+        }
     }
     
     public void notifyDeleted() throws IOException {
