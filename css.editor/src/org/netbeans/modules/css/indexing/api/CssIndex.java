@@ -440,16 +440,16 @@ public class CssIndex {
         
         LOGGER.log(Level.FINE, "Fresh deps hash code for roots {0} is {1}", new Object[]{sb.toString(), freshAllDeps_hashCode});
         
-//        if(allDepsCache != null) {
-//            LOGGER.fine("allDepsCache is NOT null");
-//            //verify whether the cache is still valid
-//            if(allDepsCache_hashCode == freshAllDeps_hashCode) {
-//                LOGGER.fine("Returning cached dependencies.");
-//                return allDepsCache;
-//            }
-//        } else {
-//            LOGGER.fine("allDepsCache is null");
-//        }
+        if(allDepsCache != null) {
+            LOGGER.fine("allDepsCache is NOT null");
+            //verify whether the cache is still valid
+            if(allDepsCache_hashCode == freshAllDeps_hashCode) {
+                LOGGER.fine("Returning cached dependencies.");
+                return allDepsCache;
+            }
+        } else {
+            LOGGER.fine("allDepsCache is null");
+        }
         
         //not cached or invalidated
         allDepsCache = createAllDependencies();
