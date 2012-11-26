@@ -74,12 +74,12 @@ import org.openide.filesystems.FileObject;
  * @author Martin Janicek
  */
 public class FindUsagesPlugin extends GroovyRefactoringPlugin {
-    
+
     public FindUsagesPlugin(FileObject fileObject, RefactoringElement element, AbstractRefactoring whereUsedQuery) {
         super(element, fileObject, whereUsedQuery);
     }
-    
-    
+
+
     @Override
     public Problem prepare(final RefactoringElementsBag elementsBag) {
         refactorResults(elementsBag, collectUsages());
