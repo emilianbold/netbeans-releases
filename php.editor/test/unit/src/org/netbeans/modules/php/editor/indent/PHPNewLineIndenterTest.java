@@ -945,6 +945,18 @@ public class PHPNewLineIndenterTest extends PHPCodeCompletionTestBase {
         testIndentInFile("testfiles/indent/issue203389.php");
     }
 
+    public void testIssue222753_01() throws Exception {
+        testIndentInFile("testfiles/indent/issue222753_01.php");
+    }
+
+    public void testIssue222753_02() throws Exception {
+        testIndentInFile("testfiles/indent/issue222753_02.php");
+    }
+
+    public void testIssue222753_03() throws Exception {
+        testIndentInFile("testfiles/indent/issue222753_03.php");
+    }
+
     @Override
     protected boolean runInEQ() {
         return true;
