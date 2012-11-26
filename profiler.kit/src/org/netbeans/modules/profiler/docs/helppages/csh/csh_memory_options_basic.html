@@ -14,18 +14,16 @@
         <p><small><a href="#seealso">See Also</a></small></p>
         <p>When analyzing memory usage, you can configure basic and advanced options for the profiling session.
         The following basic options are available when analyzing the lifecycle of objects.
-        If you are configuring a custom configuration, click Advanced Settings to specify <a href="csh_memory_options_adv.html">advanced options</a></p>
+        If you are configuring a custom configuration, click Advanced Settings to specify <a href="csh_memory_options_adv.html">advanced options</a>.</p>
         <p>When analyzing memory usage, you specify one of the following options:</p>
         <ul>
             <li><b>Quick.</b> 
-            When selected, the IDE samples the application to provide data that is limited to the live objects.
+            When selected, the profiler samples the application to provide data that is limited to the live objects.
+            This option only tracks live objects and does not track allocations when instrumenting.
             It is not possible to record stack traces or to use profiling points if you select this option.
-            This option is less precise than instrumenting methods, but the overhead is lower.
-            This option can help you locate methods that you might want to instrument.
+            This option incurs a significantly lower overhead than the Advanced option.
             </li>
             <li><b>Advanced.</b> 
-            When selected, all of the methods of the profiled application are instrumented if
-            you do not specify any root methods. 
             Profiling the application with this option gives you information about the number, type, and 
             location of objects that have been allocated. 
             When this option is selected, all classes that are currently loaded by the 
@@ -33,7 +31,7 @@
             to produce information about object allocations.
             You need to select this option if you want to use profiling points when
             analyzing memory usage or if you want to record the call stack.
-            This options incurs a greater profiling overhead than choosing the Quick option.</li>
+            This options incurs a greater profiling overhead than the Quick option.</li>
         </ul>
         
         <p>Additionally, you can set the following options:</p>
