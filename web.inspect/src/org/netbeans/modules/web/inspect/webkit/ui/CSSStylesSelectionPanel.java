@@ -817,7 +817,6 @@ public class CSSStylesSelectionPanel extends JPanel {
          * Creates a new {@code StylesRenderer}.
          */
         StylesRenderer() {
-            mediaLabel.setEnabled(false);
         }
 
         /**
@@ -881,6 +880,8 @@ public class CSSStylesSelectionPanel extends JPanel {
                 }
                 mediaLabel.setText(mediaQuery);
                 mediaLabel.setVisible(mediaQuery != null);
+                mediaLabel.setForeground(isSelected ? foreground : UIManager.getColor("Label.foreground")); // NOI18N
+                mediaLabel.setEnabled(isSelected);
             }
             String toolTip = node.getShortDescription();
             renderer.setToolTipText(toolTip);
