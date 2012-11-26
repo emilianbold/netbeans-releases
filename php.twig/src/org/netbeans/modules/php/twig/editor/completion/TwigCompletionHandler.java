@@ -111,6 +111,8 @@ public class TwigCompletionHandler implements CodeCompletionHandler {
         TAGS.add(TwigElement.Factory.create("spaceless", documentationFactory)); //NOI18N
         TAGS.add(TwigElement.Factory.create("endspaceless", documentationFactory)); //NOI18N
         TAGS.add(TwigElement.Factory.create("use", documentationFactory, "use \"${page.html}\"")); //NOI18N
+        TAGS.add(TwigElement.Factory.create("trans", documentationFactory)); //NOI18N
+        TAGS.add(TwigElement.Factory.create("endtrans", documentationFactory)); //NOI18N
     }
 
     private static final Set<TwigElement> FILTERS = new HashSet<TwigElement>();
@@ -142,6 +144,12 @@ public class TwigCompletionHandler implements CodeCompletionHandler {
         FILTERS.add(TwigElement.Factory.create("trim", documentationFactory)); //NOI18N
         FILTERS.add(TwigElement.Factory.create("upper", documentationFactory)); //NOI18N
         FILTERS.add(TwigElement.Factory.create("url_encode", documentationFactory, Collections.EMPTY_LIST)); //NOI18N
+        FILTERS.add(TwigElement.Factory.create("trans", documentationFactory)); //NOI18N
+        FILTERS.add(TwigElement.Factory.create("truncate", documentationFactory, Arrays.asList(new Parameter[] {new Parameter("int")}))); //NOI18N
+        FILTERS.add(TwigElement.Factory.create(
+                "wordwrap",
+                documentationFactory,
+                Arrays.asList(new Parameter[] {new Parameter("width"), new Parameter("'break'"), new Parameter("cut")}))); //NOI18N
     }
 
     private static final Set<TwigElement> FUNCTIONS = new HashSet<TwigElement>();
