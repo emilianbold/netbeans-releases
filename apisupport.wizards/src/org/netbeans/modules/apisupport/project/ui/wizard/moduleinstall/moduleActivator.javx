@@ -14,9 +14,11 @@ import org.osgi.framework.BundleContext;
  */
 public class ${CLASS_NAME} implements BundleActivator {
 
+    @Override
     public void start(BundleContext c) throws Exception {
     }
 
+    @Override
     public void stop(BundleContext c) throws Exception {
     }
 }
