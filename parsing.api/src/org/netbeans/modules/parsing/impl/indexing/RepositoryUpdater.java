@@ -929,6 +929,10 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
                         return;
                     }
                     FileObject rootFo = root.second;
+                    if (rootFo.equals(newFile)) {
+                        //Root renamed do nothing, will be fired as ClassPath change.
+                        return;
+                    }
                     String ownerPath = FileUtil.getRelativePath(rootFo, newFile.getParent());
                     String oldFilePath =  ownerPath.length() == 0 ? oldNameExt : ownerPath + "/" + oldNameExt; //NOI18N
                     if (newFile.isData()) {
