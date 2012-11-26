@@ -182,8 +182,8 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
                                     int stackSize,
                                     NativeBreakpoint breakpoint) {
 
-	    String src;
-	    int line;
+	    String src = "";
+	    int line = 0;
 	    String func = null;
 	    long pc = 0;
             int level = 0;
@@ -194,7 +194,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
                 src = frameTuple.getConstValue("fullname", srcTuple != null ? srcTuple.getConstValue("fullname", null) : null); //NOI18N
                 level = Integer.parseInt(frameTuple.getConstValue("level", "0")); // NOI18N
                 line = Integer.parseInt(frameTuple.getConstValue("line", "0")); //NOI18N
-            } else {
+            } else if (srcTuple != null){
                 // use srcTuple
                 src = srcTuple.getConstValue("fullname", null); // NOI18N
                 line = Integer.parseInt(srcTuple.getConstValue("line", "0")); //NOI18N
@@ -3165,7 +3165,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
                 state().isDownAllowed = !homeLoc.topframe();
                 setStack(srcRecord);
 	    } else {
-                frameTuple = frameValue.asTuple();
+                frameTuple = ( frameValue == null ? null : frameValue.asTuple() );
                 stack = null;
             }
             
