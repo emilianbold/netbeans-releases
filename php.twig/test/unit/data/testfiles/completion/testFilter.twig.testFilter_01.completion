@@ -24,6 +24,7 @@ RULE       slice(start, length)                       Filter
 RULE       sort                                       Filter
 RULE       striptags                                  Filter
 RULE       title                                      Filter
+RULE       trans                                      Filter
 RULE       trim                                       Filter
 RULE       upper                                      Filter
 RULE       url_encode()                               Filter
