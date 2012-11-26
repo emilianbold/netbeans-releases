@@ -76,7 +76,7 @@ public class RenameRefactoringPlugin extends FindUsagesPlugin {
         refactoring.getContext().add(UI.Constants.REQUEST_PREVIEW);
         return (RenameRefactoring) refactoring;
     }
-    
+
     @Override
     protected void refactorResults(RefactoringElementsBag elementsBag, List<FindUsagesElement> usages) {
         final ModificationResult modificationResult = collectModifications(usages);
