@@ -116,7 +116,8 @@ import org.openide.windows.InputOutput;
 public class ProjectActionSupport {
 
     private static ProjectActionSupport instance;
-    private static RequestProcessor RP = new RequestProcessor("ProjectActionSupport.refresh", 1); // NOI18N
+    private static final RequestProcessor RP = new RequestProcessor("ProjectActionSupport.refresh", 1); // NOI18N
+    private static final RequestProcessor RPgo = new RequestProcessor("ProjectActionSupport.go", 1); // NOI18N
     private static final Logger LOGGER = Logger.getLogger("org.netbeans.modules.cnd.makeproject"); // NOI18N
     private final List<ProjectActionHandlerFactory> handlerFactories;
 
@@ -528,7 +529,7 @@ public class ProjectActionSupport {
             progressHandle = createProgressHandle();
             progressHandle.start();
             if (SwingUtilities.isEventDispatchThread()) {
-                RequestProcessor.getDefault().post(new Runnable() {
+                RPgo.post(new Runnable() {
 
                     @Override
                     public void run() {
@@ -763,7 +764,7 @@ public class ProjectActionSupport {
             // So the call to go() is posted to RequestProcessor.
             if (rc == 0) {
                 currentAction++;
-                RequestProcessor.getDefault().post(new Runnable() {
+                RPgo.post(new Runnable() {
 
                     @Override
                     public void run() {

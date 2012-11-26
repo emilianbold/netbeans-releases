@@ -87,9 +87,11 @@ class RemoteSyncActions {
 
     /* A common active nodes cache to be used by all actions */
     private static final AtomicReference<Node[]> activatedNodesCache = new AtomicReference<Node[]>();
+    
+    private static final RequestProcessor RP = new RequestProcessor("RemoteSyncActions", 1); // NOI18N
 
     /** A task that activatedNodesCache */
-    private static final RequestProcessor.Task clearCacheTask = RequestProcessor.getDefault().create(new Runnable() {
+    private static final RequestProcessor.Task clearCacheTask = RP.create(new Runnable() {
         @Override
                 public void run() {
                     activatedNodesCache.set(null);
@@ -348,7 +350,7 @@ class RemoteSyncActions {
 
         @Override
         protected void performAction(final ExecutionEnvironment execEnv, final Node[] activatedNodes) {
-            RequestProcessor.getDefault().post(new NamedRunnable("Uploading to " + ServerList.get(execEnv).getDisplayName()) { // NOI18N
+            RP.post(new NamedRunnable("Uploading to " + ServerList.get(execEnv).getDisplayName()) { // NOI18N
                 @Override
                 protected void runImpl() {
                     upload(execEnv, activatedNodes);
@@ -372,7 +374,7 @@ class RemoteSyncActions {
 
         @Override
         protected void performAction(final ExecutionEnvironment execEnv, final Node[] activatedNodes) {
-            RequestProcessor.getDefault().post(new NamedRunnable("Uploading to " + ServerList.get(execEnv).getDisplayName()) { // NOI18N
+            RP.post(new NamedRunnable("Uploading to " + ServerList.get(execEnv).getDisplayName()) { // NOI18N
                 @Override
                 protected void runImpl() {
                     download(execEnv, activatedNodes);
