@@ -52,6 +52,8 @@ import java.io.FileReader;
 import java.net.PasswordAuthentication;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
+import junit.framework.Test;
+import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.odcs.client.api.ODCSFactory;
 import org.netbeans.modules.odcs.client.api.ODCSClient;
@@ -68,7 +70,15 @@ public class ODCSJerseyTest extends NbTestCase {
     private static String passw;
     private static String proxyHost;
     private static String proxyPort;
-    public static final String URL = "https://q.tasktop.com";
+    public static final String URL = "http://qa-dev.developer.us.oracle.com";
+    
+    public static Test suite() {
+        return NbModuleSuite
+                    .emptyConfiguration()
+                    .gui(false)
+                    .addTest(ODCSJerseyTest.class)
+                    .suite();
+    }
     
     public ODCSJerseyTest(String testName) {
         super(testName);
@@ -142,6 +152,15 @@ public class ODCSJerseyTest extends NbTestCase {
         
         assertNotNull(profile);
         assertEquals(uname, profile.getUsername());
+    }
+    
+    public void testGetUserInfo () throws Exception {
+        ODCSClient client = getClient();
+        Profile currentClient = client.getCurrentProfile();
+        assertNotNull(currentClient.getFirstName());
+        assertNotNull(currentClient.getLastName());
+        assertNotNull(currentClient.getEmail());
+        assertEquals(uname, currentClient.getUsername());
     }
     
 //    public void testRecentActivities() throws CloudException {
