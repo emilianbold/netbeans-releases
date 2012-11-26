@@ -42,9 +42,11 @@
 package org.netbeans.modules.profiler.nbmodule;
 
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.profiler.api.ProjectUtilities;
 import org.netbeans.modules.profiler.spi.project.ProfilingSettingsSupportProvider;
 import org.netbeans.spi.project.LookupProvider.Registration.ProjectType;
 import org.netbeans.spi.project.ProjectServiceProvider;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -60,6 +62,14 @@ public class NbModuleProfilingSettingsSupportProvider extends ProfilingSettingsS
     // #222661, project-only filter not available for module suites
     public String getProjectOnlyFilterName() {
         return null;
+    }
+    
+    @NbBundle.Messages({
+        "NbModuleProfilingSettingsSupportProvider_ProfileProjectSubprojectClassesString=Profile suite & modules classes"
+    })
+    public String getProjectSubprojectsFilterName() {
+        return !ProjectUtilities.hasSubprojects(getProject()) ? null :
+                Bundle.NbModuleProfilingSettingsSupportProvider_ProfileProjectSubprojectClassesString();
     }
     
     public NbModuleProfilingSettingsSupportProvider(Project project) {
