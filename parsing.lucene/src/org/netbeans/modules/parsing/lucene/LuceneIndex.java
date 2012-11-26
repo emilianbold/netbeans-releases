@@ -49,7 +49,6 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.lang.ref.SoftReference;
-import java.lang.reflect.Field;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Arrays;
@@ -572,6 +571,7 @@ public class LuceneIndex implements Index.Transactional, Index.WithTermFrequenci
         private CleanReference ref;
         private IndexReader reader;
         private volatile boolean closed;
+        private volatile Throwable closeStackTrace;
         private volatile Status validCache;
         private final OwnerReference owner = new OwnerReference();
         private final ReadWriteLock rwLock = new java.util.concurrent.locks.ReentrantReadWriteLock();
@@ -653,9 +653,8 @@ public class LuceneIndex implements Index.Transactional, Index.WithTermFrequenci
                 }
             } finally {
                 //Need to recreate directory, see issue: #148374
-                this.doClose(true);
+                this.fsDir.close();
                 this.fsDir = createFSDirectory(this.folder, this.lockFactory);
-                closed = false;
             }
         }
         
@@ -715,6 +714,7 @@ public class LuceneIndex implements Index.Transactional, Index.WithTermFrequenci
                     tmpDir.close();
                 }
                 if (closeFSDir) {
+                    this.closeStackTrace = new Throwable();
                     this.closed = true;
                     this.fsDir.close();
                 }
@@ -1002,7 +1002,7 @@ public class LuceneIndex implements Index.Transactional, Index.WithTermFrequenci
         
         private void checkPreconditions () throws IndexClosedException {
             if (closed) {
-                throw new IndexClosedException();
+                throw (IndexClosedException) new IndexClosedException().initCause(closeStackTrace);
             }
         }
         

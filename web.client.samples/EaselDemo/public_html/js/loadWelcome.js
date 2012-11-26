@@ -14,19 +14,20 @@ function getWelcome() {
     
 }
 
-function getLanguage() {
-	try {
-		var str1 = navigator.userAgent.match(/\((.*)\)/)[1];
-		var ar1 = str1.split(/\s*;\s*/), lang;
-		for (var i = 0; i < ar1.length; i++) {
-			if (ar1[i].match(/^(.{2})$/)) {
-				lang = ar1[i];
-			}
-		}
-	} catch (e) {
-	}
-	return lang;
-}
+ function getLanguage() {
+
+         if (navigator.language) {
+             lang = navigator.language;
+         } else if (navigator.userLanguage) {
+             lang = navigator.userLanguage;
+         }
+
+         if (lang && lang.length > 2) {
+             lang = lang.substring(0, 2);
+         }
+
+         return lang;
+     }
 
 var phrases = { /* translation table for page */
     en: ["<h1>Welcome!</h1><p>NetBeans Project Easel is about combining state of the art HTML5/CSS3/JavaScript client development with Java/REST web services. Enabling the development and customization of flexabilble and performant industry standard client-side interfaces for multiple devices.</p><p><a href='about.html' class='btn btn-primary btn-large'>Learn more &raquo;</a></p>"],

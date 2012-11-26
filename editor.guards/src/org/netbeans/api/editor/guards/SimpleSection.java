@@ -61,11 +61,16 @@ public final class SimpleSection extends GuardedSection {
         super(impl);
     }
 
+    SimpleSection(GuardedSection delegate, int offset) {
+        super(delegate, offset);
+    }
+
     /**
      * Sets the text of the section.
      * @param text the new text
      */
     public void setText(String text) {
+        if (getImpl() == null) throw new IllegalStateException();
         getImpl().setText(text);
     }
 
@@ -86,5 +91,10 @@ public final class SimpleSection extends GuardedSection {
 
     SimpleSectionImpl getImpl() {
         return (SimpleSectionImpl) super.getImpl();
+    }
+
+    @Override
+    GuardedSection clone(int offset) {
+        return new SimpleSection(this, offset);
     }
 }

@@ -108,6 +108,23 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
     <changes>
+        <change id="AbstractGuardedSectionsProvider-useReadersWritersOnSet">
+            <api name="general"/>
+            <summary>Ability run guarded readers/writers when the content of the guarded section's content is set</summary>
+            <version major="1" minor="20"/>
+            <date day="25" month="11" year="2012"/>
+            <author login="jlahoda"/>
+            <compatibility addition="yes" binary="compatible" deletion="no" deprecation="no" modification="no"/>
+            <description>
+                <p>When this option is set, setting the content of a GuardedSection will pass the data through the given
+                guarded writer and back through the given guarded reader, to ensure the result is the same
+                as if it would be read from the disk.</p>
+                <p>Note that this new mode is not fully compatible with the original mode, e.g. all the set methods
+                of all the GuardedSection classes will throw IllegalStateException if invoked inside the write&amp;read part.</p>
+            </description>
+            <issue number="221844"/>
+        </change>
+        
         <change id="GuardedSectionsProvider-Charset">
             <api name="general"/>
             <summary>GuardedSectionsProvider supports Charset</summary>

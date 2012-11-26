@@ -1485,6 +1485,9 @@ public class SourcePathProviderImpl extends SourcePathProvider {
         @Override
         public void pathsAdded(final GlobalPathRegistryEvent event) {
             List<URL> changedPaths = getChangedPaths(event);
+            if (changedPaths == null) {
+                return ;
+            }
             synchronized (rootsLock) {
                 if (addedRoots == null) {
                     addedRoots = changedPaths;
@@ -1498,6 +1501,9 @@ public class SourcePathProviderImpl extends SourcePathProvider {
         @Override
         public void pathsRemoved(final GlobalPathRegistryEvent event) {
             List<URL> changedPaths = getChangedPaths(event);
+            if (changedPaths == null) {
+                return ;
+            }
             synchronized (rootsLock) {
                 if (removedRoots == null) {
                     removedRoots = changedPaths;
@@ -1509,6 +1515,9 @@ public class SourcePathProviderImpl extends SourcePathProvider {
         }
         
         private List<URL> getChangedPaths(final GlobalPathRegistryEvent event) {
+            if (!ClassPath.SOURCE.equals(event.getId())) {
+                return null;
+            }
             List<URL> urls = new ArrayList<URL>();
             for (ClassPath cp : event.getChangedPaths()) {
                 for (Entry entry : cp.entries()) {

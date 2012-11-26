@@ -45,6 +45,7 @@ import javax.swing.text.BadLocationException;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.mimelookup.MimeRegistration;
 import org.netbeans.api.editor.mimelookup.MimeRegistrations;
+import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
@@ -53,7 +54,6 @@ import org.netbeans.editor.Utilities;
 import org.netbeans.lib.editor.util.CharSequenceUtilities;
 import org.netbeans.modules.csl.api.EditorOptions;
 import org.netbeans.modules.csl.spi.GsfUtilities;
-import org.netbeans.modules.editor.indent.api.Indent;
 import org.netbeans.modules.editor.indent.api.IndentUtils;
 import org.netbeans.modules.javascript2.editor.doc.JsDocumentationCompleter;
 import org.netbeans.modules.javascript2.editor.lexer.JsDocumentationTokenId;
@@ -73,7 +73,16 @@ public class JsTypedBreakInterceptor implements TypedBreakInterceptor {
      */
     static final boolean CONTINUE_COMMENTS = Boolean.getBoolean("js.cont.comment"); // NOI18N
 
+    private final Language<JsTokenId> language;
+
+    private final boolean comments;
+
     private CommentGenerator commentGenerator = null;
+
+    public JsTypedBreakInterceptor(Language<JsTokenId> language, boolean comments) {
+        this.language = language;
+        this.comments = comments;
+    }
 
     public boolean isInsertMatchingEnabled(BaseDocument doc) {
         // The editor options code is calling methods on BaseOptions instead of looking in the settings map :(
@@ -102,7 +111,8 @@ public class JsTypedBreakInterceptor implements TypedBreakInterceptor {
             return;
         }
 
-        TokenSequence<? extends JsTokenId> ts = LexUtilities.getJsTokenSequence(tokenHierarchy, offset);
+        TokenSequence<? extends JsTokenId> ts = LexUtilities.getTokenSequence(
+                tokenHierarchy, offset, language);
 
         if (ts == null) {
             return;
@@ -177,7 +187,7 @@ public class JsTypedBreakInterceptor implements TypedBreakInterceptor {
         if (id.isError()) {
             // See if it's a block comment opener
             String text = token.text().toString();
-            if (text.startsWith("/*") && ts.offset() == Utilities.getRowFirstNonWhite(doc, offset)) {
+            if (comments && text.startsWith("/*") && ts.offset() == Utilities.getRowFirstNonWhite(doc, offset)) {
                 int indent = GsfUtilities.getLineIndent(doc, offset);
                 StringBuilder sb = new StringBuilder();
                 sb.append("\n"); // NOI18N
@@ -239,7 +249,7 @@ public class JsTypedBreakInterceptor implements TypedBreakInterceptor {
         // brace on the line below the insert position, and indent properly.
         // Catch this scenario and handle it properly.
         if ((id == JsTokenId.BRACKET_RIGHT_CURLY || id == JsTokenId.BRACKET_RIGHT_BRACKET) && offset > 0) {
-            Token<? extends JsTokenId> prevToken = LexUtilities.getToken(doc, offset - 1);
+            Token<? extends JsTokenId> prevToken = LexUtilities.getToken(doc, offset - 1, language);
             if (prevToken != null) {
                 JsTokenId prevTokenId = prevToken.id();
                 if (id == JsTokenId.BRACKET_RIGHT_CURLY && prevTokenId == JsTokenId.BRACKET_LEFT_CURLY ||
@@ -260,6 +270,9 @@ public class JsTypedBreakInterceptor implements TypedBreakInterceptor {
             }
         }
 
+        if (!comments) {
+            return;
+        }
         if (id == JsTokenId.WHITESPACE) {
             // Pressing newline in the whitespace before a comment
             // should be identical to pressing newline with the caret
@@ -299,7 +312,8 @@ public class JsTypedBreakInterceptor implements TypedBreakInterceptor {
                     sb.append("* "); //NOI18N
                     carretPosition = sb.length();
 
-                    TokenSequence<? extends JsDocumentationTokenId> jsDocTS = LexUtilities.getJsDocumentationTokenSequence(tokenHierarchy, offset);
+                    TokenSequence<? extends JsDocumentationTokenId> jsDocTS =
+                            LexUtilities.getJsDocumentationTokenSequence(tokenHierarchy, offset);
                     if (jsDocTS != null) {
                         if (!endsCommentProperly(jsDocTS)) {
                             // setup comment generator
@@ -356,7 +370,8 @@ public class JsTypedBreakInterceptor implements TypedBreakInterceptor {
             if (rowStart > 0) {
                 int prevBegin = Utilities.getRowFirstNonWhite(doc, rowStart - 1);
                 if (prevBegin != -1) {
-                    Token<? extends JsTokenId> firstToken = LexUtilities.getToken(doc, prevBegin);
+                    Token<? extends JsTokenId> firstToken = LexUtilities.getToken(
+                            doc, prevBegin, language);
                     if (firstToken != null && firstToken.id() == JsTokenId.LINE_COMMENT) {
                         previousLineWasComment = true;
                     }
@@ -366,7 +381,8 @@ public class JsTypedBreakInterceptor implements TypedBreakInterceptor {
             if (rowEnd < doc.getLength()) {
                 int nextBegin = Utilities.getRowFirstNonWhite(doc, rowEnd + 1);
                 if (nextBegin != -1) {
-                    Token<? extends JsTokenId> firstToken = LexUtilities.getToken(doc, nextBegin);
+                    Token<? extends JsTokenId> firstToken = LexUtilities.getToken(
+                            doc, nextBegin, language);
                     if (firstToken != null && firstToken.id() == JsTokenId.LINE_COMMENT) {
                         nextLineIsComment = true;
                     }
@@ -387,7 +403,8 @@ public class JsTypedBreakInterceptor implements TypedBreakInterceptor {
                 } else if (CONTINUE_COMMENTS) {
                     // See if the "continue comments" options is turned on, and this is a line that
                     // contains only a comment (after leading whitespace)
-                    Token<? extends JsTokenId> firstToken = LexUtilities.getToken(doc, begin);
+                    Token<? extends JsTokenId> firstToken = LexUtilities.getToken(
+                            doc, begin, language);
                     if (firstToken.id() == JsTokenId.LINE_COMMENT) {
                         continueComment = true;
                     }
@@ -399,7 +416,8 @@ public class JsTypedBreakInterceptor implements TypedBreakInterceptor {
                     if (nextLine < doc.getLength()) {
                         int nextLineFirst = Utilities.getRowFirstNonWhite(doc, nextLine);
                         if (nextLineFirst != -1) {
-                            Token<? extends JsTokenId> firstToken = LexUtilities.getToken(doc, nextLineFirst);
+                            Token<? extends JsTokenId> firstToken = LexUtilities.getToken(
+                                    doc, nextLineFirst, language);
                             if (firstToken != null && firstToken.id() == JsTokenId.LINE_COMMENT) {
                                 continueComment = true;
                             }
@@ -477,12 +495,12 @@ public class JsTypedBreakInterceptor implements TypedBreakInterceptor {
      * @return indentation size
      * @throws BadLocationException 
      */
-    private static int getNextLineIndentation(BaseDocument doc, int offset) throws BadLocationException {
+    private int getNextLineIndentation(BaseDocument doc, int offset) throws BadLocationException {
         int indent = GsfUtilities.getLineIndent(doc, offset);
         int currentOffset = offset;
         while (currentOffset > 0) {
             if (!Utilities.isRowEmpty(doc, currentOffset) && !Utilities.isRowWhite(doc, currentOffset)
-                    && !LexUtilities.isCommentOnlyLine(doc, currentOffset)) {
+                    && !LexUtilities.isCommentOnlyLine(doc, currentOffset, language)) {
                 indent = GsfUtilities.getLineIndent(doc, currentOffset);
                 int parenBalance = LexUtilities.getLineBalance(doc, currentOffset,
                         JsTokenId.BRACKET_LEFT_PAREN, JsTokenId.BRACKET_RIGHT_PAREN);
@@ -520,13 +538,14 @@ public class JsTypedBreakInterceptor implements TypedBreakInterceptor {
      * @return true if a right brace '}' should be added
      *  or false if not.
      */
-    static boolean isAddRightBrace(BaseDocument doc, int caretOffset) throws BadLocationException {
+    private boolean isAddRightBrace(BaseDocument doc, int caretOffset) throws BadLocationException {
         if (LexUtilities.getTokenBalance(doc,
-                JsTokenId.BRACKET_LEFT_CURLY, JsTokenId.BRACKET_RIGHT_CURLY, caretOffset) <= 0) {
+                JsTokenId.BRACKET_LEFT_CURLY, JsTokenId.BRACKET_RIGHT_CURLY, caretOffset, language) <= 0) {
             return false;
         }
         int caretRowStartOffset = org.netbeans.editor.Utilities.getRowStart(doc, caretOffset);
-        TokenSequence<? extends JsTokenId> ts = LexUtilities.getJsPositionedSequence(doc, caretOffset);
+        TokenSequence<? extends JsTokenId> ts = LexUtilities.getPositionedSequence(
+                doc, caretOffset, language);
         if (ts == null) {
             return false;
         }
@@ -562,7 +581,7 @@ public class JsTypedBreakInterceptor implements TypedBreakInterceptor {
      * till the end of caret row. If there is no such element, position after the last non-white
      * character on the caret row is returned.
      */
-    static int getRowOrBlockEnd(BaseDocument doc, int caretOffset, boolean[] insert) throws BadLocationException {
+    private int getRowOrBlockEnd(BaseDocument doc, int caretOffset, boolean[] insert) throws BadLocationException {
         int rowEnd = org.netbeans.editor.Utilities.getRowLastNonWhite(doc, caretOffset);
         if (rowEnd == -1 || caretOffset >= rowEnd) {
             return caretOffset;
@@ -571,7 +590,8 @@ public class JsTypedBreakInterceptor implements TypedBreakInterceptor {
         int parenBalance = 0;
         int braceBalance = 0;
         int bracketBalance = 0;
-        TokenSequence<? extends JsTokenId> ts = LexUtilities.getJsPositionedSequence(doc, caretOffset);
+        TokenSequence<? extends JsTokenId> ts = LexUtilities.getPositionedSequence(
+                doc, caretOffset, language);
         if (ts == null) {
             return caretOffset;
         }
@@ -621,8 +641,10 @@ public class JsTypedBreakInterceptor implements TypedBreakInterceptor {
         insert[0] = false;
         return rowEnd;
     }
-    private static int getUnbalancedCurlyOffset(BaseDocument doc, int offset) throws BadLocationException {
-        TokenSequence<? extends JsTokenId> ts = LexUtilities.getJsPositionedSequence(doc, offset);
+
+    private int getUnbalancedCurlyOffset(BaseDocument doc, int offset) throws BadLocationException {
+        TokenSequence<? extends JsTokenId> ts = LexUtilities.getPositionedSequence(
+                doc, offset, language);
         if (ts == null) {
             return -1;
         }
@@ -647,19 +669,6 @@ public class JsTypedBreakInterceptor implements TypedBreakInterceptor {
         return id == JsTokenId.BLOCK_COMMENT || id == JsTokenId.DOC_COMMENT;
     }
 
-    @MimeRegistrations({
-        @MimeRegistration(mimeType = JsTokenId.JAVASCRIPT_MIME_TYPE, service = TypedBreakInterceptor.Factory.class),
-        @MimeRegistration(mimeType = JsDocumentationTokenId.MIME_TYPE, service = TypedBreakInterceptor.Factory.class)
-    })
-    public static class Factory implements TypedBreakInterceptor.Factory {
-
-        @Override
-        public TypedBreakInterceptor createTypedBreakInterceptor(MimePath mimePath) {
-            return new JsTypedBreakInterceptor();
-        }
-
-    }
-
     private static boolean endsCommentProperly(TokenSequence ts) {
         while (ts.moveNext()) {
             if (ts.token().id() == JsDocumentationTokenId.EOL) {
@@ -672,6 +681,29 @@ public class JsTypedBreakInterceptor implements TypedBreakInterceptor {
         return ts.token().id() == JsDocumentationTokenId.COMMENT_END;
     }
 
+    @MimeRegistrations({
+        @MimeRegistration(mimeType = JsTokenId.JAVASCRIPT_MIME_TYPE, service = TypedBreakInterceptor.Factory.class),
+        @MimeRegistration(mimeType = JsDocumentationTokenId.MIME_TYPE, service = TypedBreakInterceptor.Factory.class)
+    })
+    public static class JsFactory implements TypedBreakInterceptor.Factory {
+
+        @Override
+        public TypedBreakInterceptor createTypedBreakInterceptor(MimePath mimePath) {
+            return new JsTypedBreakInterceptor(JsTokenId.javascriptLanguage(), true);
+        }
+
+    }
+
+    @MimeRegistration(mimeType = JsTokenId.JSON_MIME_TYPE, service = TypedBreakInterceptor.Factory.class)
+    public static class JsonFactory implements TypedBreakInterceptor.Factory {
+
+        @Override
+        public TypedBreakInterceptor createTypedBreakInterceptor(MimePath mimePath) {
+            return new JsTypedBreakInterceptor(JsTokenId.jsonLanguage(), false);
+        }
+
+    }
+    
     private static class CommentGenerator {
 
         private final int offset;

@@ -156,6 +156,11 @@ public final class GuardedSectionManager {
             public GuardedSectionImpl getImpl(GuardedSection gs) {
                 return gs.getImpl();
             }
+
+            @Override
+            public GuardedSection clone(GuardedSection gs, int offset) {
+                return gs.clone(offset);
+            }
             
         };
     }

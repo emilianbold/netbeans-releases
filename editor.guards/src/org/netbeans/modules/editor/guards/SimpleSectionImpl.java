@@ -44,6 +44,7 @@
 
 package org.netbeans.modules.editor.guards;
 
+import java.beans.PropertyVetoException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.text.BadLocationException;
@@ -68,12 +69,22 @@ public final class SimpleSectionImpl extends GuardedSectionImpl {
         this.bounds = bounds;
     }
 
+    @Override
+    public void setName(String name) throws PropertyVetoException {
+        super.setName(name);
+        setText(getText());
+    }
+
     /**
      * Set the text of the section.
      * @param text the new text
      */
     public void setText(String text) {
-        setText(bounds, text, true);
+        setText(bounds, text, true, new ContentGetter() {
+            @Override public PositionBounds getContent(GuardedSectionImpl t) {
+                return ((SimpleSectionImpl) t).bounds;
+            }
+        });
     }
 
     void markGuarded(StyledDocument doc) {

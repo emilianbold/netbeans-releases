@@ -4,7 +4,7 @@
  */
 
 function loadRest() {
-    url = "http://localhost:8080/RestDemo/resources/manufacturer";
+    url = "rest/resources/manufacturer.json";
     $.getJSON(url, function(data) {
         content = "<div id='restDataList'><table border=0><tr>";
         for (i = 0; i < 4; i++) {
@@ -16,7 +16,7 @@ function loadRest() {
 }
 
 function showDetails(id) {
-    url = "http://localhost:8080/RestDemo/resources/manufacturer/" + id;
+    url = "rest/resources/id" + id+".json";
     $.getJSON(url, function(data) {
        $("#restName").text(data.name);
        $("#restRep").text(data.rep);
