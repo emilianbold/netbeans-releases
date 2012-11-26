@@ -178,6 +178,7 @@ class RfsLocalController extends NamedRunnable {
                     //BZ #193114 - IllegalArgumentException: Protocol error: Killed
                     //let's check the process state
                     if (remoteControllerProcess.getState() == NativeProcess.State.CANCELLED ||
+                            remoteControllerProcess.getState() == NativeProcess.State.FINISHING ||
                             remoteControllerProcess.getState() == NativeProcess.State.FINISHED){
                         try {
                             int exitStatus = remoteControllerProcess.waitFor();
