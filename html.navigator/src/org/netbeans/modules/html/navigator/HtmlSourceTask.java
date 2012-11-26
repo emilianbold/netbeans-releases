@@ -83,6 +83,7 @@ public final class HtmlSourceTask extends ParserResultTask<HtmlParserResult> {
         if (last != result) {
             //set new parser result to the UI
             HtmlNavigatorPanel.ui.setParserResult(result);
+            HtmlNavigatorPanel.ui.refreshDOM();
             last = result;
         }
         int caret = ((CursorMovedSchedulerEvent) event).getCaretOffset();

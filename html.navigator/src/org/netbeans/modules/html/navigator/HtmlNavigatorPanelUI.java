@@ -293,7 +293,7 @@ public class HtmlNavigatorPanelUI extends JPanel implements ExplorerManager.Prov
         }
     }
     
-    private synchronized void refreshDOM() {
+    public synchronized void refreshDOM() {
         if (domTask != null) {
             domTask.cancel();
         }
@@ -303,7 +303,7 @@ public class HtmlNavigatorPanelUI extends JPanel implements ExplorerManager.Prov
             public void run() {
                 refreshNodeDOMStatus();
             }
-        });
+        }, 300);
     }
     
     private synchronized void refreshSource(final Lookup.Result<Object> result) {
