@@ -534,6 +534,10 @@ public class MarkOccurrenceTest extends JsTestBase {
     public void testIssue222507_02() throws Exception {
         checkOccurrences("testfiles/markoccurences/issue222507.js", "NetBeans_PresetCustomizer._addPresetB^utton = null;", true);
     }
+    
+    public void testIssue222698_01() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue222698.js", "    data: js^on,", true);
+    }
 
 //    public void testIssue221228_02() throws Exception {
 //        checkOccurrences("testfiles/markoccurences/issue221228.js", "a.h^i(); // rename hi here", true);
