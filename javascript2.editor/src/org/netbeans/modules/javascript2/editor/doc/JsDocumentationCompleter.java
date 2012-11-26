@@ -53,22 +53,28 @@ import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import javax.swing.text.BadLocationException;
+import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
+import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.editor.indent.api.IndentUtils;
 import org.netbeans.modules.javascript2.editor.doc.api.JsDocumentationSupport;
 import org.netbeans.modules.javascript2.editor.doc.spi.SyntaxProvider;
+import org.netbeans.modules.javascript2.editor.lexer.JsTokenId;
+import org.netbeans.modules.javascript2.editor.lexer.LexUtilities;
 import org.netbeans.modules.javascript2.editor.model.DeclarationScope;
 import org.netbeans.modules.javascript2.editor.model.Identifier;
 import org.netbeans.modules.javascript2.editor.model.JsElement;
 import org.netbeans.modules.javascript2.editor.model.JsElement.Kind;
 import org.netbeans.modules.javascript2.editor.model.JsFunction;
 import org.netbeans.modules.javascript2.editor.model.JsObject;
+import org.netbeans.modules.javascript2.editor.model.Type;
 import org.netbeans.modules.javascript2.editor.model.TypeUsage;
 import org.netbeans.modules.javascript2.editor.model.impl.JsFunctionImpl;
 import org.netbeans.modules.javascript2.editor.model.impl.JsObjectImpl;
 import org.netbeans.modules.javascript2.editor.model.impl.ModelUtils;
 import org.netbeans.modules.javascript2.editor.model.impl.PathNodeVisitor;
+import org.netbeans.modules.javascript2.editor.model.impl.TypeUsageImpl;
 import org.netbeans.modules.javascript2.editor.parser.JsParserResult;
 import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
@@ -227,11 +233,35 @@ public class JsDocumentationCompleter {
         // TODO - could know constructors
         JsFunction function = ((JsFunction) jsObject);
         addParameters(doc, toAdd, syntaxProvider.paramTagTemplate(), indent, jsParserResult, function.getParameters()); //NOI18N
-        if (!function.getReturnTypes().isEmpty()) {
-            addReturns(doc, toAdd, syntaxProvider.returnTagTemplate(), indent, jsParserResult, function.getReturnTypes()); //NOI18N
+        Collection<? extends TypeUsage> returnTypes = function.getReturnTypes();
+        if (returnTypes.isEmpty()) {
+            if (hasReturnClause(doc, jsObject)) {
+                addReturns(doc, toAdd, syntaxProvider.returnTagTemplate(), indent, jsParserResult, Collections.singleton(new TypeUsageImpl(Type.UNRESOLVED)));
+            }
+        } else {
+            addReturns(doc, toAdd, syntaxProvider.returnTagTemplate(), indent, jsParserResult, returnTypes);
         }
 
         doc.insertString(offset, toAdd.toString(), null);
+    }
+
+    private static boolean hasReturnClause(BaseDocument doc, JsObject jsObject) {
+        OffsetRange offsetRange = jsObject.getOffsetRange();
+        TokenSequence<? extends JsTokenId> ts = LexUtilities.getJsTokenSequence(doc, offsetRange.getStart());
+        if (ts == null) {
+            return false;
+        }
+        ts.move(offsetRange.getStart());
+        if (!ts.moveNext() || !ts.movePrevious()) {
+            return false;
+        }
+
+        while (ts.moveNext() && ts.offset() <= offsetRange.getEnd()) {
+            if (ts.token().id() == JsTokenId.KEYWORD_RETURN) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private static void addParameters(BaseDocument doc, StringBuilder toAdd, String template, int indent, JsParserResult jsParserResult, Collection<? extends JsObject> params) {
