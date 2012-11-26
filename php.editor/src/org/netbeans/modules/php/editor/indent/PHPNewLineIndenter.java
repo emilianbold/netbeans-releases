@@ -182,6 +182,7 @@ public class PHPNewLineIndenter {
 
                         int bracketBalance = 0;
                         int squaredBalance = 0;
+                        PHPTokenId previousTokenId = ts.token().id();
                         while (!insideString && ts.movePrevious()) {
                             Token token = ts.token();
                             ScopeDelimiter delimiter = getScopeDelimiter(token);
@@ -274,7 +275,8 @@ public class PHPNewLineIndenter {
                                         }
                                         break;
                                     }
-                                } else if ((ts.token().id() == PHPTokenId.PHP_OBJECT_OPERATOR
+                                } else if ((previousTokenId == PHPTokenId.PHP_OBJECT_OPERATOR
+                                        || ts.token().id() == PHPTokenId.PHP_OBJECT_OPERATOR
                                         || ts.token().id() == PHPTokenId.PHP_PAAMAYIM_NEKUDOTAYIM) && bracketBalance <= 0) {
                                     int startExpression = findStartTokenOfExpression(ts);
                                     if (startExpression != -1) {
@@ -301,6 +303,7 @@ public class PHPNewLineIndenter {
                                     }
                                 }
                             }
+                            previousTokenId = ts.token().id();
                         }
 
                         if (newIndent < 0) {
