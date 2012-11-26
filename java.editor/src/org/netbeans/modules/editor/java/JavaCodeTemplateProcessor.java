@@ -53,7 +53,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import javax.lang.model.element.*;
 import javax.lang.model.type.*;
 import javax.lang.model.util.Types;
-import javax.swing.SwingUtilities;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
@@ -69,6 +68,7 @@ import org.netbeans.modules.parsing.api.UserTask;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 
 /**
  *
@@ -338,7 +338,7 @@ public class JavaCodeTemplateProcessor implements CodeTemplateProcessor {
             }
         }
         if (!autoImportedTypeNames.isEmpty()) {
-            SwingUtilities.invokeLater(new Runnable() {
+            RequestProcessor.getDefault().post(new Runnable() {
                 @Override
                 public void run() {
                     try {
