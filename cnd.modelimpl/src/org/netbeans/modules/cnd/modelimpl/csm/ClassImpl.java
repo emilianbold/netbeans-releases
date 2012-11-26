@@ -111,12 +111,13 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
         kind = findKind(ast);
     }
 
-    protected ClassImpl(NameHolder name, CsmDeclaration.Kind kind, CsmFile file, int startOffset, int endOffset) {
+    protected ClassImpl(NameHolder name, CsmDeclaration.Kind kind, int leftBracketPos, CsmFile file, int startOffset, int endOffset) {
         super(name, file, startOffset, endOffset);
         members = new ArrayList<CsmUID<CsmMember>>();
         friends = new ArrayList<CsmUID<CsmFriend>>(0);
         inheritances = new ArrayList<CsmUID<CsmInheritance>>(0);
         this.kind = kind;
+        this.leftBracketPos = leftBracketPos;
     }
     
     private ClassImpl(CsmFile file, CsmScope scope, String name, CsmDeclaration.Kind kind, int startOffset, int endOffset) {
@@ -451,6 +452,16 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
         
         private ClassImpl instance;
 
+        public ClassBuilder() {
+        }
+
+        protected ClassBuilder(ClassBuilder builder) {
+            super(builder);
+            kind = builder.kind;
+            memberBuilders = builder.memberBuilders;
+            inheritanceBuilders = builder.inheritanceBuilders;
+        }
+        
         public void setKind(Kind kind) {
             this.kind = kind;
         }
@@ -501,7 +512,8 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
             ClassImpl cls = getClassDefinitionInstance();
             CsmScope s = getScope();
             if (cls == null && s != null && getName() != null && getEndOffset() != 0) {
-                instance = cls = new ClassImpl(getNameHolder(), getKind(), getFile(), getStartOffset(), getEndOffset());
+                instance = cls = new ClassImpl(getNameHolder(), getKind(), getStartOffset(), getFile(), getStartOffset(), getEndOffset());
+                cls.setVisibility(CsmVisibility.PUBLIC);
                 cls.init3(s, isGlobal());
                 if(getTemplateDescriptorBuilder() != null) {
                     cls.setTemplateDescriptor(getTemplateDescriptor());
@@ -1216,6 +1228,12 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
             containerUID = UIDCsmConverter.declarationToUID(containingClass);
         }
 
+        private ClassMemberForwardDeclaration(CharSequence name, TemplateDescriptor templateDescriptor, CsmClass containingClass, CsmVisibility curentVisibility, CsmFile file, int startOffset, int endOffset) {
+            super(name, templateDescriptor, file, startOffset, endOffset);
+            visibility = curentVisibility;
+            containerUID = UIDCsmConverter.declarationToUID(containingClass);
+        }
+        
         public static ClassMemberForwardDeclaration create(CsmFile file, CsmClass containingClass, AST ast, CsmVisibility curentVisibility, boolean register) {
             ClassMemberForwardDeclaration res = new ClassMemberForwardDeclaration(file, containingClass, ast, curentVisibility, register);
             postObjectCreateRegistration(register, res);
@@ -1316,6 +1334,24 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmT
             return CharSequences.create(cls.getQualifiedName() + "::" + getName()); // NOI18N
         }
 
+        public static class ClassMemberForwardDeclarationBuilder extends ClassForwardDeclarationBuilder implements MemberBuilder {
+
+            @Override
+            public ClassMemberForwardDeclaration create() {
+                TemplateDescriptor td = null;
+                if(getTemplateDescriptorBuilder() != null) {
+                    getTemplateDescriptorBuilder().setScope(getScope());
+                    td = getTemplateDescriptorBuilder().create();
+                }
+
+                ClassMemberForwardDeclaration fc = new ClassMemberForwardDeclaration(getName(), td, (CsmClass)getScope(), CsmVisibility.PUBLIC, getFile(), getStartOffset(), getEndOffset());
+
+                postObjectCreateRegistration(isGlobal(), fc);
+
+                return fc;
+            }
+        }         
+        
         ////////////////////////////////////////////////////////////////////////////
         // impl of SelfPersistent
         @Override

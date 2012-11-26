@@ -75,7 +75,7 @@ public final class ForwardClass extends ClassImpl {
     }
 
     private ForwardClass(NameHolder name, CsmDeclaration.Kind kind, CsmFile file, int start, int end) {
-        super(name, kind, file, start, end);
+        super(name, kind, start, file, start, end);
     }
     
     public static boolean isForwardClass(CsmObject cls) {
