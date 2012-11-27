@@ -63,6 +63,7 @@ import org.openide.explorer.ExtendedDelete;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
+import org.openide.util.Exceptions;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ProxyLookup;
 
@@ -177,13 +178,13 @@ public class SafeDeleteAction extends RefactoringGlobalAction implements Extende
                                     try {
                                         nodes[i].destroy();
                                     } catch (IOException ioe) {
-                                        LOGGER.log(Level.WARNING, null, ioe);
+                                        Exceptions.printStackTrace(ioe);
                                     }
                                 }
                             }
                         });
                     } catch (IOException ioe) {
-                        LOGGER.log(Level.WARNING, null, ioe);
+                        Exceptions.printStackTrace(ioe);
                     }
                 }
                 return true;
