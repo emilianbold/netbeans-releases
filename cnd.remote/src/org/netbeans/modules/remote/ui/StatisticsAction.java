@@ -64,7 +64,6 @@ public class StatisticsAction extends SingleHostAction {
     private static final RequestProcessor RP = new RequestProcessor("StatisticsAction", 1); // NOI18N
     
     public StatisticsAction() {
-        System.err.printf("Hihi\n");
     }
 
     
