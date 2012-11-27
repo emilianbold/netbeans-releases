@@ -349,6 +349,19 @@ public class FileObjectTestHid extends TestBaseHid {
         value.equals((String)fo3.getAttribute(attrName)) );
         fileDataCreatedAssert("parent should fire fileDataCreated",1);
     }
+    
+    public void  testCopyToMemory() throws IOException {
+        checkSetUp();
+        FileObject fold = getTestFolder1(root);
+        FileObject fo1 = getTestFile1(fold);
+        
+        FileSystem memoryFileSystem = FileUtil.createMemoryFileSystem();
+        FileObject memoryFsRoot = memoryFileSystem.getRoot();
+        FileObject result = fo1.copy(memoryFsRoot, fo1.getName(), null);        
+        
+        assertTrue("Result is valid: " + result, result.isValid());
+        assertEquals("Some content in the file", fo1.asText(), result.asText());
+    }
 
     public void  testCreateAndOpen() throws Exception {
         checkSetUp();
@@ -512,6 +525,31 @@ public class FileObjectTestHid extends TestBaseHid {
             if (lock != null) lock.releaseLock();            
         }
         fsFail  ("move  should fire exception if file already exists");
+    }
+
+    public void  testMoveToMemory() throws IOException {
+        checkSetUp();
+        FileObject fold = getTestFolder1(root);
+        FileObject fo1 = getTestFile1(fold);
+        
+        FileSystem memoryFileSystem = FileUtil.createMemoryFileSystem();
+        FileObject memoryFsRoot = memoryFileSystem.getRoot();
+        FileLock lck = null;
+        try {
+            lck = fo1.lock();
+            FileObject result = fo1.move(lck, memoryFsRoot, fo1.getName(), null);        
+
+            assertTrue("Result is valid: " + result, result.isValid());
+            assertFalse("Original is not valid anymore: " + fo1, fo1.isValid());
+        } catch (IOException ex) {
+            fsAssert("OK, if the system is read-only",
+                fs.isReadOnly() || root.isReadOnly());
+            return;
+        } finally {
+            if (lck != null) {
+                lck.releaseLock();
+            }
+        } 
     }
     
     public void  testRenameLookup() throws Exception {
