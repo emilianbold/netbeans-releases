@@ -64,7 +64,7 @@ public class NbModuleSuiteStampTest extends TestCase {
             .enableClasspathModules(false)
         .suite());
         TestResult res = junit.textui.TestRunner.run(instance);
-        assertEquals("Two tests started", 2, res.runCount());
+        assertEquals("Two tests started, two shutdowns made", 2 + 2, res.runCount());
         assertEquals("No failures", 0, res.failureCount());
         assertEquals("No errors", 0, res.errorCount());
 
