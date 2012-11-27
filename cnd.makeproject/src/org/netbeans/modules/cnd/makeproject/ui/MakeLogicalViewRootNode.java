@@ -199,7 +199,7 @@ final class MakeLogicalViewRootNode extends AnnotatedNode implements ChangeListe
             if (ret == null) {
                 ret = getName();
             }
-            ret = ret + " <font color=''!controlShadow''>[" + env.getDisplayName() + "]"; // NOI18N
+            ret = ret + " <font color=\"!controlShadow\">[" + env.getDisplayName() + "]"; // NOI18N
         }
         return ret;
     }
