@@ -221,6 +221,7 @@ class JsCodeCompletion implements CodeCompletionHandler {
                     }
                     break;
                 case EXPRESSION:
+                    completeKeywords(request, resultList);
                     completeExpression(request, resultList);
                     break;
                 case OBJECT_PROPERTY:
