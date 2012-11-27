@@ -54,7 +54,7 @@ import org.netbeans.modules.parsing.lucene.support.Index;
 public class LuceneIndexFactory implements IndexFactory {
 
     @Override
-    public Index createIndex(File cacheFolder, Analyzer analyzer) throws IOException {
+    public Index.Transactional createIndex(File cacheFolder, Analyzer analyzer) throws IOException {
         return LuceneIndex.create(cacheFolder, analyzer);
     }
 
