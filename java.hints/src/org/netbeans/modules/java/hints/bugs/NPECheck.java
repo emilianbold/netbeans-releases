@@ -645,6 +645,12 @@ public class NPECheck {
             return null;
         }
 
+        @Override
+        public State visitArrayAccess(ArrayAccessTree node, Void p) {
+            super.visitArrayAccess(node, p);
+            return State.POSSIBLE_NULL;
+        }
+        
         private void mergeIntoVariable2State(Map<VariableElement, State> other) {
             for (Entry<VariableElement, State> e : other.entrySet()) {
                 State t = e.getValue();

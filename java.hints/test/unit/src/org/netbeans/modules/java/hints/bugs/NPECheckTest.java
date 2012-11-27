@@ -664,6 +664,19 @@ public class NPECheckTest extends NbTestCase {
                 .assertWarnings("4:12-4:24:verifier:ERR_NotNull");
     }
     
+    public void testArrayAccess() throws Exception {
+        HintTest.create()
+                .input("package test;\n" +
+                       "class Test {\n" +
+                       "    public void foo(String[] paths) {\n" +
+                       "        assert paths != null;\n" +
+                       "        if (paths[0] != null) { System.err.println(paths[0]); }\n" +
+                       "    }\n" +
+                       "}")
+                .run(NPECheck.class)
+                .assertWarnings();
+    }
+    
     private void performAnalysisTest(String fileName, String code, String... golden) throws Exception {
         HintTest.create()
                 .input(fileName, code)
