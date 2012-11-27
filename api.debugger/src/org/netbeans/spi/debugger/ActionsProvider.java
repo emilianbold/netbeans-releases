@@ -493,6 +493,11 @@ public abstract class ActionsProvider {
             
         }
 
+        @Override
+        public synchronized String toString() {
+            return "ActionsProvider.ContextAware for service "+serviceName+", context = "+context+", path = "+path+", delegate = "+delegate;
+        }
+        
     }
     
 }
