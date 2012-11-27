@@ -347,15 +347,18 @@ public class ModelVisitor extends PathNodeVisitor {
                     parent.addOccurrence(parentName.getOffsetRange());
                 }
             }
-            if (parent != null) {
-                String index = ((LiteralNode)indexNode.getIndex()).getPropertyName();
-                JsObjectImpl property = (JsObjectImpl)parent.getProperty(index);
-                if (property != null) {
-                    property.addOccurrence(ModelUtils.documentOffsetRange(parserResult, indexNode.getIndex().getStart(), indexNode.getIndex().getFinish()));
-                } else {
-                    Identifier name = ModelElementFactory.create(parserResult, (LiteralNode)indexNode.getIndex());
-                    property = new JsObjectImpl(parent, name, name.getOffsetRange());
-                    parent.addProperty(name.getName(), property);
+            if (parent != null && indexNode.getIndex() instanceof LiteralNode) {
+                LiteralNode literal = (LiteralNode)indexNode.getIndex();
+                if (literal.isString()) {
+                    String index = literal.getPropertyName();
+                    JsObjectImpl property = (JsObjectImpl)parent.getProperty(index);
+                    if (property != null) {
+                        property.addOccurrence(ModelUtils.documentOffsetRange(parserResult, indexNode.getIndex().getStart(), indexNode.getIndex().getFinish()));
+                    } else {
+                        Identifier name = ModelElementFactory.create(parserResult, (LiteralNode)indexNode.getIndex());
+                        property = new JsObjectImpl(parent, name, name.getOffsetRange());
+                        parent.addProperty(name.getName(), property);
+                    }
                 }
             }
         }
