@@ -205,7 +205,7 @@ made subject to such option by the copyright holder.
     </folder> <!-- Menu -->
 
     <folder name="Shortcuts">
-        <file name="DA-T.shadow">
+        <file name="DS-T.shadow">
             <attr name="originalFile" stringvalue="Actions/System/org-netbeans-modules-openfile-RecentFileAction.instance"/>
         </file>
     </folder>
