@@ -57,6 +57,7 @@ import java.util.Map;
 import java.util.MissingResourceException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import org.netbeans.modules.cnd.api.remote.RemoteSyncWorker;
 import org.netbeans.modules.cnd.api.remote.ServerList;
@@ -314,19 +315,19 @@ import org.openide.util.RequestProcessor;
 
         private final BufferedReader errorReader;
         private final PrintWriter errorWriter;
-        private boolean stopped;
+        private final AtomicBoolean stopped;
 
         public ErrorReader(InputStream errorStream, PrintWriter errorWriter) {
             this.errorReader = new BufferedReader(new InputStreamReader(errorStream));
             this.errorWriter = errorWriter;
-            this.stopped = false;
+            this.stopped = new AtomicBoolean(false);
         }
         @Override
         public void run() {
             try {
                 String line;
                 while ((line = errorReader.readLine()) != null) {
-                    if (stopped) {
+                    if (stopped.get()) {
                         break;
                     }
                     if (errorWriter != null) {
@@ -340,7 +341,7 @@ import org.openide.util.RequestProcessor;
         }
 
         private void stop() {
-            stopped = true;
+            stopped.set(true);
         }
     }
 }
