@@ -50,13 +50,13 @@ Portions Copyrighted 2008 Sun Microsystems, Inc.
         <resource>jar:nbinst://org.netbeans.libs.cglib/modules/ext/cglib-2.2.jar!/</resource>
 
         <resource>jar:nbinst://org.netbeans.libs.springframework/modules/ext/spring-3.0/spring-aop-3.1.1.RELEASE.jar!/</resource>
-        <resource>jar:nbinst://org.netbeans.libs.springframework/modules/ext/spring-3.0/spring-asm-3.1.1.RELEASE.jar!/</resource>
+        <resource>jar:nbinst://org.springframework.asm/modules/org-springframework-asm.jar!/</resource>
         <resource>jar:nbinst://org.netbeans.libs.springframework/modules/ext/spring-3.0/spring-aspects-3.1.1.RELEASE.jar!/</resource>
-        <resource>jar:nbinst://org.netbeans.libs.springframework/modules/ext/spring-3.0/spring-beans-3.1.1.RELEASE.jar!/</resource>
-        <resource>jar:nbinst://org.netbeans.libs.springframework/modules/ext/spring-3.0/spring-context-3.1.1.RELEASE.jar!/</resource>
-        <resource>jar:nbinst://org.netbeans.libs.springframework/modules/ext/spring-3.0/spring-context-support-3.1.1.RELEASE.jar!/</resource>
-        <resource>jar:nbinst://org.netbeans.libs.springframework/modules/ext/spring-3.0/spring-core-3.1.1.RELEASE.jar!/</resource>
-        <resource>jar:nbinst://org.netbeans.libs.springframework/modules/ext/spring-3.0/spring-expression-3.1.1.RELEASE.jar!/</resource>
+        <resource>jar:nbinst://org.springframework.beans/modules/org-springframework-beans.jar!/</resource>
+        <resource>jar:nbinst://org.springframework.context/modules/org-springframework-context.jar!/</resource>
+        <resource>jar:nbinst://org.springframework.context-support/modules/org-springframework-context-support.jar!/</resource>
+        <resource>jar:nbinst://org.springframework.core/modules/org-springframework-core.jar!/</resource>
+        <resource>jar:nbinst://org.springframework.expression/modules/org-springframework-expression.jar!/</resource>
         <resource>jar:nbinst://org.netbeans.libs.springframework/modules/ext/spring-3.0/spring-instrument-3.1.1.RELEASE.jar!/</resource>
         <resource>jar:nbinst://org.netbeans.libs.springframework/modules/ext/spring-3.0/spring-instrument-tomcat-3.1.1.RELEASE.jar!/</resource>
         <resource>jar:nbinst://org.netbeans.libs.springframework/modules/ext/spring-3.0/spring-jdbc-3.1.1.RELEASE.jar!/</resource>
@@ -65,7 +65,7 @@ Portions Copyrighted 2008 Sun Microsystems, Inc.
         <resource>jar:nbinst://org.netbeans.libs.springframework/modules/ext/spring-3.0/spring-oxm-3.1.1.RELEASE.jar!/</resource>
         <resource>jar:nbinst://org.netbeans.libs.springframework/modules/ext/spring-3.0/spring-test-3.1.1.RELEASE.jar!/</resource>
         <resource>jar:nbinst://org.netbeans.libs.springframework/modules/ext/spring-3.0/spring-tx-3.1.1.RELEASE.jar!/</resource>
-        <resource>jar:nbinst://org.netbeans.libs.springframework/modules/ext/spring-3.0/spring-web-3.1.1.RELEASE.jar!/</resource>
+        <resource>jar:nbinst://org.springframework.web/modules/org-springframework-web.jar!/</resource>
         <resource>jar:nbinst://org.netbeans.libs.springframework/modules/ext/spring-3.0/spring-webmvc-portlet-3.1.1.RELEASE.jar!/</resource>
         <resource>jar:nbinst://org.netbeans.libs.springframework/modules/ext/spring-3.0/spring-webmvc-3.1.1.RELEASE.jar!/</resource>
         <resource>jar:nbinst://org.netbeans.libs.springframework/modules/ext/spring-3.0/spring-struts-3.1.1.RELEASE.jar!/</resource>
