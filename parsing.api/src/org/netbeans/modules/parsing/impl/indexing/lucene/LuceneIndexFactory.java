@@ -126,7 +126,7 @@ public final class LuceneIndexFactory implements IndexFactoryImpl {
             }
             LayeredDocumentIndex res = indexes.get(luceneIndexFolder);
             if (res == null) {
-                final DocumentIndex base = DocumentBasedIndexManager.getDefault().getIndex(
+                final DocumentIndex.Transactional base = DocumentBasedIndexManager.getDefault().getIndex(
                         luceneIndexFolder,
                         mode);
                 if (base != null) {
