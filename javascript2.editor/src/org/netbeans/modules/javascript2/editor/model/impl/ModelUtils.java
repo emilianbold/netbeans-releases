@@ -340,11 +340,15 @@ public class ModelUtils {
             if (object.getJSKind() == JsElement.Kind.CONSTRUCTOR) {
                 parent = object;
             } else {
-                parent = object.getParent();
+                if (object.getParent() != null && object.getParent().getJSKind() != JsElement.Kind.FILE) {
+                    parent = object.getParent();
+                } else {
+                    parent = object;
+                }
             } 
-            if (parent.getJSKind() == JsElement.Kind.FUNCTION || parent.getJSKind() == JsElement.Kind.METHOD) {
+            if (parent != null && (parent.getJSKind() == JsElement.Kind.FUNCTION || parent.getJSKind() == JsElement.Kind.METHOD)) {
                 if (parent.getParent().getJSKind() == JsElement.Kind.FILE) {
-                    result.add(new TypeUsageImpl("@global", 0, true)); //NOI18N
+                    result.add(new TypeUsageImpl(ModelUtils.createFQN(parent), 0, true)); //NOI18N
                 } else {
                     JsObject grandParent = parent.getParent();
                     if ( grandParent != null && grandParent.getJSKind() == JsElement.Kind.OBJECT_LITERAL) {
