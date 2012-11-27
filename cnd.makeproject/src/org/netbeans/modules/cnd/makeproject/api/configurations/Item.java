@@ -67,7 +67,6 @@ import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.cnd.api.toolchain.PredefinedToolKind;
 import org.netbeans.modules.cnd.api.toolchain.Tool;
 import org.netbeans.modules.cnd.makeproject.spi.configurations.AllOptionsProvider;
-import org.netbeans.modules.cnd.makeproject.spi.configurations.ConfigurationRequirementProvider;
 import org.netbeans.modules.cnd.makeproject.spi.configurations.IncludePathExpansionProvider;
 import org.netbeans.modules.cnd.makeproject.spi.configurations.UserOptionsProvider;
 import org.netbeans.modules.cnd.utils.CndPathUtilitities;
@@ -87,7 +86,6 @@ import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileSystem;
-import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.Exceptions;
@@ -557,10 +555,6 @@ public final class Item implements NativeFileItem, PropertyChangeListener {
     public PredefinedToolKind getDefaultTool() {
         // use data object of this item
         return getDefaultToolForItem(this.getDataObject(), this);
-    }
-    
-    public boolean canHaveConfiguration() {
-        return ConfigurationRequirementProvider.askAllProviders(this);
     }
 
     private MakeConfigurationDescriptor getMakeConfigurationDescriptor() {
