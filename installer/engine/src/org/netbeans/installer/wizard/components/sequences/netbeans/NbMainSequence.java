@@ -50,8 +50,6 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import java.util.zip.ZipOutputStream;
 import org.netbeans.installer.product.Registry;
 import org.netbeans.installer.product.components.Product;
@@ -186,6 +184,7 @@ public class NbMainSequence extends WizardSequence {
             
             ExecutionResults executeResult;
             boolean start = true;
+            try {
             while (start) {
                 try {
                     compositeProgress.addProgressListener(new ProgressListener() {
@@ -294,10 +293,10 @@ public class NbMainSequence extends WizardSequence {
                 } catch (Exception ioe) {
                     LogManager.log("    .... exception ", ioe);
                     return ;
-                } finally {
-                    cleanupNBMsIfLeft(nbInstallLocation);
-                    LogManager.log("    .... done. ");
                 }
+            } finally {
+                cleanupNBMsIfLeft(nbInstallLocation);
+                LogManager.log("    .... done. ");
             }
             
             LogManager.log("preparing caches : ");
@@ -483,7 +482,7 @@ public class NbMainSequence extends WizardSequence {
         }
 
         private void cleanupNBMsIfLeft(File installRoot) {
-            Logger.getLogger(NbMainSequence.class.getName()).log(Level.INFO, "CleanupNBMsIfLeft(" + installRoot + ")");
+            LogManager.log("CleanupNBMsIfLeft(" + installRoot + ")");
             if (installRoot == null || ! installRoot.exists()) {
                 return ;
             }
