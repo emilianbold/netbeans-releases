@@ -317,7 +317,7 @@ public class OrganizeImports {
                               menuPath = "Source",
                               menuPosition = 2430,
                               menuText = "#" + EditorActionNames.organizeImports + "_menu_text")
-    public static class OrganizeMembersAction extends BaseAction {
+    public static class OrganizeImportsAction extends BaseAction {
 
         @Override
         public void actionPerformed(final ActionEvent evt, final JTextComponent component) {

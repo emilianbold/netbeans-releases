@@ -50,8 +50,6 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import java.util.zip.ZipOutputStream;
 import org.netbeans.installer.product.Registry;
 import org.netbeans.installer.product.components.Product;
@@ -186,118 +184,120 @@ public class NbMainSequence extends WizardSequence {
             
             ExecutionResults executeResult;
             boolean start = true;
-            while (start) {
-                try {
-                    compositeProgress.addProgressListener(new ProgressListener() {
+            try {
+                while (start) {
+                    try {
+                        compositeProgress.addProgressListener(new ProgressListener() {
 
-                        @Override
-                        public void progressUpdated(Progress progress) {
-                            if (oldDetail != null && oldDetail.equals(progress.getDetail())) {
-                                return ;
-                            }
-                            oldDetail = progress.getDetail();
-                            if (progress.getDetail().startsWith(SIZE_UPDATES_PATTERN)
-                                    || progress.getDetail().startsWith(SIZE_MODULES_PATTERN)) {
-                                if (! downloadIsRunning) {
-                                    downloadIsRunning = true;
-                                    if (countdownProgress != null) {
-                                        countdownProgress.detach();
-                                    }
+                            @Override
+                            public void progressUpdated(Progress progress) {
+                                if (oldDetail != null && oldDetail.equals(progress.getDetail())) {
+                                    return ;
                                 }
-                                boolean modOrUpdate = progress.getDetail().startsWith(SIZE_MODULES_PATTERN);
-                                String size = modOrUpdate ?
-                                        progress.getDetail().substring(SIZE_MODULES_PATTERN.length()) :
-                                        progress.getDetail().substring(SIZE_UPDATES_PATTERN.length());
-                                try {
-                                    sizeOfModules = Integer.valueOf(size);
-                                    if (sizeOfModules > 0) {
-                                        spendPercentage = spendPercentage + INSTALL_STEP;
+                                oldDetail = progress.getDetail();
+                                if (progress.getDetail().startsWith(SIZE_UPDATES_PATTERN)
+                                        || progress.getDetail().startsWith(SIZE_MODULES_PATTERN)) {
+                                    if (! downloadIsRunning) {
+                                        downloadIsRunning = true;
+                                        if (countdownProgress != null) {
+                                            countdownProgress.detach();
+                                        }
                                     }
-                                    loop = 0;
-                                    if (modOrUpdate) {
-                                        sumOfModules = sumOfModules + sizeOfModules;
-                                    } else {
-                                        sumOfUpdates = sumOfUpdates + sizeOfModules;
+                                    boolean modOrUpdate = progress.getDetail().startsWith(SIZE_MODULES_PATTERN);
+                                    String size = modOrUpdate ?
+                                            progress.getDetail().substring(SIZE_MODULES_PATTERN.length()) :
+                                            progress.getDetail().substring(SIZE_UPDATES_PATTERN.length());
+                                    try {
+                                        sizeOfModules = Integer.valueOf(size);
+                                        if (sizeOfModules > 0) {
+                                            spendPercentage = spendPercentage + INSTALL_STEP;
+                                        }
+                                        loop = 0;
+                                        if (modOrUpdate) {
+                                            sumOfModules = sumOfModules + sizeOfModules;
+                                        } else {
+                                            sumOfUpdates = sumOfUpdates + sizeOfModules;
+                                        }
+                                    } catch (NumberFormatException nfe) {
+                                        LogManager.log(nfe);
                                     }
-                                } catch (NumberFormatException nfe) {
-                                    LogManager.log(nfe);
+                                    progress.setDetail("");
+                                } else if (downloadIsRunning && sizeOfModules > 0) {
+                                    compositeProgress.setPercentage(spendPercentage - INSTALL_STEP + Math.min(INSTALL_STEP, INSTALL_STEP * loop++ / (sizeOfModules * 2)));
                                 }
-                                progress.setDetail("");
-                            } else if (downloadIsRunning && sizeOfModules > 0) {
-                                compositeProgress.setPercentage(spendPercentage - INSTALL_STEP + Math.min(INSTALL_STEP, INSTALL_STEP * loop++ / (sizeOfModules * 2)));
                             }
-                        }
-                    });
-                    executeResult = runIDE(commandsBase, nbInstallLocation, installJUnit, checkForUpdate, compositeProgress);
-                    start = false;
-                    if (executeResult.getErrorCode() > 0) {
-                        LogManager.log("    .... exit code: " + executeResult.getErrorCode());
-                        String msg = "";
-                        switch (executeResult.getErrorCode()) {
-                            case 31: // network problem
-                                if (installJUnit && checkForUpdate) {
-                                    msg = ResourceUtils.getString(NbMainSequence.class, "NBMS.CACHE.NetworkProblemBoth"); // NOI18N
-                                } else if (installJUnit) {
-                                    msg = ResourceUtils.getString(NbMainSequence.class, "NBMS.CACHE.NetworkProblemJunit"); // NOI18N
-                                } else if (checkForUpdate) {
-                                    msg = ResourceUtils.getString(NbMainSequence.class, "NBMS.CACHE.NetworkProblemUpdates"); // NOI18N
+                        });
+                        executeResult = runIDE(commandsBase, nbInstallLocation, installJUnit, checkForUpdate, compositeProgress);
+                        start = false;
+                        if (executeResult.getErrorCode() > 0) {
+                            LogManager.log("    .... exit code: " + executeResult.getErrorCode());
+                            String msg = "";
+                            switch (executeResult.getErrorCode()) {
+                                case 31: // network problem
+                                    if (installJUnit && checkForUpdate) {
+                                        msg = ResourceUtils.getString(NbMainSequence.class, "NBMS.CACHE.NetworkProblemBoth"); // NOI18N
+                                    } else if (installJUnit) {
+                                        msg = ResourceUtils.getString(NbMainSequence.class, "NBMS.CACHE.NetworkProblemJunit"); // NOI18N
+                                    } else if (checkForUpdate) {
+                                        msg = ResourceUtils.getString(NbMainSequence.class, "NBMS.CACHE.NetworkProblemUpdates"); // NOI18N
+                                    }
+                                    break;
+                                case 32: // install JUnit
+                                    msg = ResourceUtils.getString(NbMainSequence.class, "NBMS.CACHE.ProblemInstallJUnit"); // NOI18N
+                                    break;
+                                case 33: // update problem
+                                    msg = ResourceUtils.getString(NbMainSequence.class, "NBMS.CACHE.ProblemInstallUpdates", sumOfUpdates); // NOI18N
+                                    break;
+                                case 34: // timeout loading JUnit
+                                    LogManager.log("    ... timeout loading JUnit - run it again ");
+                                    start = true;
+                                    installJUnit = false;
+                                    downloadIsRunning = false;
+                                    break;
+                            }
+                            nbBase.setProperty(NbPostInstallSummaryPanel.NETBEANS_SUMMARY_MESSAGE_TEXT_PROPERTY, msg);
+                        } else {
+                            LogManager.log("    .... success ");
+                            LogManager.log("    ...... installed " + sumOfModules + " new modules");
+                            LogManager.log("    ...... installed " + sumOfUpdates + " updates");
+                            String msg = "";
+                            if (installJUnitOrig && checkForUpdate) {
+                                if (sumOfUpdates > 0 && sumOfModules > 0) {
+                                    // installed JUnit and updates
+                                    msg = ResourceUtils.getString(NbMainSequence.class, "NBMS.CACHE.SuccessIfBoth_JUnitInstalled_UpdatesInstalled", sumOfUpdates);
+                                } else if (sumOfModules > 0) {
+                                    // installed JUnit and IDE is up-to-date (no updates)
+                                    msg = ResourceUtils.getString(NbMainSequence.class, "NBMS.CACHE.SuccessIfBoth_JUnitInstalled_NoUpdates");
+                                } else if (sumOfUpdates > 0) {
+                                    // JUnit not found and some updates was installed
+                                    msg = ResourceUtils.getString(NbMainSequence.class, "NBMS.CACHE.SuccessIfBoth_JUnitNotFound_UpdatesInstalled", sumOfUpdates);
+                                } else {
+                                    // JUnit not found and IDE is up-to-date (no updates)
+                                    msg = ResourceUtils.getString(NbMainSequence.class, "NBMS.CACHE.SuccessIfBoth_JUnitNotFound_NoUpdates");
                                 }
-                                break;
-                            case 32: // install JUnit
-                                msg = ResourceUtils.getString(NbMainSequence.class, "NBMS.CACHE.ProblemInstallJUnit"); // NOI18N
-                                break;
-                            case 33: // update problem
-                                msg = ResourceUtils.getString(NbMainSequence.class, "NBMS.CACHE.ProblemInstallUpdates", sumOfUpdates); // NOI18N
-                                break;
-                            case 34: // timeout loading JUnit
-                                LogManager.log("    ... timeout loading JUnit - run it again ");
-                                start = true;
-                                installJUnit = false;
-                                downloadIsRunning = false;
-                                break;
-                        }
-                        nbBase.setProperty(NbPostInstallSummaryPanel.NETBEANS_SUMMARY_MESSAGE_TEXT_PROPERTY, msg);
-                    } else {
-                        LogManager.log("    .... success ");
-                        LogManager.log("    ...... installed " + sumOfModules + " new modules");
-                        LogManager.log("    ...... installed " + sumOfUpdates + " updates");
-                        String msg = "";
-                        if (installJUnitOrig && checkForUpdate) {
-                            if (sumOfUpdates > 0 && sumOfModules > 0) {
-                                // installed JUnit and updates
-                                msg = ResourceUtils.getString(NbMainSequence.class, "NBMS.CACHE.SuccessIfBoth_JUnitInstalled_UpdatesInstalled", sumOfUpdates);
-                            } else if (sumOfModules > 0) {
-                                // installed JUnit and IDE is up-to-date (no updates)
-                                msg = ResourceUtils.getString(NbMainSequence.class, "NBMS.CACHE.SuccessIfBoth_JUnitInstalled_NoUpdates");
-                            } else if (sumOfUpdates > 0) {
-                                // JUnit not found and some updates was installed
-                                msg = ResourceUtils.getString(NbMainSequence.class, "NBMS.CACHE.SuccessIfBoth_JUnitNotFound_UpdatesInstalled", sumOfUpdates);
-                            } else {
-                                // JUnit not found and IDE is up-to-date (no updates)
-                                msg = ResourceUtils.getString(NbMainSequence.class, "NBMS.CACHE.SuccessIfBoth_JUnitNotFound_NoUpdates");
+                            } else if (installJUnitOrig) {
+                                msg = sumOfModules > 0 ? 
+                                        // JUnit installed
+                                        ResourceUtils.getString(NbMainSequence.class, "NBMS.CACHE.SuccessIfJunit_JUnitInstalled") : // NOI18N
+                                        // JUnit not found
+                                        ResourceUtils.getString(NbMainSequence.class, "NBMS.CACHE.SuccessIfJunit_JUnitNotFound"); // NOI18N
+                            } else if (checkForUpdate) {
+                                msg = sumOfUpdates > 0 ?
+                                        // Updates installed
+                                        ResourceUtils.getString(NbMainSequence.class, "NBMS.CACHE.SuccessIfCheck_UpdatesInstalled", sumOfUpdates) : // NOI18N
+                                        // No updates
+                                        ResourceUtils.getString(NbMainSequence.class, "NBMS.CACHE.SuccessIfCheck_NoUpdates"); // NOI18N
                             }
-                        } else if (installJUnitOrig) {
-                            msg = sumOfModules > 0 ? 
-                                    // JUnit installed
-                                    ResourceUtils.getString(NbMainSequence.class, "NBMS.CACHE.SuccessIfJunit_JUnitInstalled") : // NOI18N
-                                    // JUnit not found
-                                    ResourceUtils.getString(NbMainSequence.class, "NBMS.CACHE.SuccessIfJunit_JUnitNotFound"); // NOI18N
-                        } else if (checkForUpdate) {
-                            msg = sumOfUpdates > 0 ?
-                                    // Updates installed
-                                    ResourceUtils.getString(NbMainSequence.class, "NBMS.CACHE.SuccessIfCheck_UpdatesInstalled", sumOfUpdates) : // NOI18N
-                                    // No updates
-                                    ResourceUtils.getString(NbMainSequence.class, "NBMS.CACHE.SuccessIfCheck_NoUpdates"); // NOI18N
+                            nbBase.setProperty(NbPostInstallSummaryPanel.NETBEANS_SUMMARY_MESSAGE_TEXT_PROPERTY, msg);
                         }
-                        nbBase.setProperty(NbPostInstallSummaryPanel.NETBEANS_SUMMARY_MESSAGE_TEXT_PROPERTY, msg);
+                    } catch (Exception ioe) {
+                        LogManager.log("    .... exception ", ioe);
+                        return ;
                     }
-                } catch (Exception ioe) {
-                    LogManager.log("    .... exception ", ioe);
-                    return ;
-                } finally {
-                    cleanupNBMsIfLeft(nbInstallLocation);
-                    LogManager.log("    .... done. ");
                 }
+            } finally {
+                cleanupNBMsIfLeft(nbInstallLocation);
+                LogManager.log("    .... done. ");
             }
             
             LogManager.log("preparing caches : ");
@@ -483,7 +483,7 @@ public class NbMainSequence extends WizardSequence {
         }
 
         private void cleanupNBMsIfLeft(File installRoot) {
-            Logger.getLogger(NbMainSequence.class.getName()).log(Level.INFO, "CleanupNBMsIfLeft(" + installRoot + ")");
+            LogManager.log("CleanupNBMsIfLeft(" + installRoot + ")");
             if (installRoot == null || ! installRoot.exists()) {
                 return ;
             }
