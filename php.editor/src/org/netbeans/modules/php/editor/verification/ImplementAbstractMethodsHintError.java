@@ -113,9 +113,9 @@ public class ImplementAbstractMethodsHintError extends AbstractHintError {
     })
     void compute(PHPRuleContext context, List<Hint> hints) {
         FileScope fileScope = context.fileScope;
-        if (fileScope != null) {
+        FileObject fileObject = context.parserResult.getSnapshot().getSource().getFileObject();
+        if (fileScope != null && fileObject != null) {
             Collection<? extends ClassScope> allClasses = ModelUtils.getDeclaredClasses(fileScope);
-            FileObject fileObject = context.parserResult.getSnapshot().getSource().getFileObject();
             for (FixInfo fixInfo : checkHints(allClasses, context)) {
                 hints.add(new Hint(
                         ImplementAbstractMethodsHintError.this,
