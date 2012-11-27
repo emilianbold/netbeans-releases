@@ -101,12 +101,11 @@ public final class HtmlSourceTask extends ParserResultTask<HtmlParserResult> {
         public Collection<? extends SchedulerTask> create(Snapshot snapshot) {
             String mimeType = snapshot.getSource().getMimeType();
             //do not create tasks for embedded html
-            if (mimeType.equals("text/html")) { //NOI18N
+            if (mimeType.equals("text/html") || mimeType.equals("text/xhtml")) { //NOI18N
                 return Collections.singletonList(new HtmlSourceTask());
             } else {
                 return Collections.emptyList();
             }
         }
     }
-    
 }
