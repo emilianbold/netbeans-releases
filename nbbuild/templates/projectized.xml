@@ -101,7 +101,12 @@ You can alternatively set this property in ${.nbbuild.properties} to affect all 
 If you are sure you want to build with JDK 7+ anyway, use: -Dpermit.jdk7.builds=true</fail>
     </target>
 
-    <target name="build-init" depends="basic-init,jdk-6-check,set-buildnumber">
+    <target name="-define-custom-javac-task" unless="have-custom-javac-task">
+        <taskdef name="custom-javac" classname="org.netbeans.nbbuild.CustomJavac" classpath="${nbantext.jar}"/>
+        <property name="have-custom-javac-task" value="true" />
+    </target>
+
+    <target name="build-init" depends="basic-init,jdk-6-check,set-buildnumber,-define-custom-javac-task">
         <property name="public.package.jar.dir" location="${nb.build.dir}/public-package-jars"/>
         <mkdir dir="${public.package.jar.dir}"/>
         <parseprojectxml
@@ -213,7 +218,6 @@ If you are sure you want to build with JDK 7+ anyway, use: -Dpermit.jdk7.builds=
         <condition property="bootclasspath.prepend" value="${retouche.javac.api}">
             <istrue value="${requires.nb.javac}"/>
         </condition>
-        <taskdef name="custom-javac" classname="org.netbeans.nbbuild.CustomJavac" classpath="${nbantext.jar}"/>
         <fail message="Delete standalone/suite-related metadata from netbeans.org modules">
             <condition>
                 <or>
@@ -226,9 +230,12 @@ If you are sure you want to build with JDK 7+ anyway, use: -Dpermit.jdk7.builds=
         </fail>
     </target>
 
-    <!-- See: http://wiki.netbeans.org/wiki/view/DevFaqExternalLibrariesUpdated -->
-    <target name="-release.files" depends="projectized-common.-release.files">
+    <target name="-define-downloadbinaries-task" unless="have-downloadbinaries-task">
         <taskdef name="downloadbinaries" classname="org.netbeans.nbbuild.extlibs.DownloadBinaries" classpath="${nbantext.jar}"/>
+    </target>
+
+    <!-- See: http://wiki.netbeans.org/wiki/view/DevFaqExternalLibrariesUpdated -->
+    <target name="-release.files" depends="projectized-common.-release.files,-define-downloadbinaries-task">
         <downloadbinaries cache="${binaries.cache}" server="${binaries.server}">
             <manifest dir=".">
                 <include name="external/binaries-list"/>

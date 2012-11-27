@@ -58,6 +58,7 @@ public class FileBasedFileSystemWithExtensionsTest extends FileBasedFileSystemTe
     /** Creates new MasterFileSystemTest */
     public FileBasedFileSystemWithExtensionsTest(Test test) {
         super(test);
+        ProvidedExtensionsTest.ProvidedExtensionsImpl.setImplsCopyRetVal(true);
         ProvidedExtensionsTest.ProvidedExtensionsImpl.setImplsMoveRetVal(true);
         ProvidedExtensionsTest.ProvidedExtensionsImpl.setImplsRenameRetVal(true);
         ProvidedExtensionsTest.ProvidedExtensionsImpl.setImplsDeleteRetVal(true);
