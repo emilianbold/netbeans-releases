@@ -176,7 +176,9 @@ public final class ActionsManager {
             fireActionDone (action);
         }
         doiingDo = false;
-        if (destroy) destroyIn ();
+        if (destroy) {
+            destroyIn ();
+        }
     }
     
     /**
@@ -227,7 +229,9 @@ public final class ActionsManager {
                                 task.actionDone();
                                 fireActionDone (action);
                                 doiingDo = false;
-                                if (destroy) destroyIn ();
+                                if (destroy) {
+                                    destroyIn ();
+                                }
                             }
                         }
                     }
@@ -240,7 +244,9 @@ public final class ActionsManager {
         }
         if (!posted) {
             doiingDo = false;
-            if (destroy) destroyIn ();
+            if (destroy) {
+                destroyIn ();
+            }
             task.actionDone();
         }
         return task;
@@ -292,7 +298,9 @@ public final class ActionsManager {
      * Stops listening on all actions, stops firing events.
      */
     public void destroy () {
-        if (!doiingDo) destroyIn ();
+        if (!doiingDo) {
+            destroyIn ();
+        }
         destroy = true;
     }
 
@@ -349,7 +357,9 @@ public final class ActionsManager {
     ) {
         synchronized (listeners) {
             List<ActionsManagerListener> ls = listeners.get (propertyName);
-            if (ls == null) return;
+            if (ls == null) {
+                return;
+            }
             ls.remove(l);
             if (ls.isEmpty()) {
                 listeners.remove(propertyName);
@@ -494,8 +504,9 @@ public final class ActionsManager {
             }
             for (ActionsProvider ap : aps) {
                 Iterator ii = ap.getActions ().iterator ();
-                while (ii.hasNext ())
+                while (ii.hasNext ()) {
                     registerActionsProvider (ii.next (), ap);
+                }
             }
         }
     }
@@ -525,7 +536,9 @@ public final class ActionsManager {
     private List lazyListeners;
     
     private synchronized void initListeners () {
-        if (listerersLoaded) return;
+        if (listerersLoaded) {
+            return;
+        }
         listerersLoaded = true;
         lazyListeners = lookup.lookup (null, LazyActionsManagerListener.class);
         int i, k = lazyListeners.size ();
@@ -567,8 +580,9 @@ public final class ActionsManager {
                         continue;
                     }
                     int j, jj = props.length;
-                    for (j = 0; j < jj; j++)
+                    for (j = 0; j < jj; j++) {
                         removeActionsManagerListener (props [j], l);
+                    }
                     l.destroy ();
                 }
                 lazyListeners = new ArrayList ();
