@@ -1317,6 +1317,8 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
         send("-gdb-set print repeat " + PRINT_REPEAT); // NOI18N
         send("-gdb-set backtrace limit " + STACK_MAX_DEPTH); // NOI18N
         send("-gdb-set print elements " + PRINT_ELEMENTS); // NOI18N
+        send("-gdb-set follow-fork-mode " + DebuggerOption.GDB_FOLLOW_FORK_MODE.getCurrValue(optionLayers())); // NOI18N
+        send("-gdb-set detach-on-fork " + DebuggerOption.GDB_DETACH_ON_FORK.getCurrValue(optionLayers())); // NOI18N
         
         if (ENABLE_PRETTY_PRINTING) {
             sendSilent("-enable-pretty-printing"); // NOI18N
@@ -3583,14 +3585,14 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
         
         String outputFile = ((MakeConfiguration)gdi.getConfiguration()).getAbsoluteOutputValue();
         outputFile = localToRemote("symbol-file", outputFile); //NOI18N
-        if (!CndPathUtilitities.sameString(program, outputFile)) {
-            // load symbol file separately, IZ 194531
-            send("-file-symbol-file " + toCString(outputFile), false); // NOI18N
-        }
-
+        
         String tmp_cmd;
         if (isCore || pid != -1) {
             tmp_cmd = "-file-symbol-file "; // NOI18N
+        } else if (!CndPathUtilitities.sameString(program, outputFile)) {
+            // load symbol file separately, IZ 194531
+            send("-file-symbol-file " + toCString(outputFile), false); // NOI18N
+            tmp_cmd = "-file-exec-file "; // NOI18N
         } else {
             tmp_cmd = "-file-exec-and-symbols "; // NOI18N
         }
