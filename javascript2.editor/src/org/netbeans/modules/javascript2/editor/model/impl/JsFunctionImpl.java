@@ -170,11 +170,21 @@ public class JsFunctionImpl extends DeclarationScopeImpl implements JsFunction {
     }    
         
     public void addReturnType(TypeUsage type) {
-        this.returnTypes.add(type);
+        boolean isThere = false;
+        for (TypeUsage typeUsage : this.returnTypes) {
+            if (type.getType().equals(typeUsage.getType())) {
+                isThere = true;
+            }
+        }
+        if (!isThere){
+            this.returnTypes.add(type);
+        }
     }
     
     public void addReturnType(Collection<TypeUsage> types) {
-        this.returnTypes.addAll(types);
+        for (TypeUsage typeUsage : types) {
+            addReturnType(typeUsage);
+        }
     }
     
     public boolean areReturnTypesEmpty() {
