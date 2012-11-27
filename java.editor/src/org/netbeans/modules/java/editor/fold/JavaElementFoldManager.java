@@ -86,6 +86,7 @@ import org.netbeans.modules.java.editor.semantic.ScanningCancellableTask;
 import org.netbeans.modules.java.editor.semantic.Utilities;
 import org.netbeans.spi.editor.fold.FoldHierarchyTransaction;
 import org.netbeans.spi.editor.fold.FoldOperation;
+import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
@@ -147,6 +148,11 @@ public class JavaElementFoldManager extends JavaFoldManager {
         Object od = doc.getProperty(Document.StreamDescriptionProperty);
         
         if (od instanceof DataObject) {
+            EditorCookie ec = ((DataObject)od).getLookup().lookup(EditorCookie.class);
+            if (doc != ec.getDocument()) {
+                throw new IllegalStateException("Different documents used by fold hierarchy and fold task.\nFold hierarchy document: " + doc + "\nFold task document: " + ec.getDocument()); //NOI18N
+            }
+                
             FileObject file = ((DataObject)od).getPrimaryFile();
 
             currentFolds = new ArrayList<Fold>();
