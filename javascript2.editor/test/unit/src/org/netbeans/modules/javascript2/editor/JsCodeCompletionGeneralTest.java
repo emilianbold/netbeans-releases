@@ -212,6 +212,10 @@ public class JsCodeCompletionGeneralTest extends JsCodeComplationBase {
     public void testIssue220917_03() throws Exception {
         checkCompletion("testfiles/completion/general/issue220917.js", "document.query^Selector();", false);
     }
+
+    public void testIssue222780() throws Exception {
+        checkCompletion("testfiles/completion/general/issue222780.js", "$scope.getServoConfigurations = fun^", false);
+    }
     
     @Override
     protected Map<String, ClassPath> createClassPathsForTest() {
