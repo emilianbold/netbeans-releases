@@ -45,11 +45,10 @@ Version 2 license, then the option applies only if the new code is
 made subject to such option by the copyright holder.
 -->
 <filesystem>
-    <folder name="Brigdes">
+    <folder name="Bridges">
         <folder name="MIDP">
             <file name="E2EWebApplication.wsclient" url="templates/MIDP/E2EWebApplication_wsclient.template">
-            <!--<file name="Jsr172Application.wsclient" url="templates/MIDP/Jsr172Application_wsclient.template">-->
-                <attr name="displayName" bundlevalue="org.netbeans.modules.mobility.end2end.ui.wizard.Bundle#Brigdes/MIDP/E2EWebApplication.wsclient"/>
+                <attr name="displayName" bundlevalue="org.netbeans.modules.mobility.end2end.ui.wizard.Bundle#Bridges/MIDP/E2EWebApplication.wsclient"/>
                 <attr name="iconBase" stringvalue="org/netbeans/modules/mobility/end2end/resources/e2eclienticon.png"/>
                 <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.mobility.end2end.ui.wizard.GenericServiceIterator.singleton"/>
                 <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/mobility/end2end/resources/descriptions/MIDP/E2EWebApplication_wsclient.html"/>
