@@ -260,12 +260,14 @@ public class Folder implements FileChangeListener, ChangeListener {
                     log.log(Level.INFO, ex.getMessage(), ex);
                     continue;
                 }
-                if (findFolderByName(file.getNameExt()) == null) {
+                Folder existingFolder = findFolderByName(file.getNameExt());
+                if (existingFolder == null) {
                     if (log.isLoggable(Level.FINE)) {
                         log.log(Level.FINE, "------------adding folder {0} in {1}", new Object[]{file.getPath(), getPath()}); // NOI18N
                     }
                     getConfigurationDescriptor().addFilesFromRefreshedDir(this, file, true, true, null, useOldSchemeBehavior);
-
+                } else {
+                    existingFolder.markRemoved(false);
                 }
             } else {
                 String path = rootPath + '/' + file.getNameExt();
@@ -1314,6 +1316,7 @@ public class Folder implements FileChangeListener, ChangeListener {
         // Happens when filter has changed
         if (isDiskFolder()) {
             refreshDiskFolder();
+            fireChangeEvent();
         }
     }
 
