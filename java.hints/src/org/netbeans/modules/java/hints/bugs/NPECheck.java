@@ -61,7 +61,7 @@ import org.netbeans.spi.java.hints.Hint.Options;
  *
  * @author lahvac
  */
-@Hint(displayName="#DN_NPECheck", description="#DESC_NPECheck", category="bugs", options=Options.QUERY)
+@Hint(displayName="#DN_NPECheck", description="#DESC_NPECheck", category="bugs", options=Options.QUERY, suppressWarnings = {"null", "ConstantConditions"})
 public class NPECheck {
 
     @TriggerPattern("$var = $expr")
@@ -724,6 +724,15 @@ public class NPECheck {
             scan(node.getCondition(), p);
             scan(node.getStatement(), p);
             scan(node.getUpdate(), p);
+            return null;
+        }
+
+        @Override
+        public State visitAssert(AssertTree node, Void p) {
+            testedTo = new HashMap<VariableElement, NPECheck.State>();
+            scan(node.getCondition(), p);
+            variable2State.putAll(testedTo);
+            scan(node.getDetail(), p);
             return null;
         }
 
