@@ -195,7 +195,7 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
         }
     }
 
-    public void stop() {
+    public void stop(@NullAllowed final Runnable postCleanTask) throws TimeoutException {
         boolean cancel = false;
 
         synchronized (this) {
@@ -212,7 +212,7 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
         }
 
         if (cancel) {
-            getWorker().cancelAll();
+            getWorker().cancelAll(postCleanTask);
         }
     }
 
@@ -5174,13 +5174,23 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
             }
         }
 
-        public void cancelAll() {
+        public void cancelAll(@NullAllowed final Runnable postCleanTask) throws TimeoutException {
             synchronized (todo) {
                 if (!allCancelled) {
                     // stop accepting new work and clean the queue
-                    allCancelled = true;
                     todo.clear();
-
+                    if (postCleanTask != null) {
+                        schedule (
+                            new Work(false, false, false, true, SuspendSupport.NOP, null) {
+                                @Override
+                                protected boolean getDone() {
+                                    postCleanTask.run();
+                                    return true;
+                                }
+                            },
+                            false);
+                    }
+                    allCancelled = true;
                     // stop the work currently being done
                     final Work work = workInProgress;
                     if (work != null) {
@@ -5200,6 +5210,7 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
 
                     if (scheduled && cnt == 0) {
                         LOGGER.log(Level.INFO, "Waiting for indexing jobs to finish timed out; job in progress {0}, jobs queue: {1}", new Object [] { work, todo }); //NOI18N
+                        throw new TimeoutException();
                     }
                 }
             }
