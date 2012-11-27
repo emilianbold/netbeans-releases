@@ -132,6 +132,7 @@ public abstract class CssStylesPanelProviderImpl extends JPanel implements CssSt
         initRunFilePanel();
         add(noStylesLabel, BorderLayout.CENTER);
         PageInspectorImpl.getDefault().addPropertyChangeListener(createInspectorListener());
+        update(PageInspectorImpl.getDefault().getPage());
     }
 
     Lookup getMatchedRulesLookup() {
@@ -265,33 +266,37 @@ public abstract class CssStylesPanelProviderImpl extends JPanel implements CssSt
                 String propName = evt.getPropertyName();
                 if (PageInspectorImpl.PROP_MODEL.equals(propName)) {
                     PageModel pageModel = PageInspectorImpl.getDefault().getPage();
-                    currentPageModel = pageModel;
-                    if (pageModel instanceof WebKitPageModel) {
-                        final WebKitPageModel webKitPageModel = (WebKitPageModel)pageModel;
-                        FileObject fob = inspectedFileObject(webKitPageModel, true);
-                        webKitPageModel.addPropertyChangeListener(new PropertyChangeListener() {
-                            @Override
-                            public void propertyChange(PropertyChangeEvent evt) {
-                                String propName = evt.getPropertyName();
-                                if (Page.PROP_DOCUMENT.equals(propName)) {
-                                    if (webKitPageModel == currentPageModel) {
-                                        FileObject fob = inspectedFileObject(webKitPageModel, true);
-                                        if (fob != null) {
-                                            inspectedFileObject = fob;
-                                        }
-                                        update();
-                                    }
-                                }
-                            }
-                        });
-                        if (fob != null) {
-                            inspectedFileObject = fob;
-                        }
-                    }
-                    update();
+                    update(pageModel);
                 }
             }
         };
+    }
+
+    private void update(PageModel pageModel) {
+        currentPageModel = pageModel;
+        if (pageModel instanceof WebKitPageModel) {
+            final WebKitPageModel webKitPageModel = (WebKitPageModel)pageModel;
+            FileObject fob = inspectedFileObject(webKitPageModel, true);
+            webKitPageModel.addPropertyChangeListener(new PropertyChangeListener() {
+                @Override
+                public void propertyChange(PropertyChangeEvent evt) {
+                    String propName = evt.getPropertyName();
+                    if (Page.PROP_DOCUMENT.equals(propName)) {
+                        if (webKitPageModel == currentPageModel) {
+                            FileObject fob = inspectedFileObject(webKitPageModel, true);
+                            if (fob != null) {
+                                inspectedFileObject = fob;
+                            }
+                            update();
+                        }
+                    }
+                }
+            });
+            if (fob != null) {
+                inspectedFileObject = fob;
+            }
+        }
+        update();
     }
 
     /**
