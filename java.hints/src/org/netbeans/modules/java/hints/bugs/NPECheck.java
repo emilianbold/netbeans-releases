@@ -590,11 +590,13 @@ public class NPECheck {
             
             Map<VariableElement, State> negConditionVariable2State = new HashMap<VariableElement, State>(variable2State);
             
-            variable2State = oldVariable2State;
+            variable2State = new HashMap<VariableElement, State>(oldVariable2State);
             
             scan(node.getCondition(), p);
             
             scan(node.getStatement(), p);
+            
+            mergeIntoVariable2State(oldVariable2State);
             
             scan(node.getCondition(), p);
             
