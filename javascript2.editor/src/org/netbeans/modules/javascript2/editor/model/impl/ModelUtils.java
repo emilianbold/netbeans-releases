@@ -501,17 +501,27 @@ public class ModelUtils {
                     if(localObject == null || (localObject.getJSKind() != JsElement.Kind.PARAMETER
                             && (ModelUtils.isGlobal(localObject.getParent()) || localObject.getJSKind() != JsElement.Kind.VARIABLE))) {
                         // Add global variables from index
-                        Collection<IndexedElement> globalVars = jsIndex.getGlobalVar(name);
-                        for (IndexedElement globalVar : globalVars) {
-                            if(name.equals(globalVar.getName())) {
-                                Collection<TypeUsage> assignments = globalVar.getAssignments();
-                                if (assignments.isEmpty()) {
-                                    lastResolvedTypes.add(new TypeUsageImpl(name, -1, true));
-                                } else {
-                                    lastResolvedTypes.addAll(assignments);
-                                }
-                            }
-                        }
+//                        Collection<IndexedElement> globalVars = jsIndex.getGlobalVar(name);
+//                        for (IndexedElement globalVar : globalVars) {
+//                            if(name.equals(globalVar.getName())) {
+//                                Collection<TypeUsage> assignments = globalVar.getAssignments();
+//                                if (assignments.isEmpty()) {
+//                                    lastResolvedTypes.add(new TypeUsageImpl(name, -1, true));
+//                                } else {
+//                                    lastResolvedTypes.addAll(assignments);
+//                                    }
+//                        }
+//                    }
+                        List<TypeUsage> fromAssignments = new ArrayList<TypeUsage>();
+//                        if (localObject != null) {
+//                            //make it only for the right offset
+//                            for(TypeUsage type: localObject.getAssignmentForOffset(offset)) {
+//                                resolveAssignments(jsIndex, type.getType(), fromAssignments);
+//                            }
+//                        } else {
+                            resolveAssignments(jsIndex, name, fromAssignments);
+//                        }
+                        lastResolvedTypes.addAll(fromAssignments);
                     }
                     
                     if(!localObjects.isEmpty()){
@@ -662,6 +672,29 @@ public class ModelUtils {
                 }
             } else {
                 resolvedTypes.add((TypeUsage)typeName);
+            }
+        }
+    }
+    
+    private static void resolveAssignments(JsIndex jsIndex, String fqn, List<TypeUsage> resolved) {
+        Set<String> alreadyAdded = new HashSet<String>();
+        for(TypeUsage type : resolved) {
+            alreadyAdded.add(type.getType());
+        }
+        if (!alreadyAdded.contains(fqn)) {
+            Collection<IndexedElement> globalVars = jsIndex.getGlobalVar(fqn);
+            resolved.add(new TypeUsageImpl(fqn, -1, true));
+            for (IndexedElement globalVar : globalVars) {
+                if(fqn.equals(globalVar.getName())) {
+                    Collection<TypeUsage> assignments = globalVar.getAssignments();
+                    if (!assignments.isEmpty()) {
+                        for (TypeUsage type: assignments) {
+                            if(!alreadyAdded.contains(type.getType())) {
+                                resolveAssignments(jsIndex, type.getType(), resolved);
+                            }
+                        }
+                    }
+                }
             }
         }
     }
