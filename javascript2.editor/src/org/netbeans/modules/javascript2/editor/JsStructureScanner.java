@@ -49,7 +49,6 @@ import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.csl.api.*;
-import org.netbeans.modules.csl.spi.GsfUtilities;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.javascript2.editor.index.JsIndex;
 import org.netbeans.modules.javascript2.editor.lexer.JsTokenId;
@@ -137,7 +136,7 @@ public class JsStructureScanner implements StructureScanner {
         }
         return false;
     }
-    
+
     private static class FoldingItem {
         String kind;
         int start;
@@ -170,15 +169,13 @@ public class JsStructureScanner implements StructureScanner {
                     // hardcoded values should be ok since token comes in case if it's completed (/** ... */)
                     int startOffset = ts.offset() + 3;
                     int endOffset = ts.offset() + ts.token().length() - 2;
-                    getRanges(folds, FOLD_JSDOC).add(new OffsetRange(
-                            info.getSnapshot().getOriginalOffset(startOffset), 
-                            info.getSnapshot().getOriginalOffset(endOffset)));
+                    appendFold(folds, FOLD_JSDOC,  info.getSnapshot().getOriginalOffset(startOffset),
+                            info.getSnapshot().getOriginalOffset(endOffset));
                 } else if (tokenId == JsTokenId.BLOCK_COMMENT) {
                     int startOffset = ts.offset() + 2;
                     int endOffset = ts.offset() + ts.token().length() - 2;
-                    getRanges(folds, FOLD_COMMENT).add(new OffsetRange(
-                            info.getSnapshot().getOriginalOffset(startOffset), 
-                            info.getSnapshot().getOriginalOffset(endOffset)));
+                    appendFold(folds, FOLD_COMMENT, info.getSnapshot().getOriginalOffset(startOffset),
+                            info.getSnapshot().getOriginalOffset(endOffset));
                 } else if (((JsTokenId) tokenId).isKeyword()) {
                     lastContextId = (JsTokenId) tokenId;
                 } else if (tokenId == JsTokenId.BRACKET_LEFT_CURLY) {
@@ -191,9 +188,8 @@ public class JsStructureScanner implements StructureScanner {
                     stack.add(new FoldingItem(kind, ts.offset()));
                 } else if (tokenId == JsTokenId.BRACKET_RIGHT_CURLY && !stack.isEmpty()) {
                     FoldingItem fromStack = stack.remove(stack.size() - 1);
-                    getRanges(folds, fromStack.kind).add(new OffsetRange(
-                            info.getSnapshot().getOriginalOffset(fromStack.start),
-                            info.getSnapshot().getOriginalOffset(ts.offset() + 1)));
+                    appendFold(folds, fromStack.kind, info.getSnapshot().getOriginalOffset(fromStack.start),
+                            info.getSnapshot().getOriginalOffset(ts.offset() + 1));
                 }
             }
         }
@@ -201,7 +197,13 @@ public class JsStructureScanner implements StructureScanner {
         LOGGER.log(Level.FINE, "Folding took %s ms", (end - start));
         return folds;
     }
-    
+
+    private void appendFold(Map<String, List<OffsetRange>> folds, String kind, int startOffset, int endOffset) {
+        if (startOffset >= 0 && endOffset >= startOffset) {
+            getRanges(folds, kind).add(new OffsetRange(startOffset, endOffset));
+        }
+    }
+
     private List<OffsetRange> getRanges(Map<String, List<OffsetRange>> folds, String kind) {
         List<OffsetRange> ranges = folds.get(kind);
         if (ranges == null) {
