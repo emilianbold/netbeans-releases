@@ -102,6 +102,7 @@ import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
 import org.openide.util.WeakListeners;
 import org.openide.util.actions.SystemAction;
@@ -129,7 +130,10 @@ final class MakeLogicalViewRootNode extends AnnotatedNode implements ChangeListe
     private final Lookup.Result<BrokenIncludes> brokenIncludesResult;
     private final MakeLogicalViewProvider provider;
     private final InstanceContent ic;
-
+    private final static RequestProcessor LOAD_NODES_RP = new RequestProcessor("MakeLogicalViewRootNode.LoadingNodes", 10); // NOI18N
+    private final RequestProcessor.Task stateChangedTask;
+    private static final int WAIT_DELAY = 500;
+    
     public MakeLogicalViewRootNode(Folder folder, MakeLogicalViewProvider provider, InstanceContent ic) {
         this(new ProjectRootChildren(folder, provider),folder, provider, ic);
     }
@@ -189,6 +193,7 @@ final class MakeLogicalViewRootNode extends AnnotatedNode implements ChangeListe
             
         }
 
+        stateChangedTask = LOAD_NODES_RP.create(new StateChangeRunnableImpl(), true);
     }
 
     @Override
@@ -416,24 +421,9 @@ final class MakeLogicalViewRootNode extends AnnotatedNode implements ChangeListe
      **/
     @Override
     public void stateChanged(ChangeEvent e) {
-        brokenLinks = provider.hasBrokenLinks();
-        brokenIncludes = hasBrokenIncludes(getProject());
-        if (provider.gotMakeConfigurationDescriptor()) {
-            MakeConfigurationDescriptor makeConfigurationDescriptor = provider.getMakeConfigurationDescriptor();
-            if (makeConfigurationDescriptor != null) {
-                brokenProject =  makeConfigurationDescriptor.getState() == State.BROKEN;
-                incorrectPlatform = isIncorrectPlatform();
-                incorrectVersion = !isCorectVersion(makeConfigurationDescriptor.getVersion());
-                if (makeConfigurationDescriptor.getConfs().size() == 0 ) {
-                    brokenProject = true;
-                }
-            }
+        if (stateChangedTask != null) {
+            stateChangedTask.schedule(WAIT_DELAY);
         }
-        updateAnnotationFiles();
-        EventQueue.invokeLater(new VisualUpdater()); // IZ 151257
-//            fireIconChange(); // MakeLogicalViewRootNode
-//            fireOpenedIconChange();
-//            fireDisplayNameChange(null, null);
     }
 
     private boolean isCorectVersion(int version) {
@@ -714,6 +704,29 @@ final class MakeLogicalViewRootNode extends AnnotatedNode implements ChangeListe
         @Override
         protected boolean isRoot() {
             return true;
+        }
+    }
+
+    private final class StateChangeRunnableImpl implements Runnable {
+
+        @Override
+        public void run() {
+//            System.err.println("StateChangeRunnableImpl on " + getFolder());
+            brokenLinks = provider.hasBrokenLinks();
+            brokenIncludes = hasBrokenIncludes(getProject());
+            if (provider.gotMakeConfigurationDescriptor()) {
+                MakeConfigurationDescriptor makeConfigurationDescriptor = provider.getMakeConfigurationDescriptor();
+                if (makeConfigurationDescriptor != null) {
+                    brokenProject = makeConfigurationDescriptor.getState() == State.BROKEN;
+                    incorrectPlatform = isIncorrectPlatform();
+                    incorrectVersion = !isCorectVersion(makeConfigurationDescriptor.getVersion());
+                    if (makeConfigurationDescriptor.getConfs().size() == 0) {
+                        brokenProject = true;
+                    }
+                }
+            }
+            updateAnnotationFiles();
+            EventQueue.invokeLater(new VisualUpdater()); // IZ 151257
         }
     }
 }
