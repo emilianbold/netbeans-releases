@@ -45,11 +45,13 @@ package org.netbeans.modules.autoupdate.services;
 
 import org.netbeans.api.autoupdate.UpdateUnitProvider.CATEGORY;
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import junit.framework.Test;
+import org.netbeans.Module;
 import org.netbeans.api.autoupdate.OperationException;
 import org.netbeans.api.autoupdate.TestUtils;
 import org.netbeans.api.autoupdate.UpdateManager;
@@ -57,7 +59,6 @@ import org.netbeans.api.autoupdate.UpdateUnit;
 import org.netbeans.api.autoupdate.UpdateUnitProviderFactory;
 import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.junit.RandomlyFails;
 import org.netbeans.modules.autoupdate.updateprovider.InstalledModuleProvider;
 import org.netbeans.modules.autoupdate.updateprovider.ModuleItem;
 import org.netbeans.modules.autoupdate.updateprovider.UpdateItemImpl;
@@ -71,7 +72,6 @@ import org.openide.util.Lookup;
  *
  * @author Jiri Rechtacek
  */
-@RandomlyFails // MyProvider occasionally not found in lookup
 public class FeatureIncompleteTest extends NbTestCase {
 
     protected boolean modulesOnly = true;
@@ -133,7 +133,7 @@ public class FeatureIncompleteTest extends NbTestCase {
             Map<String, UpdateItem> items = InstalledModuleProvider.getDefault().getUpdateItems();
             assertNotNull("Installed modules must found.", items);
 
-            Map<String, UpdateItem> res = InstalledModuleProvider.getDefault().getUpdateItems();
+            Map<String, UpdateItem> res = new HashMap<String, UpdateItem> (); //InstalledModuleProvider.getDefault().getUpdateItems();
 
             Set<String> deps = new HashSet<String>(items.size());
             for (String id : items.keySet()) {
@@ -143,8 +143,11 @@ public class FeatureIncompleteTest extends NbTestCase {
                 UpdateItemImpl itemImpl = Trampoline.SPI.impl(item);
                 assertTrue("Impl of " + item + "is ModuleItem", itemImpl instanceof ModuleItem);
                 ModuleItem moduleItem = (ModuleItem) itemImpl;
-                dep = moduleItem.getModuleInfo().getCodeNameBase() + " > " + moduleItem.getSpecificationVersion();
-                deps.add(dep);
+                Module m = Utilities.toModule(moduleItem.getModuleInfo());
+                if (m != null && m.getProblems().isEmpty()) {
+                    dep = moduleItem.getModuleInfo().getCodeNameBase() + " > " + moduleItem.getSpecificationVersion();
+                    deps.add(dep);
+                }
             }
 
             res.put("testFeatureVsStandaloneModules",
