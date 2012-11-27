@@ -56,6 +56,7 @@ import java.util.prefs.Preferences;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 import javax.swing.*;
+import javax.swing.border.Border;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.event.PopupMenuEvent;
@@ -149,6 +150,7 @@ public final class SearchBar extends JPanel implements PropertyChangeListener {
         setLayout(new BoxLayout(this, BoxLayout.LINE_AXIS));
         setFocusCycleRoot(true);
         setForeground(DEFAULT_FG_COLOR); //NOI18N
+        setBorder(new SeparatorBorder());
 
         add(Box.createHorizontalStrut(8)); //spacer in the beginnning of the toolbar
 
@@ -1118,4 +1120,25 @@ public final class SearchBar extends JPanel implements PropertyChangeListener {
             SearchBar.getInstance().setPopupMenuWasCanceled(true);
         }
     };
+
+    private static final class SeparatorBorder implements Border {
+        private static final int BORDER_WIDTH = 1;
+        private final Insets INSETS = new Insets(BORDER_WIDTH, 0, 0, 0);
+
+        @Override
+        public void paintBorder(Component c, Graphics g, int x, int y, int width, int height) {
+            Color originalColor = g.getColor();
+            g.setColor (UIManager.getColor ("controlShadow")); //NOI18N
+            g.drawLine(0, 0, c.getWidth(), 0);
+            g.setColor(originalColor);
+        }
+
+        @Override public Insets getBorderInsets(Component c) {
+            return INSETS;
+        }
+
+        @Override public boolean isBorderOpaque() {
+            return true;
+        }
+    }
 }
