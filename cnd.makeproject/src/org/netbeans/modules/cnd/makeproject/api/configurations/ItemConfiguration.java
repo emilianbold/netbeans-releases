@@ -112,21 +112,9 @@ public class ItemConfiguration implements ConfigurationAuxObject {
     }
 
     public boolean isDefaultConfiguration() {
-        if (org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider.VCS_WRITE) {
-            // was included => not default state to allow serialization
-            if (!excluded.getValue()) {
-                return false;
-            }
-        } else {
-            if (excluded.getValue()) {
-                return false;
-            }
-        }
-        if (!isItemFromDiskFolder()) {
-            // we do not check tools for excluded items in unmanaged projects
-            if (getTool() != item.getDefaultTool()) {
-                return false;
-            }
+        // was included => not default state to allow serialization
+        if (!excluded.getValue()) {
+            return false;
         }
         if (lastConfiguration != null && lastConfiguration.getModified()) {
             return false;
@@ -136,6 +124,13 @@ public class ItemConfiguration implements ConfigurationAuxObject {
         }
         if (getLanguageFlavor() != null && getLanguageFlavor() != LanguageFlavor.UNKNOWN) {
             return false;
+        }
+        // we do not check tools for excluded items in unmanaged projects
+        // but check for all logical as before
+        if (!isItemFromDiskFolder()) {
+            if (getTool() != item.getDefaultTool()) {
+                return false;
+            }
         }
         return true;
     }
@@ -358,7 +353,6 @@ public class ItemConfiguration implements ConfigurationAuxObject {
     }
     
     public boolean isVCSVisible() {
-        assert org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider.VCS_WRITE;
         if (item != null && getExcluded() != null && isItemFromDiskFolder()) {
             return !getExcluded().getValue();
         }

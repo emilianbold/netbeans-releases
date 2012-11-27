@@ -654,7 +654,7 @@ public final class Item implements NativeFileItem, PropertyChangeListener {
             FileSystem projectFS = fileSystem;
             List<FSPath> result = new ArrayList<FSPath>();            
             for (String p : vec2) {
-                if (ConfigurationDescriptorProvider.VCS_WRITE && p.contains("$")) { // NOI18N
+                if (p.contains("$")) { // NOI18N
                     // macro based path
                     if (macroConverter == null) {
                         macroConverter = new MacroConverter(env);
@@ -962,7 +962,6 @@ public final class Item implements NativeFileItem, PropertyChangeListener {
     private static final SpiAccessor SPI_ACCESSOR = new SpiAccessor();
 
     public boolean hasImportantAttributes() {
-        assert org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider.VCS_WRITE;
         for (ItemConfiguration conf : getItemConfigurations()) {
             if (conf != null && !conf.isDefaultConfiguration() ) {
                 return true;

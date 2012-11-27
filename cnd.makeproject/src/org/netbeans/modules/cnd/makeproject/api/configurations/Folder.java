@@ -854,13 +854,11 @@ public class Folder implements FileChangeListener, ChangeListener {
     }
 
     private boolean removeItemImpl(Item item, boolean setModified, boolean requestForCompleteRemove) {
-        if (org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider.VCS_WRITE) {
-            if (!requestForCompleteRemove && item.hasImportantAttributes()) {
-                if (log.isLoggable(Level.FINE)) {
-                    log.log(Level.FINE, "------------removeItemImpl does NOT REMOVED attributed {0} in {1}", new Object[]{item, getPath()}); // NOI18N
-                }
-                return false;
+        if (!requestForCompleteRemove && item.hasImportantAttributes()) {
+            if (log.isLoggable(Level.FINE)) {
+                log.log(Level.FINE, "------------removeItemImpl does NOT REMOVED attributed {0} in {1}", new Object[]{item, getPath()}); // NOI18N
             }
+            return false;
         }
         boolean ret = false;
         if (item == null) {
@@ -940,14 +938,12 @@ public class Folder implements FileChangeListener, ChangeListener {
             }
             folder.removeAll(requestForCompleteRemove);
             folder.markRemoved(true);
-            if (org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider.VCS_WRITE) {
-                if (!requestForCompleteRemove && folder.hasAttributedItems()) {
-                    if (log.isLoggable(Level.FINE)) {
-                        log.log(Level.FINE, "------------removeFolderImpl does NOT REMOVED attributed {0} in {1}", new Object[]{folder, getPath()}); // NOI18N
-                    }
-                    fireChangeEvent(this, false);
-                    return false;
+            if (!requestForCompleteRemove && folder.hasAttributedItems()) {
+                if (log.isLoggable(Level.FINE)) {
+                    log.log(Level.FINE, "------------removeFolderImpl does NOT REMOVED attributed {0} in {1}", new Object[]{folder, getPath()}); // NOI18N
                 }
+                fireChangeEvent(this, false);
+                return false;
             }
             itemsLock.writeLock().lock();
             try {
@@ -1130,7 +1126,6 @@ public class Folder implements FileChangeListener, ChangeListener {
     }
 
     public boolean hasAttributedItems() {
-        assert org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider.VCS_WRITE;
         if (!this.isDiskFolder()) {
             return true;
         }

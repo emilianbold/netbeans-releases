@@ -1160,17 +1160,16 @@ public abstract class CommonConfigurationXMLCodec
         if (codeAssistanceConfiguration.getTools().getModified()) {
             xes.element(BUILD_ANALAZYER_TOOLS_ELEMENT, "" + codeAssistanceConfiguration.getTools().getValue()); // NOI18N
         }
-        if (org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider.VCS_WRITE) {
-            if (codeAssistanceConfiguration.getEnvironmentVariables().getModified()) {
-                List<String> sortedList = new ArrayList<String>(codeAssistanceConfiguration.getEnvironmentVariables().getValue());
-                Collections.sort(sortedList);
-                writeList(xes, CODE_ASSISTANCE_ENVIRONMENT_ELEMENT, sortedList);
-            }
-            if (codeAssistanceConfiguration.getTransientMacros().getModified()) {
-                List<String> sortedList = new ArrayList<String>(codeAssistanceConfiguration.getTransientMacros().getValue());
-                Collections.sort(sortedList);
-                writeList(xes, CODE_ASSISTANCE_TRANSIENT_MACROS_ELEMENT, sortedList);
-            }
+        // evn variables and transient macros
+        if (codeAssistanceConfiguration.getEnvironmentVariables().getModified()) {
+            List<String> sortedList = new ArrayList<String>(codeAssistanceConfiguration.getEnvironmentVariables().getValue());
+            Collections.sort(sortedList);
+            writeList(xes, CODE_ASSISTANCE_ENVIRONMENT_ELEMENT, sortedList);
+        }
+        if (codeAssistanceConfiguration.getTransientMacros().getModified()) {
+            List<String> sortedList = new ArrayList<String>(codeAssistanceConfiguration.getTransientMacros().getValue());
+            Collections.sort(sortedList);
+            writeList(xes, CODE_ASSISTANCE_TRANSIENT_MACROS_ELEMENT, sortedList);
         }
         xes.elementClose(CODE_ASSISTANCE_ELEMENT);
     }
@@ -1204,18 +1203,16 @@ public abstract class CommonConfigurationXMLCodec
     }
 
     private boolean publicallyVisible(ConfigurationAuxObject auxObject) {
-        if (org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider.VCS_WRITE) {
-            if (auxObject instanceof org.netbeans.modules.cnd.makeproject.api.configurations.ItemConfiguration) {
-                return ((org.netbeans.modules.cnd.makeproject.api.configurations.ItemConfiguration)auxObject).isVCSVisible();
-            } else if (auxObject instanceof org.netbeans.modules.cnd.makeproject.api.configurations.FolderConfiguration) {
-                return ((org.netbeans.modules.cnd.makeproject.api.configurations.FolderConfiguration)auxObject).isVCSVisible();
-            }
+        if (auxObject instanceof org.netbeans.modules.cnd.makeproject.api.configurations.ItemConfiguration) {
+            return ((org.netbeans.modules.cnd.makeproject.api.configurations.ItemConfiguration)auxObject).isVCSVisible();
+        } else if (auxObject instanceof org.netbeans.modules.cnd.makeproject.api.configurations.FolderConfiguration) {
+            return ((org.netbeans.modules.cnd.makeproject.api.configurations.FolderConfiguration)auxObject).isVCSVisible();
         }
         return auxObject.shared();
     }
     
     private static StringConverter getMacroConverter(MakeConfiguration conf) {
-        if (conf != null && org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider.VCS_WRITE) {
+        if (conf != null) {
             final CodeAssistanceConfiguration caConf = conf.getCodeAssistanceConfiguration();
             if (caConf != null && caConf.getTransientMacros().getModified()) {
                 return new MacroConverterImpl(caConf);
@@ -1225,7 +1222,7 @@ public abstract class CommonConfigurationXMLCodec
     }
     
     private static StringConverter getIncludeConverter(final MakeConfiguration conf) {
-        if (conf != null && org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider.VCS_WRITE) {
+        if (conf != null) {
             final CodeAssistanceConfiguration caConf = conf.getCodeAssistanceConfiguration();
             if (caConf != null && caConf.getEnvironmentVariables().getModified()) {
                 return new IncludeConverterImpl(conf, caConf);
