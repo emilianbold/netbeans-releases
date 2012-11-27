@@ -198,6 +198,13 @@ public class Flow {
             if (cancel.isCanceled()) return false;
             
             v.scan(tp, null);
+            
+            TreePath toResume = tp;
+            
+            while (toResume != null) {
+                v.resume(toResume.getLeaf(), v.resumeAfter);
+                toResume = toResume.getParentPath();
+            }
 
             if (!v.variable2State.get(var).assignments.contains(null)) return true;
         }

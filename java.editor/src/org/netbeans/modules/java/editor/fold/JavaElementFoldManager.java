@@ -272,7 +272,7 @@ public class JavaElementFoldManager extends JavaFoldManager {
             long startTime = System.currentTimeMillis();
 
             final CompilationUnitTree cu = info.getCompilationUnit();
-            Document doc = info.getSnapshot().getSource().getDocument(false);
+            final Document doc = info.getSnapshot().getSource().getDocument(false);
             if (doc == null) {
                 return;
             }
@@ -293,13 +293,13 @@ public class JavaElementFoldManager extends JavaFoldManager {
 
             Collections.sort(v.folds);
             if (mgrs instanceof JavaElementFoldManager) {
-                SwingUtilities.invokeLater(((JavaElementFoldManager)mgrs).new CommitFolds(v.folds));
+                SwingUtilities.invokeLater(((JavaElementFoldManager)mgrs).new CommitFolds(doc, v.folds));
             } else {
                 SwingUtilities.invokeLater(new Runnable() {
                     Collection<JavaElementFoldManager> jefms = (Collection<JavaElementFoldManager>)mgrs;
                     public void run() {
                         for (JavaElementFoldManager jefm : jefms) {
-                            jefm.new CommitFolds(v.folds).run();
+                            jefm.new CommitFolds(doc, v.folds).run();
                         }
                 }});
             }
@@ -315,10 +315,12 @@ public class JavaElementFoldManager extends JavaFoldManager {
     private class CommitFolds implements Runnable {
         
         private boolean insideRender;
+        private Document doc;
         private List<FoldInfo> infos;
         private long startTime;
         
-        public CommitFolds(List<FoldInfo> infos) {
+        public CommitFolds(Document doc, List<FoldInfo> infos) {
+            this.doc = doc;
             this.infos = infos;
         }
         
@@ -354,7 +356,11 @@ public class JavaElementFoldManager extends JavaFoldManager {
             if (!insideRender) {
                 startTime = System.currentTimeMillis();
                 insideRender = true;
-                operation.getHierarchy().getComponent().getDocument().render(this);
+                Document d = operation.getHierarchy().getComponent().getDocument();
+                if (d != doc) {
+                    throw new IllegalStateException("Different documents used for folds computation and commit.\nDocument used for computation:" + doc + "\nDocument used for commit:" + d); //NOI18N
+                }
+                d.render(this);
                 
                 return;
             }

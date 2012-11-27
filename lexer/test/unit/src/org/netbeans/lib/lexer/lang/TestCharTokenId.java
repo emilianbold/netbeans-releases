@@ -75,31 +75,34 @@ public enum TestCharTokenId implements TokenId {
 
     public static final String MIME_TYPE = "text/x-simple-char";
     
-    private static final Language<TestCharTokenId> language
-    = new LanguageHierarchy<TestCharTokenId>() {
+    private static final Language<TestCharTokenId> language = createLanguage(MIME_TYPE);
 
-        @Override
-        protected Collection<TestCharTokenId> createTokenIds() {
-            return EnumSet.allOf(TestCharTokenId.class);
-        }
-        
-        @Override
-        protected Lexer<TestCharTokenId> createLexer(LexerRestartInfo<TestCharTokenId> info) {
-            return new TestCharLexer(info);
-        }
+    public static Language<TestCharTokenId> createLanguage(final String mimeType) {
+        return new LanguageHierarchy<TestCharTokenId>() {
 
-        @Override
-        protected LanguageEmbedding<?> embedding(
-        Token<TestCharTokenId> token, LanguagePath languagePath, InputAttributes inputAttributes) {
-            return null; // No embedding
-        }
+            @Override
+            protected Collection<TestCharTokenId> createTokenIds() {
+                return EnumSet.allOf(TestCharTokenId.class);
+            }
 
-        @Override
-        protected String mimeType() {
-            return MIME_TYPE;
-        }
-        
-    }.language();
+            @Override
+            protected Lexer<TestCharTokenId> createLexer(LexerRestartInfo<TestCharTokenId> info) {
+                return new TestCharLexer(info);
+            }
+
+            @Override
+            protected LanguageEmbedding<?> embedding(
+            Token<TestCharTokenId> token, LanguagePath languagePath, InputAttributes inputAttributes) {
+                return null; // No embedding
+            }
+
+            @Override
+            protected String mimeType() {
+                return mimeType;
+            }
+
+        }.language();
+    }
 
     public static Language<TestCharTokenId> language() {
         return language;

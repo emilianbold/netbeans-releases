@@ -336,6 +336,8 @@ public class GeneratorUtils {
     }
     
     public static ClassTree insertClassMembers(WorkingCopy wc, ClassTree clazz, List<? extends Tree> members, int offset) throws IllegalStateException {
+        if (members.isEmpty())
+            return clazz;
         if (offset < 0 || getCodeStyle(wc).getClassMemberInsertionPoint() != CodeStyle.InsertionPoint.CARET_LOCATION)
             return GeneratorUtilities.get(wc).insertClassMembers(clazz, members);
         int index = 0;

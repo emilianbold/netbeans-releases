@@ -53,7 +53,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import javax.lang.model.element.*;
 import javax.lang.model.type.*;
 import javax.lang.model.util.Types;
-import javax.swing.SwingUtilities;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
@@ -69,6 +68,7 @@ import org.netbeans.modules.parsing.api.UserTask;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 
 /**
  *
@@ -108,7 +108,6 @@ public class JavaCodeTemplateProcessor implements CodeTemplateProcessor {
     private Map<CodeTemplateParameter, String> param2hints = new HashMap<CodeTemplateParameter, String>();
     private Map<CodeTemplateParameter, TypeMirror> param2types = new HashMap<CodeTemplateParameter, TypeMirror>();
     private Set<String> autoImportedTypeNames = new HashSet<String>();
-    private ErrChecker errChecker = new ErrChecker();
     
     private JavaCodeTemplateProcessor(CodeTemplateInsertRequest request) {
         this.request = request;
@@ -200,7 +199,7 @@ public class JavaCodeTemplateProcessor implements CodeTemplateProcessor {
                     SourcePositions[] sourcePositions = new SourcePositions[1];
                     TreeUtilities tu = cInfo.getTreeUtilities();
                     StatementTree stmt = tu.parseStatement("{" + request.getInsertText() + "}", sourcePositions); //NOI18N
-                    if (!errChecker.containsErrors(stmt)) {
+                    if (!Utilities.containErrors(stmt)) {
                         TreePath path = tu.pathFor(new TreePath(treePath, stmt), parameter.getInsertTextOffset(), sourcePositions[0]);
                         path = Utilities.getPathElementOfKind(Tree.Kind.TRY, path);
                         if (path != null && ((TryTree)path.getLeaf()).getBlock() != null) {
@@ -339,7 +338,7 @@ public class JavaCodeTemplateProcessor implements CodeTemplateProcessor {
             }
         }
         if (!autoImportedTypeNames.isEmpty()) {
-            SwingUtilities.invokeLater(new Runnable() {
+            RequestProcessor.getDefault().post(new Runnable() {
                 @Override
                 public void run() {
                     try {
@@ -669,7 +668,7 @@ public class JavaCodeTemplateProcessor implements CodeTemplateProcessor {
                 SourcePositions[] sourcePositions = new SourcePositions[1];
                 TreeUtilities tu = cInfo.getTreeUtilities();
                 StatementTree stmt = tu.parseStatement("{" + typeName + " a;}", sourcePositions); //NOI18N
-                if (!errChecker.containsErrors(stmt) && stmt.getKind() == Tree.Kind.BLOCK) {
+                if (!Utilities.containErrors(stmt) && stmt.getKind() == Tree.Kind.BLOCK) {
                     List<? extends StatementTree> stmts = ((BlockTree)stmt).getStatements();
                     if (!stmts.isEmpty()) {
                         StatementTree var = stmts.get(0);
@@ -694,7 +693,7 @@ public class JavaCodeTemplateProcessor implements CodeTemplateProcessor {
                 SourcePositions[] sourcePositions = new SourcePositions[1];
                 TreeUtilities tu = cInfo.getTreeUtilities();
                 StatementTree stmt = tu.parseStatement("{" + request.getInsertText() + "}", sourcePositions); //NOI18N
-                if (errChecker.containsErrors(stmt))
+                if (Utilities.containErrors(stmt))
                     return null;
                 TreePath path = tu.pathFor(new TreePath(treePath, stmt), caretOffset + 1, sourcePositions[0]);
                 TreePath loop = Utilities.getPathElementOfKind(Tree.Kind.ENHANCED_FOR_LOOP, path);
@@ -727,7 +726,7 @@ public class JavaCodeTemplateProcessor implements CodeTemplateProcessor {
                 SourcePositions[] sourcePositions = new SourcePositions[1];
                 TreeUtilities tu = cInfo.getTreeUtilities();
                 StatementTree stmt = tu.parseStatement("{" + request.getInsertText() + "}", sourcePositions); //NOI18N
-                if (errChecker.containsErrors(stmt))
+                if (Utilities.containErrors(stmt))
                     return null;
                 TreePath path = tu.pathFor(new TreePath(treePath, stmt), caretOffset + 1, sourcePositions[0]);
                 TreePath tree = Utilities.getPathElementOfKind(EnumSet.of(Tree.Kind.ASSIGNMENT, Tree.Kind.VARIABLE), path);
@@ -761,7 +760,7 @@ public class JavaCodeTemplateProcessor implements CodeTemplateProcessor {
                 SourcePositions[] sourcePositions = new SourcePositions[1];
                 TreeUtilities tu = cInfo.getTreeUtilities();
                 StatementTree stmt = tu.parseStatement("{" + request.getInsertText() + "}", sourcePositions); //NOI18N
-                if (errChecker.containsErrors(stmt))
+                if (Utilities.containErrors(stmt))
                     return null;
                 TreePath path = tu.pathFor(new TreePath(treePath, stmt), caretOffset + 1, sourcePositions[0]);
                 TreePath tree = Utilities.getPathElementOfKind(EnumSet.of(Tree.Kind.ASSIGNMENT, Tree.Kind.VARIABLE), path);
@@ -812,7 +811,7 @@ public class JavaCodeTemplateProcessor implements CodeTemplateProcessor {
                 SourcePositions[] sourcePositions = new SourcePositions[1];
                 TreeUtilities tu = cInfo.getTreeUtilities();
                 StatementTree stmt = tu.parseStatement("{" + request.getInsertText() + "}", sourcePositions); //NOI18N
-                if (errChecker.containsErrors(stmt))
+                if (Utilities.containErrors(stmt))
                     return null;
                 TreePath path = tu.pathFor(new TreePath(treePath, stmt), caretOffset + 1, sourcePositions[0]);
                 TreePath decl = Utilities.getPathElementOfKind(Tree.Kind.VARIABLE, path);
@@ -895,7 +894,7 @@ public class JavaCodeTemplateProcessor implements CodeTemplateProcessor {
                 SourcePositions[] sourcePositions = new SourcePositions[1];
                 TreeUtilities tu = cInfo.getTreeUtilities();
                 StatementTree stmt = tu.parseStatement("{" + request.getInsertText() + "}", sourcePositions); //NOI18N
-                if (errChecker.containsErrors(stmt))
+                if (Utilities.containErrors(stmt))
                     return null;
                 TreePath path = tu.pathFor(new TreePath(treePath, stmt), caretOffset + 1, sourcePositions[0]);
                 path = Utilities.getPathElementOfKind(Tree.Kind.TRY, path);
@@ -1020,27 +1019,5 @@ public class JavaCodeTemplateProcessor implements CodeTemplateProcessor {
         public CodeTemplateProcessor createProcessor(CodeTemplateInsertRequest request) {
             return new JavaCodeTemplateProcessor(request); 
         }        
-    }
-    
-    
-    private static class ErrChecker extends TreeScanner<Void, Void> {
-        private boolean containsErrors;
-        
-        public boolean containsErrors(Tree tree) {
-            containsErrors = false;
-            scan(tree, null);
-            return containsErrors;
-        }
-        
-        public Void visitErroneous(ErroneousTree node, Void p) {
-            containsErrors = true;
-            return null;
-        }
-        
-        public Void scan(Tree node, Void p) {
-            if (containsErrors)
-                return null;
-            return super.scan(node, p);
-        }
     }
 }

@@ -1327,7 +1327,25 @@ public class TokenFormatter {
                                             newLines = ((FormatToken.InitToken) formatTokens.get(0)).hasHTML()
                                                     ? docOptions.blankLinesAfterOpenPHPTagInHTML + 1
                                                     : docOptions.blankLinesAfterOpenPHPTag + 1;
-                                            countSpaces = indent;
+                                            suggestedLineIndents = (Map<Integer, Integer>) doc.getProperty("AbstractIndenter.lineIndents");
+                                            if (suggestedLineIndents != null) {
+                                                try {
+                                                    int offset = formatToken.getOffset() + delta;
+                                                    int lineNumber = Utilities.getLineOffset(doc, offset) + 1;
+                                                    Integer suggestedIndent = suggestedLineIndents.get(lineNumber);
+                                                    if (suggestedIndent != null) {
+                                                        htmlIndent = suggestedIndent.intValue();
+                                                        indent = htmlIndent + docOptions.initialIndent + lastPHPIndent;
+                                                        countSpaces = indent;
+                                                    } else {
+                                                        countSpaces = indent;
+                                                    }
+                                                } catch (BadLocationException ex) {
+                                                    Exceptions.printStackTrace(ex);
+                                                }
+                                            } else {
+                                                countSpaces = indent;
+                                            }
                                             helpIndex = index + 1;
                                             while (helpIndex < formatTokens.size()
                                                     && formatTokens.get(helpIndex).isWhitespace()) {
@@ -1426,20 +1444,28 @@ public class TokenFormatter {
                                             int hindent = indent;
                                             if (hIndex < formatTokens.size()) {
                                                 FormatToken token;
+                                                int lastIndent = 0;
+                                                boolean bracketsInLine = false;
                                                 do {
                                                     token = formatTokens.get(hIndex);
                                                     if (token.getId() == FormatToken.Kind.INDENT) {
+                                                        lastIndent = ((FormatToken.IndentToken) token).getDelta();
                                                         hindent += ((FormatToken.IndentToken) token).getDelta();
+                                                    } else if (token.getId() == FormatToken.Kind.TEXT
+                                                            && (")".equals(token.getOldText()) || "]".equals(token.getOldText()))) {
+                                                        bracketsInLine = true;
                                                     }
 
                                                     hIndex++;
                                                 } while (hIndex < formatTokens.size()
                                                         && token.getId() != FormatToken.Kind.WHITESPACE_INDENT
                                                         && token.getId() != FormatToken.Kind.WHITESPACE
-                                                        && (token.isWhitespace() || token.getId() == FormatToken.Kind.INDENT));
-                                                if (FormatToken.Kind.TEXT == token.getId()
-                                                        && (")".equals(token.getOldText()) || ";".equals(token.getOldText()) || "]".equals(formatToken.getOldText()))) {
-                                                    countSpaces = hindent;
+                                                        && (token.isWhitespace() || token.getId() == FormatToken.Kind.INDENT
+                                                                || token.getId() == FormatToken.Kind.UNBREAKABLE_SEQUENCE_END
+                                                                || (token.getId() == FormatToken.Kind.TEXT
+                                                                    && (")".equals(token.getOldText()) || "]".equals(token.getOldText())))));
+                                                if (FormatToken.Kind.TEXT == token.getId() && ";".equals(token.getOldText())) {
+                                                    countSpaces = hindent == 0 && bracketsInLine ? lastIndent * -1 : hindent;
                                                     handlingSpecialCases = true;
                                                 }
                                             }

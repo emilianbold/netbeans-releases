@@ -207,7 +207,8 @@ public class FormRefactoringUpdate extends SimpleRefactoringElementImplementatio
                     transactionDone = true;
                 }
                 break;
-            case PACKAGE_RENAME: // renaming package of a component used in the form,
+            case PACKAGE_RENAME:
+            case FOLDER_RENAME:  // renaming package of a component used in the form,
                                  // but not the package of the form itself
                                  // (just one package renamed)
                 if (!changingFile.getParent().equals(originalFile)) {
@@ -447,8 +448,22 @@ public class FormRefactoringUpdate extends SimpleRefactoringElementImplementatio
         if (fes.isOpened()) {
             fes.closeFormEditor();
         }
-        if (replaceClassOrPkgName(new String[] { refInfo.getOldName(originalPkgFile) },
-                                  new String[] { refInfo.getNewName() },
+        String oldName = refInfo.getOldName(originalPkgFile);
+        String newName = refInfo.getNewName();
+        if (refInfo.getChangeType() == RefactoringInfo.ChangeType.FOLDER_RENAME) {
+            // determine full package name for renamed folder
+            ClassPath cp = ClassPath.getClassPath(originalPkgFile, ClassPath.SOURCE);
+            FileObject parent = originalPkgFile.getParent();
+            if (cp != null && cp.contains(parent)) {
+                String parentPkgName = cp.getResourceName(parent, '.', false);
+                if (parentPkgName != null && parentPkgName.length() > 0) {
+                    oldName = parentPkgName + "." + oldName; // NOI18N
+                    newName = parentPkgName + "." + newName; // NOI18N
+                }
+            }
+        }
+        if (replaceClassOrPkgName(new String[] { oldName },
+                                  new String[] { newName },
                                   true)
                 && !isGuardedCodeChanging()) {
             // some package references in resource were changed in the form file

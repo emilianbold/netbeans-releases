@@ -118,7 +118,9 @@ public abstract class Unit {
         Iterable<String> iterable = details ();
         for (String detail : iterable) {
             isVisible = filter.length () == 0 || detail.toLowerCase ().contains (filter);
-            if (isVisible) break;
+            if (isVisible) {
+                break;
+            }
         }
         return isVisible;
     }
@@ -481,7 +483,10 @@ public abstract class Unit {
         }
         @Override
         public void setMarked(boolean marked) {
-            assert marked != isMarked() : this + " marked as " + marked + " but was " + isMarked();
+            if (marked == isMarked()) {
+                log.info("Not necessary mark "  + this + " as " + marked + " if it'is marked as " + isMarked());
+                return ;
+            }
             OperationContainer container = Containers.forUpdate();
             for (UpdateUnit invisible : getUpdateUnits()) {
                 if (marked) {

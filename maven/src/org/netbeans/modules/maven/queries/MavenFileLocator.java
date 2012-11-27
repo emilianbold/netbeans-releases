@@ -102,7 +102,7 @@ public class MavenFileLocator implements LineConvertors.FileLocator {
         }
         FileObject toRet = cp.findResource(filename);
         if (toRet == null) {
-            LOG.log(Level.INFO, "#221053: Cannot find FileObject for {0}", filename);
+            LOG.log(Level.FINE, "#221053: Cannot find FileObject for {0}", filename);
         }
         return toRet;
     }

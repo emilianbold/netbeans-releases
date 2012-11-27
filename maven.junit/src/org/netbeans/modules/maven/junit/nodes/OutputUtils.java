@@ -49,6 +49,8 @@ import com.sun.source.tree.Tree;
 import com.sun.source.util.Trees;
 import java.io.IOException;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
@@ -77,7 +79,8 @@ import org.openide.text.Line.ShowVisibilityType;
  * @author Marian Petras
  */
 final class OutputUtils {
-
+    private static final Logger LOG = Logger.getLogger(OutputUtils.class.getName());
+    
     static final Action[] NO_ACTIONS = new Action[0];
     
     private OutputUtils() {
@@ -202,14 +205,32 @@ final class OutputUtils {
     static void openCallstackFrame(Node node, String frameInfo) {
             JUnitTestMethodNode methodNode = getTestMethodNode(node);
             FileLocator locator =  methodNode.getTestcase().getSession().getFileLocator();
-            if (locator == null){
+            if (locator == null) {
                 return;
             }
             FileObject testfo = methodNode.getTestcaseFileObject();
+            if (testfo == null) {
+                //#221053 more logging
+                StringBuilder stack = new StringBuilder();
+                if (methodNode.getTestcase().getTrouble() != null) {
+                    String[] st = methodNode.getTestcase().getTrouble().getStackTrace();
+                    if (st != null) {
+                        stack.append("\n");
+                        for (String s : st) {
+                            stack.append(s).append("\n");
+                        }
+                    } else {
+                        stack.append("<none>");
+                    }
+                } else {
+                    stack.append("<none>");
+                }
+                LOG.log(Level.INFO, "#221053: unknown location: {0} classname:{1}, stacktrace:", new Object[] {methodNode.getTestcase().getLocation(), methodNode.getTestcase().getClassName(), stack});
+            }
             final int[] lineNumStorage = new int[1];
             FileObject file = getFile(frameInfo, lineNumStorage, locator);
             //lineNumStorage -1 means no regexp for stacktrace was matched.
-            if ((file == null) && (methodNode.getTestcase().getTrouble() != null) && lineNumStorage[0] == -1) {
+            if (testfo != null && file == null && methodNode.getTestcase().getTrouble() != null && lineNumStorage[0] == -1) {
                 //213935 we could not recognize the stack trace line and map it to known file
                 //if it's a failure text, grab the testcase's own line from the stack.
                 String[] st = methodNode.getTestcase().getTrouble().getStackTrace();

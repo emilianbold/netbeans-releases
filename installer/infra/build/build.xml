@@ -569,7 +569,6 @@ jarsigner.storepass=${jarsigner.storepass}
                 
 		<!-- wtk -->
                 <include name="**/wtk*"/>
-                <include name="**/javamesdk*"/>
 
 		<!-- JDK -->
                 <exclude name="**/jdk*"/>

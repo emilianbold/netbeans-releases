@@ -237,9 +237,12 @@ public class HtmlNavigatorPanelUI extends JPanel implements ExplorerManager.Prov
         }
     }
 
-    private synchronized void pageModelDocumentChanged() {
+    private void pageModelDocumentChanged() {
         //try to find corresponding FileObject for the inspected document
-        inspectedFileObject = getInspectedFile(this.pageModel);
+        synchronized (this) {
+            inspectedFileObject = getInspectedFile(this.pageModel);
+        }
+        
         inspectedFileChanged();
         
         RP.post(new Runnable() {
@@ -810,7 +813,13 @@ public class HtmlNavigatorPanelUI extends JPanel implements ExplorerManager.Prov
     }
     
     private HtmlElementNode getHtmlNode(Node node) {
-        return domToNb.get(node);
+        HtmlElementNode result;
+        if (node instanceof HtmlElementNode) {
+            result = (HtmlElementNode)node;
+        } else {
+            result = domToNb.get(node);
+        }
+        return result;
     }
 
     /**
@@ -992,7 +1001,9 @@ public class HtmlNavigatorPanelUI extends JPanel implements ExplorerManager.Prov
         for (Node n : selectedNodes) {
             if (n instanceof HtmlElementNode) {
                 Node domNode = ((HtmlElementNode) n).getDOMNode();
-                if (domNode != null) {
+                if (domNode == null) {
+                    result.add(n);
+                } else {
                     result.add(domNode);
                 }
             }

@@ -175,7 +175,14 @@ public class MavenBinaryForSourceQueryImpl implements BinaryForSourceQueryImplem
         }
         
         public @Override URL[] getRoots() {
-            return new URL[] {FileUtil.urlForArchiveOrDir(project.getOutputDirectory(isTest))};
+            //#222352 afaik project.getOutputDirectory() is always non null, but apparently
+            //FileUtil.urlForArchiveOrDir can return null.
+            URL url = FileUtil.urlForArchiveOrDir(project.getOutputDirectory(isTest));
+            if (url != null) {
+                return new URL[] {url};
+            } else {
+                return new URL[0];
+            }
         }   
 
         public @Override void addChangeListener(ChangeListener changeListener) {

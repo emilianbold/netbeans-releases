@@ -54,7 +54,7 @@ import org.openide.util.NbBundle;
 import org.openide.util.lookup.ServiceProvider;
 
 
-abstract class OnlineSites implements SiteTemplateImplementation {
+public abstract class OnlineSites implements SiteTemplateImplementation {
 
     private static final Logger LOGGER = Logger.getLogger(OnlineSites.class.getName());
 
@@ -62,13 +62,21 @@ abstract class OnlineSites implements SiteTemplateImplementation {
     private final String url;
     private final File libFile;
     private final String description;
+    private final String id;
 
 
-    private OnlineSites(String name, String description, String url, File libFile) {
+
+    protected OnlineSites(String id, String name, String description, String url, File libFile) {
+        this.id = id;
         this.name = name;
         this.description = description;
         this.url = url;
         this.libFile = libFile;
+    }
+
+    @Override
+    public String getId() {
+        return id;
     }
 
     @Override
@@ -132,7 +140,7 @@ abstract class OnlineSites implements SiteTemplateImplementation {
         @NbBundle.Messages({"SiteAngularJsSeed.name=AngularJS Seed",
                 "SiteAngularJsSeed.description=Site template for AngularJS projects."})
         public SiteAngularJsSeed() {
-            super(Bundle.SiteAngularJsSeed_name(), Bundle.SiteAngularJsSeed_description(),
+            super("ANGULAR", Bundle.SiteAngularJsSeed_name(), Bundle.SiteAngularJsSeed_description(), // NOI18N
                     "https://github.com/angular/angular-seed/zipball/master", // NOI18N
                     new File(SiteHelper.getJsLibsDirectory(), "angularjs-seed.zip")); // NOI18N
         }
@@ -157,7 +165,7 @@ abstract class OnlineSites implements SiteTemplateImplementation {
 
         @NbBundle.Messages("BootstrapSiteInitializr.name=Initializr: Bootstrap")
         public BootstrapSiteInitializr() {
-            super(Bundle.BootstrapSiteInitializr_name(),
+            super("BOOTSTRAP", Bundle.BootstrapSiteInitializr_name(), // NOI18N
                     Bundle.SiteInitializr_description(),
                     "http://www.initializr.com/builder?boot-hero&jquerydev&h5bp-iecond&h5bp-chromeframe&h5bp-analytics&h5bp-favicon&h5bp-appletouchicons&modernizrrespond&izr-emptyscript&boot-css&boot-scripts", // NOI18N
                     new File(SiteHelper.getJsLibsDirectory(), "initializr-bootstrap-latest.zip")); // NOI18N
@@ -170,7 +178,7 @@ abstract class OnlineSites implements SiteTemplateImplementation {
 
         @NbBundle.Messages("ClassicSiteInitializr.name=Initializr: Classic")
         public ClassicSiteInitializr() {
-            super(Bundle.ClassicSiteInitializr_name(),
+            super("INIT.CLASSIC", Bundle.ClassicSiteInitializr_name(), // NOI18N
                 Bundle.SiteInitializr_description(),
                 "http://www.initializr.com/builder?h5bp-content&modernizr&jquerydev&h5bp-iecond&h5bp-chromeframe&h5bp-analytics&h5bp-htaccess&h5bp-favicon&h5bp-appletouchicons&h5bp-scripts&h5bp-robots&h5bp-humans&h5bp-404&h5bp-adobecrossdomain&h5bp-css&h5bp-csshelpers&h5bp-mediaqueryprint&h5bp-mediaqueries", // NOI18N
                     new File(SiteHelper.getJsLibsDirectory(), "initializr-classic-latest.zip")); // NOI18N
@@ -183,7 +191,7 @@ abstract class OnlineSites implements SiteTemplateImplementation {
 
         @NbBundle.Messages("ResponsiveSiteInitializr.name=Initializr: Responsive")
         public ResponsiveSiteInitializr() {
-            super(Bundle.ResponsiveSiteInitializr_name(),
+            super("INIT.RESP", Bundle.ResponsiveSiteInitializr_name(), // NOI18N
                     Bundle.SiteInitializr_description(),
                     "http://www.initializr.com/builder?izr-responsive&jquerydev&h5bp-iecond&h5bp-chromeframe&h5bp-analytics&h5bp-favicon&h5bp-appletouchicons&modernizrrespond&h5bp-css&h5bp-csshelpers&h5bp-mediaqueryprint&izr-emptyscript", // NOI18N
                     new File(SiteHelper.getJsLibsDirectory(), "initializr-responsive-latest.zip")); // NOI18N
@@ -197,7 +205,7 @@ abstract class OnlineSites implements SiteTemplateImplementation {
         @NbBundle.Messages({"SiteHtml5BoilerplateV4.name=HTML5 Boilerplate v4.0.0",
                 "SiteHtml5BoilerplateV4.description=Site template from html5boilerplate.com. Version: 4.0.0"})
         public SiteHtml5BoilerplateV4() {
-            super(Bundle.SiteHtml5BoilerplateV4_name(), Bundle.SiteHtml5BoilerplateV4_description(),
+            super("INIT.BOILER4", Bundle.SiteHtml5BoilerplateV4_name(), Bundle.SiteHtml5BoilerplateV4_description(), // NOI18N
                     "https://github.com/h5bp/html5-boilerplate/zipball/v4.0.0", // NOI18N
                     new File(SiteHelper.getJsLibsDirectory(), "html5-boilerplate-400.zip")); // NOI18N
         }
@@ -210,7 +218,7 @@ abstract class OnlineSites implements SiteTemplateImplementation {
         @NbBundle.Messages({"SiteHtml5Boilerplate.name=HTML5 Boilerplate v3.0.2",
                 "SiteHtml5Boilerplate.description=Site template from html5boilerplate.com. Version: 3.0.2"})
         public SiteHtml5BoilerplateV3() {
-            super(Bundle.SiteHtml5Boilerplate_name(), Bundle.SiteHtml5Boilerplate_description(),
+            super("INIT.BOILER3", Bundle.SiteHtml5Boilerplate_name(), Bundle.SiteHtml5Boilerplate_description(), // NOI18N
                     "https://github.com/h5bp/html5-boilerplate/zipball/v3.0.2", // NOI18N
                     new File(SiteHelper.getJsLibsDirectory(), "html5-boilerplate-302.zip")); // NOI18N
         }
@@ -223,7 +231,7 @@ abstract class OnlineSites implements SiteTemplateImplementation {
         @NbBundle.Messages({"SiteTwitterBootstrap.name=Twitter Bootstrap",
                 "SiteTwitterBootstrap.description=Site template from twitter.github.com/bootstrap"})
         public SiteTwitterBootstrap() {
-            super(Bundle.SiteTwitterBootstrap_name(), Bundle.SiteTwitterBootstrap_description(),
+            super("TWITTER", Bundle.SiteTwitterBootstrap_name(), Bundle.SiteTwitterBootstrap_description(), // NOI18N
                     "http://twitter.github.com/bootstrap/assets/bootstrap.zip", // NOI18N
                     new File(SiteHelper.getJsLibsDirectory(), "twitter-bootstrap.zip")); // NOI18N
         }

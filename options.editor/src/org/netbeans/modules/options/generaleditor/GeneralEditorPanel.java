@@ -134,7 +134,7 @@ public class GeneralEditorPanel extends JPanel implements ActionListener {
         cbFoldInitialComments = new javax.swing.JCheckBox();
         cbFoldTags = new javax.swing.JCheckBox();
         jSeparator1 = new javax.swing.JSeparator();
-        lCamelCaseBehavior1 = new javax.swing.JLabel();
+        lBracesMatching = new javax.swing.JLabel();
         cbShowBraceOutline = new javax.swing.JCheckBox();
         cbBraceTooltip = new javax.swing.JCheckBox();
         jSeparator6 = new javax.swing.JSeparator();
@@ -169,7 +169,7 @@ public class GeneralEditorPanel extends JPanel implements ActionListener {
 
         cbFoldTags.setText("Tags and Other Code Blocks");
 
-        lCamelCaseBehavior1.setText("Braces Matching");
+        lBracesMatching.setText(org.openide.util.NbBundle.getMessage(GeneralEditorPanel.class, "BRACES_MATCHING")); // NOI18N
 
         cbShowBraceOutline.setText("Show outline");
 
@@ -236,7 +236,7 @@ public class GeneralEditorPanel extends JPanel implements ActionListener {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jSeparator1))
             .addGroup(layout.createSequentialGroup()
-                .addComponent(lCamelCaseBehavior1)
+                .addComponent(lBracesMatching)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jSeparator6))
             .addGroup(layout.createSequentialGroup()
@@ -277,7 +277,7 @@ public class GeneralEditorPanel extends JPanel implements ActionListener {
                     .addComponent(cbFoldTags))
                 .addGap(18, 18, 18)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addComponent(lCamelCaseBehavior1)
+                    .addComponent(lBracesMatching)
                     .addComponent(jSeparator6, javax.swing.GroupLayout.PREFERRED_SIZE, 10, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addGap(3, 3, 3)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
@@ -322,8 +322,8 @@ public class GeneralEditorPanel extends JPanel implements ActionListener {
     private javax.swing.JSeparator jSeparator3;
     private javax.swing.JSeparator jSeparator5;
     private javax.swing.JSeparator jSeparator6;
+    private javax.swing.JLabel lBracesMatching;
     private javax.swing.JLabel lCamelCaseBehavior;
-    private javax.swing.JLabel lCamelCaseBehavior1;
     private javax.swing.JLabel lCamelCaseBehaviorExample;
     private javax.swing.JLabel lCodeFolding;
     private javax.swing.JLabel lCollapseByDefault;

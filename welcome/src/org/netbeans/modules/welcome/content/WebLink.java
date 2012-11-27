@@ -89,11 +89,13 @@ public class WebLink extends LinkButton {
     
     @Override
     protected void onMouseExited(MouseEvent e) {
+        super.onMouseExited( e );
         StatusDisplayer.getDefault().setStatusText( "" );
     }
 
     @Override
     protected void onMouseEntered(MouseEvent e) {
+        super.onMouseEntered( e );
         StatusDisplayer.getDefault().setStatusText( url );
     }
 }

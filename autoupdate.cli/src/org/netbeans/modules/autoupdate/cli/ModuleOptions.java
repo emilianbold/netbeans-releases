@@ -340,21 +340,21 @@ public class ModuleOptions extends OptionProcessor {
             env.getOutputStream().println("updates=0"); // NOI18N
             return;
         }
-        try {
-            env.getOutputStream().println("updates=" + operate.listAll().size()); // NOI18N
-            ProgressHandle downloadHandle = ProgressHandleFactory.createHandle("downloading-updates"); // NOI18N
-            downloadHandle.setInitialDelay(0);
-            JLabel downloadDetailLabel = ProgressHandleFactory.createDetailLabelComponent(downloadHandle);
-            downloadDetailLabel.addPropertyChangeListener(new PropertyChangeListener() {
-                @Override
-                public void propertyChange(PropertyChangeEvent evt) {
-                    if ("text".equals(evt.getPropertyName())) { // NOI18N
-                        env.getOutputStream().println(
-                                Bundle.MSG_Download(evt.getNewValue()));
-                        LOG.fine("  ... downloading update " + evt.getNewValue());
-                    }
+        env.getOutputStream().println("updates=" + operate.listAll().size()); // NOI18N
+        ProgressHandle downloadHandle = ProgressHandleFactory.createHandle("downloading-updates"); // NOI18N
+        downloadHandle.setInitialDelay(0);
+        JLabel downloadDetailLabel = ProgressHandleFactory.createDetailLabelComponent(downloadHandle);
+        downloadDetailLabel.addPropertyChangeListener(new PropertyChangeListener() {
+            @Override
+            public void propertyChange(PropertyChangeEvent evt) {
+                if ("text".equals(evt.getPropertyName())) { // NOI18N
+                    env.getOutputStream().println(
+                            Bundle.MSG_Download(evt.getNewValue()));
+                    LOG.fine("  ... downloading update " + evt.getNewValue());
                 }
-            });
+            }
+        });
+        try {
             final Validator res1 = support.doDownload(downloadHandle, null, false);
 
             Installer res2 = support.doValidate(res1, null);
@@ -376,7 +376,12 @@ public class ModuleOptions extends OptionProcessor {
                 support.doRestart(res3, null);
             }
         } catch (OperationException ex) {
-            throw (CommandException)new CommandException(33, ex.getMessage()).initCause(ex);
+            try {
+                support.doCancel();
+                throw (CommandException)new CommandException(33, ex.getMessage()).initCause(ex);
+            } catch (OperationException ex1) {
+                throw (CommandException)new CommandException(33, ex1.getMessage()).initCause(ex1);
+            }
         }
     }
 
@@ -486,7 +491,12 @@ public class ModuleOptions extends OptionProcessor {
                 env.getErrorStream().println(ex.getLocalizedMessage());
                 throw (CommandException) new CommandException(34, ex.getMessage()).initCause(ex);
             } else {
-                throw (CommandException) new CommandException(32, ex.getMessage()).initCause(ex);
+                try {
+                    support.doCancel();
+                    throw (CommandException) new CommandException(32, ex.getMessage()).initCause(ex);
+                } catch (OperationException ex1) {
+                    throw (CommandException) new CommandException(32, ex1.getMessage()).initCause(ex1);
+                }
             }
         }
     }

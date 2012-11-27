@@ -247,7 +247,7 @@ public class CssModuleTestBase extends CslTestBase {
 
     public static enum Match {
 
-        EXACT, CONTAINS, EMPTY, NOT_EMPTY, DOES_NOT_CONTAIN;
+        EXACT, CONTAINS, EMPTY, NOT_EMPTY, DOES_NOT_CONTAIN, CONTAINS_ONCE;
     }
 
     public CssModuleTestBase(String name) {
@@ -484,6 +484,12 @@ public class CssModuleTestBase extends CslTestBase {
             int originalRealSize = real.size();
             real.removeAll(exp);
             assertEquals("The unexpected element(s) '" + arrayToString(expected) + "' are present in the completion items list", originalRealSize, real.size());
+        } else if (type == Match.CONTAINS_ONCE) {
+            for(String e : expected) {
+                assertTrue(String.format("Expected item '%s' not found!", e), real.contains(e));
+                real.remove(e);
+                assertTrue(String.format("Expected item '%s' is contained multiple times!", e), !real.contains(e));
+            }
         }
 
     }
