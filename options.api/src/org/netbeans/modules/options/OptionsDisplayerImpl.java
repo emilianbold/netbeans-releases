@@ -490,16 +490,15 @@ public class OptionsDisplayerImpl {
             synchronized (lookupListener) {
                 descriptorRef = new WeakReference<DialogDescriptor>(null);
                 // #156947 - close dialog when categories change
-                if (dialog != null) {
-                    Mutex.EVENT.readAccess(new Runnable() {
-
-                        @Override
-                        public void run() {
-                            dialog.setVisible(false);
-                            dialog = null;
-                        }
-                    });
-                }
+                Mutex.EVENT.readAccess(new Runnable() {
+		    @Override
+		    public void run() {
+			if (dialog != null) {
+			    dialog.setVisible(false);
+			    dialog = null;
+			}
+		    }
+		});
             }
         }
         
