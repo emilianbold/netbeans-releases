@@ -49,14 +49,19 @@ import org.openide.util.NbBundle;
  *
  * @author marekfukala
  */
-@NavigatorPanel.Registration(
+@NavigatorPanel.Registrations({
+    @NavigatorPanel.Registration(
         displayName = "#navigator.panel.displayname",
-        mimeType = "text/html",
-        position=100)
+    mimeType = "text/html",
+    position = 100),
+    @NavigatorPanel.Registration(
+        displayName = "#navigator.panel.displayname",
+    mimeType = "text/xhtml",
+    position = 200)})
 public class HtmlNavigatorPanel implements NavigatorPanel {
 
     static HtmlNavigatorPanelUI ui = new HtmlNavigatorPanelUI();
-    
+
     @Override
     public String getDisplayName() {
         return NbBundle.getMessage(HtmlNavigatorPanel.class, "navigator.panel.displayname");
@@ -87,5 +92,5 @@ public class HtmlNavigatorPanel implements NavigatorPanel {
     public org.openide.util.Lookup getLookup() {
         return ui.getLookup();
     }
-
+    
 }

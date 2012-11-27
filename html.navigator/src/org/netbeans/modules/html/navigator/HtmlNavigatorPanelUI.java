@@ -87,6 +87,7 @@ import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.web.browser.api.Page;
 import org.netbeans.modules.web.browser.api.PageInspector;
 import org.netbeans.modules.web.common.api.ServerURLMapping;
+import org.netbeans.modules.web.common.api.WebUtils;
 import org.openide.cookies.EditorCookie;
 import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.ExplorerUtils;
@@ -403,7 +404,7 @@ public class HtmlNavigatorPanelUI extends JPanel implements ExplorerManager.Prov
         final FileObject fo = (p==null || url ==null)?f:ServerURLMapping.fromServer(p, url);
         
         if (fo != null) {
-            if (!"text/html".equals(FileUtil.getMIMEType(fo))) {
+            if (!("text/html".equals(FileUtil.getMIMEType(fo)) || ("text/xhtml".equals(FileUtil.getMIMEType(fo))))) {
                 return;
             }
 
@@ -415,7 +416,7 @@ public class HtmlNavigatorPanelUI extends JPanel implements ExplorerManager.Prov
             }
 
             Source source = Source.create(fo);
-            if (source == null || !"text/html".equals(source.getMimeType())) {
+            if (source == null || ! ("text/html".equals(source.getMimeType()) || "text/xhtml".equals(source.getMimeType()))) {
                 return;
             }
 
@@ -426,7 +427,9 @@ public class HtmlNavigatorPanelUI extends JPanel implements ExplorerManager.Prov
                 ParserManager.parse(Collections.singleton(source), new UserTask() {
                     @Override
                     public void run(ResultIterator resultIterator) throws Exception {
-                        setParserResult((HtmlParserResult) resultIterator.getParserResult());
+                        ResultIterator it = WebUtils.getResultIterator(resultIterator, "text/html");
+                        
+                        setParserResult((HtmlParserResult) it.getParserResult());
                         //inspectedFileObject = getInspectedFileFromPageModel();
                         refreshDOM();
                     }
