@@ -967,6 +967,7 @@ public final class SearchBar extends JPanel implements PropertyChangeListener {
             }
 
             EditorFindSupport.getInstance().putFindProperties(searchProps.getProperties());
+            changeHighlightCheckboxName(getCountFindMatches(EditorFindSupport.getInstance()));
         }
     }
 
