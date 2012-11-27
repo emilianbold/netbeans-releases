@@ -241,6 +241,12 @@ public class ShortcutPopupPanel extends javax.swing.JPanel {
         itemSelected(index);
     }//GEN-LAST:event_listMouseClicked
 
+    private boolean customProfile;
+    
+    void setCustomProfile(boolean customProfile) {
+        this.customProfile = customProfile;
+    }
+    
     private void itemSelected(int index) {
         if (displayAlternative) {
         switch (index) {
