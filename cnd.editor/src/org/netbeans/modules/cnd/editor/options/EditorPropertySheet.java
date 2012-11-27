@@ -587,13 +587,19 @@ public class EditorPropertySheet extends javax.swing.JPanel
 
     private void refreshPreview(JEditorPane pane, Preferences p) {
         pane.setText(getPreviewText());
-        BaseDocument bd = (BaseDocument) pane.getDocument();
-        CodeStyle codeStyle = EditorOptions.createCodeStyle(language, p, false);
-        try {
-            new Reformatter(bd, codeStyle).reformat();
-        } catch (BadLocationException ex) {
-            Exceptions.printStackTrace(ex);
-        }
+        final BaseDocument bd = (BaseDocument) pane.getDocument();
+        final CodeStyle codeStyle = EditorOptions.createCodeStyle(language, p, false);
+        bd.runAtomicAsUser(new Runnable() {
+
+            @Override
+            public void run() {
+                try {
+                    new Reformatter(bd, codeStyle).reformat();
+                } catch (BadLocationException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+        });
     }
 
     private static String getString(String key) {

@@ -309,6 +309,9 @@ public abstract class PsProvider {
             }
             idx++;
         }
+        if ( (idx-1) != res.processes.size()) {     // we should check if the operation has been applied to all processes
+            throw new AssertionError("Process list:" + res.processes.toString() + "\npargs output:" + pargsOutput.toString());
+        }
     }
 
     /**

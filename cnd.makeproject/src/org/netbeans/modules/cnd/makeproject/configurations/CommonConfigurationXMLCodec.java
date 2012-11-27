@@ -460,6 +460,8 @@ public abstract class CommonConfigurationXMLCodec
             writeLogicalFolders(xes);
             writeSourceRoots(xes);
             //writeSourceEncoding(xes);
+        } else {
+            writePrivatePhysicalFoldersForUnmanagedProject(xes);
         }
         xes.element(PROJECT_MAKEFILE_ELEMENT, ((MakeConfigurationDescriptor) projectDescriptor).getProjectMakefileName());
 //        if (!publicLocation) {
@@ -614,10 +616,50 @@ public abstract class CommonConfigurationXMLCodec
     }
 
 
+    private void writePrivatePhysicalFoldersForUnmanagedProject(XMLEncoderStream xes) {
+        Folder root = ((MakeConfigurationDescriptor) projectDescriptor).getLogicalFolders();
+        boolean unmanaged = false;
+        for (Folder folder : root.getFoldersAsArray()) {
+            if (folder.isDiskFolder()) {
+                unmanaged = true;
+                break;
+            }
+        }
+        if (!unmanaged) {
+            return;
+        }
+        List<AttrValuePair> attrList = new ArrayList<AttrValuePair>();
+        attrList.add(new AttrValuePair(NAME_ATTR, "" + root.getName())); // NOI18N
+        attrList.add(new AttrValuePair(DISPLAY_NAME_ATTR, "" + root.getDisplayName())); // NOI18N
+        attrList.add(new AttrValuePair(PROJECT_FILES_ATTR, "" + root.isProjectFiles())); // NOI18N
+        if (root.getKind() == Kind.ROOT) {
+            attrList.add(new AttrValuePair(KIND_ATTR, "" + root.getKind())); // NOI18N
+        }
+        if (root.getRoot() != null) {
+            attrList.add(new AttrValuePair(ROOT_ATTR, "" + root.getRoot())); // NOI18N
+        }
+        xes.elementOpen(LOGICAL_FOLDER_ELEMENT, attrList.toArray(new AttrValuePair[attrList.size()]));
+        // write out subfolders
+        Folder[] subfolders = root.getFoldersAsArray();
+        for (int i = 0; i < subfolders.length; i++) {
+            if (subfolders[i].isDiskFolder()) {
+                writeDiskFolder(xes, subfolders[i], true);
+            }
+        }
+        // write out items
+        // we always write all items for private
+        Item[] items = root.getItemsAsArray();
+        for (int i = 0; i < items.length; i++) {
+            Item item = items[i];
+            xes.element(ITEM_PATH_ELEMENT, item.getPath());
+        }
+        xes.elementClose(LOGICAL_FOLDER_ELEMENT);
+    }
+    
     private void writeLogicalFolders(XMLEncoderStream xes) {
         writeLogicalFolder(xes, ((MakeConfigurationDescriptor) projectDescriptor).getLogicalFolders(), 0);
     }
-
+    
     private void writeLogicalFolder(XMLEncoderStream xes, Folder folder, final int level) {
         Kind kind = folder.getKind();
         Kind storedKind = null;
@@ -645,7 +687,7 @@ public abstract class CommonConfigurationXMLCodec
         Folder[] subfolders = folder.getFoldersAsArray();
         for (int i = 0; i < subfolders.length; i++) {
             if (subfolders[i].isDiskFolder()) {
-                writeDiskFolder(xes, subfolders[i]);
+                writeDiskFolder(xes, subfolders[i], false);
             } else {
                 writeLogicalFolder(xes, subfolders[i], level + 1);
             }
@@ -660,8 +702,8 @@ public abstract class CommonConfigurationXMLCodec
         xes.elementClose(LOGICAL_FOLDER_ELEMENT);
     }
 
-    private void writeDiskFolder(XMLEncoderStream xes, Folder folder) {
-        if (org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider.VCS_WRITE && !folder.hasAttributedItems()) {
+    private void writeDiskFolder(XMLEncoderStream xes, Folder folder, boolean privateLocation) {
+        if (!privateLocation && !folder.hasAttributedItems()) {
             return;
         }
         List<AttrValuePair> attrList = new ArrayList<AttrValuePair>();
@@ -673,13 +715,13 @@ public abstract class CommonConfigurationXMLCodec
         // write out subfolders
         Folder[] subfolders = folder.getFoldersAsArray();
         for (int i = 0; i < subfolders.length; i++) {
-            writeDiskFolder(xes, subfolders[i]);
+            writeDiskFolder(xes, subfolders[i], privateLocation);
         }
         // write out items
         Item[] items = folder.getItemsAsArray();
         for (int i = 0; i < items.length; i++) {
             Item item = items[i];
-            if (!org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider.VCS_WRITE || item.hasImportantAttributes()) {
+            if (privateLocation || item.hasImportantAttributes()) {
                 xes.element(ITEM_NAME_ELEMENT, item.getName());
             }
         }

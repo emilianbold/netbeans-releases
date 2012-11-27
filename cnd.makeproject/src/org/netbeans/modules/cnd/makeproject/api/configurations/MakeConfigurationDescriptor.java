@@ -140,6 +140,9 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
     private static final Logger LOGGER = Logger.getLogger("org.netbeans.modules.cnd.makeproject"); // NOI18N
     private Project project = null;
     
+    private static final RequestProcessor RP = new RequestProcessor("MakeConfigurationDescriptor", 1); // NOI18N
+        
+    
     /*
      * For full remote, configuration base and project base might be different -
      * in 7.0 project base is local (shadow project), configuration base is remote.
@@ -661,7 +664,7 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
 
     private void checkForChangedItems2(final Folder folder, final Item item) {
         if (SwingUtilities.isEventDispatchThread()) {
-            RequestProcessor.getDefault().post(new Runnable() {
+            RP.post(new Runnable() {
 
                 @Override
                 public void run() {
@@ -886,7 +889,7 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
 
     private void checkForChangedItems2(final Delta delta) {
         if (SwingUtilities.isEventDispatchThread()) {
-            RequestProcessor.getDefault().post(new Runnable() {
+            RP.post(new Runnable() {
 
                 @Override
                 public void run() {
