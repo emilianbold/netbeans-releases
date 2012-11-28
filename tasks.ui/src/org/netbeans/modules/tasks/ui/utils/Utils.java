@@ -43,15 +43,26 @@ package org.netbeans.modules.tasks.ui.utils;
 
 import java.awt.Font;
 import java.awt.FontMetrics;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.CharConversionException;
+import javax.swing.JButton;
 import javax.swing.JComponent;
 import org.netbeans.modules.bugtracking.api.Issue;
 import org.netbeans.modules.bugtracking.api.Issue.Status;
+import org.netbeans.modules.bugtracking.api.Repository;
+import org.netbeans.modules.bugtracking.api.Util;
 import org.netbeans.modules.tasks.ui.DashboardTopComponent;
+import org.netbeans.modules.tasks.ui.QuickSearchPanel;
 import org.netbeans.modules.tasks.ui.dashboard.CategoryNode;
 import org.netbeans.modules.tasks.ui.dashboard.DashboardViewer;
 import org.netbeans.modules.tasks.ui.dashboard.RepositoryNode;
+import org.netbeans.modules.tasks.ui.dashboard.TaskNode;
+import org.netbeans.modules.tasks.ui.model.Category;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.actions.FindAction;
+import org.openide.util.NbBundle;
 import org.openide.util.SharedClassObject;
 import org.openide.xml.XMLUtil;
 
@@ -70,7 +81,6 @@ public class Utils {
         boolean containsActiveTask = DashboardViewer.getInstance().containsActiveTask(categoryNode);
         return getTopLvlDisplayText(containsActiveTask, categoryName, categoryNode.isOpened());
     }
-
 
     public static String getRepositoryDisplayText(RepositoryNode repositoryNode) {
         String repositoryName = repositoryNode.getRepository().getDisplayName();
@@ -100,7 +110,7 @@ public class Utils {
     public static String getTaskDisplayString(Issue task, JComponent component, int maxWidth, boolean active, boolean hasFocus) {
         String displayName;
         String fitText = computeFitText(component, maxWidth, task.getID() + " - " + task.getSummary(), active); //NOI18N
-        
+
         String activeText = active ? BOLD_START_SUBSTITUTE + fitText + BOLD_END_SUBSTITUTE : getFilterBoldText(fitText); //NOI18N
 
         try {
@@ -177,12 +187,59 @@ public class Utils {
         }
     }
 
-    public static String getFindActionMapKey(){
+    public static String getFindActionMapKey() {
         return SharedClassObject.findObject(FindAction.class, true).getActionMapKey().toString();
     }
 
     private static String replaceSubstitutes(String text) {
         text = text.replace(BOLD_START_SUBSTITUTE, "<b>"); //NOI18N
         return text.replace(BOLD_END_SUBSTITUTE, "</b>"); //NOI18N
+    }
+
+    public static void quickSearchTask(Repository repository) {
+        JButton open = new JButton(NbBundle.getMessage(DashboardTopComponent.class, "OPTION_Open"));
+        open.setEnabled(false);
+        JButton cancel = new JButton(NbBundle.getMessage(DashboardTopComponent.class, "OPTION_Cancel"));
+
+        QuickSearchPanel quickSearchPanel = new QuickSearchPanel(repository);
+        NotifyDescriptor quickSearchDialog = new NotifyDescriptor(
+                quickSearchPanel,
+                NbBundle.getMessage(DashboardTopComponent.class, "LBL_QuickTitle", repository.getDisplayName()), //NOI18N
+                NotifyDescriptor.OK_CANCEL_OPTION,
+                NotifyDescriptor.PLAIN_MESSAGE,
+                new Object[]{open, cancel},
+                open);
+        quickSearchDialog.setValid(false);
+        QuickSearchListener quickSearchListener = new QuickSearchListener(quickSearchPanel, open);
+        quickSearchPanel.addQuickSearchListener(quickSearchListener);
+        Object result = DialogDisplayer.getDefault().notify(quickSearchDialog);
+        if (result == open) {
+            Issue task = quickSearchPanel.getSelectedTask();
+            Util.openIssue(task.getRepository(), task.getID());
+            Category selectedCategory = quickSearchPanel.getSelectedCategory();
+            if (selectedCategory != null) {
+                DashboardViewer.getInstance().addTaskToCategory(selectedCategory, new TaskNode(task, null));
+            }
+        }
+        quickSearchPanel.removeQuickSearchListener(quickSearchListener);
+    }
+
+    private static class QuickSearchListener implements PropertyChangeListener {
+
+        private QuickSearchPanel quickSearchPanel;
+        private JButton open;
+
+        public QuickSearchListener(QuickSearchPanel quickSearchPanel, JButton open) {
+            this.quickSearchPanel = quickSearchPanel;
+            this.open = open;
+        }
+        
+        @Override
+        public void propertyChange(PropertyChangeEvent evt) {
+            if (evt.getPropertyName().equals(QuickSearchPanel.getTaskEvent())) {
+                Issue selectedTask = quickSearchPanel.getSelectedTask();
+                open.setEnabled(selectedTask != null);
+            }
+        }
     }
 }
