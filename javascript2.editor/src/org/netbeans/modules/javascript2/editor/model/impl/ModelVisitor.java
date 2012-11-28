@@ -206,7 +206,7 @@ public class ModelVisitor extends PathNodeVisitor {
                     if(!ModelUtils.isGlobal(parent) && !ModelUtils.isGlobal(parent.getParent()) &&
                         (parent.getParent() instanceof JsFunctionImpl
                             || isInPropertyNode() 
-                            || (parent instanceof JsFunctionImpl && parent.getParent().getJSKind() == JsElement.Kind.OBJECT_LITERAL))) {
+                            || parent instanceof JsFunctionImpl)) {
                         parent = (JsObjectImpl)parent.getParent();
                     }
                     property = (JsObjectImpl)parent.getProperty(fieldName);
