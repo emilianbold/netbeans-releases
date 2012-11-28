@@ -564,21 +564,26 @@ final class MakeLogicalViewRootNode extends AnnotatedNode implements ChangeListe
 
     // Private methods -------------------------------------------------
     private Action[] getAdditionalLogicalFolderActions() {
-
+        
         ResourceBundle bundle = NbBundle.getBundle(MakeLogicalViewProvider.class);
 
         MoreBuildActionsAction mba = null;        
+        ArrayList<Action> actions = new ArrayList<Action>();
         if (gotMakeConfigurationDescriptor() && getMakeConfigurationDescriptor().getActiveConfiguration() != null && getMakeConfigurationDescriptor().getActiveConfiguration().getConfigurationType().getValue() == MakeConfiguration.TYPE_MAKEFILE) {
-            mba = new MoreBuildActionsAction(new Action[]{
+            actions.addAll(Arrays.asList(new Action[]{
                 ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_CLEAN, bundle.getString("LBL_CleanAction_Name"), null), // NOI18N
                 ProjectSensitiveActions.projectCommandAction(MakeActionProvider.COMMAND_BATCH_BUILD, bundle.getString("LBL_BatchBuildAction_Name"), null), // NOI18N
-            });
+            }));
+            actions.addAll(Utilities.actionsForPath("CND/Actions/MoreBuildCommands/LogicalFolder")); //NOI18N
+            mba = new MoreBuildActionsAction(actions.toArray(new Action[0]));
         } else {
-            mba = new MoreBuildActionsAction(new Action[]{
+            actions.addAll(Arrays.asList(new Action[]{
                 ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_CLEAN, bundle.getString("LBL_CleanAction_Name"), null), // NOI18N
                 ProjectSensitiveActions.projectCommandAction(MakeActionProvider.COMMAND_BATCH_BUILD, bundle.getString("LBL_BatchBuildAction_Name"), null), // NOI18N
                 ProjectSensitiveActions.projectCommandAction(MakeActionProvider.COMMAND_BUILD_PACKAGE, bundle.getString("LBL_BuildPackagesAction_Name"), null), // NOI18N
-            });
+            }));
+            actions.addAll(Utilities.actionsForPath("CND/Actions/MoreBuildCommands/LogicalFolder")); //NOI18N
+            mba = new MoreBuildActionsAction(actions.toArray(new Action[0]));
         }
         
         Action[] result = new Action[]{
@@ -621,18 +626,23 @@ final class MakeLogicalViewRootNode extends AnnotatedNode implements ChangeListe
 
         ResourceBundle bundle = NbBundle.getBundle(MakeLogicalViewProvider.class);
 
-        MoreBuildActionsAction mba = null;        
+        MoreBuildActionsAction mba = null; 
+        ArrayList<Action> actions = new ArrayList<Action>();
         if (gotMakeConfigurationDescriptor() && getMakeConfigurationDescriptor().getActiveConfiguration() != null && getMakeConfigurationDescriptor().getActiveConfiguration().getConfigurationType().getValue() == MakeConfiguration.TYPE_MAKEFILE) {
-            mba = new MoreBuildActionsAction(new Action[]{
+            actions.addAll(Arrays.asList(new Action[]{
                 ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_CLEAN, bundle.getString("LBL_CleanAction_Name"), null), // NOI18N
                 ProjectSensitiveActions.projectCommandAction(MakeActionProvider.COMMAND_BATCH_BUILD, bundle.getString("LBL_BatchBuildAction_Name"), null), // NOI18N
-            });
+            }));
+            actions.addAll(Utilities.actionsForPath("CND/Actions/MoreBuildCommands/DiskFolder")); //NOI18N
+            mba = new MoreBuildActionsAction(actions.toArray(new Action[0]));
         } else {
-            mba = new MoreBuildActionsAction(new Action[]{
+            actions.addAll(Arrays.asList(new Action[]{
                 ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_CLEAN, bundle.getString("LBL_CleanAction_Name"), null), // NOI18N
                 ProjectSensitiveActions.projectCommandAction(MakeActionProvider.COMMAND_BATCH_BUILD, bundle.getString("LBL_BatchBuildAction_Name"), null), // NOI18N
                 ProjectSensitiveActions.projectCommandAction(MakeActionProvider.COMMAND_BUILD_PACKAGE, bundle.getString("LBL_BuildPackagesAction_Name"), null), // NOI18N
-            });
+            }));
+            actions.addAll(Utilities.actionsForPath("CND/Actions/MoreBuildCommands/DiskFolder")); //NOI18N            
+            mba = new MoreBuildActionsAction(actions.toArray(new Action[0]));
         }
         
         Action[] result = new Action[]{
