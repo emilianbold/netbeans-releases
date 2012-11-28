@@ -41,25 +41,31 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
+package org.netbeans.swing.plaf.windows8;
 
-package org.netbeans.swing.tabcontrol.plaf;
+import java.awt.*;
 
-import javax.swing.JComponent;
-import javax.swing.plaf.ComponentUI;
-import org.netbeans.swing.tabcontrol.TabDisplayer;
+import javax.swing.*;
+import javax.swing.border.AbstractBorder;
+import org.netbeans.swing.plaf.LFCustoms;
 
 /**
- * Win Vista-like user interface of view type tabs.
- *
- * @author S. Aubrecht
+ * (copy & paste of XP EditorToolbarBorder)
+ * @author  S. Aubrecht
+ * @since 1.30
  */
-public final class WinVistaViewTabDisplayerUI extends AbstractWinViewTabDisplayerUI {
+class EditorToolbarBorder extends AbstractBorder {
+    private static final Insets insets = new Insets(1, 0, 1, 0);
 
-    private WinVistaViewTabDisplayerUI(TabDisplayer displayer) {
-        super(displayer);
+    @Override
+    public void paintBorder(Component c, Graphics g, int x, int y, int w, int h) {
+        Color borderC = UIManager.getColor (LFCustoms.SCROLLPANE_BORDER_COLOR);
+        g.setColor(borderC);
+        g.drawLine(x, y + h - 1, x + w - 1, y + h - 1);
     }
 
-    public static ComponentUI createUI(JComponent c) {
-        return new WinVistaViewTabDisplayerUI((TabDisplayer)c);
-    }
+    @Override
+    public Insets getBorderInsets(Component c) {
+        return insets;
+    }  
 }
