@@ -339,6 +339,14 @@ public class MarkOccurrenceTest extends JsTestBase {
         checkOccurrences("testfiles/coloring/issue218090.js", "    var ag^e = 10;", true);
     }
     
+    public void testIssue218090_03() throws Exception {
+        checkOccurrences("testfiles/coloring/issue218090.js", "        period: peri^od", true);
+    }
+
+    public void testIssue218090_04() throws Exception {
+        checkOccurrences("testfiles/coloring/issue218090.js", "        mon_yr: mo^n_yr,", true);
+    }
+
     private String getTestFolderPath() {
         return "testfiles/markoccurences/" + getTestName();//NOI18N
     }
