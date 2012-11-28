@@ -277,7 +277,6 @@ public abstract class C2CQuery {
     }
     
     private final Set<String> issues = new HashSet<String>();
-    private Set<String> archivedIssues = new HashSet<String>();
     public void refreshIntern(final boolean autoRefresh) {
         
 //        assert if query was provided with parameters from controller
@@ -289,27 +288,15 @@ public abstract class C2CQuery {
                 C2C.LOG.log(Level.FINE, "refresh start - {0} [{1}]", new Object[] {name, getRepositoryQuery().getAttribute(C2CData.ATTR_QUERY_CRITERIA)}); // NOI18N
                 try {
                     
-                    // keeps all issues we will retrieve from the server
-                    // - those matching the query criteria
-                    // - and the obsolete ones
-                    Set<String> queryIssues = new HashSet<String>();
-
                     issues.clear();
-                    archivedIssues.clear();
                     if(isSaved()) {
                         if(!wasRun() && !issues.isEmpty()) {
                             C2C.LOG.log(Level.WARNING, "query {0} supposed to be run for the first time yet already contains issues.", getDisplayName()); // NOI18N
                             assert false;
                         }
-                        // read the stored state ...
-                        queryIssues.addAll(repository.getIssueCache().readQueryIssues(getDisplayName()));
-                        queryIssues.addAll(repository.getIssueCache().readArchivedQueryIssues(getDisplayName()));
-                        // ... and they might be rendered obsolete if not returned by the query
-                        archivedIssues.addAll(queryIssues);
                     }
                     firstRun = false;
 
-                    // run query to know what matches the criteria
                     IssuesCollector ic = new IssuesCollector();
                     PerformQueryCommand queryCmd = 
                         new PerformQueryCommand(
@@ -322,18 +309,10 @@ public abstract class C2CQuery {
                         return;
                     }
 
-                    // only issues not returned by the query are obsolete
-                    archivedIssues.removeAll(issues);
                     if(isSaved()) {
-                        // ... and store all issues you got
+                        // store all issues you got
                         repository.getIssueCache().storeQueryIssues(getDisplayName(), issues.toArray(new String[issues.size()]));
-                        repository.getIssueCache().storeArchivedQueryIssues(getDisplayName(), archivedIssues.toArray(new String[archivedIssues.size()]));
                     }
-
-                    // now get the task data for
-                    // - all issue returned by the query
-                    // - and issues which were returned by some previous run and are archived now
-                    queryIssues.addAll(issues);
 
                     //XXX opened issues must have complete task data
                     //is there another way?
@@ -374,14 +353,6 @@ public abstract class C2CQuery {
         }
     }
 
-    private class IssuesIdCollector extends TaskDataCollector {
-        public IssuesIdCollector() {}
-        @Override
-        public void accept(TaskData taskData) {
-            String id = C2CIssue.getID(taskData);
-            issues.add(id);
-        }
-    };
     private class IssuesCollector extends TaskDataCollector {
         List<C2CIssue> openedIssues = new LinkedList<C2CIssue>();
         
