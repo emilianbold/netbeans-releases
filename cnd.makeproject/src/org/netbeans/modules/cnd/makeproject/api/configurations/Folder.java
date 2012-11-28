@@ -763,6 +763,19 @@ public class Folder implements FileChangeListener, ChangeListener {
         return folderConfiguration;
     }
 
+    public FolderConfiguration[] getFolderConfigurations() {
+        FolderConfiguration[] folderConfigurations;
+        if (configurationDescriptor == null) {
+            return new FolderConfiguration[0];
+        }
+        Configuration[] configurations = configurationDescriptor.getConfs().toArray();
+        folderConfigurations = new FolderConfiguration[configurations.length];
+        for (int i = 0; i < configurations.length; i++) {
+            folderConfigurations[i] = getFolderConfiguration(configurations[i]);
+        }
+        return folderConfigurations;
+    }
+
     public String suggestedNewTestFolderName() {
         return suggestedName(DEFAULT_TEST_FOLDER_DISPLAY_NAME);
     }

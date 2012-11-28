@@ -341,17 +341,17 @@ final class LogicalFolderNode extends AnnotatedNode implements ChangeListener {
 
     @Override
     public boolean canDestroy() {
-        return getFolder().isDiskFolder();
+        return true;//getFolder().isDiskFolder();
     }
 
     @Override
     public boolean canCut() {
-        return getFolder().isDiskFolder();
+        return true;//getFolder().isDiskFolder();
     }
-
+    
     @Override
     public boolean canCopy() {
-        return getFolder().isDiskFolder();
+        return true;//getFolder().isDiskFolder();
     }
     @Override
     public Transferable clipboardCopy() throws IOException {
