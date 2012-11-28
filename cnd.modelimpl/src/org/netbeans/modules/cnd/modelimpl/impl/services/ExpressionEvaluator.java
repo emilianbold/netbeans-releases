@@ -261,6 +261,8 @@ public class ExpressionEvaluator implements CsmExpressionEvaluatorProvider {
     static private class MyTokenStream implements TokenStream {
         TokenBuffer tb;
 
+        int lastMark;
+        
         public MyTokenStream(TokenBuffer tb) {
             this.tb = tb;
         }
@@ -282,6 +284,7 @@ public class ExpressionEvaluator implements CsmExpressionEvaluatorProvider {
 
         @Override
         public int mark() {
+            lastMark = tb.index();
             return tb.mark();
         }
 
@@ -297,7 +300,8 @@ public class ExpressionEvaluator implements CsmExpressionEvaluatorProvider {
 
         @Override
         public void rewind() {
-            tb.rewind(0);
+            tb.mark();
+            tb.rewind(lastMark);
         }
 
         @Override

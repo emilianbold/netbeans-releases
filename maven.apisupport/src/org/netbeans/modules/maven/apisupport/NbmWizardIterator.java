@@ -101,21 +101,23 @@ public class NbmWizardIterator implements WizardDescriptor.BackgroundInstantiati
     private WizardDescriptor.Panel<WizardDescriptor>[] panels;
     private WizardDescriptor wiz;
     private final Archetype archetype;
+    private final String title;
 
-    private NbmWizardIterator(Archetype archetype) {
+    private NbmWizardIterator(Archetype archetype, String title) {
         this.archetype = archetype;
+        this.title = title;
     }
 
     @TemplateRegistration(folder=ArchetypeWizards.TEMPLATE_FOLDER, position=400, displayName="#template.module", iconBase="org/netbeans/modules/maven/apisupport/nbmicon.png", description="NbModuleDescription.html")
     @Messages("template.module=NetBeans Module")
     public static NbmWizardIterator createNbModuleIterator() {
-        return new NbmWizardIterator(NB_MODULE_ARCH);
+        return new NbmWizardIterator(NB_MODULE_ARCH, template_module());
     }
 
     @TemplateRegistration(folder=ArchetypeWizards.TEMPLATE_FOLDER, position=450, displayName="#template.app", iconBase="org/netbeans/modules/maven/apisupport/suiteicon.png", description="NbAppDescription.html")
     @Messages("template.app=NetBeans Application")
     public static NbmWizardIterator createNbAppIterator() {
-        return new NbmWizardIterator(NB_APP_ARCH);
+        return new NbmWizardIterator(NB_APP_ARCH, template_app());
     }
 
     @SuppressWarnings({"unchecked", "rawtypes"}) // XXX until rewrite panel storage
@@ -185,7 +187,7 @@ public class NbmWizardIterator implements WizardDescriptor.BackgroundInstantiati
 
         panels = createPanels(vg);
         this.wiz = wiz;
-
+        wiz.putProperty ("NewProjectWizard_Title", title); // NOI18N
         // Make sure list of steps is accurate.
         String[] steps = createSteps();
         for (int i = 0; i < panels.length; i++) {

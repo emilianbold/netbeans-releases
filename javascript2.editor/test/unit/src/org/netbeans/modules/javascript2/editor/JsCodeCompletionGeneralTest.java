@@ -145,6 +145,14 @@ public class JsCodeCompletionGeneralTest extends JsCodeComplationBase {
         checkCompletion("testfiles/completion/general/issue215863.js", "a^lert(\"Text\");", false);
     }
 
+    public void testIssue215863_05() throws Exception {
+        checkCompletion("testfiles/completion/general/issue215863.js", "l^", false);
+    }
+
+    public void testIssue215863_06() throws Exception {
+        checkCompletion("testfiles/completion/general/issue215863.js", "co^", false);
+    }
+
     public void testIssue218689() throws Exception {
         checkCompletion("testfiles/completion/general/issue218689.html", "            b.v^", false);
     }
@@ -183,6 +191,14 @@ public class JsCodeCompletionGeneralTest extends JsCodeComplationBase {
 
     public void testIssue218525_01() throws Exception {
         checkCompletion("testfiles/completion/general/issue218525.html", "<li style=\"cursor: pointer\" onclick=\"operator.r^emoveMe(this);\">Remove me (breakpoint on node removal + breakpoint on nonDOM line)</li>", false);
+    }
+    
+    public void testIssue215764_01() throws Exception {
+        checkCompletion("testfiles/completion/general/issue215764.js", "e215764.get^Date();", false);
+    }
+    
+    public void testIssue222601_01() throws Exception {
+        checkCompletion("testfiles/completion/general/issue222601.js", "b222601.get^Date()", false);
     }
 
     @Override

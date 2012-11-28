@@ -88,6 +88,11 @@ public class ClientProjectConfigurationImpl implements ClientProjectConfiguratio
     }
 
     @Override
+    public String getBrowserId() {
+        return browser.getId()+(disableIntegration ? "" : ".INTEGRATED"); //NOI18N
+    }
+
+    @Override
     public void save() {
         if (cust != null && getBrowserIntegration() == Boolean.TRUE) {
             EditableProperties p = project.getProjectHelper().getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);

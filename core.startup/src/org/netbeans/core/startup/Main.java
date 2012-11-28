@@ -307,6 +307,9 @@ public final class Main extends Object {
     // property editors are registered in modules, so wait a while before loading them
     CoreBridge.getDefault().registerPropertyEditors();
     StartLog.logProgress ("PropertyEditors registered"); // NOI18N
+    
+    // clean up the cache before --install, --update CLI options are processed
+    InstalledFileLocatorImpl.discardCache();
 
     org.netbeans.Main.finishInitialization();
     StartLog.logProgress("Ran any delayed command-line options"); // NOI18N
@@ -314,8 +317,6 @@ public final class Main extends Object {
     for (RunLevel level : Lookup.getDefault().lookupAll(RunLevel.class)) {
         level.run();
     }
-
-    InstalledFileLocatorImpl.discardCache();
 
     Splash.getInstance().setRunning(false);
     Splash.getInstance().dispose();

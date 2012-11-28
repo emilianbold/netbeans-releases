@@ -90,6 +90,12 @@ var I18n = {
         element.innerHTML = this.message(element.innerHTML);
         element.setAttribute(attrname, this.message(element.getAttribute(attrname)));
     },
+    /**
+     * Translate text (content) of the elements with the given className.
+     */
+    className: function(className) {
+        this.elements(document.getElementsByClassName(className));
+    },
 
     /**
      * Check element and warn to console if element does not exist.

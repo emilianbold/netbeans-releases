@@ -45,7 +45,7 @@ made subject to such option by the copyright holder.
 -->
 <project name="NetBeansCordovaBuild" basedir="..">
     <property file="nbproject/build.properties" />
-    <property file="nbproject/configs/{$config}.properties" />
+    <property file="nbproject/configs/${config}.properties" />
     <property name="android.exec.android" value="${android.sdk.home}/tools/android" />
     <property name="ios.exec.simulator" value="/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/Applications/iPhone Simulator.app/Contents/MacOS/iPhone Simulator"/>
     <property name="cordova.ios.template" value="${cordova.home}/lib/ios/bin/templates/project" />

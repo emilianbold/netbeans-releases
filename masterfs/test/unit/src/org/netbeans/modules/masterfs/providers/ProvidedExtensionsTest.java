@@ -661,6 +661,7 @@ public class ProvidedExtensionsTest extends NbTestCase {
         private static File refreshCallForDir;
         private static long refreshCallRetValue;
         private static List<File> refreshCallToAdd;
+        private int copyImplCalls;
         private int implsMoveCalls;
         private int moveImplCalls;
         private int implsRenameCalls;
@@ -684,12 +685,14 @@ public class ProvidedExtensionsTest extends NbTestCase {
         private static  boolean implsMoveRetVal = true;
         private static boolean implsRenameRetVal = true;
         private static boolean implsDeleteRetVal = false;
+        private static boolean implsCopyRetVal = false;
 
         private static int cnt;
         
         public static FileLock lock;
         private final AnnotationProvider provider;
         private IOException throwFromLock;
+        private int implsCopyCalls;
 
         public ProvidedExtensionsImpl() {
             this(null, false);
@@ -877,7 +880,7 @@ public class ProvidedExtensionsTest extends NbTestCase {
         @Override
         public ProvidedExtensions.IOHandler getMoveHandler(final File from, final File to) {
             implsMoveCalls++;
-            return (!isImplsMoveRetVal()) ? null : new ProvidedExtensions.IOHandler(){
+            return (!isImplsMoveRetVal() || to == null) ? null : new ProvidedExtensions.IOHandler(){
                 public void handle() throws IOException {
                     moveImplCalls++;
                     if (to.exists()) {
@@ -902,6 +905,34 @@ public class ProvidedExtensionsTest extends NbTestCase {
                     }
                     
                     assertFalse(from.exists());
+                    assertTrue(to.exists());
+                }
+            };
+        }
+        
+        @Override
+        public ProvidedExtensions.IOHandler getCopyHandler(final File from, final File to) {
+            implsCopyCalls++;
+            return (!isImplsCopyRetVal() || to == null) ? null : new ProvidedExtensions.IOHandler(){
+                @Override
+                public void handle() throws IOException {
+                    copyImplCalls++;
+                    if (to.exists()) {
+                        throw new IOException();
+                    }
+                    assertTrue(from.exists());
+                    assertFalse(to.exists());
+                    
+                    assertFalse(from.equals(to));
+                    InputStream inputStream = new FileInputStream(from);
+                    OutputStream outputStream = new FileOutputStream(to);
+                    try {
+                        FileUtil.copy(inputStream, outputStream);
+                    } finally {
+                        if (inputStream != null) inputStream.close();
+                        if (outputStream != null) outputStream.close();
+                    }
+                    assertTrue(from.exists());
                     assertTrue(to.exists());
                 }
             };
@@ -937,6 +968,13 @@ public class ProvidedExtensionsTest extends NbTestCase {
 
         public static void setImplsDeleteRetVal(boolean implsDeleteRetVal) {
             ProvidedExtensionsImpl.implsDeleteRetVal = implsDeleteRetVal;
+        }
+
+        public static boolean isImplsCopyRetVal() {
+            return ProvidedExtensionsImpl.implsCopyRetVal;
+        }
+        public static void setImplsCopyRetVal(boolean v) {
+            ProvidedExtensionsImpl.implsCopyRetVal = v;
         }
     }
 }

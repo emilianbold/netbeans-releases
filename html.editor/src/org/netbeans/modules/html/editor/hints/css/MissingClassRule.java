@@ -90,8 +90,10 @@ public class MissingClassRule extends HtmlRule {
     protected void run(HtmlRuleContext context, List<Hint> result) {
         try {
             HtmlParserResult parserResult = context.getHtmlParserResult();
-            CssClassesVisitor visitor = new CssClassesVisitor(this, context, result);
-            ElementUtils.visitChildren(parserResult.root(), visitor, ElementType.OPEN_TAG);
+            if(context.getCssIndex() != null) { //test if we can get the index, if not we can check nothing (typically css out of a project)
+                CssClassesVisitor visitor = new CssClassesVisitor(this, context, result);
+                ElementUtils.visitChildren(parserResult.root(), visitor, ElementType.OPEN_TAG);
+            }
         } catch (IOException ioe) {
             Exceptions.printStackTrace(ioe);
         }

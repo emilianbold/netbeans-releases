@@ -46,6 +46,7 @@ package org.netbeans.modules.cnd.modelimpl.trace;
 
 import java.io.IOException;
 import java.util.logging.Level;
+import org.netbeans.modules.cnd.apt.debug.APTTraceFlags;
 import org.netbeans.modules.cnd.apt.structure.APT;
 import org.netbeans.modules.cnd.apt.structure.APTFile;
 import org.netbeans.modules.cnd.apt.structure.APTInclude;
@@ -87,6 +88,11 @@ public class APTWalkerTest extends APTAbstractWalker {
         super.onIncludeNext(apt);
     }
 
+    @Override
+    protected boolean needPPTokens() {
+        return APTTraceFlags.INCLUDE_TOKENS_IN_TOKEN_STREAM;
+    }
+    
     @Override
     protected boolean include(ResolvedPath resolvedPath, APTInclude aptInclude, PostIncludeData postIncludeState) {
         resolvingTime += System.currentTimeMillis() - lastTime;

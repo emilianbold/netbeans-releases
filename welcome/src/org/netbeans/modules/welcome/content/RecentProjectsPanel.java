@@ -55,10 +55,12 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 import javax.swing.AbstractAction;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
+import org.netbeans.api.progress.ProgressUtils;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ui.OpenProjects;
@@ -166,27 +168,33 @@ public class RecentProjectsPanel extends JPanel implements Constants, Runnable {
 
         @Override
         public void actionPerformed(ActionEvent e) {
-            URL url = project.getURL();
-            Project prj = null;
+            Runnable r = new Runnable() {
+                @Override
+                public void run() {
+                    URL url = project.getURL();
+                    Project prj = null;
 
-            FileObject dir = URLMapper.findFileObject( url );
-            if ( dir != null && dir.isFolder() ) {
-                try {
-                    prj = ProjectManager.getDefault().findProject( dir );
-                }       
-                catch ( IOException ioEx ) {
-                    // Ignore invalid folders
+                    FileObject dir = URLMapper.findFileObject( url );
+                    if ( dir != null && dir.isFolder() ) {
+                        try {
+                            prj = ProjectManager.getDefault().findProject( dir );
+                        }
+                        catch ( IOException ioEx ) {
+                            // Ignore invalid folders
+                        }
+                    }
+
+                    if ( prj != null ) {
+                        OpenProjects.getDefault().open( new Project[] { prj }, false, true );
+                    } else {
+                        String msg = BundleSupport.getMessage("ERR_InvalidProject", project.getDisplayName()); //NOI18N
+                        NotifyDescriptor nd = new NotifyDescriptor.Message( msg );
+                        DialogDisplayer.getDefault().notify( nd );
+                        rebuildContent();
+                    }
                 }
-            }
-
-            if ( prj != null ) {
-                OpenProjects.getDefault().open( new Project[] { prj }, false, true );
-            } else {
-                String msg = BundleSupport.getMessage("ERR_InvalidProject", project.getDisplayName()); //NOI18N
-                NotifyDescriptor nd = new NotifyDescriptor.Message( msg );
-                DialogDisplayer.getDefault().notify( nd );
-                rebuildContent();
-            }
+            };
+            ProgressUtils.runOffEventDispatchThread( r, BundleSupport.getLabel("OPEN_RECENT_PROJECT"), new AtomicBoolean(false), true );
         }
     }
 }

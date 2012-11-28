@@ -52,10 +52,7 @@ import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 import javax.swing.AbstractButton;
 import javax.swing.DefaultComboBoxModel;
-import javax.swing.DefaultListCellRenderer;
 import javax.swing.JComboBox;
-import javax.swing.JLabel;
-import javax.swing.JList;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.JTextComponent;
@@ -65,6 +62,7 @@ import org.netbeans.api.search.SearchHistory;
 import org.netbeans.api.search.SearchPattern;
 import org.netbeans.modules.search.FindDialogMemory;
 import org.netbeans.modules.search.ui.PatternChangeListener;
+import org.netbeans.modules.search.ui.ShorteningCellRenderer;
 import org.netbeans.modules.search.ui.TextFieldFocusListener;
 import org.netbeans.modules.search.ui.UiUtils;
 import org.openide.util.Parameters;
@@ -79,8 +77,6 @@ public final class SearchPatternController
         extends ComponentController<JComboBox> {
 
     private JTextComponent textToFindEditor;
-    private static final int COMBO_TEXT_LENGHT_LIMIT = 100;
-    private static final String THREE_DOTS = "...";                     //NOI18N
 
     /**
      * Options of search patterns.
@@ -100,7 +96,7 @@ public final class SearchPatternController
         super(component);
         component.setEditable(true);
         Component cboxEditorComp = component.getEditor().getEditorComponent();
-        component.setRenderer(new PatternCellRenderer());
+        component.setRenderer(new ShorteningCellRenderer());
         textToFindEditor = (JTextComponent) cboxEditorComp;
         textToFindEditor.getDocument().addDocumentListener(
                 new DocumentListener() {
@@ -353,24 +349,6 @@ public final class SearchPatternController
         @Override
         public String toString() {
             return sp.getSearchExpression();
-        }
-    }
-
-    private class PatternCellRenderer extends DefaultListCellRenderer {
-
-        @Override
-        public Component getListCellRendererComponent(JList list, Object value,
-                int index, boolean isSelected, boolean cellHasFocus) {
-            Component component = super.getListCellRendererComponent(list,
-                    value, index, isSelected, cellHasFocus);
-            String s = ((ModelItem) value).sp.getSearchExpression();
-            if (s.length() > COMBO_TEXT_LENGHT_LIMIT
-                    && component instanceof JLabel) {
-                ((JLabel) component).setText(s.substring(0,
-                        COMBO_TEXT_LENGHT_LIMIT - THREE_DOTS.length())
-                        + THREE_DOTS);
-            }
-            return component;
         }
     }
 }

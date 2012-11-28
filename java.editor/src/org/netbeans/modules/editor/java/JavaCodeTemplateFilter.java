@@ -97,8 +97,7 @@ public class JavaCodeTemplateFilter implements CodeTemplateFilter {
                                         return;
                                     Parser.Result result = resultIterator.getParserResult(startOffset);
                                     CompilationController controller = result != null ? CompilationController.get(result) : null;
-                                    if (controller != null) {
-                                        controller.toPhase(Phase.PARSED);
+                                    if (controller != null && Phase.PARSED.compareTo(controller.toPhase(Phase.PARSED)) <= 0) {
                                         Tree tree = controller.getTreeUtilities().pathFor(startOffset).getLeaf();
                                         if (endOffset >= 0 && startOffset != endOffset) {
                                             if (controller.getTreeUtilities().pathFor(endOffset).getLeaf() != tree)

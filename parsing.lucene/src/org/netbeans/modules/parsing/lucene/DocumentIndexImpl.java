@@ -67,7 +67,7 @@ import org.netbeans.modules.parsing.lucene.support.Queries.QueryKind;
  *
  * @author Tomas Zezula
  */
-public final class DocumentIndexImpl implements DocumentIndex, Runnable {
+public class DocumentIndexImpl implements DocumentIndex, Runnable {
     
     private final Index luceneIndex;
     //@GuardedBy (this)
@@ -85,7 +85,7 @@ public final class DocumentIndexImpl implements DocumentIndex, Runnable {
     //@GuardedBy (this)    
     private final Set<String> dirtyKeys = new HashSet<String>();
 
-    public DocumentIndexImpl (
+    private DocumentIndexImpl (
             @NonNull final Index index,
             @NonNull final DocumentIndexCache cache) {
         assert index != null;
@@ -171,29 +171,35 @@ public final class DocumentIndexImpl implements DocumentIndex, Runnable {
     }
     
     private void store(boolean optimize, boolean flushOnly) throws IOException {
+        final  boolean change = storeImpl(optimize, flushOnly);
+        if (!change && !flushOnly && txLuceneIndex != null) {
+            commitImpl();
+        }
+    }
+
+    private boolean storeImpl(
+            final boolean optimize,
+            final boolean flushOnly) throws IOException {
         final Collection<? extends IndexDocument> _toAdd;
         final Collection<? extends String> _toRemove;
-
         synchronized (this) {
             _toAdd = cache.getAddedDocuments();
             _toRemove = cache.getRemovedKeys();
             cache.clear();
-
-            if (!dirtyKeys.isEmpty()) {                
+            if (!dirtyKeys.isEmpty()) {
                 for(IndexDocument ldoc : _toAdd) {
                     this.dirtyKeys.remove(ldoc.getPrimaryKey());
                 }
-                this.dirtyKeys.removeAll(_toRemove);                
+                this.dirtyKeys.removeAll(_toRemove);
             }
         }
-
-        if (_toAdd.size() > 0 || _toRemove.size() > 0) {                                        
+        if (!_toAdd.isEmpty() || !_toRemove.isEmpty()) {
             LOGGER.log(Level.FINE, "Flushing: {0}", luceneIndex.toString()); //NOI18N
             if (flushOnly && txLuceneIndex != null) {
                 txLuceneIndex.txStore(
-                        _toAdd, 
-                        _toRemove, 
-                        ADD_CONVERTOR, 
+                        _toAdd,
+                        _toRemove,
+                        ADD_CONVERTOR,
                         REMOVE_CONVERTOR
                 );
             } else {
@@ -202,11 +208,15 @@ public final class DocumentIndexImpl implements DocumentIndex, Runnable {
                         _toRemove,
                         ADD_CONVERTOR,
                         REMOVE_CONVERTOR,
-                        optimize);                    
+                        optimize);
             }
-        } else if (!flushOnly && txLuceneIndex != null) {
-            txLuceneIndex.commit();
+            return true;
         }
+        return false;
+    }
+
+    private void commitImpl() throws IOException {
+        txLuceneIndex.commit();
     }
 
     @Override
@@ -269,6 +279,50 @@ public final class DocumentIndexImpl implements DocumentIndex, Runnable {
     @Override
     public String toString () {
         return "DocumentIndex["+luceneIndex.toString()+"]";  //NOI18N
-    }    
+    }
+
+    @NonNull
+    public static DocumentIndex create(
+            @NonNull final Index index,
+            @NonNull final DocumentIndexCache cache) {
+        return new DocumentIndexImpl(index, cache);
+    }
+
+    @NonNull
+    public static DocumentIndex.Transactional createTransactional(
+            @NonNull final Index.Transactional index,
+            @NonNull final DocumentIndexCache cache) {
+        return new DocumentIndexImpl.Transactional(index, cache);
+    }
+
+    private final static class Transactional extends DocumentIndexImpl implements DocumentIndex.Transactional {
+
+        private Transactional(
+            @NonNull final Index.Transactional index,
+            @NonNull final DocumentIndexCache cache) {
+            super(index, cache);
+        }
+
+        @Override
+        public void txStore() throws IOException {
+            super.storeImpl(false, true);
+        }
+
+        @Override
+        public void commit() throws IOException {
+            super.commitImpl();
+        }
+
+        @Override
+        public void rollback() throws IOException {
+            super.txLuceneIndex.rollback();
+        }
+
+        @Override
+        public String toString () {
+            return "DocumentIndex.Transactional ["+super.luceneIndex.toString()+"]";  //NOI18N
+        }
+
+    }
                     
 }

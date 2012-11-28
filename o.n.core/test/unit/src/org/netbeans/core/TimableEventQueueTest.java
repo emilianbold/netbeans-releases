@@ -56,7 +56,7 @@ import org.openide.util.Exceptions;
 public class TimableEventQueueTest extends NbTestCase {
     static {
         System.setProperty("org.netbeans.core.TimeableEventQueue.quantum", "300");
-        System.setProperty("org.netbeans.core.TimeableEventQueue.pause", "3000");
+        System.setProperty("org.netbeans.core.TimeableEventQueue.pause", "10");
         System.setProperty("org.netbeans.core.TimeableEventQueue.report", "600");
         TimableEventQueue.initialize(null, false);
     }

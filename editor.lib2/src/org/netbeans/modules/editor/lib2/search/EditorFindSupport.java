@@ -137,8 +137,10 @@ public final class EditorFindSupport {
 
     /** It's public only to keep backwards compatibility of the FindSupport class. */
     public static final String FIND_HISTORY_PROP = "find-history-prop"; //NOI18N
+    public static final String REPLACE_HISTORY_PROP = "replace-history-prop"; //NOI18N
     /** It's public only to keep backwards compatibility of the FindSupport class. */
     public static final String FIND_HISTORY_CHANGED_PROP = "find-history-changed-prop"; //NOI18N
+    public static final String REPLACE_HISTORY_CHANGED_PROP = "replace-history-changed-prop"; //NOI18N
     
     /**
      * Default message 'importance' for messages from find and replace actions.
@@ -162,6 +164,7 @@ public final class EditorFindSupport {
     
     private SPW lastSelected;
     private List<SPW> historyList = new ArrayList<SPW>();
+    private List<RP> replaceList = new ArrayList<RP>();
 
     private EditorFindSupport() {
     }
@@ -917,10 +920,21 @@ public final class EditorFindSupport {
 //        firePropertyChange(FIND_HISTORY_CHANGED_PROP,null,null);
     }
     
+    public void setReplaceHistory(List<RP> rpList){
+        this.replaceList = new ArrayList<RP>(rpList);
+    }
+    
     public List<SPW> getHistory(){
         if (historyList.isEmpty())
             firePropertyChange(FIND_HISTORY_CHANGED_PROP,null,null);
         return historyList;
+    }
+    
+    public List<RP> getReplaceHistory(){
+        if (replaceList.isEmpty()) {
+            firePropertyChange(REPLACE_HISTORY_CHANGED_PROP,null,null);
+        }
+        return replaceList;
     }
     
     public void setLastSelected(SPW spw){
@@ -940,6 +954,13 @@ public final class EditorFindSupport {
     public void addToHistory(SPW spw){
         if (spw == null) return;
         firePropertyChange(FIND_HISTORY_PROP, null, spw);
+    }
+    
+    public void addToReplaceHistory(RP rp) {
+        if (rp == null) {
+            return;
+        }
+        firePropertyChange(REPLACE_HISTORY_PROP, null, rp);
     }
     
     public final static class SPW{
@@ -1010,4 +1031,41 @@ public final class EditorFindSupport {
             return  sb.toString();
         }
     } // End of SPW class
+
+    public final static class RP {
+
+        private String replaceExpression;
+        private boolean preserveCase;
+
+        public RP(String replaceExpression, boolean preserveCase) {
+            this.replaceExpression = replaceExpression;
+            this.preserveCase = preserveCase;
+        }
+
+        public String getReplaceExpression() {
+            return replaceExpression;
+        }
+
+        public boolean isPreserveCase() {
+            return preserveCase;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (!(obj instanceof RP)) {
+                return false;
+            }
+            RP sp = (RP) obj;
+            return (this.replaceExpression.equals(sp.getReplaceExpression())
+                    && this.preserveCase == sp.isPreserveCase());
+        }
+
+        @Override
+        public int hashCode() {
+            int result = 17;
+            result = 37 * result + (this.preserveCase ? 1 : 0);
+            result = 37 * result + this.replaceExpression.hashCode();
+            return result;
+        }
+    }
 }

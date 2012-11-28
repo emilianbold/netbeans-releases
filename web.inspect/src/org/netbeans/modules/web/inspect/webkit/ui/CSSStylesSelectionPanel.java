@@ -53,6 +53,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.List;
+import java.util.Map;
 import javax.swing.BorderFactory;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.GroupLayout;
@@ -63,6 +64,7 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.JTable;
+import javax.swing.JToggleButton;
 import javax.swing.JTree;
 import javax.swing.LayoutStyle;
 import javax.swing.ListCellRenderer;
@@ -77,15 +79,16 @@ import javax.swing.text.View;
 import javax.swing.tree.TreeCellRenderer;
 import javax.swing.tree.TreeSelectionModel;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.css.visual.api.EditCSSRulesAction;
 import org.netbeans.modules.web.inspect.PageModel;
 import org.netbeans.modules.web.inspect.webkit.Utilities;
 import org.netbeans.modules.web.inspect.webkit.WebKitPageModel;
-import org.netbeans.modules.web.webkit.debugging.api.TransportStateException;
 import org.netbeans.modules.web.webkit.debugging.api.WebKitDebugging;
 import org.netbeans.modules.web.webkit.debugging.api.css.CSS;
 import org.netbeans.modules.web.webkit.debugging.api.css.MatchedStyles;
 import org.netbeans.modules.web.webkit.debugging.api.css.Media;
 import org.netbeans.modules.web.webkit.debugging.api.css.Property;
+import org.netbeans.modules.web.webkit.debugging.api.css.PropertyInfo;
 import org.netbeans.modules.web.webkit.debugging.api.css.Rule;
 import org.netbeans.modules.web.webkit.debugging.api.css.RuleId;
 import org.openide.awt.HtmlRenderer;
@@ -110,6 +113,9 @@ import org.w3c.dom.Document;
  * @author Jan Stola
  */
 public class CSSStylesSelectionPanel extends JPanel {
+    
+    /** Is Mac L&F? */
+    private static final boolean AQUA = "Aqua".equals(UIManager.getLookAndFeel().getID()); //NOI18N 
     /** Request processor used by this class. */
     static final RequestProcessor RP = new RequestProcessor(CSSStylesSelectionPanel.class);
     /** Lookup of this panel. */
@@ -138,9 +144,11 @@ public class CSSStylesSelectionPanel extends JPanel {
      */
     CSSStylesSelectionPanel() {
         setLayout(new BorderLayout());
-        JSplitPane splitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
+        JSplitPane splitPane = createSplitPane();
+        splitPane.setOrientation(javax.swing.JSplitPane.VERTICAL_SPLIT);
         splitPane.setTopComponent(initPropertyPane());
         splitPane.setBottomComponent(initRulePane());
+        splitPane.setDividerSize(4);
         splitPane.setResizeWeight(0.5);
         splitPane.setBorder(null);
         selectionView = splitPane;
@@ -150,6 +158,20 @@ public class CSSStylesSelectionPanel extends JPanel {
         updateContent(null, false);
     }
 
+    private JSplitPane createSplitPane() {
+        return new JSplitPane() {
+
+            @Override
+            public String getUIClassID() {
+                if( AQUA && UIManager.get("Nb.SplitPaneUI.clean") != null ) { //NOI18N
+                    return "Nb.SplitPaneUI.clean"; //NOI18N
+                } else {
+                    return super.getUIClassID();
+                }
+            }
+        };
+    }
+    
     /**
      * Initializes Property Summary section.
      *
@@ -192,11 +214,35 @@ public class CSSStylesSelectionPanel extends JPanel {
         ExplorerManagerProviderPanel rulePanePanel = new ExplorerManagerProviderPanel();
         rulePanePanel.setLayout(new BorderLayout());
         rulePanePanel.add(rulePane, BorderLayout.CENTER);
+        
+        JPanel northPanel = new JPanel();        
+        northPanel.setLayout(new BorderLayout());
+        
+        //add the info label
         JLabel rulePaneSummaryLabel = new JLabel();
         rulePaneSummaryLabel.setText(NbBundle.getMessage(
                 CSSStylesSelectionPanel.class, "CSSStylesSelectionPanel.rulePaneHeader")); // NOI18N
-        rulePaneSummaryLabel.setBorder(BorderFactory.createEmptyBorder(4, 2, 4, 0));
-        rulePanePanel.add(rulePaneSummaryLabel, BorderLayout.PAGE_START);
+        rulePaneSummaryLabel.setBorder(BorderFactory.createEmptyBorder(0, 4, 0, 0));
+        northPanel.add(rulePaneSummaryLabel, BorderLayout.CENTER);
+        
+        //add toolbar
+        CustomToolbar toolbar = new CustomToolbar();
+        final JToggleButton createRuleToggleButton = new JToggleButton();
+        createRuleToggleButton.setAction(EditCSSRulesAction.getDefault());
+        org.openide.awt.Mnemonics.setLocalizedText(createRuleToggleButton, null);
+        createRuleToggleButton.setToolTipText(EditCSSRulesAction.getDefault().getToolTip()); // NOI18N
+        createRuleToggleButton.setFocusable(false);
+        createRuleToggleButton.addActionListener(new java.awt.event.ActionListener() {
+            @Override
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                createRuleToggleButton.setSelected(false); //disable selected as it's a toggle button
+            }
+        });
+        
+        toolbar.addButton(createRuleToggleButton);
+        northPanel.add(toolbar, BorderLayout.EAST);
+        rulePanePanel.add(northPanel, BorderLayout.NORTH);
+        
         rulePanePanel.setMinimumSize(new Dimension(0,0)); // allow shrinking in JSplitPane
         rulePaneManager = rulePanePanel.getExplorerManager();
         lookup = ExplorerUtils.createLookup(rulePaneManager, getActionMap());
@@ -306,15 +352,32 @@ public class CSSStylesSelectionPanel extends JPanel {
             setDummyRoots();
         } else {
             List<Node> selection = pageModel.getSelectedNodes();
-            int selectionSize = selection.size();
+            int selectionSize = 0;
+            boolean containsUnkownNode = false;
+            Node knownNode = null;
+            for (Node node : selection) {
+                Object webKitNode = node.getLookup().lookup(org.netbeans.modules.web.webkit.debugging.api.dom.Node.class);
+                if (webKitNode == null) {
+                    containsUnkownNode = true;
+                } else {
+                    knownNode = node;
+                    selectionSize++;
+                }
+            }
             if (selectionSize == 0) {
                 setDummyRoots();
-                showLabel("CSSStylesSelectionPanel.noElementSelected"); // NOI18N
+                String key;
+                if (containsUnkownNode) {
+                    key = "CSSStylesSelectionPanel.unknownElementSelected"; // NOI18N
+                } else {
+                    key = "CSSStylesSelectionPanel.noElementSelected"; // NOI18N
+                }
+                showLabel(key);
             } else if (selectionSize > 1) {
                 setDummyRoots();
                 showLabel("CSSStylesSelectionPanel.multipleElementsSelected"); // NOI18N
             } else {
-                final Node selectedNode = selection.get(0);
+                final Node selectedNode = knownNode;
                 final org.netbeans.modules.web.webkit.debugging.api.dom.Node node =
                     selectedNode.getLookup().lookup(org.netbeans.modules.web.webkit.debugging.api.dom.Node.class);
                 if (node.getNodeType() == Document.ELEMENT_NODE) {
@@ -333,19 +396,15 @@ public class CSSStylesSelectionPanel extends JPanel {
                         public void run() {
                             WebKitDebugging webKit = pageModel.getWebKit();
                             CSS css = webKit.getCSS();
-                            MatchedStyles matchedStyles;
-                            try {
-                                matchedStyles = css.getMatchedStyles(node, null, false, true);
-                            } catch (TransportStateException tsex) {
-                                matchedStyles = null;
-                            }
+                            MatchedStyles matchedStyles = css.getMatchedStyles(node, null, false, true);
+                            Map<String,PropertyInfo> propertyInfos = css.getSupportedCSSProperties();
                             if (matchedStyles != null) {
                                 final Node[] selectedRules = rulePaneManager.getSelectedNodes();
                                 final Node[] selectedProperties = propertyPaneManager.getSelectedNodes();
                                 Project project = pageModel.getProject();
                                 final Node rulePaneRoot = new MatchedRulesNode(project, selectedNode, matchedStyles);
                                 rulePaneManager.setRootContext(rulePaneRoot);
-                                final Node propertyPaneRoot = new MatchedPropertiesNode(project, matchedStyles);
+                                final Node propertyPaneRoot = new MatchedPropertiesNode(project, matchedStyles, propertyInfos);
                                 propertyPaneManager.setRootContext(propertyPaneRoot);
                                 if (keepSelection) {
                                     EventQueue.invokeLater(new Runnable() {

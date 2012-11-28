@@ -9,6 +9,6 @@ o:CLASS:[PUBLIC]:ESCAPED{o}:
   a:FIELD:[PUBLIC]:ESCAPED{a}<font color="#999999">ESCAPED{ : }Number</font>:
   b:FIELD:[PUBLIC]:ESCAPED{b}:
   c:FIELD:[PUBLIC]:ESCAPED{c}:
-  get b:METHOD:[PUBLIC]:ESCAPED{get b}ESCAPED{(}PARAMETERS{}ESCAPED{)}:
+  get b:METHOD:[PUBLIC]:ESCAPED{get b}ESCAPED{(}PARAMETERS{}ESCAPED{)}<font color="#999999">ESCAPED{ : }Number</font>:
   k:FIELD:[PUBLIC]:ESCAPED{k}:
   set c:METHOD:[PUBLIC]:ESCAPED{set c}ESCAPED{(}PARAMETERS{ESCAPED{x}}ESCAPED{)}<font color="#999999">ESCAPED{ : }undefined</font>:

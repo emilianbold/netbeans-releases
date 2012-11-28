@@ -304,6 +304,12 @@ ${selection}${cursor}
         </code>
     </codetemplate>
 
+    <codetemplate abbreviation="par">
+        <code>
+<![CDATA[${no-format}(${selection}${cursor})]]>
+        </code>
+    </codetemplate>
+
     <!-- Added in 6.9 -->
 
     <!-- Arrays and List conversion and sorting -->
@@ -409,7 +415,7 @@ ${cursor}]]></code></codetemplate>
         ${cursor}
      }
      ]]></code></codetemplate>
-     <codetemplate abbreviation="psfm"><code><![CDATA[    private static final ${ret default="void"} ${mname default="method"}(${args default=""}) {
+     <codetemplate abbreviation="psm"><code><![CDATA[    private static ${ret default="void"} ${mname default="method"}(${args default=""}) {
         ${cursor}
      }
      ]]></code></codetemplate>

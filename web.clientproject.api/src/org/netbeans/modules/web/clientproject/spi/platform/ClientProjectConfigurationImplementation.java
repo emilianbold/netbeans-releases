@@ -56,6 +56,11 @@ public interface ClientProjectConfigurationImplementation extends ProjectConfigu
     @NonNull String getId();
     
     /**
+     * Non localizable ID of the browser used; can be null; only used for usage statistic.
+     */
+    String getBrowserId();
+
+    /**
      * Configuration's customizer.
      * @return can return null if none
      */
