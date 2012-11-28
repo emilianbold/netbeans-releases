@@ -615,6 +615,10 @@ public class MarkOccurrenceTest extends JsTestBase {
         checkOccurrences("testfiles/markoccurences/issue217935.js", " * @param {Dates} wh^at", true);
     }
     
+    public void testIssue222904_01() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue217935.js", "   what.mart^in();", true);
+    }
+    
 //    public void testIssue221228_02() throws Exception {
 //        checkOccurrences("testfiles/markoccurences/issue221228.js", "a.h^i(); // rename hi here", true);
 //    }

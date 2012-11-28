@@ -234,6 +234,7 @@ public class JsFunctionImpl extends DeclarationScopeImpl implements JsFunction {
                 JsObject jsObject = ModelUtils.getJsObjectByName(this, type.getType());
                 if (jsObject != null) {
                     ModelUtils.addDocTypesOccurence(jsObject, docHolder);
+                    moveOccurrenceOfProperties((JsObjectImpl)jsObject, param);
                 }
             }
         }
