@@ -43,10 +43,20 @@ package org.netbeans.modules.odcs.tasks;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.util.MissingResourceException;
+import java.util.logging.Level;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.mylyn.tasks.core.RepositoryStatus;
 import org.netbeans.modules.mylyn.util.BugtrackingCommand;
+import org.netbeans.modules.mylyn.util.PerformQueryCommand;
 import org.netbeans.modules.odcs.tasks.repository.C2CRepository;
+import org.openide.DialogDescriptor;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.util.Exceptions;
+import org.openide.util.HelpCtx;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -69,12 +79,101 @@ public class C2CExecutor {
                 repository.ensureCredentials();
             }
             cmd.execute();
+            if(cmd instanceof PerformQueryCommand) {
+                handleStatus((PerformQueryCommand) cmd, handleExceptions);
+            }
         } catch (CoreException ex) {
-            Exceptions.printStackTrace(ex);
+            notifyError(ex);
         } catch (MalformedURLException ex) {
-            Exceptions.printStackTrace(ex);
+            C2C.LOG.log(Level.SEVERE, null, ex);
         } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
+            C2C.LOG.log(Level.SEVERE, null, ex);
         }
     }
+    
+    private static void notifyError(CoreException ce) {
+        String msg = getMessage(ce);
+        IStatus status = ce.getStatus();
+        if (msg == null && status instanceof RepositoryStatus) {
+            RepositoryStatus rs = (RepositoryStatus) status;
+            String html = rs.getHtmlMessage();
+            if(html != null) {
+                msg = html;
+                assertHtmlMsg(html); // any reason to expect this ???
+            }
+        }
+        notifyErrorMessage(msg);
+    }
+    
+    private static String getMessage(CoreException ce) {
+        String msg = ce.getMessage();
+        if(msg != null && !msg.trim().equals("")) {                             // NOI18N
+            return msg;
+        }
+        IStatus status = ce.getStatus();
+        msg = status != null ? status.getMessage() : null;
+        return msg != null ? msg.trim() : null;
+    }
+
+    @NbBundle.Messages({"# {0} - the returned error message", "MSG_Error_Warning=The following error was returned:\n\n{0}"})  // NOI18N
+    private boolean handleStatus(PerformQueryCommand cmd, boolean handleExceptions) throws CoreException {
+        IStatus status = cmd.getStatus();
+        if(status == null || status.isOK()) {
+            return false;
+        }
+        C2C.LOG.log(Level.FINE, "command {0} returned status : {1}", new Object[] {cmd, status.getMessage()}); // NOI18N
+
+        Throwable t = status.getException();
+        if (t instanceof CoreException) {
+            throw (CoreException) status.getException();
+        } else {
+            C2C.LOG.log(Level.WARNING, null, t);
+        }
+
+        boolean isHtml = false;
+        String errMsg = null;
+        if(status instanceof RepositoryStatus) {
+            RepositoryStatus rstatus = (RepositoryStatus) status;
+            errMsg = rstatus.getHtmlMessage();
+            isHtml = errMsg != null;
+        }
+        if(errMsg == null) {
+            errMsg = status.getMessage();
+        }
+        cmd.setErrorMessage(errMsg);
+        cmd.setFailed(true);
+
+        if(!handleExceptions) {
+            return true;
+        }
+
+        if(isHtml) {
+            assertHtmlMsg(errMsg); // any reason to expect this ???
+        } 
+        
+        notifyErrorMessage(Bundle.MSG_Error_Warning(errMsg)); 
+        return true;
+    }    
+
+    @NbBundle.Messages({"LBL_Error=Error"})  // NOI18N
+    static void notifyErrorMessage(String msg) {
+        if("true".equals(System.getProperty("netbeans.t9y.throwOnClientError", "false"))) { // NOI18N
+            C2C.LOG.info(msg);
+            throw new AssertionError(msg);
+        }
+        NotifyDescriptor nd =
+                new NotifyDescriptor(
+                    msg,
+                    Bundle.LBL_Error(),    
+                    NotifyDescriptor.DEFAULT_OPTION,
+                    NotifyDescriptor.ERROR_MESSAGE,
+                    new Object[] {NotifyDescriptor.OK_OPTION},
+                    NotifyDescriptor.OK_OPTION);
+        DialogDisplayer.getDefault().notify(nd);
+    }    
+    
+    private static void assertHtmlMsg(String msg) {
+        assert false : "received html error msg: " + msg; // NOI18N
+        C2C.LOG.log(Level.WARNING, "received html error msg:{0}", msg); // NOI18N
+    }    
 }
