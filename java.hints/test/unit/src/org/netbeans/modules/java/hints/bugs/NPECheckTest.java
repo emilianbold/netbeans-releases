@@ -889,6 +889,33 @@ public class NPECheckTest extends NbTestCase {
                 .assertWarnings();
     }
     
+    public void testTry1() throws Exception {
+        HintTest.create()
+                .input("package test;\n" +
+                       "import java.lang.annotation.RetentionPolicy;\n" +
+                       "class Test {\n" +
+                       "    private void t(RetentionPolicy pol, @CheckForNull String str) {\n" +
+                       "        switch (pol) {\n" +
+                       "            case CLASS: str = \"\"; break;\n" +
+                       "            case RUNTIME:\n" +
+                       "                if (str != null) {\n" +
+                       "                    str = \"\";\n" +
+                       "                    break;\n" +
+                       "                }\n" +
+                       "            case SOURCE:\n" +
+                       "                str = \"a\";\n" +
+                       "                break;\n" +
+                       "        }\n" +
+                       "        if (str == null) {\n" +
+                       "            System.err.println(\"should not be null\");\n" +
+                       "        }\n" +
+                       "    }\n" +
+                       "    @interface CheckForNull {}\n" +
+                       "}")
+                .run(NPECheck.class)
+                .assertWarnings();
+    }
+    
     private void performAnalysisTest(String fileName, String code, String... golden) throws Exception {
         HintTest.create()
                 .input(fileName, code)
