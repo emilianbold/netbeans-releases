@@ -33,6 +33,7 @@ import com.sun.source.tree.Tree.Kind;
 import com.sun.source.util.TreePath;
 import com.sun.source.util.TreePathScanner;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -260,6 +261,7 @@ public class NPECheck {
         
         private final CompilationInfo info;
         private Map<VariableElement, State> variable2State = new HashMap<VariableElement, NPECheck.State>();
+        private final Map<Tree, Collection<Map<VariableElement, State>>> resumeAfter = new IdentityHashMap<Tree, Collection<Map<VariableElement, State>>>();
         private final Map<Tree, State> expressionState = new IdentityHashMap<Tree, State>();
         private boolean not;
         private boolean doNotRecord;
@@ -282,7 +284,19 @@ public class NPECheck {
                 expressionState.put(tree, r);
             }
             
+            resume(tree, resumeAfter);
+            
             return r;
+        }
+
+        private void resume(Tree tree, Map<Tree, Collection<Map<VariableElement, State>>> resume) {
+            Collection<Map<VariableElement, State>> toResume = resume.remove(tree);
+
+            if (toResume != null) {
+                for (Map<VariableElement, State> s : toResume) {
+                    mergeIntoVariable2State(s);
+                }
+            }
         }
 
         @Override
@@ -639,6 +653,12 @@ public class NPECheck {
             
             Element current = info.getTrees().getElement(getCurrentPath());
             
+            if (current != null && (current.getKind() == ElementKind.METHOD || current.getKind() == ElementKind.CONSTRUCTOR)) {
+                for (VariableElement var : ((ExecutableElement) current).getParameters()) {
+                    variable2State.put(var, getStateFromAnnotations(var));
+                }
+            }
+            
             while (current != null) {
                 for (VariableElement var : ElementFilter.fieldsIn(current.getEnclosedElements())) {
                     variable2State.put(var, getStateFromAnnotations(var));
@@ -698,12 +718,67 @@ public class NPECheck {
             return State.POSSIBLE_NULL;
         }
         
+        public State visitSwitch(SwitchTree node, Void p) {
+            scan(node.getExpression(), null);
+
+            Map<VariableElement, State> origVariable2State = new HashMap<VariableElement, State>(variable2State);
+
+            boolean exhaustive = false;
+
+            for (CaseTree ct : node.getCases()) {
+                mergeIntoVariable2State(origVariable2State);
+
+                if (ct.getExpression() == null) {
+                    exhaustive = true;
+                }
+
+                scan(ct, null);
+            }
+
+            if (!exhaustive) {
+                mergeIntoVariable2State(origVariable2State);
+            }
+            
+            return null;
+        }
+        
+        public State visitBreak(BreakTree node, Void p) {
+            super.visitBreak(node, p);
+
+            StatementTree target = info.getTreeUtilities().getBreakContinueTarget(getCurrentPath());
+            
+            resumeAfter(target, variable2State);
+
+            variable2State = new HashMap<VariableElement, State>(); //XXX: fields?
+            
+            return null;
+        }
+        
+        private void resumeAfter(Tree target, Map<VariableElement, State> state) {
+            recordResume(resumeAfter, target, state);
+        }
+
+        private static void recordResume(Map<Tree, Collection<Map<VariableElement, State>>> resume, Tree target, Map<VariableElement, State> state) {
+            Collection<Map<VariableElement, State>> r = resume.get(target);
+
+            if (r == null) {
+                resume.put(target, r = new ArrayList<Map<VariableElement, State>>());
+            }
+
+            r.add(new HashMap<VariableElement, State>(state));
+        }
+
         private void mergeIntoVariable2State(Map<VariableElement, State> other) {
             for (Entry<VariableElement, State> e : other.entrySet()) {
                 State t = e.getValue();
-                State el = variable2State.get(e.getKey());
+                
+                if (variable2State.containsKey(e.getKey())) {
+                    State el = variable2State.get(e.getKey());
 
-                variable2State.put(e.getKey(), State.collect(t, el));
+                    variable2State.put(e.getKey(), State.collect(t, el));
+                } else {
+                    variable2State.put(e.getKey(), t);
+                }
             }
         }
         
