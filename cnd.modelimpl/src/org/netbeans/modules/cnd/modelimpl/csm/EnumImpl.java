@@ -123,12 +123,16 @@ public class EnumImpl extends ClassEnumBase<CsmEnum> implements CsmEnum {
     void addEnumerator(String name, int startOffset, int endOffset, boolean register) {
         EnumeratorImpl ei = EnumeratorImpl.create(this, name, startOffset, endOffset, register);
         CsmUID<CsmEnumerator> uid = UIDCsmConverter.<CsmEnumerator>objectToUID(ei);
-        enumerators.add(uid);
+        synchronized(enumerators) {
+            enumerators.add(uid);
+        }
     }
 
     void addEnumerator(EnumeratorImpl ei) {
         CsmUID<CsmEnumerator> uid = UIDCsmConverter.<CsmEnumerator>objectToUID(ei);
-        enumerators.add(uid);
+        synchronized(enumerators) {
+            enumerators.add(uid);
+        }
     }
 
     @Override
@@ -174,7 +178,9 @@ public class EnumImpl extends ClassEnumBase<CsmEnum> implements CsmEnum {
             if( t.getType() == CPPTokenTypes.IDENT ) {
                 EnumeratorImpl ei = EnumeratorImpl.create(t, file, fileContent, this, global);
                 CsmUID<CsmEnumerator> uid = UIDCsmConverter.<CsmEnumerator>objectToUID(ei);
-                enumerators.add(uid);
+                synchronized(enumerators) {
+                    enumerators.add(uid);
+                }
             }
         }
     }
@@ -186,8 +192,9 @@ public class EnumImpl extends ClassEnumBase<CsmEnum> implements CsmEnum {
 
     @Override
     public Collection<CsmEnumerator> getEnumerators() {
-        Collection<CsmEnumerator> out = UIDCsmConverter.UIDsToDeclarations(enumerators);
-        return out;
+        synchronized(enumerators) {
+            return UIDCsmConverter.UIDsToDeclarations(enumerators);
+        }
     }
     
     @SuppressWarnings("unchecked")
@@ -208,9 +215,11 @@ public class EnumImpl extends ClassEnumBase<CsmEnum> implements CsmEnum {
     }
     
     private void _clearEnumerators() {
-        Collection<CsmEnumerator> enumers = getEnumerators();
-        Utils.disposeAll(enumers);
-        RepositoryUtils.remove(enumerators);
+        synchronized(enumerators) {
+            Collection<CsmEnumerator> enumers = getEnumerators();
+            Utils.disposeAll(enumers);
+            RepositoryUtils.remove(enumerators);
+        }
     }
 
     static boolean isStronglyTypedEnum(AST ast) {
@@ -310,7 +319,7 @@ public class EnumImpl extends ClassEnumBase<CsmEnum> implements CsmEnum {
     public void write(RepositoryDataOutput output) throws IOException {
         super.write(output);
         output.writeBoolean(stronglyTyped);
-        UIDObjectFactory.getDefaultFactory().writeUIDCollection(this.enumerators, output, false);
+        UIDObjectFactory.getDefaultFactory().writeUIDCollection(this.enumerators, output, true);
     }
     
     public EnumImpl(RepositoryDataInput input) throws IOException {
