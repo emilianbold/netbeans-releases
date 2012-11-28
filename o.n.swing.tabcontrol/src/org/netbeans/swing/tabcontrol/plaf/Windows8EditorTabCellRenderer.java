@@ -41,25 +41,33 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
+/*
+ * WinVistaEditorTabCellRenderer.java
+ *
+ */
 
 package org.netbeans.swing.tabcontrol.plaf;
 
-import javax.swing.JComponent;
-import javax.swing.plaf.ComponentUI;
-import org.netbeans.swing.tabcontrol.TabDisplayer;
+import java.awt.*;
 
 /**
- * Win Vista-like user interface of view type tabs.
+ * Windows 8 implementation of tab renderer
  *
  * @author S. Aubrecht
+ * @since 1.41
  */
-public final class WinVistaViewTabDisplayerUI extends AbstractWinViewTabDisplayerUI {
+final class Windows8EditorTabCellRenderer extends WinVistaEditorTabCellRenderer {
 
-    private WinVistaViewTabDisplayerUI(TabDisplayer displayer) {
-        super(displayer);
+    public Windows8EditorTabCellRenderer() {
     }
 
-    public static ComponentUI createUI(JComponent c) {
-        return new WinVistaViewTabDisplayerUI((TabDisplayer)c);
+    @Override
+    void paintTabGradient( Graphics g, Polygon poly ) {
+        Rectangle rect = poly.getBounds(); 
+        boolean selected = isSelected();
+        boolean focused = selected && isActive();
+        boolean attention = isAttention();
+        boolean mouseOver = isArmed();
+        Windows8ViewTabDisplayerUI.paintTabBackground( (Graphics2D)g, rect.x, rect.y, rect.width, rect.height, selected, focused, attention, mouseOver);
     }
 }

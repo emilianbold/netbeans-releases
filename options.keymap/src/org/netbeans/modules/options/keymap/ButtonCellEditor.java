@@ -43,10 +43,7 @@ package org.netbeans.modules.options.keymap;
 
 import java.awt.Color;
 import java.awt.Component;
-import java.awt.Container;
 import java.awt.Window;
-import java.awt.event.FocusEvent;
-import java.awt.event.FocusListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.util.Arrays;
@@ -78,20 +75,6 @@ class ButtonCellEditor extends DefaultCellEditor {
     private Object              action;
     private KeymapViewModel     model;
     private String              orig;
-    private FocusListener       focusListener = new FocusListener () {
-
-        @Override
-        public void focusGained (FocusEvent e) {
-        }
-
-        @Override
-        public void focusLost (FocusEvent e) {
-            Component oppositeComponent = e.getOppositeComponent();
-            if (oppositeComponent == null || !SwingUtilities.isDescendingFrom(oppositeComponent, cell)) {
-                cancelCellEditing();
-            }
-        }
-    };
     
     private KeyAdapter escapeAdapter = new KeyAdapter() {
 
@@ -130,10 +113,6 @@ class ButtonCellEditor extends DefaultCellEditor {
         }
     }
     
-    private void refocusTableCell(JTable parent) {
-        
-    }
-
     @Override
     public boolean stopCellEditing() {
         String s = cell.toString();
@@ -176,8 +155,6 @@ class ButtonCellEditor extends DefaultCellEditor {
         }
         cell.getTextField().removeActionListener(delegate);
         cell.getTextField().removeKeyListener(escapeAdapter);
-        cell.getTextField().removeFocusListener (focusListener);
-        cell.getButton ().removeFocusListener (focusListener);
         model.getMutableModel().removeShortcut((ShortcutAction) action, orig);
         if (!(s.length() == 0)) // do not add empty shortcuts
             model.getMutableModel().addShortcut((ShortcutAction) action, s);
@@ -204,8 +181,6 @@ class ButtonCellEditor extends DefaultCellEditor {
         final JTextField textField = cell.getTextField();
         textField.addActionListener(delegate);
         textField.setBorder(new LineBorder(Color.BLACK));
-        textField.addFocusListener (focusListener);
-        cell.getButton ().addFocusListener (focusListener);
         if(!Arrays.asList(textField.getKeyListeners()).contains(escapeAdapter)) {
             textField.addKeyListener(escapeAdapter);
         }

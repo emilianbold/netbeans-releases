@@ -259,7 +259,6 @@ public class NPECheck {
         
         private final CompilationInfo info;
         private Map<VariableElement, State> variable2State = new HashMap<VariableElement, NPECheck.State>();
-        private Map<VariableElement, State> testedTo = new HashMap<VariableElement, NPECheck.State>();
         private final Map<Tree, State> expressionState = new IdentityHashMap<Tree, State>();
         private boolean not;
         private boolean doNotRecord;
@@ -353,64 +352,32 @@ public class NPECheck {
         @Override
         public State visitIf(IfTree node, Void p) {
             Map<VariableElement, State> oldVariable2StateBeforeCondition = new HashMap<VariableElement, State>(variable2State);
-            Map<VariableElement, State> oldTestedTo = testedTo;
             
-            testedTo = new HashMap<VariableElement, NPECheck.State>();
-            
-            scan(node.getCondition(), p);
-            
-            Map<VariableElement, State> oldVariable2State = variable2State;
-            
-            variable2State = new HashMap<VariableElement, NPECheck.State>(oldVariable2State);
-            variable2State.putAll(testedTo);
+            State condition = scan(node.getCondition(), p);
             
             scan(node.getThenStatement(), null);
             
             Map<VariableElement, State> variableStatesAfterThen = new HashMap<VariableElement, NPECheck.State>(variable2State);
-            Map<VariableElement, State> testedToAfterThen =  new HashMap<VariableElement, NPECheck.State>(testedTo);
             
             variable2State = new HashMap<VariableElement, NPECheck.State>(oldVariable2StateBeforeCondition);
-            testedTo = new HashMap<VariableElement, NPECheck.State>();
             not = true;
             doNotRecord = true;
             scan(node.getCondition(), p);
             not = false;
             doNotRecord = false;
             
-            variable2State = new HashMap<VariableElement, NPECheck.State>(oldVariable2State);
-            variable2State.putAll(testedTo);
-            
-            Map<VariableElement, State> negTestedTo = new HashMap<VariableElement, State>(testedTo);
-
             scan(node.getElseStatement(), null);
             
-            Map<VariableElement, State> variableStatesAfterElse = new HashMap<VariableElement, NPECheck.State>(variable2State);
-            
-            variable2State = oldVariable2State;
-            
-            for (Entry<VariableElement, State> e : variableStatesAfterThen.entrySet()) {
-                State t = e.getValue();
-                State el = variableStatesAfterElse.get(e.getKey());
-
-                if (t == el) {
-                    variable2State.put(e.getKey(), t);
-                } else {
-                    if (t == State.NULL && el == State.NOT_NULL) {
-                        variable2State.put(e.getKey(), State.POSSIBLE_NULL_REPORT);
-                    }
-                    if (el == State.NULL && t == State.NOT_NULL) {
-                        variable2State.put(e.getKey(), State.POSSIBLE_NULL_REPORT);
-                    }
-                }
-            }
-            
             boolean thenExitsFromAllBranches = new ExitsFromAllBranches(info).scan(new TreePath(getCurrentPath(), node.getThenStatement()), null) == Boolean.TRUE;
+            boolean elseExitsFromAllBranches = node.getElseStatement() != null && new ExitsFromAllBranches(info).scan(new TreePath(getCurrentPath(), node.getElseStatement()), null) == Boolean.TRUE;
             
-            if (thenExitsFromAllBranches) {
-                variable2State.putAll(negTestedTo);
+            if (thenExitsFromAllBranches && !elseExitsFromAllBranches) {
+                //already set
+            } else if (!thenExitsFromAllBranches && elseExitsFromAllBranches) {
+                variable2State = variableStatesAfterThen;
+            } else {
+                mergeIntoVariable2State(variableStatesAfterThen);
             }
-            
-            testedTo = oldTestedTo;
             
             return null;
         }
@@ -433,49 +400,32 @@ public class NPECheck {
             if (kind == Kind.CONDITIONAL_AND) {
                 left = scan(node.getLeftOperand(), p);
                 
-                Map<VariableElement, State> oldVariable2State = variable2State;
-                Map<VariableElement, State> oldTestedTo = testedTo;
-                
-                variable2State = new HashMap<VariableElement, NPECheck.State>(variable2State);
-                variable2State.putAll(testedTo);
-                
-                testedTo = new HashMap<VariableElement, State>();
-                
                 scan(node.getRightOperand(), p);
-                variable2State = oldVariable2State;
-                
-                Map<VariableElement, State> o = new HashMap<VariableElement, NPECheck.State>(oldTestedTo);
-
-                o.putAll(testedTo);
-
-                testedTo = o;
                 
                 subnodesAlreadyProcessed = true;
             }
             
             if (kind == Kind.CONDITIONAL_OR) {
+                HashMap<VariableElement, State> orig = new HashMap<VariableElement, NPECheck.State>(variable2State);
+                
+                left = scan(node.getLeftOperand(), p);
+                
+                Map<VariableElement, State> afterLeft = variable2State;
+                
+                variable2State = orig;
+                
                 boolean oldNot = not;
+                boolean oldDoNotRecord = doNotRecord;
                 
                 not ^= true;
-                left = scan(node.getLeftOperand(), p);
+                doNotRecord = true;
+                scan(node.getLeftOperand(), p);
                 not = oldNot;
-                
-                Map<VariableElement, State> oldVariable2State = variable2State;
-                Map<VariableElement, State> oldTestedTo = testedTo;
-                
-                variable2State = new HashMap<VariableElement, NPECheck.State>(variable2State);
-                variable2State.putAll(testedTo);
-                
-                testedTo = new HashMap<VariableElement, State>();
+                doNotRecord = oldDoNotRecord;
                 
                 scan(node.getRightOperand(), p);
-                variable2State = oldVariable2State;
                 
-                Map<VariableElement, State> o = new HashMap<VariableElement, NPECheck.State>(oldTestedTo);
-
-                o.putAll(testedTo);
-
-                testedTo = o;
+                mergeIntoVariable2State(afterLeft);
                 
                 subnodesAlreadyProcessed = true;
             }
@@ -495,8 +445,8 @@ public class NPECheck {
                 if (right == State.NULL) {
                     Element e = info.getTrees().getElement(new TreePath(getCurrentPath(), node.getLeftOperand()));
                     
-                    if (isVariableElement(e)) {
-                        testedTo.put((VariableElement) e, State.NULL);
+                    if (isVariableElement(e) && !hasDefiniteValue(e)) {
+                        variable2State.put((VariableElement) e, State.NULL);
                         
                         return null;
                     }
@@ -504,8 +454,8 @@ public class NPECheck {
                 if (left == State.NULL) {
                     Element e = info.getTrees().getElement(new TreePath(getCurrentPath(), node.getRightOperand()));
                     
-                    if (isVariableElement(e)) {
-                        testedTo.put((VariableElement) e, State.NULL);
+                    if (isVariableElement(e) && !hasDefiniteValue(e)) {
+                        variable2State.put((VariableElement) e, State.NULL);
                         
                         return null;
                     }
@@ -516,8 +466,8 @@ public class NPECheck {
                 if (right == State.NULL) {
                     Element e = info.getTrees().getElement(new TreePath(getCurrentPath(), node.getLeftOperand()));
                     
-                    if (isVariableElement(e) && variable2State.get(e) != State.NOT_NULL_BE_NPE) {
-                        testedTo.put((VariableElement) e, State.NOT_NULL);
+                    if (isVariableElement(e) && !hasDefiniteValue(e)) {
+                        variable2State.put((VariableElement) e, State.NOT_NULL);
                         
                         return null;
                     }
@@ -525,8 +475,8 @@ public class NPECheck {
                 if (left == State.NULL) {
                     Element e = info.getTrees().getElement(new TreePath(getCurrentPath(), node.getRightOperand()));
                     
-                    if (isVariableElement(e) && variable2State.get(e) != State.NOT_NULL_BE_NPE) {
-                        testedTo.put((VariableElement) e, State.NOT_NULL);
+                    if (isVariableElement(e) && !hasDefiniteValue(e)) {
+                        variable2State.put((VariableElement) e, State.NOT_NULL);
                         
                         return null;
                     }
@@ -543,7 +493,7 @@ public class NPECheck {
             Element e = info.getTrees().getElement(new TreePath(getCurrentPath(), node.getExpression()));
 
             if (isVariableElement(e) && (variable2State.get(e) == null || !variable2State.get(e).isNotNull()) && !not) {
-                testedTo.put((VariableElement) e, State.NOT_NULL);
+                variable2State.put((VariableElement) e, State.NOT_NULL);
             }
             
             return null;
@@ -552,58 +502,27 @@ public class NPECheck {
         @Override
         public State visitConditionalExpression(ConditionalExpressionTree node, Void p) {
             //TODO: handle the condition similarly to visitIf
-            scan(node.getCondition(), p);
-                
-            Map<VariableElement, State> oldVariable2State = variable2State;
-
-            variable2State = new HashMap<VariableElement, State>(variable2State);
+            Map<VariableElement, State> oldVariable2State = new HashMap<VariableElement, State>(variable2State);
             
-            variable2State.putAll(testedTo);
-                
+            scan(node.getCondition(), p);
+            
             State thenSection = scan(node.getTrueExpression(), p);
             
-            Map<VariableElement, State> variableStatesAfterThen = new HashMap<VariableElement, NPECheck.State>(variable2State);
+            Map<VariableElement, State> variableStatesAfterThen = variable2State;
             
-            variable2State = new HashMap<VariableElement, NPECheck.State>(oldVariable2State);
-            testedTo = new HashMap<VariableElement, NPECheck.State>();
+            variable2State = oldVariable2State;
+            
             not = true;
             doNotRecord = true;
             scan(node.getCondition(), p);
             not = false;
             doNotRecord = false;
             
-            variable2State = new HashMap<VariableElement, NPECheck.State>(oldVariable2State);
-            variable2State.putAll(testedTo);
-            
             State elseSection = scan(node.getFalseExpression(), p);
             
-            Map<VariableElement, State> variableStatesAfterElse = new HashMap<VariableElement, NPECheck.State>(variable2State);
+            State result = State.collect(thenSection, elseSection);
             
-            variable2State = oldVariable2State;
-                
-            State result;
-            
-            if (thenSection == elseSection) {
-                result = thenSection;
-            } else {
-                result = NPECheck.State.POSSIBLE_NULL;
-            }
-            
-            for (Entry<VariableElement, State> e : variableStatesAfterThen.entrySet()) {
-                State t = e.getValue();
-                State el = variableStatesAfterElse.get(e.getKey());
-
-                if (t == el) {
-                    variable2State.put(e.getKey(), t);
-                } else {
-                    if (t == State.NULL && el == State.NOT_NULL) {
-                        variable2State.put(e.getKey(), State.POSSIBLE_NULL_REPORT);
-                    }
-                    if (el == State.NULL && t == State.NOT_NULL) {
-                        variable2State.put(e.getKey(), State.POSSIBLE_NULL_REPORT);
-                    }
-                }
-            }
+            mergeIntoVariable2State(variableStatesAfterThen);
                 
             return result;
         }
@@ -656,39 +575,34 @@ public class NPECheck {
 
         @Override
         public State visitWhileLoop(WhileLoopTree node, Void p) {
-            Map<VariableElement, State> oldTestedTo = testedTo;
-            
-            testedTo = new HashMap<VariableElement, State>();
-            
-            Map<VariableElement, State> oldVariable2State = variable2State;
+            Map<VariableElement, State> oldVariable2State = new HashMap<VariableElement, State>(variable2State);
 
-            variable2State = new HashMap<VariableElement, State>(variable2State);
+            boolean oldNot = not;
+            boolean oldDoNotRecord = doNotRecord;
+            
+            not = true;
+            doNotRecord = true;
             
             scan(node.getCondition(), p);
             
-            variable2State.putAll(testedTo);
+            not = oldNot;
+            doNotRecord = oldDoNotRecord;
             
-            scan(node.getStatement(), p);
-            
-            testedTo = new HashMap<VariableElement, State>();
-            
-            scan(node.getCondition(), p);
-            
-            variable2State.putAll(testedTo);
-            
-            scan(node.getStatement(), p);
+            Map<VariableElement, State> negConditionVariable2State = new HashMap<VariableElement, State>(variable2State);
             
             variable2State = new HashMap<VariableElement, State>(oldVariable2State);
             
-            for (Entry<VariableElement, State> e : testedTo.entrySet()) {
-                State o = variable2State.get(e.getKey());
-                
-                if (e.getValue() == NOT_NULL && (o == POSSIBLE_NULL || o == null)) {
-                    variable2State.put(e.getKey(), POSSIBLE_NULL_REPORT);
-                }
-            }
+            scan(node.getCondition(), p);
             
-            testedTo = oldTestedTo;
+            scan(node.getStatement(), p);
+            
+            mergeIntoVariable2State(oldVariable2State);
+            
+            scan(node.getCondition(), p);
+            
+            scan(node.getStatement(), p);
+            
+            mergeIntoVariable2State(negConditionVariable2State);
             
             return null;
         }
@@ -709,7 +623,6 @@ public class NPECheck {
         @Override
         public State visitMethod(MethodTree node, Void p) {
             variable2State = new HashMap<VariableElement, NPECheck.State>();
-            testedTo = new HashMap<VariableElement, NPECheck.State>();
             not = false;
             return super.visitMethod(node, p);
         }
@@ -718,24 +631,65 @@ public class NPECheck {
         public State visitForLoop(ForLoopTree node, Void p) {
             scan(node.getInitializer(), p);
             
-            scan(node.getStatement(), p);
-            scan(node.getUpdate(), p);
+            Map<VariableElement, State> oldVariable2State = new HashMap<VariableElement, State>(variable2State);
+
+            boolean oldNot = not;
+            boolean oldDoNotRecord = doNotRecord;
+            
+            not = true;
+            doNotRecord = true;
+            
+            scan(node.getCondition(), p);
+            
+            not = oldNot;
+            doNotRecord = oldDoNotRecord;
+            
+            Map<VariableElement, State> negConditionVariable2State = new HashMap<VariableElement, State>(variable2State);
+            
+            variable2State = new HashMap<VariableElement, State>(oldVariable2State);
             
             scan(node.getCondition(), p);
             scan(node.getStatement(), p);
             scan(node.getUpdate(), p);
+            
+            mergeIntoVariable2State(oldVariable2State);
+            
+            scan(node.getCondition(), p);
+            scan(node.getStatement(), p);
+            scan(node.getUpdate(), p);
+            
+            mergeIntoVariable2State(negConditionVariable2State);
+            
             return null;
         }
 
         @Override
         public State visitAssert(AssertTree node, Void p) {
-            testedTo = new HashMap<VariableElement, NPECheck.State>();
             scan(node.getCondition(), p);
-            variable2State.putAll(testedTo);
             scan(node.getDetail(), p);
             return null;
         }
 
+        @Override
+        public State visitArrayAccess(ArrayAccessTree node, Void p) {
+            super.visitArrayAccess(node, p);
+            return State.POSSIBLE_NULL;
+        }
+        
+        private void mergeIntoVariable2State(Map<VariableElement, State> other) {
+            for (Entry<VariableElement, State> e : other.entrySet()) {
+                State t = e.getValue();
+                State el = variable2State.get(e.getKey());
+
+                variable2State.put(e.getKey(), State.collect(t, el));
+            }
+        }
+        
+        private boolean hasDefiniteValue(Element el) {
+            State s = variable2State.get(el);
+            
+            return s != null && s.isNotNull();
+        }
     }
     
     static enum State {
@@ -765,10 +719,9 @@ public class NPECheck {
         
         public static State collect(State s1, State s2) {
             if (s1 == s2) return s1;
-            if (s1 == NULL && s2 != null && s2.isNotNull()) return POSSIBLE_NULL_REPORT;
-            if (s1 != null && s1.isNotNull() && s2 == NULL) return POSSIBLE_NULL_REPORT;
-            if (s1 == POSSIBLE_NULL_REPORT && s2 != POSSIBLE_NULL) return POSSIBLE_NULL_REPORT;
-            if (s1 != POSSIBLE_NULL && s2 == POSSIBLE_NULL_REPORT) return POSSIBLE_NULL_REPORT;
+            if (s1 == NULL || s2 == NULL) return POSSIBLE_NULL_REPORT;
+            if (s1 == POSSIBLE_NULL_REPORT || s2 == POSSIBLE_NULL_REPORT) return POSSIBLE_NULL_REPORT;
+            if (s1 != null && s2 != null && s1.isNotNull() && s2.isNotNull()) return NOT_NULL;
             
             return POSSIBLE_NULL;
         }

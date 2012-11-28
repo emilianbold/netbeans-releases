@@ -39,6 +39,8 @@
  */
 package org.netbeans.modules.parsing.impl;
 
+import java.util.concurrent.TimeoutException;
+import java.util.concurrent.atomic.AtomicBoolean;
 import org.netbeans.modules.parsing.impl.indexing.RepositoryUpdater;
 import org.netbeans.modules.parsing.impl.indexing.lucene.DocumentBasedIndexManager;
 import org.netbeans.modules.parsing.impl.indexing.lucene.LuceneIndexFactory;
@@ -73,9 +75,21 @@ public class Installer extends ModuleInstall {
     @Override
     public void close() {
         super.close();
-        RepositoryUpdater.getDefault().stop();
-        LuceneIndexFactory.getDefault().close();
-        DocumentBasedIndexManager.getDefault().close();
+        final Runnable postTask = new Runnable() {
+            private AtomicBoolean started = new AtomicBoolean();
+            @Override
+            public void run() {
+                if (started.compareAndSet(false, true)) {
+                    LuceneIndexFactory.getDefault().close();
+                    DocumentBasedIndexManager.getDefault().close();
+                }
+            }
+        };
+        try {
+            RepositoryUpdater.getDefault().stop(postTask);
+        } catch (TimeoutException timeout) {
+            postTask.run();
+        }
     }
 
 }

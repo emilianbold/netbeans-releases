@@ -166,6 +166,11 @@ abstract class Lookup implements ContextProvider {
             if (l2 instanceof MetaInf) ((MetaInf) l2).setContext (context);
         }
 
+        @Override
+        public String toString() {
+            return "Lookup.Compound@"+Integer.toHexString(hashCode())+"[l1="+l1+", l2="+l2+"]";
+        }
+        
         private class CompoundLookupList<T> extends LookupList<T>
                                             implements PositionedList<T>,
                                                        Customizer,
@@ -574,6 +579,11 @@ abstract class Lookup implements ContextProvider {
             };
         }
 
+        @Override
+        public String toString() {
+            return "Lookup.MetaInf@"+Integer.toHexString(hashCode())+"[rootFolder="+rootFolder+"]";
+        }
+        
         private final class ModuleChangeListener implements PropertyChangeListener, org.openide.util.LookupListener {
 
             private ClassLoader cl;

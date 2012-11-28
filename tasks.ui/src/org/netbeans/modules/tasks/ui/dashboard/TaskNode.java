@@ -62,30 +62,32 @@ import org.netbeans.modules.tasks.ui.utils.Utils;
  *
  * @author jpeska
  */
-public class TaskNode extends TreeListNode implements Comparable<TaskNode>, PropertyChangeListener {
+public class TaskNode extends TreeListNode implements Comparable<TaskNode> {
 
     private Issue task;
     private JPanel panel;
     private TreeLabel lblName;
     private Category category;
+    private final TaskListener taskListener;
 
     public TaskNode(Issue task, TreeListNode parent) {
         // TODO subtasks, it is not in bugtracking API
         //super(task.hasSubtasks(), parent);
         super(false, parent);
         this.task = task;
+        taskListener = new TaskListener();
     }
     
     @Override
     protected void attach() {
         super.attach();
-        this.task.addPropertyChangeListener(this);
+        this.task.addPropertyChangeListener(taskListener);
     }
 
     @Override
     protected void dispose() {
         super.dispose();
-        this.task.removePropertyChangeListener(this);
+        this.task.removePropertyChangeListener(taskListener);
     }
 
     @Override
@@ -237,13 +239,6 @@ public class TaskNode extends TreeListNode implements Comparable<TaskNode>, Prop
         return task.getDisplayName();
     }
 
-    @Override
-    public void propertyChange(PropertyChangeEvent evt) {
-        if (evt.getPropertyName().equals(Issue.EVENT_ISSUE_REFRESHED)) {
-            fireContentChanged();
-        }
-    }
-
     private int compareNumericId(int id, int idOther) {
         if (id < idOther) {
             return 1;
@@ -275,4 +270,13 @@ public class TaskNode extends TreeListNode implements Comparable<TaskNode>, Prop
         //compare number suffix
         return compareNumericId(Integer.parseInt(suffix1), Integer.parseInt(suffix2));
     }
+    
+    private class TaskListener implements PropertyChangeListener {
+        @Override
+        public void propertyChange(PropertyChangeEvent evt) {
+            if (evt.getPropertyName().equals(Issue.EVENT_ISSUE_REFRESHED)) {
+                fireContentChanged();
+            }
+        }
+    }    
 }
