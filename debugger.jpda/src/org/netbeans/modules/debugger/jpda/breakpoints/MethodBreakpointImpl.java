@@ -111,7 +111,13 @@ public class MethodBreakpointImpl extends ClassBasedBreakpoint {
     public MethodBreakpointImpl (MethodBreakpoint breakpoint, JPDADebuggerImpl debugger, Session session) {
         super (breakpoint, debugger, session);
         this.breakpoint = breakpoint;
+        setSourceRoot(""); // Just to setup source change listener
         set ();
+    }
+    
+    @Override
+    protected boolean isEnabled() {
+        return true; // Check is in setRequests()
     }
     
     @Override
@@ -122,6 +128,15 @@ public class MethodBreakpointImpl extends ClassBasedBreakpoint {
                     breakpoint.getClassExclusionFilters()),
                 breakpoint);
         String[] names = classNames.getClassNames();
+        String[] disabledRootPtr = new String[] { null };
+        names = checkSourcesEnabled(names, disabledRootPtr);
+        if (names.length == 0) {
+            setValidity(VALIDITY.INVALID,
+                        NbBundle.getMessage(ClassBasedBreakpoint.class,
+                                    "MSG_DisabledSourceRoot",
+                                    disabledRootPtr[0]));
+            return ;
+        }
         String[] excludedNames = classNames.getExcludedClassNames();
         setClassRequests (
             names,
