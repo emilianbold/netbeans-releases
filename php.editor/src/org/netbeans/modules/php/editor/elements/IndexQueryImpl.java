@@ -1093,7 +1093,7 @@ public final class IndexQueryImpl implements ElementQuery.Index {
     @Override
     public Set<MethodElement> getInheritedMethods(final TypeElement typeElement) {
         final long start = (LOG.isLoggable(Level.FINE)) ? System.currentTimeMillis() : 0;
-        final LinkedHashSet<TypeMemberElement> typeMembers =
+        final Set<TypeMemberElement> typeMembers =
                 getInheritedTypeMembers(typeElement, new LinkedHashSet<TypeElement>(),
                 new LinkedHashSet<TypeMemberElement>(),
                 EnumSet.of(PhpElementKind.CLASS, PhpElementKind.IFACE, PhpElementKind.TRAIT),
@@ -1113,7 +1113,7 @@ public final class IndexQueryImpl implements ElementQuery.Index {
     @Override
     public Set<MethodElement> getAllMethods(TypeElement typeElement) {
         final long start = (LOG.isLoggable(Level.FINE)) ? System.currentTimeMillis() : 0;
-        final LinkedHashSet<TypeMemberElement> typeMembers =
+        final Set<TypeMemberElement> typeMembers =
                 getInheritedTypeMembers(typeElement, new LinkedHashSet<TypeElement>(),
                 new LinkedHashSet<TypeMemberElement>(getDeclaredMethods(typeElement)),
                 EnumSet.of(PhpElementKind.CLASS, PhpElementKind.IFACE, PhpElementKind.TRAIT),
@@ -1133,7 +1133,7 @@ public final class IndexQueryImpl implements ElementQuery.Index {
     @Override
     public Set<FieldElement> getAlllFields(TypeElement typeElement) {
         final long start = (LOG.isLoggable(Level.FINE)) ? System.currentTimeMillis() : 0;
-        final LinkedHashSet<TypeMemberElement> typeMembers =
+        final Set<TypeMemberElement> typeMembers =
                 getInheritedTypeMembers(typeElement, new LinkedHashSet<TypeElement>(),
                 new LinkedHashSet<TypeMemberElement>(getDeclaredFields(typeElement)),
                 EnumSet.of(PhpElementKind.CLASS, PhpElementKind.TRAIT),
@@ -1153,7 +1153,7 @@ public final class IndexQueryImpl implements ElementQuery.Index {
     @Override
     public Set<TypeConstantElement> getAllTypeConstants(TypeElement typeElement) {
         final long start = (LOG.isLoggable(Level.FINE)) ? System.currentTimeMillis() : 0;
-        final LinkedHashSet<TypeMemberElement> typeMembers =
+        final Set<TypeMemberElement> typeMembers =
                 getInheritedTypeMembers(typeElement, new LinkedHashSet<TypeElement>(),
                 new LinkedHashSet<TypeMemberElement>(getDeclaredTypeConstants(typeElement)),
                 EnumSet.of(PhpElementKind.CLASS, PhpElementKind.IFACE),
@@ -1221,17 +1221,16 @@ public final class IndexQueryImpl implements ElementQuery.Index {
         return Collections.unmodifiableSet(retval);
     }
 
-    private LinkedHashSet<TypeMemberElement> getInheritedTypeMembers(final TypeElement typeElement, final LinkedHashSet<TypeElement> recursionPrevention,
+    private Set<TypeMemberElement> getInheritedTypeMembers(final TypeElement typeElement, final LinkedHashSet<TypeElement> recursionPrevention,
             LinkedHashSet<TypeMemberElement> retval, EnumSet<PhpElementKind> typeKinds, EnumSet<PhpElementKind> memberKinds) {
         if (recursionPrevention.add(typeElement)) {
-            final LinkedHashSet<TypeMemberElement> typeMembers =
-                    getDirectInheritedTypeMembers(typeElement, typeKinds, memberKinds);
-            retval.addAll(forEmptyElements().filter(forComparingNameKinds(retval).reverseFilter(typeMembers)));
+            final LinkedHashSet<TypeMemberElement> typeMembers = getDirectInheritedTypeMembers(typeElement, typeKinds, memberKinds);
+            retval.addAll(forEmptyElements().filter(forComparingNonAbstractNameKinds(retval).reverseFilter(typeMembers)));
             for (final TypeElement tp : typeMembers.isEmpty() ? getDirectInheritedTypes(typeElement) : toTypes(typeMembers)) {
                 retval.addAll(getInheritedTypeMembers(tp, recursionPrevention, retval, typeKinds, memberKinds));
             }
         }
-        return retval;
+        return forPrefereMethodImplementation(retval).filter(retval);
     }
 
     @Override
@@ -1401,7 +1400,7 @@ public final class IndexQueryImpl implements ElementQuery.Index {
         return retvalIfaces;
     }
 
-    private static ElementFilter forComparingNameKinds(final Collection<? extends PhpElement> elements) {
+    private static ElementFilter forComparingNonAbstractNameKinds(final Collection<? extends PhpElement> elements) {
         return new ElementFilter() {
 
             @Override
@@ -1410,10 +1409,33 @@ public final class IndexQueryImpl implements ElementQuery.Index {
                 final ElementFilter forName = ElementFilter.forName(NameKind.exact(element.getName()));
                 for (PhpElement nextElement : elements) {
                     if (forKind.isAccepted(nextElement) && forName.isAccepted(nextElement)) {
-                        return true;
+                        if (!nextElement.getPhpModifiers().isAbstract()) {
+                            return true;
+                        }
                     }
                 }
                 return false;
+            }
+        };
+    }
+
+    private static ElementFilter forPrefereMethodImplementation(final Collection<? extends PhpElement> elements) {
+        return new ElementFilter() {
+
+            @Override
+            public boolean isAccepted(PhpElement element) {
+                boolean isAbstract = element.getPhpModifiers().isAbstract();
+                boolean isMethod = PhpElementKind.METHOD.equals(element.getPhpElementKind());
+                if (isAbstract && isMethod) {
+                    final ElementFilter forKind = ElementFilter.forKind(element.getPhpElementKind());
+                    final ElementFilter forName = ElementFilter.forName(NameKind.exact(element.getName()));
+                    for (PhpElement phpElement : elements) {
+                        if (!phpElement.equals(element) && forKind.isAccepted(phpElement) && forName.isAccepted(phpElement) && !phpElement.getPhpModifiers().isAbstract()) {
+                            return false;
+                        }
+                    }
+                }
+                return true;
             }
         };
     }
