@@ -766,6 +766,21 @@ public class NPECheckTest extends NbTestCase {
                 .assertWarnings();
     }
     
+    public void test222871() throws Exception {
+        HintTest.create()
+                .input("package test;\n" +
+                       "public class Test {\n" +
+                       "    private void t(@CheckForNull String onSuccess, @CheckForNull Integer onError) {\n" +
+                       "        checkState(onSuccess != null || onError != null);\n" +
+                       "        checkState(onSuccess == null || onError == null);\n" +
+                       "    }\n" +
+                       "    private void checkState(boolean b) {}\n" +
+                       "    @interface CheckForNull {}\n" +
+                       "}")
+                .run(NPECheck.class)
+                .assertWarnings();
+    }
+    
     private void performAnalysisTest(String fileName, String code, String... golden) throws Exception {
         HintTest.create()
                 .input(fileName, code)
