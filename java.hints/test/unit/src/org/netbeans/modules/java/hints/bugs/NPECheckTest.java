@@ -781,6 +781,28 @@ public class NPECheckTest extends NbTestCase {
                 .assertWarnings();
     }
     
+    public void testWhileInitializeWithField() throws Exception {
+        HintTest.create()
+                .input("package test;\n" +
+                       "class Test {\n" +
+                       "    java.util.List<String> result;\n" +
+                       "    public void foo(int i) {\n" +
+                       "        while (i-- > 0) {\n" +
+                       "             if (result == null) {\n" +
+                       "                 result = new java.util.ArrayList<String>();\n" +
+                       "             }\n" +
+                       "             result.add(String.valueOf(i));\n" +
+                       "        }\n" +
+                       "        if (result == null) {\n" +
+                       "            System.err.println(\"still null\");\n" +
+                       "        }" +
+                       "    }\n" +
+                       "}")
+                .run(NPECheck.class)
+                .assertWarnings();
+    }
+    
+    
     private void performAnalysisTest(String fileName, String code, String... golden) throws Exception {
         HintTest.create()
                 .input(fileName, code)

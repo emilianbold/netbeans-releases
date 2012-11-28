@@ -48,6 +48,7 @@ import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeMirror;
+import javax.lang.model.util.ElementFilter;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.spi.editor.hints.ErrorDescription;
@@ -635,6 +636,16 @@ public class NPECheck {
         public State visitMethod(MethodTree node, Void p) {
             variable2State = new HashMap<VariableElement, NPECheck.State>();
             not = false;
+            
+            Element current = info.getTrees().getElement(getCurrentPath());
+            
+            while (current != null) {
+                for (VariableElement var : ElementFilter.fieldsIn(current.getEnclosedElements())) {
+                    variable2State.put(var, getStateFromAnnotations(var));
+                }
+                current = current.getEnclosingElement();
+            }
+            
             return super.visitMethod(node, p);
         }
 
