@@ -458,10 +458,12 @@ public class HtmlElementNode extends AbstractNode {
                         long end = sd.getTo();
                         if (end == offset) {
                             //look at the next one
-                            final SourceDescription sourceDescription = ((HtmlElementNode) children[i]).getSourceDescription();
-                            if (i + 1 < children.length && sourceDescription != null && sourceDescription.getFrom() == offset) {
-                                return ((HtmlElementNode) children[i]).getNodeForOffset(offset);
-                            } 
+                            if (i + 1 < children.length) {
+                                final SourceDescription sourceDescription = ((HtmlElementNode) children[i+1]).getSourceDescription();
+                                if (sourceDescription != null && sourceDescription.getFrom() == offset) {
+                                    return ((HtmlElementNode) children[i+1]).getNodeForOffset(offset);
+                                }
+                            }
                         }
                         if (end >= offset) {
                             return c.getNodeForOffset(offset);
