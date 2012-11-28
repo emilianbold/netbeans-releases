@@ -133,4 +133,14 @@ public class HudsonManager {
                     (HudsonInstanceImpl) instance);
         }
     }
+
+    /**
+     * Synchronize Hudson instance with server. Update jobs and statuses. Do not
+     * prompt for login.
+     */
+    public static void synchronizeInstance(HudsonInstance instance) {
+        if (instance instanceof HudsonInstanceImpl) {
+            ((HudsonInstanceImpl) instance).synchronize(false);
+        }
+    }
 }

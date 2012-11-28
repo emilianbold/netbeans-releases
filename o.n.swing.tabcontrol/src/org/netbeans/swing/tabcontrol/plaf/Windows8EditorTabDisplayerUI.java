@@ -49,17 +49,23 @@ import javax.swing.plaf.ComponentUI;
 import org.netbeans.swing.tabcontrol.TabDisplayer;
 
 /**
- * Win Vista-like user interface of view type tabs.
+ * Windows Vista impl of tabs ui
  *
  * @author S. Aubrecht
+ * @since 1.41
  */
-public final class WinVistaViewTabDisplayerUI extends AbstractWinViewTabDisplayerUI {
-
-    private WinVistaViewTabDisplayerUI(TabDisplayer displayer) {
-        super(displayer);
+public final class Windows8EditorTabDisplayerUI extends AbstractWinEditorTabDisplayerUI {
+    
+    public Windows8EditorTabDisplayerUI(TabDisplayer displayer) {
+        super (displayer);
     }
 
     public static ComponentUI createUI(JComponent c) {
-        return new WinVistaViewTabDisplayerUI((TabDisplayer)c);
+        return new Windows8EditorTabDisplayerUI ((TabDisplayer) c);
+    }    
+
+    @Override
+    protected TabCellRenderer createDefaultRenderer() {
+        return new Windows8EditorTabCellRenderer();
     }
 }
