@@ -39,22 +39,41 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.cnd.makeproject.spi.configurations;
+package org.netbeans.modules.cnd.toolchain.compilers;
 
-import org.netbeans.modules.cnd.makeproject.api.configurations.Item;
-import org.openide.util.Lookup;
+import org.netbeans.modules.cnd.api.toolchain.CompilerFlavor;
+import org.netbeans.modules.cnd.api.toolchain.ToolKind;
+import org.netbeans.modules.cnd.api.toolchain.ToolchainManager;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 
-public abstract class ConfigurationRequirementProvider {
-
-    public abstract boolean canHaveConfiguration(Item item);
-
-    public static boolean askAllProviders(Item item) {
-        Lookup.Result<ConfigurationRequirementProvider> crpLookupResult = Lookup.getDefault().lookupResult(ConfigurationRequirementProvider.class);
-        for (ConfigurationRequirementProvider crp : crpLookupResult.allInstances()) {
-            if (crp.canHaveConfiguration(item)) {
-                return true;
-            }
-        }
-        return false;
+/**
+ *
+ * @author alsimon
+ */
+public class OracleCCompiler extends OracleCCppCompiler {
+    /** 
+     * Creates a new instance of SunCCCompiler
+     */
+    protected OracleCCompiler(ExecutionEnvironment env, CompilerFlavor flavor, ToolKind kind, String name, String displayName, String path) {
+        super(env, flavor, kind, name, displayName, path);
     }
+    
+    @Override
+    public OracleCCompiler createCopy(CompilerFlavor flavor) {
+        OracleCCompiler copy = new OracleCCompiler(getExecutionEnvironment(), flavor, getKind(), getName(), getDisplayName(), getPath());
+        if (isReady()) {
+            copy.copySystemIncludeDirectories(getSystemIncludeDirectories());
+            copy.copySystemPreprocessorSymbols(getSystemPreprocessorSymbols());
+        }
+        return copy;
+    }
+
+    public static OracleCCompiler create(ExecutionEnvironment env, CompilerFlavor flavor, ToolKind kind, String name, String displayName, String path) {
+        return new OracleCCompiler(env, flavor, kind, name, displayName, path);
+    }
+
+    @Override
+    public ToolchainManager.CompilerDescriptor getDescriptor() {
+        return getFlavor().getToolchainDescriptor().getC();
+    }   
 }

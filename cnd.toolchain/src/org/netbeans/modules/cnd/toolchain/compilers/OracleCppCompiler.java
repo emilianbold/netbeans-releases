@@ -39,28 +39,41 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.cnd.apt.support;
+package org.netbeans.modules.cnd.toolchain.compilers;
 
-import org.netbeans.modules.cnd.apt.support.spi.*;
-import java.util.Collection;
-import org.netbeans.modules.cnd.antlr.TokenStream;
-import org.openide.filesystems.FileSystem;
-import org.openide.util.lookup.Lookups;
+import org.netbeans.modules.cnd.api.toolchain.CompilerFlavor;
+import org.netbeans.modules.cnd.api.toolchain.ToolKind;
+import org.netbeans.modules.cnd.api.toolchain.ToolchainManager;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 
 /**
  *
- * @author Egor Ushakov
+ * @author alsimon
  */
-public final class APTIndexingSupport {
-    private APTIndexingSupport() {
+public class OracleCppCompiler extends OracleCCppCompiler {
+    /** 
+     * Creates a new instance of SunCCCompiler
+     */
+    protected OracleCppCompiler(ExecutionEnvironment env, CompilerFlavor flavor, ToolKind kind, String name, String displayName, String path) {
+        super(env, flavor, kind, name, displayName, path);
     }
     
-    private static final Collection<? extends APTIndexingFilterProvider> providers = Lookups.forPath(APTIndexingFilterProvider.PATH).lookupAll(APTIndexingFilterProvider.class);
-    
-    public static TokenStream index(FileSystem fs, CharSequence path, TokenStream ts) {
-        for (APTIndexingFilterProvider provider : providers) {
-            ts = provider.getIndexed(fs, path, ts);
+    @Override
+    public OracleCppCompiler createCopy(CompilerFlavor flavor) {
+        OracleCppCompiler copy = new OracleCppCompiler(getExecutionEnvironment(), flavor, getKind(), getName(), getDisplayName(), getPath());
+        if (isReady()) {
+            copy.copySystemIncludeDirectories(getSystemIncludeDirectories());
+            copy.copySystemPreprocessorSymbols(getSystemPreprocessorSymbols());
         }
-        return ts;
+        return copy;
     }
+
+    public static OracleCppCompiler create(ExecutionEnvironment env, CompilerFlavor flavor, ToolKind kind, String name, String displayName, String path) {
+        return new OracleCppCompiler(env, flavor, kind, name, displayName, path);
+    }
+
+    @Override
+    public ToolchainManager.CompilerDescriptor getDescriptor() {
+        return getFlavor().getToolchainDescriptor().getCpp();
+    }   
 }

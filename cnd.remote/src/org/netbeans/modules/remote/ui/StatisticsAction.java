@@ -60,9 +60,10 @@ import org.openide.util.RequestProcessor;
 @ActionRegistration(displayName = "StatisticsMenuItem")
 @ActionReference(path = "Remote/Host/Actions", name = "StatisticsAction", position = 99998)
 public class StatisticsAction extends SingleHostAction {
-
+    
+    private static final RequestProcessor RP = new RequestProcessor("StatisticsAction", 1); // NOI18N
+    
     public StatisticsAction() {
-        System.err.printf("Hihi\n");
     }
 
     
@@ -84,10 +85,10 @@ public class StatisticsAction extends SingleHostAction {
 
     @Override
     protected void performAction(final ExecutionEnvironment env, Node node) {
-        final NotifyDescriptor notifyDescriptor = new NotifyDescriptor.InputLine("Log file:", "Turn Remote Statistics On");
+        final NotifyDescriptor notifyDescriptor = new NotifyDescriptor.InputLine("Log file:", "Turn Remote Statistics On"); // NOI18N
         DialogDisplayer.getDefault().notify(notifyDescriptor);
         if (notifyDescriptor.getValue() == NotifyDescriptor.OK_OPTION) {
-            RequestProcessor.getDefault().post(new Runnable() {
+            RP.post(new Runnable() {
                 @Override
                 public void run() {
                     RemoteStatistics.startTest(notifyDescriptor.getValue().toString(), null, 0, 10000);

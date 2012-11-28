@@ -39,32 +39,57 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.cnd.makeproject.configurations;
+package org.netbeans.modules.cnd.indexing.api;
 
-import org.netbeans.modules.cnd.makeproject.api.configurations.Item;
-import org.netbeans.modules.cnd.makeproject.spi.configurations.ConfigurationRequirementProvider;
-import org.netbeans.modules.cnd.utils.MIMENames;
-import org.openide.util.lookup.ServiceProvider;
+/**
+ *
+ * @author Egor Ushakov
+ */
+public final class CndTextIndexKey {
+    private final int unitId;
+    private final int fileNameIndex;
 
-@ServiceProvider(service=ConfigurationRequirementProvider.class)
-public class DefaultConfigurationRequirementProvider extends ConfigurationRequirementProvider {
+    public CndTextIndexKey(int unitId, int fileNameIndex) {
+        this.unitId = unitId;
+        this.fileNameIndex = fileNameIndex;
+    }
+
+    public int getUnitId() {
+        return unitId;
+    }
+
+    public int getFileNameIndex() {
+        return fileNameIndex;
+    }
 
     @Override
-    public boolean canHaveConfiguration(Item item) {
-        String mimeType = item.getMIMEType();
-        if (MIMENames.C_MIME_TYPE.equals(mimeType)) {
-            return true;
-        } else if (MIMENames.HEADER_MIME_TYPE.equals(mimeType)) {
-            return true;
-        } else if (MIMENames.CPLUSPLUS_MIME_TYPE.equals(mimeType)) {
-            return true;
-        } else if (MIMENames.FORTRAN_MIME_TYPE.equals(mimeType)) {
-            return true;
-        } else if (MIMENames.ASM_MIME_TYPE.equals(mimeType)) {
-            return true;
-        } else if (MIMENames.CND_SCRIPT_MIME_TYPES.contains(mimeType)) {
-            return true;
+    public int hashCode() {
+        int hash = 5;
+        hash = 59 * hash + this.unitId;
+        hash = 59 * hash + this.fileNameIndex;
+        return hash;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
         }
-        return false;
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final CndTextIndexKey other = (CndTextIndexKey) obj;
+        if (this.unitId != other.unitId) {
+            return false;
+        }
+        if (this.fileNameIndex != other.fileNameIndex) {
+            return false;
+        }
+        return true;
+    }
+
+    @Override
+    public String toString() {
+        return "CndTextIndexKey{" + "unitId=" + unitId + ", fileNameIndex=" + fileNameIndex + '}'; //NOI18N
     }
 }
