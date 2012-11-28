@@ -48,6 +48,7 @@ import java.util.*;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.javascript2.editor.doc.spi.JsDocumentationHolder;
 import org.netbeans.modules.javascript2.editor.embedding.JsEmbeddingProvider;
 import org.netbeans.modules.javascript2.editor.index.IndexedElement;
 import org.netbeans.modules.javascript2.editor.index.JsIndex;
@@ -891,5 +892,13 @@ public class ModelUtils {
             }
             return super.enter(uNode);
         }        
+    }
+    
+    public static void addDocTypesOccurence(JsObject jsObject, JsDocumentationHolder docHolder) {
+        if (docHolder.getOccurencesMap().containsKey(jsObject.getName())) {
+            for (OffsetRange offsetRange : docHolder.getOccurencesMap().get(jsObject.getName())) {
+                ((JsObjectImpl)jsObject).addOccurrence(offsetRange);
+            }
+        }
     }
 }

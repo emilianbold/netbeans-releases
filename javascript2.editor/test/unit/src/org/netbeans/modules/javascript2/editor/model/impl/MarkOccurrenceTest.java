@@ -598,7 +598,23 @@ public class MarkOccurrenceTest extends JsTestBase {
     public void testIssue218041_02() throws Exception {
         checkOccurrences("testfiles/coloring/issue218041.js", "ba^r = 1;", true);
     }
+    
+    public void testIssue217935_01() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue217935.js", " * @param {Dat^e} what", true);
+    }
+    
+    public void testIssue217935_02() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue217935.js", " * @param {Dat^es} what", true);
+    }
 
+    public void testIssue217935_03() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue217935.js", " * @returns {Da^tes} description", true);
+    }
+    
+    public void testIssue217935_04() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue217935.js", " * @param {Dates} wh^at", true);
+    }
+    
 //    public void testIssue221228_02() throws Exception {
 //        checkOccurrences("testfiles/markoccurences/issue221228.js", "a.h^i(); // rename hi here", true);
 //    }

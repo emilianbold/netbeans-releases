@@ -44,6 +44,7 @@ package org.netbeans.modules.javascript2.editor.model.impl;
 import java.util.*;
 import org.netbeans.modules.csl.api.Modifier;
 import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.javascript2.editor.doc.spi.JsDocumentationHolder;
 import org.netbeans.modules.javascript2.editor.model.*;
 import org.openide.filesystems.FileObject;
 
@@ -192,8 +193,8 @@ public class JsFunctionImpl extends DeclarationScopeImpl implements JsFunction {
     }
 
     @Override
-    public void resolveTypes() {
-        super.resolveTypes();
+    public void resolveTypes(JsDocumentationHolder docHolder) {
+        super.resolveTypes(docHolder);
         HashSet<String> nameReturnTypes = new HashSet<String>();
         Collection<TypeUsage> resolved = new ArrayList();
         for (TypeUsage type : returnTypes) {
@@ -215,7 +216,6 @@ public class JsFunctionImpl extends DeclarationScopeImpl implements JsFunction {
             }
         }
         
-        JsObject global = ModelUtils.getGlobalObject(this);
         for (TypeUsage type : resolved) {
             if (type.getOffset() > 0) {
                 JsObject jsObject = ModelUtils.findJsObjectByName(this, type.getType());
@@ -226,6 +226,17 @@ public class JsFunctionImpl extends DeclarationScopeImpl implements JsFunction {
         }
         returnTypes.clear();
         returnTypes.addAll(resolved);
+        
+        // parameters and type type resolving for occurrences
+        for(JsObject param : parameters) {
+            Collection<? extends TypeUsage> types = param.getAssignmentForOffset(param.getDeclarationName().getOffsetRange().getStart());
+            for(TypeUsage type: types) {
+                JsObject jsObject = ModelUtils.getJsObjectByName(this, type.getType());
+                if (jsObject != null) {
+                    ModelUtils.addDocTypesOccurence(jsObject, docHolder);
+                }
+            }
+        }
     }
     
     
