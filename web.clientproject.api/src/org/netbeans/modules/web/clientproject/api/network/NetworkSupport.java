@@ -47,6 +47,7 @@ import java.util.Collections;
 import java.util.List;
 import javax.swing.JButton;
 import org.netbeans.api.options.OptionsDisplayer;
+import org.netbeans.modules.web.clientproject.api.network.ui.NetworkErrorPanel;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -65,6 +66,8 @@ public final class NetworkSupport {
     /**
      * Show network error dialog with possibility to retry the request
      * or open general IDE options where proxy can be configured.
+     * <p>
+     * See {@link #showNetworkErrorDialog(List)} for more information.
      * @param failedRequest request that failed, never {@code null}
      * @return {@code true} if the request should be downloaded once more, {@code false} otherwise
      * @see #showNetworkErrorDialog(List)
@@ -77,6 +80,14 @@ public final class NetworkSupport {
     /**
      * Show network error dialog with possibility to retry the requests
      * or open general IDE options where proxy can be configured.
+     * <p>
+     * Notes:
+     * <ul>
+     *   <li>If the request is URL (starts with "http://" or "https://"), it is
+     *       displayed as a hyperlink.</li>
+     *   <li>If the request is longer than {@value NetworkErrorPanel#MAX_REQUEST_LENGTH}
+     *       characters, it is truncated (using "...").</li>
+     * </ul>
      * @param failedRequests requests that failed, never {@code null}
      * @return {@code true} if the requests should be downloaded once more, {@code false} otherwise
      * @see #showNetworkErrorDialog(String)
@@ -93,7 +104,7 @@ public final class NetworkSupport {
             throw new IllegalArgumentException("Failed requests must be provided.");
         }
         DialogDescriptor descriptor = new DialogDescriptor(
-                Bundle.NetworkSupport_errorDialog_text(joinRequests(failedRequests, "<br>")),
+                new NetworkErrorPanel(failedRequests),
                 Bundle.NetworkSupport_errorDialog_title(),
                 true,
                 DialogDescriptor.YES_NO_OPTION,
@@ -108,20 +119,6 @@ public final class NetworkSupport {
         });
         descriptor.setAdditionalOptions(new Object[] {configureProxyButton});
         return DialogDisplayer.getDefault().notify(descriptor) == NotifyDescriptor.YES_OPTION;
-    }
-
-    private static String joinRequests(List<String> failedRequests, String glue) {
-        if (failedRequests.size() == 1) {
-            return failedRequests.get(0);
-        }
-        StringBuilder sb = new StringBuilder(200);
-        for (String request : failedRequests) {
-            if (sb.length() > 0) {
-                sb.append(glue);
-            }
-            sb.append(request);
-        }
-        return sb.toString();
     }
 
 }
