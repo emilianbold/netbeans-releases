@@ -172,10 +172,10 @@ public class CssTestBase extends CslTestBase {
         if (PRINT_GRAMMAR_RESOLVE_TIMES) {
             System.out.println(String.format("Input '%s' resolved in %s ms.", inputText, c - a));
         }
-        if(pv.isResolved()) {
-            List<Token> unresolvedTokens = pv.getUnresolvedTokens();
-            assertTrue(unresolvedTokens.isEmpty());
-        }
+//        if(pv.isResolved()) {
+//            List<Token> unresolvedTokens = pv.getUnresolvedTokens();
+//            assertTrue(unresolvedTokens.isEmpty());
+//        }
         
         if (pv.isResolved() != expectedSuccess) {
             StringBuilder sb = new StringBuilder();
