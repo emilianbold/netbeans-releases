@@ -47,8 +47,6 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.SwingUtilities;
-import javax.xml.crypto.Data;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.web.browser.api.Page;
 import org.netbeans.modules.web.browser.api.PageInspector;
@@ -59,6 +57,8 @@ import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
+import org.openide.util.RequestProcessor;
+import org.openide.windows.OnShowing;
 import org.openide.windows.TopComponent;
 
 /**
@@ -69,26 +69,34 @@ import org.openide.windows.TopComponent;
  *
  * @author marekfukala
  */
-public class PageInspectorListener implements PropertyChangeListener {
+@OnShowing
+public class PageInspectorListener implements Runnable, PropertyChangeListener {
 
     private static final Logger LOGGER = Logger.getLogger(PageInspectorListener.class.getSimpleName());
-    private static PageInspectorListener SINGLETON;
 
-    synchronized static void initialize() {
-        if (SINGLETON == null) {
-            SINGLETON = new PageInspectorListener();
-        }
-    }
-    private final PageInspector pageInspector;
+    private PageInspector pageInspector;
     private Project project;
     private Page page;
     private FileObject file;
+    
+    private boolean repost = true;
 
-    public PageInspectorListener() {
-        pageInspector = PageInspector.getDefault();
-        pageInspector.addPropertyChangeListener(this);
+    @Override
+    public void run() {
+        LOGGER.log(Level.FINE, "run(); repost {0} ", repost); //NOI18N
+        if(repost) {
+            repost = false;
+            RequestProcessor.getDefault().post(this, 2000); //UI shown, wait additional 2 seconds just for sure
+        } else {
+            pageInspector = PageInspector.getDefault();
+            if(pageInspector == null) {
+                throw new IllegalStateException("When to call PageInspector.getDefault() to get sg.?????");
+            }
+            pageInspector.addPropertyChangeListener(this);
+            LOGGER.log(Level.FINE, "PropertyChangeListener added to PageInspector {0}", pageInspector); //NOI18N
+        }
     }
-
+    
     @Override
     public void propertyChange(PropertyChangeEvent pce) {
         if (PageInspector.PROP_MODEL.equals(pce.getPropertyName())) {
@@ -160,5 +168,5 @@ public class PageInspectorListener implements PropertyChangeListener {
             }
         }
     }
-    
+
 }
