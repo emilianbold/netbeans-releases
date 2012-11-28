@@ -425,7 +425,6 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         reloading = true;
         boolean isNew = issue.isNew();
         
-        headerField.setVisible(!isNew);
         org.openide.awt.Mnemonics.setLocalizedText(addCommentLabel, NbBundle.getMessage(IssuePanel.class, isNew ? "IssuePanel.description" : "IssuePanel.addCommentLabel.text")); // NOI18N
         reportedLabel.setVisible(!isNew);
         reportedField.setVisible(!isNew);
@@ -460,8 +459,12 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
             initStatusCombo(STATUS_UNCONFIRMED, null);
         } else {
             String format = NbBundle.getMessage(IssuePanel.class, "IssuePanel.headerLabel.format"); // NOI18N
-            String headerTxt = MessageFormat.format(format, issue.getID(), issue.getSummary());
-            headerField.setText(headerTxt);
+            if(isNew) {
+                headerField.setText(""); // NOI18N
+            } else {
+                String headerTxt = MessageFormat.format(format, issue.getID(), issue.getSummary());
+                headerField.setText(headerTxt);
+            }
             Dimension dim = headerField.getPreferredSize();
             headerField.setMinimumSize(new Dimension(0, dim.height));
             headerField.setPreferredSize(new Dimension(0, dim.height));
@@ -1730,8 +1733,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
                             .addComponent(separatorLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 18, javax.swing.GroupLayout.PREFERRED_SIZE)))
                     .addGroup(jPanel1Layout.createSequentialGroup()
                         .addGap(6, 6, 6)
-                        .addComponent(headerField)
-                        .addGap(0, 0, Short.MAX_VALUE)))
+                        .addComponent(headerField)))
                 .addContainerGap())
         );
 
@@ -1949,7 +1951,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
                     .addComponent(separator)
                     .addComponent(dummyCommentsPanel, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addContainerGap())
-            .addComponent(jPanel1, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
 
         layout.linkSize(javax.swing.SwingConstants.HORIZONTAL, new java.awt.Component[] {issueTypeCombo, iterationCombo, priorityCombo, releaseCombo, resolutionCombo, severityCombo, statusCombo});
