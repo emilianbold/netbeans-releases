@@ -112,7 +112,7 @@ public class HintsTask implements CancellableTask<CompilationInfo> {
         HintsInvoker inv = caretAware ? new HintsInvoker(info, caret, cancel) : new HintsInvoker(info, cancel);
         List<ErrorDescription> result = inv.computeHints(info);
 
-        if (cancel.get()) {
+        if (result == null || cancel.get()) {
             return;
         }
 

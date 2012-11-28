@@ -44,9 +44,9 @@
 
 package org.netbeans.modules.welcome.ui;
 
-import java.awt.BorderLayout;
 import java.awt.GridLayout;
 import javax.swing.BorderFactory;
+import javax.swing.JComponent;
 import javax.swing.JPanel;
 import org.netbeans.modules.welcome.content.BundleSupport;
 import org.netbeans.modules.welcome.content.ContentSection;
@@ -58,22 +58,21 @@ import org.netbeans.modules.welcome.content.ContentSection;
 class WhatsNewTab extends AbstractTab {
     
     public WhatsNewTab() {
-        setName(BundleSupport.getLabel( "WhatsNewTab")); //NOI18N
+        super( BundleSupport.getLabel( "WhatsNewTab") ); //NOI18N
     }
 
     @Override
-    protected void buildContent() {
+    protected JComponent buildContent() {
         JPanel main = new JPanel( new GridLayout(1,0) );
         main.setOpaque(false);
         main.setBorder(BorderFactory.createEmptyBorder());
-        add( main, BorderLayout.CENTER );
 
         main.add( new ContentSection( BundleSupport.getLabel( "SectionNewsAndTutorials" ), //NOI18N
-                new ArticlesAndNews(), false, true ));
+                new ArticlesAndNews(), true ));
         
         main.add( new ContentSection( BundleSupport.getLabel( "SectionBlogs" ), //NOI18N
-                new Blogs(), true, true ) );
+                new Blogs(), true ) );
 
-        add( new BottomBar(), BorderLayout.SOUTH );
+        return main;
     }
 }

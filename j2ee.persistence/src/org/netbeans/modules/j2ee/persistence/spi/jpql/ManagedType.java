@@ -78,7 +78,9 @@ abstract public class ManagedType implements IManagedType {
 
     @Override
     public IMapping getMappingNamed(String val) {
-        if(mappings == null) mappings = initMappings();
+        if(mappings == null) {
+            mappings = initMappings();
+        }
         return mappings.get(val);
     }
 
@@ -99,7 +101,9 @@ abstract public class ManagedType implements IManagedType {
 
     @Override
     public Iterable<IMapping> mappings() {
-        if(mappings == null) mappings = initMappings();
+        if(mappings == null) {
+            mappings = initMappings();
+        }
         return Collections.unmodifiableCollection(mappings.values());
     }
 

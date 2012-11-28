@@ -161,9 +161,11 @@ public class ModelVisitor extends PathNodeVisitor {
                             //property.addOccurrence(name.getOffsetRange());
                         } else {
                             property = new JsObjectImpl(fromAN, name, name.getOffsetRange());
+                            property.addOccurrence(name.getOffsetRange());
                         }
                     } else {
                         property = new JsObjectImpl(fromAN, name, name.getOffsetRange());
+                        property.addOccurrence(name.getOffsetRange());
                     }
                     fromAN.addProperty(name.getName(), property);
                 }
@@ -193,7 +195,8 @@ public class ModelVisitor extends PathNodeVisitor {
                     String fieldName = aNode.getProperty().getName();
                     if(!ModelUtils.isGlobal(parent) && !ModelUtils.isGlobal(parent.getParent()) &&
                         (parent.getParent() instanceof JsFunctionImpl
-                            || isInPropertyNode())) {
+                            || isInPropertyNode() 
+                            || (parent instanceof JsFunctionImpl && parent.getParent().getJSKind() == JsElement.Kind.OBJECT_LITERAL))) {
                         parent = (JsObjectImpl)parent.getParent();
                     }
                     property = (JsObjectImpl)parent.getProperty(fieldName);
@@ -465,6 +468,7 @@ public class ModelVisitor extends PathNodeVisitor {
                     // here are the variables allways private
                     variable.getModifiers().remove(Modifier.PUBLIC);
                     variable.getModifiers().add(Modifier.PRIVATE);
+                    variable.addOccurrence(varName.getOffsetRange());
                     fncScope.addProperty(varName.getName(), variable);
                 }
             }
@@ -489,7 +493,7 @@ public class ModelVisitor extends PathNodeVisitor {
 
         if (fncScope != null) {
             // check parameters and return types of the function.
-            JsDocumentationHolder docHolder = parserResult.getDocumentationHolder();
+             JsDocumentationHolder docHolder = parserResult.getDocumentationHolder();
             List<Type> types = docHolder.getReturnType(functionNode);
             if (types != null && !types.isEmpty()) {
                 for(Type type : types) {
@@ -764,11 +768,12 @@ public class ModelVisitor extends PathNodeVisitor {
                         variable.getModifiers().add(Modifier.PRIVATE);
                     }
                     parent.addProperty(name.getName(), variable);
-
+                    variable.addOccurrence(name.getOffsetRange());
                 } else {
                     // the variable was probably created as temporary before, now we
                     // need to replace it with the real one
                     JsObjectImpl newVariable = new JsObjectImpl(parent, name, name.getOffsetRange(), true);
+                    newVariable.addOccurrence(name.getOffsetRange());
                     for(String propertyName: variable.getProperties().keySet()) {
                         JsObject property = variable.getProperty(propertyName);
                         if (property instanceof JsObjectImpl) {

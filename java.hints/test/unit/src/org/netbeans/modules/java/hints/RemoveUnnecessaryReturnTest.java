@@ -335,4 +335,19 @@ public class RemoveUnnecessaryReturnTest extends NbTestCase {
                 .run(RemoveUnnecessaryReturn.class)
                 .assertWarnings("<missing>");
     }
+
+    public void testIgnoreExtraBreak222422() throws Exception {
+        HintTest
+                .create()
+                .input("package test;\n" +
+                       "public class Test {\n" +
+                       "    public void test(int b) {\n" +
+                       "        if (true) return ;\n" +
+                       "        break;\n" +
+                       "    }\n" +
+                       "}\n",
+                       false)
+                .run(RemoveUnnecessaryReturn.class)
+                .assertWarnings();
+    }
 }

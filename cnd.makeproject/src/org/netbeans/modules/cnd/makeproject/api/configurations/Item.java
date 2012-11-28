@@ -518,7 +518,7 @@ public final class Item implements NativeFileItem, PropertyChangeListener {
         return mimeType;
     }
 
-    public static PredefinedToolKind getDefaultToolForItem(DataObject dataObject, Item item) {
+    /*package*/ static PredefinedToolKind getDefaultToolForItem(DataObject dataObject, Item item) {
         PredefinedToolKind tool;
         // use mime type of passed data object
         String mimeType = getMIMETypeImpl(dataObject, item);

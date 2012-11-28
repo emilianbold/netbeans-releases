@@ -76,9 +76,7 @@ public interface ClientSideModule {
         FileObject getStartFile();
 
         /**
-         * Get context root of this module. It can be a relative URL
-         * (if internal web server is used) or an absolute one (if external
-         * web server is used).
+         * Get context root of this module.
          * @return context root of this module
          */
         @NonNull

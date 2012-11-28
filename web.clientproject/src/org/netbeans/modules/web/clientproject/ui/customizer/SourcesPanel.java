@@ -127,9 +127,9 @@ public class SourcesPanel extends JPanel implements HelpCtx.Provider {
     }
 
     private void validateData() {
-        ProjectFoldersValidator validator = new ProjectFoldersValidator();
-        validator.validate(FileUtil.toFile(project.getProjectDirectory()), getSiteRootFolder(), getTestFolder());
-        ValidationResult result = validator.getResult();
+        ValidationResult result = new ProjectFoldersValidator()
+                .validate(FileUtil.toFile(project.getProjectDirectory()), getSiteRootFolder(), getTestFolder())
+                .getResult();
         // errors
         if (result.hasErrors()) {
             category.setErrorMessage(result.getErrors().get(0).getMessage());

@@ -122,6 +122,17 @@ import org.openide.util.actions.SystemAction;
  * be able to mask files not provided by their immediate siblings, but by cousins. For this reason, nested
  * subclasses may call {@link #setPropagateMasks} to make the mask files propagate up one or more nesting levels
  * and thus remain potent against cousin delegates.
+ * 
+ * <p>To support rollback, two pseudo-attribute is defined <b>since 8.5</b>: <b>{@code revealEntries}</b> typed 
+ * as <code>Map&lt;String, FileObject &amp; Callable></code>. The attribute is available on a folder, and contains information 
+ * on child FileObjects, which have been overriden or masked by the writable layer of the MFS. Map is keyed by 
+ * child name, the value is a FileObject that allows access to the masked child attributes and/or content.
+ * <p>
+ * The returned FileObjects do not leak its neighbours from the lower layers. The parent, children or siblings are
+ * returned from the MFS, if they exist. The FileObjects can be also casted to <code>Callable&lt;FileObject></code>. When
+ * called, the original version of the file is restored on the MultiFileSystem, and the restored instance is returned
+ * as result.
+ * <p>
  */
 public class MultiFileSystem extends FileSystem {
     static final long serialVersionUID = -767493828111559560L;

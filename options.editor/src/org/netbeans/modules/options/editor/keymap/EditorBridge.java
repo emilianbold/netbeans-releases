@@ -521,7 +521,7 @@ public final class EditorBridge extends KeymapManager {
                 if (j > 0) {
                     sb.append(' '); //NOI18N
                 }
-                sb.append(Utilities.keyToString(mkb.getKeyStrokeList().get(j)));
+                sb.append(Utilities.keyToString(mkb.getKeyStrokeList().get(j), true));
             }
 
             Set<String> keyStrokes = actionNameToShortcuts.get(mkb.getActionName());

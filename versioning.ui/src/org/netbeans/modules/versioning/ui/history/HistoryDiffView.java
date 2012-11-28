@@ -491,8 +491,12 @@ public class HistoryDiffView implements PropertyChangeListener {
             public void propertyChange(PropertyChangeEvent evt) {
                 if (DiffController.PROP_DIFFERENCES.equals(evt.getPropertyName())) {
                     dv.removePropertyChangeListener(this);
-                    if(dv.getDifferenceCount() > 0) {
-                        setCurrentDifference(selectLast ? dv.getDifferenceCount() - 1 : 0);
+                    int diffCount = dv.getDifferenceCount();
+                    synchronized(VIEW_LOCK) {
+                        // diffView may already be a completely different view
+                        if (dv == diffView && diffCount > 0) {
+                            setCurrentDifference(selectLast ? diffCount - 1 : 0);
+                        }
                     }
                 }
             }

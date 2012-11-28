@@ -335,6 +335,12 @@ public class MavenNbModuleImpl implements NbModuleProvider {
         if (mdep.isTestDependency()) {
             dep.setScope("test");
         }
+        //#214674 heuristics to set the right expression if matching..
+        MavenProject mp = watch.getMavenProject();
+        String nbVersion = mp.getProperties() != null ? mp.getProperties().getProperty("netbeans.version") : null;
+        if (nbVersion != null && nbVersion.equals(dep.getVersion())) {
+            dep.setVersion("${netbeans.version}");
+        }
         dependencyAdder.addDependency(dep);
         
         }

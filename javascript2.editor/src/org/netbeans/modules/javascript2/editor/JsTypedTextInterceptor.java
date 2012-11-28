@@ -45,13 +45,13 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.Caret;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.editor.mimelookup.MimeRegistration;
+import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
-import org.netbeans.modules.csl.api.EditorOptions;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.spi.GsfUtilities;
 import org.netbeans.modules.javascript2.editor.lexer.JsTokenId;
@@ -71,6 +71,10 @@ public class JsTypedTextInterceptor implements TypedTextInterceptor {
     /** Tokens which indicate that we're within a literal string */
     private final static TokenId[] STRING_TOKENS = { JsTokenId.STRING, JsTokenId.STRING_END };
 
+    private final Language<JsTokenId> language;
+
+    private final boolean singleQuote;
+
     /** When != -1, this indicates that we previously adjusted the indentation of the
      * line to the given offset, and if it turns out that the user changes that token,
      * we revert to the original indentation
@@ -85,6 +89,11 @@ public class JsTypedTextInterceptor implements TypedTextInterceptor {
      * changed
      */
     private int previousAdjustmentIndent;
+
+    public JsTypedTextInterceptor(Language<JsTokenId> language, boolean singleQuote) {
+        this.language = language;
+        this.singleQuote = singleQuote;
+    }
 
     @Override
     public void afterInsert(final Context context) throws BadLocationException {
@@ -102,16 +111,6 @@ public class JsTypedTextInterceptor implements TypedTextInterceptor {
         Caret caret = context.getComponent().getCaret();
         char ch = context.getText().charAt(0);
 
-//        if (REFLOW_COMMENTS) {
-//            Token<?extends JsTokenId> token = LexUtilities.getToken(doc, dotPos);
-//            if (token != null) {
-//                TokenId id = token.id();
-//                if (id == JsTokenId.LINE_COMMENT || id == JsTokenId.DOCUMENTATION) {
-//                    new ReflowParagraphAction().reflowEditedComment(target);
-//                }
-//            }
-//        }
-
         // See if our automatic adjustment of indentation when typing (for example) "end" was
         // premature - if you were typing a longer word beginning with one of my adjustment
         // prefixes, such as "endian", then put the indentation back.
@@ -120,7 +119,8 @@ public class JsTypedTextInterceptor implements TypedTextInterceptor {
                 // Revert indentation iff the character at the insert position does
                 // not start a new token (e.g. the previous token that we reindented
                 // was not complete)
-                TokenSequence<? extends JsTokenId> ts = LexUtilities.getJsTokenSequence(doc, dotPos);
+                TokenSequence<? extends JsTokenId> ts = LexUtilities.getTokenSequence(
+                        doc, dotPos, language);
 
                 if (ts != null) {
                     ts.move(dotPos);
@@ -136,42 +136,17 @@ public class JsTypedTextInterceptor implements TypedTextInterceptor {
 
         //dumpTokens(doc, dotPos);
         switch (ch) {
-//        case '#': {
-//            // Automatically insert #{^} when typing "#" in a quoted string or regexp
-//            Token<?extends JsTokenId> token = LexUtilities.getToken(doc, dotPos);
-//            if (token == null) {
-//                return true;
-//            }
-//            TokenId id = token.id();
-//
-//            if (id == JsTokenId.QUOTED_STRING_LITERAL || id == JsTokenId.REGEXP_LITERAL) {
-//                document.insertString(dotPos+1, "{}", null);
-//                // Skip the "{" to place the caret between { and }
-//                caret.setDot(dotPos+2);
-//            }
-//            break;
-//        }
         case '}':
         case '{':
         case ')':
         case ']':
         case '(':
         case '[': {
-            Token<? extends JsTokenId> token = LexUtilities.getToken(doc, dotPos);
+            Token<? extends JsTokenId> token = LexUtilities.getToken(doc, dotPos, language);
             if (token == null) {
                 return;
             }
             TokenId id = token.id();
-
-//            if (id == JsTokenId.ANY_OPERATOR) {
-//                int length = token.length();
-//                String s = token.text().toString();
-//                if ((length == 2) && "[]".equals(s) || "[]=".equals(s)) { // Special case
-//                    skipClosingBracket(doc, caret, ch, JsTokenId.BRACKET_RIGHT_BRACKET);
-//
-//                    return;
-//                }
-//            }
 
             if (((id == JsTokenId.IDENTIFIER) && (token.length() == 1)) ||
                     (id == JsTokenId.BRACKET_LEFT_BRACKET) || (id == JsTokenId.BRACKET_RIGHT_BRACKET) ||
@@ -199,64 +174,8 @@ public class JsTypedTextInterceptor implements TypedTextInterceptor {
         }
 
         break;
-
-//        case 'e':
-//            // See if it's the end of an "else" or an "ensure" - if so, reindent
-//            reindent(doc, dotPos, JsTokenId.ELSE, caret);
-//            reindent(doc, dotPos, JsTokenId.ENSURE, caret);
-//            reindent(doc, dotPos, JsTokenId.RESCUE, caret);
-//
-//            break;
-//
-//        case 'f':
-//            // See if it's the end of an "else" - if so, reindent
-//            reindent(doc, dotPos, JsTokenId.ELSIF, caret);
-//
-//            break;
-//
-//        case 'n':
-//            // See if it's the end of an "when" - if so, reindent
-//            reindent(doc, dotPos, JsTokenId.WHEN, caret);
-//
-//            break;
-
-        case '/': {
-            // Bracket matching for regular expressions has to be done AFTER the
-            // character is inserted into the document such that I can use the lexer
-            // to determine whether it's a division (e.g. x/y) or a regular expression (/foo/)
-            TokenSequence<? extends JsTokenId> ts = LexUtilities.getJsPositionedSequence(doc, dotPos);
-            if (ts != null) {
-                Token token = ts.token();
-                TokenId id = token.id();
-
-                if (id == JsTokenId.LINE_COMMENT) {
-                    // Did you just type "//" - make sure this didn't turn into ///
-                    // where typing the first "/" inserted "//" and the second "/" appended
-                    // another "/" to make "///"
-                    if (dotPos == ts.offset()+1 && dotPos+1 < doc.getLength() &&
-                            doc.getText(dotPos+1,1).charAt(0) == '/') {
-                        doc.remove(dotPos, 1);
-                        caret.setDot(dotPos+1);
-                        return;
-                    }
-                }
-                // see issue #217134 - it's confusing to have it turned on by default
-//                if (id == JsTokenId.REGEXP_BEGIN || id == JsTokenId.REGEXP_END) {
-//                    TokenId[] stringTokens = REGEXP_TOKENS;
-//                    TokenId beginTokenId = JsTokenId.REGEXP_BEGIN;
-//
-//                    boolean inserted =
-//                        completeQuote(doc, dotPos, caret, ch, stringTokens, beginTokenId);
-//
-//                    if (inserted) {
-//                        caret.setDot(dotPos + 1);
-//                    }
-//
-//                    return;
-//                }
-            }
+        default:
             break;
-        }
         }
     }
 
@@ -289,7 +208,8 @@ public class JsTypedTextInterceptor implements TypedTextInterceptor {
                     if (firstChar != ch) {
                         int start = target.getSelectionStart();
                         int end = target.getSelectionEnd();
-                        TokenSequence<? extends JsTokenId> ts = LexUtilities.getJsPositionedSequence(doc, start);
+                        TokenSequence<? extends JsTokenId> ts = LexUtilities.getPositionedSequence(
+                                doc, start, language);
                         if (ts != null
                                 && ts.token().id() != JsTokenId.LINE_COMMENT
                                 && ts.token().id() != JsTokenId.DOC_COMMENT
@@ -320,7 +240,8 @@ public class JsTypedTextInterceptor implements TypedTextInterceptor {
             }
         }
 
-        TokenSequence<? extends JsTokenId> ts = LexUtilities.getJsTokenSequence(doc, caretOffset);
+        TokenSequence<? extends JsTokenId> ts = LexUtilities.getTokenSequence(
+                doc, caretOffset, language);
 
         if (ts == null) {
             return false;
@@ -346,7 +267,7 @@ public class JsTypedTextInterceptor implements TypedTextInterceptor {
         }
 
         // "/" is handled AFTER the character has been inserted since we need the lexer's help
-        if (ch == '\"' || ch == '\'') {
+        if (ch == '\"' || (ch == '\'' && singleQuote)) {
             stringTokens = STRING_TOKENS;
             beginTokenId = JsTokenId.STRING_BEGIN;
         } else if (id.isError()) {
@@ -356,21 +277,21 @@ public class JsTypedTextInterceptor implements TypedTextInterceptor {
 
             TokenId prevId = ts.token().id();
 
-            if (prevId == JsTokenId.STRING_BEGIN) {
+            if (isCompletableStringBoundary(ts.token(), singleQuote, false)) {
                 stringTokens = STRING_TOKENS;
                 beginTokenId = prevId;
             } else if (prevId == JsTokenId.REGEXP_BEGIN) {
                 stringTokens = REGEXP_TOKENS;
                 beginTokenId = JsTokenId.REGEXP_BEGIN;
             }
-        } else if ((id == JsTokenId.STRING_BEGIN) &&
+        } else if (isCompletableStringBoundary(token, singleQuote, false) &&
                 (caretOffset == (ts.offset() + 1))) {
             if (!Character.isLetter(ch)) { // %q, %x, etc. Only %[], %!!, %<space> etc. is allowed
                 stringTokens = STRING_TOKENS;
                 beginTokenId = id;
             }
-        } else if (((id == JsTokenId.STRING_BEGIN) && (caretOffset == (ts.offset() + 2))) ||
-                (id == JsTokenId.STRING_END)) {
+        } else if ((isCompletableStringBoundary(token, singleQuote, false) && (caretOffset == (ts.offset() + 2))) ||
+                isCompletableStringBoundary(token, singleQuote, true)) {
             stringTokens = STRING_TOKENS;
             beginTokenId = JsTokenId.STRING_BEGIN;
         } else if (((id == JsTokenId.REGEXP_BEGIN) && (caretOffset == (ts.offset() + 2))) ||
@@ -405,7 +326,8 @@ public class JsTypedTextInterceptor implements TypedTextInterceptor {
 
     private void reindent(BaseDocument doc, int offset, TokenId id, Caret caret)
         throws BadLocationException {
-        TokenSequence<? extends JsTokenId> ts = LexUtilities.getJsTokenSequence(doc, offset);
+        TokenSequence<? extends JsTokenId> ts = LexUtilities.getTokenSequence(
+                doc, offset, language);
 
         if (ts != null) {
             ts.move(offset);
@@ -487,7 +409,8 @@ public class JsTypedTextInterceptor implements TypedTextInterceptor {
             return false;
         }
 
-        TokenSequence<? extends JsTokenId> ts = LexUtilities.getJsTokenSequence(doc, dotPos);
+        TokenSequence<? extends JsTokenId> ts = LexUtilities.getTokenSequence(
+                doc, dotPos, language);
 
         if (ts == null) {
             return false;
@@ -518,7 +441,7 @@ public class JsTypedTextInterceptor implements TypedTextInterceptor {
             return false;
         } else if ((token.id() == JsTokenId.WHITESPACE) && eol && ((dotPos - 1) > 0)) {
             // check if the caret is at the very end of the line comment
-            token = LexUtilities.getToken(doc, dotPos - 1);
+            token = LexUtilities.getToken(doc, dotPos - 1, language);
 
             if (token.id() == JsTokenId.LINE_COMMENT) {
                 return false;
@@ -559,7 +482,7 @@ public class JsTypedTextInterceptor implements TypedTextInterceptor {
             // is an unterminated string literal
             if ((token.id() == JsTokenId.WHITESPACE) && eol) {
                 if ((dotPos - 1) > 0) {
-                    token = LexUtilities.getToken(doc, dotPos - 1);
+                    token = LexUtilities.getToken(doc, dotPos - 1, language);
                     // XXX TODO use language embedding to handle this
                     insideString = (token.id() == JsTokenId.STRING);
                 }
@@ -640,12 +563,8 @@ public class JsTypedTextInterceptor implements TypedTextInterceptor {
 
             char chr = doc.getChars(firstNonWhiteFwd, 1)[0];
 
-//            if (chr == '%' && RubyUtils.isRhtmlDocument(doc)) {
-//                return true;
-//            }
-
             return ((chr == ')') || (chr == ',') || (chr == '+') || (chr == '}') || (chr == ';') ||
-               (chr == ']') || (chr == '/'));
+               (chr == ']'));
         }
     }
 
@@ -688,7 +607,8 @@ public class JsTypedTextInterceptor implements TypedTextInterceptor {
 
         boolean skipClosingBracket = false; // by default do not remove
 
-        TokenSequence<? extends JsTokenId> ts = LexUtilities.getJsTokenSequence(doc, caretOffset);
+        TokenSequence<? extends JsTokenId> ts = LexUtilities.getTokenSequence(
+                doc, caretOffset, language);
 
         if (ts == null) {
             return false;
@@ -858,7 +778,7 @@ public class JsTypedTextInterceptor implements TypedTextInterceptor {
     // XXX TODO Use embedded string sequence here and see if it
     // really is escaped. I know where those are!
     // TODO Adjust for JavaScript
-    private boolean isEscapeSequence(BaseDocument doc, int dotPos)
+    private static boolean isEscapeSequence(BaseDocument doc, int dotPos)
         throws BadLocationException {
         if (dotPos <= 0) {
             return false;
@@ -873,13 +793,10 @@ public class JsTypedTextInterceptor implements TypedTextInterceptor {
      * Returns for an opening bracket or quote the appropriate closing
      * character.
      */
-    private char matching(char bracket) {
+    private static char matching(char bracket) {
         switch (bracket) {
         case '(':
             return ')';
-
-        case '/':
-            return '/';
 
         case '[':
             return ']';
@@ -901,12 +818,33 @@ public class JsTypedTextInterceptor implements TypedTextInterceptor {
         }
     }
 
+    private static boolean isCompletableStringBoundary(Token<? extends JsTokenId> token,
+            boolean singleQuote, boolean end) {
+        if ((!end && token.id() == JsTokenId.STRING_BEGIN)
+                || (end && token.id() == JsTokenId.STRING_END)) {
+            if (singleQuote || "\"".equals(token.text().toString())) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     @MimeRegistration(mimeType = JsTokenId.JAVASCRIPT_MIME_TYPE, service = TypedTextInterceptor.Factory.class)
-    public static class Factory implements TypedTextInterceptor.Factory {
+    public static class JsFactory implements TypedTextInterceptor.Factory {
 
         @Override
         public TypedTextInterceptor createTypedTextInterceptor(org.netbeans.api.editor.mimelookup.MimePath mimePath) {
-            return new JsTypedTextInterceptor();
+            return new JsTypedTextInterceptor(JsTokenId.javascriptLanguage(), true);
+        }
+
+    }
+
+    @MimeRegistration(mimeType = JsTokenId.JSON_MIME_TYPE, service = TypedTextInterceptor.Factory.class)
+    public static class JsonFactory implements TypedTextInterceptor.Factory {
+
+        @Override
+        public TypedTextInterceptor createTypedTextInterceptor(org.netbeans.api.editor.mimelookup.MimePath mimePath) {
+            return new JsTypedTextInterceptor(JsTokenId.jsonLanguage(), false);
         }
 
     }

@@ -185,7 +185,7 @@ abstract class AbstractLines implements Lines, Runnable, ActionListener {
     public String getText(int start, int end) {
         BufferResource<CharBuffer> br = getCharBuffer(start, end - start);
         try {
-            CharBuffer cb = br.getBuffer();
+            CharBuffer cb = br == null ? null : br.getBuffer();
             String s = cb != null ? cb.toString() : new String(new char[end - start]);
             return s;
         } finally {

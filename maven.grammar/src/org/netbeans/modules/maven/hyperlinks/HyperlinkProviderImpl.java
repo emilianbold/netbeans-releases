@@ -58,6 +58,7 @@ import org.netbeans.api.editor.mimelookup.MimeRegistrations;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.api.lexer.TokenUtilities;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.xml.lexer.XMLTokenId;
@@ -188,11 +189,13 @@ public class HyperlinkProviderImpl implements HyperlinkProviderExt {
             if (fo != null && getPath(fo, text) != null) {
                 xml.movePrevious();
                 token = xml.token();
-                if (token != null && token.id() == XMLTokenId.TAG && token.text().equals(">")) {//NOI18N
+                if (token != null && token.id().equals(XMLTokenId.TAG) && TokenUtilities.equals(token.text(), ">")) {//NOI18N
                     xml.movePrevious();
                     token = xml.token();
-                    if (token != null && token.id() == XMLTokenId.TAG && token.text().equals("<module")) {//NOI18N
-                        text = text + "/pom.xml"; //NOI18N
+                    if (token != null && token.id().equals(XMLTokenId.TAG) && TokenUtilities.equals(token.text(), "<module")) {//NOI18N
+                        if (!text.endsWith("/pom.xml")) {
+                            text = text + "/pom.xml"; //NOI18N
+                        }
                     }
                 }
                 if (getPath(fo, text) != null) {

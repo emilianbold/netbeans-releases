@@ -453,4 +453,26 @@ public class TinyTest extends NbTestCase {
                               "    }\n" +
                               "}\n");
     }
+    
+    public void testFillSwitchTypeVar222372() throws Exception {
+        HintTest
+                .create()
+                .setCaretMarker('|')
+                .input("package test;\n" +
+                       "public enum Test {\n" +
+                       "    A, B, C;\n" +
+                       "    private static <T extends Enum> void t(T a) {\n" +
+                       "        sw|itch (a) {\n" +
+                       "            case A: break;\n" +
+                       "            case B: break;\n" +
+                       "            case C: break;\n" +
+                       "        }\n" +
+                       "    }\n" +
+                       "}\n",
+                       false)
+                .sourceLevel("1.7")
+                .run(Tiny.class)
+                .assertWarnings();
+    }
+
 }

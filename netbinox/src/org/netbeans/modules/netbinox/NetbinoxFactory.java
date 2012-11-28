@@ -91,6 +91,9 @@ public class NetbinoxFactory implements FrameworkFactory {
         configMap.put(Constants.FRAMEWORK_STORAGE, toFileURL(
             (String)map.get(Constants.FRAMEWORK_STORAGE)
         ));
+        if (System.getProperty("osgi.locking") == null) { // NOI18N
+            configMap.put("osgi.locking", "none"); // NOI18N
+        }
 
         Object rawBundleMap = configMap.get("felix.bootdelegation.classloaders"); // NOI18N
 

@@ -66,6 +66,10 @@ public class PseudoIdRules {
     PseudoIdRules(JSONObject pseudoRules) {
         pseudoId = ((Number)pseudoRules.get("pseudoId")).intValue(); // NOI18N
         JSONArray array = (JSONArray)pseudoRules.get("rules"); // NOI18N
+        if (array == null) {
+            // "rules" attribute has been renamed to "matches" recently
+            array = (JSONArray)pseudoRules.get("matches"); // NOI18N
+        }
         rules = new ArrayList<Rule>(array.size());
         for (Object o : array) {
             Rule rule = new Rule((JSONObject)o);

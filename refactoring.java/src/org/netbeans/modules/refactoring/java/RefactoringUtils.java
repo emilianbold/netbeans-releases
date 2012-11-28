@@ -404,17 +404,7 @@ public class RefactoringUtils {
      * @throws IOException
      */
     public static FileObject getClassPathRoot(URL url) throws IOException {
-        FileObject result = URLMapper.findFileObject(url);
-        File f;
-        try {
-            f = result != null ? null : FileUtil.normalizeFile(new File(url.toURI())); //NOI18N
-        } catch (URISyntaxException ex) {
-            throw new IOException(ex);
-        }
-        while (result == null) {
-            result = FileUtil.toFileObject(f);
-            f = f.getParentFile();
-        }
+        FileObject result = getRootFileObject(url);
         return ClassPath.getClassPath(result, ClassPath.SOURCE).findOwnerRoot(result);
     }
 
@@ -975,6 +965,21 @@ public class RefactoringUtils {
             }
         }
         return inTest;
+    }
+
+    public static FileObject getRootFileObject(URL url) throws IOException {
+        FileObject result = URLMapper.findFileObject(url);
+        File f;
+        try {
+            f = result != null ? null : FileUtil.normalizeFile(Utilities.toFile(url.toURI())); //NOI18N
+        } catch (URISyntaxException ex) {
+            throw new IOException(ex);
+        }
+        while (result == null) {
+            result = FileUtil.toFileObject(f);
+            f = f.getParentFile();
+        }
+        return result;
     }
 
     private RefactoringUtils() {

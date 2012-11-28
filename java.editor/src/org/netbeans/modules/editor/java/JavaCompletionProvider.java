@@ -4814,7 +4814,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                                 toAdd = param;
                             if (varArgs && !parIt.hasNext() && param.getKind() == TypeKind.ARRAY)
                                 toAdd = ((ArrayType)param).getComponentType();
-                            if (toAdd != null && ret.add(toAdd)) {
+                            if (toAdd != null && ret.add(toAdd) && toAdd.getKind() != TypeKind.TYPEVAR) {
                                 TypeMirror toRemove = null;
                                 for (TypeMirror tm : ret) {
                                     if (tm != toAdd) {

@@ -43,10 +43,7 @@
 window.addEventListener('load', function() {
     I18n.pageTitle();
     // texts
-    I18n.attribute('closePresetCustomizer', 'title');
-    I18n.element('title');
-    I18n.element('perex');
-    I18n.element('sizes');
+    I18n.className('i18n');
     // table
     I18n.elements(document.getElementById('presetCustomizerTable').getElementsByTagName('thead')[0].getElementsByTagName('th'));
     // preset buttons
@@ -57,4 +54,5 @@ window.addEventListener('load', function() {
     // main buttons
     I18n.elementAttribute('presetCustomizerOk', 'title');
     I18n.elementAttribute('presetCustomizerCancel', 'title');
+    I18n.elementAttribute('resetWarnings', 'title');
 }, false);

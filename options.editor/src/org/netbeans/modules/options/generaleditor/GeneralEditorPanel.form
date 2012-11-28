@@ -77,7 +77,7 @@
               <Component id="jSeparator1" max="32767" attributes="0"/>
           </Group>
           <Group type="102" attributes="0">
-              <Component id="lCamelCaseBehavior1" min="-2" max="-2" attributes="0"/>
+              <Component id="lBracesMatching" min="-2" max="-2" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
               <Component id="jSeparator6" max="32767" attributes="0"/>
           </Group>
@@ -125,7 +125,7 @@
               </Group>
               <EmptySpace type="separate" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="1" attributes="0">
-                  <Component id="lCamelCaseBehavior1" min="-2" max="-2" attributes="0"/>
+                  <Component id="lBracesMatching" min="-2" max="-2" attributes="0"/>
                   <Component id="jSeparator6" min="-2" pref="10" max="-2" attributes="0"/>
               </Group>
               <EmptySpace min="-2" pref="3" max="-2" attributes="0"/>
@@ -212,9 +212,11 @@
     </Component>
     <Component class="javax.swing.JSeparator" name="jSeparator1">
     </Component>
-    <Component class="javax.swing.JLabel" name="lCamelCaseBehavior1">
+    <Component class="javax.swing.JLabel" name="lBracesMatching">
       <Properties>
-        <Property name="text" type="java.lang.String" value="Braces Matching"/>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/options/generaleditor/Bundle.properties" key="BRACES_MATCHING" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
       </Properties>
     </Component>
     <Component class="javax.swing.JCheckBox" name="cbShowBraceOutline">
@@ -248,9 +250,6 @@
     </Component>
     <Component class="javax.swing.JLabel" name="lEditorSearchType">
       <Properties>
-        <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
-          <ComponentRef name="default"/>
-        </Property>
         <Property name="text" type="java.lang.String" value="Editor Search Type:"/>
       </Properties>
     </Component>

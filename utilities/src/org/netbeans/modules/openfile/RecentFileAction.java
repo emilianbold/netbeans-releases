@@ -45,14 +45,11 @@
 package org.netbeans.modules.openfile;
 
 import java.awt.Component;
-import java.awt.Container;
-import java.awt.EventQueue;
 import java.awt.MouseInfo;
 import java.awt.Point;
 import java.awt.PointerInfo;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
-import java.beans.BeanInfo;
 import java.io.File;
 import java.util.List;
 import javax.swing.*;
@@ -62,10 +59,7 @@ import javax.swing.event.PopupMenuEvent;
 import javax.swing.event.PopupMenuListener;
 import org.netbeans.modules.openfile.RecentFiles.HistoryItem;
 import org.openide.awt.*;
-import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.loaders.DataObject;
-import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
@@ -202,54 +196,8 @@ public class RecentFileAction extends AbstractAction
         };
         jmi.putClientProperty(PATH_PROP, path);
         jmi.addActionListener(this);
-        loadIcon(hItem, jmi);
+        jmi.setIcon(hItem.getIcon());
         return jmi;
-    }
-
-    private void loadIcon(final HistoryItem hItem, JMenuItem jmi) {
-        String path = hItem.getPath();
-        loadIcon(path, jmi);
-    }
-
-    private void loadIcon(final String path, final JMenuItem jmi) {
-        RP.post(new Runnable() {
-            @Override
-            public void run() {
-                final Icon i = findIconForPath(path);
-                EventQueue.invokeLater(new Runnable() {
-                    @Override
-                    public void run() {
-                        if (i == null && jmi != null) {
-                            jmi.setEnabled(false);
-                        } else if (jmi != null) {
-                            jmi.setIcon(i);
-                            jmi.firePropertyChange(
-                                    JMenuItem.ICON_CHANGED_PROPERTY, 0, 0);
-                        }
-                    }
-                });
-            }
-        });
-    }
-
-    private Icon findIconForPath(String path) {
-        FileObject fo = RecentFiles.convertPath2File(path);
-        final Icon i;
-        if (fo == null) {
-            i = null;
-        } else {
-            DataObject dObj;
-            try {
-                dObj = DataObject.find(fo);
-            } catch (DataObjectNotFoundException e) {
-                dObj = null;
-            }
-            i = dObj == null
-                    ? null
-                    : new ImageIcon(dObj.getNodeDelegate().getIcon(
-                    BeanInfo.ICON_COLOR_16x16));
-        }
-        return i;
     }
 
     /** Workaround for JDK bug 6663119, it ensures that first item in submenu
