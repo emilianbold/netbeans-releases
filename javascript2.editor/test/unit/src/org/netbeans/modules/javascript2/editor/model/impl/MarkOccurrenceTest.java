@@ -578,6 +578,10 @@ public class MarkOccurrenceTest extends JsTestBase {
     public void testIssue218136_02() throws Exception {
         checkOccurrences("testfiles/markoccurences/issue218136.js", "    Player.prototype.setS^tatic = function(v){ static_int = v; };", true);
     }
+    
+    public void testIssue218136_03() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue218136.js", "var stat^ic_int = 0;", true);
+    }
 
 //    public void testIssue221228_02() throws Exception {
 //        checkOccurrences("testfiles/markoccurences/issue221228.js", "a.h^i(); // rename hi here", true);
