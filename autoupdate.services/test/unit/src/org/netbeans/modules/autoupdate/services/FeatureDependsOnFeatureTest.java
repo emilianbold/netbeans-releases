@@ -52,6 +52,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import org.netbeans.Module;
 import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.autoupdate.updateprovider.InstalledModuleProvider;
@@ -63,7 +64,7 @@ import org.openide.modules.SpecificationVersion;
 import org.openide.util.Lookup;
 
 /**
- * @author Jaroslav Tulach
+ * @author Jaroslav Tulach, Jiri Rechtacek
  */
 public class FeatureDependsOnFeatureTest extends NbTestCase {
 
@@ -121,18 +122,23 @@ public class FeatureDependsOnFeatureTest extends NbTestCase {
 
             Set<String> deps = new HashSet<String>(items.size());
             for (String id : items.keySet()) {
-                String dep;
+                String dep = null;
                 if (!pilotName.equals(id)) {
                     UpdateItem item = items.get(id);
                     assertNotNull("Impl of " + item + " available", Trampoline.SPI.impl(item));
                     UpdateItemImpl itemImpl = Trampoline.SPI.impl(item);
                     assertTrue("Impl of " + item + "is ModuleItem", itemImpl instanceof ModuleItem);
                     ModuleItem moduleItem = (ModuleItem) itemImpl;
-                    dep = moduleItem.getModuleInfo().getCodeNameBase() + " > " + moduleItem.getSpecificationVersion();
+                    Module m = Utilities.toModule(moduleItem.getModuleInfo());
+                    if (m != null && m.getProblems().isEmpty()) {
+                        dep = moduleItem.getModuleInfo().getCodeNameBase() + " > " + moduleItem.getSpecificationVersion();
+                    }
                 } else {
                     dep = higherDep;
                 }
-                deps.add(dep);
+                if (dep != null) {
+                    deps.add(dep);
+                }
             }
             Map<String, UpdateItem> res = InstalledModuleProvider.getDefault().getUpdateItems();
             ModuleInfo info = pilotModuleItem.getModuleInfo();
@@ -187,12 +193,19 @@ public class FeatureDependsOnFeatureTest extends NbTestCase {
         assertNotNull("A feature found.", UpdateManager.getDefault().getUpdateUnits(UpdateManager.TYPE.FEATURE));
         List<UpdateUnit> units = UpdateManager.getDefault().getUpdateUnits(UpdateManager.TYPE.FEATURE);
         assertEquals("Two features there.", 2, units.size());
-        UpdateUnit feature = units.get(0);
-        if (feature.getCodeName().equals("testFeatureVsStandaloneModules")) {
-            feature = units.get(1);
+        UpdateUnit testTransitiveFeature;
+        UpdateUnit testFeatureVsStandaloneModulesFeature;
+        if (units.get(0).equals("testFeatureVsStandaloneModules")) {
+            testTransitiveFeature = units.get(0);
+            testFeatureVsStandaloneModulesFeature = units.get(1);
+        } else {
+            testTransitiveFeature = units.get(1);
+            testFeatureVsStandaloneModulesFeature = units.get(0);
         }
-        assertNotNull(feature + " is installed.", feature.getInstalled());
-        assertFalse(feature + " has some available updates.", feature.getAvailableUpdates().isEmpty());
+        assertNotNull(testFeatureVsStandaloneModulesFeature + " is installed.", testFeatureVsStandaloneModulesFeature.getInstalled());
+        assertFalse(testFeatureVsStandaloneModulesFeature + " has some available updates.", testFeatureVsStandaloneModulesFeature.getAvailableUpdates().isEmpty());
+        assertNotNull(testTransitiveFeature + " is installed.", testTransitiveFeature.getInstalled());
+        assertFalse(testTransitiveFeature + " has some available updates.", testTransitiveFeature.getAvailableUpdates().isEmpty());
     }
 
     final static class HackedModuleInfo extends ModuleInfo {
