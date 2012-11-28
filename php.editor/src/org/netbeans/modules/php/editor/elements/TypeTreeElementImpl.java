@@ -118,7 +118,7 @@ final class TypeTreeElementImpl  implements TreeElement<TypeElement> {
         final HashSet<TreeElement<TypeElement>> directTypes = new HashSet<TreeElement<TypeElement>>();
 
         Index index = getIndex();
-        LinkedHashSet<TypeElement> directInheritedByTypes = index.getDirectInheritedByTypes(delegate);
+        Set<TypeElement> directInheritedByTypes = index.getDirectInheritedByTypes(delegate);
         for (TypeElement typeElement : directInheritedByTypes) {
             directTypes.add(new TypeTreeElementImpl(typeElement, preferredTypes, superTypesAsChildren));
         }
