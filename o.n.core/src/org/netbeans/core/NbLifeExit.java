@@ -41,9 +41,6 @@
  */
 package org.netbeans.core;
 
-import java.awt.EventQueue;
-import java.awt.SecondaryLoop;
-import java.awt.Toolkit;
 import java.io.IOException;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
