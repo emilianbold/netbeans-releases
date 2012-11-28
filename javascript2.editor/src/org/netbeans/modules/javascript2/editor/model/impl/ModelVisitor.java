@@ -123,8 +123,18 @@ public class ModelVisitor extends PathNodeVisitor {
                 Identifier name = ModelElementFactory.create(parserResult, (IdentNode)accessNode.getBase());
                 if (name != null) {
                     List<Identifier> fqname = new ArrayList<Identifier>();
-                    fqname.add(name);
-                    fromAN = ModelUtils.getJsObject(modelBuilder, fqname, false);
+                    fqname.add(name); 
+                    Collection<? extends JsObject> variables = ModelUtils.getVariables(modelBuilder.getCurrentDeclarationScope());
+                    fromAN = null;
+                    for(JsObject variable : variables) {
+                        if (variable.getName().equals(name.getName())) {
+                            fromAN = (JsObjectImpl)variable;
+                            break;
+                        }
+                    }
+                    if (fromAN == null) {
+                        fromAN = ModelUtils.getJsObject(modelBuilder, fqname, false);
+                    }
                     fromAN.addOccurrence(name.getOffsetRange());
                 }
             } else {
