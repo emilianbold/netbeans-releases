@@ -12,15 +12,23 @@ import com.tasktop.c2c.server.profile.domain.build.HudsonStatus;
 import com.tasktop.c2c.server.profile.domain.build.JobDetails;
 import com.tasktop.c2c.server.profile.domain.project.Profile;
 import com.tasktop.c2c.server.profile.domain.project.Project;
+import com.tasktop.c2c.server.profile.domain.project.ProjectRelationship;
+import com.tasktop.c2c.server.profile.domain.project.ProjectsQuery;
 import com.tasktop.c2c.server.scm.domain.ScmRepository;
 import com.tasktop.c2c.server.tasks.domain.RepositoryConfiguration;
 import com.tasktop.c2c.server.tasks.domain.SavedTaskQuery;
 import java.net.PasswordAuthentication;
-import java.util.Collections;
+import java.util.Arrays;
 import java.util.List;
 import javax.ws.rs.core.MediaType;
 import org.netbeans.libs.odcs.jersey.wrappers.ActivityWrapper;
 import org.netbeans.libs.odcs.jersey.wrappers.ProfileWrapper;
+import org.netbeans.libs.odcs.jersey.wrappers.ProjectWrapper;
+import org.netbeans.libs.odcs.jersey.wrappers.ProjectQueryResultWrapper;
+import org.netbeans.libs.odcs.jersey.wrappers.QueryWrapper;
+import org.netbeans.libs.odcs.jersey.wrappers.RepositoryConfigurationWrapper;
+import org.netbeans.libs.odcs.jersey.wrappers.RepositoryWrapper;
+import org.netbeans.libs.odcs.jersey.wrappers.WatchingProjectWrapper;
 import org.netbeans.modules.odcs.client.api.ODCSClient;
 import org.netbeans.modules.odcs.client.api.ODCSException;
 
@@ -63,83 +71,130 @@ public class ODCSJerseyClient implements ODCSClient {
 
     @Override
     public List<Project> getMyProjects() throws ODCSException {
-        throw new UnsupportedOperationException("Not supported yet.");
+        WebResource root = client.resource(url).path("api/projects/search");
+        ProjectsQuery query = new ProjectsQuery(ProjectRelationship.MEMBER, null);
+        ProjectQueryResultWrapper result = root
+                .type(MediaType.APPLICATION_JSON_TYPE)
+                .accept(MediaType.APPLICATION_JSON)
+                .post(ProjectQueryResultWrapper.class, query);
+        return result.queryResult.getResultPage();
     }
 
     @Override
-    public Project getProjectById(String projectId) throws ODCSException {
-        throw new UnsupportedOperationException("Not supported yet.");
+    public Project getProjectById (String projectId) throws ODCSException {
+        WebResource root = client.resource(url).path("api/projects/").path(projectId);
+        ProjectWrapper wrapper = root.accept(MediaType.APPLICATION_JSON).get(ProjectWrapper.class);
+        return wrapper.project;
     }
 
     @Override
     public List<ProjectActivity> getRecentActivities(String projectId) throws ODCSException {
-        WebResource root = client.resource(url + "api/activity/"+ projectId);
+        WebResource root = client.resource(url).path("api/activity/").path(projectId);
         ActivityWrapper wrapper = root.accept(MediaType.APPLICATION_JSON).get(ActivityWrapper.class);
-        if(wrapper.commits == null) {
-            return Collections.emptyList();
-        }
-            return Collections.emptyList();
-//        return Arrays.asList(wrapper.commits);
+        return Arrays.asList(wrapper.projectActivityList);
     }
 
     @Override
     public List<ProjectActivity> getRecentShortActivities(String projectId) throws ODCSException {
-        throw new UnsupportedOperationException("Not supported yet.");
+        WebResource root = client.resource(url).path("api/activity/").path(projectId).path("short");
+        ActivityWrapper wrapper = root.accept(MediaType.APPLICATION_JSON).get(ActivityWrapper.class);
+        return Arrays.asList(wrapper.projectActivityList);
     }
 
     @Override
     public List<ScmRepository> getScmRepositories(String projectId) throws ODCSException {
-        throw new UnsupportedOperationException("Not supported yet.");
+        WebResource root = client.resource(url).path("s").path(projectId).path("scm/api/repository");
+        RepositoryWrapper wrapper = root.accept(MediaType.APPLICATION_JSON).get(RepositoryWrapper.class);
+        return Arrays.asList(wrapper.scmRepositoryList);
     }
 
     @Override
     public boolean isWatchingProject(String projectId) throws ODCSException {
-        throw new UnsupportedOperationException("Not supported yet.");
+        WebResource root = client.resource(url).path("api/projects/").path(projectId).path("watch");
+        return root.accept(MediaType.APPLICATION_JSON).get(WatchingProjectWrapper.class).isWatching;
     }
 
     @Override
     public List<Project> searchProjects(String pattern) throws ODCSException {
-        throw new UnsupportedOperationException("Not supported yet.");
+        WebResource root = client.resource(url).path("api/projects/search");
+        ProjectsQuery query = new ProjectsQuery(pattern, null);
+        ProjectQueryResultWrapper result = root
+                .type(MediaType.APPLICATION_JSON_TYPE)
+                .accept(MediaType.APPLICATION_JSON)
+                .post(ProjectQueryResultWrapper.class, query);
+        return result.queryResult.getResultPage();
     }
 
     @Override
     public void unwatchProject(String projectId) throws ODCSException {
-        throw new UnsupportedOperationException("Not supported yet.");
+        WebResource root = client.resource(url).path("api/projects/").path(projectId).path("unwatch");
+        root.post();
     }
 
     @Override
     public void watchProject(String projectId) throws ODCSException {
-        throw new UnsupportedOperationException("Not supported yet.");
+        WebResource root = client.resource(url).path("api/projects/").path(projectId).path("watch");
+        root.post();
     }
 
     @Override
     public List<Project> getWatchedProjects () throws ODCSException {
-        throw new UnsupportedOperationException("Not supported yet.");
+        WebResource root = client.resource(url).path("api/projects/search");
+        ProjectsQuery query = new ProjectsQuery(ProjectRelationship.WATCHER, null);
+        ProjectQueryResultWrapper result = root
+                .type(MediaType.APPLICATION_JSON_TYPE)
+                .accept(MediaType.APPLICATION_JSON)
+                .post(ProjectQueryResultWrapper.class, query);
+        return result.queryResult.getResultPage();
     }
 
     @Override
     public Project createProject (Project project) throws ODCSException {
-        throw new UnsupportedOperationException("Not supported yet.");
+        WebResource root = client.resource(url).path("api/profile/project");
+        ProjectWrapper result = root
+                .type(MediaType.APPLICATION_JSON_TYPE)
+                .accept(MediaType.APPLICATION_JSON)
+                .post(ProjectWrapper.class, project);
+        Project p = result.project;
+        if (result.project.getProjectServices() == null) {
+            p = getProjectById(result.project.getIdentifier());
+        }
+        return p;
     }
     
     @Override
     public SavedTaskQuery createQuery(String projectId, com.tasktop.c2c.server.tasks.domain.SavedTaskQuery query) throws ODCSException {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        WebResource root = client.resource(url).path("s").path(projectId).path("tasks/task/query");
+        QueryWrapper result = root
+                .type(MediaType.APPLICATION_JSON_TYPE)
+                .accept(MediaType.APPLICATION_JSON)
+                .post(QueryWrapper.class, query);
+        return result.savedTaskQuery;
     }
 
     @Override
     public SavedTaskQuery updateQuery(String projectId, com.tasktop.c2c.server.tasks.domain.SavedTaskQuery query) throws ODCSException {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        WebResource root = client.resource(url).path("s").path(projectId)
+                .path("tasks/task/query").path(String.valueOf(query.getId()));
+        QueryWrapper result = root
+                .type(MediaType.APPLICATION_JSON_TYPE)
+                .accept(MediaType.APPLICATION_JSON)
+                .post(QueryWrapper.class, query);
+        return result.savedTaskQuery;
     }
 
     @Override
     public void deleteQuery(String projectId, Integer queryId) throws ODCSException {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        WebResource root = client.resource(url).path("s").path(projectId)
+                .path("tasks/task/query").path(String.valueOf(queryId));
+        root.delete();
     }
 
     @Override
     public RepositoryConfiguration getRepositoryContext(String projectId) throws ODCSException {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        WebResource root = client.resource(url).path("s").path(projectId).path("tasks/repositoryContext");
+        RepositoryConfigurationWrapper wrapper = root.accept(MediaType.APPLICATION_JSON).get(RepositoryConfigurationWrapper.class);
+        return wrapper.repositoryConfiguration;
     }
 
     private Client getClient() {

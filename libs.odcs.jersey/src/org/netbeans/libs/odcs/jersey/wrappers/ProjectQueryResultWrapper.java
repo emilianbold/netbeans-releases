@@ -41,12 +41,13 @@
  */
 package org.netbeans.libs.odcs.jersey.wrappers;
 
+import com.tasktop.c2c.server.common.service.domain.QueryResult;
 import com.tasktop.c2c.server.profile.domain.project.Project;
 
 /**
  *
- * @author tomas
+ * @author Ondrej Vrabec
  */
-public class ProjectWrapper {
-    public Project project;
+public class ProjectQueryResultWrapper {
+    public QueryResult<Project> queryResult;
 }

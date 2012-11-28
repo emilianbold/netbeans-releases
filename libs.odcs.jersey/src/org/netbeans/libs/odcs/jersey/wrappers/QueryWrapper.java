@@ -41,12 +41,12 @@
  */
 package org.netbeans.libs.odcs.jersey.wrappers;
 
-import com.tasktop.c2c.server.profile.domain.project.Project;
+import com.tasktop.c2c.server.tasks.domain.SavedTaskQuery;
 
 /**
  *
- * @author tomas
+ * @author Ondrej Vrabec
  */
-public class ProjectWrapper {
-    public Project project;
+public class QueryWrapper {
+    public SavedTaskQuery savedTaskQuery;
 }
