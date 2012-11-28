@@ -175,8 +175,8 @@ public class InstantRenamePerformer implements DocumentListener, KeyListener {
         List<MutablePositionRegion> regions = new ArrayList<MutablePositionRegion>();
 
         for (Token h : highlights) {
-            // type parameter name is represented as html tag -> ignore surrounding <> in rename
-            int delta = h.id() == JavadocTokenId.HTML_TAG ? 1 : 0;
+            // type parameter name is represented as ident -> ignore surrounding <> in rename
+            int delta = h.id() == JavadocTokenId.IDENT && h.text().charAt(0) == '<' && h.text().charAt(h.length() - 1) == '>' ? 1 : 0;
             Position start = NbDocument.createPosition(doc, h.offset(null) + delta, Bias.Backward);
             Position end = NbDocument.createPosition(doc, h.offset(null) + h.length() - delta, Bias.Forward);
             MutablePositionRegion current = new MutablePositionRegion(start, end);
