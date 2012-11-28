@@ -85,7 +85,6 @@ import org.netbeans.modules.mylyn.util.GetAttachmentCommand;
 import org.netbeans.modules.mylyn.util.PostAttachmentCommand;
 import org.netbeans.modules.mylyn.util.SubmitCommand;
 import org.netbeans.modules.odcs.tasks.C2C;
-import org.netbeans.modules.odcs.tasks.issue.Bundle;
 import org.netbeans.modules.odcs.tasks.repository.C2CRepository;
 import org.netbeans.modules.odcs.tasks.spi.C2CData;
 import org.netbeans.modules.odcs.tasks.spi.C2CExtender;
@@ -385,7 +384,7 @@ public class C2CIssue {
 
     public Date getCreatedDate() {
         String value = getFieldValue(IssueField.CREATED);
-        if(value != null && !value.trim().equals("")) {
+        if(value != null && !value.trim().equals("")) { // NOI18N
             return C2CUtil.parseDate(value);
         }
         return null;
@@ -483,7 +482,8 @@ public class C2CIssue {
 
     public boolean isFinished() {
         String value = getFieldValue(IssueField.STATUS);
-        return Arrays.asList("RESOLVED", "VERIFIED", "CLOSED").contains(value);
+        // XXX shouldn't this be resolved via some repository settings?
+        return Arrays.asList("RESOLVED", "VERIFIED", "CLOSED").contains(value); // NOI18N
     }
 
     public boolean refresh() {
@@ -501,7 +501,7 @@ public class C2CIssue {
 
         // resolved attrs
         if(closeAsFixed) {
-            C2C.LOG.log(Level.FINER, "resolving issue #{0} as fixed", new Object[]{getID()});
+            C2C.LOG.log(Level.FINER, "resolving issue #{0} as fixed", new Object[]{getID()}); // NOI18N
             resolve(RESOLVE_FIXED); // XXX constant?
         }
         if(comment != null) {
@@ -513,7 +513,7 @@ public class C2CIssue {
 
     public void addComment(String comment) {
         if(comment != null) {
-            C2C.LOG.log(Level.FINER, "adding comment [{0}] to issue #{1}", new Object[]{comment, getID()});
+            C2C.LOG.log(Level.FINER, "adding comment [{0}] to issue #{1}", new Object[]{comment, getID()}); // NOI18N
             TaskAttribute ta = data.getRoot().createMappedAttribute(TaskAttribute.COMMENT_NEW);
             ta.setValue(comment);
         }
@@ -598,14 +598,14 @@ public class C2CIssue {
             if(!submitCmd.hasFailed()) {
                 assert rr != null;
                 String id = rr.getTaskId();
-                C2C.LOG.log(Level.FINE, "created issue #{0}", id);
+                C2C.LOG.log(Level.FINE, "created issue #{0}", id); // NOI18N
                 refresh(id, true);
             } else {
-                C2C.LOG.log(Level.FINE, "submiting failed");
+                C2C.LOG.log(Level.FINE, "submiting failed"); // NOI18N
                 if(rr != null) {
-                    C2C.LOG.log(Level.FINE, "repository response {0}", rr.getReposonseKind());
-                } else {
-                    C2C.LOG.log(Level.FINE, "no repository response available");
+                    C2C.LOG.log(Level.FINE, "repository response {0}", rr.getReposonseKind()); // NOI18N
+                } else { 
+                    C2C.LOG.log(Level.FINE, "no repository response available"); // NOI18N
                 }
             }
         }
@@ -869,7 +869,7 @@ public class C2CIssue {
         // XXX 
         // XXX gettaskdata the same for bugzilla, jira, c2c, ...
         try {
-            C2C.LOG.log(Level.FINE, "refreshing issue #{0}", id);
+            C2C.LOG.log(Level.FINE, "refreshing issue #{0}", id); // NOI18N
             TaskData td = C2CUtil.getTaskData(repository, id);
             if (td == null) {
                 return false;
@@ -902,7 +902,7 @@ public class C2CIssue {
         if(f == IssueField.PRODUCT) {
             handleProductChange(a);
         }
-        C2C.LOG.log(Level.FINER, "setting value [{0}] on field [{1}]", new Object[]{value, f.getKey()}) ;
+        C2C.LOG.log(Level.FINER, "setting value [{0}] on field [{1}]", new Object[]{value, f.getKey()}); // NOI18N
         a.setValue(value);
     }
 
