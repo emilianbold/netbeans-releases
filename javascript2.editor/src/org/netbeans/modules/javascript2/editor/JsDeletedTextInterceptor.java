@@ -88,73 +88,78 @@ public class JsDeletedTextInterceptor implements DeletedTextInterceptor {
         BaseDocument doc = (BaseDocument) context.getDocument();
 
         int dotPos = context.getOffset() - 1;
-        // FIXME
         char ch = context.getText().charAt(0);
         JTextComponent target = context.getComponent();
-        switch (ch) {
-        case ' ': {
-            if (comments) {
-                // Backspacing over "// " ? Delete the "//" too!
-                TokenSequence<? extends JsTokenId> ts = LexUtilities.getPositionedSequence(
-                        doc, dotPos, language);
-                if (ts != null && ts.token().id() == JsTokenId.LINE_COMMENT) {
-                    if (ts.offset() == dotPos-2) {
-                        doc.remove(dotPos-2, 2);
-                        target.getCaret().setDot(dotPos-2);
 
-                        return;
+        doc.readLock();
+        try {
+            switch (ch) {
+            case ' ': {
+                if (comments) {
+                    // Backspacing over "// " ? Delete the "//" too!
+                    TokenSequence<? extends JsTokenId> ts = LexUtilities.getPositionedSequence(
+                            doc, dotPos, language);
+                    if (ts != null && ts.token().id() == JsTokenId.LINE_COMMENT) {
+                        if (ts.offset() == dotPos-2) {
+                            doc.remove(dotPos-2, 2);
+                            target.getCaret().setDot(dotPos-2);
+
+                            return;
+                        }
                     }
                 }
-            }
-            break;
-        }
-
-        case '{':
-        case '(':
-        case '[': { // and '{' via fallthrough
-            char tokenAtDot = LexUtilities.getTokenChar(doc, dotPos, language);
-
-            if (((tokenAtDot == ']') &&
-                    (LexUtilities.getTokenBalance(doc, JsTokenId.BRACKET_LEFT_BRACKET, JsTokenId.BRACKET_RIGHT_BRACKET, dotPos, language) != 0)) ||
-                    ((tokenAtDot == ')') &&
-                    (LexUtilities.getTokenBalance(doc, JsTokenId.BRACKET_LEFT_PAREN, JsTokenId.BRACKET_RIGHT_PAREN, dotPos, language) != 0)) ||
-                    ((tokenAtDot == '}') &&
-                    (LexUtilities.getTokenBalance(doc, JsTokenId.BRACKET_LEFT_CURLY, JsTokenId.BRACKET_RIGHT_CURLY, dotPos, language) != 0))) {
-                doc.remove(dotPos, 1);
-            }
-            break;
-        }
-
-        case '/': {
-            if (comments) {
-                // Backspacing over "//" ? Delete the whole "//"
-                TokenSequence<? extends JsTokenId> ts = LexUtilities.getPositionedSequence(
-                        doc, dotPos, language);
-                if (ts != null && ts.token().id() == JsTokenId.REGEXP_BEGIN) {
-                    if (ts.offset() == dotPos-1) {
-                        doc.remove(dotPos-1, 1);
-                        target.getCaret().setDot(dotPos-1);
-
-                        return;
-                    }
-                }
-            }
-            // Fallthrough for match-deletion
-        }
-        case '\'':
-            if (!singleQuote) {
                 break;
             }
-        case '\"': {
-            char[] match = doc.getChars(dotPos, 1);
 
-            if ((match != null) && (match[0] == ch)) {
-                doc.remove(dotPos, 1);
+            case '{':
+            case '(':
+            case '[': { // and '{' via fallthrough
+                char tokenAtDot = LexUtilities.getTokenChar(doc, dotPos, language);
+
+                if (((tokenAtDot == ']') &&
+                        (LexUtilities.getTokenBalance(doc, JsTokenId.BRACKET_LEFT_BRACKET, JsTokenId.BRACKET_RIGHT_BRACKET, dotPos, language) != 0)) ||
+                        ((tokenAtDot == ')') &&
+                        (LexUtilities.getTokenBalance(doc, JsTokenId.BRACKET_LEFT_PAREN, JsTokenId.BRACKET_RIGHT_PAREN, dotPos, language) != 0)) ||
+                        ((tokenAtDot == '}') &&
+                        (LexUtilities.getTokenBalance(doc, JsTokenId.BRACKET_LEFT_CURLY, JsTokenId.BRACKET_RIGHT_CURLY, dotPos, language) != 0))) {
+                    doc.remove(dotPos, 1);
+                }
+                break;
             }
-            break;
-        } // TODO: Test other auto-completion chars, like %q-foo-
-        default:
-            break;
+
+            case '/': {
+                if (comments) {
+                    // Backspacing over "//" ? Delete the whole "//"
+                    TokenSequence<? extends JsTokenId> ts = LexUtilities.getPositionedSequence(
+                            doc, dotPos, language);
+                    if (ts != null && ts.token().id() == JsTokenId.REGEXP_BEGIN) {
+                        if (ts.offset() == dotPos-1) {
+                            doc.remove(dotPos-1, 1);
+                            target.getCaret().setDot(dotPos-1);
+
+                            return;
+                        }
+                    }
+                }
+                // Fallthrough for match-deletion
+            }
+            case '\'':
+                if (!singleQuote) {
+                    break;
+                }
+            case '\"': {
+                char[] match = doc.getChars(dotPos, 1);
+
+                if ((match != null) && (match[0] == ch)) {
+                    doc.remove(dotPos, 1);
+                }
+                break;
+            } // TODO: Test other auto-completion chars, like %q-foo-
+            default:
+                break;
+            }
+        } finally {
+            doc.readUnlock();
         }
     }
 
