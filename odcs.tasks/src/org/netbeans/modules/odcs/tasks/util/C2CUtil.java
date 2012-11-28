@@ -140,13 +140,15 @@ public class C2CUtil {
         ta = rta.createMappedAttribute(C2CData.ATTR_OWNER);
         ta = rta.createMappedAttribute(C2CData.ATTR_VERSION);
         ta = rta.createMappedAttribute(C2CData.ATTR_ESTIMATE_WITH_UNITS);
-        ta = rta.createMappedAttribute(C2CData.ATTR_REPORTER);
         ta = rta.createMappedAttribute(C2CData.ATTR_CC);
         ta = rta.createMappedAttribute(C2CData.ATTR_NEWCC);
         ta = rta.createMappedAttribute(C2CData.ATTR_PARENT);
         ta = rta.createMappedAttribute(C2CData.ATTR_SUBTASK);
         ta = rta.createMappedAttribute(C2CData.ATTR_NEWCOMMENT);
 
+        ta = rta.createMappedAttribute(C2CData.ATTR_REPORTER);
+        ta.setValue(taskRepository.getUserName());
+        
         return data;
     }
      

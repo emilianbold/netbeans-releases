@@ -3,12 +3,12 @@
    <type>org.netbeans.modules.apisupport.project</type>
    <configuration>
        <data xmlns="http://www.netbeans.org/ns/nb-module-project/2">
-           <code-name-base>com.tasktop.c2c.server.scm.api</code-name-base>
+           <code-name-base>com.tasktop.commons.tasks.core</code-name-base>
            <module-dependencies/>
            <public-packages/>
            <class-path-extension>
-               <runtime-relative-path>com-tasktop-c2c-server-scm-api.jar</runtime-relative-path>
-                <binary-origin>external/com.tasktop.c2c.server.scm.api_1.1.0.20121113-105133.jar</binary-origin>
+               <runtime-relative-path>com-tasktop-commons-tasks-core.jar</runtime-relative-path>
+                <binary-origin>external/com.tasktop.commons.tasks.core_2.6.0.20121122-0234-SNAPSHOT.jar</binary-origin>
             </class-path-extension>
         </data>
     </configuration>
