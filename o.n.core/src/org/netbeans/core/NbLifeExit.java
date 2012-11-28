@@ -41,6 +41,9 @@
  */
 package org.netbeans.core;
 
+import java.awt.EventQueue;
+import java.awt.SecondaryLoop;
+import java.awt.Toolkit;
 import java.io.IOException;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
@@ -108,9 +111,12 @@ final class NbLifeExit implements Runnable {
                 doApproved(type == 4, status);
                 break;
             case 5:
-                onExit.countDown();
-                if (!Boolean.getBoolean("netbeans.close.no.exit")) { // NOI18N
-                    TopSecurityManager.exit(status);
+                try {
+                    if (!Boolean.getBoolean("netbeans.close.no.exit")) { // NOI18N
+                        TopSecurityManager.exit(status);
+                    }
+                } finally {
+                    onExit.countDown();
                 }
                 break;
             default:

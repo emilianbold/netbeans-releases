@@ -58,6 +58,7 @@ import org.netbeans.ProxyURLStreamHandlerFactory;
 import org.netbeans.Stamps;
 import org.netbeans.Util;
 import org.netbeans.core.startup.layers.SystemFileSystem;
+import org.openide.LifecycleManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.Repository;
@@ -326,6 +327,8 @@ public final class Main extends Object {
     org.netbeans.JarClassLoader.saveArchive();
     // start to store all caches after 15s
     Stamps.getModulesJARs().flush(15000);
+    // initialize life-cycle manager
+    LifecycleManager.getDefault();
   }
     private static void deleteRec(File f) throws IOException {
         if (f.isDirectory()) {
