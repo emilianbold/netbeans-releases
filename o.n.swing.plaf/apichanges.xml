@@ -64,7 +64,7 @@ made subject to such option by the copyright holder.
             <p>New look and feel customizations for Windows 8
             </p>
         </description>
-        <class package="org.netbeans.swing.plaf.windows8" name="Windows8LFCustoms"/>
+        <!--<class package="org.netbeans.swing.plaf.windows8" name="Windows8LFCustoms"/>-->
     </change>
     <change id="lfcustoms-color-functions">
         <api name="plaf"/>
