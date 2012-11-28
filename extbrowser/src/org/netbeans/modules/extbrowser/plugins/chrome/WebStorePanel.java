@@ -41,7 +41,11 @@
  */
 package org.netbeans.modules.extbrowser.plugins.chrome;
 
+import java.awt.Dimension;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.util.logging.Logger;
+
 import org.openide.util.NbBundle;
 
 /**
@@ -52,18 +56,48 @@ class WebStorePanel extends javax.swing.JPanel {
 
     private static final long serialVersionUID = 6387325958428583652L;
     static final Logger LOGGER = Logger.getLogger(WebStorePanel.class.getName());
-
-
-    WebStorePanel(boolean update) {
+    
+    WebStorePanel(Runnable runnable) {
         initComponents();
-        String info;
-        if (update) {
-            info = NbBundle.getMessage(WebStorePanel.class, "TXT_WebStoreUpdate");
-        } else {
-            info = NbBundle.getMessage(WebStorePanel.class, "TXT_WebStoreInstall");
-        }
-        myEditorPane.setText(info);
+        warningTextLbl.setText( NbBundle.getMessage(WebStorePanel.class, "LBL_UpdateRequired"));
+        description.setText(NbBundle.getMessage(WebStorePanel.class, "TXT_WebStoreUpdate"));
+        webStoreButton.setText(NbBundle.getMessage(WebStorePanel.class, "LBL_RerunButton"));
+        remove(jScrollPane1);
+        attachActions(runnable);
     }
+
+
+    WebStorePanel(boolean rerun, String link, Runnable runnable) {
+        initComponents();
+        notConnectedLink.setBackground(getBackground());
+        if ( rerun ){
+            warningTextLbl.setText( NbBundle.getMessage(WebStorePanel.class, "LBL_Rerun"));
+            //remove(description);
+            description.setText("");
+            description.setPreferredSize(new Dimension(0,0));
+            webStoreButton.setText(NbBundle.getMessage(WebStorePanel.class, "LBL_RerunButton"));
+            //notConnectedLink.setText(NbBundle.getMessage(WebStorePanel.class, "LBL_UnableInstall", link));
+            remove(jScrollPane1);
+        }
+        else {
+          notConnectedLink.setText(NbBundle.getMessage(WebStorePanel.class, "LBL_NotConnected", link));
+        }
+        notConnectedLink.addHyperlinkListener(new LinkListener());
+        if ( runnable!= null ){
+            attachActions(runnable);
+        }
+    }
+    
+    private void attachActions(final Runnable runnable){
+        webStoreButton.addActionListener(new ActionListener() {
+            
+            @Override
+            public void actionPerformed( ActionEvent arg0 ) {
+                runnable.run();
+            }
+        });
+    }
+    
 
     /**
      * This method is called from within the constructor to initialize the form.
@@ -73,34 +107,70 @@ class WebStorePanel extends javax.swing.JPanel {
     @SuppressWarnings("unchecked")
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
+        java.awt.GridBagConstraints gridBagConstraints;
 
-        myScrollPane = new javax.swing.JScrollPane();
-        myEditorPane = new javax.swing.JEditorPane();
+        warningLbl = new javax.swing.JLabel();
+        warningTextLbl = new javax.swing.JLabel();
+        webStoreButton = new javax.swing.JButton();
+        jScrollPane1 = new javax.swing.JScrollPane();
+        notConnectedLink = new javax.swing.JEditorPane();
+        description = new javax.swing.JLabel();
 
-        myEditorPane.setEditable(false);
-        myEditorPane.setContentType("text/html"); // NOI18N
-        myEditorPane.setText("WebStore info..."); // NOI18N
-        myScrollPane.setViewportView(myEditorPane);
+        setLayout(new java.awt.GridBagLayout());
 
-        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
-        this.setLayout(layout);
-        layout.setHorizontalGroup(
-            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(layout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(myScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 334, Short.MAX_VALUE)
-                .addContainerGap())
-        );
-        layout.setVerticalGroup(
-            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(layout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(myScrollPane, javax.swing.GroupLayout.PREFERRED_SIZE, 80, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-        );
+        warningLbl.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/extbrowser/resources/warning.png"))); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
+        gridBagConstraints.insets = new java.awt.Insets(20, 20, 0, 10);
+        add(warningLbl, gridBagConstraints);
+
+        warningTextLbl.setFont(new java.awt.Font("Tahoma", 1, 11)); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(warningTextLbl, org.openide.util.NbBundle.getMessage(WebStorePanel.class, "LBL_ConnectorExtenstion")); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTHWEST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 15, 10);
+        add(warningTextLbl, gridBagConstraints);
+
+        org.openide.awt.Mnemonics.setLocalizedText(webStoreButton, org.openide.util.NbBundle.getMessage(WebStorePanel.class, "LBL_WebStore")); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 15, 0);
+        add(webStoreButton, gridBagConstraints);
+
+        jScrollPane1.setBorder(null);
+
+        notConnectedLink.setEditable(false);
+        notConnectedLink.setBackground(new java.awt.Color(240, 240, 240));
+        notConnectedLink.setBorder(null);
+        notConnectedLink.setContentType("text/html"); // NOI18N
+        notConnectedLink.setText(org.openide.util.NbBundle.getMessage(WebStorePanel.class, "LBL_NotConnected")); // NOI18N
+        jScrollPane1.setViewportView(notConnectedLink);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 3;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 10, 0);
+        add(jScrollPane1, gridBagConstraints);
+
+        org.openide.awt.Mnemonics.setLocalizedText(description, org.openide.util.NbBundle.getMessage(WebStorePanel.class, "LBL_ChromeExtensionDescription")); // NOI18N
+        description.setMinimumSize(new java.awt.Dimension(350, 56));
+        description.setPreferredSize(new java.awt.Dimension(350, 56));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.LINE_START;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 10, 20);
+        add(description, gridBagConstraints);
     }// </editor-fold>//GEN-END:initComponents
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JEditorPane myEditorPane;
-    private javax.swing.JScrollPane myScrollPane;
+    private javax.swing.JLabel description;
+    private javax.swing.JScrollPane jScrollPane1;
+    private javax.swing.JEditorPane notConnectedLink;
+    private javax.swing.JLabel warningLbl;
+    private javax.swing.JLabel warningTextLbl;
+    private javax.swing.JButton webStoreButton;
     // End of variables declaration//GEN-END:variables
 }
