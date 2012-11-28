@@ -53,6 +53,25 @@ abstract class A1 implements I1 {
 }
 
 class C1 extends A1 {}
+////////////////////////////
+
+interface MyFace {
+    public function toImplement();
+}
+
+class MyParent implements MyFace {
+    public function toImplement() {
+    }
+}
+
+abstract class AbstractSuper extends MyParent {
+}
+
+class Datagrid extends AbstractSuper implements MyFace {
+}
+
+class MyCls extends Datagrid {
+}
 
 //END
 ?>
