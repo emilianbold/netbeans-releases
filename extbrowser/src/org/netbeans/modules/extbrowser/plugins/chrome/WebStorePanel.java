@@ -46,6 +46,10 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.logging.Logger;
 
+import javax.swing.event.HyperlinkEvent;
+import javax.swing.event.HyperlinkListener;
+
+import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
 /**
@@ -56,6 +60,8 @@ class WebStorePanel extends javax.swing.JPanel {
 
     private static final long serialVersionUID = 6387325958428583652L;
     static final Logger LOGGER = Logger.getLogger(WebStorePanel.class.getName());
+    
+    static final String EXTENSION_HELP= "chrome.extension";     // NOI18N
     
     WebStorePanel(Runnable runnable) {
         initComponents();
@@ -76,13 +82,22 @@ class WebStorePanel extends javax.swing.JPanel {
             description.setText("");
             description.setPreferredSize(new Dimension(0,0));
             webStoreButton.setText(NbBundle.getMessage(WebStorePanel.class, "LBL_RerunButton"));
-            //notConnectedLink.setText(NbBundle.getMessage(WebStorePanel.class, "LBL_UnableInstall", link));
-            remove(jScrollPane1);
+            notConnectedLink.setText(NbBundle.getMessage(WebStorePanel.class, "LBL_UnableInstall", link));
+            //remove(jScrollPane1);
         }
         else {
           notConnectedLink.setText(NbBundle.getMessage(WebStorePanel.class, "LBL_NotConnected", link));
         }
-        notConnectedLink.addHyperlinkListener(new LinkListener());
+        notConnectedLink.addHyperlinkListener( new HyperlinkListener() {
+            
+            @Override
+            public void hyperlinkUpdate( HyperlinkEvent event ) {
+                if (event.getEventType() == HyperlinkEvent.EventType.ACTIVATED) {
+                    HelpCtx ctx = new HelpCtx(EXTENSION_HELP);
+                    ctx.display();
+                }
+            }
+        });
         if ( runnable!= null ){
             attachActions(runnable);
         }
