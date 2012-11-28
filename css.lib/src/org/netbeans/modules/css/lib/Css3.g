@@ -715,7 +715,7 @@ expression
     ;
     
 term
-    : unaryOperator?
+    : ( unaryOperator ws? )?
         (
         (
               NUMBER
