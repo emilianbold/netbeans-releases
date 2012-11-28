@@ -619,6 +619,14 @@ public class MarkOccurrenceTest extends JsTestBase {
         checkOccurrences("testfiles/markoccurences/issue217935.js", "   what.mart^in();", true);
     }
     
+    public void testIssue217086_01() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue217086.js", "        this.clo^thing=\"tinfoil\";", true);
+    }
+    
+    public void testIssue217086_02() throws Exception {
+        checkOccurrences("testfiles/model/person.js", "	gk.clot^hing=\"Pimp Outfit\";                    //clothing is a public variable that can be updated to any funky value ", true);
+    }
+    
 //    public void testIssue221228_02() throws Exception {
 //        checkOccurrences("testfiles/markoccurences/issue221228.js", "a.h^i(); // rename hi here", true);
 //    }
