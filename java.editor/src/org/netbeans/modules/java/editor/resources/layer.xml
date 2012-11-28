@@ -43,7 +43,9 @@ However, if you add GPL Version 2 code and therefore, elected the GPL
 Version 2 license, then the option applies only if the new code is
 made subject to such option by the copyright holder.
 -->
-<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.2//EN" "http://www.netbeans.org/dtds/filesystem-1_2.dtd">
+<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.2//EN" "http://www.netbeans.org/dtds/filesystem-1_2.dtd" [
+    <!ENTITY eclipse-global-keymap SYSTEM "eclipse-global-keymap.xml">
+]>
 <filesystem>
 
     <folder name="Actions">
@@ -428,6 +430,10 @@ made subject to such option by the copyright holder.
                 </folder>
             </folder>
         </folder>
+    </folder>
+    
+    <folder name="Keymaps">
+        &eclipse-global-keymap;
     </folder>
 
     <folder name="OptionsDialog">
