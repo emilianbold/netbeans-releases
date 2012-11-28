@@ -103,50 +103,69 @@ public class JsTypedBreakInterceptor implements TypedBreakInterceptor {
         int offset = context.getCaretOffset();
         boolean insertMatching = isInsertMatchingEnabled(doc);
 
-        doc.readLock();
-        try {
-            int lineBegin = Utilities.getRowStart(doc, offset);
-            int lineEnd = Utilities.getRowEnd(doc, offset);
+        int lineBegin = Utilities.getRowStart(doc, offset);
+        int lineEnd = Utilities.getRowEnd(doc, offset);
 
-            if (lineBegin == offset && lineEnd == offset) {
-                // Pressed return on a blank newline - do nothing
-                return;
-            }
+        if (lineBegin == offset && lineEnd == offset) {
+            // Pressed return on a blank newline - do nothing
+            return;
+        }
 
-            TokenSequence<? extends JsTokenId> ts = LexUtilities.getTokenSequence(
-                    tokenHierarchy, offset, language);
+        TokenSequence<? extends JsTokenId> ts = LexUtilities.getTokenSequence(
+                tokenHierarchy, offset, language);
 
-            if (ts == null) {
-                return;
-            }
+        if (ts == null) {
+            return;
+        }
 
-            ts.move(offset);
+        ts.move(offset);
 
-            if (!ts.moveNext() && !ts.movePrevious()) {
-                return;
-            }
+        if (!ts.moveNext() && !ts.movePrevious()) {
+            return;
+        }
 
-            Token<? extends JsTokenId> token = ts.token();
-            JsTokenId id = token.id();
+        Token<? extends JsTokenId> token = ts.token();
+        JsTokenId id = token.id();
 
-            // Insert a missing }
-            boolean insertRightBrace = isAddRightBrace(doc, offset);
+        // Insert a missing }
+        boolean insertRightBrace = isAddRightBrace(doc, offset);
 
-            if (!id.isError() && insertMatching && insertRightBrace && !isDocToken(id)) {
-                int indent = GsfUtilities.getLineIndent(doc, offset);
+        if (!id.isError() && insertMatching && insertRightBrace && !isDocToken(id)) {
+            int indent = GsfUtilities.getLineIndent(doc, offset);
 
-                int afterLastNonWhite = Utilities.getRowLastNonWhite(doc, offset);
+            int afterLastNonWhite = Utilities.getRowLastNonWhite(doc, offset);
 
-                // We've either encountered a further indented line, or a line that doesn't
-                // look like the end we're after, so insert a matching end.
-                StringBuilder sb = new StringBuilder();
-                int carretOffset = 0;
-                int curlyOffset = getUnbalancedCurlyOffset(doc, offset);
-                if (offset > afterLastNonWhite) {
-
+            // We've either encountered a further indented line, or a line that doesn't
+            // look like the end we're after, so insert a matching end.
+            StringBuilder sb = new StringBuilder();
+            int carretOffset = 0;
+            int curlyOffset = getUnbalancedCurlyOffset(doc, offset);
+            if (offset > afterLastNonWhite) {
+                
+                sb.append("\n"); // XXX On Windows, do \r\n?
+                sb.append(IndentUtils.createIndentString(doc, indent + IndentUtils.indentLevelSize(doc)));
+                carretOffset = sb.length();
+                sb.append("\n"); // NOI18N
+                if (curlyOffset >= 0) {
+                    sb.append(IndentUtils.createIndentString(doc, GsfUtilities.getLineIndent(doc, curlyOffset)));
+                } else {
+                    sb.append(IndentUtils.createIndentString(doc, indent));
+                }
+                sb.append("}"); // NOI18N
+            } else {
+                boolean insert[] = {true};
+                int end = getRowOrBlockEnd(doc, offset, insert);
+                if (insert[0]) {
+                    // I'm inserting a newline in the middle of a sentence, such as the scenario in #118656
+                    // I should insert the end AFTER the text on the line
+                    String restOfLine = doc.getText(offset,
+                            Math.min(end, Utilities.getRowEnd(doc, afterLastNonWhite)) - offset);
                     sb.append("\n"); // XXX On Windows, do \r\n?
                     sb.append(IndentUtils.createIndentString(doc, indent + IndentUtils.indentLevelSize(doc)));
+                    // right brace must be included into the correct context - issue #219683
                     carretOffset = sb.length();
+
+                    sb.append(restOfLine); // NOI18N
                     sb.append("\n"); // NOI18N
                     if (curlyOffset >= 0) {
                         sb.append(IndentUtils.createIndentString(doc, GsfUtilities.getLineIndent(doc, curlyOffset)));
@@ -154,313 +173,289 @@ public class JsTypedBreakInterceptor implements TypedBreakInterceptor {
                         sb.append(IndentUtils.createIndentString(doc, indent));
                     }
                     sb.append("}"); // NOI18N
-                } else {
-                    boolean insert[] = {true};
-                    int end = getRowOrBlockEnd(doc, offset, insert);
-                    if (insert[0]) {
-                        // I'm inserting a newline in the middle of a sentence, such as the scenario in #118656
-                        // I should insert the end AFTER the text on the line
-                        String restOfLine = doc.getText(offset,
-                                Math.min(end, Utilities.getRowEnd(doc, afterLastNonWhite)) - offset);
-                        sb.append("\n"); // XXX On Windows, do \r\n?
-                        sb.append(IndentUtils.createIndentString(doc, indent + IndentUtils.indentLevelSize(doc)));
-                        // right brace must be included into the correct context - issue #219683
-                        carretOffset = sb.length();
-
-                        sb.append(restOfLine); // NOI18N
-                        sb.append("\n"); // NOI18N
-                        if (curlyOffset >= 0) {
-                            sb.append(IndentUtils.createIndentString(doc, GsfUtilities.getLineIndent(doc, curlyOffset)));
-                        } else {
-                            sb.append(IndentUtils.createIndentString(doc, indent));
-                        }
-                        sb.append("}"); // NOI18N
-                        doc.remove(offset, restOfLine.length());
-                    }
-
+                    doc.remove(offset, restOfLine.length());
                 }
-
-                if (sb.length() > 0) {
-                    context.setText(sb.toString(), 0, carretOffset);
-                }
-                return;
+                
             }
 
-            if (id.isError()) {
-                // See if it's a block comment opener
-                String text = token.text().toString();
-                if (comments && text.startsWith("/*") && ts.offset() == Utilities.getRowFirstNonWhite(doc, offset)) {
+            if (sb.length() > 0) {
+                context.setText(sb.toString(), 0, carretOffset);
+            }
+            return;
+        }
+
+        if (id.isError()) {
+            // See if it's a block comment opener
+            String text = token.text().toString();
+            if (comments && text.startsWith("/*") && ts.offset() == Utilities.getRowFirstNonWhite(doc, offset)) {
+                int indent = GsfUtilities.getLineIndent(doc, offset);
+                StringBuilder sb = new StringBuilder();
+                sb.append("\n"); // NOI18N
+                sb.append(IndentUtils.createIndentString(doc, indent));
+                sb.append(" * "); // NOI18N
+                int carretOffset = sb.length();
+                sb.append("\n"); // NOI18N
+                sb.append(IndentUtils.createIndentString(doc, indent));
+                sb.append(" */"); // NOI18N
+
+                if (text.startsWith("/**")) {
+                    // setup comment generator
+                    commentGenerator = new CommentGenerator(offset + carretOffset, indent + 1);
+                }
+                context.setText(sb.toString(), 0, carretOffset);
+                return;
+            }
+        }
+
+        if (id == JsTokenId.STRING ||
+                (id == JsTokenId.STRING_END) && offset < ts.offset()+ts.token().length()) {
+            // Instead of splitting a string "foobar" into "foo"+"bar", just insert a \ instead!
+            //int indent = GsfUtilities.getLineIndent(doc, offset);
+            //int delimiterOffset = id == JsTokenId.STRING_END ? ts.offset() : ts.offset()-1;
+            //char delimiter = doc.getText(delimiterOffset,1).charAt(0);
+            //doc.insertString(offset, delimiter + " + " + delimiter, null);
+            //caret.setDot(offset+3);
+            //return offset + 5 + indent;
+            String str = (id != JsTokenId.STRING || offset > ts.offset()) ? "\\n\\\n"  : "\\\n";
+            context.setText(str, -1, str.length());
+            return;
+        }
+
+
+
+        if (id == JsTokenId.REGEXP ||
+                (id == JsTokenId.REGEXP_END) && offset < ts.offset()+ts.token().length()) {
+            // Instead of splitting a string "foobar" into "foo"+"bar", just insert a \ instead!
+            //int indent = GsfUtilities.getLineIndent(doc, offset);
+            //doc.insertString(offset, "/ + /", null);
+            //caret.setDot(offset+3);
+            //return offset + 5 + indent;
+            String str = (id != JsTokenId.REGEXP || offset > ts.offset()) ? "\\n\\\n"  : "\\\n";
+            context.setText(str, -1, str.length());
+            return;
+        }
+
+        // Special case: since I do hash completion, if you try to type
+        //     y = Thread.start {
+        //         code here
+        //     }
+        // you end up with
+        //     y = Thread.start {|}
+        // If you hit newline at this point, you end up with
+        //     y = Thread.start {
+        //     |}
+        // which is not as helpful as it would be if we were not doing hash-matching
+        // (in that case we'd notice the brace imbalance, and insert the closing
+        // brace on the line below the insert position, and indent properly.
+        // Catch this scenario and handle it properly.
+        if ((id == JsTokenId.BRACKET_RIGHT_CURLY || id == JsTokenId.BRACKET_RIGHT_BRACKET) && offset > 0) {
+            Token<? extends JsTokenId> prevToken = LexUtilities.getToken(doc, offset - 1, language);
+            if (prevToken != null) {
+                JsTokenId prevTokenId = prevToken.id();
+                if (id == JsTokenId.BRACKET_RIGHT_CURLY && prevTokenId == JsTokenId.BRACKET_LEFT_CURLY ||
+                        id == JsTokenId.BRACKET_RIGHT_BRACKET && prevTokenId == JsTokenId.BRACKET_LEFT_BRACKET) {
                     int indent = GsfUtilities.getLineIndent(doc, offset);
                     StringBuilder sb = new StringBuilder();
+                    // XXX On Windows, do \r\n?
                     sb.append("\n"); // NOI18N
-                    sb.append(IndentUtils.createIndentString(doc, indent));
-                    sb.append(" * "); // NOI18N
+                    sb.append(IndentUtils.createIndentString(doc, indent + IndentUtils.indentLevelSize(doc)));
                     int carretOffset = sb.length();
                     sb.append("\n"); // NOI18N
                     sb.append(IndentUtils.createIndentString(doc, indent));
-                    sb.append(" */"); // NOI18N
 
-                    if (text.startsWith("/**")) {
-                        // setup comment generator
-                        commentGenerator = new CommentGenerator(offset + carretOffset, indent + 1);
-                    }
+                    // should we reindent it automatically ?
                     context.setText(sb.toString(), 0, carretOffset);
                     return;
                 }
             }
+        }
 
-            if (id == JsTokenId.STRING ||
-                    (id == JsTokenId.STRING_END) && offset < ts.offset()+ts.token().length()) {
-                // Instead of splitting a string "foobar" into "foo"+"bar", just insert a \ instead!
-                //int indent = GsfUtilities.getLineIndent(doc, offset);
-                //int delimiterOffset = id == JsTokenId.STRING_END ? ts.offset() : ts.offset()-1;
-                //char delimiter = doc.getText(delimiterOffset,1).charAt(0);
-                //doc.insertString(offset, delimiter + " + " + delimiter, null);
-                //caret.setDot(offset+3);
-                //return offset + 5 + indent;
-                String str = (id != JsTokenId.STRING || offset > ts.offset()) ? "\\n\\\n"  : "\\\n";
-                context.setText(str, -1, str.length());
-                return;
-            }
-
-
-
-            if (id == JsTokenId.REGEXP ||
-                    (id == JsTokenId.REGEXP_END) && offset < ts.offset()+ts.token().length()) {
-                // Instead of splitting a string "foobar" into "foo"+"bar", just insert a \ instead!
-                //int indent = GsfUtilities.getLineIndent(doc, offset);
-                //doc.insertString(offset, "/ + /", null);
-                //caret.setDot(offset+3);
-                //return offset + 5 + indent;
-                String str = (id != JsTokenId.REGEXP || offset > ts.offset()) ? "\\n\\\n"  : "\\\n";
-                context.setText(str, -1, str.length());
-                return;
-            }
-
-            // Special case: since I do hash completion, if you try to type
-            //     y = Thread.start {
-            //         code here
-            //     }
-            // you end up with
-            //     y = Thread.start {|}
-            // If you hit newline at this point, you end up with
-            //     y = Thread.start {
-            //     |}
-            // which is not as helpful as it would be if we were not doing hash-matching
-            // (in that case we'd notice the brace imbalance, and insert the closing
-            // brace on the line below the insert position, and indent properly.
-            // Catch this scenario and handle it properly.
-            if ((id == JsTokenId.BRACKET_RIGHT_CURLY || id == JsTokenId.BRACKET_RIGHT_BRACKET) && offset > 0) {
-                Token<? extends JsTokenId> prevToken = LexUtilities.getToken(doc, offset - 1, language);
-                if (prevToken != null) {
-                    JsTokenId prevTokenId = prevToken.id();
-                    if (id == JsTokenId.BRACKET_RIGHT_CURLY && prevTokenId == JsTokenId.BRACKET_LEFT_CURLY ||
-                            id == JsTokenId.BRACKET_RIGHT_BRACKET && prevTokenId == JsTokenId.BRACKET_LEFT_BRACKET) {
-                        int indent = GsfUtilities.getLineIndent(doc, offset);
-                        StringBuilder sb = new StringBuilder();
-                        // XXX On Windows, do \r\n?
-                        sb.append("\n"); // NOI18N
-                        sb.append(IndentUtils.createIndentString(doc, indent + IndentUtils.indentLevelSize(doc)));
-                        int carretOffset = sb.length();
-                        sb.append("\n"); // NOI18N
-                        sb.append(IndentUtils.createIndentString(doc, indent));
-
-                        // should we reindent it automatically ?
-                        context.setText(sb.toString(), 0, carretOffset);
-                        return;
+        if (!comments) {
+            return;
+        }
+        if (id == JsTokenId.WHITESPACE) {
+            // Pressing newline in the whitespace before a comment
+            // should be identical to pressing newline with the caret
+            // at the beginning of the comment
+            int begin = Utilities.getRowFirstNonWhite(doc, offset);
+            if (begin != -1 && offset < begin) {
+                ts.move(begin);
+                if (ts.moveNext()) {
+                    id = ts.token().id();
+                    if (id == JsTokenId.LINE_COMMENT) {
+                        offset = begin;
                     }
                 }
             }
+        }
 
-            if (!comments) {
-                return;
+        if ((id == JsTokenId.BLOCK_COMMENT || id == JsTokenId.DOC_COMMENT)
+                && offset > ts.offset() && offset < ts.offset()+ts.token().length()) {
+            // Continue *'s
+            int begin = Utilities.getRowFirstNonWhite(doc, offset);
+            int end = Utilities.getRowEnd(doc, offset)+1;
+            if (begin == -1) {
+                begin = end;
             }
-            if (id == JsTokenId.WHITESPACE) {
-                // Pressing newline in the whitespace before a comment
-                // should be identical to pressing newline with the caret
-                // at the beginning of the comment
-                int begin = Utilities.getRowFirstNonWhite(doc, offset);
-                if (begin != -1 && offset < begin) {
-                    ts.move(begin);
-                    if (ts.moveNext()) {
-                        id = ts.token().id();
-                        if (id == JsTokenId.LINE_COMMENT) {
-                            offset = begin;
-                        }
-                    }
+            String line = doc.getText(begin, end-begin);
+            boolean isBlockStart = line.startsWith("/*") || (begin != -1 && begin < ts.offset());
+            if (isBlockStart || line.startsWith("*")) {
+                int indent = GsfUtilities.getLineIndent(doc, offset);
+                StringBuilder sb = new StringBuilder("\n");
+                if (isBlockStart) {
+                    indent++;
                 }
-            }
+                int carretPosition = 0;
+                sb.append(IndentUtils.createIndentString(doc, indent));
+                if (isBlockStart) {
+                    // First comment should be propertly indented
+                    sb.append("* "); //NOI18N
+                    carretPosition = sb.length();
 
-            if ((id == JsTokenId.BLOCK_COMMENT || id == JsTokenId.DOC_COMMENT)
-                    && offset > ts.offset() && offset < ts.offset()+ts.token().length()) {
-                // Continue *'s
-                int begin = Utilities.getRowFirstNonWhite(doc, offset);
-                int end = Utilities.getRowEnd(doc, offset)+1;
-                if (begin == -1) {
-                    begin = end;
-                }
-                String line = doc.getText(begin, end-begin);
-                boolean isBlockStart = line.startsWith("/*") || (begin != -1 && begin < ts.offset());
-                if (isBlockStart || line.startsWith("*")) {
-                    int indent = GsfUtilities.getLineIndent(doc, offset);
-                    StringBuilder sb = new StringBuilder("\n");
-                    if (isBlockStart) {
-                        indent++;
-                    }
-                    int carretPosition = 0;
-                    sb.append(IndentUtils.createIndentString(doc, indent));
-                    if (isBlockStart) {
-                        // First comment should be propertly indented
-                        sb.append("* "); //NOI18N
-                        carretPosition = sb.length();
-
-                        TokenSequence<? extends JsDocumentationTokenId> jsDocTS =
-                                LexUtilities.getJsDocumentationTokenSequence(tokenHierarchy, offset);
-                        if (jsDocTS != null) {
-                            if (!endsCommentProperly(jsDocTS)) {
-                                // setup comment generator
-                                commentGenerator = new CommentGenerator(offset + carretPosition, indent);
-                                // append end of the comment
-                                sb.append("\n").append(IndentUtils.createIndentString(doc, indent)).append("*/"); //NOI18N
-                            }
-                        }
-                    } else {
-                        // Copy existing indentation inside the block
-                        sb.append("*"); //NOI18N
-                        int afterStar = isBlockStart ? begin+2 : begin+1;
-                        line = doc.getText(afterStar, Utilities.getRowEnd(doc, afterStar)-afterStar);
-                        for (int i = 0; i < line.length(); i++) {
-                            char c = line.charAt(i);
-                            if (c == ' ' || c == '\t') { //NOI18N
-                                sb.append(c);
-                            } else {
-                                break;
-                            }
-                        }
-                        carretPosition = sb.length();
-                    }
-
-                    if (offset == begin && offset > 0) {
-                        context.setText(sb.toString(), -1, sb.length());
-                        return;
-                    }
-                    context.setText(sb.toString(), -1, carretPosition);
-                    return;
-                }
-            }
-
-            boolean isComment = id == JsTokenId.LINE_COMMENT;
-            if (id == JsTokenId.EOL) {
-                if (ts.movePrevious() && ts.token().id() == JsTokenId.LINE_COMMENT) {
-                    //ts.moveNext();
-                    isComment = true;
-                }
-            }
-
-            if (isComment) {
-                // Only do this if the line only contains comments OR if there is content to the right on this line,
-                // or if the next line is a comment!
-
-                boolean continueComment = false;
-                int begin = Utilities.getRowFirstNonWhite(doc, offset);
-
-                // We should only continue comments if the previous line had a comment
-                // (and a comment from the beginning, not a trailing comment)
-                boolean previousLineWasComment = false;
-                boolean nextLineIsComment = false;
-                int rowStart = Utilities.getRowStart(doc, offset);
-                if (rowStart > 0) {
-                    int prevBegin = Utilities.getRowFirstNonWhite(doc, rowStart - 1);
-                    if (prevBegin != -1) {
-                        Token<? extends JsTokenId> firstToken = LexUtilities.getToken(
-                                doc, prevBegin, language);
-                        if (firstToken != null && firstToken.id() == JsTokenId.LINE_COMMENT) {
-                            previousLineWasComment = true;
+                    TokenSequence<? extends JsDocumentationTokenId> jsDocTS =
+                            LexUtilities.getJsDocumentationTokenSequence(tokenHierarchy, offset);
+                    if (jsDocTS != null) {
+                        if (!endsCommentProperly(jsDocTS)) {
+                            // setup comment generator
+                            commentGenerator = new CommentGenerator(offset + carretPosition, indent);
+                            // append end of the comment
+                            sb.append("\n").append(IndentUtils.createIndentString(doc, indent)).append("*/"); //NOI18N
                         }
                     }
-                }
-                int rowEnd = Utilities.getRowEnd(doc, offset);
-                if (rowEnd < doc.getLength()) {
-                    int nextBegin = Utilities.getRowFirstNonWhite(doc, rowEnd + 1);
-                    if (nextBegin != -1) {
-                        Token<? extends JsTokenId> firstToken = LexUtilities.getToken(
-                                doc, nextBegin, language);
-                        if (firstToken != null && firstToken.id() == JsTokenId.LINE_COMMENT) {
-                            nextLineIsComment = true;
-                        }
-                    }
-                }
-
-                // See if we have more input on this comment line (to the right
-                // of the inserted newline); if so it's a "split" operation on
-                // the comment
-                if (previousLineWasComment || nextLineIsComment
-                        || (offset > ts.offset() && offset < ts.offset() + ts.token().length())) {
-                    if (ts.offset() + token.length() > offset + 1) {
-                        // See if the remaining text is just whitespace
-                        String trailing = doc.getText(offset, Utilities.getRowEnd(doc, offset) - offset);
-                        if (trailing.trim().length() != 0) {
-                            continueComment = true;
-                        }
-                    } else if (CONTINUE_COMMENTS) {
-                        // See if the "continue comments" options is turned on, and this is a line that
-                        // contains only a comment (after leading whitespace)
-                        Token<? extends JsTokenId> firstToken = LexUtilities.getToken(
-                                doc, begin, language);
-                        if (firstToken.id() == JsTokenId.LINE_COMMENT) {
-                            continueComment = true;
-                        }
-                    }
-                    if (!continueComment) {
-                        // See if the next line is a comment; if so we want to continue
-                        // comments editing the middle of the comment
-                        int nextLine = Utilities.getRowEnd(doc, offset) + 1;
-                        if (nextLine < doc.getLength()) {
-                            int nextLineFirst = Utilities.getRowFirstNonWhite(doc, nextLine);
-                            if (nextLineFirst != -1) {
-                                Token<? extends JsTokenId> firstToken = LexUtilities.getToken(
-                                        doc, nextLineFirst, language);
-                                if (firstToken != null && firstToken.id() == JsTokenId.LINE_COMMENT) {
-                                    continueComment = true;
-                                }
-                            }
-                        }
-                    }
-                }
-
-                if (continueComment) {
-                    // Line comments should continue
-                    int indent = GsfUtilities.getLineIndent(doc, offset);
-                    StringBuilder sb = new StringBuilder();
-                    if (offset != begin || offset <= 0) {
-                        sb.append("\n");
-                    }
-                    sb.append(IndentUtils.createIndentString(doc, indent));
-                    sb.append("//"); // NOI18N
-                    // Copy existing indentation
-                    int afterSlash = begin + 2;
-                    String line = doc.getText(afterSlash, Utilities.getRowEnd(doc, afterSlash) - afterSlash);
+                } else {
+                    // Copy existing indentation inside the block
+                    sb.append("*"); //NOI18N
+                    int afterStar = isBlockStart ? begin+2 : begin+1;
+                    line = doc.getText(afterStar, Utilities.getRowEnd(doc, afterStar)-afterStar);
                     for (int i = 0; i < line.length(); i++) {
                         char c = line.charAt(i);
-                        if (c == ' ' || c == '\t') {
+                        if (c == ' ' || c == '\t') { //NOI18N
                             sb.append(c);
                         } else {
                             break;
                         }
                     }
+                    carretPosition = sb.length();
+                }
 
-                    if (offset == begin && offset > 0) {
-                        int caretPosition = sb.length();
-                        sb.append("\n");
-                        context.setText(sb.toString(), -1, caretPosition);
-                        return;
-                    }
+                if (offset == begin && offset > 0) {
                     context.setText(sb.toString(), -1, sb.length());
                     return;
                 }
+                context.setText(sb.toString(), -1, carretPosition);
+                return;
             }
-        } finally {
-            doc.readUnlock();
+        }
+
+        boolean isComment = id == JsTokenId.LINE_COMMENT;
+        if (id == JsTokenId.EOL) {
+            if (ts.movePrevious() && ts.token().id() == JsTokenId.LINE_COMMENT) {
+                //ts.moveNext();
+                isComment = true;
+            }
+        }
+
+        if (isComment) {
+            // Only do this if the line only contains comments OR if there is content to the right on this line,
+            // or if the next line is a comment!
+
+            boolean continueComment = false;
+            int begin = Utilities.getRowFirstNonWhite(doc, offset);
+
+            // We should only continue comments if the previous line had a comment
+            // (and a comment from the beginning, not a trailing comment)
+            boolean previousLineWasComment = false;
+            boolean nextLineIsComment = false;
+            int rowStart = Utilities.getRowStart(doc, offset);
+            if (rowStart > 0) {
+                int prevBegin = Utilities.getRowFirstNonWhite(doc, rowStart - 1);
+                if (prevBegin != -1) {
+                    Token<? extends JsTokenId> firstToken = LexUtilities.getToken(
+                            doc, prevBegin, language);
+                    if (firstToken != null && firstToken.id() == JsTokenId.LINE_COMMENT) {
+                        previousLineWasComment = true;
+                    }
+                }
+            }
+            int rowEnd = Utilities.getRowEnd(doc, offset);
+            if (rowEnd < doc.getLength()) {
+                int nextBegin = Utilities.getRowFirstNonWhite(doc, rowEnd + 1);
+                if (nextBegin != -1) {
+                    Token<? extends JsTokenId> firstToken = LexUtilities.getToken(
+                            doc, nextBegin, language);
+                    if (firstToken != null && firstToken.id() == JsTokenId.LINE_COMMENT) {
+                        nextLineIsComment = true;
+                    }
+                }
+            }
+
+            // See if we have more input on this comment line (to the right
+            // of the inserted newline); if so it's a "split" operation on
+            // the comment
+            if (previousLineWasComment || nextLineIsComment
+                    || (offset > ts.offset() && offset < ts.offset() + ts.token().length())) {
+                if (ts.offset() + token.length() > offset + 1) {
+                    // See if the remaining text is just whitespace
+                    String trailing = doc.getText(offset, Utilities.getRowEnd(doc, offset) - offset);
+                    if (trailing.trim().length() != 0) {
+                        continueComment = true;
+                    }
+                } else if (CONTINUE_COMMENTS) {
+                    // See if the "continue comments" options is turned on, and this is a line that
+                    // contains only a comment (after leading whitespace)
+                    Token<? extends JsTokenId> firstToken = LexUtilities.getToken(
+                            doc, begin, language);
+                    if (firstToken.id() == JsTokenId.LINE_COMMENT) {
+                        continueComment = true;
+                    }
+                }
+                if (!continueComment) {
+                    // See if the next line is a comment; if so we want to continue
+                    // comments editing the middle of the comment
+                    int nextLine = Utilities.getRowEnd(doc, offset) + 1;
+                    if (nextLine < doc.getLength()) {
+                        int nextLineFirst = Utilities.getRowFirstNonWhite(doc, nextLine);
+                        if (nextLineFirst != -1) {
+                            Token<? extends JsTokenId> firstToken = LexUtilities.getToken(
+                                    doc, nextLineFirst, language);
+                            if (firstToken != null && firstToken.id() == JsTokenId.LINE_COMMENT) {
+                                continueComment = true;
+                            }
+                        }
+                    }
+                }
+            }
+
+            if (continueComment) {
+                // Line comments should continue
+                int indent = GsfUtilities.getLineIndent(doc, offset);
+                StringBuilder sb = new StringBuilder();
+                if (offset != begin || offset <= 0) {
+                    sb.append("\n");
+                }
+                sb.append(IndentUtils.createIndentString(doc, indent));
+                sb.append("//"); // NOI18N
+                // Copy existing indentation
+                int afterSlash = begin + 2;
+                String line = doc.getText(afterSlash, Utilities.getRowEnd(doc, afterSlash) - afterSlash);
+                for (int i = 0; i < line.length(); i++) {
+                    char c = line.charAt(i);
+                    if (c == ' ' || c == '\t') {
+                        sb.append(c);
+                    } else {
+                        break;
+                    }
+                }
+
+                if (offset == begin && offset > 0) {
+                    int caretPosition = sb.length();
+                    sb.append("\n");
+                    context.setText(sb.toString(), -1, caretPosition);
+                    return;
+                }
+                context.setText(sb.toString(), -1, sb.length());
+                return;
+            }
         }
         
         // Just indent the line properly
