@@ -298,6 +298,14 @@ public class MethodBreakpointImpl extends ClassBasedBreakpoint {
     protected void classLoaded (List<ReferenceType> referenceTypes) {
         boolean submitted = false;
         String invalidMessage = null;
+        int type = breakpoint.getBreakpointType();
+        boolean methodEntryType = (type & MethodBreakpoint.TYPE_METHOD_ENTRY) != 0;
+        boolean methodExitType = (type & MethodBreakpoint.TYPE_METHOD_EXIT) != 0;
+        int customHitCountFilter = breakpoint.getHitCountFilter();
+        if (!(methodEntryType && methodExitType)) {
+            customHitCountFilter = 0; // Use the JDI's HC filtering
+        }
+        setCustomHitCountFilter(customHitCountFilter);
         for (ReferenceType referenceType : referenceTypes) {
             Iterator methods;
             try {
@@ -329,7 +337,7 @@ public class MethodBreakpointImpl extends ClassBasedBreakpoint {
                                                  (signature == null ||
                                                   egualMethodSignatures(signature, TypeComponentWrapper.signature(method)))) {
 
-                        if ((breakpoint.getBreakpointType() & MethodBreakpoint.TYPE_METHOD_ENTRY) != 0) {
+                        if (methodEntryType) {
                             if (MethodWrapper.location(method) != null && !MethodWrapper.isNative(method)) {
                                 Location location = MethodWrapper.location(method);
                                 BreakpointRequest br = EventRequestManagerWrapper.
@@ -372,7 +380,7 @@ public class MethodBreakpointImpl extends ClassBasedBreakpoint {
                                 entryMethodNames.add(TypeComponentWrapper.name (method));
                             }
                         }
-                        if ((breakpoint.getBreakpointType() & MethodBreakpoint.TYPE_METHOD_EXIT) != 0) {
+                        if (methodExitType) {
                             if (exitReq == null) {
                                 exitReq = EventRequestManagerWrapper.
                                         createMethodExitRequest(getEventRequestManager());

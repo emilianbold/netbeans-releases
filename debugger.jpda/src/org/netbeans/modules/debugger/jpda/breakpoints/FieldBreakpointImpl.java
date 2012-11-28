@@ -164,23 +164,27 @@ public class FieldBreakpointImpl extends ClassBasedBreakpoint {
     @Override
     protected void classLoaded (List<ReferenceType> referenceTypes) {
         boolean submitted = false;
+        int type = breakpoint.getBreakpointType();
+        boolean fieldAccessType = (type & FieldBreakpoint.TYPE_ACCESS) != 0;
+        boolean fieldModificationType = (type & FieldBreakpoint.TYPE_MODIFICATION) != 0;
+        int customHitCountFilter = breakpoint.getHitCountFilter();
+        if (!(fieldAccessType && fieldModificationType)) {
+            customHitCountFilter = 0; // Use the JDI's HC filtering
+        }
+        setCustomHitCountFilter(customHitCountFilter);
         for (ReferenceType referenceType : referenceTypes) {
             try {
                 Field f = ReferenceTypeWrapper.fieldByName (referenceType, breakpoint.getFieldName ());
                 if (f == null) {
                     continue;
                 }
-                if ( (breakpoint.getBreakpointType () &
-                      FieldBreakpoint.TYPE_ACCESS) != 0
-                ) {
+                if (fieldAccessType) {
                     AccessWatchpointRequest awr = EventRequestManagerWrapper.
                         createAccessWatchpointRequest (getEventRequestManager (), f);
                     setFilters(awr);
                     addEventRequest (awr);
                 }
-                if ( (breakpoint.getBreakpointType () &
-                      FieldBreakpoint.TYPE_MODIFICATION) != 0
-                ) {
+                if (fieldModificationType) {
                     ModificationWatchpointRequest mwr = EventRequestManagerWrapper.
                         createModificationWatchpointRequest (getEventRequestManager (), f);
                     setFilters(mwr);
