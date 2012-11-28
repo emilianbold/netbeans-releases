@@ -551,6 +551,26 @@ public class MarkOccurrenceTest extends JsTestBase {
         checkOccurrences("testfiles/markoccurences/issue222498.js", "    return this.query({parent: this.getIdentity(obje^ct)});", true);
     }
   
+    public void testIssue218191_01() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue218191.js", "    var RE^GEXP = /[+]?\\d{1,20}$/; // REGEXP marked as unused", true);
+    }
+
+    public void testIssue218191_02() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue218191.js", "            alert(REGE^XP.test(value));", true);
+    }
+    
+    public void testIssue218191_03() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue218191.js", "            alert(REGEXP.te^st(value));", true);
+    }
+
+    public void testIssue218191_04() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue218191.js", "            alert(REGEXP.test(val^ue));", true);
+    }
+    
+    public void testIssue218191_05() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue218191.js", "            switch (field^Type) {", true);
+    }
+
 
 //    public void testIssue221228_02() throws Exception {
 //        checkOccurrences("testfiles/markoccurences/issue221228.js", "a.h^i(); // rename hi here", true);
