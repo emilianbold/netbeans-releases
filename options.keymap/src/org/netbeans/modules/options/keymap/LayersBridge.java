@@ -792,12 +792,16 @@ public class LayersBridge extends KeymapManager implements KeymapManager.WithRev
     public void refreshActions() {
         refreshKeymapNames();
     }
-
+    
+    private String cachedProfile;
+    
     public String getCurrentProfile() {
-        return null;
+        return cachedProfile;
     }
 
     public void setCurrentProfile(String profileName) {
+        // cached mainly because of tests; the physical storage is implemented by EditorsBridge.
+        this.cachedProfile = profileName;
     }
 
     /**
