@@ -546,6 +546,11 @@ public class MarkOccurrenceTest extends JsTestBase {
     public void testIssue222767_02() throws Exception {
         checkOccurrences("testfiles/markoccurences/issue222767.js", "            data: j^son,", true);
     }
+    
+    public void testIssue222498_01() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue222498.js", "    return this.query({parent: this.getIdentity(obje^ct)});", true);
+    }
+  
 
 //    public void testIssue221228_02() throws Exception {
 //        checkOccurrences("testfiles/markoccurences/issue221228.js", "a.h^i(); // rename hi here", true);

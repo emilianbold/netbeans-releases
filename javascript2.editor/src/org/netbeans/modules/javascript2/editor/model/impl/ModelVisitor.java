@@ -667,7 +667,7 @@ public class ModelVisitor extends PathNodeVisitor {
                     if(value instanceof CallNode) {
                         // TODO for now, don't continue. There shoudl be handled cases liek
                         // in the testFiles/model/property02.js file
-                        return null;
+                        //return null;
                     } else {
                         Collection<TypeUsage> types = ModelUtils.resolveSemiTypeOfExpression(parserResult, value);
                         if (!types.isEmpty()) {
