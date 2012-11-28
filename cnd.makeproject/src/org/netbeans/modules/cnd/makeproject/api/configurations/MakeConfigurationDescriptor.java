@@ -943,9 +943,10 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
         Configuration[] newConfs = new Configuration[clonedConfs.length];
 
         for (int i = 0; i < clonedConfs.length; i++) {
-            if (clonedConfs[i].getCloneOf() != null) {
-                clonedConfs[i].getCloneOf().assign(clonedConfs[i]);
-                newConfs[i] = clonedConfs[i].getCloneOf();
+            final Configuration cloneOf = clonedConfs[i].getCloneOf();
+            if (cloneOf != null) {
+                cloneOf.assign(clonedConfs[i]);
+                newConfs[i] = cloneOf;
             } else {
                 newConfs[i] = clonedConfs[i];
             }
