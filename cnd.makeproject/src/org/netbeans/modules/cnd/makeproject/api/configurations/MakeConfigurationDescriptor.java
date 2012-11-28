@@ -189,7 +189,10 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
         rootFolder = new Folder(this, null, "root", "root", true, Folder.Kind.ROOT); // NOI18N
         projectItems = new ConcurrentHashMap<String, Item>();
         setModified();
-        ToolsPanelSupport.addCompilerSetModifiedListener(MakeConfigurationDescriptor.this);
+    }
+
+    void opened() {
+        ToolsPanelSupport.addCompilerSetModifiedListener(this);
     }
 
     /*
@@ -1070,7 +1073,7 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
         Object oldLock = projectWriteLocks.putIfAbsent(project.getProjectDirectory().getPath(), lock);
         return (oldLock == null) ? lock : oldLock;
     }
-    
+
     private class SaveRunnable implements Runnable {
 
         private boolean ret = false;
