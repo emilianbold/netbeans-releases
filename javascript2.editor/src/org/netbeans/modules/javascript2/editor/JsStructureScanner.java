@@ -374,7 +374,6 @@ public class JsStructureScanner implements StructureScanner {
             }
             formatter.appendText(getFunctionScope().getDeclarationName().getName());
             formatter.appendText("(");   //NOI18N
-            formatter.parameters(true);
             boolean addComma = false;
             for(JsObject jsObject : function.getParameters()) {
                 if (addComma) {
@@ -382,9 +381,25 @@ public class JsStructureScanner implements StructureScanner {
                 } else {
                     addComma = true;
                 }
+                Collection<? extends TypeUsage> types = jsObject.getAssignmentForOffset(jsObject.getDeclarationName().getOffsetRange().getStart());
+                if (!types.isEmpty()) {
+                    formatter.appendHtml(FONT_GRAY_COLOR);
+                    StringBuilder typeSb = new StringBuilder();
+                    for (TypeUsage type : types) {
+
+                        if (typeSb.length() > 0) {
+                            typeSb.append("|"); //NOI18N
+                        }
+                        typeSb.append(type.getType());
+                    }
+                    if (typeSb.length() > 0) {
+                        formatter.appendText(typeSb.toString());
+                    }
+                    formatter.appendText(" ");   //NOI18N
+                    formatter.appendHtml(CLOSE_FONT);
+                }
                 formatter.appendText(jsObject.getName());
             }
-            formatter.parameters(false);
             formatter.appendText(")");   //NOI18N
             
             appendTypeInfo(formatter, function.getReturnTypes());
