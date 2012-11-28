@@ -287,31 +287,43 @@ public class NPECheck {
         @Override
         public State visitAssignment(AssignmentTree node, Void p) {
             Element e = info.getTrees().getElement(new TreePath(getCurrentPath(), node.getVariable()));
-            
-            if (e == null || !VARIABLE_ELEMENT.contains(e.getKind())) {
-                return super.visitAssignment(node, p);
-            }
-            
+            Map<VariableElement, State> orig = new HashMap<VariableElement, State>(variable2State);
             State r = scan(node.getExpression(), p);
             
-            variable2State.put((VariableElement) e, r);
-            
             scan(node.getVariable(), p);
+            
+            mergeHypotheticalVariable2State(orig);
+            
+            if (e != null && VARIABLE_ELEMENT.contains(e.getKind())) {
+                variable2State.put((VariableElement) e, r);
+            }
             
             return r;
         }
 
         @Override
+        public State visitCompoundAssignment(CompoundAssignmentTree node, Void p) {
+            Map<VariableElement, State> orig = new HashMap<VariableElement, State>(variable2State);
+            
+            scan(node.getExpression(), p);
+            scan(node.getVariable(), p);
+            
+            mergeHypotheticalVariable2State(orig);
+            
+            return null;
+        }
+
+        @Override
         public State visitVariable(VariableTree node, Void p) {
             Element e = info.getTrees().getElement(getCurrentPath());
-            
-            if (e == null) {
-                return super.visitVariable(node, p);
-            }
-            
+            Map<VariableElement, State> orig = new HashMap<VariableElement, State>(variable2State);
             State r = scan(node.getInitializer(), p);
             
-            variable2State.put((VariableElement) e, r);
+            mergeHypotheticalVariable2State(orig);
+            
+            if (e != null) {
+                variable2State.put((VariableElement) e, r);
+            }
             
             return r;
         }
@@ -384,7 +396,6 @@ public class NPECheck {
 
         @Override
         public State visitBinary(BinaryTree node, Void p) {
-            State left = null;
             boolean subnodesAlreadyProcessed = false;
             Kind kind = node.getKind();
             
@@ -398,8 +409,7 @@ public class NPECheck {
             }
             
             if (kind == Kind.CONDITIONAL_AND) {
-                left = scan(node.getLeftOperand(), p);
-                
+                scan(node.getLeftOperand(), p);
                 scan(node.getRightOperand(), p);
                 
                 subnodesAlreadyProcessed = true;
@@ -408,7 +418,7 @@ public class NPECheck {
             if (kind == Kind.CONDITIONAL_OR) {
                 HashMap<VariableElement, State> orig = new HashMap<VariableElement, NPECheck.State>(variable2State);
                 
-                left = scan(node.getLeftOperand(), p);
+                scan(node.getLeftOperand(), p);
                 
                 Map<VariableElement, State> afterLeft = variable2State;
                 
@@ -430,6 +440,7 @@ public class NPECheck {
                 subnodesAlreadyProcessed = true;
             }
             
+            State left = null;
             State right = null;
             
             if (!subnodesAlreadyProcessed) {
@@ -682,6 +693,24 @@ public class NPECheck {
                 State el = variable2State.get(e.getKey());
 
                 variable2State.put(e.getKey(), State.collect(t, el));
+            }
+        }
+        
+        private void mergeHypotheticalVariable2State(Map<VariableElement, State> original) {
+            Map<VariableElement, State> hypothetical = variable2State;
+            
+            variable2State = original;
+            
+            for (Entry<VariableElement, State> e : original.entrySet()) {
+                State t = e.getValue();
+                State el = hypothetical.get(e.getKey());
+                
+                if (el == State.NOT_NULL_BE_NPE) {
+                    variable2State.put(e.getKey(), State.NOT_NULL_BE_NPE);
+                } if (   (t == null || t == State.POSSIBLE_NULL)
+                      && (el == State.NOT_NULL || el == State.NULL || el == State.POSSIBLE_NULL_REPORT)) {
+                    variable2State.put(e.getKey(), State.POSSIBLE_NULL_REPORT);
+                }
             }
         }
         

@@ -719,6 +719,53 @@ public class NPECheckTest extends NbTestCase {
                 .assertWarnings();
     }
     
+    public void testAnd1() throws Exception {
+        HintTest.create()
+                .input("package test;\n" +
+                       "class Test {\n" +
+                       "    private void t(String str) {\n" +
+                       "        boolean empty = str != null && str.isEmpty();\n" +
+                       "        if (empty || str == null) {\n" +
+                       "            throw new IllegalStateException();\n" +
+                       "        }\n" +
+                       "    }\n" +
+                       "}")
+                .run(NPECheck.class)
+                .assertWarnings();
+    }
+    
+    public void testAnd2() throws Exception {
+        HintTest.create()
+                .input("package test;\n" +
+                       "class Test {\n" +
+                       "    private void t(String str) {\n" +
+                       "        boolean empty;\n" +
+                       "        empty = str != null && str.isEmpty();\n" +
+                       "        if (empty || str == null) {\n" +
+                       "            throw new IllegalStateException();\n" +
+                       "        }\n" +
+                       "    }\n" +
+                       "}")
+                .run(NPECheck.class)
+                .assertWarnings();
+    }
+    
+    public void testAnd3() throws Exception {
+        HintTest.create()
+                .input("package test;\n" +
+                       "class Test {\n" +
+                       "    private void t(String str) {\n" +
+                       "        boolean empty = true;\n" +
+                       "        empty &= str != null && str.isEmpty();\n" +
+                       "        if (empty || str == null) {\n" +
+                       "            throw new IllegalStateException();\n" +
+                       "        }\n" +
+                       "    }\n" +
+                       "}")
+                .run(NPECheck.class)
+                .assertWarnings();
+    }
+    
     private void performAnalysisTest(String fileName, String code, String... golden) throws Exception {
         HintTest.create()
                 .input(fileName, code)
