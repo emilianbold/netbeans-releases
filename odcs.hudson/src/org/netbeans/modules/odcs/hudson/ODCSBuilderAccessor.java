@@ -75,6 +75,8 @@ import org.netbeans.modules.hudson.api.HudsonManager;
 import org.netbeans.modules.hudson.api.UI;
 import org.netbeans.modules.odcs.api.ODCSServer;
 import org.netbeans.modules.odcs.api.ODCSProject;
+import org.netbeans.modules.odcs.ui.api.ODCSUiServer;
+import org.netbeans.modules.team.ui.common.DefaultDashboard;
 import org.netbeans.modules.team.ui.spi.BuildHandle;
 import org.netbeans.modules.team.ui.spi.BuildHandle.Status;
 import org.netbeans.modules.team.ui.spi.BuilderAccessor;
@@ -83,6 +85,7 @@ import org.netbeans.modules.team.ui.spi.ProjectHandle;
 import org.openide.awt.HtmlBrowser;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
+import org.openide.util.WeakListeners;
 import org.openide.util.lookup.ServiceProvider;
 
 /**
@@ -507,6 +510,7 @@ public class ODCSBuilderAccessor extends BuilderAccessor<ODCSProject> {
                 }
             }
             instance.addHudsonChangeListener(this);
+            initRefreshListener();
         }
 
         public synchronized List<HudsonJobHandle> getWatchedJobHandles() {
@@ -523,6 +527,9 @@ public class ODCSBuilderAccessor extends BuilderAccessor<ODCSProject> {
             if (isUserLoggedOutEvent(evt)) {
                 removeHudsonAndClean();
                 CACHE.clear();
+            } else if (evt.getPropertyName().equals(
+                    DefaultDashboard.PROP_REFRESH_REQUEST)) {
+                HudsonManager.synchronizeInstance(instance);
             } else if (projectHandle.get() == null) {
                 cleanup();
             }
@@ -720,6 +727,18 @@ public class ODCSBuilderAccessor extends BuilderAccessor<ODCSProject> {
             projectHandle.getTeamProject().getServer().
                     addPropertyChangeListener(buildsListener);
             return buildsListener;
+        }
+
+        private void initRefreshListener() {
+            ODCSServer odcsServer = server.get();
+            if (odcsServer != null) {
+                DefaultDashboard<ODCSUiServer, ODCSProject> dashboard =
+                        ODCSUiServer.forServer(odcsServer).getDashboard();
+                if (dashboard != null) {
+                    dashboard.addPropertyChangeListener(
+                            WeakListeners.propertyChange(this, dashboard));
+                }
+            }
         }
 
         /**
