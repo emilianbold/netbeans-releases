@@ -41,14 +41,21 @@
  */
 package org.netbeans.modules.web.client.samples.wizard.ui;
 
+import java.awt.EventQueue;
 import java.io.File;
+import java.io.IOException;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.web.client.samples.wizard.WizardConstants;
+import org.netbeans.modules.web.clientproject.api.network.NetworkException;
+import org.netbeans.modules.web.clientproject.api.network.NetworkSupport;
+import org.netbeans.modules.web.clientproject.spi.SiteTemplateImplementation;
 import org.netbeans.modules.web.clientproject.util.ValidationUtilities;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
 import org.openide.WizardDescriptor;
@@ -164,6 +171,43 @@ public class OnlineSampleVisualPanel extends javax.swing.JPanel {
         File[] kids = destFolder.listFiles();
         if (destFolder.exists() && kids != null && kids.length > 0) {
             return Bundle.OnlineSampleVisualPanel_error_location_notEmpty();
+        }
+        return null;
+    }
+
+    @NbBundle.Messages({
+        "# {0} - template name",
+        "SiteTemplateWizard.template.preparing=Preparing template \"{0}\" for first usage...",
+        "# {0} - template name",
+        "SiteTemplateWizard.error.preparing=Cannot prepare template \"{0}\" (see IDE log for more details)."
+    })
+    public String prepareTemplate() {
+        assert !EventQueue.isDispatchThread();
+
+        final SiteTemplateImplementation siteTemplate = (SiteTemplateImplementation) descriptor.getProperty(WizardConstants.SAMPLE_TEMPLATE);
+        final String templateName = siteTemplate.getName();
+
+        if (siteTemplate.isPrepared()) {
+            return null;
+        }
+
+        ProgressHandle progressHandle = ProgressHandleFactory.createHandle(Bundle.SiteTemplateWizard_template_preparing(templateName));
+        progressHandle.start();
+        try {
+            while (true) {
+                try {
+                    siteTemplate.prepare();
+                    break;
+                } catch (NetworkException ex) {
+                    if (!NetworkSupport.showNetworkErrorDialog(ex.getFailedRequests())) {
+                        return Bundle.SiteTemplateWizard_error_preparing(templateName);
+                    }
+                }
+            }
+        } catch (IOException ex) {
+            return Bundle.SiteTemplateWizard_error_preparing(templateName);
+        } finally {
+            progressHandle.finish();
         }
         return null;
     }

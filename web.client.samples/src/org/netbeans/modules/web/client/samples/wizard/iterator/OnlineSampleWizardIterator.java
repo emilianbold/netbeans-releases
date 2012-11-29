@@ -112,6 +112,7 @@ public abstract class OnlineSampleWizardIterator extends AbstractWizardIterator 
     protected Panel[] createPanels(WizardDescriptor wizard) {
         wizard.putProperty(WizardConstants.SAMPLE_PROJECT_NAME, getProjectName());
         wizard.putProperty(WizardConstants.SAMPLE_PROJECT_URL, getProjectZipURL());
+        wizard.putProperty(WizardConstants.SAMPLE_TEMPLATE, getSiteTemplate());
 
         return new Panel[] {
             new OnlineSamplePanel(wizard)
@@ -137,7 +138,7 @@ public abstract class OnlineSampleWizardIterator extends AbstractWizardIterator 
     })
     @Override
     public Set instantiate(ProgressHandle handle) throws IOException {
-        handle.start(5);
+        handle.start();
         handle.progress(Bundle.OnlineSampleWizardIterator_creatingProject()); //NOI18N
 
         final Set<FileObject> files = new LinkedHashSet<FileObject>();
@@ -198,9 +199,6 @@ public abstract class OnlineSampleWizardIterator extends AbstractWizardIterator 
     }
 
     @NbBundle.Messages({
-        "# {0} - template name",
-        "OnlineSampleWizardIterator.error.preparingSiteTemplate=Cannot prepar template \"{0}\".",
-        "OnlineSampleWizardIterator.downloadingTemplate=Dowloading template...",
         "OnlineSampleWizardIterator.applyingTemplate=Applying template..."
     })
     private FileObject instantiate(ProgressHandle handle, WizardDescriptor wizardDescriptor, ClientSideProject project) throws IOException {
@@ -216,17 +214,7 @@ public abstract class OnlineSampleWizardIterator extends AbstractWizardIterator 
             siteTemplate.configure(projectProperties);
             initProject(project, projectProperties);
 
-            assert !EventQueue.isDispatchThread();
-            if (!siteTemplate.isPrepared()) {
-                try {
-                    handle.progress(Bundle.OnlineSampleWizardIterator_downloadingTemplate(), 1);
-                    siteTemplate.prepare();
-                } catch (IOException ex) {
-                    errorOccured(Bundle.OnlineSampleWizardIterator_error_preparingSiteTemplate(siteTemplate.getName()));
-                }
-            }
-
-            handle.progress(Bundle.OnlineSampleWizardIterator_applyingTemplate(), 4);
+            handle.progress(Bundle.OnlineSampleWizardIterator_applyingTemplate());
             applySiteTemplate(projectHelper.getProjectDirectory(), projectProperties, siteTemplate, handle);
         } else {
             // init standard project
