@@ -44,7 +44,6 @@ package org.netbeans.modules.web.client.samples.wizard.iterator;
 
 import java.awt.EventQueue;
 import java.io.File;
-import java.io.FileFilter;
 import java.io.IOException;
 import java.util.LinkedHashSet;
 import java.util.Set;
@@ -71,8 +70,6 @@ import org.openide.WizardDescriptor;
 import org.openide.WizardDescriptor.Panel;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.loaders.DataFolder;
-import org.openide.loaders.DataObject;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.w3c.dom.Document;
