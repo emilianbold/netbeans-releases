@@ -91,7 +91,8 @@ class SampleVisualPanel extends JPanel {
         DocumentListener documentListener = new DefaultDocumentListener();
         projectNameTextField.getDocument().addDocumentListener(documentListener);
         projectLocationTextField.getDocument().addDocumentListener(documentListener);
-        setName(NbBundle.getMessage(OnlineSampleVisualPanel.class, "LBL_NameAndLocation"));
+        setName(NbBundle.getMessage(OnlineSampleVisualPanel.class, "LBL_NameAndLocation"));// NOI18N
+        
     }
 
     @Override

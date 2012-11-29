@@ -128,7 +128,7 @@ public class ManagedTypeProvider implements IManagedTypeProvider {
     @Override
     public IJPAVersion getVersion() {
         String version = PersistenceUtils.getJPAVersion(project);
-        if(version == null || version.startsWith("1")) {
+        if(version == null || version.startsWith("2")) {
             return IJPAVersion.VERSION_2_0;
         }
         else {

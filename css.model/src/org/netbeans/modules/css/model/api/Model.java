@@ -368,10 +368,10 @@ public final class Model implements PropertyChangeListener {
                     if(saveCookie != null) { //the "changes" may not modify the document
                         saveCookie.save();
                     }
-                    LiveUpdater liveUpdater = Lookup.getDefault().lookup(LiveUpdater.class);
-                    if(liveUpdater != null) {
-                        liveUpdater.update(doc);
-                    }
+                }
+                LiveUpdater liveUpdater = Lookup.getDefault().lookup(LiveUpdater.class);
+                if(liveUpdater != null) {
+                    liveUpdater.update(doc);
                 }
             } else {
                 applyChanges_AtomicLock(doc, diff, new SnapshotOffsetConvertor(snapshot));

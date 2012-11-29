@@ -46,6 +46,7 @@ import javax.swing.event.ChangeListener;
 import org.netbeans.modules.web.client.samples.wizard.WizardConstants;
 import org.openide.WizardDescriptor;
 import org.openide.util.HelpCtx;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -81,7 +82,8 @@ public class OnlineSamplePanel implements WizardDescriptor.Panel<WizardDescripto
 
     @Override
     public HelpCtx getHelp() {
-        return new HelpCtx("html5.samples"); // NOI18N
+        return null;
+        //return new HelpCtx("html5.samples"); // NOI18N
     }
 
     @Override
@@ -102,6 +104,8 @@ public class OnlineSamplePanel implements WizardDescriptor.Panel<WizardDescripto
     @Override
     public void readSettings(WizardDescriptor descriptor) {
         this.descriptor = descriptor;
+        descriptor.putProperty("NewProjectWizard_Title", NbBundle.getMessage(
+                OnlineSamplePanel.class, "TTL_SamplePanel"));         // NOI18N
     }
 
     @Override

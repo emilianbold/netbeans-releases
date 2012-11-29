@@ -200,7 +200,23 @@ public class JsCodeCompletionGeneralTest extends JsCodeComplationBase {
     public void testIssue222601_01() throws Exception {
         checkCompletion("testfiles/completion/general/issue222601.js", "b222601.get^Date()", false);
     }
+    
+    public void testIssue220917_01() throws Exception {
+        checkCompletion("testfiles/completion/general/issue220917.js", "var d = document.get^ElementById();", false);
+    }
 
+    public void testIssue220917_02() throws Exception {
+        checkCompletion("testfiles/completion/general/issue220917.js", "document.create^Attribute();", false);
+    }
+    
+    public void testIssue220917_03() throws Exception {
+        checkCompletion("testfiles/completion/general/issue220917.js", "document.query^Selector();", false);
+    }
+
+    public void testIssue222780() throws Exception {
+        checkCompletion("testfiles/completion/general/issue222780.js", "$scope.getServoConfigurations = fun^", false);
+    }
+    
     @Override
     protected Map<String, ClassPath> createClassPathsForTest() {
         return Collections.singletonMap(

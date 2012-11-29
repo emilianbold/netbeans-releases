@@ -50,6 +50,7 @@ import org.openide.WizardDescriptor.Panel;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.HelpCtx;
+import org.openide.util.NbBundle;
 
 
 /**
@@ -81,7 +82,8 @@ public class SamplePanel implements Panel<WizardDescriptor> {
 
     @Override
     public HelpCtx getHelp() {
-        return new HelpCtx("html5.samples"); // NOI18N
+        return null;
+        //return new HelpCtx("html5.samples"); // NOI18N
     }
 
     @Override
@@ -98,6 +100,8 @@ public class SamplePanel implements Panel<WizardDescriptor> {
 
     @Override
     public void readSettings(WizardDescriptor descriptor) {
+        descriptor.putProperty("NewProjectWizard_Title", NbBundle.getMessage(
+                SamplePanel.class, "TTL_SamplePanel"));         // NOI18N
     }
 
     @Override

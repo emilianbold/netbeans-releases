@@ -232,10 +232,6 @@ public final class LexUtilities {
         return OffsetRange.NONE;
     }
 
-    public static Token<? extends JsTokenId> getJsToken(Document doc, int offset) {
-        return getToken(doc, offset, JsTokenId.javascriptLanguage());
-    }
-
     public static Token<? extends JsTokenId> getToken(Document doc, int offset, Language<JsTokenId> language) {
         TokenSequence<? extends JsTokenId> ts = getPositionedSequence(doc, offset, language);
 
@@ -259,18 +255,6 @@ public final class LexUtilities {
         }
 
         return 0;
-    }
-
-    /**
-     * The same as braceBalance but generalized to any pair of matching
-     * tokens.
-     * @param open the token that increses the count
-     * @param close the token that decreses the count
-     */
-    public static int getJsTokenBalance(Document doc, TokenId open,
-            TokenId close, int offset) throws BadLocationException {
-
-        return getTokenBalance(doc, open, close, offset, JsTokenId.javascriptLanguage());
     }
 
     /**

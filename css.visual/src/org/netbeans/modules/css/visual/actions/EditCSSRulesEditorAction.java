@@ -61,6 +61,7 @@ import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.web.common.api.WebUtils;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
+import org.openide.awt.ActionReferences;
 import org.openide.awt.ActionRegistration;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
@@ -72,7 +73,10 @@ import org.openide.util.NbBundle.Messages;
 id = "org.netbeans.modules.css.visual.actions.EditCSSRulesEditorAction")
 @ActionRegistration(
     displayName = "#CTL_EditElementRulesEditorAction")
-@ActionReference(path = "Editors/text/html/Popup", position = 1300)
+@ActionReferences({
+    @ActionReference(path = "Editors/text/html/Popup", position = 1300),
+    @ActionReference(path = "Editors/text/xhtml/Popup", position = 1300)
+})
 @Messages("CTL_EditElementRulesEditorAction=Edit CSS Rules")
 public final class EditCSSRulesEditorAction implements ActionListener {
 
