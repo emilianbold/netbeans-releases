@@ -833,6 +833,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
                         CndFileSystemProvider.removeFileSystemProblemListener(this, fs);
                     }
                 }
+                projectListener = null;
             }
         }
     }
@@ -3566,7 +3567,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
     private static final class FileContainerLock {}
     private final Object fileContainerLock = new FileContainerLock();
     private final Key graphStorageKey;
-    private NativeProjectListenerImpl projectListener;
+    private volatile NativeProjectListenerImpl projectListener;
     private final Object projectListenerLock = new Object();
     
     // test variables.
