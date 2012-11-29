@@ -662,11 +662,11 @@ public class C2CIssue {
         return getFieldValue(IssueField.PARENT);
     }
     
-    public synchronized void addPropertyChangeListener(PropertyChangeListener listener) {
+    public void addPropertyChangeListener(PropertyChangeListener listener) {
         support.addPropertyChangeListener(listener);
     }
 
-    public synchronized void removePropertyChangeListener(PropertyChangeListener listener) {
+    public void removePropertyChangeListener(PropertyChangeListener listener) {
         support.removePropertyChangeListener(listener);
     }
 
