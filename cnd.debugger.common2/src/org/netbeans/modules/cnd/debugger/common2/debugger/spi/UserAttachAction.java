@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,41 +34,19 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.cnd.debugger.common2.debugger.spi;
 
-package org.netbeans.modules.cnd.repository.testbench.sfs;
-
-import java.io.DataInput;
-import java.io.DataOutput;
-import java.io.IOException;
-import org.netbeans.modules.cnd.repository.spi.Persistent;
-import org.netbeans.modules.cnd.repository.spi.PersistentFactory;
+import org.netbeans.modules.cnd.debugger.common2.debugger.api.EngineType;
 
 /**
- * PersistentFactory implementation
- * @author Vladimir Kvashin
+ *
+ * @author Nikolay Koldunov
  */
-public class TestFactory implements PersistentFactory {
-
-    private static final TestFactory instance = new TestFactory();
-    
-    public static TestFactory instance() {
-	return instance;
-    }
-    
-    public void write(DataOutput out, Persistent obj) throws IOException {
-	if( obj instanceof TestObject ) {
-	    ((TestObject) obj).write(out);
-	}
-    }
-    
-    public Persistent read(DataInput in) throws IOException {
-	TestObject obj = new TestObject(in);
-	return obj;
-    }    
-
-    public boolean canWrite(Persistent obj) {
-	return obj instanceof TestObject;
-    }
-    
+public interface UserAttachAction {
+    void attach(String pid, EngineType type);
 }

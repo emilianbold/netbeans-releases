@@ -149,7 +149,9 @@ public class SemanticHighlightingOptionsPanel extends javax.swing.JPanel impleme
 
     private void initGeneratedComponents() {
         for(NamedOption ee : Lookups.forPath(NamedOption.HIGHLIGTING_CATEGORY).lookupAll(NamedOption.class)) {
-            addEntity(ee);
+            if (ee.isVisible()) {
+                addEntity(ee);
+            }
         }
         GroupLayout layout = new GroupLayout(jPanel1);
         jPanel1.setLayout(layout);

@@ -80,6 +80,8 @@ import org.openide.util.RequestProcessor;
  */
 @org.openide.util.lookup.ServiceProvider(service = org.netbeans.modules.cnd.spi.model.services.CsmMacroExpansionViewProvider.class)
 public class MacroExpansionViewProviderImpl implements CsmMacroExpansionViewProvider {
+    
+    private static final RequestProcessor RP = new RequestProcessor("MacroExpansionViewProviderImpl", 1); // NOI18N
 
     /**
      * Expands document on specified position and shows Macro Expansion View panel.
@@ -146,6 +148,6 @@ public class MacroExpansionViewProviderImpl implements CsmMacroExpansionViewProv
                 }
             }
         };
-        RequestProcessor.getDefault().execute(createExpansionView);
+        RP.execute(createExpansionView);
     }
 }

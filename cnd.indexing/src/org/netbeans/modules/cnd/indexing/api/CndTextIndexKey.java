@@ -39,22 +39,57 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.cnd.makeproject.spi.configurations;
+package org.netbeans.modules.cnd.indexing.api;
 
-import org.netbeans.modules.cnd.makeproject.api.configurations.Item;
-import org.openide.util.Lookup;
+/**
+ *
+ * @author Egor Ushakov
+ */
+public final class CndTextIndexKey {
+    private final int unitId;
+    private final int fileNameIndex;
 
-public abstract class ConfigurationRequirementProvider {
+    public CndTextIndexKey(int unitId, int fileNameIndex) {
+        this.unitId = unitId;
+        this.fileNameIndex = fileNameIndex;
+    }
 
-    public abstract boolean canHaveConfiguration(Item item);
+    public int getUnitId() {
+        return unitId;
+    }
 
-    public static boolean askAllProviders(Item item) {
-        Lookup.Result<ConfigurationRequirementProvider> crpLookupResult = Lookup.getDefault().lookupResult(ConfigurationRequirementProvider.class);
-        for (ConfigurationRequirementProvider crp : crpLookupResult.allInstances()) {
-            if (crp.canHaveConfiguration(item)) {
-                return true;
-            }
+    public int getFileNameIndex() {
+        return fileNameIndex;
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 5;
+        hash = 59 * hash + this.unitId;
+        hash = 59 * hash + this.fileNameIndex;
+        return hash;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
         }
-        return false;
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final CndTextIndexKey other = (CndTextIndexKey) obj;
+        if (this.unitId != other.unitId) {
+            return false;
+        }
+        if (this.fileNameIndex != other.fileNameIndex) {
+            return false;
+        }
+        return true;
+    }
+
+    @Override
+    public String toString() {
+        return "CndTextIndexKey{" + "unitId=" + unitId + ", fileNameIndex=" + fileNameIndex + '}'; //NOI18N
     }
 }
