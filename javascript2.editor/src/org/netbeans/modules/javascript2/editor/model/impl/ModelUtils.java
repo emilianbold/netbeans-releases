@@ -808,29 +808,36 @@ public class ModelUtils {
             return super.enter(aNode);
         }
 
-//        @Override
-//        public Node enter(BinaryNode binaryNode) {
-//            if (!binaryNode.isAssignment()) {
-//                if(binaryNode.rhs() instanceof LiteralNode) {
-//                    LiteralNode lNode = (LiteralNode)binaryNode.rhs();
-//                    Object value = lNode.getObject();
-//                    if (value instanceof String) {
-//                        result.add(new TypeUsageImpl(Type.STRING, lNode.getStart(), true));
-//                        return null;
-//                    }
-//                }
-//                if (binaryNode.lhs() instanceof LiteralNode) {
-//                    LiteralNode lNode = (LiteralNode)binaryNode.rhs();
-//                    Object value = lNode.getObject();
-//                    if (value instanceof String) {
-//                        result.add(new TypeUsageImpl(Type.STRING, lNode.getStart(), true));
-//                        return null;
-//                    }
-//                }
-//            }
-//            return super.enter(binaryNode);
-//        }
+        @Override
+        public Node enter(BinaryNode binaryNode) {
+            if (!binaryNode.isAssignment()) {
+                if (isResultString(binaryNode)) {
+                    add(STRING_TYPE);
+                    return null;
+                } 
+            }
+            return super.enter(binaryNode);
+        }
 
+        private boolean isResultString (BinaryNode binaryNode) {
+            boolean result = false;
+            TokenType tokenType = binaryNode.tokenType();
+            Node lhs = binaryNode.lhs();
+            Node rhs = binaryNode.rhs();
+            if (tokenType == TokenType.ADD
+                    && ((lhs instanceof LiteralNode && ((LiteralNode) lhs).isString())
+                    || (rhs instanceof LiteralNode && ((LiteralNode) rhs).isString()))) {
+                result = true;
+            } else {
+                if (lhs instanceof BinaryNode) {
+                    result = isResultString((BinaryNode)lhs);
+                } else if (rhs instanceof BinaryNode) {
+                    result = isResultString((BinaryNode)rhs);
+                }
+            }
+            return result;
+        }
+        
         @Override
         public Node enter(CallNode callNode) {
             super.enter(callNode);
