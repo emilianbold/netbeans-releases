@@ -252,7 +252,7 @@ public class NbmWizardPanelVisual extends javax.swing.JPanel {
         NBVersionInfo nbvi = new NBVersionInfo("x", "x", "x", version, null, null, null, null, null);
         if (version != null && (version.equals("SNAPSHOT") || nbvi.compareTo(new NBVersionInfo("x", "x", "x", "RELEASE69-BETA", null, null, null, null, null)) <= 0)) {
             cbOsgiDeps.setEnabled(true);
-            cbOsgiDeps.setSelected(version.equals("SNAPSHOT") || nbvi.compareTo(new NBVersionInfo("x", "x", "x", "RELEASE71", null, null, null, null, null)) <= 0);
+            //cbOsgiDeps.setSelected(version.equals("SNAPSHOT") || nbvi.compareTo(new NBVersionInfo("x", "x", "x", "RELEASE71", null, null, null, null, null)) <= 0);
         } else {
             cbOsgiDeps.setEnabled(false);
             cbOsgiDeps.setSelected(false);
