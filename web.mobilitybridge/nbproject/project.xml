@@ -4,7 +4,20 @@
     <configuration>
         <data xmlns="http://www.netbeans.org/ns/nb-module-project/3">
             <code-name-base>org.netbeans.modules.web.mobilitybridge</code-name-base>
-            <module-dependencies/>
+            <module-dependencies>
+                <dependency>
+                    <code-name-base>org.netbeans.modules.mobility.kit</code-name-base>
+                    <run-dependency>
+                        <specification-version>1.19</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.netbeans.modules.web.kit</code-name-base>
+                    <run-dependency>
+                        <specification-version>1.18</specification-version>
+                    </run-dependency>
+                </dependency>
+            </module-dependencies>
             <public-packages/>
         </data>
     </configuration>
