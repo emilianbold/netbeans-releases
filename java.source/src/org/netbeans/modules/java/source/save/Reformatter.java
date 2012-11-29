@@ -3392,6 +3392,7 @@ public class Reformatter implements ReformatTask {
                 int currWSOffset = -1;
                 int lastWSOffset = -1;
                 int identStart = -1;
+                int lastNLOffset = -1;
                 boolean afterText = false;
                 boolean insideTag = false;
                 int nestedParenCnt = 0;
@@ -3453,20 +3454,19 @@ public class Reformatter implements ReformatTask {
                         case HTML_TAG:
                             if (toAdd != null) {
                                 marks.add(toAdd);
-                                toAdd = null;
                             }
                             nlAdd = null;
                             tokenText = javadocTokens.token().text().toString();
                             if (tokenText.endsWith(">")) { //NOI18N
                                 if (P_TAG.equalsIgnoreCase(tokenText)) {
-                                    if (currWSOffset >= 0) {
+                                    if (currWSOffset >= 0 && (toAdd == null || toAdd.first < currWSOffset)) {
                                         marks.add(Pair.of(currWSOffset, 1));
                                     }
                                     marks.add(Pair.of(javadocTokens.offset() + javadocTokens.token().length() - offset, 1));
                                     afterText = false;
                                 } else if (PRE_TAG.equalsIgnoreCase(tokenText)
                                         || CODE_TAG.equalsIgnoreCase(tokenText)) {
-                                    if (currWSOffset >= 0 && state == 0) {
+                                    if (currWSOffset >= 0 && state == 0 && (toAdd == null || toAdd.first < currWSOffset)) {
                                         marks.add(Pair.of(currWSOffset, 1));
                                     }
                                     marks.add(Pair.of(javadocTokens.offset() - offset, 5));
@@ -3474,11 +3474,15 @@ public class Reformatter implements ReformatTask {
                                         || CODE_END_TAG.equalsIgnoreCase(tokenText)) {
                                     marks.add(Pair.of(currWSOffset >= 0 ? currWSOffset : javadocTokens.offset() - offset, 6));
                                 } else {
+                                    if (currWSOffset >= 0 && lastNLOffset >= currWSOffset && (toAdd == null || toAdd.first < currWSOffset)) {
+                                        marks.add(Pair.of(currWSOffset, 1));
+                                    }
                                     nlAdd = Pair.of(javadocTokens.offset() + javadocTokens.token().length() - offset, 1);
                                 }
                             } else {
                                 cseq = new StringBuilder(tokenText);
                             }
+                            toAdd = null;
                             lastWSOffset = currWSOffset = -1;
                             break;
                         case OTHER_TEXT:
@@ -3502,6 +3506,9 @@ public class Reformatter implements ReformatTask {
                                         if (c == '\n') {
                                             nlNum--;
                                             nlFollows = true;
+                                            int off = javadocTokens.offset() + i - offset;
+                                            if (off > lastNLOffset)
+                                                lastNLOffset = off;
                                         }
                                         if (lastWSOffset < 0 && currWSOffset >= 0)
                                             lastWSOffset = -2;
@@ -3536,7 +3543,7 @@ public class Reformatter implements ReformatTask {
                                 }
                             }
                             if (nlFollows && nlAdd != null) {
-                                marks.add(nlAdd);
+                                toAdd = nlAdd;
                             }
                             nlAdd = null;
                             if (identStart >= 0) {
