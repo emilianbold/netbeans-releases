@@ -45,6 +45,7 @@ package org.netbeans.modules.web.client.samples.wizard.ui;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.web.client.samples.wizard.WizardConstants;
 import org.openide.WizardDescriptor;
+import org.openide.WizardValidationException;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
@@ -52,7 +53,7 @@ import org.openide.util.NbBundle;
  *
  * @author Martin Janicek
  */
-public class OnlineSamplePanel implements WizardDescriptor.Panel<WizardDescriptor> {
+public class OnlineSamplePanel implements WizardDescriptor.AsynchronousValidatingPanel<WizardDescriptor> {
 
     private WizardDescriptor descriptor;
     private OnlineSampleVisualPanel myPanel;
@@ -113,5 +114,17 @@ public class OnlineSamplePanel implements WizardDescriptor.Panel<WizardDescripto
         descriptor.putProperty(WizardConstants.SAMPLE_PROJECT_URL, getComponent().getProjectURL());
         descriptor.putProperty(WizardConstants.SAMPLE_PROJECT_NAME, getComponent().getProjectName());
         descriptor.putProperty(WizardConstants.SAMPLE_PROJECT_DIR, getComponent().getProjectDirectory());
+    }
+
+    @Override
+    public void prepareValidation() {
+    }
+
+    @Override
+    public void validate() throws WizardValidationException {
+        final String error = getComponent().prepareTemplate();
+        if (error != null) {
+            throw new WizardValidationException(getComponent(), "ERROR_PREPARE", error); // NOI18N
+        }
     }
 }
