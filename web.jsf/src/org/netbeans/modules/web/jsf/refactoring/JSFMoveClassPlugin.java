@@ -135,7 +135,6 @@ public class JSFMoveClassPlugin implements RefactoringPlugin{
                                         List<? extends Tree> typeDecls = cut.getTypeDecls();
                                         if (!typeDecls.isEmpty()){
                                             treePathHandles.add(TreePathHandle.create(TreePath.getPath(cut, typeDecls.get(0)), co));
-                                            refactoring.getContext().add(co);
                                         }
                                     }
                                 }, false);
