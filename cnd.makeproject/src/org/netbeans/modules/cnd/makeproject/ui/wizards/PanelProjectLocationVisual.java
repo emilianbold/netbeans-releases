@@ -97,7 +97,7 @@ public class PanelProjectLocationVisual extends SettingsPanel implements HelpCtx
 
     public static final String PROP_PROJECT_NAME = "projectName"; // NOI18N
     public static final String PROP_MAIN_NAME = "mainName"; // NOI18N
-    private static final RequestProcessor REQUEST_PROCESSOR = new RequestProcessor("EDT Validation wizard", 1);
+    private static final RequestProcessor REQUEST_PROCESSOR = new RequestProcessor("EDT Validation wizard", 1);//NOI18N
     private volatile WizardValidationWorkerCheckState currentState = new WizardValidationWorkerCheckState(Boolean.TRUE, 
             new ValidationResult(Boolean.FALSE, NbBundle.getMessage(PanelProjectLocationVisual.class, "PanelProjectLocationVisual.Validating_Wizard")));//NOI18N
     private static final RequestProcessor RP = new RequestProcessor("Inot Hosts", 1); // NOI18N
@@ -1109,7 +1109,7 @@ public class PanelProjectLocationVisual extends SettingsPanel implements HelpCtx
                 return result;
             }
             String makefileName = makefileTextField.getText();
-            if (makefileName.indexOf(" ") >= 0) {
+            if (makefileName.indexOf(" ") >= 0) {//NOI18N
                 String message = NbBundle.getMessage(PanelProjectLocationVisual.class, "MSG_SpacesInMakefile");// NOI18N
                 return new ValidationResult(Boolean.FALSE, message);
             }
@@ -1267,7 +1267,7 @@ public class PanelProjectLocationVisual extends SettingsPanel implements HelpCtx
 
         private EdtRunnable(RequestProcessor.Task postTask) {
             this.postTask = postTask;
-            this.nonEdtTask = new RequestProcessor("Post EDT Validation wizard", 1).create(new Runnable() {
+            this.nonEdtTask = new RequestProcessor("Post EDT Validation wizard", 1).create(new Runnable() {//NOI18N
                 @Override
                 public void run() {
                     if (SwingUtilities.isEventDispatchThread()) {
