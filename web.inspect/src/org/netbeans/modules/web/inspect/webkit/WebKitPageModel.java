@@ -57,7 +57,6 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.web.inspect.PageModel;
 import org.netbeans.modules.web.inspect.files.Files;
 import org.netbeans.modules.web.inspect.webkit.ui.CSSStylesPanel;
-import org.netbeans.modules.web.webkit.debugging.api.TransportStateException;
 import org.netbeans.modules.web.webkit.debugging.api.dom.DOM;
 import org.netbeans.modules.web.webkit.debugging.api.WebKitDebugging;
 import org.netbeans.modules.web.webkit.debugging.api.css.CSS;
@@ -137,12 +136,7 @@ public class WebKitPageModel extends PageModel {
         CSS css = webKit.getCSS();
         css.addListener(cssListener);
 
-        try {
-            initializePage();
-        } catch (TransportStateException tsex) {
-            // The underlying transport became invalid
-            // before the page was initialized.
-        }
+        initializePage();
     }
 
     /**
@@ -223,12 +217,10 @@ public class WebKitPageModel extends PageModel {
 
     @Override
     public void removeNode(org.openide.nodes.Node node) {
-        try {
-            Node webKitNode = node.getLookup().lookup(Node.class);
-            if (webKitNode != null) {
-                webKit.getDOM().removeNode(webKitNode);
-            }
-        } catch (TransportStateException tsex) {}
+        Node webKitNode = node.getLookup().lookup(Node.class);
+        if (webKitNode != null) {
+            webKit.getDOM().removeNode(webKitNode);
+        }
     }
 
     @Override
@@ -414,11 +406,9 @@ public class WebKitPageModel extends PageModel {
                 RP.post(new Runnable() {
                     @Override
                     public void run() {
-                        try {
-                            // Issue 217896
-                            String script = "NetBeans.repaintGlassPane();"; // NOI18N
-                            invokeInAllDocuments(script);
-                        } catch (TransportStateException tsex) {}
+                        // Issue 217896
+                        String script = "NetBeans.repaintGlassPane();"; // NOI18N
+                        invokeInAllDocuments(script);
                     }
                 });
             }
@@ -809,34 +799,28 @@ public class WebKitPageModel extends PageModel {
 
         @Override
         public void propertyChange(PropertyChangeEvent evt) {
-            try {
-                String propName = evt.getPropertyName();
-                if (propName.equals(PageModel.PROP_HIGHLIGHTED_NODES)) {
-                    if (shouldSynchronizeHighlight()) {
-                        updateHighlight();
-                    }
-                } else if (propName.equals(PageModel.PROP_SELECTED_NODES)) {
-                    if (shouldSynchronizeSelection()) {
-                        updateSelection();
-                    }
-                } else if (propName.equals(PageModel.PROP_SELECTED_RULE)) {
-                    if (shouldSynchronizeSelection()) {
-                        updateSelectedRule(getNodesMatchingSelectedRule());
-                    }
-                } else if (propName.equals(PageModel.PROP_SELECTION_MODE)) {
-                    updateSelectionMode();
-                    updateSynchronization();
-                } else if (propName.equals(PageModel.PROP_SYNCHRONIZE_SELECTION)) {
-                    updateSelectionMode();
-                    updateSynchronization();
-                } else if (propName.equals(PageModel.PROP_DOCUMENT)) {
-                    initializePage();
-                    updateSelectionMode();
+            String propName = evt.getPropertyName();
+            if (propName.equals(PageModel.PROP_HIGHLIGHTED_NODES)) {
+                if (shouldSynchronizeHighlight()) {
+                    updateHighlight();
                 }
-            } catch (TransportStateException tse) {
-                // The underlying transport became invalid. No need to worry
-                // about failed synchronization as this means that the debugging
-                // session has been finished.
+            } else if (propName.equals(PageModel.PROP_SELECTED_NODES)) {
+                if (shouldSynchronizeSelection()) {
+                    updateSelection();
+                }
+            } else if (propName.equals(PageModel.PROP_SELECTED_RULE)) {
+                if (shouldSynchronizeSelection()) {
+                    updateSelectedRule(getNodesMatchingSelectedRule());
+                }
+            } else if (propName.equals(PageModel.PROP_SELECTION_MODE)) {
+                updateSelectionMode();
+                updateSynchronization();
+            } else if (propName.equals(PageModel.PROP_SYNCHRONIZE_SELECTION)) {
+                updateSelectionMode();
+                updateSynchronization();
+            } else if (propName.equals(PageModel.PROP_DOCUMENT)) {
+                initializePage();
+                updateSelectionMode();
             }
         }
 
