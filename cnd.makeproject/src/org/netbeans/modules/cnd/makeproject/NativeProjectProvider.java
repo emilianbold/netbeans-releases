@@ -142,10 +142,7 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
     }
 
     private MakeConfigurationDescriptor getMakeConfigurationDescriptor() {
-        if (projectDescriptorProvider.gotDescriptor()) {
-            return projectDescriptorProvider.getConfigurationDescriptor();
-        }
-        return null;
+        return projectDescriptorProvider.getConfigurationDescriptor();
     }
 
     private MakeConfiguration getMakeConfiguration() {

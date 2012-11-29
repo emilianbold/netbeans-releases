@@ -420,12 +420,9 @@ public class ConfigurationDescriptorProvider {
 
     public void closed() {
         MakeConfigurationDescriptor descr = getConfigurationDescriptor();
-        projectDescriptor = null;
         if (descr != null) {
             descr.closed();
         }
-        needReload = true;
-        hasTried = false;
     }
 
     public void opened() {
