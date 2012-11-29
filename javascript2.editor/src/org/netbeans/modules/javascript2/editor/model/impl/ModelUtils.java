@@ -85,7 +85,7 @@ public class ModelUtils {
         }
         if (tmpObject == null) {
             DeclarationScope scope = builder.getCurrentDeclarationScope();
-            while (tmpObject == null && scope.getInScope() != null) {
+            while (scope != null && tmpObject == null && scope.getInScope() != null) {
                 tmpObject = ((JsFunction)scope).getParameter(firstName);
                 scope = scope.getInScope();
             }
@@ -744,6 +744,12 @@ public class ModelUtils {
     
     private static class SemiTypeResolverVisitor extends PathNodeVisitor {
         
+        private static TypeUsage BOOLEAN_TYPE = new TypeUsageImpl(Type.BOOLEAN, -1, true);
+        private static TypeUsage STRING_TYPE = new TypeUsageImpl(Type.STRING, -1, true);
+        private static TypeUsage NUMBER_TYPE = new TypeUsageImpl(Type.NUMBER, -1, true);
+        private static TypeUsage ARRAY_TYPE = new TypeUsageImpl(Type.ARRAY, -1, true);
+        private static TypeUsage REGEXP_TYPE = new TypeUsageImpl(Type.REGEXP, -1, true);
+        
         private final Set<TypeUsage> result = new HashSet<TypeUsage>();
         private StringBuilder sb = new StringBuilder();
         final private JsParserResult parserResult;
@@ -755,6 +761,19 @@ public class ModelUtils {
         public Collection<TypeUsage> getSemiTypes() {
             return result;
         }
+        
+        private void add(TypeUsage type) {
+            boolean isThere = false;
+            for(TypeUsage stored : result) {
+                if(stored.getType().equals(type.getType())) {
+                    isThere = true;
+                    break;
+                }
+            }
+            if (!isThere) {
+                result.add(type);
+            }
+        }
 
         @Override
         public Node enter(AccessNode aNode) {
@@ -765,7 +784,7 @@ public class ModelUtils {
                     if (!(path.size() > 0 && path.get(path.size() - 1) instanceof CallNode)) {
                         sb.append("@this."); //NOI18N
                         sb.append(aNode.getProperty().getName());
-                        result.add(new TypeUsageImpl(sb.toString(), LexUtilities.getLexerOffset(parserResult, iNode.getStart()), false));                //NOI18N
+                        add(new TypeUsageImpl(sb.toString(), LexUtilities.getLexerOffset(parserResult, iNode.getStart()), false));                //NOI18N
                         // plus five due to this.
                     }
                 } else {
@@ -776,7 +795,7 @@ public class ModelUtils {
                     }
                     sb.insert(0, ((IdentNode)aNode.getBase()).getName());
                     sb.insert(0, "@exp;");
-                    result.add(new TypeUsageImpl(sb.toString(), aNode.getStart()));
+                    add(new TypeUsageImpl(sb.toString(), aNode.getStart()));
                 }
                 return null;
             } else {
@@ -789,36 +808,43 @@ public class ModelUtils {
             return super.enter(aNode);
         }
 
-//        @Override
-//        public Node enter(BinaryNode binaryNode) {
-//            if (!binaryNode.isAssignment()) {
-//                if(binaryNode.rhs() instanceof LiteralNode) {
-//                    LiteralNode lNode = (LiteralNode)binaryNode.rhs();
-//                    Object value = lNode.getObject();
-//                    if (value instanceof String) {
-//                        result.add(new TypeUsageImpl(Type.STRING, lNode.getStart(), true));
-//                        return null;
-//                    }
-//                }
-//                if (binaryNode.lhs() instanceof LiteralNode) {
-//                    LiteralNode lNode = (LiteralNode)binaryNode.rhs();
-//                    Object value = lNode.getObject();
-//                    if (value instanceof String) {
-//                        result.add(new TypeUsageImpl(Type.STRING, lNode.getStart(), true));
-//                        return null;
-//                    }
-//                }
-//            }
-//            return super.enter(binaryNode);
-//        }
+        @Override
+        public Node enter(BinaryNode binaryNode) {
+            if (!binaryNode.isAssignment()) {
+                if (isResultString(binaryNode)) {
+                    add(STRING_TYPE);
+                    return null;
+                } 
+            }
+            return super.enter(binaryNode);
+        }
 
+        private boolean isResultString (BinaryNode binaryNode) {
+            boolean result = false;
+            TokenType tokenType = binaryNode.tokenType();
+            Node lhs = binaryNode.lhs();
+            Node rhs = binaryNode.rhs();
+            if (tokenType == TokenType.ADD
+                    && ((lhs instanceof LiteralNode && ((LiteralNode) lhs).isString())
+                    || (rhs instanceof LiteralNode && ((LiteralNode) rhs).isString()))) {
+                result = true;
+            } else {
+                if (lhs instanceof BinaryNode) {
+                    result = isResultString((BinaryNode)lhs);
+                } else if (rhs instanceof BinaryNode) {
+                    result = isResultString((BinaryNode)rhs);
+                }
+            }
+            return result;
+        }
+        
         @Override
         public Node enter(CallNode callNode) {
             super.enter(callNode);
             if (callNode.getFunction() instanceof ReferenceNode) {
                 FunctionNode function = (FunctionNode)((ReferenceNode)callNode.getFunction()).getReference();
                 String name = function.getIdent().getName();
-                result.add(new TypeUsageImpl("@call;" + name, LexUtilities.getLexerOffset(parserResult, function.getStart()), false)); //NOI18N
+                add(new TypeUsageImpl("@call;" + name, LexUtilities.getLexerOffset(parserResult, function.getStart()), false)); //NOI18N
             } else {
                 if (sb.length() < 6) {
                     sb.append("@call;");    //NOI18N
@@ -835,20 +861,20 @@ public class ModelUtils {
         public Node enter(IdentNode iNode) {
             if (getPath().isEmpty()) {
                 if (iNode.getName().equals("this")) {   //NOI18N
-                    result.add(new TypeUsageImpl("@this", LexUtilities.getLexerOffset(parserResult, iNode.getStart()), false));                //NOI18N
+                    add(new TypeUsageImpl("@this", LexUtilities.getLexerOffset(parserResult, iNode.getStart()), false));                //NOI18N
                 } else {
-                    result.add(new TypeUsageImpl("@var;" + iNode.getName(), LexUtilities.getLexerOffset(parserResult, iNode.getStart()), false));
+                    add(new TypeUsageImpl("@var;" + iNode.getName(), LexUtilities.getLexerOffset(parserResult, iNode.getStart()), false));
                 }
             } else {
                 Node lastNode = getPath().get(getPath().size() - 1);
                 if (lastNode instanceof CallNode) {
                     sb.append(iNode.getName());
-                    result.add(new TypeUsageImpl(sb.toString(), LexUtilities.getLexerOffset(parserResult, iNode.getStart()), false));
+                    add(new TypeUsageImpl(sb.toString(), LexUtilities.getLexerOffset(parserResult, iNode.getStart()), false));
                 } else {
                     if (iNode.getName().equals("this")) {   //NOI18N
-                        result.add(new TypeUsageImpl("@this", LexUtilities.getLexerOffset(parserResult, iNode.getStart()), false));                //NOI18N
+                        add(new TypeUsageImpl("@this", LexUtilities.getLexerOffset(parserResult, iNode.getStart()), false));                //NOI18N
                     } else {
-                        result.add(new TypeUsageImpl("@var;" + iNode.getName(), LexUtilities.getLexerOffset(parserResult, iNode.getStart()), false));
+                        add(new TypeUsageImpl("@var;" + iNode.getName(), LexUtilities.getLexerOffset(parserResult, iNode.getStart()), false));
                     }
                 }
             }
@@ -859,24 +885,24 @@ public class ModelUtils {
         public Node enter(LiteralNode lNode) {
             Object value = lNode.getObject();
             if (value instanceof Boolean) {
-                result.add(new TypeUsageImpl(Type.BOOLEAN, -1, true));
+                add(BOOLEAN_TYPE);
             } else if (value instanceof String) {
-                result.add(new TypeUsageImpl(Type.STRING, -1, true));
+                add(STRING_TYPE);
             } else if (value instanceof Integer
                     || value instanceof Float
                     || value instanceof Double) {
-                result.add(new TypeUsageImpl(Type.NUMBER, -1, true));
+                add(NUMBER_TYPE);
             } else if (lNode instanceof LiteralNode.ArrayLiteralNode) {
-                result.add(new TypeUsageImpl(Type.ARRAY, -1, true));
+                add(ARRAY_TYPE);
             } else if (value instanceof Lexer.RegexToken) {
-                result.add(new TypeUsageImpl(Type.REGEXP, -1, true));
+                add(REGEXP_TYPE);
             }
             return null;
         }
 
         @Override
         public Node enter(ObjectNode objectNode) {
-            result.add(new TypeUsageImpl("@anonym;" + objectNode.getStart(), LexUtilities.getLexerOffset(parserResult, objectNode.getStart()), false));
+            add(new TypeUsageImpl("@anonym;" + objectNode.getStart(), LexUtilities.getLexerOffset(parserResult, objectNode.getStart()), false));
             return null;
         }
 
@@ -886,7 +912,7 @@ public class ModelUtils {
                 if (uNode.rhs() instanceof CallNode
                     && ((CallNode)uNode.rhs()).getFunction() instanceof IdentNode) {
                         IdentNode iNode = ((IdentNode)((CallNode)uNode.rhs()).getFunction());
-                        result.add(new TypeUsageImpl("@new;" + iNode.getName(), LexUtilities.getLexerOffset(parserResult, iNode.getStart()), false));
+                        add(new TypeUsageImpl("@new;" + iNode.getName(), LexUtilities.getLexerOffset(parserResult, iNode.getStart()), false));
                         return null;
                 }
             }

@@ -42,10 +42,6 @@
 package org.netbeans.modules.css.visual;
 
 import java.awt.BorderLayout;
-import java.awt.Point;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.KeyEvent;
 import java.beans.FeatureDescriptor;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -78,13 +74,12 @@ import org.netbeans.modules.css.model.api.Rule;
 import org.netbeans.modules.css.model.api.StyleSheet;
 import org.netbeans.modules.css.visual.RuleEditorNode.DeclarationProperty;
 import org.netbeans.modules.css.visual.actions.AddPropertyAction;
-import org.netbeans.modules.css.visual.actions.DeleteRuleAction;
 import org.netbeans.modules.css.visual.actions.GoToSourceAction;
 import org.netbeans.modules.css.visual.actions.RemovePropertyAction;
 import org.netbeans.modules.css.visual.api.DeclarationInfo;
+import org.netbeans.modules.css.visual.api.EditCSSRulesAction;
 import org.netbeans.modules.css.visual.api.RuleEditorController;
 import org.netbeans.modules.css.visual.api.ViewMode;
-import org.netbeans.modules.css.visual.api.EditCSSRulesAction;
 import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.api.Source;
@@ -151,7 +146,6 @@ public class RuleEditorPanel extends JPanel {
     private Model model;
     private Rule rule;
     private Action addPropertyAction;
-    private Action removeRuleAction;
     private Action[] actions;
     private RuleEditorViews views;
     private CustomToolbar toolbar;
@@ -225,7 +219,6 @@ public class RuleEditorPanel extends JPanel {
         
         //initialize actions
         addPropertyAction = new AddPropertyAction(this);
-        removeRuleAction = new DeleteRuleAction(this);
 
         //init default components
         initComponents();
@@ -260,7 +253,6 @@ public class RuleEditorPanel extends JPanel {
             public void propertyChange(PropertyChangeEvent evt) {
                 if (evt.getPropertyName().equals(RuleEditorController.PropertyNames.RULE_SET.name())) {
                     addPropertyAction.setEnabled(evt.getNewValue() != null);
-                    removeRuleAction.setEnabled(evt.getNewValue() != null);
                 }
             }
         });
@@ -269,7 +261,6 @@ public class RuleEditorPanel extends JPanel {
         
         actions = new Action[]{
             addPropertyAction,
-            removeRuleAction,
             null,
             viewActions[0],
             viewActions[1],
@@ -298,7 +289,6 @@ public class RuleEditorPanel extends JPanel {
             setComponentPopupMenu(pm);
             
             buildButtonPopup.add(addPropertyAction);
-            buildButtonPopup.add(removeRuleAction);
             
             toolbar.addLineSeparator();
             toolbar.addButton(createPropertyToggleButton);

@@ -79,6 +79,7 @@ import org.netbeans.modules.css.lib.api.NodeVisitor;
 import org.netbeans.modules.css.lib.api.properties.PropertyDefinition;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.web.common.api.LexerUtils;
+import org.netbeans.modules.web.common.api.Lines;
 import org.netbeans.modules.web.common.api.Pair;
 import org.netbeans.modules.web.common.api.WebUtils;
 import org.openide.filesystems.FileObject;
@@ -356,7 +357,8 @@ public class DefaultCssEditorModule extends CssEditorModule {
     @Override
     public <T extends Map<String, List<OffsetRange>>> NodeVisitor<T> getFoldsNodeVisitor(FeatureContext context, T result) {
         final Snapshot snapshot = context.getSnapshot();
-
+        final Lines lines = new Lines(snapshot.getText());
+        
         return new NodeVisitor<T>(result) {
 
             @Override
@@ -381,8 +383,7 @@ public class DefaultCssEditorModule extends CssEditorModule {
                             //check the boundaries a bit
                             if (doc_from >= 0 && doc_to >= 0) {
                                 //do not creare one line folds
-                                if (LexerUtils.getLineOffset(snapshot.getText(), from)
-                                        < LexerUtils.getLineOffset(snapshot.getText(), to)) {
+                                if (lines.getLineIndex(from) < lines.getLineIndex(to)) {
 
                                     List<OffsetRange> codeblocks = getResult().get("codeblocks"); //NOI18N
                                     if (codeblocks == null) {

@@ -44,7 +44,6 @@ package org.netbeans.modules.web.inspect.webkit.ui;
 import java.util.List;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.web.inspect.webkit.WebKitPageModel;
-import org.netbeans.modules.web.webkit.debugging.api.TransportStateException;
 import org.netbeans.modules.web.webkit.debugging.api.css.CSS;
 import org.netbeans.modules.web.webkit.debugging.api.css.StyleSheetHeader;
 import org.openide.nodes.AbstractNode;
@@ -106,11 +105,7 @@ public class DocumentNode extends AbstractNode {
 
         @Override
         protected boolean createKeys(List<StyleSheetHeader> toPopulate) {
-            try {
-                toPopulate.addAll(css.getAllStyleSheets());
-            } catch (TransportStateException tse) {
-                // Debugging session finished in the mean time
-            }
+            toPopulate.addAll(css.getAllStyleSheets());
             return true;
         }
 
