@@ -62,7 +62,6 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
-import javax.swing.text.Document;
 import org.netbeans.modules.cnd.api.remote.RemoteFileUtil;
 import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.api.remote.ServerRecord;
@@ -88,7 +87,6 @@ import org.netbeans.spi.project.ui.support.ProjectChooser;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
-import org.openide.util.ChangeSupport;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -1190,8 +1188,8 @@ public class PanelProjectLocationVisual extends SettingsPanel implements HelpCtx
             if (Thread.interrupted()) {
                 return new ValidationResult(Boolean.TRUE, null);
             }
-            ServerRecord sr = (ServerRecord) hostComboBox.getSelectedItem();
-            if (sr == null || !sr.isOnline()) {
+            Object sr = hostComboBox.getSelectedItem();
+            if (!(sr instanceof ServerRecord) || !((ServerRecord)sr).isOnline()) {
                 String message = NbBundle.getMessage(PanelProjectLocationVisual.class, "MSG_OfflineHost");
                 return new ValidationResult(Boolean.TRUE, message);
             }
