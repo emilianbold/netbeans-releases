@@ -305,7 +305,8 @@ public class CreateDependencies implements PropertyChangeListener {
 
                 @Override
                 public void projectParsingFinished(CsmProject project) {
-                    if (project.getPlatformProject().equals(np)) {
+                    final Object id = project.getPlatformProject();
+                    if (id != null && id.equals(np)) {
                         CsmListeners.getDefault().removeProgressListener(this);
                         listeners.remove(this);
                         DiscoveryProjectGenerator.fixExcludedHeaderFiles(makeProject, ImportProject.logger);
