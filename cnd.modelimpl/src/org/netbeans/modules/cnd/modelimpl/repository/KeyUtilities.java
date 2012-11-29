@@ -66,7 +66,7 @@ import org.netbeans.modules.cnd.repository.spi.Key;
  * @author Vladimir Voskresensky
  */
 public class KeyUtilities {
-    public static int NON_INITIALIZED = Integer.MIN_VALUE + 1;
+    public static final int NON_INITIALIZED = Integer.MIN_VALUE + 1;
 
     /** Creates a new instance of KeyUtils */
     private KeyUtilities() {
