@@ -42,12 +42,23 @@
 package org.netbeans.modules.extbrowser.plugins.chrome;
 
 import java.awt.Dimension;
+import java.awt.Font;
+import java.awt.FontMetrics;
+import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.HierarchyEvent;
+import java.awt.event.HierarchyListener;
 import java.util.logging.Logger;
+
+import javax.swing.JEditorPane;
+import javax.swing.SwingUtilities;
 
 import javax.swing.event.HyperlinkEvent;
 import javax.swing.event.HyperlinkListener;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.Utilities;
+import javax.swing.text.html.HTMLDocument;
 
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -64,7 +75,7 @@ class WebStorePanel extends javax.swing.JPanel {
     static final String EXTENSION_HELP= "chrome.extension";     // NOI18N
     
     WebStorePanel(Runnable runnable) {
-        initComponents();
+        init();
         warningTextLbl.setText( NbBundle.getMessage(WebStorePanel.class, "LBL_UpdateRequired"));
         description.setText(NbBundle.getMessage(WebStorePanel.class, "TXT_WebStoreUpdate"));
         webStoreButton.setText(NbBundle.getMessage(WebStorePanel.class, "LBL_RerunButton"));
@@ -74,7 +85,7 @@ class WebStorePanel extends javax.swing.JPanel {
 
 
     WebStorePanel(boolean rerun, String link, Runnable runnable) {
-        initComponents();
+        init();
         notConnectedLink.setBackground(getBackground());
         if ( rerun ){
             warningTextLbl.setText( NbBundle.getMessage(WebStorePanel.class, "LBL_Rerun"));
@@ -103,6 +114,75 @@ class WebStorePanel extends javax.swing.JPanel {
         }
     }
     
+    private Dimension getDescriptionSize(){
+        return new Dimension(350, (int)getAdjustedHeight());
+    }
+    
+    private void init(){
+        initComponents();
+        description.setBackground(getBackground());
+        
+        Font font = description.getFont();
+        String bodyRule = "body { font-family: " + font.getFamily() + "; " +
+                "font-size: " + font.getSize() + "pt; }";
+        ((HTMLDocument)description.getDocument()).getStyleSheet().addRule(bodyRule);
+        
+        
+        addHierarchyListener(new HierarchyListener() {
+            
+            @Override
+            public void hierarchyChanged( HierarchyEvent event ) {
+                if ((HierarchyEvent.SHOWING_CHANGED & event.getChangeFlags()) !=0 
+                        && isShowing()) 
+                {
+//                    FontMetrics fontMetrics = description.getFontMetrics(
+//                            description.getFont());
+//                    float lineHeight = fontMetrics.getLineMetrics(description.getText(), 
+//                            description.getGraphics()).getHeight();
+                    Dimension size = description.getPreferredSize();
+                    size.setSize(size.getWidth(), getAdjustedHeight());
+                    description.setPreferredSize( size);
+                    description.setMaximumSize(size);
+                    description.setMinimumSize(size);
+                    Window window = SwingUtilities.getWindowAncestor(WebStorePanel.this);
+                    window.pack();
+                }
+            }
+        });
+    }
+    
+    private double getAdjustedHeight(){
+        JEditorPane fakePane = new JEditorPane();
+        fakePane.setEditable(false);
+        fakePane.setBorder(null);
+        fakePane.setContentType("text/html"); // NOI18N
+        fakePane.setFont(description.getFont());
+        Dimension size = description.getPreferredSize();
+        size.setSize( size.getWidth(), Short.MAX_VALUE);
+        fakePane.setSize( size);
+        fakePane.setText(description.getText());
+        Font font = description.getFont();
+        String bodyRule = "body { font-family: " + font.getFamily() + "; " +
+                "font-size: " + font.getSize() + "pt; }";
+        ((HTMLDocument)fakePane.getDocument()).getStyleSheet().addRule(bodyRule);
+        return fakePane.getPreferredSize().getHeight();
+    }
+    
+    private int getRows() {
+        int count = 0;
+        try {
+            int offs=description.getCaretPosition();
+            while( offs>0) {
+                offs=Utilities.getRowStart(description, offs)-1;
+                count++;
+            }
+        } 
+        catch (BadLocationException e) {
+            assert false;
+        }
+        return count+1;
+    }
+    
     private void attachActions(final Runnable runnable){
         webStoreButton.addActionListener(new ActionListener() {
             
@@ -129,7 +209,7 @@ class WebStorePanel extends javax.swing.JPanel {
         webStoreButton = new javax.swing.JButton();
         jScrollPane1 = new javax.swing.JScrollPane();
         notConnectedLink = new javax.swing.JEditorPane();
-        description = new javax.swing.JLabel();
+        description = new javax.swing.JEditorPane();
 
         setLayout(new java.awt.GridBagLayout());
 
@@ -143,7 +223,7 @@ class WebStorePanel extends javax.swing.JPanel {
         org.openide.awt.Mnemonics.setLocalizedText(warningTextLbl, org.openide.util.NbBundle.getMessage(WebStorePanel.class, "LBL_ConnectorExtenstion")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 15, 10);
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 15, 20);
         add(warningTextLbl, gridBagConstraints);
 
         org.openide.awt.Mnemonics.setLocalizedText(webStoreButton, org.openide.util.NbBundle.getMessage(WebStorePanel.class, "LBL_WebStore")); // NOI18N
@@ -170,9 +250,13 @@ class WebStorePanel extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 10, 0);
         add(jScrollPane1, gridBagConstraints);
 
-        org.openide.awt.Mnemonics.setLocalizedText(description, org.openide.util.NbBundle.getMessage(WebStorePanel.class, "LBL_ChromeExtensionDescription")); // NOI18N
-        description.setMinimumSize(new java.awt.Dimension(350, 56));
-        description.setPreferredSize(new java.awt.Dimension(350, 56));
+        description.setEditable(false);
+        description.setBackground(new java.awt.Color(240, 240, 240));
+        description.setBorder(null);
+        description.setContentType("text/html"); // NOI18N
+        description.setText(org.openide.util.NbBundle.getMessage(WebStorePanel.class, "WebStorePanel.description.text")); // NOI18N
+        description.setMinimumSize(new java.awt.Dimension(350, 60));
+        description.setPreferredSize(new java.awt.Dimension(350, 100));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 1;
@@ -181,7 +265,7 @@ class WebStorePanel extends javax.swing.JPanel {
         add(description, gridBagConstraints);
     }// </editor-fold>//GEN-END:initComponents
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JLabel description;
+    private javax.swing.JEditorPane description;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JEditorPane notConnectedLink;
     private javax.swing.JLabel warningLbl;
