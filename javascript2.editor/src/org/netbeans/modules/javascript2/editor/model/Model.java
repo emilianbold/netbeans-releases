@@ -117,7 +117,7 @@ public final class Model {
     }
 
     private void resolveLocalTypes(JsObject object, JsDocumentationHolder docHolder) {
-        if(object instanceof JsFunctionImpl) {
+         if(object instanceof JsFunctionImpl) {
             ((JsFunctionImpl)object).resolveTypes(docHolder);
         } else {
             ((JsObjectImpl)object).resolveTypes(docHolder);

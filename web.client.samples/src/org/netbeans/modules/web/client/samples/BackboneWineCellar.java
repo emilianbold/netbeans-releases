@@ -45,6 +45,7 @@ package org.netbeans.modules.web.client.samples;
 import org.netbeans.api.templates.TemplateRegistration;
 import org.netbeans.modules.web.client.samples.wizard.iterator.OnlineSampleWizardIterator;
 import org.netbeans.modules.web.clientproject.spi.SiteTemplateImplementation;
+import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
 
 /**
@@ -65,7 +66,7 @@ public class BackboneWineCellar extends OnlineSampleWizardIterator {
 
     @Override
     protected SiteTemplateImplementation getSiteTemplate() {
-        return new OnlineSiteTemplate("BACKBONE-WINE-CELLAR", getProjectName(), getProjectZipURL(), "backbone-cellar-master.zip"); // NOI18N
+        return new BackboneWineCellarTemplate("BACKBONE-WINE-CELLAR", getProjectName(), getProjectZipURL(), "backbone-cellar-master.zip"); // NOI18N
     }
 
     @Override
@@ -76,5 +77,22 @@ public class BackboneWineCellar extends OnlineSampleWizardIterator {
     @Override
     protected String getProjectZipURL() {
         return "https://github.com/ccoenraets/backbone-cellar/archive/master.zip"; // NOI18N
+    }
+
+    private static class BackboneWineCellarTemplate extends OnlineSiteTemplate {
+
+        public BackboneWineCellarTemplate(String id, String name, String url, String zipName) {
+            super(id, name, url, zipName);
+        }
+
+        @Override
+        public void configure(SiteTemplateImplementation.ProjectProperties projectProperties) {
+            projectProperties.setSiteRootFolder("bootstrap"); // NOI18N
+        }
+
+        @Override
+        protected FileObject getTargetDir(FileObject projectDir, ProjectProperties projectProperties) {
+            return projectDir;
+        }
     }
 }

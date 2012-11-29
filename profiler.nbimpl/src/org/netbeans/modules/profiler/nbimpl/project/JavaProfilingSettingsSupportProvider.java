@@ -55,7 +55,7 @@ import org.netbeans.spi.project.ProjectServiceProvider;
                             @ProjectType(id="org-netbeans-modules-java-j2seproject"), // NOI18N
                             @ProjectType(id="org-netbeans-modules-ant-freeform", position=1201), // NOI18N
                             @ProjectType(id="org-netbeans-modules-apisupport-project"), // NOI18N
-                            @ProjectType(id="org-netbeans-modules-apisupport-project-suite"), // NOI18N
+//                            @ProjectType(id="org-netbeans-modules-apisupport-project-suite"), // #222661, overridden in profiler.nbmodule
                             @ProjectType(id="org-netbeans-modules-maven") // NOI18N
                         }
 )

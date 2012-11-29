@@ -117,8 +117,8 @@ public class JsStructureScanner implements StructureScanner {
                     && (children.size() > 0 || child.isDeclared())) {
                 collectedItems.add(new JsObjectStructureItem(child, children, result));
             } else if (child.getJSKind() == JsElement.Kind.PROPERTY) {
-                if(child.getModifiers().contains(Modifier.PUBLIC)
-                        || !(jsObject.getParent() instanceof JsFunction))
+                if(child.isDeclared() && (child.getModifiers().contains(Modifier.PUBLIC)
+                        || !(jsObject.getParent() instanceof JsFunction)))
                 collectedItems.add(new JsSimpleStructureItem(child, "prop-", result)); //NOI18N
             } else if (child.getJSKind() == JsElement.Kind.VARIABLE && child.isDeclared()
                     /*&& (jsObject.getJSKind() == JsElement.Kind.FILE || jsObject.getJSKind() == JsElement.Kind.CONSTRUCTOR)*/) {
