@@ -67,7 +67,6 @@ import org.netbeans.modules.web.webkit.debugging.api.WebKitDebugging;
 import org.netbeans.modules.web.webkit.debugging.spi.Response;
 import org.netbeans.modules.web.webkit.debugging.spi.ResponseCallback;
 import org.netbeans.modules.web.webkit.debugging.spi.netbeansdebugger.NetBeansJavaScriptDebuggerFactory;
-import org.openide.modules.OnStop;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
@@ -104,6 +103,10 @@ public final class ExternalBrowserPlugin {
             Thread shutdown = new Thread(){
                 @Override
                 public void run() {
+                    List<BrowserTabDescriptor> browserTabs = new ArrayList<BrowserTabDescriptor>(knownBrowserTabs);
+                    for (BrowserTabDescriptor tab : browserTabs) {
+                        tab.deinitialize();
+                    }
                     server.stop();
                 }
             };
@@ -780,19 +783,4 @@ public final class ExternalBrowserPlugin {
 
     }
     
-    @OnStop
-    public static class Shutdown implements Runnable {
-
-        @Override
-        public void run() {
-            ExternalBrowserPlugin ebp = ExternalBrowserPlugin.getInstance();
-            List<BrowserTabDescriptor> browserTabs = new ArrayList<BrowserTabDescriptor>(ebp.knownBrowserTabs);
-            for (BrowserTabDescriptor tab : browserTabs) {
-                tab.deinitialize();
-            }
-            ebp.server.stop();
-        }
-        
-    }
-
 }
