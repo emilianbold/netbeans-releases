@@ -46,24 +46,37 @@ made subject to such option by the copyright holder.
 --><filesystem>
     <folder name="Templates">
         <folder name="MIDP">
-            <file name="E2EWebApplication.wsclient.shadow">
-                <attr name="originalFile" stringvalue="Bridges/MIDP/E2EWebApplication.wsclient"/>
+            <file name="E2EWebApplication.wsclient" url="E2EWebApplication_wsclient.template">
+                <attr name="displayName" bundlevalue="org.netbeans.modules.mobility.end2end.ui.wizard.Bundle#Templates/MIDP/E2EWebApplication.wsclient"/>
+                <attr name="iconBase" stringvalue="org/netbeans/modules/mobility/end2end/resources/e2eclienticon.png"/>
+                <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.mobility.end2end.ui.wizard.GenericServiceIterator.singleton"/>
+                <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/mobility/end2end/resources/descriptions/MIDP/E2EWebApplication_wsclient.html"/>
                 <attr name="position" intvalue="800"/>
+                <attr boolvalue="true" name="template"/>
+                <attr name="MIDP" boolvalue="true"/>
+                <attr name="templateCategory" stringvalue="MIDP"/>
             </file>
-            <file name="Jsr172Application.wsclient.shadow">
-                <attr name="originalFile" stringvalue="Bridges/MIDP/Jsr172Application.wsclient"/>
+            <file name="Jsr172Application.wsclient" url="Jsr172Application_wsclient.template">
+                <attr name="displayName" bundlevalue="org.netbeans.modules.mobility.jsr172.wizard.Bundle#Templates/MIDP/Jsr172Application.wsclient"/>
+                <attr name="iconBase" stringvalue="org/netbeans/modules/mobility/jsr172/resources/e2eclienticon.gif"/>
+                <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.mobility.jsr172.wizard.WebServiceClientWizardIterator.singleton"/>
+                <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/mobility/jsr172/resources/descriptions/MIDP/JSR172_wsclient.html"/>
                 <attr name="position" intvalue="900"/>
+                <attr boolvalue="true" name="template"/>
+                <attr name="MIDP" boolvalue="true"/>
+                <attr name="templateCategory" stringvalue="MIDP"/>
             </file>
         </folder>
     </folder>
+
     <folder name="RecommendedTemplates">
         <folder name="org.netbeans.modules.kjava.j2meproject">
             <file name="e2e">
-                <attr name="PriviledgedTemplates" stringvalue="Bridges/MIDP/E2EWebApplication.wsclient"/>
+                <attr name="PriviledgedTemplates" stringvalue="Templates/MIDP/E2EWebApplication.wsclient"/>
                 <attr name="position" intvalue="500"/>
             </file>
             <file name="jsr172">
-                <attr name="PriviledgedTemplates" stringvalue="Bridges/MIDP/Jsr172Application.wsclient"/>
+                <attr name="PriviledgedTemplates" stringvalue="Templates/MIDP/Jsr172Application.wsclient"/>
                 <attr name="position" intvalue="600"/>
             </file>
         </folder>
