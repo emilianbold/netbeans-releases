@@ -260,7 +260,6 @@ public class OnlineSampleVisualPanel extends javax.swing.JPanel {
         createdFolderLabel.setPreferredSize(new java.awt.Dimension(141, 15));
 
         createdFolderTextField.setEditable(false);
-        createdFolderTextField.setEnabled(false);
 
         org.openide.awt.Mnemonics.setLocalizedText(browseButton, org.openide.util.NbBundle.getMessage(OnlineSampleVisualPanel.class, "LBL_Browse")); // NOI18N
         browseButton.addActionListener(new java.awt.event.ActionListener() {
@@ -276,7 +275,6 @@ public class OnlineSampleVisualPanel extends javax.swing.JPanel {
 
         templateUrlTextField.setEditable(false);
         templateUrlTextField.setText(org.openide.util.NbBundle.getMessage(OnlineSampleVisualPanel.class, "OnlineSampleVisualPanel.templateUrlTextField.text")); // NOI18N
-        templateUrlTextField.setEnabled(false);
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
