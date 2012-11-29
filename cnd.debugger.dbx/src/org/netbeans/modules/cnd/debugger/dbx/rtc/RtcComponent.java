@@ -64,7 +64,8 @@ import org.openide.*;
 import org.openide.util.HelpCtx;
 
 
-import org.netbeans.lib.terminalemulator.*;
+import org.netbeans.lib.terminalemulator.ActiveRegion;
+import org.netbeans.lib.terminalemulator.ActiveTermListener;
 
 import org.netbeans.modules.cnd.debugger.common2.utils.options.OptionSet;
 import org.netbeans.modules.cnd.debugger.common2.utils.options.Option;

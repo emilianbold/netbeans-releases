@@ -47,7 +47,8 @@ package org.netbeans.modules.cnd.debugger.dbx.rtc;
 import java.util.Stack;
 import java.io.PrintStream;
 
-import org.netbeans.lib.terminalemulator.*;
+import org.netbeans.lib.terminalemulator.ActiveRegion;
+import org.netbeans.lib.terminalemulator.ActiveTerm;
 
 import org.netbeans.modules.cnd.debugger.common2.utils.IpeUtils;
 

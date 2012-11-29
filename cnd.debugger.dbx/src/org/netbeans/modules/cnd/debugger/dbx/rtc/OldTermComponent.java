@@ -63,13 +63,15 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
 
 import java.util.prefs.Preferences;
+import org.netbeans.lib.terminalemulator.ActiveTerm;
+import org.netbeans.lib.terminalemulator.StreamTerm;
+import org.netbeans.lib.terminalemulator.Term;
 
 import org.openide.awt.MouseUtils;
 import org.openide.windows.TopComponent;
 import org.openide.util.NbPreferences;
 
 import org.netbeans.modules.terminal.api.IOTopComponent;
-import org.netbeans.lib.terminalemulator.*;
 
 import org.netbeans.lib.terminalemulator.support.TermOptions;
 
