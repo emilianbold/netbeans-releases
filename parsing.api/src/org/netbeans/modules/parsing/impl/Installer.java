@@ -39,12 +39,14 @@
  */
 package org.netbeans.modules.parsing.impl;
 
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import org.netbeans.modules.parsing.impl.indexing.RepositoryUpdater;
 import org.netbeans.modules.parsing.impl.indexing.lucene.DocumentBasedIndexManager;
 import org.netbeans.modules.parsing.impl.indexing.lucene.LuceneIndexFactory;
 import org.openide.modules.ModuleInstall;
+import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
 import org.openide.windows.WindowManager;
 
@@ -75,13 +77,18 @@ public class Installer extends ModuleInstall {
     @Override
     public void close() {
         super.close();
+        final CountDownLatch done = new CountDownLatch(1);
         final Runnable postTask = new Runnable() {
             private AtomicBoolean started = new AtomicBoolean();
             @Override
             public void run() {
-                if (started.compareAndSet(false, true)) {
-                    LuceneIndexFactory.getDefault().close();
-                    DocumentBasedIndexManager.getDefault().close();
+                if (started.compareAndSet(false, true)) {                    
+                    try {
+                        LuceneIndexFactory.getDefault().close();
+                        DocumentBasedIndexManager.getDefault().close();
+                    } finally {
+                        done.countDown();
+                    }
                 }
             }
         };
@@ -89,6 +96,12 @@ public class Installer extends ModuleInstall {
             RepositoryUpdater.getDefault().stop(postTask);
         } catch (TimeoutException timeout) {
             postTask.run();
+        } finally {
+            try {
+                done.await();
+            } catch (InterruptedException ex) {
+                Exceptions.printStackTrace(ex);
+            }
         }
     }
 

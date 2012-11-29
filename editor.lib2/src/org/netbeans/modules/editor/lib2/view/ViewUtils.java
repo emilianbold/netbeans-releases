@@ -241,8 +241,10 @@ public final class ViewUtils {
     public static String toString(Shape s) {
         if (s instanceof Rectangle2D) {
             return toString((Rectangle2D)s);
-        } else {
+        } else if (s != null) {
             return appendPath(new StringBuilder(200), 0, s.getPathIterator(null)).toString();
+        } else {
+            return "<NULL>"; // NOI18N
         }
     }
 

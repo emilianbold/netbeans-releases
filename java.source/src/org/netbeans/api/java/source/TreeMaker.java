@@ -734,7 +734,10 @@ public final class TreeMaker {
      *                and interface methods.
      * @see com.sun.source.tree.MethodTree
      * @see javax.lang.model.element.ExecutableElement
+     * @deprecated this method produces different output than usually expected -
+     *             use one of the other "Method" methods in this class or {@link GeneratorUtilities}.
      */
+    @Deprecated
     public MethodTree Method(ExecutableElement element, BlockTree body) {
         return delegate.Method(element, body);
     }
