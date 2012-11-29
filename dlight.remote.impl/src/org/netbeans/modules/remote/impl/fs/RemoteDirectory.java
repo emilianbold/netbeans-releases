@@ -483,7 +483,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
     private static final Collection<String> AUTO_MOUNTS = Arrays.asList("/net", "/set", "/import", "/shared", "/home", "/ade_autofs", "/ade"); //NOI18N
     
     private boolean isProhibited() {
-        return getPath().equals("/proc");
+        return getPath().equals("/proc");//NOI18N
     }
 
     private Map<String, DirEntry> readEntries(DirectoryStorage oldStorage, boolean forceRefresh, String childName) throws IOException, InterruptedException, ExecutionException, CancellationException {
