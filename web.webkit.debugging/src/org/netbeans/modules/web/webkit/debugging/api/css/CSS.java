@@ -226,13 +226,13 @@ public class CSS {
     public void forcePseudoState(Node node, PseudoClass[] forcedPseudoClasses) {
         JSONObject params = new JSONObject();
         params.put("nodeId", node.getNodeId()); // NOI18N
-        if (forcedPseudoClasses != null && forcedPseudoClasses.length != 0) {
-            JSONArray pseudoClasses = new JSONArray();
+        JSONArray pseudoClasses = new JSONArray();
+        if (forcedPseudoClasses != null) {
             for (PseudoClass pseudoClass : forcedPseudoClasses) {
                 pseudoClasses.add(pseudoClass.getCode());
             }
-            params.put("forcedPseudoClasses", pseudoClasses); // NOI18N
         }
+        params.put("forcedPseudoClasses", pseudoClasses); // NOI18N
         transport.sendCommand(new Command("CSS.forcePseudoState", params)); // NOI18N
     }
 

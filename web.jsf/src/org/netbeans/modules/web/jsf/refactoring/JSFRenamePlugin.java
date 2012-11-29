@@ -149,7 +149,6 @@ public class JSFRenamePlugin implements RefactoringPlugin {
                                         CompilationUnitTree cut = co.getCompilationUnit();
                                         if(!cut.getTypeDecls().isEmpty()){
                                             treePathHandle = TreePathHandle.create(TreePath.getPath(cut, cut.getTypeDecls().get(0)), co);
-                                            refactoring.getContext().add(co);
                                         }
                                     }
                                 }, false);

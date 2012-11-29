@@ -434,7 +434,7 @@ public class PHPIndexTest extends PHPNavTestBase {
         classes = index.getClasses(NameKind.exact("testMethodDeclaration_1"));
         assertEquals(1, classes.size());
         clz = getFirst(classes);
-        LinkedHashSet<TypeElement> inheritedTypes = index.getInheritedTypes(clz);
+        Set<TypeElement> inheritedTypes = index.getInheritedTypes(clz);
         assertEquals(2, inheritedTypes.size());
 
         methods = index.getDeclaredMethods(clz);

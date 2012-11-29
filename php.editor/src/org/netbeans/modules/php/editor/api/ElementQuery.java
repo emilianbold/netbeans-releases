@@ -186,20 +186,20 @@ public interface ElementQuery {
 
         Set<TypeConstantElement> getDeclaredTypeConstants(TypeElement typeElement);
 
-        LinkedHashSet<TypeElement> getDirectInheritedTypes(final TypeElement typeElement);
+        Set<TypeElement> getDirectInheritedTypes(final TypeElement typeElement);
 
-        LinkedHashSet<ClassElement> getDirectInheritedClasses(final TypeElement typeElement);
+        Set<ClassElement> getDirectInheritedClasses(final TypeElement typeElement);
 
-        LinkedHashSet<InterfaceElement> getDirectInheritedInterfaces(final TypeElement typeElement);
+        Set<InterfaceElement> getDirectInheritedInterfaces(final TypeElement typeElement);
 
-        LinkedHashSet<TypeElement> getDirectInheritedByTypes(final TypeElement typeElement);
+        Set<TypeElement> getDirectInheritedByTypes(final TypeElement typeElement);
 
-        LinkedHashSet<TypeElement> getInheritedByTypes(final TypeElement typeElement);
+        Set<TypeElement> getInheritedByTypes(final TypeElement typeElement);
         /**
          * @return all extended classes (see method getInheritedClasses) + implemented interfaces (see method getInheritedInterfaces)
          * recursively
          */
-        LinkedHashSet<TypeElement> getInheritedTypes(TypeElement typeElement);
+        Set<TypeElement> getInheritedTypes(TypeElement typeElement);
         TreeElement<TypeElement> getInheritedTypesAsTree(TypeElement typeElement);
         TreeElement<TypeElement> getInheritedTypesAsTree(TypeElement typeElement, final Set<TypeElement> preferredTypes);
         TreeElement<TypeElement> getInheritedByTypesAsTree(TypeElement typeElement);
@@ -207,12 +207,12 @@ public interface ElementQuery {
         /**
          * @return all extended classes recursively
          */
-        LinkedHashSet<ClassElement> getInheritedClasses(TypeElement typeElement);
+        Set<ClassElement> getInheritedClasses(TypeElement typeElement);
 
         /**
          * @return all implemented interfaces recursively
          */
-        LinkedHashSet<InterfaceElement> getInheritedInterfaces(TypeElement typeElement);
+        Set<InterfaceElement> getInheritedInterfaces(TypeElement typeElement);
 
         /**
          * @return all not private fields from inherited types (see getInheritedTypes method)

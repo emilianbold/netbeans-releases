@@ -141,6 +141,9 @@ public class UninitializedVariableHint extends AbstractHint implements PHPRuleWi
             return;
         }
         FileObject fileObject = phpParseResult.getSnapshot().getSource().getFileObject();
+        if (fileObject == null) {
+            return;
+        }
         CheckVisitor checkVisitor = new CheckVisitor(fileObject, phpParseResult.getModel());
         phpParseResult.getProgram().accept(checkVisitor);
         hints.addAll(checkVisitor.getHints());

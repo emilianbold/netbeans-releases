@@ -68,6 +68,7 @@ public abstract class TokenAcceptor {
         ACCEPTORS.add(new Percentage("percentage"));
         ACCEPTORS.add(new Length("length"));
         ACCEPTORS.add(new HashColor("hash_color_code"));
+        ACCEPTORS.add(new HashColorAplha("hash_color_alpha_code")); //javafx
         ACCEPTORS.add(new StringAcceptor("string"));
         ACCEPTORS.add(new NonNegativeInteger("non-negative-integer"));
         ACCEPTORS.add(new Integer("integer"));
@@ -207,6 +208,19 @@ public abstract class TokenAcceptor {
         public boolean accepts(Token token) {
             int len = token.image().length();
             return token.tokenId() == CssTokenId.HASH && (len == 4 || len == 7); //three of six hex digits after hash sign are allowed
+        }
+    }
+
+    public static class HashColorAplha extends TokenAcceptor {
+
+        public HashColorAplha(String id) {
+            super(id);
+        }
+
+        @Override
+        public boolean accepts(Token token) {
+            int len = token.image().length();
+            return token.tokenId() == CssTokenId.HASH && len == 9; //#aabbccDD -- DD is aplha
         }
     }
 
