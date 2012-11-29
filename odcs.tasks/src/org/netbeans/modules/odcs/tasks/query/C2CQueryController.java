@@ -717,9 +717,7 @@ public class C2CQueryController extends QueryController implements ItemListener,
         synchronized(REFRESH_LOCK) {
             if(refreshTask == null) {
                 refreshTask = new QueryTask();
-            } else {
-                refreshTask.cancel();
-            }
+            } 
             t = refreshTask.post(auto);
         }
         if(synchronously) {
@@ -942,6 +940,14 @@ public class C2CQueryController extends QueryController implements ItemListener,
         }
 
         private void startQuery() {
+
+            // XXX isn't persistent and should be merged with refresh
+////            XXX String lastChageFrom = panel.changedFromTextField.getText().trim();
+////            if(lastChageFrom != null && !lastChageFrom.equals("")) {    // NOI18N
+////                C2CConfig.getInstance().setLastChangeFrom(lastChageFrom);
+////            }
+            
+            setQueryRunning(true);
             handle = ProgressHandleFactory.createHandle(
                     NbBundle.getMessage(
                         C2CQueryController.class,
@@ -959,10 +965,13 @@ public class C2CQueryController extends QueryController implements ItemListener,
                 }
             });
             handle.start();
-        }
+        } 
 
         private void finnishQuery() {
-            task = null;
+            setQueryRunning(false); // XXX do we need this? its called in finishQuery anyway
+            synchronized(REFRESH_LOCK) {
+                task = null;
+            }
             if(handle != null) {
                 handle.finish();
                 handle = null;
@@ -995,21 +1004,6 @@ public class C2CQueryController extends QueryController implements ItemListener,
             }
         }
 
-        private void executeQuery() {
-            setQueryRunning(true);
-            // XXX isn't persistent and should be merged with refresh
-//            XXX String lastChageFrom = panel.changedFromTextField.getText().trim();
-//            if(lastChageFrom != null && !lastChageFrom.equals("")) {    // NOI18N
-//                C2CConfig.getInstance().setLastChangeFrom(lastChageFrom);
-//            }
-            try {
-                query.refresh(autoRefresh);
-            } finally {
-                setQueryRunning(false); // XXX do we need this? its called in finishQuery anyway
-                task = null;
-            }
-        }
-
         private void setQueryRunning(final boolean running) {
             EventQueue.invokeLater(new Runnable() {
                 @Override
@@ -1023,15 +1017,15 @@ public class C2CQueryController extends QueryController implements ItemListener,
         public void run() {
             startQuery();
             try {
-                executeQuery();
+                query.refresh(autoRefresh);
             } finally {
                 finnishQuery();
             }
         }
 
         Task post(boolean autoRefresh) {
-            if(task != null) {
-                task.cancel();
+            if(task != null && !task.isFinished()) {
+                return task;
             }
             task = rp.create(this);
             this.autoRefresh = autoRefresh;
