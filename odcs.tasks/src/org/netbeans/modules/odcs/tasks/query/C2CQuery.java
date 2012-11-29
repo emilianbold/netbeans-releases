@@ -105,6 +105,9 @@ public abstract class C2CQuery {
     private ColumnDescriptor[] columnDescriptors;
     private OwnerInfo info;
     
+    private final Object ISSUES_LOCK = new Object();
+    private final Set<String> issues = new HashSet<String>();
+    
     public static C2CQuery createNew(C2CRepository repository) {
         return new CustomQuery(repository);
     }
@@ -151,7 +154,9 @@ public abstract class C2CQuery {
     }
 
     int getSize() {
-        return issues.size();
+        synchronized(ISSUES_LOCK) {
+            return issues.size();
+        }
     }
 
     boolean wasRun() {
@@ -172,18 +177,21 @@ public abstract class C2CQuery {
     }
 
     public boolean contains(String id) {
-        return issues.contains(id);
+        synchronized(ISSUES_LOCK) {
+            return issues.contains(id);
+        }
     }
 
     public Collection<C2CIssue> getIssues() {
-        if (issues == null) {
-            return Collections.emptyList();
-        }
-        List<String> ids = new ArrayList<String>();
-        synchronized (issues) {
+        List<String> ids;
+        synchronized(ISSUES_LOCK) {
+            if (issues == null) {
+                return Collections.emptyList();
+            }
+            ids = new ArrayList<String>(issues.size());
             ids.addAll(issues);
         }
-
+        
         IssueCache<C2CIssue, TaskData> cache = repository.getIssueCache();
         List<C2CIssue> ret = new ArrayList<C2CIssue>();
         for (String id : ids) {
@@ -276,7 +284,6 @@ public abstract class C2CQuery {
         refreshIntern(false);
     }
     
-    private final Set<String> issues = new HashSet<String>();
     public void refreshIntern(final boolean autoRefresh) {
         
 //        assert if query was provided with parameters from controller
@@ -286,18 +293,15 @@ public abstract class C2CQuery {
             @Override
             public void run() {
                 C2C.LOG.log(Level.FINE, "refresh start - {0} [{1}]", new Object[] {name, getRepositoryQuery().getAttribute(C2CData.ATTR_QUERY_CRITERIA)}); // NOI18N
+                IssuesCollector ic = new IssuesCollector();
                 try {
                     
-                    issues.clear();
-                    if(isSaved()) {
-                        if(!wasRun() && !issues.isEmpty()) {
-                            C2C.LOG.log(Level.WARNING, "query {0} supposed to be run for the first time yet already contains issues.", getDisplayName()); // NOI18N
-                            assert false;
-                        }
+                    synchronized(ISSUES_LOCK) {
+                        issues.clear();
                     }
+                    
                     firstRun = false;
 
-                    IssuesCollector ic = new IssuesCollector();
                     PerformQueryCommand queryCmd = 
                         new PerformQueryCommand(
                             C2C.getInstance().getRepositoryConnector(),
@@ -305,13 +309,16 @@ public abstract class C2CQuery {
                             ic,
                             getRepositoryQuery());
                     repository.getExecutor().execute(queryCmd, true, !autoRefresh);
+                    
                     if(queryCmd.hasFailed()) {
                         return;
                     }
 
                     if(isSaved()) {
-                        // store all issues you got
-                        repository.getIssueCache().storeQueryIssues(getDisplayName(), issues.toArray(new String[issues.size()]));
+                        synchronized(ISSUES_LOCK) {
+                            // store all issues you got
+                            repository.getIssueCache().storeQueryIssues(getDisplayName(), issues.toArray(new String[issues.size()]));
+                        }
                     }
 
                     //XXX opened issues must have complete task data
@@ -324,7 +331,9 @@ public abstract class C2CQuery {
                         }
                     }                    
                 } finally {
-                    logQueryEvent(issues.size(), autoRefresh);
+                    synchronized(ISSUES_LOCK) {
+                        logQueryEvent(issues.size(), autoRefresh);
+                    }
                     if(C2C.LOG.isLoggable(Level.FINE)) {
                         C2C.LOG.log(Level.FINE, "refresh finish - {0} [{1}]", new Object[] {name, getRepositoryQuery().getAttribute(C2CData.ATTR_QUERY_CRITERIA)}); // NOI18N
                     }
@@ -360,7 +369,9 @@ public abstract class C2CQuery {
         @Override
         public void accept(TaskData taskData) {
             String id = C2CIssue.getID(taskData);
-            issues.add(id);
+            synchronized(ISSUES_LOCK) {
+                issues.add(id);
+            }
             C2CIssue issue;
             try {
                 IssueCache<C2CIssue, TaskData> cache = repository.getIssueCache();
