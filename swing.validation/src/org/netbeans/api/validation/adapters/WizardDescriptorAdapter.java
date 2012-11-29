@@ -53,31 +53,64 @@ import org.openide.WizardDescriptor;
  */
 public class WizardDescriptorAdapter implements ValidationUI {
     private final WizardDescriptor wiz;
+    private final Type type;
 
+    /**
+     * 
+     * @since 1.22
+     */
+    public enum Type {
+        VALID, MESSAGE, VALID_AND_MESSAGE
+    }
     public WizardDescriptorAdapter(WizardDescriptor d) {
+        this(d, Type.VALID_AND_MESSAGE);
+    }
+    
+    /**
+     * allow to decide what ui elements should be affected, button enablement or error message or both.
+     * @since 1.22
+     */ 
+    public WizardDescriptorAdapter(WizardDescriptor d, Type type) {
         this.wiz = d;
+        this.type = type;
     }
 
     @Override
     public void clearProblem() {
-        wiz.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, null);
-        wiz.setValid(true);
+        if (type != Type.VALID) {
+            wiz.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, null);
+        }
+        if (type != Type.MESSAGE) {
+            wiz.setValid(true);
+        }
     }
 
     @Override
     public void showProblem(Problem p) {
         switch (p.severity()) {
             case INFO :
-                wiz.putProperty(WizardDescriptor.PROP_INFO_MESSAGE, p.getMessage());
-                wiz.setValid(true);
+                if (type != Type.VALID) {
+                    wiz.putProperty(WizardDescriptor.PROP_INFO_MESSAGE, p.getMessage());
+                }
+                if (type != Type.MESSAGE) {
+                    wiz.setValid(true);
+                }
                 break;
             case WARNING :
-                wiz.putProperty(WizardDescriptor.PROP_WARNING_MESSAGE, p.getMessage());
-                wiz.setValid(true);
+                if (type != Type.VALID) {
+                    wiz.putProperty(WizardDescriptor.PROP_WARNING_MESSAGE, p.getMessage());
+                }
+                if (type != Type.MESSAGE) {
+                    wiz.setValid(true);
+                }
                 break;
             case FATAL :
-                wiz.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, p.getMessage());
-                wiz.setValid(false);
+                if (type != Type.VALID) {
+                    wiz.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, p.getMessage());
+                }
+                if (type != Type.MESSAGE) {
+                    wiz.setValid(false);
+                }
                 break;
         }
     }

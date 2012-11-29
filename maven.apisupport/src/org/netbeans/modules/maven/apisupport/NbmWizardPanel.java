@@ -62,16 +62,22 @@ public class NbmWizardPanel implements WizardDescriptor.FinishablePanel<WizardDe
 
     private final Archetype archetype;
     private final ValidationGroup validationGroup;
+    private final ValidationGroup justEnabledStateValidationGroup;
     
 
 
-    public NbmWizardPanel(ValidationGroup vg, Archetype arch) {
-        validationGroup = vg;
+    public NbmWizardPanel(ValidationGroup enabledVG, ValidationGroup errorMsgVG, Archetype arch) {
+        validationGroup = errorMsgVG;
         archetype = arch;
+        justEnabledStateValidationGroup = enabledVG;
     }
 
     ValidationGroup getValidationGroup() {
         return validationGroup;
+    }
+    
+    ValidationGroup getEnabledStateValidationGroup() {
+        return justEnabledStateValidationGroup;
     }
     
     @Override
