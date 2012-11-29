@@ -252,7 +252,11 @@ public class PHPNewLineIndenter {
                                             continualIndent = true;
                                             break;
                                         case ':':
-                                            indent = true;
+                                            if (isInTernaryOperatorStatement(ts)) {
+                                                continualIndent = true;
+                                            } else {
+                                                indent = true;
+                                            }
                                             break;
                                         case '=':
                                             continualIndent = true;
@@ -322,6 +326,19 @@ public class PHPNewLineIndenter {
                 }
             }
         });
+    }
+
+    private static boolean isInTernaryOperatorStatement(TokenSequence<? extends PHPTokenId> ts) {
+        boolean result = false;
+        int originalOffset = ts.offset();
+        ts.movePrevious();
+        Token<? extends PHPTokenId> previousToken = LexUtilities.findPreviousToken(ts, Arrays.asList(PHPTokenId.PHP_TOKEN));
+        if (previousToken != null && previousToken.id() == PHPTokenId.PHP_TOKEN && previousToken.text().charAt(0) == '?') {
+            result = true;
+        }
+        ts.move(originalOffset);
+        ts.moveNext();
+        return result;
     }
 
     private CodeB4BreakData processCodeBeforeBreak(TokenSequence ts, boolean indentComment) {
