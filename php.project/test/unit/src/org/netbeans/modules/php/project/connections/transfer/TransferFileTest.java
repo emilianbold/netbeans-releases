@@ -102,7 +102,6 @@ public class TransferFileTest extends NbTestCase {
         assertEquals("/pub/myproject/tests/info/readme.txt", file.getRemoteAbsolutePath());
     }
 
-
     public void testTransferFileRelations() {
         TransferFile projectRoot = TransferFile.fromDirectory(null, new File("/a"), "/a", null);
         assertTrue(projectRoot.isRoot());
