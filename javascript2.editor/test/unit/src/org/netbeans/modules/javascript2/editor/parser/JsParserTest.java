@@ -43,7 +43,9 @@ package org.netbeans.modules.javascript2.editor.parser;
 
 import javax.swing.text.Document;
 import org.netbeans.modules.javascript2.editor.JsTestBase;
+import org.netbeans.modules.javascript2.editor.lexer.JsTokenId;
 import org.netbeans.modules.javascript2.editor.parser.SanitizingParser.Context;
+import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.api.Source;
 
 /**
@@ -254,8 +256,9 @@ public class JsParserTest extends JsTestBase {
 
         JsParser parser = new JsParser();
         Document doc = getDocument(original);
-        Context context = new JsParser.Context("test.js", Source.create(doc).createSnapshot(), -1);
-        JsErrorManager manager = new JsErrorManager(null);
+        Snapshot snapshot = Source.create(doc).createSnapshot();
+        Context context = new JsParser.Context("test.js", snapshot, -1);
+        JsErrorManager manager = new JsErrorManager(snapshot, JsTokenId.javascriptLanguage());
         parser.parseContext(context, JsParser.Sanitize.NONE, manager);
         
         assertEquals(expected, context.getSanitizedSource());

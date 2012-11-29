@@ -127,7 +127,7 @@ public class NPECheckTest extends NbTestCase {
     }
     
     public void testTernary1() throws Exception {
-        performAnalysisTest("test/Test.java", "package test; class Test {private void test(int i) {String s = i == 0 ? \"\" : null; s.length();}}");
+        performAnalysisTest("test/Test.java", "package test; class Test {private void test(int i) {String s = i == 0 ? \"\" : \"a\"; s.length();}}");
     }
     
     public void testTernary2() throws Exception {
@@ -217,7 +217,7 @@ public class NPECheckTest extends NbTestCase {
                             "        o.toString();\n" +
                             "    }" +
                             "}",
-                            "9:10-9:18:verifier:DN");
+                            "9:10-9:18:verifier:Possibly Dereferencing null");
     }
     
     public void testWhile1() throws Exception {
@@ -450,8 +450,7 @@ public class NPECheckTest extends NbTestCase {
         HintTest.create()
                 .input("package test;\n" +
                        "class Test {\n" +
-                       "    private void testMethod() {\n" +
-                       "        String id=\"\";\n" +
+                       "    private void testMethod(String id) {\n" +
                        "        if (id != null ) {\n" +
                        "            boolean isFoo= true || id.equalsIgnoreCase(\"text\");\n" +
                        "        }\n" +
@@ -561,6 +560,159 @@ public class NPECheckTest extends NbTestCase {
                        "class Test {\n" +
                        "    public String t(Object obj) {\n" +
                        "        return (obj == null || obj.hashCode() == 0) ? null : obj.toString();\n" +
+                       "    }\n" +
+                       "}")
+                .run(NPECheck.class)
+                .assertWarnings();
+    }
+    
+    public void test222576a() throws Exception {
+        HintTest.create()
+                .input("package test;\n" +
+                       "class Test {\n" +
+                       "    public void foo(@NullAllowed Integer position, int id) {\n" +
+                       "        position = id++;\n" +
+                       "        if (position == null) position = 1;\n" +
+                       "        if (position == null) position = 2;\n" +
+                       "    }\n" +
+                       "    @interface NullAllowed {}\n" +
+                       "}")
+                .run(NPECheck.class)
+                .assertWarnings("4:12-4:28:verifier:ERR_NotNull",
+                                "5:12-5:28:verifier:ERR_NotNull");
+    }
+    
+    public void test222576b() throws Exception {
+        HintTest.create()
+                .input("package test;\n" +
+                       "import java.util.Set;\n" +
+                       "class Test {\n" +
+                       "    public int foo(Object provider, int id, Set<Integer> vendors) {\n" +
+                       "        Integer position = (Integer) provider;\n" +
+                       "        if (position == null || vendors.contains(position)) {\n" +
+                       "            position = id++;\n" +
+                       "        }\n" +
+                       "        int value = position.intValue();\n" +
+                       "        return value;\n" +
+                       "    }\n" +
+                       "}")
+                .run(NPECheck.class)
+                .assertWarnings();
+    }
+    
+    public void test222580a() throws Exception {
+        HintTest.create()
+                .input("package test;\n" +
+                       "class Test {\n" +
+                       "    public boolean foo(String name, String path) {\n" +
+                       "        if (path == null) {\n" +
+                       "            path = name;\n" +
+                       "        } else {\n" +
+                       "            path += \".\" + name;\n" +
+                       "        }\n" +
+                       "        return path.equals(\"bin\");\n" +
+                       "    }\n" +
+                       "}")
+                .run(NPECheck.class)
+                .assertWarnings();
+    }
+    
+    public void test222580b() throws Exception {
+        HintTest.create()
+                .input("package test;\n" +
+                       "class Test {\n" +
+                       "    public boolean foo(@NullAllowed String path) {\n" +
+                       "        if (path == null) {\n" +
+                       "            path = \"\";\n" +
+                       "        } else {\n" +
+                       "            path += \".\";\n" +
+                       "        }\n" +
+                       "        return path.equals(\"bin\");\n" +
+                       "    }\n" +
+                       "    @interface NullAllowed {}\n" +
+                       "}")
+                .run(NPECheck.class)
+                .assertWarnings();
+    }
+    
+    public void testAssert222795() throws Exception {
+        HintTest.create()
+                .input("package test;\n" +
+                       "class Test {\n" +
+                       "    public boolean foo(@NullAllowed String path) {\n" +
+                       "        assert path != null;\n" +
+                       "        return path.equals(\"bin\");\n" +
+                       "    }\n" +
+                       "    @interface NullAllowed {}\n" +
+                       "}")
+                .run(NPECheck.class)
+                .assertWarnings();
+    }
+    
+    public void testCleanup1() throws Exception {
+        HintTest.create()
+                .input("package test;\n" +
+                       "class Test {\n" +
+                       "    public boolean foo(@NullAllowed String path) {\n" +
+                       "        assert path != null;\n" +
+                       "        if (path == null) { }\n" +
+                       "        return path.equals(\"bin\");\n" +
+                       "    }\n" +
+                       "    @interface NullAllowed {}\n" +
+                       "}")
+                .run(NPECheck.class)
+                .assertWarnings("4:12-4:24:verifier:ERR_NotNull");
+    }
+    
+    public void testArrayAccess() throws Exception {
+        HintTest.create()
+                .input("package test;\n" +
+                       "class Test {\n" +
+                       "    public void foo(String[] paths) {\n" +
+                       "        assert paths != null;\n" +
+                       "        if (paths[0] != null) { System.err.println(paths[0]); }\n" +
+                       "    }\n" +
+                       "}")
+                .run(NPECheck.class)
+                .assertWarnings();
+    }
+    
+    public void testWhileInitialize() throws Exception {
+        HintTest.create()
+                .input("package test;\n" +
+                       "class Test {\n" +
+                       "    public void foo(int i) {\n" +
+                       "        java.util.List<String> result = null;\n" +
+                       "        while (i-- > 0) {\n" +
+                       "             if (result == null) {\n" +
+                       "                 result = new java.util.ArrayList<String>();\n" +
+                       "             }\n" +
+                       "             result.add(String.valueOf(i));\n" +
+                       "        }\n" +
+                       "        if (result == null) {\n" +
+                       "            System.err.println(\"still null\");\n" +
+                       "        }" +
+                       "    }\n" +
+                       "}")
+                .run(NPECheck.class)
+                .assertWarnings();
+    }
+    
+    public void testForInitialize() throws Exception {
+        HintTest.create()
+                .input("package test;\n" +
+                       "class Test {\n" +
+                       "    public void foo(int i) {\n" +
+                       "        java.util.List<String> result = null;\n" +
+                       "        for ( ; i-- > 0 ; ) {\n" +
+                       "             if (result == null) {\n" +
+                       "                 result = new java.util.ArrayList<String>();\n" +
+                       "             }\n" +
+                       "             result.add(String.valueOf(i));\n" +
+                       "        }\n" +
+                       "        if (result == null) {\n" +
+                       "            System.err.println(\"still null\");\n" +
+                       "        }" +
                        "    }\n" +
                        "}")
                 .run(NPECheck.class)

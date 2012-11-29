@@ -3612,14 +3612,13 @@ public class Reformatter implements ReformatTask {
                                     String s = pendingDiff != null && pendingDiff.text != null && pendingDiff.text.charAt(0) == '\n' ? pendingDiff.text : NEWLINE + lineStartString;
                                     col = getCol(lineStartString) + i - endOff;
                                     if (align > 0) {
-                                        int num = align - lineStartString.length();
+                                        int num = align - getCol(lineStartString);
                                         if (num > 0) {
                                             s += getSpaces(num);
                                             col += num;
                                         }
-                                    } else {
-                                        col++;
                                     }
+                                    col++;
                                     if (endOff > lastWSPos && !s.equals(text.substring(lastWSPos, endOff)))
                                         addDiff(new Diff(offset + lastWSPos, offset + endOff, s));
                                 } else if (pendingDiff != null) {

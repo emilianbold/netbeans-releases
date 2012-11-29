@@ -5,9 +5,12 @@
  unexpected:	private
  after:	protected
  expected:	variable, function, static, abstract, final
-[[66,74]-POSSIBLE Syntax Error (check preceding valid syntax error)
- unexpected:	function] 66-74:POSSIBLE Syntax Error (check preceding valid syntax error)
- unexpected:	function
+[[75,78]-POSSIBLE Syntax Error (check preceding valid syntax error)
+ unexpected:	identifier 'fnc'] 75-78:POSSIBLE Syntax Error (check preceding valid syntax error)
+ unexpected:	identifier 'fnc'
+[[81,82]-POSSIBLE Syntax Error (check preceding valid syntax error)
+ unexpected:	{] 81-82:POSSIBLE Syntax Error (check preceding valid syntax error)
+ unexpected:	{
 [[91,92]-POSSIBLE Syntax Error (check preceding valid syntax error)
  unexpected:	}] 91-92:POSSIBLE Syntax Error (check preceding valid syntax error)
  unexpected:	}

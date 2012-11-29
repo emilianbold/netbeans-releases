@@ -64,9 +64,9 @@ import javax.swing.event.DocumentListener;
 import javax.swing.plaf.UIResource;
 import org.netbeans.modules.php.project.connections.ConfigManager.Configuration;
 import org.netbeans.modules.php.project.connections.common.RemoteUtils;
-import org.netbeans.modules.php.project.connections.common.RemoteValidator;
 import org.netbeans.modules.php.project.connections.ftp.FtpConfiguration.Encryption;
 import org.netbeans.modules.php.project.connections.spi.RemoteConfigurationPanel;
+import org.netbeans.modules.php.project.validation.ValidationResult;
 import org.openide.awt.Mnemonics;
 import org.openide.util.ChangeSupport;
 import org.openide.util.NbBundle;
@@ -106,51 +106,23 @@ public final class FtpConfigurationPanel extends JPanel implements RemoteConfigu
         return this;
     }
 
-    @NbBundle.Messages("FtpConfigurationPanel.warning.proxy=Configured HTTP proxy will be used only for Pure FTP.")
     @Override
     public boolean isValidConfiguration() {
         // cleanup
         setError(null);
         setWarning(null);
 
-        String err = RemoteValidator.validateHost(hostTextField.getText());
-        if (err != null) {
-            setError(err);
+        // validate
+        ValidationResult validationResult = new FtpConfigurationValidator()
+                .validate(getHostName(), getPort(), isAnonymousLogin(), getUserName(), getInitialDirectory(), getTimeout(), getKeepAliveInterval(), isPassiveMode())
+                .getResult();
+        if (validationResult.hasErrors()) {
+            setError(validationResult.getErrors().get(0).getMessage());
             return false;
         }
-
-        err = RemoteValidator.validatePort(portTextField.getText());
-        if (err != null) {
-            setError(err);
-            return false;
+        if (validationResult.hasWarnings()) {
+            setWarning(validationResult.getWarnings().get(0).getMessage());
         }
-
-        if (!validateUser()) {
-            return false;
-        }
-
-        if (!validateInitialDirectory()) {
-            return false;
-        }
-
-        err = RemoteValidator.validateTimeout(timeoutTextField.getText());
-        if (err != null) {
-            setError(err);
-            return false;
-        }
-
-        err = RemoteValidator.validateKeepAliveInterval(keepAliveTextField.getText());
-        if (err != null) {
-            setError(err);
-            return false;
-        }
-
-        // #195879
-        if (RemoteUtils.hasHttpProxy()) {
-            setWarning(Bundle.FtpConfigurationPanel_warning_proxy());
-            return true;
-        }
-
         return true;
     }
 
@@ -231,27 +203,6 @@ public final class FtpConfigurationPanel extends JPanel implements RemoteConfigu
 
     void fireChange() {
         changeSupport.fireChange();
-    }
-
-    private boolean validateUser() {
-        if (isAnonymousLogin()) {
-            return true;
-        }
-        String err = RemoteValidator.validateUser(userTextField.getText());
-        if (err != null) {
-            setError(err);
-            return false;
-        }
-        return true;
-    }
-
-    private boolean validateInitialDirectory() {
-        String err = RemoteValidator.validateUploadDirectory(getInitialDirectory());
-        if (err != null) {
-            setError(err);
-            return false;
-        }
-        return true;
     }
 
     private Encryption getEncryptionInternal() {

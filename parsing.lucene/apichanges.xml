@@ -110,6 +110,21 @@ is the proper place.
 <!-- ACTUAL CHANGES BEGIN HERE: -->
 
   <changes>
+  <change id="TransactionalDocumentIndex">
+    <api name="LuceneSupport"/>
+    <summary>Added <code>DocumentIndex.Transactional</code> to allow transaction operations on <code>DocumentIndex</code>.</summary>
+    <version major="2" minor="19"/>
+    <date day="27" month="11" year="2012"/>
+    <author login="tzezula"/>
+    <compatibility source="compatible" binary="compatible" addition="yes"/>
+    <description>
+        <p>
+            Added <code>DocumentIndex.Transactional</code> to allow commit and rollback on <code>DocumentIndex</code>.
+        </p>
+    </description>
+    <class package="org.netbeans.modules.parsing.lucene.support" name="IndexManager"/>
+    <class package="org.netbeans.modules.parsing.lucene.support" name="DocumentIndex"/>
+  </change>
   <change id="DocumentIndexCache">
     <api name="LuceneSupport"/>
     <summary>Added <code>DocumentIndexCache</code> class to allow custom caching strategy in DocumentIndex.</summary>

@@ -54,6 +54,7 @@ import org.netbeans.modules.php.editor.model.FileScope;
 import org.netbeans.modules.php.editor.model.ModelUtils;
 import org.netbeans.modules.php.editor.model.TypeScope;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
+import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle.Messages;
 
 /**
@@ -72,7 +73,8 @@ public class TypeRedeclarationHintError extends AbstractHintError {
             return;
         }
         FileScope fileScope = context.fileScope;
-        if (fileScope != null) {
+        FileObject fileObject = phpParseResult.getSnapshot().getSource().getFileObject();
+        if (fileScope != null && fileObject != null) {
             Collection<? extends TypeScope> declaredTypes = ModelUtils.getDeclaredTypes(fileScope);
             Set<String> typeNames = new HashSet<String>();
             for (TypeScope typeScope : declaredTypes) {
@@ -95,7 +97,7 @@ public class TypeRedeclarationHintError extends AbstractHintError {
                     for (TypeScope typeInstance : instances) {
                         if (typeInstance != firstDeclaredInstance) {
                             hints.add(new Hint(this, Bundle.TypeRedeclarationDesc(firstDeclaredInstance.getName()),
-                                    context.parserResult.getSnapshot().getSource().getFileObject(),
+                                    fileObject,
                                     typeInstance.getNameRange(), Collections.<HintFix>emptyList(), 500));
 
                         }

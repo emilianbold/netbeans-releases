@@ -87,6 +87,7 @@ import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.web.browser.api.Page;
 import org.netbeans.modules.web.browser.api.PageInspector;
 import org.netbeans.modules.web.common.api.ServerURLMapping;
+import org.netbeans.modules.web.common.api.WebUtils;
 import org.openide.cookies.EditorCookie;
 import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.ExplorerUtils;
@@ -237,9 +238,12 @@ public class HtmlNavigatorPanelUI extends JPanel implements ExplorerManager.Prov
         }
     }
 
-    private synchronized void pageModelDocumentChanged() {
+    private void pageModelDocumentChanged() {
         //try to find corresponding FileObject for the inspected document
-        inspectedFileObject = getInspectedFile(this.pageModel);
+        synchronized (this) {
+            inspectedFileObject = getInspectedFile(this.pageModel);
+        }
+        
         inspectedFileChanged();
         
         RP.post(new Runnable() {
@@ -290,7 +294,7 @@ public class HtmlNavigatorPanelUI extends JPanel implements ExplorerManager.Prov
         }
     }
     
-    private synchronized void refreshDOM() {
+    public synchronized void refreshDOM() {
         if (domTask != null) {
             domTask.cancel();
         }
@@ -300,7 +304,7 @@ public class HtmlNavigatorPanelUI extends JPanel implements ExplorerManager.Prov
             public void run() {
                 refreshNodeDOMStatus();
             }
-        });
+        }, 300);
     }
     
     private synchronized void refreshSource(final Lookup.Result<Object> result) {
@@ -400,7 +404,7 @@ public class HtmlNavigatorPanelUI extends JPanel implements ExplorerManager.Prov
         final FileObject fo = (p==null || url ==null)?f:ServerURLMapping.fromServer(p, url);
         
         if (fo != null) {
-            if (!"text/html".equals(FileUtil.getMIMEType(fo))) {
+            if (!("text/html".equals(FileUtil.getMIMEType(fo)) || ("text/xhtml".equals(FileUtil.getMIMEType(fo))))) {
                 return;
             }
 
@@ -412,7 +416,7 @@ public class HtmlNavigatorPanelUI extends JPanel implements ExplorerManager.Prov
             }
 
             Source source = Source.create(fo);
-            if (source == null || !"text/html".equals(source.getMimeType())) {
+            if (source == null || ! ("text/html".equals(source.getMimeType()) || "text/xhtml".equals(source.getMimeType()))) {
                 return;
             }
 
@@ -423,7 +427,9 @@ public class HtmlNavigatorPanelUI extends JPanel implements ExplorerManager.Prov
                 ParserManager.parse(Collections.singleton(source), new UserTask() {
                     @Override
                     public void run(ResultIterator resultIterator) throws Exception {
-                        setParserResult((HtmlParserResult) resultIterator.getParserResult());
+                        ResultIterator it = WebUtils.getResultIterator(resultIterator, "text/html");
+                        
+                        setParserResult((HtmlParserResult) it.getParserResult());
                         //inspectedFileObject = getInspectedFileFromPageModel();
                         refreshDOM();
                     }
@@ -810,7 +816,13 @@ public class HtmlNavigatorPanelUI extends JPanel implements ExplorerManager.Prov
     }
     
     private HtmlElementNode getHtmlNode(Node node) {
-        return domToNb.get(node);
+        HtmlElementNode result;
+        if (node instanceof HtmlElementNode) {
+            result = (HtmlElementNode)node;
+        } else {
+            result = domToNb.get(node);
+        }
+        return result;
     }
 
     /**
@@ -992,7 +1004,9 @@ public class HtmlNavigatorPanelUI extends JPanel implements ExplorerManager.Prov
         for (Node n : selectedNodes) {
             if (n instanceof HtmlElementNode) {
                 Node domNode = ((HtmlElementNode) n).getDOMNode();
-                if (domNode != null) {
+                if (domNode == null) {
+                    result.add(n);
+                } else {
                     result.add(domNode);
                 }
             }

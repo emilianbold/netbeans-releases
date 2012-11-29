@@ -152,7 +152,7 @@ final class IntroPanel extends javax.swing.JPanel {
                 .addComponent(keyboardCheck)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(customizeCheck)
-                .addContainerGap(15, Short.MAX_VALUE))
+                .addContainerGap(50, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
 

@@ -55,37 +55,19 @@ import org.openide.util.ImageUtilities;
  */
 public class ButtonBorder implements Border {
 
-    private final Image imgTopLeft;
-    private final Image imgBottomLeft;
     private final Image imgLeft;
-    private final Image imgTopRight;
-    private final Image imgBottomRight;
     private final Image imgRight;
     private final Image imgCenter;
-    private final Image imgTop;
-    private final Image imgBottom;
 
     private ButtonBorder( boolean mouseOver ) {
         if( mouseOver ) {
-            imgTopLeft = ImageUtilities.loadImage("org/netbeans/modules/welcome/resources/butt-sel-top-lef.png");
-            imgTopRight = ImageUtilities.loadImage("org/netbeans/modules/welcome/resources/butt-sel-top-right.png");
-            imgBottomLeft = ImageUtilities.loadImage("org/netbeans/modules/welcome/resources/butt-sel-bott-left.png");
-            imgBottomRight = ImageUtilities.loadImage("org/netbeans/modules/welcome/resources/butt-sel-bott-right.png");
-            imgLeft = ImageUtilities.loadImage("org/netbeans/modules/welcome/resources/butt-sel-side-left.png");
-            imgRight = ImageUtilities.loadImage("org/netbeans/modules/welcome/resources/butt-sel-side-right.png");
-            imgTop = ImageUtilities.loadImage("org/netbeans/modules/welcome/resources/butt-sel-top.png");
-            imgBottom = ImageUtilities.loadImage("org/netbeans/modules/welcome/resources/butt-sel-bottom.png");
-            imgCenter = ImageUtilities.loadImage("org/netbeans/modules/welcome/resources/butt-sel-center.png");
+            imgLeft = ImageUtilities.loadImage("org/netbeans/modules/welcome/resources/sel_btn_left.png");
+            imgRight = ImageUtilities.loadImage("org/netbeans/modules/welcome/resources/sel_btn_right.png");
+            imgCenter = ImageUtilities.loadImage("org/netbeans/modules/welcome/resources/sel_btn_center.png");
         } else {
-            imgTopLeft = ImageUtilities.loadImage("org/netbeans/modules/welcome/resources/butt-top-lef.png");
-            imgTopRight = ImageUtilities.loadImage("org/netbeans/modules/welcome/resources/butt-top-right.png");
-            imgBottomLeft = ImageUtilities.loadImage("org/netbeans/modules/welcome/resources/butt-bott-left.png");
-            imgBottomRight = ImageUtilities.loadImage("org/netbeans/modules/welcome/resources/butt-bott-right.png");
-            imgLeft = ImageUtilities.loadImage("org/netbeans/modules/welcome/resources/butt-side-left.png");
-            imgRight = ImageUtilities.loadImage("org/netbeans/modules/welcome/resources/butt-side-right.png");
-            imgTop = ImageUtilities.loadImage("org/netbeans/modules/welcome/resources/butt-top.png");
-            imgBottom = ImageUtilities.loadImage("org/netbeans/modules/welcome/resources/butt-bottom.png");
-            imgCenter = ImageUtilities.loadImage("org/netbeans/modules/welcome/resources/butt-center.png");
+            imgLeft = ImageUtilities.loadImage("org/netbeans/modules/welcome/resources/btn_left.png");
+            imgRight = ImageUtilities.loadImage("org/netbeans/modules/welcome/resources/btn_right.png");
+            imgCenter = ImageUtilities.loadImage("org/netbeans/modules/welcome/resources/btn_center.png");
         }
     }
 
@@ -106,27 +88,18 @@ public class ButtonBorder implements Border {
 
     @Override
     public void paintBorder(Component c, Graphics g, int x, int y, int width, int height) {
-        g.drawImage(imgTopLeft, x, y, c);
-        g.drawImage(imgBottomLeft, x, y+height-imgBottomLeft.getHeight(c), c);
-        g.drawImage(imgLeft, x, y+imgTopLeft.getHeight(c), imgLeft.getWidth(c), height-imgTopLeft.getHeight(c)-imgBottomLeft.getHeight(c), c);
+        g.drawImage(imgLeft, x, y, imgLeft.getWidth(c), height, c);
 
-        g.drawImage(imgTopRight, x+width-imgTopRight.getWidth(c), y, c);
-        g.drawImage(imgBottomRight, x+width-imgBottomRight.getWidth(c), y+height-imgBottomRight.getHeight(c), c);
-        g.drawImage(imgRight, x+width-imgRight.getWidth(c), y+imgTopRight.getHeight(c), imgRight.getWidth(c), height-imgTopRight.getHeight(c)-imgBottomRight.getHeight(c), c);
+        g.drawImage(imgRight, x+width-imgRight.getWidth(c), y, imgRight.getWidth(c), height, c);
 
-        g.drawImage(imgTop, x+imgTopLeft.getWidth(c), y,
-                x+width-imgTopLeft.getWidth(c)-imgTopRight.getWidth(c), imgTop.getHeight(c), c);
-        g.drawImage(imgBottom, x+imgBottomLeft.getWidth(c), y+height-imgBottom.getHeight(c),
-                x+width-imgBottomLeft.getWidth(c)-imgBottomRight.getWidth(c), imgBottom.getHeight(c), c);
-
-        g.drawImage(imgCenter, x+imgTopLeft.getWidth(c), y+imgTopLeft.getHeight(c),
-                x+width-imgTopLeft.getWidth(c)-imgTopRight.getWidth(c), y+height-imgTopLeft.getHeight(c)-imgBottomLeft.getHeight(c), c);
+        g.drawImage(imgCenter, x+imgLeft.getWidth(c), y,
+                x+width-imgLeft.getWidth(c)-imgRight.getWidth(c), height, c);
 
     }
 
     @Override
     public Insets getBorderInsets(Component c) {
-        return new Insets(11, 11, 11, 11);
+        return new Insets(12, 12, 12, 12);
     }
 
     @Override

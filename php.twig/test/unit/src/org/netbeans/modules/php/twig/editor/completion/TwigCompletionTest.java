@@ -159,4 +159,8 @@ public class TwigCompletionTest extends TwigCompletionTestBase {
         checkCompletion("testfiles/completion/issue219569.twig", "{{ foo|cap^ }}", false);
     }
 
+    public void testIssue222602() throws Exception {
+        checkCompletion("testfiles/completion/issue222602.twig", "{{ 'use^", false);
+    }
+
 }

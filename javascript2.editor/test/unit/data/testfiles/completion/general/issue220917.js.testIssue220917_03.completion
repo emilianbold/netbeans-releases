@@ -1,0 +1,11 @@
+Code completion result for source line:
+document.query|Selector();
+(QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
+------------------------------------
+METHOD     queryCommandEnabled(command: S  [PUBLIC]   stub_DOM_document.js
+METHOD     queryCommandIndeterm(command:   [PUBLIC]   stub_DOM_document.js
+METHOD     queryCommandState(command: Str  [PUBLIC]   stub_DOM_document.js
+METHOD     queryCommandSupported(command:  [PUBLIC]   stub_DOM_document.js
+METHOD     queryCommandValue(command: Str  [PUBLIC]   stub_DOM_document.js
+METHOD     querySelector(): Element        [PUBLIC]   stub_DOM_document.js
+METHOD     querySelectorAll(): NodeList    [PUBLIC]   stub_DOM_document.js

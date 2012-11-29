@@ -69,6 +69,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
+import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.modules.subversion.*;
 import org.netbeans.modules.subversion.client.PropertiesClient;
 import org.netbeans.modules.subversion.client.SvnClientExceptionHandler;
@@ -1348,7 +1349,7 @@ public class SvnUtils {
         }
         FileStatusCache cache = Subversion.getInstance().getStatusCache();
         if ((cache.getStatus(file).getStatus() & FileInformation.STATUS_VERSIONED) == 0) {
-            if(foMime.startsWith("text")) {
+            if(foMime.startsWith("text/")) {
                 return foMime;
             }
             return Utils.isFileContentText(file) ? "text/plain" : "application/octet-stream";
@@ -1356,10 +1357,21 @@ public class SvnUtils {
             PropertiesClient client = new PropertiesClient(file);
             try {
                 byte [] mimeProperty = client.getProperties().get("svn:mime-type");
-                if (mimeProperty == null) {                    
-                    return Utils.isFileContentText(file) ? "text/plain" : "application/octet-stream";
+                if (mimeProperty != null) {
+                    String mimePath = new String(mimeProperty);
+                    int pos = mimePath.indexOf('/');
+                    if (pos > 0) {
+                        while (pos < mimePath.length()) {
+                            try {
+                                return MimePath.parse(mimePath).getPath();
+                            } catch (IllegalArgumentException ex) {
+                                // for paths in the form of text/plain;charset=UTF-8
+                                mimePath = mimePath.substring(0, mimePath.length() - 1);
+                            }
+                        }
+                    }
                 }
-                return new String(mimeProperty);
+                return Utils.isFileContentText(file) ? "text/plain" : "application/octet-stream";
             } catch (IOException e) {
                 return foMime;
             }

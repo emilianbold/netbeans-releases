@@ -67,8 +67,11 @@ import org.netbeans.modules.web.webkit.debugging.api.WebKitDebugging;
 import org.netbeans.modules.web.webkit.debugging.spi.Response;
 import org.netbeans.modules.web.webkit.debugging.spi.ResponseCallback;
 import org.netbeans.modules.web.webkit.debugging.spi.netbeansdebugger.NetBeansJavaScriptDebuggerFactory;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.lookup.ProxyLookup;
 
@@ -95,6 +98,10 @@ public final class ExternalBrowserPlugin {
     
     private static RequestProcessor RP = new RequestProcessor("ExternalBrowserPlugin", 5); // NOI18N
 
+    @NbBundle.Messages({"# {0} - port", "ServerStartFailed=Internal WebSocket server failed to start "
+            + "and communication with the external Chrome browser will not work. Check the IDE log "
+            + "for more information. This is likely caused by multiple instances of NetBeans "
+            + "running at the same time or some other application using port {0}"})
     private ExternalBrowserPlugin() {
         try {
             server = new WebSocketServer(new InetSocketAddress(PORT), new BrowserPluginHandler());
@@ -114,7 +121,13 @@ public final class ExternalBrowserPlugin {
         }
         catch (IOException e) {
             LOG.log( Level.INFO , null , e);
+            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
+                    Bundle.ServerStartFailed(""+PORT), NotifyDescriptor.Message.ERROR_MESSAGE));
         }
+    }
+    
+    public boolean isServerRunning() {
+        return server != null;
     }
 
     /**

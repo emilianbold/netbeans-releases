@@ -55,6 +55,7 @@ import org.netbeans.api.editor.guards.GuardedSection;
 import org.netbeans.api.editor.guards.InteriorSection;
 import org.netbeans.api.editor.guards.SimpleSection;
 import org.netbeans.modules.editor.guards.GuardedSectionsImpl;
+import org.netbeans.modules.editor.guards.GuardsSupportAccessor;
 import org.netbeans.modules.editor.guards.PositionBounds;
 import org.netbeans.spi.editor.guards.GuardedEditorSupport;
 import org.netbeans.spi.editor.guards.GuardedSectionsProvider;
@@ -69,13 +70,25 @@ import org.netbeans.spi.editor.guards.GuardedSectionsProvider;
 public abstract class AbstractGuardedSectionsProvider implements GuardedSectionsProvider {
 
     private final GuardedSectionsImpl impl;
+    private final boolean useReadersWritersOnSet;
     
     /**
      * Creates an AbstractGuardedSectionsProvider.
      * @param editor an editor abstraction
      */
     protected AbstractGuardedSectionsProvider(GuardedEditorSupport editor) {
+        this(editor, false);
+    }
+    
+    /**
+     * Creates an AbstractGuardedSectionsProvider.
+     * @param editor an editor abstraction
+     * @param useReadersWritersOnSet if readers and writers should be used when the content of the guarded section's text is set
+     * @since 1.20
+     */
+    protected AbstractGuardedSectionsProvider(GuardedEditorSupport editor, boolean useReadersWritersOnSet) {
         this.impl = new GuardedSectionsImpl(editor);
+        this.useReadersWritersOnSet = useReadersWritersOnSet;
     }
 
     public final Reader createGuardedReader(InputStream stream, Charset charset) {
@@ -156,5 +169,13 @@ public abstract class AbstractGuardedSectionsProvider implements GuardedSections
         public List<GuardedSection> getGuardedSections() {
             return this.sections;
         }
+    }
+    
+    static {
+        GuardsSupportAccessor.DEFAULT = new GuardsSupportAccessor() {
+            @Override public boolean isUseReadersWritersOnSet(AbstractGuardedSectionsProvider impl) {
+                return impl.useReadersWritersOnSet;
+            }
+        };
     }
 }

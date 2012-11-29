@@ -406,10 +406,7 @@ NetBeans_Warnings.runIfEnabled = function(ident, task) {
 NetBeans_Warnings.enable = function(ident, enabled) {
     var key = NetBeans_Warnings._getKeyFor(ident, 'enabled');
     if (enabled) {
-        // remove fro local storage
-        chrome.storage.sync.remove(key, function() {
-            NetBeans_Warnings._logError('remove', key);
-        });
+        NetBeans_Warnings._remove(key);
     } else {
         // disable
         var data = {};
@@ -419,11 +416,39 @@ NetBeans_Warnings.enable = function(ident, enabled) {
         });
     }
 };
+/**
+ * Reset all warnings (all warnings dialogs will be shown again).
+ * @returns {void}
+ */
+NetBeans_Warnings.reset = function() {
+    chrome.storage.sync.get(function(items) {
+        NetBeans_Warnings._logError('reset', 'none');
+        var warningPrefix = NetBeans_Warnings._getKeyFor();
+        for (var key in items) {
+            if (key.indexOf(warningPrefix) === 0) {
+                NetBeans_Warnings._remove(key);
+            }
+        }
+    });
+}
 NetBeans_Warnings._getKeyFor = function(ident, key) {
-    return 'warning.' + ident + '.' + key;
+    var keyName = 'warning.';
+    if (ident !== undefined) {
+        keyName += ident;
+        if (key !== undefined) {
+            keyName += '.' + key;
+        }
+    }
+    return keyName;
 };
 NetBeans_Warnings._logError = function(operation, key) {
     if (chrome.runtime && chrome.runtime.lastError) {
         console.error('Local storage error ("' + operation + '" operation for "' + key + '"): ' + chrome.runtime.lastError.message);
     }
+};
+NetBeans_Warnings._remove = function(key) {
+    // remove from local storage
+    chrome.storage.sync.remove(key, function() {
+        NetBeans_Warnings._logError('remove', key);
+    });
 };

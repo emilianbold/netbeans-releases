@@ -44,6 +44,7 @@
 var INFOBAR = chrome.extension.getBackgroundPage().NetBeans.INFOBAR;
 var NetBeans_Presets = chrome.extension.getBackgroundPage().NetBeans_Presets;
 var NetBeans_Preset = chrome.extension.getBackgroundPage().NetBeans_Preset;
+var NetBeans_Warnings = chrome.extension.getBackgroundPage().NetBeans_Warnings;
 
 /**
  * Preset customizer.
@@ -65,6 +66,8 @@ NetBeans_PresetCustomizer._moveUpPresetButton = null;
 NetBeans_PresetCustomizer._moveDownPresetButton = null;
 // OK button
 NetBeans_PresetCustomizer._okButton = null;
+// reset warnings button
+NetBeans_PresetCustomizer._resetWarningsButton = null;
 // presets
 NetBeans_PresetCustomizer._presets = null;
 // active/selected preset
@@ -91,6 +94,7 @@ NetBeans_PresetCustomizer._init = function() {
     this._moveUpPresetButton = document.getElementById('moveUpPreset');
     this._moveDownPresetButton = document.getElementById('moveDownPreset');
     this._okButton = document.getElementById('presetCustomizerOk');
+    this._resetWarningsButton = document.getElementById('resetWarnings');
     this._registerEvents();
 };
 // hide customizer
@@ -100,9 +104,6 @@ NetBeans_PresetCustomizer._hide = function() {
 // register events
 NetBeans_PresetCustomizer._registerEvents = function() {
     var that = this;
-    document.getElementById('closePresetCustomizer').addEventListener('click', function() {
-        that._cancel();
-    }, false);
     this._moreHelpButton.addEventListener('click', function() {
         that._switchHelp();
     }, false);
@@ -123,6 +124,9 @@ NetBeans_PresetCustomizer._registerEvents = function() {
     }, false);
     document.getElementById('presetCustomizerCancel').addEventListener('click', function() {
         that._cancel();
+    }, false);
+    this._resetWarningsButton.addEventListener('click', function() {
+        that._resetWarnings();
     }, false);
 };
 // put presets to the customizer?
@@ -299,6 +303,12 @@ NetBeans_PresetCustomizer._switchHelp = function() {
     var displayed = help.style.display == 'block';
     help.style.display = displayed ? 'none' : 'block';
     this._moreHelpButton.innerHTML = I18n.message(displayed ? '_More_hellip' : '_Less_hellip');
+};
+// reset warnings
+NetBeans_PresetCustomizer._resetWarnings = function() {
+    NetBeans_Warnings.reset();
+    this._resetWarningsButton.innerHTML = I18n.message('_Done');
+    this._resetWarningsButton.setAttribute('disabled', 'disabled');
 };
 // callback when row is selected
 NetBeans_PresetCustomizer._rowSelected = function(row) {

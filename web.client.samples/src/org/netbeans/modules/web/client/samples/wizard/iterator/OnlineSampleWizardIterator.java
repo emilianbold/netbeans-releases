@@ -51,7 +51,6 @@ import java.util.Set;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.ProjectManager;
-import org.netbeans.api.templates.TemplateRegistration;
 import org.netbeans.modules.web.client.samples.wizard.WizardConstants;
 import org.netbeans.modules.web.client.samples.wizard.ui.OnlineSamplePanel;
 import org.netbeans.modules.web.clientproject.ClientSideProject;
@@ -89,55 +88,22 @@ public abstract class OnlineSampleWizardIterator extends AbstractWizardIterator 
     private static final String LIBRARIES_PATH = "LIBRARIES_PATH"; // NOI18N
 
 
-    private OnlineSampleWizardIterator() {
+    protected OnlineSampleWizardIterator() {
     }
 
     protected abstract SiteTemplateImplementation getSiteTemplate();
     protected abstract String getProjectName();
-    protected abstract String getProjectURL();
+    protected abstract String getProjectZipURL();
 
 
-    @NbBundle.Messages({
-        "AngularJSSample=AngularJS Tutorial Sources",
-        "AngularJSSampleName=AngularJSTutorial"
-    })
-    @TemplateRegistration(
-        position = 500,
-        folder = "Project/Samples/HTML5",
-        displayName = "#AngularJSSample",
-        iconBase = "org/netbeans/modules/web/client/samples/resources/HTML5_project_icon.png",
-        description = "/org/netbeans/modules/web/client/samples/resources/AngularJSSample.html"
-    )
-    public static class AngularJSSample extends OnlineSampleWizardIterator {
+    public static class OnlineSiteTemplate extends OnlineSites {
 
-        @Override
-        protected SiteTemplateImplementation getSiteTemplate() {
-            return new BaseOnlineSiteTemplate(
-                    "ANGULAR-SAMPLE", // NOI18N
-                    getProjectName(),
-                    getProjectURL(),
-                    new File(SiteHelper.getJsLibsDirectory(), "angular-angular-phonecat-step-11-0-g9aebada.zip")); // NOI18N
+        public OnlineSiteTemplate(String id, String name, String url, String zipName) {
+            this(id, name, "", url, zipName); // NOI18N
         }
 
-        @Override
-        protected String getProjectName() {
-            return "AngularJSTutorial"; // NOI18N
-        }
-
-        @Override
-        protected String getProjectURL() {
-            return "https://github.com/angular/angular-phonecat/zipball/master"; // NOI18N
-        }
-    }
-
-    public static class BaseOnlineSiteTemplate extends OnlineSites {
-
-        public BaseOnlineSiteTemplate(String id, String name, String url, File libFile) {
-            this(id, name, "", url, libFile); // NOI18N
-        }
-
-        public BaseOnlineSiteTemplate(String id, String name, String description, String url, File libFile) {
-            super(id, name, description, url, libFile);
+        public OnlineSiteTemplate(String id, String name, String description, String url, String zipName) {
+            super(id, name, description, url, new File(SiteHelper.getJsLibsDirectory(), zipName));
         }
     }
 
@@ -145,7 +111,7 @@ public abstract class OnlineSampleWizardIterator extends AbstractWizardIterator 
     @Override
     protected Panel[] createPanels(WizardDescriptor wizard) {
         wizard.putProperty(WizardConstants.SAMPLE_PROJECT_NAME, getProjectName());
-        wizard.putProperty(WizardConstants.SAMPLE_PROJECT_URL, getProjectURL());
+        wizard.putProperty(WizardConstants.SAMPLE_PROJECT_URL, getProjectZipURL());
 
         return new Panel[] {
             new OnlineSamplePanel(wizard)
@@ -166,10 +132,13 @@ public abstract class OnlineSampleWizardIterator extends AbstractWizardIterator 
      * solution)
      */
 
+    @NbBundle.Messages({
+        "OnlineSampleWizardIterator.creatingProject=Creating project..."
+    })
     @Override
     public Set instantiate(ProgressHandle handle) throws IOException {
-        handle.start();
-        handle.progress("Creating..."); //NOI18N
+        handle.start(5);
+        handle.progress(Bundle.OnlineSampleWizardIterator_creatingProject()); //NOI18N
 
         final Set<FileObject> files = new LinkedHashSet<FileObject>();
         final File projectDir = FileUtil.normalizeFile((File) descriptor.getProperty(WizardConstants.SAMPLE_PROJECT_DIR));
@@ -228,6 +197,12 @@ public abstract class OnlineSampleWizardIterator extends AbstractWizardIterator 
         });
     }
 
+    @NbBundle.Messages({
+        "# {0} - template name",
+        "OnlineSampleWizardIterator.error.preparingSiteTemplate=Cannot prepar template \"{0}\".",
+        "OnlineSampleWizardIterator.downloadingTemplate=Dowloading template...",
+        "OnlineSampleWizardIterator.applyingTemplate=Applying template..."
+    })
     private FileObject instantiate(ProgressHandle handle, WizardDescriptor wizardDescriptor, ClientSideProject project) throws IOException {
         AntProjectHelper projectHelper = project.getProjectHelper();
         SiteTemplateImplementation siteTemplate = getSiteTemplate();
@@ -240,6 +215,18 @@ public abstract class OnlineSampleWizardIterator extends AbstractWizardIterator 
         if (siteTemplate != null) {
             siteTemplate.configure(projectProperties);
             initProject(project, projectProperties);
+
+            assert !EventQueue.isDispatchThread();
+            if (!siteTemplate.isPrepared()) {
+                try {
+                    handle.progress(Bundle.OnlineSampleWizardIterator_downloadingTemplate(), 1);
+                    siteTemplate.prepare();
+                } catch (IOException ex) {
+                    errorOccured(Bundle.OnlineSampleWizardIterator_error_preparingSiteTemplate(siteTemplate.getName()));
+                }
+            }
+
+            handle.progress(Bundle.OnlineSampleWizardIterator_applyingTemplate(), 4);
             applySiteTemplate(projectHelper.getProjectDirectory(), projectProperties, siteTemplate, handle);
         } else {
             // init standard project
@@ -280,7 +267,7 @@ public abstract class OnlineSampleWizardIterator extends AbstractWizardIterator 
 
     @NbBundle.Messages({
         "# {0} - template name",
-        "ClientSideProjectWizardIterator.error.applyingSiteTemplate=Cannot apply template \"{0}\"."
+        "OnlineSampleWizardIterator.error.applyingSiteTemplate=Cannot apply template \"{0}\"."
     })
     private void applySiteTemplate(
             final FileObject projectDir,
@@ -293,7 +280,7 @@ public abstract class OnlineSampleWizardIterator extends AbstractWizardIterator 
         try {
             siteTemplate.apply(projectDir, projectProperties, handle);
         } catch (IOException ex) {
-            errorOccured(Bundle.ClientSideProjectWizardIterator_error_applyingSiteTemplate(templateName));
+            errorOccured(Bundle.OnlineSampleWizardIterator_error_applyingSiteTemplate(templateName));
         }
     }
 

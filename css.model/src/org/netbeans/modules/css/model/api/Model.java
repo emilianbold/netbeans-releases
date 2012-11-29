@@ -47,13 +47,9 @@ import java.beans.PropertyChangeSupport;
 import java.io.IOException;
 import java.io.Reader;
 import java.io.StringReader;
-import java.lang.ref.Reference;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
-import java.util.Map;
-import java.util.Observable;
-import java.util.WeakHashMap;   
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -362,7 +358,25 @@ public final class Model implements PropertyChangeListener {
         Difference[] diff = getModelSourceDiff();
         if(diff.length > 0) {
             Snapshot snapshot = getLookup().lookup(Snapshot.class);
-            applyChanges_AtomicLock(doc, diff, new SnapshotOffsetConvertor(snapshot));
+            
+            if(dataObject != null) {
+                boolean modified = dataObject.getLookup().lookup(SaveCookie.class) != null;
+                applyChanges_AtomicLock(doc, diff, new SnapshotOffsetConvertor(snapshot));
+                if(!modified) {
+                    //save the changes if the document wasn't modified before
+                    SaveCookie saveCookie = dataObject.getLookup().lookup(SaveCookie.class);
+                    if(saveCookie != null) { //the "changes" may not modify the document
+                        saveCookie.save();
+                    }
+                }
+                LiveUpdater liveUpdater = Lookup.getDefault().lookup(LiveUpdater.class);
+                if(liveUpdater != null) {
+                    liveUpdater.update(doc);
+                }
+            } else {
+                applyChanges_AtomicLock(doc, diff, new SnapshotOffsetConvertor(snapshot));
+            }
+            
             LOGGER.log(Level.INFO, "{0}: changes applied to document", this);
             changesApplied = true;
             support.firePropertyChange(CHANGES_APPLIED_TO_DOCUMENT, null, null);
@@ -506,62 +520,8 @@ public final class Model implements PropertyChangeListener {
             }
 
         }
-
-        saveIfNotOpenInEditor(document);
     }
-
-    //>>> TEMPORARY HACK - TO BE REMOVED FROM THE MODULE !!! 
-    private void saveIfNotOpenInEditor(final Document document) throws IOException {
-        DataObject dataObject = getDataObject(document);
-        if (dataObject == null) {
-            LOGGER.log(Level.FINE, "Cannot find DataObject for document " + document);
-            return;
-        }
-        FileObject file = getLookup().lookup(FileObject.class);
-        final String filename = file == null ? "???" : file.getNameExt();
-        final EditorCookie ec = dataObject.getLookup().lookup(EditorCookie.class);
-        final SaveCookie save = dataObject.getLookup().lookup(SaveCookie.class);
-        
-        Mutex.EVENT.readAccess(new Runnable() {
-
-            @Override
-            public void run() {
-                //XXX I/O in EDT, but this will be removed anyway...
-                LiveUpdater liveUpdater = Lookup.getDefault().lookup(LiveUpdater.class);
-                if (ec != null && ec.getOpenedPanes() == null) {
-                    //file not open in any editor
-                    if (save != null) {
-                        LOGGER.log(Level.INFO, "Changes saved to file {0}", filename);
-                        try {
-                            save.save();
-                        } catch (IOException ex) {
-                            Exceptions.printStackTrace(ex);
-                        }
-                    }
-                    if(liveUpdater != null) { 
-                        liveUpdater.update(document);
-                    }
-                } else {
-                    if (!ec.getOpenedPanes()[0].equals(EditorRegistry.lastFocusedComponent())) {
-                        if(liveUpdater != null) {
-                            liveUpdater.update(document);
-                        }
-                    }
-                }
-            }
-            
-        });
-    }
-
-    private static DataObject getDataObject(Document doc) {
-        Object sdp = doc == null ? null : doc.getProperty(Document.StreamDescriptionProperty);
-        if (sdp instanceof DataObject) {
-            return (DataObject) sdp;
-        }
-        return null;
-    }
-    //<<<
-
+   
     @Override
     public String toString() {
         FileObject file = getLookup().lookup(FileObject.class);

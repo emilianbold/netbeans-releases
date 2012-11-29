@@ -42,6 +42,7 @@
 package org.netbeans.modules.javafx2.editor.css;
 
 import java.lang.ref.SoftReference;
+import java.net.URL;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -51,6 +52,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.csl.api.ElementKind;
 import org.netbeans.modules.css.editor.module.spi.*;
 import org.netbeans.modules.css.lib.api.CssModule;
+import org.netbeans.modules.css.lib.api.properties.PropertyCategory;
 import org.netbeans.modules.css.lib.api.properties.PropertyDefinition;
 import org.netbeans.modules.javafx2.project.api.JavaFXProjectUtils;
 import org.openide.filesystems.FileObject;
@@ -73,6 +75,12 @@ public class JavaFXCSSModule extends CssEditorModule implements CssModule {
     private static final String PROPERTIES_DEFINITION_PATH = "org/netbeans/modules/javafx2/editor/css/javafx2"; // NOI18N
     private static Map<String, PropertyDefinition> propertyDescriptors;
     private static SoftReference<Map<String, Boolean>> fileTypeCache;
+    private static Browser FX_BROWSER = new FxBrowser();
+    
+    @Override
+    public Collection<Browser> getExtraBrowsers(FileObject file) {
+        return isJavaFXContext(file) ? Collections.singleton(FX_BROWSER) : null;
+    }
 
     @Override
     public Collection<String> getPropertyNames(FileObject file) {
@@ -81,7 +89,7 @@ public class JavaFXCSSModule extends CssEditorModule implements CssModule {
 
     @Override
     public PropertyDefinition getPropertyDefinition(String propertyName) {
-        return propertyDescriptors.get(propertyName);
+        return getJavaFXProperties().get(propertyName);
     }
 
     private synchronized Map<String, PropertyDefinition> getJavaFXProperties() {
@@ -141,5 +149,59 @@ public class JavaFXCSSModule extends CssEditorModule implements CssModule {
     @Override
     public String getSpecificationURL() {
         return "http://docs.oracle.com/javafx/2/api/javafx/scene/doc-files/cssref.html"; // NOI18N
+    }
+    
+    private static class FxBrowser extends Browser {
+        
+        private static final String PREFIX = "fx"; //NOI18N
+
+        private static final String FIXME = "???"; 
+        
+        //why icon by an URL??? - its put to the generated html source this way:
+//         sb.append("<img src=\""); //NOI18N
+//         sb.append(browserIcon.toExternalForm());
+//         sb.append("\">"); // NOI18N
+        private static final URL ICON_URL_FIXME = null; //FIXME -- will show in the completion documentation compatibility chart
+        
+        @Override
+        public PropertyCategory getPropertyCategory() {
+            return PropertyCategory.UNKNOWN;
+        }
+
+        @Override
+        public String getVendor() {
+            return FIXME;
+        }
+
+        @Override
+        public String getName() {
+            return FIXME;
+        }
+
+        @Override
+        public String getDescription() {
+            return FIXME;
+        }
+
+        @Override
+        public String getRenderingEngineId() {
+            return FIXME;
+        }
+
+        @Override
+        public String getVendorSpecificPropertyId() {
+            return PREFIX;
+        }
+
+        @Override
+        public URL getActiveIcon() {
+            return ICON_URL_FIXME;
+        }
+
+        @Override
+        public URL getInactiveIcon() {
+            return ICON_URL_FIXME;
+        }
+    
     }
 }

@@ -36,6 +36,7 @@ TAG        endraw                                     Tag
 TAG        endsandbox                                 Tag
 TAG        endset                                     Tag
 TAG        endspaceless                               Tag
+TAG        endtrans                                   Tag
 TAG        extends                                    Tag
 TAG        filter                                     Tag
 TAG        flush                                      Tag
@@ -49,6 +50,7 @@ TAG        raw                                        Tag
 TAG        sandbox                                    Tag
 TAG        set                                        Tag
 TAG        spaceless                                  Tag
+TAG        trans                                      Tag
 TAG        use                                        Tag
 RULE       abs                                        Filter
 RULE       capitalize                                 Filter
@@ -73,9 +75,12 @@ RULE       slice(start, length)                       Filter
 RULE       sort                                       Filter
 RULE       striptags                                  Filter
 RULE       title                                      Filter
+RULE       trans                                      Filter
 RULE       trim                                       Filter
+RULE       truncate(int)                              Filter
 RULE       upper                                      Filter
 RULE       url_encode()                               Filter
+RULE       wordwrap(width, 'break', cut)              Filter
 TEST       constant('const')                          Test
 TEST       defined                                    Test
 TEST       divisibleby(number)                        Test

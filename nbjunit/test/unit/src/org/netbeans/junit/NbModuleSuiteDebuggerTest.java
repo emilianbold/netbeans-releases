@@ -65,6 +65,6 @@ public class NbModuleSuiteDebuggerTest extends TestCase {
         
         assertEquals("No errors", 0, res.errorCount());
         assertEquals("No failures", 0, res.failureCount());
-        assertEquals("One test", 1, res.runCount());
+        assertEquals("One test + one shutdown", 2, res.runCount());
     }
 }

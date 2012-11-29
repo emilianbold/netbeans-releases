@@ -453,11 +453,12 @@ public class PHPBracketCompleter implements KeystrokeHandler {
                         }
                     }
                 }
+                sb.append(IndentUtils.createIndentString(doc, indent));
             } else {
+                LexUtilities.findPreviousToken(ts, Arrays.asList(PHPTokenId.PHP_CURLY_OPEN));
                 sb.append("\n"); // NOI18N
+                sb.append(IndentUtils.createIndentString(doc, GsfUtilities.getLineIndent(doc, ts.offset())));
             }
-
-            sb.append(IndentUtils.createIndentString(doc, indent));
 
             int insertOffset = offset; // offset < length ? offset+1 : offset;
             doc.insertString(insertOffset, sb.toString(), null);
@@ -1048,7 +1049,7 @@ public class PHPBracketCompleter implements KeystrokeHandler {
             case ']':
             case '(':
             case '[':
-                if (!isInsertMatchingEnabled(doc)) {
+                if (!isInsertMatchingEnabled(doc) && ch != '{' && ch != '}') {
                     return false;
                 }
                 Token<? extends PHPTokenId> token = LexUtilities.getToken(doc, dotPos);

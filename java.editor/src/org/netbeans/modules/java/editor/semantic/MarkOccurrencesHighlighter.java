@@ -88,6 +88,7 @@ import javax.swing.text.AttributeSet;
 import javax.swing.text.Document;
 
 import org.netbeans.api.java.lexer.JavaTokenId;
+import org.netbeans.api.java.lexer.JavadocTokenId;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.JavaParserResultTask;
 import org.netbeans.api.java.source.JavaSource.Phase;
@@ -450,7 +451,9 @@ public class MarkOccurrencesHighlighter extends JavaParserResultTask {
             try {
                 List<int[]> bag = new ArrayList<int[]>();
                 for (Token t : fluq.findUsages(el, info, doc)) {
-                    bag.add(new int[] {t.offset(null), t.offset(null) + t.length()});
+                    // type parameter name is represented as ident -> ignore surrounding <> in rename
+                    int delta = t.id() == JavadocTokenId.IDENT && t.text().charAt(0) == '<' && t.text().charAt(t.length() - 1) == '>' ? 1 : 0;
+                    bag.add(new int[] {t.offset(null) + delta, t.offset(null) + t.length() - delta});
                 }
 
                 return bag;

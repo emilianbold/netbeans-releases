@@ -242,16 +242,16 @@ public abstract class JPACompletionItem implements CompletionItem {
                         completion.hideDocumentation();
                     }
                     break;
-                case ';':
-                case ',':
-                case '(':
-                    completion.hideCompletion();
-                    completion.hideDocumentation();
-                case '.':
-                    if (defaultAction((JTextComponent) evt.getSource(), Character.toString(evt.getKeyChar()))) {
-                        evt.consume();
-                        break;
-                    }
+//                case ';': //TODO, can special handling be added even if we press these buttons within a literal?
+//                case ',':
+//                case '(':
+//                    completion.hideCompletion();
+//                    completion.hideDocumentation();
+//                case '.':
+//                    if (defaultAction((JTextComponent) evt.getSource(), Character.toString(evt.getKeyChar()))) {
+//                        evt.consume();
+//                        break;
+//                    }
             }
         }
     }

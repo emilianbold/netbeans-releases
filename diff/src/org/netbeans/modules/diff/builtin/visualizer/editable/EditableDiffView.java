@@ -114,6 +114,7 @@ import org.openide.util.WeakListeners;
 public class EditableDiffView extends DiffControllerImpl implements DiffView, DocumentListener, AncestorListener, PropertyChangeListener, PreferenceChangeListener, ChangeListener {
 
     private static final int INITIAL_DIVIDER_SIZE = 32;
+    private static final String CONTENT_TYPE_PLAIN = "text/plain";
     
     private Stroke boldStroke = new BasicStroke(3);
     
@@ -263,9 +264,22 @@ public class EditableDiffView extends DiffControllerImpl implements DiffView, Do
                     jEditorPane1.setBorder(BorderFactory.createMatteBorder(1, 0, 0, 0, borderColor));
                     jEditorPane2.setBorder(BorderFactory.createMatteBorder(1, 0, 0, 0, borderColor));
                     
-                    jEditorPane1.getEditorPane().setEditorKit(CloneableEditorSupport.getEditorKit(f1));
+                    EditorKit editorKit;
+                    try {
+                        editorKit = CloneableEditorSupport.getEditorKit(f1);
+                    } catch (IllegalArgumentException ex) {
+                        LOG.log(Level.INFO, ss1.toString(), ex);
+                        editorKit = CloneableEditorSupport.getEditorKit(CONTENT_TYPE_PLAIN);
+                    }
+                    jEditorPane1.getEditorPane().setEditorKit(editorKit);
                     repairTextUI(jEditorPane1.getEditorPane());
-                    jEditorPane2.getEditorPane().setEditorKit(CloneableEditorSupport.getEditorKit(f2));
+                    try {
+                        editorKit = CloneableEditorSupport.getEditorKit(f2);
+                    } catch (IllegalArgumentException ex) {
+                        LOG.log(Level.INFO, ss2.toString(), ex);
+                        editorKit = CloneableEditorSupport.getEditorKit(CONTENT_TYPE_PLAIN);
+                    }
+                    jEditorPane2.getEditorPane().setEditorKit(editorKit);
                     repairTextUI(jEditorPane2.getEditorPane());
                     
                     try {
@@ -354,7 +368,7 @@ public class EditableDiffView extends DiffControllerImpl implements DiffView, Do
                                                   JTextComponent rightEditor) {
         String mimeType = DocumentUtilities.getMimeType(leftEditor);
         if (mimeType == null) {
-            mimeType = "text/plain";                                    //NOI18N
+            mimeType = CONTENT_TYPE_PLAIN;                                    //NOI18N
         }
 
         Color bgColor = null;
@@ -1507,7 +1521,7 @@ public class EditableDiffView extends DiffControllerImpl implements DiffView, Do
         TextUI ui = pane.getUI();
         if (!(ui instanceof BaseTextUI)) {
             // use plain editor
-            pane.setEditorKit(CloneableEditorSupport.getEditorKit("text/plain")); //NOI18N
+            pane.setEditorKit(CloneableEditorSupport.getEditorKit(CONTENT_TYPE_PLAIN)); //NOI18N
         }
     }
 

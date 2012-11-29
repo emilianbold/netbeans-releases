@@ -158,7 +158,9 @@ public class JsSemanticAnalyzer extends SemanticAnalyzer<JsParserResult> {
                             highlights.put(occurence.getOffsetRange(), ColoringAttributes.GLOBAL_SET);
                         }
                     } else if (object.isDeclared() && !"prototype".equals(object.getName()) && !object.isAnonymous()) {
-                        if(object.getOccurrences().isEmpty() && object.getModifiers().contains(Modifier.PRIVATE)) {
+                        if((object.getOccurrences().isEmpty() 
+                                || (object.getOccurrences().size() == 1 && object.getOccurrences().get(0).getOffsetRange().equals(object.getDeclarationName().getOffsetRange()))) 
+                                && object.getModifiers().contains(Modifier.PRIVATE)) {
                             highlights.put(object.getDeclarationName().getOffsetRange(), UNUSED_OBJECT_SET);
                         } else {
                             highlights.put(object.getDeclarationName().getOffsetRange(), ColoringAttributes.CLASS_SET);
@@ -192,12 +194,16 @@ public class JsSemanticAnalyzer extends SemanticAnalyzer<JsParserResult> {
                                 // some virtual variables (like arguments) doesn't have to be declared, but are in the model
                                 highlights.put(object.getDeclarationName().getOffsetRange(), ColoringAttributes.UNUSED_SET);
                             }
-                        } else if (object instanceof JsObjectImpl) {
-                            if (object.getOccurrences().size() < ((JsObjectImpl)object).getCountOfAssignments()) {
+                        } else if (object instanceof JsObjectImpl && !"arguments".equals(object.getName())) {   // NOI18N
+                            if (object.getOccurrences().size() <= ((JsObjectImpl)object).getCountOfAssignments()) {
                                 // probably is used only on the left site => is unused
-                                highlights.put(object.getDeclarationName().getOffsetRange(), ColoringAttributes.UNUSED_SET);
+                                if (object.getDeclarationName().getOffsetRange().getLength() > 0) {
+                                    highlights.put(object.getDeclarationName().getOffsetRange(), ColoringAttributes.UNUSED_SET);
+                                }
                                 for(Occurrence occurence: object.getOccurrences()) {
-                                    highlights.put(occurence.getOffsetRange(), ColoringAttributes.UNUSED_SET);
+                                    if (occurence.getOffsetRange().getLength() > 0) {
+                                        highlights.put(occurence.getOffsetRange(), ColoringAttributes.UNUSED_SET);
+                                    }
                                 }
                             }
                         }
@@ -240,7 +246,9 @@ public class JsSemanticAnalyzer extends SemanticAnalyzer<JsParserResult> {
         if (param.getOccurrences().isEmpty()) {
             return false;
         }
-
+        if (param.getOccurrences().size() == 1 && param.getOccurrences().get(0).getOffsetRange().equals(param.getDeclarationName().getOffsetRange())) {
+            return false;
+        }
         JsDocumentationHolder docHolder = result.getDocumentationHolder();
         for (Occurrence occurrence : param.getOccurrences()) {
             JsComment comment = docHolder.getCommentForOffset(occurrence.getOffsetRange().getStart(), docHolder.getCommentBlocks());

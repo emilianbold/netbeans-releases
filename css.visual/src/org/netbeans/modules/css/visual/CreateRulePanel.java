@@ -53,6 +53,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeSet;
@@ -71,7 +72,6 @@ import javax.swing.JPanel;
 import javax.swing.ListCellRenderer;
 import javax.swing.ListModel;
 import javax.swing.MutableComboBoxModel;
-import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.event.ListSelectionEvent;
@@ -112,9 +112,11 @@ import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.web.common.api.DependenciesGraph;
 import org.netbeans.modules.web.common.api.LexerUtils;
 import org.netbeans.modules.web.common.api.WebUtils;
+import org.netbeans.modules.web.common.spi.ProjectWebRootQuery;
 import org.openide.cookies.EditorCookie;
 import org.openide.cookies.SaveCookie;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.Exceptions;
@@ -209,6 +211,15 @@ public class CreateRulePanel extends javax.swing.JPanel {
     private FileObject context;
     
     /**
+     * Web root of the context file.
+     */
+    private FileObject webRoot;
+    /**
+     * Project the context belongs to.
+     */
+    private Project project;
+    
+    /**
      * Cached all html source element names.
      */
     private Collection<String> ELEMENT_SELECTOR_ITEMS;
@@ -227,6 +238,8 @@ public class CreateRulePanel extends javax.swing.JPanel {
     public CreateRulePanel(FileObject context, HtmlSourceElementHandle handle) {
         assert context != null;
         this.context = context;
+        this.project = FileOwnerQuery.getOwner(context);
+        this.webRoot = ProjectWebRootQuery.getWebRoot(context);
         this.activeElement = handle;
 
         STYLESHEETS_MODEL = new ExtDefaultComboBoxModel();
@@ -696,11 +709,18 @@ public class CreateRulePanel extends javax.swing.JPanel {
 
 //        addStylesheetButton.setEnabled(!exists);
     }
-
+    
     private void createStyleSheetsModel() {
         try {
-            List<FileObject> items = new ArrayList<FileObject>();
-            Project project = FileOwnerQuery.getOwner(context);
+            Collection<FileObject> items = new TreeSet<FileObject>(new Comparator<FileObject>() {
+
+                //alphabetical sort
+                @Override
+                public int compare(FileObject t, FileObject t1) {
+                    return t.getPath().compareTo(t1.getPath());
+                }
+                
+            });
             if (project == null) {
                 return;
             }
@@ -986,9 +1006,12 @@ public class CreateRulePanel extends javax.swing.JPanel {
     /**
      * Changes the class and id attributes of the active html source element.
      */
-    private void modifySourceElement() {
+    private void modifySourceElement() throws DataObjectNotFoundException, IOException {
         final BaseDocument doc = (BaseDocument) getDocument(activeElement.getFile());
         final AtomicBoolean success = new AtomicBoolean();
+
+        DataObject dataObject = DataObject.find(activeElement.getFile());
+        boolean modified = dataObject.getLookup().lookup(SaveCookie.class) != null;
 
         pos = Integer.MAX_VALUE;
         diff = -1;
@@ -1012,16 +1035,12 @@ public class CreateRulePanel extends javax.swing.JPanel {
 
         //possibly save the document if not opened in editor
         if (success.get()) {
-            SwingUtilities.invokeLater(new Runnable() {
-                @Override
-                public void run() {
-                    try {
-                        saveDocumentIfNotOpened(doc);
-                    } catch (IOException ex) {
-                        Exceptions.printStackTrace(ex);
-                    }
+            if (!modified) { //wasn't modified before applying the changes, save...
+                SaveCookie saveCookie = dataObject.getLookup().lookup(SaveCookie.class);
+                if (saveCookie != null) { //the "changes" may not modify the document
+                    saveCookie.save();
                 }
-            });
+            }
         }
     }
 
@@ -1159,15 +1178,14 @@ public class CreateRulePanel extends javax.swing.JPanel {
      * Refreshes the combobox model of the selectors combobox according to the choosen selector type.
      */
     private void updateSelectorsModel() {
-        Collection<SelectorItem> items = new TreeSet<SelectorItem>();
-        SelectorItem selection = null;
-
-        //1.add classes && ids
-        Project project = FileOwnerQuery.getOwner(context);
         if (project == null) {
             return;
         }
 
+        Collection<SelectorItem> items = new TreeSet<SelectorItem>();
+        SelectorItem selection = null;
+
+        //1.add classes && ids
         try {
             CssIndex index = CssIndex.create(project);
             DependenciesGraph dependencies = index.getDependencies(context);
@@ -1396,8 +1414,18 @@ public class CreateRulePanel extends javax.swing.JPanel {
                     return c;
                 }
                 FileObject file = (FileObject) value;
-                String fileNameExt = file.getNameExt();
-                setText(fileNameExt);
+                if(webRoot == null) {
+                    setText(file.getNameExt());
+                } else {
+                    String relativePath = FileUtil.getRelativePath(webRoot, file);
+                    if(relativePath != null) {
+                        setText(relativePath);
+                    } else {
+                        //should not happen
+                        setText(file.getNameExt());
+                    }
+                }
+                
                 return c;
             }
         };

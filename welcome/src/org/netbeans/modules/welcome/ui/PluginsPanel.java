@@ -82,7 +82,7 @@ class PluginsPanel extends JPanel implements Constants {
     }
 
     private void addActivateFeatures( String label, String description ) {
-        LinkButton b = new LinkButton(label, Utils.getColor(COLOR_HEADER), true, "ActivateFeatures" ) { //NOI18N
+        LinkButton b = new LinkButton(label, Utils.getColor(LINK_COLOR), true, "ActivateFeatures" ) { //NOI18N
 
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -97,7 +97,7 @@ class PluginsPanel extends JPanel implements Constants {
     }
 
     private void addInstallPlugins( String label, String description ) {
-        LinkButton b = new LinkButton(label, Utils.getColor(COLOR_HEADER), true, "InstallPlugins") { //NOI18N
+        LinkButton b = new LinkButton(label, Utils.getColor(LINK_COLOR), true, "InstallPlugins") { //NOI18N
 
             @Override
             public void actionPerformed(ActionEvent e) {
