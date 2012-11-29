@@ -990,13 +990,9 @@ public class HtmlNavigatorPanelUI extends JPanel implements ExplorerManager.Prov
                         return;
                     }
                     final List nodes = translate(manager.getSelectedNodes());
-                    RP.post(new Runnable() {
-                        @Override
-                        public void run() {
-                            if (pageModel !=null)
-                                pageModel.setSelectedNodes(nodes);
-                            }
-                    });
+                    if (pageModel != null) {
+                        pageModel.setSelectedNodes(nodes);
+                    }
                 }
             }
 
