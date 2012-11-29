@@ -64,6 +64,7 @@ import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.text.NbDocument;
 import org.openide.windows.WindowManager;
 
 /**
@@ -137,9 +138,8 @@ public final class CssCaretAwareSourceTask extends ParserResultTask<CssParserRes
                 DataObject dobj = DataObject.find(file);
                 EditorCookie ec = dobj.getLookup().lookup(EditorCookie.class);
                 if (ec != null) {
-                    JEditorPane[] panes = ec.getOpenedPanes(); //needs EDT
-                    if (panes != null && panes.length > 0) {
-                        JEditorPane pane = panes[0]; //hopefully the active one
+                    JEditorPane pane = NbDocument.findRecentEditorPane(ec);
+                    if (pane != null) {
                         caretOffset = pane.getCaretPosition();
                     }
                 }
