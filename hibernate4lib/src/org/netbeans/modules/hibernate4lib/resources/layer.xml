@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.2//EN" "http://www.netbeans.org/dtds/filesystem-1_2.dtd">
+<filesystem>
+    <folder name="org-netbeans-api-project-libraries">
+        <folder name="Libraries">
+            <file name="hibernate.xml" url="hibernate.xml">
+                <attr name="displayName" bundlevalue="org/netbeans/modules/hibernatelib/resources/Bundle#hibernate3-support"/>
+            </file>
+            <file name="jpa2-persistence.xml" url="ejb3-persistence.xml">
+                <attr name="displayName" bundlevalue="org/netbeans/modules/hibernatelib/resources/Bundle#jpa2-persistence"/>
+            </file>
+            <file name="hibernate-persistence.xml" url="hibernate-persistence.xml">
+                <attr name="displayName" bundlevalue="org/netbeans/modules/hibernatelib/resources/Bundle#hibernate4-persistence"/>
+            </file>
+        </folder>
+    </folder>
+</filesystem>
