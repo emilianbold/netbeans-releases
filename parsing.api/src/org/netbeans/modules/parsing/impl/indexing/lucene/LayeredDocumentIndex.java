@@ -62,16 +62,16 @@ import static org.netbeans.modules.parsing.impl.indexing.TransientUpdateSupport.
  *
  * @author Tomas Zezula
  */
-public final class LayeredDocumentIndex implements DocumentIndex {
+public final class LayeredDocumentIndex implements DocumentIndex.Transactional {
     
-    private final DocumentIndex base;
+    private final DocumentIndex.Transactional base;
     
     private final Set<String> filter = new HashSet<String>();
     //@GuardedBy("this")
     private DocumentIndex overlay;
     
     
-    LayeredDocumentIndex(@NonNull final DocumentIndex base) {
+    LayeredDocumentIndex(@NonNull final DocumentIndex.Transactional base) {
         assert base != null;
         this.base = base;
     }
@@ -125,6 +125,34 @@ public final class LayeredDocumentIndex implements DocumentIndex {
             base.store(optimize);
         }
     }
+
+    @Override
+    public void commit() throws IOException {
+        if (isTransientUpdate()) {
+            throw new UnsupportedOperationException("Transactions not supported for overlay."); //NOI18N
+        } else {
+            base.commit();
+        }
+    }
+
+    @Override
+    public void rollback() throws IOException {
+        if (isTransientUpdate()) {
+            throw new UnsupportedOperationException("Transactions not supported for overlay."); //NOI18N
+        } else {
+            base.rollback();
+        }
+    }
+
+    @Override
+    public void txStore() throws IOException {
+        if (isTransientUpdate()) {
+            throw new UnsupportedOperationException("Transactions not supported for overlay."); //NOI18N
+        } else {
+            base.txStore();
+        }
+    }
+
 
     @Override
     public Collection<? extends IndexDocument> query(String fieldName, String value, QueryKind kind, String... fieldsToLoad) throws IOException, InterruptedException {

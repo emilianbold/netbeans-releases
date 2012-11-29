@@ -195,7 +195,7 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
         }
     }
 
-    public void stop() {
+    public void stop(@NullAllowed final Runnable postCleanTask) throws TimeoutException {
         boolean cancel = false;
 
         synchronized (this) {
@@ -212,7 +212,7 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
         }
 
         if (cancel) {
-            getWorker().cancelAll();
+            getWorker().cancelAll(postCleanTask);
         }
     }
 
@@ -2354,7 +2354,12 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
                 }
             } finally {
                 for(Pair<SourceIndexerFactory,Context> entry : ctxToFinish) {
-                    storeChanges(entry.first.getIndexerName(), entry.second, isSteady(), usedIterables.get());                    
+                    storeChanges(
+                            entry.first.getIndexerName(),
+                            entry.second,
+                            isSteady(),
+                            usedIterables.get(),
+                            finished);
                 }
             }
         }
@@ -2663,7 +2668,8 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
         protected final void binaryScanFinished(
                 @NonNull final BinaryIndexers indexers,
                 @NonNull final LinkedHashMap<BinaryIndexerFactory, Context> contexts,
-                @NonNull final BitSet startedIndexers) throws IOException {
+                @NonNull final BitSet startedIndexers,
+                final boolean finished) throws IOException {
             try {
                 int index = 0;
                 for (Map.Entry<BinaryIndexerFactory, Context> entry : contexts.entrySet()) {
@@ -2686,7 +2692,7 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
                 }
             } finally {
                 for(Context ctx : contexts.values()) {
-                    storeChanges(null, ctx, isSteady(), null);
+                    storeChanges(null, ctx, isSteady(), null, finished);
                 }
             }
         }
@@ -3185,9 +3191,10 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
                 @NonNull final String indexerName,
                 @NonNull final Context ctx,
                 final boolean optimize,
-                @NullAllowed final Iterable<? extends Indexable> indexables) throws IOException {
+                @NullAllowed final Iterable<? extends Indexable> indexables,
+                final boolean finished) throws IOException {
 
-            final DocumentIndex index = SPIAccessor.getInstance().getIndexFactory(ctx).getIndex(ctx.getIndexFolder());
+            final DocumentIndex.Transactional index = SPIAccessor.getInstance().getIndexFactory(ctx).getIndex(ctx.getIndexFolder());
             if (index != null) {
                 TEST_LOGGER.log(
                     Level.FINEST,
@@ -3197,7 +3204,11 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
                         ctx.getRootURI()
                     });
                 try {
-                    storeChanges(index, optimize, indexables);
+                    if (finished) {
+                        storeChanges(index, optimize, indexables);
+                    } else {
+                        rollBackChanges(index);
+                    }
                 } finally {
                     final DocumentIndexCache cache = SPIAccessor.getInstance().getIndexFactory(ctx).getCache(ctx);
                     if (cache instanceof ClusteredIndexables.AttachableDocumentIndexCache) {
@@ -3227,6 +3238,11 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
                 ctx.addStoreTime(span);
             }
         }
+
+       private void rollBackChanges(
+               @NonNull final DocumentIndex.Transactional docIndex) throws IOException {
+           docIndex.rollback();
+       }
 
         //@NotThreadSafe
         final class UsedIndexables {
@@ -4593,7 +4609,7 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
                 } catch (IOException ioe) {
                     LOGGER.log(Level.WARNING, null, ioe);
                 } finally {
-                    binaryScanFinished(binaryIndexers, contexts, startedIndexers);
+                    binaryScanFinished(binaryIndexers, contexts, startedIndexers, success);
                     URL archiveFile = FileUtil.getArchiveFile(root);
                     if (success && archiveFile != null && !upToDate) {
                         ArchiveTimeStamps.setLastModified(archiveFile, createBinaryIndexersTimeStamp(currentLastModified,contexts));
@@ -5158,13 +5174,23 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
             }
         }
 
-        public void cancelAll() {
+        public void cancelAll(@NullAllowed final Runnable postCleanTask) throws TimeoutException {
             synchronized (todo) {
                 if (!allCancelled) {
                     // stop accepting new work and clean the queue
-                    allCancelled = true;
                     todo.clear();
-
+                    if (postCleanTask != null) {
+                        schedule (
+                            new Work(false, false, false, true, SuspendSupport.NOP, null) {
+                                @Override
+                                protected boolean getDone() {
+                                    postCleanTask.run();
+                                    return true;
+                                }
+                            },
+                            false);
+                    }
+                    allCancelled = true;
                     // stop the work currently being done
                     final Work work = workInProgress;
                     if (work != null) {
@@ -5184,6 +5210,7 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
 
                     if (scheduled && cnt == 0) {
                         LOGGER.log(Level.INFO, "Waiting for indexing jobs to finish timed out; job in progress {0}, jobs queue: {1}", new Object [] { work, todo }); //NOI18N
+                        throw new TimeoutException();
                     }
                 }
             }

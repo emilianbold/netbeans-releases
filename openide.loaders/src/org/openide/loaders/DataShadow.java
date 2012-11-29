@@ -670,6 +670,20 @@ public class DataShadow extends MultiDataObject implements DataObject.Container 
         } catch (java.beans.PropertyVetoException e) {                        
         }         
     }
+
+    @Override
+    void notifyAttributeChanged(FileAttributeEvent fae) {
+        super.notifyAttributeChanged(fae);
+        refresh(false);
+    }
+
+    @Override
+    void notifyFileChanged(FileEvent fe) {
+        super.notifyFileChanged(fe);
+        refresh(false);
+    }
+    
+    
     
     private void tryUpdate() throws IOException {
         URL url = readURL(getPrimaryFile ());

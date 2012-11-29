@@ -3397,10 +3397,12 @@ public class Reformatter implements ReformatTask {
                 int nestedParenCnt = 0;
                 StringBuilder cseq = null;
                 Pair<Integer, Integer> toAdd = null;
+                Pair<Integer, Integer> nlAdd = null;
                 while (javadocTokens.moveNext()) {
                     switch (javadocTokens.token().id()) {
                         case TAG:
                             toAdd = null;
+                            nlAdd = null;
                             String tokenText = javadocTokens.token().text().toString();
                             int newState;
                             if (JDOC_PARAM_TAG.equalsIgnoreCase(tokenText)) {
@@ -3442,6 +3444,7 @@ public class Reformatter implements ReformatTask {
                                 marks.add(toAdd);
                                 toAdd = null;
                             }
+                            nlAdd = null;
                             if (identStart < 0 && (state == 1 || state == 4))
                                 identStart = javadocTokens.offset() - offset;
                             lastWSOffset = currWSOffset = -1;
@@ -3452,6 +3455,7 @@ public class Reformatter implements ReformatTask {
                                 marks.add(toAdd);
                                 toAdd = null;
                             }
+                            nlAdd = null;
                             tokenText = javadocTokens.token().text().toString();
                             if (tokenText.endsWith(">")) { //NOI18N
                                 if (P_TAG.equalsIgnoreCase(tokenText)) {
@@ -3469,6 +3473,8 @@ public class Reformatter implements ReformatTask {
                                 } else if (PRE_END_TAG.equalsIgnoreCase(tokenText)
                                         || CODE_END_TAG.equalsIgnoreCase(tokenText)) {
                                     marks.add(Pair.of(currWSOffset >= 0 ? currWSOffset : javadocTokens.offset() - offset, 6));
+                                } else {
+                                    nlAdd = Pair.of(javadocTokens.offset() + javadocTokens.token().length() - offset, 1);
                                 }
                             } else {
                                 cseq = new StringBuilder(tokenText);
@@ -3483,6 +3489,7 @@ public class Reformatter implements ReformatTask {
                             int nlNum = 1;
                             int insideTagEndOffset = -1;
                             boolean addNow = false;
+                            boolean nlFollows = false;
                             for (int i = cseq.length(); i >= 0; i--) {
                                 if (i == 0) {
                                     if (lastWSOffset < 0)
@@ -3492,37 +3499,46 @@ public class Reformatter implements ReformatTask {
                                 } else {
                                     char c = cseq.charAt(i - 1);
                                     if (Character.isWhitespace(c)) {
-                                        if (c == '\n')
+                                        if (c == '\n') {
                                             nlNum--;
+                                            nlFollows = true;
+                                        }
                                         if (lastWSOffset < 0 && currWSOffset >= 0)
                                             lastWSOffset = -2;
-                                    } else if (c != '*') {
-                                        if (toAdd != null) {
-                                            marks.add(toAdd);
-                                            toAdd = null;
-                                        } else {
-                                            addNow = true;
-                                        }
-                                        if (insideTag) {
-                                            if (c == '{') {
-                                                nestedParenCnt++;
-                                            } else if (c == '}') {
-                                                if (nestedParenCnt > 0) {
-                                                    nestedParenCnt--;
-                                                } else {
-                                                    insideTagEndOffset = javadocTokens.offset() + i - offset - 1;
-                                                    insideTag = false;
+                                    } else {
+                                        nlFollows = false;
+                                        if (c != '*') {
+                                            if (toAdd != null) {
+                                                marks.add(toAdd);
+                                                toAdd = null;
+                                            } else {
+                                                addNow = true;
+                                            }
+                                            if (insideTag) {
+                                                if (c == '{') {
+                                                    nestedParenCnt++;
+                                                } else if (c == '}') {
+                                                    if (nestedParenCnt > 0) {
+                                                        nestedParenCnt--;
+                                                    } else {
+                                                        insideTagEndOffset = javadocTokens.offset() + i - offset - 1;
+                                                        insideTag = false;
+                                                    }
                                                 }
                                             }
+                                            if (lastWSOffset == -2)
+                                                lastWSOffset = javadocTokens.offset() + i - offset;
+                                            if (currWSOffset < 0 && nlNum >= 0)
+                                                currWSOffset = javadocTokens.offset() + i - offset;
+                                            afterText = true;
                                         }
-                                        if (lastWSOffset == -2)
-                                            lastWSOffset = javadocTokens.offset() + i - offset;
-                                        if (currWSOffset < 0 && nlNum >= 0)
-                                            currWSOffset = javadocTokens.offset() + i - offset;
-                                        afterText = true;
                                     }
                                 }
                             }
+                            if (nlFollows && nlAdd != null) {
+                                marks.add(nlAdd);
+                            }
+                            nlAdd = null;
                             if (identStart >= 0) {
                                 int len = javadocTokens.offset() - offset - identStart;
                                 for (int i = 0; i <= cseq.length(); i++) {
@@ -3559,6 +3575,7 @@ public class Reformatter implements ReformatTask {
                                 marks.add(toAdd);
                                 toAdd = null;
                             }
+                            nlAdd = null;
                     }
                 }
             }
@@ -3612,14 +3629,13 @@ public class Reformatter implements ReformatTask {
                                     String s = pendingDiff != null && pendingDiff.text != null && pendingDiff.text.charAt(0) == '\n' ? pendingDiff.text : NEWLINE + lineStartString;
                                     col = getCol(lineStartString) + i - endOff;
                                     if (align > 0) {
-                                        int num = align - lineStartString.length();
+                                        int num = align - getCol(lineStartString);
                                         if (num > 0) {
                                             s += getSpaces(num);
                                             col += num;
                                         }
-                                    } else {
-                                        col++;
                                     }
+                                    col++;
                                     if (endOff > lastWSPos && !s.equals(text.substring(lastWSPos, endOff)))
                                         addDiff(new Diff(offset + lastWSPos, offset + endOff, s));
                                 } else if (pendingDiff != null) {

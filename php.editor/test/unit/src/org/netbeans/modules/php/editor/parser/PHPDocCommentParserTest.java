@@ -199,6 +199,23 @@ public class PHPDocCommentParserTest extends PHPTestBase {
         assertEquals(comment.indexOf("@custom1") + "@custom1".length(), tags.get(1).getEndOffset() - 3);
     }
 
+    public void testIssue222836() throws Exception {
+        String comment = " * @todo Visible but nothing after white space is not\n * @copyright (c) year, John Doe";
+        PHPDocCommentParser parser = new PHPDocCommentParser();
+        PHPDocBlock block = parser.parse(0, comment.length(), comment);
+        assertNotNull(block);
+        List<PHPDocTag> tags = block.getTags();
+        assertEquals(2, tags.size());
+        AnnotationParsedLine first = tags.get(0).getKind();
+        assertTrue(first instanceof UnknownAnnotationLine);
+        assertEquals("todo", first.getName());
+        assertEquals("Visible but nothing after white space is not", first.getDescription());
+        AnnotationParsedLine second = tags.get(1).getKind();
+        assertTrue(second instanceof UnknownAnnotationLine);
+        assertEquals("copyright", second.getName());
+        assertEquals("(c) year, John Doe", second.getDescription());
+    }
+
     public void testDescriptionWithHtml() throws Exception {
         String comment = "*   <dd> \"*word\"  => ENDS_WITH(word)\n *   <dd> \"/^word.* /\" => REGEX(^word.*)\n *   <dd> \"word*word\" => REGEX(word.*word)";
         PHPDocCommentParser parser = new PHPDocCommentParser();

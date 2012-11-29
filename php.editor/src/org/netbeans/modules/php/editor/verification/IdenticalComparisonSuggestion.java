@@ -86,6 +86,9 @@ public class IdenticalComparisonSuggestion extends AbstractSuggestion {
         int lineEnd = (lineBegin != -1) ? Utilities.getRowEnd(doc, caretOffset) : -1;
         if (lineBegin != -1 && lineEnd != -1 && caretOffset >= lineBegin) {
             FileObject fileObject = phpParseResult.getSnapshot().getSource().getFileObject();
+            if (fileObject == null) {
+                return;
+            }
             CheckVisitor checkVisitor = new CheckVisitor(fileObject, phpParseResult.getModel(), context.doc, new OffsetRange(lineBegin, lineEnd));
             phpParseResult.getProgram().accept(checkVisitor);
             hints.addAll(checkVisitor.getHints());

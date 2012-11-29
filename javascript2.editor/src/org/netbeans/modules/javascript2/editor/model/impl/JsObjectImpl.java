@@ -44,6 +44,7 @@ package org.netbeans.modules.javascript2.editor.model.impl;
 import java.util.*;
 import org.netbeans.modules.csl.api.Modifier;
 import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.javascript2.editor.doc.spi.JsDocumentationHolder;
 import org.netbeans.modules.javascript2.editor.model.*;
 
 /**
@@ -331,7 +332,7 @@ public class JsObjectImpl extends JsElementImpl implements JsObject {
         return result;
     }
     
-    public void resolveTypes() {
+    public void resolveTypes(JsDocumentationHolder jsDocHolder) {
         if (parent == null) {
             return;
         }
@@ -401,7 +402,7 @@ public class JsObjectImpl extends JsElementImpl implements JsObject {
         occurrences.clear();
     }
     
-    private void moveOccurrenceOfProperties(JsObjectImpl original, JsObject created) {
+    protected void moveOccurrenceOfProperties(JsObjectImpl original, JsObject created) {
         if (original.equals(created)) {
             return;
         }

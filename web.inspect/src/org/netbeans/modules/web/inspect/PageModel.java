@@ -71,6 +71,7 @@ public abstract class PageModel extends Page {
      * 
      * @return document node.
      */
+    @Override
     public abstract Node getDocumentNode();
 
     /**
@@ -171,6 +172,7 @@ public abstract class PageModel extends Page {
      * 
      * @param listener listener to add.
      */
+    @Override
     public void addPropertyChangeListener(PropertyChangeListener listener) {
         propChangeSupport.addPropertyChangeListener(listener);
     }
@@ -180,6 +182,7 @@ public abstract class PageModel extends Page {
      * 
      * @param listener listener to remove.
      */
+    @Override
     public void removePropertyChangeListener(PropertyChangeListener listener) {
         propChangeSupport.removePropertyChangeListener(listener);
     }

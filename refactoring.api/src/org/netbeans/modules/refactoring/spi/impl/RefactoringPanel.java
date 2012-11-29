@@ -1302,14 +1302,12 @@ public class RefactoringPanel extends JPanel implements FiltersManagerImpl.Filte
         
         private ProgressHandle handle;
         private Dialog d;
-        private int counter;
         
         @Override
         public void start(final ProgressEvent event) {
             SwingUtilities.invokeLater(new Runnable() {
                 @Override
                 public void run() {
-                    counter = 0;
                     final String lab = NbBundle.getMessage(RefactoringPanel.class, "LBL_RefactorProgressLabel");
                     handle = ProgressHandleFactory.createHandle(lab);
                     JComponent progress = ProgressHandleFactory.createProgressComponent(handle);
@@ -1333,12 +1331,12 @@ public class RefactoringPanel extends JPanel implements FiltersManagerImpl.Filte
         }
         
         @Override
-        public void step(ProgressEvent event) {
+        public void step(final ProgressEvent event) {
             SwingUtilities.invokeLater(new Runnable() {
                 @Override
                 public void run() {
                     try {
-                        handle.progress(++counter);
+                        handle.progress(event.getCount());
                     } catch (Throwable e) {
                         ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
                     }

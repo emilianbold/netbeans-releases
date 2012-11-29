@@ -43,6 +43,9 @@ package org.netbeans.modules.parsing.impl.indexing;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -52,6 +55,7 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.mimelookup.test.MockMimeLookup;
 import org.netbeans.api.java.classpath.ClassPath;
@@ -153,11 +157,34 @@ public class IndexingSupportACIDTest extends NbTestCase {
         assertEquals(0, handler.getBinaries().size());
         assertEquals(1, handler.getSources().size());
         assertEquals(this.src1.toURL(), handler.getSources().get(0));
+        assertTrue(MimeLookup.getLookup(MimePath.get(FOO_MIME)).lookup(FooIndexerFactory.class).isSuccess());
         QuerySupport qs = QuerySupport.forRoots(FooIndexerFactory.NAME, FooIndexerFactory.VERSION, src1);
         final Collection<? extends IndexResult> res = qs.query("_sn", "", QuerySupport.Kind.PREFIX, (String[]) null);   //NOI18N
         assertEquals(1, res.size());
         assertEquals(file1, res.iterator().next().getFile());
-    }    
+    }
+
+
+    public void testChangesNotVisibleAfterRollBack() throws InterruptedException, IOException {
+
+        assertTrue(GlobalPathRegistry.getDefault().getPaths(FOO_SOURCES).isEmpty());
+        final RepositoryUpdaterTest.TestHandler handler = new RepositoryUpdaterTest.TestHandler();
+        final Logger logger = Logger.getLogger(RepositoryUpdater.class.getName()+".tests"); //NOI18N
+        logger.setLevel (Level.FINEST);
+        logger.addHandler(handler);
+
+        MimeLookup.getLookup(MimePath.get(FOO_MIME)).lookup(FooIndexerFactory.class).setCancelScanning(true);
+
+        globalPathRegistry_register(FOO_SOURCES,new ClassPath[]{cp1});
+        assertTrue (handler.await());
+        assertEquals(0, handler.getBinaries().size());
+        assertEquals(1, handler.getSources().size());
+        assertEquals(this.src1.toURL(), handler.getSources().get(0));
+        assertFalse(MimeLookup.getLookup(MimePath.get(FOO_MIME)).lookup(FooIndexerFactory.class).isSuccess());
+        QuerySupport qs = QuerySupport.forRoots(FooIndexerFactory.NAME, FooIndexerFactory.VERSION, src1);
+        final Collection<? extends IndexResult> res = qs.query("_sn", "", QuerySupport.Kind.PREFIX, (String[]) null);   //NOI18N
+        assertEquals(0, res.size());
+    }
 
     private void globalPathRegistry_register(String id, ClassPath [] classpaths) {
         Map<ClassPath,Void> map = registeredClasspaths.get(id);
@@ -200,6 +227,9 @@ public class IndexingSupportACIDTest extends NbTestCase {
         private static final String NAME = "FooIndexer";    //NOI18N
         private static final int VERSION = 1;
 
+        private volatile boolean success;
+        private volatile boolean cancelScanning;
+
         @Override
         public CustomIndexer createIndexer() {
             return new CustomIndexer() {
@@ -213,6 +243,25 @@ public class IndexingSupportACIDTest extends NbTestCase {
                         }
                     } catch (IOException ioe) {
                         Exceptions.printStackTrace(ioe);
+                    }
+                    if (cancelScanning) {
+                        try {
+                            final Method gwm = RepositoryUpdater.class.getDeclaredMethod("getWorker");  //NOI18N
+                            gwm.setAccessible(true);
+                            final Object task = gwm.invoke(RepositoryUpdater.getDefault());
+                            final Field wipf = task.getClass().getDeclaredField("workInProgress");  //NOI18N
+                            wipf.setAccessible(true);
+                            RepositoryUpdater.Work work = (RepositoryUpdater.Work) wipf.get(task);
+                            work.setCancelled(true);
+                        } catch (NoSuchMethodException e) {
+                            throw new RuntimeException(e);
+                        } catch (NoSuchFieldException e) {
+                            throw new RuntimeException(e);
+                        } catch (IllegalAccessException e) {
+                            throw new RuntimeException(e);
+                        } catch (InvocationTargetException e) {
+                            throw new RuntimeException(e);
+                        }
                     }
                 }
             };
@@ -243,7 +292,15 @@ public class IndexingSupportACIDTest extends NbTestCase {
 
         @Override
         public void scanFinished(Context context) {
-            
+            success = !context.isCancelled();
+        }
+
+        boolean isSuccess() {
+            return success;
+        }
+
+        void setCancelScanning(final boolean cancelScanning) {
+            this.cancelScanning = cancelScanning;
         }
     }
 }

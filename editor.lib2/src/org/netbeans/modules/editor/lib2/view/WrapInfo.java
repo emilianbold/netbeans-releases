@@ -123,13 +123,11 @@ final class WrapInfo extends GapList<WrapLine> {
         int lastWrapLineIndex = size() - 1;
         for (int i = startIndex; i < endIndex; i++) {
             WrapLine wrapLine = get(i);
-            EditorView startViewPart = wrapLine.startPart;
-            if (startViewPart != null) {
-                // getPreferredSpan() perf should be ok since part-view should cache the TextLayout
-                float width = startViewPart.getPreferredSpan(View.X_AXIS);
-                allocBounds.width = width;
-                startViewPart.paint(g, allocBounds, clipBounds);
-                allocBounds.x += width;
+            ViewPart startPart = wrapLine.startPart;
+            if (startPart != null) {
+                allocBounds.width = startPart.width;
+                startPart.view.paint(g, allocBounds, clipBounds);
+                allocBounds.x += startPart.width;
             }
             if (wrapLine.hasFullViews()) { // Render the views
                 double visualOffset = children.startVisualOffset(wrapLine.firstViewIndex);
@@ -142,13 +140,11 @@ final class WrapInfo extends GapList<WrapLine> {
                         wrapLine.firstViewIndex, wrapLine.endViewIndex);
                 allocBounds.x += children.startVisualOffset(wrapLine.endViewIndex);
             }
-            EditorView endViewPart = wrapLine.endPart;
-            if (endViewPart != null) {
-                // getPreferredSpan() perf should be ok since part-view should cache the TextLayout
-                float endPartWidth = endViewPart.getPreferredSpan(View.X_AXIS);
-                allocBounds.width = endPartWidth;
-                endViewPart.paint(g, allocBounds, clipBounds);
-                allocBounds.x += endPartWidth;
+            ViewPart endPart = wrapLine.endPart;
+            if (endPart != null) {
+                allocBounds.width = endPart.width;
+                endPart.view.paint(g, allocBounds, clipBounds);
+                allocBounds.x += endPart.width;
             }
             // Paint wrap mark
             if (i != lastWrapLineIndex) { // but not on last wrap line
@@ -187,15 +183,16 @@ final class WrapInfo extends GapList<WrapLine> {
         int lastOffset = paragraphView.getStartOffset();
         for (int i = 0; i < size(); i++) {
             WrapLine wrapLine = get(i);
-            EditorView startViewPart = wrapLine.startPart;
+            ViewPart startPart = wrapLine.startPart;
             boolean nonEmptyLine = false;
-            if (startViewPart != null) {
+            if (startPart != null) {
                 nonEmptyLine = true;
-                if (startViewPart.getStartOffset() != lastOffset) {
-                    err = "startViewPart.getStartOffset()=" + startViewPart.getStartOffset() + // NOI18N
+                int startPartOffset = startPart.view.getStartOffset();
+                if (startPartOffset != lastOffset) {
+                    err = "startViewPart.getStartOffset()=" + startPartOffset + // NOI18N
                             " != lastOffset=" + lastOffset; // NOI18N
                 }
-                lastOffset = startViewPart.getEndOffset();
+                lastOffset = startPart.view.getEndOffset();
             }
             int startViewIndex = wrapLine.firstViewIndex;
             int endViewIndex = wrapLine.endViewIndex;
@@ -230,14 +227,15 @@ final class WrapInfo extends GapList<WrapLine> {
                     lastOffset = childView.getEndOffset();
                 }
             }
-            EditorView endViewPart = wrapLine.endPart;
-            if (endViewPart != null) {
+            ViewPart endPart = wrapLine.endPart;
+            if (endPart != null) {
                 nonEmptyLine = true;
-                if (err == null && lastOffset != endViewPart.getStartOffset()) {
-                    err = "endViewPart.getStartOffset()=" + endViewPart.getStartOffset() + // NOI18N
+                int endPartOffset = endPart.view.getStartOffset();
+                if (err == null && lastOffset != endPartOffset) {
+                    err = "endViewPart.getStartOffset()=" + endPartOffset + // NOI18N
                             " != lastOffset=" + lastOffset; // NOI18N
                 }
-                lastOffset = endViewPart.getEndOffset();
+                lastOffset = endPart.view.getEndOffset();
             }
             if (!nonEmptyLine && err == null) {
                 err = "Empty"; // NOI18N
@@ -268,14 +266,14 @@ final class WrapInfo extends GapList<WrapLine> {
             ArrayUtilities.appendBracketedIndex(sb, i, digitCount);
             WrapLine wrapLine = get(i);
             sb.append("SV:"); // NOI18N
-            EditorView startViewPart = wrapLine.startPart;
-            if (startViewPart != null) {
-                sb.append("<").append(startViewPart.getStartOffset()).append(","); // NOI18N
-                sb.append(startViewPart.getEndOffset()).append(">"); // NOI18N
+            ViewPart startPart = wrapLine.startPart;
+            if (startPart != null) {
+                sb.append("<").append(startPart.view.getStartOffset()).append(","); // NOI18N
+                sb.append(startPart.view.getEndOffset()).append(">"); // NOI18N
             } else {
                 sb.append("NULL"); // NOI18N
             }
-            sb.append("; x=").append(wrapLine.firstViewX); // NOI18N
+            sb.append("; x=").append(wrapLine.startPartWidth()); // NOI18N
             int startViewIndex = wrapLine.firstViewIndex;
             int endViewIndex = wrapLine.endViewIndex;
             sb.append(" [").append(startViewIndex).append(","); // NOI18N
@@ -307,10 +305,10 @@ final class WrapInfo extends GapList<WrapLine> {
                 }
             }
             sb.append("EV:"); // NOI18N
-            EditorView endViewPart = wrapLine.endPart;
+            ViewPart endViewPart = wrapLine.endPart;
             if (endViewPart != null) {
-                sb.append("<").append(endViewPart.getStartOffset()).append(","); // NOI18N
-                sb.append(endViewPart.getEndOffset()).append(">"); // NOI18N
+                sb.append("<").append(endViewPart.view.getStartOffset()).append(","); // NOI18N
+                sb.append(endViewPart.view.getEndOffset()).append(">"); // NOI18N
             } else {
                 sb.append("NULL"); // NOI18N
             }

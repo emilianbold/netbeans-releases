@@ -108,9 +108,12 @@ final class NbLifeExit implements Runnable {
                 doApproved(type == 4, status);
                 break;
             case 5:
-                onExit.countDown();
-                if (!Boolean.getBoolean("netbeans.close.no.exit")) { // NOI18N
-                    TopSecurityManager.exit(status);
+                try {
+                    if (!Boolean.getBoolean("netbeans.close.no.exit")) { // NOI18N
+                        TopSecurityManager.exit(status);
+                    }
+                } finally {
+                    onExit.countDown();
                 }
                 break;
             default:

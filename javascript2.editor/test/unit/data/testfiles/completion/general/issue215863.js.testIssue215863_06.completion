@@ -7,3 +7,4 @@ FIELD      console: Console                [PUBLIC]   stub_DOM_window.js
 FIELD      constructor: Function           [PUBLIC]   stub_CORE_Object.js
 FIELD      content: Window                 [PUBLIC]   stub_DOM_window.js
 FIELD      controllers: XULControllers     [PUBLIC]   stub_DOM_window.js
+KEYWORD    continue                                   null
