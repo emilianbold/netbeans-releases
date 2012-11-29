@@ -147,9 +147,22 @@ public final class TemplateDescriptor {
     public static class TemplateDescriptorBuilder extends ScopedDeclarationBuilder {
 
         private List<TemplateParameterBuilder> parameterBuilders = new ArrayList<TemplateParameterBuilder>();
+        private int inheritedTemplateParametersNumber = 0;
+        private boolean specialization = false;
         
         public void addParameterBuilder(TemplateParameterBuilder parameterBuilser) {
             parameterBuilders.add(parameterBuilser);
+        }
+        
+        public void addTemplateDescriptorBuilder(TemplateDescriptorBuilder builder) {
+            inheritedTemplateParametersNumber = parameterBuilders.size();
+            for (TemplateParameterBuilder templateParameterBuilder : builder.parameterBuilders) {
+                addParameterBuilder(templateParameterBuilder);
+            }
+        }
+
+        public void setSpecialization() {
+            this.specialization = true;
         }
         
         public TemplateDescriptor create() {
@@ -166,7 +179,7 @@ public final class TemplateDescriptor {
                 }
             }
             
-            TemplateDescriptor descriptor = new TemplateDescriptor(templateParams, NameCache.getManager().getString(CharSequences.create("<T>")), 0, false); // NOI18N
+            TemplateDescriptor descriptor = new TemplateDescriptor(templateParams, NameCache.getManager().getString(CharSequences.create("<T>")), inheritedTemplateParametersNumber, specialization); // NOI18N
             return descriptor;
         }
     }      

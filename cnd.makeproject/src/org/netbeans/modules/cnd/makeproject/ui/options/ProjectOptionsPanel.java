@@ -166,7 +166,13 @@ public class ProjectOptionsPanel extends JPanel {
     }
     
     private List<NamedOption> getEntries() {
-        return new ArrayList<NamedOption>(Lookups.forPath(NamedOption.MAKE_PROJECT_CATEGORY).lookupAll(NamedOption.class));
+        List<NamedOption> result = new ArrayList<NamedOption>();
+        for(NamedOption option: Lookups.forPath(NamedOption.MAKE_PROJECT_CATEGORY).lookupAll(NamedOption.class)) {
+            if (option.isVisible()) {
+                result.add(option);
+            }
+        }
+        return result;
     }
     
     private JCheckBox getWrapper(final NamedOption entry) {

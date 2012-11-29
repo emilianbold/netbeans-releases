@@ -44,10 +44,11 @@ package org.netbeans.modules.nativeexecution;
 import java.io.IOException;
 import java.io.ObjectStreamException;
 import java.io.Serializable;
-import org.netbeans.modules.nativeexecution.api.util.ConnectionManager.CancellationException;
+import java.util.concurrent.atomic.AtomicReference;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.nativeexecution.api.NativeProcess;
+import org.netbeans.modules.nativeexecution.api.util.ConnectionManager.CancellationException;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 
 /**
@@ -59,8 +60,7 @@ final public class ExecutionEnvironmentImpl implements ExecutionEnvironment, Ser
     private final String user;
     private final String host;
     private final int sshPort;
-    private final String toString;
-
+    private final AtomicReference<String> displayNameRef = new AtomicReference<String>();
     static final long serialVersionUID = 2098997126628923682L;
 
     /**
@@ -80,11 +80,15 @@ final public class ExecutionEnvironmentImpl implements ExecutionEnvironment, Ser
 
         // that's caller who is responsible for passing not nulls
         this.user = user;
-        this.host = host;
+        
+        String aHost = host;
+        if (host.indexOf(':') >= 0) { // ipv6 address
+            if (!(host.startsWith("[") && host.endsWith("]"))) { // NOI18N
+                aHost = '[' + host + ']';
+            }
+        }
+        this.host = aHost;
         this.sshPort = sshPort;
-
-        toString = this.user + "@" + this.host + // NOI18N
-                (this.sshPort == 0 ? "" : ":" + this.sshPort); // NOI18N
     }
 
     /**
@@ -108,15 +112,32 @@ final public class ExecutionEnvironmentImpl implements ExecutionEnvironment, Ser
      */
     @Override
     public String getDisplayName() {
-        if (isLocal()) {
-            return HostInfoUtils.LOCALHOST;
-        } else {
-            String result = this.user + "@" + this.host; // NOI18N;
-            if (this.sshPort != 22) {
-                result += ":" + this.sshPort; // NOI18N
+        String displayName = displayNameRef.get();
+        if (displayName == null) {
+            if (sshPort == 0) {
+                displayName = HostInfoUtils.LOCALHOST;
+            } else {
+                StringBuilder sb = new StringBuilder();
+
+                if (user != null) {
+                    sb.append(user).append('@');
+                }
+
+                sb.append(host);
+
+                if (sshPort != 22) {
+                    sb.append(':').append(sshPort);
+                }
+
+                displayName = sb.toString();
             }
-            return result;
+
+            String old = displayNameRef.getAndSet(displayName);
+            if (old != null) {
+                displayName = old;
+            }
         }
+        return displayName;
     }
 
     /**
@@ -127,7 +148,7 @@ final public class ExecutionEnvironmentImpl implements ExecutionEnvironment, Ser
      */
     @Override
     public String toString() {
-        return toString;
+        return getDisplayName();
     }
 
     /**
@@ -191,13 +212,11 @@ final public class ExecutionEnvironmentImpl implements ExecutionEnvironment, Ser
      */
     @Override
     public boolean equals(Object obj) {
-        ExecutionEnvironmentImpl ee = null;
-
-        if (obj != null && obj instanceof ExecutionEnvironmentImpl) {
-            ee = (ExecutionEnvironmentImpl) obj;
-        } else {
+        if (!(obj instanceof ExecutionEnvironmentImpl)) {
             return false;
         }
+
+        ExecutionEnvironmentImpl ee = (ExecutionEnvironmentImpl) obj;
 
         boolean bothLocalhost = ee.isLocal() && isLocal();
 
@@ -219,20 +238,20 @@ final public class ExecutionEnvironmentImpl implements ExecutionEnvironment, Ser
     @Override
     public void prepareForConnection() throws IOException, CancellationException {
     }
-    
+
     /* Java serialization*/ Object writeReplace() throws ObjectStreamException {
         return new SerializedForm(ExecutionEnvironmentFactory.toUniqueID(this));
     }
-    
+
     private static class SerializedForm implements Serializable {
-        
+
         static final long serialVersionUID = -1;
         private final String id;
 
         public SerializedForm(String id) {
             this.id = id;
         }
-        
+
         /* Java serialization*/ Object readResolve() throws ObjectStreamException {
             return ExecutionEnvironmentFactory.fromUniqueID(id);
         }

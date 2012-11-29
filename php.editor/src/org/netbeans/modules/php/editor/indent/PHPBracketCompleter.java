@@ -1049,6 +1049,9 @@ public class PHPBracketCompleter implements KeystrokeHandler {
             case ']':
             case '(':
             case '[':
+            case '\t':
+            case ' ':
+            case ':':
                 if (!isInsertMatchingEnabled(doc) && ch != '{' && ch != '}') {
                     return false;
                 }
@@ -1076,6 +1079,10 @@ public class PHPBracketCompleter implements KeystrokeHandler {
                     reindent(doc, dotPos, PHPTokenId.PHP_CURLY_CLOSE, caret);
                 } else if (ch == '{') {
                     reindent(doc, dotPos, PHPTokenId.PHP_CURLY_OPEN, caret);
+                } else if (ch == '\t' || ch == ' ') {
+                    reindent(doc, dotPos, PHPTokenId.WHITESPACE, caret);
+                } else if (ch == ':') {
+                    reindent(doc, dotPos, PHPTokenId.PHP_TOKEN, caret);
                 }
                 break;
             default:
@@ -1100,13 +1107,6 @@ public class PHPBracketCompleter implements KeystrokeHandler {
 
             if ((token.id() == id)) {
                 final int rowFirstNonWhite = Utilities.getRowFirstNonWhite(doc, offset);
-                // Ensure that this token is at the beginning of the line
-                if (ts.offset() > rowFirstNonWhite) {
-                    return;
-                }
-
-                OffsetRange begin;
-
                 if (id == PHPTokenId.PHP_CURLY_OPEN && ts.offset() == rowFirstNonWhite
                         && ts.movePrevious()) {
                     // The curly is at the first nonwhite char at the line.
@@ -1117,22 +1117,26 @@ public class PHPBracketCompleter implements KeystrokeHandler {
                     int newIndent = countIndent(doc, offset, previousIndent);
                     if (newIndent != currentIndent) {
                         GsfUtilities.setLineIndentation(doc, offset, Math.max(newIndent, 0));
-                        return;
                     }
-                }
-
-                if (id == PHPTokenId.PHP_CURLY_CLOSE) {
-                    begin = LexUtilities.findBwd(doc, ts, PHPTokenId.PHP_CURLY_OPEN, '{', PHPTokenId.PHP_CURLY_CLOSE, '}');
-                } else {
-                    begin = OffsetRange.NONE;
-                }
-
-                if (begin != OffsetRange.NONE) {
-                    int beginOffset = begin.getStart();
-                    int indent = GsfUtilities.getLineIndent(doc, beginOffset);
-                    previousAdjustmentIndent = GsfUtilities.getLineIndent(doc, offset);
-                    GsfUtilities.setLineIndentation(doc, offset, indent);
-                    previousAdjustmentOffset = caret.getDot();
+                } else if (id == PHPTokenId.WHITESPACE || (id == PHPTokenId.PHP_TOKEN && token.text().charAt(0) == ':')) { // ":" handles "default:"
+                    LexUtilities.findNextToken(ts, Arrays.asList(PHPTokenId.PHP_CASE));
+                    if (ts.offset() >= rowFirstNonWhite) { //previous "case" and whitespace on one line
+                        LexUtilities.findPreviousToken(ts, Arrays.asList(PHPTokenId.PHP_SWITCH));
+                        Token<? extends PHPTokenId> firstCaseInSwitch = LexUtilities.findNextToken(ts, Arrays.asList(PHPTokenId.PHP_CASE));
+                        if (firstCaseInSwitch != null && firstCaseInSwitch.id() == PHPTokenId.PHP_CASE) {
+                            int indentOfFirstCase = GsfUtilities.getLineIndent(doc, ts.offset());
+                            GsfUtilities.setLineIndentation(doc, offset, indentOfFirstCase);
+                        }
+                    }
+                } else if (id == PHPTokenId.PHP_CURLY_CLOSE) {
+                    OffsetRange begin = LexUtilities.findBwd(doc, ts, PHPTokenId.PHP_CURLY_OPEN, '{', PHPTokenId.PHP_CURLY_CLOSE, '}');
+                    if (begin != OffsetRange.NONE) {
+                        int beginOffset = begin.getStart();
+                        int indent = GsfUtilities.getLineIndent(doc, beginOffset);
+                        previousAdjustmentIndent = GsfUtilities.getLineIndent(doc, offset);
+                        GsfUtilities.setLineIndentation(doc, offset, indent);
+                        previousAdjustmentOffset = caret.getDot();
+                    }
                 }
             }
         }

@@ -405,12 +405,14 @@ public abstract class ClassEnumBase<T> extends OffsetableDeclarationBase<T> impl
     @Override
     public Collection<CsmTypedef> getEnclosingTypedefs() {
         Collection<CsmTypedef> out = new ArrayList<CsmTypedef>(0);
-        for (CsmUID<? extends CsmDeclaration> uid : enclosingElements) {
-            CsmDeclaration.Kind kind = UIDUtilities.getKind(uid);
-            if (kind == CsmDeclaration.Kind.TYPEDEF) {
-                CsmDeclaration obj = UIDCsmConverter.UIDtoCsmObject(uid);
-                if (obj != null) {
-                    out.add((CsmTypedef) obj);
+        synchronized(enclosingElements) {
+            for (CsmUID<? extends CsmDeclaration> uid : enclosingElements) {
+                CsmDeclaration.Kind kind = UIDUtilities.getKind(uid);
+                if (kind == CsmDeclaration.Kind.TYPEDEF) {
+                    CsmDeclaration obj = UIDCsmConverter.UIDtoCsmObject(uid);
+                    if (obj != null) {
+                        out.add((CsmTypedef) obj);
+                    }
                 }
             }
         }
@@ -420,12 +422,14 @@ public abstract class ClassEnumBase<T> extends OffsetableDeclarationBase<T> impl
     @Override
     public Collection<CsmVariable> getEnclosingVariables() {
         Collection<CsmVariable> out = new ArrayList<CsmVariable>(0);
-        for (CsmUID<? extends CsmDeclaration> uid : enclosingElements) {
-            CsmDeclaration.Kind kind = UIDUtilities.getKind(uid);
-            if (kind == CsmDeclaration.Kind.VARIABLE) {
-                CsmDeclaration obj = UIDCsmConverter.UIDtoCsmObject(uid);
-                if (obj != null) {
-                    out.add((CsmVariable) obj);
+        synchronized(enclosingElements) {
+            for (CsmUID<? extends CsmDeclaration> uid : enclosingElements) {
+                CsmDeclaration.Kind kind = UIDUtilities.getKind(uid);
+                if (kind == CsmDeclaration.Kind.VARIABLE) {
+                    CsmDeclaration obj = UIDCsmConverter.UIDtoCsmObject(uid);
+                    if (obj != null) {
+                        out.add((CsmVariable) obj);
+                    }
                 }
             }
         }

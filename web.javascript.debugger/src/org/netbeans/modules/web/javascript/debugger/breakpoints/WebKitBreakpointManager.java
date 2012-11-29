@@ -210,7 +210,12 @@ abstract class WebKitBreakpointManager implements PropertyChangeListener {
         @Override
         public void reset() {
             if (lineChanged.getAndSet(false)) {
-                resubmit();
+                rp.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        resubmit();
+                    }
+                });
             }
         }
 

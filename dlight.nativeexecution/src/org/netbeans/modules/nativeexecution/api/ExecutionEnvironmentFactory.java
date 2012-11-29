@@ -43,12 +43,13 @@ package org.netbeans.modules.nativeexecution.api;
 
 import java.util.Collection;
 import java.util.concurrent.CopyOnWriteArrayList;
-import org.openide.util.Lookup;
-import org.openide.util.LookupEvent;
-import org.openide.util.LookupListener;
+import java.util.logging.Level;
 import org.netbeans.modules.nativeexecution.ExecutionEnvironmentFactoryServiceImpl;
 import org.netbeans.modules.nativeexecution.spi.ExecutionEnvironmentFactoryService;
 import org.netbeans.modules.nativeexecution.support.Logger;
+import org.openide.util.Lookup;
+import org.openide.util.LookupEvent;
+import org.openide.util.LookupListener;
 
 /**
  * A factory for ExecutionEnvironment.
@@ -181,8 +182,12 @@ public class ExecutionEnvironmentFactory {
         String result;
 
         for (ExecutionEnvironmentFactoryService f : allFactories) {
-            if ((result = f.toUniqueID(executionEnvironment)) != null) {
-                return result;
+            try {
+                if ((result = f.toUniqueID(executionEnvironment)) != null) {
+                    return result;
+                }
+            } catch (Throwable th) {
+                Logger.getInstance().log(Level.FINE, "Exception in " + f.getClass().getName() + " for " + executionEnvironment.getDisplayName(), th); // NOI18N
             }
         }
 
@@ -198,8 +203,12 @@ public class ExecutionEnvironmentFactory {
         ExecutionEnvironment result;
 
         for (ExecutionEnvironmentFactoryService f : allFactories) {
-            if ((result = f.fromUniqueID(hostKey)) != null) {
-                return result;
+            try {
+                if ((result = f.fromUniqueID(hostKey)) != null) {
+                    return result;
+                }
+            } catch (Throwable th) {
+                Logger.getInstance().log(Level.FINE, "Exception in " + f.getClass().getName() + " for " + hostKey, th); // NOI18N
             }
         }
 

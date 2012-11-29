@@ -49,6 +49,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.modules.cnd.indexing.api.CndTextIndexKey;
 import org.netbeans.modules.parsing.lucene.support.DocumentIndex;
 import org.netbeans.modules.parsing.lucene.support.IndexDocument;
 import org.netbeans.modules.parsing.lucene.support.IndexManager;
@@ -62,7 +63,7 @@ import org.openide.util.RequestProcessor;
  */
 public class CndTextIndexImpl {
     private final DocumentIndex index;
-    private final HashMap<String, Set<String>> unsaved = new HashMap<String, Set<String>>();
+    private final HashMap<CndTextIndexKey, Set<String>> unsaved = new HashMap<CndTextIndexKey, Set<String>>();
     private static final RequestProcessor RP = new RequestProcessor("Index saver", 1); //NOI18N
     private final RequestProcessor.Task storeTask = RP.create(new Runnable() {
         @Override
@@ -76,7 +77,7 @@ public class CndTextIndexImpl {
         this.index = index;
     }
 
-    public void put(String key, Collection<String> values) {
+    public void put(CndTextIndexKey key, Collection<String> values) {
         synchronized (unsaved) {
             unsaved.put(key, new HashSet<String>(values));
         }
@@ -89,10 +90,11 @@ public class CndTextIndexImpl {
                 return;
             }
             long start = System.currentTimeMillis();
-            for (Map.Entry<String, Set<String>> entry : unsaved.entrySet()) {
-                final String key = entry.getKey();
-                IndexDocument doc = IndexManager.createDocument(key);
+            for (Map.Entry<CndTextIndexKey, Set<String>> entry : unsaved.entrySet()) {
+                final CndTextIndexKey key = entry.getKey();
+                IndexDocument doc = IndexManager.createDocument(String.valueOf(key.getFileNameIndex()));
                 for (String id : entry.getValue()) {
+                    doc.addPair(CndTextIndexManager.FIELD_UNIT_ID, String.valueOf(key.getUnitId()), false, true);
                     doc.addPair(CndTextIndexManager.FIELD_IDS, id, true, true);
                 }
                 index.addDocument(doc);
@@ -108,15 +110,17 @@ public class CndTextIndexImpl {
         }
     }
 
-    public Collection<String> query(String value) {
+    public Collection<CndTextIndexKey> query(String value) {
         // force store
         store();
         
         try {
             Collection<? extends IndexDocument> queryRes = index.query(CndTextIndexManager.FIELD_IDS, value, Queries.QueryKind.EXACT, null);
-            HashSet<String> res = new HashSet<String>(queryRes.size());
+            HashSet<CndTextIndexKey> res = new HashSet<CndTextIndexKey>(queryRes.size());
             for (IndexDocument doc : queryRes) {
-                res.add(doc.getPrimaryKey());
+                res.add(new CndTextIndexKey(
+                        Integer.parseInt(doc.getValue(CndTextIndexManager.FIELD_UNIT_ID)),
+                        Integer.parseInt(doc.getPrimaryKey())));
             }
             return res;
         } catch (Exception ex) {

@@ -26,7 +26,10 @@ import javax.swing.*;
 
 import de.mud.telnet.*;
 
-import org.netbeans.lib.terminalemulator.*;
+import org.netbeans.lib.terminalemulator.Term;
+import org.netbeans.lib.terminalemulator.TermInputListener;
+import org.netbeans.lib.terminalemulator.WordDelineator;
+
 
 public class TelnetApp extends JFrame {
     TermInputListener input_listener;

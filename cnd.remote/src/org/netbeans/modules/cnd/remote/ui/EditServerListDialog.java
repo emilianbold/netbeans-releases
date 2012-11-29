@@ -100,6 +100,8 @@ public class EditServerListDialog extends JPanel implements ActionListener, Prop
     private static final String CMD_PATHMAPPER = "PathMapper"; // NOI18N
     private static final String CMD_PROPERTIES = "Properties"; // NOI18N
     private static final String CMD_RETRY = "Retry"; // NOI18N
+    
+    private static final RequestProcessor RP = new RequestProcessor("EditServerListDialog", 1); // NOI18N
 
     public EditServerListDialog(ToolsCacheManager cacheManager, AtomicReference<ExecutionEnvironment> selectedEnv) {
         this(cacheManager,selectedEnv, true);
@@ -199,7 +201,7 @@ public class EditServerListDialog extends JPanel implements ActionListener, Prop
                     }
                 }
             };
-            RequestProcessor.getDefault().post(checker);
+            RP.post(checker);
         }
     }
 
@@ -217,7 +219,7 @@ public class EditServerListDialog extends JPanel implements ActionListener, Prop
             // TODO: not good to use object's toString as resource key
             tfStatus.setText(NbBundle.getMessage(RemoteServerRecord.class, RemoteServerRecord.State.INITIALIZING.toString()));
             // move expensive operation out of EDT
-            RequestProcessor.getDefault().post(new Runnable() {
+            RP.post(new Runnable() {
 
                 @Override
                 public void run() {

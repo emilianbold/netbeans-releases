@@ -295,6 +295,10 @@ public class HtmlNavigatorPanelUI extends JPanel implements ExplorerManager.Prov
     }
     
     public synchronized void refreshDOM() {
+        refreshDOM(0);
+    }
+
+    public synchronized void refreshDOM(int delay) {
         if (domTask != null) {
             domTask.cancel();
         }
@@ -304,7 +308,7 @@ public class HtmlNavigatorPanelUI extends JPanel implements ExplorerManager.Prov
             public void run() {
                 refreshNodeDOMStatus();
             }
-        }, 300);
+        }, delay);
     }
     
     private synchronized void refreshSource(final Lookup.Result<Object> result) {
@@ -359,7 +363,7 @@ public class HtmlNavigatorPanelUI extends JPanel implements ExplorerManager.Prov
 
         domToNb.clear();
         cacheDomToNb(root);
-
+        
         LOGGER.fine("root.refreshDOMStatus() called");
     }
 
@@ -986,13 +990,9 @@ public class HtmlNavigatorPanelUI extends JPanel implements ExplorerManager.Prov
                         return;
                     }
                     final List nodes = translate(manager.getSelectedNodes());
-                    RP.post(new Runnable() {
-                        @Override
-                        public void run() {
-                            if (pageModel !=null)
-                                pageModel.setSelectedNodes(nodes);
-                        }
-                    });
+                    if (pageModel != null) {
+                        pageModel.setSelectedNodes(nodes);
+                    }
                 }
             }
 
