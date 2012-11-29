@@ -39,12 +39,14 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.profiler.nbimpl.project;
+package org.netbeans.modules.profiler.nbmodule;
 
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.profiler.api.ProjectUtilities;
 import org.netbeans.modules.profiler.spi.project.ProfilingSettingsSupportProvider;
 import org.netbeans.spi.project.LookupProvider.Registration.ProjectType;
 import org.netbeans.spi.project.ProjectServiceProvider;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -52,16 +54,25 @@ import org.netbeans.spi.project.ProjectServiceProvider;
  */
 @ProjectServiceProvider(service=org.netbeans.modules.profiler.spi.project.ProfilingSettingsSupportProvider.class, 
                         projectTypes={
-                            @ProjectType(id="org-netbeans-modules-java-j2seproject"), // NOI18N
-                            @ProjectType(id="org-netbeans-modules-ant-freeform", position=1201), // NOI18N
-                            @ProjectType(id="org-netbeans-modules-apisupport-project"), // NOI18N
-//                            @ProjectType(id="org-netbeans-modules-apisupport-project-suite"), // #222661, overridden in profiler.nbmodule
-                            @ProjectType(id="org-netbeans-modules-maven") // NOI18N
+                            @ProjectType(id="org-netbeans-modules-apisupport-project-suite")
                         }
 )
-public class JavaProfilingSettingsSupportProvider extends ProfilingSettingsSupportProvider.Default {
+public class NbModuleProfilingSettingsSupportProvider extends ProfilingSettingsSupportProvider.Default {
     
-    public JavaProfilingSettingsSupportProvider(Project project) {
+    // #222661, project-only filter not available for module suites
+    public String getProjectOnlyFilterName() {
+        return null;
+    }
+    
+    @NbBundle.Messages({
+        "NbModuleProfilingSettingsSupportProvider_ProfileProjectSubprojectClassesString=Profile suite & modules classes"
+    })
+    public String getProjectSubprojectsFilterName() {
+        return !ProjectUtilities.hasSubprojects(getProject()) ? null :
+                Bundle.NbModuleProfilingSettingsSupportProvider_ProfileProjectSubprojectClassesString();
+    }
+    
+    public NbModuleProfilingSettingsSupportProvider(Project project) {
         super(project);
     }
     

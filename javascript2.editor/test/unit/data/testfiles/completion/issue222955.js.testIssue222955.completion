@@ -1,5 +1,5 @@
 Code completion result for source line:
-$(ta|ska).text("fadsfads");
+po| //here CC
 (QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
 ------------------------------------
-VARIABLE   taska: String                   [PUBLIC]   selectors.js
+VARIABLE   pokus: Test                     [PUBLIC]   issue222955.js
