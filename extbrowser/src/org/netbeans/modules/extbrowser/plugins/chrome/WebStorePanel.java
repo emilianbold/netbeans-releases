@@ -84,7 +84,7 @@ class WebStorePanel extends javax.swing.JPanel {
     }
 
 
-    WebStorePanel(boolean rerun, String link, Runnable runnable) {
+    WebStorePanel(boolean rerun, String link, Runnable runnable, final Runnable linkAction) {
         init();
         notConnectedLink.setBackground(getBackground());
         if ( rerun ){
@@ -104,8 +104,9 @@ class WebStorePanel extends javax.swing.JPanel {
             @Override
             public void hyperlinkUpdate( HyperlinkEvent event ) {
                 if (event.getEventType() == HyperlinkEvent.EventType.ACTIVATED) {
-                    HelpCtx ctx = new HelpCtx(EXTENSION_HELP);
-                    ctx.display();
+                    linkAction.run();
+                    /*HelpCtx ctx = new HelpCtx(EXTENSION_HELP);
+                    ctx.display();*/
                 }
             }
         });

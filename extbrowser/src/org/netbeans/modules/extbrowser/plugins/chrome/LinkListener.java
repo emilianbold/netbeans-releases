@@ -48,6 +48,7 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.charset.Charset;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.swing.SwingUtilities;
 import javax.swing.event.HyperlinkEvent;
@@ -62,6 +63,8 @@ import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
 
 final class LinkListener implements HyperlinkListener {
+    
+    private static final Logger LOGGER = Logger.getLogger(LinkListener.class.getName());
 
     @Override
     public void hyperlinkUpdate( HyperlinkEvent e ) {
@@ -79,16 +82,16 @@ final class LinkListener implements HyperlinkListener {
                     }
                 }
                 catch (IOException ex) {
-                    ChromeInfoPanel.LOGGER.log(Level.FINE, null, ex);
+                    LOGGER.log(Level.FINE, null, ex);
                     openNativeFileManager(url);
                 }
                 // Fix for BZ#218782 - UnsupportedOperationException: Desktop API is not supported on the current platform
                 catch (UnsupportedOperationException ex) {
-                    ChromeInfoPanel.LOGGER.log(Level.FINE, null, ex);
+                    LOGGER.log(Level.FINE, null, ex);
                     openNativeFileManager(url);
                 }
                 catch (URISyntaxException ex) {
-                    ChromeInfoPanel.LOGGER.log(Level.WARNING, null, ex);
+                    LOGGER.log(Level.WARNING, null, ex);
                     openNativeFileManager(url);
                 }
             } else {
@@ -117,16 +120,16 @@ final class LinkListener implements HyperlinkListener {
                             Charset.defaultCharset()), null);
             getRequestProcessor().post(task);
         } catch (URISyntaxException ex) {
-            ChromeInfoPanel.LOGGER.log(Level.WARNING, null, ex);
+            LOGGER.log(Level.WARNING, null, ex);
         } catch (IOException ex) {
-            ChromeInfoPanel.LOGGER.log(Level.WARNING, null, ex);
+            LOGGER.log(Level.WARNING, null, ex);
         }
     }
     
     RequestProcessor getRequestProcessor(){
         assert SwingUtilities.isEventDispatchThread();
         if ( myProcessor == null ){
-            myProcessor = new RequestProcessor(ChromeInfoPanel.class);
+            myProcessor = new RequestProcessor(LinkListener.class);
         }
         return myProcessor;
     }
