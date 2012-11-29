@@ -584,7 +584,9 @@ public abstract class WebRestSupport extends RestSupport {
         if (webApp == null) {
             return;
         }
-        if (webApp.getStatus() == webApp.STATE_INVALID_UNPARSABLE) {
+        if (webApp.getStatus() == WebApp.STATE_INVALID_UNPARSABLE || 
+                webApp.getStatus() == WebApp.STATE_INVALID_OLD_VERSION) 
+        {
             DialogDisplayer.getDefault().notify(
                     new NotifyDescriptor.Message(
                         NbBundle.getMessage(WebRestSupport.class, "MSG_InvalidDD", webApp.getError()),
@@ -1039,7 +1041,9 @@ public abstract class WebRestSupport extends RestSupport {
             if (webApp == null) {
                 return;
             }
-            if (webApp.getStatus() == WebApp.STATE_INVALID_UNPARSABLE) {
+            if (webApp.getStatus() == WebApp.STATE_INVALID_UNPARSABLE || 
+                     webApp.getStatus() == WebApp.STATE_INVALID_OLD_VERSION) 
+            {
                 return;
             }
             boolean needsSave = false;

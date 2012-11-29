@@ -188,10 +188,10 @@
         "message": "Do not show me this again"
     },
     "_Warning_DisconnectedDebuggerTitle": {
-        "message": "NetBeans has disconnected from Chrome"
+        "message": "NetBeans IDE has disconnected from Chrome"
     },
     "_Warning_DisconnectedDebuggerPerex": {
-        "message": "To continue working with the NetBeans Connector, close the Chrome tab where your application was running, and re-run from NetBeans."
+        "message": "To continue working with the NetBeans Connector, close the Chrome tab where your application was running, and re-run from NetBeans IDE."
     },
     "_Warning_DisconnectedDebuggerBody": {
         "message": "It looks like you either started the Chrome Developer Tools, or closed the \"NetBeans Connector is debugging this tab.\" infotip by clicking its Cancel button or close icon. Chrome requires that this remain open while you are connected."

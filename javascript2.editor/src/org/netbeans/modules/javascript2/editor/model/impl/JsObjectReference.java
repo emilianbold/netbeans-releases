@@ -41,21 +41,13 @@
  */
 package org.netbeans.modules.javascript2.editor.model.impl;
 
-import java.util.Collection;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import org.netbeans.modules.csl.api.ElementHandle;
 import org.netbeans.modules.csl.api.ElementKind;
 import org.netbeans.modules.csl.api.Modifier;
-import org.netbeans.modules.csl.api.OffsetRange;
-import org.netbeans.modules.csl.spi.ParserResult;
+import org.netbeans.modules.javascript2.editor.doc.spi.JsDocumentationHolder;
 import org.netbeans.modules.javascript2.editor.model.Identifier;
-import org.netbeans.modules.javascript2.editor.model.JsFunction;
 import org.netbeans.modules.javascript2.editor.model.JsObject;
-import org.netbeans.modules.javascript2.editor.model.Occurrence;
-import org.netbeans.modules.javascript2.editor.model.TypeUsage;
-import org.openide.filesystems.FileObject;
 
 /**
  *
@@ -110,7 +102,7 @@ public class JsObjectReference extends JsObjectImpl {
     }
 
     @Override
-    public void resolveTypes() {
+    public void resolveTypes(JsDocumentationHolder docHolder) {
         // do nothing
     }
 

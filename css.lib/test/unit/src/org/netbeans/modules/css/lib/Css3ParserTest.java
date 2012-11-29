@@ -1124,4 +1124,14 @@ public class Css3ParserTest extends CssTestBase {
         NodeUtil.dumpTree(result.getParseTree());
         assertEquals(0, result.getDiagnostics().size());
     }
+    
+    //Bug 219587 - parsing error on .box:nth-child(4n - 2)
+    public void testWSInExpression() throws ParseException, BadLocationException {
+        String source = ".box:nth-child(4n - 2) { } ";
+        CssParserResult result = TestUtil.parse(source);
+
+        NodeUtil.dumpTree(result.getParseTree());
+        assertEquals(0, result.getDiagnostics().size());
+        
+    }
 }

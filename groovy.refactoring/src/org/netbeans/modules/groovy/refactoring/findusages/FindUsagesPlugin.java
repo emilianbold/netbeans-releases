@@ -82,6 +82,10 @@ public class FindUsagesPlugin extends GroovyRefactoringPlugin {
 
     @Override
     public Problem prepare(final RefactoringElementsBag elementsBag) {
+        if (element == null) {
+            throw new IllegalStateException("There is no element in refactoring plugin !");
+        }
+
         refactorResults(elementsBag, collectUsages());
         fireProgressListenerStop();
         return null;

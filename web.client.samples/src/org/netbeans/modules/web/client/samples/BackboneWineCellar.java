@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,11 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -39,17 +34,47 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.extbrowser.plugins;
 
-import java.net.URL;
+package org.netbeans.modules.web.client.samples;
 
+import org.netbeans.api.templates.TemplateRegistration;
+import org.netbeans.modules.web.client.samples.wizard.iterator.OnlineSampleWizardIterator;
+import org.netbeans.modules.web.clientproject.spi.SiteTemplateImplementation;
+import org.openide.util.NbBundle;
 
 /**
- * @author ads
  *
+ * @author Martin Janicek
  */
-public interface PluginLoader {
+@NbBundle.Messages({
+    "BackboneWineCellar=Backbone.js Wine Cellar"
+})
+@TemplateRegistration(
+    position = 800,
+    folder = "Project/Samples/HTML5",
+    displayName = "#BackboneWineCellar",
+    iconBase = "org/netbeans/modules/web/client/samples/resources/HTML5_project_icon.png",
+    description = "/org/netbeans/modules/web/client/samples/resources/BackboneWineCellar.html"
+)
+public class BackboneWineCellar extends OnlineSampleWizardIterator {
 
-    void requestPluginLoad( URL url );
+    @Override
+    protected SiteTemplateImplementation getSiteTemplate() {
+        return new OnlineSiteTemplate("BACKBONE-WINE-CELLAR", getProjectName(), getProjectZipURL(), "backbone-cellar-master.zip"); // NOI18N
+    }
+
+    @Override
+    protected String getProjectName() {
+        return "BackboneWineCellar"; // NOI18N
+    }
+
+    @Override
+    protected String getProjectZipURL() {
+        return "https://github.com/ccoenraets/backbone-cellar/archive/master.zip"; // NOI18N
+    }
 }

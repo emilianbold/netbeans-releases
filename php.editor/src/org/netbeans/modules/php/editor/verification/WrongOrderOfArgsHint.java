@@ -80,6 +80,9 @@ public class WrongOrderOfArgsHint extends AbstractHint {
             return;
         }
         FileObject fileObject = phpParseResult.getSnapshot().getSource().getFileObject();
+        if (fileObject == null) {
+            return;
+        }
         TokenHierarchy<?> tokenHierarchy = phpParseResult.getSnapshot().getTokenHierarchy();
         CheckVisitor checkVisitor = new CheckVisitor(fileObject, context.doc, tokenHierarchy);
         phpParseResult.getProgram().accept(checkVisitor);
