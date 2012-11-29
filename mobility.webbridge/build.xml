@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project basedir="." default="netbeans" name="web.mobilitybridge">
-    <description>Builds, tests, and runs the project org.netbeans.modules.web.mobilitybridge</description>
+<project basedir="." default="netbeans" name="mobility.webbridge">
+    <description>Builds, tests, and runs the project org.netbeans.modules.mobility.webbridge</description>
     <import file="../nbbuild/templates/projectized.xml"/>
 </project>
