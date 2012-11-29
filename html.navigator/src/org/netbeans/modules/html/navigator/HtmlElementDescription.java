@@ -60,6 +60,7 @@ import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.parsing.spi.Parser;
+import org.netbeans.modules.web.common.api.WebUtils;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -222,7 +223,9 @@ public class HtmlElementDescription extends SourceDescription implements SourceE
         ParserManager.parse(Collections.singleton(source), new UserTask() {
             @Override
             public void run(ResultIterator resultIterator) throws Exception {
-                task.run((HtmlParserResult) resultIterator.getParserResult());
+                ResultIterator it = WebUtils.getResultIterator(resultIterator, "text/html");
+                
+                task.run((HtmlParserResult) it.getParserResult());
             }
         });
 

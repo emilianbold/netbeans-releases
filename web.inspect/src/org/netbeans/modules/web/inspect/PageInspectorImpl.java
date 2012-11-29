@@ -292,6 +292,7 @@ public class PageInspectorImpl extends PageInspector {
      * 
      * @return current inspected page.
      */
+    @Override
     public PageModel getPage() {
         synchronized (LOCK) {
             return pageModel;
@@ -303,6 +304,7 @@ public class PageInspectorImpl extends PageInspector {
      * 
      * @param listener listener to add.
      */
+    @Override
     public void addPropertyChangeListener(PropertyChangeListener listener) {
         propChangeSupport.addPropertyChangeListener(listener);
     }
@@ -312,6 +314,7 @@ public class PageInspectorImpl extends PageInspector {
      * 
      * @param listener listener to remove.
      */
+    @Override
     public void removePropertyChangeListener(PropertyChangeListener listener) {
         propChangeSupport.removePropertyChangeListener(listener);
     }

@@ -16,23 +16,18 @@
         <p><small><a href="#seealso">See Also</a></small>
 
         <p>You open the HTML5 Project Properties dialog box by right-clicking
-            any HTML5 project node in the Projects window and choosing Properties.</p>
-
-        <p>The Sources page lets you set the locations for commonly-used directories within
-            the project folder of a Java web project, such as the <code>WEB-INF</code> and Web Pages
-            folders. It also allows you to specify the project's source package and test package
-            folders, set the JDK version that corresponds to the project's source/binary
-            format, include or exclude classes to be compiled with the project, and set the
-            default project character encoding.</p>
-
+        any HTML5 project node in the Projects window and choosing Properties.
+        The Sources page lets you set the locations for the site root
+        and the folder for tests.</p>
 
         <p>You can modify the following properties in the Sources page of the dialog box.</p>
 
         <ul>
             <li><strong>Project Folder.</strong> (<em>read-only</em>) The folder on your
-                computer where the project sources are located.</li>
+                local system that contains the project metadata and usually the site root.</li>
 
-            <li><strong>Site Root Folder.</strong> The top level folder of the application. 
+            <li><strong>Site Root Folder.</strong> The contents of this folder 
+                will be available through the web server on the production site.
                 This folder typically contains the <tt>index.html</tt> file.</li>
 
             <li><strong>Unit Tests Folder.</strong> The folder in the project that contains

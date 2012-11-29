@@ -719,6 +719,203 @@ public class NPECheckTest extends NbTestCase {
                 .assertWarnings();
     }
     
+    public void testAnd1() throws Exception {
+        HintTest.create()
+                .input("package test;\n" +
+                       "class Test {\n" +
+                       "    private void t(String str) {\n" +
+                       "        boolean empty = str != null && str.isEmpty();\n" +
+                       "        if (empty || str == null) {\n" +
+                       "            throw new IllegalStateException();\n" +
+                       "        }\n" +
+                       "    }\n" +
+                       "}")
+                .run(NPECheck.class)
+                .assertWarnings();
+    }
+    
+    public void testAnd2() throws Exception {
+        HintTest.create()
+                .input("package test;\n" +
+                       "class Test {\n" +
+                       "    private void t(String str) {\n" +
+                       "        boolean empty;\n" +
+                       "        empty = str != null && str.isEmpty();\n" +
+                       "        if (empty || str == null) {\n" +
+                       "            throw new IllegalStateException();\n" +
+                       "        }\n" +
+                       "    }\n" +
+                       "}")
+                .run(NPECheck.class)
+                .assertWarnings();
+    }
+    
+    public void testAnd3() throws Exception {
+        HintTest.create()
+                .input("package test;\n" +
+                       "class Test {\n" +
+                       "    private void t(String str) {\n" +
+                       "        boolean empty = true;\n" +
+                       "        empty &= str != null && str.isEmpty();\n" +
+                       "        if (empty || str == null) {\n" +
+                       "            throw new IllegalStateException();\n" +
+                       "        }\n" +
+                       "    }\n" +
+                       "}")
+                .run(NPECheck.class)
+                .assertWarnings();
+    }
+    
+    public void test222871() throws Exception {
+        HintTest.create()
+                .input("package test;\n" +
+                       "public class Test {\n" +
+                       "    private void t(@CheckForNull String onSuccess, @CheckForNull Integer onError) {\n" +
+                       "        checkState(onSuccess != null || onError != null);\n" +
+                       "        checkState(onSuccess == null || onError == null);\n" +
+                       "    }\n" +
+                       "    private void checkState(boolean b) {}\n" +
+                       "    @interface CheckForNull {}\n" +
+                       "}")
+                .run(NPECheck.class)
+                .assertWarnings();
+    }
+    
+    public void testWhileInitializeWithField() throws Exception {
+        HintTest.create()
+                .input("package test;\n" +
+                       "class Test {\n" +
+                       "    java.util.List<String> result;\n" +
+                       "    public void foo(int i) {\n" +
+                       "        while (i-- > 0) {\n" +
+                       "             if (result == null) {\n" +
+                       "                 result = new java.util.ArrayList<String>();\n" +
+                       "             }\n" +
+                       "             result.add(String.valueOf(i));\n" +
+                       "        }\n" +
+                       "        if (result == null) {\n" +
+                       "            System.err.println(\"still null\");\n" +
+                       "        }" +
+                       "    }\n" +
+                       "}")
+                .run(NPECheck.class)
+                .assertWarnings();
+    }
+    
+    public void testSwitch1() throws Exception {
+        HintTest.create()
+                .input("package test;\n" +
+                       "import java.lang.annotation.RetentionPolicy;\n" +
+                       "class Test {\n" +
+                       "    private void t(RetentionPolicy pol, @CheckForNull String str) {\n" +
+                       "        switch (pol) {\n" +
+                       "            case CLASS: str = \"\"; break;\n" +
+                       "            case RUNTIME:\n" +
+                       "                if (str != null) {\n" +
+                       "                    str = \"\";\n" +
+                       "                    break;\n" +
+                       "                }\n" +
+                       "            case SOURCE:\n" +
+                       "                str = \"a\";\n" +
+                       "                break;\n" +
+                       "            default:\n" +
+                       "                str = \"b\";\n" +
+                       "                break;\n" +
+                       "        }\n" +
+                       "        if (str == null) {\n" +
+                       "            System.err.println(\"should not be null\");\n" +
+                       "        }\n" +
+                       "    }\n" +
+                       "    @interface CheckForNull {}\n" +
+                       "}")
+                .run(NPECheck.class)
+                .assertWarnings("18:12-18:23:verifier:ERR_NotNull");
+    }
+    
+    public void testSwitch2() throws Exception {
+        HintTest.create()
+                .input("package test;\n" +
+                       "import java.lang.annotation.RetentionPolicy;\n" +
+                       "class Test {\n" +
+                       "    private void t(RetentionPolicy pol, @CheckForNull String str) {\n" +
+                       "        switch (pol) {\n" +
+                       "            case CLASS: str = \"\"; break;\n" +
+                       "            case RUNTIME:\n" +
+                       "                if (str != null) {\n" +
+                       "                    str = \"\";\n" +
+                       "                }\n" +
+                       "                break;\n" +
+                       "            case SOURCE:\n" +
+                       "                str = \"a\";\n" +
+                       "                break;\n" +
+                       "            default:\n" +
+                       "                str = \"b\";\n" +
+                       "                break;\n" +
+                       "        }\n" +
+                       "        if (str == null) {\n" +
+                       "            System.err.println(\"may be null\");\n" +
+                       "        }\n" +
+                       "    }\n" +
+                       "    @interface CheckForNull {}\n" +
+                       "}")
+                .run(NPECheck.class)
+                .assertWarnings();
+    }
+    
+    public void testSwitch3() throws Exception {
+        HintTest.create()
+                .input("package test;\n" +
+                       "import java.lang.annotation.RetentionPolicy;\n" +
+                       "class Test {\n" +
+                       "    private void t(RetentionPolicy pol, @CheckForNull String str) {\n" +
+                       "        switch (pol) {\n" +
+                       "            case CLASS: str = \"\"; break;\n" +
+                       "            case RUNTIME:\n" +
+                       "                if (str != null) {\n" +
+                       "                    str = \"\";\n" +
+                       "                    break;\n" +
+                       "                }\n" +
+                       "            case SOURCE:\n" +
+                       "                str = \"a\";\n" +
+                       "                break;\n" +
+                       "        }\n" +
+                       "        if (str == null) {\n" +
+                       "            System.err.println(\"should not be null\");\n" +
+                       "        }\n" +
+                       "    }\n" +
+                       "    @interface CheckForNull {}\n" +
+                       "}")
+                .run(NPECheck.class)
+                .assertWarnings();
+    }
+    
+    public void testTry1() throws Exception {
+        HintTest.create()
+                .input("package test;\n" +
+                       "import java.lang.annotation.RetentionPolicy;\n" +
+                       "class Test {\n" +
+                       "    private void t(RetentionPolicy pol, @CheckForNull String str) {\n" +
+                       "        switch (pol) {\n" +
+                       "            case CLASS: str = \"\"; break;\n" +
+                       "            case RUNTIME:\n" +
+                       "                if (str != null) {\n" +
+                       "                    str = \"\";\n" +
+                       "                    break;\n" +
+                       "                }\n" +
+                       "            case SOURCE:\n" +
+                       "                str = \"a\";\n" +
+                       "                break;\n" +
+                       "        }\n" +
+                       "        if (str == null) {\n" +
+                       "            System.err.println(\"should not be null\");\n" +
+                       "        }\n" +
+                       "    }\n" +
+                       "    @interface CheckForNull {}\n" +
+                       "}")
+                .run(NPECheck.class)
+                .assertWarnings();
+    }
+    
     private void performAnalysisTest(String fileName, String code, String... golden) throws Exception {
         HintTest.create()
                 .input(fileName, code)

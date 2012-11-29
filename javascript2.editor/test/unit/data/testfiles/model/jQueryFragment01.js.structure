@@ -11,6 +11,6 @@ jQuery:CLASS:[PRIVATE]:ESCAPED{jQuery}:
       name:FIELD:[PUBLIC]:ESCAPED{name}:
       petr:FIELD:[PUBLIC]:ESCAPED{petr}<font color="#999999">ESCAPED{ : }Number</font>:
       setData:FIELD:[PUBLIC]:ESCAPED{setData}<font color="#999999">ESCAPED{ : }Boolean</font>:
-      test:METHOD:[PUBLIC]:ESCAPED{test}ESCAPED{(}PARAMETERS{}ESCAPED{)}<font color="#999999">ESCAPED{ : }undefined</font>:
+      test:METHOD:[PUBLIC]:ESCAPED{test}ESCAPED{(}ESCAPED{)}<font color="#999999">ESCAPED{ : }undefined</font>:
     name:FIELD:[PUBLIC]:ESCAPED{name}<font color="#999999">ESCAPED{ : }String</font>:
 globalProperty:VARIABLE:[PUBLIC]:ESCAPED{globalProperty}<font color="#999999">ESCAPED{ : }String</font>:

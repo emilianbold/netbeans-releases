@@ -125,6 +125,7 @@
             <friend-packages>
                 <friend>org.netbeans.core.browser.webview</friend>
                 <friend>org.netbeans.modules.cordova</friend>
+                <friend>org.netbeans.modules.css.visual</friend>
                 <friend>org.netbeans.modules.extbrowser</friend>
                 <friend>org.netbeans.modules.html</friend>
                 <friend>org.netbeans.modules.html.navigator</friend>
