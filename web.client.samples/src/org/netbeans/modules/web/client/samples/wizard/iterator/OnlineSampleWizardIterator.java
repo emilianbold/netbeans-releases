@@ -225,19 +225,6 @@ public abstract class OnlineSampleWizardIterator extends AbstractWizardIterator 
         FileObject siteRootDir = project.getSiteRootFolder();
         assert siteRootDir != null;
 
-        // index file (#216293)
-        File[] htmlFiles = FileUtil.toFile(siteRootDir).listFiles(new FileFilter() {
-            @Override
-            public boolean accept(File pathname) {
-                // accept html or xhtml files
-                return pathname.isFile()
-                        && pathname.getName().toLowerCase().endsWith("html"); // NOI18N
-            }
-        });
-        if (htmlFiles != null && htmlFiles.length == 0) {
-            createIndexFile(siteRootDir);
-        }
-
         // apply extenders
         for (ClientProjectExtender extender : Lookup.getDefault().lookupAll(ClientProjectExtender.class)) {
             extender.apply(project.getProjectDirectory(), siteRootDir, (String) wizardDescriptor.getProperty(LIBRARIES_PATH));
@@ -274,12 +261,5 @@ public abstract class OnlineSampleWizardIterator extends AbstractWizardIterator 
 
     private void errorOccured(String message) {
         DialogDisplayer.getDefault().notifyLater(new NotifyDescriptor.Message(message, NotifyDescriptor.ERROR_MESSAGE));
-    }
-
-    private void createIndexFile(FileObject siteRoot) throws IOException {
-        FileObject indexTemplate = FileUtil.getConfigFile("Templates/Other/html.html"); // NOI18N
-        DataFolder dataFolder = DataFolder.findFolder(siteRoot);
-        DataObject dataIndex = DataObject.find(indexTemplate);
-        dataIndex.createFromTemplate(dataFolder, "index"); // NOI18N
     }
 }
