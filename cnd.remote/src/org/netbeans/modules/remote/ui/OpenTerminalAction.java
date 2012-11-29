@@ -75,6 +75,8 @@ import org.openide.util.actions.SystemAction;
 public class OpenTerminalAction extends SingleHostAction {
     private JMenu remotePopupMenu;
     private JMenuItem localPopupMenu;
+    
+    private static final RequestProcessor RP = new RequestProcessor("OpenTerminalAction", 1); // NOI18N
 
     @Override
     public String getName() {
@@ -181,7 +183,7 @@ public class OpenTerminalAction extends SingleHostAction {
                 }
             };
 
-            RequestProcessor.getDefault().post(runnable);
+            RP.post(runnable);
         }
 
         @Override

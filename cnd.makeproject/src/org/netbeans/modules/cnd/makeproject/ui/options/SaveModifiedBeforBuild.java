@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.cnd.makeproject.ui.options;
 
+import java.util.Properties;
 import org.netbeans.modules.cnd.utils.ui.NamedOption;
 import org.openide.util.NbBundle;
 import org.openide.util.lookup.ServiceProvider;
@@ -78,4 +79,10 @@ public class SaveModifiedBeforBuild extends NamedOption {
     public Object getDefaultValue() {
         return true;
     }
+
+    @Override
+    public boolean isVisible() {
+        return Boolean.getBoolean(NamedOption.EXTRA_OPTIONS_FLAG);
+    }
+        
 }

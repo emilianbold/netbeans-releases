@@ -317,6 +317,13 @@ public final class FriendClassImpl extends OffsetableDeclarationBase<CsmFriendCl
     public static class FriendClassBuilder extends SimpleDeclarationBuilder {
         
         private SpecializationDescriptorBuilder specializationDescriptorBuilder;
+
+        public FriendClassBuilder() {
+        }
+        
+        public FriendClassBuilder(SimpleDeclarationBuilder builder) {
+            super(builder);
+        }
         
         public void setSpecializationDescriptorBuilder(SpecializationDescriptorBuilder specializationDescriptorBuilder) {
             this.specializationDescriptorBuilder = specializationDescriptorBuilder;

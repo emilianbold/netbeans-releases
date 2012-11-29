@@ -62,18 +62,20 @@ final class ViewFolderPasteType  extends PasteType {
 
     private static final RequestProcessor RP = new RequestProcessor("ViewFolderPasteType", 1); //NOI18N
     private final Folder toFolder;
-    private final LogicalFolderNode viewFolderNode;
+    //private final LogicalFolderNode viewFolderNode;
+    private final Folder fromFolder;
     private final int type;
     private final MakeLogicalViewProvider provider;
 
     public ViewFolderPasteType(Folder toFolder, LogicalFolderNode viewFolderNode, int type, MakeLogicalViewProvider provider) {
         this.toFolder = toFolder;
-        this.viewFolderNode = viewFolderNode;
+        //this.viewFolderNode = viewFolderNode;
+        fromFolder = viewFolderNode.getFolder();
         this.type = type;
         this.provider = provider;
     }
 
-    private void copyItemConfigurations(ItemConfiguration[] newConfigurations, ItemConfiguration[] oldConfigurations) {
+    private void copyFolderConfigurations(FolderConfiguration[] newConfigurations, FolderConfiguration[] oldConfigurations) {
         // Only allowing copying configurations within same project
         if (newConfigurations == null || oldConfigurations == null) {
             return;
@@ -109,17 +111,12 @@ final class ViewFolderPasteType  extends PasteType {
         if (!provider.gotMakeConfigurationDescriptor() || !(provider.getMakeConfigurationDescriptor().okToChange())) {
             return null;
         }
-        Folder folder = viewFolderNode.getFolder();
-        //ItemConfiguration[] oldConfigurations = folder.getItemConfigurations();
-//            if (oldConfigurations.length == 0) {
-//                // Item may have been removed or renamed inbetween copy and paste
-//                return null;
-//            }
+        FolderConfiguration[] oldConfigurations = fromFolder.getFolderConfigurations();
         if (type == DnDConstants.ACTION_MOVE) {
             // Drag&Drop, Cut&Paste
                 // Move within same project
-            if (toFolder.isDiskFolder()) {
-                FileObject itemFO = getFolderFileObject(folder);
+            if (toFolder.isDiskFolder() && fromFolder.isDiskFolder()) {
+                FileObject itemFO = getFolderFileObject(fromFolder);
 
                 String toFolderPath = CndPathUtilitities.toAbsolutePath(toFolder.getConfigurationDescriptor().getBaseDir(), toFolder.getRootPath());
                 FileObject toFolderFO = CndFileUtils.toFileObject(toFolder.getConfigurationDescriptor().getBaseDirFileObject().getFileSystem(), toFolderPath); // should it be normalized?
@@ -128,32 +125,62 @@ final class ViewFolderPasteType  extends PasteType {
                 try {
                     FileObject movedFileFO = itemFO.move(lock, toFolderFO, newName, ""); // NOI18N
                     Folder movedFolder = toFolder.findFolderByAbsolutePath(movedFileFO.getPath());
-                    if (toFolder.getProject() == viewFolderNode.getFolder().getProject()) {
+                    if (toFolder.getProject() == fromFolder.getProject()) {
                         if (movedFolder != null) {
-                            //copyItemConfigurations(movedItem.getItemConfigurations(), oldConfigurations);
+                            copyFolderConfigurations(movedFolder.getFolderConfigurations(), oldConfigurations);
                         }
                     }
                 } finally {
                     lock.releaseLock();
                 }
+            } else if (!toFolder.isDiskFolder() && !fromFolder.isDiskFolder()) {
+                if (!fromFolder.getAllFolders(true).contains(toFolder)) {
+                    recussiveMove(fromFolder, toFolder, true);
+                }
             }
         } else if (type == DnDConstants.ACTION_COPY || type == DnDConstants.ACTION_NONE) {
             // Copy&Paste
-            if (toFolder.isDiskFolder()) {
-                FileObject fo = getFolderFileObject(folder);
+            if (toFolder.isDiskFolder() && fromFolder.isDiskFolder()) {
+                FileObject fo = getFolderFileObject(fromFolder);
                 String toFolderPath = CndPathUtilitities.toAbsolutePath(toFolder.getConfigurationDescriptor().getBaseDir(), toFolder.getRootPath());
                 FileObject toFolderFO = CndFileUtils.toFileObject(toFolder.getConfigurationDescriptor().getBaseDirFileSystem(), toFolderPath); // should it be normalized?
                 String newName = CndPathUtilitities.createUniqueFileName(toFolderFO, fo.getNameExt(), "");
                 FileObject copiedFileObject = fo.copy(toFolderFO, newName, "");
 
                 Folder copiedFolder = toFolder.findFolderByAbsolutePath(copiedFileObject.getPath());
-                if (toFolder.getProject() == viewFolderNode.getFolder().getProject()) {
+                if (toFolder.getProject() == fromFolder.getProject()) {
                     if (copiedFolder != null) {
-                        //copyItemConfigurations(copiedItemItem.getItemConfigurations(), oldConfigurations);
+                        copyFolderConfigurations(copiedFolder.getFolderConfigurations(), oldConfigurations);
                     }
+                }
+            } else if (!toFolder.isDiskFolder() && !fromFolder.isDiskFolder()) {
+                if (!fromFolder.getAllFolders(true).contains(toFolder)) {
+                    recussiveMove(fromFolder, toFolder, false);
                 }
             }
         }
         return null;
+    }
+
+    private void recussiveMove(Folder folder, Folder toFolder, boolean move) throws IOException {
+        Folder parent = folder.getParent();
+        Folder target = toFolder.findFolderByDisplayName(folder.getDisplayName());
+        if (target == null) {
+            target = new Folder(toFolder.getConfigurationDescriptor(), toFolder, folder.getName(), folder.getDisplayName(), true, Folder.Kind.SOURCE_LOGICAL_FOLDER);
+            toFolder.addFolder(target, true);
+            if (target.getProject() == folder.getProject()) {
+                copyFolderConfigurations(target.getFolderConfigurations(), folder.getFolderConfigurations());
+            }
+        }
+        for (Folder sub : folder.getFolders()) {
+            recussiveMove(sub, target, move);
+        }
+        for (Item item : folder.getItemsAsArray()) {
+            ViewItemPasteType viewItemPasteType = new ViewItemPasteType(target ,folder,  item, type, provider);
+            viewItemPasteType.pasteImpl();
+        }
+        if (move) {
+            parent.removeFolderAction(folder);
+        }
     }
 }

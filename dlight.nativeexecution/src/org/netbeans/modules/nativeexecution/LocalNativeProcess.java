@@ -171,6 +171,7 @@ public final class LocalNativeProcess extends AbstractNativeProcess {
             pb.environment().put(envEntry.getKey(), envEntry.getValue());
         }
 
+        pb.redirectErrorStream(info.isRedirectError());
         pb.command(info.getCommand());
 
         if (LOG.isLoggable(Level.FINEST)) {

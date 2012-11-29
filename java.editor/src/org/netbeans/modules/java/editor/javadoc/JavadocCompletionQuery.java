@@ -734,8 +734,8 @@ final class JavadocCompletionQuery extends AsyncCompletionQuery{
 //        final boolean isStatic = elem != null && (elem.getKind().isClass() || elem.getKind().isInterface() || elem.getKind() == TYPE_PARAMETER);
 //        final boolean isSuperCall = elem != null && elem.getKind().isField() && elem.getSimpleName().contentEquals(SUPER_KEYWORD);
         Element docelm = env.handle.resolve(controller);
-        TreePath docpath = trees.getPath(docelm);
-        final Scope scope = trees.getScope(docpath);
+        TreePath docpath = docelm != null ? trees.getPath(docelm) : null;
+        final Scope scope = docpath != null ? trees.getScope(docpath) : tu.scopeFor(caretOffset);
         TypeElement enclClass = scope.getEnclosingClass();
         final TypeMirror enclType = enclClass != null ? enclClass.asType() : null;
         ElementUtilities.ElementAcceptor acceptor = new ElementUtilities.ElementAcceptor() {
@@ -814,8 +814,8 @@ final class JavadocCompletionQuery extends AsyncCompletionQuery{
         final TreeUtilities tu = controller.getTreeUtilities();
         final Trees trees = controller.getTrees();
         Element docelm = env.handle.resolve(controller);
-        TreePath docpath = trees.getPath(docelm);
-        final Scope scope = trees.getScope(docpath);
+        TreePath docpath = docelm != null ? trees.getPath(docelm) : null;
+        final Scope scope = docpath != null ? trees.getScope(docpath) : tu.scopeFor(caretOffset);
         Set<? extends TypeMirror> smartTypes = null;
 //        if (queryType == COMPLETION_QUERY_TYPE) {
 //            smartTypes = env.getSmartTypes();
@@ -953,10 +953,9 @@ final class JavadocCompletionQuery extends AsyncCompletionQuery{
         final Elements elements = controller.getElements();
         final Types types = controller.getTypes();
         final TreeUtilities tu = controller.getTreeUtilities();
-//        final Scope scope = env.getScope();
         Element docelm = env.handle.resolve(controller);
-        TreePath docpath = trees.getPath(docelm);
-        final Scope scope = trees.getScope(docpath);
+        TreePath docpath = docelm != null ? trees.getPath(docelm) : null;
+        final Scope scope = docpath != null ? trees.getScope(docpath) : tu.scopeFor(caretOffset);
         final TypeElement enclClass = scope.getEnclosingClass();
         final boolean isStatic = enclClass == null ? false : tu.isStaticContext(scope);
         ElementUtilities.ElementAcceptor acceptor = new ElementUtilities.ElementAcceptor() {
@@ -1023,7 +1022,9 @@ final class JavadocCompletionQuery extends AsyncCompletionQuery{
         Elements elements = controller.getElements();
         Types types = controller.getTypes();
         Trees trees = controller.getTrees();
-        Scope scope = /*env.getScope()*/ trees.getScope(trees.getPath(srcEl));
+        TreeUtilities tu = controller.getTreeUtilities();
+        TreePath docpath = srcEl != null ? trees.getPath(srcEl) : null;
+        Scope scope = docpath != null ? trees.getScope(docpath) : tu.scopeFor(caretOffset);
         for (Element e : controller.getElementUtilities().getMembers(te.asType(), null)) {
             if ((e.getKind().isClass() || e.getKind().isInterface()) && (toExclude == null || !toExclude.contains(e))) {
                 String name = e.getSimpleName().toString();
@@ -1040,7 +1041,9 @@ final class JavadocCompletionQuery extends AsyncCompletionQuery{
         Elements elements = controller.getElements();
         Types types = controller.getTypes();
         Trees trees = controller.getTrees();
-        Scope scope =  trees.getScope(trees.getPath(srcEl));
+        TreeUtilities tu = controller.getTreeUtilities();
+        TreePath docpath = srcEl != null ? trees.getPath(srcEl) : null;
+        Scope scope = docpath != null ? trees.getScope(docpath) : tu.scopeFor(caretOffset);
         for(Element e : pe.getEnclosedElements()) {
             if ((e.getKind().isClass() || e.getKind().isInterface()) && (toExclude == null || !toExclude.contains(e))) {
                 String name = e.getSimpleName().toString();
@@ -1086,8 +1089,10 @@ final class JavadocCompletionQuery extends AsyncCompletionQuery{
         CompilationInfo controller = jdctx.javac;
         Types types = controller.getTypes();
         Trees trees = controller.getTrees();
+        TreeUtilities tu = controller.getTreeUtilities();
         Element resolvedElm = jdctx.handle.resolve(controller);
-        Scope scope = trees.getScope(trees.getPath(resolvedElm));
+        TreePath docpath = resolvedElm != null ? trees.getPath(resolvedElm) : null;
+        Scope scope = docpath != null ? trees.getScope(docpath) : tu.scopeFor(caretOffset);
         if (prefix != null && prefix.length() > 2 && baseType.getTypeArguments().isEmpty()) {
             // XXX resolve camels
 //            ClassIndex.NameKind kind = env.isCamelCasePrefix() ?
