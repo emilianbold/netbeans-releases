@@ -4,13 +4,16 @@
     <folder name="org-netbeans-api-project-libraries">
         <folder name="Libraries">
             <file name="hibernate.xml" url="hibernate.xml">
-                <attr name="displayName" bundlevalue="org/netbeans/modules/hibernatelib/resources/Bundle#hibernate3-support"/>
+                <attr name="displayName" bundlevalue="org/netbeans/modules/hibernate4lib/resources/Bundle#hibernate3-support"/>
             </file>
             <file name="jpa2-persistence.xml" url="ejb3-persistence.xml">
-                <attr name="displayName" bundlevalue="org/netbeans/modules/hibernatelib/resources/Bundle#jpa2-persistence"/>
+                <attr name="displayName" bundlevalue="org/netbeans/modules/hibernate4lib/resources/Bundle#jpa2-persistence"/>
             </file>
             <file name="hibernate-persistence.xml" url="hibernate-persistence.xml">
-                <attr name="displayName" bundlevalue="org/netbeans/modules/hibernatelib/resources/Bundle#hibernate4-persistence"/>
+                <attr name="displayName" bundlevalue="org/netbeans/modules/hibernate4lib/resources/Bundle#hibernate4-persistence"/>
+            </file>
+            <file name="hibernate-persistence-modelgen.xml" url="hibernate-persistence-modelgen.xml">
+                <attr name="displayName" bundlevalue="org/netbeans/modules/hibernate4lib/resources/Bundle#hibernate4-persistence-modelgen"/>
             </file>
         </folder>
     </folder>
