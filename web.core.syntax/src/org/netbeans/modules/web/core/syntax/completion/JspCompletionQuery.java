@@ -88,11 +88,11 @@ public class JspCompletionQuery {
     }
     
     void query(CompletionResultSet<? extends CompletionItem> result, 
-            JTextComponent component, int offset) 
-    {
+            JTextComponent component, int offset)  {
         BaseDocument doc = (BaseDocument)component.getDocument();
         JspSyntaxSupport sup = JspSyntaxSupport.get(doc);
-        
+
+        doc.readLock();
         try {
             SyntaxElement elem = sup.getElementChain( offset );
             if (elem == null)
@@ -148,11 +148,11 @@ public class JspCompletionQuery {
                 //query for jsp delimiters
                 queryJspDelimitersInContent(result, offset, sup);
                 break;
-                
             }
-            
         } catch (BadLocationException e) {
-            e.printStackTrace();
+            Exceptions.printStackTrace(e);
+        } finally {
+            doc.readUnlock();
         }
     }
     
