@@ -106,7 +106,15 @@ class AutoUpdateCatalogParser extends DefaultHandler {
     
     private static enum ELEMENTS {
         module_updates, module_group, notification, module, description,
-        module_notification, external_package, manifest, l10n, license
+        module_notification, external_package, manifest, l10n, license, UNKNOWN;
+
+        private static ELEMENTS valueOfOrUnknown(String qName) {
+            try {
+                return valueOf(qName);
+            } catch (IllegalArgumentException ex) {
+                return UNKNOWN;
+            }
+        }
     }
     
     private static final String MODULE_UPDATES_ATTR_TIMESTAMP = "timestamp"; // NOI18N
@@ -237,7 +245,7 @@ class AutoUpdateCatalogParser extends DefaultHandler {
 
     @Override
     public void endElement (String uri, String localName, String qName) throws SAXException {
-        switch (ELEMENTS.valueOf (qName)) {
+        switch (ELEMENTS.valueOfOrUnknown(qName)) {
             case module_updates :
                 break;
             case module_group :
@@ -317,7 +325,7 @@ class AutoUpdateCatalogParser extends DefaultHandler {
     public void startElement (String uri, String localName, String qName, Attributes attributes) throws SAXException {
         lines.clear();
         bufferInitSize = 0;
-        switch (ELEMENTS.valueOf (qName)) {
+        switch (ELEMENTS.valueOfOrUnknown(qName)) {
             case module_updates :
                 try {
                     catalogDate = "";
