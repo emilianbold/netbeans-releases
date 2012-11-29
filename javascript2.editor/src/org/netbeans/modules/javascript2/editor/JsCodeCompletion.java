@@ -48,6 +48,7 @@ import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
+import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.csl.api.*;
@@ -400,9 +401,30 @@ class JsCodeCompletion implements CodeCompletionHandler {
         if (typedText.length() == 0) {
             return QueryType.NONE;
         }
-        char lastChar = typedText.charAt(typedText.length() - 1);
-        if (lastChar == '.') {
-                return QueryType.COMPLETION;
+
+        int offset = component.getCaretPosition();
+        TokenSequence<? extends JsTokenId> ts = LexUtilities.getJsTokenSequence(component.getDocument(), offset);
+        if (ts != null) {
+            int diff = ts.move(offset);
+            TokenId currentTokenId = null;
+            if (diff == 0 && ts.movePrevious() || ts.moveNext()) {
+                currentTokenId = ts.token().id();
+            }
+
+            char lastChar = typedText.charAt(typedText.length() - 1);
+            if (currentTokenId == JsTokenId.BLOCK_COMMENT || currentTokenId == JsTokenId.DOC_COMMENT
+                    || currentTokenId == JsTokenId.LINE_COMMENT) {
+                if (lastChar == '@') { //NOI18N
+                    return QueryType.COMPLETION;
+                }
+            } else {
+                switch (lastChar) {
+                    case '.': //NOI18N
+                        return QueryType.COMPLETION;
+                    default:
+                        return QueryType.NONE;
+                }
+            }
         }
         return QueryType.NONE;
     }
