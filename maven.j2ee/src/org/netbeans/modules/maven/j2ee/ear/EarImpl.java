@@ -340,16 +340,23 @@ public class EarImpl implements EarImplementation, EarImplementation2,
      */
     @Override
     public FileObject getContentDirectory() throws IOException {
-        MavenProject proj = mavenproject().getMavenProject();
-        String finalName = proj.getBuild().getFinalName();
-        String loc = proj.getBuild().getDirectory();
-        File fil = FileUtil.normalizeFile(new File(loc, finalName));
-//        System.out.println("earimpl. get content=" + fil);
-        FileObject fo = FileUtil.toFileObject(fil);
+        final MavenProject proj = mavenproject().getMavenProject();
+        final String finalName = proj.getBuild().getFinalName();
+        final String buildDir = proj.getBuild().getDirectory();
+
+        final File file;
+        if (finalName != null) {
+            file = FileUtil.normalizeFile(new File(buildDir, finalName));
+        } else {
+            // Not sure how, but it might happen - see issue #222839
+            file = FileUtil.normalizeFile(new File(buildDir));
+        }
+
+        final FileObject fo = FileUtil.toFileObject(file);
         if (fo != null) {
             fo.refresh();
         }
-        return FileUtil.toFileObject(fil);
+        return FileUtil.toFileObject(file);
     }
 
     /**

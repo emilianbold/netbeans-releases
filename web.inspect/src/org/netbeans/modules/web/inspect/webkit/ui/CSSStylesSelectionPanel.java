@@ -46,17 +46,29 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.EventQueue;
+import java.awt.GridLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
+import java.util.ResourceBundle;
 import javax.swing.BorderFactory;
+import javax.swing.Box;
+import javax.swing.BoxLayout;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.GroupLayout;
+import javax.swing.JCheckBox;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JList;
@@ -102,6 +114,7 @@ import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.nodes.PropertySupport;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -122,6 +135,8 @@ public class CSSStylesSelectionPanel extends JPanel {
     private Lookup lookup;
     /** The current inspected page. */
     private WebKitPageModel pageModel;
+    /** The current inspected node. */
+    private Node inspectedNode;
     /** Page model listener. */
     private Listener listener;
     /** Property Summary view. */
@@ -191,12 +206,116 @@ public class CSSStylesSelectionPanel extends JPanel {
         ExplorerManagerProviderPanel propertyPanePanel = new ExplorerManagerProviderPanel();
         propertyPanePanel.setLayout(new BorderLayout());
         propertyPanePanel.add(propertyPane, BorderLayout.CENTER);
+        JPanel headerPanel = new JPanel();
+        headerPanel.setLayout(new BorderLayout());
+        JPanel titlePanel = new JPanel();
+        titlePanel.setLayout(new BoxLayout(titlePanel, BoxLayout.X_AXIS));
         propertySummaryLabel = new JLabel();
-        propertySummaryLabel.setBorder(BorderFactory.createEmptyBorder(4, 2, 4, 0));
-        propertyPanePanel.add(propertySummaryLabel, BorderLayout.PAGE_START);
+        propertySummaryLabel.setBorder(BorderFactory.createEmptyBorder(0, 2, 0, 0));
+        titlePanel.add(propertySummaryLabel);
+        titlePanel.add(Box.createHorizontalGlue());
+        JToggleButton pseudoClassToggle = new JToggleButton();
+        pseudoClassToggle.setFocusPainted(false);
+        pseudoClassToggle.setIcon(ImageUtilities.loadImageIcon("org/netbeans/modules/web/inspect/resources/selectionMode.png", true)); // NOI18N
+        pseudoClassToggle.setToolTipText(NbBundle.getMessage(CSSStylesSelectionPanel.class, "CSSStylesSelectionPanel.pseudoClasses")); // NOI18N
+        CustomToolbar toolBar = new CustomToolbar();
+        toolBar.addButton(pseudoClassToggle);
+        titlePanel.add(toolBar);
+        headerPanel.add(titlePanel, BorderLayout.PAGE_START);
+        headerPanel.add(createPseudoClassPanel(pseudoClassToggle), BorderLayout.CENTER);
+        propertyPanePanel.add(headerPanel, BorderLayout.PAGE_START);
         propertyPaneManager = propertyPanePanel.getExplorerManager();
         propertyPanePanel.setMinimumSize(new Dimension(0,0)); // allow shrinking in JSplitPane
         return propertyPanePanel;
+    }
+
+    /**
+     * Creates a panel that allows forcing of pseudo-classes.
+     * 
+     * @param pseudoClassToggle toggle-button used to show the panel.
+     * @return panel that allows forcing of pseudo-classes.
+     */
+    private JPanel createPseudoClassPanel(JToggleButton pseudoClassToggle) {
+        final JPanel panel = new JPanel();
+        panel.setLayout(new GridLayout(2,2));
+        ResourceBundle bundle = NbBundle.getBundle(CSSStylesSelectionPanel.class);
+        panel.add(createPseudoCheckBox(
+                CSS.PseudoClass.ACTIVE,
+                bundle.getString("CSSStylesSelectionPanel.pseudoClass.active"))); // NOI18N
+        panel.add(createPseudoCheckBox(
+                CSS.PseudoClass.HOVER,
+                bundle.getString("CSSStylesSelectionPanel.pseudoClass.hover"))); // NOI18N
+        panel.add(createPseudoCheckBox(
+                CSS.PseudoClass.FOCUS,
+                bundle.getString("CSSStylesSelectionPanel.pseudoClass.focus"))); // NOI18N
+        panel.add(createPseudoCheckBox(
+                CSS.PseudoClass.VISITED,
+                bundle.getString("CSSStylesSelectionPanel.pseudoClass.visited"))); // NOI18N
+        panel.setVisible(false);
+        pseudoClassToggle.addItemListener(new ItemListener() {
+            @Override
+            public void itemStateChanged(ItemEvent e) {
+                JToggleButton source = (JToggleButton)e.getSource();
+                panel.setVisible(source.isSelected());
+            }
+        });
+        return panel;
+    }
+
+    /** Name of the client property that holds a pseudo-class that is affected by the check-box. */
+    private static final String PSEUDO_CLASS = "pseudoClass"; // NOI18N
+    /** Check-boxes that can be used to force pseudo-classes. */
+    private List<JCheckBox> pseudoClassCheckBoxes = new ArrayList<JCheckBox>(4);
+
+    /**
+     * Creates a check-box that can be used to force the specified pseudo-class.
+     * 
+     * @param pseudoClass pseudo-class affected by the check-box.
+     * @param title title of the check-box.
+     * @return check-box that can be used to force the specified pseudo-class.
+     */
+    private JCheckBox createPseudoCheckBox(final CSS.PseudoClass pseudoClass, String title) {
+        JCheckBox checkbox = new JCheckBox(title);
+        checkbox.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                WebKitPageModel model = pageModel;
+                Node selectedNode = inspectedNode;
+                if ((model != null) && (selectedNode != null)) {
+                    org.netbeans.modules.web.webkit.debugging.api.dom.Node node =
+                        selectedNode.getLookup().lookup(org.netbeans.modules.web.webkit.debugging.api.dom.Node.class);
+                    JCheckBox source = (JCheckBox)e.getSource();
+                    boolean checked = source.isSelected();
+                    if (checked) {
+                        model.addPseudoClass(node, pseudoClass);
+                    } else {
+                        model.removePseudoClass(node, pseudoClass);
+                    }
+                    updateMatchedRules(model, selectedNode, true);
+                }
+            }
+        });
+        checkbox.putClientProperty(PSEUDO_CLASS, pseudoClass);
+        pseudoClassCheckBoxes.add(checkbox);
+        return checkbox;
+    }
+
+    /**
+     * Updates the panel used to force pseudo-classes.
+     * 
+     * @param pageModel inspected page.
+     * @param node inspected/selected node.
+     */
+    private void updatePseudoClassPanel(WebKitPageModel pageModel,
+            org.netbeans.modules.web.webkit.debugging.api.dom.Node node) {
+        CSS.PseudoClass[] pseudoClasses = pageModel.getPseudoClasses(node);
+        EnumSet<CSS.PseudoClass> set = EnumSet.noneOf(CSS.PseudoClass.class);
+        set.addAll(Arrays.asList(pseudoClasses));
+        for (JCheckBox checkbox : pseudoClassCheckBoxes) {
+            CSS.PseudoClass pseudoClass = (CSS.PseudoClass)checkbox.getClientProperty(PSEUDO_CLASS);
+            boolean selected = set.contains(pseudoClass);
+            checkbox.setSelected(selected);
+        }
     }
 
     /**
@@ -222,7 +341,7 @@ public class CSSStylesSelectionPanel extends JPanel {
         JLabel rulePaneSummaryLabel = new JLabel();
         rulePaneSummaryLabel.setText(NbBundle.getMessage(
                 CSSStylesSelectionPanel.class, "CSSStylesSelectionPanel.rulePaneHeader")); // NOI18N
-        rulePaneSummaryLabel.setBorder(BorderFactory.createEmptyBorder(0, 4, 0, 0));
+        rulePaneSummaryLabel.setBorder(BorderFactory.createEmptyBorder(0, 2, 0, 0));
         northPanel.add(rulePaneSummaryLabel, BorderLayout.CENTER);
         
         //add toolbar
@@ -348,6 +467,7 @@ public class CSSStylesSelectionPanel extends JPanel {
             });
             return;
         }
+        inspectedNode = null;
         if (pageModel == null) {
             setDummyRoots();
         } else {
@@ -377,6 +497,7 @@ public class CSSStylesSelectionPanel extends JPanel {
                 setDummyRoots();
                 showLabel("CSSStylesSelectionPanel.multipleElementsSelected"); // NOI18N
             } else {
+                inspectedNode = knownNode;
                 final Node selectedNode = knownNode;
                 final org.netbeans.modules.web.webkit.debugging.api.dom.Node node =
                     selectedNode.getLookup().lookup(org.netbeans.modules.web.webkit.debugging.api.dom.Node.class);
@@ -391,71 +512,8 @@ public class CSSStylesSelectionPanel extends JPanel {
                     int width = propertySummaryLabel.getPreferredSize().width;
                     propertySummaryLabel.setText("<html><div width=\""+width+"\">" + header + "</div>"); // NOI18N
                     showLabel(null);
-                    RP.post(new Runnable() {
-                        @Override
-                        public void run() {
-                            WebKitDebugging webKit = pageModel.getWebKit();
-                            CSS css = webKit.getCSS();
-                            MatchedStyles matchedStyles = css.getMatchedStyles(node, null, false, true);
-                            Map<String,PropertyInfo> propertyInfos = css.getSupportedCSSProperties();
-                            if (matchedStyles != null) {
-                                final Node[] selectedRules = rulePaneManager.getSelectedNodes();
-                                final Node[] selectedProperties = propertyPaneManager.getSelectedNodes();
-                                Project project = pageModel.getProject();
-                                final Node rulePaneRoot = new MatchedRulesNode(project, selectedNode, matchedStyles);
-                                rulePaneManager.setRootContext(rulePaneRoot);
-                                final Node propertyPaneRoot = new MatchedPropertiesNode(project, matchedStyles, propertyInfos);
-                                propertyPaneManager.setRootContext(propertyPaneRoot);
-                                if (keepSelection) {
-                                    EventQueue.invokeLater(new Runnable() {
-                                        @Override
-                                        public void run() {
-                                            if (selectedProperties.length > 0) {
-                                                Node selectedProperty = selectedProperties[0];
-                                                Property property = selectedProperty.getLookup().lookup(Property.class);
-                                                if (property != null) {
-                                                    String propertyName = property.getName();
-                                                    for (Node candidate : propertyPaneRoot.getChildren().getNodes()) {
-                                                        Property candProperty = candidate.getLookup().lookup(Property.class);
-                                                        if (candProperty != null && propertyName.equals(candProperty.getName())) {
-                                                            try {
-                                                                propertyPaneManager.setSelectedNodes(new Node[] {candidate});
-                                                            } catch (PropertyVetoException pvex) {}
-                                                            break;
-                                                        }
-                                                    }
-                                                }
-                                            }
-                                            if (selectedRules.length > 0) {
-                                                Node selectedRuleNode = selectedRules[0];
-                                                Rule selectedRule = selectedRuleNode.getLookup().lookup(Rule.class);
-                                                if (selectedRule != null) {
-                                                    Node newSelectedRuleNode = Utilities.findRule(rulePaneRoot, selectedRule);
-                                                    if (newSelectedRuleNode != null) {
-                                                        try {
-                                                            rulePaneManager.setSelectedNodes(new Node[] {newSelectedRuleNode});
-                                                        } catch (PropertyVetoException pvex) {}
-                                                    }
-                                                }
-                                            }
-                                        }
-                                    });
-                                } else {
-                                    EventQueue.invokeLater(new Runnable() {
-                                        @Override
-                                        public void run() {
-                                            Node[] nodes = propertyPaneRoot.getChildren().getNodes();
-                                            if (nodes.length > 0) {
-                                                try {
-                                                    propertyPaneManager.setSelectedNodes(new Node[] { nodes[0] });
-                                                } catch (PropertyVetoException pvex) {}
-                                            }
-                                        }
-                                    });
-                                }
-                            }
-                        }
-                    });
+                    updatePseudoClassPanel(pageModel, node);
+                    updateMatchedRules(pageModel, selectedNode, keepSelection);
                 } else {
                     setDummyRoots();
                     showLabel("CSSStylesSelectionPanel.noElementSelected"); // NOI18N
@@ -464,6 +522,90 @@ public class CSSStylesSelectionPanel extends JPanel {
         }
         revalidate();
         repaint();
+    }
+
+    /**
+     * Updates the list of displayed matched rules.
+     * 
+     * @param pageModel inspected page.
+     * @param selectedNode inspected/selected node.
+     * @param keepSelection if {@code true} then an attempt to keep the current
+     * selection is made, otherwise the selection is cleared.
+     */
+    void updateMatchedRules(final WebKitPageModel pageModel, final Node selectedNode, final boolean keepSelection) {
+        if (EventQueue.isDispatchThread()) {
+            RP.post(new Runnable() {
+                @Override
+                public void run() {
+                    updateMatchedRules(pageModel, selectedNode, keepSelection);
+                }
+            });
+            return;
+        }
+        org.netbeans.modules.web.webkit.debugging.api.dom.Node node =
+            selectedNode.getLookup().lookup(org.netbeans.modules.web.webkit.debugging.api.dom.Node.class);
+        WebKitDebugging webKit = pageModel.getWebKit();
+        CSS css = webKit.getCSS();
+        CSS.PseudoClass[] pseudoClasses = pageModel.getPseudoClasses(node);
+        css.forcePseudoState(node, pseudoClasses);
+        MatchedStyles matchedStyles = css.getMatchedStyles(node, pseudoClasses, true, true);
+        Map<String,PropertyInfo> propertyInfos = css.getSupportedCSSProperties();
+        if (matchedStyles != null) {
+            final Node[] selectedRules = rulePaneManager.getSelectedNodes();
+            final Node[] selectedProperties = propertyPaneManager.getSelectedNodes();
+            Project project = pageModel.getProject();
+            final Node rulePaneRoot = new MatchedRulesNode(project, selectedNode, matchedStyles);
+            rulePaneManager.setRootContext(rulePaneRoot);
+            final Node propertyPaneRoot = new MatchedPropertiesNode(project, matchedStyles, propertyInfos);
+            propertyPaneManager.setRootContext(propertyPaneRoot);
+            if (keepSelection) {
+                EventQueue.invokeLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        if (selectedProperties.length > 0) {
+                            Node selectedProperty = selectedProperties[0];
+                            Property property = selectedProperty.getLookup().lookup(Property.class);
+                            if (property != null) {
+                                String propertyName = property.getName();
+                                for (Node candidate : propertyPaneRoot.getChildren().getNodes()) {
+                                    Property candProperty = candidate.getLookup().lookup(Property.class);
+                                    if (candProperty != null && propertyName.equals(candProperty.getName())) {
+                                        try {
+                                            propertyPaneManager.setSelectedNodes(new Node[] {candidate});
+                                        } catch (PropertyVetoException pvex) {}
+                                        break;
+                                    }
+                                }
+                            }
+                        }
+                        if (selectedRules.length > 0) {
+                            Node selectedRuleNode = selectedRules[0];
+                            Rule selectedRule = selectedRuleNode.getLookup().lookup(Rule.class);
+                            if (selectedRule != null) {
+                                Node newSelectedRuleNode = Utilities.findRule(rulePaneRoot, selectedRule);
+                                if (newSelectedRuleNode != null) {
+                                    try {
+                                        rulePaneManager.setSelectedNodes(new Node[] {newSelectedRuleNode});
+                                    } catch (PropertyVetoException pvex) {}
+                                }
+                            }
+                        }
+                    }
+                });
+            } else {
+                EventQueue.invokeLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        Node[] nodes = propertyPaneRoot.getChildren().getNodes();
+                        if (nodes.length > 0) {
+                            try {
+                                propertyPaneManager.setSelectedNodes(new Node[] { nodes[0] });
+                            } catch (PropertyVetoException pvex) {}
+                        }
+                    }
+                });
+            }
+        }
     }
 
     /**
@@ -675,7 +817,6 @@ public class CSSStylesSelectionPanel extends JPanel {
          * Creates a new {@code StylesRenderer}.
          */
         StylesRenderer() {
-            mediaLabel.setEnabled(false);
         }
 
         /**
@@ -739,6 +880,8 @@ public class CSSStylesSelectionPanel extends JPanel {
                 }
                 mediaLabel.setText(mediaQuery);
                 mediaLabel.setVisible(mediaQuery != null);
+                mediaLabel.setForeground(isSelected ? foreground : UIManager.getColor("Label.foreground")); // NOI18N
+                mediaLabel.setEnabled(isSelected);
             }
             String toolTip = node.getShortDescription();
             renderer.setToolTipText(toolTip);

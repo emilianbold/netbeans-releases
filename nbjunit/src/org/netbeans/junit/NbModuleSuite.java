@@ -805,7 +805,7 @@ public class NbModuleSuite {
                 if (jars != null) {
                     for (File jar : jars) {
                         if (jar.getName().endsWith(".jar")) {
-                            bootCP.add(jar.toURI().toURL());
+                            bootCP.add(toURI(jar).toURL());
                         }
                     }
                 }
@@ -970,13 +970,13 @@ public class NbModuleSuite {
             }
             try {
                 Class<?> lookup = Class.forName("org.openide.util.Lookup"); // NOI18N
-                File util = new File(lookup.getProtectionDomain().getCodeSource().getLocation().toURI());
+                File util = toFile(lookup.getProtectionDomain().getCodeSource().getLocation().toURI());
                 Assert.assertTrue("Util exists: " + util, util.exists());
 
                 return util.getParentFile().getParentFile();
             } catch (Exception ex) {
                 try {
-                    File nbjunit = new File(NbModuleSuite.class.getProtectionDomain().getCodeSource().getLocation().toURI());
+                    File nbjunit = toFile(NbModuleSuite.class.getProtectionDomain().getCodeSource().getLocation().toURI());
                     File harness = nbjunit.getParentFile().getParentFile();
                     Assert.assertEquals(nbjunit + " is in a folder named 'harness'", "harness", harness.getName());
                     TreeSet<File> sorted = new TreeSet<File>();
@@ -1168,7 +1168,7 @@ public class NbModuleSuite {
         private static File jarFromURL(URL u) {
             Matcher m = MANIFEST.matcher(u.toExternalForm());
             if (m.matches()) {
-                return new File(URI.create(m.group(1)));
+                return toFile(URI.create(m.group(1)));
             } else {
                 if (!u.getProtocol().equals("file")) {
                     throw new IllegalStateException(u.toExternalForm());
@@ -1178,6 +1178,67 @@ public class NbModuleSuite {
             }
         }
 
+        /**
+         * JDK 7
+         */
+        private static Method fileToPath, pathToUri, pathsGet, pathToFile;
+
+        static {
+            try {
+                fileToPath = File.class.getMethod("toPath");
+            } catch (NoSuchMethodException x) {
+                // fine, JDK 6
+            }
+            if (fileToPath != null) {
+                try {
+                    Class<?> path = Class.forName("java.nio.file.Path");
+                    pathToUri = path.getMethod("toUri");
+                    pathsGet = Class.forName("java.nio.file.Paths").getMethod("get", URI.class);
+                    pathToFile = path.getMethod("toFile");
+                } catch (Exception x) {
+                    throw new ExceptionInInitializerError(x);
+                }
+            }
+        }
+        private static File toFile(URI u) throws IllegalArgumentException {
+            if (pathsGet != null) {
+                try {
+                    return (File) pathToFile.invoke(pathsGet.invoke(null, u));
+                } catch (Exception x) {
+                    LOG.log(Level.FINE, "could not convert " + u + " to File", x);
+                }
+            }
+            String host = u.getHost();
+            if (host != null && !host.isEmpty() && "file".equals(u.getScheme())) {
+                return new File("\\\\" + host + u.getPath().replace('/', '\\'));
+            }
+            return new File(u);
+        }
+        private static URI toURI(File f) {
+            if (fileToPath != null) {
+                try {
+                    URI u = (URI) pathToUri.invoke(fileToPath.invoke(f));
+                    if (u.toString().startsWith("file:///")) { // #214131 workaround
+                        u = new URI(/* "file" */u.getScheme(), /* null */u.getUserInfo(), /* null (!) */u.getHost(), /* -1 */u.getPort(), /* "/..." */u.getPath(), /* null */u.getQuery(), /* null */u.getFragment());
+                    }
+                    return u;
+                } catch (Exception x) {
+                    LOG.log(Level.FINE, "could not convert " + f + " to URI", x);
+                }
+            }
+            String path = f.getAbsolutePath();
+            if (path.startsWith("\\\\")) { // UNC
+                if (!path.endsWith("\\") && f.isDirectory()) {
+                    path += "\\";
+                }
+                try {
+                    return new URI("file", null, path.replace('\\', '/'), null);
+                } catch (URISyntaxException x) {
+                    LOG.log(Level.FINE, "could not convert " + f + " to URI", x);
+                }
+            }
+            return f.toURI();
+        }
         
         static void preparePatches(String path, Properties prop, Class<?>... classes) throws URISyntaxException {
             Pattern tests = Pattern.compile(".*\\" + File.separator + "([^\\" + File.separator + "]+)\\" + File.separator + "tests\\.jar");
@@ -1198,7 +1259,7 @@ public class NbModuleSuite {
                 URL test = c.getProtectionDomain().getCodeSource().getLocation();
                 Assert.assertNotNull("URL found for " + c, test);
                 if (uniqueURLs.add(test)) {
-                    sb.append(sep).append(new File(test.toURI()).getPath());
+                    sb.append(sep).append(toFile(test.toURI()).getPath());
                     sep = File.pathSeparator;
                 }
             }

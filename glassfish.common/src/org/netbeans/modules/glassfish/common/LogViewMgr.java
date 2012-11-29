@@ -188,8 +188,6 @@ public class LogViewMgr {
         }
     }
 
-    //private static final RequestProcessor RP = new RequestProcessor("LogViewMgr",100); // NOI18N
-
     /**
      * Reads a newly included InputSreams.
      *
@@ -1083,10 +1081,9 @@ public class LogViewMgr {
         return newIO;
     }
 
-    static public void displayOutput(/*Map<String,String> properties*/GlassfishInstance instance, Lookup lookup) {
+    static public void displayOutput(GlassfishInstance instance, Lookup lookup) {
         String uri = instance.getProperty(GlassfishModule.URL_ATTR);
         if (null != uri && (uri.contains("gfv3ee6wc") || uri.contains("localhost"))) {
-//            try {
                 FetchLog log = getServerLogStream(instance);
                 LogViewMgr mgr = LogViewMgr.getInstance(uri);
                 List<Recognizer> recognizers = new ArrayList<Recognizer>();
@@ -1095,10 +1092,6 @@ public class LogViewMgr {
                 }
                 mgr.ensureActiveReader(recognizers, log, instance);
                 mgr.selectIO(true);
-//            } catch (IOException ioe) {
-//                LOGGER.log(Level.WARNING, NbBundle.getMessage(LogViewMgr.class,
-//                        "WARN_UNREADABLE_LOG_STREAM", uri),ioe);
-//            }
         }
     }
 

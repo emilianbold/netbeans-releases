@@ -351,10 +351,20 @@
                     <test-dependency>
                         <code-name-base>org.netbeans.modules.csl.api</code-name-base>
                         <compile-dependency/>
+                        <test/>
+                    </test-dependency>
+                    <test-dependency>
+                        <code-name-base>org.netbeans.modules.css.lib</code-name-base>
+                        <compile-dependency/>
+                        <test/>
                     </test-dependency>
                     <test-dependency>
                         <code-name-base>org.netbeans.modules.defaults</code-name-base>
                         <compile-dependency/>
+                    </test-dependency>
+                    <test-dependency>
+                        <code-name-base>org.netbeans.modules.editor.mimelookup.impl</code-name-base>
+                        <test/>
                     </test-dependency>
                     <test-dependency>
                         <code-name-base>org.netbeans.modules.java.editor</code-name-base>
@@ -366,6 +376,10 @@
                         <code-name-base>org.netbeans.modules.java.source</code-name-base>
                         <recursive/>
                         <compile-dependency/>
+                        <test/>
+                    </test-dependency>
+                    <test-dependency>
+                        <code-name-base>org.netbeans.modules.lexer.nbbridge</code-name-base>
                         <test/>
                     </test-dependency>
                     <test-dependency>
@@ -382,15 +396,13 @@
                         <test/>
                     </test-dependency>
                     <test-dependency>
-                        <code-name-base>org.netbeans.modules.lexer.nbbridge</code-name-base>
+                        <code-name-base>org.openide.util</code-name-base>
+                        <compile-dependency/>
                         <test/>
                     </test-dependency>
                     <test-dependency>
-                        <code-name-base>org.netbeans.modules.editor.mimelookup.impl</code-name-base>
-                        <test/>
-                    </test-dependency>
-                    <test-dependency>
-                        <code-name-base>org.netbeans.modules.xml.text</code-name-base>
+                        <code-name-base>org.openide.util.lookup</code-name-base>
+                        <compile-dependency/>
                         <test/>
                     </test-dependency>
                 </test-type>

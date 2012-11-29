@@ -339,6 +339,14 @@ public class MarkOccurrenceTest extends JsTestBase {
         checkOccurrences("testfiles/coloring/issue218090.js", "    var ag^e = 10;", true);
     }
     
+    public void testIssue218090_03() throws Exception {
+        checkOccurrences("testfiles/coloring/issue218090.js", "        period: peri^od", true);
+    }
+
+    public void testIssue218090_04() throws Exception {
+        checkOccurrences("testfiles/coloring/issue218090.js", "        mon_yr: mo^n_yr,", true);
+    }
+
     private String getTestFolderPath() {
         return "testfiles/markoccurences/" + getTestName();//NOI18N
     }
@@ -534,7 +542,91 @@ public class MarkOccurrenceTest extends JsTestBase {
     public void testIssue222507_02() throws Exception {
         checkOccurrences("testfiles/markoccurences/issue222507.js", "NetBeans_PresetCustomizer._addPresetB^utton = null;", true);
     }
+    
+    public void testIssue222698_01() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue222698.js", "    data: js^on,", true);
+    }
+    
+    public void testIssue222767_01() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue222767.js", "        var js^on = \"data=\" + angular.toJson($scope.servos);", true);
+    }
 
+    public void testIssue222767_02() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue222767.js", "            data: j^son,", true);
+    }
+    
+    public void testIssue222498_01() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue222498.js", "    return this.query({parent: this.getIdentity(obje^ct)});", true);
+    }
+  
+    public void testIssue218191_01() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue218191.js", "    var RE^GEXP = /[+]?\\d{1,20}$/; // REGEXP marked as unused", true);
+    }
+
+    public void testIssue218191_02() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue218191.js", "            alert(REGE^XP.test(value));", true);
+    }
+    
+    public void testIssue218191_03() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue218191.js", "            alert(REGEXP.te^st(value));", true);
+    }
+
+    public void testIssue218191_04() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue218191.js", "            alert(REGEXP.test(val^ue));", true);
+    }
+    
+    public void testIssue218191_05() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue218191.js", "            switch (field^Type) {", true);
+    }
+    
+    public void testIssue218136_01() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue218136.js", "p1.set^Static(100);", true);
+    }
+
+    public void testIssue218136_02() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue218136.js", "    Player.prototype.setS^tatic = function(v){ static_int = v; };", true);
+    }
+    
+    public void testIssue218136_03() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue218136.js", "var stat^ic_int = 0;", true);
+    }
+    
+    public void testIssue218041_01() throws Exception {
+        checkOccurrences("testfiles/coloring/issue218041.js", "    return b^ar;", true);
+    }
+    
+    public void testIssue218041_02() throws Exception {
+        checkOccurrences("testfiles/coloring/issue218041.js", "ba^r = 1;", true);
+    }
+    
+    public void testIssue217935_01() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue217935.js", " * @param {Dat^e} what", true);
+    }
+    
+    public void testIssue217935_02() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue217935.js", " * @param {Dat^es} what", true);
+    }
+
+    public void testIssue217935_03() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue217935.js", " * @returns {Da^tes} description", true);
+    }
+    
+    public void testIssue217935_04() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue217935.js", " * @param {Dates} wh^at", true);
+    }
+    
+    public void testIssue222904_01() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue217935.js", "   what.mart^in();", true);
+    }
+    
+    public void testIssue217086_01() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue217086.js", "        this.clo^thing=\"tinfoil\";", true);
+    }
+    
+    public void testIssue217086_02() throws Exception {
+        checkOccurrences("testfiles/model/person.js", "	gk.clot^hing=\"Pimp Outfit\";                    //clothing is a public variable that can be updated to any funky value ", true);
+    }
+    
 //    public void testIssue221228_02() throws Exception {
 //        checkOccurrences("testfiles/markoccurences/issue221228.js", "a.h^i(); // rename hi here", true);
 //    }

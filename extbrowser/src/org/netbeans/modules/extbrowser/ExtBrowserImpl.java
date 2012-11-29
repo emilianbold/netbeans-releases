@@ -258,7 +258,7 @@ public abstract class ExtBrowserImpl extends HtmlBrowser.Impl
      * @param url URL to show in the browser.
      */
     @Override
-    final public void setURL(URL url) {
+    final public void setURL(final URL url) {
         if (hasEnhancedMode()) {
             BrowserTabDescriptor tab = getBrowserTabDescriptor();
             if (tab == null) {
@@ -271,13 +271,7 @@ public abstract class ExtBrowserImpl extends HtmlBrowser.Impl
                 } else if (status == ExtensionManager.ExtensitionStatus.MISSING || 
                         status == ExtensionManager.ExtensitionStatus.NEEDS_UPGRADE) {
                     browserPluginAvailable = ExtensionManager.installExtension(pluginId,
-                            new PluginLoader() {
-
-                                @Override
-                                public void requestPluginLoad( URL url ) {
-                                    loadURLInBrowser(url);
-                                }
-                            }, status);
+                             status);
                 }
                 if (browserPluginAvailable) {
                     if (ExternalBrowserPlugin.getInstance().isServerRunning()) {

@@ -81,6 +81,7 @@ import org.netbeans.modules.php.editor.parser.astnodes.StaticConstantAccess;
 import org.netbeans.modules.php.editor.parser.astnodes.StaticFieldAccess;
 import org.netbeans.modules.php.editor.parser.astnodes.StaticMethodInvocation;
 import org.netbeans.modules.php.editor.parser.astnodes.visitors.DefaultTreePathVisitor;
+import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle.Messages;
 
@@ -117,7 +118,8 @@ public class AddUseImportSuggestion extends AbstractSuggestion {
         if (phpParseResult.getProgram() == null) {
             return;
         }
-        if (CodeUtils.isPhp52(phpParseResult.getSnapshot().getSource().getFileObject())) {
+        FileObject fileObject = phpParseResult.getSnapshot().getSource().getFileObject();
+        if (fileObject == null || CodeUtils.isPhp52(fileObject)) {
             return;
         }
 

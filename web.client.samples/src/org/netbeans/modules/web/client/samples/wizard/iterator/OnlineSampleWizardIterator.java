@@ -51,7 +51,6 @@ import java.util.Set;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.ProjectManager;
-import org.netbeans.api.templates.TemplateRegistration;
 import org.netbeans.modules.web.client.samples.wizard.WizardConstants;
 import org.netbeans.modules.web.client.samples.wizard.ui.OnlineSamplePanel;
 import org.netbeans.modules.web.clientproject.ClientSideProject;
@@ -89,67 +88,22 @@ public abstract class OnlineSampleWizardIterator extends AbstractWizardIterator 
     private static final String LIBRARIES_PATH = "LIBRARIES_PATH"; // NOI18N
 
 
-    private OnlineSampleWizardIterator() {
+    protected OnlineSampleWizardIterator() {
     }
 
     protected abstract SiteTemplateImplementation getSiteTemplate();
     protected abstract String getProjectName();
-    protected abstract String getProjectURL();
+    protected abstract String getProjectZipURL();
 
 
-    @NbBundle.Messages({
-        "AngularJSSample=AngularJS Tutorial Sources",
-        "AngularJSSampleName=AngularJSTutorial"
-    })
-    @TemplateRegistration(
-        position = 500,
-        folder = "Project/Samples/HTML5",
-        displayName = "#AngularJSSample",
-        iconBase = "org/netbeans/modules/web/client/samples/resources/HTML5_project_icon.png",
-        description = "/org/netbeans/modules/web/client/samples/resources/AngularJSSample.html"
-    )
-    public static class AngularJSSample extends OnlineSampleWizardIterator {
+    public static class OnlineSiteTemplate extends OnlineSites {
 
-        @Override
-        protected SiteTemplateImplementation getSiteTemplate() {
-            return new BaseOnlineSiteTemplate(
-                    "ANGULAR-SAMPLE", // NOI18N
-                    getProjectName(),
-                    getProjectURL(),
-                    new File(SiteHelper.getJsLibsDirectory(), "angular-angular-phonecat-step-11-0-g9aebada.zip")); // NOI18N
+        public OnlineSiteTemplate(String id, String name, String url, String zipName) {
+            this(id, name, "", url, zipName); // NOI18N
         }
 
-        @Override
-        protected String getProjectName() {
-            return "AngularJSTutorial"; // NOI18N
-        }
-
-        @Override
-        protected String getProjectURL() {
-            return "https://github.com/angular/angular-phonecat/zipball/master"; // NOI18N
-        }
-    }
-
-    public static class BaseOnlineSiteTemplate extends OnlineSites {
-
-        public BaseOnlineSiteTemplate(String id, String name, String url, File libFile) {
-            this(id, name, "", url, libFile); // NOI18N
-        }
-
-        public BaseOnlineSiteTemplate(String id, String name, String description, String url, File libFile) {
-            super(id, name, description, url, libFile);
-        }
-
-        @Override
-        public void configure(ProjectProperties projectProperties) {
-            projectProperties.setSiteRootFolder("app"); // NOI18N
-            projectProperties.setTestFolder("test"); // NOI18N
-            projectProperties.setConfigFolder("config"); // NOI18N
-        }
-
-        @Override
-        protected FileObject getTargetDir(FileObject projectDir, ProjectProperties projectProperties) {
-            return projectDir;
+        public OnlineSiteTemplate(String id, String name, String description, String url, String zipName) {
+            super(id, name, description, url, new File(SiteHelper.getJsLibsDirectory(), zipName));
         }
     }
 
@@ -157,7 +111,7 @@ public abstract class OnlineSampleWizardIterator extends AbstractWizardIterator 
     @Override
     protected Panel[] createPanels(WizardDescriptor wizard) {
         wizard.putProperty(WizardConstants.SAMPLE_PROJECT_NAME, getProjectName());
-        wizard.putProperty(WizardConstants.SAMPLE_PROJECT_URL, getProjectURL());
+        wizard.putProperty(WizardConstants.SAMPLE_PROJECT_URL, getProjectZipURL());
 
         return new Panel[] {
             new OnlineSamplePanel(wizard)

@@ -48,8 +48,10 @@ import java.awt.EventQueue;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.JDialog;
 import org.netbeans.core.startup.ModuleLifecycleManager;
 import org.openide.DialogDisplayer;
 import org.openide.LifecycleManager;
@@ -61,14 +63,28 @@ import org.openide.util.Exceptions;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
 import org.openide.util.lookup.ServiceProvider;
+import org.openide.windows.WindowManager;
 
 /**
  * Default implementation of the lifecycle manager interface that knows
  * how to save all modified DataObject's, and to exit the IDE safely.
  */
-@ServiceProvider(service=LifecycleManager.class, supersedes="org.netbeans.core.startup.ModuleLifecycleManager")
+@ServiceProvider(
+    service=LifecycleManager.class, 
+    supersedes="org.netbeans.core.startup.ModuleLifecycleManager"
+)
 public final class NbLifecycleManager extends LifecycleManager {
-    private final CountDownLatch onExit = new CountDownLatch(1);
+    private final CountDownLatch onExit = new CountDownLatch(1) {
+        @Override
+        public void countDown() {
+            super.countDown();
+            if (dialog != null) {
+                dialog.setVisible(false);
+            }
+        }
+    };
+    private volatile JDialog dialog;
+    private volatile Thread shutDown;
     
     @Override
     public void saveAll() {
@@ -111,14 +127,34 @@ public final class NbLifecycleManager extends LifecycleManager {
 
     @Override
     public void exit(int status) {
+        if (shutDown == Thread.currentThread()) {
+            return;
+        }
         NbLifeExit action = new NbLifeExit(0, status, onExit);
         Mutex.EVENT.readAccess(action);
-        if (!EventQueue.isDispatchThread()) {
+        if (EventQueue.isDispatchThread()) {
+            shutDown = Thread.currentThread();
             try {
-                onExit.await();
+                if (onExit.await(5, TimeUnit.SECONDS)) {
+                    return;
+                }
             } catch (InterruptedException ex) {
                 Exceptions.printStackTrace(ex);
             }
+            dialog = new JDialog(WindowManager.getDefault().getMainWindow(), true);
+            dialog.setLocation(544300, 544300);
+            dialog.setSize(0, 0);
+            try {
+                dialog.setVisible(true);
+            } finally {
+                dialog = null;
+                shutDown = null;
+            }
+        }
+        try {
+            onExit.await();
+        } catch (InterruptedException ex) {
+            Exceptions.printStackTrace(ex);
         }
     }
     

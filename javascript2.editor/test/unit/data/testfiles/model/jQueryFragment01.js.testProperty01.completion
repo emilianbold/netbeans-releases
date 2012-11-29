@@ -5,9 +5,9 @@ Code completion result for source line:
 CONSTRUCTO $()                             [PUBLIC]   jquery-api.xml
 CONSTRUCTO jQuery()                        [PUBLIC]   jquery-api.xml
 CLASS      formatter                       [PUBLIC]   jQueryFragment01.js
-VARIABLE   arguments                       [PRIVATE]  jQueryFragment01.js
-VARIABLE   functionVar                     [PRIVATE]  jQueryFragment01.js
-VARIABLE   globalProperty                  [PUBLIC]   jQueryFragment01.js
+VARIABLE   arguments: Arguments            [PRIVATE]  jQueryFragment01.js
+VARIABLE   functionVar: String             [PRIVATE]  jQueryFragment01.js
+VARIABLE   globalProperty: String          [PUBLIC]   jQueryFragment01.js
 KEYWORD    break                                      null
 KEYWORD    case                                       null
 KEYWORD    catch                                      null

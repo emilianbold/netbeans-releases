@@ -63,6 +63,7 @@ import org.netbeans.core.options.keymap.api.ShortcutsFinder;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
+import org.openide.util.Task;
 import org.openide.util.Utilities;
 
 /**
@@ -419,11 +420,15 @@ class MutableShortcutsModel extends ShortcutsFinderImpl implements ShortcutsFind
     private volatile boolean applyInProgress = false;
     
     public void apply () {
+        postApply();
+    }
+    
+    /* test only */ Task postApply() {
         if (applyInProgress) {
-            return;
+            return null;
         }
         applyInProgress = true;
-        RequestProcessor.getDefault ().post (new Runnable () {
+        return RequestProcessor.getDefault ().post (new Runnable () {
             public void run () {
                 for (String profile : revertedProfiles) {
                     try {

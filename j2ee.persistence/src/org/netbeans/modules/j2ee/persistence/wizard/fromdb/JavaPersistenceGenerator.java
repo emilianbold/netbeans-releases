@@ -1133,12 +1133,12 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
                         annotations = method.getModifiers().getAnnotations();
                         memberType = method.getReturnType();
                         String tmp = method.getName().toString();
-                        if(tmp.startsWith("get")){//NOI18N
-                            getters.put((tmp.substring(3,4).toLowerCase()+tmp.substring(4)).toUpperCase(), method);
-                        } else if(tmp.startsWith("set")){//NOI18N
-                            setters.put((tmp.substring(3,4).toLowerCase()+tmp.substring(4)).toUpperCase(), method);
-                        } else if(tmp.startsWith("is")){
-                            getters.put((tmp.substring(2,3).toLowerCase()+tmp.substring(3)).toUpperCase(), method);
+                        if(tmp.length()>3 && tmp.startsWith("get")){//NOI18N
+                            getters.put((tmp.substring(3,4).toLowerCase() + (tmp.length()>4 ? tmp.substring(4):"")).toUpperCase(), method);
+                        } else if(tmp.length()>3 && tmp.startsWith("set")){//NOI18N
+                            setters.put((tmp.substring(3,4).toLowerCase() + (tmp.length()>4 ? tmp.substring(4):"")).toUpperCase(), method);
+                        } else if(tmp.length()>2 && tmp.startsWith("is")) {//NOI18N
+                            getters.put((tmp.substring(2,3).toLowerCase() + (tmp.length()>3 ? tmp.substring(3):"")).toUpperCase(), method);
                         }
                     }
                     if (annotations != null) {

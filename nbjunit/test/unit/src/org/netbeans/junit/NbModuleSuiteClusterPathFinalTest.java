@@ -77,6 +77,7 @@ public class NbModuleSuiteClusterPathFinalTest extends NbTestCase {
         test.run(new TestResult());
         String val = System.getProperty("my.clusters");
         assertNotNull("The test was running", clusters);
+        assertNotNull("Value has been set", val);
         assertTrue("ide cluster shall be included: " + val, val.contains(ideCluster.getPath()));
         assertFalse("no java cluster shall be included: " + val, val.matches(".*java[:;].*"));
         assertFalse("no apisupport cluster shall be included: " + val, val.matches(".*apisupport[:;].*"));

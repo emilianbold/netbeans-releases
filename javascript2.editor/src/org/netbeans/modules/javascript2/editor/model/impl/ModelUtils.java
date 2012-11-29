@@ -48,6 +48,7 @@ import java.util.*;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.javascript2.editor.doc.spi.JsDocumentationHolder;
 import org.netbeans.modules.javascript2.editor.embedding.JsEmbeddingProvider;
 import org.netbeans.modules.javascript2.editor.index.IndexedElement;
 import org.netbeans.modules.javascript2.editor.index.JsIndex;
@@ -340,11 +341,15 @@ public class ModelUtils {
             if (object.getJSKind() == JsElement.Kind.CONSTRUCTOR) {
                 parent = object;
             } else {
-                parent = object.getParent();
+                if (object.getParent() != null && object.getParent().getJSKind() != JsElement.Kind.FILE) {
+                    parent = object.getParent();
+                } else {
+                    parent = object;
+                }
             } 
-            if (parent.getJSKind() == JsElement.Kind.FUNCTION || parent.getJSKind() == JsElement.Kind.METHOD) {
+            if (parent != null && (parent.getJSKind() == JsElement.Kind.FUNCTION || parent.getJSKind() == JsElement.Kind.METHOD)) {
                 if (parent.getParent().getJSKind() == JsElement.Kind.FILE) {
-                    result.add(new TypeUsageImpl("@global", 0, true)); //NOI18N
+                    result.add(new TypeUsageImpl(ModelUtils.createFQN(parent), 0, true)); //NOI18N
                 } else {
                     JsObject grandParent = parent.getParent();
                     if ( grandParent != null && grandParent.getJSKind() == JsElement.Kind.OBJECT_LITERAL) {
@@ -501,17 +506,27 @@ public class ModelUtils {
                     if(localObject == null || (localObject.getJSKind() != JsElement.Kind.PARAMETER
                             && (ModelUtils.isGlobal(localObject.getParent()) || localObject.getJSKind() != JsElement.Kind.VARIABLE))) {
                         // Add global variables from index
-                        Collection<IndexedElement> globalVars = jsIndex.getGlobalVar(name);
-                        for (IndexedElement globalVar : globalVars) {
-                            if(name.equals(globalVar.getName())) {
-                                Collection<TypeUsage> assignments = globalVar.getAssignments();
-                                if (assignments.isEmpty()) {
-                                    lastResolvedTypes.add(new TypeUsageImpl(name, -1, true));
-                                } else {
-                                    lastResolvedTypes.addAll(assignments);
-                                }
-                            }
-                        }
+//                        Collection<IndexedElement> globalVars = jsIndex.getGlobalVar(name);
+//                        for (IndexedElement globalVar : globalVars) {
+//                            if(name.equals(globalVar.getName())) {
+//                                Collection<TypeUsage> assignments = globalVar.getAssignments();
+//                                if (assignments.isEmpty()) {
+//                                    lastResolvedTypes.add(new TypeUsageImpl(name, -1, true));
+//                                } else {
+//                                    lastResolvedTypes.addAll(assignments);
+//                                    }
+//                        }
+//                    }
+                        List<TypeUsage> fromAssignments = new ArrayList<TypeUsage>();
+//                        if (localObject != null) {
+//                            //make it only for the right offset
+//                            for(TypeUsage type: localObject.getAssignmentForOffset(offset)) {
+//                                resolveAssignments(jsIndex, type.getType(), fromAssignments);
+//                            }
+//                        } else {
+                            resolveAssignments(jsIndex, name, fromAssignments);
+//                        }
+                        lastResolvedTypes.addAll(fromAssignments);
                     }
                     
                     if(!localObjects.isEmpty()){
@@ -662,6 +677,29 @@ public class ModelUtils {
                 }
             } else {
                 resolvedTypes.add((TypeUsage)typeName);
+            }
+        }
+    }
+    
+    private static void resolveAssignments(JsIndex jsIndex, String fqn, List<TypeUsage> resolved) {
+        Set<String> alreadyAdded = new HashSet<String>();
+        for(TypeUsage type : resolved) {
+            alreadyAdded.add(type.getType());
+        }
+        if (!alreadyAdded.contains(fqn)) {
+            Collection<IndexedElement> globalVars = jsIndex.getGlobalVar(fqn);
+            resolved.add(new TypeUsageImpl(fqn, -1, true));
+            for (IndexedElement globalVar : globalVars) {
+                if(fqn.equals(globalVar.getName())) {
+                    Collection<TypeUsage> assignments = globalVar.getAssignments();
+                    if (!assignments.isEmpty()) {
+                        for (TypeUsage type: assignments) {
+                            if(!alreadyAdded.contains(type.getType())) {
+                                resolveAssignments(jsIndex, type.getType(), resolved);
+                            }
+                        }
+                    }
+                }
             }
         }
     }
@@ -854,5 +892,13 @@ public class ModelUtils {
             }
             return super.enter(uNode);
         }        
+    }
+    
+    public static void addDocTypesOccurence(JsObject jsObject, JsDocumentationHolder docHolder) {
+        if (docHolder.getOccurencesMap().containsKey(jsObject.getName())) {
+            for (OffsetRange offsetRange : docHolder.getOccurencesMap().get(jsObject.getName())) {
+                ((JsObjectImpl)jsObject).addOccurrence(offsetRange);
+            }
+        }
     }
 }

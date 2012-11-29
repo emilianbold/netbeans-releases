@@ -33,10 +33,13 @@ import com.sun.source.tree.Tree.Kind;
 import com.sun.source.util.TreePath;
 import com.sun.source.util.TreePathScanner;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.IdentityHashMap;
+import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -47,13 +50,16 @@ import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
+import javax.lang.model.util.ElementFilter;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.openide.util.NbBundle;
 
 import static org.netbeans.modules.java.hints.bugs.NPECheck.State.*;
+import org.netbeans.modules.java.hints.introduce.Flow;
 import org.netbeans.spi.java.hints.*;
 import org.netbeans.spi.java.hints.Hint.Options;
 
@@ -259,7 +265,11 @@ public class NPECheck {
         
         private final CompilationInfo info;
         private Map<VariableElement, State> variable2State = new HashMap<VariableElement, NPECheck.State>();
+        private final Map<Tree, Collection<Map<VariableElement, State>>> resumeBefore = new IdentityHashMap<Tree, Collection<Map<VariableElement, State>>>();
+        private final Map<Tree, Collection<Map<VariableElement, State>>> resumeAfter = new IdentityHashMap<Tree, Collection<Map<VariableElement, State>>>();
+        private       Map<TypeMirror, Collection<Map<VariableElement, State>>> resumeOnExceptionHandler = new IdentityHashMap<TypeMirror, Collection<Map<VariableElement, State>>>();
         private final Map<Tree, State> expressionState = new IdentityHashMap<Tree, State>();
+        private final List<TreePath> pendingFinally = new LinkedList<TreePath>();
         private boolean not;
         private boolean doNotRecord;
 
@@ -269,6 +279,8 @@ public class NPECheck {
 
         @Override
         public State scan(Tree tree, Void p) {
+            resume(tree, resumeBefore);
+
             State r = super.scan(tree, p);
             
             TypeMirror currentType = tree != null ? info.getTrees().getTypeMirror(new TreePath(getCurrentPath(), tree)) : null;
@@ -281,37 +293,61 @@ public class NPECheck {
                 expressionState.put(tree, r);
             }
             
+            resume(tree, resumeAfter);
+            
             return r;
+        }
+
+        private void resume(Tree tree, Map<Tree, Collection<Map<VariableElement, State>>> resume) {
+            Collection<Map<VariableElement, State>> toResume = resume.remove(tree);
+
+            if (toResume != null) {
+                for (Map<VariableElement, State> s : toResume) {
+                    mergeIntoVariable2State(s);
+                }
+            }
         }
 
         @Override
         public State visitAssignment(AssignmentTree node, Void p) {
             Element e = info.getTrees().getElement(new TreePath(getCurrentPath(), node.getVariable()));
-            
-            if (e == null || !VARIABLE_ELEMENT.contains(e.getKind())) {
-                return super.visitAssignment(node, p);
-            }
-            
+            Map<VariableElement, State> orig = new HashMap<VariableElement, State>(variable2State);
             State r = scan(node.getExpression(), p);
             
-            variable2State.put((VariableElement) e, r);
-            
             scan(node.getVariable(), p);
+            
+            mergeHypotheticalVariable2State(orig);
+            
+            if (e != null && VARIABLE_ELEMENT.contains(e.getKind())) {
+                variable2State.put((VariableElement) e, r);
+            }
             
             return r;
         }
 
         @Override
+        public State visitCompoundAssignment(CompoundAssignmentTree node, Void p) {
+            Map<VariableElement, State> orig = new HashMap<VariableElement, State>(variable2State);
+            
+            scan(node.getExpression(), p);
+            scan(node.getVariable(), p);
+            
+            mergeHypotheticalVariable2State(orig);
+            
+            return null;
+        }
+
+        @Override
         public State visitVariable(VariableTree node, Void p) {
             Element e = info.getTrees().getElement(getCurrentPath());
-            
-            if (e == null) {
-                return super.visitVariable(node, p);
-            }
-            
+            Map<VariableElement, State> orig = new HashMap<VariableElement, State>(variable2State);
             State r = scan(node.getInitializer(), p);
             
-            variable2State.put((VariableElement) e, r);
+            mergeHypotheticalVariable2State(orig);
+            
+            if (e != null) {
+                variable2State.put((VariableElement) e, r);
+            }
             
             return r;
         }
@@ -384,7 +420,6 @@ public class NPECheck {
 
         @Override
         public State visitBinary(BinaryTree node, Void p) {
-            State left = null;
             boolean subnodesAlreadyProcessed = false;
             Kind kind = node.getKind();
             
@@ -398,8 +433,7 @@ public class NPECheck {
             }
             
             if (kind == Kind.CONDITIONAL_AND) {
-                left = scan(node.getLeftOperand(), p);
-                
+                scan(node.getLeftOperand(), p);
                 scan(node.getRightOperand(), p);
                 
                 subnodesAlreadyProcessed = true;
@@ -408,7 +442,7 @@ public class NPECheck {
             if (kind == Kind.CONDITIONAL_OR) {
                 HashMap<VariableElement, State> orig = new HashMap<VariableElement, NPECheck.State>(variable2State);
                 
-                left = scan(node.getLeftOperand(), p);
+                scan(node.getLeftOperand(), p);
                 
                 Map<VariableElement, State> afterLeft = variable2State;
                 
@@ -430,6 +464,7 @@ public class NPECheck {
                 subnodesAlreadyProcessed = true;
             }
             
+            State left = null;
             State right = null;
             
             if (!subnodesAlreadyProcessed) {
@@ -531,6 +566,12 @@ public class NPECheck {
         public State visitNewClass(NewClassTree node, Void p) {
             super.visitNewClass(node, p);
             
+            Element invoked = info.getTrees().getElement(getCurrentPath());
+
+            if (invoked != null && invoked.getKind() == ElementKind.CONSTRUCTOR) {
+                recordResumeOnExceptionHandler((ExecutableElement) invoked);
+            }
+            
             return State.NOT_NULL;
         }
 
@@ -547,6 +588,8 @@ public class NPECheck {
             
             if (e == null || e.getKind() != ElementKind.METHOD) {
                 return State.POSSIBLE_NULL;
+            } else {
+                recordResumeOnExceptionHandler((ExecutableElement) e);
             }
             
             return getStateFromAnnotations(e);
@@ -622,9 +665,33 @@ public class NPECheck {
 
         @Override
         public State visitMethod(MethodTree node, Void p) {
-            variable2State = new HashMap<VariableElement, NPECheck.State>();
-            not = false;
-            return super.visitMethod(node, p);
+            Map<TypeMirror, Collection<Map<VariableElement, State>>> oldResumeOnExceptionHandler = resumeOnExceptionHandler;
+
+            resumeOnExceptionHandler = new IdentityHashMap<TypeMirror, Collection<Map<VariableElement, State>>>();
+            
+            try {
+                variable2State = new HashMap<VariableElement, NPECheck.State>();
+                not = false;
+
+                Element current = info.getTrees().getElement(getCurrentPath());
+
+                if (current != null && (current.getKind() == ElementKind.METHOD || current.getKind() == ElementKind.CONSTRUCTOR)) {
+                    for (VariableElement var : ((ExecutableElement) current).getParameters()) {
+                        variable2State.put(var, getStateFromAnnotations(var));
+                    }
+                }
+
+                while (current != null) {
+                    for (VariableElement var : ElementFilter.fieldsIn(current.getEnclosedElements())) {
+                        variable2State.put(var, getStateFromAnnotations(var));
+                    }
+                    current = current.getEnclosingElement();
+                }
+
+                return super.visitMethod(node, p);
+            } finally {
+                resumeOnExceptionHandler = oldResumeOnExceptionHandler;
+            }
         }
 
         @Override
@@ -676,12 +743,185 @@ public class NPECheck {
             return State.POSSIBLE_NULL;
         }
         
+        public State visitSwitch(SwitchTree node, Void p) {
+            scan(node.getExpression(), null);
+
+            Map<VariableElement, State> origVariable2State = new HashMap<VariableElement, State>(variable2State);
+
+            boolean exhaustive = false;
+
+            for (CaseTree ct : node.getCases()) {
+                mergeIntoVariable2State(origVariable2State);
+
+                if (ct.getExpression() == null) {
+                    exhaustive = true;
+                }
+
+                scan(ct, null);
+            }
+
+            if (!exhaustive) {
+                mergeIntoVariable2State(origVariable2State);
+            }
+            
+            return null;
+        }
+        
+        public State visitBreak(BreakTree node, Void p) {
+            super.visitBreak(node, p);
+
+            StatementTree target = info.getTreeUtilities().getBreakContinueTarget(getCurrentPath());
+            
+            resumeAfter(target, variable2State);
+
+            variable2State = new HashMap<VariableElement, State>(); //XXX: fields?
+            
+            return null;
+        }
+        
+        public State visitTry(TryTree node, Void p) {
+            if (node.getFinallyBlock() != null) {
+                pendingFinally.add(0, new TreePath(getCurrentPath(), node.getFinallyBlock()));
+            }
+            
+            scan(node.getResources(), null);
+
+            Map<VariableElement, State> oldVariable2State = variable2State;
+
+            variable2State = new HashMap<VariableElement, State>(oldVariable2State);
+
+            scan(node.getBlock(), null);
+
+            HashMap<VariableElement, State> afterBlockVariable2State = new HashMap<VariableElement, State>(variable2State);
+
+            for (CatchTree ct : node.getCatches()) {
+                Map<VariableElement, State> variable2StateBeforeCatch = variable2State;
+
+                variable2State = new HashMap<VariableElement, State>(oldVariable2State);
+
+                if (ct.getParameter() != null) {
+                    TypeMirror caught = info.getTrees().getTypeMirror(new TreePath(getCurrentPath(), ct.getParameter()));
+
+                    if (caught != null && caught.getKind() != TypeKind.ERROR) {
+                        for (Iterator<Entry<TypeMirror, Collection<Map<VariableElement, State>>>> it = resumeOnExceptionHandler.entrySet().iterator(); it.hasNext();) {
+                            Entry<TypeMirror, Collection<Map<VariableElement, State>>> e = it.next();
+
+                            if (info.getTypes().isSubtype(e.getKey(), caught)) {
+                                for (Map<VariableElement, State> s : e.getValue()) {
+                                    mergeIntoVariable2State(s);
+                                }
+
+                                it.remove();
+                            }
+                        }
+                    }
+                }
+                
+                scan(ct, null);
+
+                mergeIntoVariable2State(variable2StateBeforeCatch);
+            }
+
+            if (node.getFinallyBlock() != null) {
+                pendingFinally.remove(0);
+                mergeIntoVariable2State(oldVariable2State);
+                mergeIntoVariable2State(afterBlockVariable2State);
+
+                scan(node.getFinallyBlock(), null);
+            }
+            
+            return null;
+        }
+        
+        private void recordResumeOnExceptionHandler(ExecutableElement invoked) {
+            for (TypeMirror tt : invoked.getThrownTypes()) {
+                recordResumeOnExceptionHandler(tt);
+            }
+
+            recordResumeOnExceptionHandler("java.lang.RuntimeException");
+            recordResumeOnExceptionHandler("java.lang.Error");
+        }
+
+        private void recordResumeOnExceptionHandler(String exceptionTypeFQN) {
+            TypeElement exc = info.getElements().getTypeElement(exceptionTypeFQN);
+
+            if (exc == null) return;
+
+            recordResumeOnExceptionHandler(exc.asType());
+        }
+
+        private void recordResumeOnExceptionHandler(TypeMirror thrown) {
+            if (thrown == null || thrown.getKind() == TypeKind.ERROR) return;
+            
+            Collection<Map<VariableElement, State>> r = resumeOnExceptionHandler.get(thrown);
+
+            if (r == null) {
+                resumeOnExceptionHandler.put(thrown, r = new ArrayList<Map<VariableElement, State>>());
+            }
+
+            r.add(new HashMap<VariableElement, State>(variable2State));
+        }
+        
+        private void resumeAfter(Tree target, Map<VariableElement, State> state) {
+            for (TreePath tp : pendingFinally) {
+                boolean shouldBeRun = false;
+
+                for (Tree t : tp) {
+                    if (t == target) {
+                        shouldBeRun = true;
+                        break;
+                    }
+                }
+
+                if (shouldBeRun) {
+                    recordResume(resumeBefore, tp.getLeaf(), state);
+                } else {
+                    break;
+                }
+            }
+
+            recordResume(resumeAfter, target, state);
+        }
+
+        private static void recordResume(Map<Tree, Collection<Map<VariableElement, State>>> resume, Tree target, Map<VariableElement, State> state) {
+            Collection<Map<VariableElement, State>> r = resume.get(target);
+
+            if (r == null) {
+                resume.put(target, r = new ArrayList<Map<VariableElement, State>>());
+            }
+
+            r.add(new HashMap<VariableElement, State>(state));
+        }
+
         private void mergeIntoVariable2State(Map<VariableElement, State> other) {
             for (Entry<VariableElement, State> e : other.entrySet()) {
                 State t = e.getValue();
-                State el = variable2State.get(e.getKey());
+                
+                if (variable2State.containsKey(e.getKey())) {
+                    State el = variable2State.get(e.getKey());
 
-                variable2State.put(e.getKey(), State.collect(t, el));
+                    variable2State.put(e.getKey(), State.collect(t, el));
+                } else {
+                    variable2State.put(e.getKey(), t);
+                }
+            }
+        }
+        
+        private void mergeHypotheticalVariable2State(Map<VariableElement, State> original) {
+            Map<VariableElement, State> hypothetical = variable2State;
+            
+            variable2State = original;
+            
+            for (Entry<VariableElement, State> e : original.entrySet()) {
+                State t = e.getValue();
+                State el = hypothetical.get(e.getKey());
+                
+                if (el == State.NOT_NULL_BE_NPE) {
+                    variable2State.put(e.getKey(), State.NOT_NULL_BE_NPE);
+                } if (   (t == null || t == State.POSSIBLE_NULL)
+                      && (el == State.NOT_NULL || el == State.NULL || el == State.POSSIBLE_NULL_REPORT)) {
+                    variable2State.put(e.getKey(), State.POSSIBLE_NULL_REPORT);
+                }
             }
         }
         
