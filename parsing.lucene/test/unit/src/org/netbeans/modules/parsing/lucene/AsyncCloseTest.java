@@ -42,16 +42,18 @@
 package org.netbeans.modules.parsing.lucene;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import org.apache.lucene.analysis.KeywordAnalyzer;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
 import org.apache.lucene.index.Term;
+import org.apache.lucene.search.PrefixQuery;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.TermQuery;
 import org.netbeans.api.annotations.common.NonNull;
@@ -120,6 +122,60 @@ public class AsyncCloseTest extends NbTestCase {
         assertNull(exception.get());
     }
 
+    public void testConcurrentReadWrite() throws Exception {
+        final Index index = IndexManager.createTransactionalIndex(indexFolder, new KeywordAnalyzer());
+        index.store(
+            new ArrayList<String>(Arrays.asList("a")), //NOI18N
+            Collections.<String>emptySet(),
+            new TestInsertConvertor(),
+            new TestDeleteConvertor(),
+            true);
+
+        final CountDownLatch slot = new CountDownLatch(1);
+        final CountDownLatch signal = new CountDownLatch(1);
+        final CountDownLatch done = new CountDownLatch(1);
+        final AtomicReference<Exception> result = new AtomicReference<Exception>();
+
+        final Thread worker = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    index.store(
+                           new ArrayList<String>(Arrays.asList("b")), //NOI18N
+                           Collections.<String>emptySet(),
+                           new TestInsertConvertor(slot, signal),
+                           new TestDeleteConvertor(),
+                           true);
+                } catch (Exception e) {
+                    result.set(e);
+                } finally {
+                    done.countDown();
+                }
+            }
+        });
+
+        worker.start();
+        signal.await();
+
+        final Collection<String> data = new ArrayList<String>();
+        index.query(
+            data,
+            new Convertor<Document,String>(){
+                @Override
+                public String convert(Document p) {
+                    return p.get(FLD_KEY);
+                }
+            },
+            null,
+            new AtomicBoolean(),
+            new PrefixQuery(new Term(FLD_KEY,""))); //NOI18N
+        assertEquals(1, data.size());
+        assertEquals("a", data.iterator().next());  //NOI18N
+        slot.countDown();
+        done.await();
+        assertNull(result.get());
+    }
+
     private static final class TestInsertConvertor implements Convertor<String, Document> {
 
         private final CountDownLatch slot;
@@ -134,14 +190,23 @@ public class AsyncCloseTest extends NbTestCase {
             this.signal = signal;
         }
 
+        TestInsertConvertor() {
+            slot = null;
+            signal = null;
+        }
+
         @Override
         public Document convert(String p) {
-            signal.countDown();
+            if (signal != null) {
+                signal.countDown();
+            }
 
-            try {
-                this.slot.await();
-            } catch (InterruptedException ex) {
-                throw new RuntimeException(ex);
+            if (slot != null) {
+                try {
+                    this.slot.await();
+                } catch (InterruptedException ex) {
+                    throw new RuntimeException(ex);
+                }
             }
 
             final Document doc = new Document();
