@@ -247,6 +247,7 @@ public class MakeProjectGeneratorImpl {
                 // finish postponed activity when project metadata is ready
                 mainFileParams.doPostProjectCreationWork();
                 projectDescriptor.closed();
+                projectDescriptor.clean();
             }
         };
         //if (project instanceof MakeProject && !saveNow) { // How can it not be an instance of MakeProject???
