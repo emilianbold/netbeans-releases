@@ -17,9 +17,9 @@
         <tocitem text="HTML5 Application Tasks: Quick Reference" target="html5-quickref" />
         <tocitem text="Creating an HTML5 Application" target="html5-create" />
         <tocitem text="Running an HTML5 Application" target="html5-run" />
-        <tocitem text="Previewing an HTML5 Application" target="html5-preview" />
         <tocitem text="Integrating an HTML5 Project with a Browser" target="html5-chrome" />
         <tocitem text="Inspecting HTML5 Code with the Browser" target="html5-inspect" />
-        <tocitem text="About HTML5 Site Templates" target="html5-templates" />
+        <tocitem text="Changing Browser Screen Sizes" target="html5-preview" />
+        <tocitem text="About HTML5 Templates" target="html5-templates" />
     </tocitem>
 </toc>

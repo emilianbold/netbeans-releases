@@ -43,19 +43,16 @@ import static javax.lang.model.element.Modifier.PRIVATE;
 import static javax.lang.model.element.Modifier.STATIC;
 import javax.lang.model.element.NestingKind;
 import javax.lang.model.element.TypeElement;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.GeneratorUtilities;
-import org.netbeans.api.java.source.JavaSource;
-import org.netbeans.api.java.source.JavaSource.Phase;
-import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.api.java.source.TreeUtilities;
-import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.modules.java.hints.spi.ErrorRule;
 import org.netbeans.modules.java.hints.spi.ErrorRule.Data;
-import org.netbeans.spi.editor.hints.ChangeInfo;
 import org.netbeans.spi.editor.hints.Fix;
+import org.netbeans.spi.java.hints.JavaFix;
 import org.openide.util.NbBundle;
 
 /**
@@ -93,7 +90,7 @@ public class SerialVersionUID implements ErrorRule<Void> {
         TypeElement type = (TypeElement) info.getTrees().getElement(treePath);
         List<Fix> fixes = new ArrayList<Fix>();
 
-        fixes.add(new FixImpl(TreePathHandle.create(treePath, info), false));
+        fixes.add(new FixImpl(TreePathHandle.create(treePath, info), false).toEditorFix());
         // fixes.add(new FixImpl(TreePathHandle.create(treePath, info), true));
 
         if (!type.getNestingKind().equals(NestingKind.ANONYMOUS)) {
@@ -116,8 +113,7 @@ public class SerialVersionUID implements ErrorRule<Void> {
         cancel.set(true);
     }
 
-    private static class FixImpl implements Fix, Task<WorkingCopy> {
-        private static final int ENUM_FLAG = 1 << 14;
+    private static class FixImpl extends JavaFix {
 
         private final TreePathHandle handle;
         private final boolean generated;
@@ -127,6 +123,7 @@ public class SerialVersionUID implements ErrorRule<Void> {
          * @param generated true will insert a generated value, false will use a default
          */
         public FixImpl(TreePathHandle handle, boolean generated) {
+            super(handle);
             this.handle = handle;
             this.generated = generated;
             if (generated) {
@@ -134,36 +131,26 @@ public class SerialVersionUID implements ErrorRule<Void> {
             }
         }
 
-        public String getText() {
+        @Override
+        protected String getText() {
             if (generated) {
                 return NbBundle.getMessage(getClass(), "HINT_SerialVersionUID_Generated");//NOI18N
             }
             return NbBundle.getMessage(getClass(), "HINT_SerialVersionUID");//NOI18N
         }
 
-        public ChangeInfo implement() throws Exception {
-            JavaSource js = JavaSource.forFileObject(handle.getFileObject());
-            js.runModificationTask(this).commit();
-            return null;
-        }
-
-        public void run(WorkingCopy copy) throws Exception {
-            if (copy.toPhase(Phase.RESOLVED).compareTo(Phase.RESOLVED) < 0) {
-                return;
-            }
-            TreePath treePath = handle.resolve(copy);
-            if (treePath == null || !TreeUtilities.CLASS_TREE_KINDS.contains(treePath.getLeaf().getKind())) {
-                return;
-            }
+        @Override
+        protected void performRewrite(@NonNull TransformationContext ctx) throws Exception {
+            TreePath treePath = ctx.getPath();
             ClassTree classTree = (ClassTree) treePath.getLeaf();
-            TreeMaker make = copy.getTreeMaker();
+            TreeMaker make = ctx.getWorkingCopy().getTreeMaker();
 
             // documentation recommends private
             Set<Modifier> modifiers = EnumSet.of(PRIVATE, STATIC, FINAL);
             VariableTree svuid = make.Variable(make.Modifiers(modifiers), SVUID, make.Identifier("long"), make.Literal(1L)); //NO18N
 
-            ClassTree decl = GeneratorUtilities.get(copy).insertClassMember(classTree, svuid);
-            copy.rewrite(classTree, decl);
+            ClassTree decl = GeneratorUtilities.get(ctx.getWorkingCopy()).insertClassMember(classTree, svuid);
+            ctx.getWorkingCopy().rewrite(classTree, decl);
         }
 
         @Override

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,31 +34,75 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-
-package org.netbeans.modules.refactoring.spi;
-
-import org.netbeans.modules.refactoring.api.ProgressListener;
+package org.netbeans.modules.editor.lib2.view;
 
 /**
- * Refactoring plugins and transactions should implement this interface, if they
- * want to notify their progress of commit, preCheck, prepare and
- * checkParameters method.
- *
- * @author Jan Becicka
+ * Part of a view (but may also be used as a container for full view).
  */
-public interface ProgressProvider {
-    /**
-     * Adds progress listener.
-     * The listener is notified when long-lasting operation started/advanced/stopped .
-     * @param listener
-     */
-    public void addProgressListener(ProgressListener listener);
+final class ViewPart {
 
     /**
-     * Remove progress listener.
-     * The listener is notified when long-lasting operation started/advanced/stopped .
-     * @param listener
+     * Part view.
      */
-    public void removeProgressListener(ProgressListener listener);
+    final EditorView view;
+    
+    /**
+     * Width of the part view (or full view).
+     */
+    final float width;
+    
+    /**
+     * Relative X of the part against start of whole child view (from which view splitting
+     * was initiated).
+     * This needs to be included in a 'pos' parameter of a possible breakView()
+     * so that e.g. tab widths are properly computed.
+     * If this container is used for a full view then this field is 0f.
+     */
+    final float xShift;
+    
+    /**
+     * Index of view part among other parts (starting at 0).
+     * Full view has index -1.
+     */
+    final int index;
+
+    /**
+     * Constructor for whole view.
+     */
+    ViewPart(EditorView view, float width) {
+        this(view, width, 0f, -1);
+    }
+
+    /**
+     * Constructor for view part.
+     */
+    ViewPart(EditorView part, float width, float xShift, int index) {
+        assert (part != null) : "Null view"; // NOI18N
+        this.view = part;
+        this.width = width;
+        this.xShift = xShift;
+        this.index = index;
+    }
+
+    boolean isPart() {
+        return (index != -1);
+    }
+    
+    boolean isFirstPart() {
+        return (index == 0);
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder(100);
+        sb.append("view=").append(view).append(", width=").append(width). // NOI18N
+                append(", xShift=").append(xShift).append(", index=").append(index); // NOI18N
+        return sb.toString();
+    }
+
 }

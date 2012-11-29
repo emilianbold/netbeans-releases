@@ -59,6 +59,7 @@ import java.awt.event.ActionEvent;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import org.netbeans.editor.BaseAction;
+import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 import org.netbeans.spi.editor.highlighting.HighlightsSequence;
 import org.netbeans.spi.editor.highlighting.support.OffsetsBag;
 import org.openide.awt.StatusDisplayer;
@@ -72,6 +73,7 @@ public class GoToMarkOccurrencesAction extends BaseAction {
 
     private static final String prevActionName = "java-prev-marked-occurrence"; // NOI18N
     private static final String nextActionName = "java-next-marked-occurrence"; // NOI18N
+    static final String markedOccurence = "marked-occurrence"; // NOI18N
 
     private final boolean next;
 
@@ -145,10 +147,11 @@ public class GoToMarkOccurrencesAction extends BaseAction {
             int goTo = findOccurrencePosition(next, doc, position);
             if (goTo > 0) {
                 txt.setCaretPosition(goTo);
+                doc.putProperty(markedOccurence, new long[] {DocumentUtilities.getDocumentVersion(doc), goTo});
             } else {
                 StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(GoToMarkOccurrencesAction.class, "java-no-marked-occurrence"));
+                doc.putProperty(markedOccurence, null);
             }
         }
-
     }    
 }

@@ -81,10 +81,8 @@ public class KeymapViewModelTest extends NbTestCase {
         model.setCurrentProfile ("mine");
         assertEquals ("mine", model.getCurrentProfile ());
         assertEquals (currentProfile, new KeymapViewModel ().getMutableModel().getCurrentProfile ());
-        model.apply ();
+        model.postApply().waitFinished();
         assertEquals ("mine", model.getCurrentProfile ());
-        // TODO: this no longer works:
-        // assertEquals ("mine", new KeymapViewModel ().getCurrentProfile ());
     }
     
     public void testChangeShortcuts () {

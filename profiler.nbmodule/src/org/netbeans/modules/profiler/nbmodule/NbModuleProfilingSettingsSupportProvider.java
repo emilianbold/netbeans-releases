@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,31 +34,46 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.profiler.nbmodule;
 
-package org.netbeans.modules.refactoring.spi;
-
-import org.netbeans.modules.refactoring.api.ProgressListener;
+import org.netbeans.api.project.Project;
+import org.netbeans.modules.profiler.api.ProjectUtilities;
+import org.netbeans.modules.profiler.spi.project.ProfilingSettingsSupportProvider;
+import org.netbeans.spi.project.LookupProvider.Registration.ProjectType;
+import org.netbeans.spi.project.ProjectServiceProvider;
+import org.openide.util.NbBundle;
 
 /**
- * Refactoring plugins and transactions should implement this interface, if they
- * want to notify their progress of commit, preCheck, prepare and
- * checkParameters method.
  *
- * @author Jan Becicka
+ * @author Jiri Sedlacek
  */
-public interface ProgressProvider {
-    /**
-     * Adds progress listener.
-     * The listener is notified when long-lasting operation started/advanced/stopped .
-     * @param listener
-     */
-    public void addProgressListener(ProgressListener listener);
-
-    /**
-     * Remove progress listener.
-     * The listener is notified when long-lasting operation started/advanced/stopped .
-     * @param listener
-     */
-    public void removeProgressListener(ProgressListener listener);
+@ProjectServiceProvider(service=org.netbeans.modules.profiler.spi.project.ProfilingSettingsSupportProvider.class, 
+                        projectTypes={
+                            @ProjectType(id="org-netbeans-modules-apisupport-project-suite")
+                        }
+)
+public class NbModuleProfilingSettingsSupportProvider extends ProfilingSettingsSupportProvider.Default {
+    
+    // #222661, project-only filter not available for module suites
+    public String getProjectOnlyFilterName() {
+        return null;
+    }
+    
+    @NbBundle.Messages({
+        "NbModuleProfilingSettingsSupportProvider_ProfileProjectSubprojectClassesString=Profile suite & modules classes"
+    })
+    public String getProjectSubprojectsFilterName() {
+        return !ProjectUtilities.hasSubprojects(getProject()) ? null :
+                Bundle.NbModuleProfilingSettingsSupportProvider_ProfileProjectSubprojectClassesString();
+    }
+    
+    public NbModuleProfilingSettingsSupportProvider(Project project) {
+        super(project);
+    }
+    
 }
