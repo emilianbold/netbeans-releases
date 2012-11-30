@@ -106,7 +106,9 @@ import org.netbeans.modules.cnd.apt.support.PostIncludeData;
 import org.netbeans.modules.cnd.apt.support.StartEntry;
 import org.netbeans.modules.cnd.apt.utils.APTSerializeUtils;
 import org.netbeans.modules.cnd.apt.utils.APTUtils;
+import org.netbeans.modules.cnd.debug.CndTraceFlags;
 import org.netbeans.modules.cnd.debug.DebugUtils;
+import org.netbeans.modules.cnd.indexing.api.CndTextIndex;
 import org.netbeans.modules.cnd.modelimpl.cache.impl.WeakContainer;
 import org.netbeans.modules.cnd.modelimpl.content.project.ClassifierContainer;
 import org.netbeans.modules.cnd.modelimpl.content.project.DeclarationContainerProject;
@@ -447,7 +449,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         return getUniqueName(platformProject.getFileSystem(), platformProject);
     }
 
-    /*package*/ CacheLocation getCacheLocation() {
+    public final CacheLocation getCacheLocation() {
         return cacheLocation;
     }
 
@@ -831,6 +833,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
                         CndFileSystemProvider.removeFileSystemProblemListener(this, fs);
                     }
                 }
+                projectListener = null;
             }
         }
     }
@@ -2486,6 +2489,9 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
                     APTDriver.invalidateAPT(buf);
                     APTFileCacheManager.getInstance(buf.getFileSystem()).invalidate(buf.getAbsolutePath());
                     ParserQueue.instance().remove(impl);
+                    if (CndTraceFlags.TEXT_INDEX) {
+                        CndTextIndex.remove(impl.getProjectImpl(true).getCacheLocation(), impl.getTextIndexKey());
+                    }
                 }
             }
         }
@@ -3561,7 +3567,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
     private static final class FileContainerLock {}
     private final Object fileContainerLock = new FileContainerLock();
     private final Key graphStorageKey;
-    private NativeProjectListenerImpl projectListener;
+    private volatile NativeProjectListenerImpl projectListener;
     private final Object projectListenerLock = new Object();
     
     // test variables.

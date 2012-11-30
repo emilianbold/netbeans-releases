@@ -418,6 +418,20 @@ public class ConfigurationDescriptorProvider {
         return strSize;
     }
 
+    public void closed() {
+        MakeConfigurationDescriptor descr = getConfigurationDescriptor();
+        if (descr != null) {
+            descr.closed();
+        }
+    }
+
+    public void opened() {
+        MakeConfigurationDescriptor descr = getConfigurationDescriptor(true);
+        if (descr != null) {
+            descr.opened();
+        }
+    }
+
     /**
      * This listener will be notified about updates of files
      * <code>nbproject/configurations.xml</code> and

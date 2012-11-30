@@ -54,24 +54,17 @@ final class WrapLine {
 
     /**
      * Start view of this line that was obtained by breaking a view
-     * at (viewIndex - 1). It may be null if this line starts at view boundary
+     * at (firstViewIndex - 1). It may be null if this line starts at view boundary
      * with a view at viewIndex.
      */
-    EditorView startPart;
+    ViewPart startPart;
 
     /**
      * Ending view of this line that was obtained by breaking a view
      * at endViewIndex.
      * It may be null if the line ends at view boundary.
      */
-    EditorView endPart;
-
-    /*
-     * X corresponding to the start view on the line (right next to startPart).
-     * If there's an existing startPart then the value is its width otherwise
-     * it's value is zero.
-     */
-    float firstViewX;
+    ViewPart endPart;
 
     /**
      * Index of a first view located at this line.
@@ -87,15 +80,32 @@ final class WrapLine {
      * It should be >= firstViewIndex.
      */
     int endViewIndex;
-
+    
     WrapLine() {
-        // Leave firstViewIndex == endViewIndex which means no full views
     }
 
     boolean hasFullViews() {
         return firstViewIndex != endViewIndex;
     }
+
+    /**
+     * Get first view (or fragment) of this wrap line.
+     *
+     * @param pView paragraph view to which this wrap line belongs.
+     * @return starting child view or fragment.
+     */
+    EditorView startView(ParagraphView pView) {
+        return (startPart != null)
+                ? startPart.view
+                : ((firstViewIndex != endViewIndex)
+                        ? pView.getEditorView(firstViewIndex)
+                        : endPart.view);
+    }
     
+    float startPartWidth() {
+        return (startPart != null) ? startPart.width : 0f;
+    }
+
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();

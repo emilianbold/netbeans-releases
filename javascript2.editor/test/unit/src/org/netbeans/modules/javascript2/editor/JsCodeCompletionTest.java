@@ -175,4 +175,8 @@ public class JsCodeCompletionTest extends JsCodeComplationBase {
     public void testIssue221022() throws Exception {
         checkCompletion("testfiles/completion/issue221022.js", "    $scope.^     //here", false);
     }
+
+    public void testIssue222955() throws Exception {
+        checkCompletion("testfiles/completion/issue222955.js", "po^ //here CC", false);
+    }
 }

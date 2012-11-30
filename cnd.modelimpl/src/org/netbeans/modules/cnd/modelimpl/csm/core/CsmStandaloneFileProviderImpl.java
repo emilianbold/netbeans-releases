@@ -280,11 +280,14 @@ public class CsmStandaloneFileProviderImpl extends CsmStandaloneFileProvider {
     }
 
     private void scheduleProjectRemoval(final CsmProject project) {
-        final NativeProject nativeProject = (NativeProject)project.getPlatformProject();
         if(!project.isValid()) {
             return;
         }
-        final String root = nativeProject.getProjectRoot();
+        final Object nativeProject = project.getPlatformProject();
+        if (!(nativeProject instanceof NativeProject)) {
+            return;
+        }
+        final String root = ((NativeProject)nativeProject).getProjectRoot();
         if (TRACE) {trace("schedulling removal %s", project.toString());} //NOI18N
         synchronized (lock) {
             toBeRmoved.add(root);

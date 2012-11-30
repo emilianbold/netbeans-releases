@@ -83,6 +83,8 @@ public abstract class TokenAcceptor {
         ACCEPTORS.add(new Uri("uri"));
         ACCEPTORS.add(new Anything("anything")); 
         
+        ACCEPTORS.add(new GenericFunctionContent("function-content")); 
+        
         InstanceContent content = new InstanceContent();
         for(TokenAcceptor ta : ACCEPTORS) {
             ACCEPTORS_MAP.put(ta.id(), ta);
@@ -519,5 +521,19 @@ public abstract class TokenAcceptor {
         public boolean accepts(Token token) {
             return token.tokenId() == CssTokenId.URI;
         }
+    }
+    
+    private static class GenericFunctionContent extends TokenAcceptor {
+
+        public GenericFunctionContent(String id) {
+            super(id);
+        }
+
+        @Override
+        public boolean accepts(Token token) {
+            //consume everything except ")"
+            return token.tokenId() != CssTokenId.RPAREN;
+        }
+        
     }
 }

@@ -192,7 +192,7 @@ public class TransportHelper {
             if (callback != null) {
                 TransportStateException transportException = response.getException();
                 if (transportException != null) {
-                    transport.log("response "+transport.toString()); // NOI18N
+                    transport.log("response "+transportException.toString()); // NOI18N
                 } else {
                     transport.log("response "+response.getResponse().toJSONString()); // NOI18N
                 }

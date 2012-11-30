@@ -62,7 +62,8 @@ import org.openide.util.RequestProcessor;
 @ActionRegistration(displayName = "RefreshMenuItem")
 @ActionReference(path = "Remote/Host/Actions", name = "RefreshAction", position = 99999)
 public class RefreshAction extends SingleHostAction {
-
+    private static final RequestProcessor RP = new RequestProcessor("RefreshAction", 1); // NOI18N
+    
     @Override
     public String getName() {
         return NbBundle.getMessage(HostListRootNode.class, "RefreshMenuItem");
@@ -81,7 +82,7 @@ public class RefreshAction extends SingleHostAction {
 
     @Override
     protected void performAction(final ExecutionEnvironment env, Node node) {
-        RequestProcessor.getDefault().post(new Runnable() {
+        RP.post(new Runnable() {
             @Override
             public void run() {
                 if (ConnectionManager.getInstance().isConnectedTo(env)) {
