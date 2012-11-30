@@ -577,6 +577,8 @@ public class ModelVisitor extends PathNodeVisitor {
             int pathSize = getPath().size();
             boolean isDeclaredInParent = false;
             boolean isPrivate = false;
+            boolean treatAsAnonymous = false;
+            
             Node lastVisited = getPath().get(pathSize - 1);
             VarNode varNode = null;
 
@@ -592,35 +594,49 @@ public class ModelVisitor extends PathNodeVisitor {
                 isDeclaredInParent = true;
             } else if (lastVisited instanceof BinaryNode) {
                 BinaryNode binNode = (BinaryNode) lastVisited;
-                if (getPath().size() > 1) {
-                    lastVisited = getPath().get(getPath().size() - 2);
-                    if (lastVisited instanceof VarNode) {
-                        varNode = (VarNode) lastVisited;
+                if (binNode.lhs() instanceof IndexNode) {
+                    Node index =  ((IndexNode)binNode.lhs()).getIndex();
+                    if (!(index instanceof LiteralNode && ((LiteralNode)index).isString())) {
+                        treatAsAnonymous = true;
+                    }
+                } 
+                if (!treatAsAnonymous) {
+                    if (getPath().size() > 1) {
+                        lastVisited = getPath().get(getPath().size() - 2);
+                        if (lastVisited instanceof VarNode) {
+                            varNode = (VarNode) lastVisited;
+                        }
+                    }
+                    fqName = getName(binNode);
+                    if (binNode.lhs() instanceof IdentNode || (binNode.lhs() instanceof AccessNode
+                            && ((AccessNode) binNode.lhs()).getBase() instanceof IdentNode
+                            && ((IdentNode) ((AccessNode) binNode.lhs()).getBase()).getName().equals("this"))) {
+                        isDeclaredInParent = true;
                     }
                 }
-                fqName = getName(binNode);
-                if (binNode.lhs() instanceof IdentNode || (binNode.lhs() instanceof AccessNode
-                        && ((AccessNode) binNode.lhs()).getBase() instanceof IdentNode
-                        && ((IdentNode) ((AccessNode) binNode.lhs()).getBase()).getName().equals("this"))) {
-                    isDeclaredInParent = true;
+            }
+            if (!treatAsAnonymous) {
+                if (fqName == null || fqName.isEmpty()) {
+                    fqName = new ArrayList<Identifier>(1);
+                    fqName.add(new IdentifierImpl("UNKNOWN", //NOI18N
+                            ModelUtils.documentOffsetRange(parserResult, objectNode.getStart(), objectNode.getFinish())));
                 }
-            }
-            if (fqName == null || fqName.isEmpty()) {
-                fqName = new ArrayList<Identifier>(1);
-                fqName.add(new IdentifierImpl("UNKNOWN",   //NOI18N
-                        ModelUtils.documentOffsetRange(parserResult, objectNode.getStart(), objectNode.getFinish())));
-            }
-            JsObjectImpl objectScope = varNode != null
-                    ? modelBuilder.getCurrentObject()
-                    : ModelElementFactory.create(parserResult, objectNode, fqName, modelBuilder, isDeclaredInParent);
-            if (objectScope != null) {
-                objectScope.setJsKind(JsElement.Kind.OBJECT_LITERAL);
+                JsObjectImpl objectScope = varNode != null
+                        ? modelBuilder.getCurrentObject()
+                        : ModelElementFactory.create(parserResult, objectNode, fqName, modelBuilder, isDeclaredInParent);
+                if (objectScope != null) {
+                    objectScope.setJsKind(JsElement.Kind.OBJECT_LITERAL);
+                    modelBuilder.setCurrentObject(objectScope);
+                    if (isPrivate) {
+                        objectScope.getModifiers().remove(Modifier.PUBLIC);
+                        objectScope.getModifiers().add(Modifier.PRIVATE);
+                    }
+                }
+            } else {
+                JsObjectImpl objectScope = ModelElementFactory.createAnonymousObject(parserResult, objectNode, modelBuilder);
                 modelBuilder.setCurrentObject(objectScope);
-                if(isPrivate) {
-                    objectScope.getModifiers().remove(Modifier.PUBLIC);
-                    objectScope.getModifiers().add(Modifier.PRIVATE);
-                }
             }
+            
         }
 
         return super.enter(objectNode);
