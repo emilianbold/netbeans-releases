@@ -59,7 +59,6 @@ import org.openide.NotifyDescriptor;
 import org.openide.awt.StatusDisplayer;
 import org.openide.cookies.SaveCookie;
 import org.openide.loaders.DataObject;
-import org.openide.util.Exceptions;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
 import org.openide.util.lookup.ServiceProvider;
@@ -74,6 +73,8 @@ import org.openide.windows.WindowManager;
     supersedes="org.netbeans.core.startup.ModuleLifecycleManager"
 )
 public final class NbLifecycleManager extends LifecycleManager {
+    static final Logger LOG = Logger.getLogger(NbLifecycleManager.class.getName());
+    
     /** @GuardedBy("NbLifecycleManager.class") */
     private static CountDownLatch onExit;
     private volatile JDialog dialog;
@@ -122,6 +123,7 @@ public final class NbLifecycleManager extends LifecycleManager {
         synchronized (NbLifecycleManager.class) {
             if (onExit != null) {
                 arr[0] = onExit;
+                LOG.log(Level.FINE, "blockForExit, already counting down {0}", onExit);
                 return true;
             }
             arr[0] = onExit = new CountDownLatch(1) {
@@ -129,53 +131,65 @@ public final class NbLifecycleManager extends LifecycleManager {
                 public void countDown() {
                     super.countDown();
                     JDialog d = dialog;
+                    LOG.log(Level.FINE, "countDown for {0}, hiding {1}", new Object[] { this, d });
                     if (d != null) {
                         d.setVisible(false);
                     }
                 }
             };
+            LOG.log(Level.FINE, "blockForExit, new {0}", onExit);
             return false;
         }
     }
     
     private void finishExitState(CountDownLatch[] cdl, boolean clean) {
+        LOG.log(Level.FINE, "finishExitState {0} clean: {1}", new Object[]{Thread.currentThread(), clean});
         if (EventQueue.isDispatchThread()) {
             onExitThread = Thread.currentThread();
             try {
+                LOG.log(Level.FINE, "waiting in EDT: {0} own: {1}", new Object[]{onExit, cdl[0]});
                 if (cdl[0].await(5, TimeUnit.SECONDS)) {
+                    LOG.fine("wait is over, return");
                     return;
                 }
             } catch (InterruptedException ex) {
-                Exceptions.printStackTrace(ex);
+                LOG.log(Level.FINE, null, ex);
             }
             JDialog d = new JDialog(WindowManager.getDefault().getMainWindow(), true);
             d.setLocation(544300, 544300);
             d.setSize(0, 0);
             try {
                 dialog = d;
+                LOG.log(Level.FINE, "Showing dialog: {0}", d);
                 d.setVisible(true);
             } finally {
+                LOG.log(Level.FINE, "Disposing dialog: {0}", dialog);
                 dialog = null;
                 onExitThread = null;
             }
         }
+        LOG.log(Level.FINE, "About to block on {0}", cdl[0]);
         try {
             cdl[0].await();
         } catch (InterruptedException ex) {
-            Exceptions.printStackTrace(ex);
+            LOG.log(Level.FINE, null, ex);
         } finally {
             if (clean) {
+                LOG.log(Level.FINE, "Cleaning {0} own {1}", new Object[] { onExit, cdl[0] });
                 synchronized (NbLifecycleManager.class) {
                     assert cdl[0] == onExit;
                     onExit = null;
                 }
             }
         }
+        LOG.fine("End of finishExitState");
     }
     
     @Override
     public void exit(int status) {
+        LOG.log(Level.FINE, "Initiating exit with status {0}", status);
         if (onExitThread == Thread.currentThread()) {
+            LOG.log(Level.FINE, "Already in process of exiting {0}, return", onExitThread);
             return;
         }
         CountDownLatch[] cdl = { null };

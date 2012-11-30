@@ -79,10 +79,16 @@ final class NbLifeExit implements Runnable {
         this.status = status;
         this.waitFor = waitFor;
         this.onExit = onExit;
+        NbLifecycleManager.LOG.log(
+            Level.FINE, "NbLifeExit({0}, {1}, {2}, {3}) = {4}", new Object[]{
+                type, status, waitFor, onExit, this
+            }
+        );
     }
 
     @Override
     public void run() {
+        NbLifecycleManager.LOG.log(Level.FINE, "{0}.run()", this);
         switch (type) {
             case 0:
                 doExit(status);
