@@ -85,6 +85,22 @@ final class ViewFolderPasteType  extends PasteType {
             newConfigurations[i].assignValues(oldConfigurations[i]);
         }
     }
+
+    private void copyItemConfigurations(ItemConfiguration[] newConfigurations, ItemConfiguration[] oldConfigurations) {
+        // Only allowing copying configurations within same project
+        if (newConfigurations == null || oldConfigurations == null) {
+            return;
+        }        
+        assert newConfigurations.length == oldConfigurations.length;
+        if (newConfigurations.length == 0 || oldConfigurations.length == 0) {
+            return;
+        }
+        for (int i = 0; i < newConfigurations.length; i++) {
+            if (oldConfigurations[i] != null && newConfigurations[i] != null) {
+                newConfigurations[i].assignValues(oldConfigurations[i]);
+            }
+        }
+    }
     
     private FileObject getFolderFileObject(Folder folder) {
         String rootPath = folder.getRootPath();
@@ -99,6 +115,7 @@ final class ViewFolderPasteType  extends PasteType {
             public void run() {
                 try {
                     pasteImpl();
+                    provider.getMakeConfigurationDescriptor().save();
                 } catch (IOException ex) {
                     Exceptions.printStackTrace(ex);
                 }
@@ -111,7 +128,6 @@ final class ViewFolderPasteType  extends PasteType {
         if (!provider.gotMakeConfigurationDescriptor() || !(provider.getMakeConfigurationDescriptor().okToChange())) {
             return null;
         }
-        FolderConfiguration[] oldConfigurations = fromFolder.getFolderConfigurations();
         if (type == DnDConstants.ACTION_MOVE) {
             // Drag&Drop, Cut&Paste
                 // Move within same project
@@ -124,10 +140,12 @@ final class ViewFolderPasteType  extends PasteType {
                 final FileLock lock = itemFO.lock();
                 try {
                     FileObject movedFileFO = itemFO.move(lock, toFolderFO, newName, ""); // NOI18N
-                    Folder movedFolder = toFolder.findFolderByAbsolutePath(movedFileFO.getPath());
+                    Folder movedFolder = toFolder.findFolderByName(movedFileFO.getNameExt());
                     if (toFolder.getProject() == fromFolder.getProject()) {
-                        if (movedFolder != null) {
-                            copyFolderConfigurations(movedFolder.getFolderConfigurations(), oldConfigurations);
+                        if (!fromFolder.getAllFolders(true).contains(toFolder)) {
+                            if (movedFolder != null) {
+                                recussiveMoveConfigurations(fromFolder, toFolder, movedFolder.getName(), true);
+                            }
                         }
                     }
                 } finally {
@@ -147,10 +165,12 @@ final class ViewFolderPasteType  extends PasteType {
                 String newName = CndPathUtilitities.createUniqueFileName(toFolderFO, fo.getNameExt(), "");
                 FileObject copiedFileObject = fo.copy(toFolderFO, newName, "");
 
-                Folder copiedFolder = toFolder.findFolderByAbsolutePath(copiedFileObject.getPath());
+                Folder copiedFolder = toFolder.findFolderByName(copiedFileObject.getNameExt());
                 if (toFolder.getProject() == fromFolder.getProject()) {
-                    if (copiedFolder != null) {
-                        copyFolderConfigurations(copiedFolder.getFolderConfigurations(), oldConfigurations);
+                    if (!fromFolder.getAllFolders(true).contains(toFolder)) {
+                        if (copiedFolder != null) {
+                            recussiveMoveConfigurations(fromFolder, toFolder, copiedFolder.getName(), false);
+                        }
                     }
                 }
             } else if (!toFolder.isDiskFolder() && !fromFolder.isDiskFolder()) {
@@ -162,12 +182,34 @@ final class ViewFolderPasteType  extends PasteType {
         return null;
     }
 
+    private void recussiveMoveConfigurations(Folder folder, Folder toFolder, String newName, boolean move) throws IOException {
+        Folder target = toFolder.findFolderByName(newName);
+        if (target != null) {
+            if (target.getProject() == folder.getProject()) {
+                copyFolderConfigurations(target.getFolderConfigurations(), folder.getFolderConfigurations());
+            }
+            for (Folder sub : folder.getFolders()) {
+                recussiveMoveConfigurations(sub, target, sub.getName(), move);
+            }
+            for (Item item : folder.getItemsAsArray()) {
+                Item toItem = target.findItemByName(item.getName());
+                if (toItem != null) {
+                    copyItemConfigurations(toItem.getItemConfigurations(), item.getItemConfigurations());
+                }
+            }
+        }
+        if (move) {
+            Folder parent = folder.getParent();
+            parent.removeFolderAction(folder);
+        }
+    }
+
     private void recussiveMove(Folder folder, Folder toFolder, boolean move) throws IOException {
         Folder parent = folder.getParent();
         Folder target = toFolder.findFolderByDisplayName(folder.getDisplayName());
         if (target == null) {
             target = new Folder(toFolder.getConfigurationDescriptor(), toFolder, folder.getName(), folder.getDisplayName(), true, Folder.Kind.SOURCE_LOGICAL_FOLDER);
-            toFolder.addFolder(target, true);
+            target = toFolder.addFolder(target, true);
             if (target.getProject() == folder.getProject()) {
                 copyFolderConfigurations(target.getFolderConfigurations(), folder.getFolderConfigurations());
             }
