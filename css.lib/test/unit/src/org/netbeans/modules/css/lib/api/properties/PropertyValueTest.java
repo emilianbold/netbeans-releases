@@ -197,7 +197,7 @@ public class PropertyValueTest extends CssTestBase {
                 "small-caps", "800", "normal", "lighter", "smaller", "600", "bold",
                 "700", "!length", "-", "xx-small", "bolder", "100", "300", "!percentage",
                 "200", "larger", "medium", "500", "x-large", "x-small", "400",
-                "xx-large", "900", "small", "large", "calc");
+                "xx-large", "900", "small", "large", "calc",  "fantasy","monospace","!identifier","!string","/","cursive","serif","sans-serif");
 
         assertAlternatives(p.getGrammar(), "italic large",
                 "fantasy", "serif", "sans-serif", "monospace", "/", "cursive", "!string", "!identifier");
