@@ -2361,6 +2361,7 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
                             usedIterables.get(),
                             finished);
                 }
+                InjectedTasksSupport.clear();
             }
         }
 
@@ -2517,6 +2518,7 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
                                 + "; mimeTypes=" + sb.toString()
                                 + "; took " + (tm1 != -1 && tm2 != -1 ? (tm2 - tm1) + "ms" : "unknown time")); //NOI18N
                         }
+                        InjectedTasksSupport.execute();
                     }
 
                     if (getCancelRequest().isRaised()) {
@@ -2897,6 +2899,7 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
                         LOGGER.log(Level.WARNING, null, e);
                     }
                 }
+                InjectedTasksSupport.execute();
             }
 
             return !getCancelRequest().isRaised();
@@ -3666,6 +3669,7 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
                                                 Level.WARNING, "RefreshCifIndices ignored recently added factory: {0}", //NOI18N
                                                 indexerKey);
                                         }
+                                        InjectedTasksSupport.execute();
                                     }
                                 } finally {
                                     usedIterables.offerAll(allIndexblesSentToIndexers);
