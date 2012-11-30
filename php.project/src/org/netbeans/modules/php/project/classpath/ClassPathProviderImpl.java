@@ -294,10 +294,6 @@ public final class ClassPathProviderImpl implements ClassPathProvider, PhpSource
      */
     public ClassPath[] getProjectClassPaths(String type) {
         if (PhpSourcePath.BOOT_CP.equals(type)) {
-            // because of global include path, we need to ensure that it is known for property evaluator
-            //  (=> need to be written in global properties, do it just once, just before getting BOOT class path)
-            PhpOptions.getInstance().getPhpGlobalIncludePath();
-
             return new ClassPath[] {getBootClassPath()};
         } else if (PhpSourcePath.SOURCE_CP.equals(type)) {
             return new ClassPath[] {
