@@ -57,6 +57,7 @@ import org.netbeans.modules.parsing.lucene.support.DocumentIndex;
 import org.netbeans.modules.parsing.lucene.support.DocumentIndexCache;
 import org.netbeans.modules.parsing.lucene.support.IndexManager;
 import org.openide.util.Exceptions;
+import org.openide.util.Parameters;
 import org.openide.util.Utilities;
 
 /**
@@ -67,6 +68,7 @@ public final class DocumentBasedIndexManager {
 
     private static DocumentBasedIndexManager instance;
 
+    //@GuardedBy("this")
     @org.netbeans.api.annotations.common.SuppressWarnings(
     value="DMI_COLLECTION_OF_URLS"
     /*,justification="URLs have never host part"*/)
@@ -138,9 +140,20 @@ public final class DocumentBasedIndexManager {
     }
 
    @CheckForNull
-   public DocumentIndexCache getCache(@NonNull final URL root) {
+   public synchronized DocumentIndexCache getCache(@NonNull final URL root) {
        final Pair<DocumentIndex.Transactional, DocumentIndexCache> entry = indexes.get(root);
        return entry == null ? null : entry.second;
+   }
+
+   @CheckForNull
+   public synchronized DocumentIndex.Transactional getIndex(@NonNull final DocumentIndexCache cache) {
+       Parameters.notNull("cache", cache);  //NOI18N
+       for (Pair<DocumentIndex.Transactional,DocumentIndexCache> e : indexes.values()) {
+           if (cache.equals(e.second)) {
+               return e.first;
+           }
+       }
+       return null;
    }
    
    public synchronized void close() {

@@ -54,12 +54,19 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
+import java.util.concurrent.Callable;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
+import org.netbeans.modules.parsing.impl.indexing.lucene.DocumentBasedIndexManager;
+import org.netbeans.modules.parsing.lucene.support.DocumentIndex;
 import org.netbeans.modules.parsing.lucene.support.DocumentIndexCache;
 import org.netbeans.modules.parsing.lucene.support.IndexDocument;
 import org.netbeans.modules.parsing.spi.indexing.Indexable;
 import org.openide.util.Parameters;
+import org.openide.util.Utilities;
 
 /**
  *
@@ -71,6 +78,8 @@ public final class ClusteredIndexables {
 
     public static final String DELETE = "ci-delete-set";    //NOI18N
     public static final String INDEX = "ci-index-set";      //NOI18N
+
+    private static final Logger LOG = Logger.getLogger(ClusteredIndexables.class.getName());
 
     // -----------------------------------------------------------------------
     // Public implementation
@@ -312,7 +321,7 @@ public final class ClusteredIndexables {
             toDeleteOutOfOrder = null;
             deleteFromDeleted = null;
             deleteFromIndex = null;
-            this.dataRef = null;
+            dataRef = null;
         }
 
         @Override
@@ -386,9 +395,55 @@ public final class ClusteredIndexables {
                 toDeleteOutOfOrder = new ArrayList<String>();
                 deleteFromDeleted = new BitSet();
                 deleteFromIndex = new BitSet();
-                dataRef = new SoftReference<List[]>(new List[] {toAdd, toDeleteOutOfOrder});
+                dataRef = new ClearReference(
+                        new List[] {toAdd, toDeleteOutOfOrder},
+                        this);
             }
             return dataRef.get() == null;
+        }
+    }
+
+    private static final class ClearReference extends SoftReference<List[]> implements Runnable, Callable<Void> {
+
+        private final DocumentIndexCacheImpl owner;
+        private final AtomicInteger state = new AtomicInteger();
+
+        public ClearReference(
+                @NonNull final List[] data,
+                @NonNull final DocumentIndexCacheImpl owner) {
+            super(data, Utilities.activeReferenceQueue());
+            Parameters.notNull("data", data);   //NOI18N
+            Parameters.notNull("owner", owner); //NOI18N
+            this.owner = owner;
+        }
+
+        @Override
+        public void run() {
+            if (!state.compareAndSet(0, 1)) {
+                throw new IllegalStateException(Integer.toString(state.get()));
+            }
+            InjectedTasksSupport.enqueueTask(this);
+            LOG.log(
+                Level.FINEST,
+                "Reference Task Enqueued for: {0}", //NOI18N
+                owner);
+        }
+         
+
+        @Override
+        public Void call () throws Exception {
+            if (!state.compareAndSet(1, 2)) {
+                throw new IllegalStateException(Integer.toString(state.get()));
+            }
+            final DocumentIndex.Transactional txIndex = DocumentBasedIndexManager.getDefault().getIndex(owner);
+            if (txIndex != null) {
+                txIndex.txStore();
+            }
+            LOG.log(
+                Level.FINEST,
+                "Reference Task Executed for: {0}", //NOI18N
+                owner);
+            return null;
         }
     }
     

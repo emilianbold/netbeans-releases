@@ -1349,6 +1349,10 @@ public class Folder implements FileChangeListener, ChangeListener {
     @Override
     public void fileDataCreated(FileEvent fe) {
         FileObject fileObject = fe.getFile();
+        if (!VisibilityQuery.getDefault().isVisible(fileObject) ||
+            !CndFileVisibilityQuery.getDefault().isVisible(fileObject)) {
+            return;
+        }
         FileObject thisFolder = getThisFolder();
         FileObject aParent = fileObject.getParent();
         if (aParent.equals(thisFolder)) {
@@ -1385,6 +1389,10 @@ public class Folder implements FileChangeListener, ChangeListener {
     public void fileFolderCreated(FileEvent fe) {
         FileObject fileObject = fe.getFile();
         assert fileObject.isFolder();
+        if (!VisibilityQuery.getDefault().isVisible(fileObject) ||
+            getConfigurationDescriptor().getFolderVisibilityQuery().isIgnored(fileObject)) {
+            return;
+        }        
         FileObject thisFolder = getThisFolder();
         FileObject aParent = fileObject.getParent();
         if (aParent.equals(thisFolder)) {
