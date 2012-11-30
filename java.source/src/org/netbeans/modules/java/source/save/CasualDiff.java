@@ -651,9 +651,9 @@ public class CasualDiff {
             posHint = oldT.typarams.iterator().next().getStartPosition();
         }
         if ((oldT.name != names.init || origClassName != null) && (newT.name != names.init || newClassName != null)) {
+            int origLength = (oldT.name == names.init && origClassName != null ? origClassName.length() : oldT.name.length());
             if (nameChanged(oldT.name, newT.name)) {
                 copyTo(localPointer, oldT.pos);
-                int origLength = (oldT.name == names.init && origClassName != null ? origClassName.length() : oldT.name.length());
                 // use orig class name in case of constructor
                 if (newT.name == names.init && (newClassName != null)) {
                     printer.print(newClassName);
@@ -665,7 +665,7 @@ public class CasualDiff {
                     localPointer = oldT.pos + origLength;
                 }
             } else {
-                copyTo(localPointer, localPointer = (oldT.pos + oldT.name.length()));
+                copyTo(localPointer, localPointer = (oldT.pos + origLength));
             }
         }
         if (oldT.params.isEmpty()) {
