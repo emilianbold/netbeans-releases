@@ -225,6 +225,18 @@ public class JsCodeCompletionGeneralTest extends JsCodeComplationBase {
         checkCompletion("testfiles/completion/general/issue214205/issue214205.js", "new Number().^", false);
     }
     
+    public void testIssue222993_01() throws Exception {
+        checkCompletion("testfiles/completion/general/issue222993.js", "        this.^content.slides.titles[0] = {};", false);
+    }
+    
+    public void testIssue222993_02() throws Exception {
+        checkCompletion("testfiles/completion/general/issue222993.js", "        this.content.^slides.titles[0] = {};", false);
+    }
+
+    public void testIssue222993_03() throws Exception {
+        checkCompletion("testfiles/completion/general/issue222993.js", "        this.content.slides.^titles[0] = {};", false);
+    }
+
     @Override
     protected Map<String, ClassPath> createClassPathsForTest() {
         return Collections.singletonMap(
