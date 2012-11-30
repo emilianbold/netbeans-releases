@@ -125,6 +125,7 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
     private static final Icon ICON_COLLAPSED = UIManager.getIcon("Tree.collapsedIcon"); //NOI18N
     private static final Icon ICON_EXPANDED = UIManager.getIcon("Tree.expandedIcon"); //NOI18N
     private boolean selectFirstRevision;
+    private boolean searchStarted;
 
     enum FilterKind {
         ALL(null, NbBundle.getMessage(SearchHistoryPanel.class, "Filter.All")), //NOI18N
@@ -318,12 +319,15 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
         return explorerManager;
     }
     
+    @NbBundle.Messages("LBL_SearchHistory_NoSearchYet=<No Results - Search Not Started>")
     final void refreshComponents(boolean refreshResults) {
         if (refreshResults) {
             resultsPanel.removeAll();
             if (results == null) {
                 String branches = criteria.getBranch();
-                if (searchInProgress) {
+                if (!searchStarted) {
+                    resultsPanel.add(new NoContentPanel(Bundle.LBL_SearchHistory_NoSearchYet()));
+                } else if (searchInProgress) {
                     resultsPanel.add(new NoContentPanel(NbBundle.getMessage(SearchHistoryPanel.class,
                             branches.isEmpty() ? "LBL_SearchHistory_Searching" : "LBL_SearchHistory_Searching.branch", branches))); // NOI18N
                 } else {
@@ -399,6 +403,7 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
     }
 
     private synchronized void search() {
+        searchStarted = true;
         cancelBackgroundSearch();
         setResults(null, null, true, -1);
         HgModuleConfig.getDefault().setShowHistoryMerges(criteria.isIncludeMerges());

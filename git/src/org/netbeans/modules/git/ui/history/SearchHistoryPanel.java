@@ -122,6 +122,7 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
     private List<GitLogEntry> logEntries;
     private boolean selectFirstRevision;
     private DiffResultsViewFactory diffViewFactory;
+    private boolean searchStarted;
 
     enum FilterKind {
         ALL(null, NbBundle.getMessage(SearchHistoryPanel.class, "Filter.All")), //NOI18N
@@ -274,11 +275,14 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
         return explorerManager;
     }
     
+    @NbBundle.Messages("LBL_SearchHistory_NoSearchYet=<No Results - Search Not Started>")
     final void refreshComponents(boolean refreshResults) {
         if (refreshResults) {
             resultsPanel.removeAll();
             if (results == null) {
-                if (searchInProgress) {
+                if (!searchStarted) {
+                    resultsPanel.add(new NoContentPanel(Bundle.LBL_SearchHistory_NoSearchYet()));
+                } else if (searchInProgress) {
                     resultsPanel.add(new NoContentPanel(NbBundle.getMessage(SearchHistoryPanel.class, "LBL_SearchHistory_Searching"))); // NOI18N
                 } else {
                     resultsPanel.add(new NoContentPanel(NbBundle.getMessage(SearchHistoryPanel.class, "LBL_SearchHistory_NoResults"))); // NOI18N
@@ -354,6 +358,7 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
     }
 
     void executeSearch() {
+        searchStarted = true;
         cancelBackgroundTasks();
         setResults(null, null, true, -1);
         GitModuleConfig.getDefault().setShowHistoryMerges(criteria.isIncludeMerges());
