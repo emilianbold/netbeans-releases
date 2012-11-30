@@ -134,7 +134,7 @@ final class ViewFolderPasteType  extends PasteType {
             if (toFolder.isDiskFolder() && fromFolder.isDiskFolder()) {
                 FileObject itemFO = getFolderFileObject(fromFolder);
 
-                String toFolderPath = CndPathUtilitities.toAbsolutePath(toFolder.getConfigurationDescriptor().getBaseDir(), toFolder.getRootPath());
+                String toFolderPath = CndPathUtilitities.toAbsolutePath(toFolder.getConfigurationDescriptor().getBaseDirFileObject(), toFolder.getRootPath());
                 FileObject toFolderFO = CndFileUtils.toFileObject(toFolder.getConfigurationDescriptor().getBaseDirFileObject().getFileSystem(), toFolderPath); // should it be normalized?
                 String newName = CndPathUtilitities.createUniqueFileName(toFolderFO, itemFO.getNameExt(), ""); // NOI18N
                 final FileLock lock = itemFO.lock();
