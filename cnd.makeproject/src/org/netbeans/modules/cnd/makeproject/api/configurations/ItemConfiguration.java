@@ -443,6 +443,7 @@ public class ItemConfiguration implements ConfigurationAuxObject {
         ItemConfiguration i = (ItemConfiguration) profileAuxObject;
         getExcluded().assign(i.getExcluded());
         setTool(i.getTool());
+        setLanguageFlavor(i.getLanguageFlavor());
         switch (getTool()) {
             case Assembler:
                 getAssemblerConfiguration().assign(i.getAssemblerConfiguration());
