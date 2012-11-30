@@ -590,12 +590,12 @@ final class EventBroadcaster implements TableModelListener, TreeModelListener, E
     private TableModelEvent[] translateEvent (TreeModelEvent e, int type) {
 
         TreePath path = e.getTreePath();
-        int row = getLayout().getRowForPath(path);
         
         //If the node is not expanded, we simply fire a change
         //event for the parent
         boolean inClosedNode = !getLayout().isExpanded(path);
         if (inClosedNode) {
+            int row = getLayout().getRowForPath(path);
             //If the node is closed, no expensive checks are needed - just
             //fire a change on the parent node in case it needs to update
             //its display
@@ -616,14 +616,15 @@ final class EventBroadcaster implements TableModelListener, TreeModelListener, E
             return new TableModelEvent[0];
         }
         
-        boolean discontiguous = isDiscontiguous(e);
-        
+        int[] rowIndices = computeRowIndices(e);
+        boolean discontiguous = isDiscontiguous(rowIndices);
+
         Object[] blocks;
         if (discontiguous) {
-            blocks = getContiguousIndexBlocks(e, type == NODES_REMOVED);
+            blocks = getContiguousIndexBlocks(rowIndices, type == NODES_REMOVED);
             log ("discontiguous " + types[type] + " event", blocks.length + " blocks");
         } else {
-            blocks = new Object[] {e.getChildIndices()};
+            blocks = new Object[]{rowIndices};
         }
         
         
@@ -703,14 +704,14 @@ final class EventBroadcaster implements TableModelListener, TreeModelListener, E
     }
 
     /** Create a change TableModelEvent for the passed TreeModelEvent and the 
-     * contiguous subrange of the TreeModelEvent's getChildIndices() value */
+     * contiguous subrange of row indices. */
     private TableModelEvent createTableChangeEvent (TreeModelEvent e, int[] indices) {
         TableModelEvent result = null;
         TreePath path = e.getTreePath();
         int row = getLayout().getRowForPath(path);
         
-        int first = null == indices ? row : row + 1 + indices[0];
-        int last = null == indices ? row : row + 1 + indices[indices.length-1];
+        int first = null == indices ? row : indices[0];
+        int last = null == indices ? row : indices[indices.length - 1];
         
         //TODO - does not need to be ALL_COLUMNS, but we need a way to determine
         //which column index is the tree
@@ -721,7 +722,7 @@ final class EventBroadcaster implements TableModelListener, TreeModelListener, E
     }
     
     /** Create an insertion TableModelEvent for the passed TreeModelEvent and the 
-     * contiguous subrange of the TreeModelEvent's getChildIndices() value */
+     * contiguous subrange of row indices. */
     private TableModelEvent createTableInsertionEvent (TreeModelEvent e, int[] indices) {
         TableModelEvent result = null;
 
@@ -738,7 +739,7 @@ final class EventBroadcaster implements TableModelListener, TreeModelListener, E
                 //will be the first index in the array + the row +
                 //1 because the 0th child of a node is 1 greater than
                 //its row index
-                int affectedRow = row + indices[0] + 1;
+                int affectedRow = indices[0];
                 result = new TableModelEvent (getModel(), affectedRow, affectedRow, 
                     TableModelEvent.ALL_COLUMNS, TableModelEvent.INSERT);
 
@@ -746,9 +747,9 @@ final class EventBroadcaster implements TableModelListener, TreeModelListener, E
                 //Find the first and last indices.  Add one since it is at 
                 //minimum the first index after the affected row, since it
                 //is a child of it.
-                int lowest = indices[0] + 1;
-                int highest = indices[indices.length-1] + 1;
-                result = new TableModelEvent (getModel(), row + lowest, row + highest,
+                int lowest = indices[0];
+                int highest = indices[indices.length - 1];
+                result = new TableModelEvent(getModel(), lowest, highest,
                     TableModelEvent.ALL_COLUMNS, TableModelEvent.INSERT);
 
             }
@@ -764,7 +765,7 @@ final class EventBroadcaster implements TableModelListener, TreeModelListener, E
     
     
     /** Create a deletion TableModelEvent for the passed TreeModelEvent and the 
-     * contiguous subrange of the TreeModelEvent's getChildIndices() value */
+     * contiguous subrange of row indices. */
     private TableModelEvent createTableDeletionEvent (TreeModelEvent e, int[] indices) {
         TableModelEvent result = null;
         
@@ -780,53 +781,15 @@ final class EventBroadcaster implements TableModelListener, TreeModelListener, E
             // root node and in such case the calculation bellow
             // will just succeed and returning null was even more stupid ...
         }
-        
-        int countRemoved = indices.length;
-        
-        //Get the subset of the children in the event that correspond
-        //to the passed indices
-        Object[] children = getChildrenForIndices(e, indices);
-        
-        for (int i=0; i < children.length; i++) {
-            TreePath childPath = path.pathByAddingChild(children[i]);
-            if (getTreePathSupport().isExpanded(childPath)) {
-                
-                int visibleChildren = 
-                    getLayout().getVisibleChildCount(childPath);
-                
-                if (log) {
-                    log (childPath + " has ", new Integer(visibleChildren));
-                }
-                
-                countRemoved += visibleChildren;
-            }
-            getTreePathSupport().removePath(childPath);
-        }
 
-        //Add in the first index, and add one to it since the 0th
-        //will have the row index of its parent + 1
-        int firstRow = row + indices[0] + 1;
-        
-        log ("firstRow", new Integer(firstRow));
-        /*
-        if (countRemoved == 1) {
-            System.err.println("Only one removed: " + (row + indices[0] + 1));
-            result = new TableModelEvent (getModel(), firstRow, firstRow, 
-                TableModelEvent.ALL_COLUMNS, 
-                TableModelEvent.DELETE);
-        } else {
-         */
-            log("Count removed is ", new Integer(countRemoved));
+        int firstRow = indices[0];
+        int lastRow = indices[indices.length - 1];
 
-            int lastRow = firstRow + (countRemoved - 1);
+        log("TableModelEvent: fromRow: ", new Integer(firstRow));
+        log(" toRow: ", new Integer(lastRow));
 
-            log("TableModelEvent: fromRow: ", new Integer(firstRow));
-            log(" toRow: ", new Integer(lastRow));
-
-            result = new TableModelEvent (getModel(), firstRow, lastRow,
-                TableModelEvent.ALL_COLUMNS, TableModelEvent.DELETE);        
-        //}
-        
+        result = new TableModelEvent(getModel(), firstRow, lastRow,
+                TableModelEvent.ALL_COLUMNS, TableModelEvent.DELETE);
         return result;
     }
 
@@ -836,8 +799,7 @@ final class EventBroadcaster implements TableModelListener, TreeModelListener, E
     /** Determine if the indices referred to by a TreeModelEvent are
      * contiguous.  If they are not, we will need to generate multiple
      * TableModelEvents for each contiguous block */
-    private static boolean isDiscontiguous (TreeModelEvent e) {
-        int[] indices = e.getChildIndices();
+    private static boolean isDiscontiguous(int[] indices) {
         if (indices == null || indices.length <= 1) {
             return false;
         }
@@ -861,8 +823,7 @@ final class EventBroadcaster implements TableModelListener, TreeModelListener, E
      * must be removed first or the indices of later removals will be changed),
      * the returned int[]s will be sorted in reverse order, and the order in
      * which they are returned will also be from highest to lowest. */
-    private static Object[] getContiguousIndexBlocks (TreeModelEvent e, boolean reverseOrder) {
-        int[] indices = e.getChildIndices();
+    private static Object[] getContiguousIndexBlocks(int[] indices, boolean reverseOrder) {
         
         //Quick check if there's only one index
         if (indices.length == 1) {
@@ -913,34 +874,6 @@ final class EventBroadcaster implements TableModelListener, TreeModelListener, E
         
         return res.toArray();
     }
-    
-    /** Get the children from a TreeModelEvent associated with the set of
-     * indices passed. */
-    private Object[] getChildrenForIndices (TreeModelEvent e, int[] indices) {
-        //XXX performance - better way to do this may be to have
-        //getContinguousIndexBlocks instead construct sub-treemodelevents - 
-        //that would save having to do these iterations later to extract the
-        //children.
-        
-        //At the same time, discontiguous child removals are relatively rare
-        //events - optimizing them heavily may not be a good use of time.
-        Object[] children = e.getChildren();
-        int[] allIndices = e.getChildIndices();
-        
-        ArrayList<Object> al = new ArrayList<Object>();
-        
-        for (int i=0; i < indices.length; i++) {
-            int pos = Arrays.binarySearch (allIndices, indices[i]);
-            if (pos > -1) {
-                al.add (children[pos]);
-            }
-            if (al.size() == indices.length) {
-                break;
-            }
-        }
-        return al.toArray();
-    }
-    
     
     /** Converts an Integer[] to an int[] */
     private static int[] toArrayOfInt (Integer[] ints) {
@@ -1004,5 +937,27 @@ final class EventBroadcaster implements TableModelListener, TreeModelListener, E
             default : sb.append (e.getColumn());
         }
         return sb.toString();
+    }
+
+    /**
+     * Compute real table row indices of nodes that are affected by the event.
+     *
+     * @param e Event description.
+     * @return Indices of rows in the table where the nodes (affected by the
+     * event) are displayed, or null if they are not available.
+     */
+    private int[] computeRowIndices(TreeModelEvent e) {
+        int[] rowIndices;
+        if (e.getChildren() != null) {
+            rowIndices = new int[e.getChildren().length];
+            for (int i = 0; i < e.getChildren().length; i++) {
+                TreePath childPath =
+                        e.getTreePath().pathByAddingChild(e.getChildren()[i]);
+                rowIndices[i] = getLayout().getRowForPath(childPath);
+            }
+        } else {
+            rowIndices = null;
+        }
+        return rowIndices;
     }
 }

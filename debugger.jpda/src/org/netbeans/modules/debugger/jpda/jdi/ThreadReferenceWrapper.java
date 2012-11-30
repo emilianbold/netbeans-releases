@@ -974,7 +974,15 @@ public final class ThreadReferenceWrapper {
                     new Object[] {a});
         }
         try {
-            a.resume();
+            try {
+                a.resume();
+            } catch (com.sun.jdi.InternalException iex) {
+                if (iex.errorCode() == 13) { // THREAD_NOT_SUSPENDED
+                    // Ignore, as we're resuming the thread.
+                } else {
+                    throw iex; // re-throw the original
+                }
+            }
         } catch (com.sun.jdi.InternalException ex) {
             org.netbeans.modules.debugger.jpda.JDIExceptionReporter.report(ex);
             throw new org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper(ex);
