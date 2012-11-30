@@ -154,21 +154,11 @@ public final class ClassPathProviderImpl implements ClassPathProvider, PhpSource
         return getDirs(PhpProjectProperties.INCLUDE_PATH);
     }
 
+    // #221036 - order of the directories is from the "nearest"
+    // (if one has project on the (global) include path -> SOURCE should be returned, not INCLUDE)
     @Override
     public FileType getFileType(FileObject file) {
         Parameters.notNull("file", file);
-
-        for (FileObject dir : CommonPhpSourcePath.getInternalPath()) {
-            if (dir != null && (dir.equals(file) || FileUtil.isParentOf(dir, file))) {
-                return FileType.INTERNAL;
-            }
-        }
-
-        for (FileObject dir : getPlatformPath()) {
-            if (dir.equals(file) || FileUtil.isParentOf(dir, file)) {
-                return FileType.INCLUDE;
-            }
-        }
 
         // first check tests because test directory can be underneath sources directory
         for (FileObject root : tests.getRoots()) {
@@ -190,6 +180,19 @@ public final class ClassPathProviderImpl implements ClassPathProvider, PhpSource
                 return FileType.SOURCE;
             }
         }
+
+        for (FileObject dir : getPlatformPath()) {
+            if (dir.equals(file) || FileUtil.isParentOf(dir, file)) {
+                return FileType.INCLUDE;
+            }
+        }
+
+        for (FileObject dir : CommonPhpSourcePath.getInternalPath()) {
+            if (dir != null && (dir.equals(file) || FileUtil.isParentOf(dir, file))) {
+                return FileType.INTERNAL;
+            }
+        }
+
         return FileType.UNKNOWN;
     }
 
