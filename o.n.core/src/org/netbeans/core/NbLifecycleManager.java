@@ -52,6 +52,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JDialog;
+import javax.swing.JFrame;
 import org.netbeans.core.startup.ModuleLifecycleManager;
 import org.openide.DialogDisplayer;
 import org.openide.LifecycleManager;
@@ -155,7 +156,8 @@ public final class NbLifecycleManager extends LifecycleManager {
             } catch (InterruptedException ex) {
                 LOG.log(Level.FINE, null, ex);
             }
-            JDialog d = new JDialog(WindowManager.getDefault().getMainWindow(), true);
+            JDialog d = new JDialog((JFrame)null, true);
+            d.setUndecorated(true);
             d.setLocation(544300, 544300);
             d.setSize(0, 0);
             try {
