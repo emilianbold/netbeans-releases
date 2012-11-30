@@ -74,17 +74,10 @@ import org.openide.windows.WindowManager;
     supersedes="org.netbeans.core.startup.ModuleLifecycleManager"
 )
 public final class NbLifecycleManager extends LifecycleManager {
-    private final CountDownLatch onExit = new CountDownLatch(1) {
-        @Override
-        public void countDown() {
-            super.countDown();
-            if (dialog != null) {
-                dialog.setVisible(false);
-            }
-        }
-    };
+    /** @GuardedBy("NbLifecycleManager.class") */
+    private static CountDownLatch onExit;
     private volatile JDialog dialog;
-    private volatile Thread shutDown;
+    private volatile Thread onExitThread;
     
     @Override
     public void saveAll() {
@@ -124,42 +117,79 @@ public final class NbLifecycleManager extends LifecycleManager {
         // and accessing AWTTreeLock from saving routines (winsys).
         exit(0);
     }
-
-    @Override
-    public void exit(int status) {
-        if (shutDown == Thread.currentThread()) {
-            return;
+    
+    private boolean blockForExit(CountDownLatch[] arr) {
+        synchronized (NbLifecycleManager.class) {
+            if (onExit != null) {
+                arr[0] = onExit;
+                return true;
+            }
+            arr[0] = onExit = new CountDownLatch(1) {
+                @Override
+                public void countDown() {
+                    super.countDown();
+                    JDialog d = dialog;
+                    if (d != null) {
+                        d.setVisible(false);
+                    }
+                }
+            };
+            return false;
         }
-        NbLifeExit action = new NbLifeExit(0, status, onExit);
-        Mutex.EVENT.readAccess(action);
+    }
+    
+    private void finishExitState(CountDownLatch[] cdl, boolean clean) {
         if (EventQueue.isDispatchThread()) {
-            shutDown = Thread.currentThread();
+            onExitThread = Thread.currentThread();
             try {
-                if (onExit.await(5, TimeUnit.SECONDS)) {
+                if (cdl[0].await(5, TimeUnit.SECONDS)) {
                     return;
                 }
             } catch (InterruptedException ex) {
                 Exceptions.printStackTrace(ex);
             }
-            dialog = new JDialog(WindowManager.getDefault().getMainWindow(), true);
-            dialog.setLocation(544300, 544300);
-            dialog.setSize(0, 0);
+            JDialog d = new JDialog(WindowManager.getDefault().getMainWindow(), true);
+            d.setLocation(544300, 544300);
+            d.setSize(0, 0);
             try {
-                dialog.setVisible(true);
+                dialog = d;
+                d.setVisible(true);
             } finally {
                 dialog = null;
-                shutDown = null;
+                onExitThread = null;
             }
         }
         try {
-            onExit.await();
+            cdl[0].await();
         } catch (InterruptedException ex) {
             Exceptions.printStackTrace(ex);
+        } finally {
+            if (clean) {
+                synchronized (NbLifecycleManager.class) {
+                    assert cdl[0] == onExit;
+                    onExit = null;
+                }
+            }
         }
     }
     
+    @Override
+    public void exit(int status) {
+        if (onExitThread == Thread.currentThread()) {
+            return;
+        }
+        CountDownLatch[] cdl = { null };
+        if (blockForExit(cdl)) {
+            finishExitState(cdl, false);
+            return;
+        }
+        NbLifeExit action = new NbLifeExit(0, status, cdl[0]);
+        Mutex.EVENT.readAccess(action);
+        finishExitState(cdl, true);
+    }
+    
     public static boolean isExiting() {
-        return NbLifeExit.isExiting();
+        return onExit != null;
     }
 
     @Override

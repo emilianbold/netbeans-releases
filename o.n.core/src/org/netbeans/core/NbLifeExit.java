@@ -120,32 +120,16 @@ final class NbLifeExit implements Runnable {
                 throw new IllegalStateException("Type: " + type); // NOI18N
         }
     }
-    private static boolean doingExit = false;
-    
-    /**
-     * @return True if the IDE is shutting down.
-     */
-    public static boolean isExiting() {
-        return doingExit;
-    }
 
     private void doExit(int status) {
-        if (doingExit) {
-            onExit.countDown();
-            return;
-        }
-        doingExit = true;
         // save all open files
-        try {
-            if (System.getProperty("netbeans.close") != null || ExitDialog.showDialog()) { // NOI18N
-                Future<Boolean> res = Main.getModuleSystem().shutDownAsync(new NbLifeExit(1, status, null, onExit));
-                RP.post(new NbLifeExit(2, status, res, onExit));
-            } else {
-                onExit.countDown();
-            }
-        } finally {
-            doingExit = false;
+        Future<Boolean> res;
+        if (System.getProperty("netbeans.close") != null || ExitDialog.showDialog()) { // NOI18N
+            res = Main.getModuleSystem().shutDownAsync(new NbLifeExit(1, status, null, onExit));
+        } else {
+            res = null;
         }
+        RP.post(new NbLifeExit(2, status, res, onExit));
     }
 
     private void doStopInfra(int status) {
@@ -158,8 +142,11 @@ final class NbLifeExit implements Runnable {
         }
         if (Boolean.getBoolean("netbeans.close.when.invisible")) { // NOI18N
             // hook to permit perf testing of time to *apparently* shut down
-            onExit.countDown();
-            TopSecurityManager.exit(status);
+            try {
+                TopSecurityManager.exit(status);
+            } finally {
+                onExit.countDown();
+            }
         }
         
     }
