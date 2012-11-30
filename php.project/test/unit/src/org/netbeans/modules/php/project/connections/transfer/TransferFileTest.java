@@ -137,4 +137,13 @@ public class TransferFileTest extends NbTestCase {
         assertEquals(childWithParent.getRemotePath(), grandchildWithoutParent.getParentRemotePath());
     }
 
+    // #220823
+    public void testAbsoluteRemotePath() {
+        RemoteClientImplementation remoteClient = new RemoteClient("/");
+        TransferFile file = TransferFile.fromRemoteFile(null,
+                new RemoteFileImpl("readme.txt", "/", false),
+                remoteClient, null);
+        assertEquals("/readme.txt", file.getRemoteAbsolutePath());
+    }
+
 }

@@ -196,20 +196,15 @@ public class ChromeManagerAccessor implements ExtensionManagerAccessor {
                 return false;
             }
             
-            String useManualInstallation = System.getProperty( NO_WEB_STORE_SWITCH );
-            try {
-                if ( useManualInstallation !=null ){
-                    return manualInstallPluginDialog(currentStatus, extensionFile);
-                }
-                else {
-                    return alertGoogleWebStore( currentStatus);
-                }
+            String useManualInstallation = System
+                    .getProperty(NO_WEB_STORE_SWITCH);
+            if (useManualInstallation != null) {
+                return manualInstallPluginDialog(currentStatus, extensionFile);
             }
-            catch( IOException e ){
-                Logger.getLogger( ChromeExtensionManager.class.getCanonicalName()).
-                    log(Level.INFO , null ,e );
-                return false;
+            else {
+                return alertGoogleWebStore(currentStatus);
             }
+            
             
            /* NotifyDescriptor installDesc = new NotifyDescriptor.Confirmation(
                     NbBundle.getMessage(ChromeExtensionManager.class, 
@@ -345,8 +340,17 @@ public class ChromeManagerAccessor implements ExtensionManagerAccessor {
 
         private boolean manualInstallPluginDialog( 
                 ExtensionManager.ExtensitionStatus currentStatus,
-                File extensionFile ) throws IOException
+                File extensionFile ) 
         {
+            String path = null;
+            try {
+                path = extensionFile.getCanonicalPath();
+            }
+            catch( IOException e ){
+                Logger.getLogger( ChromeExtensionManager.class.getCanonicalName()).
+                    log(Level.INFO , null ,e );
+                return false;
+            }
             JButton continueButton = new JButton(NbBundle.getMessage(
                     ChromeExtensionManager.class,
                     currentStatus == ExtensionManager.ExtensitionStatus.NEEDS_UPGRADE ?
@@ -356,7 +360,7 @@ public class ChromeManagerAccessor implements ExtensionManagerAccessor {
             continueButton.getAccessibleContext().setAccessibleDescription(NbBundle.
                     getMessage(ChromeExtensionManager.class, "ACSD_Continue"));    // NOI18N
             DialogDescriptor descriptor = new DialogDescriptor(
-                    new ChromeInfoPanel(extensionFile.getCanonicalPath(), currentStatus), 
+                    new ChromeInfoPanel(path, currentStatus), 
                     NbBundle.getMessage(ChromeExtensionManager.class, 
                             currentStatus == ExtensionManager.ExtensitionStatus.NEEDS_UPGRADE ?
                     "TTL_UpdateExtension" : "TTL_InstallExtension"), true,
@@ -378,17 +382,21 @@ public class ChromeManagerAccessor implements ExtensionManagerAccessor {
             }
         }
 
-        private boolean alertGoogleWebStore(ExtensionManager.ExtensitionStatus currentStatus) {
+        private boolean alertGoogleWebStore(
+                ExtensionManager.ExtensitionStatus currentStatus) 
+        {
             // #221325
             if (currentStatus == ExtensionManager.ExtensitionStatus.MISSING) {
-                return alertGoogleWebStoreInstall();
+                return alertGoogleWebStoreInstall(currentStatus);
             }
             // update
-            return alertGoogleWebStoreUpdate();
+            return alertGoogleWebStoreUpdate(currentStatus);
         }
 
-        private boolean alertGoogleWebStoreInstall() {
-            File extensionFile = InstalledFileLocator.getDefault().locate(
+        private boolean alertGoogleWebStoreInstall(final 
+                ExtensionManager.ExtensitionStatus currentStatus) 
+        {
+            final File extensionFile = InstalledFileLocator.getDefault().locate(
                     EXTENSION_PATH,PLUGIN_MODULE_NAME, false);
             String path="";
             try {
@@ -415,7 +423,16 @@ public class ChromeManagerAccessor implements ExtensionManagerAccessor {
                             }
                             dialogs[0].setVisible(false);
                             dialogs[0].dispose();
-                            result[0] = createReRun();
+                            result[0] = createReRun(currentStatus, extensionFile);
+                        }
+                    }, new Runnable() {
+                        
+                        @Override
+                        public void run() {
+                            dialogs[0].setVisible(false);
+                            dialogs[0].dispose();
+                            result[0] = manualInstallPluginDialog(currentStatus, 
+                                    extensionFile);
                         }
                     }),
                     NbBundle.getMessage(ChromeExtensionManager.class,
@@ -429,7 +446,10 @@ public class ChromeManagerAccessor implements ExtensionManagerAccessor {
             return result[0];
         }
         
-        private boolean createReRun(){
+        private boolean createReRun(final 
+                ExtensionManager.ExtensitionStatus currentStatus,
+                final File extensionFile)
+        {
             final Dialog[] dialogs = new Dialog[1];
             final boolean result[] = new boolean[1];
             DialogDescriptor descriptor = new DialogDescriptor(
@@ -445,6 +465,14 @@ public class ChromeManagerAccessor implements ExtensionManagerAccessor {
                             dialogs[0].setVisible(false);
                             dialogs[0].dispose();
                         }
+                    }, new Runnable() {
+                        
+                        @Override
+                        public void run() {
+                            dialogs[0].setVisible(false);
+                            dialogs[0].dispose();
+                            result[0] = manualInstallPluginDialog(currentStatus, extensionFile);
+                        }
                     }),
                     NbBundle.getMessage(ChromeExtensionManager.class,
                             "TTL_InstallExtension"), true,
@@ -457,7 +485,9 @@ public class ChromeManagerAccessor implements ExtensionManagerAccessor {
             return result[0];
         }
 
-        private boolean alertGoogleWebStoreUpdate() {
+        private boolean alertGoogleWebStoreUpdate(
+                final ExtensionManager.ExtensitionStatus currentStatus) 
+        {
             final Dialog[] dialogs = new Dialog[1];
             final boolean[] result = new boolean[1];
             DialogDescriptor descriptor = new DialogDescriptor(

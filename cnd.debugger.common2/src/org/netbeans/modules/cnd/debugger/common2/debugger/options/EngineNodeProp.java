@@ -97,9 +97,9 @@ public class EngineNodeProp extends PropertySupport<EngineType> {
         @Override
 	public void setAsText(String text) {
             if (IpeUtils.isEmpty(text)) {
-                setValue(null);
+                EngineEditor.super.setValue(null);
             } else {
-                setValue(EngineTypeManager.getEngineTypeByDisplayName(text));
+                EngineEditor.super.setValue(EngineTypeManager.getEngineTypeByDisplayName(text));
             }
 	}
 

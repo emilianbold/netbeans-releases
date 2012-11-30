@@ -67,6 +67,8 @@ public class CompilerSet2Configuration implements PropertyChangeListener, Clonea
     private String flavor;
     private boolean dirty = false;
     private Map<String, String> oldNameMap = new HashMap<String, String>();
+    
+    private static final RequestProcessor RP = new RequestProcessor("CompilerSet2Configuration", 1); // NOI18N
 
     private CompilerSet2Configuration(CompilerSet2Configuration other) {
         this.dhconf = other.dhconf.clone();
@@ -307,7 +309,7 @@ public class CompilerSet2Configuration implements PropertyChangeListener, Clonea
         } else {
             setValue(ocs.getName());
             final CompilerSet focs = ocs;
-            RequestProcessor.getDefault().post(new Runnable() {
+            RP.post(new Runnable() {
                 @Override
                 public void run() {
                     ServerRecord record = ServerList.get(env);

@@ -47,6 +47,8 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.Writer;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.api.diff.Difference;
 import org.netbeans.api.diff.StreamSource;
 import org.netbeans.api.queries.FileEncodingQuery;
@@ -57,6 +59,8 @@ import org.openide.util.NbBundle;
  * Base class for stream source.
  */
 abstract class BaseStreamSource extends StreamSource {
+
+    protected static final Logger LOGGER = Logger.getLogger(BaseStreamSource.class.getName());
 
     private final String name;
     private final String mimeType;
@@ -93,6 +97,7 @@ abstract class BaseStreamSource extends StreamSource {
     @Override
     public final Reader createReader() throws IOException {
         if (!mimeType.startsWith("text/")) { // NOI18N
+            LOGGER.log(Level.INFO, "No reader for non-text file; MIME type is {0}", mimeType);
             return null;
         }
         return createReaderInternal();

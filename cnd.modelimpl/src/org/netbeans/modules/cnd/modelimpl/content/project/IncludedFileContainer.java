@@ -98,10 +98,11 @@ public final class IncludedFileContainer {
     }
 
     public void write(RepositoryDataOutput aStream) throws IOException {
-        aStream.writeInt(list.size());
+        List<Entry> aList = new ArrayList<Entry>(list);
+        aStream.writeInt(aList.size());
         UIDObjectFactory factory = UIDObjectFactory.getDefaultFactory();
 //        KeyFactory keyFactory = KeyFactory.getDefaultFactory();
-        for (Entry entry : list) {
+        for (Entry entry : aList) {
             factory.writeUID(entry.prjUID, aStream);
             entry.getStorage().write(aStream);
 //            keyFactory.writeKey(entry.storageKey, aStream);

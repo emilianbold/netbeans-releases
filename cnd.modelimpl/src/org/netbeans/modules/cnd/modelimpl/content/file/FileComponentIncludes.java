@@ -93,8 +93,13 @@ public class FileComponentIncludes extends FileComponent implements Persistent, 
     FileComponentIncludes(FileComponentIncludes other, boolean empty) {
         super(other);
         if (!empty) {
-            includes.addAll(other.includes);
-            brokenIncludes.addAll(other.brokenIncludes);
+            try {
+                other.includesLock.readLock().lock();
+                includes.addAll(other.includes);
+                brokenIncludes.addAll(other.brokenIncludes);
+            } finally {
+                other.includesLock.readLock().unlock();
+            }
         }
     }
     
@@ -216,14 +221,19 @@ public class FileComponentIncludes extends FileComponent implements Persistent, 
     public void appendFrom(FileComponentIncludes other) {
         try {
             includesLock.writeLock().lock();
-            for (CsmUID<CsmInclude> csmUID : other.includes) {
-                includes.add(csmUID);
-                brokenIncludes.remove(csmUID);
-            }
-            for (CsmUID<CsmInclude> csmUID : other.brokenIncludes) {
-                if (!includes.contains(csmUID)) {
-                    brokenIncludes.add(csmUID);
+            try {
+                other.includesLock.readLock().lock();
+                for (CsmUID<CsmInclude> csmUID : other.includes) {
+                    includes.add(csmUID);
+                    brokenIncludes.remove(csmUID);
                 }
+                for (CsmUID<CsmInclude> csmUID : other.brokenIncludes) {
+                    if (!includes.contains(csmUID)) {
+                        brokenIncludes.add(csmUID);
+                    }
+                }
+            } finally {
+                other.includesLock.readLock().unlock();
             }
         } finally {
             includesLock.writeLock().unlock();

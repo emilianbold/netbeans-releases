@@ -180,7 +180,7 @@ public final class MakeProject implements Project, MakeProjectListener, Runnable
     private final Set<String> cExtensions = MakeProject.createExtensionSet();
     private final Set<String> cppExtensions = MakeProject.createExtensionSet();
     private String sourceEncoding = null;
-    private boolean isOpenHookDone = false;
+    private volatile boolean isOpenHookDone = false;
     private final AtomicBoolean isDeleted = new AtomicBoolean(false);
     private final AtomicBoolean isDeleting = new AtomicBoolean(false);
     private final MakeSources sources;
@@ -1366,7 +1366,7 @@ public final class MakeProject implements Project, MakeProjectListener, Runnable
             RP.post(new Runnable() {
                 @Override
                 public void run() {
-                    projectDescriptorProvider.getConfigurationDescriptor(true);
+                    projectDescriptorProvider.opened();
                     if(nativeProject instanceof NativeProjectProvider) {
                         NativeProjectRegistry.getDefault().register(nativeProject);
                     }
@@ -1390,9 +1390,7 @@ public final class MakeProject implements Project, MakeProjectListener, Runnable
         LOGGER.log(Level.FINE, "on project close MakeProject@{0} {1}", new Object[]{System.identityHashCode(MakeProject.this), helper.getProjectDirectory().getNameExt()}); // NOI18N
         helper.removeMakeProjectListener(this);
         save();
-        if (projectDescriptorProvider.getConfigurationDescriptor() != null) {
-            projectDescriptorProvider.getConfigurationDescriptor().closed();
-        }
+        projectDescriptorProvider.closed();
         MakeOptions.getInstance().removePropertyChangeListener(indexerListener);
         if (isOpenHookDone) {
             registerClassPath(false);
