@@ -15,13 +15,22 @@
 <p> <small><a href="#seealso">See Also</a>&nbsp; </small>
 
 
-<p>The IDE includes an extension that you can install in
-    the Chrome browser that enables the IDE and the browser to communicate.
-    If you select Chrome with NetBeans Integration as the browser in the Project Properties window
-    the IDE will open the Chrome browser when you run the application. 
-    Debugging is automatically enabled if the extension is 
-    installed when you run the application.
-    If the extension is not installed the IDE will prompt you to install the extension.</p>
+<p>A NetBeans extension is available for the Chrome browser that enables the IDE and the 
+    browser to communicate.
+    To integrate the IDE with the Chrome browser you need to install the NetBeans Connector 
+    extension from the Chrome Web Store or install the extension manually.
+    After you install the extension you can perform the following tasks
+    in the Chrome browser.</p>
+<ul>
+    <li>Use Inspect mode to select and locate elements in your code</li>
+    <li>Debug JavaScript files</li>
+    <li>Select various browser sizes from the NetBeans actions menu</li>
+</ul>
+    
+    <p>After you install the extension, select Chrome with NetBeans Integration as the target browser
+    and run the application. 
+    The IDE will prompt you to install the extension if you 
+    select Chrome with NetBeans Integration and the extension is not installed.</p>
 
 <ul class="note">
     <li>Do not close the infobar in the tab in the Chrome browser that informs you that
@@ -54,7 +63,7 @@ by performing the following steps.</p>
 <ol>
     <li>Open your Chrome browser to <tt>chrome://chrome/extensions/</tt>.</li>
     <li>On your local system, navigate to the <tt><em>NETBEANS_INSTALL</em>/ide/modules/lib</tt>
-    directory, where <tt><em>NETBEANS_INSTALL</em></tt> is the installation of the IDE.</li>
+        directory, where <tt><em>NETBEANS_INSTALL</em></tt> is the installation of the IDE.</li>
     <li>Drag the NetBeans Connector extension (<tt>netbeans-chrome-connector.crx</tt>) 
         from the <tt>lib</tt> directory into the Extensions tab in the Chrome browser window 
         and approve the addition of the extension.</li>
