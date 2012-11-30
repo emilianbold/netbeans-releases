@@ -54,6 +54,7 @@ import org.netbeans.modules.cnd.repository.spi.Key;
 import org.netbeans.modules.cnd.repository.spi.Persistent;
 import org.netbeans.modules.cnd.repository.testbench.Stats;
 import org.netbeans.modules.cnd.repository.util.UnitCodec;
+import org.netbeans.modules.cnd.utils.CndUtils;
 
 /**
  * Stores Persistent objects in two files;
@@ -220,22 +221,26 @@ public final class DoubleFileStorage extends FileStorage {
         
         int cnt = 0;
         boolean activeFlag = getFlag();        
-        Iterator<Key> it = getFileByFlag(!activeFlag).getKeySetIterator();
+        IndexedStorageFile activeFile = getFileByFlag(!activeFlag);
+        Iterator<Key> it = activeFile.getKeySetIterator();
 
         while( it.hasNext() ) {
             Key key = it.next();
             ChunkInfo chunk = getFileByFlag(!activeFlag).getChunkInfo(key);
-            int size = chunk.getSize();
-            long newOffset = getFileByFlag(activeFlag).getSize();
-            getFileByFlag(activeFlag).moveDataFromOtherFile(getFileByFlag(!activeFlag).getDataFile(), chunk.getOffset(), size, newOffset, key);
-	    getFileByFlag(!activeFlag).remove(key);
-            // it.remove(); // some of the implementations does not support removal
-            cnt++;
-            
-            if( (timeout > 0) && (cnt % 10 == 0) ) {
-                if( System.currentTimeMillis()-time >= timeout ) {
-                    needMoreTime = true;
-                    break;
+            CndUtils.assertNotNull(chunk, "Null chunk when defragmenting " + activeFile.getTraceString()); //NOI18N
+            if (chunk != null) {
+                int size = chunk.getSize();
+                long newOffset = getFileByFlag(activeFlag).getSize();
+                getFileByFlag(activeFlag).moveDataFromOtherFile(getFileByFlag(!activeFlag).getDataFile(), chunk.getOffset(), size, newOffset, key);
+                getFileByFlag(!activeFlag).remove(key);
+                // it.remove(); // some of the implementations does not support removal
+                cnt++;
+
+                if( (timeout > 0) && (cnt % 10 == 0) ) {
+                    if( System.currentTimeMillis()-time >= timeout ) {
+                        needMoreTime = true;
+                        break;
+                    }
                 }
             }
         }

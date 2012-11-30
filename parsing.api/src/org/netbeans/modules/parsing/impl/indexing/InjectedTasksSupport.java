@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -23,7 +23,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -34,37 +34,60 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ *
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.parsing.impl.indexing;
 
-package org.netbeans.junit;
-
-import junit.framework.Test;
-import junit.framework.TestCase;
-import junit.framework.TestResult;
-import test.pkg.not.in.junit.NbModuleSuiteDebugger;
+import java.io.IOException;
+import java.util.Queue;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ConcurrentLinkedQueue;
+import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.api.annotations.common.NonNull;
+import org.openide.util.Parameters;
 
 /**
  *
- * @author Jaroslav Tulach <jaroslav.tulach@netbeans.org>
+ * @author Tomas Zezula
  */
-public class NbModuleSuiteDebuggerTest extends TestCase {
-    
-    public NbModuleSuiteDebuggerTest(String testName) {
-        super(testName);
-    }            
+class InjectedTasksSupport {
 
-    public void testRun() {
-        Test instance = NbModuleSuite.createConfiguration(NbModuleSuiteDebugger.class).
-            clusters("").gui(false).
-            honorAutoloadEager(true).suite();
-        TestResult res = junit.textui.TestRunner.run(instance);
-        
-        assertEquals("No errors", 0, res.errorCount());
-        assertEquals("No failures", 0, res.failureCount());
-        assertEquals("One test", 1, res.runCount());
+    private static final Queue<Callable<?>> tasks = new ConcurrentLinkedQueue<Callable<?>>();
+
+
+    static void enqueueTask(@NonNull final Callable<?> task) {
+        Parameters.notNull("task", task);   //NOI18N
+        tasks.offer(task);
     }
+
+    static void clear() {
+        if (!TransientUpdateSupport.isTransientUpdate()) {
+            tasks.clear();
+        }
+    }
+
+    @CheckForNull
+    static Callable<?> nextTask() {
+        return TransientUpdateSupport.isTransientUpdate()?
+            null:
+            tasks.poll();
+    }
+
+    static void execute() throws IOException {
+        for (Callable<?> task = nextTask(); task != null; task = nextTask()) {
+            try {
+                task.call();
+            } catch (RuntimeException re) {
+                throw re;
+            } catch (IOException ioe) {
+                throw ioe;
+            } catch (Exception e) {
+                throw new IOException(e);
+            }
+        }
+    }
+
 }
