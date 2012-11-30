@@ -98,6 +98,10 @@ public class LineBreakpoint extends AbstractBreakpoint {
     public final void setInvalid(String message) {
         setValidity(VALIDITY.INVALID, message);
     }
+    
+    final void resetValidity() {
+        setValidity(VALIDITY.UNKNOWN, null);
+    }
 
 
     public Line getLine() {

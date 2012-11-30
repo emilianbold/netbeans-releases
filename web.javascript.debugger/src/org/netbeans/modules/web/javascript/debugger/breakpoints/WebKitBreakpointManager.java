@@ -66,6 +66,7 @@ import org.netbeans.modules.web.webkit.debugging.api.dom.Node;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
+import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -136,6 +137,10 @@ abstract class WebKitBreakpointManager implements PropertyChangeListener {
         }
     }
     
+    @NbBundle.Messages({
+        "MSG_BRKP_Resolved=Successfully resolved at current line.",
+        "MSG_BRKP_Unresolved=Not resolved/inactive at current line."
+    })
     private static final class WebKitLineBreakpointManager extends WebKitBreakpointManager 
         implements Debugger.Listener, ChangeListener {
         
@@ -165,6 +170,12 @@ abstract class WebKitBreakpointManager implements PropertyChangeListener {
                     d.addLineBreakpoint(url, lb.getLine().getLineNumber(), 0);
                 if (br != null) {
                     br.addPropertyChangeListener(this);
+                    long brLine = br.getLineNumber();
+                    if (brLine >= 0) {
+                        lb.setValid(Bundle.MSG_BRKP_Resolved());
+                    } else {
+                        lb.setInvalid(Bundle.MSG_BRKP_Unresolved());
+                    }
                     b = br;
                     d.addListener(this);
                 }
@@ -182,6 +193,7 @@ abstract class WebKitBreakpointManager implements PropertyChangeListener {
                 d.removeLineBreakpoint(b);
             }
             b = null;
+            lb.resetValidity();
         }
         
         private void resubmit() {
@@ -244,6 +256,11 @@ abstract class WebKitBreakpointManager implements PropertyChangeListener {
                     lb.setLine(lineNumber);
                 } finally {
                     ignoreLineUpdate.remove();
+                }
+                if (lineNumber >= 0) {
+                    lb.setValid(Bundle.MSG_BRKP_Resolved());
+                } else {
+                    lb.setInvalid(Bundle.MSG_BRKP_Unresolved());
                 }
             } else {
                 super.propertyChange(event);

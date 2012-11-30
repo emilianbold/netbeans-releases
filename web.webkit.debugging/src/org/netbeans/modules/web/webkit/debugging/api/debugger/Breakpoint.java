@@ -66,17 +66,33 @@ public class Breakpoint extends AbstractObject {
         return (String)getObject().get("breakpointId");
     }
 
+    /**
+     * Get the breakpoint's location
+     * @return The location or <code>null</code> when not defined.
+     */
     public JSONObject getBreakpointLocation() {
         synchronized (this) {
             if (location == null) {
-                location = (JSONObject)((JSONArray)getObject().get("locations")).get(0);
+                JSONArray locations = (JSONArray)getObject().get("locations");
+                if (!locations.isEmpty()) {
+                    location = (JSONObject) locations.get(0);
+                }
             }
             return location;
         }
     }
     
+    /**
+     * Get the breakpoint's line number
+     * @return The line number, or -1 when not defined.
+     */
     public long getLineNumber() {
-        return (Long) getBreakpointLocation().get("lineNumber");
+        JSONObject location = getBreakpointLocation();
+        if (location != null) {
+            return (Long) location.get("lineNumber");
+        } else {
+            return -1l;
+        }
     }
 
     void notifyResolved(JSONObject location) {
