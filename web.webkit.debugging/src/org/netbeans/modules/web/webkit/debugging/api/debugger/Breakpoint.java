@@ -41,6 +41,8 @@
  */
 package org.netbeans.modules.web.webkit.debugging.api.debugger;
 
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.netbeans.modules.web.webkit.debugging.api.WebKitDebugging;
@@ -49,6 +51,12 @@ import org.netbeans.modules.web.webkit.debugging.api.WebKitDebugging;
  * Wrapper for Debugger.setBreakpointByUrl return value.
  */
 public class Breakpoint extends AbstractObject {
+    
+    public static final String PROP_LOCATION = "location";
+    
+    private PropertyChangeSupport pcs = new PropertyChangeSupport(this);
+    
+    private JSONObject location;
 
     Breakpoint(JSONObject object, WebKitDebugging webkit) {
         super(object, webkit);
@@ -59,7 +67,33 @@ public class Breakpoint extends AbstractObject {
     }
 
     public JSONObject getBreakpointLocation() {
-        return (JSONObject)((JSONArray)getObject().get("locations")).get(0);
+        synchronized (this) {
+            if (location == null) {
+                location = (JSONObject)((JSONArray)getObject().get("locations")).get(0);
+            }
+            return location;
+        }
+    }
+    
+    public long getLineNumber() {
+        return (Long) getBreakpointLocation().get("lineNumber");
+    }
+
+    void notifyResolved(JSONObject location) {
+        JSONObject oldLocation;
+        synchronized (this) {
+            oldLocation = this.location;
+            this.location = location;
+        }
+        pcs.firePropertyChange(PROP_LOCATION, oldLocation, location);
+    }
+    
+    public void addPropertyChangeListener(PropertyChangeListener pcl) {
+        pcs.addPropertyChangeListener(pcl);
+    }
+    
+    public void removePropertyChangeListener(PropertyChangeListener pcl) {
+        pcs.removePropertyChangeListener(pcl);
     }
     
 }

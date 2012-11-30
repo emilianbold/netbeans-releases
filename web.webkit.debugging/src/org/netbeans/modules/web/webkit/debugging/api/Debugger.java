@@ -45,6 +45,7 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.EventListener;
 import java.util.HashMap;
 import java.util.List;
@@ -91,6 +92,7 @@ public final class Debugger {
     private static final String COMMAND_REMOVE_BRKP_EVENT = "DOMDebugger.removeEventListenerBreakpoint";    // NOI18N
     private static final String COMMAND_SET_BRKPS_ACTIVE = "Debugger.setBreakpointsActive";     // NOI18N
     
+    private static final String RESPONSE_BRKP_RESOLVED = "Debugger.breakpointResolved";         // NOI18N
     private static final String RESPONSE_GLOB_OBJECT_CLEARED = "Debugger.globalObjectCleared";  // NOI18N
     private static final String RESPONSE_PAUSED = "Debugger.paused";            // NOI18N
     private static final String RESPONSE_RESUMED = "Debugger.resumed";          // NOI18N
@@ -113,6 +115,7 @@ public final class Debugger {
     private CallFrame currentCallFrame = null;
     private boolean breakpointsActive = lastBreakpointsActive;
     private final Object breakpointsActiveLock = new Object();
+    private final Map<String, Breakpoint> breakpointsById = Collections.synchronizedMap(new HashMap<String, Breakpoint>());
     private boolean inLiveHTMLMode = false;
     private RequestProcessor.Task latestSnapshotTask;    
 
@@ -355,6 +358,7 @@ public final class Debugger {
             JSONObject result = (JSONObject) resp.getResponse().get("result");
             if (result != null) {
                 Breakpoint b = APIFactory.createBreakpoint(result, webkit);
+                breakpointsById.put(b.getBreakpointID(), b);
                 return b;
             } else {
                 // What can we do when we have no results?
@@ -367,8 +371,10 @@ public final class Debugger {
     @SuppressWarnings("unchecked")    
     public void removeLineBreakpoint(Breakpoint b) {
         JSONObject params = new JSONObject();
-        params.put("breakpointId", b.getBreakpointID());
+        String id = b.getBreakpointID();
+        params.put("breakpointId", id);
         transport.sendBlockingCommand(new Command(COMMAND_REMOVE_BRKP, params));
+        breakpointsById.remove(id);
     }
     
     public Breakpoint addDOMBreakpoint(Node node, String type) {
@@ -510,7 +516,7 @@ public final class Debugger {
                 notifyResumed();
                 webkit.getRuntime().releaseNetBeansObjectGroup();
             } else if (RESPONSE_PAUSED.equals(method)) {
-                JSONObject params = (JSONObject)response.getResponse().get("params");
+                JSONObject params = response.getParams();
 
                 if (inLiveHTMLMode) {
                     final long timestamp = System.currentTimeMillis();
@@ -553,6 +559,13 @@ public final class Debugger {
                 notifyReset();
             } else if (RESPONSE_SCRIPT_PARSED.equals(method)) {
                 addScript(response.getParams());
+            } else if (RESPONSE_BRKP_RESOLVED.equals(method)) {
+                JSONObject params = response.getParams();
+                Object id = params.get("breakpointId");
+                Breakpoint bp = breakpointsById.get(id);
+                if (bp != null) {
+                    APIFactory.breakpointResolved(bp, (JSONObject) params.get("location"));
+                }
             }
         }
         
