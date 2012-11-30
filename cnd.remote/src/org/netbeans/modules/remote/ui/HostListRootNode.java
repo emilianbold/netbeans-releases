@@ -130,6 +130,7 @@ public final class HostListRootNode extends AbstractNode {
     }
 
     private static class AddHostAction extends AbstractAction implements Runnable {
+        private static final RequestProcessor RP = new RequestProcessor("AddHostAction", 1); // NOI18N
 
         public AddHostAction() {
             super(NbBundle.getMessage(HostListRootNode.class, "AddHostMenuItem"));
@@ -138,7 +139,7 @@ public final class HostListRootNode extends AbstractNode {
         @Override
         public void actionPerformed(ActionEvent e) {
             setEnabled(false);
-            RequestProcessor.getDefault().post(this);
+            RP.post(this);
         }
 
         @Override

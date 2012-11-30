@@ -87,7 +87,7 @@ public class GenerateTestChooseElementsWizardPanel implements WizardDescriptor.P
     private final AtomicBoolean initialized = new AtomicBoolean(false);
     private Task task;
     private WizardDescriptor wizard;
-
+    
     public GenerateTestChooseElementsWizardPanel(String unitTestKind) {
         this.unitTestKind = unitTestKind;
         cs = new ChangeSupport(this);

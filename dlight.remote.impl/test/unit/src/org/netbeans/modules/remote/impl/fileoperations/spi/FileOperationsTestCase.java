@@ -199,8 +199,8 @@ public class FileOperationsTestCase extends RemoteFileTestBase {
             assertEquals(path, fileOperations.getPath(file));
             assertEquals(fs.getRoot(), fileOperations.getRoot());
             if (!entry.isLink()) {
-                assertEquals(entry.isPlainFile(), fileOperations.isFile(file));
-                assertEquals(entry.isDirectory(), fileOperations.isDirectory(file));
+                assertEquals("sftp and fileOperations isFile differ for " + file.getPath(), entry.isPlainFile(), fileOperations.isFile(file));
+                assertEquals("sftp and fileOperations isDirectory differ for " + file.getPath(), entry.isDirectory(), fileOperations.isDirectory(file));
             }
             File ioFile = new File(localDir+"/"+name);
             fileEquals(ioFile, file, false);

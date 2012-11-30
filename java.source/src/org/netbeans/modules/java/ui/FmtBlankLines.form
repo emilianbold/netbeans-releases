@@ -40,25 +40,21 @@
                   <Component id="aMethodsLabel" alignment="0" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
-              <Group type="103" groupAlignment="0" attributes="0">
-                  <Group type="103" alignment="0" groupAlignment="0" max="-2" attributes="0">
-                      <Component id="aImportsField" alignment="0" pref="0" max="32767" attributes="0"/>
-                      <Component id="bImportsField" alignment="0" pref="0" max="32767" attributes="0"/>
-                      <Component id="aPackageField" alignment="0" pref="0" max="32767" attributes="0"/>
-                      <Component id="bPackageField" alignment="0" max="32767" attributes="0"/>
-                      <Component id="anAnonymousClassHeaderField" alignment="0" max="32767" attributes="0"/>
-                      <Component id="aClassHeaderField" alignment="0" pref="0" max="32767" attributes="0"/>
-                      <Component id="aClassField" alignment="0" pref="0" max="32767" attributes="0"/>
-                      <Component id="bClassField" alignment="0" min="-2" pref="26" max="-2" attributes="0"/>
-                  </Group>
-                  <Group type="103" alignment="0" groupAlignment="0" max="-2" attributes="0">
-                      <Component id="aClassFooterField" alignment="0" pref="0" max="32767" attributes="0"/>
-                      <Component id="anAnonymousClassFooterField" alignment="0" max="32767" attributes="0"/>
-                      <Component id="bMethodsField" alignment="0" pref="0" max="32767" attributes="0"/>
-                      <Component id="aFieldsField" alignment="0" pref="0" max="32767" attributes="0"/>
-                      <Component id="aMethodsField" alignment="0" pref="0" max="32767" attributes="0"/>
-                      <Component id="bFieldsField" min="-2" pref="26" max="-2" attributes="0"/>
-                  </Group>
+              <Group type="103" groupAlignment="1" max="-2" attributes="0">
+                  <Component id="bMethodsField" alignment="0" pref="0" max="32767" attributes="0"/>
+                  <Component id="aFieldsField" alignment="0" pref="0" max="32767" attributes="0"/>
+                  <Component id="bFieldsField" alignment="0" pref="0" max="32767" attributes="0"/>
+                  <Component id="anAnonymousClassFooterField" alignment="0" max="32767" attributes="0"/>
+                  <Component id="aClassFooterField" alignment="0" pref="0" max="32767" attributes="0"/>
+                  <Component id="anAnonymousClassHeaderField" alignment="0" max="32767" attributes="0"/>
+                  <Component id="aClassHeaderField" alignment="0" pref="0" max="32767" attributes="0"/>
+                  <Component id="aClassField" alignment="0" pref="0" max="32767" attributes="0"/>
+                  <Component id="bClassField" alignment="0" pref="0" max="32767" attributes="0"/>
+                  <Component id="aImportsField" alignment="0" pref="0" max="32767" attributes="0"/>
+                  <Component id="bImportsField" alignment="0" pref="0" max="32767" attributes="0"/>
+                  <Component id="aPackageField" alignment="0" pref="0" max="32767" attributes="0"/>
+                  <Component id="bPackageField" alignment="0" max="32767" attributes="0"/>
+                  <Component id="aMethodsField" pref="0" max="32767" attributes="0"/>
               </Group>
               <EmptySpace max="32767" attributes="0"/>
           </Group>

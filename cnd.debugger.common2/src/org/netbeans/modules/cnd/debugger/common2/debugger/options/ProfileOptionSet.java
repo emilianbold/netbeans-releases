@@ -62,7 +62,10 @@ public class ProfileOptionSet extends OptionSetSupport {
 	DebuggerOption.MT_RESUME_ONE,
 	DebuggerOption.MT_SYNC_TRACKING,
 
-	DebuggerOption.FOLLOW_FORK_MODE,
+        DebuggerOption.GDB_FOLLOW_FORK_MODE,
+        DebuggerOption.GDB_DETACH_ON_FORK,
+        
+        DebuggerOption.FOLLOW_FORK_MODE,
 	DebuggerOption.FOLLOW_FORK_INHERIT,
 
 	DebuggerOption.OPTION_EXEC32,

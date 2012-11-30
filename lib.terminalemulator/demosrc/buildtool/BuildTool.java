@@ -46,9 +46,9 @@ import java.io.*;
 import java.awt.*;
 import java.awt.event.*;
 import javax.swing.*;
-import javax.swing.border.*;
-
-import org.netbeans.lib.terminalemulator.*;
+import org.netbeans.lib.terminalemulator.ActiveRegion;
+import org.netbeans.lib.terminalemulator.ActiveTerm;
+import org.netbeans.lib.terminalemulator.ActiveTermListener;
 
 /*
  * A simple demonstration of using ActiveTerm for highlighting compiler

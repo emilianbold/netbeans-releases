@@ -25,19 +25,31 @@
 
 <p class="note"><strong>Note.</strong> You only need to install the extension one time.</p>
 
+<h3>Installing the extension from the Chrome Web Store</h3>
 <p>Perform the following steps to install the NetBeans extension for the Chrome browser.</p>
 <ol>
-    <li>Right-click an HTML5 project node in the Project Projects window and choose Properties in the popup menu. </li>
+    <li>Right-click an HTML5 project node in the Project Projects window and choose Properties in the popup menu. 
+        <p>Alternatively, you can select a target browser for the project from the dropdown list in the toolbar.</p></li>
     <li>In the Run panel of the Properties window, select Chrome with NetBeans Integration in the server dropdown list. Click OK.</li>
     <li>Right-click the HTML5 project node in the Projects window and choose Run.
-        <p>When you click Run the IDE opens a dialog that prompts you to install the extension.</p></li>
-    <li>Click the "locate" link in the dialog to open the directory on your local
-        system that contains the extension (<tt>netbeans-chrome-connector.crx</tt>).</li>    
+        <p>When you click Run the IDE opens a dialog that prompts you to install the extension from the Chrome Web Store.</p></li>
+
+    <li>After the extension is installed in the Chrome browser, click the "Re-run Project" button 
+        in the dialog box to open the HTML5 application in the Chrome browser</li>
+</ol>
+
+<h3>Installing the extension manually</h3>
+<p>If you are unable to connect to the Chrome Web Store you can install the NetBeans Connector extension manually
+by performing the following steps.</p>
+<ol>
     <li>Open your Chrome browser to <tt>chrome://chrome/extensions/</tt>.</li>
-    <li>Drag the extension from the local directory into the Chrome browser window and approve the addition of the extension.</li>
-    <li>In the IDE, click "Yes, the plugin is installed now" button to open the
-    HTML5 application in the Chrome browser</li>
-    </ol>
+    <li>On your local system, navigate to the <tt><em>NETBEAN_INSTALL</em>/ide/modules/lib</tt>
+    directory, where <tt><em>NETBEAN_INSTALL</em></tt> is the installation of the IDE.</li>
+    <li>Drag the NetBeans Connector extension (<tt>netbeans-chrome-connector.crx</tt>) 
+        from the <tt>lib</tt> directory into the Extensions tab in the Chrome browser window 
+        and approve the addition of the extension.</li>
+    <li>Right-click the HTML5 project node in the Projects window and choose Run.</li>
+</ol>
 
 <dl>
 <dt><a name="seealso">See Also</a></dt>

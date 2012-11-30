@@ -366,6 +366,8 @@ public class CppParserEmptyActionImpl implements CppParserActionEx {
     @Override public void decltype_specifier(int kind, Token token) {}
     @Override public void end_decltype_specifier(Token token) {}
     @Override public void end_elaborated_type_specifier(Token token) {}
+    @Override public void typename_specifier(Token token) {}
+    @Override public void end_typename_specifier(Token token) {}
     @Override public void asm_definition(Token asmToken, Token lparenToken, Token stringToken, Token rparenToken, Token semicolonToken) {}
     @Override public void linkage_specification(Token externToken, Token stringToken) {}
     @Override public void linkage_specification(int kind, Token token) {}

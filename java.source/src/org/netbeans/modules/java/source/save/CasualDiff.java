@@ -416,10 +416,12 @@ public class CasualDiff {
 
     // TODO: should be here printer.enclClassName be used?
     private Name origClassName = null;
+    private Name newClassName = null;
 
     protected int diffClassDef(JCClassDecl oldT, JCClassDecl newT, int[] bounds) {
         int localPointer = bounds[0];
         final Name origOuterClassName = origClassName;
+        final Name newOuterClassName = newClassName;
         int insertHint = localPointer;
         List<JCTree> filteredOldTDefs = filterHidden(oldT.defs);
         List<JCTree> filteredNewTDefs = filterHidden(newT.defs);
@@ -460,11 +462,12 @@ public class CasualDiff {
             printer.print(newT.name);
             diffInfo.put(insertHint, NbBundle.getMessage(CasualDiff.class,"TXT_ChangeClassName"));
             localPointer = insertHint += oldT.name.length();
-            origClassName = oldT.name;
         } else {
             insertHint += oldT.name.length();
             copyTo(localPointer, localPointer = insertHint);
         }
+        origClassName = oldT.name;
+        newClassName = newT.name;
         if (oldT.typarams.nonEmpty() && newT.typarams.nonEmpty()) {
             copyTo(localPointer, localPointer = oldT.typarams.head.pos);
         }
@@ -562,6 +565,7 @@ public class CasualDiff {
         localPointer = diffList(filteredOldTDefs, filteredNewTDefs, insertHint, est, Measure.REAL_MEMBER, printer);
         printer.enclClassName = origName;
         origClassName = origOuterClassName;
+        newClassName = newOuterClassName;
         printer.undent(old);
         if (localPointer != -1 && localPointer < origText.length()) {
             if (origText.charAt(localPointer) == '}') {
@@ -646,18 +650,19 @@ public class CasualDiff {
         } else {
             posHint = oldT.typarams.iterator().next().getStartPosition();
         }
-        if (oldT.name != names.init || origClassName != null) {
+        if ((oldT.name != names.init || origClassName != null) && (newT.name != names.init || newClassName != null)) {
             if (nameChanged(oldT.name, newT.name)) {
                 copyTo(localPointer, oldT.pos);
+                int origLength = (oldT.name == names.init && origClassName != null ? origClassName.length() : oldT.name.length());
                 // use orig class name in case of constructor
-                if (oldT.name == names.init && (origClassName != null)) {
-                    printer.print(newT.name);
-                    localPointer = oldT.pos + origClassName.length();
+                if (newT.name == names.init && (newClassName != null)) {
+                    printer.print(newClassName);
+                    localPointer = oldT.pos + origLength;
                 }
                 else {
                     printer.print(newT.name);
                     diffInfo.put(oldT.pos, NbBundle.getMessage(CasualDiff.class,"TXT_RenameMethod",oldT.name));
-                    localPointer = oldT.pos + oldT.name.length();
+                    localPointer = oldT.pos + origLength;
                 }
             } else {
                 copyTo(localPointer, localPointer = (oldT.pos + oldT.name.length()));

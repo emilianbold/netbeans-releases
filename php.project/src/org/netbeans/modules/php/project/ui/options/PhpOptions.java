@@ -55,7 +55,6 @@ import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.util.Exceptions;
-import org.openide.util.RequestProcessor;
 
 /**
  * Helper class to get actual PHP properties like debugger port etc.
@@ -110,6 +109,7 @@ public final class PhpOptions {
     private volatile boolean phpInterpreterSearched = false;
     private volatile boolean phpUnitSearched = false;
     private volatile boolean phpUnitSkelGenSearched = false;
+    private volatile boolean phpGlobalIncludePathEnsured = false;
 
     private PhpOptions() {
     }
@@ -272,20 +272,7 @@ public final class PhpOptions {
      */
     public String getPhpGlobalIncludePath() {
         // XXX the default value could be improved (OS dependent)
-        String phpGlobalIncludePath = getPreferences().get(PHP_GLOBAL_INCLUDE_PATH, null);
-        if (phpGlobalIncludePath == null) {
-            // #218432
-            RequestProcessor.getDefault().post(new Runnable() {
-                @Override
-                public void run() {
-                    // first time we want to read it => write an empty string to the global properties so property evaluator is not confused
-                    //  (property evaluator returns JAR entry, see org.netbeans.modules.php.project.classpath.ClassPathProviderImpl#getBootClassPath())
-                    setPhpGlobalIncludePath(""); // NOI18N
-                }
-            });
-            phpGlobalIncludePath = ""; // NOI18N
-        }
-        return phpGlobalIncludePath;
+        return getPreferences().get(PHP_GLOBAL_INCLUDE_PATH, ""); // NOI18N
     }
 
     public String[] getPhpGlobalIncludePathAsArray() {
@@ -301,6 +288,20 @@ public final class PhpOptions {
             PropertyUtils.putGlobalProperties(globalProperties);
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
+        }
+    }
+
+    // #210057
+    /**
+     * Ensure that the php.global.include.path is written in build.properties so Ant can see it.
+     */
+    public void ensurePhpGlobalIncludePath() {
+        if (phpGlobalIncludePathEnsured) {
+            return;
+        }
+        phpGlobalIncludePathEnsured = true;
+        if (PropertyUtils.getGlobalProperties().getProperty(PhpProjectProperties.GLOBAL_INCLUDE_PATH) == null) {
+            setPhpGlobalIncludePath(getPhpGlobalIncludePath());
         }
     }
 
