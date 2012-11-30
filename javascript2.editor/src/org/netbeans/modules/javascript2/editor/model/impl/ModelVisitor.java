@@ -158,10 +158,15 @@ public class ModelVisitor extends PathNodeVisitor {
         }
         if (fromAN != null) {
             JsObjectImpl property = (JsObjectImpl)fromAN.getProperty(accessNode.getProperty().getName());
+            int pathSize = getPath().size();
+            Node lastVisited = getPath().get(pathSize - 2);
+            boolean onLeftSite =  lastVisited instanceof BinaryNode && ((BinaryNode)lastVisited).lhs().equals(accessNode);
             if (property != null) {
+                if(onLeftSite && !property.isDeclared()) {
+                    property.setDeclared(true);
+                }
                 property.addOccurrence(ModelUtils.documentOffsetRange(parserResult, accessNode.getProperty().getStart(), accessNode.getProperty().getFinish()));
             } else {
-                int pathSize = getPath().size();
                 Identifier name = ModelElementFactory.create(parserResult, (IdentNode)accessNode.getProperty());
                 if (name != null) {
                     if (pathSize > 1 && getPath().get(pathSize - 2) instanceof CallNode) {
@@ -170,11 +175,11 @@ public class ModelVisitor extends PathNodeVisitor {
                             property = ModelElementFactory.createVirtualFunction(parserResult, fromAN, name, cNode.getArgs().size());
                             //property.addOccurrence(name.getOffsetRange());
                         } else {
-                            property = new JsObjectImpl(fromAN, name, name.getOffsetRange());
+                            property = new JsObjectImpl(fromAN, name, name.getOffsetRange(), onLeftSite);
                             property.addOccurrence(name.getOffsetRange());
                         }
                     } else {
-                        property = new JsObjectImpl(fromAN, name, name.getOffsetRange());
+                        property = new JsObjectImpl(fromAN, name, name.getOffsetRange(), onLeftSite);
                         property.addOccurrence(name.getOffsetRange());
                     }
                     fromAN.addProperty(name.getName(), property);
