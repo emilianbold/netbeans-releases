@@ -92,7 +92,7 @@ public class RepositoryTranslatorImpl {
      */
     private UnitsCache unitNamesCache = null;
     private final Object initLock = new Object();
-    private boolean loaded = false;
+    private volatile boolean loaded = false;
     private final StorageAllocator storageAllocator;
     private final UnitCodec unitCodec;
 
