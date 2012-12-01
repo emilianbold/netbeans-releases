@@ -83,6 +83,7 @@ public class InterpDumb extends AbstractInterp {
 
         static final class ACT_NOP implements Actor {
 
+            @Override
             public String action(AbstractInterp ai, char c) {
                 return null;
             }
@@ -90,6 +91,7 @@ public class InterpDumb extends AbstractInterp {
 
         static final class ACT_PAUSE implements Actor {
 
+            @Override
             public String action(AbstractInterp ai, char c) {
                 ai.ops.op_pause();
                 return null;
@@ -98,6 +100,7 @@ public class InterpDumb extends AbstractInterp {
 
         static final class ACT_ERR implements Actor {
 
+            @Override
             public String action(AbstractInterp ai, char c) {
                 return "ACT ERROR";	// NOI18N
             }
@@ -105,6 +108,7 @@ public class InterpDumb extends AbstractInterp {
 
         static final class ACT_REGULAR implements Actor {
 
+            @Override
             public String action(AbstractInterp ai, char c) {
                 ai.ops.op_char(c);
                 return null;
@@ -113,6 +117,7 @@ public class InterpDumb extends AbstractInterp {
 
         static final class ACT_CR implements Actor {
 
+            @Override
             public String action(AbstractInterp ai, char c) {
                 ai.ops.op_carriage_return();
                 return null;
@@ -121,6 +126,7 @@ public class InterpDumb extends AbstractInterp {
 
         static final class ACT_LF implements Actor {
 
+            @Override
             public String action(AbstractInterp ai, char c) {
                 ai.ops.op_line_feed();
                 return null;
@@ -129,6 +135,7 @@ public class InterpDumb extends AbstractInterp {
 
         static final class ACT_BS implements Actor {
 
+            @Override
             public String action(AbstractInterp ai, char c) {
                 ai.ops.op_back_space();
                 return null;
@@ -137,6 +144,7 @@ public class InterpDumb extends AbstractInterp {
 
         static final class ACT_TAB implements Actor {
 
+            @Override
             public String action(AbstractInterp ai, char c) {
                 ai.ops.op_tab();
                 return null;
@@ -145,6 +153,7 @@ public class InterpDumb extends AbstractInterp {
 
         static final class ACT_BEL implements Actor {
 
+            @Override
             public String action(AbstractInterp ai, char c) {
                 ai.ops.op_bel();
                 return null;
@@ -188,6 +197,7 @@ public class InterpDumb extends AbstractInterp {
         ctl_sequence = null;
     }
 
+    @Override
     public String name() {
         return "dumb";	// NOI18N
     }
@@ -222,6 +232,7 @@ public class InterpDumb extends AbstractInterp {
         reset();
     }
 
+    @Override
     public void processChar(char c) {
 
         // If we're collecting stuff into a control sequence remember the char

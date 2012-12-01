@@ -104,6 +104,7 @@ class InterpDtTerm extends InterpANSI {
 	}
 
 	static final class ACT_START_COLLECT implements Actor {
+            @Override
 	    public String action(AbstractInterp ai, char c) {
 		InterpDtTerm i = (InterpDtTerm) ai;
 		i.text = "";	// NOI18N
@@ -112,6 +113,7 @@ class InterpDtTerm extends InterpANSI {
 	}
 
 	static final class ACT_COLLECT implements Actor {
+            @Override
 	    public String action(AbstractInterp ai, char c) {
 		// java bug 4318526 text += c;
 		InterpDtTerm i = (InterpDtTerm) ai;
@@ -121,6 +123,7 @@ class InterpDtTerm extends InterpANSI {
 	}
 
 	static final class ACT_DONE_COLLECT implements Actor {
+            @Override
 	    public String action(AbstractInterp ai, char c) {
 		/* DEBUG
 		System.out.println("DtTerm emulation: got '" + text + "'");	// NOI18N
@@ -130,6 +133,7 @@ class InterpDtTerm extends InterpANSI {
 	}
 
 	static final class ACT_DONE_COLLECT2 implements Actor {
+            @Override
 	    public String action(AbstractInterp ai, char c) {
 		InterpDtTerm i = (InterpDtTerm) ai;
 		// OLD i.text = "";	// NOI18N
@@ -172,6 +176,7 @@ class InterpDtTerm extends InterpANSI {
 
         
 	static final class ACT_D implements Actor {
+            @Override
 	    public String action(AbstractInterp ai, char c) {
 		ai.ops.op_do(1);
 		return null;
@@ -179,6 +184,7 @@ class InterpDtTerm extends InterpANSI {
 	};
 
 	static final class ACT_M implements Actor {
+            @Override
 	    public String action(AbstractInterp ai, char c) {
 		ai.ops.op_up(1);
 		return null;
@@ -221,6 +227,7 @@ class InterpDtTerm extends InterpANSI {
                 return "act_DEC_private: unrecognized cmd " + c;	// NOI18N
             }
             
+            @Override
 	    public String action(AbstractInterp ai, char c) {
 		if (ai.noNumber())
 		    return "act_DEC_private: no number";	// NOI18N
@@ -236,6 +243,7 @@ class InterpDtTerm extends InterpANSI {
 	}
 
 	protected static final class ACT_DEC_STR implements Actor {
+            @Override
 	    public String action(AbstractInterp ai, char c) {
 		ai.ops.op_soft_reset();
 		return null;
@@ -261,10 +269,12 @@ class InterpDtTerm extends InterpANSI {
 	setup();
     } 
 
+    @Override
     public String name() {
 	return "dtterm";	// NOI18N
     } 
 
+    @Override
     public void reset() {
 	super.reset();
 	text = null;
