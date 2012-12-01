@@ -76,6 +76,11 @@ abstract public class AbstractObject {
             public CallFrame createCallFrame(JSONObject o, WebKitDebugging webkit, TransportHelper transport) {
                 return new CallFrame(o, webkit, transport);
             }
+
+            @Override
+            public void breakpointResolved(Breakpoint bp, JSONObject location) {
+                bp.notifyResolved(location);
+            }
         };
     }
     

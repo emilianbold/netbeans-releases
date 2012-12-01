@@ -411,7 +411,7 @@ public class JsFormatter implements Formatter {
 
         // assert we can use the lastOffsetDiff and lastIndentationLevel
         assert tokenBeforeEol.getKind() != FormatToken.Kind.WHITESPACE
-                && tokenBeforeEol.getKind() != FormatToken.Kind.EOL;
+                && tokenBeforeEol.getKind() != FormatToken.Kind.EOL : tokenBeforeEol;
 
         if (style == CodeStyle.WrapStyle.WRAP_IF_LONG) {
             int segmentLength = tokenBeforeEol.getOffset() + tokenBeforeEol.getText().length()
