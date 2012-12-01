@@ -151,18 +151,18 @@ public class FeatureDependsOnFeatureTest extends NbTestCase {
                     null);
             UpdateItem higherModuleItem = Utilities.createUpdateItem(higherItemImpl);
 
-            res.put("testFeatureVsStandaloneModules",
+            res.put("testFeatureDependsOnModules",
                     UpdateItem.createFeature(
-                    "testFeatureVsStandaloneModules",
+                    "testFeatureDependsOnModules",
                     "1.0",
                     deps,
                     null,
                     null,
                     null));
             res.put(pilotName, higherModuleItem);
-            res.put("testTransitive", UpdateItem.createFeature(
-                    "testTransitive", "1.3",
-                    Collections.singleton("testFeatureVsStandaloneModules"),
+            res.put("testDependsOnFeature", UpdateItem.createFeature(
+                    "testDependsOnFeature", "1.3",
+                    Collections.singleton("testFeatureDependsOnModules"),
                     null, null, null));
             return res;
         }
@@ -189,23 +189,23 @@ public class FeatureDependsOnFeatureTest extends NbTestCase {
         UpdateUnitProviderFactory.getDefault().refreshProviders(null, true);
     }
 
-    public void testNoUpToDateFeature() {
+    public void testFeatureDependsOnInstalledFeature() {
         assertNotNull("A feature found.", UpdateManager.getDefault().getUpdateUnits(UpdateManager.TYPE.FEATURE));
         List<UpdateUnit> units = UpdateManager.getDefault().getUpdateUnits(UpdateManager.TYPE.FEATURE);
         assertEquals("Two features there.", 2, units.size());
-        UpdateUnit testTransitiveFeature;
-        UpdateUnit testFeatureVsStandaloneModulesFeature;
-        if (units.get(0).equals("testFeatureVsStandaloneModules")) {
-            testTransitiveFeature = units.get(0);
-            testFeatureVsStandaloneModulesFeature = units.get(1);
+        UpdateUnit testDependsOnFeature;
+        UpdateUnit testFeatureDependsOnModules;
+        if ("testFeatureDependsOnModules".equals(units.get(0).toString())) {
+            testFeatureDependsOnModules = units.get(0);
+            testDependsOnFeature = units.get(1);
         } else {
-            testTransitiveFeature = units.get(1);
-            testFeatureVsStandaloneModulesFeature = units.get(0);
+            testDependsOnFeature = units.get(0);
+            testFeatureDependsOnModules = units.get(1);
         }
-        assertNotNull(testFeatureVsStandaloneModulesFeature + " is installed.", testFeatureVsStandaloneModulesFeature.getInstalled());
-        assertFalse(testFeatureVsStandaloneModulesFeature + " has some available updates.", testFeatureVsStandaloneModulesFeature.getAvailableUpdates().isEmpty());
-        assertNotNull(testTransitiveFeature + " is installed.", testTransitiveFeature.getInstalled());
-        assertFalse(testTransitiveFeature + " has some available updates.", testTransitiveFeature.getAvailableUpdates().isEmpty());
+        assertNotNull(testFeatureDependsOnModules + " is installed.", testFeatureDependsOnModules.getInstalled());
+        assertFalse(testFeatureDependsOnModules + " has some available updates.", testFeatureDependsOnModules.getAvailableUpdates().isEmpty());
+        assertNotNull(testDependsOnFeature + " is installed.", testDependsOnFeature.getInstalled());
+        assertFalse(testDependsOnFeature + " has some available updates.", testDependsOnFeature.getAvailableUpdates().isEmpty());
     }
 
     final static class HackedModuleInfo extends ModuleInfo {

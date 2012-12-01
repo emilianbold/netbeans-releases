@@ -54,6 +54,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.Module;
 import org.netbeans.api.autoupdate.UpdateElement;
 import org.netbeans.api.autoupdate.UpdateManager;
 import org.netbeans.api.autoupdate.UpdateUnit;
@@ -256,6 +257,10 @@ public class FeatureUpdateElementImpl extends UpdateElementImpl {
         return moduleElementsImpl;
     }
     
+    public Set<FeatureUpdateElementImpl> getDependingFeatures() {
+        return Collections.emptySet();
+    }
+
     @Override
     public UpdateManager.TYPE getType () {
         return type;
@@ -308,19 +313,23 @@ public class FeatureUpdateElementImpl extends UpdateElementImpl {
     
     @Override
     public boolean equals(Object obj) {
-        if (obj == null)
+        if (obj == null) {
             return false;
-        if (getClass() != obj.getClass())
+        }
+        if (getClass() != obj.getClass()) {
             return false;
+        }
         final FeatureUpdateElementImpl other = (FeatureUpdateElementImpl) obj;
 
         if (this.specVersion != other.specVersion &&
             (this.specVersion == null ||
-             !this.specVersion.equals(other.specVersion)))
+             !this.specVersion.equals(other.specVersion))) {
             return false;
+        }
         if (this.codeName != other.codeName &&
-            (this.codeName == null || !this.codeName.equals(other.codeName)))
+            (this.codeName == null || !this.codeName.equals(other.codeName))) {
             return false;
+        }
         return true;
     }
 
@@ -334,6 +343,11 @@ public class FeatureUpdateElementImpl extends UpdateElementImpl {
                (this.specVersion != null ? this.specVersion.hashCode()
                                          : 0);
         return hash;
+    }
+    
+    @Override
+    public String toString() {
+        return "FeatureUpdateElementImpl[" + this.codeName + "/" + this.specVersion + "]";
     }
 
     public static class Agent extends FeatureUpdateElementImpl {
@@ -349,31 +363,42 @@ public class FeatureUpdateElementImpl extends UpdateElementImpl {
         
         @Override
         public Set<ModuleUpdateElementImpl> getContainedModuleElements () {
+            initializeAgent();
+            assert moduleElementsImpl != null : "FeatureUpdateElementImpl contains modules " + moduleElementsImpl;
+            return moduleElementsImpl;
+        }
+        
+        @Override
+        public Set<FeatureUpdateElementImpl> getDependingFeatures() {
+            initializeAgent();
+            assert featureElementsImpl != null : "FeatureUpdateElementImpl depends on features " + featureElementsImpl;
+            return featureElementsImpl;
+        }
+        
+        private void initializeAgent() {
             synchronized(this) {
-                if (moduleElementsImpl == null) {
+                if (featureElementsImpl == null || moduleElementsImpl == null) {
                     Set<FeatureUpdateElementImpl> depFeatures = new HashSet<FeatureUpdateElementImpl>();
                     moduleElementsImpl = processContainedModules (featureItem.getModuleCodeNames (), null, depFeatures);
                     featureElementsImpl = depFeatures;
                 }
             }
-            assert moduleElementsImpl != null : "FeatureUpdateElementImpl contains modules " + moduleElementsImpl;
-            return moduleElementsImpl;
         }
-        
+
         private Set<ModuleUpdateElementImpl> processContainedModules (
-            Set<String> dependenciesToModules,
+            Set<String> dependenciesToModulesOrFeatures,
             UpdateUnitProvider provider,
             Set<FeatureUpdateElementImpl> depFeatures
         ) {
             Set<ModuleUpdateElementImpl> res = new HashSet<ModuleUpdateElementImpl> ();
-            assert dependenciesToModules != null : "Invalid Feature " + this + " with null modules.";
-            if (dependenciesToModules == null) {
-                dependenciesToModules = new HashSet<String>();
+            assert dependenciesToModulesOrFeatures != null : "Invalid Feature " + this + " with null modules.";
+            if (dependenciesToModulesOrFeatures == null) {
+                dependenciesToModulesOrFeatures = new HashSet<String>();
             } else {
-                dependenciesToModules = new HashSet<String>(dependenciesToModules);
+                dependenciesToModulesOrFeatures = new HashSet<String>(dependenciesToModulesOrFeatures);
             }
             Set<Dependency> deps = new HashSet<Dependency> ();
-            for (String depSpec : dependenciesToModules) {
+            for (String depSpec : dependenciesToModulesOrFeatures) {
                 deps.addAll (Dependency.create (Dependency.TYPE_MODULE, depSpec));
             }
             List<UpdateUnit> moduleUnits = provider == null ?
@@ -395,7 +420,7 @@ public class FeatureUpdateElementImpl extends UpdateElementImpl {
                             assert Trampoline.API.impl (el) instanceof ModuleUpdateElementImpl : "Impl of " + el + " is instanceof ModuleUpdateElementImpl.";
                             ModuleUpdateElementImpl impl = (ModuleUpdateElementImpl) Trampoline.API.impl (el);
                             res.add (impl);
-                            dependenciesToModules.remove(name);
+                            dependenciesToModulesOrFeatures.remove(name);
                             it.remove();
                         } else {
                             LOG.log (Level.INFO, getUpdateUnit () + " requires a module " + name + " what is not present.");
@@ -403,7 +428,7 @@ public class FeatureUpdateElementImpl extends UpdateElementImpl {
                     }
                 }
             }
-            if (!dependenciesToModules.isEmpty()) {
+            if (!dependenciesToModulesOrFeatures.isEmpty()) {
                 List<UpdateUnit> features = provider == null
                         ? UpdateManager.getDefault().getUpdateUnits(UpdateManager.TYPE.FEATURE)
                         : provider.getUpdateUnits(UpdateManager.TYPE.FEATURE);
@@ -414,20 +439,37 @@ public class FeatureUpdateElementImpl extends UpdateElementImpl {
                         if (name.equals(feat.getCodeName())) {
                             UpdateElement el = getMatchedUpdateElement(feat, dep);
                             if (el != null) {
-                                assert Trampoline.API.impl(el) instanceof FeatureUpdateElementImpl : "Impl of " + el + " is instanceof ModuleUpdateElementImpl.";
+                                assert Trampoline.API.impl(el) instanceof FeatureUpdateElementImpl : "Impl of " + el + " is instanceof FeatureUpdateElementImpl.";
                                 FeatureUpdateElementImpl impl = (FeatureUpdateElementImpl) Trampoline.API.impl(el);
-                                depFeatures.add(impl);
-                                dependenciesToModules.remove(name);
+                                if (depFeatures.add(impl)) {
+                                    //res.addAll(impl.getContainedModuleElements());
+                                }
+                                dependenciesToModulesOrFeatures.remove(name);
                                 it.remove();
                             } else {
-                                LOG.log(Level.INFO, getUpdateUnit() + " requires a module " + name + " what is not present.");
+                                LOG.log(Level.INFO, getUpdateUnit() + " requires a feature " + name + " what is not present.");
                             }
                         }
                     }
                 }
             }
-            if (!dependenciesToModules.isEmpty()) {
-                throw new IllegalStateException("" + dependenciesToModules);
+            for (Iterator<String> it = dependenciesToModulesOrFeatures.iterator(); it.hasNext();) {
+                String depSpec = it.next();
+                for (Dependency dep : Dependency.create (Dependency.TYPE_MODULE, depSpec)) {
+                    String cnb = dep.getName ();
+                    // trim release impl.
+                    if (cnb.indexOf ('/') != -1) {
+                        int to = cnb.indexOf ('/');
+                        cnb = cnb.substring (0, to);
+                    }
+                    Module m = Utilities.toModule(cnb, null);
+                    if (m != null && ! m.getProblems().isEmpty()) {
+                        dependenciesToModulesOrFeatures.remove(depSpec);
+                    }
+                }
+            }
+            if (!dependenciesToModulesOrFeatures.isEmpty()) {
+                throw new IllegalStateException(this.featureItem + " depends on non-existing " + dependenciesToModulesOrFeatures);
             }
             return res;
         }
