@@ -22,7 +22,9 @@
             <public-packages>
                 <subpackages>org.hibernate</subpackages>
                 <subpackages>org.dom4j</subpackages>
+                <subpackages>org.slf4j</subpackages>
                 <subpackages>org.apache</subpackages>
+                <subpackages>org.jboss</subpackages>
                 <subpackages>javax.sql</subpackages>
                 <subpackages>javax.transaction</subpackages>
                 <subpackages>javax.persistence</subpackages>
@@ -66,6 +68,21 @@
             </class-path-extension>
             <class-path-extension>
                 <runtime-relative-path>ext/hibernate4/hibernate-tools-4.0.0-CR1.jar</runtime-relative-path>
+            </class-path-extension>
+            <class-path-extension>
+                <runtime-relative-path>ext/hibernate4/slf4j-api-1.6.1.jar</runtime-relative-path>
+            </class-path-extension>
+            <class-path-extension>
+                <runtime-relative-path>ext/hibernate4/slf4j-log4j12-1.6.1.jar</runtime-relative-path>
+            </class-path-extension>
+            <class-path-extension>
+                <runtime-relative-path>ext/hibernate4/jboss-logging-3.1.0.GA.jar</runtime-relative-path>
+            </class-path-extension>
+            <class-path-extension>
+                <runtime-relative-path>ext/hibernate4/jboss-transaction-api_1.1_spec-1.0.0.Final.jar</runtime-relative-path>
+            </class-path-extension>
+            <class-path-extension>
+                <runtime-relative-path>ext/hibernate4/log4j-1.2.16.jar</runtime-relative-path>
             </class-path-extension>
         </data>
     </configuration>
