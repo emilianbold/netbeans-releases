@@ -203,6 +203,72 @@ public class CreateMethodTest extends ErrorHintsTestBase {
                         "}\n").replaceAll("[ \n\t\r]+", " "));
     }
     
+    public void test223011a() throws Exception {
+        performFixTest("test/Test.java",
+                       "package test;\n" +
+                       "import java.lang.reflect.*;\n" +
+                       "public class Test {\n" +
+                       "    public void foo(Class<?> c) throws Exception {\n" +
+                       "        Field f = m|ethod(c);\n" +
+                       "    }\n" +
+                       "}\n",
+                       "CreateMethodFix:method(java.lang.Class<?> c)java.lang.reflect.Field:test.Test",
+                       ("package test;\n" +
+                        "import java.lang.reflect.*;\n" +
+                        "public class Test {\n" +
+                        "    public void foo(Class<?> c) throws Exception {\n" +
+                        "        Field f = method(c);\n" +
+                        "    }\n" +
+                        "    private Field method(Class<?> c) {\n" +
+                        "        throw new UnsupportedOperationException(\"Not supported yet.\"); //To change body of generated methods, choose Tools | Templates.\n" +
+                        "    }\n" +
+                        "}\n").replaceAll("[ \n\t\r]+", " "));
+    }
+    
+    public void test223011b() throws Exception {
+        performFixTest("test/Test.java",
+                       "package test;\n" +
+                       "import java.lang.reflect.*;\n" +
+                       "public class Test {\n" +
+                       "    public <T extends Number&CharSequence, E extends Integer> void foo(Class<E> c1, Class<T> c2) throws Exception {\n" +
+                       "        Field f = m|ethod(c1, c2);\n" +
+                       "    }\n" +
+                       "}\n",
+                       "CreateMethodFix:method(java.lang.Class<E> c1,java.lang.Class<T> c2)java.lang.reflect.Field:test.Test",
+                       ("package test;\n" +
+                        "import java.lang.reflect.*;\n" +
+                        "public class Test {\n" +
+                        "    public <T extends Number&CharSequence, E extends Integer> void foo(Class<E> c1, Class<T> c2) throws Exception {\n" +
+                        "        Field f = method(c1, c2);\n" +
+                        "    }\n" +
+                        "    private <T extends Number & CharSequence, E extends Integer> Field method(Class<E> c1, Class<T> c2) {\n" +
+                        "        throw new UnsupportedOperationException(\"Not supported yet.\"); //To change body of generated methods, choose Tools | Templates.\n" +
+                        "    }\n" +
+                        "}\n").replaceAll("[ \n\t\r]+", " "));
+    }
+    
+    public void test223011c() throws Exception {
+        performFixTest("test/Test.java",
+                       "package test;\n" +
+                       "import java.lang.reflect.*;\n" +
+                       "public class Test {\n" +
+                       "    public <T extends Number&CharSequence, E> void foo(Class<T> c) throws Exception {\n" +
+                       "        Class<E> cr = m|ethod(c);\n" +
+                       "    }\n" +
+                       "}\n",
+                       "CreateMethodFix:method(java.lang.Class<T> c)java.lang.Class<E>:test.Test",
+                       ("package test;\n" +
+                        "import java.lang.reflect.*;\n" +
+                        "public class Test {\n" +
+                        "    public <T extends Number&CharSequence, E> void foo(Class<T> c) throws Exception {\n" +
+                        "        Class<E> cr = method(c);\n" +
+                        "    }\n" +
+                        "    private <T extends Number & CharSequence, E> Class<E> method(Class<T> c) {\n" +
+                        "        throw new UnsupportedOperationException(\"Not supported yet.\"); //To change body of generated methods, choose Tools | Templates.\n" +
+                        "    }\n" +
+                        "}\n").replaceAll("[ \n\t\r]+", " "));
+    }
+    
     protected List<Fix> computeFixes(CompilationInfo info, int pos, TreePath path) throws IOException {
         List<Fix> fixes = new CreateElement().analyze(info, pos);
         List<Fix> result=  new LinkedList<Fix>();
