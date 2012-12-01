@@ -46,7 +46,7 @@ package fu;
  * xSubtypeCx
  * subtypeC
  * @author jp159440
- */
+  */
 public class SubtypeC extends Subtype1 {
 
     /**

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,22 +37,64 @@
  * 
  * Contributor(s):
  * 
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ ** Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.test.refactoring.actions;
+package org.netbeans.modules.test.refactoring.operators;
 
-import org.netbeans.jellytools.MainWindowOperator;
+import org.netbeans.jellytools.Bundle;
+import org.netbeans.jemmy.operators.JComboBoxOperator;
+import org.netbeans.jemmy.operators.JLabelOperator;
 
 /**
  *
- * @author Jiri Prox Jiri.Prox@SUN.Com
+ * @author Jiri Prox Jiri.Prox@oracle.com, Marian.Mirilovic@oracle.com
  */
-public class RenameMenuAction implements TestAction {
+public class MoveClassDialogOperator extends ParametersPanelOperator{
+    private JComboBoxOperator _cbxProjects;
+    private JComboBoxOperator _cbxLocation;
+    private JComboBoxOperator _cbxToPackage;
+    private JLabelOperator _lblTitle;
+    private JLabelOperator _lblError;
 
-    @Override
-    public void perform(Object parameter) {
-        MainWindowOperator.getDefault().menuBar().pushMenu(new String[]{"Refactor","Rename"});
+
+    public MoveClassDialogOperator() {
+        super(Bundle.getStringTrimmed("org.netbeans.modules.refactoring.java.ui.Bundle","LBL_MoveClass")); // Move Class
     }
-   
+
+    public JComboBoxOperator getProjectsCombo() {
+        if(_cbxProjects==null) {
+            _cbxProjects = new JComboBoxOperator(this, 0);
+        }
+        return _cbxProjects;
+    }
+
+
+    public JComboBoxOperator getLocationCombo() {
+        if(_cbxLocation==null) {
+            _cbxLocation = new JComboBoxOperator(this, 1);
+        }
+        return _cbxLocation;
+    }
+
+    public JComboBoxOperator getPackageCombo() {
+        if(_cbxToPackage==null) {
+            _cbxToPackage = new JComboBoxOperator(this, 2);
+        }
+        return _cbxToPackage;
+    }
+
+    public JLabelOperator getTitleLabel() {
+        if(_lblTitle==null) {
+            _lblTitle = new JLabelOperator(this,0);
+        }
+        return _lblTitle;
+    }
+
+    public JLabelOperator getError() {
+        if(_lblError==null) {
+            _lblError = new JLabelOperator(this,1);
+        }
+        return _lblError;
+    }
 }
