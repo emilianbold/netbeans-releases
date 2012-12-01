@@ -180,7 +180,7 @@ public final class MakeProject implements Project, MakeProjectListener, Runnable
     private final Set<String> cExtensions = MakeProject.createExtensionSet();
     private final Set<String> cppExtensions = MakeProject.createExtensionSet();
     private String sourceEncoding = null;
-    private volatile boolean isOpenHookDone = false;
+    private final AtomicBoolean isOpenHookDone = new AtomicBoolean(false);
     private final AtomicBoolean isDeleted = new AtomicBoolean(false);
     private final AtomicBoolean isDeleting = new AtomicBoolean(false);
     private final MakeSources sources;
@@ -333,7 +333,7 @@ public final class MakeProject implements Project, MakeProjectListener, Runnable
                     new MakeProjectEncodingQueryImpl(this),
                     new RemoteProjectImpl(),
                     new ToolchainProjectImpl(),
-                    new CPPImpl(sources),
+                    new CPPImpl(sources, isOpenHookDone),
                     new CacheDirectoryProviderImpl(helper.getProjectDirectory()),
                     this
                 };
@@ -566,7 +566,7 @@ public final class MakeProject implements Project, MakeProjectListener, Runnable
     }
 
     private synchronized void registerClassPath(boolean register) {
-        if (isOpenHookDone) {
+        if (isOpenHookDone.get()) {
             if (register) {
                 GlobalPathRegistry.getDefault().register(MakeProjectPaths.SOURCES, sourcepath.getClassPath());
             } else {
@@ -1343,7 +1343,7 @@ public final class MakeProject implements Project, MakeProjectListener, Runnable
     }
 
     private synchronized void onProjectOpened() {
-        if (!isOpenHookDone) {
+        if (!isOpenHookDone.getAndSet(true)) {
             FileObject dir = getProjectDirectory();
             if (dir != null) { // high resistance mode paranoia
                 final ExecutionEnvironment env = FileSystemProvider.getExecutionEnvironment(dir);
@@ -1358,7 +1358,6 @@ public final class MakeProject implements Project, MakeProjectListener, Runnable
                 openedTasks.clear();
                 openedTasks = null;
             }
-            isOpenHookDone = true;
             if (MakeOptions.getInstance().isFullFileIndexer()) {
                 registerClassPath(true);
             }
@@ -1392,9 +1391,8 @@ public final class MakeProject implements Project, MakeProjectListener, Runnable
         save();
         projectDescriptorProvider.closed();
         MakeOptions.getInstance().removePropertyChangeListener(indexerListener);
-        if (isOpenHookDone) {
+        if (isOpenHookDone.getAndSet(false)) {
             registerClassPath(false);
-            isOpenHookDone = false;
         }
         MakeProjectFileProviderFactory.removeSearchBase(this);
         if(nativeProject instanceof NativeProjectProvider) {
@@ -1758,21 +1756,24 @@ public final class MakeProject implements Project, MakeProjectListener, Runnable
     private static final class CPPImpl implements ClassPathProvider {
 
         private final MakeSources sources;
+        private final AtomicBoolean isOpenHookDone;
 
-        public CPPImpl(MakeSources sources) {
+        public CPPImpl(MakeSources sources, AtomicBoolean isOpenHookDone) {
             this.sources = sources;
+            this.isOpenHookDone = isOpenHookDone;
         }
 
         @Override
         public ClassPath findClassPath(FileObject file, String type) {
-            if (MakeProjectPaths.SOURCES.equals(type)) {
-                for (SourceGroup sg : sources.getSourceGroups(MakeSources.GENERIC)) {
-                    if (sg.getRootFolder().equals(file)) {
-                        return ClassPathSupport.createClassPath(Arrays.asList(new PathResourceImpl(ClassPathSupport.createResource(file.toURL()))));
+            if (isOpenHookDone.get()) {
+                if (MakeProjectPaths.SOURCES.equals(type)) {
+                    for (SourceGroup sg : sources.getSourceGroups(MakeSources.GENERIC)) {
+                        if (sg.getRootFolder().equals(file)) {
+                            return ClassPathSupport.createClassPath(Arrays.asList(new PathResourceImpl(ClassPathSupport.createResource(file.toURL()))));
+                        }
                     }
                 }
             }
-
             return null;
         }
     }
