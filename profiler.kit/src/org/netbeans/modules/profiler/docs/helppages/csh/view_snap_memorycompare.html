@@ -30,6 +30,28 @@
         The data that is captured in the snapshot depends upon the options that were selected 
         for the profiling session.</p>
         
+        <h3>Sampling Comparison</h3>
+        <p>If the <strong>Quick (sampled)</strong> option was selected for the profiling session,
+        the comparison provides details on the difference between the number of live objects
+        in the two snapshots.</p>
+        
+        <p>The table in the Sampling Comparison window contains the following columns:</p>
+        <ul>
+            <li><b>Class Name - Live Objects.</b> Name of the class or live object.</li>
+            <li><b>Live Bytes.</b> Graphic display of the relative amount of memory currently occupied by the live object.</li>
+            <li><b>Live Bytes.</b> Memory size in bytes that is currently occupied by the live object. </li>
+            <li><b>Live Objects.</b> Exact difference between the number of live objects in the two snapshots.</li>
+        </ul>
+        
+        <p>You can perform the following actions in the memory comparison window.</p>
+        <ul>
+            <li>You can click a column header to sort the order that the results are displayed. </li>
+            <li>You can load the source <tt>.java</tt> file of a class by right-clicking in 
+            the row for the class and choosing Go To Source.</li>
+            <li>You can filter the list by the class name by typing the filter criteria in the 
+            Class Name Filter at the bottom of the window and clicking the filter icon
+            (&nbsp;<img src="../img/filter.png" alt="Filter icon">&nbsp;) to selecting a filter option.</li>
+        </ul>
 
         <h3>Allocations Comparison</h3>
         <p>If <b>Record object creation</b> was selected for the profiling session,
@@ -59,30 +81,6 @@
             <li><b>Generations.</b> Number of different generations (garbage collections survived) of live instances of the class.</li>
         </ul>
         
-        <h3>Sampling Comparison</h3>
-        <p>If the <strong>Quick (sampled)</strong> option was selected for the profiling session,
-        the comparison provides details on the difference between the number of live objects
-        in the two snapshots.</p>
-        
-        <p>The table in the Sampling Comparison window contains the following columns:</p>
-        <ul>
-            <li><b>Class Name - Live Objects.</b> Name of the class or live object.</li>
-            <li><b>Live Bytes.</b> Graphic display of the relative amount of memory currently occupied by the live object.</li>
-            <li><b>Live Bytes.</b> Memory size in bytes that is currently occupied by the live object. </li>
-            <li><b>Live Objects.</b> Exact difference between the number of live objects in the two snapshots.</li>
-        </ul>
-        
-        <p>You can perform the following actions in the memory comparison window.</p>
-        <ul>
-        
-            <li>You can click a column header to sort the order that the results are displayed. </li>
-            <li>You can load the source <tt>.java</tt> file of a class by right-clicking in 
-            the row for the class and choosing Go To Source.</li>
-            <li>You can filter the list by the class name by typing the filter criteria in the 
-            Class Name Filter at the bottom of the window and clicking the filter icon
-            (&nbsp;<img src="../img/filter.png" alt="Filter icon">&nbsp;) to selecting a filter option.</li>
-        </ul>
-
         <dl>
             <dt><a name="seealso">See Also</a></dt>
             <dd><a href="../snap_taking.html">Taking a Snapshot</a></dd>

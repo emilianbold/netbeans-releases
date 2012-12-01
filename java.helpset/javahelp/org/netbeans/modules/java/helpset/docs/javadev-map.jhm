@@ -441,7 +441,10 @@
 <!--CSH topic for GUI Builder main workspace-->
 <mapID target="gui.formeditor" url="gui/csh/gui_guibuilder_window.html" />
 <!--CSH topic for New Master/Detail Form wizard-->
-<mapID target="gui.connecting.source" url="gui/csh/new_master_form_wizard.html" />
+<mapID target="org.netbeans.modules.form.j2ee.wizard.MasterPanel" url="gui/csh/new_master_form_wizard_mastertable.html" />
+<mapID target="org.netbeans.modules.form.j2ee.wizard.DetailPanel" url="gui/csh/new_master_form_wizard_detailoptions.html" />
+<!--CSH topic for Property Editors dialog box-->
+<mapID target="f1_mat_prop_html" url="gui/csh/gui_prop_editors.html" />
 
 <!-- todo (post 5.0) reclaim these IDs - they are currently overridden by gui.connecting.code:-->
 
