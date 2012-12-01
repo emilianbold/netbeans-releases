@@ -172,7 +172,7 @@ public class InterpDumb extends AbstractInterp {
     }
     protected String ctl_sequence = null;
     private InterpTypeDumb type;
-    public static final InterpTypeDumb type_singleton = new InterpTypeDumb();
+    private static final InterpTypeDumb type_singleton = new InterpTypeDumb();
 
     public InterpDumb(Ops ops) {
         super(ops);

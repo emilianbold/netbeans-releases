@@ -247,7 +247,7 @@ class InterpDtTerm extends InterpANSI {
 
     private InterpTypeDtTerm type;
 
-    public static final InterpTypeDtTerm type_singleton = new InterpTypeDtTerm();
+    private static final InterpTypeDtTerm type_singleton = new InterpTypeDtTerm();
 
     public InterpDtTerm(Ops ops) {
 	super(ops, type_singleton);

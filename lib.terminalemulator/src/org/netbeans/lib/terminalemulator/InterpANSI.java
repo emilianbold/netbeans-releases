@@ -53,7 +53,7 @@
 
 package org.netbeans.lib.terminalemulator;
 
-public class InterpANSI extends InterpDumb {
+public class InterpANSI extends InterpProtoANSI {
 
     private static class Ascii {
         public static final char ESC = 27;
@@ -61,7 +61,7 @@ public class InterpANSI extends InterpDumb {
         public static final char CTRL_O = 15;   // ASCII SI/ShiftIn
     }
     
-    protected static class InterpTypeANSI extends InterpTypeDumb {
+    protected static class InterpTypeANSI extends InterpTypeProtoANSI {
 	protected final State st_esc = new State("esc");	// NOI18N
 	protected final State st_esc_lb = new State("esc_lb");	// NOI18N
 
@@ -408,7 +408,7 @@ public class InterpANSI extends InterpDumb {
 
     private InterpTypeANSI type;
 
-    public static final InterpTypeANSI type_singleton = new InterpTypeANSI();
+    private static final InterpTypeANSI type_singleton = new InterpTypeANSI();
 
     public InterpANSI(Ops ops) {
 	super(ops, type_singleton);
