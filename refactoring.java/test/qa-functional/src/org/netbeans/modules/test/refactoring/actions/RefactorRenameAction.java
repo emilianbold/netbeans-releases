@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -23,7 +23,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -34,27 +34,39 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
+ *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.test.refactoring.actions;
 
-import org.netbeans.jellytools.MainWindowOperator;
+import java.awt.event.KeyEvent;
+import javax.swing.KeyStroke;
+import org.netbeans.jellytools.Bundle;
+import org.netbeans.jellytools.actions.ActionNoBlock;
 
 /**
  *
- * @author Jiri Prox Jiri.Prox@SUN.Com
+ * @author Jiri.Prox@oracle.com, Marian.Mirilovic@oracle.com
  */
-public class UndoAction implements TestAction{
+public class RefactorRenameAction extends ActionNoBlock {
 
-    @Override
-    public void perform(Object parameter) {
-        MainWindowOperator.getDefault().menuBar().pushMenu(new String[]{"Refactor","Undo"});
+    private static final String refactorRenamePopup = Bundle.getStringTrimmed("org.netbeans.modules.refactoring.spi.impl.Bundle", "Actions/Refactoring")
+            + "|"
+            + Bundle.getStringTrimmed("org.netbeans.modules.refactoring.spi.impl.Bundle", "LBL_RenameAction");
+          
+    private static final String refactorRenameMenu = Bundle.getStringTrimmed("org.netbeans.modules.refactoring.spi.impl.Bundle", "Menu/Refactoring") // Refactoring
+            + "|"
+            + Bundle.getStringTrimmed("org.netbeans.modules.refactoring.spi.impl.Bundle", "LBL_RenameAction");
+    private static final KeyStroke keystroke = System.getProperty("os.name").toLowerCase().indexOf("mac") > -1 ?
+            KeyStroke.getKeyStroke(KeyEvent.VK_R, KeyEvent.META_MASK) :
+            KeyStroke.getKeyStroke(KeyEvent.VK_R, KeyEvent.CTRL_MASK);
+
+    /**
+     * creates new RefactorRenameAction instance
+     */
+    public RefactorRenameAction() {
+        super(refactorRenameMenu, refactorRenamePopup, null, keystroke);
     }
-
-    
-    
 }

@@ -64,12 +64,19 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.lang.model.element.TypeElement;
 import org.netbeans.api.debugger.Breakpoint.VALIDITY;
 import org.netbeans.api.debugger.jpda.ClassLoadUnloadBreakpoint;
 
 import org.netbeans.api.debugger.jpda.JPDABreakpoint;
 import org.netbeans.api.debugger.Session;
+import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.source.ClasspathInfo;
+import org.netbeans.api.java.source.CompilationController;
+import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.api.java.source.Task;
 import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
+import org.netbeans.modules.debugger.jpda.SourcePath;
 import org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.InvalidRequestStateExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.ObjectCollectedExceptionWrapper;
@@ -85,7 +92,9 @@ import org.netbeans.modules.debugger.jpda.jdi.request.EventRequestManagerWrapper
 import org.netbeans.modules.debugger.jpda.util.JPDAUtils;
 import org.netbeans.spi.debugger.jpda.BreakpointsClassFilter;
 import org.netbeans.spi.debugger.jpda.SourcePathProvider;
+import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.ErrorManager;
+import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
@@ -234,6 +243,123 @@ public abstract class ClassBasedBreakpoint extends BreakpointImpl {
         return compareSourceRoots(sourceRoot, urlRoot);
     }
     
+    /**
+     * Returns list of class names that are a sub-set of provided class names,
+     * which does not belong to disabled source roots.
+     * @param classNames List of class names
+     */
+    protected final String[] checkSourcesEnabled(String[] classNames, String[] srcRootPtr) {
+        List<String> enabledClassNames = new ArrayList<String>(classNames.length);
+        for (String className : classNames) {
+            String relPath = SourcePath.convertClassNameToRelativePath(className);
+            String globalURL = getDebugger().getEngineContext().getURL(relPath, true);
+            if (globalURL != null) {
+                if (getDebugger().getEngineContext().getURL(relPath, false) == null) {
+                    // Is disabled
+                    srcRootPtr[0] = getDebugger().getEngineContext().getSourceRoot(globalURL);
+                    continue;
+                }
+            }
+            enabledClassNames.add(className);
+        }
+        return enabledClassNames.toArray(new String[] {});
+    }
+    
+    protected static boolean classExistsInSources(final String className, String[] projectSourceRoots) {
+        /*
+        ClassIndexManager cim = ClassIndexManager.getDefault();
+        List<FileObject> sourcePaths = new ArrayList<FileObject>(projectSourceRoots.length);
+        for (String sr : projectSourceRoots) {
+            FileObject fo = getFileObject(sr);
+            if (fo != null) {
+                sourcePaths.add(fo);
+                ClassIndexImpl ci;
+                try {
+                    ci = cim.getUsagesQuery(fo.getURL());
+                    if (ci != null) {
+                        String sourceName = ci.getSourceName(className);
+                        if (sourceName != null) {
+                            return true;
+                        }
+                    }
+                } catch (FileStateInvalidException ex) {
+                    continue;
+                } catch (java.io.IOException ioex) {
+                    continue;
+                }
+            }
+        }
+        return false;
+         */
+        List<FileObject> sourcePaths = new ArrayList<FileObject>(projectSourceRoots.length);
+        for (String sr : projectSourceRoots) {
+            FileObject fo = getFileObject(sr);
+            if (fo != null) {
+                sourcePaths.add(fo);
+            }
+        }
+        ClassPath cp = ClassPathSupport.createClassPath(sourcePaths.toArray(new FileObject[0]));
+        //ClassPathSupport.createClassPath(new FileObject[] {});
+        ClasspathInfo cpInfo = ClasspathInfo.create(ClassPathSupport.createClassPath(new FileObject[] {}),
+                                                    ClassPathSupport.createClassPath(new FileObject[] {}),
+                                                    cp);
+        //ClassIndex ci = cpInfo.getClassIndex();
+        JavaSource js = JavaSource.create(cpInfo);
+        final boolean[] found = new boolean[] { false };
+        try {
+            js.runUserActionTask(new Task<CompilationController>() {
+                @Override
+                public void run(CompilationController cc) throws Exception {
+                    cc.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
+                    TypeElement te = cc.getElements().getTypeElement(className);
+                    if (te != null) { // found
+                        found[0] = true;
+                    }
+                }
+            }, true);
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        return found[0];
+        /*
+        SourceUtils.getFile(null, null);
+        ClasspathInfo.create(null, null, cp);
+
+        cp = org.netbeans.modules.java.source.classpath.SourcePath.create(cp, true);
+        try {
+            ClassLoader cl = cp.getClassLoader(true);
+            FileObject fo = cp.findResource(className.replace('.', '/').concat(".class"));
+            Class c = cl.loadClass(className);
+            System.err.println("classExistsInSources("+className+"): fo = "+fo+", class = "+c);
+            return c != null;
+        } catch (ClassNotFoundException ex) {
+            return false;
+        }
+        */
+    }
+    
+    /**
+     * Returns FileObject for given String.
+     */
+    private static FileObject getFileObject (String file) {
+        File f = new File (file);
+        FileObject fo = FileUtil.toFileObject (f);
+        String path = null;
+        if (fo == null && file.contains("!/")) {
+            int index = file.indexOf("!/");
+            f = new File(file.substring(0, index));
+            fo = FileUtil.toFileObject (f);
+            path = file.substring(index + "!/".length());
+        }
+        if (fo != null && FileUtil.isArchiveFile (fo)) {
+            fo = FileUtil.getArchiveRoot (fo);
+            if (path !=null) {
+                fo = fo.getFileObject(path);
+            }
+        }
+        return fo;
+    }
+
     protected final void setClassRequests (
         String[] classFilters,
         String[] classExclusionFilters,

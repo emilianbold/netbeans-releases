@@ -58,6 +58,8 @@ import org.netbeans.modules.tasks.ui.actions.*;
 import org.netbeans.modules.tasks.ui.actions.Actions.CloseRepositoryNodeAction;
 import org.netbeans.modules.tasks.ui.actions.Actions.CreateTaskAction;
 import org.netbeans.modules.tasks.ui.actions.Actions.OpenRepositoryNodeAction;
+import org.netbeans.modules.tasks.ui.actions.Actions.CreateQueryAction;
+import org.netbeans.modules.tasks.ui.actions.Actions.QuickSearchAction;
 import org.netbeans.modules.tasks.ui.treelist.AsynchronousNode;
 import org.netbeans.modules.tasks.ui.treelist.TreeLabel;
 import org.netbeans.modules.tasks.ui.treelist.TreeListNode;
@@ -81,6 +83,7 @@ public class RepositoryNode extends AsynchronousNode<Collection<Query>> implemen
     private LinkButton btnRefresh;
     private LinkButton btnSearch;
     private LinkButton btnCreateTask;
+    private LinkButton btnAddQuery;
     private CloseRepositoryNodeAction closeRepositoryAction;
     private OpenRepositoryNodeAction openRepositoryAction;
     private Map<String, QueryNode> queryNodesMap;
@@ -97,7 +100,7 @@ public class RepositoryNode extends AsynchronousNode<Collection<Query>> implemen
         queryNodesMap = new HashMap<String, QueryNode>();
         repositoryListener = new RepositoryListener();
     }
-
+ 
     @Override
     protected Collection<Query> load() {
         if (refresh && queryNodes != null) {
@@ -135,12 +138,16 @@ public class RepositoryNode extends AsynchronousNode<Collection<Query>> implemen
         if (isOpened()) {
             btnRefresh = new LinkButton(ImageUtilities.loadImageIcon("org/netbeans/modules/tasks/ui/resources/refresh.png", true), new Actions.RefreshRepositoryAction(this)); //NOI18N
             btnRefresh.setToolTipText(NbBundle.getMessage(CategoryNode.class, "LBL_Refresh")); //NOI18N
-            panel.add(btnRefresh, new GridBagConstraints(8, 0, 1, 1, 0.0, 0.0, GridBagConstraints.EAST, GridBagConstraints.NONE, new Insets(0, 3, 0, 0), 0, 0));
+            panel.add(btnRefresh, new GridBagConstraints(9, 0, 1, 1, 0.0, 0.0, GridBagConstraints.EAST, GridBagConstraints.NONE, new Insets(0, 3, 0, 0), 0, 0));
 
-            btnSearch = new LinkButton(ImageUtilities.loadImageIcon("org/netbeans/modules/tasks/ui/resources/search_repo.png", true), new SearchRepositoryAction(this)); //NOI18N
+            btnSearch = new LinkButton(ImageUtilities.loadImageIcon("org/netbeans/modules/tasks/ui/resources/search_repo.png", true), new QuickSearchAction(this)); //NOI18N
             btnSearch.setToolTipText(NbBundle.getMessage(CategoryNode.class, "LBL_SearchInRepo")); //NOI18N
-            panel.add(btnSearch, new GridBagConstraints(7, 0, 1, 1, 0.0, 0.0, GridBagConstraints.EAST, GridBagConstraints.NONE, new Insets(0, 3, 0, 0), 0, 0));
+            panel.add(btnSearch, new GridBagConstraints(8, 0, 1, 1, 0.0, 0.0, GridBagConstraints.EAST, GridBagConstraints.NONE, new Insets(0, 3, 0, 0), 0, 0));
 
+            btnAddQuery = new LinkButton(ImageUtilities.loadImageIcon("org/netbeans/modules/tasks/ui/resources/query.png", true), new CreateQueryAction(this)); //NOI18N
+            btnAddQuery.setToolTipText(NbBundle.getMessage(CategoryNode.class, "LBL_CreateQuery")); //NOI18N
+            panel.add(btnAddQuery, new GridBagConstraints(7, 0, 1, 1, 0.0, 0.0, GridBagConstraints.EAST, GridBagConstraints.NONE, new Insets(0, 3, 0, 0), 0, 0));
+            
             btnCreateTask = new LinkButton(ImageUtilities.loadImageIcon("org/netbeans/modules/tasks/ui/resources/add_task.png", true), new CreateTaskAction(this)); //NOI18N
             btnCreateTask.setToolTipText(NbBundle.getMessage(CategoryNode.class, "LBL_CreateTask")); //NOI18N
             panel.add(btnCreateTask, new GridBagConstraints(6, 0, 1, 1, 0.0, 0.0, GridBagConstraints.EAST, GridBagConstraints.NONE, new Insets(0, 3, 0, 0), 0, 0));
