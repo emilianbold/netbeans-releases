@@ -1265,6 +1265,8 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
                         v = l * r; isBoolean = false; break;
                     case PLUS:
                         v = l + r; isBoolean = false; break;
+                    case REMAINDER:
+                        v = l % r; isBoolean = false; break;
                     case EQUAL_TO:
                         b = l == r; break;
                     case GREATER_THAN:
@@ -1302,6 +1304,8 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
                         v = l * r; isBoolean = false; break;
                     case PLUS:
                         v = l + r; isBoolean = false; break;
+                    case REMAINDER:
+                        v = l % r; isBoolean = false; break;
                     case EQUAL_TO:
                         b = l == r; break;
                     case GREATER_THAN:
