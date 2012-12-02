@@ -66,6 +66,7 @@ import org.netbeans.modules.web.webkit.debugging.api.dom.Node;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
+import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -136,12 +137,17 @@ abstract class WebKitBreakpointManager implements PropertyChangeListener {
         }
     }
     
+    @NbBundle.Messages({
+        "MSG_BRKP_Resolved=Successfully resolved at current line.",
+        "MSG_BRKP_Unresolved=Not resolved/inactive at current line."
+    })
     private static final class WebKitLineBreakpointManager extends WebKitBreakpointManager 
         implements Debugger.Listener, ChangeListener {
         
         private final LineBreakpoint lb;
-        private org.netbeans.modules.web.webkit.debugging.api.debugger.Breakpoint b;
+        private volatile org.netbeans.modules.web.webkit.debugging.api.debugger.Breakpoint b;
         private final AtomicBoolean lineChanged = new AtomicBoolean(false);
+        private final ThreadLocal<Boolean> ignoreLineUpdate = new ThreadLocal<Boolean>();
         private ProjectContext pc;
         
         public WebKitLineBreakpointManager(Debugger d, ProjectContext pc, LineBreakpoint lb) {
@@ -160,8 +166,19 @@ abstract class WebKitBreakpointManager implements PropertyChangeListener {
             if (curl != null) {
                 String url = lb.getURLString(pc.getProject(), curl);
                 url = reformatFileURL(url);
-                b = d.addLineBreakpoint(url, lb.getLine().getLineNumber(), 0);
-                d.addListener(this);
+                org.netbeans.modules.web.webkit.debugging.api.debugger.Breakpoint br =
+                    d.addLineBreakpoint(url, lb.getLine().getLineNumber(), 0);
+                if (br != null) {
+                    br.addPropertyChangeListener(this);
+                    long brLine = br.getLineNumber();
+                    if (brLine >= 0) {
+                        lb.setValid(Bundle.MSG_BRKP_Resolved());
+                    } else {
+                        lb.setInvalid(Bundle.MSG_BRKP_Unresolved());
+                    }
+                    b = br;
+                    d.addListener(this);
+                }
             }
         }
 
@@ -170,11 +187,13 @@ abstract class WebKitBreakpointManager implements PropertyChangeListener {
             if (b == null) {
                 return ;
             }
+            b.removePropertyChangeListener(this);
             d.removeListener(this);
             if (d.isEnabled()) {
                 d.removeLineBreakpoint(b);
             }
             b = null;
+            lb.resetValidity();
         }
         
         private void resubmit() {
@@ -223,9 +242,26 @@ abstract class WebKitBreakpointManager implements PropertyChangeListener {
         public void propertyChange(PropertyChangeEvent event) {
             String propertyName = event.getPropertyName();
             if (LineBreakpoint.PROP_LINE.equals(propertyName)) {
+                Boolean ignore = ignoreLineUpdate.get();
+                if (ignore != null && ignore.booleanValue()) {
+                    return ;
+                }
                 resubmit();
             } else if (LineBreakpoint.PROP_LINE_NUMBER.equals(propertyName)) {
                 lineChanged.set(true);
+            } else if (org.netbeans.modules.web.webkit.debugging.api.debugger.Breakpoint.PROP_LOCATION.equals(propertyName)) {
+                int lineNumber = (int) b.getLineNumber();
+                ignoreLineUpdate.set(Boolean.TRUE);
+                try {
+                    lb.setLine(lineNumber);
+                } finally {
+                    ignoreLineUpdate.remove();
+                }
+                if (lineNumber >= 0) {
+                    lb.setValid(Bundle.MSG_BRKP_Resolved());
+                } else {
+                    lb.setInvalid(Bundle.MSG_BRKP_Unresolved());
+                }
             } else {
                 super.propertyChange(event);
             }

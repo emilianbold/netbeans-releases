@@ -45,6 +45,7 @@
 package org.netbeans.modules.web.javascript.debugger.breakpoints;
 
 import java.util.List;
+import org.netbeans.api.debugger.Breakpoint;
 import org.netbeans.modules.web.javascript.debugger.ViewModelSupport;
 import org.netbeans.modules.web.javascript.debugger.breakpoints.DOMNode.NodeId;
 import org.netbeans.spi.debugger.DebuggerServiceRegistration;
@@ -159,10 +160,19 @@ public class BreakpointModel extends ViewModelSupport
      */
     @Override
     public String getIconBase(Object node) throws UnknownTypeException {
+        if (!(node instanceof Breakpoint)) {
+            throw new UnknownTypeException(node);
+        }
+        Breakpoint b = (Breakpoint) node;
+        boolean disabled = !b.isEnabled();
+        boolean invalid = b.getValidity() == Breakpoint.VALIDITY.INVALID;
+        String iconBase;
         if (node instanceof LineBreakpoint) {
             LineBreakpoint breakpoint = (LineBreakpoint)node;
-            if(!breakpoint.isEnabled()) {
-                return DISABLED_LINE_BREAKPOINT;
+            if (disabled) {
+                iconBase = DISABLED_LINE_BREAKPOINT;
+            } else {
+                iconBase = LINE_BREAKPOINT;
             }
             /*Line line = Utils.getCurrentLine();
             if(line != null && 
@@ -170,28 +180,64 @@ public class BreakpointModel extends ViewModelSupport
             {
                 return CURRENT_LINE_BREAKPOINT;
             }*/
-            return LINE_BREAKPOINT;
-        }
-        else if ( node instanceof AbstractBreakpoint ){
+        } else if (node instanceof AbstractBreakpoint) {
             AbstractBreakpoint breakpoint = (AbstractBreakpoint) node;
-            if(!breakpoint.isEnabled()) {
-                return DISABLED_BREAKPOINT;
+            if (disabled) {
+                iconBase = DISABLED_BREAKPOINT;
+            } else {
+                iconBase = BREAKPOINT;
             }
-            return BREAKPOINT;
+        } else {
+            throw new UnknownTypeException(node);
         }
-        throw new UnknownTypeException(node);
+        if (invalid && !disabled) {
+            iconBase += "_broken";
+        }
+        return iconBase;
     }
 
     /* (non-Javadoc)
      * @see org.netbeans.spi.viewmodel.NodeModel#getShortDescription(java.lang.Object)
      */
+    @NbBundle.Messages({
+        "CTL_APPEND_BP_Valid=[Active]",
+        "CTL_APPEND_BP_Invalid=[Invalid]",
+        "# {0} - message describing why is the breakpoint invalid.",
+        "CTL_APPEND_BP_Invalid_with_reason=[Invalid, reason: {0}]"
+    })
     @Override
     public String getShortDescription(Object node) throws UnknownTypeException {
-        if (node instanceof LineBreakpoint) {
-            return ((LineBreakpoint)node).getLine().getDisplayName();
+        if (!(node instanceof Breakpoint)) {
+            throw new UnknownTypeException(node);
         }
-
-        throw new UnknownTypeException(node);
+        Breakpoint b = (Breakpoint) node;
+        String appendMsg = null;
+        if (node instanceof Breakpoint) {
+            Breakpoint.VALIDITY validity = b.getValidity();
+            boolean valid = validity == Breakpoint.VALIDITY.VALID;
+            boolean invalid = validity == Breakpoint.VALIDITY.INVALID;
+            String message = b.getValidityMessage();
+            if (valid) {
+                appendMsg = Bundle.CTL_APPEND_BP_Valid();
+            }
+            if (invalid) {
+                if (message != null) {
+                    appendMsg = Bundle.CTL_APPEND_BP_Invalid_with_reason(message);
+                } else {
+                    appendMsg = Bundle.CTL_APPEND_BP_Invalid();
+                }
+            }
+        }
+        String description;
+        if (node instanceof LineBreakpoint) {
+            description = ((LineBreakpoint)node).getLine().getDisplayName();
+        } else {
+            return null;
+        }
+        if (appendMsg != null) {
+            description = description + " " + appendMsg;
+        }
+        return description;
     }
 
 }
