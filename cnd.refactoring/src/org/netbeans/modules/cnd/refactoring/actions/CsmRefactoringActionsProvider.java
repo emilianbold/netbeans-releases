@@ -86,7 +86,7 @@ public class CsmRefactoringActionsProvider extends CsmActionsImplementationProvi
             CsmContext editorContext = CsmContext.create(lookup);
             if (editorContext != null) {
                 CsmFunction fun = editorContext.getEnclosingFunction();
-                return fun != null && !CsmKindUtilities.isDestructor(fun);
+                return fun != null;
             }
             return false;
         } else {

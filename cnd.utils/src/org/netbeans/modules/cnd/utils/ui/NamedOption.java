@@ -56,6 +56,7 @@ public abstract class NamedOption {
     public static final String MAKE_PROJECT_CATEGORY = "CND/options/makeProject"; //NOI18N
     public static final String HINTS_CATEGORY = "CND/options/hints"; //NOI18N
     public static final String OTHER_CATEGORY = "CND/options/other"; //NOI18N
+    public static final String EXTRA_OPTIONS_FLAG = "cnd.options.project.extra"; //NOI18N
     
     private static final Accessor accessor = new Accessor();
     
@@ -74,6 +75,10 @@ public abstract class NamedOption {
     public abstract OptionKind getKind();
 
     public abstract Object getDefaultValue();
+    
+    public boolean isVisible() {
+        return true;
+    }
     
     public static Accessor getAccessor() {
         return accessor;

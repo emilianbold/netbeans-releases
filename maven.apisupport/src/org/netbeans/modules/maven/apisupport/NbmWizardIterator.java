@@ -121,10 +121,10 @@ public class NbmWizardIterator implements WizardDescriptor.BackgroundInstantiati
     }
 
     @SuppressWarnings({"unchecked", "rawtypes"}) // XXX until rewrite panel storage
-    private WizardDescriptor.Panel<WizardDescriptor>[] createPanels(ValidationGroup vg) {
+    private WizardDescriptor.Panel<WizardDescriptor>[] createPanels(ValidationGroup enabledVG, ValidationGroup errorMsgVG) {
             return new WizardDescriptor.Panel[] {
-                ArchetypeWizards.basicWizardPanel(vg, false, archetype),
-                new NbmWizardPanel(vg, archetype)
+                ArchetypeWizards.basicWizardPanel(errorMsgVG, false, archetype),
+                new NbmWizardPanel(enabledVG, errorMsgVG, archetype)
             };
     }
     
@@ -183,9 +183,10 @@ public class NbmWizardIterator implements WizardDescriptor.BackgroundInstantiati
     @Override
     public void initialize(WizardDescriptor wiz) {
         index = 0;
-        ValidationGroup vg = ValidationGroup.create(new WizardDescriptorAdapter(wiz));
-
-        panels = createPanels(vg);
+        ValidationGroup enabledVG = ValidationGroup.create(new WizardDescriptorAdapter(wiz, WizardDescriptorAdapter.Type.VALID));
+        ValidationGroup errorMsgVG = ValidationGroup.create(new WizardDescriptorAdapter(wiz, WizardDescriptorAdapter.Type.MESSAGE));
+        enabledVG.addItem(errorMsgVG, false);
+        panels = createPanels(enabledVG, errorMsgVG);
         this.wiz = wiz;
         wiz.putProperty ("NewProjectWizard_Title", title); // NOI18N
         // Make sure list of steps is accurate.

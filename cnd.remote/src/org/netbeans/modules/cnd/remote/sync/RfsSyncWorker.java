@@ -57,6 +57,7 @@ import java.util.Map;
 import java.util.MissingResourceException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import org.netbeans.modules.cnd.api.remote.RemoteSyncWorker;
 import org.netbeans.modules.cnd.api.remote.ServerList;
@@ -85,8 +86,9 @@ import org.openide.util.RequestProcessor;
 /*package*/ final class RfsSyncWorker extends BaseSyncWorker implements RemoteSyncWorker {
 
     private static final RequestProcessor RP = new RequestProcessor("RFS Sync Worker", 20); // NOI18N
-    private NativeProcess remoteControllerProcess;
+    //private NativeProcess remoteControllerProcess;
     private RfsLocalController localController;
+    private RemoteProcessController remoteController;
     private String remoteDir;
     private ErrorReader errorReader;
 
@@ -180,7 +182,8 @@ import org.openide.util.RequestProcessor;
         if (rfsTrace != null) {
             pb.getEnvironment().put("RFS_CONTROLLER_TRACE", rfsTrace); // NOI18N
         }
-        remoteControllerProcess = pb.call();
+        NativeProcess remoteControllerProcess = pb.call();
+        remoteController = new RemoteProcessController(remoteControllerProcess);
 
         errorReader = new ErrorReader(remoteControllerProcess.getErrorStream(), err);
         RP.post(errorReader);
@@ -190,7 +193,7 @@ import org.openide.util.RequestProcessor;
         final BufferedReader rcInputStreamReader = ProcessUtils.getReader(rcInputStream, executionEnvironment.isRemote());
         final PrintWriter rcOutputStreamWriter = ProcessUtils.getWriter(rcOutputStream, executionEnvironment.isRemote());
         localController = new RfsLocalController(
-                executionEnvironment, files, remoteControllerProcess, rcInputStreamReader,
+                executionEnvironment, files, remoteController, rcInputStreamReader,
                 rcOutputStreamWriter, err, privProjectStorageDir);
 
         if (!localController.init()) {
@@ -283,15 +286,9 @@ import org.openide.util.RequestProcessor;
     }
 
     private void localControllerCleanup() {
-        RfsLocalController lc;
         synchronized (this) {
-            lc = localController;
             localController = null;
         }
-        // now local controller does this as soon as
-        //if (lc != null) {
-        //    lc.shutdown();
-        //}
     }
     
     private void remoteControllerCleanup() {
@@ -299,13 +296,13 @@ import org.openide.util.RequestProcessor;
         if (r != null) {
             r.stop();
         }
-        NativeProcess rc;
+        RemoteProcessController rc;
         synchronized (this) {
-            rc = remoteControllerProcess;
-            remoteControllerProcess = null;
+            rc = remoteController;
+            remoteController = null;
         }
         if (rc != null) {
-            rc.destroy();
+            rc.stop();
         }
     }
 
@@ -314,19 +311,19 @@ import org.openide.util.RequestProcessor;
 
         private final BufferedReader errorReader;
         private final PrintWriter errorWriter;
-        private boolean stopped;
+        private final AtomicBoolean stopped;
 
         public ErrorReader(InputStream errorStream, PrintWriter errorWriter) {
             this.errorReader = new BufferedReader(new InputStreamReader(errorStream));
             this.errorWriter = errorWriter;
-            this.stopped = false;
+            this.stopped = new AtomicBoolean(false);
         }
         @Override
         public void run() {
             try {
                 String line;
                 while ((line = errorReader.readLine()) != null) {
-                    if (stopped) {
+                    if (stopped.get()) {
                         break;
                     }
                     if (errorWriter != null) {
@@ -340,7 +337,29 @@ import org.openide.util.RequestProcessor;
         }
 
         private void stop() {
-            stopped = true;
+            stopped.set(true);
+        }
+    }
+    
+    static class RemoteProcessController {
+        private final NativeProcess remoteControllerProcess;
+        private final AtomicBoolean stopped = new AtomicBoolean(false);
+        
+        RemoteProcessController (NativeProcess remoteControllerProcess){
+            this.remoteControllerProcess = remoteControllerProcess;            
+        }
+        
+        boolean isAlive(){
+            return ProcessUtils.isAlive(remoteControllerProcess);
+        }
+        
+        boolean isStopped(){
+            return stopped.get();
+        }
+        
+        void stop() {
+            stopped.set(true);
+            remoteControllerProcess.destroy();
         }
     }
 }

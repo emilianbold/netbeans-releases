@@ -75,6 +75,8 @@ public class HostUpdates {
     //
 
     private static final Map<ExecutionEnvironment, HostUpdates> map = new HashMap<ExecutionEnvironment, HostUpdates>();
+    
+    private static final RequestProcessor RP = new RequestProcessor("HostUpdates", 1); // NOI18N
 
     public static void register(Collection<File> localFiles, ExecutionEnvironment env, FileObject privStorageDir) throws IOException {
         HostUpdates.get(env, true, privStorageDir).register(localFiles);
@@ -227,7 +229,7 @@ public class HostUpdates {
                         download(confirmed);
                     }
                 };
-                RequestProcessor.getDefault().post(r);
+                RP.post(r);
             }
         }
     }
@@ -249,7 +251,7 @@ public class HostUpdates {
             infos.removeAll(unconfirmed);
         }
         if (!confirmed.isEmpty()) {
-            RequestProcessor.getDefault().post(new NamedRunnable("") {
+            RP.post(new NamedRunnable("") {
                 @Override
                 protected void runImpl() {
                     download(confirmed);
@@ -317,7 +319,7 @@ public class HostUpdates {
                 detailsText,
                 onClickAction,
                 NotificationDisplayer.Priority.LOW));
-        RequestProcessor.getDefault().post(new Runnable() {
+        RP.post(new Runnable() {
             @Override
             public void run() {
                 Notification n = notRef.get();

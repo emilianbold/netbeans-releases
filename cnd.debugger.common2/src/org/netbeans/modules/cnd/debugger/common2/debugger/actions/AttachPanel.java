@@ -96,8 +96,10 @@ import org.netbeans.modules.cnd.debugger.common2.debugger.remote.CndRemote;
 
 
 import org.netbeans.modules.cnd.debugger.common2.debugger.debugtarget.DebugTarget;
+import org.netbeans.modules.cnd.debugger.common2.debugger.spi.UserAttachAction;
 import org.netbeans.modules.cnd.utils.ui.ModalMessageDlg;
 import org.openide.util.Cancellable;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.windows.WindowManager;
 
@@ -926,6 +928,21 @@ public final class AttachPanel extends TopComponent {
         // interface Controller
         final public boolean ok() {
             //System.out.println("AttachPanel.ok");
+            
+            if ( executableProjectPanel.getNoProject() && getHostName().equals(Host.getLocal().getHostName()) ) {
+                UserAttachAction action = Lookup.getDefault().lookup(UserAttachAction.class);
+                if (action != null) {
+                    int selectedRow = procTable.getSelectedRow();
+                    if (selectedRow == -1) {
+                        return false;
+                    }
+
+                    String pid = processModel.getValueAt(selectedRow, getPsData().pidColumnIdx()).toString();
+                    action.attach(pid, engine.getType());
+                    return true;
+                }
+            }
+            
             if (isValid()) {
                 saveState();
                 // doAttach() should not be called in EDT (i.e. see #212908).

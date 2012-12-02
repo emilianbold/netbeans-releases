@@ -118,7 +118,7 @@ public class WebFaceletTaglibResourceProvider implements ConfigurationResourcePr
                         //try to resolve according to the web module root,
                         //in most cases a folder identical to the web-inf's parent folder
                         //but may not always be true
-                        libraryFO = webModuleRoot.getFileObject(libraryPath);
+                        libraryFO = webModuleRoot != null ? webModuleRoot.getFileObject(libraryPath) : null; //WebModule may have no root if broken
                     }
                     if(libraryFO != null) {
                         URL url = URLMapper.findURL(libraryFO, URLMapper.INTERNAL);

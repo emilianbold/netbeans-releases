@@ -49,6 +49,7 @@ import org.netbeans.api.editor.mimelookup.MimeRegistrations;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.spi.editor.typinghooks.DeletedTextInterceptor;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -75,8 +76,21 @@ public class CppDTIFactory implements DeletedTextInterceptor.Factory {
         private CppTypingCompletion.ExtraText rawStringExtraText;
 
         @Override
-        public boolean beforeRemove(Context context) throws BadLocationException {
-            rawStringExtraText = CppTypingCompletion.checkRawStringRemove(context);
+        public boolean beforeRemove(final Context context) throws BadLocationException {
+            final CppTypingCompletion.ExtraText[] res = new CppTypingCompletion.ExtraText[]{null};
+            BaseDocument doc = (BaseDocument) context.getDocument();
+            doc.runAtomicAsUser(new Runnable() {
+
+                @Override
+                public void run() {
+                    try {
+                        res[0] = CppTypingCompletion.checkRawStringRemove(context);
+                    } catch (BadLocationException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
+                }
+            });
+            rawStringExtraText = res[0];
             return false;
         }
 

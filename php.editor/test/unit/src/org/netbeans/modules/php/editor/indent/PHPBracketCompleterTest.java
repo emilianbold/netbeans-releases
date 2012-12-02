@@ -1148,4 +1148,28 @@ public class PHPBracketCompleterTest extends PHPCodeCompletionTestBase {
         insertChar("function foo()\n    {\n    while ($bar)\n        {\n        if (true)\n            {\n            doSmt();\n            }\n        }\n    ^", '}', "function foo()\n    {\n    while ($bar)\n        {\n        if (true)\n            {\n            doSmt();\n            }\n        }\n    }^", null, false, options);
     }
 
+    public void testIssue170779_01() throws Exception {
+        String original = "switch($value) {\n    case^\n}";
+        String expected = "switch($value) {\n    case ^\n}";
+        insertChar(original, ' ', expected);
+    }
+
+    public void testIssue170779_02() throws Exception {
+        String original = "switch ($value) {\n    case 1:\n        break;\n    case^\n}";
+        String expected = "switch ($value) {\n    case 1:\n        break;\n    case ^\n}";
+        insertChar(original, ' ', expected);
+    }
+
+    public void testIssue170779_03() throws Exception {
+        String original = "switch ($value) {\n    case 1:\n        break;\n    case 2:\n        case^\n}";
+        String expected = "switch ($value) {\n    case 1:\n        break;\n    case 2:\n    case ^\n}";
+        insertChar(original, ' ', expected);
+    }
+
+    public void testIssue170779_04() throws Exception {
+        String original = "switch ($value) {\n    case 1:\n        break;\n    case 2:\n        default^\n}";
+        String expected = "switch ($value) {\n    case 1:\n        break;\n    case 2:\n    default:^\n}";
+        insertChar(original, ':', expected);
+    }
+
 }

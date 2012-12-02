@@ -62,6 +62,8 @@ import org.openide.util.RequestProcessor;
 @ActionRegistration(displayName = "ConnectMenuItem")
 @ActionReference(path = "Remote/Host/Actions", name = "ConnectAction", position = 100)
 public class ConnectAction extends SingleHostAction {
+    
+    private static final RequestProcessor RP = new RequestProcessor("ConnectAction", 1); // NOI18N
 
     @Override
     public String getName() {
@@ -83,7 +85,7 @@ public class ConnectAction extends SingleHostAction {
 
     @Override
     protected void performAction(final ExecutionEnvironment env, Node node) {
-        RequestProcessor.getDefault().post(new Runnable() {
+        RP.post(new Runnable() {
             @Override
             public void run() {
                 connect(env);

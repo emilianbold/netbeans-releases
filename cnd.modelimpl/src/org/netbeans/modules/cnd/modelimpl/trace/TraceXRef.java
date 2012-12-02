@@ -1474,7 +1474,7 @@ public class TraceXRef extends TraceModel {
             if (getClass() != obj.getClass()) {
                 return false;
             }
-            final UnresolvedEntry other = (UnresolvedEntry) obj;
+            final IndexedEntry other = (IndexedEntry) obj;
             return this.name.equals(other.name);
         }
 

@@ -216,7 +216,35 @@ public class JsCodeCompletionGeneralTest extends JsCodeComplationBase {
     public void testIssue222780() throws Exception {
         checkCompletion("testfiles/completion/general/issue222780.js", "$scope.getServoConfigurations = fun^", false);
     }
+
+    public void testIssue214205_01() throws Exception {
+        checkCompletion("testfiles/completion/general/issue214205/issue214205.js", "number.^", false);
+    }
+
+    public void testIssue214205_02() throws Exception {
+        checkCompletion("testfiles/completion/general/issue214205/issue214205.js", "new Number().^", false);
+    }
     
+    public void testIssue222993_01() throws Exception {
+        checkCompletion("testfiles/completion/general/issue222993.js", "        this.^content.slides.titles[0] = {};", false);
+    }
+    
+    public void testIssue222993_02() throws Exception {
+        checkCompletion("testfiles/completion/general/issue222993.js", "        this.content.^slides.titles[0] = {};", false);
+    }
+
+    public void testIssue222993_03() throws Exception {
+        checkCompletion("testfiles/completion/general/issue222993.js", "        this.content.slides.^titles[0] = {};", false);
+    }
+    
+    public void testIssue223037_01() throws Exception {
+        checkCompletion("testfiles/completion/general/issue223037.js", "                return this.^note + this.author;", false);
+    }
+    
+    public void testIssue223037_02() throws Exception {
+        checkCompletion("testfiles/completion/general/issue223037.js", "this.content.slides.titles.^reverse();", false);
+    }
+
     @Override
     protected Map<String, ClassPath> createClassPathsForTest() {
         return Collections.singletonMap(

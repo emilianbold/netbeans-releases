@@ -421,14 +421,21 @@ public class FtpClient implements RemoteClient {
 
         RemoteFile result = null;
         try {
-            FTPFile[] files = ftpClient.listFiles(absolutePath);
-            if (files.length == 1) {
-                FTPFile file = files[0];
-                if ((file.isFile() || file.isSymbolicLink())
-                        && file.getName().equals(RemoteUtils.getName(absolutePath))) {
-                    String parentPath = RemoteUtils.getParentPath(absolutePath);
-                    assert parentPath != null : "Parent path should exist for " + absolutePath;
-                    result = new RemoteFileImpl(file, parentPath);
+            // #220675 - proftpd returns absolut pathname as name so we must:
+            //  - cd to the parent path
+            //  - list relative file
+            String parentPath = RemoteUtils.getParentPath(absolutePath);
+            assert parentPath != null : "Parent path should exist for " + absolutePath;
+            if (ftpClient.changeWorkingDirectory(parentPath)) {
+                // path exists
+                String name = RemoteUtils.getName(absolutePath);
+                FTPFile[] files = ftpClient.listFiles(name);
+                if (files.length == 1) {
+                    FTPFile file = files[0];
+                    if ((file.isFile() || file.isSymbolicLink())
+                            && file.getName().equals(name)) {
+                        result = new RemoteFileImpl(file, parentPath);
+                    }
                 }
             }
         } catch (IOException ex) {

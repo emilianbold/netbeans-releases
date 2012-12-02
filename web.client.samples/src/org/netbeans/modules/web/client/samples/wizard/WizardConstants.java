@@ -51,6 +51,7 @@ public final class WizardConstants {
     public static final String SAMPLE_PROJECT_NAME = "sampleProjectName"; // NOI18N
     public static final String SAMPLE_PROJECT_DIR = "sampleProjectDir"; // NOI18N
     public static final String SAMPLE_PROJECT_URL = "sampleProjectURL"; // NOI18N
+    public static final String SAMPLE_TEMPLATE = "sampleTemplate"; // NOI18N
 
     private WizardConstants() {
     }

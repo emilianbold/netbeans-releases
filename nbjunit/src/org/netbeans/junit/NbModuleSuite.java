@@ -75,9 +75,11 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.swing.SwingUtilities;
 import junit.framework.Assert;
+import junit.framework.AssertionFailedError;
 import junit.framework.Protectable;
 import junit.framework.Test;
 import junit.framework.TestCase;
+import junit.framework.TestFailure;
 import junit.framework.TestResult;
 
 /**
@@ -948,7 +950,21 @@ public class NbModuleSuite {
             if (handler != null) {
                 NbModuleLogHandler.finish();
             }
-            new Shutdown(global, config.latestTestCaseClass.getName()).run(result);
+            String n;
+            if (config.latestTestCaseClass != null) {
+                n = config.latestTestCaseClass.getName();
+            } else {
+                n = "exit"; // NOI18N
+            }
+            TestResult shutdownResult = new Shutdown(global, n).run();
+            if (shutdownResult.failureCount() > 0) {
+                final TestFailure tf = shutdownResult.failures().nextElement();
+                result.addFailure(tf.failedTest(), (AssertionFailedError)tf.thrownException());
+            }
+            if (shutdownResult.errorCount() > 0) {
+                final TestFailure tf = shutdownResult.errors().nextElement();
+                result.addError(tf.failedTest(), tf.thrownException());
+            }
         }
 
         static File findPlatform() {
@@ -1321,6 +1337,16 @@ public class NbModuleSuite {
             @Override
             protected int timeOut() {
                 return 180000; // 3 minutes for a shutdown
+            }
+
+            @Override
+            protected Level logLevel() {
+                return Level.FINE;
+            }
+
+            @Override
+            protected String logRoot() {
+                return "org.netbeans.core.NbLifecycleManager"; // NOI18N
             }
             
             private static void waitForAWT() throws InvocationTargetException, InterruptedException {

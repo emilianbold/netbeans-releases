@@ -176,6 +176,9 @@ public class AutoUpdate extends Task {
 
         Map<String,List<String>> installed;
         if (dir != null) {
+            if (!dir.exists()) {
+                dir.mkdirs();
+            }
             File[] arr = dir.listFiles();
             if (arr == null) {
                 throw new BuildException("installdir must be existing directory: " + dir);

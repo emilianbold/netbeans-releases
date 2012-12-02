@@ -987,7 +987,7 @@ public final class NativeDebuggerManager extends DebuggerManagerAdapter {
         // See "./README.startup"
 
         if (isAsyncStart()) {
-            RequestProcessor.getDefault().post(new Runnable() {
+            getRequestProcessor().post(new Runnable() {
 
                 public void run() {
                     delegate().startDebugging(di);

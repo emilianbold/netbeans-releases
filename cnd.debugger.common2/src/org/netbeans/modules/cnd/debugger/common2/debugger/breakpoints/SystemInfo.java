@@ -59,6 +59,7 @@ public abstract class SystemInfo {
     protected Vector<String> items;
     protected String cmd;
     protected String ignore;
+    private static final RequestProcessor RP = new RequestProcessor("SystemInfo", 1); // NOI18N
 
     protected SystemInfo(Vector<String> items, String cmd, String ignore) {
 	this.items = items;
@@ -69,7 +70,7 @@ public abstract class SystemInfo {
     public abstract String all();
 
     public void stuffIntoAsync(final JComboBox combo) {
-	RequestProcessor.getDefault().post(new Runnable () {
+	RP.post(new Runnable () {
 	    public void run () {
 		stuffInto(combo);
 	    }

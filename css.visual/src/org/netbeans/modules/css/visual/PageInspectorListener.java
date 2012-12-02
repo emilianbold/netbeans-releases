@@ -45,6 +45,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.Collection;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.project.Project;
@@ -57,7 +58,10 @@ import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
-import org.openide.util.RequestProcessor;
+import org.openide.util.Lookup;
+import org.openide.util.Lookup.Result;
+import org.openide.util.LookupEvent;
+import org.openide.util.LookupListener;
 import org.openide.windows.OnShowing;
 import org.openide.windows.TopComponent;
 
@@ -73,30 +77,36 @@ import org.openide.windows.TopComponent;
 public class PageInspectorListener implements Runnable, PropertyChangeListener {
 
     private static final Logger LOGGER = Logger.getLogger(PageInspectorListener.class.getSimpleName());
-
     private PageInspector pageInspector;
     private Project project;
     private Page page;
     private FileObject file;
-    
-    private boolean repost = true;
+    private Result<PageInspector> lookupResult;
 
     @Override
     public void run() {
-        LOGGER.log(Level.FINE, "run(); repost {0} ", repost); //NOI18N
-        if(repost) {
-            repost = false;
-            RequestProcessor.getDefault().post(this, 2000); //UI shown, wait additional 2 seconds just for sure
-        } else {
-            pageInspector = PageInspector.getDefault();
-            if(pageInspector == null) {
-                throw new IllegalStateException("When to call PageInspector.getDefault() to get sg.?????");
+        lookupResult = Lookup.getDefault().lookupResult(PageInspector.class);
+        lookupResult.addLookupListener(new LookupListener() {
+            @Override
+            public void resultChanged(LookupEvent ev) {
+                refreshPageInspector();
             }
-            pageInspector.addPropertyChangeListener(this);
-            LOGGER.log(Level.FINE, "PropertyChangeListener added to PageInspector {0}", pageInspector); //NOI18N
+        });
+        refreshPageInspector();
+    }
+
+    private void refreshPageInspector() {
+        Collection<? extends PageInspector> allInstances = lookupResult.allInstances();
+        if (!allInstances.isEmpty()) {
+            PageInspector pi = allInstances.iterator().next();
+            if (pageInspector != null) {
+                pageInspector.removePropertyChangeListener(PageInspectorListener.this);
+            }
+            pageInspector = pi;
+            pageInspector.addPropertyChangeListener(PageInspectorListener.this);
         }
     }
-    
+
     @Override
     public void propertyChange(PropertyChangeEvent pce) {
         if (PageInspector.PROP_MODEL.equals(pce.getPropertyName())) {
@@ -141,14 +151,14 @@ public class PageInspectorListener implements Runnable, PropertyChangeListener {
                     //and the html navigator
                     DataObject dobj = DataObject.find(file);
                     EditorCookie ec = dobj.getLookup().lookup(EditorCookie.class);
-                    if(ec != null) {
+                    if (ec != null) {
                         ec.open();
                     }
                     //clear out the file ref so we won't re-activate the
                     //CssStyles window again and again.
                     //If the browser document changes then it will be re-set again
                     //and the CssStyles window will get the new context.
-                    file = null; 
+                    file = null;
 
                 } catch (DataObjectNotFoundException ex) {
                     Exceptions.printStackTrace(ex);
@@ -168,5 +178,4 @@ public class PageInspectorListener implements Runnable, PropertyChangeListener {
             }
         }
     }
-
 }

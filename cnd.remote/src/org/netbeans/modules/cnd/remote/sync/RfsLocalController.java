@@ -93,7 +93,7 @@ import org.openide.util.Utilities;
 
 class RfsLocalController extends NamedRunnable {
 
-    private final NativeProcess remoteControllerProcess;
+    private final RfsSyncWorker.RemoteProcessController remoteController;
     private final BufferedReader requestReader;
     private final PrintWriter responseStream;
     private final File[] files;
@@ -111,6 +111,7 @@ class RfsLocalController extends NamedRunnable {
     private static final boolean USE_TIMESTAMPS = DebugUtils.getBoolean("cnd.rfs.timestamps", true);
     private static final boolean CHECK_ALIVE = DebugUtils.getBoolean("cnd.rfs.check.alive", true);
 
+    private static final RequestProcessor RP = new RequestProcessor("RfsLocalController", 1); // NOI18N    
     /**
      * Maps remote canonical remote path remote controller operates with
      * to the absolute remote path local controller uses
@@ -126,12 +127,12 @@ class RfsLocalController extends NamedRunnable {
     }
 
     public RfsLocalController(ExecutionEnvironment executionEnvironment, File[] files,
-            NativeProcess remoteControllerProcess, BufferedReader requestStreamReader, PrintWriter responseStreamWriter, PrintWriter err,
+            RfsSyncWorker.RemoteProcessController remoteController, BufferedReader requestStreamReader, PrintWriter responseStreamWriter, PrintWriter err,
             FileObject privProjectStorageDir) throws IOException {
         super("RFS local controller thread " + executionEnvironment); //NOI18N
         this.execEnv = executionEnvironment;
         this.files = files;
-        this.remoteControllerProcess = remoteControllerProcess;
+        this.remoteController = remoteController;
         this.requestReader = requestStreamReader;
         this.responseStream = responseStreamWriter;
         this.err = err;
@@ -176,16 +177,8 @@ class RfsLocalController extends NamedRunnable {
                 if ("Killed".equals(request)){//NOI18N
                     //BZ #193114 - IllegalArgumentException: Protocol error: Killed
                     //let's check the process state
-                    if (remoteControllerProcess.getState() == NativeProcess.State.CANCELLED ||
-                            remoteControllerProcess.getState() == NativeProcess.State.FINISHED){
-                        try {
-                            int exitStatus = remoteControllerProcess.waitFor();
-                            if (exitStatus != 0){
-                                return RequestKind.KILLED;
-                            }
-                        } catch (InterruptedException ex) {
-                        }
-                        
+                    if (remoteController.isStopped()){
+                        return RequestKind.KILLED;                        
                     }
                 }
                 return RequestKind.UNKNOWN;
@@ -500,7 +493,7 @@ class RfsLocalController extends NamedRunnable {
             return false;
         }        
         logger.log(Level.FINE, "Initialization. Version=%c", version);
-        if (CHECK_ALIVE && !ProcessUtils.isAlive(remoteControllerProcess)) { // fixup for remote tests unstable failure (caused by jsch issue)
+        if (CHECK_ALIVE && !remoteController.isAlive()) { // fixup for remote tests unstable failure (caused by jsch issue)
             if (err != null) {
                 err.printf("Process exited unexpectedly when initializing\n"); //NOI18N
             }
@@ -581,7 +574,7 @@ class RfsLocalController extends NamedRunnable {
                 return false;
             }
         }
-        if (CHECK_ALIVE && !ProcessUtils.isAlive(remoteControllerProcess)) { // fixup for remote tests unstable failure (caused by jsch issue)
+        if (CHECK_ALIVE && !remoteController.isAlive()) { // fixup for remote tests unstable failure (caused by jsch issue)
             if (err != null) {
                 err.printf("Process exited unexpectedly\n"); //NOI18N
             }
@@ -655,7 +648,7 @@ class RfsLocalController extends NamedRunnable {
             return addedInfos;
         }
         
-        RequestProcessor.getDefault().post(new Runnable() {
+        RP.post(new Runnable() {
             @Override
             public void run() {
                 BufferedWriter requestWriter = new BufferedWriter(new OutputStreamWriter(process.getOutputStream()));
@@ -677,7 +670,7 @@ class RfsLocalController extends NamedRunnable {
             }
         });
 
-        RequestProcessor.getDefault().post(new Runnable() {
+        RP.post(new Runnable() {
             private final BufferedReader errorReader = new BufferedReader(new InputStreamReader(process.getErrorStream()));
             @Override
             public void run() {
@@ -809,7 +802,7 @@ class RfsLocalController extends NamedRunnable {
     }
     
     private void sendFileInitRequest(FileGatheringInfo fgi) throws IOException {
-        if (CHECK_ALIVE && !ProcessUtils.isAlive(remoteControllerProcess)) { // fixup for remote tests unstable failure (caused by jsch issue)
+        if (CHECK_ALIVE && !remoteController.isAlive()) { // fixup for remote tests unstable failure (caused by jsch issue)
             throw new IOException("process already exited"); //NOI18N
         }
         if(fgi.isLink()) {

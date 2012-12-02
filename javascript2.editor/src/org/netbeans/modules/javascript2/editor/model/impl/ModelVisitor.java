@@ -158,10 +158,15 @@ public class ModelVisitor extends PathNodeVisitor {
         }
         if (fromAN != null) {
             JsObjectImpl property = (JsObjectImpl)fromAN.getProperty(accessNode.getProperty().getName());
+            int pathSize = getPath().size();
+            Node lastVisited = getPath().get(pathSize - 2);
+            boolean onLeftSite =  lastVisited instanceof BinaryNode && ((BinaryNode)lastVisited).lhs().equals(accessNode);
             if (property != null) {
+                if(onLeftSite && !property.isDeclared()) {
+                    property.setDeclared(true);
+                }
                 property.addOccurrence(ModelUtils.documentOffsetRange(parserResult, accessNode.getProperty().getStart(), accessNode.getProperty().getFinish()));
             } else {
-                int pathSize = getPath().size();
                 Identifier name = ModelElementFactory.create(parserResult, (IdentNode)accessNode.getProperty());
                 if (name != null) {
                     if (pathSize > 1 && getPath().get(pathSize - 2) instanceof CallNode) {
@@ -170,11 +175,11 @@ public class ModelVisitor extends PathNodeVisitor {
                             property = ModelElementFactory.createVirtualFunction(parserResult, fromAN, name, cNode.getArgs().size());
                             //property.addOccurrence(name.getOffsetRange());
                         } else {
-                            property = new JsObjectImpl(fromAN, name, name.getOffsetRange());
+                            property = new JsObjectImpl(fromAN, name, name.getOffsetRange(), onLeftSite);
                             property.addOccurrence(name.getOffsetRange());
                         }
                     } else {
-                        property = new JsObjectImpl(fromAN, name, name.getOffsetRange());
+                        property = new JsObjectImpl(fromAN, name, name.getOffsetRange(), onLeftSite);
                         property.addOccurrence(name.getOffsetRange());
                     }
                     fromAN.addProperty(name.getName(), property);
@@ -438,7 +443,7 @@ public class ModelVisitor extends PathNodeVisitor {
         }
         functionStack.add(functions);
 
-        JsFunctionImpl fncScope = null;
+        JsFunctionImpl fncScope = (JsFunctionImpl)modelBuilder.getCurrentDeclarationScope();
         if (functionNode.getKind() != FunctionNode.Kind.SCRIPT) {
             // create the function object
             DeclarationScopeImpl scope = modelBuilder.getCurrentDeclarationScope();
@@ -471,22 +476,27 @@ public class ModelVisitor extends PathNodeVisitor {
                 scope.addDeclaredScope(fncScope);
                 // push the current function in the model builder stack
                 modelBuilder.setCurrentObject((JsObjectImpl)fncScope);
-                // create variables that are declared in the function
-                // They has to be created here for tracking occurrences
-                for(VarNode varNode : functionNode.getDeclarations()) {
-                    Identifier varName = new IdentifierImpl(varNode.getName().getName(),
-                        ModelUtils.documentOffsetRange(parserResult, varNode.getName().getStart(), varNode.getName().getFinish()));
-                    JsObjectImpl variable = new JsObjectImpl(fncScope, varName, varName.getOffsetRange());
-                    variable.setDeclared(true);
-                    // here are the variables allways private
-                    variable.getModifiers().remove(Modifier.PUBLIC);
-                    variable.getModifiers().add(Modifier.PRIVATE);
-                    variable.addOccurrence(varName.getOffsetRange());
-                    fncScope.addProperty(varName.getName(), variable);
-                }
             }
         }
-
+        // create variables that are declared in the function
+        // They has to be created here for tracking occurrences
+        for (VarNode varNode : functionNode.getDeclarations()) {
+            Identifier varName = new IdentifierImpl(varNode.getName().getName(),
+                    ModelUtils.documentOffsetRange(parserResult, varNode.getName().getStart(), varNode.getName().getFinish()));
+            OffsetRange range = varNode.getInit() instanceof ObjectNode ? 
+                    ModelUtils.documentOffsetRange(parserResult, varNode.getName().getStart(), ((ObjectNode)varNode.getInit()).getFinish()) 
+                    : varName.getOffsetRange();
+            JsObjectImpl variable = new JsObjectImpl(fncScope, varName, range);
+            variable.setDeclared(true);
+            if (functionNode.getKind() != FunctionNode.Kind.SCRIPT) {
+                // here are the variables allways private
+                variable.getModifiers().remove(Modifier.PUBLIC);
+                variable.getModifiers().add(Modifier.PRIVATE);
+            }
+            variable.addOccurrence(varName.getOffsetRange());
+            modelBuilder.getCurrentObject().addProperty(varName.getName(), variable);
+        }
+                
         for (FunctionNode fn : functions) {
             if (fn.getIdent().getStart() < fn.getIdent().getFinish()) {
                 // go through all functions defined via reference
@@ -577,6 +587,8 @@ public class ModelVisitor extends PathNodeVisitor {
             int pathSize = getPath().size();
             boolean isDeclaredInParent = false;
             boolean isPrivate = false;
+            boolean treatAsAnonymous = false;
+            
             Node lastVisited = getPath().get(pathSize - 1);
             VarNode varNode = null;
 
@@ -584,6 +596,7 @@ public class ModelVisitor extends PathNodeVisitor {
                 fqName = getName((VarNode)lastVisited);
                 isDeclaredInParent = true;
                 JsObject declarationScope = modelBuilder.getCurrentDeclarationScope();
+                varNode = (VarNode)lastVisited;
                 if (fqName.size() == 1 && !ModelUtils.isGlobal(declarationScope)) {
                     isPrivate = true;
                 }
@@ -592,35 +605,49 @@ public class ModelVisitor extends PathNodeVisitor {
                 isDeclaredInParent = true;
             } else if (lastVisited instanceof BinaryNode) {
                 BinaryNode binNode = (BinaryNode) lastVisited;
-                if (getPath().size() > 1) {
-                    lastVisited = getPath().get(getPath().size() - 2);
-                    if (lastVisited instanceof VarNode) {
-                        varNode = (VarNode) lastVisited;
+                if (binNode.lhs() instanceof IndexNode) {
+                    Node index =  ((IndexNode)binNode.lhs()).getIndex();
+                    if (!(index instanceof LiteralNode && ((LiteralNode)index).isString())) {
+                        treatAsAnonymous = true;
+                    }
+                } 
+                if (!treatAsAnonymous) {
+                    if (getPath().size() > 1) {
+                        lastVisited = getPath().get(getPath().size() - 2);
+                        if (lastVisited instanceof VarNode) {
+                            varNode = (VarNode) lastVisited;
+                        }
+                    }
+                    fqName = getName(binNode);
+                    if (binNode.lhs() instanceof IdentNode || (binNode.lhs() instanceof AccessNode
+                            && ((AccessNode) binNode.lhs()).getBase() instanceof IdentNode
+                            && ((IdentNode) ((AccessNode) binNode.lhs()).getBase()).getName().equals("this"))) {
+                        isDeclaredInParent = true;
                     }
                 }
-                fqName = getName(binNode);
-                if (binNode.lhs() instanceof IdentNode || (binNode.lhs() instanceof AccessNode
-                        && ((AccessNode) binNode.lhs()).getBase() instanceof IdentNode
-                        && ((IdentNode) ((AccessNode) binNode.lhs()).getBase()).getName().equals("this"))) {
-                    isDeclaredInParent = true;
+            }
+            if (!treatAsAnonymous) {
+                if (fqName == null || fqName.isEmpty()) {
+                    fqName = new ArrayList<Identifier>(1);
+                    fqName.add(new IdentifierImpl("UNKNOWN", //NOI18N
+                            ModelUtils.documentOffsetRange(parserResult, objectNode.getStart(), objectNode.getFinish())));
                 }
-            }
-            if (fqName == null || fqName.isEmpty()) {
-                fqName = new ArrayList<Identifier>(1);
-                fqName.add(new IdentifierImpl("UNKNOWN",   //NOI18N
-                        ModelUtils.documentOffsetRange(parserResult, objectNode.getStart(), objectNode.getFinish())));
-            }
-            JsObjectImpl objectScope = varNode != null
-                    ? modelBuilder.getCurrentObject()
-                    : ModelElementFactory.create(parserResult, objectNode, fqName, modelBuilder, isDeclaredInParent);
-            if (objectScope != null) {
-                objectScope.setJsKind(JsElement.Kind.OBJECT_LITERAL);
+                JsObjectImpl objectScope = varNode != null
+                        ? modelBuilder.getCurrentObject()
+                        : ModelElementFactory.create(parserResult, objectNode, fqName, modelBuilder, isDeclaredInParent);
+                if (objectScope != null) {
+                    objectScope.setJsKind(JsElement.Kind.OBJECT_LITERAL);
+                    modelBuilder.setCurrentObject(objectScope);
+                    if (isPrivate) {
+                        objectScope.getModifiers().remove(Modifier.PUBLIC);
+                        objectScope.getModifiers().add(Modifier.PRIVATE);
+                    }
+                }
+            } else {
+                JsObjectImpl objectScope = ModelElementFactory.createAnonymousObject(parserResult, objectNode, modelBuilder);
                 modelBuilder.setCurrentObject(objectScope);
-                if(isPrivate) {
-                    objectScope.getModifiers().remove(Modifier.PUBLIC);
-                    objectScope.getModifiers().add(Modifier.PRIVATE);
-                }
             }
+            
         }
 
         return super.enter(objectNode);
@@ -791,7 +818,7 @@ public class ModelVisitor extends PathNodeVisitor {
                     }
                     parent.addProperty(name.getName(), variable);
                     variable.addOccurrence(name.getOffsetRange());
-                } else {
+                } else if (!variable.isDeclared()){
                     // the variable was probably created as temporary before, now we
                     // need to replace it with the real one
                     JsObjectImpl newVariable = new JsObjectImpl(parent, name, name.getOffsetRange(), true);
@@ -837,13 +864,24 @@ public class ModelVisitor extends PathNodeVisitor {
                     }
                 }
             }
+        } else if(varNode.getInit() instanceof ObjectNode) {
+            JsObjectImpl function = modelBuilder.getCurrentDeclarationScope();
+            Identifier name = ModelElementFactory.create(parserResult, varNode.getName());
+            if (name != null) {
+                JsObjectImpl variable = (JsObjectImpl)function.getProperty(name.getName());
+                if (variable != null) {
+                    modelBuilder.setCurrentObject(variable);
+                    variable.setDeclared(true);
+                    variable.setJsKind(JsElement.Kind.OBJECT_LITERAL);
+                }
+            }
         }
         return super.enter(varNode);
     }
 
     @Override
     public Node leave(VarNode varNode) {
-        if (!(varNode.getInit() instanceof ObjectNode || varNode.getInit() instanceof ReferenceNode)
+        if (!(varNode.getInit() instanceof ReferenceNode)
                 // XXX can we avoid creation of object ?
                 && ModelElementFactory.create(parserResult, varNode.getName()) != null) {
             modelBuilder.reset();

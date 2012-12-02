@@ -90,6 +90,7 @@ import org.netbeans.modules.php.project.ui.customizer.CustomizerProviderImpl;
 import org.netbeans.modules.php.project.ui.customizer.IgnorePathSupport;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties;
 import org.netbeans.modules.php.project.ui.logicalview.PhpLogicalViewProvider;
+import org.netbeans.modules.php.project.ui.options.PhpOptions;
 import org.netbeans.modules.php.project.util.PhpProjectUtils;
 import org.netbeans.modules.php.spi.framework.PhpFrameworkProvider;
 import org.netbeans.modules.php.spi.framework.PhpModuleIgnoredFilesExtender;
@@ -670,6 +671,8 @@ public final class PhpProject implements Project {
             PhpFrameworks.addFrameworksListener(frameworksListener);
             List<PhpFrameworkProvider> frameworkProviders = getFrameworks();
             getName();
+
+            PhpOptions.getInstance().ensurePhpGlobalIncludePath();
 
             ClassPathProviderImpl cpProvider = lookup.lookup(ClassPathProviderImpl.class);
             ClassPath[] bootClassPaths = cpProvider.getProjectClassPaths(PhpSourcePath.BOOT_CP);
