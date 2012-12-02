@@ -42,16 +42,14 @@
 
 window.addEventListener('load', function() {
     // texts
+    I18n.className('i18n');
     I18n.attribute('autoPresetMenu', 'title');
     I18n.attribute('sizeToFitIcon', 'alt');
     I18n.attribute('sizeToFitIcon', 'title');
-    I18n.element('sizeToFit');
     I18n.attribute('customizePresetsMenu', 'title');
     I18n.attribute('customizeIcon', 'alt');
     I18n.attribute('customizeIcon', 'title');
-    I18n.element('customize');
     I18n.attribute('selectionModeMenu', 'title');
     I18n.attribute('selectModeIcon', 'alt');
     I18n.attribute('selectModeIcon', 'title');
-    I18n.element('selectMode');
 }, false);

@@ -91,6 +91,7 @@ class StackEntry {
             int bracket = 0;
             int paren = 0;
             int triangle = 0;
+            boolean hasID = false;
             while (true) {
                 if (!ts.movePrevious()) {
                     return;
@@ -102,6 +103,13 @@ class StackEntry {
                         if (paren == 0 && triangle == 0) {
                             likeToArrayInitialization = false;
                             likeToFunction = true;
+                        }
+                        break;
+                    }
+                    case IDENTIFIER:
+                    {
+                        if (paren == 0 && triangle == 0) {
+                            hasID = true;
                         }
                         break;
                     }
@@ -173,6 +181,9 @@ class StackEntry {
                     case SEMICOLON: //(";", "separator"),
                     {
                         if (paren == 0 && triangle == 0) {
+                            if (hasID && !likeToFunction) {
+                                likeToArrayInitialization = true;
+                            }
                             // undefined
                             return;
                         }

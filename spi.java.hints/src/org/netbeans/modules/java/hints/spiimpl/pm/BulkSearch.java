@@ -52,6 +52,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
+import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.modules.java.hints.spiimpl.Utilities;
 import org.netbeans.modules.java.hints.providers.spi.HintDescription.AdditionalQueryConstraints;
@@ -75,28 +77,33 @@ public abstract class BulkSearch {
         this.requiresLightweightVerification = requiresLightweightVerification;
     }
     
-    public final Map<String, Collection<TreePath>> match(CompilationInfo info, TreePath toSearch, BulkPattern pattern) {
-        return match(info, toSearch, pattern, null);
+    public final Map<String, Collection<TreePath>> match(CompilationInfo info, AtomicBoolean cancel, TreePath toSearch, BulkPattern pattern) {
+        return match(info, cancel, toSearch, pattern, null);
     }
 
     public final boolean requiresLightweightVerification() {
         return requiresLightweightVerification;
     }
 
-    public abstract Map<String, Collection<TreePath>> match(CompilationInfo info, TreePath toSearch, BulkPattern pattern, Map<String, Long> timeLog);
+    @CheckForNull
+    public abstract Map<String, Collection<TreePath>> match(CompilationInfo info, AtomicBoolean cancel, TreePath toSearch, BulkPattern pattern, Map<String, Long> timeLog);
 
-    public abstract boolean matches(InputStream encoded, BulkPattern pattern);
-    public abstract Map<String, Integer> matchesWithFrequencies(InputStream encoded, BulkPattern pattern);
+    public abstract boolean matches(InputStream encoded, AtomicBoolean cancel, BulkPattern pattern);
     
-    public abstract boolean matches(CompilationInfo info, TreePath toSearch, BulkPattern pattern);
+    @CheckForNull
+    public abstract Map<String, Integer> matchesWithFrequencies(InputStream encoded, BulkPattern pattern, AtomicBoolean cancel);
+    
+    public abstract boolean matches(CompilationInfo info, AtomicBoolean cancel, TreePath toSearch, BulkPattern pattern);
 
-    public abstract void encode(Tree tree, EncodingContext ctx);
+    public abstract void encode(Tree tree, EncodingContext ctx, AtomicBoolean cancel);
     
-    public final BulkPattern create(CompilationInfo info, String... code) {
-        return create(info, Arrays.asList(code));
+    @CheckForNull
+    public final BulkPattern create(CompilationInfo info, AtomicBoolean cancel, String... code) {
+        return create(info, cancel, Arrays.asList(code));
     }
 
-    public final BulkPattern create(CompilationInfo info, Collection<? extends String> code) {
+    @CheckForNull
+    public final BulkPattern create(CompilationInfo info, AtomicBoolean cancel, Collection<? extends String> code) {
         List<Tree> patterns = new LinkedList<Tree>();
         List<AdditionalQueryConstraints> additionalConstraints = new LinkedList<AdditionalQueryConstraints>();
 
@@ -105,10 +112,11 @@ public abstract class BulkSearch {
             additionalConstraints.add(AdditionalQueryConstraints.empty());
         }
 
-        return create(code, patterns, additionalConstraints);
+        return create(code, patterns, additionalConstraints, cancel);
     }
     
-    public abstract BulkPattern create(Collection<? extends String> code, Collection<? extends Tree> patterns, Collection<? extends AdditionalQueryConstraints> additionalConstraints);
+    @CheckForNull
+    public abstract BulkPattern create(Collection<? extends String> code, Collection<? extends Tree> patterns, Collection<? extends AdditionalQueryConstraints> additionalConstraints, AtomicBoolean cancel);
 
     public static abstract class BulkPattern {
 

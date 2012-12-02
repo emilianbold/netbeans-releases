@@ -93,6 +93,8 @@ public class ClassMemberTest extends GeneratorTestMDRCompat {
 //        suite.addTest(new ClassMemberTest("test111024"));
 //        suite.addTest(new ClassMemberTest("test196053a"));
 //        suite.addTest(new ClassMemberTest("test196053b"));
+//        suite.addTest(new ClassMemberTest("testShuffleConstructorMethod1"));
+//        suite.addTest(new ClassMemberTest("testShuffleConstructorMethod2"));
         return suite;
     }
     
@@ -1682,6 +1684,139 @@ public class ClassMemberTest extends GeneratorTestMDRCompat {
 
                 workingCopy.rewrite(var.getModifiers(), make.Modifiers(EnumSet.of(Modifier.PUBLIC)));
                 workingCopy.rewrite(var, make.setLabel(var, "c"));
+            }
+        };
+        src.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+    
+    public void testShuffleConstructorMethod1() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile,
+            "package hierbas.del.litoral;\n" +
+            "\n" +
+            "public class Test {\n" +
+            "    public Test() {\n" +
+            "    }\n" +
+            "    public static void m(String[] args) {\n" +
+            "    }\n" +
+            "}\n"
+            );
+        String golden =
+            "package hierbas.del.litoral;\n" +
+            "\n" +
+            "public class Test {\n" +
+            "    public static void m(String[] args) {\n" +
+            "    }\n" +
+            "    public Test() {\n" +
+            "    }\n" +
+            "}\n";
+
+        JavaSource src = getJavaSource(testFile);
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws Exception {
+                workingCopy.toPhase(Phase.RESOLVED); // is it neccessary?
+                CompilationUnitTree cut = workingCopy.getCompilationUnit();
+                TreeMaker make = workingCopy.getTreeMaker();
+                ClassTree clazz = (ClassTree) cut.getTypeDecls().get(0);
+                MethodTree m0 = (MethodTree) clazz.getMembers().get(0);
+                m0 = make.setLabel(m0, m0.getName());
+                MethodTree m1 = (MethodTree) clazz.getMembers().get(1);
+                m1 = make.setLabel(m1, m1.getName());
+                clazz = make.removeClassMember(clazz, 0);
+                clazz = make.removeClassMember(clazz, 0);
+                clazz = make.addClassMember(clazz, m1);
+                clazz = make.addClassMember(clazz, m0);
+                workingCopy.rewrite(cut.getTypeDecls().get(0), clazz);
+            }
+        };
+        src.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+    
+    public void testShuffleConstructorMethod2() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile,
+            "package hierbas.del.litoral;\n" +
+            "\n" +
+            "public class Test {\n" +
+            "    public Test() {\n" +
+            "    }\n" +
+            "    public static void m(String[] args) {\n" +
+            "    }\n" +
+            "}\n"
+            );
+        String golden =
+            "package hierbas.del.litoral;\n" +
+            "\n" +
+            "public class NewName {\n" +
+            "    public static void m(String[] args) {\n" +
+            "    }\n" +
+            "    public NewName() {\n" +
+            "    }\n" +
+            "}\n";
+
+        JavaSource src = getJavaSource(testFile);
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws Exception {
+                workingCopy.toPhase(Phase.RESOLVED); // is it neccessary?
+                CompilationUnitTree cut = workingCopy.getCompilationUnit();
+                TreeMaker make = workingCopy.getTreeMaker();
+                ClassTree clazz = (ClassTree) cut.getTypeDecls().get(0);
+                MethodTree m0 = (MethodTree) clazz.getMembers().get(0);
+                m0 = make.setLabel(m0, m0.getName());
+                MethodTree m1 = (MethodTree) clazz.getMembers().get(1);
+                m1 = make.setLabel(m1, m1.getName());
+                clazz = make.removeClassMember(clazz, 0);
+                clazz = make.removeClassMember(clazz, 0);
+                clazz = make.addClassMember(clazz, m1);
+                clazz = make.addClassMember(clazz, m0);
+                clazz = make.setLabel(clazz, "NewName");
+                workingCopy.rewrite(cut.getTypeDecls().get(0), clazz);
+            }
+        };
+        src.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+
+    public void testAddConstructorParam() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile,
+            "package hierbas.del.litoral;\n" +
+            "\n" +
+            "public class Test {\n" +
+            "    public Test() {\n" +
+            "    }\n" +
+            "}\n"
+            );
+        String golden =
+            "package hierbas.del.litoral;\n" +
+            "\n" +
+            "public class Test {\n" +
+            "    public Test(int i) {\n" +
+            "    }\n" +
+            "}\n";
+
+        JavaSource src = getJavaSource(testFile);
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws Exception {
+                workingCopy.toPhase(Phase.RESOLVED); // is it neccessary?
+                CompilationUnitTree cut = workingCopy.getCompilationUnit();
+                TreeMaker make = workingCopy.getTreeMaker();
+                ClassTree clazz = (ClassTree) cut.getTypeDecls().get(0);
+                MethodTree constr = (MethodTree) clazz.getMembers().get(0);
+                VariableTree param = make.Variable(make.Modifiers(EnumSet.noneOf(Modifier.class)), "i", make.PrimitiveType(TypeKind.INT), null);
+                MethodTree nueConstr = make.addMethodParameter(constr, param);
+                workingCopy.rewrite(constr, nueConstr);
             }
         };
         src.runModificationTask(task).commit();

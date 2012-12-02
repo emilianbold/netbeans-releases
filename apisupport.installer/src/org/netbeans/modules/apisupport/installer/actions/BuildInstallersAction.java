@@ -142,7 +142,7 @@ public final class BuildInstallersAction extends AbstractAction implements Conte
                                 is.close();
                             }
                             appName = ps.getProperty("app.name");
-                            if (appName.contains("$")) {
+                            if (appName != null && appName.contains("$")) {
                                 appName = ProjectUtils.getInformation(prj).getName();
                             }
                             

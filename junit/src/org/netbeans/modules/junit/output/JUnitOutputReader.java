@@ -377,6 +377,13 @@ final class JUnitOutputReader {
                 }
             }
             case TESTCASE_STARTED: {
+		int posTestListener = msg.indexOf(TEST_LISTENER_PREFIX);
+		if (posTestListener != -1) {
+		    displayOutput(msg.substring(0, posTestListener), event.getLogLevel() == AntEvent.LOG_WARN);
+		    verboseMessageLogged(msg.substring(posTestListener));
+		} else {
+		    displayOutput(msg, event.getLogLevel() == AntEvent.LOG_WARN);
+		}
                 break;
             }
         }
@@ -729,7 +736,18 @@ final class JUnitOutputReader {
     /**
      */
     private void displayOutput(final String text, final boolean error) {
-        manager.displayOutput(testSession,text, error);
+	if (outputStarted || errorStarted) {
+	    manager.displayOutput(testSession, text, error);
+	} else {
+	    if (!error) {
+		List<String> addedLines = new ArrayList<String>();
+		addedLines.add(text);
+		Testcase tc = testSession.getCurrentTestCase();
+		if (tc != null) {
+		    tc.addOutputLines(addedLines);
+		}
+	    }
+	}
     }
     
     //--------------------------------------------------------

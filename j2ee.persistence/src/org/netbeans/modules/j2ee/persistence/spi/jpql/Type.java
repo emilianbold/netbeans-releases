@@ -125,7 +125,7 @@ public class Type implements IType{
     
     @Override
     public boolean equals(Object itype) {
-        return (this == itype) || equals((IType) itype);
+        return (this == itype) || ((itype instanceof IType) && equals((IType) itype));
     }
     
     @Override

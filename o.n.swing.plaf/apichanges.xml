@@ -49,6 +49,23 @@ made subject to such option by the copyright holder.
     <apidef name="plaf">Look And Feel Customization</apidef>
 </apidefs>
 <changes>
+    <change id="windows8-lfcustoms">
+        <api name="plaf"/>
+        <summary>New look and feel customizations for Windows 8</summary>
+        <version major="1" minor="30"/>
+        <date day="27" month="11" year="2012"/>
+        <author login="saubrecht"/>
+        <compatibility
+            addition="yes"
+            binary="compatible" deletion="no" deprecation="no"
+            modification="no" semantic="compatible" source="compatible"
+        />
+        <description>
+            <p>New look and feel customizations for Windows 8
+            </p>
+        </description>
+        <!--<class package="org.netbeans.swing.plaf.windows8" name="Windows8LFCustoms"/>-->
+    </change>
     <change id="lfcustoms-color-functions">
         <api name="plaf"/>
         <summary>New functions for getting foreground text color and color shifting</summary>

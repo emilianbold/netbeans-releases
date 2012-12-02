@@ -45,6 +45,7 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.EventListener;
 import java.util.HashMap;
 import java.util.List;
@@ -74,6 +75,29 @@ public final class Debugger {
     public static final String PROP_CURRENT_FRAME = "currentFrame";     // NOI18N
     public static final String PROP_BREAKPOINTS_ACTIVE = "breakpointsActive"; // NOI18N
     
+    private static final String COMMAND_ENABLE = "Debugger.enable";             // NOI18N
+    private static final String COMMAND_DISABLE = "Debugger.disable";           // NOI18N
+    private static final String COMMAND_STEP_OVER = "Debugger.stepOver";        // NOI18N
+    private static final String COMMAND_STEP_INTO = "Debugger.stepInto";        // NOI18N
+    private static final String COMMAND_STEP_OUT = "Debugger.stepOut";          // NOI18N
+    private static final String COMMAND_PAUSE = "Debugger.pause";               // NOI18N
+    private static final String COMMAND_RESUME = "Debugger.resume";             // NOI18N
+    private static final String COMMAND_SET_BRKP_BY_URL = "Debugger.setBreakpointByUrl";// NOI18N
+    private static final String COMMAND_SET_BRKP_DOM = "DOMDebugger.setDOMBreakpoint";  // NOI18N
+    private static final String COMMAND_SET_BRKP_XHR = "DOMDebugger.setXHRBreakpoint";  // NOI18N
+    private static final String COMMAND_SET_BRKP_EVENT = "DOMDebugger.setEventListenerBreakpoint";  // NOI18N
+    private static final String COMMAND_REMOVE_BRKP = "Debugger.removeBreakpoint";      // NOI18N
+    private static final String COMMAND_REMOVE_BRKP_DOM = "DOMDebugger.removeDOMBreakpoint";    // NOI18N
+    private static final String COMMAND_REMOVE_BRKP_XHR = "DOMDebugger.removeXHRBreakpoint";    // NOI18N
+    private static final String COMMAND_REMOVE_BRKP_EVENT = "DOMDebugger.removeEventListenerBreakpoint";    // NOI18N
+    private static final String COMMAND_SET_BRKPS_ACTIVE = "Debugger.setBreakpointsActive";     // NOI18N
+    
+    private static final String RESPONSE_BRKP_RESOLVED = "Debugger.breakpointResolved";         // NOI18N
+    private static final String RESPONSE_GLOB_OBJECT_CLEARED = "Debugger.globalObjectCleared";  // NOI18N
+    private static final String RESPONSE_PAUSED = "Debugger.paused";            // NOI18N
+    private static final String RESPONSE_RESUMED = "Debugger.resumed";          // NOI18N
+    private static final String RESPONSE_SCRIPT_PARSED = "Debugger.scriptParsed";// NOI18N
+    
     private static final Logger LOG = Logger.getLogger(Debugger.class.getName());
 
     private static boolean lastBreakpointsActive = true;
@@ -91,6 +115,7 @@ public final class Debugger {
     private CallFrame currentCallFrame = null;
     private boolean breakpointsActive = lastBreakpointsActive;
     private final Object breakpointsActiveLock = new Object();
+    private final Map<String, Breakpoint> breakpointsById = Collections.synchronizedMap(new HashMap<String, Breakpoint>());
     private boolean inLiveHTMLMode = false;
     private RequestProcessor.Task latestSnapshotTask;    
 
@@ -102,7 +127,7 @@ public final class Debugger {
     }
     
     public boolean enable() {
-        transport.sendBlockingCommand(new Command("Debugger.enable"));
+        transport.sendBlockingCommand(new Command(COMMAND_ENABLE));
 
         // always enable Page and Network; at the moment only Live HTML is using them
         // but I expect that soon it will be used somewhere else as well
@@ -143,29 +168,29 @@ public final class Debugger {
         webkit.getNetwork().disable();
         webkit.getConsole().disable();
         webkit.getCSS().disable();
-        transport.sendCommand(new Command("Debugger.disable"));
+        transport.sendCommand(new Command(COMMAND_DISABLE));
         enabled = false;
         initDOMLister = true;
     }
 
     public void stepOver() {
-        doCommand("Debugger.stepOver");
+        doCommand(COMMAND_STEP_OVER);
     }
     
     public void stepInto() {
-        doCommand("Debugger.stepInto");
+        doCommand(COMMAND_STEP_INTO);
     }
     
     public void stepOut() {
-        doCommand("Debugger.stepOut");
+        doCommand(COMMAND_STEP_OUT);
     }
     
     public void resume() {
-        doCommand("Debugger.resume");
+        doCommand(COMMAND_RESUME);
     }
     
     public void pause() {
-        doCommand("Debugger.pause");
+        doCommand(COMMAND_PAUSE);
     }
     
     private void doCommand(String name) {
@@ -324,7 +349,7 @@ public final class Debugger {
         params.put("lineNumber", lineNumber);
         params.put("url", url.replaceAll("/", "\\/")); //  XXX: not sure why but using backslash is necesssary here
         params.put("columnNumber", columnNumber);
-        Response resp = transport.sendBlockingCommand(new Command("Debugger.setBreakpointByUrl", params));
+        Response resp = transport.sendBlockingCommand(new Command(COMMAND_SET_BRKP_BY_URL, params));
         if (resp != null) {
             if (resp.getException() != null) {
                 // transport is broken
@@ -333,6 +358,7 @@ public final class Debugger {
             JSONObject result = (JSONObject) resp.getResponse().get("result");
             if (result != null) {
                 Breakpoint b = APIFactory.createBreakpoint(result, webkit);
+                breakpointsById.put(b.getBreakpointID(), b);
                 return b;
             } else {
                 // What can we do when we have no results?
@@ -345,15 +371,17 @@ public final class Debugger {
     @SuppressWarnings("unchecked")    
     public void removeLineBreakpoint(Breakpoint b) {
         JSONObject params = new JSONObject();
-        params.put("breakpointId", b.getBreakpointID());
-        transport.sendBlockingCommand(new Command("Debugger.removeBreakpoint", params));
+        String id = b.getBreakpointID();
+        params.put("breakpointId", id);
+        transport.sendBlockingCommand(new Command(COMMAND_REMOVE_BRKP, params));
+        breakpointsById.remove(id);
     }
     
     public Breakpoint addDOMBreakpoint(Node node, String type) {
         JSONObject params = new JSONObject();
         params.put("nodeId", node.getNodeId());
         params.put("type", type);
-        Response resp = transport.sendBlockingCommand(new Command("DOMDebugger.setDOMBreakpoint", params));
+        Response resp = transport.sendBlockingCommand(new Command(COMMAND_SET_BRKP_DOM, params));
         if (resp != null) {
             if (resp.getException() != null) {
                 // transport is broken
@@ -375,13 +403,13 @@ public final class Debugger {
         JSONObject params = new JSONObject();
         params.put("nodeId", node.getNodeId());
         params.put("type", type);
-        Response resp = transport.sendBlockingCommand(new Command("DOMDebugger.removeDOMBreakpoint", params));
+        Response resp = transport.sendBlockingCommand(new Command(COMMAND_REMOVE_BRKP_DOM, params));
     }
     
     public Breakpoint addXHRBreakpoint(String urlSubstring) {
         JSONObject params = new JSONObject();
         params.put("url", urlSubstring);
-        Response resp = transport.sendBlockingCommand(new Command("DOMDebugger.setXHRBreakpoint", params));
+        Response resp = transport.sendBlockingCommand(new Command(COMMAND_SET_BRKP_XHR, params));
         if (resp != null) {
             if (resp.getException() != null) {
                 // transport is broken
@@ -402,7 +430,7 @@ public final class Debugger {
     public void removeXHRBreakpoint(String urlSubstring) {
         JSONObject params = new JSONObject();
         params.put("url", urlSubstring);
-        Response resp = transport.sendBlockingCommand(new Command("DOMDebugger.removeXHRBreakpoint", params));
+        Response resp = transport.sendBlockingCommand(new Command(COMMAND_REMOVE_BRKP_XHR, params));
     }
     
     public static final String DOM_BREAKPOINT_SUBTREE = "subtree-modified";
@@ -412,7 +440,7 @@ public final class Debugger {
     public Breakpoint addEventBreakpoint(String event) {
         JSONObject params = new JSONObject();
         params.put("eventName", event);
-        Response resp = transport.sendBlockingCommand(new Command("DOMDebugger.setEventListenerBreakpoint", params));
+        Response resp = transport.sendBlockingCommand(new Command(COMMAND_SET_BRKP_EVENT, params));
         if (resp != null) {
             if (resp.getException() != null) {
                 // transport is broken
@@ -433,7 +461,7 @@ public final class Debugger {
     public void removeEventBreakpoint(String event) {
         JSONObject params = new JSONObject();
         params.put("eventName", event);
-        Response resp = transport.sendBlockingCommand(new Command("DOMDebugger.removeEventListenerBreakpoint", params));
+        Response resp = transport.sendBlockingCommand(new Command(COMMAND_REMOVE_BRKP_EVENT, params));
     }
     
     public boolean areBreakpointsActive() {
@@ -447,7 +475,7 @@ public final class Debugger {
             if (oldActive != active) {
                 JSONObject params = new JSONObject();
                 params.put("active", active);
-                Response resp = transport.sendBlockingCommand(new Command("Debugger.setBreakpointsActive", params));
+                Response resp = transport.sendBlockingCommand(new Command(COMMAND_SET_BRKPS_ACTIVE, params));
                 breakpointsActive = active;
                 lastBreakpointsActive = active;
             }
@@ -483,11 +511,12 @@ public final class Debugger {
 
         @Override
         public void handleResponse(Response response) {
-            if ("Debugger.resumed".equals(response.getMethod())) {
+            String method = response.getMethod();
+            if (RESPONSE_RESUMED.equals(method)) {
                 notifyResumed();
                 webkit.getRuntime().releaseNetBeansObjectGroup();
-            } else if ("Debugger.paused".equals(response.getMethod())) {
-                JSONObject params = (JSONObject)response.getResponse().get("params");
+            } else if (RESPONSE_PAUSED.equals(method)) {
+                JSONObject params = response.getParams();
 
                 if (inLiveHTMLMode) {
                     final long timestamp = System.currentTimeMillis();
@@ -526,10 +555,17 @@ public final class Debugger {
                     }
                     notifyPaused(frames, (String)params.get("reason"), (JSONObject)params.get("data"));
                 }
-            } else if ("Debugger.globalObjectCleared".equals(response.getMethod())) {
+            } else if (RESPONSE_GLOB_OBJECT_CLEARED.equals(method)) {
                 notifyReset();
-            } else if ("Debugger.scriptParsed".equals(response.getMethod())) {
+            } else if (RESPONSE_SCRIPT_PARSED.equals(method)) {
                 addScript(response.getParams());
+            } else if (RESPONSE_BRKP_RESOLVED.equals(method)) {
+                JSONObject params = response.getParams();
+                Object id = params.get("breakpointId");
+                Breakpoint bp = breakpointsById.get(id);
+                if (bp != null) {
+                    APIFactory.breakpointResolved(bp, (JSONObject) params.get("location"));
+                }
             }
         }
         

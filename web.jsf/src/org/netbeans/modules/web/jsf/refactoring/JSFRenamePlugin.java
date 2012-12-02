@@ -127,7 +127,10 @@ public class JSFRenamePlugin implements RefactoringPlugin {
                         return null;//it may happens for folders in php and similar projects, see #181611
                     }
                     FileObject root = classPath.findOwnerRoot(fileObject);
-                    String prefix = FileUtil.getRelativePath(root, fileObject.getParent()).replace('/','.');
+                    String relativePath = FileUtil.getRelativePath(root, fileObject.getParent());
+                    // change of the one of project source roots - issue #222730
+                    if (relativePath == null) { relativePath = ""; } //NOI18N
+                    String prefix = relativePath.replace('/','.'); //NOI18N
                     String oldName = (prefix.length() == 0 ? fileObject.getName() : prefix + "." + fileObject.getName());
                     // the new package name
                     String newName = (prefix.length() == 0 ? refactoring.getNewName() : prefix + "." + refactoring.getNewName());
@@ -146,7 +149,6 @@ public class JSFRenamePlugin implements RefactoringPlugin {
                                         CompilationUnitTree cut = co.getCompilationUnit();
                                         if(!cut.getTypeDecls().isEmpty()){
                                             treePathHandle = TreePathHandle.create(TreePath.getPath(cut, cut.getTypeDecls().get(0)), co);
-                                            refactoring.getContext().add(co);
                                         }
                                     }
                                 }, false);

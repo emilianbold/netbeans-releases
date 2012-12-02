@@ -45,7 +45,9 @@ import java.util.Collections;
 import java.util.List;
 import javax.swing.text.Document;
 import org.netbeans.modules.javascript2.editor.JsonTestBase;
+import org.netbeans.modules.javascript2.editor.lexer.JsTokenId;
 import org.netbeans.modules.javascript2.editor.parser.SanitizingParser.Context;
+import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.api.Source;
 
 /**
@@ -85,8 +87,9 @@ public class JsonParserTest extends JsonTestBase {
 
         JsonParser parser = new JsonParser();
         Document doc = getDocument(original);
-        Context context = new JsParser.Context("test.json", Source.create(doc).createSnapshot(), -1);
-        JsErrorManager manager = new JsErrorManager(null);
+        Snapshot snapshot = Source.create(doc).createSnapshot();
+        Context context = new JsParser.Context("test.json", snapshot, -1);
+        JsErrorManager manager = new JsErrorManager(snapshot, JsTokenId.jsonLanguage());
         parser.parseContext(context, JsParser.Sanitize.NEVER, manager);
 
         assertEquals(errors.size(), manager.getErrors().size());

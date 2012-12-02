@@ -44,6 +44,11 @@
 
 package org.netbeans.modules.javascript2.editor;
 
+import javax.swing.JTextArea;
+import javax.swing.text.Caret;
+import org.netbeans.editor.BaseDocument;
+import org.netbeans.editor.Utilities;
+
 /**
  * @todo Try typing in whole source files and other than tracking missing end and } closure
  *   statements the buffer should be identical - both in terms of quotes to the rhs not having
@@ -134,70 +139,51 @@ public class JsDeletedTextInterceptorTest extends JsTestBase {
         deleteChar("puts ('// ^')", "puts ('//^')");
     }
 
-// BROKEN !
-//    public void testDeleteWord() throws Exception {
-//        deleteWord("foo_bar_baz^", "foo_bar_^");
-//    }
-//
-//    public void testDeleteWord111303() throws Exception {
-//        deleteWord("foo::bar^", "foo::^");
-//        deleteWord("Foo::Bar^", "Foo::^");
-//        deleteWord("Foo::Bar_Baz^", "Foo::Bar_^");
-//    }
-//
-//    public void testDeleteWordx111305() throws Exception {
-//        deleteWord("foo_bar^", "foo_^");
-//        deleteWord("x.foo_bar^.y", "x.foo_^.y");
-//    }
+    public void testDeleteWord1() throws Exception {
+        deleteWord("FooBarBaz^", "FooBar^");
+    }
 
-//    //Bug 195569 - Evaluate unit test failures of temporarily commented tests     
-//    public void testdeleteWord2() throws Exception {
-//        deleteWord("foo_bar_baz ^", "^");
-//        deleteWord("foo_bar_^", "foo_^");
-//    }
+    public void testDeleteWord2() throws Exception {
+        deleteWord("Set^Foo", "^Foo");
+    }
 
-// BROKEN !
-//    public void testDeleteWord3() throws Exception {
-//        deleteWord("FooBarBaz^", "FooBar^");
-//    }
-//
-//    public void testDeleteWord4_110998() throws Exception {
-//        deleteWord("Blah::Set^Foo", "Blah::^Foo");
-//    }
-//
-//    public void testDeleteWord5() throws Exception {
-//        deleteWord("foo_bar_^", "foo_^");
-//    }
-//
-//    public void testDeleteWords() throws Exception {
-//        deleteWord("foo bar^", "foo ^");
-//    }
-//
-//
-//    public void testDeleteWord4_110998c() throws Exception {
-//        String before = "  snark^\n";
-//        String after = "  ^\n";
-//        deleteWord(before, after);
-//    }
 
-//    public void testBackwardsDeletion() throws Exception {
-//        String s = "Foo::Bar = whatever('hello')  \n  nextline";
-//        JsKeystrokeHandler bc = new JsKeystrokeHandler();
-//        for (int i = s.length(); i >= 1; i--) {
-//            String shortened = s.substring(0, i);
-//            BaseDocument doc = getDocument(shortened);
-//
-//            JTextArea ta = new JTextArea(doc);
-//            Caret caret = ta.getCaret();
-//            int dot = i;
-//            caret.setDot(dot);
-//            int begin = bc.getNextWordOffset(doc, dot, true);
-//            if (begin == -1) {
-//                begin = Utilities.getPreviousWord(ta, dot);
-//            }
-//
-//            assert begin != -1 && begin < i;
-//        }
-//    }
+    public void testDeleteWord3() throws Exception {
+        deleteWord("foo bar^", "foo ^");
+    }
+
+    public void testDeleteWord4() throws Exception {
+        String before = "  snark^\n";
+        String after = "  ^\n";
+        deleteWord(before, after);
+    }
+
+    public void testDeleteWord5() throws Exception {
+        deleteWord("foo bar     ^", "foo bar^");
+    }
+
+    public void testDeleteWord6() throws Exception {
+        deleteWord("foo bar ^", "foo bar^");
+    }
+
+    public void testBackwardsDeletion() throws Exception {
+        String s = "alert('hello')  \n  nextline";
+        JsKeystrokeHandler bc = new JsKeystrokeHandler();
+        for (int i = s.length(); i >= 1; i--) {
+            String shortened = s.substring(0, i);
+            BaseDocument doc = getDocument(shortened);
+
+            JTextArea ta = new JTextArea(doc);
+            Caret caret = ta.getCaret();
+            int dot = i;
+            caret.setDot(dot);
+            int begin = bc.getNextWordOffset(doc, dot, true);
+            if (begin == -1) {
+                begin = Utilities.getPreviousWord(ta, dot);
+            }
+
+            assert begin != -1 && begin < i;
+        }
+    }
 
 }

@@ -247,6 +247,7 @@ public class ModelImpl implements CsmModel, LowMemoryListener {
     public ProjectBase addProject(ProjectBase prj) {
         synchronized (lock) {
             Object id = prj.getPlatformProject();
+            assert id != null : "It is expected that prj.getPlatformProject() is not NULL here"; // NOI18N
             if (obj2Project(id) != null) {
                 new IllegalStateException("CsmProject already exists: " + id).printStackTrace(System.err); // NOI18N
                 return null;
@@ -306,10 +307,12 @@ public class ModelImpl implements CsmModel, LowMemoryListener {
         ProjectBase prj = csmProject;
         boolean cleanModel;
         synchronized (lock) {
-            CsmUID<CsmProject> uid = platf2csm.remove(platformProjectKey);
-            if (uid != null) {
-                prj = (prj == null) ? (ProjectBase) UIDCsmConverter.UIDtoProject(uid) : prj;
-                assert prj != null : "null object for UID " + uid;
+            if (platformProjectKey != null) {
+                CsmUID<CsmProject> uid = platf2csm.remove(platformProjectKey);
+                if (uid != null) {
+                    prj = (prj == null) ? (ProjectBase) UIDCsmConverter.UIDtoProject(uid) : prj;
+                    assert prj != null : "null object for UID " + uid;
+                }
             }
             cleanModel = (platf2csm.isEmpty());
         }
@@ -644,7 +647,9 @@ public class ModelImpl implements CsmModel, LowMemoryListener {
         }
         if (csmProject != null) {
             synchronized (lock) {
-                disabledProjects.add(csmProject.getPlatformProject());
+                final Object id = csmProject.getPlatformProject();
+                assert id != null : "It is expected that csmProject.getPlatformProject() is not NULL here"; // NOI18N
+                disabledProjects.add(id);
             }
             disableProject2(csmProject);
         }

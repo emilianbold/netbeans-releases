@@ -52,7 +52,6 @@ import java.io.IOException;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.ResourceBundle;
@@ -248,7 +247,7 @@ final class LogicalFolderNode extends AnnotatedNode implements ChangeListener {
             image = ImageUtilities.loadImage("org/netbeans/modules/cnd/makeproject/ui/resources/logicalFilesFolder.gif"); // NOI18N
         }
         if (folder.isProjectFiles() && folder.isRemoved()) {
-            image = ImageUtilities.mergeImages(image, MakeLogicalViewProvider.brokenProjectBadge, 11, 0);
+            image = ImageUtilities.mergeImages(image, MakeLogicalViewProvider.brokenFolderBadge, 11, 0);
         }
         image = annotateIcon(image, type);
         return image;
@@ -269,7 +268,7 @@ final class LogicalFolderNode extends AnnotatedNode implements ChangeListener {
             image = ImageUtilities.loadImage("org/netbeans/modules/cnd/makeproject/ui/resources/logicalFilesFolderOpened.gif"); // NOI18N
         }
         if (folder.isProjectFiles() && folder.isRemoved()) {
-            image = ImageUtilities.mergeImages(image, MakeLogicalViewProvider.brokenProjectBadge, 11, 0);
+            image = ImageUtilities.mergeImages(image, MakeLogicalViewProvider.brokenFolderBadge, 11, 0);
         }        
         image = annotateIcon(image, type);
         return image;
@@ -342,17 +341,17 @@ final class LogicalFolderNode extends AnnotatedNode implements ChangeListener {
 
     @Override
     public boolean canDestroy() {
-        return getFolder().isDiskFolder();
+        return true;//getFolder().isDiskFolder();
     }
 
     @Override
     public boolean canCut() {
-        return getFolder().isDiskFolder();
+        return true;//getFolder().isDiskFolder();
     }
-
+    
     @Override
     public boolean canCopy() {
-        return getFolder().isDiskFolder();
+        return true;//getFolder().isDiskFolder();
     }
     @Override
     public Transferable clipboardCopy() throws IOException {

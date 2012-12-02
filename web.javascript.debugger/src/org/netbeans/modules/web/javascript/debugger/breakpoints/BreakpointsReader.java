@@ -112,6 +112,10 @@ public class BreakpointsReader implements Properties.Reader {
             } else {
                 url = null;
             }
+            if (url == null) {
+                // The file is gone
+                return null;
+            }
             DOMNode node = DOMNode.create(nodePathDefinition);
             DOMBreakpoint db = new DOMBreakpoint(url, node);
             db.setOnSubtreeModification(properties.getBoolean(Debugger.DOM_BREAKPOINT_SUBTREE, false));

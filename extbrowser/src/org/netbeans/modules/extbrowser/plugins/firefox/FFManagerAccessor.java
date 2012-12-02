@@ -67,12 +67,12 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import org.netbeans.modules.extbrowser.plugins.ExtensionManager;
 import org.netbeans.modules.extbrowser.plugins.ExtensionManagerAccessor;
-import org.netbeans.modules.extbrowser.plugins.PluginLoader;
 import org.netbeans.modules.extbrowser.plugins.Utils;
 
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.awt.HtmlBrowser;
 import org.openide.awt.Mnemonics;
 import org.openide.modules.InstalledFileLocator;
 import org.openide.util.NbBundle;
@@ -173,11 +173,8 @@ public class FFManagerAccessor implements ExtensionManagerAccessor {
             }
         }
 
-        /* (non-Javadoc)
-         * @see org.netbeans.modules.web.plugins.ExtensionManagerAccessor.BrowserExtensionManager#install(org.netbeans.modules.web.plugins.PluginLoader)
-         */
         @Override
-        public boolean install(PluginLoader loader, ExtensionManager.ExtensitionStatus state) {
+        public boolean install( ExtensionManager.ExtensitionStatus state) {
             File defaultProfile = getDefaultProfile();
             File extensionDir = new File(defaultProfile, "extensions" +    // NOI18N 
                     File.separator + EXTENSION_ID);
@@ -210,7 +207,7 @@ public class FFManagerAccessor implements ExtensionManagerAccessor {
                 return false;
             }
             try {
-                loader.requestPluginLoad( new URL("file:///"+extensionFile.getCanonicalPath()));
+                HtmlBrowser.URLDisplayer.getDefault().showURL(new URL("file:///"+extensionFile.getCanonicalPath()));
             }
             catch( IOException e ){
                 Logger.getLogger( FFExtensionManager.class.getCanonicalName()).

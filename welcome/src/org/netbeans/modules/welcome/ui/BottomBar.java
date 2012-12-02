@@ -49,7 +49,9 @@ import java.awt.GridBagLayout;
 import java.awt.Insets;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import org.netbeans.modules.welcome.content.Constants;
 import org.netbeans.modules.welcome.content.Logo;
+import org.netbeans.modules.welcome.content.Utils;
 
 /**
  *
@@ -59,22 +61,17 @@ class BottomBar extends JPanel {
 
     public BottomBar() {
         super( new GridBagLayout() );
-        setOpaque(false);
+        setOpaque(true);
+        setBackground( Utils.getColor( Constants.COLOR_BOTTOM_BAR ) );
         
         add( Logo.createOracleLogo(), new GridBagConstraints(0,0,1,1,0.0,0.0,
-                GridBagConstraints.SOUTHWEST,GridBagConstraints.NONE,new Insets(0,35,0,5),0,0 ) );
+                GridBagConstraints.WEST,GridBagConstraints.NONE,new Insets(0,12,0,5),0,0 ) );
         
         add( new JLabel(), new GridBagConstraints(1,0,1,1,1.0,0.0,
                 GridBagConstraints.CENTER,GridBagConstraints.NONE,new Insets(0,0,0,0),0,0 ) );
         
-        add( new ShowNextTime(), new GridBagConstraints(2,0,1,1,0.0,0.0,
-                GridBagConstraints.SOUTH,GridBagConstraints.NONE,new Insets(0,0,0,0),0,0 ) );
-        
-        add( new JLabel(), new GridBagConstraints(3,0,1,1,1.0,0.0,
-            GridBagConstraints.CENTER,GridBagConstraints.NONE,new Insets(0,0,0,0),0,0 ) );
-
         add( Logo.createJavaLogo(), new GridBagConstraints(4,0,1,1,0.0,0.0,
-                GridBagConstraints.SOUTHEAST,GridBagConstraints.NONE,new Insets(0,5,0,35),0,0 ) );
+                GridBagConstraints.EAST,GridBagConstraints.NONE,new Insets(5,5,5,12),0,0 ) );
     }
 
 }

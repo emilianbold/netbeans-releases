@@ -257,18 +257,20 @@ class FilesystemHandler extends VCSInterceptor {
      */
     private boolean shallRemove(SvnClient client, File file) throws SVNClientException {
         boolean retval = true;
-        ISVNStatus status = getStatus(client, file);
-        if (!SVNStatusKind.MISSING.equals(status.getTextStatus())) {
-            Subversion.LOG.fine(" shallRemove: skipping delete due to correct metadata");
-            retval = false;
-        } else if ("false".equals(System.getProperty("org.netbeans.modules.subversion.deleteMissingFiles", "true"))) { //NOI18N
+        if (!"true".equals(System.getProperty("org.netbeans.modules.subversion.deleteMissingFiles", "false"))) { //NOI18N
             // prevents automatic svn remove for those who dislike such behavior
-            Subversion.LOG.log(Level.FINE, "File {0} deleted externally, metadata not repaired (org.netbeans.modules.subversion.deleteMissingFiles=false)", new String[] {file.getAbsolutePath()}); //NOI18N
+            Subversion.LOG.log(Level.FINE, "File {0} deleted externally, metadata not repaired (org.netbeans.modules.subversion.deleteMissingFiles=false by default)", new String[] {file.getAbsolutePath()}); //NOI18N
             retval = false;
-        } else if (Utilities.isMac() || Utilities.isWindows()) {
-            String existingFilename = FileUtils.getExistingFilenameInParent(file);
-            if (existingFilename != null) {
+        } else {
+            ISVNStatus status = getStatus(client, file);
+            if (!SVNStatusKind.MISSING.equals(status.getTextStatus())) {
+                Subversion.LOG.fine(" shallRemove: skipping delete due to correct metadata");
                 retval = false;
+            } else if (Utilities.isMac() || Utilities.isWindows()) {
+                String existingFilename = FileUtils.getExistingFilenameInParent(file);
+                if (existingFilename != null) {
+                    retval = false;
+                }
             }
         }
         return retval;

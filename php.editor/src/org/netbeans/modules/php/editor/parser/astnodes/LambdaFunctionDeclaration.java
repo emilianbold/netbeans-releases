@@ -54,11 +54,12 @@ import java.util.List;
 public class LambdaFunctionDeclaration extends Expression {
 
     private boolean isReference;
+    private boolean isStatic;
     private final List<FormalParameter> formalParameters = new ArrayList<FormalParameter>();
     private final List<Expression> lexicalVariables = new ArrayList<Expression>();
     private Block body;
 
-    public LambdaFunctionDeclaration(int start, int end, List formalParameters, List lexicalVars, Block body, final boolean isReference) {
+    public LambdaFunctionDeclaration(int start, int end, List formalParameters, List lexicalVars, Block body, boolean isReference, boolean isStatic) {
         super(start, end);
 
         if (formalParameters == null) {
@@ -66,6 +67,7 @@ public class LambdaFunctionDeclaration extends Expression {
         }
 
         this.isReference = isReference;
+        this.isStatic = isStatic;
 
         this.formalParameters.addAll(formalParameters);
         if (lexicalVars != null) {
@@ -109,6 +111,13 @@ public class LambdaFunctionDeclaration extends Expression {
      */
     public boolean isReference() {
         return isReference;
+    }
+
+    /**
+     * e.g. $fnc = static function() {};
+     */
+    public boolean isStatic() {
+        return isStatic;
     }
 
     @Override

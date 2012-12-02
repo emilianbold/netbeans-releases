@@ -60,6 +60,7 @@ import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.queries.FileEncodingQuery;
+import org.netbeans.modules.php.api.util.StringUtils;
 import org.netbeans.modules.php.project.api.PhpLanguageProperties.PhpVersion;
 import org.netbeans.modules.php.project.environment.PhpEnvironment;
 import org.netbeans.modules.php.project.ui.Utils;
@@ -214,7 +215,7 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel<WizardDescr
      */
     public File getProjectFolderFile() {
         String projectFolder = configureProjectPanelVisual.getProjectFolder();
-        if (projectFolder.length() == 0) {
+        if (!StringUtils.hasText(projectFolder)) {
             return null;
         }
         return new File(projectFolder);

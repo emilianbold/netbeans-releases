@@ -267,15 +267,15 @@ final class MobilePlatformsPanel extends javax.swing.JPanel {
     boolean valid() {
         File androidLoc = new File(androidSdkField.getText());
         File androidTools = new File(androidLoc, "tools"); //NOI18N
-        boolean adroidValid = androidLoc.exists() && androidLoc.isDirectory()
-                               && androidTools.exists() && androidTools.isDirectory();
+        boolean adroidValid = androidSdkField.getText().isEmpty() || (androidLoc.exists() && androidLoc.isDirectory()
+                               && androidTools.exists() && androidTools.isDirectory());
 
         File cordovaLoc = new File(cordovaSdkField.getText());
         File cordovaAndroid = new File(cordovaLoc, "lib/android"); //NOI18N
         File cordovaIOS = new File(cordovaLoc, "lib/ios"); //NOI18N
-        boolean cordovaValid = cordovaLoc.exists() && cordovaLoc.isDirectory()
+        boolean cordovaValid = androidSdkField.getText().isEmpty() || (cordovaLoc.exists() && cordovaLoc.isDirectory()
                                && cordovaAndroid.exists() && cordovaAndroid.isDirectory()
-                               && cordovaIOS.exists() && cordovaIOS.isDirectory() ;
+                               && cordovaIOS.exists() && cordovaIOS.isDirectory()) ;
         
         return adroidValid && cordovaValid;
     }

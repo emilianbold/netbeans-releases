@@ -178,7 +178,7 @@ public class OccurrencesFinderImpl extends OccurrencesFinder<JsParserResult> {
                                 declaration = prototype.getProperty(object.getName());
                             }
                         }
-                        if (declaration != null) {
+                        if (declaration != null && !declaration.getModifiers().contains(Modifier.PRIVATE)) {
                             offsets.add(declaration.getDeclarationName().getOffsetRange());
                             for (Occurrence oc : declaration.getOccurrences()) {
                                 offsets.add(oc.getOffsetRange());

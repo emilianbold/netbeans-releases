@@ -145,6 +145,14 @@ public class JsCodeCompletionGeneralTest extends JsCodeComplationBase {
         checkCompletion("testfiles/completion/general/issue215863.js", "a^lert(\"Text\");", false);
     }
 
+    public void testIssue215863_05() throws Exception {
+        checkCompletion("testfiles/completion/general/issue215863.js", "l^", false);
+    }
+
+    public void testIssue215863_06() throws Exception {
+        checkCompletion("testfiles/completion/general/issue215863.js", "co^", false);
+    }
+
     public void testIssue218689() throws Exception {
         checkCompletion("testfiles/completion/general/issue218689.html", "            b.v^", false);
     }
@@ -183,6 +191,58 @@ public class JsCodeCompletionGeneralTest extends JsCodeComplationBase {
 
     public void testIssue218525_01() throws Exception {
         checkCompletion("testfiles/completion/general/issue218525.html", "<li style=\"cursor: pointer\" onclick=\"operator.r^emoveMe(this);\">Remove me (breakpoint on node removal + breakpoint on nonDOM line)</li>", false);
+    }
+    
+    public void testIssue215764_01() throws Exception {
+        checkCompletion("testfiles/completion/general/issue215764.js", "e215764.get^Date();", false);
+    }
+    
+    public void testIssue222601_01() throws Exception {
+        checkCompletion("testfiles/completion/general/issue222601.js", "b222601.get^Date()", false);
+    }
+    
+    public void testIssue220917_01() throws Exception {
+        checkCompletion("testfiles/completion/general/issue220917.js", "var d = document.get^ElementById();", false);
+    }
+
+    public void testIssue220917_02() throws Exception {
+        checkCompletion("testfiles/completion/general/issue220917.js", "document.create^Attribute();", false);
+    }
+    
+    public void testIssue220917_03() throws Exception {
+        checkCompletion("testfiles/completion/general/issue220917.js", "document.query^Selector();", false);
+    }
+
+    public void testIssue222780() throws Exception {
+        checkCompletion("testfiles/completion/general/issue222780.js", "$scope.getServoConfigurations = fun^", false);
+    }
+
+    public void testIssue214205_01() throws Exception {
+        checkCompletion("testfiles/completion/general/issue214205/issue214205.js", "number.^", false);
+    }
+
+    public void testIssue214205_02() throws Exception {
+        checkCompletion("testfiles/completion/general/issue214205/issue214205.js", "new Number().^", false);
+    }
+    
+    public void testIssue222993_01() throws Exception {
+        checkCompletion("testfiles/completion/general/issue222993.js", "        this.^content.slides.titles[0] = {};", false);
+    }
+    
+    public void testIssue222993_02() throws Exception {
+        checkCompletion("testfiles/completion/general/issue222993.js", "        this.content.^slides.titles[0] = {};", false);
+    }
+
+    public void testIssue222993_03() throws Exception {
+        checkCompletion("testfiles/completion/general/issue222993.js", "        this.content.slides.^titles[0] = {};", false);
+    }
+    
+    public void testIssue223037_01() throws Exception {
+        checkCompletion("testfiles/completion/general/issue223037.js", "                return this.^note + this.author;", false);
+    }
+    
+    public void testIssue223037_02() throws Exception {
+        checkCompletion("testfiles/completion/general/issue223037.js", "this.content.slides.titles.^reverse();", false);
     }
 
     @Override

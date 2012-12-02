@@ -85,7 +85,12 @@ public class FileComponentInstantiations extends FileComponent implements Persis
     FileComponentInstantiations(FileComponentInstantiations other, boolean empty) {
         super(other);
         if (!empty) {
-            instantiations.addAll(other.instantiations);
+            try {
+                other.instantiationsLock.readLock().lock();
+                instantiations.addAll(other.instantiations);
+            } finally {
+                other.instantiationsLock.readLock().unlock();
+            }
         }
     }
     

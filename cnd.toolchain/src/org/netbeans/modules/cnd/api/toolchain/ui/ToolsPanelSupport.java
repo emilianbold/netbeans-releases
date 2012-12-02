@@ -78,6 +78,9 @@ public class ToolsPanelSupport {
     public final static String OK_LISTENER_KEY = "okVetoableListener"; // NOI18N
     // component.getClientProperty(OK_LISTENER_KEY) can have selected toolchain name (String)
     public final static String SELECTED_TOOLCHAIN_KEY = "selectedToolchain"; // NOI18N
+    
+    private static final RequestProcessor RP = new RequestProcessor("ToolsPanelSupport", 1); // NOI18N
+    
     public static ToolsCacheManager getToolsCacheManager() {
         return cacheManager;
     }
@@ -245,7 +248,7 @@ public class ToolsPanelSupport {
         final CompilerSetManagerImpl csm = (CompilerSetManagerImpl) cacheManager.getCompilerSetManagerCopy(env, true);
         final CompilerSet cs = AddCompilerSetPanel.invokeMe(csm);
         if (cs != null) {
-            return RequestProcessor.getDefault().submit(
+            return RP.submit(
                     new CompilerSetAction(csm, cs, CompilerSetActionType.ADD), cs);
         }
         return null;
@@ -265,7 +268,7 @@ public class ToolsPanelSupport {
      */
     public static RequestProcessor.Task setDefaultCompilerSet(final ExecutionEnvironment env, final String csName) {
         final CompilerSetManagerImpl csm = (CompilerSetManagerImpl) cacheManager.getCompilerSetManagerCopy(env, true);
-        return RequestProcessor.getDefault().post(
+        return RP.post(
                 new CompilerSetAction(csm, csm.getCompilerSet(csName), CompilerSetActionType.SET_DEFAULT));
     }
 
@@ -283,7 +286,7 @@ public class ToolsPanelSupport {
      */
     public static RequestProcessor.Task removeCompilerSet(final ExecutionEnvironment env, final String csName) {
         final CompilerSetManagerImpl csm = (CompilerSetManagerImpl) cacheManager.getCompilerSetManagerCopy(env, true);
-        return RequestProcessor.getDefault().post(
+        return RP.post(
                 new CompilerSetAction(csm, csm.getCompilerSet(csName), CompilerSetActionType.REMOVE));
     }
 
@@ -316,7 +319,7 @@ public class ToolsPanelSupport {
         } else {
             runnable.run();
         }
-        return RequestProcessor.getDefault().post(
+        return RP.post(
                 new CompilerSetAction(null, null, CompilerSetActionType.NONE));
     }
 

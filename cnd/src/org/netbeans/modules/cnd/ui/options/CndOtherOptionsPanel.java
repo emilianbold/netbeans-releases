@@ -175,7 +175,9 @@ import org.openide.util.lookup.Lookups;
             eeList.add(ee);
         }
         for(NamedOption ee : Lookups.forPath(NamedOption.OTHER_CATEGORY).lookupAll(NamedOption.class)) {
-            addEntity(ee);
+            if (ee.isVisible()) {
+                addEntity(ee);
+            }
         }
         
         GroupLayout layout = new GroupLayout(extensionPanel);

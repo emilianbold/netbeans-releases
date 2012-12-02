@@ -42,10 +42,13 @@
 package org.netbeans.modules.css.visual.api;
 
 import java.awt.BorderLayout;
+import javax.swing.JComponent;
+import javax.swing.JLabel;
+import javax.swing.SwingConstants;
 import org.netbeans.modules.css.visual.CssStylesPanel;
-import org.netbeans.modules.css.visual.RuleEditorPanel;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
+import org.openide.explorer.view.BeanTreeView;
 import org.openide.filesystems.FileObject;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -80,7 +83,8 @@ preferredID = CssStylesTC.ID)
 @NbBundle.Messages({
     "CTL_CssStylesAction=CSS Styles", // NOI18N
     "CTL_CssStylesTC.title={0}CSS Styles", // NOI18N
-    "HINT_CssStylesTC=This window shows matched style rules of an element and allows to edit them." // NOI18N
+    "HINT_CssStylesTC=This window shows matched style rules of an element and allows to edit them.", // NOI18N
+    "CssStylesTC.no.content=No Content"
 })
 public final class CssStylesTC extends TopComponent {
 
@@ -99,21 +103,59 @@ public final class CssStylesTC extends TopComponent {
      * Panel shown in this {@code TopComponent}.
      */
     private CssStylesPanel cssStylesPanel;
+    
+    private JLabel noContentLabel;
 
     public CssStylesTC() {
         setLayout(new BorderLayout());
         cssStylesPanel = new CssStylesPanel();
-        add(cssStylesPanel, BorderLayout.CENTER);
+        
+        initNoContentLabel();
+        add(noContentLabel, BorderLayout.CENTER);
         
         associateLookup(cssStylesPanel.getLookup());
         
         setFileNameInTitle(null);
         setToolTipText(Bundle.HINT_CssStylesTC());
     }
+    
+    
+    /**
+     * Initializes the "no Styles" label.
+     */
+    private void initNoContentLabel() {
+        noContentLabel = new JLabel();
+        noContentLabel.setText(Bundle.CssStylesTC_no_content()); // NOI18N
+        noContentLabel.setHorizontalAlignment(SwingConstants.CENTER);
+        noContentLabel.setVerticalAlignment(SwingConstants.CENTER);
+        noContentLabel.setEnabled(false);
+        noContentLabel.setBackground(new BeanTreeView().getViewport().getView().getBackground());
+        noContentLabel.setOpaque(true);
+    }
+    
+    private void setContent(JComponent component) {
+        if(component.getParent() == null) {
+            //not shown
+            removeAll();
+            add(component, BorderLayout.CENTER);
+            revalidate();
+            repaint();
+        }
+    }
+    
+    public void setUnsupportedContext(FileObject file) {
+        setFileNameInTitle(file);
+        setContent(noContentLabel);
+    }
 
     public void setContext(FileObject file) {
         setFileNameInTitle(file);
+        setContent(cssStylesPanel);
+
         cssStylesPanel.setContext(file);
+        
+        //hack - set context to the create rule action
+        EditCSSRulesAction.getDefault().setContext(file);
     }
 
     @Override

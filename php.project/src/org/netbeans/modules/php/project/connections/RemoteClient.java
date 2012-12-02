@@ -248,6 +248,7 @@ public final class RemoteClient implements Cancellable, RemoteClientImplementati
         return success;
     }
 
+    @Override
     public List<TransferFile> listFiles(TransferFile file) throws RemoteException {
         ensureConnected();
 

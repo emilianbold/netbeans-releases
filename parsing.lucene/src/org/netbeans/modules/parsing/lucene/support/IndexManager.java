@@ -235,7 +235,23 @@ public final class IndexManager {
      * @return the created {@link Index}
      * @throws IOException in case of IO problem.
      */
-    public static Index createIndex(final @NonNull File cacheFolder, final @NonNull Analyzer analyzer) throws IOException {        
+    @NonNull
+    public static Index createIndex(final @NonNull File cacheFolder, final @NonNull Analyzer analyzer) throws IOException {
+        return createTransactionalIndex(cacheFolder, analyzer);
+    }
+
+    /**
+     * Creates a new {@link Index.Transactional} for given folder with given lucene Analyzer.
+     * The returned {@link Index} is not cached, next call with the same arguments returns a different instance
+     * of {@link Index}. The caller is responsible to cache the returned {@link Index}.
+     * @param cacheFolder the folder in which the index is stored
+     * @param analyzer the lucene Analyzer used to split fields into tokens.
+     * @return the created {@link Index.Transactional}
+     * @throws IOException in case of IO problem.
+     * @since 2.19
+     */
+    @NonNull
+    public static Index.Transactional createTransactionalIndex(final @NonNull File cacheFolder, final @NonNull Analyzer analyzer) throws IOException {
         Parameters.notNull("cacheFolder", cacheFolder); //NOI18N
         Parameters.notNull("analyzer", analyzer);       //NOI18N
         if (!cacheFolder.canRead()) {
@@ -244,7 +260,7 @@ public final class IndexManager {
         if (!cacheFolder.canWrite()) {
             throw new IOException(String.format("Cannot write to cache folder: %s.", cacheFolder.getAbsolutePath()));   //NOI18N
         }
-        final Index index = factory.createIndex(cacheFolder, analyzer);
+        final Index.Transactional index = factory.createIndex(cacheFolder, analyzer);
         assert index != null;
         indexes.put(cacheFolder, new Ref(cacheFolder,index));
         return index;
@@ -298,9 +314,9 @@ public final class IndexManager {
     }
 
     /**
-     * Creates a document based index
-     * The returned {@link Index} is not cached, next call with the same arguments returns a different instance
-     * of {@link Index}. The caller is responsible to cache the returned {@link DocumentIndex}.
+     * Creates a document based index.
+     * The returned {@link DocumentIndex} is not cached, next call with the same arguments returns a different instance
+     * of {@link DocumentIndex}. The caller is responsible to cache the returned {@link DocumentIndex}.
      * @param index the low level index to which the document based index delegates
      * @param cache the document caching provider
      * @return the document based index
@@ -311,7 +327,7 @@ public final class IndexManager {
             final @NonNull DocumentIndexCache cache) {
         Parameters.notNull("index", index);     //NOI18N
         Parameters.notNull("cache", cache);     //NOI18N
-        return new DocumentIndexImpl(index, cache);
+        return DocumentIndexImpl.create(index, cache);
     }
     
     /**
@@ -342,6 +358,73 @@ public final class IndexManager {
         Parameters.notNull("cacheFolder", cacheFolder);     //NOI18N
         Parameters.notNull("cache", cache);                 //NOI18N
         return createDocumentIndex(createIndex(cacheFolder, new KeywordAnalyzer()), cache);
+    }
+
+    /**
+     * Creates a transactional document based index.
+     * The returned {@link DocumentIndex} is not cached, next call with the same arguments returns a different instance
+     * of {@link DocumentIndex}. The caller is responsible to cache the returned {@link DocumentIndex}.
+     * @param index the low level index to which the document based index delegates
+     * @param cache the document caching provider
+     * @return the document based index
+     * @since 2.19
+     */
+    @NonNull
+    public static DocumentIndex.Transactional createTransactionalDocumentIndex (
+            final @NonNull Index.Transactional index) {
+        return createTransactionalDocumentIndex(index, new SimpleDocumentIndexCache());
+    }
+
+    /**
+     * Creates a transactional document based index.
+     * The returned {@link DocumentIndex} is not cached, next call with the same arguments returns a different instance
+     * of {@link DocumentIndex}. The caller is responsible to cache the returned {@link DocumentIndex}.
+     * @param index the low level index to which the document based index delegates
+     * @return the document based index
+     * @since 2.19
+     */
+    @NonNull
+    public static DocumentIndex.Transactional createTransactionalDocumentIndex (
+            final @NonNull Index.Transactional index,
+            final @NonNull DocumentIndexCache cache) {
+        Parameters.notNull("index", index);     //NOI18N
+        Parameters.notNull("cache", cache);     //NOI18N
+        return DocumentIndexImpl.createTransactional(index, cache);
+    }
+
+    /**
+     * Creates a transactional document based index.
+     * The returned {@link DocumentIndex} is not cached, next call with the same arguments returns a different instance
+     * of {@link DocumentIndex}. The caller is responsible to cache the returned {@link DocumentIndex}.
+     * @param cacheFolder the folder in which the index should be stored
+     * @return the document based index
+     * @since 2.19
+     */
+    @NonNull
+    public static DocumentIndex.Transactional createTransactionalDocumentIndex (
+            final @NonNull File cacheFolder) throws IOException {
+        Parameters.notNull("cacheFolder", cacheFolder);     //NOI18N                 //NOI18N
+        return createTransactionalDocumentIndex(cacheFolder, new SimpleDocumentIndexCache());
+    }
+
+    /**
+     * Creates a transactional document based index.
+     * The returned {@link DocumentIndex} is not cached, next call with the same arguments returns a different instance
+     * of {@link DocumentIndex}. The caller is responsible to cache the returned {@link DocumentIndex}.
+     * @param cacheFolder the folder in which the index should be stored
+     * @param cache the document caching provider
+     * @return the document based index
+     * @since 2.19
+     */
+    @NonNull
+    public static DocumentIndex.Transactional createTransactionalDocumentIndex (
+            final @NonNull File cacheFolder,
+            final @NonNull DocumentIndexCache cache) throws IOException {
+        Parameters.notNull("cacheFolder", cacheFolder);     //NOI18N
+        Parameters.notNull("cache", cache);                 //NOI18N
+        return createTransactionalDocumentIndex(
+                createTransactionalIndex(cacheFolder, new KeywordAnalyzer()),
+                cache);
     }
 
     /**

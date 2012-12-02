@@ -47,13 +47,9 @@ import java.beans.PropertyChangeSupport;
 import java.io.IOException;
 import java.io.Reader;
 import java.io.StringReader;
-import java.lang.ref.Reference;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
-import java.util.Map;
-import java.util.Observable;
-import java.util.WeakHashMap;   
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -130,6 +126,7 @@ public final class Model implements PropertyChangeListener {
     private static int globalModelSerialNumber;
     
     private EditorCookie.Observable editorCookie;
+    private DataObject dataObject;
     
     /**
      * Gets cached instance of {@link Model}.
@@ -198,8 +195,8 @@ public final class Model implements PropertyChangeListener {
             //if the original document was closed.
             //See issue http://netbeans.org/bugzilla/show_bug.cgi?id=219493 for more details
             try {
-                DataObject dobj = DataObject.find(file);
-                editorCookie = dobj.getLookup().lookup(EditorCookie.Observable.class);
+                dataObject = DataObject.find(file);
+                editorCookie = dataObject.getLookup().lookup(EditorCookie.Observable.class);
                 editorCookie.addPropertyChangeListener(WeakListeners.propertyChange(this, editorCookie));
             } catch (DataObjectNotFoundException ex) {
                 Exceptions.printStackTrace(ex);
@@ -223,13 +220,18 @@ public final class Model implements PropertyChangeListener {
                 try {
                     //Document closed.
                     //Re-create the document and update the lookup.
-                    StyledDocument newDocument = editorCookie.openDocument();
-                    documentLookup.updateLookup(Lookups.fixed(newDocument));
+                    if(dataObject.isValid()) {
+                        StyledDocument newDocument = editorCookie.openDocument();
+                        documentLookup.updateLookup(Lookups.fixed(newDocument));
 
-                    LOGGER.log(Level.FINE, "Model: {0}: new document instance set to {0} upon "
-                            + "EditorCookie.Observable.PROP_DOCUMENT property change.", 
-                            new Object[]{this, System.identityHashCode(newDocument)}); //NOI18N
-                    
+                        LOGGER.log(Level.FINE, "Model: {0}: new document instance set to {0} upon "
+                                + "EditorCookie.Observable.PROP_DOCUMENT property change.",
+                                new Object[]{this, System.identityHashCode(newDocument)}); //NOI18N
+                    } else {
+                        documentLookup.updateLookup(Lookups.fixed()); //remove the document from lookup
+                        LOGGER.log(Level.FINE, "Model: {0}: DataObject become invalid.",
+                                new Object[]{this}); //NOI18N
+                    }
                 } catch (IOException ex) {
                     Exceptions.printStackTrace(ex);
                 }
@@ -350,13 +352,31 @@ public final class Model implements PropertyChangeListener {
         }
         Document doc = getLookup().lookup(Document.class);
         if (doc == null) {
-            throw new IOException("Not document based model instance!"); //NOI18N
+            throw new IllegalStateException("Trying to save model with invalidated DataObject!");
         }
         
         Difference[] diff = getModelSourceDiff();
         if(diff.length > 0) {
             Snapshot snapshot = getLookup().lookup(Snapshot.class);
-            applyChanges_AtomicLock(doc, diff, new SnapshotOffsetConvertor(snapshot));
+            
+            if(dataObject != null) {
+                boolean modified = dataObject.getLookup().lookup(SaveCookie.class) != null;
+                applyChanges_AtomicLock(doc, diff, new SnapshotOffsetConvertor(snapshot));
+                if(!modified) {
+                    //save the changes if the document wasn't modified before
+                    SaveCookie saveCookie = dataObject.getLookup().lookup(SaveCookie.class);
+                    if(saveCookie != null) { //the "changes" may not modify the document
+                        saveCookie.save();
+                    }
+                }
+                LiveUpdater liveUpdater = Lookup.getDefault().lookup(LiveUpdater.class);
+                if(liveUpdater != null) {
+                    liveUpdater.update(doc);
+                }
+            } else {
+                applyChanges_AtomicLock(doc, diff, new SnapshotOffsetConvertor(snapshot));
+            }
+            
             LOGGER.log(Level.INFO, "{0}: changes applied to document", this);
             changesApplied = true;
             support.firePropertyChange(CHANGES_APPLIED_TO_DOCUMENT, null, null);
@@ -500,62 +520,8 @@ public final class Model implements PropertyChangeListener {
             }
 
         }
-
-        saveIfNotOpenInEditor(document);
     }
-
-    //>>> TEMPORARY HACK - TO BE REMOVED FROM THE MODULE !!! 
-    private void saveIfNotOpenInEditor(final Document document) throws IOException {
-        DataObject dataObject = getDataObject(document);
-        if (dataObject == null) {
-            LOGGER.log(Level.FINE, "Cannot find DataObject for document " + document);
-            return;
-        }
-        FileObject file = getLookup().lookup(FileObject.class);
-        final String filename = file == null ? "???" : file.getNameExt();
-        final EditorCookie ec = dataObject.getLookup().lookup(EditorCookie.class);
-        final SaveCookie save = dataObject.getLookup().lookup(SaveCookie.class);
-        
-        Mutex.EVENT.readAccess(new Runnable() {
-
-            @Override
-            public void run() {
-                //XXX I/O in EDT, but this will be removed anyway...
-                LiveUpdater liveUpdater = Lookup.getDefault().lookup(LiveUpdater.class);
-                if (ec != null && ec.getOpenedPanes() == null) {
-                    //file not open in any editor
-                    if (save != null) {
-                        LOGGER.log(Level.INFO, "Changes saved to file {0}", filename);
-                        try {
-                            save.save();
-                        } catch (IOException ex) {
-                            Exceptions.printStackTrace(ex);
-                        }
-                    }
-                    if(liveUpdater != null) { 
-                        liveUpdater.update(document);
-                    }
-                } else {
-                    if (!ec.getOpenedPanes()[0].equals(EditorRegistry.lastFocusedComponent())) {
-                        if(liveUpdater != null) {
-                            liveUpdater.update(document);
-                        }
-                    }
-                }
-            }
-            
-        });
-    }
-
-    private static DataObject getDataObject(Document doc) {
-        Object sdp = doc == null ? null : doc.getProperty(Document.StreamDescriptionProperty);
-        if (sdp instanceof DataObject) {
-            return (DataObject) sdp;
-        }
-        return null;
-    }
-    //<<<
-
+   
     @Override
     public String toString() {
         FileObject file = getLookup().lookup(FileObject.class);

@@ -101,6 +101,7 @@ public class DefaultProjectActionHandler implements ProjectActionHandler {
     // first is in determining the type of console for remote;
     // second is in canCancel
     private static final boolean RUN_REMOTE_IN_OUTPUT_WINDOW = false;
+    private static final RequestProcessor RP = new RequestProcessor("DefaultProjectActionHandler", 1); // NOI18N
 
     @Override
     public void init(ProjectActionEvent pae, ProjectActionEvent[] paes, Collection<OutputStreamHandler> outputHandlers) {
@@ -146,7 +147,7 @@ public class DefaultProjectActionHandler implements ProjectActionHandler {
         };
 
         if (SwingUtilities.isEventDispatchThread()) {
-            RequestProcessor.getDefault().post(executor);
+            RP.post(executor);
         } else {
             executor.run();
         }
@@ -378,7 +379,7 @@ public class DefaultProjectActionHandler implements ProjectActionHandler {
 
     @Override
     public void cancel() {
-        RequestProcessor.getDefault().post(new Runnable() {
+        RP.post(new Runnable() {
 
             @Override
             public void run() {

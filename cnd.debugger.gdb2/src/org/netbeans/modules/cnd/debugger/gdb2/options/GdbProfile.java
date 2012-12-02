@@ -177,7 +177,11 @@ public class GdbProfile extends DbgProfile implements
         
 	set.put(DebuggerOption.GDB_INIT_FILE.createNodeProp(this));
         set.put(DebuggerOption.GDB_SOURCE_DIRS.createNodeProp(this));
-	set.put(new PathmapNodeProp(this, "SubPropDisplayName")); // NOI18N
+        
+        set.put(DebuggerOption.GDB_FOLLOW_FORK_MODE.createNodeProp(this));
+        set.put(DebuggerOption.GDB_DETACH_ON_FORK.createNodeProp(this));
+	
+        set.put(new PathmapNodeProp(this, "SubPropDisplayName")); // NOI18N
 	// LATER set.put(new ExceptionsNodeProp(this));
 	// LATER set.put(new SignalsNodeProp(this));
 	sheet.put(set);

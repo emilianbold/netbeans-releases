@@ -247,6 +247,19 @@ public class WebKitNodeDescription extends DOMNodeDescription {
         return parent;
     }
 
+    @Override
+    public String toString() {
+        StringBuilder buffer = new StringBuilder();
+        buffer.append("<").append(getName()).append(">");
+        buffer.append("{");
+        for (WebKitNodeDescription desc:getChildren()) {
+            buffer.append(desc.toString());
+        }
+        buffer.append("}");
+        
+        return buffer.toString();
+    }
+
     public static class WebKitNodeTreePath {
 
         private static final char ELEMENT_PATH_ELEMENTS_DELIMITER = '/';

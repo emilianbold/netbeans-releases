@@ -42,10 +42,6 @@
 package org.netbeans.modules.css.visual;
 
 import java.awt.BorderLayout;
-import java.awt.Point;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.KeyEvent;
 import java.beans.FeatureDescriptor;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -78,11 +74,10 @@ import org.netbeans.modules.css.model.api.Rule;
 import org.netbeans.modules.css.model.api.StyleSheet;
 import org.netbeans.modules.css.visual.RuleEditorNode.DeclarationProperty;
 import org.netbeans.modules.css.visual.actions.AddPropertyAction;
-import org.netbeans.modules.css.visual.actions.CreateRuleAction;
-import org.netbeans.modules.css.visual.actions.DeleteRuleAction;
 import org.netbeans.modules.css.visual.actions.GoToSourceAction;
 import org.netbeans.modules.css.visual.actions.RemovePropertyAction;
 import org.netbeans.modules.css.visual.api.DeclarationInfo;
+import org.netbeans.modules.css.visual.api.EditCSSRulesAction;
 import org.netbeans.modules.css.visual.api.RuleEditorController;
 import org.netbeans.modules.css.visual.api.ViewMode;
 import org.netbeans.modules.parsing.api.ParserManager;
@@ -151,8 +146,6 @@ public class RuleEditorPanel extends JPanel {
     private Model model;
     private Rule rule;
     private Action addPropertyAction;
-    private CreateRuleAction addRuleAction;
-    private Action removeRuleAction;
     private Action[] actions;
     private RuleEditorViews views;
     private CustomToolbar toolbar;
@@ -226,8 +219,6 @@ public class RuleEditorPanel extends JPanel {
         
         //initialize actions
         addPropertyAction = new AddPropertyAction(this);
-        addRuleAction = new CreateRuleAction();
-        removeRuleAction = new DeleteRuleAction(this);
 
         //init default components
         initComponents();
@@ -260,11 +251,8 @@ public class RuleEditorPanel extends JPanel {
         addRuleEditorListener(new PropertyChangeListener() {
             @Override
             public void propertyChange(PropertyChangeEvent evt) {
-                if (evt.getPropertyName().equals(RuleEditorController.PropertyNames.MODEL_SET.name())) {
-                    addRuleAction.setEnabled(evt.getNewValue() != null);
-                } else if (evt.getPropertyName().equals(RuleEditorController.PropertyNames.RULE_SET.name())) {
+                if (evt.getPropertyName().equals(RuleEditorController.PropertyNames.RULE_SET.name())) {
                     addPropertyAction.setEnabled(evt.getNewValue() != null);
-                    removeRuleAction.setEnabled(evt.getNewValue() != null);
                 }
             }
         });
@@ -273,8 +261,6 @@ public class RuleEditorPanel extends JPanel {
         
         actions = new Action[]{
             addPropertyAction,
-            addRuleAction,
-            removeRuleAction,
             null,
             viewActions[0],
             viewActions[1],
@@ -303,11 +289,8 @@ public class RuleEditorPanel extends JPanel {
             setComponentPopupMenu(pm);
             
             buildButtonPopup.add(addPropertyAction);
-            buildButtonPopup.add(addRuleAction);
-            buildButtonPopup.add(removeRuleAction);
             
             toolbar.addLineSeparator();
-            toolbar.addButton(createRuleToggleButton);
             toolbar.addButton(createPropertyToggleButton);
             
         }
@@ -486,7 +469,7 @@ public class RuleEditorPanel extends JPanel {
         CHANGE_SUPPORT.firePropertyChange(RuleEditorController.PropertyNames.MODEL_SET.name(), oldModel, this.model);
 
         //update the context in create rule action
-        addRuleAction.setContext(model.getLookup().lookup(FileObject.class));
+        EditCSSRulesAction.getDefault().setContext(model.getLookup().lookup(FileObject.class));
         
         if (this.rule != null) {
             //resolve the old rule from the previous model to corresponding rule in the new model
@@ -621,7 +604,6 @@ public class RuleEditorPanel extends JPanel {
 
         cancelFilterLabel = new javax.swing.JLabel();
         filterTextField = new javax.swing.JTextField();
-        createRuleToggleButton = new javax.swing.JToggleButton();
         filterToggleButton = new javax.swing.JToggleButton();
         createPropertyToggleButton = new javax.swing.JToggleButton();
         northPanel = new javax.swing.JPanel();
@@ -641,17 +623,6 @@ public class RuleEditorPanel extends JPanel {
         filterTextField.setToolTipText(org.openide.util.NbBundle.getMessage(RuleEditorPanel.class, "DocumentViewPanel.filterToggleButton.toolTipText")); // NOI18N
         filterTextField.setMaximumSize(new java.awt.Dimension(32767, 32767));
         filterTextField.setMinimumSize(new java.awt.Dimension(60, 28));
-
-        createRuleToggleButton.setAction(addRuleAction);
-        createRuleToggleButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/css/visual/resources/newRule.png"))); // NOI18N
-        createRuleToggleButton.setText(null);
-        createRuleToggleButton.setToolTipText(org.openide.util.NbBundle.getMessage(RuleEditorPanel.class, "DocumentViewPanel.createRuleToggleButton.toolTipText")); // NOI18N
-        createRuleToggleButton.setFocusable(false);
-        createRuleToggleButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                createRuleToggleButtonActionPerformed(evt);
-            }
-        });
 
         filterToggleButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/css/visual/resources/find.png"))); // NOI18N
         filterToggleButton.setText(null);
@@ -730,10 +701,6 @@ public class RuleEditorPanel extends JPanel {
         
     }//GEN-LAST:event_filterToggleButtonActionPerformed
 
-    private void createRuleToggleButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_createRuleToggleButtonActionPerformed
-        createRuleToggleButton.setSelected(false);
-    }//GEN-LAST:event_createRuleToggleButtonActionPerformed
-
     private void createPropertyToggleButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_createPropertyToggleButtonActionPerformed
         createPropertyToggleButton.setSelected(false);
     }//GEN-LAST:event_createPropertyToggleButtonActionPerformed
@@ -741,7 +708,6 @@ public class RuleEditorPanel extends JPanel {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel cancelFilterLabel;
     private javax.swing.JToggleButton createPropertyToggleButton;
-    private javax.swing.JToggleButton createRuleToggleButton;
     private javax.swing.JTextField filterTextField;
     private javax.swing.JToggleButton filterToggleButton;
     private javax.swing.JPanel northEastPanel;
@@ -765,8 +731,8 @@ public class RuleEditorPanel extends JPanel {
         @Override
         protected JPopupMenu createPopupMenu() {
             FeatureDescriptor fd = getSelection();
-            if(fd != null) {
-                if(fd instanceof RuleEditorNode.DeclarationProperty) {
+            if (fd != null) {
+                if (fd instanceof RuleEditorNode.DeclarationProperty) {
                     //property
                     //
                     //actions:
@@ -775,23 +741,26 @@ public class RuleEditorPanel extends JPanel {
                     //????
                     //custom popop for the whole panel
                     JPopupMenu pm = new JPopupMenu();
-                    
-                    pm.add(new GoToSourceAction(RuleEditorPanel.this, (RuleEditorNode.DeclarationProperty)fd));
-                    pm.addSeparator();
-                    pm.add(new RemovePropertyAction(RuleEditorPanel.this, (RuleEditorNode.DeclarationProperty)fd));
+
+                    if(!addPropertyMode) {
+                        pm.add(new GoToSourceAction(RuleEditorPanel.this, (RuleEditorNode.DeclarationProperty) fd));
+                        pm.addSeparator();
+                        pm.add(new RemovePropertyAction(RuleEditorPanel.this, (RuleEditorNode.DeclarationProperty) fd));
+                    }
 
                     return pm;
-                    
-                } else if(fd instanceof RuleEditorNode.PropertyCategoryPropertySet) {
+
+                } else if (fd instanceof RuleEditorNode.PropertyCategoryPropertySet) {
                     //property category
                     //TODO possibly add "add property" action which would
                     //preselect the css category in the "add property dialog".
                 }
-            }            
-            
+            }
+
             //no context popup - create the generic popup
             return genericPopupMenu;
         }
+
         
     }
 }

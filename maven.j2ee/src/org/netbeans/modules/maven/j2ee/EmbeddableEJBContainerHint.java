@@ -176,17 +176,21 @@ public class EmbeddableEJBContainerHint extends AbstractHint {
     public void cancel() {
     }
 
-    private static class FixEjbContainerAction implements Fix {
-        private String fixDesc;
-        private URL pomUrl;
-        private Project prj;
-        private File f;
+    private static final class FixEjbContainerAction implements Fix {
+
+        private static final String GF_EMBEDDED_STATIC_SHELL_POM_LATEST = "https://maven.java.net/content/repositories/releases/org/glassfish/main/extras/glassfish-embedded-static-shell/3.1.2.2/glassfish-embedded-static-shell-3.1.2.2.pom";
+        private static final String GF_EMBEDDED_STATIC_SHELL_POM_OLD = "http://repo2.maven.org/maven2/org/glassfish/extras/glassfish-embedded-static-shell/3.0.1/glassfish-embedded-static-shell-3.0.1.pom";
+        private final String fixDesc;
+        private final URL pomUrl;
+        private final Project project;
+        private final File file;
+
 
         private FixEjbContainerAction(String fixDesc, URL pomUrl, File f, Project prj) {
             this.fixDesc = fixDesc;
             this.pomUrl = pomUrl;
-            this.prj = prj;
-            this.f = FileUtil.normalizeFile(f);
+            this.project = prj;
+            this.file = FileUtil.normalizeFile(f);
         }
 
         public static List<Fix> createGF3SystemScope(Project prj) {
@@ -209,9 +213,9 @@ public class EmbeddableEJBContainerHint extends AbstractHint {
                     try {
                         URL pomUrl;
                         if (serId.indexOf("gfv3ee6wc") != -1) {
-                            pomUrl = new URL("http://repo2.maven.org/maven2/org/glassfish/extras/glassfish-embedded-static-shell/3.1.1/glassfish-embedded-static-shell-3.1.1.pom");
+                            pomUrl = new URL(GF_EMBEDDED_STATIC_SHELL_POM_LATEST);
                         } else {
-                            pomUrl = new URL("http://repo2.maven.org/maven2/org/glassfish/extras/glassfish-embedded-static-shell/3.0.1/glassfish-embedded-static-shell-3.0.1.pom");
+                            pomUrl = new URL(GF_EMBEDDED_STATIC_SHELL_POM_OLD);
                         }
                         if (serId.equals(usedServer)) {
                             fixes.clear();
@@ -238,15 +242,15 @@ public class EmbeddableEJBContainerHint extends AbstractHint {
             ModelOperation<POMModel> operation = new ModelOperation<POMModel>() {
                 @Override
                 public void performOperation(POMModel model) {
-                    added[0] = checkAndAddPom(pomUrl, model, f);
+                    added[0] = checkAndAddPom(pomUrl, model, file);
                 }
             };
-            FileObject pom = prj.getProjectDirectory().getFileObject("pom.xml");//NOI18N
+            FileObject pom = project.getProjectDirectory().getFileObject("pom.xml");//NOI18N
             org.netbeans.modules.maven.model.Utilities.performPOMModelOperations(pom, Collections.singletonList(operation));
             //TODO is the manual reload necessary if pom.xml file is being saved?
     //                NbMavenProject.fireMavenProjectReload(project);
             if (added[0]) {
-                prj.getLookup().lookup(NbMavenProject.class).triggerDependencyDownload();
+                project.getLookup().lookup(NbMavenProject.class).triggerDependencyDownload();
             }
             return null;
         }
@@ -279,5 +283,4 @@ public class EmbeddableEJBContainerHint extends AbstractHint {
             return fixDesc;
         }
      }
-    
 }

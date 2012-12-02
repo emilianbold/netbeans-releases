@@ -57,8 +57,10 @@ import javax.swing.text.StyleConstants;
 import javax.swing.text.StyleContext;
 import java.net.URI;
 import javax.swing.JTextPane;
+import javax.swing.text.BadLocationException;
 import org.netbeans.modules.bugtracking.BugtrackingManager;
 import static org.netbeans.modules.bugtracking.util.WebUrlHyperlinkSupport.SearchMachine.State.*;
+import org.openide.util.Exceptions;
 
 /**
  * Finds http(s) addresses in a text pane and makes hyperlinks out of them.
@@ -69,7 +71,12 @@ class WebUrlHyperlinkSupport {
 
     static void register(final JTextPane pane) {
         final StyledDocument doc = pane.getStyledDocument();
-        String text = pane.getText();
+        String text = "";
+        try {
+            text = doc.getText(0, doc.getLength());
+        } catch (BadLocationException ex) {
+            BugtrackingManager.LOG.log(Level.SEVERE, null, ex);
+        }
         final int[] boundaries = findBoundaries(text);
         if ((boundaries != null) && (boundaries.length != 0)) {
 
@@ -85,36 +92,46 @@ class WebUrlHyperlinkSupport {
                     for (int i = 0; i < boundaries.length; i+=2) {
                         doc.setCharacterAttributes(boundaries[i], boundaries[i + 1] - boundaries[i], hlStyle, true);
                     }
-                    pane.addMouseListener(new MouseAdapter() {
-                        @Override
-                        public void mouseClicked(MouseEvent e) {
-                            try {
-                                if (SwingUtilities.isLeftMouseButton(e)) {
-                                    JTextPane pane = (JTextPane)e.getSource();
-                                    StyledDocument doc = pane.getStyledDocument();
-                                    Element elem = doc.getCharacterElement(pane.viewToModel(e.getPoint()));
-                                    AttributeSet as = elem.getAttributes();
-
-                                    UrlAction urlAction = (UrlAction) as.getAttribute(HyperlinkSupport.URL_ATTRIBUTE);
-                                    if (urlAction != null) {
-                                        int startOffset = elem.getStartOffset();
-                                        int endOffset = elem.getEndOffset();
-                                        int length = endOffset - startOffset;
-                                        String hyperlinkText = doc.getText(startOffset, length);
-                                        urlAction.openUrlHyperlink(hyperlinkText);
-                                        return;
-                                    }
-                                }
-                            } catch(Exception ex) {
-                                BugtrackingManager.LOG.log(Level.SEVERE, null, ex);
-                            }
-                        }
-                    });
+                    pane.removeMouseListener(getUrlMouseListener());
+                    pane.addMouseListener(getUrlMouseListener());
                 }
             });
         }
     }
-    
+
+    private static MouseAdapter urlListener;
+
+    private static MouseAdapter getUrlMouseListener() {
+        if (urlListener == null) {
+            urlListener = new MouseAdapter() {
+                @Override
+                public void mouseClicked(MouseEvent e) {
+                    try {
+                        if (SwingUtilities.isLeftMouseButton(e)) {
+                            JTextPane pane = (JTextPane) e.getSource();
+                            StyledDocument doc = pane.getStyledDocument();
+                            Element elem = doc.getCharacterElement(pane.viewToModel(e.getPoint()));
+                            AttributeSet as = elem.getAttributes();
+
+                            UrlAction urlAction = (UrlAction) as.getAttribute(HyperlinkSupport.URL_ATTRIBUTE);
+                            if (urlAction != null) {
+                                int startOffset = elem.getStartOffset();
+                                int endOffset = elem.getEndOffset();
+                                int length = endOffset - startOffset;
+                                String hyperlinkText = doc.getText(startOffset, length);
+                                urlAction.openUrlHyperlink(hyperlinkText);
+                                return;
+                            }
+                        }
+                    } catch (Exception ex) {
+                        BugtrackingManager.LOG.log(Level.SEVERE, null, ex);
+                    }
+                }
+            };
+        }
+        return urlListener;
+    }
+
     private static class UrlAction {
         void openUrlHyperlink(String hyperlinkText) {
             try {

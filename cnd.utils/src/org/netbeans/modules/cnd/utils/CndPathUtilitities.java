@@ -52,6 +52,7 @@ import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileSystem;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.Utilities;
 
@@ -215,9 +216,10 @@ public class CndPathUtilitities {
         return path;
     }
 
-    /*
-     * From PicklistUtils
+    /**
+     * @deprecated Please use {@link #toAbsolutePath(FileObject base, String path)}
      */
+    @Deprecated
     public static String toAbsolutePath(String base, String path) {
         String newPath = path;
         if (newPath == null || newPath.length() == 0) {
@@ -233,7 +235,7 @@ public class CndPathUtilitities {
             File newPathFile = new File(newPath);
             if (newPathFile.exists()) {
                 try {
-                    newPath = newPathFile.getCanonicalPath();
+                    newPath = FileUtil.normalizePath(newPath);
                 } catch (Exception e) {
                 }
             }

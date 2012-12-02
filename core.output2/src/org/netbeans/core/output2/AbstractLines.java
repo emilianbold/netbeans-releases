@@ -57,6 +57,8 @@ import java.nio.charset.CharsetEncoder;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.swing.UIManager;
@@ -73,6 +75,8 @@ import org.netbeans.swing.plaf.LFCustoms;
  * Abstract Lines implementation with handling for getLine wrap calculations, etc.
  */
 abstract class AbstractLines implements Lines, Runnable, ActionListener {
+    private static final Logger LOG =
+            Logger.getLogger(AbstractLines.class.getName());
     /** A collections-like lineStartList that maps file positions to getLine numbers */
     IntList lineStartList;
     IntListSimple lineCharLengthListWithTabs;
@@ -185,7 +189,7 @@ abstract class AbstractLines implements Lines, Runnable, ActionListener {
     public String getText(int start, int end) {
         BufferResource<CharBuffer> br = getCharBuffer(start, end - start);
         try {
-            CharBuffer cb = br.getBuffer();
+            CharBuffer cb = br == null ? null : br.getBuffer();
             String s = cb != null ? cb.toString() : new String(new char[end - start]);
             return s;
         } finally {
@@ -1114,6 +1118,7 @@ abstract class AbstractLines implements Lines, Runnable, ActionListener {
     void addTabAt(int i, int tabLength) {
         tabLength--;    // substract the tab character as such, to have the extra length
         synchronized (readLock()) {
+            LOG.log(Level.FINEST, "addTabAt: i = {0}", i);   // #201450 //NOI18N
             tabCharOffsets.add(i);
             int n = tabLengthSums.size();
             if (n > 0) {

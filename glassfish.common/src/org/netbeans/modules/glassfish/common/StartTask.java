@@ -594,13 +594,14 @@ public class StartTask extends BasicTask<OperationState> {
         } else {
             if (null != debugPortString && debugPortString.trim().length() > 0) {
                 int t = Integer.parseInt(debugPortString);
-                if (t < LOWEST_USER_PORT || t > 65535) {
+                if (t != 0 && (t < LOWEST_USER_PORT || t > 65535)) {
                     throw new NumberFormatException();
                 }
             }
         }
         //try {
-        if (null == debugPortString || "".equals(debugPortString)) {
+        if (null == debugPortString
+                || "0".equals(debugPortString) || "".equals(debugPortString)) {
             if ("true".equals(instance.getProperty(GlassfishModule.USE_SHARED_MEM_ATTR))) { // NOI18N
                 debugPortString = Integer.toString(
                         Math.abs((instance.getProperty(GlassfishModule.GLASSFISH_FOLDER_ATTR)
@@ -685,6 +686,7 @@ public class StartTask extends BasicTask<OperationState> {
 
     private Process createProcess() throws ProcessCreationException {
         StartupArgs args = createProcessDescriptor();
+        // JDK checks and Java VM process startup were moved to GF Tooling SDK.
         ResultProcess process = ServerTasks.startServer(instance, args);
         if (process.getState() != TaskState.COMPLETED) {
             throw new ProcessCreationException(null, "MSG_START_SERVER_FAILED_PD", instanceName);

@@ -45,6 +45,7 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.mimelookup.MimeRegistration;
+import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.javascript2.editor.lexer.JsTokenId;
@@ -57,6 +58,18 @@ import org.netbeans.spi.editor.typinghooks.DeletedTextInterceptor;
  */
 public class JsDeletedTextInterceptor implements DeletedTextInterceptor {
 
+    private final Language<JsTokenId> language;
+
+    private final boolean singleQuote;
+
+    private final boolean comments;
+
+    public JsDeletedTextInterceptor(Language<JsTokenId> language, boolean singleQuote, boolean comments) {
+        this.language = language;
+        this.singleQuote = singleQuote;
+        this.comments = comments;
+    }
+    
     @Override
     public void afterRemove(Context context) throws BadLocationException {
     }
@@ -80,14 +93,17 @@ public class JsDeletedTextInterceptor implements DeletedTextInterceptor {
         JTextComponent target = context.getComponent();
         switch (ch) {
         case ' ': {
-            // Backspacing over "// " ? Delete the "//" too!
-            TokenSequence<? extends JsTokenId> ts = LexUtilities.getJsPositionedSequence(doc, dotPos);
-            if (ts != null && ts.token().id() == JsTokenId.LINE_COMMENT) {
-                if (ts.offset() == dotPos-2) {
-                    doc.remove(dotPos-2, 2);
-                    target.getCaret().setDot(dotPos-2);
+            if (comments) {
+                // Backspacing over "// " ? Delete the "//" too!
+                TokenSequence<? extends JsTokenId> ts = LexUtilities.getPositionedSequence(
+                        doc, dotPos, language);
+                if (ts != null && ts.token().id() == JsTokenId.LINE_COMMENT) {
+                    if (ts.offset() == dotPos-2) {
+                        doc.remove(dotPos-2, 2);
+                        target.getCaret().setDot(dotPos-2);
 
-                    return;
+                        return;
+                    }
                 }
             }
             break;
@@ -96,35 +112,40 @@ public class JsDeletedTextInterceptor implements DeletedTextInterceptor {
         case '{':
         case '(':
         case '[': { // and '{' via fallthrough
-            char tokenAtDot = LexUtilities.getTokenChar(doc, dotPos);
+            char tokenAtDot = LexUtilities.getTokenChar(doc, dotPos, language);
 
             if (((tokenAtDot == ']') &&
-                    (LexUtilities.getTokenBalance(doc, JsTokenId.BRACKET_LEFT_BRACKET, JsTokenId.BRACKET_RIGHT_BRACKET, dotPos) != 0)) ||
+                    (LexUtilities.getTokenBalance(doc, JsTokenId.BRACKET_LEFT_BRACKET, JsTokenId.BRACKET_RIGHT_BRACKET, dotPos, language) != 0)) ||
                     ((tokenAtDot == ')') &&
-                    (LexUtilities.getTokenBalance(doc, JsTokenId.BRACKET_LEFT_PAREN, JsTokenId.BRACKET_RIGHT_PAREN, dotPos) != 0)) ||
+                    (LexUtilities.getTokenBalance(doc, JsTokenId.BRACKET_LEFT_PAREN, JsTokenId.BRACKET_RIGHT_PAREN, dotPos, language) != 0)) ||
                     ((tokenAtDot == '}') &&
-                    (LexUtilities.getTokenBalance(doc, JsTokenId.BRACKET_LEFT_CURLY, JsTokenId.BRACKET_RIGHT_CURLY, dotPos) != 0))) {
+                    (LexUtilities.getTokenBalance(doc, JsTokenId.BRACKET_LEFT_CURLY, JsTokenId.BRACKET_RIGHT_CURLY, dotPos, language) != 0))) {
                 doc.remove(dotPos, 1);
             }
             break;
         }
 
         case '/': {
-            // Backspacing over "//" ? Delete the whole "//"
-            TokenSequence<? extends JsTokenId> ts = LexUtilities.getJsPositionedSequence(doc, dotPos);
-            if (ts != null && ts.token().id() == JsTokenId.REGEXP_BEGIN) {
-                if (ts.offset() == dotPos-1) {
-                    doc.remove(dotPos-1, 1);
-                    target.getCaret().setDot(dotPos-1);
+            if (comments) {
+                // Backspacing over "//" ? Delete the whole "//"
+                TokenSequence<? extends JsTokenId> ts = LexUtilities.getPositionedSequence(
+                        doc, dotPos, language);
+                if (ts != null && ts.token().id() == JsTokenId.REGEXP_BEGIN) {
+                    if (ts.offset() == dotPos-1) {
+                        doc.remove(dotPos-1, 1);
+                        target.getCaret().setDot(dotPos-1);
 
-                    return;
+                        return;
+                    }
                 }
             }
             // Fallthrough for match-deletion
         }
-        case '|':
-        case '\"':
-        case '\'': {
+        case '\'':
+            if (!singleQuote) {
+                break;
+            }
+        case '\"': {
             char[] match = doc.getChars(dotPos, 1);
 
             if ((match != null) && (match[0] == ch)) {
@@ -139,11 +160,21 @@ public class JsDeletedTextInterceptor implements DeletedTextInterceptor {
 
 
     @MimeRegistration(mimeType = JsTokenId.JAVASCRIPT_MIME_TYPE, service = DeletedTextInterceptor.Factory.class)
-    public static class Factory implements DeletedTextInterceptor.Factory {
+    public static class JsFactory implements DeletedTextInterceptor.Factory {
 
         @Override
         public DeletedTextInterceptor createDeletedTextInterceptor(MimePath mimePath) {
-            return new JsDeletedTextInterceptor();
+            return new JsDeletedTextInterceptor(JsTokenId.javascriptLanguage(), true, true);
+        }
+
+    }
+
+    @MimeRegistration(mimeType = JsTokenId.JSON_MIME_TYPE, service = DeletedTextInterceptor.Factory.class)
+    public static class JsonFactory implements DeletedTextInterceptor.Factory {
+
+        @Override
+        public DeletedTextInterceptor createDeletedTextInterceptor(MimePath mimePath) {
+            return new JsDeletedTextInterceptor(JsTokenId.jsonLanguage(), false, false);
         }
 
     }

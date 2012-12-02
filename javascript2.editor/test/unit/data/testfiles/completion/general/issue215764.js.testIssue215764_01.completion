@@ -1,0 +1,26 @@
+Code completion result for source line:
+e215764.get|Date();
+(QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
+------------------------------------
+METHOD     getDate(): Number               [PUBLIC]   stub_CORE_Date.js
+METHOD     getDay(): Number                [PUBLIC]   stub_CORE_Date.js
+METHOD     getFullYear(): Number           [PUBLIC]   stub_CORE_Date.js
+METHOD     getHours(): Number              [PUBLIC]   stub_CORE_Date.js
+METHOD     getMilliseconds(): Number       [PUBLIC]   stub_CORE_Date.js
+METHOD     getMinutes(): Number            [PUBLIC]   stub_CORE_Date.js
+METHOD     getMonth(): Number              [PUBLIC]   stub_CORE_Date.js
+METHOD     getOwnPropertyDescriptor(O: Ob  [PUBLIC,   stub_CORE_Object.js
+METHOD     getOwnPropertyNames(O: Object)  [PUBLIC,   stub_CORE_Object.js
+METHOD     getPrototypeOf(O: Object): Obj  [PUBLIC,   stub_CORE_Object.js
+METHOD     getSeconds(): Number            [PUBLIC]   stub_CORE_Date.js
+METHOD     getTime(): Number               [PUBLIC]   stub_CORE_Date.js
+METHOD     getTimezoneOffset(): Number     [PUBLIC]   stub_CORE_Date.js
+METHOD     getUTCDate(): Number            [PUBLIC]   stub_CORE_Date.js
+METHOD     getUTCDay(): Number             [PUBLIC]   stub_CORE_Date.js
+METHOD     getUTCFullYear(): Number        [PUBLIC]   stub_CORE_Date.js
+METHOD     getUTCHours(): Number           [PUBLIC]   stub_CORE_Date.js
+METHOD     getUTCMilliseconds(): Number    [PUBLIC]   stub_CORE_Date.js
+METHOD     getUTCMinutes(): Number         [PUBLIC]   stub_CORE_Date.js
+METHOD     getUTCMonth(): Number           [PUBLIC]   stub_CORE_Date.js
+METHOD     getUTCSeconds(): Number         [PUBLIC]   stub_CORE_Date.js
+METHOD     getYear(): Number               [PUBLIC]   stub_CORE_Date.js

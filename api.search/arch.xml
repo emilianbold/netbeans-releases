@@ -129,6 +129,19 @@
         </question>
 -->
     <answer id="arch-usecases">
+        <usecase id="searchHistory" name="Search History">
+            <p>
+                SearchHistory is synchronising history content through netbeans modules and it saves history to preferences.
+            </p>
+            <p>
+                There are two separate histories. One for search and another for replace.
+                When you add your propertyListener to SearchHistory - you can listen for changes in histories.
+            </p>
+            <p>
+                SearchHistory has methods for adding new entries and getting whole history list.
+            </p>
+
+        </usecase>
         <usecase id="searchInfo" name="SearchInfo API &amp; SPI">
             <p>
                 This use-case was formerly covered by module

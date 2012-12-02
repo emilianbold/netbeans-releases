@@ -49,6 +49,25 @@ made subject to such option by the copyright holder.
         <apidef name="filesystems">Filesystems API</apidef>
     </apidefs>
     <changes>
+        <change id="MultiFileObject.revealEntriesAttribute">
+            <api name="filesystems"/>
+            <summary>Allowed to reveal deleted files, or original files overriden by writable layer</summary>
+            <version major="8" minor="5"/>
+            <date year="2012" month="11" day="23"/>
+            <author login="sdedic"/>
+            <compatibility addition="yes"/>
+            <description>
+                <p>
+                    Files which have been deleted can be obtained by <code>folder.getAttribute("revealEntries")</code>.
+                    See <a href="@TOP@org/openide/filesystems/MultiFileSystem.html">MultiFileSystem
+                    </a> javadoc for details
+                </p>
+                <p>
+                    <b>Warning:</b> stability of this feature is <b>development</b>
+                </p>
+            </description>
+            <!--<class package="org.openide.filesystems" name="MultiFileObject"/>-->
+        </change>
         <change id="FileChooserBuilder-setAcceptAllFileFilterUsed">
             <api name="filesystems"/>
             <summary>New method FileChooserBuilder.setAcceptAllFileFilterUsed.</summary>

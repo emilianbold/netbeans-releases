@@ -74,6 +74,9 @@ public class AbstractClassInstantiationHintError extends AbstractHintError {
             return;
         }
         FileObject fileObject = phpParseResult.getSnapshot().getSource().getFileObject();
+        if (fileObject == null) {
+            return;
+        }
         CheckVisitor checkVisitor = new CheckVisitor(fileObject, context.getIndex(), phpParseResult.getModel());
         phpParseResult.getProgram().accept(checkVisitor);
         hints.addAll(checkVisitor.getHints());
