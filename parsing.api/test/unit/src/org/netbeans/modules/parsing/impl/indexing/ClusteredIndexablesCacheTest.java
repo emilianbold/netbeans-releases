@@ -56,6 +56,7 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
+import javax.swing.event.ChangeListener;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.mimelookup.test.MockMimeLookup;
@@ -63,12 +64,21 @@ import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.classpath.GlobalPathRegistry;
 import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.parsing.api.Snapshot;
+import org.netbeans.modules.parsing.api.Task;
 import org.netbeans.modules.parsing.impl.indexing.lucene.DocumentBasedIndexManager;
 import org.netbeans.modules.parsing.lucene.support.Convertor;
 import org.netbeans.modules.parsing.lucene.support.DocumentIndexCache;
+import org.netbeans.modules.parsing.spi.ParseException;
+import org.netbeans.modules.parsing.spi.Parser;
+import org.netbeans.modules.parsing.spi.Parser.Result;
+import org.netbeans.modules.parsing.spi.ParserFactory;
+import org.netbeans.modules.parsing.spi.SourceModificationEvent;
 import org.netbeans.modules.parsing.spi.indexing.Context;
 import org.netbeans.modules.parsing.spi.indexing.CustomIndexer;
 import org.netbeans.modules.parsing.spi.indexing.CustomIndexerFactory;
+import org.netbeans.modules.parsing.spi.indexing.EmbeddingIndexer;
+import org.netbeans.modules.parsing.spi.indexing.EmbeddingIndexerFactory;
 import org.netbeans.modules.parsing.spi.indexing.Indexable;
 import org.netbeans.modules.parsing.spi.indexing.PathRecognizer;
 import org.netbeans.modules.parsing.spi.indexing.support.IndexDocument;
@@ -79,6 +89,7 @@ import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
+import org.openide.util.Parameters;
 
 /**
  *
@@ -90,14 +101,24 @@ public class ClusteredIndexablesCacheTest extends NbTestCase {
     private static final String FOO_MIME = "text/x-foo";    //NOI18N
     private static final String FOO_SOURCES = "foo-src";    //NOI18N
 
+    private static final String EMB_EXT = "emb";            //NOI18N
+    private static final String EMB_MIME = "text/x-emb";    //NOI18N
+    private static final String EMB_SOURCES = "emb-src";    //NOI18N
+
     private final Map<String, Map<ClassPath,Void>> registeredClasspaths = new HashMap<String, Map<ClassPath,Void>>();
 
     private FileObject src1;
+    private FileObject src2;
     private FileObject file1;
     private FileObject file2;
     private FileObject file3;
     private FileObject file4;
+    private FileObject file5;
+    private FileObject file6;
+    private FileObject file7;
+    private FileObject file8;
     private ClassPath cp1;
+    private ClassPath cp2;
 
     public ClusteredIndexablesCacheTest(@NonNull final String name) {
         super(name);
@@ -123,10 +144,23 @@ public class ClusteredIndexablesCacheTest extends NbTestCase {
         file4 = src1.createData("test4", FOO_EXT);  //NOI18N
         assertNotNull(file4);
         FileUtil.setMIMEType(FOO_EXT, FOO_MIME);
-        cp1 = ClassPathSupport.createClassPath(src1);        
-        MockServices.setServices(FooPathRecognizer.class);
+        src2 = wdo.createFolder("src2");    //NOI18N
+        assertNotNull(src2);
+        file5 = src2.createData("test5", EMB_EXT);   //NOI18N
+        assertNotNull(file5);
+        file6 = src2.createData("test6", EMB_EXT);   //NOI18N
+        assertNotNull(file6);
+        file7 = src2.createData("test7", EMB_EXT);   //NOI18N
+        assertNotNull(file7);
+        file8 = src2.createData("test8", EMB_EXT);   //NOI18N
+        assertNotNull(file8);
+        FileUtil.setMIMEType(EMB_EXT, EMB_MIME);
+        cp1 = ClassPathSupport.createClassPath(src1);
+        cp2 = ClassPathSupport.createClassPath(src2);
+        MockServices.setServices(FooPathRecognizer.class, EmbPathRecognizer.class);
         MockMimeLookup.setInstances(MimePath.get(FOO_MIME), new FooIndexerFactory());
-        RepositoryUpdaterTest.setMimeTypes(FOO_MIME);
+        MockMimeLookup.setInstances(MimePath.get(EMB_MIME), new EmbIndexerFactory(), new EmbParserFactory());
+        RepositoryUpdaterTest.setMimeTypes(FOO_MIME, EMB_MIME);
         RepositoryUpdaterTest.waitForRepositoryUpdaterInit();
     }
 
@@ -149,42 +183,87 @@ public class ClusteredIndexablesCacheTest extends NbTestCase {
     }
 
 
-    public void testNoOutOfOrderFiles() throws InterruptedException, IOException {
+    public void testNoOutOfOrderFilesCustomIndexer() throws InterruptedException, IOException {
 
         assertTrue(GlobalPathRegistry.getDefault().getPaths(FOO_SOURCES).isEmpty());
         final TestHandler handler = new TestHandler();
         final Logger logger = Logger.getLogger(RepositoryUpdater.class.getName()+".tests"); //NOI18N
         logger.setLevel (Level.FINEST);
         logger.addHandler(handler);
-        handler.beforeScanFinishedAction = new NoOutOfOrderPredicate();
-        globalPathRegistry_register(FOO_SOURCES,new ClassPath[]{cp1});
-        assertTrue (handler.await());
-        assertEquals(0, handler.getBinaries().size());
-        assertEquals(1, handler.getSources().size());
-        assertEquals(this.src1.toURL(), handler.getSources().get(0));
-        assertEquals(Boolean.TRUE, handler.res);
-        QuerySupport qs = QuerySupport.forRoots(FooIndexerFactory.NAME, FooIndexerFactory.VERSION, src1);
-        Collection<? extends IndexResult> res = qs.query("_sn", "", QuerySupport.Kind.PREFIX, (String[]) null);   //NOI18N
-        assertEquals(4, res.size());
+        try {
+            handler.beforeScanFinishedAction = new NoOutOfOrderPredicate(FooIndexerFactory.NAME);
+            globalPathRegistry_register(FOO_SOURCES,new ClassPath[]{cp1});
+            assertTrue (handler.await());
+            assertEquals(0, handler.getBinaries().size());
+            assertEquals(1, handler.getSources().size());
+            assertEquals(this.src1.toURL(), handler.getSources().get(0));
+            assertEquals(Boolean.TRUE, handler.res);
+            QuerySupport qs = QuerySupport.forRoots(FooIndexerFactory.NAME, FooIndexerFactory.VERSION, src1);
+            Collection<? extends IndexResult> res = qs.query("_sn", "", QuerySupport.Kind.PREFIX, (String[]) null);   //NOI18N
+            assertEquals(4, res.size());
 
-        handler.reset();
-        globalPathRegistry_unregister(FOO_SOURCES,new ClassPath[]{cp1});
-        assertTrue (handler.await());
+            handler.reset();
+            globalPathRegistry_unregister(FOO_SOURCES,new ClassPath[]{cp1});
+            assertTrue (handler.await());
 
-        file3.delete();
-        file4.delete();
-        handler.reset();
-        handler.beforeScanFinishedAction = new NoOutOfOrderPredicate();
-        globalPathRegistry_register(FOO_SOURCES,new ClassPath[]{cp1});
-        assertTrue (handler.await());
-        assertEquals(0, handler.getBinaries().size());
-        assertEquals(1, handler.getSources().size());
-        assertEquals(this.src1.toURL(), handler.getSources().get(0));
-        assertEquals(Boolean.TRUE, handler.res);
-        qs = QuerySupport.forRoots(FooIndexerFactory.NAME, FooIndexerFactory.VERSION, src1);
-        res = qs.query("_sn", "", QuerySupport.Kind.PREFIX, (String[]) null);   //NOI18N
-        assertEquals(2, res.size());
+            file3.delete();
+            file4.delete();
+            handler.reset();
+            handler.beforeScanFinishedAction = new NoOutOfOrderPredicate(FooIndexerFactory.NAME);
+            globalPathRegistry_register(FOO_SOURCES,new ClassPath[]{cp1});
+            assertTrue (handler.await());
+            assertEquals(0, handler.getBinaries().size());
+            assertEquals(1, handler.getSources().size());
+            assertEquals(this.src1.toURL(), handler.getSources().get(0));
+            assertEquals(Boolean.TRUE, handler.res);
+            qs = QuerySupport.forRoots(FooIndexerFactory.NAME, FooIndexerFactory.VERSION, src1);
+            res = qs.query("_sn", "", QuerySupport.Kind.PREFIX, (String[]) null);   //NOI18N
+            assertEquals(2, res.size());
+        } finally {
+            logger.removeHandler(handler);
+        }
 
+    }
+
+    public void testNoOutOfOrderFilesEmbeddingIndexer() throws InterruptedException, IOException {
+
+        assertTrue(GlobalPathRegistry.getDefault().getPaths(EMB_SOURCES).isEmpty());
+        final TestHandler handler = new TestHandler();
+        final Logger logger = Logger.getLogger(RepositoryUpdater.class.getName()+".tests"); //NOI18N
+        logger.setLevel (Level.FINEST);
+        logger.addHandler(handler);
+        try {
+            handler.beforeScanFinishedAction = new NoOutOfOrderPredicate(EmbIndexerFactory.NAME);
+            globalPathRegistry_register(EMB_SOURCES,new ClassPath[]{cp2});
+            assertTrue (handler.await());
+            assertEquals(0, handler.getBinaries().size());
+            assertEquals(1, handler.getSources().size());
+            assertEquals(this.src2.toURL(), handler.getSources().get(0));
+            assertEquals(Boolean.TRUE, handler.res);
+            QuerySupport qs = QuerySupport.forRoots(EmbIndexerFactory.NAME, FooIndexerFactory.VERSION, src2);
+            Collection<? extends IndexResult> res = qs.query("_sn", "", QuerySupport.Kind.PREFIX, (String[]) null);   //NOI18N
+            assertEquals(4, res.size());
+
+            handler.reset();
+            globalPathRegistry_unregister(EMB_SOURCES,new ClassPath[]{cp2});
+            assertTrue (handler.await());
+
+            file5.delete();
+            file6.delete();
+            handler.reset();
+            handler.beforeScanFinishedAction = new NoOutOfOrderPredicate(EmbIndexerFactory.NAME);
+            globalPathRegistry_register(EMB_SOURCES,new ClassPath[]{cp2});
+            assertTrue (handler.await());
+            assertEquals(0, handler.getBinaries().size());
+            assertEquals(1, handler.getSources().size());
+            assertEquals(this.src2.toURL(), handler.getSources().get(0));
+            assertEquals(Boolean.TRUE, handler.res);
+            qs = QuerySupport.forRoots(EmbIndexerFactory.NAME, FooIndexerFactory.VERSION, src2);
+            res = qs.query("_sn", "", QuerySupport.Kind.PREFIX, (String[]) null);   //NOI18N
+            assertEquals(2, res.size());
+        } finally {
+            logger.removeHandler(handler);
+        }
     }
 
     private void globalPathRegistry_register(String id, ClassPath [] classpaths) {
@@ -228,6 +307,29 @@ public class ClusteredIndexablesCacheTest extends NbTestCase {
         @Override
         public Set<String> getMimeTypes() {
             return Collections.<String>singleton(FOO_MIME);
+        }
+    }
+
+    public static final class EmbPathRecognizer extends PathRecognizer {
+
+        @Override
+        public Set<String> getSourcePathIds() {
+            return Collections.<String>singleton(EMB_SOURCES);
+        }
+
+        @Override
+        public Set<String> getLibraryPathIds() {
+            return Collections.<String>emptySet();
+        }
+
+        @Override
+        public Set<String> getBinaryLibraryPathIds() {
+            return Collections.<String>emptySet();
+        }
+
+        @Override
+        public Set<String> getMimeTypes() {
+            return Collections.<String>singleton(EMB_MIME);
         }
     }
 
@@ -287,10 +389,104 @@ public class ClusteredIndexablesCacheTest extends NbTestCase {
         }        
     }
 
+    private static class EmbIndexerFactory extends EmbeddingIndexerFactory {
+
+        private static final String NAME = "EmbIndexer";    //NOI18N
+        private static final int VERSION = 1;
+
+        @Override
+        public EmbeddingIndexer createIndexer(Indexable indexable, Snapshot snapshot) {
+            return new EmbeddingIndexer() {
+                @Override
+                protected void index(Indexable indexable, Result parserResult, Context context) {
+                    try {
+                        final IndexingSupport is = IndexingSupport.getInstance(context);
+                        final IndexDocument doc = is.createDocument(indexable);
+                        is.addDocument(doc);
+                    } catch (IOException ioe) {
+                        Exceptions.printStackTrace(ioe);
+                    }
+                }
+            };
+        }
+
+        @Override
+        public void filesDeleted(Iterable<? extends Indexable> deleted, Context context) {
+            try {
+                final IndexingSupport is = IndexingSupport.getInstance(context);
+                for (Indexable i : deleted) {
+                    is.removeDocuments(i);
+                }
+            } catch (IOException  ioe) {
+                Exceptions.printStackTrace(ioe);
+            }
+        }
+
+        @Override
+        public void filesDirty(Iterable<? extends Indexable> dirty, Context context) {
+        }
+
+        @Override
+        public String getIndexerName() {
+            return NAME;
+        }
+
+        @Override
+        public int getIndexVersion() {
+            return VERSION;
+        }
+
+    }
+
+    private static class EmbParserFactory extends ParserFactory {
+
+        @Override
+        public Parser createParser(Collection<Snapshot> snapshots) {
+            return new Parser() {
+
+                private Result res;
+
+                @Override
+                public void parse(Snapshot snapshot, Task task, SourceModificationEvent event) throws ParseException {
+                    res = new Result(snapshot) {
+                        @Override
+                        protected void invalidate() {
+                        }
+                    };
+                }
+
+                @Override
+                public Result getResult(Task task) throws ParseException {
+                    assert res != null;
+                    return res;
+                }
+
+                @Override
+                public void addChangeListener(ChangeListener changeListener) {
+                }
+
+                @Override
+                public void removeChangeListener(ChangeListener changeListener) {
+                }
+            };
+        }
+
+    }
+
     private static class NoOutOfOrderPredicate implements Convertor<Pair<URL,String>, Boolean> {
+
+        private final String forIndexer;
+
+        NoOutOfOrderPredicate(@NonNull final String forIndexer) {
+            Parameters.notNull("forIndexer", forIndexer);   //NOI18N
+            this.forIndexer = forIndexer;
+        }
 
         @Override
         public Boolean convert(@NonNull final Pair<URL,String> p) {
+            if (!forIndexer.equals(p.second)) {
+                return null;
+            }
             try {
                 final FileObject cacheFolder = CacheFolder.getDataFolder(p.first);
                 final FileObject indexer = cacheFolder.getFileObject(p.second);
@@ -340,10 +536,13 @@ public class ClusteredIndexablesCacheTest extends NbTestCase {
             final String message = record.getMessage();
             if (action != null && "scanFinishing:{0}:{1}".equals(message)) {    //NOI18N
                 try {
-                    res = action.convert(
+                    Boolean tmpRes = action.convert(
                         Pair.<URL,String>of(
                             new URL ((String)record.getParameters()[1]),
                             (String)record.getParameters()[0]));
+                    if (tmpRes != null) {
+                        res = tmpRes;
+                    }
                 } catch (MalformedURLException ex) {
                     Exceptions.printStackTrace(ex);
                 }
