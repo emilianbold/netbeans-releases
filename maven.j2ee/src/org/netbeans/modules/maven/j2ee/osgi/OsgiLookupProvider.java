@@ -47,9 +47,17 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.maven.api.NbMavenProject;
-import org.netbeans.modules.maven.j2ee.*;
+import org.netbeans.modules.maven.j2ee.CopyOnSave;
+import org.netbeans.modules.maven.j2ee.EMGSResolverImpl;
+import org.netbeans.modules.maven.j2ee.JPAStuffImpl;
+import org.netbeans.modules.maven.j2ee.JsfSupportHandleImpl;
+import org.netbeans.modules.maven.j2ee.MavenPersistenceProviderSupplier;
 import org.netbeans.modules.maven.j2ee.utils.MavenProjectSupport;
-import org.netbeans.modules.maven.j2ee.web.*;
+import org.netbeans.modules.maven.j2ee.web.EntRefContainerImpl;
+import org.netbeans.modules.maven.j2ee.web.MavenWebProjectWebRootProvider;
+import org.netbeans.modules.maven.j2ee.web.WebCopyOnSave;
+import org.netbeans.modules.maven.j2ee.web.WebModuleProviderImpl;
+import org.netbeans.modules.maven.j2ee.web.WebReplaceTokenProvider;
 import org.netbeans.modules.web.jsfapi.spi.JsfSupportHandle;
 import org.netbeans.spi.project.LookupProvider;
 import org.openide.util.Lookup;
@@ -57,7 +65,7 @@ import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
 
 /**
- * Provide additional lookup objects for bundle (OSGI) type (see #179584 for more detail)
+ * Provide additional lookup objects for bundle (OSGI) type (see #179584 for more detail).
  * @author Martin Janicek
  */
 @LookupProvider.Registration(projectType = {"org-netbeans-modules-maven/" + NbMavenProject.TYPE_OSGI})
@@ -80,12 +88,12 @@ public class OsgiLookupProvider implements LookupProvider, PropertyChangeListene
     private JPAStuffImpl jPAStuffImpl;
     private CopyOnSave copyOnSave;
 
-    
+
     @Override
-    public Lookup createAdditionalLookup(Lookup baseLookup) {
+    public synchronized Lookup createAdditionalLookup(Lookup baseLookup) {
         project = baseLookup.lookup(Project.class);
         ic = new InstanceContent();
-        
+
         mavenPersistenceProviderSupplier = new MavenPersistenceProviderSupplier(project);
         mavenWebProjectWebRootProvider = new MavenWebProjectWebRootProvider(project);
         webReplaceTokenProvider = new WebReplaceTokenProvider(project);
@@ -110,7 +118,7 @@ public class OsgiLookupProvider implements LookupProvider, PropertyChangeListene
             LOGGER.log(Level.WARNING, "When the second InstanceContent was created, the StackTrace was: \n\n");
             logStackTrace(Thread.currentThread().getStackTrace());
         }
-        
+
         return new AbstractLookup(ic);
     }
 
@@ -121,27 +129,27 @@ public class OsgiLookupProvider implements LookupProvider, PropertyChangeListene
     }
 
     @Override
-    public void propertyChange(PropertyChangeEvent propertyChangeEvent) {
+    public synchronized void propertyChange(PropertyChangeEvent propertyChangeEvent) {
         if (NbMavenProject.PROP_PROJECT.equals(propertyChangeEvent.getPropertyName())) {
             changeAdditionalLookups();
         }
     }
-    
+
     /*
      * At the moment there is no way to conditionaly register some objects using @ProjectServiceProvider annotation.
      * Because of issue #179584 we want to provide some Java EE instances only in certain situations for OSGI type.
      * So the only way to do so (for now) is to add these instances manualy when changing packaging type to bundle
      * type - which is the reason why this weird method is here.
-     * 
-     * In the future this should be removed and replaced by some kind of multiple @PSP registrator which allows to 
+     *
+     * In the future this should be removed and replaced by some kind of multiple @PSP registrator which allows to
      * combine more than one packaging type and merges registrated lookup instances
      */
-    private void changeAdditionalLookups() {
+    private synchronized void changeAdditionalLookups() {
         removeLookupInstances();
         addLookupInstances();
     }
-    
-    private void removeLookupInstances() {
+
+    private synchronized void removeLookupInstances() {
         ic.remove(mavenPersistenceProviderSupplier);
         ic.remove(mavenWebProjectWebRootProvider);
         ic.remove(webReplaceTokenProvider);
@@ -156,13 +164,13 @@ public class OsgiLookupProvider implements LookupProvider, PropertyChangeListene
             ic.remove(copyOnSave);
         }
     }
-    
-    private void addLookupInstances() {
+
+    private synchronized void addLookupInstances() {
         String packaging = project.getLookup().lookup(NbMavenProject.class).getPackagingType();
-        
+
         if (MavenProjectSupport.isBundlePackaging(project, packaging)) {
             copyOnSave.initialize();
-            
+
             ic.add(copyOnSave);
             ic.add(provider);
             ic.add(webReplaceTokenProvider);

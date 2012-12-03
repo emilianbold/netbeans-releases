@@ -79,6 +79,11 @@ public class KnockoutJSGameList extends OnlineSampleWizardIterator {
         return "https://github.com/bernardobrezende/KnockoutJS.Tips/archive/master.zip"; // NOI18N
     }
 
+    @Override
+    protected String getStartFile() {
+        return "0-iteratingwithdivs.html"; // NOI18N
+    }
+
     private static class KnockoutJSGameListTemplate extends OnlineSiteTemplate {
 
         public KnockoutJSGameListTemplate(String id, String name, String url, String zipName) {
