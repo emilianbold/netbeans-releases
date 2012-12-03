@@ -1119,8 +1119,12 @@ public class PHPBracketCompleter implements KeystrokeHandler {
                         GsfUtilities.setLineIndentation(doc, offset, Math.max(newIndent, 0));
                     }
                 } else if (id == PHPTokenId.WHITESPACE || (id == PHPTokenId.PHP_TOKEN && token.text().charAt(0) == ':')) { // ":" handles "default:"
-                    LexUtilities.findNextToken(ts, Arrays.asList(PHPTokenId.PHP_CASE));
-                    if (ts.offset() >= rowFirstNonWhite) { //previous "case" and whitespace on one line
+                    if (id == PHPTokenId.WHITESPACE) {
+                        LexUtilities.findPreviousToken(ts, Arrays.asList(PHPTokenId.PHP_CASE));
+                    } else {
+                        LexUtilities.findPreviousToken(ts, Arrays.asList(PHPTokenId.PHP_DEFAULT));
+                    }
+                    if (ts.offset() >= rowFirstNonWhite) { //previous "case" or "default" on one line with typed char
                         LexUtilities.findPreviousToken(ts, Arrays.asList(PHPTokenId.PHP_SWITCH));
                         Token<? extends PHPTokenId> firstCaseInSwitch = LexUtilities.findNextToken(ts, Arrays.asList(PHPTokenId.PHP_CASE));
                         if (firstCaseInSwitch != null && firstCaseInSwitch.id() == PHPTokenId.PHP_CASE) {

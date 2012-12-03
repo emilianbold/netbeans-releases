@@ -253,15 +253,10 @@ public class FormCustomEditor extends JPanel implements PropertyChangeListener {
 
         editorsCombo.getAccessibleContext().setAccessibleDescription(
             FormUtils.getBundleString("ACSD_EditingMode")); // NOI18N
+
+        updateHelpAndAccessibleDescription();
     }
 
-    @Override
-    public void addNotify() {
-        super.addNotify();
-        updateHelpAndAccessibleDescription(); // hack: called here not to show Help button
-    }
-
-    
     private void updateHelpAndAccessibleDescription() {
         HelpCtx.setHelpIDString(this, null);
         int i = editorsCombo.getSelectedIndex();

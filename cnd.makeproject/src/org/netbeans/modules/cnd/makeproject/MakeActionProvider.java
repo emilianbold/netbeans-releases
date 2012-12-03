@@ -103,6 +103,7 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.ItemConfiguration
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.netbeans.modules.cnd.makeproject.api.runprofiles.RunProfile;
+import org.netbeans.modules.cnd.makeproject.configurations.CppUtils;
 import org.netbeans.modules.cnd.makeproject.platform.Platform;
 import org.netbeans.modules.cnd.makeproject.platform.Platforms;
 import org.netbeans.modules.cnd.makeproject.spi.configurations.AllOptionsProvider;
@@ -974,6 +975,19 @@ public final class MakeActionProvider implements ActionProvider {
                     }
                     profile.setArgs(command);
                     String compilerPath = convertPath(ccCompiler.getPath(), conf.getDevelopmentHost().getExecutionEnvironment());
+                    ExecutionEnvironment ee = conf.getDevelopmentHost().getExecutionEnvironment();
+                    if (ee.isLocal() && Utilities.isWindows()) {
+                        try {
+                            compilerPath = compilerPath.replace('\\', '/'); // NOI18N
+                            profile.setArgs(new String[]{"-c", "\"'"+compilerPath+"' "+command+"\""}); // NOI18N
+                            HostInfo hostInfo = HostInfoUtils.getHostInfo(ee);
+                            compilerPath = hostInfo.getShell();
+                        } catch (IOException ex) {
+                            return false;
+                        } catch (CancellationException ex) {
+                            return false;
+                        }
+                    }
                     ProjectActionEvent projectActionEvent = new ProjectActionEvent(project, actionEvent, compilerPath, conf, profile, true, context);
                     actionEvents.add(projectActionEvent);
                     return true;
@@ -992,9 +1006,42 @@ public final class MakeActionProvider implements ActionProvider {
                     }
                 }
                 command = command+" -o "+getDevNull(conf.getDevelopmentHost().getExecutionEnvironment(), compilerSet); // NOI18N
-                command = command+" -c "+item.getAbsolutePath(); // NOI18N
+                String source = item.getAbsolutePath();
+                ExecutionEnvironment ee = conf.getDevelopmentHost().getExecutionEnvironment();
+                boolean isWindows = ee.isLocal() && Utilities.isWindows();
+                if (isWindows) {
+                    source = source.replace('\\', '/'); // NOI18N
+                    source = CppUtils.normalizeDriveLetter(compilerSet, source);
+                    source = "'"+source+"'"; // NOI18N
+                }
+                command = command+" -c "+source; // NOI18N
                 profile.setArgs(command);
                 String compilerPath = convertPath(ccCompiler.getPath(), conf.getDevelopmentHost().getExecutionEnvironment());
+                if (isWindows) {
+                    try {
+                        HostInfo hostInfo = HostInfoUtils.getHostInfo(ee);
+                        compilerPath = compilerPath.replace('\\', '/'); // NOI18N
+                        profile.setArgs(new String[]{"-c", "\"'"+compilerPath+"' "+command+"\""}); // NOI18N
+                        Shell shell = WindowsSupport.getInstance().getActiveShell();
+                        String shellPath = hostInfo.getShell();
+                        if (shell.type == Shell.ShellType.CYGWIN && compilerSet.getCompilerFlavor().isMinGWCompiler()) {
+                            Tool make = compilerSet.findTool(PredefinedToolKind.MakeTool);
+                            if (make != null) {
+                                String path = make.getPath();
+                                String dir = CndPathUtilitities.getDirName(path);
+                                if (dir != null && !dir.isEmpty()) {
+                                    shellPath = dir+"/sh.exe"; // NOI18N
+                                }
+                            }
+                        }
+                        shellPath = shellPath.replace('\\', '/'); // NOI18N
+                        compilerPath = shellPath;
+                    } catch (IOException ex) {
+                        return false;
+                    } catch (CancellationException ex) {
+                        return false;
+                    }
+                }
                 ProjectActionEvent projectActionEvent = new ProjectActionEvent(project, actionEvent, compilerPath, conf, profile, true, context);
                 actionEvents.add(projectActionEvent);
                 return true;

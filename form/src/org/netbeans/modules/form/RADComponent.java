@@ -404,17 +404,24 @@ public class RADComponent {
     }
 
     public Object cloneBeanInstance(Collection<RADProperty> relativeProperties) {
-        Object clone;
+        Object clone = null;
         try {
             if (JavaCodeGenerator.VALUE_SERIALIZE.equals(getAuxValue(JavaCodeGenerator.AUX_CODE_GENERATION))) {
                 clone = createDefaultDeserializedInstance();
-            } else {
-                clone = createBeanInstance();
             }
+        } catch (Exception ex) {
+            // The serialization support is usually useless and not working well in many situations.
+            // If set on, its mostly by mistake. In case of failure let's fall back to a default
+            // instance creation so the cloning does not fail (or does not return null as it used to,
+            // which was not good for the replicated design view).
+            Logger.getLogger(RADComponent.class.getName()).log(Level.INFO, ex.getMessage(), ex);
         }
-        catch (Exception ex) { // ignore, this should not fail
-            org.openide.ErrorManager.getDefault().notify(org.openide.ErrorManager.INFORMATIONAL, ex);
-            return null;
+        if (clone == null) {
+            try {
+                clone = createBeanInstance();
+            } catch (Exception ex) { // this should not fail, we already have an instance of this kind
+                Logger.getLogger(RADComponent.class.getName()).log(Level.SEVERE, ex.getMessage(), ex);
+            }
         }
 
         FormUtils.copyPropertiesToBean(getKnownBeanProperties(),
