@@ -127,6 +127,11 @@ public class SiteZipPanel extends javax.swing.JPanel implements DocumentListener
         return ((JTextField)(archiveComboBox.getEditor().getEditorComponent())).getText();
     }
 
+    // only to be called from a unit test:
+    public void setTemplate(String template) {
+        ((JTextField)(archiveComboBox.getEditor().getEditorComponent())).setText(template);
+    }
+
     private void browseButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_browseButtonActionPerformed
         File file = new FileChooserBuilder(SiteZipPanel.class.getName())
                 .setTitle(Bundle.LBL_SiteZipPanel_Title())

@@ -42,9 +42,12 @@
 package org.netbeans.modules.web.clientproject;
 
 import java.util.Collection;
+import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.web.clientproject.browser.ClientProjectPlatformProviderImpl;
+import org.netbeans.modules.web.clientproject.sites.SiteZip;
+import org.netbeans.modules.web.clientproject.sites.SiteZipPanel;
+import org.netbeans.modules.web.clientproject.spi.SiteTemplateImplementation;
 import org.netbeans.modules.web.clientproject.ui.customizer.ClientSideProjectProperties;
 import org.netbeans.modules.web.clientproject.util.ClientSideProjectUtilities;
 import org.netbeans.spi.project.support.ant.AntBasedProjectType;
@@ -107,6 +110,28 @@ public class ClientSideProjectTest extends NbTestCase {
         ProjectProblemsProvider ppp = project.getLookup().lookup(ProjectProblemsProvider.class);
         assertNotNull("project does have ProjectProblemsProvider", ppp);
         assertEquals("project does not have any problems", 3, ppp.getProblems().size());
+    }
+
+    public void testProjectCreationFromZipTemplate() throws Exception {
+        FileObject wd = FileUtil.toFileObject(getWorkDir());
+        wd = wd.createFolder(""+System.currentTimeMillis());
+        AntProjectHelper projectHelper = ClientSideProjectUtilities.setupProject(wd, "Project3");
+        ClientSideProject project = (ClientSideProject) FileOwnerQuery.getOwner(projectHelper.getProjectDirectory());
+        SiteZip sz = new SiteZip();
+        FileObject dd = FileUtil.toFileObject(getDataDir()).getFileObject("TestTemplate.zip");
+        ((SiteZipPanel)(sz.getCustomizer().getComponent())).setTemplate(FileUtil.getFileDisplayName(dd));
+        SiteTemplateImplementation.ProjectProperties pp = new SiteTemplateImplementation.ProjectProperties();
+        sz.configure(pp);
+        ClientSideProjectUtilities.initializeProject(project,
+                pp.getSiteRootFolder(),
+                pp.getTestFolder(),
+                pp.getConfigFolder());
+        sz.apply(projectHelper.getProjectDirectory(), pp, ProgressHandleFactory.createHandle("somename"));
+        ClientSideProjectProperties projectProperties = new ClientSideProjectProperties(project);
+        assertEquals("site root was created from template", wd.getFileObject("custom_siteroot"), FileUtil.toFileObject(projectProperties.getResolvedSiteRootFolder()));
+        ProjectProblemsProvider ppp = project.getLookup().lookup(ProjectProblemsProvider.class);
+        assertNotNull("project does have ProjectProblemsProvider", ppp);
+        assertEquals("project does not have any problems", 0, ppp.getProblems().size());
     }
 
 }
