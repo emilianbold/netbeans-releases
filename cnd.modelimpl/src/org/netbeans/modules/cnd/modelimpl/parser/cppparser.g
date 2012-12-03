@@ -2436,15 +2436,21 @@ access_specifier
 	;
 
 member_declarator_list
-	:	member_declarator (ASSIGNEQUAL initializer)?
-		(COMMA member_declarator (ASSIGNEQUAL initializer)?)*
+	:	member_declarator
+		(COMMA member_declarator)*
 	;
 
 member_declarator
 	:	
 		((IDENT)? COLON constant_expression)=>(IDENT)? COLON constant_expression
 	|  
-		declarator[declOther, 0] (LITERAL_override | LITERAL_final | LITERAL_new)?
+		declarator[declOther, 0] 
+                (   LITERAL_override 
+                |   LITERAL_final 
+                |   LITERAL_new
+                |   ASSIGNEQUAL initializer
+                |   array_initializer
+                )?
 	;
 
 conversion_function_decl_or_def returns [boolean definition = false]
