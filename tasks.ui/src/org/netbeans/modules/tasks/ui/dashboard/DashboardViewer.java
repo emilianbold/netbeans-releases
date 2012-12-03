@@ -254,6 +254,12 @@ public final class DashboardViewer implements PropertyChangeListener {
         mapTaskToNode.put(issue, taskNode);
     }
 
+    void removeTaskMapEntries(TaskNode... taskNodes) {
+        for (TaskNode taskNode : taskNodes) {
+            mapTaskToNode.remove(taskNode.getTask());
+        }
+    }
+
     private static class Holder {
 
         private static final DashboardViewer theInstance = new DashboardViewer();

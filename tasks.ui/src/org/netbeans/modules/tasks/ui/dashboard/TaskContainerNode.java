@@ -215,6 +215,7 @@ public abstract class TaskContainerNode extends AsynchronousNode<List<Issue>> {
             if (taskListener == null) {
                 taskListener = new TaskListener();
             }
+            removeTasksFromMap(dashboard);
             taskNodes = new ArrayList<TaskNode>(issues.size());
             filteredTaskNodes = new ArrayList<TaskNode>(issues.size());
             for (Issue issue : issues) {
@@ -307,15 +308,34 @@ public abstract class TaskContainerNode extends AsynchronousNode<List<Issue>> {
         this.error = error;
     }
 
+    private void refilterTaskNodes() {
+        DashboardViewer dashboard = DashboardViewer.getInstance();
+        AppliedFilters appliedFilters = dashboard.getAppliedTaskFilters();
+        removeTasksFromMap(dashboard);
+        filteredTaskNodes.clear();
+        for (TaskNode taskNode : taskNodes) {
+            if (appliedFilters.isInFilter(taskNode.getTask())) {
+                dashboard.addTaskMapEntry(taskNode.getTask(), taskNode);
+                filteredTaskNodes.add(taskNode);
+            }
+        }
+    }
+
+    private void removeTasksFromMap(DashboardViewer dashboard) {
+        if (filteredTaskNodes != null && !filteredTaskNodes.isEmpty()) {
+            dashboard.removeTaskMapEntries(filteredTaskNodes.toArray(new TaskNode[filteredTaskNodes.size()]));
+        }
+    }
+
     private class TaskListener implements PropertyChangeListener {
 
         @Override
-        public void propertyChange(PropertyChangeEvent evt) {
+        public void propertyChange(final PropertyChangeEvent evt) {
             if (evt.getPropertyName().equals(Issue.EVENT_ISSUE_REFRESHED)) {
                 SwingUtilities.invokeLater(new Runnable() {
                     @Override
                     public void run() {
-                        updateNodes();
+                        refilterTaskNodes();
                         updateCounts();
                     }
                 });
