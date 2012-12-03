@@ -94,8 +94,6 @@ class CodeMarkerBuilder {
         }
     }
 
-
-
     void prepare(ReturnStatement returnStatement, Scope scope) {
         ASTNodeInfo<ReturnStatement> nodeInfo = ASTNodeInfo.create(returnStatement);
         if (canBePrepared(returnStatement, scope)) {
@@ -134,7 +132,7 @@ class CodeMarkerBuilder {
                 FunctionDeclaration function = nodInfo.getOriginalNode();
                 Identifier functionName = function.getFunctionName();
                 OffsetRange range = new OffsetRange(function.getStartOffset(), functionName.getStartOffset());
-                fileScope.addCodeMarker(new CodeMarkerImpl.InvisibleCodeMarker(scope, range, fileScope));
+                fileScope.addCodeMarker(new CodeMarkerImpl.InvisibleCodeMarker(range, fileScope));
             }
         }
     }
@@ -152,12 +150,11 @@ class CodeMarkerBuilder {
                     FunctionDeclaration function = nodInfo.getOriginalNode().getFunction();
                     Identifier functionName = function.getFunctionName();
                     OffsetRange range = new OffsetRange(function.getStartOffset(), functionName.getStartOffset());
-                    fileScope.addCodeMarker(new CodeMarkerImpl.InvisibleCodeMarker(scope, range, fileScope));
+                    fileScope.addCodeMarker(new CodeMarkerImpl.InvisibleCodeMarker(range, fileScope));
                 }
             }
         }
     }
-
 
     private void buildReturnStatement(FileScopeImpl fileScope) {
         String scopeName = currentScope.getName();
@@ -169,12 +166,11 @@ class CodeMarkerBuilder {
             ASTNodeInfo<ReturnStatement> nodInfo = entry.getKey();
             if (scopeName.equalsIgnoreCase(scope.getName())) {
                 if (parentCurrentScope != null && parentScope != null && parentCurrentScope.getName().equalsIgnoreCase(parentScope.getName())) {
-                    fileScope.addCodeMarker(new CodeMarkerImpl(scope, nodInfo, fileScope));
+                    fileScope.addCodeMarker(new CodeMarkerImpl(nodInfo, fileScope));
                 }
             }
         }
     }
-
 
     void build(FileScopeImpl fileScope, final int offset) {
         if (currentNodeInfo == null && offset >= 0) {
