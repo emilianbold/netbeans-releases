@@ -53,13 +53,17 @@ import org.netbeans.modules.cnd.utils.CndUtils;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.EntityResolver;
 import org.xml.sax.ErrorHandler;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
+import org.xml.sax.SAXNotRecognizedException;
+import org.xml.sax.SAXNotSupportedException;
 import org.xml.sax.SAXParseException;
+import org.xml.sax.ext.LexicalHandler;
 
 
 /**
@@ -86,11 +90,15 @@ abstract public class XMLDocReader extends XMLDecoder {
 
     // This probably SHOULD be per nested XMLDecoder!
     private String currentText = null;
+    private String comment = null;
 
     public XMLDocReader() {
     }
 
-
+    protected String getMasterComment() {
+        return comment;
+    }
+       
     /**
      * Drive the reading of XML from the given InputStream.
      * <p>
@@ -124,6 +132,13 @@ abstract public class XMLDocReader extends XMLDecoder {
 	xmlReader.setContentHandler(parser);
 	xmlReader.setEntityResolver(parser);
 	xmlReader.setErrorHandler(new ErrHandler());
+        try {
+            xmlReader.setProperty("http://xml.org/sax/properties/lexical-handler", new CommentsParser()); //NOI18N
+        } catch (SAXNotRecognizedException ex) {
+            Exceptions.printStackTrace(ex);
+        } catch (SAXNotSupportedException ex) {
+            Exceptions.printStackTrace(ex);
+        }
 
 	String fmt = getString("MSG_Whilereading");	// NOI18N
 	String whileMsg = MessageFormat.format(fmt, new Object[] {sourceName});
@@ -179,6 +194,47 @@ abstract public class XMLDocReader extends XMLDecoder {
 	return true;
     }
 
+    
+    private class CommentsParser implements LexicalHandler {
+
+        @Override
+        public void startDTD(String name, String publicId, String systemId) throws SAXException {
+            // Not used
+        }
+
+        @Override
+        public void endDTD() throws SAXException {
+            // Not used
+        }
+
+        @Override
+        public void startEntity(String name) throws SAXException {
+            // Not used
+        }
+
+        @Override
+        public void endEntity(String name) throws SAXException {
+            // Not used
+        }
+
+        @Override
+        public void startCDATA() throws SAXException {
+            // Not used
+        }
+
+        @Override
+        public void endCDATA() throws SAXException {
+            // Not used
+        }
+
+        @Override
+        public void comment(char[] ch, int start, int length) throws SAXException {
+            if (comment == null) {
+                comment = new String(ch, start, length);
+            }
+        }
+        
+    }
 
     private class Parser
 	implements ContentHandler, EntityResolver {
