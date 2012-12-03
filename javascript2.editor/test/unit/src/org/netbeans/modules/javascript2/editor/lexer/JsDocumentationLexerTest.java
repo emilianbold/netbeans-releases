@@ -286,22 +286,24 @@ public class JsDocumentationLexerTest extends NbTestCase {
     }
 
     public void testHtmlComment03() {
-        String text = "/** <a */";
+        String text = "/** <a> */";
         TokenHierarchy hi = TokenHierarchy.create(text, JsDocumentationTokenId.language());
         TokenSequence<?extends JsDocumentationTokenId> ts = hi.tokenSequence();
         LexerTestUtilities.assertNextTokenEquals(ts, JsDocumentationTokenId.COMMENT_DOC_START, "/**");
         LexerTestUtilities.assertNextTokenEquals(ts, JsDocumentationTokenId.WHITESPACE, " ");
-        LexerTestUtilities.assertNextTokenEquals(ts, JsDocumentationTokenId.HTML, "<a ");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsDocumentationTokenId.HTML, "<a>");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsDocumentationTokenId.WHITESPACE, " ");
         LexerTestUtilities.assertNextTokenEquals(ts, JsDocumentationTokenId.COMMENT_END, "*/");
     }
 
     public void testHtmlComment04() {
-        String text = "/** < ";
+        String text = "/** </a> ";
         TokenHierarchy hi = TokenHierarchy.create(text, JsDocumentationTokenId.language());
         TokenSequence<?extends JsDocumentationTokenId> ts = hi.tokenSequence();
         LexerTestUtilities.assertNextTokenEquals(ts, JsDocumentationTokenId.COMMENT_DOC_START, "/**");
         LexerTestUtilities.assertNextTokenEquals(ts, JsDocumentationTokenId.WHITESPACE, " ");
-        LexerTestUtilities.assertNextTokenEquals(ts, JsDocumentationTokenId.HTML, "< ");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsDocumentationTokenId.HTML, "</a>");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsDocumentationTokenId.WHITESPACE, " ");
     }
 
     public void testCommentWithString() {
@@ -321,6 +323,75 @@ public class JsDocumentationLexerTest extends NbTestCase {
         LexerTestUtilities.assertNextTokenEquals(ts, JsDocumentationTokenId.EOL, "\n");
         LexerTestUtilities.assertNextTokenEquals(ts, JsDocumentationTokenId.WHITESPACE, " ");
         LexerTestUtilities.assertNextTokenEquals(ts, JsDocumentationTokenId.KEYWORD, "@param");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsDocumentationTokenId.WHITESPACE, " ");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsDocumentationTokenId.COMMENT_END, "*/");
+    }
+
+    public void testIssue223107_1() {
+        String text = "/** Start if a < 0 */";
+        TokenHierarchy hi = TokenHierarchy.create(text, JsDocumentationTokenId.language());
+        TokenSequence<?extends JsDocumentationTokenId> ts = hi.tokenSequence();
+        LexerTestUtilities.assertNextTokenEquals(ts, JsDocumentationTokenId.COMMENT_DOC_START, "/**");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsDocumentationTokenId.WHITESPACE, " ");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsDocumentationTokenId.OTHER, "Start");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsDocumentationTokenId.WHITESPACE, " ");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsDocumentationTokenId.OTHER, "if");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsDocumentationTokenId.WHITESPACE, " ");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsDocumentationTokenId.OTHER, "a");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsDocumentationTokenId.WHITESPACE, " ");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsDocumentationTokenId.OTHER, "<");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsDocumentationTokenId.WHITESPACE, " ");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsDocumentationTokenId.OTHER, "0");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsDocumentationTokenId.WHITESPACE, " ");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsDocumentationTokenId.COMMENT_END, "*/");
+    }
+
+    public void testIssue223107_2() {
+        String text = "/** Start if a < 0 <a href=\"\"> */";
+        TokenHierarchy hi = TokenHierarchy.create(text, JsDocumentationTokenId.language());
+        TokenSequence<?extends JsDocumentationTokenId> ts = hi.tokenSequence();
+        LexerTestUtilities.assertNextTokenEquals(ts, JsDocumentationTokenId.COMMENT_DOC_START, "/**");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsDocumentationTokenId.WHITESPACE, " ");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsDocumentationTokenId.OTHER, "Start");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsDocumentationTokenId.WHITESPACE, " ");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsDocumentationTokenId.OTHER, "if");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsDocumentationTokenId.WHITESPACE, " ");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsDocumentationTokenId.OTHER, "a");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsDocumentationTokenId.WHITESPACE, " ");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsDocumentationTokenId.OTHER, "<");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsDocumentationTokenId.WHITESPACE, " ");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsDocumentationTokenId.OTHER, "0");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsDocumentationTokenId.WHITESPACE, " ");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsDocumentationTokenId.HTML, "<a href=\"\">");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsDocumentationTokenId.WHITESPACE, " ");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsDocumentationTokenId.COMMENT_END, "*/");
+    }
+
+    public void testIssue223107_3() {
+        String text = "/** Start if a < 0 or a > 10 <a href=\"\"> */";
+        TokenHierarchy hi = TokenHierarchy.create(text, JsDocumentationTokenId.language());
+        TokenSequence<?extends JsDocumentationTokenId> ts = hi.tokenSequence();
+        LexerTestUtilities.assertNextTokenEquals(ts, JsDocumentationTokenId.COMMENT_DOC_START, "/**");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsDocumentationTokenId.WHITESPACE, " ");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsDocumentationTokenId.OTHER, "Start");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsDocumentationTokenId.WHITESPACE, " ");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsDocumentationTokenId.OTHER, "if");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsDocumentationTokenId.WHITESPACE, " ");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsDocumentationTokenId.OTHER, "a");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsDocumentationTokenId.WHITESPACE, " ");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsDocumentationTokenId.OTHER, "<");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsDocumentationTokenId.WHITESPACE, " ");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsDocumentationTokenId.OTHER, "0");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsDocumentationTokenId.WHITESPACE, " ");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsDocumentationTokenId.OTHER, "or");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsDocumentationTokenId.WHITESPACE, " ");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsDocumentationTokenId.OTHER, "a");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsDocumentationTokenId.WHITESPACE, " ");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsDocumentationTokenId.OTHER, ">");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsDocumentationTokenId.WHITESPACE, " ");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsDocumentationTokenId.OTHER, "10");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsDocumentationTokenId.WHITESPACE, " ");
+        LexerTestUtilities.assertNextTokenEquals(ts, JsDocumentationTokenId.HTML, "<a href=\"\">");
         LexerTestUtilities.assertNextTokenEquals(ts, JsDocumentationTokenId.WHITESPACE, " ");
         LexerTestUtilities.assertNextTokenEquals(ts, JsDocumentationTokenId.COMMENT_END, "*/");
     }

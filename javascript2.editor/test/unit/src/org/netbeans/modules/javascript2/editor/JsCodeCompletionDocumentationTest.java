@@ -66,4 +66,8 @@ public class JsCodeCompletionDocumentationTest extends JsCodeComplationBase {
     public void testIssue180805() throws Exception {
         checkCompletionDocumentation("testfiles/completion/documentation/documentation01.js", "tes^t(1, 2);", false, "tes");
     }
+
+    public void testIssue223104() throws Exception {
+        checkCompletionDocumentation("testfiles/completion/documentation/issue223104.js", "testOptionalPa^rameter(\"nevim\", \"nevim2\");", false, "testOptionalPa");
+    }
 }
