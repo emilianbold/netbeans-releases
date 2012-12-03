@@ -69,6 +69,8 @@ import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelException;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.websvc.rest.model.api.RestApplication;
+import org.netbeans.modules.websvc.rest.model.api.RestApplicationModel;
+import org.netbeans.modules.websvc.rest.model.api.RestApplications;
 import org.netbeans.modules.websvc.rest.model.api.RestServiceDescription;
 import org.netbeans.modules.websvc.rest.model.api.RestServices;
 import org.netbeans.modules.websvc.rest.model.api.RestServicesModel;
@@ -109,7 +111,7 @@ class RestScanTask {
     }
 
     void run(){
-       Project project = FileOwnerQuery.getOwner(fileObject);
+       final Project project = FileOwnerQuery.getOwner(fileObject);
        if ( project == null ){
            return;
        }
@@ -117,7 +119,7 @@ class RestScanTask {
        if( webModule == null ){
            return;
        }
-       WebRestSupport support = project.getLookup().lookup(WebRestSupport.class);
+       final WebRestSupport support = project.getLookup().lookup(WebRestSupport.class);
        if ( support ==null || !support.hasJaxRsApi() ){
            return;
        }
@@ -131,22 +133,90 @@ class RestScanTask {
                     needConfiguration = false;
                 }
             }
-            if (needConfiguration) {
-                configureRest(project, support);
+            RestServicesModel servicesModel = support.getRestServicesModel();
+            if ( needConfiguration ){
+                configureRest(project, servicesModel);
             }
             else {
-                checkApplicationConfiguration(project, support);
+                checkApplicationConfiguration(project, support, servicesModel);
             }
        }
        catch(IOException e ){
            // Ignore all exceptions , just returns without assigned hints
        }
-       catch(InterruptedException e ){
-           // Ignore all exceptions , just returns without assigned hints
-       }
-       catch(ExecutionException e ){
-           // Ignore all exceptions , just returns without assigned hints
-       }
+    }
+
+    private void checkApplicationConfiguration( final Project project,
+            final WebRestSupport support, RestServicesModel servicesModel )
+            throws MetadataModelException, IOException
+    {
+        RestApplicationModel applicationModel = support.getRestApplicationsModel();
+        List<RestApplication> applications = null;
+        if ( isCancelled() ){
+            return ;
+        }
+        if (applicationModel != null) {
+            applications = applicationModel
+                    .runReadAction(new MetadataModelAction<RestApplications, 
+                            List<RestApplication>>()
+                    {
+                        @Override
+                        public List<RestApplication> run(
+                                RestApplications metadata )
+                                throws IOException
+                        {
+                            if ( isCancelled() ){
+                                return null;
+                            }
+                            return metadata.getRestApplications();
+                        }
+                    });
+        }
+        else {
+            return;
+        }
+                
+        if ( applications== null || applications.isEmpty() ||isCancelled()){
+            return;
+        }
+        final List<RestApplication> restApps = applications;
+        servicesModel.runReadAction(
+                new MetadataModelAction<RestServicesMetadata, Void>()
+        {
+
+            @Override
+            public Void run( RestServicesMetadata metadata )
+                    throws Exception
+            {
+                if ( isCancelled() ){
+                    return null;
+                }
+                doCheckApplicationConfiguration(project,support, restApps,
+                        metadata);
+                return null;
+            }
+        });
+    }
+
+    private void configureRest( final Project project,
+            RestServicesModel servicesModel ) throws MetadataModelException,
+            IOException
+    {
+        servicesModel.runReadAction(
+                new MetadataModelAction<RestServicesMetadata, Void>()
+        {
+
+            @Override
+            public Void run( RestServicesMetadata metadata )
+                    throws Exception
+            {
+                if ( isCancelled() ){
+                    return null;
+                }
+                doConfigureRest(project, metadata);
+                return null;
+            }
+        });
     }
 
     void stop() {
@@ -157,17 +227,15 @@ class RestScanTask {
         return hints;
     }
     
-    private void checkApplicationConfiguration( Project project,
-            WebRestSupport support ) throws MetadataModelException,IOException, 
-            InterruptedException, ExecutionException
+    private void doCheckApplicationConfiguration( Project project, WebRestSupport support,
+            List<RestApplication>  applications, RestServicesMetadata metadata) 
     {
-        List<RestApplication> applications = support.getRestApplications();
-        if ( applications.isEmpty() ){
-            return;
-        }
-        List<TypeElement> restResources = getRestResources(support);
+        List<TypeElement> restResources = getRestResources(metadata);
         for (TypeElement typeElement : restResources) {
             String fqn = typeElement.getQualifiedName().toString();
+            if ( isCancelled() ){
+                return; 
+            }
             if ( !support.hasApplicationResourceClass(fqn ) ){
                 ClassTree tree = info.getTrees().getTree(typeElement);
                 List<Integer> position = getElementPosition(info, tree);
@@ -187,11 +255,9 @@ class RestScanTask {
         }
     }
     
-    private void configureRest( Project project, WebRestSupport support ) 
-            throws MetadataModelException,IOException, 
-            InterruptedException, ExecutionException
+    private void doConfigureRest( Project project, RestServicesMetadata metadata ) 
     {
-        List<TypeElement> rest = getRestResources(support);
+        List<TypeElement> rest = getRestResources(metadata);
         if ( rest.isEmpty() ){
             return;
         }
@@ -209,48 +275,30 @@ class RestScanTask {
         hints.add(description);
     }
     
-    private List<TypeElement> getRestResources(WebRestSupport support) 
-            throws MetadataModelException,IOException, 
-            InterruptedException, ExecutionException
+    private List<TypeElement> getRestResources(RestServicesMetadata metadata) 
     {
         List<? extends TypeElement> types = info.getTopLevelElements();
-        RestServicesModel servicesModel = support.getRestServicesModel();
         if ( isCancelled()){
             return Collections.emptyList();
         }
-        Future<Set<String>> future = servicesModel
-                .runReadActionWhenReady(
-                        new MetadataModelAction<RestServicesMetadata, Set<String>>()
-                {
+        Set<String> restFqns = new HashSet<String>();
+        if (isCancelled()) {
+            return Collections.emptyList();
+        }
+        RestServices services = metadata.getRoot();
+        RestServiceDescription[] descriptions = services
+                .getRestServiceDescription();
+        for (RestServiceDescription description : descriptions) {
+            restFqns.add(description.getClassName());
+        }
 
-                    @Override
-                    public Set<String> run(
-                            RestServicesMetadata metadata )
-                            throws Exception
-                    {
-                        Set<String> restFqns = new HashSet<String>();
-                        if ( isCancelled()){
-                            return Collections.emptySet();
-                        }
-                        RestServices services = metadata.getRoot();
-                        RestServiceDescription[] descriptions = services
-                                .getRestServiceDescription();
-                        for (RestServiceDescription description : descriptions)
-                        {
-                            restFqns.add(description.getClassName());
-                        }
-                        return restFqns;
-                    }
-
-                });
         if ( isCancelled()){
             return Collections.emptyList();
         }
-        Set<String> fqns = future.get();
         List<TypeElement> rest = new ArrayList<TypeElement>(
                 types.size());
         for (TypeElement typeElement : types) {
-            if (fqns.contains(typeElement.getQualifiedName().toString())){
+            if (restFqns.contains(typeElement.getQualifiedName().toString())){
                 rest.add(typeElement);
             }
         }

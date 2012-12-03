@@ -346,7 +346,13 @@ public class HtmlNavigatorPanelUI extends JPanel implements ExplorerManager.Prov
         if (pageModel == null) {
             return;
         }
-        WebKitNodeDescription domDescription = WebKitNodeDescription.forNode(null, pageModel.getDocumentNode());
+        Node documentNode = pageModel.getDocumentNode();
+
+        if (documentNode == null) {
+            return;
+        }
+        
+        WebKitNodeDescription domDescription = WebKitNodeDescription.forNode(null, documentNode);
         changeListener = new ChangeListener() {
             @Override
             public void stateChanged(ChangeEvent e) {
