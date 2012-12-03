@@ -57,7 +57,16 @@ import javax.persistence.Table;
  */
 @Entity
 @Table(name = "ITEM")
-@NamedQueries({@NamedQuery(name = "Item.findAll", query = "SELECT i FROM Item i"), @NamedQuery(name = "Item.findByItemid", query = "SELECT i FROM Item i WHERE i.itemid = :itemid"), @NamedQuery(name = "Item.findByProductid", query = "SELECT i FROM Item i WHERE i.productid = :productid"), @NamedQuery(name = "Item.findByName", query = "SELECT i FROM Item i WHERE i.name = :name"), @NamedQuery(name = "Item.findByDescription", query = "SELECT i FROM Item i WHERE i.description = :description"), @NamedQuery(name = "Item.findByImageurl", query = "SELECT i FROM Item i WHERE i.imageurl = :imageurl"), @NamedQuery(name = "Item.findByImagethumburl", query = "SELECT i FROM Item i WHERE i.imagethumburl = :imagethumburl"), @NamedQuery(name = "Item.findByPrice", query = "SELECT i FROM Item i WHERE i.price = :price")})
+@NamedQueries({
+    @NamedQuery(name = "Item.findAll", query = "SELECT i FROM Item i"),
+    @NamedQuery(name = "Item.findByItemid", query = "SELECT i FROM Item i WHERE i.itemid = :itemid"),
+    @NamedQuery(name = "Item.findByProductid", query = "SELECT i FROM Item i WHERE i.productid = :productid"),
+    @NamedQuery(name = "Item.findByName", query = "SELECT i FROM Item i WHERE i.name = :name"),
+    @NamedQuery(name = "Item.findByDescription", query = "SELECT i FROM Item i WHERE i.description = :description"),
+    @NamedQuery(name = "Item.findByImageurl", query = "SELECT i FROM Item i WHERE i.imageurl = :imageurl"),
+    @NamedQuery(name = "Item.findByImagethumburl", query = "SELECT i FROM Item i WHERE i.imagethumburl = :imagethumburl"),
+    @NamedQuery(name = "Item.findByPrice", query = "SELECT i FROM Item i WHERE i.price = :price")
+})
 public class Item implements Serializable {
     private static final long serialVersionUID = 1L;
     @Id
