@@ -134,7 +134,7 @@ class CodeMarkerBuilder {
                 FunctionDeclaration function = nodInfo.getOriginalNode();
                 Identifier functionName = function.getFunctionName();
                 OffsetRange range = new OffsetRange(function.getStartOffset(), functionName.getStartOffset());
-                fileScope.addCodeMarker(new CodeMarkerImpl(scope, range, fileScope));
+                fileScope.addCodeMarker(new CodeMarkerImpl.InvisibleCodeMarker(scope, range, fileScope));
             }
         }
     }
@@ -152,7 +152,7 @@ class CodeMarkerBuilder {
                     FunctionDeclaration function = nodInfo.getOriginalNode().getFunction();
                     Identifier functionName = function.getFunctionName();
                     OffsetRange range = new OffsetRange(function.getStartOffset(), functionName.getStartOffset());
-                    fileScope.addCodeMarker(new CodeMarkerImpl(scope, range, fileScope));
+                    fileScope.addCodeMarker(new CodeMarkerImpl.InvisibleCodeMarker(scope, range, fileScope));
                 }
             }
         }
