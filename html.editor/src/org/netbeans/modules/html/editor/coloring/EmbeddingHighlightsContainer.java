@@ -45,6 +45,7 @@
 package org.netbeans.modules.html.editor.coloring;
 
 import java.awt.Color;
+import java.util.Collection;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.logging.Level;
@@ -68,6 +69,9 @@ import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
 import org.netbeans.spi.editor.highlighting.HighlightsSequence;
 import org.netbeans.spi.editor.highlighting.support.AbstractHighlightsContainer;
+import org.openide.util.Lookup.Result;
+import org.openide.util.LookupEvent;
+import org.openide.util.LookupListener;
 import org.openide.util.WeakListeners;
 
 /**
@@ -87,17 +91,32 @@ public class EmbeddingHighlightsContainer extends AbstractHighlightsContainer im
     private static final String CSS_INLINED_MIME_TYPE = "text/css-inlined"; //NOI18N
     private static final String JAVASCRIPT_MIME_TYPE = "text/javascript"; //NOI18N
 
-    private final AttributeSet cssBackground;
-    private final AttributeSet javascriptBackground;
+    private AttributeSet cssBackground;
+    private AttributeSet javascriptBackground;
     private final Document document;
     private TokenHierarchy<? extends Document> hierarchy = null;
     private long version = 0;
+    
+    private Result<FontColorSettings> lookupResult;
 
     EmbeddingHighlightsContainer(Document document) {
         this.document = document;
+
+        lookupResult = MimeLookup.getLookup(HTML_MIME_TYPE).lookupResult(FontColorSettings.class);
+        lookupResult.addLookupListener(new LookupListener() {
+            @Override
+            public void resultChanged(LookupEvent ev) {
+                refreshColorings();
+            }
+        });
+        refreshColorings();
+    }
+    
+    private void refreshColorings() {
+        Collection<? extends FontColorSettings> allInstances = lookupResult.allInstances();
+        assert allInstances.size() > 0;
         
-        //try load the background from html settings
-        FontColorSettings fcs = MimeLookup.getLookup(HTML_MIME_TYPE).lookup(FontColorSettings.class);
+        FontColorSettings fcs = allInstances.iterator().next();
         Color cssBC = null;
         Color jsBC = null;
         if (fcs != null) {
@@ -111,7 +130,7 @@ public class EmbeddingHighlightsContainer extends AbstractHighlightsContainer im
 
         javascriptBackground = jsBC == null ? SimpleAttributeSet.EMPTY : AttributesUtilities.createImmutable(
             StyleConstants.Background, jsBC, 
-            ATTR_EXTENDS_EOL, Boolean.TRUE);
+            ATTR_EXTENDS_EOL, Boolean.TRUE);        
     }
 
     @Override
