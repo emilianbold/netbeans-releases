@@ -62,6 +62,7 @@ import org.netbeans.modules.web.clientproject.spi.SiteTemplateImplementation;
 import org.netbeans.modules.web.clientproject.spi.SiteTemplateImplementation.ProjectProperties;
 import org.netbeans.modules.web.clientproject.util.ClientSideProjectUtilities;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
+import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.ProjectGenerator;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
 import org.openide.DialogDisplayer;
@@ -154,12 +155,18 @@ public abstract class OnlineSampleWizardIterator extends AbstractWizardIterator 
         files.add(projectDirFO);
 
         ClientSideProject project = (ClientSideProject) FileOwnerQuery.getOwner(projectHelper.getProjectDirectory());
+
+        // Setting start file
+        EditableProperties properties = projectHelper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+        properties.put(ClientSideProjectConstants.PROJECT_START_FILE, getStartFile());
+        projectHelper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, properties);
+
         FileObject siteRoot = instantiate(handle, descriptor, project);
 
-        // index file
-        FileObject indexFile = siteRoot.getFileObject("index", "html"); // NOI18N
-        if (indexFile != null) {
-            files.add(indexFile);
+        // start file
+        FileObject startFile = siteRoot.getFileObject(getStartFile()); // NOI18N
+        if (startFile != null) {
+            files.add(startFile);
         }
 
         File parent = projectDir.getParentFile();
@@ -169,6 +176,10 @@ public abstract class OnlineSampleWizardIterator extends AbstractWizardIterator 
 
         handle.finish();
         return files;
+    }
+
+    protected String getStartFile() {
+        return "index.html";
     }
 
     private void setProjectName(final AntProjectHelper projectHelper, final String name) {

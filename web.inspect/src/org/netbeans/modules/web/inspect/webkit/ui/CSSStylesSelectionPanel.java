@@ -44,13 +44,18 @@ package org.netbeans.modules.web.inspect.webkit.ui;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.EventQueue;
 import java.awt.GridLayout;
+import java.awt.Point;
+import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
@@ -93,6 +98,7 @@ import javax.swing.tree.TreeSelectionModel;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.css.visual.api.EditCSSRulesAction;
 import org.netbeans.modules.web.inspect.PageModel;
+import org.netbeans.modules.web.inspect.actions.Resource;
 import org.netbeans.modules.web.inspect.webkit.Utilities;
 import org.netbeans.modules.web.inspect.webkit.WebKitPageModel;
 import org.netbeans.modules.web.webkit.debugging.api.WebKitDebugging;
@@ -110,6 +116,7 @@ import org.openide.explorer.view.BeanTreeView;
 import org.openide.explorer.view.ListView;
 import org.openide.explorer.view.TreeTableView;
 import org.openide.explorer.view.Visualizer;
+import org.openide.filesystems.FileObject;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
@@ -326,7 +333,54 @@ public class CSSStylesSelectionPanel extends JPanel {
     private JPanel initRulePane() {
         rulePane = new ListView() {
             {
-                list.setCellRenderer(new StylesRenderer());
+                final StylesRenderer renderer = new StylesRenderer();
+                list.setCellRenderer(renderer);
+                MouseAdapter adapter = new MouseAdapter() {
+                    @Override
+                    public void mouseMoved(MouseEvent e) {
+                        if (isLink(e)) {
+                            list.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+                        } else {
+                            list.setCursor(Cursor.getDefaultCursor());
+                        }
+                    }
+
+                    @Override
+                    public void mouseExited(MouseEvent e) {
+                        list.setCursor(Cursor.getDefaultCursor());
+                    }
+
+                    @Override
+                    public void mouseClicked(MouseEvent e) {
+                        if (isLink(e)) {
+                            Point p = e.getPoint();
+                            int index = list.locationToIndex(p);
+                            Object value = list.getModel().getElementAt(index);
+                            Node node = Visualizer.findNode(value);
+                            node.getPreferredAction().actionPerformed(new ActionEvent(node, 0, null));
+                        }
+                    }
+
+                    /**
+                     * Determines whether there is a link under the mouse cursor.
+                     *
+                     * @param event event describing the mouse state.
+                     */
+                    private boolean isLink(MouseEvent event) {
+                        Point p = event.getPoint();
+                        int index = list.locationToIndex(p);
+                        if (index == -1) {
+                            return false;
+                        }
+                        Rectangle cellBounds = list.getCellBounds(index, index);
+                        p.translate(-cellBounds.x, -cellBounds.y);
+                        Object value = list.getModel().getElementAt(index);
+                        renderer.getListCellRendererComponent(list, value, index, false, false);
+                        return renderer.isLink(p);
+                    }
+                };
+                list.addMouseMotionListener(adapter);
+                list.addMouseListener(adapter);
             }
         };
         rulePane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
@@ -810,6 +864,10 @@ public class CSSStylesSelectionPanel extends JPanel {
         private JLabel selectorLabel = new JLabel();
         /** Label showing the media query. */
         private JLabel mediaLabel = new JLabel();
+        /** Label showing the location of the rule. */
+        private JLabel ruleLocationLabel = new JLabel();
+        /** Panel showing the location of the rule. */
+        private JPanel ruleLocationPanel = new JPanel();
         /** HTML renderer used to obtain background color. */
         private ListCellRenderer htmlRenderer = HtmlRenderer.createRenderer();
 
@@ -817,6 +875,9 @@ public class CSSStylesSelectionPanel extends JPanel {
          * Creates a new {@code StylesRenderer}.
          */
         StylesRenderer() {
+            ruleLocationPanel.setOpaque(false);
+            ruleLocationPanel.setLayout(new BorderLayout());
+            ruleLocationPanel.add(ruleLocationLabel, BorderLayout.LINE_START);
         }
 
         /**
@@ -827,11 +888,17 @@ public class CSSStylesSelectionPanel extends JPanel {
             GroupLayout.Group hGroup = layout.createSequentialGroup()
                     .addComponent(selectorLabel, 1, 1, Short.MAX_VALUE)
                     .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
-                    .addComponent(matchedNodeLabel, 1, 1, Short.MAX_VALUE);
+                    .addGroup(layout.createParallelGroup()
+                        .addComponent(matchedNodeLabel, 1, 1, Short.MAX_VALUE)
+                        .addComponent(ruleLocationPanel, 1, 1, Short.MAX_VALUE)
+                    );
             GroupLayout.Group vGroup = layout.createSequentialGroup()
                     .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
                         .addComponent(selectorLabel)
-                        .addComponent(matchedNodeLabel))
+                        .addGroup(layout.createSequentialGroup()
+                            .addComponent(matchedNodeLabel)
+                            .addComponent(ruleLocationPanel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                        ))
                     .addGap(0, 0, Short.MAX_VALUE);
             hGroup = layout.createParallelGroup()
                     .addComponent(mediaLabel, 1, 1, Short.MAX_VALUE)
@@ -872,6 +939,23 @@ public class CSSStylesSelectionPanel extends JPanel {
                 // Using HTML labels to allow wrapping of their content
                 String matchedNode = node.getDisplayName();
                 matchedNodeLabel.setText("<html>"+matchedNode); // NOI18N
+                String ruleLocation = null;
+                Resource ruleOrigin = node.getLookup().lookup(Resource.class);
+                if (ruleOrigin != null) {
+                    FileObject fob = ruleOrigin.toFileObject();
+                    if (fob != null) {
+                        String fileName = fob.getNameExt();
+                        // Source line seems to be 0-based (i.e. is 0 for the first line).
+                        int sourceLine = rule.getSourceLine() + 1;
+                        ruleLocation = fileName + ":" + sourceLine; // NOI18N
+                    }
+                }
+                ruleLocationLabel.setVisible(ruleLocation != null);
+                if (ruleLocation != null) {
+                    ruleLocation = "<html><u>" + ruleLocation; // NOI18N
+                }
+                ruleLocationLabel.setText(ruleLocation);
+                ruleLocationPanel.doLayout();
                 String selector = rule.getSelector();
                 selectorLabel.setText("<html>"+selector); // NOI18N
                 String mediaQuery = null;
@@ -880,7 +964,9 @@ public class CSSStylesSelectionPanel extends JPanel {
                 }
                 mediaLabel.setText(mediaQuery);
                 mediaLabel.setVisible(mediaQuery != null);
-                mediaLabel.setForeground(isSelected ? foreground : UIManager.getColor("Label.foreground")); // NOI18N
+                Color fg = isSelected ? foreground : UIManager.getColor("Label.disabledForeground"); // NOI18N
+                ruleLocationLabel.setForeground(fg);
+                mediaLabel.setForeground(fg);
                 mediaLabel.setEnabled(isSelected);
             }
             String toolTip = node.getShortDescription();
@@ -957,6 +1043,23 @@ public class CSSStylesSelectionPanel extends JPanel {
             } catch (NoSuchMethodException ex) {
             }
             return color;
+        }
+
+        /**
+         * Determines whether there is a link on the specified point of the renderer.
+         *
+         * @param point point to check.
+         * @return {@code true} when there is a link, returns {@code false} otherwise.
+         */
+        boolean isLink(Point point) {
+            boolean link = false;
+            Rectangle bounds = ruleLocationPanel.getBounds();
+            if (bounds.contains(point)) {
+                point.translate(-bounds.x, -bounds.y);
+                bounds = ruleLocationLabel.getBounds();
+                link = bounds.contains(point);
+            }
+            return link;
         }
 
     }

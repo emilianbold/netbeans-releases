@@ -289,4 +289,7 @@ public class CssCompletionTest extends CssModuleTestBase {
         
     }
     
+    public void testInheritInColor() throws ParseException {
+        checkCC("div { color:|  }", arr("inherit"), Match.CONTAINS_ONCE);
+    }
 }

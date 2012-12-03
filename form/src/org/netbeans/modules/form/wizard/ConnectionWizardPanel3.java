@@ -103,7 +103,7 @@ class ConnectionWizardPanel3 implements org.openide.WizardDescriptor.Panel {
 
     @Override
     public org.openide.util.HelpCtx getHelp() {
-        return new org.openide.util.HelpCtx("gui.connecting.source"); // NOI18N
+        return new org.openide.util.HelpCtx("gui.connecting.param"); // NOI18N
     }
 
     @Override
