@@ -1,3 +1,2 @@
-    |>MARK_OCCURRENCES:function <|functionName($param) {
             |>MARK_OCCURRENCES:retur^n 5;<|
             |>MARK_OCCURRENCES:return 10;<|
