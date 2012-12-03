@@ -49,6 +49,7 @@ import java.util.*;
 import javax.lang.model.element.*;
 import javax.lang.model.type.*;
 import javax.swing.Icon;
+import javax.swing.JEditorPane;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.TreePathHandle;
@@ -417,8 +418,11 @@ final class Call implements CallDescriptor {
 
                     @Override
                     public void run() {
-                        ec.getOpenedPanes()[0].setSelectionStart(begin);
-                        ec.getOpenedPanes()[0].setSelectionEnd(end);
+                        JEditorPane textC = NbDocument.findRecentEditorPane(ec);
+                        if(textC != null) {
+                            textC.setSelectionStart(begin);
+                            textC.setSelectionEnd(end);
+                        }
                     }
                 });
                 return true;
