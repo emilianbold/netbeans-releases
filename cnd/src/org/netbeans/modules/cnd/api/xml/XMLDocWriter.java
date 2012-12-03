@@ -126,7 +126,7 @@ abstract public class XMLDocWriter implements XMLEncoder {
 	encoderStream.println
 	("<?xml version=\"" + version + "\" encoding=\"" + encoding() + "\"?>"); // NOI18N
         if (comment != null) {
-            encoderStream.println("<!--" + comment + "-->");
+            encoderStream.println("<!--" + comment + "-->"); // NOI18N
         }
     } 
 
