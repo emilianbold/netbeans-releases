@@ -45,6 +45,7 @@ import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.EventObject;
 import java.util.HashMap;
 import java.util.IdentityHashMap;
 import java.util.Map;
@@ -88,12 +89,16 @@ public class AdjustConfigurationPanel extends javax.swing.JPanel {
         initComponents();
 
         if (preselected == null) {
-            configurationCombo.setModel(new ConfigurationsComboModel(true));
+            final ConfigurationsComboModel model = new ConfigurationsComboModel(true);
+            configurationCombo.setModel(model);
             configurationCombo.setRenderer(new ConfigurationRenderer(false));
             configurationCombo.addActionListener(new ActionListener() {
                 @Override public void actionPerformed(ActionEvent e) {
                     if (configurationCombo.getSelectedItem() instanceof ActionListener) {
                         ((ActionListener) configurationCombo.getSelectedItem()).actionPerformed(e);
+                    } else if (configurationCombo.getSelectedItem() instanceof String) {
+                        assert model.currentActiveItem != null;
+                        model.currentActiveItem.confirm(new EventObject(configurationCombo.getEditor().getEditorComponent()));
                     } else {
                         updateConfiguration();
                     }
