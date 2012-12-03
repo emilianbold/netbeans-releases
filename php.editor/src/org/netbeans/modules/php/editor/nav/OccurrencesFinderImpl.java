@@ -159,7 +159,7 @@ public class OccurrencesFinderImpl extends OccurrencesFinder {
                 }
             }
         } else {
-            OccurrenceHighlighter highlighter = new OccurrenceHighlighterImpl();
+            OccurrenceHighlighterImpl highlighter = new OccurrenceHighlighterImpl();
             OffsetRange referenceSpanForCodeMarkers = tokenSequence != null ? getReferenceSpanForCodeMarkers(tokenSequence, offset) : OffsetRange.NONE;
             if (!referenceSpanForCodeMarkers.equals(OffsetRange.NONE)) {
                 Model model = parseResult.getModel();
@@ -207,8 +207,7 @@ public class OccurrencesFinderImpl extends OccurrencesFinder {
             offsetRanges.add(offsetRange);
         }
 
-        @Override
-        public Set<OffsetRange> getRanges() {
+        private Set<OffsetRange> getRanges() {
             return new TreeSet<OffsetRange>(offsetRanges);
         }
     }
