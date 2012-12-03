@@ -285,17 +285,6 @@ public class FilterNode extends Node {
         }
     }
 
-    /** Removes all listeners (property and node) on
-    * the original node. Called from {@link NodeListener#nodeDestroyed},
-    * but can be called by any subclass to stop reflecting changes
-    * in the original node.
-    */
-    @Override
-    protected void finalize() {
-        original.removePropertyChangeListener(getPropertyChangeListener());
-        original.removeNodeListener(getNodeListener());
-    }
-
     /** Enable delegation of a set of methods.
     * These will be delegated to the original node.
     * Since all available methods are delegated by default, normally you will not need to call this.
@@ -1145,6 +1134,18 @@ public class FilterNode extends Node {
         protected void propertyChange(FilterNode fn, PropertyChangeEvent ev) {
             fn.firePropertyChange(ev.getPropertyName(), ev.getOldValue(), ev.getNewValue());
         }
+        
+        static Set<PropertyChangeListener> checkDormant(PropertyChangeListener l, Set<PropertyChangeListener> in) {
+            if (l instanceof PropertyChangeAdapter && ((PropertyChangeAdapter)l).fnRef.get() == null) {
+                Set<PropertyChangeListener> ret = new HashSet<PropertyChangeListener>();
+                if (in != null) {
+                    ret.addAll(in);
+                }
+                ret.add(l);
+                return ret;
+            }
+            return in;
+        }
     }
 
     /** Adapter that listens on changes in an original node and refires them
@@ -1271,6 +1272,17 @@ public class FilterNode extends Node {
             }
 
             fn.originalDestroyed();
+        }
+        static Set<NodeListener> checkDormant(NodeListener l, Set<NodeListener> in) {
+            if (l instanceof NodeAdapter && ((NodeAdapter)l).fnRef.get() == null) {
+                Set<NodeListener> ret = new HashSet<NodeListener>();
+                if (in != null) {
+                    ret.addAll(in);
+                }
+                ret.add(l);
+                return ret;
+            }
+            return in;
         }
     }
 
