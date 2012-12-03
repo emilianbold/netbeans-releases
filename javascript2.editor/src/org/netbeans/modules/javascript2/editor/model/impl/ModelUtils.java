@@ -636,7 +636,6 @@ public class ModelUtils {
                                             newResolvedObjects.add(property);
                                         }
                                     }
-                                    newResolvedObjects.add(object);
                                     break;
                                 }
                             }
@@ -788,10 +787,11 @@ public class ModelUtils {
                         // plus five due to this.
                     }
                 } else {
-                    if (sb.length() > 5) {
-                        sb.insert(6, aNode.getProperty().getName());
-                    } else {
+                    if ("@call;".equals(sb.toString())) {
                         sb.append(aNode.getProperty().getName());
+                    } else {
+                        sb.insert(0, aNode.getProperty().getName());
+                        sb.insert(0, "@pro;");
                     }
                     sb.insert(0, ((IdentNode)aNode.getBase()).getName());
                     sb.insert(0, "@exp;");
@@ -799,10 +799,11 @@ public class ModelUtils {
                 }
                 return null;
             } else {
-                if(sb.length() > 5) {
-                    sb.insert(6, aNode.getProperty().getName());
-                } else {
+                if ("@call;".equals(sb.toString())) {
                     sb.append(aNode.getProperty().getName());
+                } else {
+                    sb.insert(0, aNode.getProperty().getName());
+                    sb.insert(0, "@pro;");
                 }
             }
             return super.enter(aNode);
@@ -870,7 +871,7 @@ public class ModelUtils {
                 if (lastNode instanceof CallNode) {
                     sb.append(iNode.getName());
                     add(new TypeUsageImpl(sb.toString(), LexUtilities.getLexerOffset(parserResult, iNode.getStart()), false));
-                } else {
+                } else if (!(lastNode instanceof AccessNode)) {
                     if (iNode.getName().equals("this")) {   //NOI18N
                         add(new TypeUsageImpl("@this", LexUtilities.getLexerOffset(parserResult, iNode.getStart()), false));                //NOI18N
                     } else {
