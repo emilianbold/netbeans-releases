@@ -41,6 +41,8 @@
  */
 package org.netbeans.modules.php.editor.model.impl;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -102,14 +104,22 @@ class CodeMarkerBuilder {
     }
 
     void setCurrentContextInfo(final int offset) {
+        final Collection<LazyBuild> scopesToScan = new ArrayList<LazyBuild>();
+        for (Entry<MethodDeclarationInfo, Scope> entry : methodDeclarations.entrySet()) {
+            if (entry.getValue() instanceof LazyBuild) {
+                LazyBuild scope = (LazyBuild) entry.getValue();
+                scopesToScan.add(scope);
+            }
+            setOccurenceAsCurrent(entry.getKey(), entry.getValue(), offset);
+        }
+        for (LazyBuild lazyBuild : scopesToScan) {
+            if (!lazyBuild.isScanned()) {
+                lazyBuild.scan();
+            }
+        }
         for (Entry<FunctionDeclarationInfo, Scope> entry : fncDeclarations.entrySet()) {
             setOccurenceAsCurrent(entry.getKey(), entry.getValue(), offset);
         }
-
-        for (Entry<MethodDeclarationInfo, Scope> entry : methodDeclarations.entrySet()) {
-            setOccurenceAsCurrent(entry.getKey(), entry.getValue(), offset);
-        }
-
         for (Entry<ASTNodeInfo<ReturnStatement>, Scope> entry : returnStatements.entrySet()) {
             setOccurenceAsCurrent(entry.getKey(), entry.getValue(), offset);
         }
