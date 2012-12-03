@@ -106,7 +106,9 @@ public class TestNGExecutionManager implements RerunHandler {
                         SingleMethod methodSpec = new SingleMethod(testFO, methodName);
                         lookup = Lookups.singleton(methodSpec);
                     } else {
-                        lookup = Lookups.fixed(DataObject.find(testFO));
+			if(testFO != null) {
+			    lookup = Lookups.fixed(DataObject.find(testFO));
+			}
                     }
                 }
                 if (scriptFile.getName().equals("junit.xml")) {              //NOI18N

@@ -51,6 +51,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.php.api.util.StringUtils;
 import org.netbeans.modules.php.editor.CodeUtils;
@@ -136,6 +137,9 @@ import org.openide.util.Union2;
  */
 class OccurenceBuilder {
 
+    private static final int INITIAL_CAPACITY = 16;
+    private static final float LOAD_FACTOR = 0.75f;
+    private static final int ACCESSING_THREADS = 2;
     private Map<ASTNodeInfo<Scalar>, ConstantElement> constDeclarations;
     private Map<ConstantDeclarationInfo, ConstantElement> constDeclarations53;
     private Map<ASTNodeInfo<Scalar>, Scope> constInvocations;
@@ -152,16 +156,16 @@ class OccurenceBuilder {
     private Map<ClassDeclarationInfo, ClassScope> clasDeclarations;
     private Map<InterfaceDeclarationInfo, InterfaceScope> ifaceDeclarations;
     private Map<TraitDeclarationInfo, TraitScope> traitDeclarations;
-    private HashMap<PhpDocTypeTagInfo, Scope> docTags;
+    private Map<PhpDocTypeTagInfo, Scope> docTags;
     private Map<ASTNodeInfo<ClassName>, Scope> clasNames;
     private Map<ASTNodeInfo<ClassInstanceCreation>, Scope> clasInstanceCreations;
     private Map<ASTNodeInfo<Expression>, Scope> clasIDs;
     private Map<ASTNodeInfo<Expression>, Scope> ifaceIDs;
     private Map<ASTNodeInfo<Expression>, Scope> traitIDs;
     private Map<ASTNodeInfo<Variable>, Scope> variables;
-    private HashMap<IncludeInfo, IncludeElement> includes;
-    private HashMap<SingleFieldDeclarationInfo, FieldElementImpl> fldDeclarations;
-    private HashMap<ASTNodeInfo<FieldAccess>, Scope> fieldInvocations;
+    private Map<IncludeInfo, IncludeElement> includes;
+    private Map<SingleFieldDeclarationInfo, FieldElementImpl> fldDeclarations;
+    private Map<ASTNodeInfo<FieldAccess>, Scope> fieldInvocations;
     private volatile ElementInfo elementInfo;
     private Map<ASTNodeInfo<GotoLabel>, Scope> gotoLabel;
     private Map<ASTNodeInfo<GotoStatement>, Scope> gotoStatement;
@@ -173,37 +177,42 @@ class OccurenceBuilder {
     }
 
     OccurenceBuilder(int offset) {
-        this.constInvocations = new HashMap<ASTNodeInfo<Scalar>, Scope>();
-        this.nsConstInvocations = new HashMap<ASTNodeInfo<Expression>, Scope>();
-        this.constDeclarations = new HashMap<ASTNodeInfo<Scalar>, ConstantElement>();
-        this.constDeclarations53 = new HashMap<ConstantDeclarationInfo, ConstantElement>();
-        this.includes = new HashMap<IncludeInfo, IncludeElement>();
-        this.fncInvocations = new HashMap<ASTNodeInfo<FunctionInvocation>, Scope>();
-        this.fncDeclarations = new HashMap<ASTNodeInfo<FunctionDeclaration>, FunctionScope>();
-        this.staticMethodInvocations = new HashMap<ASTNodeInfo<StaticMethodInvocation>, Scope>();
-        this.methodDeclarations = new HashMap<ASTNodeInfo<MethodDeclaration>, MethodScope>();
-        this.magicMethodDeclarations = new HashMap<MagicMethodDeclarationInfo, MethodScope>();
-        this.methodInvocations = new HashMap<ASTNodeInfo<MethodInvocation>, Scope>();
-        this.fieldInvocations = new HashMap<ASTNodeInfo<FieldAccess>, Scope>();
-        this.staticFieldInvocations = new HashMap<ASTNodeInfo<StaticFieldAccess>, Scope>();
-        this.staticConstantInvocations = new HashMap<ASTNodeInfo<StaticConstantAccess>, Scope>();
-        this.clasDeclarations = new HashMap<ClassDeclarationInfo, ClassScope>();
-        this.ifaceDeclarations = new HashMap<InterfaceDeclarationInfo, InterfaceScope>();
-        this.traitDeclarations = new HashMap<TraitDeclarationInfo, TraitScope>();
-        this.clasNames = new HashMap<ASTNodeInfo<ClassName>, Scope>();
-        this.clasInstanceCreations = new HashMap<ASTNodeInfo<ClassInstanceCreation>, Scope>();
-        this.clasIDs = new HashMap<ASTNodeInfo<Expression>, Scope>();
-        this.ifaceIDs = new HashMap<ASTNodeInfo<Expression>, Scope>();
-        this.traitIDs = new HashMap<ASTNodeInfo<Expression>, Scope>();
-        this.classConstantDeclarations = new HashMap<ASTNodeInfo<Identifier>, ClassConstantElement>();
-        this.variables = new HashMap<ASTNodeInfo<Variable>, Scope>();
-        this.fldDeclarations = new HashMap<SingleFieldDeclarationInfo, FieldElementImpl>();
-        this.docTags = new HashMap<PhpDocTypeTagInfo, Scope>();
-        this.gotoStatement = new HashMap<ASTNodeInfo<GotoStatement>, Scope>();
-        this.gotoLabel = new HashMap<ASTNodeInfo<GotoLabel>, Scope>();
-        this.useAliases = new HashMap<ASTNodeInfo<Expression>, Scope>();
+        this.constInvocations = this.<ASTNodeInfo<Scalar>, Scope>initMap();
+        this.nsConstInvocations = this.<ASTNodeInfo<Expression>, Scope>initMap();
+        this.constDeclarations = this.<ASTNodeInfo<Scalar>, ConstantElement>initMap();
+        this.constDeclarations53 = this.<ConstantDeclarationInfo, ConstantElement>initMap();
+        this.includes = this.<IncludeInfo, IncludeElement>initMap();
+        this.fncInvocations = this.<ASTNodeInfo<FunctionInvocation>, Scope>initMap();
+        this.fncDeclarations = this.<ASTNodeInfo<FunctionDeclaration>, FunctionScope>initMap();
+        this.staticMethodInvocations = this.<ASTNodeInfo<StaticMethodInvocation>, Scope>initMap();
+        this.methodDeclarations = this.<ASTNodeInfo<MethodDeclaration>, MethodScope>initMap();
+        this.magicMethodDeclarations = this.<MagicMethodDeclarationInfo, MethodScope>initMap();
+        this.methodInvocations = this.<ASTNodeInfo<MethodInvocation>, Scope>initMap();
+        this.fieldInvocations = this.<ASTNodeInfo<FieldAccess>, Scope>initMap();
+        this.staticFieldInvocations = this.<ASTNodeInfo<StaticFieldAccess>, Scope>initMap();
+        this.staticConstantInvocations = this.<ASTNodeInfo<StaticConstantAccess>, Scope>initMap();
+        this.clasDeclarations = this.<ClassDeclarationInfo, ClassScope>initMap();
+        this.ifaceDeclarations = this.<InterfaceDeclarationInfo, InterfaceScope>initMap();
+        this.traitDeclarations = this.<TraitDeclarationInfo, TraitScope>initMap();
+        this.clasNames = this.<ASTNodeInfo<ClassName>, Scope>initMap();
+        this.clasInstanceCreations = this.<ASTNodeInfo<ClassInstanceCreation>, Scope>initMap();
+        this.clasIDs = this.<ASTNodeInfo<Expression>, Scope>initMap();
+        this.ifaceIDs = this.<ASTNodeInfo<Expression>, Scope>initMap();
+        this.traitIDs = this.<ASTNodeInfo<Expression>, Scope>initMap();
+        this.classConstantDeclarations = this.<ASTNodeInfo<Identifier>, ClassConstantElement>initMap();
+        this.variables = this.<ASTNodeInfo<Variable>, Scope>initMap();
+        this.fldDeclarations = this.<SingleFieldDeclarationInfo, FieldElementImpl>initMap();
+        this.docTags = this.<PhpDocTypeTagInfo, Scope>initMap();
+        this.gotoStatement = this.<ASTNodeInfo<GotoStatement>, Scope>initMap();
+        this.gotoLabel = this.<ASTNodeInfo<GotoLabel>, Scope>initMap();
+        this.useAliases = this.<ASTNodeInfo<Expression>, Scope>initMap();
+        this.useAliases = this.<ASTNodeInfo<Expression>, Scope>initMap();
 
         this.cachedOccurences = new ArrayList<Occurence>();
+    }
+
+    private <K, V> Map<K, V> initMap() {
+        return new ConcurrentHashMap<K, V>(INITIAL_CAPACITY, LOAD_FACTOR, ACCESSING_THREADS);
     }
 
     void prepare(GotoStatement statement, ScopeImpl scope) {

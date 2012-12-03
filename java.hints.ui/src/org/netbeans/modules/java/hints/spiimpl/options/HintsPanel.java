@@ -817,6 +817,7 @@ public final class HintsPanel extends javax.swing.JPanel   {
         errorTreeModel = constructTM(Utilities.getBatchSupportedHints(cpBased).keySet(), false);
         errorTree.setModel(errorTreeModel);
         select(getHintByName(selectedHintId));
+        customHintCodeBeforeEditing = null;
         cancelEditActionPerformed(evt);
         hasNewHints = true;
     }//GEN-LAST:event_saveButtonActionPerformed

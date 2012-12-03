@@ -53,6 +53,7 @@ import java.util.logging.Level;
 import org.netbeans.modules.cnd.apt.impl.support.APTPreprocessorToken;
 import org.netbeans.modules.cnd.apt.structure.APT;
 import org.netbeans.modules.cnd.apt.structure.APTFile;
+import org.netbeans.modules.cnd.apt.structure.APTInclude;
 import org.netbeans.modules.cnd.apt.structure.APTStream;
 import org.netbeans.modules.cnd.apt.utils.APTTraceUtils;
 import org.netbeans.modules.cnd.apt.utils.APTUtils;
@@ -392,24 +393,22 @@ public abstract class APTWalker {
     private void fillTokensIfNeeded(APT node) {
         if (walkerUsedForTokenStreamGeneration == Boolean.TRUE) {
             // only token stream nodes contain tokens as TokenStream
-            if (node != null) {
-                switch (node.getType()) {
-                    case APT.Type.TOKEN_STREAM:
-                    {
-                        TokenStream ts = ((APTStream)node).getTokenStream();
-                        tokens.addFirst(ts);
-                        break;
-                    }
-                    case APT.Type.INCLUDE:
-                    case APT.Type.INCLUDE_NEXT:
-                    {
-                        if (needPPTokens()) {
-                            tokens.addFirst(new TokenBasedTokenStream(new APTPreprocessorToken(node, nodeProperties.get(node))));
-                        }
-                        break;
-                    }
-                }
+            if (node != null && node.getType() == APT.Type.TOKEN_STREAM) {
+                TokenStream ts = ((APTStream)node).getTokenStream();
+                tokens.addFirst(ts);
             }
+        }
+    }
+    
+    /*package*/final void beforeInclude(APTInclude aptInclude, ResolvedPath resolvedPath) {
+        if (walkerUsedForTokenStreamGeneration == Boolean.TRUE && needPPTokens()) {
+            tokens.add(new TokenBasedTokenStream(new APTPreprocessorToken(aptInclude, true, resolvedPath, nodeProperties.get(aptInclude))));            
+        }
+    }
+
+    /*package*/final void afterInclude(APTInclude aptInclude, ResolvedPath resolvedPath) {
+        if (walkerUsedForTokenStreamGeneration == Boolean.TRUE && needPPTokens()) {
+            tokens.add(new TokenBasedTokenStream(new APTPreprocessorToken(aptInclude, false, resolvedPath, nodeProperties.get(aptInclude))));
         }
     }
     

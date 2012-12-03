@@ -1067,7 +1067,7 @@ external_declaration {String s; K_and_R = false; boolean definition;StorageClass
 
 	|	
                 //enum typedef )))	
-                (LITERAL_typedef LITERAL_enum (LITERAL_class | LITERAL_struct)? (IDENT)? (COLON ts = type_specifier[dsInvalid, false])? LCURLY)=> typedef_enum
+                (LITERAL_typedef LITERAL_enum (LITERAL_class | LITERAL_struct)? (IDENT)? (COLON ts = type_specifier[dsInvalid, false])? (type_attribute_specification)? LCURLY)=> typedef_enum
                 {  #external_declaration = #(#[CSM_GENERIC_DECLARATION, "CSM_GENERIC_DECLARATION"], #external_declaration); }
 /*    |
         // IZ#145071: forward declarations marked as error
@@ -1507,7 +1507,7 @@ member_declaration
 		{ #member_declaration = #(#[CSM_ENUM_FWD_DECLARATION, "CSM_ENUM_FWD_DECLARATION"], #member_declaration); }
 	|	
                 //enum typedef )))	
-                (LITERAL_typedef LITERAL_enum (LITERAL_class | LITERAL_struct)? (IDENT)? (COLON ts = type_specifier[dsInvalid, false])? LCURLY)=> typedef_enum
+                (LITERAL_typedef LITERAL_enum (LITERAL_class | LITERAL_struct)? (IDENT)? (COLON ts = type_specifier[dsInvalid, false])? (type_attribute_specification)? LCURLY)=> typedef_enum
 		{ #member_declaration = #(#[CSM_FIELD, "CSM_FIELD"], #member_declaration); }
 	|
 		// Constructor declarator
@@ -2147,6 +2147,7 @@ enum_specifier
         {action.enum_strongly_typed(LT(1));}
     )?
     (   (COLON ts = builtin_cv_type_specifier[ts])?
+        (type_attribute_specification)?
         LCURLY enumerator_list 
         ( EOF! { reportError(new NoViableAltException(org.netbeans.modules.cnd.apt.utils.APTUtils.EOF_TOKEN, getFilename())); }
         | RCURLY )
@@ -2164,6 +2165,7 @@ enum_specifier
             )?
             (options {greedy=true;} :
                 {action.enum_body(LT(1));}
+                (type_attribute_specification)?
                 LCURLY enumerator_list 
                 {action.end_enum_body(LT(1));}
                 ( EOF! { reportError(new NoViableAltException(org.netbeans.modules.cnd.apt.utils.APTUtils.EOF_TOKEN, getFilename())); }

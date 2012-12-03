@@ -379,9 +379,9 @@ public class RefactoringPanel extends JPanel implements FiltersManagerImpl.Filte
         toolbar.add(stopButton);
         toolbar.add(prevMatch);
         toolbar.add(nextMatch);
+        toolbar.add(expandButton);
         toolbar.add(logicalViewButton);
         toolbar.add(physicalViewButton);
-        toolbar.add(expandButton);
         if (ui instanceof RefactoringCustomUI) {
             toolbar.add(customViewButton);
         }
@@ -778,6 +778,7 @@ public class RefactoringPanel extends JPanel implements FiltersManagerImpl.Filte
                         //[retouche]                    JavaModel.getJavaRepository().beginTrans(false);
                         try {
                             // ui.getRefactoring().setClassPath();
+                            boolean progressStarted = false;
                             for (Iterator it = elements.iterator(); it.hasNext();i++) {
                                 final RefactoringElement e = (RefactoringElement) it.next();
                                 TreeElement treeElement = null;
@@ -798,6 +799,10 @@ public class RefactoringPanel extends JPanel implements FiltersManagerImpl.Filte
                                     }
                                     final boolean finished = session!= null? APIAccessor.DEFAULT.isFinished(session) : true;
                                     final boolean last = !it.hasNext();
+                                    if (!progressStarted && (finished || last)) {
+                                        progressStarted = true;
+                                        progressHandle.start();
+                                    }
                                     if ((occurrences % 10 == 0 && !finished) || last) {
                                         SwingUtilities.invokeLater(new Runnable() {
                                             @Override
@@ -1297,14 +1302,12 @@ public class RefactoringPanel extends JPanel implements FiltersManagerImpl.Filte
         
         private ProgressHandle handle;
         private Dialog d;
-        private int counter;
         
         @Override
         public void start(final ProgressEvent event) {
             SwingUtilities.invokeLater(new Runnable() {
                 @Override
                 public void run() {
-                    counter = 0;
                     final String lab = NbBundle.getMessage(RefactoringPanel.class, "LBL_RefactorProgressLabel");
                     handle = ProgressHandleFactory.createHandle(lab);
                     JComponent progress = ProgressHandleFactory.createProgressComponent(handle);
@@ -1328,12 +1331,12 @@ public class RefactoringPanel extends JPanel implements FiltersManagerImpl.Filte
         }
         
         @Override
-        public void step(ProgressEvent event) {
+        public void step(final ProgressEvent event) {
             SwingUtilities.invokeLater(new Runnable() {
                 @Override
                 public void run() {
                     try {
-                        handle.progress(++counter);
+                        handle.progress(event.getCount());
                     } catch (Throwable e) {
                         ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
                     }

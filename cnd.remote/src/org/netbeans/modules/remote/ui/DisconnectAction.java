@@ -58,6 +58,8 @@ import org.openide.util.RequestProcessor;
 @ActionRegistration(displayName = "DisconnectMenuItem")
 @ActionReference(path = "Remote/Host/Actions", name = "DisconnectAction", position = 200)
 public class DisconnectAction extends SingleHostAction {
+    
+    private static final RequestProcessor RP = new RequestProcessor("DisconnectAction", 1); // NOI18N
 
     @Override
     public String getName() {
@@ -76,7 +78,7 @@ public class DisconnectAction extends SingleHostAction {
 
     @Override
     protected void performAction(final ExecutionEnvironment env, Node node) {
-        RequestProcessor.getDefault().post(new Runnable() {
+        RP.post(new Runnable() {
             @Override
             public void run() {
                 if (ConnectionManager.getInstance().isConnectedTo(env)) {

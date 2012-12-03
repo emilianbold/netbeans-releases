@@ -98,10 +98,12 @@ public class Utilities {
         }
         Set<String> properties = new HashSet<String>();
         for (Property property : rule.getStyle().getProperties()) {
-            String propertyName = property.getShorthandName();
-            if (propertyName == null) {
-                propertyName = property.getName();
+            if (property.getText() == null) {
+                // longhand property that is included in the rule
+                // indirectly through the corresponding shorthand property
+                continue;
             }
+            String propertyName = property.getName();
             properties.add(propertyName.trim());
         }
         org.netbeans.modules.css.model.api.Rule result = findRuleInStyleSheet0(

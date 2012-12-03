@@ -348,10 +348,6 @@ public final class NativeProcessInfo {
             sb.append("\" "); // NOI18N
         }
 
-        if (redirectError) {
-            sb.append(" 2>&1"); // NOI18N
-        }
-
         return sb.toString().trim();
     }
 
@@ -468,5 +464,9 @@ public final class NativeProcessInfo {
 
     boolean isCommandLineDefined() {
         return commandLine != null;
+    }
+
+    boolean isRedirectError() {
+        return redirectError;
     }
 }

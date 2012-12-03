@@ -258,7 +258,7 @@ public abstract class ExtBrowserImpl extends HtmlBrowser.Impl
      * @param url URL to show in the browser.
      */
     @Override
-    final public void setURL(URL url) {
+    final public void setURL(final URL url) {
         if (hasEnhancedMode()) {
             BrowserTabDescriptor tab = getBrowserTabDescriptor();
             if (tab == null) {
@@ -271,26 +271,24 @@ public abstract class ExtBrowserImpl extends HtmlBrowser.Impl
                 } else if (status == ExtensionManager.ExtensitionStatus.MISSING || 
                         status == ExtensionManager.ExtensitionStatus.NEEDS_UPGRADE) {
                     browserPluginAvailable = ExtensionManager.installExtension(pluginId,
-                            new PluginLoader() {
-
-                                @Override
-                                public void requestPluginLoad( URL url ) {
-                                    loadURLInBrowser(url);
-                                }
-                            }, status);
+                             status);
                 }
                 if (browserPluginAvailable) {
-                    // instead of using real URL to open a new tab in the browser
-                    // (and possible start browser process itself) I'm going to use
-                    // a temp file which I will refresh with the real URL once the
-                    // link between browser and IDE was established. The reason is
-                    // that I would like to be able to set breakpoints to the browser
-                    // tab before the URL is loaded so that breakpoints get hit
-                    // even when the URL is loaded for the first time.
-                    URL tempUrl = createBlankHTMLPage();
-                    assert tempUrl != null;
-                    ExternalBrowserPlugin.getInstance().register(tempUrl, url, this);
-                    loadURLInBrowser(tempUrl);
+                    if (ExternalBrowserPlugin.getInstance().isServerRunning()) {
+                        // instead of using real URL to open a new tab in the browser
+                        // (and possible start browser process itself) I'm going to use
+                        // a temp file which I will refresh with the real URL once the
+                        // link between browser and IDE was established. The reason is
+                        // that I would like to be able to set breakpoints to the browser
+                        // tab before the URL is loaded so that breakpoints get hit
+                        // even when the URL is loaded for the first time.
+                        URL tempUrl = createBlankHTMLPage();
+                        assert tempUrl != null;
+                        ExternalBrowserPlugin.getInstance().register(tempUrl, url, this);
+                        loadURLInBrowser(tempUrl);
+                    } else {
+                        loadURLInBrowser(url);
+                    }
                 }
             }
             else {

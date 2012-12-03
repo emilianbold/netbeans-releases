@@ -658,14 +658,11 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
             new GitProgressSupport.NoOutputLogging() {
                 @Override
                 protected void perform () {
-                    try {
-                        GitClient client = getClient();
-                        final java.util.Map<String, GitBranch> branches = client.getBranches(true, getProgressMonitor());
-                        if (!isCanceled()) {
-                            refreshBranches(branches);
-                        }
-                    } catch (GitException ex) {
-                        LOG.log(Level.INFO, "refreshBranches()", ex); //NOI18N
+                    RepositoryInfo info = RepositoryInfo.getInstance(repository);
+                    info.refresh();
+                    java.util.Map<String, GitBranch> branches = info.getBranches();
+                    if (!isCanceled()) {
+                        refreshBranches(branches);
                     }
                 }
             }.start(RP, repository, NbBundle.getMessage(BranchesTopChildren.class, "MSG_RepositoryPanel.refreshingBranches")); //NOI18N
@@ -680,7 +677,7 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
                 for (java.util.Map.Entry<String, GitBranch> e : BranchesTopChildren.this.branches.entrySet()) {
                     GitBranch newBranchInfo = branches.get(e.getKey());
                     // do not refresh branches that don't change their active state or head id
-                    if (newBranchInfo != null && (newBranchInfo.getId().equals(e.getValue().getId()) || newBranchInfo.isActive() == e.getValue().isActive())) {
+                    if (newBranchInfo != null && (newBranchInfo.getId().equals(e.getValue().getId()) && newBranchInfo.isActive() == e.getValue().isActive())) {
                         branches.remove(e.getKey());
                     }
                 }
@@ -1066,14 +1063,11 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
             new GitProgressSupport.NoOutputLogging() {
                 @Override
                 protected void perform () {
-                    try {
-                        GitClient client = getClient();
-                        final java.util.Map<String, GitTag> tags = client.getTags(GitUtils.NULL_PROGRESS_MONITOR, false);
-                        if (!isCanceled()) {
-                            refreshTags(tags);
-                        }
-                    } catch (GitException ex) {
-                        LOG.log(Level.INFO, "refreshTags()", ex); //NOI18N
+                    RepositoryInfo info = RepositoryInfo.getInstance(repository);
+                    info.refresh();
+                    java.util.Map<String, GitTag> tags = info.getTags();
+                    if (!isCanceled()) {
+                        refreshTags(tags);
                     }
                 }
             }.start(RP, repository, NbBundle.getMessage(BranchesTopChildren.class, "MSG_RepositoryPanel.refreshingTags")); //NOI18N
@@ -1089,7 +1083,7 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
                     GitTag newTagInfo = tags.get(e.getKey());
                     // do not refresh tags they keep the same
                     if (newTagInfo != null && (newTagInfo.getTaggedObjectId().equals(e.getValue().getTaggedObjectId()) 
-                            || newTagInfo.getMessage().equals(e.getValue().getMessage()))) {
+                            && newTagInfo.getMessage().equals(e.getValue().getMessage()))) {
                         tags.remove(e.getKey());
                     }
                 }

@@ -47,11 +47,9 @@ import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.GridBagLayout;
-import java.awt.Image;
-import java.awt.Insets;
-import javax.swing.BorderFactory;
 import javax.swing.JPanel;
-import org.openide.util.ImageUtilities;
+import org.netbeans.modules.welcome.content.Constants;
+import org.netbeans.modules.welcome.content.Utils;
 
 /**
  *
@@ -59,25 +57,10 @@ import org.openide.util.ImageUtilities;
  */
 class TabContentPane extends JPanel {
 
-    private final Image leftShadow;
-    private final Image rightShadow;
-    private final Image bottomShadow;
-    private final Image bottomLeftCorner;
-    private final Image bottomRightCorner;
-
-    private final static Insets insets = new Insets(0,19,85,22);
-
     public TabContentPane() {
         super( new GridBagLayout() );
         setOpaque(false);
-        setBorder(BorderFactory.createEmptyBorder(0,4,23,6));
         setMinimumSize(new Dimension(41, 85));
-
-        leftShadow = ImageUtilities.loadImage("org/netbeans/modules/welcome/resources/left_shadow.png");
-        rightShadow = ImageUtilities.loadImage("org/netbeans/modules/welcome/resources/right_shadow.png");
-        bottomShadow = ImageUtilities.loadImage("org/netbeans/modules/welcome/resources/bottom_shadow.png");
-        bottomLeftCorner = ImageUtilities.loadImage("org/netbeans/modules/welcome/resources/bottom_left_corner.png");
-        bottomRightCorner = ImageUtilities.loadImage("org/netbeans/modules/welcome/resources/bottom_right_corner.png");
     }
 
     @Override
@@ -85,21 +68,11 @@ class TabContentPane extends JPanel {
         Graphics2D g2d = (Graphics2D) g;
         int width = getWidth();
         int height = getHeight();
-        g2d.drawImage(bottomLeftCorner, 0, height-insets.bottom, this);
-        g2d.drawImage(bottomRightCorner,
-                width-insets.right, height-insets.bottom, this);
-        g2d.drawImage(bottomShadow,
-                insets.left, height-insets.bottom,
-                width-insets.left-insets.right, insets.bottom, this);
-
-        g2d.drawImage(leftShadow,
-                0, 0,
-                insets.left, height-insets.bottom, this);
-        g2d.drawImage(rightShadow,
-                width-insets.right, 0,
-                insets.right, height-insets.bottom, this);
 
         g2d.setColor(Color.white);
-        g2d.fillRect(insets.left, 0, width-insets.left-insets.right, height-insets.bottom);
+        g2d.fillRect(0, 0, width, height);
+        g2d.setColor( Utils.getColor( Constants.COLOR_BORDER ) );
+        g2d.drawLine( 0,0, 0, height);
+        g2d.drawLine( width-1,0, width-1, height);
     }
 }

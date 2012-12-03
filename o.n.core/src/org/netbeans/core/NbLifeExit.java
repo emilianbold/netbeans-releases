@@ -79,10 +79,16 @@ final class NbLifeExit implements Runnable {
         this.status = status;
         this.waitFor = waitFor;
         this.onExit = onExit;
+        NbLifecycleManager.LOG.log(
+            Level.FINE, "NbLifeExit({0}, {1}, {2}, {3}) = {4}", new Object[]{
+                type, status, waitFor, onExit, this
+            }
+        );
     }
 
     @Override
     public void run() {
+        NbLifecycleManager.LOG.log(Level.FINE, "{0}.run()", this);
         switch (type) {
             case 0:
                 doExit(status);
@@ -108,41 +114,28 @@ final class NbLifeExit implements Runnable {
                 doApproved(type == 4, status);
                 break;
             case 5:
-                onExit.countDown();
-                if (!Boolean.getBoolean("netbeans.close.no.exit")) { // NOI18N
-                    TopSecurityManager.exit(status);
+                try {
+                    if (!Boolean.getBoolean("netbeans.close.no.exit")) { // NOI18N
+                        TopSecurityManager.exit(status);
+                    }
+                } finally {
+                    onExit.countDown();
                 }
                 break;
             default:
                 throw new IllegalStateException("Type: " + type); // NOI18N
         }
     }
-    private static boolean doingExit = false;
-    
-    /**
-     * @return True if the IDE is shutting down.
-     */
-    public static boolean isExiting() {
-        return doingExit;
-    }
 
     private void doExit(int status) {
-        if (doingExit) {
-            onExit.countDown();
-            return;
-        }
-        doingExit = true;
         // save all open files
-        try {
-            if (System.getProperty("netbeans.close") != null || ExitDialog.showDialog()) { // NOI18N
-                Future<Boolean> res = Main.getModuleSystem().shutDownAsync(new NbLifeExit(1, status, null, onExit));
-                RP.post(new NbLifeExit(2, status, res, onExit));
-            } else {
-                onExit.countDown();
-            }
-        } finally {
-            doingExit = false;
+        Future<Boolean> res;
+        if (System.getProperty("netbeans.close") != null || ExitDialog.showDialog()) { // NOI18N
+            res = Main.getModuleSystem().shutDownAsync(new NbLifeExit(1, status, null, onExit));
+        } else {
+            res = null;
         }
+        RP.post(new NbLifeExit(2, status, res, onExit));
     }
 
     private void doStopInfra(int status) {
@@ -155,8 +148,11 @@ final class NbLifeExit implements Runnable {
         }
         if (Boolean.getBoolean("netbeans.close.when.invisible")) { // NOI18N
             // hook to permit perf testing of time to *apparently* shut down
-            onExit.countDown();
-            TopSecurityManager.exit(status);
+            try {
+                TopSecurityManager.exit(status);
+            } finally {
+                onExit.countDown();
+            }
         }
         
     }

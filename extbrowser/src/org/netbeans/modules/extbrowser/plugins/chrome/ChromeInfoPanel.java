@@ -41,29 +41,13 @@
  */
 package org.netbeans.modules.extbrowser.plugins.chrome;
 
-import java.awt.Desktop;
 import java.io.File;
-import java.io.IOException;
 import java.net.MalformedURLException;
-import java.net.URISyntaxException;
-import java.net.URL;
-import java.nio.charset.Charset;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import javax.swing.SwingUtilities;
-import javax.swing.event.HyperlinkEvent;
-import javax.swing.event.HyperlinkListener;
-import org.netbeans.api.extexecution.ExternalProcessBuilder;
-import org.netbeans.api.extexecution.input.InputReaderTask;
-import org.netbeans.api.extexecution.input.InputReaders;
-
 import org.netbeans.modules.extbrowser.plugins.ExtensionManager.ExtensitionStatus;
-import org.netbeans.modules.extbrowser.plugins.PluginLoader;
-import org.openide.awt.HtmlBrowser;
 import org.openide.util.NbBundle;
-import org.openide.util.RequestProcessor;
-import org.openide.util.Utilities;
 
 /**
  *
@@ -72,10 +56,10 @@ import org.openide.util.Utilities;
 class ChromeInfoPanel extends javax.swing.JPanel {
 
     private static final long serialVersionUID = 5394629966593049098L;
-    static final Logger LOGGER = Logger.getLogger(ChromeInfoPanel.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(ChromeInfoPanel.class.getName());
 
 
-    ChromeInfoPanel(String pluginPath, final PluginLoader loader,
+    ChromeInfoPanel(String pluginPath, 
             ExtensitionStatus currentStatus)
     {
         initComponents();
@@ -102,77 +86,9 @@ class ChromeInfoPanel extends javax.swing.JPanel {
         myEditorPane.setText(text.toString());
         myEditorPane.setCaretPosition(0);
         
-        HyperlinkListener listener = new HyperlinkListener() {
-
-            @Override
-            public void hyperlinkUpdate( HyperlinkEvent e ) {
-                if (e.getEventType() == HyperlinkEvent.EventType.ACTIVATED) {
-                    URL url = e.getURL();
-                    if (url.getProtocol().equals("file")) { // NOI18N
-                        // first, try java api
-                        try {
-                            Desktop desktop = Desktop.getDesktop();
-                            if (desktop.isSupported(Desktop.Action.OPEN)) {
-                                desktop.open(Utilities.toFile(url.toURI()));
-                            }
-                            else {
-                                openNativeFileManager(url);
-                            }
-                        }
-                        catch (IOException ex) {
-                            LOGGER.log(Level.FINE, null, ex);
-                            openNativeFileManager(url);
-                        }
-                        // Fix for BZ#218782 - UnsupportedOperationException: Desktop API is not supported on the current platform
-                        catch (UnsupportedOperationException ex) {
-                            LOGGER.log(Level.FINE, null, ex);
-                            openNativeFileManager(url);
-                        }
-                        catch (URISyntaxException ex) {
-                            LOGGER.log(Level.WARNING, null, ex);
-                            openNativeFileManager(url);
-                        }
-                    } else {
-                        HtmlBrowser.URLDisplayer.getDefault().showURL(url);
-                    }
-                }
-            }
-
-            private void openNativeFileManager(URL url) {
-                String executable;
-                if (Utilities.isWindows()) {
-                    executable = "explorer.exe"; // NOI18N
-                } else if (Utilities.isMac()) {
-                    executable = "open"; // NOI18N
-                } else {
-                    assert Utilities.isUnix() : "Unix expected";
-                    executable = "xdg-open"; // NOI18N
-                }
-                try {
-                    Process process = new ExternalProcessBuilder(executable)
-                            .addArgument(url.toURI().toString())
-                            .redirectErrorStream(true)
-                            .call();
-                    InputReaderTask task = InputReaderTask.newTask(InputReaders.forStream(process.getInputStream(), Charset.defaultCharset()), null);
-                    getRequestProcessor().post(task);
-                } catch (URISyntaxException ex) {
-                    LOGGER.log(Level.WARNING, null, ex);
-                } catch (IOException ex) {
-                    LOGGER.log(Level.WARNING, null, ex);
-                }
-            }
-        };
-        myEditorPane.addHyperlinkListener(listener);
+        myEditorPane.addHyperlinkListener(new LinkListener());
     }
     
-    private RequestProcessor getRequestProcessor(){
-        assert SwingUtilities.isEventDispatchThread();
-        if ( myProcessor == null ){
-            myProcessor = new RequestProcessor(ChromeInfoPanel.class);
-        }
-        return myProcessor;
-    }
-
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -212,5 +128,4 @@ class ChromeInfoPanel extends javax.swing.JPanel {
     private javax.swing.JScrollPane myScrollPane;
     // End of variables declaration//GEN-END:variables
     
-    private RequestProcessor myProcessor;
 }

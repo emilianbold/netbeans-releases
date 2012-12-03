@@ -44,6 +44,7 @@
 
 package org.netbeans.modules.options.keymap;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -59,6 +60,7 @@ import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import org.netbeans.core.options.keymap.api.ShortcutAction;
 import org.netbeans.core.options.keymap.spi.KeymapManager;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
@@ -254,13 +256,12 @@ public class KeymapModel {
                 if (currentProfile == null) {
                     currentProfile = m.getCurrentProfile();
                 }
-                if (l != null) {
+                if (l != null && profilesMap.isEmpty()) {
                     for(String name : l) {
                         profilesMap.put(m.getProfileDisplayName(name), name);
                         customProfiles.put(name, Boolean.TRUE.equals(customProfiles.get(name)) || 
                                 m.isCustomProfile(name));
                     }
-                    break;
                 }
             }
             if (currentProfile == null) {
@@ -437,6 +438,84 @@ public class KeymapModel {
                 profileData = null;
             }
         });
+    }
+    
+    /**
+     * Reverts an action in KeymapManagers, which support the revert
+     * operation. 
+     * 
+     * @param ac
+     * @throws IOException 
+     */
+    public void revertActions(final Collection<ShortcutAction> ac) throws IOException {
+        final IOException[] exc = new IOException[1];
+        
+        waitFinished(new Runnable() {
+            public void run() {
+                try {
+                    for (KeymapManager m : getKeymapManagerInstances()) {
+                        if (m instanceof KeymapManager.WithRevert) {
+                            try {
+                                ((KeymapManager.WithRevert)m).revertActions(getCurrentProfile(), ac);
+                            } catch (IOException ex) {
+                                exc[0] = ex;
+                                return;
+                            }
+                        } else {
+                            Map<ShortcutAction, Set<String>> actions = m.getDefaultKeymap(getCurrentProfile());
+                            Map<ShortcutAction, Set<String>> keymap = new HashMap<ShortcutAction, Set<String>>(m.getKeymap(getCurrentProfile()));
+                            for (ShortcutAction a : ac) {
+                                Set<String> defKeys = actions.get(a);
+                                if (defKeys == null) {
+                                    keymap.remove(a);
+                                } else {
+                                    keymap.put(a, defKeys);
+                                }
+                            }
+                            m.saveKeymap(getCurrentProfile(), keymap);
+                        }
+                    }
+                } finally {
+                    synchronized (KeymapModel.this) {
+                        keymapData = null;
+                    }
+                }
+            }
+        });
+        if (exc[0] != null) {
+            throw exc[0];
+        }
+    }
+    
+    public void revertProfile(final String profileName) throws IOException {
+        final IOException[] exc = new IOException[1];
+        
+        waitFinished(new Runnable() {
+            public void run() {
+                try {
+                    for (KeymapManager m : getKeymapManagerInstances()) {
+                        if (m instanceof KeymapManager.WithRevert) {
+                            try {
+                                ((KeymapManager.WithRevert)m).revertProfile(profileName);
+                            } catch (IOException ex) {
+                                exc[0] = ex;
+                                return;
+                            }
+                        } else {
+                            m.saveKeymap(profileName, m.getDefaultKeymap(profileName));
+                        }
+                    }
+                } finally {
+                    synchronized (KeymapModel.this) {
+                        profileData = null;
+                        keymapData = null;
+                    }
+                }
+            }
+        });
+        if (exc[0] != null) {
+            throw exc[0];
+        }
     }
     
     public List<String> getProfiles () {

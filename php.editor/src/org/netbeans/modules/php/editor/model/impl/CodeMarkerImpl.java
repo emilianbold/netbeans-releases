@@ -45,6 +45,7 @@ package org.netbeans.modules.php.editor.model.impl;
 import java.util.List;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.php.editor.model.CodeMarker;
+import org.netbeans.modules.php.editor.model.OccurrenceHighlighter;
 import org.netbeans.modules.php.editor.model.Scope;
 import org.netbeans.modules.php.editor.model.nodes.ASTNodeInfo;
 
@@ -73,8 +74,17 @@ class CodeMarkerImpl implements CodeMarker {
     }
 
     @Override
-    public OffsetRange getOffsetRange() {
+    public boolean containsInclusive(int offset) {
+        return getOffsetRange().containsInclusive(offset);
+    }
+
+    private OffsetRange getOffsetRange() {
         return range;
+    }
+
+    @Override
+    public void highlight(OccurrenceHighlighter highlighter) {
+        highlighter.add(getOffsetRange());
     }
 
     /**
@@ -84,5 +94,20 @@ class CodeMarkerImpl implements CodeMarker {
         return scope;
     }
 
+    public static final class InvisibleCodeMarker extends CodeMarkerImpl {
+
+        public InvisibleCodeMarker(Scope scope, ASTNodeInfo nodeInfo, FileScopeImpl fileScope) {
+            super(scope, nodeInfo, fileScope);
+        }
+
+        public InvisibleCodeMarker(Scope scope, OffsetRange range, FileScopeImpl fileScope) {
+            super(scope, range, fileScope);
+        }
+
+        @Override
+        public void highlight(OccurrenceHighlighter highlighter) {
+        }
+
+    }
 
 }

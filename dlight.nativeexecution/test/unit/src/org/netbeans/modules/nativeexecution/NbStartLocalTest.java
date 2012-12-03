@@ -231,13 +231,10 @@ public class NbStartLocalTest extends NativeExecutionBaseTestCase {
         CommonTasksSupport.sendSignal(env, process.getPID(), Signal.SIGCONT, null);
 
         try {
-            int threshold = process instanceof NbNativeProcess ? 500 : 1500;
-            waitTask.waitFinished(threshold);
+            assertTrue("waitTask must be finished at this point", waitTask.waitFinished(1500));
         } catch (InterruptedException ex) {
             fail("Process must continue after senging the SIGCONT");
         }
-
-        assertTrue("waitTask must be finished at this point", waitTask.isFinished());
 
         String error = ProcessUtils.readProcessErrorLine(process);
         System.out.println(error);

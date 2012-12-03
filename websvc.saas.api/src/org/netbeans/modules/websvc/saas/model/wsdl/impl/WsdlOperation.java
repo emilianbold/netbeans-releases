@@ -101,6 +101,9 @@ public class WsdlOperation implements WSOperation{
                 if(complexTypes != null && !complexTypes.isEmpty()){
                     for(ComplexType complexType : complexTypes){
                         ComplexTypeDefinition def = complexType.getDefinition();
+                        if (def == null){
+                            continue;
+                        }
                         List<LocalElement> elements = def.getChildren(LocalElement.class);
                         for(LocalElement element : elements){
                             parms.add(new WsdlParameter(element));

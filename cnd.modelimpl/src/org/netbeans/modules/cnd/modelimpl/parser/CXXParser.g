@@ -528,14 +528,14 @@ nested_name_specifier:
 
 nested_name_specifier returns [ name_specifier_t namequal ]
     :
-        simple_template_id_or_IDENT                                             {action.nested_name_specifier(input.LT(0));}
+        simple_template_id_or_IDENT
         SCOPE 
         (
             (LITERAL_template lookup_simple_template_id_nocheck SCOPE )=> 
                 LITERAL_template simple_template_id_nocheck SCOPE
         |
             (IDENT SCOPE) =>
-                IDENT           {action.nested_name_specifier(input.LT(0));}
+                IDENT                                                           {action.nested_name_specifier(input.LT(0));}
                 SCOPE     
         |
             (lookup_simple_template_id SCOPE)=>
@@ -679,18 +679,19 @@ decl_specifier
 storage_class_specifier:
 //        LITERAL_auto 
 //    |
-        LITERAL_register 
+        LITERAL_register                                                        {action.decl_specifier(action.STORAGE_CLASS_SPECIFIER__REGISTER, $LITERAL_register);}
     |
-        LITERAL_static 
+        LITERAL_static                                                          {action.decl_specifier(action.STORAGE_CLASS_SPECIFIER__STATIC, $LITERAL_static);}
     |
-        LITERAL_extern 
+        LITERAL_extern                                                          {action.decl_specifier(action.STORAGE_CLASS_SPECIFIER__EXTERN, $LITERAL_extern);}
     |
-        LITERAL_mutable 
+        LITERAL_mutable                                                         {action.decl_specifier(action.STORAGE_CLASS_SPECIFIER__MUTABLE, $LITERAL_mutable);}
     |
-        LITERAL___thread
+        LITERAL___thread                                                        {action.decl_specifier(action.STORAGE_CLASS_SPECIFIER____THREAD, $LITERAL___thread);}
     |
-        LITERAL_thread_local
+        LITERAL_thread_local                                                    {action.decl_specifier(action.STORAGE_CLASS_SPECIFIER__THREAD_LOCAL, $LITERAL_thread_local);}
     ;
+
 function_specifier:
         LITERAL_inline 
     |
@@ -872,7 +873,10 @@ elaborated_type_specifier
     ;
 
 // In C++0x this is factored out already
-typename_specifier:
+typename_specifier
+@init                                                                           {if(state.backtracking == 0){action.typename_specifier(input.LT(1));}}
+@after                                                                          {if(state.backtracking == 0){action.end_typename_specifier(input.LT(0));}}
+    :
         LITERAL_typename SCOPE? nested_name_specifier ( simple_template_id_or_IDENT  | LITERAL_template simple_template_id_nocheck )
     ;
 
@@ -1540,7 +1544,7 @@ optionally_qualified_name
     :                                                                           {action.optionally_qualified_name(input.LT(1));}
         // TODO: review temp predicate
         (((lookup_simple_template_id | IDENT) SCOPE) => nested_name_specifier)? 
-        simple_template_id_or_IDENT                                             {action.class_name(input.LT(0));}
+        simple_template_id_or_IDENT                                             //{action.class_name(input.LT(0));}
                                                                                 {action.end_optionally_qualified_name(input.LT(0));}
     ;
 

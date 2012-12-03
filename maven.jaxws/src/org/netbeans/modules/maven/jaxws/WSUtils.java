@@ -1024,11 +1024,16 @@ public class WSUtils {
     }
 
     static boolean isInSourceGroup(Project prj, String serviceClass) {
-
-        SourceGroup[] sourceGroups = ProjectUtils.getSources(prj).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
+        if ( serviceClass == null ){
+            return false;
+        }
+        String resource = serviceClass.replace('.', '/') + ".java"; //NOI18N
+        SourceGroup[] sourceGroups = ProjectUtils.getSources(prj).getSourceGroups(
+                JavaProjectConstants.SOURCES_TYPE_JAVA);
         for (SourceGroup group : sourceGroups) {
-            String resource = serviceClass.replace('.', '/') + ".java"; //NOI18N
-            if (group.getRootFolder().getFileObject(resource) != null) {
+            if (group.getRootFolder() != null && group.getRootFolder().
+                    getFileObject(resource) != null) 
+            {
                 return true;
             }
 

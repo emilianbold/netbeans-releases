@@ -151,10 +151,12 @@ public class ASTUtils {
             FieldNode fieldNode = (FieldNode) node;
             return getNextIdentifierByName(doc, fieldNode.getName(), start);
         } else if (node instanceof ClassNode) {
-            // classnode for script does not have real declaration and thus
-            // location
-            if (((ClassNode) node).isScript()) {
-                return OffsetRange.NONE;
+            final ClassNode classNode = (ClassNode) node;
+            int start = getOffset(doc, lineNumber, columnNumber);
+
+            // classnode for script does not have real declaration and thus location
+            if (classNode.isScript()) {
+                return getNextIdentifierByName(doc, classNode.getNameWithoutPackage(), start);
             }
 
             // ok, here we have to move the Range to the first character
@@ -170,9 +172,7 @@ public class ASTUtils {
                 // in the sourcefile. So take doc.getLength() as maximum.
 
                 int docLength = doc.getLength();
-                int start = getOffset(doc, lineNumber, columnNumber);
                 int limit = getLimit(node, doc, docLength);
-
 
                 try {
                     // we have to really search for class keyword other keyword
@@ -196,8 +196,6 @@ public class ASTUtils {
                 if (start < 0) {
                     start = 0;
                 }
-
-                ClassNode classNode = (ClassNode) node;
 
                 int end = start + classNode.getNameWithoutPackage().length();
 

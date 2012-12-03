@@ -816,8 +816,6 @@ public class CssCompletion implements CodeCompletionHandler {
             case selectorsGroup:
             case combinator:
             case selector:
-            case body:
-            case imports:
                 //complete selector list without prefix in selector list e.g. BODY, | { ... }
                 completionProposals.addAll(completeHtmlSelectors(completionContext, prefix, caretOffset));
                 break;

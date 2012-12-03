@@ -86,7 +86,7 @@ public class ManagedTypeProvider implements IManagedTypeProvider {
     @Override
     public Iterable<IEntity> abstractSchemaTypes() {
         initializeManagedTypes();
-        Collection<IEntity> abstractSchemaTypes = null;
+        Collection<IEntity> abstractSchemaTypes;
         ManagedTypeVisitor visitor = new ManagedTypeVisitor();
         for (IManagedType managedType : managedTypes.values()) {
             managedType.accept(visitor);
@@ -128,8 +128,12 @@ public class ManagedTypeProvider implements IManagedTypeProvider {
     @Override
     public IJPAVersion getVersion() {
         String version = PersistenceUtils.getJPAVersion(project);
-        if(version == null || version.startsWith("1"))return IJPAVersion.VERSION_2_0;
-        else return IJPAVersion.VERSION_1_0;
+        if(version == null || version.startsWith("2")) {
+            return IJPAVersion.VERSION_2_0;
+        }
+        else {
+            return IJPAVersion.VERSION_1_0;
+        }
     }
 
     @Override

@@ -60,6 +60,7 @@ import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle.Messages;
+import static org.netbeans.modules.maven.j2ee.newproject.Bundle.*;
 
 /**
  * This class is responsible for creating Ejb, Web and App client projects
@@ -71,29 +72,31 @@ public class EEWizardIterator extends BaseWizardIterator {
     /** value is one of Profile instance */
     public static final String PROP_EE_LEVEL = "eeLevel"; // NOI18N
     private J2eeModule.Type projectType;
+    private final String titleName;
     
     
-    private EEWizardIterator(J2eeModule.Type projectType) {
+    private EEWizardIterator(J2eeModule.Type projectType, String titleName) {
         this.projectType = projectType;
+        this.titleName = titleName;
     }
     
 
     @TemplateRegistration(folder=ArchetypeWizards.TEMPLATE_FOLDER, position=200, displayName="#template.WebApp", iconBase="org/netbeans/modules/maven/j2ee/resources/maven_web_application_16.png", description="../resources/WebAppDescription.html")
     @Messages("template.WebApp=Web Application")
     public static EEWizardIterator createWebAppIterator() {
-        return new EEWizardIterator(J2eeModule.Type.WAR);
+        return new EEWizardIterator(J2eeModule.Type.WAR, template_WebApp());
     }
 
     @TemplateRegistration(folder=ArchetypeWizards.TEMPLATE_FOLDER, position=250, displayName="#template.EJB", iconBase="org/netbeans/modules/maven/j2ee/resources/maven_ejb_module_16.png", description="../resources/EjbDescription.html")
     @Messages("template.EJB=EJB Module")
     public static EEWizardIterator createEJBIterator() {
-        return new EEWizardIterator(J2eeModule.Type.EJB);
+        return new EEWizardIterator(J2eeModule.Type.EJB, template_EJB());
     }
     
     @TemplateRegistration(folder=ArchetypeWizards.TEMPLATE_FOLDER, position=277, displayName="#template.APPCLIENT", iconBase="org/netbeans/modules/maven/j2ee/resources/appclient.png", description="../resources/AppClientDescription.html")
     @Messages("template.APPCLIENT=Enterprise Application Client")
     public static EEWizardIterator createAppClientIterator() {
-        return new EEWizardIterator(J2eeModule.Type.CAR);
+        return new EEWizardIterator(J2eeModule.Type.CAR, template_APPCLIENT());
     }
     
     @Override
@@ -120,6 +123,13 @@ public class EEWizardIterator extends BaseWizardIterator {
         
         return projects;
     }
+
+    @Override
+    public void initialize(WizardDescriptor wiz) {
+        super.initialize(wiz);
+        wiz.putProperty ("NewProjectWizard_Title", titleName);
+    }
+    
 
     @Override
     protected WizardDescriptor.Panel[] createPanels(ValidationGroup vg) {

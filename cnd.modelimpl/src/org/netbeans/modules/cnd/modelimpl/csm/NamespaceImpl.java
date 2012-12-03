@@ -701,7 +701,7 @@ public class NamespaceImpl implements CsmNamespace, MutableDeclarationsContainer
         assert this.qualifiedName != null;
         PersistentUtils.writeUTF(qualifiedName, output);
 
-        theFactory.writeStringToUIDMap(this.nestedNamespaces, output, true);
+        theFactory.writeStringToUIDMap(this.nestedNamespaces, output, false);
         ProjectComponent.writeKey(this.declarationsSorageKey, output);
         try {
             nsDefinitionsLock.readLock().lock();

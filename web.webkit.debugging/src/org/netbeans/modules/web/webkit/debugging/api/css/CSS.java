@@ -43,7 +43,9 @@ package org.netbeans.modules.web.webkit.debugging.api.css;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicBoolean;
 import org.json.simple.JSONArray;
@@ -178,23 +180,60 @@ public class CSS {
 
     /** Determines whether styleSheetChanged event was fired. */
     private AtomicBoolean styleSheetChanged = new AtomicBoolean();
+    /**
+     * Supported CSS properties. A mapping from a property name
+     * to information about the property.
+     */
+    private Map<String,PropertyInfo> supportedProperties;
 
     /**
-     * Returns names of supported CSS properties.
+     * Returns information about the supported CSS properties.
      *
-     * @return names of supported CSS properties.
+     * @return a mapping from a property name to information about the property.
      */
-    public List<String> getSupportedCSSProperties() {
-        List<String> list = new ArrayList<String>();
-        Response response = transport.sendBlockingCommand(new Command("CSS.getSupportedCSSProperties")); // NOI18N
-        if (response != null) {
-            JSONObject result = response.getResult();
-            if (result != null) {
-                JSONArray properties = (JSONArray)result.get("cssProperties"); // NOI18N
-                list.addAll(properties);
+    public Map<String,PropertyInfo> getSupportedCSSProperties() {
+        if (supportedProperties == null) {
+            Map<String,PropertyInfo> map = new HashMap<String,PropertyInfo>();
+            Response response = transport.sendBlockingCommand(new Command("CSS.getSupportedCSSProperties")); // NOI18N
+            if (response != null) {
+                JSONObject result = response.getResult();
+                if (result != null) {
+                    JSONArray properties = (JSONArray)result.get("cssProperties"); // NOI18N
+                    for (Object o : properties) {
+                        PropertyInfo info;
+                        if (o instanceof String) {
+                            info = new PropertyInfo((String)o);
+                        } else {
+                            info = new PropertyInfo((JSONObject)o);
+                        }
+                        map.put(info.getName(), info);
+                    }
+                    supportedProperties = map;
+                }
             }
         }
-        return list;
+        return supportedProperties;
+    }
+
+    /**
+     * Ensures that the given node will have the specified pseudo-classes
+     * whenever its style is computed by the browser.
+     *
+     * @param node node for which to force the pseudo-classes.
+     * @param forcedPseudoClasses pseudo-classes to force.
+     * @since 1.5
+     */
+    public void forcePseudoState(Node node, PseudoClass[] forcedPseudoClasses) {
+        JSONObject params = new JSONObject();
+        params.put("nodeId", node.getNodeId()); // NOI18N
+        JSONArray pseudoClasses = new JSONArray();
+        if (forcedPseudoClasses != null) {
+            for (PseudoClass pseudoClass : forcedPseudoClasses) {
+                pseudoClasses.add(pseudoClass.getCode());
+            }
+        }
+        params.put("forcedPseudoClasses", pseudoClasses); // NOI18N
+        transport.sendCommand(new Command("CSS.forcePseudoState", params)); // NOI18N
     }
 
     /**

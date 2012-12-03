@@ -56,6 +56,7 @@ import org.netbeans.modules.masterfs.filebasedfs.FileUtilTest.TestFileChangeList
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
 
 /**
  * 
@@ -157,4 +158,20 @@ public class FileObjTest extends NbTestCase {
         assertEquals("Only one change event should be fired.", 1, listener.check(EventType.CHANGED));
     }
 
+    public void testReadOnlyFile() throws Exception {
+        clearWorkDir();
+        File f = new File(getWorkDir(), "read-only.txt");
+        f.createNewFile();
+        FileObject fo = FileUtil.toFileObject(f);
+        f.setWritable(false);
+        try {
+            OutputStream os = fo.getOutputStream();
+            fail("Can't get the output stream for read-only file: " + os);
+        } catch (IOException ex) {
+            String msg = Exceptions.findLocalizedMessage(ex);
+            assertNotNull("The exception comes with a localized message", msg);
+        } finally {
+            f.setWritable(true);
+        }
+    }
 }

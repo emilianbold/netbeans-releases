@@ -364,8 +364,11 @@ public class JsfHtmlExtension extends HtmlExtension {
             //filter the items according to the prefix
             Iterator<CompletionItem> itr = items.iterator();
             while (itr.hasNext()) {
-                if (!CharSequenceUtilities.startsWith(itr.next().getInsertPrefix(), context.getPrefix())) {
-                    itr.remove();
+                CharSequence insertPrefix = itr.next().getInsertPrefix();
+                if(insertPrefix != null) {
+                    if (!CharSequenceUtilities.startsWith(insertPrefix, context.getPrefix())) {
+                        itr.remove();
+                    }
                 }
             }
         }

@@ -117,7 +117,7 @@ public class StringTableCellEditor extends ResultSetTableCellEditor implements T
             }
         };
         panel.add(c);
-        if (isGtk) {
+        if (suppressEditorBorder) {
             c.setBorder(BorderFactory.createEmptyBorder());
         }
         panel.add(customEditorButton, BorderLayout.EAST);

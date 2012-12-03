@@ -48,6 +48,7 @@ import java.lang.ref.WeakReference;
 import java.util.*;
 import org.netbeans.modules.parsing.impl.indexing.IndexFactoryImpl;
 import org.netbeans.modules.parsing.lucene.support.DocumentIndex;
+import org.netbeans.modules.parsing.lucene.support.DocumentIndexCache;
 import org.netbeans.modules.parsing.lucene.support.Index.Status;
 import org.netbeans.modules.parsing.lucene.support.IndexDocument;
 import org.netbeans.modules.parsing.lucene.support.Queries;
@@ -76,7 +77,7 @@ public class TestIndexFactoryImpl implements IndexFactoryImpl {
         }
 
         public @Override LayeredDocumentIndex createIndex(Context ctx) throws IOException {
-            DocumentIndex ii = delegate.createIndex(ctx);
+            DocumentIndex.Transactional ii = delegate.createIndex(ctx);
             Reference<LayeredDocumentIndex> ttiRef = indexImpls.get(ii);
             LayeredDocumentIndex lii = ttiRef != null ? ttiRef.get() : null;
             
@@ -88,6 +89,13 @@ public class TestIndexFactoryImpl implements IndexFactoryImpl {
             }
             return lii;
         }
+
+        @Override
+        public DocumentIndexCache getCache(Context ctx) throws IOException {
+            return null;
+        }
+
+
         
         public TestIndexImpl getTestIndex(FileObject indexFolder) throws IOException {
             DocumentIndex ii = delegate.getIndex(indexFolder);
@@ -104,9 +112,9 @@ public class TestIndexFactoryImpl implements IndexFactoryImpl {
         private final Map<DocumentIndex, Reference<TestIndexImpl>> testImpls = new WeakHashMap<DocumentIndex, Reference<TestIndexImpl>>();
         private final Map<DocumentIndex, Reference<LayeredDocumentIndex>> indexImpls = new WeakHashMap<DocumentIndex, Reference<LayeredDocumentIndex>>();
 
-    public static final class TestIndexImpl implements DocumentIndex {
+    public static final class TestIndexImpl implements DocumentIndex.Transactional {
 
-        public TestIndexImpl(DocumentIndex original) {
+        public TestIndexImpl(DocumentIndex.Transactional original) {
             this.original = original;
         }
 
@@ -153,6 +161,21 @@ public class TestIndexFactoryImpl implements IndexFactoryImpl {
         }
 
         @Override
+        public void commit() throws IOException {
+            original.commit();
+        }
+
+        @Override
+        public void rollback() throws IOException {
+            original.rollback();
+        }
+
+        @Override
+        public void txStore() throws IOException {
+            original.txStore();
+        }
+
+        @Override
         public Collection<? extends IndexDocument> query(String fieldName, String value, Queries.QueryKind kind, String... fieldsToLoad) throws IOException, InterruptedException {
             return original.query(fieldName, value, kind, fieldsToLoad);
         }
@@ -184,7 +207,7 @@ public class TestIndexFactoryImpl implements IndexFactoryImpl {
         // private implementation
         // --------------------------------------------------------------------
 
-        private final DocumentIndex original;
+        private final DocumentIndex.Transactional original;
         public Map<String, List<TestIndexDocumentImpl>> documents = new HashMap<String, List<TestIndexDocumentImpl>>();
         
     } // End of TestIndexImpl class

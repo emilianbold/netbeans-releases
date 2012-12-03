@@ -48,6 +48,7 @@ import java.io.IOException;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
@@ -57,6 +58,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.MissingResourceException;
 import java.util.Set;
+import java.util.concurrent.Callable;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.Action;
@@ -67,9 +69,11 @@ import org.openide.ErrorManager;
 import org.openide.cookies.InstanceCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
+import org.openide.filesystems.FileSystem.AtomicAction;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.loaders.DataShadow;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
@@ -80,7 +84,7 @@ import org.openide.util.NbBundle;
  * @author Jan Jancura
  */
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.core.options.keymap.spi.KeymapManager.class)
-public class LayersBridge extends KeymapManager {
+public class LayersBridge extends KeymapManager implements KeymapManager.WithRevert {
     
     /**
      * Extension for DataObjects, which cause an action to be removed from the parent (general) keymap.
@@ -100,7 +104,7 @@ public class LayersBridge extends KeymapManager {
     /** Map (String (folderName) > Set (GlobalAction)). */
     private Map<String, Set<ShortcutAction>> categoryToActions;
     /** Set (GlobalAction). */
-    private Set<GlobalAction> actions = new HashSet<GlobalAction> ();
+    private Map<GlobalAction, GlobalAction> actions = new HashMap<GlobalAction, GlobalAction> ();
     
     public LayersBridge() {
         super(LAYERS_BRIDGE);
@@ -163,10 +167,10 @@ public class LayersBridge extends KeymapManager {
                 initActions ((DataFolder) dataObject, name, category);
                 continue;
             }
-            GlobalAction action = createAction (dataObject, name);
+            GlobalAction action = createAction (dataObject, name, dataObject.getPrimaryFile().getName(), false);
             if (action == null) continue;
-            if (actions.contains (action)) continue;
-            actions.add (action);
+            if (actions.containsKey (action)) continue;
+            actions.put (action, action);
             
             // add to actions (Map (String (folderName) > Set (GlobalAction))).
             Set<ShortcutAction> a = categoryToActions.get (name);
@@ -313,9 +317,11 @@ public class LayersBridge extends KeymapManager {
     public synchronized Map<ShortcutAction, Set<String>> getDefaultKeymap (String profile) {
         if (!keymapDefaults.containsKey (profile)) {
             DataFolder root = getRootFolder (SHORTCUTS_FOLDER, null);
-            Map<ShortcutAction, Set<String>> m = readKeymap (root);
+            Map<ShortcutAction, Set<String>> m = readKeymap (root, true);
+            overrideWithKeyMap(m, readOriginalKeymap(root), profile);
             root = getRootFolder (KEYMAPS_FOLDER, profile);
-            overrideWithKeyMap(m, readKeymap(root), profile);
+            overrideWithKeyMap(m, readKeymap(root, true), profile);
+            overrideWithKeyMap(m, readOriginalKeymap(root), profile);
             m.remove(REMOVED);
             keymapDefaults.put (profile, m);
         }
@@ -336,10 +342,156 @@ public class LayersBridge extends KeymapManager {
         }
     };
     
+    public void revertProfile(final String profile) throws IOException {
+        final DataFolder root = getRootFolder (KEYMAPS_FOLDER, profile);
+        if (root == null) {
+            return;
+        }
+        final Collection<Callable> reverts = (Collection<Callable>)root.getPrimaryFile().getAttribute("revealEntries");
+        root.getPrimaryFile().getFileSystem().runAtomicAction(new AtomicAction() {
+            public void run() throws IOException {
+                for (Callable c : reverts) {
+                    try {
+                        c.call();
+                    } catch (IOException ex) {
+                        throw ex;
+                    } catch (Exception ex) {
+                        throw new IOException("Unexpected error", ex);
+                    }
+                }
+                FileObject[] ch = root.getPrimaryFile().getChildren();
+                for (FileObject f : ch) {
+                    if (f.canRevert()) {
+                        f.revert();
+                    }
+                }
+                //root.getPrimaryFile().revert();
+                root.getPrimaryFile().refresh();
+            }
+        });
+        keymaps.remove(profile);
+    }
+    
+    /** 
+     * Reads original keymap entries, which are now replaced or deleted by the user's
+     * writable layer.
+     * 
+     * @param root
+     * @return 
+     */
+    private Map<ShortcutAction, Set<String>> readOriginalKeymap(DataFolder root) {
+        Map<ShortcutAction, Set<String>> keymap = 
+                new HashMap<ShortcutAction, Set<String>> ();
+        if (root == null) return keymap;
+
+        FileObject fo = root.getPrimaryFile();
+        Collection<FileObject> entries = (Collection<FileObject>)fo.getAttribute("revealEntries");
+        Set<String> names = new HashSet<String>();
+        for (FileObject f : entries) {
+            try {
+                GlobalAction action;
+                
+                names.add(f.getName());
+                if (EXT_REMOVED.equals(f.getExt()) && FileUtil.findBrother(f, "shadow") == null) {
+                    action = REMOVED;
+                } else {
+                    FileObject orig = DataShadow.findOriginal(f);
+                    if (orig == null) {
+                        continue;
+                    }
+                    DataObject dataObject = DataObject.find(orig);
+
+                    if (dataObject instanceof DataFolder) continue;
+                    action = createActionWithLookup (dataObject, null, f.getName(), false);
+                }
+                if (action == null) continue;
+                String shortcut = f.getName();
+
+                LOG.log(Level.FINEST, "Overriden action {0}: {1}, by {2}", new Object[] {
+                    action.getId(),
+                    shortcut,
+                    f.getPath()
+                });
+                Set<String> s = keymap.get (action);
+                if (s == null) {
+                    s = new HashSet<String> ();
+                    keymap.put (action, s);
+                }
+                s.add (shortcut);
+            } catch (IOException ex) {
+                // handle somehow
+            }
+        }
+        return keymap;
+    }
+    
+    public void revertActions(String profile, Collection<ShortcutAction> actions) throws IOException {
+        Map<ShortcutAction, Set<String>> defaultKeyMap = getDefaultKeymap(profile);
+        Map<ShortcutAction, Set<String>> keyMap = getKeymap(profile);
+        
+        DataFolder root = getRootFolder (KEYMAPS_FOLDER, profile);
+        if (root == null) {
+            return;
+        }
+        final FileObject fo = root.getPrimaryFile();
+        final Collection<FileObject> entries = (Collection<FileObject>)fo.getAttribute("revealEntries");
+        final Set<String> keys = new HashSet<String>();
+        final Set<String> discard = new HashSet<String>();
+        
+        for (ShortcutAction ac : actions) {
+            Set<String> sc = defaultKeyMap.get(ac);
+            if (sc != null) {
+                keys.addAll(sc);
+            }
+            sc = keyMap.get(ac);
+            if (sc != null) {
+                discard.addAll(sc);
+            }
+        }
+
+        fo.getFileSystem().runAtomicAction(new AtomicAction() {
+            public void run() throws IOException {
+                if (keys != null) {
+                    for (FileObject f : entries) {
+                        if (keys.remove(f.getName())) {
+                            try {
+                                ((Callable)f).call();
+                            } catch (IOException ex) {
+                                throw ex;
+                            } catch (Exception ex) {
+                                throw new IOException("Cannot revert", ex);
+                            }
+                            
+                        }
+                    }
+                    // for remaining keys, try to discover the .remove mask
+                    for (Iterator<String> it = keys.iterator(); it.hasNext(); ) {
+                        String s = it.next();
+                        FileObject mask = fo.getFileObject(s, "removed");
+                        if (mask != null) {
+                            mask.delete();
+                            it.remove();
+                        }
+                    }
+                }
+                for (String s : discard) {
+                    FileObject ex = fo.getFileObject(s, "shadow");
+                    if (ex != null) {
+                        ex.delete();
+                    }
+                }
+            }
+        });
+    }
+    
+    private Map<ShortcutAction, Set<String>> readKeymap (DataFolder root) {
+        return readKeymap(root, false);
+    }
+    
     /**
      * Read keymap from one folder Map (GlobalAction > Set (String (shortcut))).
      */
-    private Map<ShortcutAction, Set<String>> readKeymap (DataFolder root) {
+    private Map<ShortcutAction, Set<String>> readKeymap (DataFolder root, boolean ignoreUserRemoves) {
         LOG.log(Level.FINEST, "Reading keymap from: {0}", root);
         Map<ShortcutAction, Set<String>> keymap = 
                 new HashMap<ShortcutAction, Set<String>> ();
@@ -348,7 +500,7 @@ public class LayersBridge extends KeymapManager {
         while (en.hasMoreElements ()) {
             DataObject dataObject = en.nextElement ();
             if (dataObject instanceof DataFolder) continue;
-            GlobalAction action = createAction (dataObject, null);
+            GlobalAction action = createActionWithLookup (dataObject, null, dataObject.getPrimaryFile().getName(), ignoreUserRemoves);
             if (action == null) continue;
             String shortcut = dataObject.getPrimaryFile().getName();
             
@@ -421,7 +573,7 @@ public class LayersBridge extends KeymapManager {
             }
             GlobalAction a1 = (GlobalAction) shortcutToAction.get (dataObject.getName ());
             if (a1 != null) {
-                GlobalAction action = createAction (dataObject, null);
+                GlobalAction action = createAction (dataObject, null, dataObject.getPrimaryFile().getName(), false);
                 if (action == null) {
                     LOG.log(Level.FINEST, "Broken action shortcut will be removed: {0}, will replace by {1}", new Object[] { dataObject.getName(), a1.getId() });
                 } else if (action.equals (a1)) {
@@ -440,6 +592,7 @@ public class LayersBridge extends KeymapManager {
             }
         }
         
+        Set<String> defaultNames = new HashSet<String>();
         // 4) add new shortcuts
         en = defaultMap.children();
         while (en.hasMoreElements()) {
@@ -448,10 +601,10 @@ public class LayersBridge extends KeymapManager {
             if (ga == null) {
                 continue;
             }
-            GlobalAction action = createAction(dataObject, null);
+            GlobalAction action = createAction(dataObject, null, dataObject.getPrimaryFile().getName(), false);
             if (ga.equals(action)) {
                 LOG.log(Level.FINEST, "Leaving default shortcut: {0}", dataObject.getName());
-                shortcutToAction.remove(dataObject.getName());
+                defaultNames.add(dataObject.getName());
             }
         }
         
@@ -466,13 +619,16 @@ public class LayersBridge extends KeymapManager {
                      System.out.println ("No original DataObject specified! Not possible to create shadow1. " + action);
                  continue;
             }
+            FileObject f = targetDir.getFileObject(shortcut, EXT_REMOVED);
             try {
-                DataShadow.create (folder, shortcut, dataObject);
-                // remove the '.remove' file, if it exists:
-                FileObject f = targetDir.getFileObject(shortcut, EXT_REMOVED);
                 if (f != null) {
                     f.delete();
                 }
+                if (defaultNames.contains(shortcut)) {
+                    continue;
+                }
+                DataShadow.create (folder, shortcut, dataObject);
+                // remove the '.remove' file, if it exists:
             } catch (IOException ex) {
                 ex.printStackTrace ();
                 continue;
@@ -502,6 +658,19 @@ public class LayersBridge extends KeymapManager {
         }
         
     }    
+    
+    private static DataFolder getExistingProfile(String profile) {
+        FileObject root = FileUtil.getConfigRoot ();
+        FileObject fo1 = root.getFileObject(KEYMAPS_FOLDER);
+        if (fo1 == null) {
+            return null;
+        }
+        FileObject fo2 = fo1.getFileObject(profile);
+        if (fo2 == null) {
+            return null;
+        }
+        return DataFolder.findFolder(fo2);
+    }
 
     private static DataFolder getRootFolder (String name1, String name2) {
         FileObject root = FileUtil.getConfigRoot ();
@@ -519,15 +688,27 @@ public class LayersBridge extends KeymapManager {
             return null;
         }
     }
+    
+    private GlobalAction createActionWithLookup(DataObject dataObject, String prefix, String name, boolean ignoreUserRemoves) {
+        GlobalAction a = createAction(dataObject, prefix, name, ignoreUserRemoves);
+        if (a == null) {
+            return null;
+        }
+        GlobalAction b = actions.get(a);
+        return b == null ? a : b;
+    }
 
     /**
      * Returns instance of GlobalAction encapsulating action, or null.
      */
-    private GlobalAction createAction (DataObject dataObject, String prefix) {
+    private GlobalAction createAction (DataObject dataObject, String prefix, String name, boolean ignoreUserRemoves) {
         InstanceCookie ic = dataObject.getCookie(InstanceCookie.class);
         // handle any non-IC file as instruction to remove the action
+        FileObject pf = dataObject.getPrimaryFile();
+        if (ignoreUserRemoves && pf.canRevert()) {
+            return null;
+        }
         if (ic == null) {
-            FileObject pf = dataObject.getPrimaryFile();
             if (!EXT_REMOVED.equals(pf.getExt())) {
                 LOG.log(Level.WARNING, "Invalid shortcut: {0}", dataObject);
                 return null;
@@ -543,7 +724,7 @@ public class LayersBridge extends KeymapManager {
             Object action = ic.instanceCreate ();
             if (action == null) return null;
             if (!(action instanceof Action)) return null;
-            return createAction((Action) action, prefix, dataObject.getPrimaryFile().getName());
+            return createAction((Action) action, prefix, name);
         } catch (Exception ex) {
             ex.printStackTrace ();
             return null;
@@ -611,17 +792,49 @@ public class LayersBridge extends KeymapManager {
     public void refreshActions() {
         refreshKeymapNames();
     }
-
+    
+    private String cachedProfile;
+    
     public String getCurrentProfile() {
-        return null;
+        return cachedProfile;
     }
 
     public void setCurrentProfile(String profileName) {
+        // cached mainly because of tests; the physical storage is implemented by EditorsBridge.
+        this.cachedProfile = profileName;
     }
 
+    /**
+     * Custom profile is present if:
+     * a/ the profile's folder can be reverted (=> was materialized on writable layer)
+     * b/ there's no "reveal" entry for it in its parent => was not present
+     * @param profileName
+     * @return C
+     */
     public boolean isCustomProfile(String profileName) {
-        // TODO:
-        return false;
+        DataFolder profileFolder = getExistingProfile(profileName);
+        if (profileFolder == null) {
+            return true;
+        }
+        FileObject f = profileFolder.getPrimaryFile();
+        if (!f.canRevert()) {
+            return false;
+        }
+        FileObject parentF = profileFolder.getPrimaryFile().getParent();
+        if (parentF == null) {
+            // very very unlikely
+            return true;
+        }
+        Collection<FileObject> col = (Collection<FileObject>)parentF.getAttribute("revealEntries");
+        if (col == null) {
+            return true;
+        }
+        for (FileObject f2 : col) {
+            if (f2.getNameExt().equals(profileName)) {
+                return false;
+            }
+        }
+        return true;
     }
     
     /* package */ static String getOrigActionClass(ShortcutAction sa) {
