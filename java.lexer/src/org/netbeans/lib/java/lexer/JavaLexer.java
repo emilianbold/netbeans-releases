@@ -333,22 +333,35 @@ public class JavaLexer implements Lexer<JavaTokenId> {
 		    c = input.read();
                     if (c == 'x' || c == 'X') { // in hexadecimal (possibly floating-point) literal
                         boolean inFraction = false;
+                        boolean afterDigit = false;
                         while (true) {
                             switch (input.read()) {
                                 case '0': case '1': case '2': case '3': case '4':
                                 case '5': case '6': case '7': case '8': case '9':
                                 case 'a': case 'b': case 'c': case 'd': case 'e': case 'f':
                                 case 'A': case 'B': case 'C': case 'D': case 'E': case 'F':
+                                    afterDigit = true;
                                     break;
                                 case '.': // hex float literal
                                     if (!inFraction) {
                                         inFraction = true;
+                                        afterDigit = false;
                                     } else { // two dots in the float literal
                                         return token(JavaTokenId.FLOAT_LITERAL_INVALID);
                                     }
                                     break;
                                 case 'p': case 'P': // binary exponent
                                     return finishFloatExponent();
+                                case 'l': case 'L':
+                                    return token(JavaTokenId.LONG_LITERAL);
+                                case '_':
+                                    if (this.version >= 7 && afterDigit) {
+                                        int cc = input.read();
+                                        input.backup(1);
+                                        if (cc >= '0' && cc <= '9' || cc >= 'a' && cc <= 'f' || cc >= 'A' && cc <= 'F' || cc == '_') {
+                                            break;
+                                        }
+                                    }
                                 default:
                                     input.backup(1);
                                     // if float then before mandatory binary exponent => invalid
@@ -357,12 +370,22 @@ public class JavaLexer implements Lexer<JavaTokenId> {
                             }
                         } // end of while(true)
                     } else if (this.version >= 7 && (c == 'b' || c == 'B')) { // in binary literal
+                        boolean afterDigit = false;
                         while (true) {
                             switch (input.read()) {
                                 case '0': case '1':
+                                    afterDigit = true;
                                     break;
                                 case 'l': case 'L':
                                     return token(JavaTokenId.LONG_LITERAL);
+                                case '_':
+                                    if (afterDigit) {
+                                        int cc = input.read();
+                                        input.backup(1);
+                                        if (cc == '0' || cc == '1' || cc == '_') {
+                                            break;
+                                        }
+                                    }
                                 default:
                                     input.backup(1);
                                     return token(JavaTokenId.INT_LITERAL);
@@ -928,11 +951,13 @@ public class JavaLexer implements Lexer<JavaTokenId> {
     }
     
     private Token<JavaTokenId> finishNumberLiteral(int c, boolean inFraction) {
+        boolean afterDigit = true;
         while (true) {
             switch (c) {
                 case '.':
                     if (!inFraction) {
                         inFraction = true;
+                        afterDigit = false;
                     } else { // two dots in the literal
                         return token(JavaTokenId.FLOAT_LITERAL_INVALID);
                     }
@@ -945,9 +970,18 @@ public class JavaLexer implements Lexer<JavaTokenId> {
                     return token(JavaTokenId.FLOAT_LITERAL);
                 case '0': case '1': case '2': case '3': case '4':
                 case '5': case '6': case '7': case '8': case '9':
+                    afterDigit = true;
                     break;
                 case 'e': case 'E': // exponent part
                     return finishFloatExponent();
+                case '_':
+                    if (this.version >= 7 && afterDigit) {
+                        int cc = input.read();
+                        input.backup(1);
+                        if (cc >= '0' && cc <= '9' || cc == '_') {
+                            break;
+                        }
+                    }
                 default:
                     input.backup(1);
                     return token(inFraction ? JavaTokenId.DOUBLE_LITERAL
