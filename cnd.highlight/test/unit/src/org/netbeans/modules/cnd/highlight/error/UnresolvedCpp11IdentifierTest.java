@@ -113,6 +113,11 @@ public class UnresolvedCpp11IdentifierTest extends ErrorHighlightingBaseTestCase
         // Bug 220307 - C++11 parsing: Cannot parse member initializer for array
         performStaticTest("bug220307.cpp");
     }        
+
+    public void testBug222886() throws Exception {
+        // Bug 222886 - C++11: brace-Initialization 
+        performStaticTest("bug222886.cpp");
+    }        
     
     
     /////////////////////////////////////////////////////////////////////
