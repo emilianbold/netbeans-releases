@@ -60,7 +60,7 @@ import org.openide.util.Exceptions;
  *
  * @see AntProjectTypeStrategy
  * @see MavenProjectTypeStrategy
- * 
+ *
  * @author Martin Janicek
  */
 public abstract class ProjectTypeStrategy {
@@ -83,7 +83,7 @@ public abstract class ProjectTypeStrategy {
     protected abstract void createGroovySourceFolder();
 
     /**
-     * Enables to change the order of the given source groups
+     * Enables to change the order of the given source groups.
      *
      * @param groups source groups
      * @return regrouped source groups

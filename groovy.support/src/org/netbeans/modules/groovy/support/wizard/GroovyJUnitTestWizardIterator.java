@@ -126,7 +126,7 @@ import org.openide.util.NbBundle;
         description = "/org/netbeans/modules/groovy/support/resources/GroovyJUnitTest.html",
         category = "invisible")
 })
-public class GroovyJUnitTestWizardIterator extends GroovyFileWizardIterator {
+public final class GroovyJUnitTestWizardIterator extends GroovyFileWizardIterator {
 
     private static ResourceBundle bundle = NbBundle.getBundle(GroovyJUnitTestWizardIterator.class);
 
@@ -154,7 +154,7 @@ public class GroovyJUnitTestWizardIterator extends GroovyFileWizardIterator {
     public Set instantiate(ProgressHandle handle) throws IOException {
         handle.start();
         handle.progress(NbBundle.getMessage(GroovyJUnitTestWizardIterator.class, "LBL_NewGroovyFileWizardIterator_WizardProgress_CreatingFile")); // NOI18N
-        
+
         JUnit currentJUnit = strategy.findJUnitVersion();
         if (currentJUnit == JUnit.NOT_DECLARED) {
             JUnit jUnitToUse = askUserWhichJUnitToUse();
