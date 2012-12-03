@@ -52,6 +52,7 @@ import javax.swing.MenuElement;
 import javax.swing.JSeparator;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.HashMap;
 import java.util.List;
@@ -71,6 +72,7 @@ public class MenuChecker {
     public MenuChecker() {
     }
 
+    private static final String ALPHABET = "a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v,w,x,y,z";
 
     /** Open all menus in menubar
      * @param menu  to be visited */
@@ -241,6 +243,7 @@ public class MenuChecker {
         boolean printHeader = false;
         String title = menuName.isEmpty() ? "Main Menu" : menuName;
 
+        // build a map of used mnemos
         for (NbMenuItem item : list) {
             if (item.getMnemo() != 0) {
                 Character mnemonic = new Character(item.getMnemo());
@@ -254,15 +257,19 @@ public class MenuChecker {
                 noMnemoList.add(item);
             }
         }
+        String[] alpha = ALPHABET.split(",");
+        List<String> unusedMnemos = new ArrayList<String>(Arrays.asList(alpha));
 
+        // print collisions
         for (Map.Entry<Character, List<NbMenuItem>> entry : mnemoMap.entrySet()) {
             List<NbMenuItem> collisionList = entry.getValue();
+            unusedMnemos.remove(Character.toString(entry.getKey()).toLowerCase());
             if (collisionList.size() > 1) {
                 printHeader = true;
-                collisions.append("\n\n Mnemonic Collision in " + title + " menu - mnemonic = " + entry.getKey());
-                collisions.append("\n Menu items: ");
+                collisions.append("\n\n Mnemonic Collision mnemonic : ").append(entry.getKey());
+                collisions.append(", items: ");
                 for (NbMenuItem nbMenuItem : collisionList) {
-                    collisions.append(menuName + "/" + nbMenuItem.getName());
+                    collisions.append(nbMenuItem.getName());
                     if (nbMenuItem != collisionList.get(collisionList.size() - 1)) {
                         collisions.append(", ");
                     }
@@ -270,17 +277,25 @@ public class MenuChecker {
 
             }
         }
+
+        // print missing mnemos
         if (!noMnemoList.isEmpty()) {
             printHeader = true;
             collisions.append("\n\n No Mnemonic set for: " );
             for (NbMenuItem nbMenuItem : noMnemoList) {
-                collisions.append(menuName + "/" + nbMenuItem.getName());
-                if (nbMenuItem != noMnemoList.get(noMnemoList.size() - 1)) {
-                    collisions.append(", ");
-                }
+                collisions.append("\n\t").append(nbMenuItem.getName());
+                collisions.append(" - suggestions: ").append(getMnemoSuggestion(nbMenuItem.getName(), unusedMnemos));
             }
         }
         if (printHeader) {
+            collisions.append("\n Available mnemonics: ");
+            for (Iterator<String> it = unusedMnemos.iterator(); it.hasNext();) {
+                String mnemo = it.next();
+                collisions.append(mnemo);
+                if (it.hasNext()) {
+                    collisions.append(", ");
+                }
+            }
             collisions.insert(0, "\n #################### " + title + " menu mnemonic test ####################");
             collisions.insert(0, "\n\n ==============================================================================");
         }
@@ -291,6 +306,44 @@ public class MenuChecker {
             }
         }
         return collisions;
+    }
+
+    private static String getMnemoSuggestion(String menuName, List<String> unusedMnemos) {
+        ArrayList<String> unusedMnemosCopy = new ArrayList<String>(unusedMnemos);
+        String mainSuggestion = "";
+        String minorSuggestion = "";
+        String[] words = menuName.split(" ");
+        for (int i = 0; i < words.length; i++) {
+            if (words[i].isEmpty()) {
+                continue;
+            }
+
+            String letter = Character.toString(words[i].charAt(0)).toLowerCase();
+            if (unusedMnemosCopy.remove(letter)) {
+                if (!mainSuggestion.isEmpty()) {
+                    mainSuggestion += ", ";
+                }
+                mainSuggestion += letter.toUpperCase();
+            }
+
+        }
+
+        for (int i = 0; i < words.length; i++) {
+            if (words[i].isEmpty()) {
+                continue;
+            }
+            for (int j = 1; j < words[i].length(); j++) {
+                String letter = Character.toString(words[i].charAt(j)).toLowerCase();
+                if (unusedMnemosCopy.remove(letter)) {
+                    if (!minorSuggestion.isEmpty()) {
+                        minorSuggestion += ", ";
+                    }
+                    minorSuggestion += letter;
+                }
+            }
+        }
+        String suggestion = mainSuggestion.isEmpty() ? minorSuggestion :  mainSuggestion + ", " + minorSuggestion;
+        return suggestion.isEmpty() ? "(none)" : suggestion;
     }
 
     public static String checkShortCutCollision() {
