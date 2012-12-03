@@ -41,9 +41,11 @@
  */
 package org.netbeans.modules.openide.nodes;
 
+import java.beans.Introspector;
 import java.beans.PropertyEditorManager;
 import java.lang.reflect.Array;
 import java.util.Arrays;
+import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -59,21 +61,92 @@ import org.openide.util.LookupListener;
  * 
  * @author Jan Horvath <jhorvath@netbeans.org>
  */
-public final class PERegistrationSupport {
+public final class NodesRegistrationSupport {
     
-    static final String LOOKUP_PATH = "Services/PropertyEditorManager"; //NOI18N
+    static final String PE_LOOKUP_PATH = "Services/PropertyEditorManager"; //NOI18N
+    static final String BEANINFO_LOOKUP_PATH = "Services/Introspector"; //NOI18N
     static final String PACKAGE = "packagePath"; //NOI18N
     static final String EDITOR_CLASS = "propertyEditorClass"; //NOI18N
     
-    static ClassReg clsReg = null;
-    static PkgReg pkgReg = null;
+    private static AbstractRegistrator clsReg = null;
+    private static AbstractRegistrator beanInfoReg = null;
+    private static AbstractRegistrator pkgReg = null;
+    
+    private static List<String> originalPath = null;
+    private static List<String> originalBeanInfoSearchPath = null;
     
     public static synchronized void registerPropertyEditors() {
+        
         if (clsReg == null) {
-            clsReg = new ClassReg();
+            clsReg = new AbstractRegistrator(PEClassRegistration.class) {
+
+                @Override
+                void register() {
+                    ClassLoader clsLoader = Thread.currentThread().getContextClassLoader();
+                    for (Iterator it = lookupResult.allInstances().iterator(); it.hasNext();) {
+                        PEClassRegistration clsReg = (PEClassRegistration) it.next();
+                        for (String type : clsReg.targetTypes) {
+                            try {
+                                Class<?> cls = getClassFromCanonicalName(type);
+                                Class<?> editorCls = Class.forName(clsReg.editorClass, true, clsLoader);
+                                PropertyEditorManager.registerEditor(cls, editorCls);
+                            } catch (ClassNotFoundException ex) {
+                                Exceptions.printStackTrace(ex);
+                            }
+                        }
+                    }
+                }
+
+                @Override
+                void init() {
+                }
+            };
         }
+        
         if (pkgReg == null) {
-            pkgReg = new PkgReg();
+            pkgReg = new AbstractRegistrator(PEPackageRegistration.class) {
+
+                @Override
+                void register() {
+                    Set<String> newPath = new LinkedHashSet<String> ();
+                    for (Iterator it = lookupResult.allInstances().iterator(); it.hasNext();) {
+                        PEPackageRegistration pkgReg = (PEPackageRegistration) it.next();
+                        newPath.add(pkgReg.pkg);
+                    }
+                    newPath.addAll(originalPath);
+                    PropertyEditorManager.setEditorSearchPath(newPath.toArray(new String[newPath.size()]));
+                }
+
+                @Override
+                void init() {
+                    if (originalPath == null) {
+                        originalPath = Arrays.asList(PropertyEditorManager.getEditorSearchPath());
+                    }
+                }
+            };
+        }
+        
+        if (beanInfoReg == null) {
+            beanInfoReg = new AbstractRegistrator(BeanInfoRegistration.class) {
+
+                @Override
+                void register() {
+                    Set<String> newPath = new LinkedHashSet<String> ();
+                    for (Iterator it = lookupResult.allInstances().iterator(); it.hasNext();) {
+                        BeanInfoRegistration biReg = (BeanInfoRegistration) it.next();
+                        newPath.add(biReg.searchPath);
+                    }
+                    newPath.addAll(originalBeanInfoSearchPath);
+                    Introspector.setBeanInfoSearchPath(newPath.toArray(new String[newPath.size()]));
+                }
+
+                @Override
+                void init() {
+                    if (originalBeanInfoSearchPath == null) {
+                    originalBeanInfoSearchPath = Arrays.asList(Introspector.getBeanInfoSearchPath());
+                    }
+                }
+            };
         }
     }
     
@@ -107,6 +180,11 @@ public final class PERegistrationSupport {
             targetTypes.add(targetType);
         }
         return new PEClassRegistration(editorClass, targetTypes);
+    }
+    
+    public static BeanInfoRegistration createBeanInfoRegistration(final Map attrs) {
+        String pkg = (String) attrs.get(PACKAGE);
+        return new BeanInfoRegistration(pkg);
     }
     
     /**
@@ -149,7 +227,7 @@ public final class PERegistrationSupport {
         }
         return result;
     }
-    
+
     public static class PEPackageRegistration {
         final String pkg;
 
@@ -168,64 +246,35 @@ public final class PERegistrationSupport {
         }
     }
     
-    private static final class ClassReg implements LookupListener {
-        Result<PEClassRegistration> lookupResult = null;
+    public static class BeanInfoRegistration {
+        final String searchPath;
         
-        ClassReg() {
-            lookupResult = Lookup.getDefault().lookupResult(PERegistrationSupport.PEClassRegistration.class);
+        BeanInfoRegistration(String searchPath) {
+            this.searchPath = searchPath;
+        }
+    }
+    
+    private static abstract class AbstractRegistrator implements LookupListener {
+        Result lookupResult;
+        private final Class cls;
+        
+        AbstractRegistrator(Class cls) {
+            this.cls = cls;
+            init();
+            lookupResult = Lookup.getDefault().lookupResult(cls);
             register();
             lookupResult.addLookupListener(this);
         }
-                
-        synchronized void register() {
-            lookupResult = Lookup.getDefault().lookupResult(PERegistrationSupport.PEClassRegistration.class);
-            ClassLoader clsLoader = Thread.currentThread().getContextClassLoader();
-            
-            for (PEClassRegistration clsReg : lookupResult.allInstances()) {
-                for (String type : clsReg.targetTypes) {
-                    try {
-                        Class<?> cls = getClassFromCanonicalName(type);
-                        Class<?> editorCls = Class.forName(clsReg.editorClass, true, clsLoader);
-                        PropertyEditorManager.registerEditor(cls, editorCls);
-                    } catch (ClassNotFoundException ex) {
-                        Exceptions.printStackTrace(ex);
-                    }
-                }
-            }
-        }
+        
+        abstract void register();
+        
+        abstract void init();
         
         @Override
         public void resultChanged(LookupEvent ev) {
+            lookupResult = Lookup.getDefault().lookupResult(cls);
             register();
         }
     }
     
-    static final class PkgReg implements LookupListener {
-        Result<PEPackageRegistration> pkgResult;
-        private static List<String> originalPath = null;
-        
-        PkgReg() {
-            if (originalPath == null) {
-                originalPath = Arrays.asList(PropertyEditorManager.getEditorSearchPath());
-            }
-            pkgResult = Lookup.getDefault().lookupResult(PERegistrationSupport.PEPackageRegistration.class);
-            register();
-            pkgResult.addLookupListener(this);
-        }
-        
-        synchronized void register() {
-            pkgResult = Lookup.getDefault().lookupResult(PERegistrationSupport.PEPackageRegistration.class);
-            Set<String> newPath = new LinkedHashSet<String> ();
-            for (PEPackageRegistration pkgReg : pkgResult.allInstances()) {
-                newPath.add(pkgReg.pkg);
-            }
-            newPath.addAll(originalPath);
-            PropertyEditorManager.setEditorSearchPath(newPath.toArray(new String[newPath.size()]));
-        }
-
-        @Override
-        public void resultChanged(LookupEvent ev) {
-            register();
-        }
-    }
 }

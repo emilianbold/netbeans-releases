@@ -56,7 +56,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.Action;
 import javax.swing.JPopupMenu;
-import org.netbeans.modules.openide.nodes.PERegistrationSupport;
+import org.netbeans.modules.openide.nodes.NodesRegistrationSupport;
 import org.openide.util.Enumerations;
 import org.openide.util.Lookup;
 import org.openide.util.Utilities;
@@ -468,7 +468,7 @@ public final class NodeOp extends Object {
      * @since 7.30
      */
     public static void registerPropertyEditors() {
-        PERegistrationSupport.registerPropertyEditors();
+        NodesRegistrationSupport.registerPropertyEditors();
     }
 
     /** more info in class javadoc.
