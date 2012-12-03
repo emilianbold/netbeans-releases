@@ -1,4 +1,4 @@
-var slideIndex = {
+var slideIndex222993 = {
     host: host,
     content: {
         title: "",
