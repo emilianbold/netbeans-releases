@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,77 +37,18 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.php.editor.model;
 
-package org.netbeans.modules.php.editor.model.impl;
-
-import java.util.List;
 import org.netbeans.modules.csl.api.OffsetRange;
-import org.netbeans.modules.php.editor.model.CodeMarker;
-import org.netbeans.modules.php.editor.model.OccurrenceHighlighter;
-import org.netbeans.modules.php.editor.model.Scope;
-import org.netbeans.modules.php.editor.model.nodes.ASTNodeInfo;
 
 /**
  *
- * @author Radek Matous
+ * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-class CodeMarkerImpl implements CodeMarker {
-    private OffsetRange range;
-    private Scope scope;
-    private FileScopeImpl fileScope;
+public interface OccurrenceHighlighter {
 
-    public CodeMarkerImpl(Scope scope , ASTNodeInfo nodeInfo, FileScopeImpl fileScope) {
-        this(scope, nodeInfo.getRange(), fileScope);
-    }
-
-    public CodeMarkerImpl(Scope scope , OffsetRange  range, FileScopeImpl fileScope) {
-         this.range = range;
-         this.scope = scope;
-         this.fileScope = fileScope;
-    }
-
-    @Override
-    public List<? extends CodeMarker> getAllMarkers() {
-        return fileScope.getMarkers();
-    }
-
-    @Override
-    public boolean containsInclusive(int offset) {
-        return getOffsetRange().containsInclusive(offset);
-    }
-
-    private OffsetRange getOffsetRange() {
-        return range;
-    }
-
-    @Override
-    public void highlight(OccurrenceHighlighter highlighter) {
-        highlighter.add(getOffsetRange());
-    }
-
-    /**
-     * @return the scopeName
-     */
-    Scope getScope() {
-        return scope;
-    }
-
-    public static final class InvisibleCodeMarker extends CodeMarkerImpl {
-
-        public InvisibleCodeMarker(Scope scope, ASTNodeInfo nodeInfo, FileScopeImpl fileScope) {
-            super(scope, nodeInfo, fileScope);
-        }
-
-        public InvisibleCodeMarker(Scope scope, OffsetRange range, FileScopeImpl fileScope) {
-            super(scope, range, fileScope);
-        }
-
-        @Override
-        public void highlight(OccurrenceHighlighter highlighter) {
-        }
-
-    }
+    void add(OffsetRange offsetRange);
 
 }

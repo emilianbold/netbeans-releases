@@ -85,7 +85,8 @@ public class NetworkErrorPanel extends JPanel {
         });
     }
 
-    private static String joinRequests(List<String> failedRequests) {
+    // unit tests
+    static String joinRequests(List<String> failedRequests) {
         StringBuilder sb = new StringBuilder(200);
         for (String request : failedRequests) {
             if (request == null) {
@@ -99,7 +100,8 @@ public class NetworkErrorPanel extends JPanel {
         return sb.toString();
     }
 
-    private static String decorateRequest(String request) {
+    // unit tests
+    static String decorateRequest(String request) {
         String original = request;
         if (request.length() > MAX_REQUEST_LENGTH) {
             request = request.substring(0, MAX_REQUEST_LENGTH) + "..."; // NOI18N

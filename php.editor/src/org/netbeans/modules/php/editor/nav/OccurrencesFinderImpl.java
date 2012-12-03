@@ -68,6 +68,7 @@ import org.netbeans.modules.php.editor.model.Model;
 import org.netbeans.modules.php.editor.model.Occurence;
 import org.netbeans.modules.php.editor.model.Occurence.Accuracy;
 import org.netbeans.modules.php.editor.model.OccurencesSupport;
+import org.netbeans.modules.php.editor.model.OccurrenceHighlighter;
 import org.netbeans.modules.php.editor.options.MarkOccurencesSettings;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
 
@@ -158,6 +159,7 @@ public class OccurrencesFinderImpl extends OccurrencesFinder {
                 }
             }
         } else {
+            OccurrenceHighlighterImpl highlighter = new OccurrenceHighlighterImpl();
             OffsetRange referenceSpanForCodeMarkers = tokenSequence != null ? getReferenceSpanForCodeMarkers(tokenSequence, offset) : OffsetRange.NONE;
             if (!referenceSpanForCodeMarkers.equals(OffsetRange.NONE)) {
                 Model model = parseResult.getModel();
@@ -166,10 +168,11 @@ public class OccurrencesFinderImpl extends OccurrencesFinder {
                 if (codeMarker != null) {
                     Collection<? extends CodeMarker> allMarkers = codeMarker.getAllMarkers();
                     for (CodeMarker marker : allMarkers) {
-                        result.add(marker.getOffsetRange());
+                        marker.highlight(highlighter);
                     }
                 }
             }
+            result.addAll(highlighter.getRanges());
         }
         return result;
     }
@@ -194,5 +197,18 @@ public class OccurrencesFinderImpl extends OccurrencesFinder {
     @Override
     public Class<? extends Scheduler> getSchedulerClass() {
         return Scheduler.CURSOR_SENSITIVE_TASK_SCHEDULER;
+    }
+
+    private static final class OccurrenceHighlighterImpl implements OccurrenceHighlighter {
+        private Set<OffsetRange> offsetRanges = new TreeSet<OffsetRange>();
+
+        @Override
+        public void add(OffsetRange offsetRange) {
+            offsetRanges.add(offsetRange);
+        }
+
+        private Set<OffsetRange> getRanges() {
+            return new TreeSet<OffsetRange>(offsetRanges);
+        }
     }
 }

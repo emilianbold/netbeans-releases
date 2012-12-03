@@ -233,6 +233,7 @@ public final class CreateTestsAction extends NodeAction {
         showFailures(failed);
         reformat(toOpen);
         open(toOpen);
+        refreshTests(ProjectPropertiesSupport.getTestDirectory(phpProject, false));
     }
 
     private void generateTest(PhpProject phpProject, PhpVisibilityQuery phpVisibilityQuery, FileObject sourceFo,
@@ -307,16 +308,19 @@ public final class CreateTestsAction extends NodeAction {
     }
 
     private void open(Set<File> files) {
-        Set<File> toRefresh = new HashSet<File>();
         for (File file : files) {
             assert file.isFile() : "File must be given to open: " + file;
-            toRefresh.add(file.getParentFile());
             PhpProjectUtils.openFile(file);
         }
+    }
 
-        if (!toRefresh.isEmpty()) {
-            FileUtil.refreshFor(toRefresh.toArray(new File[toRefresh.size()]));
-        }
+    private void refreshTests(final FileObject testDir) {
+        RP.post(new Runnable() {
+            @Override
+            public void run() {
+                FileUtil.refreshFor(FileUtil.toFile(testDir));
+            }
+        });
     }
 
     //~ Inner classes
