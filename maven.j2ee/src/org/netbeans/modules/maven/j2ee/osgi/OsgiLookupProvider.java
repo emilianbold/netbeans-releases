@@ -82,7 +82,7 @@ public class OsgiLookupProvider implements LookupProvider, PropertyChangeListene
 
     
     @Override
-    public Lookup createAdditionalLookup(Lookup baseLookup) {
+    public synchronized Lookup createAdditionalLookup(Lookup baseLookup) {
         project = baseLookup.lookup(Project.class);
         ic = new InstanceContent();
         
@@ -121,7 +121,7 @@ public class OsgiLookupProvider implements LookupProvider, PropertyChangeListene
     }
 
     @Override
-    public void propertyChange(PropertyChangeEvent propertyChangeEvent) {
+    public synchronized void propertyChange(PropertyChangeEvent propertyChangeEvent) {
         if (NbMavenProject.PROP_PROJECT.equals(propertyChangeEvent.getPropertyName())) {
             changeAdditionalLookups();
         }
@@ -136,12 +136,12 @@ public class OsgiLookupProvider implements LookupProvider, PropertyChangeListene
      * In the future this should be removed and replaced by some kind of multiple @PSP registrator which allows to 
      * combine more than one packaging type and merges registrated lookup instances
      */
-    private void changeAdditionalLookups() {
+    private synchronized void changeAdditionalLookups() {
         removeLookupInstances();
         addLookupInstances();
     }
     
-    private void removeLookupInstances() {
+    private synchronized void removeLookupInstances() {
         ic.remove(mavenPersistenceProviderSupplier);
         ic.remove(mavenWebProjectWebRootProvider);
         ic.remove(webReplaceTokenProvider);
@@ -157,7 +157,7 @@ public class OsgiLookupProvider implements LookupProvider, PropertyChangeListene
         }
     }
     
-    private void addLookupInstances() {
+    private synchronized void addLookupInstances() {
         String packaging = project.getLookup().lookup(NbMavenProject.class).getPackagingType();
         
         if (MavenProjectSupport.isBundlePackaging(project, packaging)) {
