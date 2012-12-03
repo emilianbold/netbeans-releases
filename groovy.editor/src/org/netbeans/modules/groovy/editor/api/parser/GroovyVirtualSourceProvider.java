@@ -108,7 +108,7 @@ public class GroovyVirtualSourceProvider implements VirtualSourceProvider {
         FileObject rootFO = FileUtil.toFileObject(sourceRoot);
         Iterator<File> it = files.iterator();
         while (it.hasNext()) {
-            File file = it.next();
+            File file = FileUtil.normalizeFile(it.next());
             List<ClassNode> classNodes = getClassNodes(file);
             if (classNodes.isEmpty()) {
                 // source is probably broken and there is no AST

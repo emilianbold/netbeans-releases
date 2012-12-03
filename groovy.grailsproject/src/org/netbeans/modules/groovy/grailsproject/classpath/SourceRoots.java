@@ -116,7 +116,11 @@ public class SourceRoots {
     }
 
     private List<FileObject> addPluginRoots(File pluginsDirFile, GrailsPluginSupport.FolderFilter filter) {
-        FileObject pluginsDir = (pluginsDirFile == null) ? null : FileUtil.toFileObject(pluginsDirFile);
+        if (pluginsDirFile == null) {
+            return Collections.emptyList();
+        }
+
+        final FileObject pluginsDir = FileUtil.toFileObject(FileUtil.normalizeFile(pluginsDirFile));
         if (pluginsDir != null) {
             List<FileObject> result = new ArrayList<FileObject>();
             for(Enumeration<? extends FileObject> subfolders = pluginsDir.getFolders(false);
