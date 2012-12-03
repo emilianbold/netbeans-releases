@@ -1172,4 +1172,10 @@ public class PHPBracketCompleterTest extends PHPCodeCompletionTestBase {
         insertChar(original, ':', expected);
     }
 
+    public void testIssue223165() throws Exception {
+        String original = "switch ($a) {\n    case 1: break;\n}if^";
+        String expected = "switch ($a) {\n    case 1: break;\n}if ^";
+        insertChar(original, ' ', expected);
+    }
+
 }

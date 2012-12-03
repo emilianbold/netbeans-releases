@@ -61,7 +61,7 @@ public class BooleanTableCellEditor extends ResultSetTableCellEditor implements 
         this.table = table;
         Component c = super.getTableCellEditorComponent(table, value, isSelected, row, column);
         setEditable(column, c, table.isCellEditable(row, column));
-        if (isGtk && c instanceof JComponent) {
+        if (suppressEditorBorder && c instanceof JComponent) {
             ((JComponent) c).setBorder(BorderFactory.createEmptyBorder());
         }
         return c;

@@ -189,6 +189,7 @@ public final class MakeProject implements Project, MakeProjectListener, Runnable
     private /*final*/ RemoteProject.Mode remoteMode;
     private final String remoteBaseDir;
     private ExecutionEnvironment fileSystemHost;
+    private String configurationXMLComment;
 
     public MakeProject(MakeProjectHelper helper) throws IOException {
         LOGGER.log(Level.FINE, "Start of creation MakeProject@{0} {1}", new Object[]{System.identityHashCode(MakeProject.this), helper.getProjectDirectory().getNameExt()}); // NOI18N
@@ -298,7 +299,15 @@ public final class MakeProject implements Project, MakeProjectListener, Runnable
     public String toString() {
         return "MakeProject[" + getProjectDirectory() + "]"; // NOI18N
     }
+   
+    public void setConfigurationXMLComment(String configurationXMLComment) {
+        this.configurationXMLComment = configurationXMLComment;
+    }
 
+    public String getConfigurationXMLComment() {
+        return configurationXMLComment;
+    }
+   
     public MakeProjectHelper getMakeProjectHelper() {
         return helper;
     }
