@@ -67,6 +67,7 @@ import org.netbeans.modules.css.model.api.StyleSheet;
 import org.netbeans.modules.css.visual.spi.CssStylesListener;
 import org.netbeans.modules.css.visual.spi.CssStylesPanelProvider;
 import org.netbeans.modules.web.browser.api.Page;
+import org.netbeans.modules.web.clientproject.api.ClientSideModule;
 import org.netbeans.modules.web.common.api.ServerURLMapping;
 import org.netbeans.modules.web.inspect.PageInspectorImpl;
 import org.netbeans.modules.web.inspect.PageModel;
@@ -393,6 +394,16 @@ public abstract class CssStylesPanelProviderImpl extends JPanel implements CssSt
         public boolean providesContentFor(FileObject file) {
             if (!MIME_TYPES.contains(file.getMIMEType())) {
                 return false;
+            }
+
+            // Heuristics that tries to recognize client-side projects
+            Project project = FileOwnerQuery.getOwner(file);
+            if (project != null) {
+                Lookup lookup = project.getLookup();
+                ClientSideModule module = lookup.lookup(ClientSideModule.class);
+                if (module == null) {
+                    return false;
+                }
             }
 
             ActionProvider provider = actionProviderForFileObject(file);
