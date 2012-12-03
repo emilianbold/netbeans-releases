@@ -159,8 +159,11 @@ public class InspectAndRefactorPanel extends javax.swing.JPanel implements Popup
     }
 
     private Map<? extends HintMetadata, ? extends Iterable<? extends HintDescription>> allHints;
-
+    private boolean initialized;
+    
     public synchronized void initialize() {
+        if (initialized) return ;
+        initialized = true;
         initComponents();
         configurationCombo.setModel(new ConfigurationsComboModel(false));
         allHints = hintWrap != null ? Collections.singletonMap(hintWrap.hm, hintWrap.hints) : Utilities.getBatchSupportedHints(cpBased);
