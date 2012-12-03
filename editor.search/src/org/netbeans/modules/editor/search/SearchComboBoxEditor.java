@@ -233,7 +233,7 @@ public class SearchComboBoxEditor implements ComboBoxEditor {
 
     private static int getLFHeightAdjustment() {
         if (isCurrentLF("Metal")) { //NOI18N
-            return 0;
+            return -7;
         }
         if (isCurrentLF("GTK")) { //NOI18N
             return 2;
