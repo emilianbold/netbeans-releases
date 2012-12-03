@@ -62,6 +62,8 @@ public class JsDocumentationPrinter {
     private static final String TABLE_BEGIN = "<table style=\"margin-left: 10px;\">\n"; //NOI18N
     private static final String PARAGRAPH_BEGIN = "<p style=\"margin: 0px 14px 0px 14px;\">"; //NOI18N
 
+    private static final String OPTIONAL_PARAMETER = "[optional]"; //NOI18N
+
     /**
      * Prints documentation for CC doc window.
      *
@@ -139,7 +141,11 @@ public class JsDocumentationPrinter {
                 sb.append("<tr>\n"); //NOI18N
                 sb.append("<td valign=\"top\" style=\"margin-right:5px;\">").append(getStringFromTypes(docParam.getParamTypes())).append("</td>\n"); //NOI18N
                 sb.append("<td valign=\"top\" style=\"margin-right:5px;\"><b>").append(paramName).append("</b></td>\n"); //NOI18N
-                sb.append("<td>").append(docParam.getParamDescription()).append("</td>\n"); //NOI18N
+                String description = docParam.getParamDescription();
+                if (docParam.isOptional()) {
+                    description = OPTIONAL_PARAMETER + "<br>" + description; //NOI18N
+                }
+                sb.append("<td>").append(description).append("</td>\n"); //NOI18N
                 sb.append("</tr>\n"); //NOI18N
             }
             sb.append("</table>\n"); //NOI18N
