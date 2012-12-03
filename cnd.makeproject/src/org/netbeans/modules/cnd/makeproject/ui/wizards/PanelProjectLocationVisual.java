@@ -73,6 +73,7 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.netbeans.modules.cnd.makeproject.api.wizards.WizardConstants;
 import org.netbeans.modules.cnd.utils.CndPathUtilitities;
+import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.FSPath;
 import org.netbeans.modules.cnd.utils.MIMEExtensions;
 import org.netbeans.modules.cnd.utils.MIMENames;
@@ -110,10 +111,10 @@ public class PanelProjectLocationVisual extends SettingsPanel implements HelpCtx
     private ExecutionEnvironment env;
     private FileSystem fileSystem;
     private char fsFileSeparator;
-    private AtomicBoolean isValid = new AtomicBoolean(false);
+//    private AtomicBoolean isValid = new AtomicBoolean(false);
     private final WizardValidationWorker validationWorker = new WizardValidationWorker();
     static final int VALIDATION_DELAY = 300;
-
+    
     /**
      * Creates new form PanelProjectLocationVisual
      */
@@ -572,21 +573,17 @@ public class PanelProjectLocationVisual extends SettingsPanel implements HelpCtx
     boolean valid(WizardDescriptor wizardDescriptor) {
         if (!initialized.get()) {
             return false;
-        }
-        boolean valid = isValid.get();
+        }                       
         ValidationResult result = currentState.validationResult;
+        boolean valid = result.isValid;
         wizardDescriptor.putProperty(result.isValid ? WizardDescriptor.PROP_WARNING_MESSAGE : WizardDescriptor.PROP_ERROR_MESSAGE, result.msgError);
         return valid;
 
     }
 
-    private void setValidImpl(boolean valid) {
-        isValid.set(valid);
-        controller.fireChangeEvent(new ChangeEvent(validationWorker)); // Notify that the panel changed
-    }
 
-    void setError(ValidationResult result) {
-        setValidImpl(result.isValid);
+    void setError() {
+        controller.fireChangeEvent(new ChangeEvent(validationWorker)); // Notify that the panel changed
     }
 
     private FileObject getExistingParent(String path) {
@@ -1063,7 +1060,7 @@ public class PanelProjectLocationVisual extends SettingsPanel implements HelpCtx
 
     private class WizardValidationWorker implements Runnable, DocumentListener, ChangeListener {
 
-        private final RequestProcessor.Task task = new RequestProcessor("Validation wizard", 1).create(this); // NOI18N
+        private final RequestProcessor.Task task = REQUEST_PROCESSOR.create(this); // NOI18N
         private final EdtRunnable edtRunnable = new EdtRunnable(task);
         private final RequestProcessor.Task edtValidationTask = REQUEST_PROCESSOR.create(edtRunnable); // NOI18N
         private WizardValidationWorkerCheckState lastCheck = new WizardValidationWorkerCheckState(null, 
@@ -1079,9 +1076,10 @@ public class PanelProjectLocationVisual extends SettingsPanel implements HelpCtx
                 currentState = curStatus;
                 ValidationResult validationResult = curStatus.validationResult;
                 if (curStatus.checking == null) {
-                    validationResult = new ValidationResult(Boolean.TRUE, null);
+                    validationResult = new ValidationResult(Boolean.TRUE, validationResult.msgError);
+                    currentState = new WizardValidationWorkerCheckState(null, validationResult);
                 }
-                setError(validationResult);
+                setError();
             } else {
                 //check if we are not shutdowned already
                 try {
@@ -1120,7 +1118,7 @@ public class PanelProjectLocationVisual extends SettingsPanel implements HelpCtx
                 return new ValidationResult(Boolean.FALSE, message);
             }
             if (Thread.interrupted()) {
-                return new ValidationResult(Boolean.TRUE, null);
+                return new ValidationResult(Boolean.FALSE, null);
             }
             FileObject projectDirFO = fileSystem.findResource(folder); // can be null
             if (projectDirFO != null && projectDirFO.isValid()) {
@@ -1129,7 +1127,7 @@ public class PanelProjectLocationVisual extends SettingsPanel implements HelpCtx
                     return new ValidationResult(Boolean.FALSE, message);
                 }
                 if (Thread.interrupted()) {
-                    return new ValidationResult(Boolean.TRUE, null);
+                    return new ValidationResult(Boolean.FALSE, null);
                 }
                 FileObject nbProjFO = projectDirFO.getFileObject(MakeConfiguration.NBPROJECT_FOLDER);
                 if (nbProjFO != null && nbProjFO.isValid()) {
@@ -1137,7 +1135,7 @@ public class PanelProjectLocationVisual extends SettingsPanel implements HelpCtx
                     return new ValidationResult(Boolean.FALSE, message);
                 }
                 if (Thread.interrupted()) {
-                    return new ValidationResult(Boolean.TRUE, null);
+                    return new ValidationResult(Boolean.FALSE, null);
                 }
                 FileObject makeFO = fileSystem.findResource(projectDirFO.getPath() + fsFileSeparator + makefileName);
                 if (makeFO != null && makeFO.isValid()) {
@@ -1146,7 +1144,7 @@ public class PanelProjectLocationVisual extends SettingsPanel implements HelpCtx
                     return new ValidationResult(Boolean.FALSE, message);
                 }
                 if (Thread.interrupted()) {
-                    return new ValidationResult(Boolean.TRUE, null);
+                    return new ValidationResult(Boolean.FALSE, null);
                 }
                 FileObject nbFO = fileSystem.findResource(projectDirFO.getPath() + fsFileSeparator + MakeConfiguration.NBPROJECT_FOLDER);
                 if (nbFO != null && nbFO.isValid()) {
@@ -1155,7 +1153,7 @@ public class PanelProjectLocationVisual extends SettingsPanel implements HelpCtx
                     return new ValidationResult(Boolean.FALSE, message);
                 }
                 if (Thread.interrupted()) {
-                    return new ValidationResult(Boolean.TRUE, null);
+                    return new ValidationResult(Boolean.FALSE, null);
                 }
                 if (type != NewMakeProjectWizardIterator.TYPE_MAKEFILE) {
                     FileObject destFO = fileSystem.findResource(projectDirFO.getPath() + fsFileSeparator + MakeConfiguration.DIST_FOLDER);
@@ -1173,7 +1171,7 @@ public class PanelProjectLocationVisual extends SettingsPanel implements HelpCtx
                 }
             } else {
                 if (Thread.interrupted()) {
-                    return new ValidationResult(Boolean.TRUE, null);
+                    return new ValidationResult(Boolean.FALSE, null);
                 }
                 FileObject existingParent = getExistingParent(createdFolderTextField.getText());
                 if (existingParent == null) {
@@ -1186,7 +1184,7 @@ public class PanelProjectLocationVisual extends SettingsPanel implements HelpCtx
                 }
             }
             if (Thread.interrupted()) {
-                return new ValidationResult(Boolean.TRUE, null);
+                return new ValidationResult(Boolean.FALSE, null);
             }
             Object sr = hostComboBox.getSelectedItem();
             if (!(sr instanceof ServerRecord) || !((ServerRecord)sr).isOnline()) {
@@ -1231,15 +1229,17 @@ public class PanelProjectLocationVisual extends SettingsPanel implements HelpCtx
         }
 
         private void rescheduleTask() {
-            currentState = new WizardValidationWorkerCheckState(Boolean.TRUE, 
-                    new ValidationResult(Boolean.FALSE, NbBundle.getMessage(PanelProjectLocationVisual.class, "PanelProjectLocationVisual.Validating_Wizard")));//NOI18N
+            ValidationResult validationResult = new ValidationResult(Boolean.FALSE, NbBundle.getMessage(PanelProjectLocationVisual.class, "PanelProjectLocationVisual.Validating_Wizard"));
+            currentState = new WizardValidationWorkerCheckState(Boolean.TRUE, validationResult);//NOI18N
+            setError();
             task.cancel();
             task.schedule(VALIDATION_DELAY);
         }
 
         private void rescheduleEdtValidationTask() {
-            currentState = new WizardValidationWorkerCheckState(Boolean.TRUE, 
-                    new ValidationResult(Boolean.FALSE, NbBundle.getMessage(PanelProjectLocationVisual.class, "PanelProjectLocationVisual.Validating_Wizard")));//NOI18N
+            ValidationResult validationResult = new ValidationResult(Boolean.FALSE, NbBundle.getMessage(PanelProjectLocationVisual.class, "PanelProjectLocationVisual.Validating_Wizard"));
+            currentState = new WizardValidationWorkerCheckState(Boolean.TRUE, validationResult);//NOI18N
+            setError();
             edtValidationTask.cancel();
             edtValidationTask.schedule(VALIDATION_DELAY);
         }
@@ -1265,7 +1265,7 @@ public class PanelProjectLocationVisual extends SettingsPanel implements HelpCtx
 
         private EdtRunnable(RequestProcessor.Task postTask) {
             this.postTask = postTask;
-            this.nonEdtTask = new RequestProcessor("Post EDT Validation wizard", 1).create(new Runnable() {//NOI18N
+            this.nonEdtTask = REQUEST_PROCESSOR.create(new Runnable() {//NOI18N
                 @Override
                 public void run() {
                     if (SwingUtilities.isEventDispatchThread()) {
@@ -1316,8 +1316,9 @@ public class PanelProjectLocationVisual extends SettingsPanel implements HelpCtx
         }
 
         void reschedulePostTask() {
-            currentState = new WizardValidationWorkerCheckState(Boolean.TRUE, 
-                    new ValidationResult(Boolean.FALSE, NbBundle.getMessage(PanelProjectLocationVisual.class, "PanelProjectLocationVisual.Validating_Wizard")));//NOI18N
+            ValidationResult validationResult = new ValidationResult(Boolean.FALSE, NbBundle.getMessage(PanelProjectLocationVisual.class, "PanelProjectLocationVisual.Validating_Wizard"));
+            currentState = new WizardValidationWorkerCheckState(Boolean.TRUE, validationResult);//NOI18N            
+            setError();
             postTask.cancel();
             postTask.schedule(VALIDATION_DELAY);
         }
