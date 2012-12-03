@@ -699,14 +699,22 @@ public class LuceneIndex implements Index.Transactional, Index.WithTermFrequenci
                     txWriter.remove();
                     owner.clear();
                     try {
-                        if (!success && IndexWriter.isLocked(fsDir)) {
-                            IndexWriter.unlock(fsDir);
+                        if (!success) {
+                            if ((lockFactory instanceof RecordOwnerLockFactory) &&
+                                ((RecordOwnerLockFactory)lockFactory).getOwner() == Thread.currentThread()) {
+                                ((RecordOwnerLockFactory)lockFactory).forceRemoveLock();
+                            } else if (IndexWriter.isLocked(fsDir)) {
+                                IndexWriter.unlock(fsDir);
+                            }
                         }
                     } catch (IOException ioe) {
                         LOGGER.log(
                            Level.WARNING,
-                           "Cannot unlock index {0} while recovering.",  //NOI18N
-                           folder.getAbsolutePath());
+                           "Cannot unlock index {0} while recovering, {1}.",  //NOI18N
+                           new Object[] {
+                               folder.getAbsolutePath(),
+                            ioe.getMessage()
+                           });
                     } finally {
                         refreshReader();
                     }
