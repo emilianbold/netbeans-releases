@@ -49,8 +49,6 @@ import java.util.WeakHashMap;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.web.clientproject.spi.platform.ClientProjectPlatformImplementation;
 import org.netbeans.modules.web.clientproject.spi.platform.ClientProjectPlatformProvider;
-import org.netbeans.modules.web.clientproject.spi.platform.ProjectConfigurationCustomizer;
-import org.netbeans.spi.project.ProjectServiceProvider;
 import org.openide.util.lookup.ServiceProvider;
 
 // btw. ServiceProvider is used here instead of ProjectsServiceProvider so that position can be specified

@@ -74,6 +74,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.URLMapper;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.text.NbDocument;
 import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
@@ -307,15 +308,15 @@ public class MoveClassUI implements RefactoringUI, RefactoringUIBypass {
             if (e == null) {
                 return null;
             }
-            JEditorPane[] openedPanes = ec.getOpenedPanes();
-            if (openedPanes == null) {
+            JEditorPane textC = NbDocument.findRecentEditorPane(ec);;
+            if (textC == null) {
                 try {
                     return new MoveClassUI(DataObject.find(files[0]), tar, paste);
                 } catch (DataObjectNotFoundException ex) {
                     Exceptions.printStackTrace(ex);
                 }
+                return null;
             }
-            JEditorPane textC = openedPanes[0];
             int startOffset = textC.getSelectionStart();
             int endOffset = textC.getSelectionEnd();
             if (startOffset == endOffset) {

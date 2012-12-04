@@ -423,23 +423,28 @@ public abstract class CssStylesPanelProviderImpl extends JPanel implements CssSt
             //rule selected in document view...
             final PageModel pageModel = PageInspectorImpl.getDefault().getPage();
             if (pageModel != null && (pageModel instanceof WebKitPageModel)) {
-                WebKitPageModel wkPageModel = (WebKitPageModel) pageModel;
-                FileObject file = inspectedFileObject(wkPageModel, false);
-                if (file != null) {
-                    final Model model = rule.getModel();
-                    model.runReadTask(new Model.ModelTask() {
-                        @Override
-                        public void run(StyleSheet styleSheet) {
-                            final String elementSource = model.getElementSource(rule.getSelectorsGroup()).toString();
-                            RP.post(new Runnable() {
+                final WebKitPageModel wkPageModel = (WebKitPageModel) pageModel;
+                RP.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        FileObject file = inspectedFileObject(wkPageModel, false);
+                        if (file != null) {
+                            final Model model = rule.getModel();
+                            model.runReadTask(new Model.ModelTask() {
                                 @Override
-                                public void run() {
-                                    pageModel.setSelectedSelector(elementSource);
+                                public void run(StyleSheet styleSheet) {
+                                    final String elementSource = model.getElementSource(rule.getSelectorsGroup()).toString();
+                                    RP.post(new Runnable() {
+                                        @Override
+                                        public void run() {
+                                            pageModel.setSelectedSelector(elementSource);
+                                        }
+                                    });
                                 }
                             });
                         }
-                    });
-                }
+                    }
+                });
             }
         }
 

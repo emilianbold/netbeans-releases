@@ -49,6 +49,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.StringTokenizer;
 import java.util.logging.Logger;
 import javax.swing.Icon;
 import javax.swing.JComponent;
@@ -227,57 +228,106 @@ public class RectangularSelectionTransferHandler extends TransferHandler {
     public boolean importData(TransferSupport support) {
         Component c = support.getComponent();
         Transferable t = support.getTransferable();
-        if (t.isDataFlavorSupported(RECTANGULAR_SELECTION_FLAVOR) && c instanceof JTextComponent) {
+        if (c instanceof JTextComponent) {
             JTextComponent tc = (JTextComponent) c;
-            boolean result = false;
-            try {
-                if (Boolean.TRUE.equals(tc.getClientProperty(RECTANGULAR_SELECTION_PROPERTY))) {
-                    final RectangularSelectionData data = (RectangularSelectionData) t.getTransferData(RECTANGULAR_SELECTION_FLAVOR);
-                    final List<Position> regions = RectangularSelectionUtils.regionsCopy(tc);
-                    final Document doc = tc.getDocument();
-                    DocUtils.runAtomicAsUser(doc, new Runnable() {
+            if (t.isDataFlavorSupported(RECTANGULAR_SELECTION_FLAVOR) && c instanceof JTextComponent) {
+                boolean result = false;
+                try {
+                    if (Boolean.TRUE.equals(tc.getClientProperty(RECTANGULAR_SELECTION_PROPERTY))) {
+                        final RectangularSelectionData data = (RectangularSelectionData) t.getTransferData(RECTANGULAR_SELECTION_FLAVOR);
+                        final List<Position> regions = RectangularSelectionUtils.regionsCopy(tc);
+                        final Document doc = tc.getDocument();
+                        DocUtils.runAtomicAsUser(doc, new Runnable() {
 
-                        @Override
-                        public void run() {
-                            try {
-                                RectangularSelectionUtils.removeSelection(doc, regions);
-                                String[] strings = data.strings();
-                                for (int i = 0; i < strings.length; i++) {
-                                    int doubleI = (i << 1);
-                                    if (doubleI >= regions.size()) {
-                                        break;
+                            @Override
+                            public void run() {
+                                try {
+                                    RectangularSelectionUtils.removeSelection(doc, regions);
+                                    String[] strings = data.strings();
+                                    for (int i = 0; i < strings.length; i++) {
+                                        int doubleI = (i << 1);
+                                        if (doubleI >= regions.size()) {
+                                            break;
+                                        }
+                                        Position linePos = regions.get(doubleI);
+                                        doc.insertString(linePos.getOffset(), strings[i], null);
                                     }
-                                    Position linePos = regions.get(doubleI);
-                                    doc.insertString(linePos.getOffset(), strings[i], null);
+                                } catch (BadLocationException ex) {
+                                    // Ignore
                                 }
-                            } catch (BadLocationException ex) {
-                                // Ignore
                             }
-                        }
-                        
-                    });
 
-                } else { // Regular selection
-                    String s = (String) t.getTransferData(DataFlavor.stringFlavor); // There should be string flavor
-                    if (s != null) {
-                        tc.replaceSelection("");
+                        });
+
+                    } else { // Regular selection
+                        String s = (String) t.getTransferData(DataFlavor.stringFlavor); // There should be string flavor
+                        if (s != null) {
+                            tc.replaceSelection("");
+                        }
+                    }
+                    result = true;
+
+                } catch (UnsupportedFlavorException ex) {
+                    Exceptions.printStackTrace(ex);
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+
+                return result;
+
+            } else if (RectangularSelectionUtils.isRectangularSelection(tc)) {
+                if (t.isDataFlavorSupported(DataFlavor.stringFlavor)) {
+                    try {
+                        // Paste individual lines into rectangular selection
+                        String s = (String) t.getTransferData(DataFlavor.stringFlavor); // There should be string flavor
+                        final List<String> dataLines = splitByLines(s);
+                        final List<Position> regions = RectangularSelectionUtils.regionsCopy(tc);
+                        final Document doc = tc.getDocument();
+                        final int dataLinesSize = dataLines.size();
+                        final int regionsSize = regions.size();
+                        if (dataLinesSize > 0 && regionsSize > 0) { // Otherwise do nothing
+                            DocUtils.runAtomicAsUser(doc, new Runnable() {
+                                @Override
+                                public void run() {
+                                    try {
+                                        RectangularSelectionUtils.removeSelection(doc, regions);
+                                        int dataLineIndex = 0;
+                                        for (int i = 0; i < regionsSize; i += 2) {
+                                            Position linePos = regions.get(i);
+                                            doc.insertString(linePos.getOffset(),
+                                                    dataLines.get(dataLineIndex++), null);
+                                            if (dataLineIndex >= dataLinesSize) {
+                                                dataLineIndex = 0;
+                                            }
+                                        }
+                                    } catch (BadLocationException ex) {
+                                        // Ignore
+                                    }
+                                }
+                            });
+                            return true;
+                        } else {
+                            return false;
+                        }
+                    } catch (UnsupportedFlavorException ex) {
+                        Exceptions.printStackTrace(ex);
+                    } catch (IOException ex) {
+                        Exceptions.printStackTrace(ex);
                     }
                 }
-                result = true;
-
-            } catch (UnsupportedFlavorException ex) {
-                Exceptions.printStackTrace(ex);
-            } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
             }
-
-            return result;
-
-        } else { // Regular importData()
-            return delegate.importData(support);
         }
+        return delegate.importData(support); // Regular importData()
     }
-    
+
+    private static List<String> splitByLines(String s) {
+        StringTokenizer splitByLines = new StringTokenizer(s, "\n", false);
+        List<String> lines = new ArrayList<String>();
+        while (splitByLines.hasMoreTokens()) {
+            lines.add(splitByLines.nextToken());
+        }
+        return lines;
+    }
 
     private static final class WrappedTransferable implements Transferable {
 
