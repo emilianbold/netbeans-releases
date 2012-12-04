@@ -847,8 +847,7 @@ class RfsLocalController extends NamedRunnable {
                     || newState == FileState.INEXISTENT,
                     "State shouldn't be ", newState); //NOI18N
             if (USE_TIMESTAMPS) {
-                long fileTime = file.lastModified();
-                fileTime += timeSkew;
+                long fileTime = file.exists() ? Math.max(0, file.lastModified() + timeSkew) : 0;
                 long seconds = fileTime / 1000;
                 long microseconds = (fileTime % 1000) * 1000;
                 responseStream.printf("%c %d %d %d %s\n", newState.id, file.length(), seconds, microseconds, remotePath); // NOI18N
