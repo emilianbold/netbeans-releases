@@ -43,6 +43,13 @@
 // Initialization/cleanup
 NetBeans.cleanup();
 
+// Notify IDE that the extension has been installed/updated
+chrome.runtime.onInstalled.addListener(function() {
+    var manifest = chrome.runtime.getManifest();
+    var version = manifest.version;
+    NetBeans.sendReadyMessage(version);
+});
+
 // Register reload-callback
 NetBeans.browserReloadCallback = function(tabId, newUrl) {
     if (newUrl !== undefined) {
