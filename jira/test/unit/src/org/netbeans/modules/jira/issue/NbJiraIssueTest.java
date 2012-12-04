@@ -129,6 +129,7 @@ public class NbJiraIssueTest extends NbTestCase {
 
     @Override
     protected void setUp() throws Exception {
+        System.setProperty("netbeans.t9y.jira.nb.config.path", System.getProperty("netbeans.user"));
         JiraTestUtil.initClient(getWorkDir());
         if (config == null) {
             config = getRepository().getConfiguration();
