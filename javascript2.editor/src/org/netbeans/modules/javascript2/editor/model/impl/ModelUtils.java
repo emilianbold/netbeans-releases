@@ -358,7 +358,7 @@ public class ModelUtils {
                         result.add(new TypeUsageImpl(ModelUtils.createFQN(parent), type.getOffset(), true));
                     }
                 }
-            } else {
+            } else if (parent != null) {
                 result.add(new TypeUsageImpl(ModelUtils.createFQN(parent), type.getOffset(), true));
             }
         } else if (type.getType().startsWith("@this.")) {
