@@ -290,7 +290,10 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
         // Remove non C/C++ items
         Iterator<NativeFileItem> iter = nativeFileIetms.iterator();
         while (iter.hasNext()) {
-            NativeFileItem nativeFileIetm = iter.next();
+            final NativeFileItem nativeFileIetm = iter.next();
+            if (nativeFileIetm == null) {
+                continue;
+            }
             PredefinedToolKind tool = ((Item) nativeFileIetm).getDefaultTool();
             if (tool == PredefinedToolKind.CustomTool
                     // check of mime type is better to support headers without extensions
