@@ -181,7 +181,7 @@ public class DebugCoreAction extends SystemAction {
         if (noproject) {
             UserDebugCoreAction action = Lookup.getDefault().lookup(UserDebugCoreAction.class);
             if (action != null) {
-                if (Catalog.get("AutoCoreExe").equals(executable)) {
+                if (Catalog.get("AutoCoreExe").equals(executable)) { // NOI18N
                     executable = null;
                 }
                 action.debugCore(corefile, executable, engineType);
