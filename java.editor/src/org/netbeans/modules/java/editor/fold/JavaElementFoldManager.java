@@ -149,7 +149,7 @@ public class JavaElementFoldManager extends JavaFoldManager {
         
         if (od instanceof DataObject) {
             EditorCookie ec = ((DataObject)od).getLookup().lookup(EditorCookie.class);
-            if (doc != ec.getDocument()) {
+            if (ec != null && doc != ec.getDocument()) {
                 throw new IllegalStateException("Different documents used by fold hierarchy and fold task.\nFold hierarchy document: " + doc + "\nFold task document: " + ec.getDocument()); //NOI18N
             }
                 
