@@ -262,6 +262,48 @@ public class VisibilityChangeTest extends NbTestCase {
             MimeLookup.getLookup(MimePath.get(FOO_MIME)).lookup(FooIndexerFactory.class).clearRemovedFiles());
 
     }
+
+    public void testVisibilityChangeInSingleRoot() throws InterruptedException, IOException {
+
+        assertTrue(GlobalPathRegistry.getDefault().getPaths(FOO_SOURCES).isEmpty());
+        final RepositoryUpdaterTest.TestHandler handler = new RepositoryUpdaterTest.TestHandler();
+        final Logger logger = Logger.getLogger(RepositoryUpdater.class.getName()+".tests"); //NOI18N
+        logger.setLevel (Level.FINEST);
+        logger.addHandler(handler);
+
+        globalPathRegistry_register(FOO_SOURCES,new ClassPath[]{cp1});
+        assertTrue (handler.await());
+        assertEquals(0, handler.getBinaries().size());
+        assertEquals(4, handler.getSources().size());
+        assertEquals(
+            new URI[] {
+                src1file1.toURI(),
+                src1file2.toURI(),
+                src2file1.toURI(),
+                src2file2.toURI(),
+                src3file1.toURI(),
+                src3file2.toURI(),
+                src4file1.toURI(),
+                src4file2.toURI()
+            },
+            MimeLookup.getLookup(MimePath.get(FOO_MIME)).lookup(FooIndexerFactory.class).clearIndexedFiles());
+        assertEquals(
+            new URI[0],
+            MimeLookup.getLookup(MimePath.get(FOO_MIME)).lookup(FooIndexerFactory.class).clearRemovedFiles());
+        handler.reset();
+//        Lookup.getDefault().lookup(MockVisibilityQuery.class).change(src1file1);
+//        assertTrue (handler.await());
+//        assertEquals(0, handler.getBinaries().size());
+//        assertEquals(1, handler.getSources().size());
+//        assertEquals(
+//            new URI[0],
+//            MimeLookup.getLookup(MimePath.get(FOO_MIME)).lookup(FooIndexerFactory.class).clearIndexedFiles());
+//        assertEquals(
+//            new URI[]{
+//                src1file1.toURI()
+//            },
+//            MimeLookup.getLookup(MimePath.get(FOO_MIME)).lookup(FooIndexerFactory.class).clearRemovedFiles());
+    }
     
     private void assertEquals(URI[] expected, URI[] result) {
         final Set<URI> es = new HashSet<URI>(Arrays.asList(expected));

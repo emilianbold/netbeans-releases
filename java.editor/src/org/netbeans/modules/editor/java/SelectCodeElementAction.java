@@ -203,6 +203,8 @@ final class SelectCodeElementAction extends BaseAction {
                 if (cancel != null && cancel.get())
                     return;
                 selectionInfos = initSelectionPath(target, cc);
+                if (selectionInfos != null && selectionInfos.length > 0)
+                    selIndex = 0;
             } catch (IOException ex) {
                 Exceptions.printStackTrace(ex);
             }

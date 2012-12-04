@@ -622,6 +622,9 @@ public final class EditorBridge extends KeymapManager {
         public String getDelegatingActionId() {
             if (delegaitngActionId == null) {
                 delegaitngActionId = (String) action.getValue(NbEditorKit.SYSTEM_ACTION_CLASS_NAME_PROPERTY);
+                if (delegaitngActionId != null) {
+                    delegaitngActionId = delegaitngActionId.replaceAll("\\.", "-");
+                }
             }
             return delegaitngActionId;
         }
