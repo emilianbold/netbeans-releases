@@ -12,6 +12,9 @@
             <file name="hibernate-persistence.xml" url="hibernate-persistence.xml">
                 <attr name="displayName" bundlevalue="org/netbeans/modules/hibernatelib/resources/Bundle#hibernate-persistence"/>
             </file>
+            <file name="hibernate-persistencemodelgen.xml" url="hibernate-persistencemodelgen.xml">
+                <attr name="displayName" bundlevalue="org/netbeans/modules/hibernatelib/resources/Bundle#hibernate-persistencemodelgen"/>
+            </file>
         </folder>
     </folder>
 </filesystem>
