@@ -60,7 +60,7 @@ public class SiteZipPanel extends javax.swing.JPanel implements DocumentListener
     public SiteZipPanel(SiteZip.Customizer cust) {
         this.cust = cust;
         initComponents();
-        List<String> templates = new ArrayList(SiteZip.getUsedTemplates());
+        List<String> templates = new ArrayList<String>(SiteZip.getUsedTemplates());
         if (templates.size() > 0 && templates.get(0).length() > 0) {
             templates.add(0, ""); //NOI18N
         }
