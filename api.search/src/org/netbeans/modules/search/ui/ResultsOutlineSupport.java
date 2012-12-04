@@ -500,6 +500,17 @@ public class ResultsOutlineSupport {
 
         public FolderTreeItem(MatchingObject matchingObject) {
             this.matchingObject = matchingObject;
+            matchingObject.addPropertyChangeListener(
+                    new PropertyChangeListener() {
+                @Override
+                public void propertyChange(PropertyChangeEvent evt) {
+                    String pn = evt.getPropertyName();
+                    if (pn.equals(MatchingObject.PROP_SELECTED)) {
+                        setSelected(FolderTreeItem.this.matchingObject
+                                .isSelected());
+                    }
+                }
+            });
         }
 
         public FolderTreeItem(DataObject file) {
