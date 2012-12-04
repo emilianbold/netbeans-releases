@@ -2456,14 +2456,15 @@ public class EditorContextImpl extends EditorContext {
                             String fieldName = it.getName().toString();
                             Scope scope = ci.getTreeUtilities().scopeFor(offset);
                             TypeElement te = scope.getEnclosingClass();
-                            List<? extends Element> enclosedElms = te.getEnclosedElements();
-                            for (Element elm : enclosedElms) {
-                                if (elm.getKind().equals(ElementKind.FIELD) && elm.getSimpleName().contentEquals(fieldName)) {
-                                    currentElementPtr[0] = fieldName;
-                                    break;
+                            if (te != null) {
+                                List<? extends Element> enclosedElms = te.getEnclosedElements();
+                                for (Element elm : enclosedElms) {
+                                    if (elm.getKind().equals(ElementKind.FIELD) && elm.getSimpleName().contentEquals(fieldName)) {
+                                        currentElementPtr[0] = fieldName;
+                                        break;
+                                    }
                                 }
                             }
-
                         } else if (tree.getKind() == Tree.Kind.MEMBER_SELECT && selectedIdentifier != null) {
                             MemberSelectTree mst = (MemberSelectTree) tree;
                             String fieldName = mst.getIdentifier().toString();
