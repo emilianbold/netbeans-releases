@@ -2246,7 +2246,7 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
                     value = Pair.<SourceIndexerFactory,Context>of(factory,ctx);
                     ctxToFinish.put(key,value);
                 }
-                long time = System.currentTimeMillis();
+                logStartIndexer(factory.getIndexerName());
                 try {
                     boolean vote = factory.scanStarted(value.second);
                     votes.put(factory,vote);
@@ -2257,10 +2257,7 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
                     votes.put(factory, false);
                     Exceptions.printStackTrace(t);
                 } finally {
-                    if (getLogContext() != null) {
-                        long timeSpan = System.currentTimeMillis() - time;
-                        getLogContext().addIndexerTime(factory.getIndexerName(), timeSpan);
-                    }
+                    logFinishIndexer(factory.getIndexerName());
                 }
             }
         }
@@ -2295,7 +2292,7 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
                         value = Pair.<SourceIndexerFactory,Context>of(eif,context);
                         ctxToFinish.put(key, value);
                     }
-                    long time = System.currentTimeMillis();
+                    logStartIndexer(eif.getIndexerName());
                     try {
                         boolean vote = eif.scanStarted(value.second);
                         votes.put(eif, vote);
@@ -2306,10 +2303,7 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
                         votes.put(eif, false);
                         Exceptions.printStackTrace(t);
                     } finally {
-                        if (getLogContext() != null) {
-                            long timeSpan = System.currentTimeMillis() - time;
-                            getLogContext().addIndexerTime(eif.getIndexerName(), timeSpan);
-                        }
+                        logFinishIndexer(eif.getIndexerName());
                     }
                 }
             }
@@ -2326,7 +2320,7 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
                         TEST_LOGGER.log(Level.FINEST, "scanFinishing:{0}:{1}", 
                                 new Object[] { entry.first.getIndexerName(), entry.second.getRootURI().toExternalForm() });
                     }
-                    long time = System.currentTimeMillis();
+                    logStartIndexer(entry.first.getIndexerName());
                     SPIAccessor.getInstance().putProperty(entry.second, ClusteredIndexables.DELETE, null);
                     SPIAccessor.getInstance().putProperty(entry.second, ClusteredIndexables.INDEX, null);
                     cancelRequest.setResult(finished);
@@ -2341,12 +2335,7 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
                     } finally {
                         cancelRequest.setResult(null);
                     }
-
-
-                    if (getLogContext() != null) {
-                        long timeSpan = System.currentTimeMillis() - time;
-                        getLogContext().addIndexerTime(entry.first.getIndexerName(), timeSpan);
-                    }
+                    logFinishIndexer(entry.first.getIndexerName());
                     if (TEST_LOGGER.isLoggable(Level.FINEST)) {
                         TEST_LOGGER.log(Level.FINEST, "scanFinished:{0}:{1}", 
                                 new Object[] { entry.first.getIndexerName(), entry.second.getRootURI().toExternalForm() });
@@ -2464,6 +2453,9 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
                         final boolean forceReindex = votes.get(factory) == Boolean.FALSE && allResources != null;
                         final boolean allFiles = cifIsChanged || forceReindex || (allResources != null && allResources.size() == resources.size());
                         if (ae && forceReindex && LOGGER.isLoggable(Level.INFO) && resources.size() != allResources.size() && !cifInfo.getMimeTypes().isEmpty()) {
+                            if (getLogContext() != null) {
+                                getLogContext().reindexForced(root, factory.getIndexerName());
+                            }
                             LOGGER.log(Level.INFO, "Refresh of custom indexer ({0}) for root: {1} forced by: {2}",    //NOI18N
                                     new Object[]{
                                         cifInfo.getMimeTypes(),
@@ -2501,17 +2493,18 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
 
                         final CustomIndexer indexer = factory.createIndexer();
                         long tm1 = -1, tm2 = -1;
+                        logStartIndexer(factory.getIndexerName());
                         SPIAccessor.getInstance().putProperty(value.second, ClusteredIndexables.INDEX, usedCi);
                         try {
                             tm1 = System.currentTimeMillis();
                             SPIAccessor.getInstance().index(indexer, indexables, value.second);
-                            tm2 = System.currentTimeMillis();
-                            logIndexerTime(factory.getIndexerName(), (int)(tm2-tm1));
                         } catch (ThreadDeath td) {
                             throw td;
                         } catch (Throwable t) {
                             LOGGER.log(Level.WARNING, null, t);
                         }
+                        tm2 = System.currentTimeMillis();
+                        logIndexerTime(factory.getIndexerName(), (int)(tm2-tm1));
                         if (LOGGER.isLoggable(Level.FINE)) {
                             StringBuilder sb = printMimeTypes(cifInfo.getMimeTypes(), new StringBuilder());
                             LOGGER.fine("Indexing source root " + root + " using " + indexer
@@ -2534,11 +2527,17 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
                         for(Set<IndexerCache.IndexerInfo<EmbeddingIndexerFactory>> eifInfos : indexers.eifInfosMap.values()) {
                             for(IndexerCache.IndexerInfo<EmbeddingIndexerFactory> eifInfo : eifInfos) {
                                 if (indexers.changedEifs != null && indexers.changedEifs.contains(eifInfo)) {
+                                    if (getLogContext() != null) {
+                                        getLogContext().newIndexerSeen(eifInfo.getIndexerFactory().getIndexerName());
+                                    }
                                     containsNewIndexers = true;
                                 }
                                 EmbeddingIndexerFactory eif = eifInfo.getIndexerFactory();
                                 boolean indexerVote = votes.get(eif) == Boolean.FALSE;
                                 if (indexerVote) {
+                                    if (getLogContext() != null) {
+                                        getLogContext().reindexForced(root, eif.getIndexerName());
+                                    }
                                     reindexVoters.add(eif);
                                 }
                                 forceReindex |= indexerVote;
@@ -2646,6 +2645,7 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
                 SPIAccessor.getInstance().setAllFilesJob(ctx, !upToDate);
                 parkWhileSuspended();
                 long st = System.currentTimeMillis();
+                logStartIndexer(bif.getIndexerName());
                 boolean vote;
                 try {
                     startedIndexers.set(index);
@@ -2677,6 +2677,7 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
                 for (Map.Entry<BinaryIndexerFactory, Context> entry : contexts.entrySet()) {
                     parkWhileSuspended();
                     long st = System.currentTimeMillis();
+                    logStartIndexer(entry.getKey().getIndexerName());
                     try {
                         if (startedIndexers.get(index)) {
                             entry.getKey().scanFinished(entry.getValue());
@@ -2786,16 +2787,17 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
                 if (LOGGER.isLoggable(Level.FINE)) {
                     LOGGER.fine("Indexing binary " + root + " using " + indexer); //NOI18N
                 }
+                long st = System.currentTimeMillis();
+                logStartIndexer(f.getIndexerName());
                 try {
-                    long st = System.currentTimeMillis();
                     SPIAccessor.getInstance().index(indexer, ctx);
-                    long et = System.currentTimeMillis();
-                    logIndexerTime(f.getIndexerName(), (int)(et-st));
                 } catch (ThreadDeath td) {
                     throw td;
                 } catch (Throwable t) {
                     LOGGER.log(Level.WARNING, null, t);
                 }
+                long et = System.currentTimeMillis();
+                logIndexerTime(f.getIndexerName(), (int)(et-st));
             }
             return !getCancelRequest().isRaised();
         }
@@ -2829,6 +2831,8 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
 
                     Source src = Source.create(fileObject);
                     try {
+                        // log parsing for the mimetype:
+                        logStartIndexer(src.getMimeType());
                         ParserManager.parse(Collections.singleton(src), new UserTask() {
                             @Override
                             public void run(ResultIterator resultIterator) throws Exception {
@@ -2836,8 +2840,10 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
                                 final Collection<? extends IndexerCache.IndexerInfo<EmbeddingIndexerFactory>> infos = eifInfosMap.get(mimeType);
 
                                 if (infos != null && infos.size() > 0) {
+                                    boolean finished = false;
                                     for (IndexerCache.IndexerInfo<EmbeddingIndexerFactory> info : infos) {
                                         if (getCancelRequest().isRaised()) {
+                                            logFinishIndexer(mimeType);
                                             return;
                                         }
 
@@ -2847,6 +2853,11 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
                                         }
 
                                         final Parser.Result pr = resultIterator.getParserResult();
+                                        // must follow getParserResult(), as resultIterators are lazy
+                                        if (!finished) {
+                                            logFinishIndexer(mimeType);
+                                            finished = true;
+                                        }
                                         if (pr != null) {
                                             final String indexerName = indexerFactory.getIndexerName();
                                             final int indexerVersion = indexerFactory.getIndexVersion();
@@ -2872,30 +2883,35 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
                                             final EmbeddingIndexer indexer = indexerFactory.createIndexer(dirty, pr.getSnapshot());
                                             if (indexer != null) {
                                                 SPIAccessor.getInstance().putProperty(value.second, ClusteredIndexables.INDEX, usedCi);
+                                                long st = System.currentTimeMillis();
+                                                logStartIndexer(indexerName);
                                                 try {
-                                                    long st = System.currentTimeMillis();
                                                     SPIAccessor.getInstance().index(indexer, dirty, pr, value.second);
-                                                    long et = System.currentTimeMillis();
-                                                    logIndexerTime(indexerName, (int)(et-st));
                                                 } catch (ThreadDeath td) {
                                                     throw td;
                                                 } catch (Throwable t) {
                                                     LOGGER.log(Level.WARNING, null, t);
                                                 }
+                                                long et = System.currentTimeMillis();
+                                                logIndexerTime(indexerName, (int)(et-st));
                                             }
                                         }
                                     }
+                                } else {
+                                    logFinishIndexer(resultIterator.getSnapshot().getMimeType());
                                 }
 
                                 for (Embedding embedding : resultIterator.getEmbeddings()) {
                                     if (getCancelRequest().isRaised()) {
                                         return;
                                     }
+                                    logStartIndexer(embedding.getMimeType());
                                     run(resultIterator.getResultIterator(embedding));
                                 }
                             }
                         });
                     } catch (final ParseException e) {
+                        logFinishIndexer(src.getMimeType());
                         LOGGER.log(Level.WARNING, null, e);
                     }
                 }
@@ -3010,11 +3026,25 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
                     c == null ? -1 : c.size(), 
                     ac == null ? -1 : ac.size());
         }
+        
+        protected final void logStartIndexer(String iName) {
+            if (getLogContext() != null) {
+                getLogContext().startIndexer(iName);
+            }
+        }
+        
+        protected final void logFinishIndexer(String iName) {
+            if (getLogContext() != null) {
+                getLogContext().finishIndexer(iName);
+            }
+        }
 
         protected final void logIndexerTime(
                 final @NonNull String indexerName,
                 final int time) {
             if (getLogContext() != null) {
+                // a relic, but since time is also counted in indexerStatistic, 
+                // it's less code than to finish indexer separately
                 getLogContext().addIndexerTime(indexerName, time);
             }
             if (!reportIndexerStatistics) {
@@ -3654,16 +3684,17 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
                                                     });
                                             }
                                             SPIAccessor.getInstance().putProperty(ctx.second, ClusteredIndexables.INDEX, ci);
+                                            long st = System.currentTimeMillis();
+                                            logStartIndexer(factory.getIndexerName());
                                             try {
-                                                long st = System.currentTimeMillis();
                                                 SPIAccessor.getInstance().index(indexer, indexables, ctx.second);
-                                                long et = System.currentTimeMillis();
-                                                logIndexerTime(factory.getIndexerName(), (int)(et-st));
                                             } catch (ThreadDeath td) {
                                                 throw td;
                                             } catch (Throwable t) {
                                                 LOGGER.log(Level.WARNING, null, t);
                                             }
+                                            long et = System.currentTimeMillis();
+                                            logIndexerTime(factory.getIndexerName(), (int)(et-st));
                                         } else {
                                             LOGGER.log(
                                                 Level.WARNING, "RefreshCifIndices ignored recently added factory: {0}", //NOI18N
@@ -4858,6 +4889,7 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
                         LOGGER.fine("Fake indexing: indexer=" + indexer); //NOI18N
                     }
                     long start = System.currentTimeMillis();
+                    logStartIndexer(info.getIndexerName());
                     try {
                         final Pair<String,Integer> indexerKey = Pair.<String,Integer>of(factory.getIndexerName(),factory.getIndexVersion());
                         final Pair<SourceIndexerFactory,Context> ctx = transactionContexts.get(indexerKey);

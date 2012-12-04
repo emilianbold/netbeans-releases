@@ -42,6 +42,7 @@ package org.netbeans.modules.parsing.impl;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
+import org.netbeans.modules.parsing.impl.indexing.LogContext;
 import org.netbeans.modules.parsing.impl.indexing.RepositoryUpdater;
 import org.netbeans.modules.parsing.impl.indexing.lucene.DocumentBasedIndexManager;
 import org.netbeans.modules.parsing.impl.indexing.lucene.LuceneIndexFactory;
@@ -72,6 +73,12 @@ public class Installer extends ModuleInstall {
                 });
             }
         });
+    }
+
+    @Override
+    public boolean closing() {
+        LogContext.notifyClosing();
+        return super.closing();
     }
 
     @Override
