@@ -99,6 +99,7 @@ public class PanelProjectLocationVisual extends SettingsPanel implements HelpCtx
 
     public static final String PROP_PROJECT_NAME = "projectName"; // NOI18N
     public static final String PROP_MAIN_NAME = "mainName"; // NOI18N
+    //changed from EDT thread only
     private volatile WizardValidationWorkerCheckState currentState = new WizardValidationWorkerCheckState(Boolean.TRUE, 
             new ValidationResult(Boolean.FALSE, NbBundle.getMessage(PanelProjectLocationVisual.class, "PanelProjectLocationVisual.Validating_Wizard")));//NOI18N
     private static final RequestProcessor RP = new RequestProcessor("Inot Hosts", 1); // NOI18N
@@ -1257,7 +1258,7 @@ public class PanelProjectLocationVisual extends SettingsPanel implements HelpCtx
                 projectParamsChanged.set(false);
             }
 
-            rescheduleTask();
+            handleProjectParamsChanges();
             //run pre-validation and to not schedule task
             if (projectNameTextField.getDocument() == e.getDocument()) {
                 firePropertyChange(PROP_PROJECT_NAME, null, projectNameTextField.getText());
@@ -1267,7 +1268,7 @@ public class PanelProjectLocationVisual extends SettingsPanel implements HelpCtx
             }
         }
 
-        private void rescheduleTask() {
+        private void handleProjectParamsChanges() {
             ValidationResult validationResult = new ValidationResult(Boolean.FALSE, NbBundle.getMessage(PanelProjectLocationVisual.class, "PanelProjectLocationVisual.Validating_Wizard"));
             currentState = new WizardValidationWorkerCheckState(Boolean.TRUE, validationResult);//NOI18N
             setError();
@@ -1295,7 +1296,7 @@ public class PanelProjectLocationVisual extends SettingsPanel implements HelpCtx
                 //ignore own ones
                 return;
             }
-            rescheduleTask();
+            handleProjectParamsChanges();
         }
     }
     
