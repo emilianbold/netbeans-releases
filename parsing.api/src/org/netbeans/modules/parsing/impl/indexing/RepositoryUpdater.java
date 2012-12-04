@@ -138,7 +138,7 @@ import org.openide.util.lookup.ServiceProvider;
  * @author Tomas Zezula
  */
 @SuppressWarnings("ClassWithMultipleLoggers")
-public final class RepositoryUpdater implements PathRegistryListener, ChangeListener, PropertyChangeListener, DocumentListener, AtomicLockListener {
+public final class RepositoryUpdater implements PathRegistryListener, PropertyChangeListener, DocumentListener, AtomicLockListener {
     /**
      * If the task is delayed longer than this constant from its schedule to execution, the previous task's info
      * will be chained to it. If the user cancels the task, the log will also contain the long-blocking predecessor.
@@ -175,7 +175,7 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
                 EditorRegistry.addPropertyChangeListener(this);
                 IndexerCache.getCifCache().addPropertyChangeListener(this);
                 IndexerCache.getEifCache().addPropertyChangeListener(this);
-                VisibilityQuery.getDefault().addChangeListener(this);
+                visibilitySupport.start();
                 if (force) {
                     work = new InitialRootsWork(
                         scannedRoots2Dependencies,
@@ -206,7 +206,7 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
                 PathRegistry.getDefault().removePathRegistryListener(this);
                 rootsListeners.setListener(null, null);
                 EditorRegistry.removePropertyChangeListener(this);
-
+                visibilitySupport.stop();
                 cancel = true;
             }
         }
@@ -581,73 +581,11 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
         }
     }
 
-    @Override
-    public void stateChanged (@NonNull final ChangeEvent event) {
-        visibilityCache.clear();
-        if (Crawler.listenOnVisibility()) {
-            if (visibilityLogCtx.get()==null) {
-                visibilityLogCtx.compareAndSet(null, LogContext.create(LogContext.EventType.FILE, null));
-            }
-            visibilityChanged.schedule(VISIBILITY_CHANGE_WINDOW);
-        }
-    }
-
     // -----------------------------------------------------------------------
     // FileChangeListener implementation
     // -----------------------------------------------------------------------
     
     private final FileEventLog eventQueue = new FileEventLog();
-    //@GuardedBy("visibilityCache")
-    private final Map<FileObject,Boolean> visibilityCache = Collections.synchronizedMap(new WeakHashMap<FileObject, Boolean>());
-
-    private boolean isVisible(
-        @NonNull FileObject file,
-        @NullAllowed final FileObject root) {
-        long st = 0L;
-        if (PERF_LOGGER.isLoggable(Level.FINE)) {
-            st = System.currentTimeMillis();
-        }
-        try {
-            final VisibilityQuery vq = VisibilityQuery.getDefault();
-            final Deque<FileObject> fta = new ArrayDeque<FileObject>();
-            Boolean vote = null;
-            boolean folder = false;
-            while (root != null && !root.equals(file)) {
-                vote = visibilityCache.get(file);
-                if (vote != null) {
-                    break;
-                }
-                if (folder || file.isFolder()) {
-                    fta.offer(file);
-                }
-                if (!vq.isVisible(file)) {
-                    vote = Boolean.FALSE;
-                    break;
-                }
-                file = file.getParent();
-                folder = true;
-            }
-            if (vote == null) {
-                vote = vq.isVisible(file);
-                fta.offer(file);
-            }
-            if (!fta.isEmpty()) {
-                synchronized(visibilityCache) {
-                    for (FileObject nf : fta) {
-                        visibilityCache.put(nf, vote);
-                    }
-                }
-            }
-            return vote;
-        } finally {
-            if (PERF_LOGGER.isLoggable(Level.FINE)) {
-                PERF_LOGGER.log(
-                    Level.FINE,
-                    "reportVisibilityOverhead: {0}",    //NOI18N
-                    (System.currentTimeMillis() - st));
-            }
-        }
-    }
 
     private void fileFolderCreatedImpl(FileEvent fe, Boolean source) {
         FileObject fo = fe.getFile();
@@ -668,7 +606,7 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
         if (fo != null && fo.isValid()) {
             if (source == null || source.booleanValue()) {
                 root = getOwningSourceRoot(fo);
-                if (root != null && isVisible(fo, root.second)) {
+                if (root != null && visibilitySupport.isVisible(fo, root.second)) {
                     if (root.second == null) {
                         LOGGER.log(
                             Level.INFO,
@@ -741,7 +679,7 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
 
             if (!processed && (source == null || !source.booleanValue())) {
                 root = getOwningBinaryRoot(fo);
-                if (root != null && isVisible(fo, root.second)) {
+                if (root != null && visibilitySupport.isVisible(fo, root.second)) {
                     final Work wrk = new BinaryWork(
                         root.first,
                         suspendSupport.getSuspendStatus(),
@@ -776,7 +714,7 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
         if (fo != null && fo.isValid()) {
             if (source == null || source.booleanValue()) {
                 root = getOwningSourceRoot (fo);
-                if (root != null && isVisible(fo,root.second)) {
+                if (root != null && visibilitySupport.isVisible(fo,root.second)) {
                     if (root.second == null) {
                         LOGGER.log(
                             Level.INFO,
@@ -808,7 +746,7 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
 
             if (!processed && (source == null || !source.booleanValue())) {
                 root = getOwningBinaryRoot(fo);
-                if (root != null && isVisible(fo,root.second)) {
+                if (root != null && visibilitySupport.isVisible(fo,root.second)) {
                     final Work wrk = new BinaryWork(
                         root.first,
                         suspendSupport.getSuspendStatus(),
@@ -849,7 +787,7 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
         if (fo != null) {
             if (source == null || source.booleanValue()) {
                 root = getOwningSourceRoot (fo);
-                if (root != null && fo.isData() && isVisible(fo, root.second)) {
+                if (root != null && fo.isData() && visibilitySupport.isVisible(fo, root.second)) {
                     String relativePath = null;
                     try {
                     //Root may be deleted -> no root.second available
@@ -878,7 +816,7 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
 
             if (!processed && (source == null || !source.booleanValue())) {
                 root = getOwningBinaryRoot(fo);
-                if (root != null && isVisible(fo, root.second)) {
+                if (root != null && visibilitySupport.isVisible(fo, root.second)) {
                     final Work wrk = new BinaryWork(
                         root.first,
                         suspendSupport.getSuspendStatus(),
@@ -959,7 +897,7 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
                         }
                     }
 
-                    if (isVisible(newFile,root.second)) {
+                    if (visibilitySupport.isVisible(newFile,root.second)) {
                         final boolean sourceForBinaryRoot = sourcesForBinaryRoots.contains(root.first);
                         ClassPath.Entry entry = sourceForBinaryRoot ? null : getClassPathEntry(rootFo);
                         if (entry == null || entry.includes(newFile)) {
@@ -1259,7 +1197,6 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
     private static final String PROP_OWNING_SOURCE_ROOT_URL = RepositoryUpdater.class.getName() + "-owning-source-root-url"; //NOI18N
     private static final String PROP_OWNING_SOURCE_ROOT = RepositoryUpdater.class.getName() + "-owning-source-root"; //NOI18N
     private static final String PROP_OWNING_SOURCE_UNKNOWN_IN = RepositoryUpdater.class.getName() + "-owning-source-root-unknown-in"; //NOI18N
-    private static final int VISIBILITY_CHANGE_WINDOW = 500;
     private static final String INDEX_DOWNLOAD_FOLDER = "index-download";   //NOI18N
 
     /* test */ static final List<URL> EMPTY_DEPS = Collections.unmodifiableList(new LinkedList<URL>());
@@ -1304,15 +1241,7 @@ public final class RepositoryUpdater implements PathRegistryListener, ChangeList
     private final FileChangeListener binaryRootsListener = new FCL(Boolean.FALSE);
     private final ThreadLocal<Boolean> inIndexer = new ThreadLocal<Boolean>();
 
-    //Todo: Separate visibility to new class
-    private final AtomicReference<LogContext> visibilityLogCtx = new AtomicReference<LogContext>();
-    private final RequestProcessor.Task visibilityChanged = RP.create(new Runnable() {
-        @Override
-        public void run() {
-            LOGGER.fine ("VisibilityQuery changed, reindexing");    //NOI18N
-            refreshAll(false, false, true, visibilityLogCtx.getAndSet(null));
-        }
-    });
+   private final VisibilitySupport visibilitySupport = VisibilitySupport.create(this, RP);
    private final SuspendSupport suspendSupport = new SuspendSupport(WORKER);
    private final AtomicLong scannedRoots2DependenciesLamport = new AtomicLong();
 
