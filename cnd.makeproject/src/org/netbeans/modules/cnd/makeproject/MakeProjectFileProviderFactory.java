@@ -138,7 +138,8 @@ public class MakeProjectFileProviderFactory implements FileProviderFactory {
      */
     public static void removeSearchBase(Project project){
         searchBase.remove(project);
-        fileNameSearchBase.remove(project);
+        // 223003 - memory leaked project instance 
+        fileNameSearchBase.remove(project); // prevent leak
     }
 
     public static void removeFromSearchBase(Project project, Folder folder, CharSequence item) {
