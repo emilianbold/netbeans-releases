@@ -131,6 +131,11 @@ public final class Utils {
     private static final Logger METRICS_LOG = Logger.getLogger("org.netbeans.ui.metrics.vcs");
 
     /**
+     * Metrics logger
+     */
+    private static final Logger UIGESTURES_LOG = Logger.getLogger("org.netbeans.ui.vcs"); //NOI18N
+
+    /**
      * Keeps track about already logged metrics events
      */
     private static final Set<String> metrics = new HashSet<String>(3);
@@ -1034,6 +1039,31 @@ public final class Utils {
         rec.setParameters(new Object[] { vcs });
         rec.setLoggerName(METRICS_LOG.getName());
         METRICS_LOG.log(rec);
+    }
+    
+    /**
+     * Logs vcs command usage.
+     *
+     * @param vcs - the particular vcs "GIT", "HG", ...
+     * @param time - time in millis the command took to finish
+     * @param modifications - number of modified/created/deleted files during 
+     * the command's progress
+     * @param command - command name
+     * @param external - true if the command was invoked externally
+     * (e.g. on commandline) and not from within the IDE.
+     */
+    public static void logVCSCommandUsageEvent (String vcs, long time,
+            long modifications, String command, boolean external) {
+        if (command == null) {
+            command = "UNKNOWN"; //NOI18N
+        }
+        LogRecord rec = new LogRecord(Level.INFO, "USG_VCS_CMD"); //NOI18N
+        String cmdType = external ? "EXTERNAL" : "INTERNAL";
+        rec.setResourceBundle(NbBundle.getBundle(Utils.class));
+        rec.setResourceBundleName(Utils.class.getPackage().getName() + ".Bundle"); //NOI18N
+        rec.setParameters(new Object[] { vcs, time, modifications, command, cmdType });
+        rec.setLoggerName(UIGESTURES_LOG.getName());
+        UIGESTURES_LOG.log(rec);
     }
 
     private static boolean checkMetricsKey(String key) {
