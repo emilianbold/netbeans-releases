@@ -57,6 +57,7 @@ import org.netbeans.modules.cnd.makeproject.api.MakeCustomizerProvider;
 import org.netbeans.modules.cnd.makeproject.api.MakeProjectCustomizer;
 import org.netbeans.modules.cnd.makeproject.api.MakeProjectCustomizerAdaptor;
 import org.netbeans.modules.cnd.spi.toolchain.ErrorParserProvider;
+import org.netbeans.modules.cnd.spi.toolchain.ErrorParserProvider.OutputListenerRegistry;
 import org.netbeans.modules.cnd.spi.toolchain.ErrorParserProvider.Result;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.HostInfo;
@@ -118,6 +119,10 @@ public final class LDErrorParser implements ErrorParserProvider.ErrorParser {
         } catch (CancellationException ex) {
             Exceptions.printStackTrace(ex);
         }
+    }
+
+    @Override
+    public void setOutputListenerRegistry(OutputListenerRegistry regestry) {
     }
 
     @Override

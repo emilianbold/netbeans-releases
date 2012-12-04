@@ -56,6 +56,7 @@ import org.netbeans.modules.tasks.ui.actions.Actions.OpenQueryAction;
 import org.netbeans.modules.tasks.ui.settings.DashboardSettings;
 import org.netbeans.modules.tasks.ui.treelist.TreeLabel;
 import org.netbeans.modules.tasks.ui.treelist.TreeListNode;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -111,8 +112,8 @@ public class QueryNode extends TaskContainerNode implements Comparable<QueryNode
         List<Issue> tasks = Collections.emptyList();
         try {
             tasks = new ArrayList<Issue>(query.getIssues());
-        } catch (Exception ex) {
-            handleError(ex.getMessage());
+        } catch (Throwable throwable) {
+            handleError(throwable);
         }
         return tasks;
     }

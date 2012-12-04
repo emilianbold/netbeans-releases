@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,38 +37,16 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2010 Sun Microsystems, Inc.
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.cnd.debugger.common2.debugger.spi;
 
-package org.netbeans.modules.cnd.toolchain.execution;
-
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import org.openide.filesystems.FileObject;
+import org.netbeans.modules.cnd.debugger.common2.debugger.api.EngineType;
 
 /**
  *
- * @author Alexander Simon
+ * @author Nikolay Koldunov
  */
-public class OutputListenerFactory {
-    private final Map<FileObject,List<OutputListenerImpl>> storage = new HashMap<FileObject,List<OutputListenerImpl>>();
-    private final Map<OutputListenerImpl,FileObject> listeners = new HashMap<OutputListenerImpl,FileObject>();
-
-    public OutputListenerImpl register(FileObject file, int line, boolean isError, String description) {
-        OutputListenerImpl res = new OutputListenerImpl(this, file, line, isError, description);
-        List<OutputListenerImpl> list = storage.get(file);
-        if (list == null) {
-            list = new ArrayList<OutputListenerImpl>();
-            storage.put(file, list);
-        }
-        list.add(res);
-        listeners.put(res, file);
-        return res;
-    }
-
-    public List<OutputListenerImpl> getFileListeners(FileObject file){
-        return storage.get(file);
-    }
+public interface UserDebugCoreAction {
+    void debugCore(String corefile, String executable, EngineType type);
 }

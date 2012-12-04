@@ -3684,7 +3684,7 @@ public class HgCommand {
                     logExternalRepositories(repository, hgCommand);
                 }
                 if (modifiesRepository(hgCommand) && repository != null) {
-                    return Mercurial.getInstance().runWithoutExternalEvents(repository, callable);
+                    return Mercurial.getInstance().runWithoutExternalEvents(repository, hgCommand, callable);
                 } else {
                     return callable.call();
                 }
@@ -4305,7 +4305,7 @@ public class HgCommand {
         command.add(FileUtil.normalizeFile(file).getAbsolutePath());
         List<String> list;
         try {
-            list = Mercurial.getInstance().runWithoutExternalEvents(repository, new Callable<List<String>>() {
+            list = Mercurial.getInstance().runWithoutExternalEvents(repository, HG_RESOLVE_CMD, new Callable<List<String>>() {
                 @Override
                 public List<String> call () throws Exception {
                     return exec(command);
