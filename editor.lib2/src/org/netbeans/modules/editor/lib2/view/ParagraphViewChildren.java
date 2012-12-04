@@ -481,14 +481,15 @@ final class ParagraphViewChildren extends ViewChildren<EditorView> {
                     logBuilder.append("START-part:").append(ViewUtils.toString(startPartAlloc)); // NOI18N
                 }
                 ret = wrapLine.startPart.view.modelToViewChecked(offset, startPartAlloc, bias);
-            } else if (wrapLine.endPart != null && offset >= wrapLine.endPart.view.getStartOffset()) {
+            } else if (wrapLine.endPart != null && (offset >= wrapLine.endPart.view.getStartOffset() ||
+                    !wrapLine.hasFullViews())) // Fallback for invalid offset
+            {
                 Shape endPartAlloc = endPartAlloc(wrapLineBounds, wrapLine, pView);
                 if (logBuilder != null) {
                     logBuilder.append("END-part:").append(ViewUtils.toString(endPartAlloc)); // NOI18N
                 }
                 ret = wrapLine.endPart.view.modelToViewChecked(offset, endPartAlloc, bias);
             } else {
-                assert (wrapLine.hasFullViews()) : wrapInfo.dumpWrapLine(pView, wrapLineIndex);
                 for (int i = wrapLine.firstViewIndex; i < wrapLine.endViewIndex; i++) {
                     EditorView view = pView.getEditorView(i);
                     if (offset < view.getEndOffset()) {
@@ -497,6 +498,12 @@ final class ParagraphViewChildren extends ViewChildren<EditorView> {
                         assert (ret != null);
                         break;
                     }
+                }
+                // Fallback for invalid offset - use last offset of last view
+                if (ret == null && wrapLine.hasFullViews()) {
+                    EditorView view = pView.getEditorView(wrapLine.endViewIndex - 1);
+                    Shape viewAlloc = wrapAlloc(wrapLineBounds, wrapLine, wrapLine.endViewIndex - 1, pView);
+                    ret = view.modelToViewChecked(view.getEndOffset() - 1, viewAlloc, bias);
                 }
             }
             if (logBuilder != null) {

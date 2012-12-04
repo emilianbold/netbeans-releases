@@ -48,10 +48,14 @@ import java.awt.FileDialog;
 import java.awt.Frame;
 import java.awt.HeadlessException;
 import java.io.File;
+import java.io.FilenameFilter;
+import java.io.IOException;
+import java.net.URI;
 import java.util.prefs.Preferences;
 import javax.swing.JFileChooser;
 import javax.swing.SwingUtilities;
 import javax.swing.filechooser.FileFilter;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.NbPreferences;
 import org.openide.util.Utilities;
 
@@ -96,7 +100,8 @@ public class FileChooser extends JFileChooser {
         if (FileChooser.getCurrentChooserFile() == null && feedFilePathFile == null) {
             feedFilePathFile = new File(getLastPath());
         }
-        if (FileChooser.getCurrentChooserFile() == null && feedFilePathFile.getParentFile() != null && feedFilePathFile.getParentFile().exists()) {
+        if (FileChooser.getCurrentChooserFile() == null && feedFilePathFile != null && 
+            feedFilePathFile.getParentFile() != null && feedFilePathFile.getParentFile().exists()) {
             FileChooser.setCurrentChooserFile(feedFilePathFile.getParentFile());
             useParent = false;
         }
@@ -115,7 +120,7 @@ public class FileChooser extends JFileChooser {
             if (sd != null) {
                 File sdFile = new File(sd);
                 if (sdFile.exists()) {
-                    return sdFile;
+                    return wrapFileNoCanonicalize(sdFile);
                 }
             }
         }
@@ -217,6 +222,76 @@ public class FileChooser extends JFileChooser {
     }
 
     public static void setCurrentChooserFile(File aCurrentChooserFile) {
-        currentChooserFile = aCurrentChooserFile;
+        currentChooserFile = wrapFileNoCanonicalize(aCurrentChooserFile);
     }
+    
+    private static File wrapFileNoCanonicalize(File f) {
+        if (f instanceof FileChooser.NonCanonicalizingFile) {
+            return f;
+        } else if (f != null) {
+            return new FileChooser.NonCanonicalizingFile(f);
+        } else {
+            return null;
+        }
+    }
+
+    private static File[] wrapFilesNoCanonicalize(File[] fs) {
+        if (fs != null) {
+            for (int i = 0; i < fs.length; i++) {
+                fs[i] = wrapFileNoCanonicalize(fs[i]);
+            }
+        }
+
+        return fs;
+    }
+
+    private static final class NonCanonicalizingFile extends File {
+
+        public NonCanonicalizingFile(File orig) {
+            this(orig.getPath());
+        }
+
+        private NonCanonicalizingFile(String path) {
+            super(path);
+        }
+
+        private NonCanonicalizingFile(URI uri) {
+            super(uri);
+        }
+
+        @Override
+        public File getCanonicalFile() throws IOException {
+            return wrapFileNoCanonicalize(FileUtil.normalizeFile(super.getAbsoluteFile()));
+        }
+
+        @Override
+        public String getCanonicalPath() throws IOException {
+            return FileUtil.normalizeFile(super.getAbsoluteFile()).getAbsolutePath();
+        }
+
+        @Override
+        public File getParentFile() {
+            return wrapFileNoCanonicalize(super.getParentFile());
+        }
+
+        @Override
+        public File getAbsoluteFile() {
+            return wrapFileNoCanonicalize(super.getAbsoluteFile());
+        }
+
+        @Override
+        public File[] listFiles() {
+            return wrapFilesNoCanonicalize(super.listFiles());
+        }
+
+        @Override
+        public File[] listFiles(java.io.FileFilter filter) {
+            return wrapFilesNoCanonicalize(super.listFiles(filter));
+        }
+
+        @Override
+        public File[] listFiles(FilenameFilter filter) {
+            return wrapFilesNoCanonicalize(super.listFiles(filter));
+        }
+    }    
 }

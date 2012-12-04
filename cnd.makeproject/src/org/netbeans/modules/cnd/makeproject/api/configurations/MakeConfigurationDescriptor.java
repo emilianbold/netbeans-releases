@@ -1487,7 +1487,7 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
             if (canonicalPath != null) {
                 int canonicalPathLength = canonicalPath.length();
                 for (String sourceRoot : sourceRoots) {
-                    String absSourceRoot = CndPathUtilitities.toAbsolutePath(getBaseDir(), sourceRoot);
+                    String absSourceRoot = CndPathUtilitities.toAbsolutePath(getBaseDirFileObject(), sourceRoot);
                     String canonicalSourceRoot;
                     try {
                         canonicalSourceRoot = FileSystemProvider.getCanonicalPath(baseDirFS, absSourceRoot);
@@ -1781,24 +1781,27 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
             return;
         }
         ArrayList<NativeFileItem> filesAdded = new ArrayList<NativeFileItem>();
-        Folder top;
-        top = folder.findFolderByAbsolutePath(dir.getPath());
-        if (top == null) {
-            top = new Folder(folder.getConfigurationDescriptor(), folder, dir.getNameExt(), dir.getNameExt(), true, folderKind);
-            folder.addFolder(top, true);
-        }
-        assert top.getKind() == folderKind;
+        Folder srcRoot;
+        srcRoot = folder.findFolderByAbsolutePath(dir.getPath());
+        String rootPath = null;
         if (folderKind == Folder.Kind.SOURCE_DISK_FOLDER) {
-            String rootPath = ProjectSupport.toProperPath(baseDirFO, dir, project);
+            rootPath = ProjectSupport.toProperPath(baseDirFO, dir, project);
             rootPath = CndPathUtilitities.normalizeSlashes(rootPath);
-            top.setRoot(rootPath);
-        }        
-        addFilesImpl(new HashSet<String>(), top, dir, null, filesAdded, true, true, fileFilter, true/*all found are included by default*/);
+        }
+        if (srcRoot == null) {
+            srcRoot = new Folder(folder.getConfigurationDescriptor(), folder, dir.getNameExt(), dir.getNameExt(), true, folderKind);
+            if (folderKind == Folder.Kind.SOURCE_DISK_FOLDER) {
+                srcRoot.setRoot(rootPath);
+            }
+            srcRoot = folder.addFolder(srcRoot, true);
+        }
+        assert srcRoot.getKind() == folderKind;
+        addFilesImpl(new HashSet<String>(), srcRoot, dir, null, filesAdded, true, true, fileFilter, true/*all found are included by default*/);
         if (getNativeProjectChangeSupport() != null) { // once not null, it never becomes null
             getNativeProjectChangeSupport().fireFilesAdded(filesAdded);
         }
         if (attachListeners) {
-            top.attachListeners();
+            srcRoot.attachListeners();
         }
 
         addSourceRoot(dir.getPath());

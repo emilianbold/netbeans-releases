@@ -74,10 +74,12 @@ import org.netbeans.modules.cnd.debugger.common2.debugger.remote.Host;
 import org.netbeans.modules.cnd.debugger.common2.debugger.debugtarget.DebugTarget;
 import org.netbeans.modules.cnd.debugger.common2.debugger.NativeDebuggerManager;
 import org.netbeans.modules.cnd.debugger.common2.debugger.api.EngineType;
+import org.netbeans.modules.cnd.debugger.common2.debugger.spi.UserDebugCoreAction;
 import org.netbeans.modules.cnd.debugger.common2.utils.IpeUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.openide.filesystems.FileObject;
+import org.openide.util.Lookup;
 
 /**
  * Debug a corefile after putting up a corefile chooser.
@@ -176,6 +178,16 @@ public class DebugCoreAction extends SystemAction {
         String hostName = coreDialogPanel.getHostName();
 	EngineType engineType = coreDialogPanel.getEngine();
 
+        if (noproject) {
+            UserDebugCoreAction action = Lookup.getDefault().lookup(UserDebugCoreAction.class);
+            if (action != null) {
+                if (Catalog.get("AutoCoreExe").equals(executable)) { // NOI18N
+                    executable = null;
+                }
+                action.debugCore(corefile, executable, engineType);
+                return;
+            }
+        }
 
         //
         // Create Project and configuration as needed.
