@@ -116,7 +116,6 @@ public final class DashboardViewer implements PropertyChangeListener {
     private final Object LOCK_CATEGORIES = new Object();
     private final Object LOCK_REPOSITORIES = new Object();
     private Map<Category, CategoryNode> mapCategoryToNode;
-    private Map<Issue, TaskNode> mapTaskToNode;
     private List<CategoryNode> categoryNodes;
     private List<RepositoryNode> repositoryNodes;
     private AppliedFilters<Issue> appliedTaskFilters;
@@ -153,7 +152,6 @@ public final class DashboardViewer implements PropertyChangeListener {
         dashboardComponent.setBackground(ColorManager.getDefault().getDefaultBackground());
         dashboardComponent.getViewport().setBackground(ColorManager.getDefault().getDefaultBackground());
         mapCategoryToNode = new HashMap<Category, CategoryNode>();
-        mapTaskToNode = new HashMap<Issue, TaskNode>();
         categoryNodes = new ArrayList<CategoryNode>();
         repositoryNodes = new ArrayList<RepositoryNode>();
 
@@ -239,24 +237,13 @@ public final class DashboardViewer implements PropertyChangeListener {
         }
     }
 
-    void setSelection(Collection<Issue> toSelect) {
-        for (Issue issue : toSelect) {
-            TaskNode taskNode = mapTaskToNode.get(issue);
+    void setSelection(Collection<TaskNode> toSelect) {
+        for (TaskNode taskNode : toSelect) {
             TreeListNode parent = taskNode.getParent();
             if (!parent.isExpanded()) {
                 parent.setExpanded(true);
             }
             treeList.setSelectedValue(taskNode, true);
-        }
-    }
-
-    void addTaskMapEntry(Issue issue, TaskNode taskNode) {
-        mapTaskToNode.put(issue, taskNode);
-    }
-
-    void removeTaskMapEntries(TaskNode... taskNodes) {
-        for (TaskNode taskNode : taskNodes) {
-            mapTaskToNode.remove(taskNode.getTask());
         }
     }
 
@@ -321,6 +308,8 @@ public final class DashboardViewer implements PropertyChangeListener {
     }
 
     public void addTaskToCategory(Category category, TaskNode... taskNodes) {
+        ArrayList<TaskNode> toSelect = new ArrayList<TaskNode>();
+        CategoryNode destCategoryNode = mapCategoryToNode.get(category);
         for (TaskNode taskNode : taskNodes) {
             TaskNode categorizedTaskNode = getCategorizedTask(taskNode);
             //task is already categorized (task exists within categories)
@@ -332,7 +321,6 @@ public final class DashboardViewer implements PropertyChangeListener {
                 //task is already in another category, dont add new taskNode but move existing one
                 taskNode = categorizedTaskNode;
             }
-            CategoryNode destCategoryNode = mapCategoryToNode.get(category);
             final boolean isCatInFilter = isCategoryInFilter(destCategoryNode);
             final boolean isTaskInFilter = appliedTaskFilters.isInFilter(taskNode.getTask());
             TaskNode toAdd = new TaskNode(taskNode.getTask(), destCategoryNode);
@@ -346,14 +334,13 @@ public final class DashboardViewer implements PropertyChangeListener {
                 if (DashboardViewer.getInstance().isTaskNodeActive(taskNode)) {
                     DashboardViewer.getInstance().setActiveTaskNode(toAdd);
                 }
-                ArrayList<Issue> toSelect = new ArrayList<Issue>();
-                toSelect.add(taskNode.getTask());
-                destCategoryNode.updateContentAndSelect(toSelect);
+                toSelect.add(taskNode);
             }
             if (isTaskInFilter && !isCatInFilter) {
                 addCategoryToModel(destCategoryNode);
             }
         }
+        destCategoryNode.updateContentAndSelect(toSelect);
         storeCategory(category);
     }
 
@@ -1055,7 +1042,6 @@ public final class DashboardViewer implements PropertyChangeListener {
                 repositoryNode.updateContent();
             }
         }
-        mapTaskToNode.clear();
         setRepositories(repositoryNodes);
         setCategories(categoryNodes);
     }

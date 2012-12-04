@@ -73,7 +73,7 @@ public abstract class TaskContainerNode extends AsynchronousNode<List<Issue>> {
     private TaskListener taskListener;
     private boolean refresh;
     private final Object LOCK = new Object();
-    private Collection<Issue> toSelect;
+    private Collection<TaskNode> toSelect;
     protected List<TreeLabel> labels;
     protected List<LinkButton> buttons;
     private int pageSize;
@@ -146,7 +146,7 @@ public abstract class TaskContainerNode extends AsynchronousNode<List<Issue>> {
         updateContentAndSelect(null);
     }
 
-    void updateContentAndSelect(Collection<Issue> toSelect) {
+    void updateContentAndSelect(Collection<TaskNode> toSelect) {
         this.toSelect = toSelect;
         final boolean empty = getChildren().isEmpty();
         boolean expand = toSelect != null && !toSelect.isEmpty() && !isExpanded();
@@ -215,7 +215,6 @@ public abstract class TaskContainerNode extends AsynchronousNode<List<Issue>> {
             if (taskListener == null) {
                 taskListener = new TaskListener();
             }
-            removeTasksFromMap(dashboard);
             taskNodes = new ArrayList<TaskNode>(issues.size());
             filteredTaskNodes = new ArrayList<TaskNode>(issues.size());
             for (Issue issue : issues) {
@@ -224,7 +223,6 @@ public abstract class TaskContainerNode extends AsynchronousNode<List<Issue>> {
                 adjustTaskNode(taskNode);
                 taskNodes.add(taskNode);
                 if (appliedFilters.isInFilter(issue)) {
-                    dashboard.addTaskMapEntry(issue, taskNode);
                     filteredTaskNodes.add(taskNode);
                 }
             }
@@ -261,8 +259,10 @@ public abstract class TaskContainerNode extends AsynchronousNode<List<Issue>> {
     }
 
     final void showAdditionalPage() {
+        Collection<TaskNode> list = new ArrayList<TaskNode>(1);
+        list.add(filteredTaskNodes.get(getTaskCountToShow() - 1));
         pageCountShown++;
-        updateContent();
+        updateContentAndSelect(list);
     }
 
     @Override
@@ -311,19 +311,11 @@ public abstract class TaskContainerNode extends AsynchronousNode<List<Issue>> {
     private void refilterTaskNodes() {
         DashboardViewer dashboard = DashboardViewer.getInstance();
         AppliedFilters appliedFilters = dashboard.getAppliedTaskFilters();
-        removeTasksFromMap(dashboard);
         filteredTaskNodes.clear();
         for (TaskNode taskNode : taskNodes) {
             if (appliedFilters.isInFilter(taskNode.getTask())) {
-                dashboard.addTaskMapEntry(taskNode.getTask(), taskNode);
                 filteredTaskNodes.add(taskNode);
             }
-        }
-    }
-
-    private void removeTasksFromMap(DashboardViewer dashboard) {
-        if (filteredTaskNodes != null && !filteredTaskNodes.isEmpty()) {
-            dashboard.removeTaskMapEntries(filteredTaskNodes.toArray(new TaskNode[filteredTaskNodes.size()]));
         }
     }
 
