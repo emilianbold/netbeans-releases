@@ -550,23 +550,23 @@ public class ModelVisitor extends PathNodeVisitor {
             if (docHolder.isClass(functionNode)) {
                 fncScope.setJsKind(JsElement.Kind.CONSTRUCTOR);
             }
-            Set<JsModifier> modifiers = docHolder.getModifiers(functionNode);
-            for(JsModifier modifier : modifiers) {
-                switch(modifier) {
-                    case PUBLIC:
-                        fncScope.getModifiers().add(Modifier.PUBLIC);
-                        fncScope.getModifiers().remove(Modifier.PRIVATE);
-                        break;
-                    case PRIVATE:
-                        fncScope.getModifiers().add(Modifier.PRIVATE);
-                        fncScope.getModifiers().remove(Modifier.PUBLIC);
-                        break;
-                    case STATIC:
-                        fncScope.getModifiers().add(Modifier.STATIC);
-                        break;
-                }
-                
-            }
+//            Set<JsModifier> modifiers = docHolder.getModifiers(functionNode);
+//            for(JsModifier modifier : modifiers) {
+//                switch(modifier) {
+//                    case PUBLIC:
+//                        fncScope.getModifiers().add(Modifier.PUBLIC);
+//                        fncScope.getModifiers().remove(Modifier.PRIVATE);
+//                        break;
+//                    case PRIVATE:
+//                        fncScope.getModifiers().add(Modifier.PRIVATE);
+//                        fncScope.getModifiers().remove(Modifier.PUBLIC);
+//                        break;
+//                    case STATIC:
+//                        fncScope.getModifiers().add(Modifier.STATIC);
+//                        break;
+//                }
+//                
+//            }
         }
 
         for (FunctionNode fn : functions) {
