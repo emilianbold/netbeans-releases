@@ -42,7 +42,10 @@
 package org.netbeans.modules.javascript2.editor;
 
 import java.io.File;
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.modules.javascript2.editor.classpath.ClasspathProviderImplAccessor;
@@ -74,14 +77,12 @@ public class JsCodeCompletionArgumentsTest extends JsCodeComplationBase {
     
     @Override
     protected Map<String, ClassPath> createClassPathsForTest() {
+        List<FileObject> cpRoots = new LinkedList<FileObject>(Arrays.asList(ClasspathProviderImplAccessor.getJsStubs()));
+        cpRoots.add(FileUtil.toFileObject(new File(getDataDir(), "/testfiles/completion/arguments")));
+        cpRoots.add(FileUtil.toFileObject(new File(getDataDir(), "/testfiles/completion/lib")));
         return Collections.singletonMap(
             JS_SOURCE_ID,
-            ClassPathSupport.createClassPath(new FileObject[] {
-                ClasspathProviderImplAccessor.getJsStubs(),
-                FileUtil.toFileObject(new File(getDataDir(), "/testfiles/completion/arguments")),
-                FileUtil.toFileObject(new File(getDataDir(), "/testfiles/completion/lib"))
-            })
+            ClassPathSupport.createClassPath(cpRoots.toArray(new FileObject[cpRoots.size()]))
         );
     }
-    
 }
