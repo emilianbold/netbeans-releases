@@ -162,7 +162,7 @@ abstract class ModelElementImpl extends PHPElement implements ModelElement {
         if (fileObject != null) {
             filePath = fileObject.getPath();
         }
-        return getNamespaceName().append(QualifiedName.create(getName())).toString().toLowerCase() + String.valueOf(offsetRange.getStart())+filePath;
+        return getNamespaceName().append(QualifiedName.create(getName())).toString().toLowerCase() + String.valueOf(offsetRange.getStart()) + filePath;
     }
 
     static boolean nameKindMatch(Pattern p, String text) {
