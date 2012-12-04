@@ -48,6 +48,7 @@ import junit.framework.Test;
 import org.netbeans.modules.cnd.remote.test.RemoteDevelopmentTest;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.cnd.makeproject.MakeProject;
+import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.nativeexecution.test.ForAllEnvironments;
 import org.netbeans.spi.project.ActionProvider;
 
@@ -55,6 +56,7 @@ import org.netbeans.spi.project.ActionProvider;
  * @author Vladimir Kvashin
  */
 public class RemoteBuildMakefileTestCase extends RemoteBuildTestBase {
+    static final boolean ENABLE_SCP = CndUtils.getBoolean("cnd.remote.scp", false); // NOI18N
 
     public RemoteBuildMakefileTestCase(String testName) {
         super(testName);
@@ -77,7 +79,11 @@ public class RemoteBuildMakefileTestCase extends RemoteBuildTestBase {
 
     @ForAllEnvironments
     public void testBuildMakefileWithExt_scp_gnu() throws Exception {
-        doTest(Sync.ZIP, Toolchain.GNU);
+        if (ENABLE_SCP) {
+            doTest(Sync.ZIP, Toolchain.GNU);
+        } else {
+            System.out.println("Sync.ZIP: testBuildMakefileWithExt_scp_gnu is skipped. 'cnd.remote.scp' property is set to 'false'.");
+        }
     }
 
     @ForAllEnvironments
@@ -92,7 +98,11 @@ public class RemoteBuildMakefileTestCase extends RemoteBuildTestBase {
 
     @ForAllEnvironments
     public void testBuildMakefileWithExt_scp_sunstudio() throws Exception {
-        doTest(Sync.ZIP, Toolchain.SUN);
+        if (ENABLE_SCP) {
+            doTest(Sync.ZIP, Toolchain.SUN);
+        } else {
+            System.out.println("Sync.ZIP: testBuildMakefileWithExt_scp_sunstudio is skipped. 'cnd.remote.scp' property is set to 'false'.");
+        }
     }
 
     @ForAllEnvironments
