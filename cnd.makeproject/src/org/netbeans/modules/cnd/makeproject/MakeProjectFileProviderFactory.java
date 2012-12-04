@@ -138,6 +138,7 @@ public class MakeProjectFileProviderFactory implements FileProviderFactory {
      */
     public static void removeSearchBase(Project project){
         searchBase.remove(project);
+        fileNameSearchBase.remove(project);
     }
 
     public static void removeFromSearchBase(Project project, Folder folder, CharSequence item) {
