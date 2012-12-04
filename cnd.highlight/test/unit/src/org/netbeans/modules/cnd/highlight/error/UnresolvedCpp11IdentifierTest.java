@@ -118,7 +118,11 @@ public class UnresolvedCpp11IdentifierTest extends ErrorHighlightingBaseTestCase
         // Bug 222886 - C++11: brace-Initialization 
         performStaticTest("bug222886.cpp");
     }        
-    
+
+    public void testBug222884() throws Exception {
+        // Bug 222884 - unexpected "," operator
+        performStaticTest("bug222884.cpp");
+    }            
     
     /////////////////////////////////////////////////////////////////////
     // FAILS
