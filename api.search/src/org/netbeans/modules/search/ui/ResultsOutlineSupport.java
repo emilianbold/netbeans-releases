@@ -138,6 +138,7 @@ public class ResultsOutlineSupport {
         outlineView.getOutline().setDefaultRenderer(Node.Property.class,
                 new ResultsOutlineCellRenderer());
         setOutlineColumns();
+        outlineView.getOutline().setAutoCreateColumnsFromModel(false);
         outlineView.addTreeExpansionListener(
                 new ExpandingTreeExpansionListener());
         outlineView.getOutline().setRootVisible(false);
