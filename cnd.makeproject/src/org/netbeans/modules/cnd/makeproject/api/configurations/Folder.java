@@ -532,9 +532,11 @@ public class Folder implements FileChangeListener, ChangeListener {
                 String name2 = f.getSortName();
                 int compareRes = name1.compareToIgnoreCase(name2);
                 if (compareRes == 0) {
-                    // already in list
-                    f.markRemoved(false);
-                    return f;
+                    if (isSameFolder(f, element)) {
+                        // already in list
+                        f.markRemoved(false);
+                        return f;
+                    }
                 }
                 if (compareRes < 0) {
                     indexAt--;
@@ -549,6 +551,12 @@ public class Folder implements FileChangeListener, ChangeListener {
         }
     }
 
+    private boolean isSameFolder(Folder f, Folder element) {
+        assert f != null;
+        assert element != null;
+        return f.getKind() == element.getKind() && f.getRootPath().equals(element.getRootPath());
+    }
+   
     public static Item insertItemElementInList(ArrayList<Object> list, Item element) {
         String name1 = (element).getSortName();
         int indexAt = list.size() - 1;
