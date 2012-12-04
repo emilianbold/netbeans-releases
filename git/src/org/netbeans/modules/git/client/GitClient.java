@@ -772,7 +772,7 @@ public final class GitClient {
                 public T call() throws Exception {
                     Callable<T> callable = new Callable<T>() {
                         @Override
-                        public T call() throws GitException {
+                        public T call() throws Exception {
                             boolean repositoryInfoRefreshNeeded = NEED_REPOSITORY_REFRESH_COMMANDS.contains(methodName);
                             long t = 0;
                             if (LOG.isLoggable(Level.FINE)) {
@@ -789,11 +789,7 @@ public final class GitClient {
                                 if ((progressSupport == null || !progressSupport.isCanceled()) && new GitClientExceptionHandler(GitClient.this, handleAuthenticationIssues).handleException(ex)) {
                                     return this.call();
                                 } else {
-                                    if (ex instanceof GitException) {
-                                        throw (GitException) ex;
-                                    } else {
-                                        throw new GitException("Cannot run command git " + methodName + " due to: " + ex.getMessage(), ex); //NOI18N
-                                    }
+                                    throw ex;
                                 }
                             } finally {
                                 if (LOG.isLoggable(Level.FINE)) {

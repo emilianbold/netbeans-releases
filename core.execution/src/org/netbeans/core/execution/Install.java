@@ -110,23 +110,10 @@ import org.openide.util.actions.SystemAction;
 @OnStart
 public class Install implements Runnable {
     
-    private static final String BEANINFO_PATH
-            = "org.netbeans.core.execution.beaninfo"; // NOI18N
-
     private static final Logger LOG = Logger.getLogger(Install.class.getName());
     
     public @Override void run() {
         TopSecurityManager.register(SecMan.DEFAULT);
-        
-        // Add beaninfo search path.
-        String[] sp = Introspector.getBeanInfoSearchPath();
-        java.util.List<String> paths = Arrays.asList(sp);
-        if(!paths.contains(BEANINFO_PATH)) {
-            paths = new ArrayList<String>(paths);
-            paths.add(BEANINFO_PATH);
-            Introspector.setBeanInfoSearchPath(
-                    paths.toArray(new String[0]));
-        }
     }
     
     @OnStop
@@ -136,16 +123,6 @@ public class Install implements Runnable {
             showPendingTasks();
 
             TopSecurityManager.unregister(SecMan.DEFAULT);
-
-            // Remove beaninfo search path.
-            String[] sp = Introspector.getBeanInfoSearchPath();
-            java.util.List<String> paths = Arrays.asList(sp);
-            if(paths.contains(BEANINFO_PATH)) {
-                paths = new ArrayList<String>(paths);
-                paths.remove(BEANINFO_PATH);
-                Introspector.setBeanInfoSearchPath(
-                        paths.toArray(new String[0]));
-            }
         }
     }
 
