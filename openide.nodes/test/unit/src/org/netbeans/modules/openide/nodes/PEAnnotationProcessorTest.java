@@ -41,14 +41,15 @@
  */
 package org.netbeans.modules.openide.nodes;
 
+import java.beans.Introspector;
 import java.beans.PropertyEditor;
 import java.beans.PropertyEditorManager;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.Collection;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.openide.nodes.PERegistrationSupport.PEClassRegistration;
-import org.netbeans.modules.openide.nodes.PERegistrationSupport.PEPackageRegistration;
+import org.netbeans.modules.openide.nodes.NodesRegistrationSupport.PEClassRegistration;
+import org.netbeans.modules.openide.nodes.NodesRegistrationSupport.PEPackageRegistration;
 import org.openide.nodes.NodeOp;
 import org.openide.util.Lookup;
 import org.openide.util.test.AnnotationProcessorTestUtils;
@@ -58,7 +59,7 @@ import org.openide.util.test.AnnotationProcessorTestUtils;
  * @author Jan Horvath <jhorvath@netbeans.org>
  */
 public class PEAnnotationProcessorTest extends NbTestCase {
-    
+
     static {
         System.setProperty("org.openide.util.Lookup.paths", "Services");
     }
@@ -83,7 +84,8 @@ public class PEAnnotationProcessorTest extends NbTestCase {
                 count++;
             }
         }
-        assertEquals("Package path is registered multiple times", 1, count);
+        assertFalse("Package path is registered multiple times", count > 1);
+        assertFalse("Package path is not registered", count == 0);
     }
         
     public void testPERegistered() {
@@ -146,6 +148,21 @@ public class PEAnnotationProcessorTest extends NbTestCase {
         assertTrue("failed to lookup class registrations", lookup.size() > 0);
         PEPackageRegistration pkgReg = lookup.iterator().next();
         assertEquals("org.netbeans.modules.openide.nodes", pkgReg.pkg);
+    }
+    
+    public void testBeanInfoRegistration() {
+        NodeOp.registerPropertyEditors();
+        NodeOp.registerPropertyEditors();
+        
+        int count = 0;
+        String[] path = Introspector.getBeanInfoSearchPath();
+        for (int i = 0; i < path.length; i++) {
+            if ("org.netbeans.modules.openide.nodes".equals(path[i])) {
+                count++;
+            }
+        }
+        assertFalse("Package path is registered multiple times", count > 1);
+        assertFalse("Package path is not registered", count == 0);
     }
         
 }
