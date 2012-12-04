@@ -1370,7 +1370,12 @@ public class TopComponent extends JComponent implements Externalizable, Accessib
     }
 
     /** Associates the provided lookup with the component. So it will
-     * be returned from {@link #getLookup} method.
+     * be returned from {@link #getLookup} method. When used, make sure
+     * the provided {@link Lookup} contains objects needed by other subsystems.
+     * For example, if {@link Actions#callback(java.lang.String, javax.swing.Action, boolean, java.lang.String, java.lang.String, boolean) callback actions}
+     * are about to search their actions in this {@link TopComponent},
+     * it is good idea to include {@link #getActionMap() this.getActionMap()} in
+     * the lookup.
      *
      * @param lookup the lookup to associate
      * @exception IllegalStateException if there already is a lookup registered
