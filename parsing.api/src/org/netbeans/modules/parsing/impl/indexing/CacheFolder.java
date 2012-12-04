@@ -48,6 +48,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URL;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -55,6 +56,7 @@ import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.api.annotations.common.NonNull;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
@@ -184,16 +186,21 @@ public final class CacheFolder {
         }
     }
 
-    public static synchronized Iterable<? extends FileObject> findRootsWithCacheUnderFolder(FileObject folder) throws IOException {
+    @NonNull
+    public static Iterable<? extends FileObject> findRootsWithCacheUnderFolder(@NonNull final FileObject folder) throws IOException {
         URL folderURL = folder.toURL();
         String prefix = folderURL.toExternalForm();
-        final FileObject _cacheFolder = getCacheFolder();
-        List<FileObject> result = new LinkedList<FileObject>();
-        loadSegments(_cacheFolder);
-        for (Entry<String, String> e : invertedSegments.entrySet()) {
+        final FileObject _cacheFolder;
+        final Map<String,String> isdc;
+        synchronized (CacheFolder.class) {
+            _cacheFolder = getCacheFolder();
+            loadSegments(_cacheFolder);
+            isdc = new HashMap<String,String>(invertedSegments);
+        }
+        final List<FileObject> result = new LinkedList<FileObject>();
+        for (Entry<String, String> e : isdc.entrySet()) {
             if (e.getKey().startsWith(prefix)) {
-                FileObject fo = URLMapper.findFileObject(new URL(e.getKey()));
-                
+                FileObject fo = URLMapper.findFileObject(new URL(e.getKey()));                
                 if (fo != null) {
                     result.add(fo);
                 }
