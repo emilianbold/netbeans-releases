@@ -248,7 +248,9 @@ public class LicenseApprovalPanel extends javax.swing.JPanel {
 		}
 
 		cbPlugins.setModel(new DefaultComboBoxModel(pluginsModel.toArray()));
-		cbPlugins.setSelectedIndex(0);
+		if (! pluginsModel.isEmpty()) {
+                    cbPlugins.setSelectedIndex(0);
+                }
 	}
 
 }
