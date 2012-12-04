@@ -294,10 +294,10 @@ public abstract class TaskContainerNode extends AsynchronousNode<List<Issue>> {
         pageCountShown = 1;
     }
 
-    final void handleError(String message) {
-        DashboardViewer.LOG.log(Level.WARNING, "Tasks loading failed due to: {0}", message); //NOI18N
+    final void handleError(Throwable throwable) {
         setRefresh(true);
         setError(true);
+        DashboardViewer.LOG.log(Level.WARNING, "Tasks loading failed due to: {0}", throwable); //NOI18N
     }
 
     boolean isError() {

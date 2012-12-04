@@ -847,8 +847,8 @@ public final class DashboardViewer implements PropertyChangeListener {
             } else {
                 setCategories(catNodes);
             }
-        } catch (Exception ex) {
-            LOG.log(Level.WARNING, "Categories loading failed due to: {0}", ex.getMessage());
+        } catch (Throwable ex) {
+            LOG.log(Level.WARNING, "Categories loading failed due to: {0}", ex);
             showCategoriesError();
         }
     }
@@ -985,8 +985,8 @@ public final class DashboardViewer implements PropertyChangeListener {
             } else {
                 setRepositories(repoNodes);
             }
-        } catch (Exception ex) {
-            LOG.log(Level.WARNING, "Repositories loading failed due to: {0}", ex.getMessage());
+        } catch (Throwable ex) {
+            LOG.log(Level.WARNING, "Repositories loading failed due to: {0}", ex);
             showRepositoriesError();
         }
     }
