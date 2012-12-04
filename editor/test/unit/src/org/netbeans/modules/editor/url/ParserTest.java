@@ -82,9 +82,9 @@ public class ParserTest {
         performTest("    https://www.netbeans.org/~s?d=3_\n", 4, 36);
         performTest("    https://www.test-test.test/\n", 4, 31);
         performTest("    https://www.test-test.test/a.jsp?tt\\&t$=$\n", 4, 45);
-        performTest("    ftps://www.test-test.test/a.jsp?tt\\&t$=$\n", null);
+        performTest("    ftps://www.test-test.test/a.jsp?tt\\&t$=$\n", 4, 44);
         performTest("    f t p://www.test-test.test/a.jsp?tt\\&t$=$\n", null);
-        performTest("    ftps://www.test-test.test/a.jsp?tt\\&t$=$", null);
+        performTest("    ftps://www.test-test.test/a.jsp?tt\\&t$=$", 4, 44);
         performTest("    \"https://www.netbeans.org/\"", 5, 30);
         performTest("    https://some.where/some-thing.html#section\n", 4, 46);
         performTest("    https://netbeans.org/bugzilla/buglist.cgi?bug_id=181772,172312\n", 4, 66);
@@ -98,6 +98,11 @@ public class ParserTest {
         performTest("    http://hudson.gotdns.com/wiki/display/HUDSON/Structured+Form+Submission\n", 4, 75);
         performTest("    https://hudson.gotdns.com/wiki/display/HUDSON/Structured+Form+Submission\n", 4, 76);
         performTest("    ht+tp://hudson.gotdns.com/wiki/display/HUDSON/Structured+Form+Submission\n", null);
+    }
+
+    @Test
+    public void testInvalidUrls() {
+        performTest("    http::request\n", null);
     }
 
     @Test
