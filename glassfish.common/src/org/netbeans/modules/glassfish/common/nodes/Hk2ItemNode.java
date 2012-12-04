@@ -55,11 +55,12 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.Action;
 import javax.swing.JFileChooser;
-import org.netbeans.modules.glassfish.common.CommandRunner;
+import org.glassfish.tools.ide.admin.*;
 import org.netbeans.modules.glassfish.common.CommonServerSupport;
+import org.netbeans.modules.glassfish.common.GlassfishInstance;
+import org.netbeans.modules.glassfish.common.Util;
 import org.netbeans.modules.glassfish.common.nodes.actions.*;
 import org.netbeans.modules.glassfish.spi.Decorator;
-import org.netbeans.modules.glassfish.spi.GlassfishModule.OperationState;
 import org.netbeans.modules.glassfish.spi.ResourceDecorator;
 import org.openide.actions.CopyAction;
 import org.openide.filesystems.FileUtil;
@@ -73,257 +74,466 @@ import org.openide.util.NbBundle;
 import org.openide.util.actions.SystemAction;
 import org.openide.windows.WindowManager;
 
-
 /**
  * Extensible node.
- * 
- * @author Ludovic Champenois
- * @author Peter Williams
+ * <p/>
+ * @author Ludovic Champenois, Peter Williams, Tomas Kraus
  */
 public class Hk2ItemNode extends AbstractNode {
-    
+
+    ////////////////////////////////////////////////////////////////////////////
+    // Inner classes                                                          //
+    ////////////////////////////////////////////////////////////////////////////
+
+    /**
+     * Common node cookie.
+     */
+    private static class Cookie {
+
+        /** Task status. */
+        volatile WeakReference<Future<ResultString>> status;
+
+        /** GlassFish server instance. */
+        final GlassfishInstance instance;
+
+        /** Resource name. */
+        final String name;
+
+        /**
+         * Creates an instance of cookie.
+         * <p/>
+         * @param lookup Lookup containing {@see CommonServerSupport}.
+         * @param name   Name of resource to be enabled.
+         */
+        Cookie(final Lookup lookup, final String name) {
+            this.instance = getGlassFishInstance(lookup);
+            this.name = name;
+        }
+
+        /**
+         * Returns <code>true</code> if this task is still running.
+         * <p/>
+         * @return Value of <code>true</code> if this task is still running
+         *         or <code>false</code> otherwise.
+         */
+        public boolean isRunning() {
+            WeakReference<Future<ResultString>> localref = status;
+            if (localref == null) {
+                return false;
+            }
+            Future<ResultString> future = localref.get();
+            return future != null && !future.isDone();
+        }
+    }
+
+    /**
+     * Enable node cookie.
+     */
+    private static class Enable
+            extends Cookie implements EnableModulesCookie {
+
+        /**
+         * Creates an instance of cookie for enabling module.
+         * <p/>
+         * @param lookup Lookup containing {@see CommonServerSupport}.
+         * @param name   Name of resource to be enabled.
+         */
+        Enable(final Lookup lookup, final String name) {
+            super(lookup, name);
+        }
+
+        /**
+         * Enable module on GlassFish server.
+         * <p/>
+         * @return Result of enable task execution.
+         */
+        @Override
+        public Future<ResultString> enableModule() {
+            if (instance != null) {
+                Future<ResultString> future = ServerAdmin.<ResultString>exec(
+                        instance, new CommandEnable(name, Util.computeTarget(
+                        instance.getProperties())), null);
+                status = new WeakReference<Future<ResultString>>(future);
+                return future;
+            } else {
+                return null;
+            }
+        }
+    }
+
+    /**
+     * Disable node cookie.
+     */
+    private static class Disable
+            extends Cookie implements DisableModulesCookie {
+
+        /**
+         * Creates an instance of cookie for disabling module.
+         * <p/>
+         * @param lookup Lookup containing {@see CommonServerSupport}.
+         * @param name   Name of resource to be enabled.
+         */
+        Disable(final Lookup lookup, final String name) {
+            super(lookup, name);
+        }
+
+        /**
+         * Disable module on GlassFish server.
+         * <p/>
+         * @return Result of disable task execution.
+         */
+        @Override
+        public Future<ResultString> disableModule() {
+            if (instance != null) {
+                Future<ResultString> future = ServerAdmin.<ResultString>exec(
+                        instance, new CommandDisable(name, Util.computeTarget(
+                        instance.getProperties())), null);
+                status = new WeakReference<Future<ResultString>>(future);
+                return future;
+            } else {
+                return null;
+            }
+        }
+    }
+
+    /**
+     * Undeploy node cookie.
+     */
+    private static class Undeploy
+            extends Cookie implements UndeployModuleCookie {
+
+        /**
+         * Creates an instance of cookie for disabling module.
+         * <p/>
+         * @param lookup Lookup containing {@see CommonServerSupport}.
+         * @param name   Name of resource to be enabled.
+         */
+        Undeploy(final Lookup lookup, final String name) {
+            super(lookup, name);
+        }
+
+        /**
+         * Undeploy module on GlassFish server.
+         * <p/>
+         * @return Result of undeploy task execution.
+         */
+        @Override
+        public Future<ResultString> undeploy() {
+            if (instance != null) {
+                Future<ResultString> future = ServerAdmin.<ResultString>exec(
+                        instance, new CommandUndeploy(name, Util.computeTarget(
+                        instance.getProperties())), null);
+                status = new WeakReference<Future<ResultString>>(future);
+                return future;
+            } else {
+                return null;
+            }
+        }
+    }
+
+    /**
+     * Deploy node cookie.
+     */
+    private static class Deploy
+            extends Cookie implements DeployDirectoryCookie {
+
+        /**
+         * Creates an instance of cookie for disabling module.
+         * <p/>
+         * @param lookup Lookup containing {@see CommonServerSupport}.
+         * @param name   Name of resource to be enabled.
+         */
+        Deploy(final Lookup lookup) {
+            super(lookup, null);
+        }
+
+        /**
+         * Deploy module from directory on GlassFish server.
+         * <p/>
+         * @return Result of undeploy task execution.
+         */
+        @Override
+        public Future<ResultString> deployDirectory() {
+            JFileChooser chooser = new JFileChooser();
+            chooser.setDialogTitle(NbBundle.getMessage(Hk2ItemNode.class,
+                    "LBL_ChooseButton")); // NOI18N
+            chooser.setDialogType(JFileChooser.CUSTOM_DIALOG);
+            chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+            chooser.setMultiSelectionEnabled(false);
+
+            int returnValue = chooser.showDialog(WindowManager.getDefault()
+                    .getMainWindow(), NbBundle.getMessage(
+                    Hk2ItemNode.class, "LBL_ChooseButton"));
+            if (instance != null
+                    || returnValue != JFileChooser.APPROVE_OPTION) {
+                return null;
+            }
+
+            final File dir
+                    = new File(chooser.getSelectedFile().getAbsolutePath());
+
+            Future<ResultString> future = ServerAdmin.<ResultString>exec(
+                    instance, new CommandDeploy(dir.getParentFile().getName(),
+                    Util.computeTarget(instance.getProperties()),
+                    dir, null, null, null), null);
+            status = new WeakReference<Future<ResultString>>(future);
+            return future;
+        }
+    }
+
+    /**
+     * Refresh node cookie.
+     */
+    private static class Refresh implements RefreshModulesCookie {
+
+        /** Child nodes to be refreshed. */
+        private final Children children;
+
+        /**
+         * Creates an instance of cookie for refreshing nodes.
+         * <p/>
+         * @param children Child nodes to be refreshed.
+         */
+        Refresh(Children children) {
+            this.children = children;
+        }
+
+        /**
+         * Refresh child nodes.
+         */
+        @Override
+        public void refresh() {
+            refresh(null, null);
+        }
+
+        /**
+         * Refresh child nodes.
+         * <p/>
+         * @param expected   Expected node display name.
+         * @param unexpected Unexpected node display name.
+         */
+        @Override
+        public void refresh(String expected, String unexpected) {
+            if (children instanceof Refreshable) {
+                ((Refreshable) children).updateKeys();
+                boolean foundExpected = expected == null ? true : false;
+                boolean foundUnexpected = false;
+                for (Node node : children.getNodes()) {
+                    if (!foundExpected
+                            && node.getDisplayName().equals(expected)) {
+                        foundExpected = true;
+                    }
+                    if (!foundUnexpected
+                            && node.getDisplayName().equals(unexpected)) {
+                        foundUnexpected = true;
+                    }
+                }
+                if (!foundExpected) {
+                    Logger.getLogger("glassfish").log(Level.WARNING, null,
+                            new IllegalStateException(
+                            "did not find a child node, named " + expected));
+                }
+                if (foundUnexpected) {
+                    Logger.getLogger("glassfish").log(Level.WARNING, null,
+                            new IllegalStateException(
+                            "found unexpected child node, named "
+                            + unexpected));
+                }
+            }
+        }
+    }
+
+    ////////////////////////////////////////////////////////////////////////////
+    // Class attributes                                                       //
+    ////////////////////////////////////////////////////////////////////////////
+
+    /** Resources icon. */
+    private static final String RESOURCES_ICON = 
+            "org/netbeans/modules/glassfish/common/resources/resources.gif";
+
+    /** Web services icon. */
+    private static final String WS_ICON =
+            "org/netbeans/modules/glassfish/common/resources/webservice.png";
+
+    /** Java EE applications folder. */
+    public static final Decorator J2EE_APPLICATION_FOLDER = new Decorator() {
+        @Override public boolean isRefreshable() {
+            return true;
+        }
+        @Override public boolean canDeployTo() {
+            return true;
+        }
+    };
+
+    /** Resources folder. */
+    public static final Decorator RESOURCES_FOLDER = new Decorator() {
+        @Override public boolean isRefreshable() {
+            return true;
+        }
+        @Override public Image getIcon(int type) {
+            return ImageUtilities.loadImage(RESOURCES_ICON);
+        }
+        @Override public Image getOpenedIcon(int type) {
+            return getIcon(type);
+        }
+    };
+
+    /** Web services folder. */
+    public static final Decorator WS_FOLDER = new Decorator() {
+        @Override public boolean isRefreshable() {
+            return true;
+        }
+    };
+
+    /** Web service. */
+    public static final Decorator WS_ENDPOINT = new Decorator() {
+        @Override public boolean canTest() {
+            return true;
+        }
+        @Override public boolean canCopy() {
+            return true;
+        }
+        @Override public Image getIcon(int type) {
+            return ImageUtilities.loadImage(WS_ICON);
+        }
+        @Override public Image getOpenedIcon(int type) {
+            return getIcon(type);
+        }
+    };
+
+    /** Java EE application. */
+    public static final Decorator J2EE_APPLICATION = new Decorator() {
+        @Override public boolean canUndeploy() {
+            return true;
+        }
+        @Override public boolean canEnable() {
+            return true;
+        }
+        @Override public boolean canDisable() {
+            return true;
+        }
+        @Override public boolean canShowBrowser() {
+            return true;
+        }
+    };
+
+    /** Refreshable folder. */
+    public static final Decorator REFRESHABLE_FOLDER = new Decorator() {
+        @Override public boolean isRefreshable() {
+            return true;
+        }
+        @Override public boolean canDeployTo() {
+            return true;
+        }
+    };
+
+    /** JDBC managed data sources. */
+    public static final Decorator JDBC_MANAGED_DATASOURCES
+            = new ResourceDecorator() {
+        @Override public boolean canUnregister() {
+            return true;
+        }
+        @Override public Image getIcon(int type) {
+            return ImageUtilities.loadImage(RESOURCES_ICON);
+        }
+        @Override public String getCmdPropertyName() {
+            return "jdbc_resource_name";
+        }
+    };
+
+    /** Connection pools. */
+    public static final Decorator CONNECTION_POOLS = new ResourceDecorator() {
+        @Override public boolean canUnregister() {
+            return true;
+        }
+        @Override public Image getIcon(int type) {
+            return ImageUtilities.loadImage(RESOURCES_ICON);
+        }
+        @Override public String getCmdPropertyName() {
+            return "jdbc_connection_pool_id";
+        }
+        @Override public boolean isCascadeDelete() {
+            return true;
+        }
+    };
+
+    ////////////////////////////////////////////////////////////////////////////
+    // Static methods                                                         //
+    ////////////////////////////////////////////////////////////////////////////
+
+    /**
+     * Retrieve GlassFish instance from {@see Lookup} object.
+     * <p/>
+     * @param lookup Lookup containing {@see CommonServerSupport}.
+     * @return GlassFish instance retrieved from lookup object.
+     */
+    private static GlassfishInstance getGlassFishInstance(final Lookup lookup) {
+        CommonServerSupport commonModule = lookup.lookup(
+                CommonServerSupport.class);
+        return commonModule != null ? commonModule.getInstance() : null;
+    }
+
+    /** Node decorator. */
     protected final Decorator decorator;
-    
+
+    ////////////////////////////////////////////////////////////////////////////
+    // Constructors                                                           //
+    ////////////////////////////////////////////////////////////////////////////
+
+    /**
+     * Creates an instance of extensible node without setting node display name.
+     * <p/>
+     * @param children  Child nodes.
+     * @param lookup    Lookup containing {@see CommonServerSupport}.
+     * @param name      Node name.
+     * @param decorator Node decorator.
+     */
     protected Hk2ItemNode(Children children, final Lookup lookup,
             final String name, final Decorator decorator) {
         super(children);
         this.decorator = decorator;
         
         if(decorator.isRefreshable()) {
-            getCookieSet().add(new RefreshModulesCookie() {
-                @Override
-                public void refresh() {
-                    refresh(null, null);
-                }
-
-                @Override
-                public void refresh(String expected, String unexpected) {
-                    Children children = getChildren();
-                    if(children instanceof Refreshable) {
-                        ((Refreshable) children).updateKeys();
-                        boolean foundExpected = expected == null ? true : false;
-                        boolean foundUnexpected = false;
-                        for (Node node : children.getNodes()) {
-                            if (!foundExpected && node.getDisplayName().equals(expected))
-                                foundExpected = true;
-                            if (!foundUnexpected && node.getDisplayName().equals(unexpected))
-                                foundUnexpected = true;
-                        }
-                        if (!foundExpected) {
-                            Logger.getLogger("glassfish").log(Level.WARNING, null, new IllegalStateException("did not find a child node, named "+expected));
-                        }
-                        if (foundUnexpected) {
-                            Logger.getLogger("glassfish").log(Level.WARNING, null, new IllegalStateException("found unexpected child node, named "+unexpected));
-                        }
-                    }
-                }
-            });
+            getCookieSet().add(new Refresh(children));
         }
-        
         if(decorator.canDeployTo()) {
-            getCookieSet().add(new DeployDirectoryCookie() {
-                @Override
-                public void deployDirectory() {
-                    JFileChooser chooser = new JFileChooser();
-                    chooser.setDialogTitle(NbBundle.getMessage(Hk2ItemNode.class, "LBL_ChooseButton")); // NOI18N
-                    chooser.setDialogType(JFileChooser.CUSTOM_DIALOG);
-                    chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-                    chooser.setMultiSelectionEnabled(false);
-                    
-                    int returnValue = chooser.showDialog(WindowManager.getDefault().getMainWindow(),
-                            NbBundle.getMessage(Hk2ItemNode.class, "LBL_ChooseButton")); // NOI18N
-                    if(returnValue != JFileChooser.APPROVE_OPTION) {
-                        return;
-                    }
-                    
-                    final File dir = new File(chooser.getSelectedFile().getAbsolutePath());
-                    
-                    CommonServerSupport commonModule = lookup.lookup(
-                            CommonServerSupport.class);
-                    if(commonModule != null) {
-                        CommandRunner mgr = new CommandRunner(true,
-                                commonModule.getCommandFactory(),
-                                commonModule.getInstance());
-                        mgr.deploy(dir);
-                    }
-                }
-            }); 
+            getCookieSet().add(new Deploy(lookup)); 
         }
-        
         if(decorator.canUndeploy()) {
-            getCookieSet().add(new UndeployModuleCookie() {
-                
-                private volatile WeakReference<Future<OperationState>> status;
-
-                @Override
-                public Future<OperationState> undeploy() {
-                    Future<OperationState> result = null;
-                    CommonServerSupport commonModule = lookup.lookup(
-                            CommonServerSupport.class);
-                    if(commonModule != null) {
-                        CommandRunner mgr = new CommandRunner(true,
-                                commonModule.getCommandFactory(),
-                                commonModule.getInstance());
-                        result = mgr.undeploy(name);
-                        status = new WeakReference<Future<OperationState>>(result);
-                    }
-                    return result;
-                }
-
-                @Override
-                public boolean isRunning() {
-                    WeakReference<Future<OperationState>> localref = status;
-                    if(localref == null) {
-                        return false;
-                    }
-                    Future<OperationState> cmd = localref.get();
-                    if(cmd == null || cmd.isDone()) {
-                        return false;
-                    }
-                    return true;
-                }
-                
-            });
+            getCookieSet().add(new Undeploy(lookup, name));
         }
-
         if(decorator.canEnable()) {
-            getCookieSet().add(new EnableModulesCookie() {
-
-                private volatile WeakReference<Future<OperationState>> status;
-
-                @Override
-                public Future<OperationState> enableModule() {
-                    Future<OperationState> result = null;
-                    CommonServerSupport commonModule = lookup.lookup(
-                            CommonServerSupport.class);
-                    if(commonModule != null) {
-                        CommandRunner mgr = new CommandRunner(true,
-                                commonModule.getCommandFactory(),
-                                commonModule.getInstance());
-                        result = mgr.enable(name);
-                        status = new WeakReference<Future<OperationState>>(result);
-                    }
-                    return result;
-                }
-
-                @Override
-                public boolean isRunning() {
-                    WeakReference<Future<OperationState>> localref = status;
-                    if(localref == null) {
-                        return false;
-                    }
-                    Future<OperationState> cmd = localref.get();
-                    if(cmd == null || cmd.isDone()) {
-                        return false;
-                    }
-                    return true;
-                }
-
-            });
+            getCookieSet().add(new Enable(lookup, name));
         }
-
         if(decorator.canDisable()) {
-            getCookieSet().add(new DisableModulesCookie() {
-
-                private volatile WeakReference<Future<OperationState>> status;
-
-                @Override
-                public Future<OperationState> disableModule() {
-                    Future<OperationState> result = null;
-                    CommonServerSupport commonModule = lookup.lookup(
-                            CommonServerSupport.class);
-                    if(commonModule != null) {
-                        CommandRunner mgr = new CommandRunner(true,
-                                commonModule.getCommandFactory(),
-                                commonModule.getInstance());
-                        result = mgr.disable(name);
-                        status = new WeakReference<Future<OperationState>>(result);
-                    }
-                    return result;
-                }
-
-                @Override
-                public boolean isRunning() {
-                    WeakReference<Future<OperationState>> localref = status;
-                    if(localref == null) {
-                        return false;
-                    }
-                    Future<OperationState> cmd = localref.get();
-                    if(cmd == null || cmd.isDone()) {
-                        return false;
-                    }
-                    return true;
-                }
-
-            });
+            getCookieSet().add(new Disable(lookup, name));
         }
-
-        //        if(decorator.canUnregister()) {
-//            getCookieSet().add(new UnregisterResourceCookie() {
-//
-//                private volatile WeakReference<Future<OperationState>> status;
-//
-//                public Future<OperationState> unregister() {
-//                    Future<OperationState> result = null;
-//                    GlassfishModule commonModule = lookup.lookup(GlassfishModule.class);
-//                    if(commonModule != null) {
-//                        CommandRunner mgr = new CommandRunner(commonModule.getInstanceProperties());
-//                        result = mgr.unregister(name, suffix);
-//                        status = new WeakReference<Future<OperationState>>(result);
-//                    }
-//                    return result;
-//                }
-//
-//                public boolean isRunning() {
-//                    WeakReference<Future<OperationState>> localref = status;
-//                    if(localref == null) {
-//                        return false;
-//                    }
-//                    Future<OperationState> cmd = localref.get();
-//                    if(cmd == null || cmd.isDone()) {
-//                        return false;
-//                    }
-//                    return true;
-//                }
-//
-//            });
-//        }
     }
-    
-//    public Hk2ItemNode(final Lookup lookup, final AppDesc app, Decorator decorator) {
-//        this(Children.LEAF, lookup, app.getName(), decorator);
-//        setDisplayName(app.getName());
-//        setShortDescription("<html>name: " + app.getName() + "<br>path: " + app.getPath() + "</html>");
-//
-//        // !PW FIXME should method of retrieving context root be controlled by decorator?
-//        if(decorator.canShowBrowser()) {
-//            getCookieSet().add(new OpenURLActionCookie() {
-//                public String getWebURL() {
-//                    String result = null;
-//                    GlassfishModule commonModule = lookup.lookup(GlassfishModule.class);
-//                    if(commonModule != null) {
-//                        Map<String, String> ip = commonModule.getInstanceProperties();
-//                        String host = ip.get(GlassfishModule.HOSTNAME_ATTR);
-//                        String httpPort = ip.get(GlassfishModule.HTTPPORT_ATTR);
-//                        result = HTTP_HEADER + host + ":" + httpPort + "/" + app.getContextRoot() + "/";
-//                    }
-//                    return result;
-//                }
-//            });
-//        }
-//    }
-//
-//    public Hk2ItemNode(Lookup lookup, ResourceDesc resource, Decorator decorator) {
-//        this(Children.LEAF, lookup, resource.getName(), decorator);
-//        setDisplayName(resource.getName());
-//        setShortDescription("<html>name: " + resource.getName() + "</html>");
-//    }
-    
-    public Hk2ItemNode(Lookup lookup, Children children, String name, Decorator type) {
-        this(children, lookup, name, type);
+        
+    /**
+     * Creates an instance of extensible node and sets node display name.
+     * <p/>
+     * @param children  Child nodes.
+     * @param lookup    Lookup containing {@see CommonServerSupport}.
+     * @param name      Node name.
+     * @param decorator Node decorator.
+     */
+    public Hk2ItemNode(final Lookup lookup,
+            Children children, final String name, final Decorator decorator) {
+        this(children, lookup, name, decorator);
         setDisplayName(name);
     }
     
+    ////////////////////////////////////////////////////////////////////////////
+    // Getters and setters                                                    //
+    ////////////////////////////////////////////////////////////////////////////
+
+    /**
+     * Find an icon for this node (in the closed state).
+     * <p/>
+     * @param type Constant from {@link java.beans.BeanInfo}.
+     * @return Icon to use to represent this node.
+     */
     @Override
     public Image getIcon(int type) {
         Image image;
@@ -340,6 +550,14 @@ public class Hk2ItemNode extends AbstractNode {
         return image != null ? image : getIconDelegate().getIcon(type);
     }
     
+    /**
+     * Find an icon for this node (in the open state).
+     * <p/>
+     * This icon is used when the node may have children and is expanded.
+     * <p/>
+     * @param type Constant from {@link java.beans.BeanInfo}.
+     * @return Icon to use to represent this node when open.
+     */
     @Override
     public Image getOpenedIcon(int type) {
         Image image;
@@ -352,34 +570,38 @@ public class Hk2ItemNode extends AbstractNode {
         return image != null ? image : getIconDelegate().getOpenedIcon(type);
     }
     
+    /** Get the set of actions that are associated with this node.
+     * <p/>
+     * This set is used to construct the context menu for the node.
+     * By default this method delegates to the deprecated getActions
+     * or getContextActions method depending on the value of supplied argument.
+     * It is supposed to be overridden by subclasses accordingly.
+     * <p/>
+     * @param context Whether to find actions for context meaning or for
+     *                the node itself.
+     * @return {@see List} of actions (you may include nulls for separators).
+     */
     @Override
     public Action[] getActions(boolean context) {
         List<Action> actions = new ArrayList<Action>();
-
         if(decorator.isRefreshable()) {
             actions.add(SystemAction.get(RefreshModulesAction.class));
         }
-        
         if(decorator.canDeployTo()) {
 //            actions.add(SystemAction.get(DeployDirectoryAction.class));
         }
-        
         if(decorator.canUndeploy()) {
             actions.add(SystemAction.get(UndeployModuleAction.class));
         }
-    
         if(decorator.canEnable()) {
             actions.add(SystemAction.get(EnableModulesAction.class));
         }
-
         if(decorator.canDisable()) {
             actions.add(SystemAction.get(DisableModulesAction.class));
         }
-
         if(decorator.canUnregister()) {
             actions.add(SystemAction.get(UnregisterResourceAction.class));
         }
-
         if(decorator.canShowBrowser()) {
             actions.add(SystemAction.get(OpenURLAction.class));
         }
@@ -392,42 +614,50 @@ public class Hk2ItemNode extends AbstractNode {
         if (decorator.canEditDetails()) {
             actions.add(SystemAction.get(EditDetailsAction.class));
         }
-        
         return actions.toArray(new Action[actions.size()]);
     }
     
-    /* Creates and returns the instance of the node
-     * representing the status 'WAIT' of the node.
+    ////////////////////////////////////////////////////////////////////////////
+    // Methods                                                                //
+    ////////////////////////////////////////////////////////////////////////////
+
+    /**
+     * Creates and returns the instance of the node representing the status
+     * 'WAIT' of the node.
+     * <p/>
      * It is used when it spent more time to create elements hierarchy.
-     * @return the wait node.
+     * <p/>
+     * @return The wait node.
      */
     public static Node createWaitNode() {
         AbstractNode node = new AbstractNode(Children.LEAF);
-        node.setName(NbBundle.getMessage(Hk2ItemNode.class, "LBL_WaitNode_DisplayName")); //NOI18N
-        node.setIconBaseWithExtension("org/openide/src/resources/wait.gif"); // NOI18N
+        node.setName(NbBundle.getMessage(Hk2ItemNode.class,
+                "LBL_WaitNode_DisplayName"));
+        node.setIconBaseWithExtension("org/openide/src/resources/wait.gif");
         return node;
     }
 
     /**
      * Applies a badge to an open or closed folder icon.
-     * 
-     * @param badge badge image for folder
-     * @param opened use open or closed folder
-     * @return an image of the badged folder
+     * <p/>
+     * @param badge  Badge image for folder.
+     * @param opened Use open or closed folder.
+     * @return An image of the badged folder.
      */
     public static Image badgeFolder(Image badge, boolean opened) {
         Node folderNode = getIconDelegate();
-        Image folder = opened ? folderNode.getOpenedIcon(BeanInfo.ICON_COLOR_16x16) : 
-                folderNode.getIcon(BeanInfo.ICON_COLOR_16x16);
+        Image folder = opened
+                ? folderNode.getOpenedIcon(BeanInfo.ICON_COLOR_16x16)
+                : folderNode.getIcon(BeanInfo.ICON_COLOR_16x16);
         return ImageUtilities.mergeImages(folder, badge, 7, 7);
     }
     
     /**
      * Applies a badge to an icon.
-     *
-     * @param badge badge image for folder
-     * @param icon the image to be badged
-     * @return an image of the badged folder
+     * <p/>
+     * @param badge Badge image for folder.
+     * @param icon  Tthe image to be badged.
+     * @return An image of the badged folder.
      */
     public static Image badgeIcon(Image badge, Image icon) {
         return ImageUtilities.mergeImages(icon, badge, 7, 7);
@@ -436,64 +666,12 @@ public class Hk2ItemNode extends AbstractNode {
     /**
      * Retrieves the IDE's standard folder node, so we can access the default
      * open/closed folder icons.
-     * 
-     * @return standard folder node
+     * <p/>
+     * @return Standard folder node.
      */
     private static Node getIconDelegate() {
-        return DataFolder.findFolder(FileUtil.getConfigRoot()).getNodeDelegate();
+        return DataFolder.findFolder(
+                FileUtil.getConfigRoot()).getNodeDelegate();
     }
-    
-    private static final String RESOURCES_ICON = 
-            "org/netbeans/modules/glassfish/common/resources/resources.gif"; // NOI18N
-    private static final String WS_ICON =
-            "org/netbeans/modules/glassfish/common/resources/webservice.png"; // NOI18N
-        
-    public static final Decorator J2EE_APPLICATION_FOLDER = new Decorator() {
-        @Override public boolean isRefreshable() { return true; }
-        @Override public boolean canDeployTo() { return true; }
-    };
-    
-    public static final Decorator RESOURCES_FOLDER = new Decorator() {
-        @Override public boolean isRefreshable() { return true; }
-        @Override public Image getIcon(int type) { return ImageUtilities.loadImage(RESOURCES_ICON); }
-        @Override public Image getOpenedIcon(int type) { return getIcon(type); }
-    };
-    
-    public static final Decorator WS_FOLDER = new Decorator() {
-        @Override public boolean isRefreshable() { return true; }
-    };
 
-    public static final Decorator WS_ENDPOINT = new Decorator() {
-        @Override public boolean canTest() { return true; }
-        @Override public boolean canCopy() { return true; }
-        @Override public Image getIcon(int type) { return ImageUtilities.loadImage(WS_ICON); }
-        @Override public Image getOpenedIcon(int type) { return getIcon(type); }
-        //@Override public boolean canSave() { return true; }
-    };
-
-    public static final Decorator J2EE_APPLICATION = new Decorator() {
-        @Override public boolean canUndeploy() { return true; }
-        @Override public boolean canEnable() { return true; }
-        @Override public boolean canDisable() { return true; }
-        @Override public boolean canShowBrowser() { return true; }
-    };
-    
-    public static final Decorator REFRESHABLE_FOLDER = new Decorator() {
-        @Override public boolean isRefreshable() { return true; }
-        @Override public boolean canDeployTo() { return true; }
-    };
-
-    public static final Decorator JDBC_MANAGED_DATASOURCES = new ResourceDecorator() {
-        @Override public boolean canUnregister() { return true; }
-        @Override public Image getIcon(int type) { return ImageUtilities.loadImage(RESOURCES_ICON); }
-        @Override public String getCmdPropertyName() { return "jdbc_resource_name"; }
-    };
-
-    public static final Decorator CONNECTION_POOLS = new ResourceDecorator() {
-        @Override public boolean canUnregister() { return true; }
-        @Override public Image getIcon(int type) { return ImageUtilities.loadImage(RESOURCES_ICON); }
-        @Override public String getCmdPropertyName() { return "jdbc_connection_pool_id"; }
-        @Override public boolean isCascadeDelete() { return true; }
-    };
-    
 }

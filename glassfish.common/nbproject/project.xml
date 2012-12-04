@@ -203,6 +203,8 @@
         </data>
         <spellchecker-wordlist xmlns="http://www.netbeans.org/ns/spellchecker-wordlist/1">
             <word>admin</word>
+            <word>Refreshable</word>
+            <word>undeploy</word>
         </spellchecker-wordlist>
     </configuration>
 </project>

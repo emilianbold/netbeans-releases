@@ -48,6 +48,9 @@ import java.awt.event.ActionListener;
 import java.lang.ref.WeakReference;
 import java.lang.reflect.InvocationTargetException;
 import java.util.concurrent.Future;
+import org.glassfish.tools.ide.admin.CommandDeleteResource;
+import org.glassfish.tools.ide.admin.ResultString;
+import org.glassfish.tools.ide.admin.ServerAdmin;
 import org.netbeans.modules.glassfish.common.CommandRunner;
 import org.netbeans.modules.glassfish.common.CommonServerSupport;
 import org.netbeans.modules.glassfish.common.PartialCompletionException;
@@ -55,7 +58,6 @@ import org.netbeans.modules.glassfish.common.nodes.actions.EditDetailsCookie;
 import org.netbeans.modules.glassfish.common.nodes.actions.UnregisterResourceCookie;
 import org.netbeans.modules.glassfish.common.ui.BasePanel;
 import org.netbeans.modules.glassfish.spi.GlassfishModule;
-import org.netbeans.modules.glassfish.spi.GlassfishModule.OperationState;
 import org.netbeans.modules.glassfish.spi.ResourceDecorator;
 import org.netbeans.modules.glassfish.spi.ResourceDesc;
 import org.netbeans.modules.glassfish.spi.ServerUtilities;
@@ -83,30 +85,36 @@ public class Hk2ResourceNode extends Hk2ItemNode {
         if(decorator.canUnregister()) {
             getCookieSet().add(new UnregisterResourceCookie() {
 
-                private volatile WeakReference<Future<OperationState>> status;
+                private volatile WeakReference<Future<ResultString>> status;
 
-                public Future<OperationState> unregister() {
-                    Future<OperationState> result = null;
+                @Override
+                public Future<ResultString> unregister() {
                     CommonServerSupport commonModule = lookup.lookup(
                             CommonServerSupport.class);
                     if(commonModule != null) {
-                        CommandRunner mgr = new CommandRunner(true,
-                                commonModule.getCommandFactory(),
-                                commonModule.getInstance());
-                        result = mgr.unregister(resource.getName(), resource.getCommandSuffix(),
-                                decorator.getCmdPropertyName(), decorator.isCascadeDelete());
-                        status = new WeakReference<Future<OperationState>>(result);
+                        Future<ResultString> future
+                                = ServerAdmin.<ResultString>exec(
+                                commonModule.getInstance(),
+                                new CommandDeleteResource(resource.getName(),
+                                resource.getCommandSuffix(),
+                                decorator.getCmdPropertyName(),
+                                decorator.isCascadeDelete()),
+                                null);
+                        status = new WeakReference<Future<ResultString>>(future);
+                        return future;
+                    } else {
+                        return null;
                     }
-                    return result;
                 }
 
+                @Override
                 public boolean isRunning() {
-                    WeakReference<Future<OperationState>> localref = status;
+                    WeakReference<Future<ResultString>> localref = status;
                     if(localref == null) {
                         return false;
                     }
-                    Future<OperationState> cmd = localref.get();
-                    if(cmd == null || cmd.isDone()) {
+                    Future<ResultString> future = localref.get();
+                    if(future == null || future.isDone()) {
                         return false;
                     }
                     return true;

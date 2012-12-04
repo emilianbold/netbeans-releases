@@ -51,7 +51,7 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeoutException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.netbeans.modules.glassfish.spi.GlassfishModule.OperationState;
+import org.glassfish.tools.ide.admin.ResultString;
 import org.netbeans.modules.glassfish.spi.ServerUtilities;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -95,7 +95,7 @@ public class EnableModulesAction extends NodeAction {
             EnableModulesCookie uCookie = node.getCookie(EnableModulesCookie.class);
 
             if(uCookie != null) {
-                final Future<OperationState> result = uCookie.enableModule();
+                final Future<ResultString> result = uCookie.enableModule();
                 final Node pNode = node.getParentNode().getParentNode();
                 final Node fnode = node;
 

@@ -55,9 +55,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.event.ChangeListener;
-import org.glassfish.tools.ide.admin.TaskEvent;
-import org.glassfish.tools.ide.admin.TaskState;
-import org.glassfish.tools.ide.admin.TaskStateListener;
+import org.glassfish.tools.ide.admin.*;
 import org.netbeans.modules.glassfish.common.nodes.actions.RefreshModulesCookie;
 import org.netbeans.modules.glassfish.spi.GlassfishModule.OperationState;
 import org.netbeans.modules.glassfish.spi.GlassfishModule.ServerState;
@@ -521,29 +519,28 @@ public class CommonServerSupport
     }
 
     @Override
-    public Future<OperationState> undeploy(
-            final OperationStateListener stateListener, final String name) {
-        CommandRunner mgr = new CommandRunner(
-                GlassFishStatus.isReady(instance, false),
-                getCommandFactory(), instance, stateListener);
-        return mgr.undeploy(name);
+    public Future<ResultString> undeploy(
+            final TaskStateListener stateListener, final String name) {
+        return ServerAdmin.<ResultString>exec(
+                instance, new CommandUndeploy(name, Util.computeTarget(
+                instance.getProperties())), null,
+                new TaskStateListener[]{stateListener});
     }
 
     @Override
-    public Future<OperationState> enable(
-            final OperationStateListener stateListener, final String name) {
-        CommandRunner mgr = new CommandRunner(
-                GlassFishStatus.isReady(instance, false),
-                getCommandFactory(), instance, stateListener);
-        return mgr.enable(name);
+    public Future<ResultString> enable(
+            final TaskStateListener stateListener, final String name) {
+        return ServerAdmin.<ResultString>exec(instance, new CommandEnable(
+                name,  Util.computeTarget(instance.getProperties())), null,
+                new TaskStateListener[] {stateListener});
     }
+
     @Override
-    public Future<OperationState> disable(
-            final OperationStateListener stateListener, final String name) {
-        CommandRunner mgr = new CommandRunner(
-                GlassFishStatus.isReady(instance, false),
-                getCommandFactory(), instance, stateListener);
-        return mgr.disable(name);
+    public Future<ResultString> disable(
+            final TaskStateListener stateListener, final String name) {
+        return ServerAdmin.<ResultString>exec(instance, new CommandDisable(
+                name,  Util.computeTarget(instance.getProperties())), null,
+                new TaskStateListener[] {stateListener});
     }
 
     @Override

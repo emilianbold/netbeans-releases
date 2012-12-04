@@ -464,29 +464,6 @@ public class CommandRunner extends BasicTask<OperationState> {
         return Boolean.parseBoolean(sessionPreservationFlag);
     }
 
-    public Future<OperationState> undeploy(String moduleName) {
-        LogViewMgr.displayOutput(instance, null);
-        return execute(new Commands.UndeployCommand(moduleName,
-                Util.computeTarget(instance.getProperties())));
-    }
-
-    public Future<OperationState> enable(String moduleName) {
-        return execute(new Commands.EnableCommand(moduleName,
-                Util.computeTarget(instance.getProperties())));
-    }
-
-    public Future<OperationState> disable(String moduleName) {
-        return execute(new Commands.DisableCommand(moduleName,
-                Util.computeTarget(instance.getProperties())));
-    }
-
-    public Future<OperationState> unregister(String resourceName, String suffix,
-            String cmdPropName, boolean cascade) {
-        return execute(new Commands.UnregisterCommand(resourceName, suffix,
-                cmdPropName, cascade,
-                Util.computeTarget(instance.getProperties())));
-    }
-
     /**
      * Execute an arbitrary server command.
      */

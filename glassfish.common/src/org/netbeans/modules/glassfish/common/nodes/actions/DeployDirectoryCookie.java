@@ -44,6 +44,8 @@
 
 package org.netbeans.modules.glassfish.common.nodes.actions;
 
+import java.util.concurrent.Future;
+import org.glassfish.tools.ide.admin.ResultString;
 import org.openide.nodes.Node;
 
 /**
@@ -52,6 +54,6 @@ import org.openide.nodes.Node;
  */
 public interface DeployDirectoryCookie extends Node.Cookie {
     
-    public void deployDirectory();
+    public Future<ResultString> deployDirectory();
     
 }
