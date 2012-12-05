@@ -87,6 +87,7 @@ import org.netbeans.modules.maven.api.execute.ActiveJ2SEPlatformProvider;
 import org.netbeans.modules.maven.configurations.M2ConfigProvider;
 import org.netbeans.modules.maven.configurations.M2Configuration;
 import org.netbeans.modules.maven.configurations.ProjectProfileHandlerImpl;
+import org.netbeans.modules.maven.cos.CopyResourcesOnSave;
 import org.netbeans.modules.maven.embedder.EmbedderFactory;
 import org.netbeans.modules.maven.embedder.MavenEmbedder;
 import org.netbeans.modules.maven.modelcache.MavenProjectCache;
@@ -141,6 +142,8 @@ public final class NbMavenProjectImpl implements Project {
     private final M2ConfigProvider configProvider;
     private final @NonNull MavenProjectPropsImpl auxprops;
     private ProjectProfileHandlerImpl profileHandler;
+    private CopyResourcesOnSave copyResourcesOnSave;
+    private final Object COPYRESOURCES_LOCK = new Object();
     @org.netbeans.api.annotations.common.SuppressWarnings("MS_SHOULD_BE_FINAL")
     public static WatcherAccessor ACCESSOR = null;
 
@@ -154,6 +157,7 @@ public final class NbMavenProjectImpl implements Project {
             LOG.log(Level.SEVERE, "very wrong, very wrong, yes indeed", ex);
         }
     }
+
 
     public static abstract class WatcherAccessor {
 
@@ -674,6 +678,15 @@ public final class NbMavenProjectImpl implements Project {
     @Override
     public Lookup getLookup() {
         return lookup;
+    }
+    
+    CopyResourcesOnSave getCopyOnSaveResources() {
+        synchronized (COPYRESOURCES_LOCK) {
+            if (copyResourcesOnSave == null) {
+                copyResourcesOnSave = new CopyResourcesOnSave(watcher, this);
+            }
+            return copyResourcesOnSave;
+        }
     }
 
     private static class PackagingTypeDependentLookup extends ProxyLookup implements PropertyChangeListener {
