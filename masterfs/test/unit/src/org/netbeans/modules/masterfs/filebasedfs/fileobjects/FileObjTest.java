@@ -199,25 +199,29 @@ public class FileObjTest extends NbTestCase {
         File original = new File(wd, "original");
 //        original.createNewFile();
         File lockFile = new File(wd, "wlock");
-        ProcessBuilder pb = new ProcessBuilder().directory(wd).command(
-            new String[] { "ln", "-s", original.getName(), lockFile.getName() }
-        );
-        pb.start().waitFor();
-        final List<String> names = Arrays.asList(lockFile.getParentFile().list());
-        assertEquals("One file", 1, names.size());
-        // file exists, or at least dir.listFiles lists the file
-        assertTrue(names.contains(lockFile.getName()));
-        // java.io.File.exists returns false
-        assertFalse(lockFile.exists());
+        try {
+            ProcessBuilder pb = new ProcessBuilder().directory(wd).command(
+                new String[] { "ln", "-s", original.getName(), lockFile.getName() }
+            );
+            pb.start().waitFor();
+            final List<String> names = Arrays.asList(lockFile.getParentFile().list());
+            assertEquals("One file", 1, names.size());
+            // file exists, or at least dir.listFiles lists the file
+            assertTrue(names.contains(lockFile.getName()));
+            // java.io.File.exists returns false
+            assertFalse(lockFile.exists());
 
-        if (listFirst) {
-            FileObject root = FileUtil.toFileObject(wd);
-            List<FileObject> arr = Arrays.asList(root.getChildren());
-            assertEquals("One files: " + arr, 1, arr.size());
-            assertEquals("Has the right name", lockFile.getName(), arr.get(0).getName());
+            if (listFirst) {
+                FileObject root = FileUtil.toFileObject(wd);
+                List<FileObject> arr = Arrays.asList(root.getChildren());
+                assertEquals("One files: " + arr, 1, arr.size());
+                assertEquals("Has the right name", lockFile.getName(), arr.get(0).getName());
+            }
+
+            // and no FileObject is reated for such a file
+            assertNotNull(FileUtil.toFileObject(lockFile));
+        } finally {
+            lockFile.delete();
         }
-        
-        // and no FileObject is reated for such a file
-        assertNotNull(FileUtil.toFileObject(lockFile));
     }
 }
