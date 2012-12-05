@@ -23,15 +23,16 @@ you configure the test driver.</p>
 by performing the following steps.</p>
 
 <ol>
-    <li>Download the js-test-driver JAR.</li>
+    <li>Download the js-test-driver JAR to your local system.</li>
     <li>In the Services window, right-click the JS Test Driver node and choose Configure in the popup menu.</li>
-    <li>In the Configure JSTestDriver dialog box, select the browsers that you want to run the test against.
+    <li>In the Configure JSTestDriver dialog box, click Browse and locate the js-test-driver JAR that you downloaded.</li>
+    <li>Select the browsers that you want to run the tests against.
         <p>Only browsers that are installed on your local system are displayed in the list.</p>
         Click OK to close the dialog box.</li>
     <li>Right-click the JS Test Driver node and choose Start to start the js-test-driver server.
         <p>When you choose Start, each of the browsers that you specified will open a window 
-        and will wait to run the unit tests. You can see the status of the the js-test-driver server 
-        in the Output window.</p></li>
+        and will wait to run the unit tests. You can see the status in the js-test-driver server 
+        tab in the Output window.</p></li>
     <li>Choose New &gt; New File to open the New File wizard.</li>
     <li>Select JsTestDriver Configuration File in the Unit Tests category in the New File wizard.</li>
     <li>Use the default name <tt>jsTestDriver.conf</tt> for the File Name.</li>
@@ -60,9 +61,9 @@ You can see details about the specific tests in the Output window. </p>
 
 <p><strong>Notes.</strong></p>
 <ul class="note">
-    <li>Debugging of unit tests is automatically enabled if you specify Chrome with NetBeans Integration as one 
-        of the JS Test Driver browsers in the Services window.</li>   
-    <li>To use JS Test Driver in the IDE you need to download the JS Test Driver JAR that is available from the following location.
+    <li>Debugging of unit tests is automatically enabled if you specify Chrome with NetBeans JS Debugger as one 
+        of the JS Test Driver browsers when you configure JS Test Driver in the Services window.</li>   
+    <li>To use JS Test Driver in the IDE you need to download the JS Test Driver JAR that is available from the following location.<br>
 <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
     <param name="content" value="http://code.google.com/p/js-test-driver/">
     <param name="text" value="<html><u>JS Test Driver homepage</u></html>">
