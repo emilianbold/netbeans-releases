@@ -75,6 +75,9 @@ public class ProvidedExtensionsProxy extends ProvidedExtensions {
     
     @Override
     public IOHandler getCopyHandler(File from, File to) {
+        if (to == null) {
+            return null;
+        }
         IOHandler retValue = null;
         for (Iterator it = annotationProviders.iterator(); it.hasNext() && retValue == null;) {
             AnnotationProvider provider = (AnnotationProvider) it.next();
@@ -115,6 +118,9 @@ public class ProvidedExtensionsProxy extends ProvidedExtensions {
     }
     
     public ProvidedExtensions.IOHandler getMoveHandler(final File from, final File to)  {
+        if (to == null) {
+            return null;
+        }
         IOHandler retValue = null;
         for (Iterator it = annotationProviders.iterator(); it.hasNext() && retValue == null;) {
             AnnotationProvider provider = (AnnotationProvider) it.next();
@@ -368,6 +374,9 @@ public class ProvidedExtensionsProxy extends ProvidedExtensions {
 
     @Override
     public void beforeMove(final FileObject from, final File to) {
+        if (to == null) {
+            return;
+        }
         for (Iterator it = annotationProviders.iterator(); it.hasNext();) {
             AnnotationProvider provider = (AnnotationProvider) it.next();
             final InterceptionListener iListener = (provider != null) ?  provider.getInterceptionListener() : null;
@@ -383,6 +392,9 @@ public class ProvidedExtensionsProxy extends ProvidedExtensions {
 
     @Override
     public void moveSuccess(final FileObject from, final File to) {
+        if (to == null) {
+            return;
+        }
         for (Iterator it = annotationProviders.iterator(); it.hasNext();) {
             AnnotationProvider provider = (AnnotationProvider) it.next();
             final InterceptionListener iListener = (provider != null) ?  provider.getInterceptionListener() : null;
@@ -398,6 +410,9 @@ public class ProvidedExtensionsProxy extends ProvidedExtensions {
 
     @Override
     public void moveFailure(final FileObject from, final File to) {
+        if (to == null) {
+            return;
+        }
         for (Iterator it = annotationProviders.iterator(); it.hasNext();) {
             AnnotationProvider provider = (AnnotationProvider) it.next();
             final InterceptionListener iListener = (provider != null) ?  provider.getInterceptionListener() : null;
@@ -413,6 +428,9 @@ public class ProvidedExtensionsProxy extends ProvidedExtensions {
     
     @Override
     public void beforeCopy(final FileObject from, final File to) {
+        if (to == null) {
+            return;
+        }
         for (Iterator it = annotationProviders.iterator(); it.hasNext();) {
             AnnotationProvider provider = (AnnotationProvider) it.next();
             final InterceptionListener iListener = (provider != null) ?  provider.getInterceptionListener() : null;
@@ -428,6 +446,9 @@ public class ProvidedExtensionsProxy extends ProvidedExtensions {
 
     @Override
     public void copySuccess(final FileObject from, final File to) {
+        if (to == null) {
+            return;
+        }
         for (Iterator it = annotationProviders.iterator(); it.hasNext();) {
             AnnotationProvider provider = (AnnotationProvider) it.next();
             final InterceptionListener iListener = (provider != null) ?  provider.getInterceptionListener() : null;
@@ -443,6 +464,9 @@ public class ProvidedExtensionsProxy extends ProvidedExtensions {
 
     @Override
     public void copyFailure(final FileObject from, final File to) {
+        if (to == null) {
+            return;
+        }
         for (Iterator it = annotationProviders.iterator(); it.hasNext();) {
             AnnotationProvider provider = (AnnotationProvider) it.next();
             final InterceptionListener iListener = (provider != null) ?  provider.getInterceptionListener() : null;
