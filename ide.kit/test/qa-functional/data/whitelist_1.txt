@@ -1,3 +1,10 @@
+#223333
+org.netbeans.modules.css.visual.CssCaretAwareSourceTask
+org.netbeans.modules.css.visual.CssStylesTCController
+org.netbeans.modules.css.visual.Installer
+org.netbeans.modules.css.visual.PageInspectorListener
+org.netbeans.modules.css.visual.RuleEditorPanel
+
 #OK on Nov 22, 2012, was #218044
 org.netbeans.modules.javascript2.editor.ModuleInstaller
 
