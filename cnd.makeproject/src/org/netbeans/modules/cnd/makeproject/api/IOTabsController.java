@@ -42,14 +42,15 @@
 package org.netbeans.modules.cnd.makeproject.api;
 
 import java.io.IOException;
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
-import javax.swing.Action;
-import javax.swing.SwingUtilities;
-import org.openide.windows.IOProvider;
+import org.netbeans.modules.cnd.utils.CndUtils;
+import org.openide.util.Mutex;
+import org.openide.util.Mutex.Action;
 import org.openide.windows.InputOutput;
 import org.openide.windows.OutputWriter;
 
@@ -73,7 +74,7 @@ final class IOTabsController {
 
             // Cleanup obsolete groups
             for (TabsGroup group : groups) {
-                if (group.isClosed()) {
+                if (group.canForget()) {
                     toRemove.add(group);
                 }
             }
@@ -86,7 +87,7 @@ final class IOTabsController {
                 TabsGroup toReuse = null;
                 for (TabsGroup group : groups) {
                     if (group.groupName.equals(groupName)) {
-                        if (group.canReuse()) {
+                        if (!group.isLocked()) {
                             toReuse = group;
                             break;
                         }
@@ -115,12 +116,16 @@ final class IOTabsController {
     }
 
     public void startHandlerInTab(ProjectActionHandler handler, InputOutputTab ioTab) {
-        handler.execute(ioTab.inputOutput);
+        InputOutput io = ioTab.inputOutputRef.get();
+        if (io != null) {
+            handler.execute(io);
+        }
     }
 
     public static final class TabsGroup {
 
         private final List<InputOutputTab> tabs = new ArrayList<InputOutputTab>();
+        private final AtomicBoolean locked = new AtomicBoolean(false);
         private final String groupName;
         private final int seqID;
 
@@ -129,18 +134,11 @@ final class IOTabsController {
             this.groupName = groupName;
         }
 
-        private boolean canReuse() {
-            synchronized (tabs) {
-                for (InputOutputTab tab : tabs) {
-                    if (!tab.isOutputClosed()) {
-                        return false;
-                    }
-                }
-            }
-            return true;
+        private boolean isLocked() {
+            return locked.get();
         }
 
-        public InputOutputTab getTab(final IOProvider ioProvider, final String tabName, final Action[] actions) {
+        public InputOutputTab getTab(final String tabName, final IOTabFactory factory) {
             String name = seqID == 1 ? tabName : tabName.concat(" #" + seqID); // NOI18N
             synchronized (tabs) {
                 for (InputOutputTab tab : tabs) {
@@ -148,7 +146,7 @@ final class IOTabsController {
                         return tab;
                     }
                 }
-                InputOutputTab newTab = new InputOutputTab(name, ioProvider.getIO(name, actions));
+                InputOutputTab newTab = new InputOutputTab(name, factory.createNewTab(name));
                 tabs.add(newTab);
                 return newTab;
             }
@@ -157,48 +155,90 @@ final class IOTabsController {
         private void closeAll() {
             synchronized (tabs) {
                 for (InputOutputTab tab : tabs) {
-                    tab.closeOutput();
-                    tab.inputOutput.closeInputOutput();
+                    tab.closeTab();
                 }
                 tabs.clear();
             }
         }
 
-        public void resetIO() {
+        public void lockAndReset() {
+            if (!locked.compareAndSet(false, true)) {
+                throw new IllegalStateException("Already locked"); // NOI18N
+            }
+
             synchronized (tabs) {
-                for (InputOutputTab tab : tabs) {
-                    tab.closeOutput();
-                    try {
-                        tab.outputWriter.reset();
-                    } catch (IOException ex) {
+                Mutex.EVENT.writeAccess(new Action<Void>() {
+
+                    @Override
+                    public Void run() {
+                        for (InputOutputTab tab : tabs) {
+                            tab.resetIO();
+                            // In case of NbIO this call to closeOutput() will
+                            // not change a title to a plain (not bold) font ...
+                            // For this we need to write at least one char to 
+                            // the stream (and do this from another thread).
+                            // But will just ignore this minor problem, as
+                            // this method is invoked right before performing
+                            // output... 
+                            // Still do closeOutput() because this will make 
+                            // terminal's title not bold.
+                            // Closing output doesn't prevent from further 
+                            // writing 
+                            tab.closeOutput();
+                        }
+                        return null;
                     }
-                }
+                });
             }
         }
 
-        private boolean isClosed() {
+        public void unlockAndCloseOutput() {
+            synchronized (tabs) {
+                if (!locked.get()) {
+                    throw new IllegalStateException("Not locked: " + toString()); // NOI18N
+                }
+
+                Mutex.EVENT.writeAccess(new Action<Void>() {
+
+                    @Override
+                    public Void run() {
+                        for (InputOutputTab tab : tabs) {
+                            tab.closeOutput();
+                        }
+                        return null;
+                    }
+                });
+
+                locked.set(false);
+            }
+        }
+
+        private boolean canForget() {
             synchronized (tabs) {
                 for (InputOutputTab tab : tabs) {
-                    if (!tab.isOutputClosed() || !tab.inputOutput.isClosed()) {
+                    if (tab.inputOutputRef.get() != null) {
                         return false;
                     }
                 }
+                tabs.clear();
                 return true;
             }
+        }
+
+        @Override
+        public String toString() {
+            return "Group of IO tabs named " + groupName; // NOI18N
         }
     }
 
     public static final class InputOutputTab {
 
         private final String name;
-        private final InputOutput inputOutput;
-        private final OutputWriter outputWriter;
-        private final AtomicBoolean isOutputClosed = new AtomicBoolean(false);
+        private final WeakReference<InputOutput> inputOutputRef;
 
         private InputOutputTab(final String name, final InputOutput inputOutput) {
             this.name = name;
-            this.inputOutput = inputOutput;
-            this.outputWriter = inputOutput.getOut();
+            inputOutputRef = new WeakReference<InputOutput>(inputOutput);
         }
 
         public String getName() {
@@ -206,30 +246,77 @@ final class IOTabsController {
         }
 
         public void select() {
-            SwingUtilities.invokeLater(new Runnable() {
+            Mutex.EVENT.postWriteRequest(new Runnable() {
 
                 @Override
                 public void run() {
-                    inputOutput.select();
+                    InputOutput io = inputOutputRef.get();
+                    if (io != null) {
+                        io.select();
+                    }
                 }
             });
         }
 
-        public void closeOutput() {
-            isOutputClosed.set(true);
-            outputWriter.close();
+        private OutputWriter getOutputWriter() {
+            CndUtils.assertUiThread();
+            InputOutput io = inputOutputRef.get();
+            return (io == null) ? null : io.getOut();
         }
 
-        private boolean isOutputClosed() {
-            return isOutputClosed.get();
+        public void closeOutput() {
+            Mutex.EVENT.postWriteRequest(new Runnable() {
+
+                @Override
+                public void run() {
+                    OutputWriter outputWriter = getOutputWriter();
+                    if (outputWriter != null) {
+                        outputWriter.close();
+                    }
+                }
+            });
+        }
+
+        private void closeTab() {
+            final InputOutput io = inputOutputRef.get();
+            if (io != null) {
+                Mutex.EVENT.postWriteRequest(new Runnable() {
+
+                    @Override
+                    public void run() {
+                        io.closeInputOutput();
+                    }
+                });
+            }
+        }
+
+        private void resetIO() {
+            Mutex.EVENT.postWriteRequest(new Runnable() {
+
+                @Override
+                public void run() {
+                    OutputWriter outputWriter = getOutputWriter();
+                    if (outputWriter != null) {
+                        try {
+                            outputWriter.reset();
+                        } catch (IOException ex) {
+                        }
+                    }
+                }
+            });
         }
     }
 
-    private static class TabsGroupGroupsComparator implements Comparator<TabsGroup> {
+    private static final class TabsGroupGroupsComparator implements Comparator<TabsGroup> {
 
         @Override
-        public int compare(TabsGroup o1, TabsGroup o2) {
+        public int compare(final TabsGroup o1, final TabsGroup o2) {
             return o1.seqID - o2.seqID;
         }
+    }
+
+    interface IOTabFactory {
+
+        InputOutput createNewTab(String tabName);
     }
 }
