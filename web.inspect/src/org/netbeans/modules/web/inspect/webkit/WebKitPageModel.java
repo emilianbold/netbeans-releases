@@ -126,6 +126,7 @@ public class WebKitPageModel extends PageModel {
         this.project = pageContext.lookup(Project.class);
         this.external = (pageContext.lookup(JToolBar.class) == null); // Ugly heuristics
         addPropertyChangeListener(new WebPaneSynchronizer());
+        addPropertyChangeListener(new EditorSynchronizer());
 
         // Register DOM domain listener
         domListener = createDOMListener();
