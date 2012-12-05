@@ -8,4 +8,4 @@ FIELD      loads: Number                   [PUBLIC]   issue221022.js
 FIELD      orderProp: String               [PUBLIC]   issue221022.js
 FIELD      rights: Number                  [PUBLIC]   issue221022.js
 FIELD      specs: Array                    [PUBLIC]   issue221022.js
-FIELD      version: String|@exp;$routePar  [PUBLIC]   issue221022.js
+FIELD      version: @exp;$routeParams@pro  [PUBLIC]   issue221022.js

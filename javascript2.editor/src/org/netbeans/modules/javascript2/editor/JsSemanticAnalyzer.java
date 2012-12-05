@@ -58,7 +58,6 @@ import org.netbeans.modules.javascript2.editor.doc.spi.JsComment;
 import org.netbeans.modules.javascript2.editor.doc.spi.JsDocumentationHolder;
 import org.netbeans.modules.javascript2.editor.lexer.JsTokenId;
 import org.netbeans.modules.javascript2.editor.lexer.LexUtilities;
-import org.netbeans.modules.javascript2.editor.model.JsElement;
 import org.netbeans.modules.javascript2.editor.model.JsFunction;
 import org.netbeans.modules.javascript2.editor.model.JsObject;
 import org.netbeans.modules.javascript2.editor.model.Model;
@@ -155,7 +154,9 @@ public class JsSemanticAnalyzer extends SemanticAnalyzer<JsParserResult> {
                     if (parent.getParent() == null && !GLOBAL_TYPES.contains(object.getName())) {
                         highlights.put(object.getDeclarationName().getOffsetRange(), ColoringAttributes.GLOBAL_SET);
                         for (Occurrence occurence : object.getOccurrences()) {
-                            highlights.put(occurence.getOffsetRange(), ColoringAttributes.GLOBAL_SET);
+                            if (!isCommentOccurence(result, occurence)) {
+                                highlights.put(occurence.getOffsetRange(), ColoringAttributes.GLOBAL_SET);
+                            }
                         }
                     } else if (object.isDeclared() && !"prototype".equals(object.getName()) && !object.isAnonymous()) {
                         if((object.getOccurrences().isEmpty() 
@@ -171,21 +172,27 @@ public class JsSemanticAnalyzer extends SemanticAnalyzer<JsParserResult> {
                     if(object.isDeclared()) {
                         highlights.put(object.getDeclarationName().getOffsetRange(), ColoringAttributes.FIELD_SET);
                         for(Occurrence occurence: object.getOccurrences()) {
-                            highlights.put(occurence.getOffsetRange(), ColoringAttributes.FIELD_SET);
+                            if (!isCommentOccurence(result, occurence)) {
+                                highlights.put(occurence.getOffsetRange(), ColoringAttributes.FIELD_SET);
+                            }
                         }
                     }
                     break;
                 case FIELD:
                     highlights.put(object.getDeclarationName().getOffsetRange(), ColoringAttributes.FIELD_SET);
                     for (Occurrence occurence : object.getOccurrences()) {
-                        highlights.put(occurence.getOffsetRange(), ColoringAttributes.FIELD_SET);
+                        if (!isCommentOccurence(result, occurence)) {
+                            highlights.put(occurence.getOffsetRange(), ColoringAttributes.FIELD_SET);
+                        }
                     }
                     break;
                 case VARIABLE:
                     if (parent.getParent() == null && !GLOBAL_TYPES.contains(object.getName())) {
                         highlights.put(object.getDeclarationName().getOffsetRange(), ColoringAttributes.GLOBAL_SET);
                         for(Occurrence occurence: object.getOccurrences()) {
-                            highlights.put(occurence.getOffsetRange(), ColoringAttributes.GLOBAL_SET);
+                            if (!isCommentOccurence(result, occurence)) {
+                                highlights.put(occurence.getOffsetRange(), ColoringAttributes.GLOBAL_SET);
+                            }
                         }
                     } else {
                         if (object.getOccurrences().isEmpty() && !GLOBAL_TYPES.contains(object.getName())) {
@@ -253,6 +260,16 @@ public class JsSemanticAnalyzer extends SemanticAnalyzer<JsParserResult> {
         for (Occurrence occurrence : param.getOccurrences()) {
             JsComment comment = docHolder.getCommentForOffset(occurrence.getOffsetRange().getStart(), docHolder.getCommentBlocks());
             if (comment == null) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private static boolean isCommentOccurence(JsParserResult result, Occurrence occurence) {
+        // Comment blocks are cached by holders so this is faster than calls to token sequences.
+        for (JsComment comment : result.getDocumentationHolder().getCommentBlocks().values()) {
+            if (comment.getOffsetRange().containsInclusive(occurence.getOffsetRange().getStart())) {
                 return true;
             }
         }

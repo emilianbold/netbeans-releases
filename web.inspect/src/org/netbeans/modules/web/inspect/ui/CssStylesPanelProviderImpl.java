@@ -67,6 +67,7 @@ import org.netbeans.modules.css.model.api.StyleSheet;
 import org.netbeans.modules.css.visual.spi.CssStylesListener;
 import org.netbeans.modules.css.visual.spi.CssStylesPanelProvider;
 import org.netbeans.modules.web.browser.api.Page;
+import org.netbeans.modules.web.clientproject.api.ClientSideModule;
 import org.netbeans.modules.web.common.api.ServerURLMapping;
 import org.netbeans.modules.web.inspect.PageInspectorImpl;
 import org.netbeans.modules.web.inspect.PageModel;
@@ -395,6 +396,16 @@ public abstract class CssStylesPanelProviderImpl extends JPanel implements CssSt
                 return false;
             }
 
+            // Heuristics that tries to recognize client-side projects
+            Project project = FileOwnerQuery.getOwner(file);
+            if (project != null) {
+                Lookup lookup = project.getLookup();
+                ClientSideModule module = lookup.lookup(ClientSideModule.class);
+                if (module == null) {
+                    return false;
+                }
+            }
+
             ActionProvider provider = actionProviderForFileObject(file);
             if (provider == null) {
                 return false;
@@ -412,23 +423,28 @@ public abstract class CssStylesPanelProviderImpl extends JPanel implements CssSt
             //rule selected in document view...
             final PageModel pageModel = PageInspectorImpl.getDefault().getPage();
             if (pageModel != null && (pageModel instanceof WebKitPageModel)) {
-                WebKitPageModel wkPageModel = (WebKitPageModel) pageModel;
-                FileObject file = inspectedFileObject(wkPageModel, false);
-                if (file != null) {
-                    final Model model = rule.getModel();
-                    model.runReadTask(new Model.ModelTask() {
-                        @Override
-                        public void run(StyleSheet styleSheet) {
-                            final String elementSource = model.getElementSource(rule.getSelectorsGroup()).toString();
-                            RP.post(new Runnable() {
+                final WebKitPageModel wkPageModel = (WebKitPageModel) pageModel;
+                RP.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        FileObject file = inspectedFileObject(wkPageModel, false);
+                        if (file != null) {
+                            final Model model = rule.getModel();
+                            model.runReadTask(new Model.ModelTask() {
                                 @Override
-                                public void run() {
-                                    pageModel.setSelectedSelector(elementSource);
+                                public void run(StyleSheet styleSheet) {
+                                    final String elementSource = model.getElementSource(rule.getSelectorsGroup()).toString();
+                                    RP.post(new Runnable() {
+                                        @Override
+                                        public void run() {
+                                            pageModel.setSelectedSelector(elementSource);
+                                        }
+                                    });
                                 }
                             });
                         }
-                    });
-                }
+                    }
+                });
             }
         }
 

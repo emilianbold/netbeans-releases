@@ -98,7 +98,7 @@ import org.openide.util.lookup.Lookups;
     "CreateSiteTemplate_Error1_extension=Template name must be a ZIP file (*.zip).",
     "CreateSiteTemplate_Error2=Destination name must be specified",
     "CreateSiteTemplate_Error3=Destination is not a valid folder",
-    "CreateSiteTemplate_Error4=Template file {0} already exists. Do you want to override it?",
+    "# {0} - template file", "CreateSiteTemplate_Error4=Template file {0} already exists. Do you want to override it?",
     "CreateSiteTemplate_FileChooser=Select folder to store template in",
     "CreateSiteTemplate_FileChooserButton=Select"
 })

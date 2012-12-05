@@ -59,7 +59,7 @@ public class WebKitDebuggingTransport implements TransportImplementation {
     }
     
     @Override
-    public void sendCommand(Command command) {
+    public void sendCommand(Command command) throws TransportStateException {
         if (impl.getBrowserTabDescriptor() == null) {
             throw new TransportStateException();
         }
