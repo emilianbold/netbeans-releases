@@ -943,17 +943,10 @@ public class CreateRulePanel extends javax.swing.JPanel {
                     styleSheet.getBody().addRule(rule);
                 } else {
                     //add to the at-rule
-
-                    //XXX: is it too hacky? As the underlying source model cannot 
-                    //normally change during the modal dialog is opened the 
-                    //media item obtained when the combobox model was created 
-                    //should be the same as the model created in this method.
-                    //if this is not true - the media object from the older
-                    //source model would have to be resolved to the new source model.
-                    Media media = createInAtRule.getMedia();
-                    assert media.getModel() == cssSourceModel;
-
-                    media.addRule(rule);
+                    Media oldMedia = createInAtRule.getMedia();  //ref from the old model
+                    ModelUtils utils = new ModelUtils(cssSourceModel);
+                    Media match = utils.findMatchingMedia(oldMedia.getModel(), oldMedia);
+                    match.addRule(rule);
                 }
 
                 try {
