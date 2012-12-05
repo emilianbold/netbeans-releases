@@ -334,6 +334,28 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
             scheduleWork(flw, wait);
         }
     }
+
+    void addDeleteJob(
+        @NonNull final URL root,
+        @NonNull final Set<String> relativePaths,
+        @NonNull final LogContext logCtx) {
+        final Work wrk = new DeleteWork(
+            root,
+            relativePaths,
+            suspendSupport.getSuspendStatus(),
+            logCtx);
+        scheduleWork(wrk, false);
+    }
+
+    void addBinaryJob(
+        @NonNull final URL root,
+        @NonNull final LogContext logCtx) {
+        final Work wrk = new BinaryWork(
+            root,
+            suspendSupport.getSuspendStatus(),
+            logCtx);
+        scheduleWork(wrk, false);
+    }
     
     public void enforcedFileListUpdate(
             @NonNull final URL rootUrl,
@@ -1558,7 +1580,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
         }
     }
 
-    private Pair<URL, FileObject> getOwningBinaryRoot(final FileObject fo) {
+    Pair<URL, FileObject> getOwningBinaryRoot(final FileObject fo) {
         if (fo == null) {
             return null;
         }
@@ -3463,11 +3485,17 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                 final Map<Pair<String,Integer>,Pair<SourceIndexerFactory,Context>> contexts = new HashMap<Pair<String,Integer>,Pair<SourceIndexerFactory,Context>>();
                 final UsedIndexables usedIterables = new UsedIndexables();
                 final SourceIndexers indexers = SourceIndexers.load(false);
+                final TimeStamps ts = TimeStamps.forRoot(root, false);
                 try {
                     scanStarted(root, false, indexers, votes, contexts);
                     delete(indexables, contexts, usedIterables);
+                    ts.remove(relativePaths);
                 } finally {
-                    scanFinished(contexts.values(), usedIterables, !getCancelRequest().isRaised());
+                    final boolean finished = !getCancelRequest().isRaised();
+                    if (finished) {
+                        ts.store();
+                        scanFinished(contexts.values(), usedIterables, finished);
+                    }
                 }
                 TEST_LOGGER.log(Level.FINEST, "delete"); //NOI18N
             } catch (IOException ioe) {
