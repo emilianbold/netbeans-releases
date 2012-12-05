@@ -52,6 +52,7 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
+import javax.swing.SwingUtilities;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
@@ -90,6 +91,7 @@ public class DirectoryGroup extends Group {
 
     @Override
     protected void findProjects(Set<Project> projects, ProgressHandle h, int start, int end) {
+        assert !SwingUtilities.isEventDispatchThread(); 
         String dir = prefs().get(KEY_PATH, null);
         FileObject fo = null;
         try {

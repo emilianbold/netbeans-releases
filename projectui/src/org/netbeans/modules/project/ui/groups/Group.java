@@ -64,6 +64,7 @@ import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
+import javax.swing.SwingUtilities;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.api.project.Project;
@@ -359,6 +360,8 @@ public abstract class Group {
      * @throws IllegalArgumentException unless the main project is among {@link #getProjects}
      */
     public void setMainProject(Project mainProject) throws IllegalArgumentException {
+        assert !SwingUtilities.isEventDispatchThread(); //getProjects() can be expensive
+                
         LOG.log(Level.FINE, "updating main project for {0} to {1}", new Object[] {id, mainProject});
         URL f = null;
         if (mainProject != null && getProjects().contains(mainProject)) {
