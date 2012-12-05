@@ -64,6 +64,7 @@ import javax.tools.Diagnostic.Kind;
 import org.openide.filesystems.annotations.LayerBuilder;
 import org.openide.filesystems.annotations.LayerGeneratingProcessor;
 import org.openide.filesystems.annotations.LayerGenerationException;
+import org.openide.nodes.BeanInfoSearchPath;
 import org.openide.nodes.PropertyEditorRegistration;
 import org.openide.nodes.PropertyEditorSearchPath;
 import org.openide.util.lookup.ServiceProvider;
@@ -76,9 +77,9 @@ import org.openide.util.lookup.ServiceProvider;
  */
 @ServiceProvider(service=Processor.class)
 @SupportedSourceVersion(SourceVersion.RELEASE_6)
-public class PEAnnotationProcessor extends LayerGeneratingProcessor {
+public class NodesAnnotationProcessor extends LayerGeneratingProcessor {
 
-    public PEAnnotationProcessor() {
+    public NodesAnnotationProcessor() {
     }
 
     @Override
@@ -86,6 +87,7 @@ public class PEAnnotationProcessor extends LayerGeneratingProcessor {
         Set<String> set = new HashSet<String>();
         set.add(PropertyEditorSearchPath.class.getName());
         set.add(PropertyEditorRegistration.class.getName());
+        set.add(BeanInfoSearchPath.class.getName());
         return set;
     }
 
@@ -93,19 +95,22 @@ public class PEAnnotationProcessor extends LayerGeneratingProcessor {
     protected boolean handleProcess(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) 
             throws LayerGenerationException {
         Messager messager = processingEnv.getMessager();
+        
+        // handle @PropertyEditorSearchPath
         for (Element e : roundEnv.getElementsAnnotatedWith(PropertyEditorSearchPath.class)) {
             String pkg = findPackage(e);
             String pkgFilename = pkg.replace(".", "-"); //NOI18N
             LayerBuilder builder = layer(e);
-            LayerBuilder.File file = builder.file(PERegistrationSupport.LOOKUP_PATH 
+            LayerBuilder.File file = builder.file(NodesRegistrationSupport.PE_LOOKUP_PATH 
                     + "/Package-" + pkgFilename + ".instance"); //NOI18N
-            file.methodvalue("instanceCreate", PERegistrationSupport.class.getName(), 
+            file.methodvalue("instanceCreate", NodesRegistrationSupport.class.getName(), 
                     "createPackageRegistration"); //NOI18N
-            file.stringvalue(PERegistrationSupport.PACKAGE, pkg);
-            file.stringvalue("instanceOf", PERegistrationSupport.PEPackageRegistration.class.getName());
+            file.stringvalue(NodesRegistrationSupport.PACKAGE, pkg);
+            file.stringvalue("instanceOf", NodesRegistrationSupport.PEPackageRegistration.class.getName());
             file.write();
         }
 
+        // handle @PropertyEditorRegistration
         for (Element e : roundEnv.getElementsAnnotatedWith(PropertyEditorRegistration.class)) {
             if (e.getKind() == ElementKind.CLASS) {
                 String className = ((TypeElement) e).getQualifiedName().toString();
@@ -130,10 +135,10 @@ public class PEAnnotationProcessor extends LayerGeneratingProcessor {
 
                 LayerBuilder builder = layer(e);
                 String clsFileName = className.replace(".", "-"); //NOI18N
-                LayerBuilder.File file = builder.instanceFile(PERegistrationSupport.LOOKUP_PATH, "Class-" + clsFileName); //NOI18N
-                file.methodvalue("instanceCreate", PERegistrationSupport.class.getName(), "createClassRegistration"); //NOI18N
-                file.stringvalue(PERegistrationSupport.EDITOR_CLASS, className); //NOI18N
-                file.stringvalue("instanceOf", PERegistrationSupport.PEClassRegistration.class.getName());
+                LayerBuilder.File file = builder.instanceFile(NodesRegistrationSupport.PE_LOOKUP_PATH, "Class-" + clsFileName); //NOI18N
+                file.methodvalue("instanceCreate", NodesRegistrationSupport.class.getName(), "createClassRegistration"); //NOI18N
+                file.stringvalue(NodesRegistrationSupport.EDITOR_CLASS, className); //NOI18N
+                file.stringvalue("instanceOf", NodesRegistrationSupport.PEClassRegistration.class.getName());
                 int i = 1;
                 for (AnnotationValue type : targetTypes) {
                     String clsName = type.accept(new SimpleAnnotationValueVisitor6<String, Object>() {
@@ -148,6 +153,20 @@ public class PEAnnotationProcessor extends LayerGeneratingProcessor {
                 }
                 file.write();
             }
+        }
+        
+        // handle @BeanInfoSearchPath
+        for (Element e : roundEnv.getElementsAnnotatedWith(BeanInfoSearchPath.class)) {
+            String pkg = findPackage(e);
+            String pkgFilename = pkg.replace(".", "-"); //NOI18N
+            LayerBuilder builder = layer(e);
+            LayerBuilder.File file = builder.file(NodesRegistrationSupport.BEANINFO_LOOKUP_PATH 
+                    + "/BeanInfo-" + pkgFilename + ".instance"); //NOI18N
+            file.methodvalue("instanceCreate", NodesRegistrationSupport.class.getName(), 
+                    "createBeanInfoRegistration"); //NOI18N
+            file.stringvalue(NodesRegistrationSupport.PACKAGE, pkg);
+            file.stringvalue("instanceOf", NodesRegistrationSupport.BeanInfoRegistration.class.getName());
+            file.write();
         }
         return true;
     }

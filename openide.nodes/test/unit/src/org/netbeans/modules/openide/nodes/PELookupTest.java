@@ -62,9 +62,9 @@ public class PELookupTest extends NbTestCase {
     }
     
     public void testPackageUnregistering() {
-        MockLookup.setInstances(new PERegistrationSupport.PEPackageRegistration("test1.pkg"));
+        MockLookup.setInstances(new NodesRegistrationSupport.PEPackageRegistration("test1.pkg"));
         NodeOp.registerPropertyEditors();
-        MockLookup.setInstances(new PERegistrationSupport.PEPackageRegistration("test2.pkg"));
+        MockLookup.setInstances(new NodesRegistrationSupport.PEPackageRegistration("test2.pkg"));
         
         String[] editorSearchPath = PropertyEditorManager.getEditorSearchPath();
         int count = 0;

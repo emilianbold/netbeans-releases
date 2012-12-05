@@ -256,7 +256,8 @@ public class HistoryRootNode extends AbstractNode {
             @Override
             public String getDisplayValue() {
                 if(dateFrom != null) {
-                    return NbBundle.getMessage(HistoryRootNode.class, "LBL_ShowingVCSRevisions", vcsName, dateFormat.format(dateFrom), vcsCount); // NOI18N
+                    String entries = NbBundle.getMessage(HistoryRootNode.class, vcsCount == 1 ? "LBL_EntryCountOne" : "LBL_EntryCountMore", vcsCount); //NOI18N
+                    return NbBundle.getMessage(HistoryRootNode.class, "LBL_ShowingVCSRevisions", vcsName, dateFormat.format(dateFrom), entries); // NOI18N
                 } else {
                     return NbBundle.getMessage(HistoryRootNode.class, "LBL_ShowingAllVCSRevisions", vcsName); // NOI18N
                 }
