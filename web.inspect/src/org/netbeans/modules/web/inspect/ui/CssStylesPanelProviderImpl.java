@@ -273,9 +273,18 @@ public abstract class CssStylesPanelProviderImpl extends JPanel implements CssSt
         };
     }
 
-    private void update(PageModel pageModel) {
+    private void update(final PageModel pageModel) {
         currentPageModel = pageModel;
         if (pageModel instanceof WebKitPageModel) {
+            if (EventQueue.isDispatchThread()) {
+                RP.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        update(pageModel);
+                    }
+                });
+                return;
+            }
             final WebKitPageModel webKitPageModel = (WebKitPageModel)pageModel;
             FileObject fob = inspectedFileObject(webKitPageModel, true);
             webKitPageModel.addPropertyChangeListener(new PropertyChangeListener() {
