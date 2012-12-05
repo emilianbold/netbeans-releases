@@ -291,10 +291,16 @@ public class ToolTipAnnotation extends Annotation
         }
         column = Math.min(column, t.length());
         int identStart = column;
-        while (identStart > 0 &&
-                (Character.isJavaIdentifierPart(t.charAt(identStart - 1)) ||
-                (t.charAt (identStart - 1) == '.'))) {
-            identStart--;
+        while (identStart > 0) {
+            char c = t.charAt (identStart - 1);
+            if (Character.isJavaIdentifierPart(c) ||
+                c == '.' ||
+                c == ']' || c == '[') {
+                
+                identStart--;
+            } else {
+                break;
+            }
         }
         int identEnd = column;
         while (identEnd < lineLen &&
