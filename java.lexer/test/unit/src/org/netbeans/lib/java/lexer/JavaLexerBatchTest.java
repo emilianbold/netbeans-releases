@@ -152,7 +152,7 @@ public class JavaLexerBatchTest extends TestCase {
     
     public void testNumberLiterals() {
         String text = "0 00 09 1 12 0L 1l 12L 0x1 0xf 0XdE 0Xbcy" + 
-                " 09.5 1.5f 2.5d 6d 7e3 6.1E-7f 0xa.5dp+12d .3";
+                " 09.5 1.5f 2.5d 6d 7e3 6.1E-7f 0xa.5dp+12d .3 0x4l 0x5L";
         TokenHierarchy<?> hi = TokenHierarchy.create(text, JavaTokenId.language());
         TokenSequence<?> ts = hi.tokenSequence();
         LexerTestUtilities.assertNextTokenEquals(ts, JavaTokenId.INT_LITERAL, "0");
@@ -195,6 +195,10 @@ public class JavaLexerBatchTest extends TestCase {
         LexerTestUtilities.assertNextTokenEquals(ts, JavaTokenId.DOUBLE_LITERAL, "0xa.5dp+12d");
         LexerTestUtilities.assertNextTokenEquals(ts, JavaTokenId.WHITESPACE, " ");
         LexerTestUtilities.assertNextTokenEquals(ts, JavaTokenId.DOUBLE_LITERAL, ".3");
+        LexerTestUtilities.assertNextTokenEquals(ts, JavaTokenId.WHITESPACE, " ");
+        LexerTestUtilities.assertNextTokenEquals(ts, JavaTokenId.LONG_LITERAL, "0x4l");
+        LexerTestUtilities.assertNextTokenEquals(ts, JavaTokenId.WHITESPACE, " ");
+        LexerTestUtilities.assertNextTokenEquals(ts, JavaTokenId.LONG_LITERAL, "0x5L");
     }
     
     public void testOperators() {
@@ -473,5 +477,21 @@ public class JavaLexerBatchTest extends TestCase {
         LexerTestUtilities.assertNextTokenEquals(ts, JavaTokenId.IDENTIFIER, "b101l");
         LexerTestUtilities.assertNextTokenEquals(ts, JavaTokenId.INT_LITERAL, "0");
         LexerTestUtilities.assertNextTokenEquals(ts, JavaTokenId.IDENTIFIER, "b101L");
+    }
+
+    public void testUnderscoresInLiterals() {
+        String text = "_12 1_2 12_ 0_12 01_2 0x1_2";
+        InputAttributes attr = new InputAttributes();
+        attr.setValue(JavaTokenId.language(), "version", Integer.valueOf(7), true);
+        TokenHierarchy<?> hi = TokenHierarchy.create(text, false, JavaTokenId.language(), EnumSet.of(JavaTokenId.WHITESPACE), attr);
+        TokenSequence<?> ts = hi.tokenSequence();
+
+        LexerTestUtilities.assertNextTokenEquals(ts, JavaTokenId.IDENTIFIER, "_12");
+        LexerTestUtilities.assertNextTokenEquals(ts, JavaTokenId.INT_LITERAL, "1_2");
+        LexerTestUtilities.assertNextTokenEquals(ts, JavaTokenId.INT_LITERAL, "12");
+        LexerTestUtilities.assertNextTokenEquals(ts, JavaTokenId.IDENTIFIER, "_");
+        LexerTestUtilities.assertNextTokenEquals(ts, JavaTokenId.INT_LITERAL, "0_12");
+        LexerTestUtilities.assertNextTokenEquals(ts, JavaTokenId.INT_LITERAL, "01_2");
+        LexerTestUtilities.assertNextTokenEquals(ts, JavaTokenId.INT_LITERAL, "0x1_2");
     }
 }

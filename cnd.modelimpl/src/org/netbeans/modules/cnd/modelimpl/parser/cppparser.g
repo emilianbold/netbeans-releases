@@ -2436,15 +2436,21 @@ access_specifier
 	;
 
 member_declarator_list
-	:	member_declarator (ASSIGNEQUAL initializer)?
-		(COMMA member_declarator (ASSIGNEQUAL initializer)?)*
+	:	member_declarator
+		(COMMA member_declarator)*
 	;
 
 member_declarator
 	:	
 		((IDENT)? COLON constant_expression)=>(IDENT)? COLON constant_expression
 	|  
-		declarator[declOther, 0] (LITERAL_override | LITERAL_final | LITERAL_new)?
+		declarator[declOther, 0] 
+                (   LITERAL_override 
+                |   LITERAL_final 
+                |   LITERAL_new
+                |   ASSIGNEQUAL initializer
+                |   array_initializer
+                )?
 	;
 
 conversion_function_decl_or_def returns [boolean definition = false]
@@ -3447,11 +3453,6 @@ statement
                 try_block[false]
 	|
                 {if (statementTrace>=1) 
-			printf("statement_12[%d]: throw_statement\n", LT(1).getLine());
-		}	
-                throw_statement
-	|
-                {if (statementTrace>=1) 
 			printf("statement_13[%d]: asm_block\n", LT(1).getLine());
 		}	
                 asm_block
@@ -3712,11 +3713,8 @@ exception_declaration
  * to me means "statement"; it removes some ambiguity to put it in
  * as a statement also.
  */
-throw_statement
-	:	LITERAL_throw (assignment_expression) ? 
-        ( EOF! { reportError(new NoViableAltException(org.netbeans.modules.cnd.apt.utils.APTUtils.EOF_TOKEN, getFilename())); }
-        | SEMICOLON) //{ end_of_stmt();}
-		{#throw_statement = #(#[CSM_THROW_STATEMENT, "CSM_THROW_STATEMENT"], #throw_statement);}
+throw_expression
+	:	LITERAL_throw (options {greedy=true;}: assignment_expression) ? 
 	;
 
 using_declaration
@@ -3816,6 +3814,8 @@ assignment_expression
             (cast_array_initializer_head)=>cast_array_initializer
             |
             lazy_expression[false, false, 0]
+            |
+            throw_expression
         )
 	(options {greedy=true;}:	
             ( ASSIGNEQUAL              
@@ -3880,7 +3880,7 @@ lazy_expression[boolean inTemplateParams, boolean searchingGreaterthen, int temp
             |   LESSTHAN
             |   LESSTHANOREQUALTO
             |   GREATERTHANOREQUALTO
-            |   QUESTIONMARK (expression | LITERAL_throw (assignment_expression)? )? COLON (assignment_expression | LITERAL_throw (options {greedy=true;}: assignment_expression)?)
+            |   QUESTIONMARK (expression)? COLON (assignment_expression)
             |   SHIFTLEFT 
             |   SHIFTRIGHT
             |   PLUS 
@@ -4138,7 +4138,7 @@ lazy_expression_predicate
     |   LESSTHAN
     |   LESSTHANOREQUALTO
     |   GREATERTHANOREQUALTO
-    |   QUESTIONMARK (expression | LITERAL_throw (assignment_expression)?) COLON (assignment_expression | LITERAL_throw (options {greedy=true;}:assignment_expression)?)
+    |   QUESTIONMARK (expression) COLON (assignment_expression)
     |   SHIFTLEFT 
     |   SHIFTRIGHT
     |   PLUS 

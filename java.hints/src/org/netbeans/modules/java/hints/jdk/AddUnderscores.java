@@ -49,6 +49,7 @@ import javax.lang.model.SourceVersion;
 import javax.swing.JComponent;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.WorkingCopy;
+import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.java.hints.jdk.AddUnderscores.CustomizerProviderImpl;
 import org.netbeans.spi.java.hints.Hint;
 import org.netbeans.spi.java.hints.TriggerTreeKind;
@@ -74,9 +75,11 @@ public class AddUnderscores {
         if (ctx.getInfo().getSourceVersion().compareTo(SourceVersion.RELEASE_7) < 0) return null;
         
         TreePath tp = ctx.getPath();
-        int start = (int) ctx.getInfo().getTrees().getSourcePositions().getStartPosition(tp.getCompilationUnit(), tp.getLeaf());
         int end = (int) ctx.getInfo().getTrees().getSourcePositions().getEndPosition(tp.getCompilationUnit(), tp.getLeaf());
-        String literal = ctx.getInfo().getText().substring(start, end);
+        TokenSequence<?> ts = ctx.getInfo().getTokenHierarchy().tokenSequence();
+        ts.move(end);
+        if (!ts.movePrevious()) return null;
+        String literal = ts.token().text().toString();
         if (!isReplaceLiteralsWithUnderscores(ctx.getPreferences()) && literal.contains("_")) return null;
         RadixInfo info = radixInfo(literal);
         if (info.radix == 8) return null;//octals ignored for now

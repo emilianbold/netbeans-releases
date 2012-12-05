@@ -76,8 +76,7 @@ FUNCTION DEFINITION foo_7  [30:1/376-32:2/435] FunctionDDImpl SCOPE: $Global$
     PARAMETERS:
     RETURNS void TEXT=void  [30:1/376-30:5/380]
     STATEMENT COMPOUND  [30:40/415-32:2/435] SCOPE: foo_7 
-        STATEMENT THROW  [31:9/419-31:23/433] SCOPE: Stmt  [30:40/415-32:2/435]
-            unexpected statement kind
+        STATEMENT EXPRESSION  [31:9/419-31:22/432] SCOPE: Stmt  [30:40/415-32:2/435] text: 'throw fp_fun1'
 
 ========== Dumping model of PROJECT DummyProject
 CLASS Exception (Exception ) [1:1/0-1:19/18] lcurly=16 SCOPE: $Global$ 
@@ -141,8 +140,7 @@ FUNCTION DEFINITION foo_7  [30:1/376-32:2/435] FunctionDDImpl SCOPE: $Global$
     PARAMETERS:
     RETURNS void TEXT=void  [30:1/376-30:5/380]
     STATEMENT COMPOUND  [30:40/415-32:2/435] SCOPE: foo_7 
-        STATEMENT THROW  [31:9/419-31:23/433] SCOPE: Stmt  [30:40/415-32:2/435]
-            unexpected statement kind
+        STATEMENT EXPRESSION  [31:9/419-31:22/432] SCOPE: Stmt  [30:40/415-32:2/435] text: 'throw fp_fun1'
 NAMESPACE DEFINITIONS for ns (ns) 
     throw_const.cc  [3:1/21-5:2/61]
 NAMESPACE ns (ns) 

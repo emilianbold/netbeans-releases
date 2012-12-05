@@ -124,7 +124,6 @@ FormattingToken{kind=WHITESPACE, offset=126, text= }
 FormattingToken{kind=TEXT, offset=127, text=/}
 FormattingToken{kind=TEXT, offset=128, text=sdsdsd}
 FormattingToken{kind=TEXT, offset=134, text=/}
-FormattingToken{kind=AFTER_STATEMENT, offset=-1, text=null}
 FormattingToken{kind=EOL, offset=135, text=
 }
 FormattingToken{kind=EOL, offset=136, text=
@@ -132,7 +131,6 @@ FormattingToken{kind=EOL, offset=136, text=
 FormattingToken{kind=TEXT, offset=137, text=/}
 FormattingToken{kind=TEXT, offset=138, text=dfdfdf}
 FormattingToken{kind=TEXT, offset=144, text=/}
-FormattingToken{kind=AFTER_STATEMENT, offset=-1, text=null}
 FormattingToken{kind=EOL, offset=145, text=
 }
 FormattingToken{kind=EOL, offset=146, text=

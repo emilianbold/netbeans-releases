@@ -82,6 +82,7 @@ import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
 import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
 import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport.UploadStatus;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager.CancellationException;
+import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils.ExitStatus;
 import org.netbeans.modules.nativeexecution.api.util.ShellScriptRunner;
@@ -487,7 +488,7 @@ class RfsLocalController extends NamedRunnable {
      * @return true in the case of success, otherwise false
      * NB: in the case false is returned, no shutdown will be called
      */
-    boolean init() throws IOException {
+    boolean init() throws IOException, CancellationException {
         char version = USE_TIMESTAMPS ? '4' : '3';
         if (!checkVersion(version)) {
             return false;
@@ -564,9 +565,10 @@ class RfsLocalController extends NamedRunnable {
         logger.log(Level.FINE, "sorting file list took %d ms", System.currentTimeMillis() - time);
 
         time = System.currentTimeMillis();
+        long clockSkew = HostInfoUtils.getHostInfo(execEnv).getClockSkew();
         for (FileGatheringInfo info : filesToFeed) {
             try {
-                sendFileInitRequest(info);
+                sendFileInitRequest(info, clockSkew);
             } catch (IOException ex) {
                 if (err != null) {
                     err.printf("Process exited unexpectedly while file info was being sent\n"); //NOI18N
@@ -801,7 +803,7 @@ class RfsLocalController extends NamedRunnable {
         }
     }
     
-    private void sendFileInitRequest(FileGatheringInfo fgi) throws IOException {
+    private void sendFileInitRequest(FileGatheringInfo fgi, long timeSkew) throws IOException {
         if (CHECK_ALIVE && !remoteController.isAlive()) { // fixup for remote tests unstable failure (caused by jsch issue)
             throw new IOException("process already exited"); //NOI18N
         }
@@ -845,7 +847,7 @@ class RfsLocalController extends NamedRunnable {
                     || newState == FileState.INEXISTENT,
                     "State shouldn't be ", newState); //NOI18N
             if (USE_TIMESTAMPS) {
-                long fileTime = file.lastModified();
+                long fileTime = file.exists() ? Math.max(0, file.lastModified() + timeSkew) : 0;
                 long seconds = fileTime / 1000;
                 long microseconds = (fileTime % 1000) * 1000;
                 responseStream.printf("%c %d %d %d %s\n", newState.id, file.length(), seconds, microseconds, remotePath); // NOI18N

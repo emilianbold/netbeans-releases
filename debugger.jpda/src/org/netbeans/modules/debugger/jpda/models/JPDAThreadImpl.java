@@ -54,6 +54,7 @@ import com.sun.jdi.StackFrame;
 import com.sun.jdi.StringReference;
 import com.sun.jdi.ThreadGroupReference;
 import com.sun.jdi.ThreadReference;
+import com.sun.jdi.VMDisconnectedException;
 
 import com.sun.jdi.VirtualMachine;
 import com.sun.jdi.event.Event;
@@ -1292,7 +1293,7 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer, BeanContext
                 int tsc = ThreadReferenceWrapper.suspendCount(threadReference);
                 if (suspendCount != tsc) {
                     // Should not occur
-                    Exceptions.printStackTrace(new IllegalStateException("Different suspend counts! JPDA Thread = "+suspendCount+", thread "+threadReference+" = "+tsc));
+                    Exceptions.printStackTrace(new IllegalStateException("Different suspend counts! JPDA Thread = "+suspendCount+", thread "+threadReference+" = "+tsc+", thread's state: "+getThreadStateLog(threadReference)));
                     suspendCount = tsc;
                 }
                 // The thread needs to be only single-suspended, otherwise it can not invoke methods.
@@ -1301,6 +1302,7 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer, BeanContext
                 }
             } catch (InternalExceptionWrapper iew) {
             } catch (VMDisconnectedExceptionWrapper dew) {
+            } catch (VMDisconnectedException de) { // from ThreadReference.toString()
             } catch (ObjectCollectedExceptionWrapper oce) {
             } catch (IllegalThreadStateExceptionWrapper itse) {
             }

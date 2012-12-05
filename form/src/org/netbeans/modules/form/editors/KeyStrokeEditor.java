@@ -520,7 +520,10 @@ public class KeyStrokeEditor extends PropertyEditorSupport
         int code = e.getKeyCode();
         if (keyEvent_getExtendedKeyCode != null) {
             try {
-                code = (int)(Integer)keyEvent_getExtendedKeyCode.invoke(e);
+                int ecode = (int)(Integer)keyEvent_getExtendedKeyCode.invoke(e);
+                if (ecode != KeyEvent.VK_UNDEFINED) {
+                    code = ecode;
+                }
             } catch (IllegalAccessException ex) {
                 Exceptions.printStackTrace(ex);
             } catch (IllegalArgumentException ex) {
