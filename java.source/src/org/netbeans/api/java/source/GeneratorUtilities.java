@@ -1140,6 +1140,9 @@ public final class GeneratorUtilities {
         } else {
             Trees trees = copy.getTrees();
             TreePath path = trees.getPath(clazz);
+            if (path == null) {
+                path = new TreePath(copy.getCompilationUnit());
+            }
             Scope s = trees.getScope(path);
             BlockTree body = method.getBody();
             copy.getTreeUtilities().attributeTree(body, s);
