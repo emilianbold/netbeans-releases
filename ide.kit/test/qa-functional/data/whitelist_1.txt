@@ -1023,6 +1023,9 @@ javax.accessibility.AccessibleSelection
 javax.accessibility.AccessibleValue
 javax.crypto.SecretKey
 javax.enterprise.deploy.shared.ModuleType
+javax.enterprise.deploy.shared.factories.DeploymentFactoryManager
+javax.enterprise.deploy.spi.DeploymentManager
+javax.enterprise.deploy.spi.exceptions.DeploymentManagerCreationException
 javax.enterprise.deploy.spi.factories.DeploymentFactory
 javax.help.HelpSet
 javax.help.HelpSetException
@@ -1329,10 +1332,16 @@ org.ini4j.IniParser
 org.ini4j.IniParser$1XML2Ini
 org.ini4j.InvalidIniFormatException
 org.ini4j.ServiceFinder
+org.jdesktop.beans.AbstractBean
 org.jdesktop.layout.GroupLayout$Group
 org.jdesktop.layout.GroupLayout$ParallelGroup
 org.jdesktop.layout.GroupLayout$SequentialGroup
 org.jdesktop.layout.GroupLayout$Spring
+org.jdesktop.swingx.painter.AbstractPainter
+org.jdesktop.swingx.painter.AbstractPainter$Interpolation
+org.jdesktop.swingx.painter.BusyPainter
+org.jdesktop.swingx.painter.BusyPainter$Direction
+org.jdesktop.swingx.painter.Painter
 org.netbeans.CLIHandler
 org.netbeans.CLIHandler$Args
 org.netbeans.DuplicateException
@@ -5693,6 +5702,9 @@ sun.net.NetProperties
 sun.reflect.ConstructorAccessorImpl
 sun.reflect.MethodAccessorImpl
 javax.swing.plaf.ProgressBarUI
+javax.swing.plaf.ComboBoxUI
+javax.swing.text.DocumentFilter
+javax.swing.text.DocumentFilter$FilterBypass
 org.netbeans.core.NbKeymap$Binding
 org.netbeans.core.execution.SecMan$PrivilegedCheck
 org.netbeans.core.startup.ModuleList$ReadInitial
