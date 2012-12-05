@@ -50,8 +50,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.ResourceBundle;
 import java.util.Set;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.swing.BorderFactory;
 import javax.swing.ButtonGroup;
 import javax.swing.JButton;
@@ -130,7 +128,6 @@ import org.openide.util.NbBundle;
 })
 public final class GroovyJUnitTestWizardIterator extends GroovyFileWizardIterator {
 
-    private static final Logger LOGGER = Logger.getLogger(GroovyJUnitTestWizardIterator.class.getName());
     private static final ResourceBundle BUNDLE = NbBundle.getBundle(GroovyJUnitTestWizardIterator.class);
 
 
@@ -139,46 +136,18 @@ public final class GroovyJUnitTestWizardIterator extends GroovyFileWizardIterato
 
     @Override
     protected List<SourceGroup> getOrderedSourcesGroups(WizardDescriptor wizardDescriptor, List<SourceGroup> groups) {
-        LOGGER.finest("getOrderedSourcesGroups(...) method entered");
-        LOGGER.finest("Source groups at the beginning of the method: \n");
-        printSourceGroups(groups);
-
         if (!strategy.existsGroovyTestFolder(groups)) {
-            LOGGER.finest("Groovy test folder doesn't exist");
-            LOGGER.finest("\nProject structure before the strategy.createGroovyTestFolder() call: \n");
-            printProjectStructure();
             strategy.createGroovyTestFolder();
-
-            LOGGER.finest("\nProject structure after the strategy.createGroovyTestFolder() call: \n");
-            printProjectStructure();
 
             // Retrieve the source groups again, but now with a newly created /test/groovy folder
             groups = GroovySources.getGroovySourceGroups(ProjectUtils.getSources(project));
-
-            LOGGER.finest("\nSource groups after the test folder creation: \n");
-            printSourceGroups(groups);
         }
+
         final List<SourceGroup> testSourceGroups = strategy.getOnlyTestSourceGroups(groups);
-
-        LOGGER.finest("\nTest source groups only: \n");
-        printSourceGroups(testSourceGroups);
-
         if (!testSourceGroups.isEmpty()) {
             return testSourceGroups;
         } else {
             return groups;
-        }
-    }
-
-    private void printProjectStructure() {
-        for (FileObject child : project.getProjectDirectory().getChildren()) {
-            LOGGER.log(Level.FINEST, "Child name: {0}", child.getName());
-        }
-    }
-
-    private void printSourceGroups(List<SourceGroup> groups) {
-        for (SourceGroup group : groups) {
-            LOGGER.log(Level.FINEST, "Group name: {0}, Group root: {1}", new Object[] {group.getDisplayName(), group.getRootFolder()});
         }
     }
 
