@@ -287,13 +287,25 @@ NetBeans.openWarning = function(ident, height) {
     });
 };
 
+/**
+ * Open popup window.
+ * @param {string} url url to be opened
+ * @param {int} width popup width, can be omitted
+ * @param {type} height popup height, can be omitted
+ * @returns {void}
+ */
 NetBeans.openPopup = function(url, width, height) {
-    chrome.windows.create({
+    var options = {
         url: url,
-        type: 'popup',
-        width: width,
-        height: height
-    });
+        type: 'popup'
+    };
+    if (width !== undefined) {
+        options['width'] = width;
+    }
+    if (height !== undefined) {
+        options['height'] = height;
+    }
+    chrome.windows.create(options);
 };
 
 chrome.debugger.onEvent.addListener(function(source, method, params) {
