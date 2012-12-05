@@ -1589,9 +1589,14 @@ public class AstRenderer {
         }
         if (typeof || tokType.getType() == CPPTokenTypes.CSM_TYPE_BUILTIN ||
                 tokType.getType() == CPPTokenTypes.CSM_TYPE_COMPOUND ||
-                tokType.getType() == CPPTokenTypes.CSM_QUALIFIED_ID && isThisReference) {
-
-            AST nextToken = tokType.getNextSibling();
+                tokType.getType() == CPPTokenTypes.CSM_QUALIFIED_ID && isThisReference ||
+                tokType.getType() == CPPTokenTypes.CSM_VARIABLE_DECLARATION) {
+            AST nextToken;
+            if(tokType.getType() == CPPTokenTypes.CSM_VARIABLE_DECLARATION) {
+                nextToken = tokType;
+            } else {
+                nextToken = tokType.getNextSibling();
+            }
             while (nextToken != null &&
                     (nextToken.getType() == CPPTokenTypes.CSM_PTR_OPERATOR ||
                     isQualifier(nextToken.getType()) ||
