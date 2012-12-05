@@ -51,6 +51,7 @@ import org.netbeans.modules.php.editor.api.QualifiedName;
 import org.netbeans.modules.php.editor.api.elements.NamespaceElement;
 import org.netbeans.modules.php.editor.index.PHPIndexer;
 import org.netbeans.modules.php.editor.index.Signature;
+import org.netbeans.modules.php.editor.model.impl.VariousUtils;
 import org.netbeans.modules.php.editor.model.nodes.NamespaceDeclarationInfo;
 import org.netbeans.modules.php.editor.parser.astnodes.NamespaceDeclaration;
 import org.openide.util.Parameters;
@@ -65,8 +66,9 @@ public class NamespaceElementImpl extends FullyQualifiedElementImpl implements N
             final QualifiedName qualifiedName,
             final int offset,
             final String fileUrl,
-            final ElementQuery elementQuery) {
-        super(qualifiedName.toName().toString(), qualifiedName.toNamespaceName().toString(), fileUrl, offset, elementQuery);
+            final ElementQuery elementQuery,
+            final boolean isDeprecated) {
+        super(qualifiedName.toName().toString(), qualifiedName.toNamespaceName().toString(), fileUrl, offset, elementQuery, isDeprecated);
     }
 
     public static Set<NamespaceElement> fromSignature(final IndexQueryImpl indexQuery, final IndexResult indexResult) {
@@ -91,7 +93,7 @@ public class NamespaceElementImpl extends FullyQualifiedElementImpl implements N
         if (matchesQuery(query, signParser)) {
                 retval = new NamespaceElementImpl(signParser.getQualifiedName(),
                 0, indexResult.getUrl().toString(),
-                indexScopeQuery);
+                indexScopeQuery, signParser.isDeprecated());
         }
         return retval;
     }
@@ -102,7 +104,8 @@ public class NamespaceElementImpl extends FullyQualifiedElementImpl implements N
         NamespaceDeclarationInfo info = NamespaceDeclarationInfo.create(node);
         return new NamespaceElementImpl(
                 info.getQualifiedName(), info.getRange().getStart(),
-                fileQuery.getURL().toExternalForm(), fileQuery);
+                fileQuery.getURL().toExternalForm(), fileQuery,
+                VariousUtils.isDeprecatedFromPHPDoc(fileQuery.getResult().getProgram(), node));
     }
 
     private static boolean matchesQuery(final NameKind query, NamespaceSignatureParser signParser) {
@@ -121,6 +124,7 @@ public class NamespaceElementImpl extends FullyQualifiedElementImpl implements N
         sb.append(name.toLowerCase()).append(Separator.SEMICOLON);
         sb.append(name).append(Separator.SEMICOLON);
         sb.append(namespaceName).append(Separator.SEMICOLON);
+        sb.append(isDeprecated() ? 1 : 0).append(Separator.SEMICOLON);
         checkSignature(sb);
         return sb.toString();
     }
@@ -151,6 +155,10 @@ public class NamespaceElementImpl extends FullyQualifiedElementImpl implements N
 
         QualifiedName getQualifiedName() {
             return composeQualifiedName(signature.string(2), signature.string(1));
+        }
+
+        boolean isDeprecated() {
+            return signature.integer(3) == 1;
         }
     }
 

@@ -58,6 +58,7 @@ import org.netbeans.modules.php.editor.api.elements.TypeResolver;
 import org.netbeans.modules.php.editor.api.elements.VariableElement;
 import org.netbeans.modules.php.editor.index.PHPIndexer;
 import org.netbeans.modules.php.editor.index.Signature;
+import org.netbeans.modules.php.editor.model.impl.VariousUtils;
 import org.netbeans.modules.php.editor.model.nodes.ASTNodeInfo;
 import org.netbeans.modules.php.editor.parser.astnodes.ArrayAccess;
 import org.netbeans.modules.php.editor.parser.astnodes.Expression;
@@ -82,8 +83,9 @@ public class VariableElementImpl extends PhpElementImpl implements VariableEleme
             final String fileUrl,
             final ElementQuery elementQuery,
             final Set<TypeResolver> instanceTypes,
-            final Set<TypeResolver> instanceFQTypes) {
-        super(VariableElementImpl.getName(variableName, true), null, fileUrl, offset, elementQuery);
+            final Set<TypeResolver> instanceFQTypes,
+            final boolean isDeprecated) {
+        super(VariableElementImpl.getName(variableName, true), null, fileUrl, offset, elementQuery, isDeprecated);
         this.instanceTypes = instanceTypes;
         this.instanceFQTypes = instanceFQTypes;
     }
@@ -93,8 +95,9 @@ public class VariableElementImpl extends PhpElementImpl implements VariableEleme
             final int offset,
             final String fileUrl,
             final ElementQuery elementQuery,
-            final Set<TypeResolver> instanceTypes) {
-        return new VariableElementImpl(variableName, offset, fileUrl, elementQuery, instanceTypes, instanceTypes);
+            final Set<TypeResolver> instanceTypes,
+            final boolean isDeprecated) {
+        return new VariableElementImpl(variableName, offset, fileUrl, elementQuery, instanceTypes, instanceTypes, isDeprecated);
     }
 
     public static VariableElementImpl create(
@@ -102,8 +105,9 @@ public class VariableElementImpl extends PhpElementImpl implements VariableEleme
             final int offset,
             final FileObject fo,
             final ElementQuery elementQuery,
-            final Set<TypeResolver> instanceTypes) {
-        return new VariableElementImpl(variableName, offset, null, elementQuery, instanceTypes, instanceTypes) {
+            final Set<TypeResolver> instanceTypes,
+            final boolean isDeprecated) {
+        return new VariableElementImpl(variableName, offset, null, elementQuery, instanceTypes, instanceTypes, isDeprecated) {
             @Override
             public synchronized FileObject getFileObject() {
                 return fo;
@@ -136,7 +140,8 @@ public class VariableElementImpl extends PhpElementImpl implements VariableEleme
         if (matchesQuery(query, signParser)) {
             retval = new VariableElementImpl(signParser.getVariableName(),
                     signParser.getOffset(), indexResult.getUrl().toString(),
-                    indexScopeQuery, signParser.getTypes(), signParser.getFQTypes());
+                    indexScopeQuery, signParser.getTypes(), signParser.getFQTypes(),
+                    signParser.isDeprecated());
         }
         return retval;
     }
@@ -146,7 +151,8 @@ public class VariableElementImpl extends PhpElementImpl implements VariableEleme
         Parameters.notNull("fileQuery", fileQuery);
         ASTNodeInfo<Variable> info = ASTNodeInfo.create(node);
         return new VariableElementImpl(info.getName(), info.getRange().getStart(),
-                fileQuery.getURL().toExternalForm(), fileQuery, typeResolvers, typeResolvers);
+                fileQuery.getURL().toExternalForm(), fileQuery, typeResolvers, typeResolvers,
+                VariousUtils.isDeprecatedFromPHPDoc(fileQuery.getResult().getProgram(), node));
     }
 
     public static VariableElement fromFrameworks(final PhpVariable variable, final ElementQuery elementQuery) {
@@ -156,7 +162,7 @@ public class VariableElementImpl extends PhpElementImpl implements VariableEleme
                     ? Collections.<TypeResolver>emptySet()
                     : Collections.<TypeResolver>singleton(new TypeResolverImpl(variableType.getFullyQualifiedName()));
         VariableElementImpl retval = new VariableElementImpl(variable.getName(), variable.getOffset(), null, elementQuery,
-                typeResolvers, typeResolvers);
+                typeResolvers, typeResolvers, false);
         retval.setFileObject(variable.getFile());
         return retval;
     }
@@ -186,6 +192,7 @@ public class VariableElementImpl extends PhpElementImpl implements VariableEleme
         sb.append(varName).append(Separator.SEMICOLON); //NOI18N
         sb.append(Separator.SEMICOLON); //NOI18N
         sb.append(getOffset()).append(Separator.SEMICOLON); //NOI18N
+        sb.append(isDeprecated() ? 1 : 0).append(Separator.SEMICOLON);
         checkSignature(sb);
         return sb.toString();
     }
@@ -248,6 +255,10 @@ public class VariableElementImpl extends PhpElementImpl implements VariableEleme
 
         Set<TypeResolver> getFQTypes() {
             return TypeResolverImpl.parseTypes(signature.string(4));
+        }
+
+        boolean isDeprecated() {
+            return signature.integer(4) == 1;
         }
 
     }

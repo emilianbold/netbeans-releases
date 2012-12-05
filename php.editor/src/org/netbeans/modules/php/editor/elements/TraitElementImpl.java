@@ -55,6 +55,7 @@ import org.netbeans.modules.php.editor.api.elements.NamespaceElement;
 import org.netbeans.modules.php.editor.api.elements.TraitElement;
 import org.netbeans.modules.php.editor.index.PHPIndexer;
 import org.netbeans.modules.php.editor.index.Signature;
+import org.netbeans.modules.php.editor.model.impl.VariousUtils;
 import org.netbeans.modules.php.editor.model.nodes.TraitDeclarationInfo;
 import org.netbeans.modules.php.editor.parser.astnodes.TraitDeclaration;
 import org.openide.util.Parameters;
@@ -72,8 +73,17 @@ public final class TraitElementImpl extends TypeElementImpl implements TraitElem
             final int offset,
             final Collection<QualifiedName> usedTraits,
             final String fileUrl,
-            final ElementQuery elementQuery) {
-        super(qualifiedName, offset, Collections.<QualifiedName>emptySet(), Collections.<QualifiedName>emptySet(), PhpModifiers.NO_FLAGS, fileUrl, elementQuery);
+            final ElementQuery elementQuery,
+            final boolean isDeprecated) {
+        super(
+                qualifiedName,
+                offset,
+                Collections.<QualifiedName>emptySet(),
+                Collections.<QualifiedName>emptySet(),
+                PhpModifiers.NO_FLAGS,
+                fileUrl,
+                elementQuery,
+                isDeprecated);
         this.usedTraits = usedTraits;
     }
 
@@ -86,7 +96,13 @@ public final class TraitElementImpl extends TypeElementImpl implements TraitElem
         TraitSignatureParser signParser = new TraitSignatureParser(signature);
         TraitElement retval = null;
         if (matchesQuery(query, signParser)) {
-            retval = new TraitElementImpl(signParser.getQualifiedName(), signParser.getOffset(), signParser.getUsedTraits(), indexResult.getUrl().toString(), indexScopeQuery);
+            retval = new TraitElementImpl(
+                    signParser.getQualifiedName(),
+                    signParser.getOffset(),
+                    signParser.getUsedTraits(),
+                    indexResult.getUrl().toString(),
+                    indexScopeQuery,
+                    signParser.isDeprecated());
         }
         return retval;
     }
@@ -112,7 +128,8 @@ public final class TraitElementImpl extends TypeElementImpl implements TraitElem
                 : QualifiedName.createForDefaultNamespaceName();
         return new TraitElementImpl(
                 fullyQualifiedName.append(info.getName()), info.getRange().getStart(),
-                info.getUsedTraits(), fileQuery.getURL().toExternalForm(), fileQuery);
+                info.getUsedTraits(), fileQuery.getURL().toExternalForm(), fileQuery,
+                VariousUtils.isDeprecatedFromPHPDoc(fileQuery.getResult().getProgram(), node));
     }
 
     private static boolean matchesQuery(final NameKind query, TraitSignatureParser signParser) {
@@ -139,6 +156,7 @@ public final class TraitElementImpl extends TypeElementImpl implements TraitElem
             sb.append(traitSb);
         }
         sb.append(Separator.SEMICOLON);
+        sb.append(isDeprecated() ? 1 : 0).append(Separator.SEMICOLON);
         return sb.toString();
     }
 
@@ -181,6 +199,10 @@ public final class TraitElementImpl extends TypeElementImpl implements TraitElem
                 retval.add(QualifiedName.create(trait));
             }
             return retval;
+        }
+
+        boolean isDeprecated() {
+            return signature.integer(5) == 1;
         }
     }
 

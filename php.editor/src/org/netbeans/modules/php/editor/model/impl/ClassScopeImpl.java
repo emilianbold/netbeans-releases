@@ -106,8 +106,8 @@ class ClassScopeImpl extends TypeScopeImpl implements ClassScope, VariableNameFa
     }
 
     //new contructors
-    ClassScopeImpl(Scope inScope, ClassDeclarationInfo nodeInfo) {
-        super(inScope, nodeInfo);
+    ClassScopeImpl(Scope inScope, ClassDeclarationInfo nodeInfo, boolean isDeprecated) {
+        super(inScope, nodeInfo, isDeprecated);
         Expression superId = nodeInfo.getSuperClass();
         if (superId != null) {
             NamespaceScope namespaceScope = ModelUtils.getNamespaceScope(inScope);
@@ -407,6 +407,7 @@ class ClassScopeImpl extends TypeScopeImpl implements ClassScope, VariableNameFa
             sb.append(traitSb);
         }
         sb.append(Signature.ITEM_DELIMITER);
+        sb.append(isDeprecated() ? 1 : 0).append(Signature.ITEM_DELIMITER);
         return sb.toString();
     }
 
@@ -433,6 +434,7 @@ class ClassScopeImpl extends TypeScopeImpl implements ClassScope, VariableNameFa
         assert namespaceScope != null;
         QualifiedName qualifiedName = namespaceScope.getQualifiedName();
         sb.append(qualifiedName.toString()).append(Signature.ITEM_DELIMITER);
+        sb.append(isDeprecated() ? 1 : 0).append(Signature.ITEM_DELIMITER);
 
         return sb.toString();
 

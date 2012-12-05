@@ -85,8 +85,8 @@ abstract class TypeScopeImpl extends ScopeImpl implements TypeScope {
     private Set<? super TypeScope> superRecursionDetection = new HashSet<TypeScope>();
     private Set<? super TypeScope> subRecursionDetection = new HashSet<TypeScope>();
 
-    TypeScopeImpl(Scope inScope, ClassDeclarationInfo nodeInfo) {
-        super(inScope, nodeInfo, nodeInfo.getAccessModifiers(), nodeInfo.getOriginalNode().getBody());
+    TypeScopeImpl(Scope inScope, ClassDeclarationInfo nodeInfo, boolean isDeprecated) {
+        super(inScope, nodeInfo, nodeInfo.getAccessModifiers(), nodeInfo.getOriginalNode().getBody(), isDeprecated);
         List<? extends Expression> interfaces = nodeInfo.getInterfaces();
         for (Expression identifier : interfaces) {
             String ifaceName = CodeUtils.extractQualifiedName(identifier);
@@ -95,8 +95,8 @@ abstract class TypeScopeImpl extends ScopeImpl implements TypeScope {
         }
     }
 
-    TypeScopeImpl(Scope inScope, InterfaceDeclarationInfo nodeInfo) {
-        super(inScope, nodeInfo, PhpModifiers.fromBitMask(PhpModifiers.PUBLIC), nodeInfo.getOriginalNode().getBody());
+    TypeScopeImpl(Scope inScope, InterfaceDeclarationInfo nodeInfo, boolean isDeprecated) {
+        super(inScope, nodeInfo, PhpModifiers.fromBitMask(PhpModifiers.PUBLIC), nodeInfo.getOriginalNode().getBody(), isDeprecated);
         List<? extends Expression> interfaces = nodeInfo.getInterfaces();
         for (Expression identifier : interfaces) {
             String ifaceName = CodeUtils.extractQualifiedName(identifier);
@@ -105,8 +105,8 @@ abstract class TypeScopeImpl extends ScopeImpl implements TypeScope {
         }
     }
 
-    TypeScopeImpl(Scope inScope, TraitDeclarationInfo nodeInfo) {
-        super(inScope, nodeInfo, PhpModifiers.fromBitMask(PhpModifiers.PUBLIC), nodeInfo.getOriginalNode().getBody());
+    TypeScopeImpl(Scope inScope, TraitDeclarationInfo nodeInfo, boolean isDeprecated) {
+        super(inScope, nodeInfo, PhpModifiers.fromBitMask(PhpModifiers.PUBLIC), nodeInfo.getOriginalNode().getBody(), isDeprecated);
     }
 
     protected TypeScopeImpl(Scope inScope, ClassElement element) {

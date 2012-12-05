@@ -57,6 +57,7 @@ import org.netbeans.modules.php.editor.api.elements.InterfaceElement;
 import org.netbeans.modules.php.editor.api.elements.NamespaceElement;
 import org.netbeans.modules.php.editor.index.PHPIndexer;
 import org.netbeans.modules.php.editor.index.Signature;
+import org.netbeans.modules.php.editor.model.impl.VariousUtils;
 import org.netbeans.modules.php.editor.model.nodes.InterfaceDeclarationInfo;
 import org.netbeans.modules.php.editor.parser.astnodes.InterfaceDeclaration;
 import org.openide.util.Parameters;
@@ -74,9 +75,10 @@ public final class InterfaceElementImpl extends TypeElementImpl implements Inter
             final Set<QualifiedName> ifaceNames,
             final Collection<QualifiedName> fqSuperInterfaces,
             final String fileUrl,
-            final ElementQuery elementQuery) {
+            final ElementQuery elementQuery,
+            final boolean isDeprecated) {
         super(qualifiedName, offset, ifaceNames, fqSuperInterfaces,
-                PhpModifiers.noModifiers().toFlags(), fileUrl, elementQuery);
+                PhpModifiers.noModifiers().toFlags(), fileUrl, elementQuery, isDeprecated);
     }
 
     public static Set<InterfaceElement> fromSignature(IndexQueryImpl indexScopeQuery, IndexResult indexResult) {
@@ -105,7 +107,7 @@ public final class InterfaceElementImpl extends TypeElementImpl implements Inter
         if (matchesQuery(query, signParser)) {
             retval = new InterfaceElementImpl(signParser.getQualifiedName(), signParser.getOffset(),
                     signParser.getSuperInterfaces(), signParser.getFQSuperInterfaces(),
-                    indexResult.getUrl().toString(), indexScopeQuery);
+                    indexResult.getUrl().toString(), indexScopeQuery, signParser.isDeprecated());
         }
         return retval;
     }
@@ -120,7 +122,7 @@ public final class InterfaceElementImpl extends TypeElementImpl implements Inter
         return new InterfaceElementImpl(
                 fullyQualifiedName.append(info.getName()), info.getRange().getStart(),
                 info.getInterfaceNames(), Collections.<QualifiedName>emptySet(),
-                fileQuery.getURL().toExternalForm(), fileQuery);
+                fileQuery.getURL().toExternalForm(), fileQuery, VariousUtils.isDeprecatedFromPHPDoc(fileQuery.getResult().getProgram(), node));
     }
 
     private static boolean matchesQuery(final NameKind query, InterfaceSignatureParser signParser) {
@@ -145,6 +147,7 @@ public final class InterfaceElementImpl extends TypeElementImpl implements Inter
         sb.append(Separator.SEMICOLON); //NOI18N
         QualifiedName namespaceName = getNamespaceName();
         sb.append(namespaceName.toString()).append(Separator.SEMICOLON); //NOI18N
+        sb.append(isDeprecated() ? 1 : 0).append(Separator.SEMICOLON);
         checkInterfaceSignature(sb);
         return sb.toString();
     }
@@ -247,6 +250,10 @@ public final class InterfaceElementImpl extends TypeElementImpl implements Inter
 
         int getOffset() {
             return signature.integer(2);
+        }
+
+        boolean isDeprecated() {
+            return signature.integer(5) == 1;
         }
     }
 }

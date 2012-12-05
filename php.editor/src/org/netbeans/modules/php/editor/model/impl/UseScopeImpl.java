@@ -75,7 +75,7 @@ class UseScopeImpl extends ScopeImpl implements UseScope {
 
     private UseScopeImpl(ScopeImpl inScope, String name,
             Union2<String, FileObject> file, OffsetRange offsetRange) {
-        super(inScope, name, file, offsetRange, PhpElementKind.USE_STATEMENT);
+        super(inScope, name, file, offsetRange, PhpElementKind.USE_STATEMENT, false);
     }
 
     @Override

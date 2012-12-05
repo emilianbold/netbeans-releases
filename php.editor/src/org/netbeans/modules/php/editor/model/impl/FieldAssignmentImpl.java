@@ -50,7 +50,7 @@ import org.netbeans.modules.php.editor.model.Scope;
 class FieldAssignmentImpl extends AssignmentImpl<FieldElementImpl> {
     private VariableNameImpl variableNameImpl;
     FieldAssignmentImpl(VariableNameImpl variableNameImpl, FieldElementImpl field, Scope scope, OffsetRange scopeRange, OffsetRange nameRange, String typeName) {
-        super(field, scope, scopeRange, nameRange, typeName);
+        super(field, scope, scopeRange, nameRange, typeName, field.isDeprecated());
         this.variableNameImpl = variableNameImpl;
     }
 

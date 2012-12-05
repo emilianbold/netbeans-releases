@@ -305,7 +305,12 @@ public final class IndexQueryImpl implements ElementQuery.Index {
                     while (original == null && !qn.isDefaultNamespace()) {
                         original = namespacesMap.put(
                                 qn.toFullyQualified().toString().toLowerCase(),
-                                new NamespaceElementImpl(qn, namespace.getOffset(), namespace.getFilenameUrl(), namespace.getElementQuery()));
+                                new NamespaceElementImpl(
+                                        qn,
+                                        namespace.getOffset(),
+                                        namespace.getFilenameUrl(),
+                                        namespace.getElementQuery(),
+                                        namespace.isDeprecated()));
                         qn = qn.toNamespaceName();
                     }
                 }

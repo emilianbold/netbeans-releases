@@ -54,6 +54,7 @@ import org.netbeans.modules.php.editor.api.elements.ConstantElement;
 import org.netbeans.modules.php.editor.api.elements.NamespaceElement;
 import org.netbeans.modules.php.editor.index.PHPIndexer;
 import org.netbeans.modules.php.editor.index.Signature;
+import org.netbeans.modules.php.editor.model.impl.VariousUtils;
 import org.netbeans.modules.php.editor.model.nodes.ConstantDeclarationInfo;
 import org.netbeans.modules.php.editor.parser.astnodes.ConstantDeclaration;
 import org.openide.util.Parameters;
@@ -71,8 +72,9 @@ public final class ConstantElementImpl extends FullyQualifiedElementImpl impleme
             final String value,
             final int offset,
             final String fileUrl,
-            final ElementQuery elementQuery) {
-        super(qualifiedName.toName().toString(), qualifiedName.toNamespaceName().toString(), fileUrl, offset, elementQuery);
+            final ElementQuery elementQuery,
+            final boolean isDeprecated) {
+        super(qualifiedName.toName().toString(), qualifiedName.toNamespaceName().toString(), fileUrl, offset, elementQuery, isDeprecated);
         this.value = value;
     }
 
@@ -104,7 +106,8 @@ public final class ConstantElementImpl extends FullyQualifiedElementImpl impleme
                     signParser.getValue(),
                     signParser.getOffset(),
                     indexResult.getUrl().toString(),
-                    indexScopeQuery);
+                    indexScopeQuery,
+                    signParser.isDeprecated());
         }
         return retval;
     }
@@ -119,7 +122,8 @@ public final class ConstantElementImpl extends FullyQualifiedElementImpl impleme
                     ? namespace.getFullyQualifiedName() : QualifiedName.createForDefaultNamespaceName();
             retval.add(new ConstantElementImpl(
                     fullyQualifiedName.append(info.getName()),
-                    info.getValue(), info.getRange().getStart(), fileQuery.getURL().toExternalForm(), fileQuery));
+                    info.getValue(), info.getRange().getStart(), fileQuery.getURL().toExternalForm(), fileQuery,
+                    VariousUtils.isDeprecatedFromPHPDoc(fileQuery.getResult().getProgram(), node)));
         }
         return retval;
     }
@@ -144,6 +148,7 @@ public final class ConstantElementImpl extends FullyQualifiedElementImpl impleme
         QualifiedName namespaceName = getNamespaceName();
         sb.append(namespaceName.toString()).append(Separator.SEMICOLON); //NOI18N
         sb.append(getValue()).append(Separator.SEMICOLON); //NOI18N
+        sb.append(isDeprecated() ? 1 : 0).append(Separator.SEMICOLON);
         checkConstantSignature(sb);
         return sb.toString();
     }
@@ -180,8 +185,13 @@ public final class ConstantElementImpl extends FullyQualifiedElementImpl impleme
         int getOffset() {
             return signature.integer(2);
         }
+
         String getValue() {
             return signature.string(4);
+        }
+
+        boolean isDeprecated() {
+            return signature.integer(5) == 1;
         }
     }
 }
