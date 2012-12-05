@@ -65,8 +65,6 @@ import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.spi.jumpto.file.FileDescriptor;
 import org.netbeans.spi.jumpto.file.FileProvider;
 import org.netbeans.spi.jumpto.file.FileProviderFactory;
-import org.netbeans.spi.jumpto.support.NameMatcher;
-import org.netbeans.spi.jumpto.support.NameMatcherFactory;
 import org.netbeans.spi.jumpto.type.SearchType;
 import org.openide.filesystems.FileObject;
 
@@ -74,7 +72,9 @@ import org.openide.filesystems.FileObject;
  *
  * @author vv159170
  */
-@org.openide.util.lookup.ServiceProvider(service=org.netbeans.spi.jumpto.file.FileProviderFactory.class, position=1500)
+// we use position less than MakeProjectFileProviderFactory to be called by infrastructure
+// and have a chance to contribute libraries even if MakeProjectFileProviderFactory consumes src root
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.spi.jumpto.file.FileProviderFactory.class, position=900)
 public class LibraryFileProviderFactory implements FileProviderFactory {
 
     @Override
@@ -98,12 +98,18 @@ public class LibraryFileProviderFactory implements FileProviderFactory {
         private String cachedTextPrefix = null;
         private String lastText = null;
         private SearchType lastSearchType = null;
+        private Context lastQueriedContext;
                 
         @Override
         public boolean computeFiles(Context context, Result result) {
-            if (context.getText().equals(lastText) && context.getSearchType().equals(lastSearchType)) {
-                return true;
+            cancel.set(false);
+            if (lastQueriedContext == context) {
+                // check if already provided info for this context
+                if (context.getText().equals(lastText) && context.getSearchType().equals(lastSearchType)) {
+                    return false;
+                }
             }
+            lastQueriedContext = context;
             boolean validCache = cachedTextPrefix != null && lastText.startsWith(cachedTextPrefix) && context.getSearchType().equals(lastSearchType);
             lastText = context.getText();
             lastSearchType = context.getSearchType();
@@ -153,7 +159,6 @@ public class LibraryFileProviderFactory implements FileProviderFactory {
                         }
                     }
                 }
-                return true;
             }
             return false;
         }
