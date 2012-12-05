@@ -508,7 +508,7 @@ public abstract class Lookup {
 
         // XXX can it be null??
 
-        /** Get a persistent indentifier for the item.
+        /** Get a persistent identifier for the item.
          * This identifier should uniquely represent the item
          * within its containing lookup (and if possible within the
          * global lookup as a whole). For example, it might represent
