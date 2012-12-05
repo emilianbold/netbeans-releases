@@ -269,31 +269,29 @@ public final class NavigatorScanner {
             return null;
         }
 
-        protected void appendInterfeas(Collection<? extends String> interfaes, HtmlFormatter formatter) {
+        protected void appendInterfeas(Collection<? extends InterfaceScope> interfaes, HtmlFormatter formatter) {
             boolean first = true;
-            for (String identifier : interfaes) {
-                if (identifier != null) {
+            for (InterfaceScope interfaceScope : interfaes) {
+                if (interfaceScope != null) {
                     if (!first) {
                         formatter.appendText(", ");  //NOI18N
-
                     } else {
                         first = false;
                     }
-                    formatter.appendText(identifier);
+                    appendName(interfaceScope, formatter);
                 }
-
             }
         }
 
-        protected void appendUsedTraits(Collection<QualifiedName> usedTraits, HtmlFormatter formatter) {
+        protected void appendUsedTraits(Collection<? extends TraitScope> usedTraits, HtmlFormatter formatter) {
             boolean first = true;
-            for (QualifiedName qualifiedName : usedTraits) {
+            for (TraitScope traitScope : usedTraits) {
                 if (!first) {
                     formatter.appendText(", ");  //NOI18N
                 } else {
                     first = false;
                 }
-                formatter.appendText(qualifiedName.toString());
+                appendName(traitScope, formatter);
             }
         }
 
@@ -365,6 +363,16 @@ public final class NavigatorScanner {
             if (function.isDeprecated()) {
                 formatter.deprecated(false);
             }
+        }
+    }
+
+    private void appendName(ModelElement modelElement, HtmlFormatter formatter) {
+        if (modelElement.isDeprecated()) {
+            formatter.deprecated(true);
+            formatter.appendText(modelElement.getName());
+            formatter.deprecated(false);
+        } else {
+            formatter.appendText(modelElement.getName());
         }
     }
 
@@ -489,30 +497,24 @@ public final class NavigatorScanner {
         @Override
         public String getHtml(HtmlFormatter formatter) {
             formatter.reset();
-            if (getClassScope().isDeprecated()) {
-                formatter.deprecated(true);
-            }
-            formatter.appendText(getName());
+            appendName(getClassScope(), formatter);
             String superCalssName = ModelUtils.getFirst(getClassScope().getSuperClassNames());
             if (superCalssName != null) {
                 formatter.appendHtml(FONT_GRAY_COLOR + "::"); //NOI18N
                 formatter.appendText(superCalssName);
                 formatter.appendHtml(CLOSE_FONT);
             }
-            Collection<? extends String> interfaes = getClassScope().getSuperInterfaceNames();
+            Collection<? extends InterfaceScope> interfaes = getClassScope().getSuperInterfaceScopes();
             if (interfaes != null && interfaes.size() > 0) {
                 formatter.appendHtml(FONT_GRAY_COLOR + ":"); //NOI18N
                 appendInterfeas(interfaes, formatter);
                 formatter.appendHtml(CLOSE_FONT);
             }
-            Collection<QualifiedName> usedTraits = getClassScope().getUsedTraits();
+            Collection<? extends TraitScope> usedTraits = getClassScope().getTraits();
             if (usedTraits != null && usedTraits.size() > 0) {
                 formatter.appendHtml(FONT_GRAY_COLOR + "#"); //NOI18N
                 appendUsedTraits(usedTraits, formatter);
                 formatter.appendHtml(CLOSE_FONT);
-            }
-            if (getClassScope().isDeprecated()) {
-                formatter.deprecated(false);
             }
             return formatter.getText();
         }
@@ -613,18 +615,12 @@ public final class NavigatorScanner {
         @Override
         public String getHtml(HtmlFormatter formatter) {
             formatter.reset();
-            if (getInterfaceScope().isDeprecated()) {
-                formatter.deprecated(true);
-            }
-            formatter.appendText(getElementHandle().getName());
-            Collection<? extends String> interfaes = getInterfaceScope().getSuperInterfaceNames();
+            appendName(getInterfaceScope(), formatter);
+            Collection<? extends InterfaceScope> interfaes = getInterfaceScope().getSuperInterfaceScopes();
             if (interfaes != null && interfaes.size() > 0) {
                 formatter.appendHtml(FONT_GRAY_COLOR + "::"); //NOI18N
                 appendInterfeas(interfaes, formatter);
                 formatter.appendHtml(CLOSE_FONT);
-            }
-            if (getInterfaceScope().isDeprecated()) {
-                formatter.deprecated(false);
             }
             return formatter.getText();
         }
@@ -652,18 +648,12 @@ public final class NavigatorScanner {
         @Override
         public String getHtml(HtmlFormatter formatter) {
             formatter.reset();
-            if (getTraitScope().isDeprecated()) {
-                formatter.deprecated(true);
-            }
-            formatter.appendText(getElementHandle().getName());
-            Collection<QualifiedName> usedTraits = getTraitScope().getUsedTraits();
+            appendName(getTraitScope(), formatter);
+            Collection<? extends TraitScope> usedTraits = getTraitScope().getTraits();
             if (usedTraits != null && usedTraits.size() > 0) {
                 formatter.appendHtml(FONT_GRAY_COLOR + "#"); //NOI18N
                 appendUsedTraits(usedTraits, formatter);
                 formatter.appendHtml(CLOSE_FONT);
-            }
-            if (getTraitScope().isDeprecated()) {
-                formatter.deprecated(false);
             }
             return formatter.getText();
         }
