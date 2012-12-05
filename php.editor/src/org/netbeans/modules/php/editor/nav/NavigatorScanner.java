@@ -366,7 +366,7 @@ public final class NavigatorScanner {
         }
     }
 
-    private void appendName(ModelElement modelElement, HtmlFormatter formatter) {
+    protected void appendName(ModelElement modelElement, HtmlFormatter formatter) {
         if (modelElement.isDeprecated()) {
             formatter.deprecated(true);
             formatter.appendText(modelElement.getName());
