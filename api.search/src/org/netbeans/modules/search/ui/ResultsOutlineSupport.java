@@ -406,7 +406,11 @@ public class ResultsOutlineSupport {
         }
         MatchingObjectNode mon =
                 new MatchingObjectNode(delegate, children, key, replacing);
-        matchingObjectNodes.add(mon);
+        synchronized (this) {
+            if (!closed) {
+                matchingObjectNodes.add(mon);
+            }
+        }
         return mon;
     }
 
