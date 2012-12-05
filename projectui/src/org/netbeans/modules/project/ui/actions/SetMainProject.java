@@ -278,13 +278,15 @@ public class SetMainProject extends ProjectAction implements PropertyChangeListe
             
             if ( e.getSource() instanceof JMenuItem ) {
                 JMenuItem jmi = (JMenuItem)e.getSource();
-                Project project = (Project)jmi.getClientProperty( PROJECT_KEY );
-                OpenProjectList.getDefault().setMainProject(project);
+                final Project project = (Project)jmi.getClientProperty( PROJECT_KEY );
                 prefs().putBoolean(CONTEXT_MENU_ITEM_ENABLED, project != null);
-            }
-            
-        }
-        
-    }
-       
+                RP.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        OpenProjectList.getDefault().setMainProject(project);
+                    }
+                });   
+            }            
+        }   
+    }       
 }
