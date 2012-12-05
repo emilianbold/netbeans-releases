@@ -493,8 +493,14 @@ public final class BeanModelBuilder {
         }
         
         if (builder) {
+            StringBuilder sb = new StringBuilder();
+            sb.append(Character.toLowerCase(name.charAt(0)));
+            if (name.length() > 1) {
+                sb.append(name.substring(1));
+            }
             return compilationInfo.getTypes().isAssignable(m.getReturnType(), m.getEnclosingElement().asType()) ?
-                    name : null;
+                    // #223293: some builder methods start with uppercase, which is not a permitted name for a property
+                    sb.toString() : null;
         } else {
             return  m.getReturnType().getKind() == TypeKind.VOID ?
                     getPropertyName(name.toString()) : null;
