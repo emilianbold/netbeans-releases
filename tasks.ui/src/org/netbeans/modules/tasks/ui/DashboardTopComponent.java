@@ -47,8 +47,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
-import java.awt.event.ItemEvent;
-import java.awt.event.ItemListener;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import javax.swing.JComponent;
 import javax.swing.Timer;
 import javax.swing.event.DocumentEvent;
@@ -67,14 +67,9 @@ import java.util.List;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.SwingUtilities;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
-import org.netbeans.modules.bugtracking.api.Repository;
 import org.netbeans.modules.bugtracking.api.RepositoryManager;
 import org.netbeans.modules.tasks.ui.dashboard.TaskNode;
 import org.netbeans.modules.tasks.ui.settings.DashboardSettings;
-import org.netbeans.modules.tasks.ui.treelist.TreeListModelListener;
-import org.netbeans.modules.tasks.ui.treelist.TreeListNode;
 import org.netbeans.modules.tasks.ui.utils.DashboardRefresher;
 import org.netbeans.modules.tasks.ui.utils.Utils;
 import org.openide.awt.ActionReferences;
@@ -114,7 +109,7 @@ public final class DashboardTopComponent extends TopComponent {
     private DisplayTextTaskFilter displayTextTaskFilter = null;
     private CategoryNamePanel categoryNamePanel;
     private NotifyDescriptor categoryNameDialog;
-    private DashboardSelectionListener dashboardSelectionListener;
+    private DashboardActiveListener dashboardSelectionListener;
     private Timer dashboardRefreshTime;
     private final DashboardRefresher refresher;
     private final DashboardViewer dashboard;
@@ -131,8 +126,8 @@ public final class DashboardTopComponent extends TopComponent {
         }
         dashboard = DashboardViewer.getInstance();
         dashboardComponent = dashboard.getComponent();
-        dashboardRefreshTime = new Timer(10000, new RefreshTimerListener());
-        dashboardSelectionListener = new DashboardSelectionListener();
+        dashboardRefreshTime = new Timer(20000, new RefreshTimerListener());
+        dashboardSelectionListener = new DashboardActiveListener();
         activeTaskConstrains = new GridBagConstraints(0, 1, 2, 1, 1.0, 0, GridBagConstraints.NORTH, GridBagConstraints.HORIZONTAL, new Insets(0, 3, 0, 0), 0, 0);
         componentAdapter = new ComponentAdapter() {
             @Override
@@ -232,8 +227,7 @@ public final class DashboardTopComponent extends TopComponent {
 
         addComponentListener(componentAdapter);
         DashboardSettings.getInstance().addPropertyChangedListener(dashboard);
-        dashboard.addDashboardSelectionListener(dashboardSelectionListener);
-        dashboard.addModelListener(dashboardSelectionListener);
+        TopComponent.getRegistry().addPropertyChangeListener(dashboardSelectionListener);
         refresher.setRefreshEnabled(true);
         dashboardRefreshTime.restart();
         //load data after the component is displayed
@@ -250,8 +244,6 @@ public final class DashboardTopComponent extends TopComponent {
         filterPanel.removeDocumentListener(filterListener);
         RepositoryManager.getInstance().removePropertChangeListener(dashboard);
         DashboardSettings.getInstance().removePropertyChangedListener(dashboard);
-        dashboard.removeDashboardSelectionListener(dashboardSelectionListener);
-        dashboard.removeModelListener(dashboardSelectionListener);
         filterPanel.clear();
         dashboard.clearFilters();
         refresher.setRefreshEnabled(false);
@@ -438,22 +430,17 @@ public final class DashboardTopComponent extends TopComponent {
         }
     }
 
-    private class DashboardSelectionListener implements ListSelectionListener, TreeListModelListener {
+    private class DashboardActiveListener implements PropertyChangeListener {
 
         @Override
-        public void valueChanged(ListSelectionEvent e) {
-            dashboardBusy();
-        }
-
-        @Override
-        public void nodeExpanded(TreeListNode node) {
-            dashboardBusy();
-        }
-
-        private void dashboardBusy() {
-            // dashboard selection changed, user is using the dashboard
-            refresher.setDashboardBusy(true);
-            dashboardRefreshTime.restart();
+        public void propertyChange(PropertyChangeEvent evt) {
+            if (TopComponent.Registry.PROP_ACTIVATED.equals(evt.getPropertyName())) {
+                if (DashboardTopComponent.this == TopComponent.getRegistry().getActivated()) {
+                    refresher.setDashboardBusy(true);
+                } else {
+                    dashboardRefreshTime.restart();
+                }
+            }
         }
     }
 
