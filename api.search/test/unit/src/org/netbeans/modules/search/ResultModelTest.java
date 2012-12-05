@@ -37,10 +37,14 @@
  */
 package org.netbeans.modules.search;
 
-import org.netbeans.spi.search.SearchScopeDefinition;
-import javax.swing.event.ChangeListener;
-import org.netbeans.api.search.provider.SearchInfo;
+import java.awt.EventQueue;
+import java.io.IOException;
+import java.nio.charset.Charset;
+import java.util.concurrent.atomic.AtomicBoolean;
 import org.netbeans.junit.NbTestCase;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -62,78 +66,31 @@ public class ResultModelTest extends NbTestCase {
      */
     public void testObjectFoundTwice() throws Exception {
 
-        // TODO
-        
-//        FileObject root = FileUtil.createMemoryFileSystem().getRoot();
-//        final FileObject fo = root.createData("test.txt");
-//
-//        final BasicSearchCriteria criteria = new BasicSearchCriteria();
-//        final SearchScope scope = new CustomSearchScope();
-//        final List<SearchType> types = Collections.emptyList();
-//
-//        final SearchTask st = new SearchTask(scope, criteria, types);
-//        final ResultModel rm = st.getResultModel();
-//
-//        EventQueue.invokeAndWait(new Runnable() {
-//
-//            @Override
-//            public void run() {
-//                rtm = new ResultTreeModel(rm);
-//                rm.setObserver(rtm);
-//                ResultViewPanel rvm = new ResultViewPanel(st);
-//                rm.setObserver(rvm);
-//            }
-//        });
-//
-//        rm.objectFound(fo, Charset.defaultCharset());
-//        rm.objectFound(fo, Charset.defaultCharset());
-//
-//        assertEquals(1, rm.getMatchingObjects().size());
-//
-//        EventQueue.invokeAndWait(new Runnable() {
-//
-//            @Override
-//            public void run() {
-//                for (MatchingObject mo : rm.getMatchingObjects()) {
-//                    try {
-//                        mo.getFileObject().delete();
-//                    } catch (IOException ex) {
-//                        Exceptions.printStackTrace(ex);
-//                    }
-//                }
-//            }
-//        });
-    }
+        FileObject root = FileUtil.createMemoryFileSystem().getRoot();
+        final FileObject fo = root.createData("test.txt");
 
-    private static class CustomSearchScope extends SearchScopeDefinition {
+        final ResultModel rm = new ResultModel(
+                new BasicSearchCriteria(), "test");
 
-        @Override
-        public String getTypeId() {
-            return "TEST";
-        }
+        rm.objectFound(fo, Charset.defaultCharset(), null);
+        rm.objectFound(fo, Charset.defaultCharset(), null);
 
-        @Override
-        public String getDisplayName() {
-            return "Test";
-        }
+        assertEquals(1, rm.getMatchingObjects().size());
 
-        @Override
-        public boolean isApplicable() {
-            return true;
-        }
-
-        @Override
-        public SearchInfo getSearchInfo() {
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
-
-        @Override
-        public int getPriority() {
-            return 0;
-        }
-
-        @Override
-        public void clean() {
-        }
+        final AtomicBoolean errorFound = new AtomicBoolean(false);
+        EventQueue.invokeAndWait(new Runnable() {
+            @Override
+            public void run() {
+                for (MatchingObject mo : rm.getMatchingObjects()) {
+                    try {
+                        mo.getFileObject().delete();
+                    } catch (IOException ex) {
+                        errorFound.set(true);
+                        Exceptions.printStackTrace(ex);
+                    }
+                }
+            }
+        });
+        assertFalse(errorFound.get());
     }
 }
