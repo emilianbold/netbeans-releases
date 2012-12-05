@@ -213,6 +213,9 @@ public class ModelVisitor extends PathNodeVisitor {
                             || isInPropertyNode() 
                             || parent instanceof JsFunctionImpl)) {
                         parent = (JsObjectImpl)parent.getParent();
+                        if ("prototype".equals(parent.getName())) {
+                            parent = (JsObjectImpl)parent.getParent();
+                        }
                     }
                     property = (JsObjectImpl)parent.getProperty(fieldName);
                     if(property == null) {
