@@ -34,7 +34,13 @@
                 <subpackages>javassist</subpackages>
             </public-packages>
             <class-path-extension>
-                <runtime-relative-path>ext/hibernate/hibernate3.jar</runtime-relative-path>
+                <runtime-relative-path>ext/hibernate/hibernate-core-3.6.10.Final.jar</runtime-relative-path>
+            </class-path-extension>
+            <class-path-extension>
+                <runtime-relative-path>ext/hibernate/hibernate-entitymanager-3.6.10.Final.jar</runtime-relative-path>
+            </class-path-extension>
+            <class-path-extension>
+                <runtime-relative-path>ext/hibernate/hibernate-commons-annotations-3.2.0.Final.jar</runtime-relative-path>
             </class-path-extension>
             <class-path-extension>
                 <runtime-relative-path>ext/hibernate/antlr-2.7.6.jar</runtime-relative-path>

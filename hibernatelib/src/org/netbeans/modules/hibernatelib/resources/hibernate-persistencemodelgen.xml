@@ -67,7 +67,7 @@ made subject to such option by the copyright holder.
         <property>
             <name>maven-dependencies</name>
             <value>
-                org.hibernate:hibernate-jpamodelgen-1.1.1.Final:jar
+                org.hibernate:hibernate-jpamodelgen:1.1.1.Final:jar
             </value>
         </property>
     </properties>
