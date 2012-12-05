@@ -1,5 +1,11 @@
 #include whitelist_2.txt
 
+#223335
+org.netbeans.modules.maven.queries.AbstractMavenForBinaryQueryImpl
+org.netbeans.modules.maven.queries.RepositoryForBinaryQueryImpl
+org.netbeans.modules.maven.queries.RepositoryForBinaryQueryImpl$SrcResult
+org.netbeans.modules.maven.queries.RepositoryMavenCPProvider
+
 #218046
 org.netbeans.spi.debugger.ui.MethodChooser
 org.netbeans.spi.debugger.ui.MethodChooser$ReleaseListener

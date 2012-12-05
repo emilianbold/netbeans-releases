@@ -1,3 +1,6 @@
+#223335
+org.netbeans.modules.maven.NbMavenProjectFactory
+
 #223333
 org.netbeans.modules.css.visual.CssCaretAwareSourceTask
 org.netbeans.modules.css.visual.CssStylesTCController
