@@ -97,9 +97,9 @@ public class JUnitMethodRunnerProvider extends TestMethodRunnerProvider {
                 if (pane != null) {
 		    String text = pane.getText();
                     if (text != null) {  //NOI18N
-                        text = text.replaceAll(" ", "");
-			if (text.contains("@RunWith(value=Parameterized.class)") ||   //NOI18N
-				text.contains("@RunWith(Parameterized.class)")) {  //NOI18N
+                        text = text.replaceAll("\n", "").replaceAll(" ", "");
+			if ((text.contains("@RunWith") || text.contains("@org.junit.runner.RunWith")) //NOI18N
+			    && text.contains("Parameterized.class)")) {  //NOI18N
 			    return false;
 			}
                     }

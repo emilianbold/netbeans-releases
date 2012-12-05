@@ -60,7 +60,14 @@ public class ResultSetTableCellEditor extends DefaultCellEditor {
     protected Object val;
     protected boolean editable = true;
     protected JTable table;
-    protected static final boolean isGtk = "GTK".equals (UIManager.getLookAndFeel ().getID ()); //NOI18N
+    protected static final boolean suppressEditorBorder;
+
+    static {
+        boolean suppressBorder = false;
+        suppressBorder |= "GTK".equals(UIManager.getLookAndFeel().getID());  //NOI18N
+        suppressBorder |= "Nimbus".equals(UIManager.getLookAndFeel().getName());  //NOI18N
+        suppressEditorBorder = suppressBorder;
+    }
 
     public ResultSetTableCellEditor(final JTextField textField) {
         super(textField);

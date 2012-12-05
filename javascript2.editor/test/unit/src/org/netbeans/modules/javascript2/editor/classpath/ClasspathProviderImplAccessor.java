@@ -50,7 +50,7 @@ import org.openide.util.RequestProcessor;
  */
 public class ClasspathProviderImplAccessor {
     
-    public static FileObject getJsStubs() {
+    public static FileObject[] getJsStubs() {
         return ClassPathProviderImpl.getJsStubs();
     }
 

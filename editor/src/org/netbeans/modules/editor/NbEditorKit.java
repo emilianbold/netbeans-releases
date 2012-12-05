@@ -229,7 +229,7 @@ public class NbEditorKit extends ExtKit implements Callable {
     protected void addSystemActionMapping(String editorActionName, Class systemActionClass) {
         Action a = getActionByName(editorActionName);
         if (a != null) {
-            a.putValue(SYSTEM_ACTION_CLASS_NAME_PROPERTY, systemActionClass.getName().replaceAll("\\.", "-"));
+            a.putValue(SYSTEM_ACTION_CLASS_NAME_PROPERTY, systemActionClass.getName());
         }
         systemAction2editorAction.put(systemActionClass.getName(), editorActionName);
     }

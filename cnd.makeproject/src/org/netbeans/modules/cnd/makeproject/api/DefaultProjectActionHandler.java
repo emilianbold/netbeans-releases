@@ -61,7 +61,6 @@ import org.netbeans.api.extexecution.print.LineConvertor;
 import org.netbeans.modules.cnd.api.remote.RemoteFileUtil;
 import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
-import org.netbeans.modules.cnd.api.toolchain.PlatformTypes;
 import org.netbeans.modules.cnd.api.toolchain.PredefinedToolKind;
 import org.netbeans.modules.cnd.api.utils.PlatformInfo;
 import org.netbeans.modules.cnd.makeproject.api.BuildActionsProvider.OutputStreamHandler;
@@ -332,7 +331,7 @@ public class DefaultProjectActionHandler implements ProjectActionHandler {
                 inputVisible(showInput).
                 inputOutput(io).
                 outLineBased(!unbuffer).
-                showProgress(!CndUtils.isStandalone()).
+                showProgress(false).
                 postMessageDisplayer(new PostMessageDisplayer.Default(pae.getActionName())).
                 postExecution(processChangeListener).
                 errConvertorFactory(processChangeListener).
@@ -461,6 +460,9 @@ public class DefaultProjectActionHandler implements ProjectActionHandler {
                     Exceptions.printStackTrace(ex);
                 }
                 outputListener = null;
+            }
+            if (lineConvertor instanceof ChangeListener) {
+                ((ChangeListener)lineConvertor).stateChanged(new ChangeEvent(this));
             }
         }
 

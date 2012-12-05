@@ -249,6 +249,10 @@ public final class ClientSideConfigurationProvider implements ProjectConfigurati
             }
         }
         // fallback on first one:
-        return cfgs.get(0);
+        if (cfgs != null && cfgs.size() > 0) {
+            return cfgs.get(0);
+        } else {
+            return null;
+        }
     }
 }

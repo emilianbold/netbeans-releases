@@ -43,7 +43,6 @@ package org.netbeans.modules.refactoring.java.ui;
 
 import java.awt.Component;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import javax.swing.event.*;
@@ -181,7 +180,8 @@ public class ReplaceConstructorWithBuilderPanel extends javax.swing.JPanel imple
 
     public List<ReplaceConstructorWithBuilderRefactoring.Setter> getSetters() {
         List<ReplaceConstructorWithBuilderRefactoring.Setter> result = new ArrayList();
-        for (int i = 0; i < parameterTypes.size(); i++) {
+        int size = parameterTypes.size();
+        for (int i = 0; i < size; i++) {
             final String name = (String) ((DefaultTableModel) paramTable.getModel()).getValueAt(i, 0);
             result.add(new ReplaceConstructorWithBuilderRefactoring.Setter(
                     (String) ((DefaultTableModel) paramTable.getModel()).getValueAt(i, 1),

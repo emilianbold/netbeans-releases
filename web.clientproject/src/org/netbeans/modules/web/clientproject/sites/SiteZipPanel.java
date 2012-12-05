@@ -60,7 +60,7 @@ public class SiteZipPanel extends javax.swing.JPanel implements DocumentListener
     public SiteZipPanel(SiteZip.Customizer cust) {
         this.cust = cust;
         initComponents();
-        List<String> templates = new ArrayList(SiteZip.getUsedTemplates());
+        List<String> templates = new ArrayList<String>(SiteZip.getUsedTemplates());
         if (templates.size() > 0 && templates.get(0).length() > 0) {
             templates.add(0, ""); //NOI18N
         }
@@ -125,6 +125,11 @@ public class SiteZipPanel extends javax.swing.JPanel implements DocumentListener
 
     public String getTemplate() {
         return ((JTextField)(archiveComboBox.getEditor().getEditorComponent())).getText();
+    }
+
+    // only to be called from a unit test:
+    public void setTemplate(String template) {
+        ((JTextField)(archiveComboBox.getEditor().getEditorComponent())).setText(template);
     }
 
     private void browseButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_browseButtonActionPerformed
