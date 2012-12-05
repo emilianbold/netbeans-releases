@@ -255,8 +255,8 @@ public class InterpDumb extends AbstractInterp {
             String err_str = a.actor.action(this, c);
             if (err_str != null) {
                 /* DEBUG
-                System.out.println("action error: " + err_str);	// NOI18N
-                 */
+                System.out.printf("F \"%s\" %s\n", ctl_sequence, err_str);	// NOI18N
+                */
                 reset_state_bad();
                 return;
             }
@@ -269,6 +269,10 @@ public class InterpDumb extends AbstractInterp {
 
         } finally {
             if (state == type.st_base) {
+                /* DEBUG
+                if (ctl_sequence != null)
+                    System.out.printf("S \"%s\"\n", ctl_sequence);	// NOI18N
+                */
                 ctl_sequence = null;
             }
         }
