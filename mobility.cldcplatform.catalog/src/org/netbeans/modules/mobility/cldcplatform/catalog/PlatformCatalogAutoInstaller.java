@@ -126,9 +126,11 @@ public class PlatformCatalogAutoInstaller implements Runnable, FileChangeListene
                              * "C:\Users\tester\.netbeans\dev\config\platform_installers\
                              * Sun-Java-Wireless-Toolkit252-for-CLDC-for-Windows_200710311754.exe":
                              * CreateProcess error=740, The requ
+                             * 
+                             * Due to #222517 changed to call cmd.exe on all Windows since NT, not just Vista.
                              */
                             String[] args;
-                            if (Utilities.getOperatingSystem() == Utilities.OS_WINVISTA) {
+                            if (Utilities.isWindows() && ((Utilities.getOperatingSystem() & (Utilities.OS_WIN95 | Utilities.OS_WIN98) ) == 0) ) {
                                 args = new String[]{"cmd.exe", "/c", inst.getAbsolutePath()}; // NOI18N
                             } else {
                                 args = new String[]{inst.getAbsolutePath()};
