@@ -203,9 +203,6 @@
           <Connection code="createStylesheetsRenderer()" type="code"/>
         </Property>
       </Properties>
-      <Events>
-        <EventHandler event="itemStateChanged" listener="java.awt.event.ItemListener" parameters="java.awt.event.ItemEvent" handler="styleSheetCBItemStateChanged"/>
-      </Events>
     </Component>
     <Component class="javax.swing.JComboBox" name="atRuleCB">
       <Properties>
