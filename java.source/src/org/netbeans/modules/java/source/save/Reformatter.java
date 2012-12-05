@@ -1129,6 +1129,8 @@ public class Reformatter implements ReformatTask {
         public Boolean visitAnnotation(AnnotationTree node, Void p) {
             accept(AT);
             scan(node.getAnnotationType(), p);
+            boolean old = continuationIndent;
+            continuationIndent = true;
             List<? extends ExpressionTree> args = node.getArguments();
             spaces(cs.spaceBeforeAnnotationParen() ? 1 : 0);
             accept(LPAREN);
@@ -1140,6 +1142,7 @@ public class Reformatter implements ReformatTask {
                 spaces(cs.spaceWithinAnnotationParens() ? 1 : 0);
             }
             accept(RPAREN);
+            continuationIndent = old;
             return true;
         }
 
@@ -3314,9 +3317,8 @@ public class Reformatter implements ReformatTask {
                 } else if (first) {
                     int index = tokens.index();
                     int c = col;
-                    Diff d = diffs.isEmpty() ? null : diffs.getFirst();
-                    if (prependSpace)
-                        spaces(1, true);
+                    Diff d = diffs.isEmpty() ? null : diffs.getFirst();                    
+                    spaces(prependSpace ? 1 : 0, true);
                     if (align)
                         alignIndent = col;
                     scan(impl, null);
