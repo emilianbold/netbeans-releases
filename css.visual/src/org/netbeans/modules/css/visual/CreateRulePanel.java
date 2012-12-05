@@ -905,6 +905,7 @@ public class CreateRulePanel extends javax.swing.JPanel {
     private void createNewRule(final SelectorItem selectorItem) throws IOException, ParseException {
         final FileObject createInFile = selectorItem.getCreateInFile();
         final Model cssSourceModel = getCssSourceModel(createInFile);
+        final AtomicReference<Rule> createdRuleRef = new AtomicReference<Rule>();
 
         cssSourceModel.runWriteTask(new Model.ModelTask() {
             @Override
@@ -943,13 +944,17 @@ public class CreateRulePanel extends javax.swing.JPanel {
 
                 try {
                     cssSourceModel.applyChanges();
+                    createdRuleRef.set(rule);
                     LOGGER.log(Level.FINE, "Created new rule {0} in file {1} (at-rule: {2}).", new Object[]{selectorItem.getItemFQName(), createInFile.getNameExt(), createInAtRule});
-                    selectTheRuleInEditorIfOpened(cssSourceModel, rule);
                 } catch (Exception /*ParseException, IOException, BadLocationException*/ ex) {
                     Exceptions.printStackTrace(ex);
                 }
             }
         });
+        Rule createdRule = createdRuleRef.get();
+        if(createdRule != null) {
+            selectTheRuleInEditorIfOpened(cssSourceModel, createdRule);
+        }
 
     }
 
