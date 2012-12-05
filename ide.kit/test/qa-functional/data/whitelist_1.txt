@@ -1,3 +1,13 @@
+#223337
+org.netbeans.modules.project.ui.actions.ShortcutManager
+org.netbeans.modules.project.ui.problems.BrokenProjectNotifier
+org.netbeans.modules.project.uiapi.Utilities$ProjectGroupAccessor
+org.netbeans.api.project.ui.ProjectGroup
+org.netbeans.api.project.ui.ProjectGroup$AccessorImpl
+org.netbeans.modules.project.libraries.LibraryAccessor
+org.netbeans.api.project.libraries.Library
+org.netbeans.api.project.libraries.LibraryManager
+
 #223335
 org.netbeans.modules.maven.NbMavenProjectFactory
 
