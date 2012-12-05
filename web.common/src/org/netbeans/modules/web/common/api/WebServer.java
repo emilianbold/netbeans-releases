@@ -191,7 +191,6 @@ public final class WebServer {
     }
 
     private FileObject findFile(Entry<Project, Pair> entry, String serverURL) {
-        Project p = entry.getKey();
         int index = entry.getValue().webContextRoot.length()+1;
         if (entry.getValue().webContextRoot.equals("/")) { //NOI18N
             index = 1;
