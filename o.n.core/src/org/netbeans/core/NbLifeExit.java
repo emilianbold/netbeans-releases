@@ -99,7 +99,7 @@ final class NbLifeExit implements Runnable {
             case 2:
                 int s = 3;
                 try {
-                    if (waitFor.get()) {
+                    if (waitFor != null && waitFor.get()) {
                         s = 4;
                     }
                 } catch (InterruptedException ex) {
@@ -185,6 +185,9 @@ final class NbLifeExit implements Runnable {
             // to RequestProcessor to avoid security problems.
             Task exitTask = new Task(new NbLifeExit(5, status, null, onExit));
             RP.post(exitTask);
+        } else {
+            // end of exit
+            onExit.countDown();
         }
     }
     
