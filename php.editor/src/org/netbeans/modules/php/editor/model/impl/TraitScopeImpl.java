@@ -77,8 +77,8 @@ public class TraitScopeImpl extends TypeScopeImpl implements TraitScope {
         usedTraits = indexedTrait.getUsedTraits();
     }
 
-    TraitScopeImpl(Scope inScope, TraitDeclarationInfo nodeInfo) {
-        super(inScope, nodeInfo);
+    TraitScopeImpl(Scope inScope, TraitDeclarationInfo nodeInfo, boolean isDeprecated) {
+        super(inScope, nodeInfo, isDeprecated);
         usedTraits = nodeInfo.getUsedTraits();
     }
 
@@ -123,6 +123,7 @@ public class TraitScopeImpl extends TypeScopeImpl implements TraitScope {
             sb.append(traitSb);
         }
         sb.append(Signature.ITEM_DELIMITER);
+        sb.append(isDeprecated() ? 1 : 0).append(Signature.ITEM_DELIMITER);
         return sb.toString();
     }
 

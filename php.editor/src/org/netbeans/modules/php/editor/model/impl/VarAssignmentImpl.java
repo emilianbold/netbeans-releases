@@ -60,12 +60,12 @@ class VarAssignmentImpl extends AssignmentImpl<VariableNameImpl> {
             OffsetRange nameRange,
             Assignment assignment,
             Map<String, AssignmentImpl> allAssignments) {
-        super(var, scope, scopeRange, nameRange, assignment, allAssignments);
+        super(var, scope, scopeRange, nameRange, assignment, allAssignments, var.isDeprecated());
         setConditionalBlock(conditionalBlock);
     }
 
     VarAssignmentImpl(VariableNameImpl var, Scope scope, boolean conditionalBlock, OffsetRange scopeRange, OffsetRange nameRange, String typeName) {
-        super(var, scope, scopeRange, nameRange, typeName);
+        super(var, scope, scopeRange, nameRange, typeName, var.isDeprecated());
         setConditionalBlock(conditionalBlock);
     }
 

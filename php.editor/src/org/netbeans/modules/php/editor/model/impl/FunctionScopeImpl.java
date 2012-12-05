@@ -84,22 +84,22 @@ class FunctionScopeImpl extends ScopeImpl implements FunctionScope, VariableName
 
     //new contructors
     FunctionScopeImpl(Scope inScope, FunctionDeclarationInfo info, String returnType) {
-        super(inScope, info, PhpModifiers.fromBitMask(PhpModifiers.PUBLIC), info.getOriginalNode().getBody());
+        super(inScope, info, PhpModifiers.fromBitMask(PhpModifiers.PUBLIC), info.getOriginalNode().getBody(), inScope.isDeprecated());
         this.paremeters = info.getParameters();
         this.returnType = returnType;
     }
     FunctionScopeImpl(Scope inScope, LambdaFunctionDeclarationInfo info) {
-        super(inScope, info, PhpModifiers.fromBitMask(PhpModifiers.PUBLIC), info.getOriginalNode().getBody());
+        super(inScope, info, PhpModifiers.fromBitMask(PhpModifiers.PUBLIC), info.getOriginalNode().getBody(), inScope.isDeprecated());
         this.paremeters = info.getParameters();
     }
-    protected FunctionScopeImpl(Scope inScope, MethodDeclarationInfo info, String returnType) {
-        super(inScope, info, info.getAccessModifiers(), info.getOriginalNode().getFunction().getBody());
+    protected FunctionScopeImpl(Scope inScope, MethodDeclarationInfo info, String returnType, boolean isDeprecated) {
+        super(inScope, info, info.getAccessModifiers(), info.getOriginalNode().getFunction().getBody(), isDeprecated);
         this.paremeters = info.getParameters();
         this.returnType = returnType;
     }
 
-    protected FunctionScopeImpl(Scope inScope, MagicMethodDeclarationInfo info) {
-        super(inScope, info, info.getAccessModifiers(), null);
+    protected FunctionScopeImpl(Scope inScope, MagicMethodDeclarationInfo info, boolean isDeprecated) {
+        super(inScope, info, info.getAccessModifiers(), null, isDeprecated);
         this.paremeters = info.getParameters();
         this.returnType = info.getReturnType();
     }
@@ -288,6 +288,7 @@ class FunctionScopeImpl extends ScopeImpl implements FunctionScope, VariableName
         assert namespaceScope != null;
         QualifiedName qualifiedName = namespaceScope.getQualifiedName();
         sb.append(qualifiedName.toString()).append(Signature.ITEM_DELIMITER);
+        sb.append(isDeprecated() ? 1 : 0).append(Signature.ITEM_DELIMITER);
         return sb.toString();
     }
 

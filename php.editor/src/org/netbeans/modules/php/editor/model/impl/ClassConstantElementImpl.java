@@ -68,7 +68,7 @@ class ClassConstantElementImpl extends ModelElementImpl implements ClassConstant
     }
 
     ClassConstantElementImpl(Scope inScope, ClassConstantDeclarationInfo clsConst) {
-        super(inScope, clsConst, PhpModifiers.noModifiers());
+        super(inScope, clsConst, PhpModifiers.noModifiers(), inScope.isDeprecated());
         typeName = inScope.getName();
         value = clsConst.getValue();
     }

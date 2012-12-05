@@ -53,8 +53,8 @@ import org.netbeans.modules.php.editor.api.elements.NamespaceElement;
  */
 public abstract class FullyQualifiedElementImpl extends PhpElementImpl implements FullyQualifiedElement {
     FullyQualifiedElementImpl(final String name, final String in, final String fileUrl,
-            final int offset, final ElementQuery elementQuery) {
-        super(name, in, fileUrl, offset, elementQuery);
+            final int offset, final ElementQuery elementQuery, boolean isDeprecated) {
+        super(name, in, fileUrl, offset, elementQuery, isDeprecated);
     }
 
     @Override

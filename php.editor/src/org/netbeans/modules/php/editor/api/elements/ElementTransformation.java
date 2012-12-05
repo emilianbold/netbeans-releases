@@ -88,7 +88,13 @@ public abstract class ElementTransformation<S extends PhpElement> {
             public VariableElement transform(PhpElement element) {
                 if (element instanceof FieldElement) {
                     FieldElement field = (FieldElement) element;
-                    return VariableElementImpl.create(field.getName(), field.getOffset(), field.getFilenameUrl(), field.getElementQuery(), field.getInstanceTypes());
+                    return VariableElementImpl.create(
+                            field.getName(),
+                            field.getOffset(),
+                            field.getFilenameUrl(),
+                            field.getElementQuery(),
+                            field.getInstanceTypes(),
+                            field.isDeprecated());
                 }
                 return null;
             }
