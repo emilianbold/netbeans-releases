@@ -75,7 +75,7 @@ public class MethodRefactoringElement extends RefactoringElement {
         this.methodType = methodType;
     }
 
-    
+
     @Override
     public String getName() {
         return ElementUtils.getNameWithoutPackage(node);
@@ -139,7 +139,7 @@ public class MethodRefactoringElement extends RefactoringElement {
 
     private List<String> getParams(MethodNode methodNode) {
         final List<String> paramTypes = new ArrayList<String>();
-        
+
         for (Parameter param : methodNode.getParameters()) {
             paramTypes.add(ElementUtils.getTypeName(param));
         }
@@ -149,7 +149,7 @@ public class MethodRefactoringElement extends RefactoringElement {
     public void setMethodType(ClassNode methodType) {
         this.methodType = methodType;
     }
-    
+
     private String getMethodSignature(MethodNode method) {
         final MethodSignatureBuilder builder = new MethodSignatureBuilder();
         builder.appendMethodName(method);
