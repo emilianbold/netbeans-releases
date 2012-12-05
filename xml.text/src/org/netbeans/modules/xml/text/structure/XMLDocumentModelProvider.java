@@ -417,7 +417,9 @@ public class XMLDocumentModelProvider implements DocumentModelProvider {
                 } else {
                     //everything else is content
                     int from = sel.getElementOffset();
-                    int to = getSyntaxElementEndOffset(sel);
+                    // because of changeset #1d6a31161c70, all elements report end at the last char, but that is not
+                    // what is expected from the DocumentElement.
+                    int to = getSyntaxElementEndOffset(sel) + 1;
                     if(from < to) {
                         //Do not allow empty elements to be added:
                         //Otherwise it causes problems in DocumentModel.ELEMENTS_COMPARATOR
