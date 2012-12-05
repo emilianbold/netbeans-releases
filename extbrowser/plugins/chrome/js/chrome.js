@@ -160,11 +160,29 @@ NetBeans.getWindowInfo = function(callback) {
     chrome.windows.getLastFocused(callback);
 };
 NetBeans.detectViewPort = function(callback) {
-    chrome.tabs.executeScript(null, {file: 'js/viewport.js'}, function() {
-        if (callback) {
-            callback();
+    var script = 'NetBeans_ViewPort = {'
+            + '    width: window.innerWidth,'
+            + '    height: window.innerHeight,'
+            + '    marginWidth: window.outerWidth - window.innerWidth,'
+            + '    marginHeight: window.outerHeight - window.innerHeight,'
+            + '    isMac: navigator.platform.toUpperCase().indexOf("MAC") !== -1'
+            + '};';
+    chrome.debugger.sendCommand(
+        {tabId : NetBeans.debuggedTab},
+        'Runtime.evaluate',
+        {expression: script, returnByValue: true},
+        function(result) {
+            var viewport = result.result.value;
+            NetBeans_ViewPort.width = viewport.width;
+            NetBeans_ViewPort.height = viewport.height;
+            NetBeans_ViewPort.marginWidth = viewport.marginWidth;
+            NetBeans_ViewPort.marginHeight = viewport.marginHeight;
+            NetBeans_ViewPort.isMac = viewport.isMac;
+            if (callback) {
+                callback();
+            }
         }
-    });
+    );
 };
 NetBeans.resetPageSize = function(callback) {
     chrome.windows.getLastFocused(function(win) {
@@ -334,15 +352,7 @@ chrome.tabs.onRemoved.addListener(function(tabId) {
 // register content script listener
 chrome.extension.onMessage.addListener(function(message, sender, sendResponse) {
     var type = message.type;
-    if (type === 'VIEWPORT') {
-        console.log('Setting new viewport margins (' + message.marginWidth + ' x ' + message.marginHeight + ')');
-        NetBeans_ViewPort.width = message.width;
-        NetBeans_ViewPort.height = message.height;
-        NetBeans_ViewPort.marginWidth = message.marginWidth;
-        NetBeans_ViewPort.marginHeight = message.marginHeight;
-        NetBeans_ViewPort.isMac = message.isMac;
-        sendResponse();
-    } else if (type === 'switchSelectionMode') {
+    if (type === 'switchSelectionMode') {
         NetBeans.setSelectionMode(!NetBeans.getSelectionMode());
     }
 });
