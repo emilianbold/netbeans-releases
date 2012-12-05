@@ -79,7 +79,8 @@ public class PlatformCatalogAutoInstaller implements Runnable, FileChangeListene
     private static final String STORAGE = "Services/Platforms/org-netbeans-api-java-Platform";  //NOI18N
     private static final int SCHEDULE_DELAY = 400;
     
-    private final RequestProcessor.Task task = RequestProcessor.getDefault().create(this);
+    private static final RequestProcessor RP = new RequestProcessor(PlatformCatalogAutoInstaller.class);
+    private final RequestProcessor.Task task = RP.create(this);
     private final FileObject fo;
     private final Lookup.Result res;
 
