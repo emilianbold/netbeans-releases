@@ -1,3 +1,33 @@
+207965 - Terminal incorrectly displays prompt string
+	Preparation for introduction of xterm emulation.
+
+	Introduced a table to track control sequences common to ansi, dtterm
+	and xterm:
+		lib.terminalemulator/doc-files/sequences
+
+	Introduced InterpProtoANSI and InterpProtoANSIX.
+	- InterpProtoANSI is intended to factor Interp states and actions that
+	  are common to ansi, dtterm and xterm.
+	- InterpProtoANSIX is intended to factor Interp states and actions
+	  that are common to dtterm and xterm.
+
+nobugid - debugging printfs for Failed and Successful sequences
+	changeset   : 240882:a7abd9388502
+
+	The idea is to log seen control sequences, both those which
+	succeeded and those which failed. 
+	Later this output will be controllable using Term debug flags.
+
+nobugid - Get lib.richexecution and TermApp projects compilable again
+	changeset   : 240881:d942f87bcfdd
+
+	Fixing of various dependencies and project file regenerations.
+
+nobugid - move documentation out of src directory
+	changeset:   240878:8323630292f9
+
+	... and into lib.terminalemulator/doc-files
+................................................................................
 nobugid - fix op_ce (clear to end of line) so there are no "boxes" when
           running nethack.
 	This in response to Jesse's comment that nethack doesn't work
