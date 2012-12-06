@@ -85,8 +85,9 @@ public final class FieldElementImpl extends PhpElementImpl implements FieldEleme
             final String fileUrl,
             final ElementQuery elementQuery,
             final Set<TypeResolver> instanceTypes,
-            final Set<TypeResolver> instanceFQTypes) {
-        super(FieldElementImpl.getName(fieldName, true), enclosingType.getName(), fileUrl, offset, elementQuery);
+            final Set<TypeResolver> instanceFQTypes,
+            final boolean isDeprecated) {
+        super(FieldElementImpl.getName(fieldName, true), enclosingType.getName(), fileUrl, offset, elementQuery, isDeprecated);
         this.modifiers = PhpModifiers.fromBitMask(flags);
         this.enclosingType = enclosingType;
         this.instanceTypes = instanceTypes;
@@ -121,7 +122,7 @@ public final class FieldElementImpl extends PhpElementImpl implements FieldEleme
         if (matchesQuery(query, signParser)) {
             retval = new FieldElementImpl(type, signParser.getFieldName(),
                     signParser.getOffset(), signParser.getFlags(), indexResult.getUrl().toString(),
-                    indexScopeQuery, signParser.getTypes(), signParser.getFQTypes());
+                    indexScopeQuery, signParser.getTypes(), signParser.getFQTypes(), signParser.isDeprecated());
 
         }
         return retval;
@@ -138,7 +139,7 @@ public final class FieldElementImpl extends PhpElementImpl implements FieldEleme
             Set<TypeResolver> types = returnType != null ? TypeResolverImpl.parseTypes(returnType) : null;
             retval.add(new FieldElementImpl(type, info.getName(), info.getRange().getStart(),
                     info.getAccessModifiers().toFlags(), fileQuery.getURL().toString(), fileQuery,
-                    types, types));
+                    types, types, VariousUtils.isDeprecatedFromPHPDoc(fileQuery.getResult().getProgram(), node)));
         }
         return retval;
     }
@@ -158,7 +159,8 @@ public final class FieldElementImpl extends PhpElementImpl implements FieldEleme
                 fileQuery.getURL().toString(),
                 fileQuery,
                 resolvers,
-                resolvers);
+                resolvers,
+                VariousUtils.isDeprecatedFromPHPDoc(fileQuery.getResult().getProgram(), node));
     }
 
     static FieldElement fromFrameworks(final TypeElement type, final Field field, final ElementQuery elementQuery) {
@@ -169,7 +171,7 @@ public final class FieldElementImpl extends PhpElementImpl implements FieldEleme
                 ? Collections.<TypeResolver>singleton(new TypeResolverImpl(fldType.getFullyQualifiedName()))
                 : Collections.<TypeResolver>emptySet();
         FieldElementImpl retval = new FieldElementImpl(type, field.getName(), field.getOffset(),
-                PhpModifiers.NO_FLAGS, null, elementQuery, typeResolvers, typeResolvers);
+                PhpModifiers.NO_FLAGS, null, elementQuery, typeResolvers, typeResolvers, false);
         retval.setFileObject(field.getFile());
         return retval;
     }
@@ -194,6 +196,7 @@ public final class FieldElementImpl extends PhpElementImpl implements FieldEleme
             sb.append(resolverImpl.getSignature());
         }
         sb.append(Separator.SEMICOLON); //NOI18N
+        sb.append(isDeprecated() ? 1 : 0).append(Separator.SEMICOLON);
         checkSignature(sb);
         return sb.toString();
     }
@@ -306,6 +309,10 @@ public final class FieldElementImpl extends PhpElementImpl implements FieldEleme
 
         Set<TypeResolver> getFQTypes() {
             return TypeResolverImpl.parseTypes(signature.string(5));
+        }
+
+        boolean isDeprecated() {
+            return signature.integer(6) == 1;
         }
     }
 }

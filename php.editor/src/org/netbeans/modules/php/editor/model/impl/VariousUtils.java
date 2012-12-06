@@ -227,6 +227,13 @@ public final class VariousUtils {
         return getTypeFromPHPDoc(root, field, PHPDocTag.Type.VAR);
     }
 
+    public static String getDeprecatedDescriptionFromPHPDoc(Program root, ASTNode node) {
+        return getDescriptionFromPHPDoc(root, node, PHPDocTag.Type.DEPRECATED);
+    }
+
+    public static boolean isDeprecatedFromPHPDoc(Program root, ASTNode node) {
+        return getDeprecatedDescriptionFromPHPDoc(root, node) != null;
+    }
 
     public static Map<String, List<QualifiedName>> getParamTypesFromPHPDoc(Program root, ASTNode node) {
         Map<String, List<QualifiedName>> retval = new HashMap<String, List<QualifiedName>>();
@@ -271,6 +278,18 @@ public final class VariousUtils {
         return null;
     }
 
+    public static String getDescriptionFromPHPDoc(Program root, ASTNode node, PHPDocTag.Type tagType) {
+        Comment comment = Utils.getCommentForNode(root, node);
+        if (comment instanceof PHPDocBlock) {
+            PHPDocBlock phpDoc = (PHPDocBlock) comment;
+            for (PHPDocTag tag : phpDoc.getTags()) {
+                if (tag.getKind().equals(tagType)) {
+                    return tag.getValue().trim();
+                }
+            }
+        }
+        return null;
+    }
 
     @CheckForNull
     static String extractVariableTypeFromAssignment(Assignment assignment, Map<String, AssignmentImpl> allAssignments) {

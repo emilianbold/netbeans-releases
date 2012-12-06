@@ -67,8 +67,8 @@ import org.netbeans.modules.php.editor.model.nodes.InterfaceDeclarationInfo;
  * @author Radek Matous
  */
 class InterfaceScopeImpl extends TypeScopeImpl implements InterfaceScope {
-    InterfaceScopeImpl(Scope inScope, InterfaceDeclarationInfo nodeInfo) {
-        super(inScope, nodeInfo);
+    InterfaceScopeImpl(Scope inScope, InterfaceDeclarationInfo nodeInfo, boolean isDeprecated) {
+        super(inScope, nodeInfo, isDeprecated);
     }
 
     InterfaceScopeImpl(IndexScope inScope, InterfaceElement indexedIface) {
@@ -186,6 +186,7 @@ class InterfaceScopeImpl extends TypeScopeImpl implements InterfaceScope {
         assert namespaceScope != null;
         QualifiedName qualifiedName = namespaceScope.getQualifiedName();
         sb.append(qualifiedName.toString()).append(Signature.ITEM_DELIMITER);
+        sb.append(isDeprecated() ? 1 : 0).append(Signature.ITEM_DELIMITER);
         return sb.toString();
     }
 

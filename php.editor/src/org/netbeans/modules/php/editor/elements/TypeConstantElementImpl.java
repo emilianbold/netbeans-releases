@@ -53,6 +53,7 @@ import org.netbeans.modules.php.editor.api.elements.TypeConstantElement;
 import org.netbeans.modules.php.editor.api.elements.TypeElement;
 import org.netbeans.modules.php.editor.index.PHPIndexer;
 import org.netbeans.modules.php.editor.index.Signature;
+import org.netbeans.modules.php.editor.model.impl.VariousUtils;
 import org.netbeans.modules.php.editor.model.nodes.ClassConstantDeclarationInfo;
 import org.netbeans.modules.php.editor.parser.astnodes.ConstantDeclaration;
 import org.openide.util.Parameters;
@@ -71,8 +72,9 @@ public final class TypeConstantElementImpl extends PhpElementImpl implements Typ
             final String value,
             final int offset,
             final String fileUrl,
-            final ElementQuery elementQuery) {
-        super(constantName, enclosingType.getName(), fileUrl, offset, elementQuery);
+            final ElementQuery elementQuery,
+            final boolean isDeprecated) {
+        super(constantName, enclosingType.getName(), fileUrl, offset, elementQuery, isDeprecated);
         this.enclosingType = enclosingType;
         this.value = value;
     }
@@ -108,7 +110,8 @@ public final class TypeConstantElementImpl extends PhpElementImpl implements Typ
                     signParser.getValue(),
                     signParser.getOffset(),
                     indexResult.getUrl().toString(),
-                    indexScopeQuery);
+                    indexScopeQuery,
+                    signParser.isDeprecated());
         }
         return retval;
     }
@@ -122,7 +125,8 @@ public final class TypeConstantElementImpl extends PhpElementImpl implements Typ
         for (ClassConstantDeclarationInfo info : consts) {
             retval.add(new TypeConstantElementImpl(
                     type, info.getName(), info.getValue(), info.getRange().getStart(),
-                    fileQuery.getURL().toExternalForm(), fileQuery));
+                    fileQuery.getURL().toExternalForm(), fileQuery,
+                    VariousUtils.isDeprecatedFromPHPDoc(fileQuery.getResult().getProgram(), node)));
         }
         return retval;
     }
@@ -140,6 +144,7 @@ public final class TypeConstantElementImpl extends PhpElementImpl implements Typ
         sb.append(getName()).append(Separator.SEMICOLON); //NOI18N
         sb.append(getOffset()).append(Separator.SEMICOLON); //NOI18N
         sb.append(getValue()).append(Separator.SEMICOLON); //NOI18N
+        sb.append(isDeprecated() ? 1 : 0).append(Separator.SEMICOLON);
         checkSignature(sb);
         return sb.toString();
     }
@@ -218,6 +223,10 @@ public final class TypeConstantElementImpl extends PhpElementImpl implements Typ
 
         String getValue() {
             return signature.string(3);
+        }
+
+        boolean isDeprecated() {
+            return signature.integer(4) == 1;
         }
     }
 }

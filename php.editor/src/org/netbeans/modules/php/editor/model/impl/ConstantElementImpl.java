@@ -57,7 +57,7 @@ class ConstantElementImpl extends ModelElementImpl implements ConstantElement, F
     private final String value;
 
     ConstantElementImpl(NamespaceScopeImpl inScope, ClassConstantDeclarationInfo node) {
-        this(inScope, node.getName(), node.getValue(), inScope.getFile(), node.getRange());
+        this(inScope, node.getName(), node.getValue(), inScope.getFile(), node.getRange(), inScope.isDeprecated());
     }
 
     ConstantElementImpl(IndexScopeImpl inScope, org.netbeans.modules.php.editor.api.elements.ConstantElement indexedConstant) {
@@ -66,12 +66,12 @@ class ConstantElementImpl extends ModelElementImpl implements ConstantElement, F
                 indexedConstant.getName(),
                 indexedConstant.getValue(),
                 Union2.<String/*url*/, FileObject>createFirst(indexedConstant.getFilenameUrl()),
-                new OffsetRange(indexedConstant.getOffset(),
-                indexedConstant.getOffset() + indexedConstant.getName().length()));
+                new OffsetRange(indexedConstant.getOffset(), indexedConstant.getOffset() + indexedConstant.getName().length()),
+                indexedConstant.isDeprecated());
     }
 
-    private ConstantElementImpl(ScopeImpl inScope, String name, String value, Union2<String, FileObject> file, OffsetRange offsetRange) {
-        super(inScope, name, file, offsetRange, PhpElementKind.CONSTANT);
+    private ConstantElementImpl(ScopeImpl inScope, String name, String value, Union2<String, FileObject> file, OffsetRange offsetRange, boolean isDeprecated) {
+        super(inScope, name, file, offsetRange, PhpElementKind.CONSTANT, isDeprecated);
         this.value = value;
     }
 

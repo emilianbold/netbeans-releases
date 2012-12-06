@@ -269,31 +269,29 @@ public final class NavigatorScanner {
             return null;
         }
 
-        protected void appendInterfeas(Collection<? extends String> interfaes, HtmlFormatter formatter) {
+        protected void appendInterfeas(Collection<? extends InterfaceScope> interfaes, HtmlFormatter formatter) {
             boolean first = true;
-            for (String identifier : interfaes) {
-                if (identifier != null) {
+            for (InterfaceScope interfaceScope : interfaes) {
+                if (interfaceScope != null) {
                     if (!first) {
                         formatter.appendText(", ");  //NOI18N
-
                     } else {
                         first = false;
                     }
-                    formatter.appendText(identifier);
+                    appendName(interfaceScope, formatter);
                 }
-
             }
         }
 
-        protected void appendUsedTraits(Collection<QualifiedName> usedTraits, HtmlFormatter formatter) {
+        protected void appendUsedTraits(Collection<? extends TraitScope> usedTraits, HtmlFormatter formatter) {
             boolean first = true;
-            for (QualifiedName qualifiedName : usedTraits) {
+            for (TraitScope traitScope : usedTraits) {
                 if (!first) {
                     formatter.appendText(", ");  //NOI18N
                 } else {
                     first = false;
                 }
-                formatter.appendText(qualifiedName.toString());
+                appendName(traitScope, formatter);
             }
         }
 
@@ -301,6 +299,9 @@ public final class NavigatorScanner {
             formatter.reset();
             if (function == null) {
                 return;
+            }
+            if (function.isDeprecated()) {
+                formatter.deprecated(true);
             }
             formatter.appendText(function.getName());
             formatter.appendText("(");   //NOI18N
@@ -359,36 +360,56 @@ public final class NavigatorScanner {
                 formatter.appendText(sb.toString());
                 formatter.appendHtml(CLOSE_FONT);
             }
+            if (function.isDeprecated()) {
+                formatter.deprecated(false);
+            }
+        }
+    }
+
+    protected void appendName(ModelElement modelElement, HtmlFormatter formatter) {
+        if (modelElement.isDeprecated()) {
+            formatter.deprecated(true);
+            formatter.appendText(modelElement.getName());
+            formatter.deprecated(false);
+        } else {
+            formatter.appendText(modelElement.getName());
         }
     }
 
     private class PHPFieldStructureItem extends PHPSimpleStructureItem {
-        public PHPFieldStructureItem(ModelElement elementHandle) {
+        public PHPFieldStructureItem(FieldElement elementHandle) {
             super(elementHandle, "field"); //NOI18N
+        }
+
+        public FieldElement getField() {
+            return (FieldElement) getElementHandle();
         }
 
         @Override
         public String getHtml(HtmlFormatter formatter) {
-            ElementHandle elementHandle = getElementHandle();
-            formatter.appendText(elementHandle.getName());
-            if (elementHandle instanceof FieldElement) {
-                final FieldElement fieldElement = (FieldElement) elementHandle;
-                Collection<? extends String> types = fieldElement.getDefaultTypeNames();
-                StringBuilder sb = null;
-                if (!types.isEmpty()) {
-                    formatter.appendHtml(FONT_GRAY_COLOR + ":"); //NOI18N
-                    for (String type : types) {
-                        if (sb == null) {
-                            sb = new StringBuilder();
-                        } else {
-                            sb.append(", "); //NOI18N
-                        }
-                        sb.append(type);
-
+            FieldElement field = getField();
+            if (field.isDeprecated()) {
+                formatter.deprecated(true);
+            }
+            formatter.appendText(field.getName());
+            Collection<? extends String> types = field.getDefaultTypeNames();
+            StringBuilder sb = null;
+            if (!types.isEmpty()) {
+                formatter.appendHtml(FONT_GRAY_COLOR + ":"); //NOI18N
+                for (String type : types) {
+                    if (sb == null) {
+                        sb = new StringBuilder();
+                    } else {
+                        sb.append(", "); //NOI18N
                     }
-                    formatter.appendText(sb.toString());
-                    formatter.appendHtml(CLOSE_FONT);
+                    sb.append(type);
+
                 }
+                formatter.appendText(sb.toString());
+                formatter.appendHtml(CLOSE_FONT);
+            }
+            if (field.isDeprecated()) {
+                formatter.deprecated(false);
             }
             return formatter.getText();
         }
@@ -416,10 +437,20 @@ public final class NavigatorScanner {
             super(elementHandle, children, "namespace"); //NOI18N
         }
 
+        public NamespaceScope getNamespaceScope() {
+            return (NamespaceScope) getModelElement();
+        }
+
         @Override
         public String getHtml(HtmlFormatter formatter) {
             formatter.reset();
+            if (getNamespaceScope().isDeprecated()) {
+                formatter.deprecated(true);
+            }
             formatter.appendText(getName());
+            if (getNamespaceScope().isDeprecated()) {
+                formatter.deprecated(false);
+            }
             return formatter.getText();
         }
 
@@ -466,20 +497,20 @@ public final class NavigatorScanner {
         @Override
         public String getHtml(HtmlFormatter formatter) {
             formatter.reset();
-            formatter.appendText(getName());
+            appendName(getClassScope(), formatter);
             String superCalssName = ModelUtils.getFirst(getClassScope().getSuperClassNames());
             if (superCalssName != null) {
                 formatter.appendHtml(FONT_GRAY_COLOR + "::"); //NOI18N
                 formatter.appendText(superCalssName);
                 formatter.appendHtml(CLOSE_FONT);
             }
-            Collection<? extends String> interfaes = getClassScope().getSuperInterfaceNames();
+            Collection<? extends InterfaceScope> interfaes = getClassScope().getSuperInterfaceScopes();
             if (interfaes != null && interfaes.size() > 0) {
                 formatter.appendHtml(FONT_GRAY_COLOR + ":"); //NOI18N
                 appendInterfeas(interfaes, formatter);
                 formatter.appendHtml(CLOSE_FONT);
             }
-            Collection<QualifiedName> usedTraits = getClassScope().getUsedTraits();
+            Collection<? extends TraitScope> usedTraits = getClassScope().getTraits();
             if (usedTraits != null && usedTraits.size() > 0) {
                 formatter.appendHtml(FONT_GRAY_COLOR + "#"); //NOI18N
                 appendUsedTraits(usedTraits, formatter);
@@ -502,6 +533,9 @@ public final class NavigatorScanner {
         @Override
         public String getHtml(HtmlFormatter formatter) {
             formatter.reset();
+            if (getConstant().isDeprecated()) {
+                formatter.deprecated(true);
+            }
             formatter.appendText(getName());
             final ConstantElement constant = getConstant();
             String value = constant.getValue();
@@ -510,6 +544,9 @@ public final class NavigatorScanner {
                 formatter.appendHtml(FONT_GRAY_COLOR); //NOI18N
                 formatter.appendText(value);
                 formatter.appendHtml(CLOSE_FONT);
+            }
+            if (getConstant().isDeprecated()) {
+                formatter.deprecated(false);
             }
             return formatter.getText();
         }
@@ -528,9 +565,9 @@ public final class NavigatorScanner {
 
         @Override
         public String getHtml(HtmlFormatter formatter) {
-                formatter.reset();
-                appendFunctionDescription(getFunctionScope(), formatter);
-                return formatter.getText();
+            formatter.reset();
+            appendFunctionDescription(getFunctionScope(), formatter);
+            return formatter.getText();
         }
 
     }
@@ -547,9 +584,9 @@ public final class NavigatorScanner {
 
         @Override
         public String getHtml(HtmlFormatter formatter) {
-                formatter.reset();
-                appendFunctionDescription(getMethodScope(), formatter);
-                return formatter.getText();
+            formatter.reset();
+            appendFunctionDescription(getMethodScope(), formatter);
+            return formatter.getText();
         }
 
 
@@ -578,8 +615,8 @@ public final class NavigatorScanner {
         @Override
         public String getHtml(HtmlFormatter formatter) {
             formatter.reset();
-            formatter.appendText(getElementHandle().getName());
-            Collection<? extends String> interfaes = getInterfaceScope().getSuperInterfaceNames();
+            appendName(getInterfaceScope(), formatter);
+            Collection<? extends InterfaceScope> interfaes = getInterfaceScope().getSuperInterfaceScopes();
             if (interfaes != null && interfaes.size() > 0) {
                 formatter.appendHtml(FONT_GRAY_COLOR + "::"); //NOI18N
                 appendInterfeas(interfaes, formatter);
@@ -611,8 +648,8 @@ public final class NavigatorScanner {
         @Override
         public String getHtml(HtmlFormatter formatter) {
             formatter.reset();
-            formatter.appendText(getElementHandle().getName());
-            Collection<QualifiedName> usedTraits = getTraitScope().getUsedTraits();
+            appendName(getTraitScope(), formatter);
+            Collection<? extends TraitScope> usedTraits = getTraitScope().getTraits();
             if (usedTraits != null && usedTraits.size() > 0) {
                 formatter.appendHtml(FONT_GRAY_COLOR + "#"); //NOI18N
                 appendUsedTraits(usedTraits, formatter);
@@ -640,9 +677,9 @@ public final class NavigatorScanner {
 
         @Override
         public String getHtml(HtmlFormatter formatter) {
-                formatter.reset();
-                appendFunctionDescription(getMethodScope(), formatter);
-                return formatter.getText();
+            formatter.reset();
+            appendFunctionDescription(getMethodScope(), formatter);
+            return formatter.getText();
         }
 
     }

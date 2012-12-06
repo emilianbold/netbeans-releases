@@ -8,7 +8,7 @@ Not Searchable Keys:
 
 Document 1
 Searchable Keys:
-  clz : nonsclassname;NoNsClassName;132;;No\Ns;NsInterfaceName|\NsFoo\NsBar\NsInterfaceName;1;;
+  clz : nonsclassname;NoNsClassName;132;;No\Ns;NsInterfaceName|\NsFoo\NsBar\NsInterfaceName;1;;0;
   superiface : nsinterfacename;NsInterfaceName;NsFoo\NsBar
   top : nonsclassname
 
@@ -33,7 +33,7 @@ Not Searchable Keys:
 
 Document 3
 Searchable Keys:
-  iface : nsinterfacename;NsInterfaceName;44;;NsFoo\NsBar;
+  iface : nsinterfacename;NsInterfaceName;44;;NsFoo\NsBar;0;
   top : nsinterfacename
 
 Not Searchable Keys:

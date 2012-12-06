@@ -102,9 +102,10 @@ public abstract class PhpElementImpl implements PhpElement {
     private final ElementQuery elementQuery;
     //@GuardedBy("this")
     private FileObject fileObject;
+    private final boolean isDeprecated;
 
     public static PhpElementImpl create(final String variableName, final String in, final int offset, final FileObject fo, final PhpElementKind kind) {
-        return new PhpElementImpl(variableName, in, null, offset, null) {
+        return new PhpElementImpl(variableName, in, null, offset, null, false) {
 
             @Override
             public String getSignature() {
@@ -124,8 +125,7 @@ public abstract class PhpElementImpl implements PhpElement {
     }
 
 
-    PhpElementImpl(final String name, final String in, final String fileUrl,
-            final int offset, final ElementQuery elementQuery) {
+    PhpElementImpl(final String name, final String in, final String fileUrl, final int offset, final ElementQuery elementQuery, boolean isDeprecated) {
         this.name = name;
         this.in = in;
         this.fileUrl = fileUrl == null ? "" : fileUrl;
@@ -134,6 +134,7 @@ public abstract class PhpElementImpl implements PhpElement {
             throw new IllegalArgumentException("fileURL may not contain spaces!"); //NOI18N
         }
         this.elementQuery = elementQuery;
+        this.isDeprecated = isDeprecated;
     }
 
     @Override
@@ -251,6 +252,11 @@ public abstract class PhpElementImpl implements PhpElement {
             return fileType.equals(FileType.INTERNAL);
         }
         return false;
+    }
+
+    @Override
+    public boolean isDeprecated() {
+        return isDeprecated;
     }
 
     @Override

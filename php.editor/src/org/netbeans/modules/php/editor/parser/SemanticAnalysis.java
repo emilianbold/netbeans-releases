@@ -56,7 +56,13 @@ import org.netbeans.modules.parsing.spi.Parser.Result;
 import org.netbeans.modules.parsing.spi.Scheduler;
 import org.netbeans.modules.parsing.spi.SchedulerEvent;
 import org.netbeans.modules.php.editor.CodeUtils;
+import org.netbeans.modules.php.editor.api.NameKind;
 import org.netbeans.modules.php.editor.api.QualifiedName;
+import org.netbeans.modules.php.editor.api.elements.ElementFilter;
+import org.netbeans.modules.php.editor.api.elements.TypeElement;
+import org.netbeans.modules.php.editor.model.Model;
+import org.netbeans.modules.php.editor.model.VariableScope;
+import org.netbeans.modules.php.editor.model.impl.VariousUtils;
 import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
 import org.netbeans.modules.php.editor.parser.astnodes.ArrayAccess;
 import org.netbeans.modules.php.editor.parser.astnodes.Block;
@@ -99,6 +105,7 @@ public class SemanticAnalysis extends SemanticAnalyzer {
     public static final EnumSet<ColoringAttributes> STATIC_METHOD_SET = EnumSet.of(ColoringAttributes.STATIC, ColoringAttributes.METHOD);
     public static final EnumSet<ColoringAttributes> UNUSED_STATIC_METHOD_SET = EnumSet.of(ColoringAttributes.STATIC, ColoringAttributes.METHOD, ColoringAttributes.UNUSED);
     public static final EnumSet<ColoringAttributes> UNUSED_USES_SET = EnumSet.of(ColoringAttributes.UNUSED);
+    public static final EnumSet<ColoringAttributes> DEPRECATED_CLASS_SET = EnumSet.of(ColoringAttributes.DEPRECATED, ColoringAttributes.CLASS);
     private static final String NAMESPACE_SEPARATOR = "\\"; //NOI18N
 
     // @GuarderBy("this")
@@ -144,7 +151,7 @@ public class SemanticAnalysis extends SemanticAnalyzer {
         PHPParseResult result = (PHPParseResult) r;
         Map<OffsetRange, Set<ColoringAttributes>> highlights = new HashMap<OffsetRange, Set<ColoringAttributes>>(100);
         if (result.getProgram() != null) {
-            SemanticHighlightVisitor semanticHighlightVisitor = new SemanticHighlightVisitor(highlights, result.getSnapshot());
+            SemanticHighlightVisitor semanticHighlightVisitor = new SemanticHighlightVisitor(highlights, result.getSnapshot(), result.getModel());
             result.getProgram().accept(semanticHighlightVisitor);
             if (highlights.size() > 0) {
                 semanticHighlights = highlights;
@@ -199,16 +206,22 @@ public class SemanticAnalysis extends SemanticAnalyzer {
         private final Snapshot snapshot;
 
         private final Map<String, UnusedOffsetRanges> unusedUsesOffsetRanges;
+
+        private final Model model;
+
+        private final Set<TypeElement> deprecatedTypes;
         // last visited type declaration
         private TypeDeclaration typeDeclaration;
 
-        public SemanticHighlightVisitor(Map<OffsetRange, Set<ColoringAttributes>> highlights, Snapshot snapshot) {
+        public SemanticHighlightVisitor(Map<OffsetRange, Set<ColoringAttributes>> highlights, Snapshot snapshot, Model model) {
             this.highlights = highlights;
             privateFieldsUnused = new HashMap<UnusedIdentifier, ASTNodeColoring>();
             unusedUses = new HashMap<String, ASTNodeColoring>();
             privateUnusedMethods = new HashMap<UnusedIdentifier, ASTNodeColoring>();
             unusedUsesOffsetRanges = new HashMap<String, UnusedOffsetRanges>();
             this.snapshot = snapshot;
+            this.model = model;
+            deprecatedTypes = ElementFilter.forDeprecated(true).filter(model.getIndexScope().getIndex().getTypes(NameKind.empty()));
         }
 
         public Set<UnusedOffsetRanges> getUnusedUsesOffsetRanges() {
@@ -247,7 +260,7 @@ public class SemanticAnalysis extends SemanticAnalyzer {
             scan(cldec.getSuperClass());
             scan(cldec.getInterfaes());
             Identifier name = cldec.getName();
-            addOffsetRange(name, ColoringAttributes.CLASS_SET);
+            createTypeNameColoring(name);
             needToScan = new ArrayList<Block>();
             if (cldec.getBody() != null) {
                 cldec.getBody().accept(this);
@@ -274,6 +287,23 @@ public class SemanticAnalysis extends SemanticAnalyzer {
                         addOffsetRange(item.identifier, UNUSED_METHOD_SET);
                     }
                 }
+            }
+        }
+
+        private void createTypeNameColoring(Identifier name) {
+            boolean isDeprecated = false;
+            VariableScope variableScope = model.getVariableScope(name.getStartOffset());
+            QualifiedName fullyQualifiedName = VariousUtils.getFullyQualifiedName(QualifiedName.create(name), name.getStartOffset(), variableScope);
+            for (TypeElement typeElement : deprecatedTypes) {
+                if (typeElement.getFullyQualifiedName().equals(fullyQualifiedName)) {
+                    isDeprecated = true;
+                    break;
+                }
+            }
+            if (isDeprecated) {
+                addOffsetRange(name, DEPRECATED_CLASS_SET);
+            } else {
+                addOffsetRange(name, ColoringAttributes.CLASS_SET);
             }
         }
 
@@ -341,7 +371,7 @@ public class SemanticAnalysis extends SemanticAnalyzer {
             }
             typeDeclaration = node;
             Identifier name = node.getName();
-            addOffsetRange(name, ColoringAttributes.CLASS_SET);
+            createTypeNameColoring(name);
             super.visit(node);
         }
 
@@ -352,7 +382,7 @@ public class SemanticAnalysis extends SemanticAnalyzer {
             }
             typeDeclaration = node;
             Identifier name = node.getName();
-            addOffsetRange(name, ColoringAttributes.CLASS_SET);
+            createTypeNameColoring(name);
             needToScan = new ArrayList<Block>();
             if (node.getBody() != null) {
                 node.getBody().accept(this);
