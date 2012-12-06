@@ -36,26 +36,35 @@ Microsystems, Inc. All Rights Reserved.
 If you wish your version of this file to be governed by only the CDDL
 or only the GPL Version 2, indicate your decision by adding
 "[Contributor] elects to include this software in this distribution
-under the [CDDL or GPL Version 2] license." If you do not indicate a
+under the [CDDL or GPL Version 2] license." If yBrigdesou do not indicate a
 single choice of license, a recipient has the option to distribute
 your version of this file under either the CDDL, the GPL Version 2 or
 to extend the choice of license to its licensees as provided above.
 However, if you add GPL Version 2 code and therefore, elected the GPL
 Version 2 license, then the option applies only if the new code is
 made subject to such option by the copyright holder.
--->
-<filesystem>
-    <folder name="Brigdes">
+--><filesystem>
+    <folder name="Templates">
         <folder name="MIDP">
-            <file name="Jsr172Application.wsclient" url="templates/MIDP/Jsr172Application_wsclient.template">
-                <attr name="displayName" bundlevalue="org.netbeans.modules.mobility.jsr172.wizard.Bundle#Brigdes/MIDP/Jsr172Application.wsclient"/>
-                <attr name="iconBase" stringvalue="org/netbeans/modules/mobility/jsr172/resources/e2eclienticon.gif"/>
-                <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.mobility.jsr172.wizard.WebServiceClientWizardIterator.singleton"/>
-                <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/mobility/jsr172/resources/descriptions/MIDP/JSR172_wsclient.html"/>
+            <file name="E2EWebApplication.wsclient.shadow">
+                <attr name="originalFile" stringvalue="Brigdes/MIDP/E2EWebApplication.wsclient"/>
+                <attr name="position" intvalue="800"/>
+            </file>
+            <file name="Jsr172Application.wsclient.shadow">
+                <attr name="originalFile" stringvalue="Brigdes/MIDP/Jsr172Application.wsclient"/>
                 <attr name="position" intvalue="900"/>
-                <attr boolvalue="true" name="template"/>
-                <attr name="MIDP" boolvalue="true"/>
-                <attr name="templateCategory" stringvalue="MIDP"/>
+            </file>
+        </folder>
+    </folder>
+    <folder name="RecommendedTemplates">
+        <folder name="org.netbeans.modules.kjava.j2meproject">
+            <file name="e2e">
+                <attr name="PriviledgedTemplates" stringvalue="Brigdes/MIDP/E2EWebApplication.wsclient"/>
+                <attr name="position" intvalue="500"/>
+            </file>
+            <file name="jsr172">
+                <attr name="PriviledgedTemplates" stringvalue="Brigdes/MIDP/Jsr172Application.wsclient"/>
+                <attr name="position" intvalue="600"/>
             </file>
         </folder>
     </folder>

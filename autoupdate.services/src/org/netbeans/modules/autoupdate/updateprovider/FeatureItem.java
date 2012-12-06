@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -81,6 +81,7 @@ public class FeatureItem extends UpdateItemImpl {
         this.category = category;
     }
     
+    @Override
     public String getCodeName () {
         return this.codeName;
     }
@@ -121,11 +122,13 @@ public class FeatureItem extends UpdateItemImpl {
         return moduleCodeNames;
     }
     
+    @Override
     public UpdateLicenseImpl getUpdateLicenseImpl () {
         assert false : "Not provided yet";
         return null;
     }
 
+    @Override
     public String getCategory () {
         return category;
     }
@@ -133,6 +136,11 @@ public class FeatureItem extends UpdateItemImpl {
     @Override
     public void setUpdateLicenseImpl (UpdateLicenseImpl licenseImpl) {
         assert false : "Not provided yet";
+    }
+    
+    @Override
+    public String toString() {
+        return "FeatureItem[" + this.getCodeName() + "/" + this.getSpecificationVersion() + "]";
     }
 
 }
