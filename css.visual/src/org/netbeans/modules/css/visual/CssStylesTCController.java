@@ -122,10 +122,7 @@ public class CssStylesTCController implements PropertyChangeListener {
 
                     //slow IO, do not run in EDT
                     final FileObject file = getFileObject(activated);
-                    if(file == null) {
-                        return ;
-                    }
-                    final boolean supported = isSupportedFileType(file);
+                    final boolean supported = file != null && isSupportedFileType(file);
 
                     SwingUtilities.invokeLater(new Runnable() {
                         @Override

@@ -88,7 +88,7 @@ public class Wrapper {
     public String getSessionServerInstanceId() {
         return sessionServerInstanceId;
     }
-    
+
     @Override
     public String toString() {
         if (ExecutionChecker.DEV_NULL.equals(serverInstanceId)) {
@@ -118,7 +118,7 @@ public class Wrapper {
 
     static Wrapper findWrapperByType(String serverId, JComboBox combo) {
         for (int i = 0; i < combo.getModel().getSize(); i++) {
-            Wrapper wr = (Wrapper)combo.getModel().getElementAt(i);
+            Wrapper wr = (Wrapper) combo.getModel().getElementAt(i);
             if (serverId.equals(wr.getServerID())) {
                 return wr;
             }
@@ -128,7 +128,7 @@ public class Wrapper {
 
     static Wrapper findWrapperByInstance(String instanceId, JComboBox combo) {
         for (int i = 0; i < combo.getModel().getSize(); i++) {
-            Wrapper wr = (Wrapper)combo.getModel().getElementAt(i);
+            Wrapper wr = (Wrapper) combo.getModel().getElementAt(i);
             if (instanceId.equals(wr.getServerInstanceID())) {
                 return wr;
             }
@@ -136,34 +136,34 @@ public class Wrapper {
         return null;
     }
 
-    
+
     public static ComboBoxUpdater<Wrapper> createComboBoxUpdater(final ModelHandle2 handle, final JComboBox combo, JLabel label) {
         return  new ComboBoxUpdater<Wrapper>(combo, label) {
-            
+
             private Wrapper modified;
             private ModelOperation<POMModel> operation = new ModelOperation<POMModel>() {
 
-            @Override
+                @Override
                 public void performOperation(POMModel model) {
                     String sID = modified.getServerID();
                     String iID = modified.getServerInstanceID();
-                    
+
                     if (ExecutionChecker.DEV_NULL.equals(iID)) {
                         Properties props = model.getProject().getProperties();
                         if (props != null) {
                             props.setProperty(MavenJavaEEConstants.HINT_DEPLOY_J2EE_SERVER, null);
                         }
-                } else {
-                    Properties props = model.getProject().getProperties();
-                    if (props == null) {
-                        props = model.getFactory().createProperties();
-                        model.getProject().setProperties(props);
+                    } else {
+                        Properties props = model.getProject().getProperties();
+                        if (props == null) {
+                            props = model.getFactory().createProperties();
+                            model.getProject().setProperties(props);
+                        }
+                        props.setProperty(MavenJavaEEConstants.HINT_DEPLOY_J2EE_SERVER, sID);
                     }
-                    props.setProperty(MavenJavaEEConstants.HINT_DEPLOY_J2EE_SERVER, sID);
-                }
                 }
             };
-            
+
             @Override
             public Wrapper getDefaultValue() {
                 return null;

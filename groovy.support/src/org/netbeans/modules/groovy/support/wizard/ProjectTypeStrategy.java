@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.groovy.support.wizard;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -60,7 +61,7 @@ import org.openide.util.Exceptions;
  *
  * @see AntProjectTypeStrategy
  * @see MavenProjectTypeStrategy
- * 
+ *
  * @author Martin Janicek
  */
 public abstract class ProjectTypeStrategy {
@@ -83,7 +84,7 @@ public abstract class ProjectTypeStrategy {
     protected abstract void createGroovySourceFolder();
 
     /**
-     * Enables to change the order of the given source groups
+     * Enables to change the order of the given source groups.
      *
      * @param groups source groups
      * @return regrouped source groups
@@ -95,7 +96,10 @@ public abstract class ProjectTypeStrategy {
     protected final List<SourceGroup> getOnlyTestSourceGroups(List<SourceGroup> groups) {
         List<SourceGroup> reorderedGroup = new ArrayList<SourceGroup>();
         for (SourceGroup group : groups) {
-            if (group.getRootFolder().getPath().contains("/test")) { // NOI18N
+            final String groupPath = group.getRootFolder().getPath();
+
+            // Two check because of issue #221727
+            if (groupPath.endsWith(File.separator + "test") || groupPath.contains(File.separator + "test" + File.separator)) { // NOI18N
                 reorderedGroup.add(group);
             }
         }

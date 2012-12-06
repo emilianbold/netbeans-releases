@@ -166,5 +166,32 @@ public class DeclarationsITest extends ModelTestBase {
         
     }
     
+    public void testRemovePropertyWithStarHack() {
+        String code = "div {\n"
+                + "    font-size: 222px;\n"
+                + "    *margin: 2px 1px 2px 2px; \n"
+                + "}\n";
+        
+//        CssParserResult result = TestUtil.parse(code);
+//        TestUtil.dumpResult(result);
+        
+        Model model = createModel(code);
+        StyleSheet styleSheet = getStyleSheet(model);
+        Declarations ds = styleSheet.getBody().getRules().get(0).getDeclarations();
+        assertNotNull(ds);
+        
+        Declaration margin = ds.getDeclarations().get(1);
+        assertNotNull(margin);
+        
+        ds.removeDeclaration(margin);
+        
+//        System.out.println(model.getModelSource());
+        
+        assertEquals("div {\n"
+                + "    font-size: 222px;\n"
+                + "}\n", model.getModelSource().toString());
+        
+    }
+    
     
 }

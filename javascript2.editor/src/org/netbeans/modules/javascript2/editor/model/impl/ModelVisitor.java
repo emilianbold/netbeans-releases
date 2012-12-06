@@ -53,10 +53,10 @@ import org.netbeans.modules.javascript2.editor.doc.spi.DocIdentifier;
 import org.netbeans.modules.javascript2.editor.doc.spi.DocParameter;
 import org.netbeans.modules.javascript2.editor.doc.spi.JsComment;
 import org.netbeans.modules.javascript2.editor.doc.spi.JsDocumentationHolder;
+import org.netbeans.modules.javascript2.editor.doc.spi.JsModifier;
 import org.netbeans.modules.javascript2.editor.lexer.LexUtilities;
 import org.netbeans.modules.javascript2.editor.model.*;
 import org.netbeans.modules.javascript2.editor.parser.JsParserResult;
-import org.netbeans.modules.parsing.api.Snapshot;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -213,6 +213,9 @@ public class ModelVisitor extends PathNodeVisitor {
                             || isInPropertyNode() 
                             || parent instanceof JsFunctionImpl)) {
                         parent = (JsObjectImpl)parent.getParent();
+                        if ("prototype".equals(parent.getName())) {
+                            parent = (JsObjectImpl)parent.getParent();
+                        }
                     }
                     property = (JsObjectImpl)parent.getProperty(fieldName);
                     if(property == null) {
@@ -550,6 +553,23 @@ public class ModelVisitor extends PathNodeVisitor {
             if (docHolder.isClass(functionNode)) {
                 fncScope.setJsKind(JsElement.Kind.CONSTRUCTOR);
             }
+//            Set<JsModifier> modifiers = docHolder.getModifiers(functionNode);
+//            for(JsModifier modifier : modifiers) {
+//                switch(modifier) {
+//                    case PUBLIC:
+//                        fncScope.getModifiers().add(Modifier.PUBLIC);
+//                        fncScope.getModifiers().remove(Modifier.PRIVATE);
+//                        break;
+//                    case PRIVATE:
+//                        fncScope.getModifiers().add(Modifier.PRIVATE);
+//                        fncScope.getModifiers().remove(Modifier.PUBLIC);
+//                        break;
+//                    case STATIC:
+//                        fncScope.getModifiers().add(Modifier.STATIC);
+//                        break;
+//                }
+//                
+//            }
         }
 
         for (FunctionNode fn : functions) {

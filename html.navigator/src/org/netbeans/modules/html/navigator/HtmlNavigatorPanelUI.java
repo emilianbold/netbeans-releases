@@ -60,6 +60,8 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
+import java.util.concurrent.Callable;
+import java.util.concurrent.Future;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.Action;
@@ -1025,5 +1027,14 @@ public class HtmlNavigatorPanelUI extends JPanel implements ExplorerManager.Prov
         return result;
     }
     
+    /**
+     * Only for tests
+     * @param <T>
+     * @param task
+     * @return 
+     */
+    public <T> Future<T> performTest(Callable<T> task) {
+        return RP.submit(task);
+    }
     
 }

@@ -293,7 +293,7 @@ public final class ClientSideProjectUtilities {
         }
     }
 
-    public static void logUsage(Class srcClass, String message, Object[] params) {
+    public static void logUsage(Class<? extends Object> srcClass, String message, Object[] params) {
         Parameters.notNull("message", message); // NOI18N
 
         LogRecord logRecord = new LogRecord(Level.INFO, message);
