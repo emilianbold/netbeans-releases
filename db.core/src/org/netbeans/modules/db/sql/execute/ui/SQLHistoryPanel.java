@@ -42,6 +42,7 @@
 package org.netbeans.modules.db.sql.execute.ui;
 
 import java.awt.Component;
+import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
@@ -60,6 +61,8 @@ import javax.swing.table.*;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Caret;
 import javax.swing.text.Document;
+import org.netbeans.api.db.explorer.ConnectionManager;
+import org.netbeans.api.db.explorer.DatabaseConnection;
 import org.netbeans.api.editor.EditorRegistry;
 import org.netbeans.modules.db.sql.history.SQLHistory;
 import org.netbeans.modules.db.sql.history.SQLHistoryEntry;
@@ -71,6 +74,7 @@ import org.openide.awt.MouseUtils;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.NotImplementedException;
+import org.openide.util.RequestProcessor;
 
 /**
  *
@@ -78,6 +82,8 @@ import org.openide.util.NotImplementedException;
  */
 public class SQLHistoryPanel extends javax.swing.JPanel {
 
+    private static final RequestProcessor RP =
+            new RequestProcessor(SQLHistoryPanel.class);
     private TableRowSorter<HistoryTableModel> rowSorter;
     private HistoryTableModel htm = new HistoryTableModel();
     public static final String SAVE_STATEMENTS_CLEARED = ""; // NOI18N  
@@ -168,9 +174,10 @@ public class SQLHistoryPanel extends javax.swing.JPanel {
     private void updateFilter() {
         List<RowFilter<HistoryTableModel, Integer>> rowFilter = new ArrayList<RowFilter<HistoryTableModel, Integer>>();
 
-        String url = (String) connectionUrlComboBox.getSelectedItem();
-
-        if (url != null && !url.equals(NbBundle.getMessage(SQLHistoryPanel.class, "LBL_URLComboBoxAllConnectionsItem"))) {
+        ConnectionHistoryItem connectionItem =
+                (ConnectionHistoryItem) connectionUrlComboBox.getSelectedItem();
+        String url = connectionItem.getUrl();
+        if (url != null && !url.equals(ConnectionHistoryItem.ALL_URLS)) {
             rowFilter.add(new EqualsFilter(url, 0));
     }
 
@@ -186,15 +193,40 @@ public class SQLHistoryPanel extends javax.swing.JPanel {
             }
 
     private void updateURLList() {
-        List<String> urls = new ArrayList<String>(htm.getJdbcURLs());
-        urls.add(0, NbBundle.getMessage(SQLHistoryPanel.class, "LBL_URLComboBoxAllConnectionsItem"));
-        Object selected = connectionUrlComboBox.getSelectedItem();
-        connectionUrlComboBox.setModel(new DefaultComboBoxModel(urls.toArray()));
-        if(selected != null && urls.contains((String) selected)) {
-            connectionUrlComboBox.setSelectedItem(selected);
-        } else {
-            connectionUrlComboBox.setSelectedIndex(0);
-        }
+        ConnectionHistoryItem selectedItem =
+                (ConnectionHistoryItem) connectionUrlComboBox.getSelectedItem();
+        final String selectedUrl = selectedItem == null
+                ? null : selectedItem.getUrl();
+        final List<String> urls = new ArrayList<String>(htm.getJdbcURLs());
+        urls.add(0, ConnectionHistoryItem.ALL_URLS);
+        RP.post(new Runnable() {
+            @Override
+            public void run() {
+                int selectedIndex = 0;
+                int w = urls.size();
+                final ConnectionHistoryItem[] comboItems =
+                        new ConnectionHistoryItem[w];
+                for (int i = 0; i < w; i++) {
+                    comboItems[i] = new ConnectionHistoryItem(urls.get(i));
+                    if (urls.get(i) != null && urls.get(i).equals(selectedUrl)) {
+                        selectedIndex = i;
+                    }
+                }
+                final int selectedIndexFinal = selectedIndex;
+                EventQueue.invokeLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        updateComboBox(comboItems, selectedIndexFinal);
+                    }
+                });
+            }
+
+            private void updateComboBox(ConnectionHistoryItem[] items,
+                    int selectedIndex) {
+                connectionUrlComboBox.setModel(new DefaultComboBoxModel(items));
+                connectionUrlComboBox.setSelectedIndex(selectedIndex);
+            }
+        });
     }
 
     /** This method is called from within the constructor to
@@ -651,4 +683,39 @@ private void sqlLimitButtonActionPerformed(java.awt.event.ActionEvent evt) {//GE
             return ((String) entry.getModel().getValueAt(entry.getIdentifier(), referenzColumn)).toLowerCase().contains(referenz);
         }
     };
+
+    private static class ConnectionHistoryItem {
+
+        private static final String ALL_URLS = "*";                     //NOI18N
+        private String url;
+        private String name;
+
+        public ConnectionHistoryItem(String url) {
+            this.url = url == null ? ALL_URLS : url;
+            if (ALL_URLS.equals(url)) {
+                name = NbBundle.getMessage(SQLHistoryPanel.class,
+                        "LBL_URLComboBoxAllConnectionsItem");           //NOI18N
+            } else {
+                for (DatabaseConnection dc
+                        : ConnectionManager.getDefault().getConnections()) {
+                    if (dc.getDatabaseURL().equals(url)) {
+                        name = dc.getDisplayName();
+                        break;
+                    }
+                }
+                if (name == null) {
+                    name = url;
+                }
+            }
+        }
+
+        public String getUrl() {
+            return url;
+        }
+
+        @Override
+        public String toString() {
+            return name;
+        }
+    }
 }

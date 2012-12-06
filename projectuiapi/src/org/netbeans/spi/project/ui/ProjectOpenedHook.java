@@ -80,9 +80,11 @@ public abstract class ProjectOpenedHook {
 
     static {
         ProjectOpenedTrampoline.DEFAULT = new ProjectOpenedTrampoline() {
+            @Override
             public void projectOpened(ProjectOpenedHook hook) {
                 hook.projectOpened();
             }
+            @Override
             public void projectClosed(ProjectOpenedHook hook) {
                 hook.projectClosed();
             }
