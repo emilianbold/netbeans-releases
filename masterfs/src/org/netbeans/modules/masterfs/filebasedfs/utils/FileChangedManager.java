@@ -247,7 +247,7 @@ public class FileChangedManager extends SecurityManager {
         }
 
         Integer maxLoad = IDLE_IO.get();
-        if (maxLoad != null) {
+        if (maxLoad != null && !isClassLoading()) {
             try {
                 waitIOLoadLowerThan(maxLoad);
             } catch (InterruptedException ex) {
@@ -313,5 +313,21 @@ public class FileChangedManager extends SecurityManager {
 
     private Integer put(String f, boolean value) {
         return put(getKey(f), value);
+    }
+    
+    private static boolean isClassLoading() {
+        StackTraceElement[] arr = new Throwable().getStackTrace();
+        for (StackTraceElement e : arr) {
+            if (
+                e.getClassName().startsWith("org.netbeans.JarClassLoader")
+                ||
+                e.getClassName().startsWith("org.netbeans.ProxyClassLoader")
+                ||
+                e.getClassName().equals("java.lang.ClassLoader")
+            ) {
+                return true;
+            }
+        }
+        return false;
     }
 }
