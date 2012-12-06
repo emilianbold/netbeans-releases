@@ -167,7 +167,7 @@ public class FoDUpdateUnitProvider implements UpdateProvider {
                         }
                         FeatureInfo fi = FeatureManager.findInfo(d.getName());
                         if (fi != null) {
-                            assert fi.getFeatureCodeNameBase() != null : "No CNB for " + fi;
+                            // assert fi.getFeatureCodeNameBase() != null : "No CNB for " + fi; // unit-test FeatureOffDemand**
                             String cnb = "fod." + fi.getFeatureCodeNameBase();
                             if (!cnb.equals(name)) {
                                 justKits.add(cnb);
