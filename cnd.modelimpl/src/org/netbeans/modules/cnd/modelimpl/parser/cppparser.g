@@ -1880,7 +1880,11 @@ declaration_specifiers [boolean allowTypedef, boolean noTypeId]
     ((LITERAL_static IDENT (SEMICOLON | ASSIGNEQUAL | COMMA)) =>
         sc = storage_class_specifier
     |
-        (   ( (LITERAL_constexpr | cv_qualifier | LITERAL_static | literal_inline | LITERAL_friend)* LITERAL_auto declarator[declOther, 0]) => 
+        (   ( (LITERAL_constexpr | cv_qualifier | LITERAL_static | literal_inline | LITERAL_friend)* 
+              LITERAL_auto 
+              (postfix_cv_qualifier | LITERAL_constexpr)? 
+              (literal_inline | storage_class_specifier | LITERAL_virtual)*
+              declarator[declOther, 0]) => 
             (LITERAL_constexpr | tq = cv_qualifier | LITERAL_static | literal_inline | LITERAL_friend)*
         |
             (   options {warnWhenFollowAmbig = false;} : sc = storage_class_specifier

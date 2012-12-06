@@ -123,6 +123,11 @@ public class UnresolvedCpp11IdentifierTest extends ErrorHighlightingBaseTestCase
         // Bug 222884 - unexpected "," operator
         performStaticTest("bug222884.cpp");
     }            
+
+    public void testBug222553() throws Exception {
+        // Bug 222553 - Cannot parse "auto const a = 0;"
+        performStaticTest("bug222553.cpp");
+    }            
     
     /////////////////////////////////////////////////////////////////////
     // FAILS
