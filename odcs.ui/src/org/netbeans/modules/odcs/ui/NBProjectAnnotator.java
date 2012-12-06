@@ -46,6 +46,7 @@ import java.awt.EventQueue;
 import java.awt.Image;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
@@ -80,7 +81,7 @@ public class NBProjectAnnotator implements ProjectIconAnnotator, PropertyChangeL
     
     public NBProjectAnnotator () {
         listeners = new LinkedHashSet<ChangeListener>();
-        odcsProjects = new WeakHashMap<Project, Boolean>(10);
+        odcsProjects = Collections.synchronizedMap(new WeakHashMap<Project, Boolean>(10));
         Utils.getRequestProcessor().post(new Runnable() {
             @Override
             public void run () {
@@ -121,9 +122,7 @@ public class NBProjectAnnotator implements ProjectIconAnnotator, PropertyChangeL
     @Override
     public void propertyChange (PropertyChangeEvent evt) {
         if (ODCSManager.PROP_INSTANCES.equals(evt.getPropertyName())) {
-            synchronized (listeners) {
-                listeners.clear();
-            }
+            odcsProjects.clear();
             EventQueue.invokeLater(new Runnable() {
                 @Override
                 public void run () {
@@ -134,6 +133,7 @@ public class NBProjectAnnotator implements ProjectIconAnnotator, PropertyChangeL
     }
 
     private void refreshAsync (final Project p) {
+        odcsProjects.put(p, false);
         Utils.getRequestProcessor().post(new Runnable() {
             @Override
             public void run () {
