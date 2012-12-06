@@ -297,6 +297,10 @@ public final class WindowsNotifier extends Notifier<Void> {
     private final BlockingQueue<String> events = new LinkedBlockingQueue<String>();
 
     public @Override Void addWatch(String path) throws IOException {
+        if (path.isEmpty()) {
+            return null;
+        }
+        
         String root = null;
 
         if (path.charAt(1) == ':') { // classic drive letter (e.g. C:\)
