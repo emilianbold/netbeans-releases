@@ -101,7 +101,7 @@ final class StandardModuleData extends ModuleData {
         if (classPath != null) {
             StringTokenizer tok = new StringTokenizer(classPath);
             while (tok.hasMoreTokens()) {
-                String ext = tok.nextToken();
+                String ext = tok.nextToken().replace("%20", " "); // NOI18N
                 if (new File(ext).isAbsolute()) { // NOI18N
                     Util.err.log(Level.WARNING, "Class-Path value {0} from {1} is illegal according to the Java Extension Mechanism: must be relative", new Object[]{ext, jar});
                 }
