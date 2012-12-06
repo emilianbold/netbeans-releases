@@ -489,7 +489,6 @@ public class ProjectActionSupport {
                         break;
                     }
 
-                    activeHandlerRef.set(handlerToUse);
                     final CountDownLatch eventProcessed = new CountDownLatch(1);
                     final AtomicBoolean stepFailed = new AtomicBoolean(true);
                     final ExecutionListener eventExecutionListener = new ExecutionListener() {
@@ -535,8 +534,9 @@ public class ProjectActionSupport {
                     ProgressHandle progressHandle = null;
 
                     try {
-                        handlerToUse.addExecutionListener(eventExecutionListener);
                         initHandler(handlerToUse, currentEvent, paes);
+                        activeHandlerRef.set(handlerToUse);
+                        handlerToUse.addExecutionListener(eventExecutionListener);
                         progressHandle = createProgressHandle(ioTab, handlerToUse);
                         progressHandle.start();
                         IOTabsController.getDefault().startHandlerInTab(handlerToUse, ioTab);
