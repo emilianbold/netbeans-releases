@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -30,7 +30,6 @@
  */
 package org.netbeans.modules.ide.ergonomics.fod;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.HashMap;
@@ -38,7 +37,6 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.Logger;
-import org.netbeans.Module;
 import org.netbeans.api.autoupdate.UpdateUnitProvider.CATEGORY;
 import org.netbeans.spi.autoupdate.UpdateItem;
 import org.netbeans.spi.autoupdate.UpdateProvider;
@@ -169,7 +167,11 @@ public class FoDUpdateUnitProvider implements UpdateProvider {
                         }
                         FeatureInfo fi = FeatureManager.findInfo(d.getName());
                         if (fi != null) {
-                            justKits.addAll(fi.getCodeNames());
+                            // assert fi.getFeatureCodeNameBase() != null : "No CNB for " + fi; // unit-test FeatureOffDemand**
+                            String cnb = "fod." + fi.getFeatureCodeNameBase();
+                            if (!cnb.equals(name)) {
+                                justKits.add(cnb);
+                            }
                         }
                     }
                     continue;

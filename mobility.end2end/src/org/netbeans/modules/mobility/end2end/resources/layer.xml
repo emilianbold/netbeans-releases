@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
+<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.2//EN" "http://www.netbeans.org/dtds/filesystem-1_2.dtd">
 <!--
 DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
@@ -45,19 +45,12 @@ Version 2 license, then the option applies only if the new code is
 made subject to such option by the copyright holder.
 -->
 <filesystem>
-    <folder name="RecommendedTemplates">
-        <folder name="org.netbeans.modules.kjava.j2meproject">
-            <file name="e2e">
-                <attr name="PriviledgedTemplates" stringvalue="Templates/MIDP/E2EWebApplication.wsclient"/>
-                <attr name="position" intvalue="500"/>
-            </file>
-        </folder>
-    </folder>
-    <folder name="Templates">
+    <folder name="Brigdes">
         <folder name="MIDP">
             <file name="E2EWebApplication.wsclient" url="templates/MIDP/E2EWebApplication_wsclient.template">
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.mobility.end2end.ui.wizard.Bundle"/>
-                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/mobility/end2end/resources/e2eclienticon.png"/>
+            <!--<file name="Jsr172Application.wsclient" url="templates/MIDP/Jsr172Application_wsclient.template">-->
+                <attr name="displayName" bundlevalue="org.netbeans.modules.mobility.end2end.ui.wizard.Bundle#Brigdes/MIDP/E2EWebApplication.wsclient"/>
+                <attr name="iconBase" stringvalue="org/netbeans/modules/mobility/end2end/resources/e2eclienticon.png"/>
                 <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.mobility.end2end.ui.wizard.GenericServiceIterator.singleton"/>
                 <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/mobility/end2end/resources/descriptions/MIDP/E2EWebApplication_wsclient.html"/>
                 <attr name="position" intvalue="800"/>
@@ -66,6 +59,8 @@ made subject to such option by the copyright holder.
                 <attr name="templateCategory" stringvalue="MIDP"/>
             </file>
         </folder>
+    </folder>
+    <folder name="Templates">
         <!-- Javon templates -->
         <folder name="Client">
             <attr name="position" intvalue="0"/>
