@@ -532,14 +532,13 @@ public class ProjectActionSupport {
                         }
                     };
 
-                    ProgressHandle progressHandle = createProgressHandle(ioTab, handlerToUse);
+                    ProgressHandle progressHandle = null;
 
                     try {
-                        progressHandle.start();
-
                         handlerToUse.addExecutionListener(eventExecutionListener);
                         initHandler(handlerToUse, currentEvent, paes);
-
+                        progressHandle = createProgressHandle(ioTab, handlerToUse);
+                        progressHandle.start();
                         IOTabsController.getDefault().startHandlerInTab(handlerToUse, ioTab);
 
                         try {
@@ -556,7 +555,9 @@ public class ProjectActionSupport {
                     } finally {
                         handlerToUse.removeExecutionListener(eventExecutionListener);
                         activeHandlerRef.set(null);
-                        progressHandle.finish();
+                        if (progressHandle != null) {
+                            progressHandle.finish();
+                        }
                         stopAction.setEnabled(false);
                     }
                 }
