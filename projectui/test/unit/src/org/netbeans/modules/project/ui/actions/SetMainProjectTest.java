@@ -46,8 +46,10 @@ package org.netbeans.modules.project.ui.actions;
 
 import java.io.IOException;
 import java.lang.ref.WeakReference;
+import java.lang.reflect.InvocationTargetException;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
+import javax.swing.SwingUtilities;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.junit.MockServices;
@@ -56,6 +58,7 @@ import org.netbeans.modules.project.ui.OpenProjectList;
 import org.netbeans.modules.project.ui.actions.TestSupport.ActionCreator;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 
 public class SetMainProjectTest extends NbTestCase {
@@ -132,17 +135,17 @@ public class SetMainProjectTest extends NbTestCase {
         }
         
         OpenProjectList.getDefault().close(new Project[] {p1}, false);
-        
+        waitForAWT();
         assertEquals(3, menu.getItemCount());
         assertTrue(menu.isEnabled());
 
         OpenProjectList.getDefault().close(new Project[] {p2}, false);
-        
+        waitForAWT();
         assertEquals(2, menu.getItemCount());
         assertFalse(menu.isEnabled());
 
         OpenProjectList.getDefault().open(new Project[] {p1}, false);
-        
+        waitForAWT();
         assertEquals(3, menu.getItemCount());
         assertTrue(menu.isEnabled());
         
@@ -150,5 +153,21 @@ public class SetMainProjectTest extends NbTestCase {
         
         assertGC("", menuRef);
         assertGC("", actionRef);
+    }
+
+    private void waitForAWT() {
+        try {
+            SwingUtilities.invokeAndWait(new Runnable() {
+
+                @Override
+                public void run() {
+                    
+                }
+            });
+        } catch (InterruptedException ex) {
+            Exceptions.printStackTrace(ex);
+        } catch (InvocationTargetException ex) {
+            Exceptions.printStackTrace(ex);
+        }
     }
 }
