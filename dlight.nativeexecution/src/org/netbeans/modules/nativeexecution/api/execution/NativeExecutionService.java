@@ -42,8 +42,7 @@
 package org.netbeans.modules.nativeexecution.api.execution;
 
 import java.awt.event.ActionEvent;
-import java.io.IOException;
-import java.io.PrintWriter;
+import java.io.Reader;
 import java.nio.charset.Charset;
 import java.util.EnumSet;
 import java.util.concurrent.Callable;
@@ -74,10 +73,12 @@ import org.netbeans.modules.terminal.api.IOEmulation;
 import org.netbeans.modules.terminal.api.IOTerm;
 import org.openide.awt.StatusDisplayer;
 import org.openide.util.Cancellable;
-import org.openide.util.Exceptions;
+import org.openide.util.Mutex;
+import org.openide.util.Mutex.Action;
 import org.openide.util.WeakListeners;
 import org.openide.windows.IOSelect;
 import org.openide.windows.IOSelect.AdditionalOperation;
+import org.openide.windows.OutputWriter;
 
 /**
  * This is a wrapper over an <tt>Executionservice</tt> that handles running
@@ -243,8 +244,7 @@ public final class NativeExecutionService {
                     });
 
                     if (process.getState() == State.ERROR) {
-                        descriptor.inputOutput.getErr().print(ProcessUtils.readProcessErrorLine(process));
-                        descriptor.inputOutput.getErr().println('\r');
+                        out(true, ProcessUtils.readProcessErrorLine(process), "\r"); // NOI18N
                         return 1;
                     }
 
@@ -276,7 +276,6 @@ public final class NativeExecutionService {
                                         }
                                     } finally {
                                         IOTerm.term(descriptor.inputOutput).setReadOnly(true);
-                                        descriptor.inputOutput.getOut().close();
                                     }
                                 }
                             }, "term process post execution"); // NOI18N
@@ -380,14 +379,53 @@ public final class NativeExecutionService {
         return result;
     }
 
+    private void out(final boolean toError, final CharSequence... cs) {
+        Mutex.EVENT.writeAccess(new Action<Void>() {
+
+            @Override
+            public Void run() {
+                OutputWriter w = toError
+                        ? descriptor.inputOutput.getErr()
+                        : descriptor.inputOutput.getOut();
+                if (w != null) {
+                    for (CharSequence c : cs) {
+                        w.append(c);
+                    }
+                }
+                return null;
+            }
+        });
+    }
+
     private void closeIO() {
-        descriptor.inputOutput.getErr().close();
-        descriptor.inputOutput.getOut().close();
-        try {
-            descriptor.inputOutput.getIn().close();
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
-        }
+        Mutex.EVENT.writeAccess(new Action<Void>() {
+
+            @Override
+            public Void run() {
+                final OutputWriter out = descriptor.inputOutput.getOut();
+                final OutputWriter err = descriptor.inputOutput.getErr();
+                final Reader in = descriptor.inputOutput.getIn();
+                if (err != null) {
+                    try {
+                        err.close();
+                    } catch (Throwable th) {
+                    }
+                }
+                if (out != null) {
+                    try {
+                        out.close();
+                    } catch (Throwable th) {
+                    }
+                }
+                if (in != null) {
+                    try {
+                        in.close();
+                    } catch (Throwable th) {
+                    }
+                }
+                return null;
+            }
+        });
     }
 
     private final class PostRunnable implements Runnable {
@@ -410,24 +448,19 @@ public final class NativeExecutionService {
                 if (descriptor.postMessageDisplayer != null) {
                     final long time = System.currentTimeMillis() - startTimeMillis;
                     String postMsg = descriptor.postMessageDisplayer.getPostMessage(process, time);
-
-                    PrintWriter pw = (rc == 0)
-                            ? descriptor.inputOutput.getOut()
-                            : descriptor.inputOutput.getErr();
-
-                    // use \n\r to correctly move cursor in terminals as well
-                    pw.printf("\n\r%s\n\r", postMsg); // NOI18N
-
+                    out(rc != 0, "\n\r", postMsg, "\n\r"); // NOI18N
                     StatusDisplayer.getDefault().setStatusText(descriptor.postMessageDisplayer.getPostStatusString(process));
                 }
 
-                if (descriptor.closeInputOutputOnFinish) {
-                    closeIO();
-                }
-
-                // Finally, if there was some post executable set before - call it
-                if (postExecutable != null) {
-                    postExecutable.run();
+                try {
+                    // Finally, if there was some post executable set before - call it
+                    if (postExecutable != null) {
+                        postExecutable.run();
+                    }
+                } finally {
+                    if (descriptor.closeInputOutputOnFinish) {
+                        closeIO();
+                    }
                 }
             }
         }
