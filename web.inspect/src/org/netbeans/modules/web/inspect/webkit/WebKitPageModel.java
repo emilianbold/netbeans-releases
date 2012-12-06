@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.web.inspect.webkit;
 
+import java.awt.EventQueue;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
@@ -125,6 +126,7 @@ public class WebKitPageModel extends PageModel {
         this.project = pageContext.lookup(Project.class);
         this.external = (pageContext.lookup(JToolBar.class) == null); // Ugly heuristics
         addPropertyChangeListener(new WebPaneSynchronizer());
+        addPropertyChangeListener(new EditorSynchronizer());
 
         // Register DOM domain listener
         domListener = createDOMListener();
@@ -203,6 +205,7 @@ public class WebKitPageModel extends PageModel {
 
     @Override
     public org.openide.nodes.Node getDocumentNode() {
+        assert !EventQueue.isDispatchThread();
         synchronized (this) {
             if (documentNode == null) {
                 DOM dom = webKit.getDOM();
@@ -481,6 +484,7 @@ public class WebKitPageModel extends PageModel {
 
     @Override
     public void setSelectedNodes(List<? extends org.openide.nodes.Node> nodes) {
+        assert !EventQueue.isDispatchThread();
         synchronized (this) {
             if (selectedNodes.equals(nodes)) {
                 return;
@@ -518,6 +522,7 @@ public class WebKitPageModel extends PageModel {
 
     @Override
     public void setHighlightedNodes(List<? extends org.openide.nodes.Node> nodes) {
+        assert !EventQueue.isDispatchThread();
         if (isSynchronizeSelection()) {
             setHighlightedNodesImpl(nodes);
         }

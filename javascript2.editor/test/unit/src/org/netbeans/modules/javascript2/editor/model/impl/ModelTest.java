@@ -336,7 +336,7 @@ public class ModelTest extends JsTestBase {
         assertNotNull(model);
         
         JsObject  object = model.getGlobalObject();
-        assertEquals(3, object.getProperties().size());
+        assertEquals(4, object.getProperties().size());
         
         object = object.getProperty("_L2").getProperty("jQuery");
         assertEquals(true, object.isDeclared());

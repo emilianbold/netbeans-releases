@@ -63,7 +63,11 @@ public class SessionProviderImpl extends SessionProvider {
 
     @Override
     public String getSessionName() {
-        return webkit.getConnectionName();
+        String name = webkit.getConnectionName();
+        if (name == null) {
+            name = "...";
+        }
+        return name;
     }
 
     @Override

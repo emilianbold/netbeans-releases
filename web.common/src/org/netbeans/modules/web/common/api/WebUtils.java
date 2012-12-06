@@ -366,8 +366,8 @@ public class WebUtils {
                     urlString.startsWith("https:/"))) {
                     urlString = "http://" + urlString;
                 }
+                u = new URL(urlString);
             }
-            u = new URL(urlString);
                 
             // and now use URI to properly encode spaces in path:
             return new URI(u.getProtocol(), u.getAuthority(), u.getPath(), u.getQuery(), u.getRef()).toURL();

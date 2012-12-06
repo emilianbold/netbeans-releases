@@ -54,11 +54,11 @@ import org.openide.util.Exceptions;
  * @author ads
  *
  */
-class Message {
+public class Message {
 
     private static final String MESSAGE = "message";        // NOI18N
     
-    enum MessageType {
+    public enum MessageType {
         INIT,
         RELOAD,
         URLCHANGE,
@@ -71,6 +71,7 @@ class Message {
         DEBUGGER_DETACHED,
         LOAD_RESIZE_OPTIONS,
         SAVE_RESIZE_OPTIONS,
+        READY
         ;
         
         @Override

@@ -554,7 +554,7 @@ public class JSTestDriverSupport {
             if (testResult.getResult() == TestResult.Result.failed || testResult.getResult() == TestResult.Result.error) {
                 Trouble t = new Trouble(true);
                 if (testResult.getStack().length() > 0) {
-                    t.setStackTrace(testResult.getStack().split("\\u000d"));
+                    t.setStackTrace(trimArray(testResult.getStack().split("\\u000d")));
                     testCase.addOutputLines(Arrays.asList(testResult.getStack().split("\\u000d")));
                     //manager.displayOutput(testSession, testResult.getStack(), true);
                 }
@@ -595,6 +595,16 @@ public class JSTestDriverSupport {
                 report = testSession.getReport(0);
             }
             manager.displayReport(testSession, report, true);
+        }
+
+        private String[] trimArray(String[] split) {
+            if (split == null) {
+                return null;
+            }
+            for (int i = 0; i < split.length; i++) {
+                split[i] = split[i].trim();
+            }
+            return split;
         }
         
     }

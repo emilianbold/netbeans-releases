@@ -170,7 +170,17 @@ public class RADConnectionPropertyEditor
 
     @Override
     public boolean supportsCustomEditor() {
-        return !formModel.isReadOnly();
+        if (formModel.isReadOnly()) {
+            return false;
+        }
+        if (editorType == Type.CustomCode) {
+            FormEditor formEditor = FormEditor.getFormEditor(formModel);
+            if (formEditor.getGuardedSectionManager() == null) {
+                // unknown setup problem - bug 223356, bug 220699
+                return false;
+            }
+        }
+        return true;
     }
 
     @Override

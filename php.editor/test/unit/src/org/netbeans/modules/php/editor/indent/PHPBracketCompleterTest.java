@@ -1178,4 +1178,16 @@ public class PHPBracketCompleterTest extends PHPCodeCompletionTestBase {
         insertChar(original, ' ', expected);
     }
 
+    public void testIssue223395_01() throws Exception {
+        String original = "# first^\n# second";
+        String expected = "# first\n# ^\n# second";
+        insertBreak(original, expected);
+    }
+
+    public void testIssue223395_02() throws Exception {
+        String original = "    # first^\n    # second";
+        String expected = "    # first\n    # ^\n    # second";
+        insertBreak(original, expected);
+    }
+
 }

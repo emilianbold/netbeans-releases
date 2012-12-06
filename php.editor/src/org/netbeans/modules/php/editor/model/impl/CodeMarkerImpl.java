@@ -46,7 +46,6 @@ import java.util.List;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.php.editor.model.CodeMarker;
 import org.netbeans.modules.php.editor.model.OccurrenceHighlighter;
-import org.netbeans.modules.php.editor.model.Scope;
 import org.netbeans.modules.php.editor.model.nodes.ASTNodeInfo;
 
 /**
@@ -54,17 +53,15 @@ import org.netbeans.modules.php.editor.model.nodes.ASTNodeInfo;
  * @author Radek Matous
  */
 class CodeMarkerImpl implements CodeMarker {
-    private OffsetRange range;
-    private Scope scope;
-    private FileScopeImpl fileScope;
+    private final OffsetRange range;
+    private final FileScopeImpl fileScope;
 
-    public CodeMarkerImpl(Scope scope , ASTNodeInfo nodeInfo, FileScopeImpl fileScope) {
-        this(scope, nodeInfo.getRange(), fileScope);
+    public CodeMarkerImpl(ASTNodeInfo nodeInfo, FileScopeImpl fileScope) {
+        this(nodeInfo.getRange(), fileScope);
     }
 
-    public CodeMarkerImpl(Scope scope , OffsetRange  range, FileScopeImpl fileScope) {
+    public CodeMarkerImpl(OffsetRange  range, FileScopeImpl fileScope) {
          this.range = range;
-         this.scope = scope;
          this.fileScope = fileScope;
     }
 
@@ -75,33 +72,22 @@ class CodeMarkerImpl implements CodeMarker {
 
     @Override
     public boolean containsInclusive(int offset) {
-        return getOffsetRange().containsInclusive(offset);
-    }
-
-    private OffsetRange getOffsetRange() {
-        return range;
+        return range.containsInclusive(offset);
     }
 
     @Override
     public void highlight(OccurrenceHighlighter highlighter) {
-        highlighter.add(getOffsetRange());
-    }
-
-    /**
-     * @return the scopeName
-     */
-    Scope getScope() {
-        return scope;
+        highlighter.add(range);
     }
 
     public static final class InvisibleCodeMarker extends CodeMarkerImpl {
 
-        public InvisibleCodeMarker(Scope scope, ASTNodeInfo nodeInfo, FileScopeImpl fileScope) {
-            super(scope, nodeInfo, fileScope);
+        public InvisibleCodeMarker(ASTNodeInfo nodeInfo, FileScopeImpl fileScope) {
+            super(nodeInfo, fileScope);
         }
 
-        public InvisibleCodeMarker(Scope scope, OffsetRange range, FileScopeImpl fileScope) {
-            super(scope, range, fileScope);
+        public InvisibleCodeMarker(OffsetRange range, FileScopeImpl fileScope) {
+            super(range, fileScope);
         }
 
         @Override
