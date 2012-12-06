@@ -590,15 +590,7 @@ public class TemplatesPanel extends TopComponent implements ExplorerManager.Prov
     }
 
     private void deleteButtonActionPerformed (java.awt.event.ActionEvent evt) {//GEN-FIRST:event_deleteButtonActionPerformed
-        Node [] nodes = manager.getSelectedNodes (); 
-        for (int i = 0; i < nodes.length; i++) {
-            try {
-                nodes[i].destroy();
-            }
-            catch (IOException ioe) {
-                Logger.getLogger(TemplatesPanel.class.getName()).log(Level.WARNING, null, ioe);
-            }
-        }
+        getActionMap().get("delete").actionPerformed(evt);
     }//GEN-LAST:event_deleteButtonActionPerformed
 
     private void duplicateButtonActionPerformed (java.awt.event.ActionEvent evt) {//GEN-FIRST:event_duplicateButtonActionPerformed
