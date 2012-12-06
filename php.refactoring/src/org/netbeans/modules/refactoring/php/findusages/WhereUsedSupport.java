@@ -119,6 +119,10 @@ public final class WhereUsedSupport {
         return node;
     }
 
+    public FileObject getDeclarationFileObject() {
+        return modelElement.getFileObject();
+    }
+
     /*public FileObject getFileObject() {
         return fo;
     }*/
@@ -139,6 +143,10 @@ public final class WhereUsedSupport {
 
     public ElementKind getElementKind() {
         return modelElement.getPHPElement().getKind();
+    }
+
+    public PhpElementKind getPhpElementKind() {
+        return modelElement.getPhpElementKind();
     }
 
     public Set<Modifier> getModifiers() {
