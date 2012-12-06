@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -44,14 +44,14 @@
 package org.netbeans.modules.autoupdate.services;
 
 import org.netbeans.api.autoupdate.UpdateUnitProvider.CATEGORY;
-import java.io.File;
 import java.io.IOException;
-import java.net.URL;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import junit.framework.Test;
+import org.netbeans.Module;
 import org.netbeans.api.autoupdate.OperationException;
 import org.netbeans.api.autoupdate.TestUtils;
 import org.netbeans.api.autoupdate.UpdateManager;
@@ -59,7 +59,6 @@ import org.netbeans.api.autoupdate.UpdateUnit;
 import org.netbeans.api.autoupdate.UpdateUnitProviderFactory;
 import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.junit.RandomlyFails;
 import org.netbeans.modules.autoupdate.updateprovider.InstalledModuleProvider;
 import org.netbeans.modules.autoupdate.updateprovider.ModuleItem;
 import org.netbeans.modules.autoupdate.updateprovider.UpdateItemImpl;
@@ -73,96 +72,101 @@ import org.openide.util.Lookup;
  *
  * @author Jiri Rechtacek
  */
-@RandomlyFails // MyProvider occasionally not found in lookup
-public class FeatureUncompleteTest extends NbTestCase {
+public class FeatureIncompleteTest extends NbTestCase {
 
     protected boolean modulesOnly = true;
     List<UpdateUnit> keepItNotToGC;
 
-    public FeatureUncompleteTest (String testName) {
-        super (testName);
+    public FeatureIncompleteTest(String testName) {
+        super(testName);
     }
 
     public static Test suite() {
-        return NbModuleSuite.create(
-            NbModuleSuite.createConfiguration(FeatureUncompleteTest.class).gui(false)
-        );
+        return NbModuleSuite.createConfiguration(FeatureIncompleteTest.class).gui(false).suite();
     }
 
     @Override
-    protected void setUp () throws Exception {
-        super.setUp ();
-        this.clearWorkDir ();
-        TestUtils.setUserDir (getWorkDirPath ());
-        TestUtils.testInit ();
+    protected void setUp() throws Exception {
+        super.setUp();
+        this.clearWorkDir();
+        TestUtils.setUserDir(getWorkDirPath());
+        TestUtils.testInit();
         FileObject fo = FileUtil.createData(FileUtil.getConfigRoot(), "Services/MyProvider.instance");
         fo.setAttribute("instanceCreate", new MyProvider());
-        assert Lookup.getDefault ().lookup (MyProvider.class) != null;
+        assert Lookup.getDefault().lookup(MyProvider.class) != null;
         /* XXX for some reason this does not work:
-        MockLookup.setInstances(new MyProvider());
+         MockLookup.setInstances(new MyProvider());
          */
-        UpdateUnitProviderFactory.getDefault ().refreshProviders (null, true);
+        UpdateUnitProviderFactory.getDefault().refreshProviders(null, true);
     }
 
-    public void testUncompleteFeature () throws OperationException {
-        List<UpdateUnit> features = UpdateManager.getDefault ().getUpdateUnits (UpdateManager.TYPE.FEATURE);
-        List<UpdateUnit> modules = UpdateManager.getDefault ().getUpdateUnits (UpdateManager.TYPE.MODULE);
-        assertNotNull ("A feature found.", features);
-        assertEquals ("Only once feature there.", 1, features.size ());
-        UpdateUnit feature = features.get (0);
-        assertNotNull (feature + " is installed.", feature.getInstalled ());
-        assertFalse("Not all modules are enabled as such the feature shall be in " +
-                "disabled state:\n" + modules, feature.getInstalled().isEnabled());
+    public void testIncompleteFeature() throws OperationException {
+        List<UpdateUnit> features = UpdateManager.getDefault().getUpdateUnits(UpdateManager.TYPE.FEATURE);
+        List<UpdateUnit> modules = UpdateManager.getDefault().getUpdateUnits(UpdateManager.TYPE.MODULE);
+        assertNotNull("A feature found.", features);
+        assertEquals("Only once feature there.", 1, features.size());
+        UpdateUnit feature = features.get(0);
+        assertNotNull(feature + " is installed.", feature.getInstalled());
+        assertFalse("Not all modules are enabled as such the feature shall be in "
+                + "disabled state:\n" + modules, feature.getInstalled().isEnabled());
     }
 
     private static class MyProvider implements UpdateProvider {
 
-        public String getName () {
-            return FeatureNotUpToDateTest.class.getName ();
-        }
-
-        public String getDisplayName () {
-            return getName ();
-        }
-
-        public String getDescription () {
-            return getName ();
+        @Override
+        public String getName() {
+            return FeatureNotUpToDateTest.class.getName();
         }
 
         @Override
-        public Map<String, UpdateItem> getUpdateItems () throws IOException {
-            Map<String, UpdateItem> items = InstalledModuleProvider.getDefault().getUpdateItems ();
-            assertNotNull ("Installed modules must found.", items);
+        public String getDisplayName() {
+            return getName();
+        }
 
-            Map<String, UpdateItem> res = InstalledModuleProvider.getDefault().getUpdateItems ();
+        @Override
+        public String getDescription() {
+            return getName();
+        }
 
-            Set<String> deps = new HashSet<String> (items.size ());
-            for (String id : items.keySet ()) {
+        @Override
+        public Map<String, UpdateItem> getUpdateItems() throws IOException {
+            Map<String, UpdateItem> items = InstalledModuleProvider.getDefault().getUpdateItems();
+            assertNotNull("Installed modules must found.", items);
+
+            Map<String, UpdateItem> res = new HashMap<String, UpdateItem> (); //InstalledModuleProvider.getDefault().getUpdateItems();
+
+            Set<String> deps = new HashSet<String>(items.size());
+            for (String id : items.keySet()) {
                 String dep;
-                UpdateItem item = items.get (id);
-                assertNotNull ("Impl of " + item + " available", Trampoline.SPI.impl (item));
-                UpdateItemImpl itemImpl = Trampoline.SPI.impl (item);
-                assertTrue ("Impl of " + item + "is ModuleItem", itemImpl instanceof ModuleItem);
+                UpdateItem item = items.get(id);
+                assertNotNull("Impl of " + item + " available", Trampoline.SPI.impl(item));
+                UpdateItemImpl itemImpl = Trampoline.SPI.impl(item);
+                assertTrue("Impl of " + item + "is ModuleItem", itemImpl instanceof ModuleItem);
                 ModuleItem moduleItem = (ModuleItem) itemImpl;
-                dep = moduleItem.getModuleInfo ().getCodeNameBase () + " > " + moduleItem.getSpecificationVersion ();
-                deps.add (dep);
+                Module m = Utilities.toModule(moduleItem.getModuleInfo());
+                if (m != null && m.getProblems().isEmpty()) {
+                    dep = moduleItem.getModuleInfo().getCodeNameBase() + " > " + moduleItem.getSpecificationVersion();
+                    deps.add(dep);
+                }
             }
 
-            res.put ("testFeatueVsStandaloneModules",
-                    UpdateItem.createFeature (
-                        "testFeatueVsStandaloneModules",
-                        "1.0",
-                        deps,
-                        null,
-                        null,
-                        null));
+            res.put("testFeatureVsStandaloneModules",
+                    UpdateItem.createFeature(
+                    "testFeatureVsStandaloneModules",
+                    "1.0",
+                    deps,
+                    null,
+                    null,
+                    null));
             return res;
         }
 
-        public boolean refresh (boolean force) throws IOException {
+        @Override
+        public boolean refresh(boolean force) throws IOException {
             return true;
         }
 
+        @Override
         public CATEGORY getCategory() {
             return CATEGORY.COMMUNITY;
         }
