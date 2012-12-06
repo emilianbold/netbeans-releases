@@ -231,7 +231,7 @@ NetBeans._resizePage = function(width, height, callback) {
             }
             // #218974
             if (NetBeans_ViewPort.isMac && width < 400) {
-                NetBeans.openWarning('windowTooSmall', 240);
+                NetBeans.openWarning('windowTooSmall', 250);
             }
         });
     });
@@ -301,14 +301,14 @@ NetBeans._checkUnexpectedDetach = function(tabId) {
             warn = true;
         }
         if (warn) {
-            NetBeans.openWarning('disconnectedDebugger', 400);
+            NetBeans.openWarning('disconnectedDebugger', 410);
         }
     }, 100);
 };
 
 NetBeans.openWarning = function(ident, height) {
     NetBeans_Warnings.runIfEnabled(ident, function() {
-        NetBeans.openPopup('html/warning.html#' + ident, 540, height);
+        NetBeans.openPopup('html/warning.html#' + ident, 550, height);
     });
 };
 
