@@ -108,10 +108,8 @@ public abstract class BaseRunCustomizer extends JPanel implements ApplyChangesCu
                 String s = handle.getRawAuxiliaryProperty(MavenJavaEEConstants.HINT_DEPLOY_ON_SAVE, true);
                 if (s != null) {
                     return Boolean.valueOf(s);
-                } else {
-                    // null means no customization in nb-configuration.xml --> set default value which is true
-                    return Boolean.TRUE;
                 }
+                return null;
             }
 
             @Override
