@@ -66,8 +66,7 @@ import org.netbeans.modules.cnd.utils.CndUtils;
  * @author Vladimir Kvashin
  */
 public abstract class OffsetableBase implements CsmOffsetable, Disposable, CsmValidable {
-    // only one of fileRef/fileUID must be used (USE_UID_TO_CONTAINER)
-    private /*final*/ CsmFile fileRef; // can be set in onDispose or contstructor only
+    private /*final*/ CsmFile fileRef; // set in onDispose, used as marker of invalid object
     private final CsmUID<CsmFile> fileUID;
     
     private final int startPosition;
@@ -147,7 +146,7 @@ public abstract class OffsetableBase implements CsmOffsetable, Disposable, CsmVa
 
     @Override
     public boolean isValid() {
-        return CsmBaseUtilities.isValid(_getFile(false));
+        return CsmBaseUtilities.isValid(_getFile(false)) && this.fileRef == null;
     }
     
     @Override
