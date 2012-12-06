@@ -227,18 +227,16 @@ public class CCParser {
                                 continue; //next loop
                             case RPAREN:
                                 lparopened--;
-                                if(currAttrValue.length()>0 && lparopened<0){
+                                if(lparopened<0){
                                     state = INNN;
                                     attrs.add(new NNAttr(currAttrName, currAttrValue, currAttrStartOffset, currAttrQuated));
                                     ts.movePrevious();
                                     break;
                                 }
                             case COMMA:
-                                if(currAttrValue.length()>0){
                                     state = INNN;
                                     attrs.add(new NNAttr(currAttrName, currAttrValue, currAttrStartOffset, currAttrQuated));
                                     break;
-                                }
                             default:
                                 //ERROR => recover
                                 //set the start offset of the value to the offset of the equator + 1
