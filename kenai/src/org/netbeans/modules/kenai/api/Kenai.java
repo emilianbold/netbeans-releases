@@ -44,7 +44,6 @@ package org.netbeans.modules.kenai.api;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.net.MalformedURLException;
 import java.net.PasswordAuthentication;
@@ -58,7 +57,6 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import javax.swing.Icon;
-import javax.swing.ImageIcon;
 import org.codeviation.commons.patterns.Factory;
 import org.codeviation.commons.utils.Iterators;
 import org.jivesoftware.smack.PacketListener;
@@ -143,7 +141,9 @@ public final class Kenai implements Comparable<Kenai> {
     private java.beans.PropertyChangeSupport propertyChangeSupport = new java.beans.PropertyChangeSupport(this);
 
      static synchronized Kenai createInstance(String name, String urlString) throws MalformedURLException {
-         assert urlString.startsWith("https://") : "the only supported protocol is https";
+         if (!urlString.startsWith("https://")) {
+             throw new MalformedURLException("the only supported protocol is https: " + urlString);
+         }
          if (urlString.endsWith("/")) {
              urlString = urlString.substring(0, urlString.length() - 1);
          }

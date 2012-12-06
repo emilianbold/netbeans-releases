@@ -55,6 +55,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.TreeMap;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 import org.openide.util.Exceptions;
@@ -224,8 +226,16 @@ public final class KenaiManager {
                         line = line.trim();
                         if (line.length() != 0) {
                             if (getKenai(line) == null && !prefs.getBoolean(UPDATED + line, false)) {
-                                addInstance(Kenai.createInstance(null, line));
-                                prefs.putBoolean(UPDATED + line, true);
+                                try {
+                                    addInstance(Kenai.createInstance(null, line));
+                                    prefs.putBoolean(UPDATED + line, true);
+                                } catch (MalformedURLException ex) {
+                                    Logger.getLogger(KenaiManager.class.getName())
+                                            .log(Level.WARNING, "Unexpected line in {0}: {1}", //NOI18N
+                                            new Object[] { INSTANCES_URL, line });
+                                    Logger.getLogger(KenaiManager.class.getName())
+                                            .log(Level.INFO, null, ex);
+                                }
                             }
                         }
                     }
