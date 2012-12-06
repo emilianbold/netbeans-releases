@@ -920,6 +920,9 @@ public class ProvidedExtensionsTest extends NbTestCase {
         @Override
         public ProvidedExtensions.IOHandler getCopyHandler(final File from, final File to) {
             to.getClass();
+            if (from.isDirectory()) {
+                return null;
+            }
             implsCopyCalls++;
             return (!isImplsCopyRetVal() || to == null) ? null : new ProvidedExtensions.IOHandler(){
                 @Override
