@@ -55,6 +55,7 @@ import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu.Separator;
 import javax.swing.JRadioButtonMenuItem;
+import javax.swing.SwingUtilities;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectUtils;
@@ -261,10 +262,24 @@ public class SetMainProject extends ProjectAction implements PropertyChangeListe
     @Override public void propertyChange(PropertyChangeEvent e) {
         
         if ( OpenProjectList.PROPERTY_OPEN_PROJECTS.equals( e.getPropertyName() ) ) {
-            createSubMenu();
+            SwingUtilities.invokeLater(new Runnable() {
+                @Override
+                public void run() {
+                   createSubMenu();
+                }
+            });
+            
         }
-        else if ( OpenProjectList.PROPERTY_MAIN_PROJECT.equals( e.getPropertyName() ) && subMenu != null ) {
-            selectMainProject();
+        else if ( OpenProjectList.PROPERTY_MAIN_PROJECT.equals( e.getPropertyName() )) {
+            SwingUtilities.invokeLater(new Runnable() {
+                @Override
+                public void run() {
+                    if (subMenu != null) {
+                        selectMainProject();
+                    }
+                }
+            });            
+            
         }
         
         
