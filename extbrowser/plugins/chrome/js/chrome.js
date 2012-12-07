@@ -83,6 +83,8 @@ NetBeans.browserAttachDebugger = function(tabId) {
             chrome.tabs.get(tabId, function(tab) {
                 NetBeans.windowWithDebuggedTab = tab.windowId;
             });
+            // detect viewport
+            NetBeans.detectViewPort();
         }
     });
 };
@@ -166,6 +168,13 @@ NetBeans.getWindowInfo = function(callback) {
     chrome.windows.getLastFocused(callback);
 };
 NetBeans.detectViewPort = function(callback) {
+    if (NetBeans.debuggedTab === null) {
+        console.log('No debuggedTab so bypassing the detection');
+        if (callback) {
+            callback();
+        }
+        return;
+    }
     var script = 'NetBeans_ViewPort = {'
             + '    width: window.innerWidth,'
             + '    height: window.innerHeight,'
