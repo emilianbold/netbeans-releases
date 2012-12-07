@@ -82,6 +82,9 @@ public class FilesAndAttributesCheck extends NbTestCase {
         StringBuilder errors = new StringBuilder();
         while (allTemplates.hasMoreElements()) {
             FileObject fo = allTemplates.nextElement();
+            if (fo.getPath().contains("Templates/MIDP") && fo.getPath().endsWith("wsclient")) {
+                continue;
+            }
 
             int cnt = 0;
             Enumeration<String> allAttributes = fo.getAttributes();
