@@ -66,6 +66,9 @@ public class MainClassesCoSSkipper implements CompileOnSaveSkipper {
                 
                 //TODO is there a way to figure if there is a modified java file in a simpler way?
                 File dirFile = FileUtilities.convertStringToFile(config.getMavenProject().getBuild().getSourceDirectory());
+                if (dirFile == null || !dirFile.exists()) { //#223461
+                    return false;
+                }
                 DirectoryScanner ds = new DirectoryScanner();
                 ds.setBasedir(dirFile);
                 //includes/excludes
