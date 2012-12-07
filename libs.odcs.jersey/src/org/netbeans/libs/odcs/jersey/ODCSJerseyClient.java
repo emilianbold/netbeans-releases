@@ -7,9 +7,6 @@ import com.sun.jersey.api.client.config.DefaultClientConfig;
 import com.sun.jersey.api.client.filter.HTTPBasicAuthFilter;
 import com.sun.jersey.api.json.JSONConfiguration;
 import com.tasktop.c2c.server.profile.domain.activity.ProjectActivity;
-import com.tasktop.c2c.server.profile.domain.build.BuildDetails;
-import com.tasktop.c2c.server.profile.domain.build.HudsonStatus;
-import com.tasktop.c2c.server.profile.domain.build.JobDetails;
 import com.tasktop.c2c.server.profile.domain.project.Profile;
 import com.tasktop.c2c.server.profile.domain.project.Project;
 import com.tasktop.c2c.server.profile.domain.project.ProjectRelationship;
@@ -46,27 +43,12 @@ public class ODCSJerseyClient implements ODCSClient {
         this.pa = pa;
         this.client = getClient();
     }
-        
-    @Override
-    public BuildDetails getBuildDetails(String projectId, String jobName, int buildNumber) throws ODCSException {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
 
     @Override
     public Profile getCurrentProfile() throws ODCSException {
         WebResource root = client.resource(url + "api/profile");
         ProfileWrapper wrapper = root.accept(MediaType.APPLICATION_JSON).get(ProfileWrapper.class);
         return wrapper.profile;
-    }
-
-    @Override
-    public HudsonStatus getHudsonStatus(String projectId) throws ODCSException {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    @Override
-    public JobDetails getJobDetails(String projectId, String jobName) throws ODCSException {
-        throw new UnsupportedOperationException("Not supported yet.");
     }
 
     @Override

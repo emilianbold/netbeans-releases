@@ -42,9 +42,6 @@
 package org.netbeans.modules.odcs.client.api;
 
 import com.tasktop.c2c.server.profile.domain.activity.ProjectActivity;
-import com.tasktop.c2c.server.profile.domain.build.BuildDetails;
-import com.tasktop.c2c.server.profile.domain.build.HudsonStatus;
-import com.tasktop.c2c.server.profile.domain.build.JobDetails;
 import com.tasktop.c2c.server.profile.domain.project.Profile;
 import com.tasktop.c2c.server.profile.domain.project.Project;
 import com.tasktop.c2c.server.scm.domain.ScmRepository;
@@ -60,13 +57,7 @@ public interface ODCSClient {
 
     Project createProject (Project project) throws ODCSException;
 
-    BuildDetails getBuildDetails(String projectId, final String jobName, final int buildNumber) throws ODCSException;
-
     Profile getCurrentProfile() throws ODCSException;
-
-    HudsonStatus getHudsonStatus(String projectId) throws ODCSException;
-
-    JobDetails getJobDetails(String projectId, final String jobName) throws ODCSException;
 
     List<Project> getMyProjects() throws ODCSException;
 

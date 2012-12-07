@@ -464,7 +464,6 @@ public class ODCSBuilderAccessorTest {
                     throw unsupportedByMock();
                 }
 
-                @Override
                 public BuildDetails getBuildDetails(String projectId,
                         String jobName, int buildNumber) throws ODCSException {
                     BuildDetails bd = new BuildDetails();
@@ -490,7 +489,6 @@ public class ODCSBuilderAccessorTest {
                     return p;
                 }
 
-                @Override
                 public HudsonStatus getHudsonStatus(String projectId)
                         throws ODCSException {
                     HudsonStatus hs = new HudsonStatus();
@@ -501,7 +499,6 @@ public class ODCSBuilderAccessorTest {
                     return hs;
                 }
 
-                @Override
                 public JobDetails getJobDetails(String projectId,
                         String jobName) throws ODCSException {
                     JobDetails jd = new JobDetails();

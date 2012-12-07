@@ -49,10 +49,6 @@ import com.tasktop.c2c.server.common.service.domain.criteria.ColumnCriteria;
 import com.tasktop.c2c.server.common.service.domain.criteria.Criteria;
 import com.tasktop.c2c.server.profile.domain.activity.ProjectActivity;
 import com.tasktop.c2c.server.profile.domain.activity.TaskActivity;
-import com.tasktop.c2c.server.profile.domain.build.BuildDetails;
-import com.tasktop.c2c.server.profile.domain.build.HudsonStatus;
-import com.tasktop.c2c.server.profile.domain.build.JobDetails;
-import com.tasktop.c2c.server.profile.domain.build.JobSummary;
 import com.tasktop.c2c.server.profile.domain.project.Profile;
 import com.tasktop.c2c.server.profile.domain.project.Project;
 import com.tasktop.c2c.server.profile.domain.project.ProjectService;
@@ -229,36 +225,36 @@ public class ODCSClientTest extends NbTestCase  {
             }
         }
     }
-    
-    public void testGetHudsonStatus () throws Exception {
-        ODCSClient client = getClient();
-        Project project = client.getProjectById(MY_PROJECT);
-        HudsonStatus status = client.getHudsonStatus(project.getIdentifier());
-        assertNotNull(status);
-        assertTrue(status.getJobs().size() > 0);
-        for (JobSummary summary : status.getJobs()) {
-            JobDetails details = client.getJobDetails(MY_PROJECT, summary.getName());
-            assertNotNull(details);
-            assertEquals(summary.getName(), details.getName());
-            assertEquals(summary.getColor(), details.getColor());
-            assertEquals(summary.getUrl(), details.getUrl());
-            // XXX uncomment when running against a properly set project
-            // fails for some jobs on c2c. 
-//            assertNotNull(summary.getBuilds());
-//            assertTrue(details.getBuilds().size() > 0);
-        }
-    }
-    
-    public void testGetBuildDetails () throws Exception {
-        ODCSClient client = getClient();
-        Project project = client.getProjectById(MY_PROJECT);
-        HudsonStatus status = client.getHudsonStatus(project.getIdentifier());
-        assertNotNull(status);
-        assertTrue(status.getJobs().size() > 0);
-        JobDetails jobDetails = client.getJobDetails(MY_PROJECT, "Sample Maven Build");
-        BuildDetails details = client.getBuildDetails(MY_PROJECT, jobDetails.getName(), jobDetails.getBuilds().get(0).getNumber());
-        assertNotNull(details);
-    }
+//    
+//    public void testGetHudsonStatus () throws Exception {
+//        ODCSClient client = getClient();
+//        Project project = client.getProjectById(MY_PROJECT);
+//        HudsonStatus status = client.getHudsonStatus(project.getIdentifier());
+//        assertNotNull(status);
+//        assertTrue(status.getJobs().size() > 0);
+//        for (JobSummary summary : status.getJobs()) {
+//            JobDetails details = client.getJobDetails(MY_PROJECT, summary.getName());
+//            assertNotNull(details);
+//            assertEquals(summary.getName(), details.getName());
+//            assertEquals(summary.getColor(), details.getColor());
+//            assertEquals(summary.getUrl(), details.getUrl());
+//            // XXX uncomment when running against a properly set project
+//            // fails for some jobs on c2c. 
+////            assertNotNull(summary.getBuilds());
+////            assertTrue(details.getBuilds().size() > 0);
+//        }
+//    }
+//    
+//    public void testGetBuildDetails () throws Exception {
+//        ODCSClient client = getClient();
+//        Project project = client.getProjectById(MY_PROJECT);
+//        HudsonStatus status = client.getHudsonStatus(project.getIdentifier());
+//        assertNotNull(status);
+//        assertTrue(status.getJobs().size() > 0);
+//        JobDetails jobDetails = client.getJobDetails(MY_PROJECT, "Sample Maven Build");
+//        BuildDetails details = client.getBuildDetails(MY_PROJECT, jobDetails.getName(), jobDetails.getBuilds().get(0).getNumber());
+//        assertNotNull(details);
+//    }
 
     public void testGetScmRepositories () throws Exception {
         ODCSClient client = getClient();

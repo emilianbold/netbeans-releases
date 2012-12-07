@@ -81,7 +81,6 @@ public final class ODCSMockClient implements ODCSClient {
         loadData();        
     }
 
-    @Override
     public BuildDetails getBuildDetails(String projectId, String jobName, int buildNumber) throws ODCSException {
         List<JobSummary> jobs = getHudsonStatus(projectId).getJobs();
         for (JobSummary jobSummary : jobs) {
@@ -102,12 +101,10 @@ public final class ODCSMockClient implements ODCSClient {
         return currentProfile;
     }
 
-    @Override
     public HudsonStatus getHudsonStatus(String projectId) throws ODCSException {
         return hudsonStatuses.get(projectId);
     }
 
-    @Override
     public JobDetails getJobDetails(String projectId, String jobName) throws ODCSException {
         List<JobSummary> jobs = getHudsonStatus(projectId).getJobs();
         for (JobSummary jobSummary : jobs) {

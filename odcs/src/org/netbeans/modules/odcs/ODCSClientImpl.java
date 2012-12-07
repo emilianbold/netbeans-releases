@@ -232,7 +232,6 @@ public final class ODCSClientImpl implements ODCSClient {
         }, activityClient, PROFILE_SERVICE);
     }
 
-    @Override
     public HudsonStatus getHudsonStatus (String projectId) throws ODCSException {
         return run(new Callable<HudsonStatus> () {
             @Override
@@ -242,7 +241,6 @@ public final class ODCSClientImpl implements ODCSClient {
         }, hudsonClient, buildUrl(HUDSON_SERVICE, projectId));
     }
 
-    @Override
     public JobDetails getJobDetails (String projectId, final String jobName) throws ODCSException {
         return run(new Callable<JobDetails> () {
             @Override
@@ -252,7 +250,6 @@ public final class ODCSClientImpl implements ODCSClient {
         }, hudsonClient, buildUrl(HUDSON_SERVICE, projectId));
     }
 
-    @Override
     public BuildDetails getBuildDetails (String projectId, final String jobName, final int buildNumber) throws ODCSException {
         return run(new Callable<BuildDetails> () {
             @Override
