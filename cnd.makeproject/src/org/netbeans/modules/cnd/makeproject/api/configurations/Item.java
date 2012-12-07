@@ -120,6 +120,20 @@ public final class Item implements NativeFileItem, PropertyChangeListener {
         return new Item(fileSystem, path);
     }
 
+    public static Item createDetachedViewItem(FileSystem fileSystem, String path) {
+        CndUtils.assertNonUiThread();
+        Item out = new Item(fileSystem, path);
+        // This method is executed in not EDT and first call to getDataObject() is quite expensive operation.
+        // If we call this method here then result will be calculated and cached. So cached version will be
+        // used in createNodes and won't freeze EDT.
+        // See Bug 221962 - [73cat] 3.s - Blocked by cnd.makeproject.ui.LogicalViewChildren.createNodes().
+        DataObject dobj = out.getDataObject();
+        // detach resources to prevent memory leaks
+        out.onClose(); 
+        CndUtils.assertTrueInConsole(out.lastDataObject == dobj, "data object should stay the same ", out.lastDataObject);
+        return out;
+    }
+
     // XXX:fullRemote deprecate and remove!
     private Item(FileSystem fileSystem, String path) {
         CndUtils.assertNotNull(path, "Path should not be null"); //NOI18N

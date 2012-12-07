@@ -436,9 +436,12 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<Token
                         case SCOPE_OPEN:
                             if (isSeparatorOrOperator(tokenID)) {
                                 switch (tokenID) {
-                                    case LT:
                                     case LPAREN:
                                         break;
+                                    case LT:
+                                        if(supportTemplates) {
+                                            break;
+                                        }
                                     default:
                                         popExp();
                                         top2.addParameter(top);

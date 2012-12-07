@@ -968,6 +968,11 @@ public class BasicHyperlinkTestCase extends HyperlinkBaseTestCase {
         // Bug 223298 - Wrong recognition of function
         performTest("bug223298.cpp", 10, 10, "bug223298.cpp", 6, 1);
     }    
+
+    public void testBug223298_2() throws Exception {
+        // Bug 223298 - Wrong recognition of function
+        performTest("bug223298.c", 10, 10, "bug223298.c", 6, 1);
+    }    
     
     public static class Failed extends HyperlinkBaseTestCase {
 
