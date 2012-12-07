@@ -174,8 +174,8 @@ public class CssBracketCompleter implements KeystrokeHandler {
                             TokenSequence<?> htmlts = embedded.get(embedded.size() - 2);
                             if (htmlts.languagePath().equals(parentPath)) {
                                 //it relly looks like our parent ts
-                                htmlts.move(dot);
-                                if (htmlts.moveNext() || htmlts.movePrevious()) {
+                                int ediff = htmlts.move(dot);
+                                if (ediff == 0 && htmlts.movePrevious() || htmlts.moveNext()) {
                                     TokenId id = htmlts.token().id();
                                     //XXX !!!! DEPENDENCY to HtmlTokenId !!!!
                                     if (id.name().equals("VALUE_CSS")) { //NOI18N
