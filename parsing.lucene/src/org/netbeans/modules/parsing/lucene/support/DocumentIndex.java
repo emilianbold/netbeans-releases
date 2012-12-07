@@ -146,4 +146,32 @@ public interface DocumentIndex {
      */
     public @NonNull Collection<? extends String> getDirtyKeys();
 
+    /**
+     * Transactional document index.
+     * @since 2.19
+     */
+    public interface  Transactional extends DocumentIndex {
+
+        /**
+         * Stores new data and/or deletes old one, just as {@link #store}, but does not
+         * expose the written data to readers. You must call {@link #commit} to finish the
+         * transaction and make the data visible.
+         * @throws IOException in case of IO problem
+         * @see #store
+         */
+        void txStore() throws IOException;
+
+        /**
+         * Commits the data written by txStore; no op, if a transaction is not opened
+         * @throws IOException in case of I/O error during commit
+         */
+        void commit() throws IOException;
+
+        /**
+         * Rolls back changes.
+         * @throws IOException in case of I/O error during rollback
+         */
+        void rollback() throws IOException;
+    }
+
 }

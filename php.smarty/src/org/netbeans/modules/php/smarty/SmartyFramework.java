@@ -96,6 +96,11 @@ public class SmartyFramework {
         return OPTIONS_SUB_PATH;
     }
 
+    /**
+     * Gets the close delimiter for the given file. In relation to the owning project and general settings.
+     * @param fileObject any FileObject, never {@code null}
+     * @return close delimiter of the project which is owning that file if any or global close delimiter from Options
+     */
     public static String getCloseDelimiter(FileObject fileObject) {
         PhpModule phpModule = PhpModule.forFileObject(fileObject);
         if (phpModule != null && !SmartyPhpModuleCustomizerExtender.getCustomCloseDelimiter(phpModule).isEmpty()) {
@@ -105,6 +110,11 @@ public class SmartyFramework {
         }
     }
 
+    /**
+     * Gets the open delimiter for the given file. In relation to the owning project and general settings.
+     * @param fileObject any FileObject, never {@code null}
+     * @return open delimiter of the project which is owning that file if any or global open delimiter from Options
+     */
     public static String getOpenDelimiter(FileObject fileObject) {
         PhpModule phpModule = PhpModule.forFileObject(fileObject);
         if (phpModule != null && !SmartyPhpModuleCustomizerExtender.getCustomOpenDelimiter(phpModule).isEmpty()) {
@@ -119,6 +129,14 @@ public class SmartyFramework {
             depthOfScanningForTpl = SmartyOptions.getInstance().getScanningDepth();
         }
         return depthOfScanningForTpl;
+    }
+
+    public static String getDelimiterDefaultOpen() {
+        return delimiterDefaultOpen;
+    }
+
+    public static String getDelimiterDefaultClose() {
+        return delimiterDefaultClose;
     }
 
     public static void setDelimiterDefaultClose(String delimiterDefaultClose) {

@@ -93,6 +93,7 @@ public class RelocatablePathMapperImpl implements RelocatablePathMapper {
     private final boolean FORBID_AUTO_PATH_MAPPER = Boolean.getBoolean("makeproject.pathMapper.forbid_auto"); // NOI18N
     
     public RelocatablePathMapperImpl(ProjectProxy project) {
+        boolean addDefaultMapping = true;
         if(project != null) {
             Project makeProject = project.getProject();
             List<String> list = null;
@@ -141,7 +142,11 @@ public class RelocatablePathMapperImpl implements RelocatablePathMapper {
                         LOG.log(Level.FINE, "Init path map {0} -> {1}", new Object[]{list.get(i), list.get(i+1)}); // NOI18N
                     }
                 }
+                addDefaultMapping = false;
             }
+        }
+        if (addDefaultMapping) {
+            mapper.add(new MapperEntry("/usr", "/usr"));// NOI18N
         }
     }
 

@@ -1,4 +1,4 @@
-<?xml version="1.1" encoding="UTF-8" ?>
+<?xml version="1.0" encoding="UTF-8" ?>
 
 <Form version="1.4" maxVersion="1.4" type="org.netbeans.modules.form.forminfo.JPanelFormInfo">
   <AuxValues>
@@ -130,7 +130,7 @@
     <Component class="javax.swing.JCheckBox" name="detailView">
       <Properties>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/autoupdate/ui/Bundle.properties" key="UnitTab.detailView.text" replaceFormat="org.openide.util.NbBundle.getBundle({sourceFileName}.class).getString(&quot;{key}&quot;)"/>
+          <ResourceString bundle="org/netbeans/modules/autoupdate/ui/Bundle.properties" key="UnitTab.detailView.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </Properties>
       <Events>
@@ -138,6 +138,7 @@
       </Events>
       <AuxValues>
         <AuxValue name="JavaCodeGenerator_InitCodePre" type="java.lang.String" value="detailViewInit();"/>
+        <AuxValue name="JavaCodeGenerator_SerializeTo" type="java.lang.String" value="UnitTab_detailView"/>
       </AuxValues>
     </Component>
     <Component class="javax.swing.JButton" name="bTabAction1">

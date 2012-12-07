@@ -173,6 +173,8 @@ public class ElementUtils {
         return (String) root.getProperty("namespace");
     }
 
+    
+    
     /**
      * Returns most leaf open tag which semantic range fits to the given offset.
      */
@@ -181,16 +183,21 @@ public class ElementUtils {
             if (isVirtualNode(child)) {
                 //we need to recurse into every virtual branch blindly hoping there might by some
                 //real nodes fulfilling our constrains
-                Node n = findBySemanticRange(child, offset, forward);
-                if (n != null) {
-                    return n;
+                Node sub = findBySemanticRange(child, offset, forward);
+                if (!isVirtualNode(sub)) {
+                    return sub;
                 }
             }
             if (matchesNodeRange(child, offset, forward, false)) {
-                return findBySemanticRange(child, offset, forward);
+                    Node sub = findBySemanticRange(child, offset, forward);
+                    if(isVirtualNode(sub)) {
+                        return child;
+                    } else {
+                        return sub;
+                    }
+                }
             }
-        }
-        return isVirtualNode(node) ? null : node;
+        return node;
     }
     
     /**

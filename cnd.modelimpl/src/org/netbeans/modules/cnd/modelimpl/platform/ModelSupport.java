@@ -58,6 +58,7 @@ import javax.swing.event.ChangeListener;
 import javax.swing.text.Document;
 
 import org.netbeans.api.project.*;
+import org.netbeans.modules.cnd.api.model.CsmFile;
 
 import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.modules.cnd.api.model.CsmModelAccessor;
@@ -69,6 +70,7 @@ import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.modelimpl.memory.LowMemoryEvent;
 import org.netbeans.modules.cnd.modelimpl.spi.LowMemoryAlerter;
 import org.netbeans.modules.cnd.spi.utils.CndFileSystemProvider;
+import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.FSPath;
 import org.netbeans.modules.cnd.utils.NamedRunnable;
 import org.netbeans.modules.cnd.utils.SuspendableFileChangeListener;
@@ -520,24 +522,31 @@ public class ModelSupport implements PropertyChangeListener {
                 set = findCanonicalSet(curObj);
             }
 
-            if (set != null && !set.isEmpty()) {
-
-                EditorCookie editor = curObj.getLookup().lookup(EditorCookie.class);
-                Document doc = editor != null ? editor.getDocument() : null;
-                if (doc.getProperty("cnd.refactoring.modification.event") != Boolean.TRUE) {
-                    FileObject primaryFile = curObj.getPrimaryFile();
-                    long lastModified = primaryFile.lastModified().getTime();
-                    final FileBufferDoc buffer = new FileBufferDoc(primaryFile, doc);
-
-                    for (NativeFileItem nativeFile : set.getItems()) {
-                        ProjectBase csmProject = (ProjectBase) model.getProject(nativeFile.getNativeProject());
-                        if (csmProject != null) { // this could be null when code assistance is turned off for project
-                            addBufNP(curObj, new BufAndProj(buffer, csmProject, nativeFile, lastModified));
-                            csmProject.onFileEditStart(buffer, nativeFile);
-                        }
+            if (set != null) {
+                if (set.isEmpty()) {
+                    // we have native file, but with empty set
+                    if (CndUtils.isDebugMode() || CndUtils.isUnitTestMode()) {
+                        CsmFile csmFile = CsmModelAccessor.getModel().findFile(FSPath.toFSPath(curObj.getPrimaryFile()), false, false);
+                        CndUtils.assertTrueInConsole(csmFile == null, "WARNING: can not switch buffer due to empty NativeFileItemSet for being edited ", csmFile);
                     }
                 } else {
-//                    System.err.println("skip unnecessary switch of buffers");
+                    EditorCookie editor = curObj.getLookup().lookup(EditorCookie.class);
+                    Document doc = editor != null ? editor.getDocument() : null;
+                    if (doc != null && doc.getProperty("cnd.refactoring.modification.event") != Boolean.TRUE) {
+                        FileObject primaryFile = curObj.getPrimaryFile();
+                        long lastModified = primaryFile.lastModified().getTime();
+                        final FileBufferDoc buffer = new FileBufferDoc(primaryFile, doc);
+
+                        for (NativeFileItem nativeFile : set.getItems()) {
+                            ProjectBase csmProject = (ProjectBase) model.getProject(nativeFile.getNativeProject());
+                            if (csmProject != null) { // this could be null when code assistance is turned off for project
+                                addBufNP(curObj, new BufAndProj(buffer, csmProject, nativeFile, lastModified));
+                                csmProject.onFileEditStart(buffer, nativeFile);
+                            }
+                        }
+                    } else {
+    //                    System.err.println("skip unnecessary switch of buffers");
+                    }
                 }
             }
         }

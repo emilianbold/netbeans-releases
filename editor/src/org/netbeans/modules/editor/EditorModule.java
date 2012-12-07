@@ -50,11 +50,9 @@ import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
@@ -69,8 +67,6 @@ import javax.swing.text.html.HTMLEditorKit;
 import javax.swing.text.rtf.RTFEditorKit;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.mimelookup.MimePath;
-import org.netbeans.api.search.SearchHistory;
-import org.netbeans.api.search.SearchPattern;
 import org.netbeans.editor.AnnotationType;
 import org.netbeans.editor.AnnotationTypes;
 import org.netbeans.editor.BaseDocument;
@@ -81,7 +77,6 @@ import org.netbeans.modules.editor.indent.api.Reformat;
 import org.netbeans.modules.editor.lib.EditorPackageAccessor;
 import org.netbeans.modules.editor.lib2.actions.EditorRegistryWatcher;
 import org.netbeans.modules.editor.lib2.document.ReadWriteUtils;
-import org.netbeans.modules.editor.lib2.search.EditorFindSupport;
 import org.netbeans.modules.editor.options.AnnotationTypesFolder;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
@@ -113,20 +108,6 @@ public class EditorModule extends ModuleInstall {
     
     private static final boolean debug = Boolean.getBoolean("netbeans.debug.editor.kits");
 
-    private static class SearchHistoryUtility {
-        public static List<EditorFindSupport.SPW> convertFromSearchHistoryToEditorFindSupport(List<SearchPattern> searchPatterns) {
-            List<EditorFindSupport.SPW> history = new ArrayList<EditorFindSupport.SPW>();
-            for (int i = 0; i < searchPatterns.size(); i++) {
-                SearchPattern sptr = searchPatterns.get(i);
-                EditorFindSupport.SPW spwrap = new EditorFindSupport.SPW(sptr.getSearchExpression(),
-                        sptr.isWholeWords(), sptr.isMatchCase(), sptr.isRegExp());
-                history.add(spwrap);
-            }
-            return history;
-        }
-    }
-    private PropertyChangeListener searchSelectedPatternListener;
-    private PropertyChangeListener editorHistoryChangeListener;
     private PropertyChangeListener topComponentRegistryListener;
 
     /** Module installed again. */
@@ -228,43 +209,7 @@ public class EditorModule extends ModuleInstall {
 
         // ------------------------------------------------------------
         
-         searchSelectedPatternListener = new PropertyChangeListener(){
-             
-            @Override
-             public void propertyChange(PropertyChangeEvent evt){
-                 if (evt == null)
-                     return;             
-                 if (SearchHistory.ADD_TO_HISTORY.equals(evt.getPropertyName())){
-                     EditorFindSupport.getInstance().setHistory(
-                             SearchHistoryUtility.convertFromSearchHistoryToEditorFindSupport(SearchHistory.getDefault().getSearchPatterns()));
-                 }
-             }
-         };
 
-        editorHistoryChangeListener = new PropertyChangeListener() {
-
-            @Override
-            public void propertyChange(PropertyChangeEvent evt) {
-                if (evt == null) {
-                    return;
-                }
-                if (EditorFindSupport.FIND_HISTORY_PROP.equals(evt.getPropertyName())) {
-                    EditorFindSupport.SPW spw = (EditorFindSupport.SPW) evt.getNewValue();
-                    if (spw == null || spw.getSearchExpression() == null || "".equals(spw.getSearchExpression())) { //NOI18N
-                        return;
-                    }
-                    SearchPattern sp = SearchPattern.create(spw.getSearchExpression(),
-                            spw.isWholeWords(), spw.isMatchCase(), spw.isRegExp());
-                    SearchHistory.getDefault().add(sp);
-                } else if (EditorFindSupport.FIND_HISTORY_CHANGED_PROP.equals(evt.getPropertyName())) {
-                    EditorFindSupport.getInstance().setHistory(
-                             SearchHistoryUtility.convertFromSearchHistoryToEditorFindSupport(SearchHistory.getDefault().getSearchPatterns()));
-                }                       
-            }
-        };
-
-        SearchHistory.getDefault().addPropertyChangeListener(searchSelectedPatternListener);
-        EditorFindSupport.getInstance().addPropertyChangeListener(editorHistoryChangeListener);
         if (topComponentRegistryListener == null) {
             topComponentRegistryListener = new PropertyChangeListener() {
                 @Override

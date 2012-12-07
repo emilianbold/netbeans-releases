@@ -77,4 +77,10 @@ public class FixUnresolvedInclude extends NamedOption {
     public Object getDefaultValue() {
         return true;
     }
+
+    @Override
+    public boolean isVisible() {
+        return Boolean.getBoolean(NamedOption.EXTRA_OPTIONS_FLAG);
+    }
+        
 }

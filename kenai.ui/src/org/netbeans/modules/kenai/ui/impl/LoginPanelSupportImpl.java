@@ -64,6 +64,7 @@ import static org.netbeans.modules.kenai.ui.impl.Bundle.*;
 public class LoginPanelSupportImpl implements LoginPanelSupport {
     private final Kenai kenai;
     private LoginPanelDetails component;
+    private RequestProcessor rp;
 
     public LoginPanelSupportImpl (Kenai kenai) {
         this.kenai = kenai;
@@ -74,8 +75,7 @@ public class LoginPanelSupportImpl implements LoginPanelSupport {
     public void startLogin (final LoginPanelCallback loginPanelCallback) {
         final LoginPanelDetails loginPanel = getLoginPanelComponent();
         loginPanel.setChildrenEnabled(false);
-        RequestProcessor.getDefault().post(new Runnable() {
-
+        getRequestProcessor().post(new Runnable() {
             @Override
             public void run() {
                 try {
@@ -129,5 +129,12 @@ public class LoginPanelSupportImpl implements LoginPanelSupport {
         }
         return component;
     }
+    
+    private synchronized RequestProcessor getRequestProcessor() {
+        if(rp == null) {
+            rp = new RequestProcessor("Kenai Login"); // NOI18N
+        }
+        return rp;
+    }    
     
 }

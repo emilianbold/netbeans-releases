@@ -98,6 +98,9 @@ public class OracleWizardComponent extends javax.swing.JPanel implements Documen
         serviceInstanceTextField.getDocument().addDocumentListener(this);
         sdkTextField.getDocument().addDocumentListener(this);
         ((JTextField)jDataCenterComboBox.getEditor().getEditorComponent()).getDocument().addDocumentListener(this);
+
+        serviceInstanceTextField.setText("java"); // NOI18N
+        dbServiceNameTextField.setText("database"); // NOI18N
     }
 
     void disableModifications(boolean disable) {

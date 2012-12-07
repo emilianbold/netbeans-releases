@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -23,7 +23,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -34,42 +34,36 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
+ *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.test.refactoring.actions;
 
 import java.awt.event.KeyEvent;
-import org.netbeans.jellytools.EditorOperator;
-import org.netbeans.jemmy.EventTool;
-import org.netbeans.jemmy.operators.JPopupMenuOperator;
+import javax.swing.KeyStroke;
+import org.netbeans.jellytools.Bundle;
+import org.netbeans.jellytools.actions.ActionNoBlock;
 
 /**
  *
- * @author Jiri Prox Jiri.Prox@Sun.COM
+ * @author Jiri.Prox@oracle.com, Marian.Mirilovic@oracle.com
  */
-public class FindUsagesAction implements TestAction {
-            
-    public static final String popupPath = "Find Usages";
+public class FindUsagesAction extends ActionNoBlock {
 
+    private static final String findUsagesPopup = Bundle.getStringTrimmed("org.netbeans.modules.refactoring.java.ui.Bundle", "LBL_WhereUsedAction"); // Find Usages
+    private static final String findUsagesMenu = Bundle.getStringTrimmed("org.netbeans.core.ui.resources.Bundle", "Menu/Edit") // Edit
+            + "|"
+            + findUsagesPopup;
+    private static final KeyStroke keystroke = System.getProperty("os.name").toLowerCase().indexOf("mac") > -1 ?
+            KeyStroke.getKeyStroke(KeyEvent.VK_F7, KeyEvent.META_MASK) :
+            KeyStroke.getKeyStroke(KeyEvent.VK_F7, KeyEvent.ALT_MASK);
+
+    /**
+     * creates new FindUsagesAction instance
+     */
     public FindUsagesAction() {
-        
+        super(findUsagesMenu, findUsagesPopup, null, keystroke);
     }
-    
-    public void perform(EditorOperator editor) {
-        editor.clickForPopup();
-        new EventTool().waitNoEvent(2000);
-        JPopupMenuOperator jpmo = new JPopupMenuOperator();
-        new EventTool().waitNoEvent(2000);
-        jpmo.pushMenuNoBlock(new String[]{popupPath});        
-    }
-
-    @Override
-    public void perform(Object parameter) {
-        perform((EditorOperator)parameter);
-    }
-    
 }

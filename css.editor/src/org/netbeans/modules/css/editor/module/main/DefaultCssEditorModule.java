@@ -79,6 +79,7 @@ import org.netbeans.modules.css.lib.api.NodeVisitor;
 import org.netbeans.modules.css.lib.api.properties.PropertyDefinition;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.web.common.api.LexerUtils;
+import org.netbeans.modules.web.common.api.Lines;
 import org.netbeans.modules.web.common.api.Pair;
 import org.netbeans.modules.web.common.api.WebUtils;
 import org.openide.filesystems.FileObject;
@@ -356,47 +357,54 @@ public class DefaultCssEditorModule extends CssEditorModule {
     @Override
     public <T extends Map<String, List<OffsetRange>>> NodeVisitor<T> getFoldsNodeVisitor(FeatureContext context, T result) {
         final Snapshot snapshot = context.getSnapshot();
-
+        final Lines lines = new Lines(snapshot.getText());
+        
         return new NodeVisitor<T>(result) {
 
             @Override
             public boolean visit(Node node) {
                 int from = -1, to = -1;
-                if (node.type() == NodeType.rule) {
-                    //find the ruleSet curly brackets and create the fold between them inclusive
-                    Node[] tokenNodes = NodeUtil.getChildrenByType(node, NodeType.token);
-                    for (Node leafNode : tokenNodes) {
-                        if (CharSequenceUtilities.equals("{", leafNode.image())) {
-                            from = leafNode.from();
-                        } else if (CharSequenceUtilities.equals("}", leafNode.image())) {
-                            to = leafNode.to();
-                        }
-                    }
-
-                    if (from != -1 && to != -1) {
-                        int doc_from = snapshot.getOriginalOffset(from);
-                        int doc_to = snapshot.getOriginalOffset(to);
-
-                        try {
-                            //check the boundaries a bit
-                            if (doc_from >= 0 && doc_to >= 0) {
-                                //do not creare one line folds
-                                if (LexerUtils.getLineOffset(snapshot.getText(), from)
-                                        < LexerUtils.getLineOffset(snapshot.getText(), to)) {
-
-                                    List<OffsetRange> codeblocks = getResult().get("codeblocks"); //NOI18N
-                                    if (codeblocks == null) {
-                                        codeblocks = new ArrayList<OffsetRange>();
-                                        getResult().put("codeblocks", codeblocks); //NOI18N
-                                    }
-
-                                    codeblocks.add(new OffsetRange(doc_from, doc_to));
-                                }
+                switch(node.type()) {
+                    case rule:
+                    case media:
+                    case page:
+                    case webkitKeyframes:
+                    case generic_at_rule:
+                    case vendorAtRule:
+                        //find the ruleSet curly brackets and create the fold between them inclusive
+                        Node[] tokenNodes = NodeUtil.getChildrenByType(node, NodeType.token);
+                        for (Node leafNode : tokenNodes) {
+                            if (CharSequenceUtilities.equals("{", leafNode.image())) {
+                                from = leafNode.from();
+                            } else if (CharSequenceUtilities.equals("}", leafNode.image())) {
+                                to = leafNode.to();
                             }
-                        } catch (BadLocationException ex) {
-                            //ignore
                         }
-                    }
+
+                        if (from != -1 && to != -1) {
+                            int doc_from = snapshot.getOriginalOffset(from);
+                            int doc_to = snapshot.getOriginalOffset(to);
+
+                            try {
+                                //check the boundaries a bit
+                                if (doc_from >= 0 && doc_to >= 0) {
+                                    //do not creare one line folds
+                                    if (lines.getLineIndex(from) < lines.getLineIndex(to)) {
+
+                                        List<OffsetRange> codeblocks = getResult().get("codeblocks"); //NOI18N
+                                        if (codeblocks == null) {
+                                            codeblocks = new ArrayList<OffsetRange>();
+                                            getResult().put("codeblocks", codeblocks); //NOI18N
+                                        }
+
+                                        codeblocks.add(new OffsetRange(doc_from, doc_to));
+                                    }
+                                }
+                            } catch (BadLocationException ex) {
+                                //ignore
+                            }
+                        }
+
                 }
                 return false;
             }

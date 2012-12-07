@@ -1136,6 +1136,18 @@ public class OccurrencesFinderImplTest extends PHPNavTestBase {
         checkOccurrences(getTestPath(), "class AbstractController implements Dispatch^able2 {", true);
     }
 
+    public void testIssue223076_01() throws Exception {
+        checkOccurrences(getTestPath(), "func^tion functionName($param) {", true);
+    }
+
+    public void testIssue223076_02() throws Exception {
+        checkOccurrences(getTestPath(), "retur^n 5;", true);
+    }
+
+    public void testIssue223076_03() throws Exception {
+        checkOccurrences(getTestPath(), "retur^n 10;", true);
+    }
+
     @Override
     protected FileObject[] createSourceClassPathsForTest() {
         return new FileObject[]{FileUtil.toFileObject(new File(getDataDir(), getTestFolderPath()))};

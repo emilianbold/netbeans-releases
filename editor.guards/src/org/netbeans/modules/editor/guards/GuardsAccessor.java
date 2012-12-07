@@ -74,4 +74,6 @@ public abstract class GuardsAccessor {
     
     public abstract GuardedSectionImpl getImpl(GuardedSection gs);
     
+    public abstract GuardedSection clone(GuardedSection gs, int offset);
+    
 }

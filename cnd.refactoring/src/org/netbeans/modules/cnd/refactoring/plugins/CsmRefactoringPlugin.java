@@ -54,9 +54,9 @@ import org.netbeans.modules.cnd.api.model.services.CsmSelect;
 import org.netbeans.modules.cnd.api.model.util.CsmBaseUtilities;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.model.xref.CsmIncludeHierarchyResolver;
+import org.netbeans.modules.cnd.api.model.xref.CsmReferenceRepository;
 import org.netbeans.modules.cnd.api.model.xref.CsmReferenceSupport;
 import org.netbeans.modules.cnd.debug.CndTraceFlags;
-import org.netbeans.modules.cnd.indexing.api.CndTextIndex;
 import org.netbeans.modules.cnd.refactoring.support.CsmRefactoringUtils;
 import org.netbeans.modules.cnd.refactoring.elements.DiffElement;
 import org.netbeans.modules.cnd.refactoring.support.ModificationResult;
@@ -66,7 +66,6 @@ import org.netbeans.modules.refactoring.spi.*;
 import org.netbeans.modules.refactoring.api.*;
 import org.netbeans.modules.refactoring.spi.RefactoringCommit;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileSystem;
 import org.openide.util.NbBundle;
 
 /**
@@ -248,27 +247,9 @@ public abstract class CsmRefactoringPlugin extends ProgressProviderAdapter imple
                         name = ((CsmGotoStatement)referencedObject).getLabel();
                     }
                 }
-                Map<FileSystem, Collection<CsmProject>> relevantFilesystems = new HashMap<FileSystem, Collection<CsmProject>>();
-                for (CsmProject csmProject : relevantPrjs) {
-                    final FileSystem fileSystem = csmProject.getFileSystem();
-                    Collection<CsmProject> projects = relevantFilesystems.get(fileSystem);
-                    if (projects == null) {
-                        projects = new HashSet<CsmProject>();
-                        relevantFilesystems.put(fileSystem, projects);
-                    }
-                    projects.add(csmProject);
-                }
-                for (Map.Entry<FileSystem, Collection<CsmProject>> entry : relevantFilesystems.entrySet()) {
-                    Collection<FSPath> files = CndTextIndex.query(entry.getKey(), name.toString());
-                    for (FSPath fSPath : files) {
-                        for (CsmProject csmProject : entry.getValue()) {
-                            CsmFile file = csmProject.findFile(fSPath, false, false);
-                            if (file != null) {
-                                relevantFiles.add(file);
-                            }
-                        }
-                    }
-                }
+                
+                final CsmReferenceRepository xRef = CsmReferenceRepository.getDefault();
+                relevantFiles.addAll(xRef.findRelevantFiles(relevantPrjs, name));
             } else {
                 for (CsmProject csmProject : relevantPrjs) {
                     relevantFiles.addAll(csmProject.getAllFiles());

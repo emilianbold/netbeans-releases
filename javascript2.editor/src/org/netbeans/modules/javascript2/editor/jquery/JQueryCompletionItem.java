@@ -151,11 +151,7 @@ public abstract class JQueryCompletionItem implements CompletionProposal {
 
         @Override
         public int getAnchorOffset() {
-            if(surround.isEmpty()) {
-                return super.getAnchorOffset() - surround.length();
-            } else {
-                return super.getAnchorOffset();
-            }
+            return super.getAnchorOffset();
         }
 
         

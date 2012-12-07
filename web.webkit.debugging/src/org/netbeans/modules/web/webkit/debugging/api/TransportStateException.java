@@ -47,7 +47,7 @@ package org.netbeans.modules.web.webkit.debugging.api;
  *
  * @author Jan Stola
  */
-public class TransportStateException extends IllegalStateException {
+public class TransportStateException extends Exception {
 
     /**
      * Creates a new {@code TransportStateException} without a message.

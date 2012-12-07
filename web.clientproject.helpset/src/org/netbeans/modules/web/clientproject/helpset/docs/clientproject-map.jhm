@@ -37,11 +37,8 @@
     <!-- CSH for Test Results window -->
     <mapID target="org.netbeans.modules.gsf.testrunner.api.ResultWindow" url="csh/csh-html5-prop-run.html"/>
     
-    <!-- CSH for Web Browser window -->
-    <mapID target="org.netbeans.core.HtmlBrowserComponent" url="csh/csh-html5-webkit.html"/>
-    
-    <!-- TODO - CSH for Customize Window Settings dialog (opened from web browser options menu) -->
-    <mapID target="" url="csh/csh-html5-webkit.html"/>
+    <!-- CSH for Customize Window Settings dialog (opened from web browser window options menu) -->
+    <mapID target="org.netbeans.modules.web.browser.ui.ResizeOptionsCustomizer" url="csh/csh_customize-browsers.html"/>
     
     <!-- CSH for JavaScript Breakpoints dialogs -->
     <mapID target="NetbeansDebuggerLineBreakpointJavaScript" url="csh/js_newbreakpoint-line.html"/>

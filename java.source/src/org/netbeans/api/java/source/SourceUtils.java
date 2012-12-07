@@ -390,9 +390,8 @@ public class SourceUtils {
         if ("text/x-java".equals(topLevelLanguageMIMEType)){ //NOI18N
             final Set<Element> elementsToImport = Collections.singleton(toImport);
             if (info instanceof WorkingCopy) {
-                CompilationUnitTree nue = (CompilationUnitTree) ((WorkingCopy)info).getChangeSet().get(cut);
-                cut = nue != null ? nue : cut;
-                ((WorkingCopy)info).rewrite(info.getCompilationUnit(), GeneratorUtilities.get((WorkingCopy)info).addImports(cut, elementsToImport));
+                CompilationUnitTree nue = (CompilationUnitTree) ((WorkingCopy)info).resolveRewriteTarget(cut);
+                ((WorkingCopy)info).rewrite(info.getCompilationUnit(), GeneratorUtilities.get((WorkingCopy)info).addImports(nue, elementsToImport));
             } else {
                 SwingUtilities.invokeLater(new Runnable() {
                     public void run() {

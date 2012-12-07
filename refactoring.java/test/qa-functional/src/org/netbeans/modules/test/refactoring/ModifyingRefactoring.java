@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -48,79 +48,71 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import org.netbeans.jemmy.EventTool;
-import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.modules.test.refactoring.operators.RefactoringResultOperator;
 import org.openide.filesystems.FileObject;
 
 /**
  *
- * @author Jiri Prox Jiri.Prox@SUN.Com
+ * @author Jiri.Prox@oracle.com, Marian.Mirilovic@oracle.com
  */
 public class ModifyingRefactoring extends RefactoringTestCase {
-
 
     public ModifyingRefactoring(String name) {
         super(name);
     }
 
-    @Override
-    public String getProjectName() {
-        return "RefactoringTest";
-
-    }
-
     /**
      * Gets list of files in give directory
+     *
      * @param rootDir Root directory
      * @return List of filenames in given directory, including subdirectories
      */
-    public List<String> getFiles(File rootDir) {
+        public List<String> getFiles(File rootDir) {
         List<String> res = new LinkedList<String>();
         getFiles(rootDir, res);
         return res;
     }
 
-    private void getFiles(File dir,List<String> res) {
+    private void getFiles(File dir, List<String> res) {
         File[] listFiles = dir.listFiles();
         for (File file : listFiles) {
-            if(file.getName().startsWith(".")) {
+            if (file.getName().startsWith(".")) {
                 continue;
             } //ignoring hidden files
-            if(file.isDirectory()) {
-                getFiles(file,res);
+            if (file.isDirectory()) {
+                getFiles(file, res);
             }
             res.add(file.getAbsolutePath());
-        }        
+        }
     }
 
     public void refModifiedFiles(Set<FileObject> modifiedFiles) {
         List<FileObject> l = new LinkedList<FileObject>(modifiedFiles);
         Collections.sort(l, new Comparator<FileObject>() {
-
             @Override
             public int compare(FileObject o1, FileObject o2) {
                 return o1.getName().compareTo(o2.getName());
             }
         });
         for (FileObject fileObject : l) {
-                ref(fileObject);
+            ref(fileObject);
         }
-       
+
     }
 
     public void refFileChange(List<String> origFiles, List<String> newFiles) {
         Collections.sort(newFiles);
-        Collections.sort(origFiles);        
+        Collections.sort(origFiles);
         for (String fileName : newFiles) {
-            if(!origFiles.contains(fileName)) {
+            if (!origFiles.contains(fileName)) {
                 File f = new File(fileName);
-                if(!f.exists()) {
-                    fail("File "+fileName+" does not exists");
+                if (!f.exists()) {
+                    fail("File " + fileName + " does not exists");
                 }
-                if(f.isDirectory()) {
+                if (f.isDirectory()) {
                     ref("Created directory:\n");
-                    String rootDir = new File(getDataDir(), "projects/RefactoringTest/src").getAbsolutePath();                   
-                    ref(fileName.substring(rootDir.length()).replace('\\', '/')+"\n");
+                    String rootDir = new File(getRefactroringTestFolder(), "src").getAbsolutePath();
+                    ref(fileName.substring(rootDir.length()).replace('\\', '/') + "\n");
                 } else {
                     ref("Created file:\n");
                     ref(new File(fileName));
@@ -129,10 +121,10 @@ public class ModifyingRefactoring extends RefactoringTestCase {
         }
 
         for (String fileName : origFiles) {
-            if(!newFiles.contains(fileName)) {
+            if (!newFiles.contains(fileName)) {
                 ref("Deleted file:\n");
-                String rootDir = new File(getDataDir(), "projects/RefactoringTest/src").getAbsolutePath();
-                ref(fileName.substring(rootDir.length()).replace('\\', '/')); 
+                String rootDir = new File(getRefactroringTestFolder(), "src").getAbsolutePath();
+                ref(fileName.substring(rootDir.length()).replace('\\', '/'));
             }
         }
     }
@@ -140,15 +132,18 @@ public class ModifyingRefactoring extends RefactoringTestCase {
     protected void dumpRefactoringResults() {
         RefactoringResultOperator result = RefactoringResultOperator.getPreview();
         new EventTool().waitNoEvent(1000);
-        JButtonOperator jbo = new JButtonOperator(result.getWindowContainerOperator(),"Do Refactoring");
-        new EventTool().waitNoEvent(1000);
+        
         Set<FileObject> involvedFiles = (Set<FileObject>) result.getInvolvedFiles();
-        List<String> origfiles = getFiles(new File(getDataDir(), "projects/RefactoringTest"));
+        List<String> origfiles = getFiles(getRefactroringTestFolder());
+        
+        result.doRefactoring();
         new EventTool().waitNoEvent(8000);
-        jbo.push();
-        new EventTool().waitNoEvent(8000);
+        
         refModifiedFiles(involvedFiles);
-        refFileChange(origfiles, getFiles(new File(getDataDir(), "projects/RefactoringTest")));
+        refFileChange(origfiles, getFiles(getRefactroringTestFolder()));
+    }
+    
+    private File getRefactroringTestFolder(){
+        return new File(getDataDir(), "projects" + File.separator + REFACTORING_TEST);
     }
 }
-

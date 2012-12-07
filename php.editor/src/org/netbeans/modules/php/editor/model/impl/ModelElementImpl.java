@@ -52,6 +52,7 @@ import org.netbeans.modules.csl.api.Modifier;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
+import org.netbeans.modules.php.api.util.StringUtils;
 import org.netbeans.modules.php.editor.api.ElementQuery;
 import org.netbeans.modules.php.editor.api.PhpElementKind;
 import org.netbeans.modules.php.editor.api.PhpModifiers;
@@ -162,7 +163,7 @@ abstract class ModelElementImpl extends PHPElement implements ModelElement {
         if (fileObject != null) {
             filePath = fileObject.getPath();
         }
-        return getNamespaceName().append(QualifiedName.create(getName())).toString().toLowerCase() + String.valueOf(offsetRange.getStart())+filePath;
+        return getNamespaceName().append(QualifiedName.create(getName())).toString().toLowerCase() + String.valueOf(offsetRange.getStart()) + filePath;
     }
 
     static boolean nameKindMatch(Pattern p, String text) {
@@ -260,7 +261,7 @@ abstract class ModelElementImpl extends PHPElement implements ModelElement {
         if (fileObject == null) {
             assert file.hasFirst();
             String fileUrl = file.first();
-            if (fileUrl != null) {
+            if (StringUtils.hasText(fileUrl)) {
                 fileObject = PhpElementImpl.resolveFileObject(fileUrl);
                 synchronized (ModelElementImpl.class) {
                     if (fileObject != null) {

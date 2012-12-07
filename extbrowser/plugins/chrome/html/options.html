@@ -53,11 +53,21 @@ Portions Copyrighted 2012 Sun Microsystems, Inc.
     <body>
         <div id="main">
 
-            <div id="presetCustomizer">
-                <div id="close"><a href="#" id="closePresetCustomizer" title="_CloseWithoutSaving">X</a></div>
-                <div id="title">_CustomizeWindowSettings</div>
-                <div id="perex">_ConfigureSizesInfo</div>
-                <div id="sizes">_DisplaySizes</div>
+            <div id="presetCustomizer" class="panel">
+                <div class="title i18n">_CustomizeWindowSettings</div>
+                <div id="perex" class="perex">
+                    <span class="i18n">_ConfigureSizesInfo</span> <a href="#" id="moreHelpButton" class="i18n">_More_hellip</a>
+                    <div id="help">
+                        <ul>
+                            <li class="i18n">_Help_Step1</li>
+                            <li class="i18n">_Help_Step2</li>
+                            <li class="i18n">_Help_Step3</li>
+                            <li class="i18n">_Help_Step4</li>
+                        </ul>
+                        <p class="i18n">_Help_FinalStep</p>
+                    </div>
+                </div>
+                <div id="sizes" class="i18n">_DisplaySizes</div>
                 <div id="presetCustomizerTableWrapper">
                     <div id="presetCustomizerTableColumn">
                         <table id="presetCustomizerTable">
@@ -83,12 +93,20 @@ Portions Copyrighted 2012 Sun Microsystems, Inc.
                     </div>
                 </div>
                 <div class="clear"></div>
-                <div id="mainButtons">
+                <div class="mainButtons">
                     <button id="presetCustomizerOk" title="_SaveAndClose">_OK</button>
                     <button id="presetCustomizerCancel" title="_CloseWithoutSaving">_Cancel</button>
                 </div>
                 <div class="clear"></div>
+            </div>
 
+            <div id="resetWarningsPanel" class="panel">
+                <div class="title i18n">_Warnings</div>
+                <div class="perex i18n">_ResetAllWarningDialogs</div>
+                <div class="mainButtons">
+                    <button id="resetWarnings" title="_ResetAllWarningDialogs">_Reset</button>
+                </div>
+                <div class="clear"></div>
             </div>
 
         </div>

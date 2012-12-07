@@ -298,7 +298,7 @@ public class ImportExecutable implements PropertyChangeListener {
                                 try {
                                     extension.apply(map, lastSelectedProject);
                                     discoverScripts(lastSelectedProject, DiscoveryWizardDescriptor.adaptee(map).getBuildResult());
-                                    DiscoveryProjectGenerator.saveMakeConfigurationDescriptor(lastSelectedProject, false);
+                                    DiscoveryProjectGenerator.saveMakeConfigurationDescriptor(lastSelectedProject, null);
                                     if (projectKind == ProjectKind.CreateDependencies && (additionalDependencies == null || additionalDependencies.isEmpty())) {
                                         cd = new CreateDependencies(lastSelectedProject, DiscoveryWizardDescriptor.adaptee(map).getDependencies(), dependencies,
                                                 DiscoveryWizardDescriptor.adaptee(map).getSearchPaths(), DiscoveryWizardDescriptor.adaptee(map).getBuildResult());
@@ -601,7 +601,8 @@ public class ImportExecutable implements PropertyChangeListener {
 
                 @Override
                 public void projectParsingFinished(CsmProject project) {
-                    if (project.getPlatformProject().equals(np)) {
+                    final Object id = project.getPlatformProject();
+                    if (id != null && id.equals(np)) {
                         CsmListeners.getDefault().removeProgressListener(this);
                         listeners.remove(this);
                         if (project instanceof ProjectBase && functionName != null) {

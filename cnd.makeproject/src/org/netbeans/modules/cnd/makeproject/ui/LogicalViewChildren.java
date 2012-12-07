@@ -46,10 +46,12 @@ import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Iterator;
 import javax.swing.event.ChangeEvent;
 import org.netbeans.api.queries.VisibilityQuery;
 import org.netbeans.modules.cnd.api.remote.RemoteFileUtil;
 import org.netbeans.modules.cnd.api.utils.CndFileVisibilityQuery;
+import org.netbeans.modules.cnd.api.utils.CndVisibilityQuery;
 import org.netbeans.modules.cnd.makeproject.MakeOptions;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Item;
@@ -145,8 +147,10 @@ class LogicalViewChildren extends BaseMakeViewChildren implements PropertyChange
         Collection<Object> collection;
         if (getFolder().isDiskFolder()) {
             // Search disk folder for C/C++ files and add them to the view (not the project!).
+            CndVisibilityQuery folderVisibilityQuery = getFolder().getConfigurationDescriptor().getFolderVisibilityQuery();
             ArrayList<Object> collection2 = new ArrayList<Object>(getFolder().getElements());
-            FileObject fileObject = RemoteFileUtil.getFileObject(getFolder().getConfigurationDescriptor().getBaseDirFileObject(), getFolder().getRootPath());
+            FileObject baseDirFileObject = getFolder().getConfigurationDescriptor().getBaseDirFileObject();
+            FileObject fileObject = RemoteFileUtil.getFileObject(baseDirFileObject, getFolder().getRootPath());
             if (fileObject != null && fileObject.isValid() && fileObject.isFolder()) {
                 FileObject[] children = fileObject.getChildren();
                 if (children != null) {
@@ -172,7 +176,28 @@ class LogicalViewChildren extends BaseMakeViewChildren implements PropertyChange
 
                         // Add file to the view
                         Item item = Item.createInFileSystem(provider.getMakeConfigurationDescriptor().getBaseDirFileSystem(), child.getPath());
+                        // This method is executed in not EDT and first call to getDataObject() is quite expensive operation.
+                        // If we call this method here then result will be calculated and cached cached. So cached version will be
+                        // used in createNodes and won't freeze EDT.
+                        // See Bug 221962 - [73cat] 3.s - Blocked by cnd.makeproject.ui.LogicalViewChildren.createNodes().
+                        item.getDataObject();
                         Folder.insertItemElementInList(collection2, item);
+                    }
+                }
+            }
+            if (folderVisibilityQuery != null) {
+                for (Iterator<Object> it = collection2.iterator(); it.hasNext();) {
+                    Object object = it.next();
+                    if (object instanceof Folder) {
+                        Folder fldr = (Folder) object;
+                        // check if we need to show folders marked as removed
+                        if (fldr.isRemoved()) {
+                            FileObject toCheck = RemoteFileUtil.getFileObject(baseDirFileObject, fldr.getRootPath());
+                            // hide folders from ignore pattern
+                            if (toCheck != null && folderVisibilityQuery.isIgnored(toCheck)) {
+                                it.remove();
+                            }
+                        }
                     }
                 }
             }

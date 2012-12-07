@@ -429,6 +429,8 @@ public class CXXParserActionImpl implements CXXParserActionEx {
     @Override public void decltype_specifier(int kind, Token token) {orig.decltype_specifier(kind, convertToken(token));}
     @Override public void end_decltype_specifier(Token token) {orig.end_decltype_specifier(convertToken(token));}
     @Override public void end_elaborated_type_specifier(Token token) {orig.end_elaborated_type_specifier(convertToken(token));}
+    @Override public void typename_specifier(Token token) {orig.typename_specifier(convertToken(token));}
+    @Override public void end_typename_specifier(Token token) {orig.end_typename_specifier(convertToken(token));}
     @Override public void asm_definition(Token asmToken, Token lparenToken, Token stringToken, Token rparenToken, Token semicolonToken) {orig.asm_definition(convertToken(asmToken), convertToken(lparenToken), convertToken(stringToken), convertToken(rparenToken), convertToken(semicolonToken));}
     @Override public void linkage_specification(Token externToken, Token stringToken) {orig.linkage_specification(convertToken(externToken), convertToken(stringToken));}
     @Override public void linkage_specification(int kind, Token token) {orig.linkage_specification(kind, convertToken(token));}

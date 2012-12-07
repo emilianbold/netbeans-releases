@@ -219,16 +219,15 @@ public class AnalyzeExecLog extends BaseDwarfProvider {
     @Override
     public boolean isApplicable(ProjectProxy project) {
         String set = (String) getProperty(EXEC_LOG_KEY).getValue();
-        if (set == null || set.length() == 0) {
-            return false;
+        if (set != null && set.length() > 0) {
+            return true;
         }
-        return true;
-        //Object o = getProperty(RESTRICT_COMPILE_ROOT).getValue();
-        //if (o == null || "".equals(o.toString())) { // NOI18N
-        //    getProperty(RESTRICT_COMPILE_ROOT).setValue(project.getSourceRoot());
-        //    return true;
-        //}
-        //return false;
+        Object o = getProperty(RESTRICT_COMPILE_ROOT).getValue();
+        if (o == null || "".equals(o.toString())) { // NOI18N
+            getProperty(RESTRICT_COMPILE_ROOT).setValue(project.getSourceRoot());
+            return true;
+        }
+        return false;
     }
 
     @Override

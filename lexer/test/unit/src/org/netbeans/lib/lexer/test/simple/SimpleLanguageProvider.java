@@ -47,6 +47,7 @@ package org.netbeans.lib.lexer.test.simple;
 import org.netbeans.lib.lexer.lang.TestCharTokenId;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.EnumSet;
 import org.netbeans.api.lexer.InputAttributes;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.LanguagePath;
@@ -87,7 +88,8 @@ public class SimpleLanguageProvider extends LanguageProvider {
 
     public Language<?> findLanguage(String mimeType) {
         if (LanguageManagerTest.MIME_TYPE_KNOWN.equals(mimeType)) {
-            return new LH().language();
+            return TestCharTokenId.createLanguage(LanguageManagerTest.MIME_TYPE_KNOWN);
+
         } else if (TestChangingTokenId.MIME_TYPE.equals(mimeType)) {
             return TestChangingTokenId.language();
         }
@@ -103,18 +105,4 @@ public class SimpleLanguageProvider extends LanguageProvider {
         }
     }
     
-    private static final class LH extends LanguageHierarchy<TokenId> {
-        protected Collection<TokenId> createTokenIds() {
-            return Collections.emptyList();
-        }
-
-        protected Lexer<TokenId> createLexer(LexerRestartInfo<TokenId> info) {
-            return null;
-        }
-
-        protected String mimeType() {
-            return LanguageManagerTest.MIME_TYPE_KNOWN;
-        }
-
-    } // End of LD class
 }

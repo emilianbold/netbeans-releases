@@ -73,11 +73,11 @@ mkdir -p $TESTDIR
 
 mkdir -p "nbbuild/build"
 STATUS="nbbuild/build/build-info"
-curl $pop_job/buildStatus -D "$STATUS"
+curl -H "Cache-Control: no-cache" $pop_job/buildStatus -D "$STATUS"
 cat "$STATUS"
 
 echo Getting Build Info
-HGINFO=`curl $pop_job/lastStableBuild/artifact/$pop_build_info`
+HGINFO=`curl -vvvv -H "Cache-Control: no-cache" $pop_job/lastStableBuild/artifact/$pop_build_info`
 echo Build info: $HGINFO
 testresult "$TESTDIR" "build.info" "$HGINFO"
 [ -n "$HGINFO" ] || exit 1

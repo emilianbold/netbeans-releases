@@ -185,7 +185,8 @@ public final class SharableLibrariesUtils {
     })
     public static boolean showMakeSharableWizard(final AntProjectHelper helper, ReferenceHelper ref, List<String> libraryNames, List<String> jarReferences) {
 
-        final WizardDescriptor wizardDescriptor = new WizardDescriptor(new CopyIterator(helper));
+        final CopyIterator cpIt = new CopyIterator(helper);
+        final WizardDescriptor wizardDescriptor = new WizardDescriptor(cpIt);
         // {0} will be replaced by WizardDesriptor.Panel.getComponent().getName()
         wizardDescriptor.setTitleFormat(new MessageFormat("{0}"));
         wizardDescriptor.setTitle(TIT_MakeSharableWizard());
@@ -197,11 +198,10 @@ public final class SharableLibrariesUtils {
         dialog.getAccessibleContext().setAccessibleDescription(ACSD_MakeSharableWizard());
         dialog.setVisible(true);
         dialog.toFront();
-        return wizardDescriptor.getValue() == WizardDescriptor.FINISH_OPTION;
+        return wizardDescriptor.getValue() == WizardDescriptor.FINISH_OPTION && cpIt.isSuccess();
     }
 
-    private static void execute(final WizardDescriptor wizardDescriptor, final AntProjectHelper helper, final ProgressHandle handle) {
-        
+    private static void execute(final WizardDescriptor wizardDescriptor, final AntProjectHelper helper, final ProgressHandle handle) throws IOException {
         final String loc = (String) wizardDescriptor.getProperty(PROP_LOCATION);
         final List<Action> actions = NbCollections.checkedListByCopy((List) wizardDescriptor.getProperty(PROP_ACTIONS), Action.class, true);
         assert loc != null;
@@ -215,6 +215,9 @@ public final class SharableLibrariesUtils {
             f = FileUtil.normalizeFile(f);
             if (!f.exists()) {
                 FileUtil.createData(f);
+            }
+            if (!f.isFile()) {
+                throw new IllegalArgumentException("Library definition has to be file, got: " + f.getAbsolutePath());   //NOI18N
             }
 
             try {
@@ -235,7 +238,7 @@ public final class SharableLibrariesUtils {
                                 }
                             });
                         } catch (IllegalArgumentException ex) {
-                            Exceptions.printStackTrace(ex);
+                            throw new IOException(ex);
                         }
                         return null;
                     }
@@ -243,8 +246,6 @@ public final class SharableLibrariesUtils {
             } catch (MutexException ex) {
                 throw (IOException) ex.getException();
             }
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
         } finally {
             handle.finish();
         }
@@ -253,6 +254,7 @@ public final class SharableLibrariesUtils {
     private static class CopyIterator extends WizardDescriptor.ArrayIterator<WizardDescriptor> implements WizardDescriptor.ProgressInstantiatingIterator<WizardDescriptor> {
         private AntProjectHelper helper;
         private WizardDescriptor desc;
+        private volatile boolean success;
 
         private CopyIterator(AntProjectHelper helper) {
             super(getPanels());
@@ -262,6 +264,7 @@ public final class SharableLibrariesUtils {
 
         public Set instantiate(ProgressHandle handle) throws IOException {
             execute(desc, helper, handle);
+            success = true;
             return Collections.EMPTY_SET;
         }
 
@@ -275,6 +278,10 @@ public final class SharableLibrariesUtils {
 
         public void uninitialize(WizardDescriptor wizard) {
             this.desc = wizard;
+        }
+
+        boolean isSuccess() {
+            return success;
         }
         
     }

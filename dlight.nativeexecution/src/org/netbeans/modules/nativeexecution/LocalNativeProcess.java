@@ -133,6 +133,10 @@ public final class LocalNativeProcess extends AbstractNativeProcess {
             toProcessStream.write("while [ -z \"$ITS_TIME_TO_START\" ]; do sleep 1; done\n".getBytes()); // NOI18N
         }
 
+        if (info.isRedirectError()) {
+            toProcessStream.write(("exec 2>&1\n").getBytes()); // NOI18N
+        }
+
         toProcessStream.write(("exec " + info.getCommandLineForShell() + "\n").getBytes()); // NOI18N
         toProcessStream.flush();
 
@@ -167,6 +171,7 @@ public final class LocalNativeProcess extends AbstractNativeProcess {
             pb.environment().put(envEntry.getKey(), envEntry.getValue());
         }
 
+        pb.redirectErrorStream(info.isRedirectError());
         pb.command(info.getCommand());
 
         if (LOG.isLoggable(Level.FINEST)) {

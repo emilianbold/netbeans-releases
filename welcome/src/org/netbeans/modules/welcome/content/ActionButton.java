@@ -84,6 +84,7 @@ public class ActionButton extends LinkButton {
 
     @Override
     protected void onMouseExited(MouseEvent e) {
+        super.onMouseExited( e );
         if( null != urlString ) {
             StatusDisplayer.getDefault().setStatusText( "" ); //NOI18N
         }
@@ -91,6 +92,7 @@ public class ActionButton extends LinkButton {
 
     @Override
     protected void onMouseEntered(MouseEvent e) {
+        super.onMouseEntered( e );
         if( null != urlString ) {
             StatusDisplayer.getDefault().setStatusText( urlString );
         }
@@ -100,6 +102,6 @@ public class ActionButton extends LinkButton {
     protected boolean isVisited() {
         return visited;
     }
-    
+
     private static final long serialVersionUID = 1L; 
 }

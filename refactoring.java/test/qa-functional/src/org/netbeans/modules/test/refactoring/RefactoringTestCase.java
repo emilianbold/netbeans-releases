@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,7 +37,7 @@
  * 
  * Contributor(s):
  * 
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ ** Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.test.refactoring;
 
@@ -48,6 +48,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintStream;
+import java.io.StringReader;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -59,6 +60,8 @@ import java.util.StringTokenizer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JTree;
+import javax.swing.text.html.HTMLEditorKit;
+import javax.swing.text.html.parser.ParserDelegator;
 import javax.swing.tree.TreeModel;
 import javax.swing.tree.TreePath;
 import org.netbeans.jellytools.JellyTestCase;
@@ -68,26 +71,27 @@ import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.ProjectRootNode;
 import org.netbeans.jemmy.JemmyException;
 import org.netbeans.jemmy.JemmyProperties;
-import org.netbeans.jemmy.TimeoutExpiredException;
 import org.netbeans.jemmy.Waitable;
 import org.netbeans.jemmy.Waiter;
+import org.netbeans.jemmy.operators.JTreeOperator;
 import org.netbeans.junit.diff.LineDiff;
 import org.openide.filesystems.FileObject;
 
 /**
  *
- * @author Jiri Prox Jiri.Prox@Sun.COM
+ * @author Jiri.Prox@oracle.com, Marian.Mirilovic@oracle.com
  */
 public abstract class RefactoringTestCase extends JellyTestCase {
 
-    public static final char treeSeparator = '|';
+    public static final char TREE_SEPARATOR = '|';
+    protected static ProjectRootNode testProjectRootNode = null;
+    private static ProjectsTabOperator pto = null;
     /**
      * The distance from the root of preview tree. Nodes located closer to the
      * root then this values will be sorted before dumping to ref file
      */
     public static int sortLevel = 2;
-    private PrintStream jemmyError;
-    private PrintStream jemmyOutput;
+    protected final static String REFACTORING_TEST = "RefactoringTest";
 
     public RefactoringTestCase(String name) {
         super(name);
@@ -144,11 +148,11 @@ public abstract class RefactoringTestCase extends JellyTestCase {
      * @param level Distance current root - tree root
      */
     protected void browseChildren(TreeModel model, Object parent, int level) {
-        Object invoke = getPreviewItemLabel(parent);
+        String logNode = getPreviewItemLabel(parent);
         for (int i = 0; i < level; i++) {
             ref("    ");
         }
-        ref(invoke.toString() + "\n");
+        ref(logNode + "\n");
 
         int childs = model.getChildCount(parent);
         ArrayList<Object> al = new ArrayList<Object>(childs);  //storing childs for sorting        
@@ -168,6 +172,12 @@ public abstract class RefactoringTestCase extends JellyTestCase {
 
     }
 
+    protected void browseRoot(JTree tree) {
+        TreeModel model = tree.getModel();
+        Object root = model.getRoot();
+        browseChildren(model, root, 0);
+    }
+
     /**
      * Opens file in editor.
      *
@@ -175,31 +185,25 @@ public abstract class RefactoringTestCase extends JellyTestCase {
      * @param fileName
      */
     protected void openFile(String treeSubPackagePathToFile, String fileName) {
-        ProjectsTabOperator pto = new ProjectsTabOperator();
-        pto.invoke();
-        ProjectRootNode prn = pto.getProjectRootNode(getProjectName());
-        prn.select();
-        StringTokenizer st = new StringTokenizer(treeSubPackagePathToFile, treeSeparator + "");
-        String token = "";
-        String oldtoken = "";
+        openProject(REFACTORING_TEST);
+        StringTokenizer st = new StringTokenizer(treeSubPackagePathToFile, TREE_SEPARATOR + "");
         if (st.countTokens() > 1) {
-            token = st.nextToken();
+            String token = st.nextToken();
 
             String fullpath = token;
             while (st.hasMoreTokens()) {
                 token = st.nextToken();
                 waitForChildNode(fullpath, token);
-                fullpath += treeSeparator + token;
+                fullpath += TREE_SEPARATOR + token;
             }
         }
         // last node
         waitForChildNode(treeSubPackagePathToFile, fileName);
         // end of fix of issue #51191
 
-        Node node = new Node(prn, treeSubPackagePathToFile + treeSeparator + fileName);
+        Node node = new Node(testProjectRootNode, treeSubPackagePathToFile + TREE_SEPARATOR + fileName);
         //node.performPopupAction("Open");
         new OpenAction().performAPI(node);  //should be more stable then performing open action from popup
-
     }
 
     /**
@@ -209,10 +213,12 @@ public abstract class RefactoringTestCase extends JellyTestCase {
      * @param tree Preview tree
      * @return File name related to selected node
      */
-    public String getFileForSelectedNode(JTree tree) {
+    public String getFileForSelectedNode(JTreeOperator tree) {
         TreePath selectionPath = tree.getSelectionPath();
+        System.err.println("SP " + selectionPath.getPath());
         Object pathComponent = selectionPath.getPathComponent(2);
-        return (String) getPreviewItemLabel(pathComponent);
+        System.err.println("PC " + pathComponent);
+        return getPreviewItemLabel(pathComponent);
     }
 
     /**
@@ -222,12 +228,16 @@ public abstract class RefactoringTestCase extends JellyTestCase {
      * @param parent The tree item
      * @return Test label obtained by method {@code getLabel}
      */
-    protected Object getPreviewItemLabel(Object parent) {
+    protected String getPreviewItemLabel(Object parent) {
         try {
             Method method = parent.getClass().getDeclaredMethod("getLabel");
             method.setAccessible(true);
             Object invoke = method.invoke(parent);
-            return invoke;
+            Label2Text parser = new Label2Text();
+            parser.parse(new StringReader((String)invoke));
+            return parser.result.toString();
+        } catch (IOException ex) {
+            Logger.getLogger(RefactoringTestCase.class.getName()).log(Level.SEVERE, null, ex);
         } catch (IllegalAccessException ex) {
             Logger.getLogger(RefactoringTestCase.class.getName()).log(Level.SEVERE, null, ex);
         } catch (IllegalArgumentException ex) {
@@ -246,7 +256,7 @@ public abstract class RefactoringTestCase extends JellyTestCase {
     private void sortChilds(List<Object> al) {
         final HashMap<Object, String> hashMap = new HashMap<Object, String>();
         for (Object object : al) {
-            hashMap.put(object, (String) getPreviewItemLabel(object));
+            hashMap.put(object, getPreviewItemLabel(object));
         }
 
         Collections.<Object>sort(al, new Comparator() {
@@ -258,10 +268,8 @@ public abstract class RefactoringTestCase extends JellyTestCase {
     }
 
     private void waitForChildNode(String parentPath, String childName) {
-        ProjectsTabOperator pto = new ProjectsTabOperator();
-        ProjectRootNode prn = pto.getProjectRootNode(getProjectName());
-        prn.select();
-        Node parent = new Node(prn, parentPath);
+        openProject(REFACTORING_TEST);
+        Node parent = new Node(testProjectRootNode, parentPath);
         final String finalFileName = childName;
         try {
             // wait for max. 3 seconds for the file node to appear
@@ -283,60 +291,60 @@ public abstract class RefactoringTestCase extends JellyTestCase {
     }
 
     protected void openSourceFile(String dir, String srcName) {
-        openFile(org.netbeans.jellytools.Bundle.getString("org.netbeans.modules.java.j2seproject.Bundle", "NAME_src.dir") + treeSeparator + dir, srcName);
+        openFile(org.netbeans.jellytools.Bundle.getString("org.netbeans.modules.java.j2seproject.Bundle", "NAME_src.dir") + TREE_SEPARATOR + dir, srcName);
     }
 
     @Override
     protected void setUp() throws Exception {
-        jemmyOutput = new PrintStream(new File(getWorkDir(), getName() + ".jemmy"));
-        jemmyError = new PrintStream(new File(getWorkDir(), getName() + ".error"));
-        //JemmyProperties.setCurrentOutput(new TestOut(System.in, jemmyOutput , jemmyError));
-        //JemmyProperties.setCurrentOutput(new TestOut(System.in, null , System.out));
+        //jemmyOutput = new PrintStream(new File(getWorkDir(), getName() + ".jemmy"));
+        System.setErr(new PrintStream(new File(getWorkDir(), getName() + ".error")));
         System.out.println("Test " + getName() + " started");
-        openProject("RefactoringTest");
+        openProject(REFACTORING_TEST);
     }
 
-    public void openProject(String projectName) {
-
-        /* 1. check if project is open  */
-        ProjectsTabOperator pto = ProjectsTabOperator.invoke();
-        boolean isOpen = true;
-        try {
-            ProjectRootNode prn = pto.getProjectRootNode(projectName);
-        } catch (TimeoutExpiredException ex) {
-            // This excpeiton is ok, project is not open;
-            //ex.printStackTrace();
-            isOpen = false;
+    protected void openProject(String projectName) {
+        if (pto == null) {
+            pto = ProjectsTabOperator.invoke();
         }
 
-        if (isOpen) {
-            log("Project is open!");
-            return;
+        if (testProjectRootNode == null) {
+            try {
+                openDataProjects("projects/" + projectName);
+                testProjectRootNode = pto.getProjectRootNode(projectName);
+                testProjectRootNode.select();
+            } catch (IOException ex) {
+                throw new JemmyException("Open project [" + projectName + "] fails !!!", ex);
+            }
+        } else {
+            log("Project is opened!");
         }
-        try {
-            /* 2. open project */
-            //retouche:
-            //Object prj= ProjectSupport.openProject(projectPath);
-            this.openDataProjects("projects/" + projectName);
-        } catch (IOException ex) {
-            fail("Project cannot be opened");
-        }
-
     }
 
-   
     @Override
     protected void tearDown() throws Exception {
         getRef().close();
-        jemmyOutput.close();
-        jemmyError.close();
-        System.out.println();
         assertFile("Golden file differs ", new File(getWorkDir(), getName() + ".ref"), getGoldenFile(), getWorkDir(), new LineDiff());
         System.out.println("Test " + getName() + " finished");
-
     }
 
-    public abstract String getProjectName();
-        
-}
+    
+    
+    private static class Label2Text extends HTMLEditorKit.ParserCallback {
+        StringBuffer result;
 
+        public Label2Text() {
+            result = new StringBuffer();
+        }
+
+        public void parse(StringReader in) throws IOException {
+            new ParserDelegator().parse(in, this, Boolean.TRUE);
+        }
+
+        @Override
+        public void handleText(char[] text, int pos) {
+            result.append(text);
+        }
+    }
+
+
+}

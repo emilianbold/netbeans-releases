@@ -43,15 +43,8 @@
  */
 package org.netbeans.modules.html.editor.completion;
 
-import org.netbeans.modules.html.editor.HtmlExtensions;
-import org.netbeans.modules.html.editor.lib.api.elements.Node;
-import org.netbeans.modules.html.editor.lib.api.elements.FeaturedNode;
-import org.netbeans.modules.html.editor.lib.api.elements.Element;
-import org.netbeans.modules.html.editor.lib.api.elements.ElementType;
-import org.netbeans.modules.html.editor.lib.api.elements.Attribute;
-import org.netbeans.modules.html.editor.lib.api.elements.ElementUtils;
-import java.util.Map.Entry;
 import java.util.*;
+import java.util.Map.Entry;
 import java.util.logging.Logger;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
@@ -62,6 +55,7 @@ import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.lib.editor.util.CharSequenceUtilities;
 import org.netbeans.modules.csl.api.DataLoadersBridge;
+import org.netbeans.modules.html.editor.HtmlExtensions;
 import org.netbeans.modules.html.editor.HtmlPreferences;
 import org.netbeans.modules.html.editor.api.Utils;
 import org.netbeans.modules.html.editor.api.completion.HtmlCompletionItem;
@@ -103,13 +97,11 @@ public class HtmlCompletionQuery extends UserTask {
     private FileObject file;
     private int offset;
     private CompletionResult completionResult;
-    private boolean triggeredByAutocompletion; //unused so far
 
     public HtmlCompletionQuery(Document document, int offset, boolean triggeredByAutocompletion) {
         this.document = document;
         this.offset = offset;
         this.file = DataLoadersBridge.getDefault().getFileObject(document);
-        this.triggeredByAutocompletion = triggeredByAutocompletion;
     }
 
     public CompletionResult query() throws ParseException {
@@ -134,42 +126,44 @@ public class HtmlCompletionQuery extends UserTask {
         doc.render(new Runnable() {
             @Override
             public void run() {
-                int embeddedOffset = snapshot.getEmbeddedOffset(offset);
                 String resultMimeType = parserResult.getSnapshot().getMimeType();
                 if (resultMimeType.equals("text/html")) {
                     //proceed only on html content
                     completionResult = query((HtmlParserResult) parserResult);
                 } else if (resultMimeType.equals("text/javascript")) {
                     //complete the </script> end tag
-                    completionResult = queryHtmlEndTagInEmbeddedCode(snapshot, doc, embeddedOffset, SCRIPT_TAG_NAME);
+                    completionResult = queryHtmlEndTagInEmbeddedCode(snapshot, doc, SCRIPT_TAG_NAME);
                 } else if (resultMimeType.equals("text/css")) {
                     //complete the </style> end tag
-                    completionResult = queryHtmlEndTagInEmbeddedCode(snapshot, doc, embeddedOffset, STYLE_TAG_NAME);
+                    completionResult = queryHtmlEndTagInEmbeddedCode(snapshot, doc, STYLE_TAG_NAME);
                 }
             }
         });
 
     }
 
-    private CompletionResult queryHtmlEndTagInEmbeddedCode(Snapshot snapshot, Document doc, final int embeddedOffset, final String endTagName) {
+    private CompletionResult queryHtmlEndTagInEmbeddedCode(Snapshot snapshot, Document doc, String endTagName) {
         // End tag autocompletion support
         // We want the end tag autocompletion to appear just after <style> and <script> tags.
         // Since there is css language as leaf languge, this needs to be treated separately.
-        int documentItemOffset = snapshot.getOriginalOffset(embeddedOffset);
-        TokenSequence ts = Utils.getJoinedHtmlSequence(doc, documentItemOffset - 1);
+        TokenSequence ts = Utils.getJoinedHtmlSequence(doc, offset - 1);
         if (ts != null) {
             if (ts.token().id() == HTMLTokenId.TAG_CLOSE_SYMBOL && CharSequenceUtilities.equals(ts.token().text(), ">")) {
                 Token openTagToken = Utils.findTagOpenToken(ts);
                 if (openTagToken != null && CharSequenceUtilities.equals(openTagToken.text(), endTagName)) {
 
                     List<? extends CompletionItem> items = Collections.singletonList(
-                            HtmlCompletionItem.createAutocompleteEndTag(endTagName, documentItemOffset));
+                            HtmlCompletionItem.createAutocompleteEndTag(endTagName, offset));
                     return new CompletionResult(items, offset);
                 }
             }
         }
 
-
+        int embeddedOffset = snapshot.getEmbeddedOffset(offset);
+        if(embeddedOffset == -1) {
+            return null;
+        }
+        
         String expectedCode = "</" + endTagName;
         // Common end tag completion
 
@@ -198,7 +192,7 @@ public class HtmlCompletionQuery extends UserTask {
             int itemOffset = embeddedOffset - patternSize + ltIndex;
 
             //convert back to document offsets
-            documentItemOffset = snapshot.getOriginalOffset(itemOffset);
+            int documentItemOffset = snapshot.getOriginalOffset(itemOffset);
 
             List<? extends CompletionItem> items = Collections.singletonList(HtmlCompletionItem.createEndTag(endTagName, documentItemOffset, null, -1, HtmlCompletionItem.EndTag.Type.DEFAULT));
             return new CompletionResult(items, offset);

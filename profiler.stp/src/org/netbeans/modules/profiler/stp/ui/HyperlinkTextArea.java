@@ -53,7 +53,11 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import javax.swing.UIManager;
 import javax.swing.text.BadLocationException;
+import javax.swing.text.Caret;
 import javax.swing.text.Document;
+import javax.swing.text.JTextComponent;
+import javax.swing.text.NavigationFilter;
+import javax.swing.text.Position;
 
 
 /**
@@ -75,6 +79,23 @@ public class HyperlinkTextArea extends HTMLTextArea {
         setFocusable(true);
         setHighlighter(null);
         setShowPopup(false);
+        
+        // Disable blinking cursor on Mac OS X (Aqua LaF)
+        setNavigationFilter(new NavigationFilter() {
+            public void moveDot(NavigationFilter.FilterBypass fb, int dot, Position.Bias bias) {
+                super.moveDot(fb, 0, bias);
+            }
+
+            public void setDot(NavigationFilter.FilterBypass fb, int dot, Position.Bias bias) {
+                super.setDot(fb, 0, bias);
+            }
+
+            public int getNextVisualPositionFrom(JTextComponent text, int pos, Position.Bias bias,
+                                                 int direction, Position.Bias[] biasRet)
+                                          throws BadLocationException {
+                return 0;
+            }
+        });
 
         addMouseListener(new MouseAdapter() {
                 public void mouseEntered(MouseEvent e) {
@@ -165,6 +186,8 @@ public class HyperlinkTextArea extends HTMLTextArea {
             } catch (BadLocationException ex) {}
             getAccessibleContext().setAccessibleName(accesibleName);
         }
+        Caret c = getCaret();
+        if (c != null) c.setVisible(false);
     }
 
     public void scrollRectToVisible(Rectangle aRect) {

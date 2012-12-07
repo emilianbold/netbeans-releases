@@ -109,6 +109,7 @@ public class TestRunnerActionHandler implements ProjectActionHandler, ExecutionL
     private TestSession session;
     private Manager manager;
     private InputOutput lastIO = null;
+    private static final RequestProcessor RP = new RequestProcessor("TestRunnerActionHandler", 1); // NOI18N
 
     @Override
     public void init(ProjectActionEvent pae, ProjectActionEvent[] paes, Collection<OutputStreamHandler> outputHandlers) {
@@ -119,7 +120,7 @@ public class TestRunnerActionHandler implements ProjectActionHandler, ExecutionL
     public void execute(final InputOutput io) {
         lastIO = io;
         if (SwingUtilities.isEventDispatchThread()) {
-            RequestProcessor.getDefault().post(new Runnable() {
+            RP.post(new Runnable() {
 
                 @Override
                 public void run() {
@@ -216,7 +217,7 @@ public class TestRunnerActionHandler implements ProjectActionHandler, ExecutionL
 
     private void runExecution() {
         if (SwingUtilities.isEventDispatchThread()) {
-            RequestProcessor.getDefault().post(new Runnable() {
+            RP.post(new Runnable() {
 
                 @Override
                 public void run() {
@@ -277,7 +278,7 @@ public class TestRunnerActionHandler implements ProjectActionHandler, ExecutionL
 
     @Override
     public void cancel() {
-        RequestProcessor.getDefault().post(new Runnable() {
+        RP.post(new Runnable() {
 
             @Override
             public void run() {

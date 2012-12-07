@@ -66,6 +66,9 @@ public class OccurrencesSupport {
         long start = System.currentTimeMillis();
         JsObject object = model.getGlobalObject();
         result = findOccurrence(object, offset);
+        if (result == null) {
+            result = findDeclaration(object, offset);
+        }
         long end = System.currentTimeMillis();
         LOGGER.log(Level.FINE, "Computing getOccurences({0}) took {1}ms. Returns {2}", new Object[]{offset, end - start, result});
         return result;
@@ -74,21 +77,7 @@ public class OccurrencesSupport {
     private Occurrence findOccurrence(JsObject object, int offset) {
         Occurrence result = null;
         JsElement.Kind kind = object.getJSKind();
-        if (kind != JsElement.Kind.ANONYMOUS_OBJECT 
-                && object.getDeclarationName().getOffsetRange().containsInclusive(offset)
-                && !ModelUtils.isGlobal(object)) {
-            if (kind.isPropertyGetterSetter()) {
-                // if it's getter or setter in object literal, return it as occurrence of the property
-                String propertyName = object.getName();
-                propertyName = propertyName.substring(propertyName.lastIndexOf(' ') + 1);
-                JsObject property = object.getParent().getProperty(propertyName);
-                if (property != null) {
-                    return new OccurrenceImpl(property.getDeclarationName().getOffsetRange(), property); 
-                }
-            } 
-            result = new OccurrenceImpl(object.getDeclarationName().getOffsetRange(), object);
-        } else {
-            for(Occurrence occurrence: object.getOccurrences()) {
+        for(Occurrence occurrence: object.getOccurrences()) {
                 if (occurrence.getOffsetRange().containsInclusive(offset)) {
                     return occurrence;
                 }
@@ -110,8 +99,43 @@ public class OccurrencesSupport {
                     break;
                 }
             }
+        return result;
+    }
+    
+    private Occurrence findDeclaration (JsObject object, int offset) {
+        Occurrence result = null;
+        JsElement.Kind kind = object.getJSKind();
+        if (kind != JsElement.Kind.ANONYMOUS_OBJECT 
+                && object.getDeclarationName().getOffsetRange().containsInclusive(offset)
+                && !ModelUtils.isGlobal(object)) {
+            if (kind.isPropertyGetterSetter()) {
+                // if it's getter or setter in object literal, return it as occurrence of the property
+                String propertyName = object.getName();
+                propertyName = propertyName.substring(propertyName.lastIndexOf(' ') + 1);
+                JsObject property = object.getParent().getProperty(propertyName);
+                if (property != null) {
+                    return new OccurrenceImpl(property.getDeclarationName().getOffsetRange(), property); 
+                }
+            } 
+
+            result = new OccurrenceImpl(object.getDeclarationName().getOffsetRange(), object);
         }
-        
+        if (result == null && kind.isFunction()) {
+             for(JsObject param : ((JsFunction)object).getParameters()) {
+                 if (param.getDeclarationName().getOffsetRange().containsInclusive(offset)) {
+                     result = new OccurrenceImpl(param.getDeclarationName().getOffsetRange(), object);
+                     return result;
+                }
+            }
+        }
+        if (result == null) {
+            for(JsObject property: object.getProperties().values()) {
+                result = findDeclaration(property, offset);
+                if (result != null) {
+                    break;
+                }
+            }
+        }
         return result;
     }
 }

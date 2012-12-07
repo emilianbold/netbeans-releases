@@ -302,11 +302,13 @@ public final class NbMavenProject {
     public File getOutputDirectory(boolean test) {
         Build build = getMavenProject().getBuild();
         String path = build != null ? (test ? build.getTestOutputDirectory() : build.getOutputDirectory()) : null;
+        File toRet;
         if (path != null) {
-            return new File(path);
+            toRet = new File(path);
         } else { // #189092
-            return new File(new File(getMavenProject().getBasedir(), "target"), test ? "test-classes" : "classes"); // NOI18N
+            toRet =  new File(new File(getMavenProject().getBasedir(), "target"), test ? "test-classes" : "classes"); // NOI18N
         }
+        return FileUtil.normalizeFile(toRet);
     }
 
     /**

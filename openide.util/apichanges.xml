@@ -51,6 +51,24 @@ made subject to such option by the copyright holder.
     <apidef name="actions">Actions API</apidef>
 </apidefs>
 <changes>
+    <change id="automatic-uqe">
+        <api name="util"/>
+        <summary>Automatic support for UserQuestionException</summary>
+        <version major="8" minor="29"/>
+        <date year="2012" month="11" day="14"/>
+        <author login="jtulach"/>
+        <compatibility addition="yes" binary="compatible" source="compatible"/>
+        <description>
+            <p>
+                The default NetBeans Platform infrastructure knows how to
+                display dialog when a <code>UserQuestionException</code> is
+                reported.
+            </p>
+        </description>
+        <class package="org.openide.util" name="Exceptions"/>
+        <class package="org.openide.util" name="UserQuestionException"/>
+        <issue number="57748"/>
+    </change>
     <change id="File.URI">
         <api name="util"/>
         <summary>UNC-safe File / URI interconversion</summary>

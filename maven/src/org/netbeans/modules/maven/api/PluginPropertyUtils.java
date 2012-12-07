@@ -75,6 +75,7 @@ import org.openide.util.Exceptions;
  * Examines a POM for configuration of plugins.
  */
 public class PluginPropertyUtils {
+    private static final String CONTEXT_EXPRESSION_EVALUATOR = "NB_EVALUATOR";
 
     private PluginPropertyUtils() {
     }
@@ -102,7 +103,7 @@ public class PluginPropertyUtils {
      * tries to figure out if the property of the given plugin is customized in the
      * current project and returns it's value if so, otherwise null
      * @param parameter the name of the plugin parameter to look for
-     * @param expressionProperty expression property that once defined (and plugin configuration is omited) is used.
+     * @param expressionProperty expression property that once defined (and plugin configuration is omited) is used. only value, no ${}
      */
     public static @CheckForNull String getPluginProperty(@NonNull Project prj, @NonNull String groupId, @NonNull String artifactId, @NonNull String parameter, @NullAllowed String goal, @NullAllowed String expressionProperty) {
         NbMavenProjectImpl project = prj.getLookup().lookup(NbMavenProjectImpl.class);
@@ -121,7 +122,12 @@ public class PluginPropertyUtils {
     public static @CheckForNull String getPluginProperty(@NonNull MavenProject prj, @NonNull String groupId, @NonNull String artifactId, @NonNull String parameter, @NullAllowed String goal) {
         return getPluginProperty(prj, groupId, artifactId, parameter, goal, null);
     }
-    
+    /**
+     * tries to figure out if the property of the given plugin is customized in the
+     * current project and returns it's value if so, otherwise null
+     * @param parameter the name of the plugin parameter to look for
+     * @param expressionProperty expression property that once defined (and plugin configuration is omited) is used. only value, no ${}
+     */
     public static @CheckForNull String getPluginProperty(@NonNull MavenProject prj, @NonNull String groupId, @NonNull String artifactId, @NonNull String parameter, @NullAllowed String goal, @NullAllowed String expressionProperty) {
         return getPluginPropertyImpl(prj, createEvaluator(prj), groupId, artifactId, parameter, goal, expressionProperty);
     }
@@ -565,21 +571,29 @@ public class PluginPropertyUtils {
         plugins.addAll(m2Plugins);
         return plugins;
     }
-/**
+    
+    /**
      * Evaluator usable for interpolating variables in plugin properties.
      * @since 2.57
      */
     public static @NonNull ExpressionEvaluator createEvaluator(@NonNull Project project) {
-        //ugly
-        Settings ss = EmbedderFactory.getProjectEmbedder().getSettings();
-        ss.setLocalRepository(EmbedderFactory.getProjectEmbedder().getLocalRepository().getBasedir());
-
         NbMavenProjectImpl prj = project.getLookup().lookup(NbMavenProjectImpl.class);
         assert prj != null;
-        return new NBPluginParameterExpressionEvaluator(
-                prj.getOriginalMavenProject(),
+        MavenProject mvnprj = prj.getOriginalMavenProject();
+        //the idea here is to tie the lifecycle of the evaluator to the lifecycle of the MavenProject, both
+        //get changed when settings.xml is changed or pom is change or when a profile gets updated..
+        ExpressionEvaluator eval = (ExpressionEvaluator) mvnprj.getContextValue(CONTEXT_EXPRESSION_EVALUATOR);
+        if (eval == null) {
+            Settings ss = EmbedderFactory.getProjectEmbedder().getSettings();
+            ss.setLocalRepository(EmbedderFactory.getProjectEmbedder().getLocalRepository().getBasedir());
+
+            eval =  new NBPluginParameterExpressionEvaluator(
+                mvnprj,
                 ss,
                 prj.createSystemPropsForPropertyExpressions());
+            mvnprj.setContextValue(CONTEXT_EXPRESSION_EVALUATOR, eval);
+        }
+        return eval;
     }
     
     /**
@@ -589,6 +603,10 @@ public class PluginPropertyUtils {
      * @since 2.32
      */
     public static @NonNull ExpressionEvaluator createEvaluator(@NonNull MavenProject prj) {
+        ExpressionEvaluator eval = (ExpressionEvaluator) prj.getContextValue(CONTEXT_EXPRESSION_EVALUATOR);
+        if (eval != null) {
+            return eval;
+        }
         Map<? extends String,? extends String> props = Collections.emptyMap();
         File basedir = prj.getBasedir();
         if (basedir != null) {
@@ -607,10 +625,12 @@ public class PluginPropertyUtils {
         Settings ss = EmbedderFactory.getProjectEmbedder().getSettings();
         ss.setLocalRepository(EmbedderFactory.getProjectEmbedder().getLocalRepository().getBasedir());
 
-        return new NBPluginParameterExpressionEvaluator(
+        eval = new NBPluginParameterExpressionEvaluator(
                 prj,
                 ss,
                 props);
+        prj.setContextValue(CONTEXT_EXPRESSION_EVALUATOR, eval);
+        return eval;
     }
 
     /** @see org.apache.maven.lifecycle.internal.DefaultLifecycleExecutionPlanCalculator */

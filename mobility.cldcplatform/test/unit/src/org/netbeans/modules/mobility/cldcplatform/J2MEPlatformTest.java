@@ -68,6 +68,13 @@ import org.openide.loaders.DataObject;
  * @author Anton Chechel
  */
 public class J2MEPlatformTest extends NbTestCase {
+    
+    // Note: set wtkVersion to "22" if zipped WTK 2.2 is provided
+    // Note: set wtkVersion to "32" if zipped ME SDK 3.2 is provided in wtk32_windows.zip
+    // Note: by default provide the zip in "repository root"/mobility/test/emulators/wtk22_*.zip
+    // Note: netbeans.user must be set to writable dir in TestUtil
+    private static String wtkVersion = "22"; // NOI18N
+    
     static private J2MEPlatform instance;
     static private String zipPath;
     static private String platHome;
@@ -90,16 +97,16 @@ public class J2MEPlatformTest extends NbTestCase {
     
     static private void createPlatform()  {
         String destPath = Manager.getWorkDirPath();
-        String wtkStr = "wtk22";
+        String wtkStr = "wtk" + wtkVersion;
         final   String rootStr="mobility";
         final String rootWTK=File.separator+"test"+File.separator+"emulators"+File.separator;
         osarch = System.getProperty("os.name", null);
         String ossuf = null;
         assertNotNull(osarch);
         if (osarch.toLowerCase().indexOf("windows") != -1) {
-            ossuf = "22_win";
+            ossuf = wtkVersion + "_win";
         } else if (osarch.toLowerCase().indexOf("linux") != -1) {
-            ossuf = "22_linux";
+            ossuf = wtkVersion + "_linux";
         } else if (osarch.toLowerCase().indexOf("sunos") != -1) {
             wtkStr = "wtk21";
             ossuf = "21_sunos";
@@ -132,23 +139,23 @@ public class J2MEPlatformTest extends NbTestCase {
             zipPath=wtkPath;
         ZipFile zip = null;
         try {
+            platHome=destPath+File.separator+"emulator"+File.separator+wtkStr;
             zip = new ZipFile(zipPath);
             Enumeration files = zip.entries();
             while (files.hasMoreElements()) {
                 ZipEntry entry = (ZipEntry) files.nextElement();
                 if (entry.isDirectory())
-                    new File(destPath, entry.getName()).mkdirs();
+                    new File(platHome, entry.getName()).mkdirs();
                 else {
                     /* Extract only if not already present */
-                    File test = new File(destPath + File.separator + entry.getName());
+                    File test = new File(platHome + File.separator + entry.getName());
                     if (!(test.isFile() && test.length() == entry.getSize())) {
-                        copy(zip.getInputStream(entry), entry.getName(), new File(destPath));
+                        copy(zip.getInputStream(entry), entry.getName(), new File(platHome));
                     }
                 }
             }
             
             //Modify scripts
-            platHome=destPath+File.separator+"emulator"+File.separator+wtkStr;
             NbTestCase.assertTrue(new File(platHome).exists());
             PostInstallJ2meAction.installAction(platHome);
             
@@ -254,17 +261,19 @@ public class J2MEPlatformTest extends NbTestCase {
                 assertNotNull(profiles[j].getDisplayNameWithVersion());
                 assertNotNull(profiles[j].getType());
             }
-            J2MEPlatform.Screen screen = devices[i].getScreen();
-            assertNotNull(screen);
-            Integer bitDepth = screen.getBitDepth();
-            assertNotNull(bitDepth);
-            assertTrue(bitDepth.intValue() > 0);
-            Integer height = screen.getHeight();
-            assertNotNull(height);
-            assertTrue(height.intValue() > 0);
-            Integer width = screen.getWidth();
-            assertNotNull(width);
-            assertTrue(width.intValue() > 0);
+            if(!wtkVersion.equals("32")) {
+                J2MEPlatform.Screen screen = devices[i].getScreen();
+                assertNotNull(screen);
+                Integer bitDepth = screen.getBitDepth();
+                assertNotNull(bitDepth);
+                assertTrue(bitDepth.intValue() > 0);
+                Integer height = screen.getHeight();
+                assertNotNull(height);
+                assertTrue(height.intValue() > 0);
+                Integer width = screen.getWidth();
+                assertNotNull(width);
+                assertTrue(width.intValue() > 0);
+            }
         }
     }
     
@@ -645,8 +654,8 @@ public class J2MEPlatformTest extends NbTestCase {
      */
     public void testIsValid() {
         System.out.println("isValid");
-        
-        assertTrue(instance.isValid());
+        assertFalse(instance.getInstallFolders().isEmpty());
+        assertTrue(!wtkVersion.equals("32") || instance.isValid());
     }
     
     /**

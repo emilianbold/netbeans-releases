@@ -43,6 +43,13 @@
 // Initialization/cleanup
 NetBeans.cleanup();
 
+// Notify IDE that the extension has been installed/updated
+chrome.runtime.onInstalled.addListener(function() {
+    var manifest = chrome.runtime.getManifest();
+    var version = manifest.version;
+    NetBeans.sendReadyMessage(version);
+});
+
 // Register reload-callback
 NetBeans.browserReloadCallback = function(tabId, newUrl) {
     if (newUrl !== undefined) {
@@ -160,11 +167,29 @@ NetBeans.getWindowInfo = function(callback) {
     chrome.windows.getLastFocused(callback);
 };
 NetBeans.detectViewPort = function(callback) {
-    chrome.tabs.executeScript(null, {file: 'js/viewport.js'}, function() {
-        if (callback) {
-            callback();
+    var script = 'NetBeans_ViewPort = {'
+            + '    width: window.innerWidth,'
+            + '    height: window.innerHeight,'
+            + '    marginWidth: window.outerWidth - window.innerWidth,'
+            + '    marginHeight: window.outerHeight - window.innerHeight,'
+            + '    isMac: navigator.platform.toUpperCase().indexOf("MAC") !== -1'
+            + '};';
+    chrome.debugger.sendCommand(
+        {tabId : NetBeans.debuggedTab},
+        'Runtime.evaluate',
+        {expression: script, returnByValue: true},
+        function(result) {
+            var viewport = result.result.value;
+            NetBeans_ViewPort.width = viewport.width;
+            NetBeans_ViewPort.height = viewport.height;
+            NetBeans_ViewPort.marginWidth = viewport.marginWidth;
+            NetBeans_ViewPort.marginHeight = viewport.marginHeight;
+            NetBeans_ViewPort.isMac = viewport.isMac;
+            if (callback) {
+                callback();
+            }
         }
-    });
+    );
 };
 NetBeans.resetPageSize = function(callback) {
     chrome.windows.getLastFocused(function(win) {
@@ -206,7 +231,7 @@ NetBeans._resizePage = function(width, height, callback) {
             }
             // #218974
             if (NetBeans_ViewPort.isMac && width < 400) {
-                NetBeans.openPopup('html/warnWindowTooSmall.html');
+                NetBeans.openWarning('windowTooSmall', 250);
             }
         });
     });
@@ -276,18 +301,36 @@ NetBeans._checkUnexpectedDetach = function(tabId) {
             warn = true;
         }
         if (warn) {
-            NetBeans.openPopup('html/warnDebuggerDetached.html');
+            NetBeans.openWarning('disconnectedDebugger', 410);
         }
     }, 100);
 };
 
-NetBeans.openPopup = function(url) {
-    chrome.windows.create({
-        'url': url,
-        type: 'popup',
-        width: 600,
-        height: 250
+NetBeans.openWarning = function(ident, height) {
+    NetBeans_Warnings.runIfEnabled(ident, function() {
+        NetBeans.openPopup('html/warning.html#' + ident, 550, height);
     });
+};
+
+/**
+ * Open popup window.
+ * @param {string} url url to be opened
+ * @param {int} width popup width, can be omitted
+ * @param {type} height popup height, can be omitted
+ * @returns {void}
+ */
+NetBeans.openPopup = function(url, width, height) {
+    var options = {
+        url: url,
+        type: 'popup'
+    };
+    if (width !== undefined) {
+        options['width'] = width;
+    }
+    if (height !== undefined) {
+        options['height'] = height;
+    }
+    chrome.windows.create(options);
 };
 
 chrome.debugger.onEvent.addListener(function(source, method, params) {
@@ -316,15 +359,7 @@ chrome.tabs.onRemoved.addListener(function(tabId) {
 // register content script listener
 chrome.extension.onMessage.addListener(function(message, sender, sendResponse) {
     var type = message.type;
-    if (type === 'VIEWPORT') {
-        console.log('Setting new viewport margins (' + message.marginWidth + ' x ' + message.marginHeight + ')');
-        NetBeans_ViewPort.width = message.width;
-        NetBeans_ViewPort.height = message.height;
-        NetBeans_ViewPort.marginWidth = message.marginWidth;
-        NetBeans_ViewPort.marginHeight = message.marginHeight;
-        NetBeans_ViewPort.isMac = message.isMac;
-        sendResponse();
-    } else if (type === 'switchSelectionMode') {
+    if (type === 'switchSelectionMode') {
         NetBeans.setSelectionMode(!NetBeans.getSelectionMode());
     }
 });
@@ -369,3 +404,80 @@ chrome.tabs.onAttached.addListener(function(tabId, attachInfo) {
         NetBeans.windowFocused(windowId);
     }
 });
+
+/**
+ * Warnings manager.
+ */
+NetBeans_Warnings = {};
+/**
+ * Runs the given task if the warning identified by the given ident is enabled.
+ * @param {String} ident warning identifier
+ * @param {function} task task to be run
+ * @returns {void}
+ */
+NetBeans_Warnings.runIfEnabled = function(ident, task) {
+    var key = NetBeans_Warnings._getKeyFor(ident, 'enabled');
+    chrome.storage.sync.get(key, function(items) {
+        NetBeans_Warnings._logError('get', key);
+        if (items[key] !== undefined && items[key] === 'false') {
+            // warning disabled
+            return;
+        }
+        task();
+    });
+};
+/**
+ * Enable/disable the given warning.
+ * @param {String} ident warning identifier
+ * @param {boolean} true for enable, false to disable
+ * @returns {void}
+ */
+NetBeans_Warnings.enable = function(ident, enabled) {
+    var key = NetBeans_Warnings._getKeyFor(ident, 'enabled');
+    if (enabled) {
+        NetBeans_Warnings._remove(key);
+    } else {
+        // disable
+        var data = {};
+        data[key] = 'false';
+        chrome.storage.sync.set(data, function() {
+            NetBeans_Warnings._logError('set', key);
+        });
+    }
+};
+/**
+ * Reset all warnings (all warnings dialogs will be shown again).
+ * @returns {void}
+ */
+NetBeans_Warnings.reset = function() {
+    chrome.storage.sync.get(function(items) {
+        NetBeans_Warnings._logError('reset', 'none');
+        var warningPrefix = NetBeans_Warnings._getKeyFor();
+        for (var key in items) {
+            if (key.indexOf(warningPrefix) === 0) {
+                NetBeans_Warnings._remove(key);
+            }
+        }
+    });
+}
+NetBeans_Warnings._getKeyFor = function(ident, key) {
+    var keyName = 'warning.';
+    if (ident !== undefined) {
+        keyName += ident;
+        if (key !== undefined) {
+            keyName += '.' + key;
+        }
+    }
+    return keyName;
+};
+NetBeans_Warnings._logError = function(operation, key) {
+    if (chrome.runtime && chrome.runtime.lastError) {
+        console.error('Local storage error ("' + operation + '" operation for "' + key + '"): ' + chrome.runtime.lastError.message);
+    }
+};
+NetBeans_Warnings._remove = function(key) {
+    // remove from local storage
+    chrome.storage.sync.remove(key, function() {
+        NetBeans_Warnings._logError('remove', key);
+    });
+};

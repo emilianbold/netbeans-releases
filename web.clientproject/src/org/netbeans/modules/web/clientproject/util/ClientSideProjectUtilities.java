@@ -51,6 +51,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Level;
+import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import org.netbeans.api.annotations.common.CheckReturnValue;
 import org.netbeans.api.annotations.common.NonNull;
@@ -76,6 +77,7 @@ import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
+import org.openide.util.Parameters;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
@@ -87,11 +89,30 @@ import org.w3c.dom.NodeList;
 public final class ClientSideProjectUtilities {
 
     private static final Logger LOGGER = Logger.getLogger(ClientSideProjectUtilities.class.getName());
+    private static final Logger USG_LOGGER = Logger.getLogger("org.netbeans.ui.metrics.web.clientproject"); // NOI18N
 
     public static final Charset DEFAULT_PROJECT_CHARSET = getDefaultProjectCharset();
 
 
     private ClientSideProjectUtilities() {
+    }
+
+    /**
+     * Check whether the given folder is already a project.
+     * @param folder folder to be checked
+     * @return {@code true} if the given folder is already a project, {@code false} otherwise
+     */
+    public static boolean isProject(File folder) {
+        Project prj = null;
+        boolean foundButBroken = false;
+        try {
+            prj = ProjectManager.getDefault().findProject(FileUtil.toFileObject(FileUtil.normalizeFile(folder)));
+        } catch (IOException ex) {
+            foundButBroken = true;
+        } catch (IllegalArgumentException ex) {
+            // noop
+        }
+        return prj != null || foundButBroken;
     }
 
     /**
@@ -271,4 +292,18 @@ public final class ClientSideProjectUtilities {
             return new String[]{url,""};
         }
     }
+
+    public static void logUsage(Class<? extends Object> srcClass, String message, Object[] params) {
+        Parameters.notNull("message", message); // NOI18N
+
+        LogRecord logRecord = new LogRecord(Level.INFO, message);
+        logRecord.setLoggerName(USG_LOGGER.getName());
+        logRecord.setResourceBundle(NbBundle.getBundle(srcClass));
+        logRecord.setResourceBundleName(srcClass.getPackage().getName() + ".Bundle"); // NOI18N
+        if (params != null) {
+            logRecord.setParameters(params);
+        }
+        USG_LOGGER.log(logRecord);
+    }
+
 }

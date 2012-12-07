@@ -112,14 +112,26 @@ public class ArchetypeWizards {
      * @since 2.28
      * @see TemplateRegistration
      * @see #TEMPLATE_FOLDER
+     * @deprecated use the variant with template title name
      */
+    @Deprecated
     public static WizardDescriptor.InstantiatingIterator<?> definedArchetype(String groupId, String artifactId, String version, @NullAllowed String repository) {
+        return definedArchetype(groupId, artifactId, version, repository, null);
+    }
+    
+    /**
+     * Wizard iterator using a predetermined archetype.
+     * @since 2.63
+     * @see TemplateRegistration
+     * @see #TEMPLATE_FOLDER
+     */
+    public static WizardDescriptor.InstantiatingIterator<?> definedArchetype(String groupId, String artifactId, String version, @NullAllowed String repository, String title) {
         Archetype arch = new Archetype();
         arch.setGroupId(groupId);
         arch.setArtifactId(artifactId);
         arch.setVersion(version);
         arch.setRepository(repository);
-        return new MavenWizardIterator(arch);
+        return new MavenWizardIterator(arch, title);
     }
 
 }

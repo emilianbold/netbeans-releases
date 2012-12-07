@@ -1,0 +1,15 @@
+Code completion result for source line:
+var d = document.get|ElementById();
+(QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
+------------------------------------
+METHOD     getElementById(elementId: Stri  [PUBLIC]   stub_DOM_Document.js
+METHOD     getElementsByClassName(names:   [PUBLIC]   stub_DOM_document.js
+METHOD     getElementsByName(elementName:  [PUBLIC]   stub_DOM_HTMLDocument.js
+METHOD     getElementsByTagName(tagname:   [PUBLIC]   stub_DOM_Document.js
+METHOD     getElementsByTagNameNS(namespa  [PUBLIC]   stub_DOM_Document.js
+METHOD     getFeature(feature: String, ve  [PUBLIC]   stub_DOM_Node.js
+METHOD     getOwnPropertyDescriptor(O: Ob  [PUBLIC,   stub_CORE_Object.js
+METHOD     getOwnPropertyNames(O: Object)  [PUBLIC,   stub_CORE_Object.js
+METHOD     getPrototypeOf(O: Object): Obj  [PUBLIC,   stub_CORE_Object.js
+METHOD     getSelection(): Selection       [PUBLIC]   stub_DOM_document.js
+METHOD     getUserData(key: String): DOMU  [PUBLIC]   stub_DOM_Node.js

@@ -163,6 +163,8 @@
 <mapID target="gui.deploying" url="gui/gui_deploying.html" />
 
 
+
+
 <!-- begin OSGi section -->
  <mapID target="osgi_intro" url="osgi/about-osgi.html"/>
  <mapID target="osgi_import" url="osgi/osgi-import.html"/>
@@ -438,6 +440,11 @@
 <mapID target="gui.source.modifying.property" url="gui/csh/gui_advanced_sourcemod_dialog.html" />
 <!--CSH topic for GUI Builder main workspace-->
 <mapID target="gui.formeditor" url="gui/csh/gui_guibuilder_window.html" />
+<!--CSH topic for New Master/Detail Form wizard-->
+<mapID target="gui.masterdetail-wizard.master" url="gui/csh/new_master_form_wizard_mastertable.html" />
+<mapID target="gui.masterdetail-wizard.detail" url="gui/csh/new_master_form_wizard_detailoptions.html" />
+<!--CSH topic for Property Editors dialog box-->
+<mapID target="f1_mat_prop_html" url="gui/csh/gui_prop_editors.html" />
 
 <!-- todo (post 5.0) reclaim these IDs - they are currently overridden by gui.connecting.code:-->
 
@@ -448,11 +455,6 @@
 <!--CSH for Binding dialog-->
 <mapID target="gui.binding-customizer.basic" url="gui/csh/gui_bind_dialog.html" />
 <mapID target="gui.binding-customizer.advanced" url="gui/csh/gui_bind_advanced_dialog.html" />
-
-<!--<mapID target="org.netbeans.modules.form.ConnectionWizard1" url="pending.html" />-->
-<!--<mapID target="org.netbeans.modules.form.ConnectionWizard2" url="pending.html" />-->
-<!--<mapID target="org.netbeans.modules.form.ConnectionWizard3" url="pending.html" />-->
-<!--<mapID target="org.netbeans.modules.form.FormCustomEditor.tabbedPane" url="pending.html" />-->
 
 <!--Space Around Component dialog-->
 <mapID target="org.netbeans.modules.form.actions.CustomizeEmptySpaceAction" url="pending.html" />

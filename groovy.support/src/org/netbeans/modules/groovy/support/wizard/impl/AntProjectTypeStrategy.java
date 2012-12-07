@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.groovy.support.wizard.impl;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -90,7 +91,7 @@ public class AntProjectTypeStrategy extends ProjectTypeStrategy {
     /** full name of a file specific for the JUnit 4.x library */
     private static final String JUNIT4_SPECIFIC = "org/junit/Test.class";               //NOI18N
 
-    
+
 
     public AntProjectTypeStrategy(Project project) {
         super(project);
@@ -104,17 +105,18 @@ public class AntProjectTypeStrategy extends ProjectTypeStrategy {
 
     @Override
     protected boolean existsGroovyTestFolder(List<SourceGroup> groups) {
-        return existsFolder(groups, "/test"); // NOI18N
+        return existsFolder(groups, "test"); // NOI18N
     }
 
     @Override
     protected boolean existsGroovySourceFolder(List<SourceGroup> groups) {
-        return existsFolder(groups, "/src"); // NOI18N
+        return existsFolder(groups, "src"); // NOI18N
     }
 
     private boolean existsFolder(List<SourceGroup> groups, String folderName) {
         for (SourceGroup group : groups) {
-            if (group.getRootFolder().getPath().contains(folderName)) {
+            final String groupPath = group.getRootFolder().getPath();
+            if (groupPath.endsWith(File.separator + folderName) || groupPath.contains(File.separator + folderName + File.separator)) {
                 return true;
             }
         }
@@ -170,7 +172,7 @@ public class AntProjectTypeStrategy extends ProjectTypeStrategy {
         }
     }
 
-    private ClassPath getTestClassPath(final Project project) throws IllegalStateException {
+    private ClassPath getTestClassPath(final Project project) {
         final ClassPathProvider cpProvider = project.getLookup().lookup(ClassPathProvider.class);
         if (cpProvider == null) {
             return null;
@@ -269,13 +271,13 @@ public class AntProjectTypeStrategy extends ProjectTypeStrategy {
             } else {
                 verNumToAdd = null;
             }
-            String verNumToRemove = (jUnit == JUnit.JUNIT3) ? "4" : "3";//NOI18N
-            if (name.equals("junit")) {                                 //NOI18N
-                add    = (verNumToAdd    == "3");                       //NOI18N
-                remove = (verNumToRemove == "3");                       //NOI18N
+            String verNumToRemove = (jUnit == JUnit.JUNIT3) ? "4" : "3"; //NOI18N
+            if (name.equals("junit")) {                                  //NOI18N
+                add    = (verNumToAdd    == "3");                        //NOI18N
+                remove = (verNumToRemove == "3");                        //NOI18N
             } else if ((matcher = pattern.matcher(name)).matches()) {
                 String verNum = matcher.group(1);
-                add    = verNum.equals(verNumToAdd   );
+                add    = verNum.equals(verNumToAdd);
                 remove = verNum.equals(verNumToRemove);
             }
             if (add) {
@@ -292,7 +294,6 @@ public class AntProjectTypeStrategy extends ProjectTypeStrategy {
                     }
                     if (libraryComparator.compare(libraryToAdd, library) > 0) {
                         libraryToAdd = library;
-                    } else {
                     }
                 }
             }
@@ -315,7 +316,7 @@ public class AntProjectTypeStrategy extends ProjectTypeStrategy {
         final Library[] libsToAdd, libsToRemove;
         if (libraryToAdd != null) {
             libsToAdd = new Library[] {libraryToAdd};
-        } else{
+        } else {
             libsToAdd = null;
         }
         if (librariesToRemove != null) {
@@ -344,9 +345,9 @@ public class AntProjectTypeStrategy extends ProjectTypeStrategy {
                     String prjName = ProjectUtils.getInformation(project).getDisplayName();
                     ErrorManager.getDefault().log(
                             WARNING,
-                            "Project " + prjName                        //NOI18N
-                            + ": Could not modify set of JUnit libraries"   //NOI18N
-                            + " - operation not supported by the project.");//NOI18N
+                            "Project " + prjName                             //NOI18N
+                            + ": Could not modify set of JUnit libraries"    //NOI18N
+                            + " - operation not supported by the project."); //NOI18N
                 } catch (IOException ex) {
                     ErrorManager.getDefault().notify(ERROR, ex);
                 }
@@ -366,7 +367,7 @@ public class AntProjectTypeStrategy extends ProjectTypeStrategy {
     private List<FileObject> getProjectTestArtifacts(final Project project) {
         final ClassPathProvider cpProvider = project.getLookup().lookup(ClassPathProvider.class);
         final Collection<FileObject> testFolders = getTestFolders(project);
-        
+
         List<FileObject> result = null;
         for (FileObject testRoot : testFolders) {
             ClassPath testClassPath = cpProvider.findClassPath(testRoot, ClassPath.COMPILE);

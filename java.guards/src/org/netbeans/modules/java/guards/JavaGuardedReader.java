@@ -78,17 +78,15 @@ final class JavaGuardedReader {
      * 2. Replace the comments with spaces to hide them from user but to preserve
      *    overall length and positions.
      * 3. Remove the comments completely.
-     * Default is #3, can be changed via branding. For a long time #2 used to be
-     * the default, but neither 1 nor 2 is reliable since artificial chars are
-     * made part of the sections' content which the clients do not know about.
-     * Once a client changes the section content, the artificial comments or spaces
-     * are gone from the document, but they get written to the file on saving and
-     * so the file is then inconsistent with the document just like in case of #3.
+     * 
+     * Option #3 causes that offsets inside the editor differ from the offsets on disk,
+     * which then breaks many clients that create PositionRefs for a closed file and then
+     * use it for an opened file, and vice versa.
+     * 
+     * Default is #2.
      */
     private static boolean KEEP_GUARD_COMMENTS    // not final only for tests
             = getPresetValue("KEEP_GUARD_COMMENTS", false); // NOI18N
-    private static boolean REPLACE_GUARD_COMMENTS_WITH_SPACES    // not final only for tests
-            = getPresetValue("REPLACE_GUARD_COMMENTS_WITH_SPACES", false); // NOI18N
 
     /** The list of the SectionsDesc. */
     private final LinkedList<SectionDescriptor> list;
@@ -219,13 +217,10 @@ final class JavaGuardedReader {
                     if (KEEP_GUARD_COMMENTS) { // keep guard comment (content unchanged)
                         i -= match.length();
                         charBuffPtr += MAGICLEN;
-                    } else if (REPLACE_GUARD_COMMENTS_WITH_SPACES) {
+                    } else {
                         i += toNl;
                         Arrays.fill(charBuff,charBuffPtr,charBuffPtr+sectionSize,' ');
                         charBuffPtr+=sectionSize;
-                    } else { // remove the guard comment
-                        i += toNl;
-                        desc.setEnd(charBuffPtr);
                     }
                 }
             }
@@ -400,15 +395,11 @@ final class JavaGuardedReader {
         return defaultValue;
     }
 
-    static void setGuardCommentProcessingForTest(int type) {
-        if (type == 1) {
-            KEEP_GUARD_COMMENTS = true;
-        } else if (type == 2) {
-            KEEP_GUARD_COMMENTS = false;
-            REPLACE_GUARD_COMMENTS_WITH_SPACES = true;
-        } else if (type == 3) {
-            KEEP_GUARD_COMMENTS = false;
-            REPLACE_GUARD_COMMENTS_WITH_SPACES = false;
-        }
+    static boolean getKeepGuardedComments() {
+        return KEEP_GUARD_COMMENTS;
+    }
+
+    static void setKeepGuardCommentsForTest(boolean keep) {
+        KEEP_GUARD_COMMENTS = keep;
     }
 }

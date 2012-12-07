@@ -53,6 +53,7 @@ import org.netbeans.modules.php.editor.parser.astnodes.DereferencedArrayAccess;
 import org.netbeans.modules.php.editor.parser.astnodes.Expression;
 import org.netbeans.modules.php.editor.parser.astnodes.FieldAccess;
 import org.netbeans.modules.php.editor.parser.astnodes.Identifier;
+import org.netbeans.modules.php.editor.parser.astnodes.LambdaFunctionDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.MethodInvocation;
 import org.netbeans.modules.php.editor.parser.astnodes.ReflectionVariable;
 import org.netbeans.modules.php.editor.parser.astnodes.Scalar;
@@ -154,6 +155,13 @@ public class PHP54UnhandledError extends AbstractUnhandledError {
             Expression name = node.getMethod().getFunctionName().getName();
             if (name instanceof ReflectionVariable) {
                 createError(name);
+            }
+        }
+
+        @Override
+        public void visit(LambdaFunctionDeclaration node) {
+            if (node.isStatic()) {
+                createError(node);
             }
         }
 

@@ -5616,4 +5616,52 @@ public class FormatterTestCase extends EditorBase {
               + "int && c;\n"
               + "\n");
     }
+    
+    public void test222396() {
+        setDefaultsOptions();
+        setLoadDocumentText(
+                "if(0){\n" 
+              + "        int a=0;\n" 
+              + "    }//sample comment\n"
+              + "else\n"
+              + "    int b = 1;");
+        reformat();
+        assertDocumentText("Incorrect rvalue reference",
+                "if (0) {\n" 
+              + "    int a = 0;\n" 
+              + "}//sample comment\n"
+              + "else\n"
+              + "    int b = 1;");
+    }
+    
+    public void test222887() {
+        setDefaultsOptions();
+        setLoadDocumentText(
+                "class A {\n" 
+              + "public:\n" 
+              + "    int a {(int)123};\n"
+              + "};\n");
+        reformat();
+        assertDocumentText("Incorrect C++11: brace-Initialization format",
+                "class A\n"
+              + "{\n" 
+              + "public:\n" 
+              + "    int a{(int) 123};\n"
+              + "};\n");
+    }
+    
+    public void test222887_2() {
+        setDefaultsOptions();
+        setLoadDocumentText(
+                "int main()\n"
+              + "{\n" 
+              + "    int a {(int) 123};\n" 
+              + "};\n");
+        reformat();
+        assertDocumentText("ncorrect C++11: brace-Initialization format",
+                "int main()\n"
+              + "{\n" 
+              + "    int a{(int) 123};\n" 
+              + "};\n");
+    }
 }

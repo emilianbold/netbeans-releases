@@ -66,7 +66,9 @@ import org.netbeans.modules.cnd.apt.support.APTTokenTypes;
 import org.netbeans.modules.cnd.apt.support.APTWalker;
 import org.netbeans.modules.cnd.apt.utils.APTUtils;
 import org.netbeans.modules.cnd.indexing.api.CndTextIndex;
+import org.netbeans.modules.cnd.indexing.api.CndTextIndexKey;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
+import org.netbeans.modules.cnd.repository.api.CacheLocation;
 
 
 /**
@@ -77,10 +79,14 @@ import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
  */
 public final class APTIndexingWalker extends APTWalker {
     private final Set<String> ids = new HashSet<String>();
+    private final CndTextIndexKey key;
+    private final CacheLocation location;
     
-    public APTIndexingWalker(APTFile apt) {
+    public APTIndexingWalker(APTFile apt, CndTextIndexKey key, CacheLocation location) {
         super(apt, null);
         assert apt.isTokenized() : "only full APT have to be passed here " + apt.getPath();
+        this.key = key;
+        this.location = location;
     }
 
     @Override
@@ -156,7 +162,7 @@ public final class APTIndexingWalker extends APTWalker {
     
     public void index() {
         super.visit();
-        CndTextIndex.put(getRootFile().getFileSystem(), getRootFile().getPath(), ids);
+        CndTextIndex.put(location, key, ids);
     }
 
     private boolean analyzeToken(APTToken token) {

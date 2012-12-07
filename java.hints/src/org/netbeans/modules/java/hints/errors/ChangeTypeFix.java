@@ -115,7 +115,7 @@ final class ChangeTypeFix implements Fix {
         return NbBundle.getMessage(ChangeTypeFix.class, "MSG_ChangeVariablesType", treeName, type); // NOI18N
     }
 
-    private static String escape(String s) {
+    static String escape(String s) {
         if (s != null) {
             try {
                 return XMLUtil.toAttributeValue(s);

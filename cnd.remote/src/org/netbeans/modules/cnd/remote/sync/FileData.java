@@ -67,7 +67,8 @@ import org.openide.util.Exceptions;
 public final class FileData {
 
     private final Properties data;
-    private final FileObject dataFile;
+    private final FileObject privProjectStorageDir;
+    private final String dataFileName;
 
     // upgrade to 1.3 is caused not by this file itself, but by change in remote host mirror
     private static final String VERSION = "1.3"; // NOI18N
@@ -123,10 +124,10 @@ public final class FileData {
 
     private FileData(FileObject privProjectStorageDir, ExecutionEnvironment executionEnvironment) throws IOException {
         data = new Properties();
-        String dataFileName = "timestamps-" + executionEnvironment.getHost() + //NOI18N
+        this.privProjectStorageDir = privProjectStorageDir;
+        this.dataFileName = "timestamps-" + executionEnvironment.getHost() + //NOI18N
                 '-' + executionEnvironment.getUser()+ //NOI18N
-                '-' + executionEnvironment.getSSHPort(); //NOI18N
-        dataFile = FileUtil.createData(privProjectStorageDir, dataFileName);
+                '-' + executionEnvironment.getSSHPort(); //NOI18N        
         if (!Boolean.getBoolean("cnd.remote.timestamps.clear")) {
             try {
                 load();
@@ -140,8 +141,8 @@ public final class FileData {
         }
     }
     
-    public FileObject getDataFile() {
-        return dataFile;
+    public FileObject getDataFile() throws IOException {
+        return FileUtil.createData(privProjectStorageDir, dataFileName);
     }
 
 //    /**
@@ -188,7 +189,9 @@ public final class FileData {
 
     @org.netbeans.api.annotations.common.SuppressWarnings("RV")
     public void store()  {
+        FileObject dataFile = null;
         try {
+            dataFile = getDataFile();
             OutputStream os = new BufferedOutputStream(dataFile.getOutputStream());
             data.setProperty(VERSION_KEY, VERSION);
             data.store(os, null);
@@ -196,7 +199,9 @@ public final class FileData {
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
             try {
-                dataFile.delete();
+                if (dataFile != null) { // NB hint that sais it's unnecessary check lies
+                    dataFile.delete();
+                }
             } catch (IOException ex1) {
                 System.err.printf("Error deleting file %s\n", dataFile.getPath());
             }
@@ -212,6 +217,7 @@ public final class FileData {
     //
 
     private void load() throws IOException {
+        FileObject dataFile = getDataFile();
         if (dataFile.isValid()) {
             long time = System.currentTimeMillis();
             final InputStream is = dataFile.getInputStream();

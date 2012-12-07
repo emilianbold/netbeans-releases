@@ -45,16 +45,23 @@
 package org.netbeans.modules.editor.java;
 
 import com.sun.source.tree.Tree;
-import java.util.ArrayList;
+
 import java.util.Collections;
 import java.util.EnumSet;
+import java.util.HashSet;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Logger;
 import javax.swing.text.JTextComponent;
 
+import com.sun.source.tree.ExpressionTree;
+import com.sun.source.util.SourcePositions;
+import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource.Phase;
+import org.netbeans.api.java.source.SourceUtils;
+import org.netbeans.api.java.source.TreeUtilities;
+import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.api.progress.ProgressUtils;
 import org.netbeans.lib.editor.codetemplates.api.CodeTemplate;
 import org.netbeans.lib.editor.codetemplates.spi.CodeTemplateFilter;
@@ -74,15 +81,15 @@ import org.openide.util.NbBundle;
 public class JavaCodeTemplateFilter implements CodeTemplateFilter {
     
     private static final Logger LOG = Logger.getLogger(JavaCodeTemplateFilter.class.getName());
+    private static final String EXPRESSION = "{EXPRESSION}"; //NOI18N
     
-    private int startOffset;
-    private int endOffset;
-    private Tree.Kind ctx = null;
+    private Tree.Kind treeKindCtx = null;
+    private String stringCtx = null;
     
     private JavaCodeTemplateFilter(JTextComponent component, int offset) {
         if (Utilities.isJavaContext(component, offset, false)) {
-            this.startOffset = offset;
-            this.endOffset = component.getSelectionStart() == offset ? component.getSelectionEnd() : -1;
+            final int startOffset = offset;
+            final int endOffset = component.getSelectionStart() == offset ? component.getSelectionEnd() : -1;
             final Source source = Source.create(component.getDocument());
             if (source != null) {
                 final AtomicBoolean cancel = new AtomicBoolean();
@@ -93,18 +100,35 @@ public class JavaCodeTemplateFilter implements CodeTemplateFilter {
                             ParserManager.parse(Collections.singleton(source), new UserTask() {
                                 @Override
                                 public void run(ResultIterator resultIterator) throws Exception {
-                                    if (cancel.get())
+                                    if (cancel.get()) {
                                         return;
+                                    }
                                     Parser.Result result = resultIterator.getParserResult(startOffset);
                                     CompilationController controller = result != null ? CompilationController.get(result) : null;
-                                    if (controller != null) {
-                                        controller.toPhase(Phase.PARSED);
-                                        Tree tree = controller.getTreeUtilities().pathFor(startOffset).getLeaf();
-                                        if (endOffset >= 0 && startOffset != endOffset) {
-                                            if (controller.getTreeUtilities().pathFor(endOffset).getLeaf() != tree)
-                                                return;
+                                    if (controller != null && Phase.PARSED.compareTo(controller.toPhase(Phase.PARSED)) <= 0) {
+                                        TreeUtilities tu = controller.getTreeUtilities();
+                                        if (endOffset >= 0) {
+                                            TokenSequence<JavaTokenId> ts = SourceUtils.getJavaTokenSequence(controller.getTokenHierarchy(), startOffset);
+                                            int delta = ts.move(startOffset);
+                                            if (delta == 0 || ts.moveNext() && ts.token().id() == JavaTokenId.WHITESPACE) {
+                                                delta = ts.move(endOffset);
+                                                if (delta == 0 || ts.moveNext() && ts.token().id() == JavaTokenId.WHITESPACE) {
+                                                    String selectedText = controller.getText().substring(startOffset, endOffset).trim();
+                                                    SourcePositions[] sp = new SourcePositions[1];
+                                                    ExpressionTree expr = tu.parseExpression(selectedText, sp);
+                                                    if (expr != null && expr.getKind() != Tree.Kind.IDENTIFIER && !Utilities.containErrors(expr) && sp[0].getEndPosition(null, expr) >= selectedText.length()) {
+                                                        stringCtx = EXPRESSION;
+                                                    }
+                                                }
+                                            }
                                         }
-                                        ctx = tree.getKind();
+                                        Tree tree = tu.pathFor(startOffset).getLeaf();
+                                        if (endOffset >= 0 && startOffset != endOffset) {
+                                            if (tu.pathFor(endOffset).getLeaf() != tree) {
+                                                return;
+                                            }
+                                        }
+                                        treeKindCtx = tree.getKind();
                                     }
                                 }
                             });
@@ -117,37 +141,33 @@ public class JavaCodeTemplateFilter implements CodeTemplateFilter {
         }
     }
 
+    @Override
     public synchronized boolean accept(CodeTemplate template) {
-        if (ctx == null)
+        if (treeKindCtx == null && stringCtx == null) {
             return false;
-        EnumSet<Tree.Kind> contexts = getTemplateContexts(template);        
-        return contexts.size() == 0 || contexts.contains(ctx);
+        }
+        EnumSet<Tree.Kind> treeKindContexts = EnumSet.noneOf(Tree.Kind.class);
+        HashSet stringContexts = new HashSet();
+        getTemplateContexts(template, treeKindContexts, stringContexts);
+        return treeKindContexts.isEmpty() && stringContexts.isEmpty() || treeKindContexts.contains(treeKindCtx) || stringContexts.contains(stringCtx);
     }
     
-    private EnumSet<Tree.Kind> getTemplateContexts(CodeTemplate template) {
+    private void getTemplateContexts(CodeTemplate template, EnumSet<Tree.Kind> treeKindContexts, HashSet<String> stringContexts) {
         List<String> contexts = template.getContexts();
-        List<Tree.Kind> kinds = new ArrayList<Tree.Kind>();
-        
         if (contexts != null) {
-            for(String ctx : contexts) {
-                Tree.Kind kind = Tree.Kind.valueOf(ctx);
-                if (kind != null) {
-                    kinds.add(kind);
-                } else {
-                    LOG.warning("Invalid code template context '" + ctx + "', ignoring."); //NOI18N
+            for(String context : contexts) {
+                try {
+                    treeKindContexts.add(Tree.Kind.valueOf(context));
+                } catch (IllegalArgumentException iae) {
+                    stringContexts.add(context);
                 }
             }
-        }
-        
-        if (kinds.size() > 0) {
-            return EnumSet.copyOf(kinds);
-        } else {
-            return EnumSet.noneOf(Tree.Kind.class);
         }
     }
 
     public static final class Factory implements CodeTemplateFilter.Factory {
         
+        @Override
         public CodeTemplateFilter createFilter(JTextComponent component, int offset) {
             return new JavaCodeTemplateFilter(component, offset);
         }

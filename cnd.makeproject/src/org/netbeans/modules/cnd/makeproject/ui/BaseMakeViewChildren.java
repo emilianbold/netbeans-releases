@@ -62,6 +62,7 @@ abstract class BaseMakeViewChildren extends Children.Keys<Object>
         implements ChangeListener, RefreshableItemsContainer {
 
     private final static RequestProcessor LOAD_NODES_RP = new RequestProcessor("MakeLogicalViewProvider.LoadingNodes", 1); // NOI18N
+    private final RequestProcessor.Task refreshKeysTask;
     private static final int WAIT_DELAY = 50;
 
     private Folder folder;
@@ -70,6 +71,13 @@ abstract class BaseMakeViewChildren extends Children.Keys<Object>
     public BaseMakeViewChildren(Folder folder, MakeLogicalViewProvider provider) {
         this.folder = folder;
         this.provider = provider;
+        this.refreshKeysTask = LOAD_NODES_RP.create(new Runnable() {
+            @Override
+            public void run() {
+//                System.err.println("resetKeys on " + getFolder());
+                resetKeys(getKeys());
+            }
+        }, true);
     }
 
     protected final MakeProject getProject() {
@@ -146,6 +154,8 @@ abstract class BaseMakeViewChildren extends Children.Keys<Object>
     @Override
     @SuppressWarnings("unchecked")
     protected void removeNotify() {
+        refreshKeysTask.cancel();
+        refreshKeysTask.waitFinished();
         resetKeys(Collections.EMPTY_SET);
         if (folder != null) {
             folder.removeChangeListener(this);
@@ -170,24 +180,13 @@ abstract class BaseMakeViewChildren extends Children.Keys<Object>
                             refreshItem(item);
                         }
                     };
+                    LOAD_NODES_RP.post(todo);
                     break;
                 }
             }
         } else {
             // update folder. Items may have been added or deleted
-            final Collection<Object> keys = getKeys();
-            // setKeys() acquires Children.MUTEX; make sure
-            // it's not under ProjectManager.mutex() (IZ#175996)
-            todo = new Runnable() {
-
-                @Override
-                public void run() {
-                    resetKeys(keys);
-                }
-            };
-        }
-        if (todo != null) {
-            LOAD_NODES_RP.post(todo);
+            refreshKeysTask.schedule(WAIT_DELAY);
         }
     }
 

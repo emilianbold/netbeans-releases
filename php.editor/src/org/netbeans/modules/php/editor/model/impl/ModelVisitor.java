@@ -1291,7 +1291,7 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
         List<? extends CodeMarker> markers = scope.getMarkers();
         for (CodeMarker codeMarker : markers) {
             assert codeMarker != null;
-            if (codeMarker.getOffsetRange().containsInclusive(offset)) {
+            if (codeMarker.containsInclusive(offset)) {
                 atOffset = codeMarker;
             }
         }

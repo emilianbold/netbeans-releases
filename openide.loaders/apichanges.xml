@@ -109,6 +109,23 @@ is the proper place.
 <!-- ACTUAL CHANGES BEGIN HERE: -->
 
   <changes>
+      <change id="DataShadow.findOriginal">
+          <api name="loaders"/>
+          <summary>
+              Introduced <code>DataShadow.findOriginal</code> which extracts the original file from
+              a FileObject representing a shadow/link.
+          </summary>
+          <version major="7" minor="42"/>
+          <date day="23" month="11" year="2012"/>
+          <author login="sdedic"/>
+          <compatibility addition="yes"/>
+          <description>
+              Target FileObject can be obtained, instead of DataObject. The target may be invalid,
+              or otherwise unsuitable for DataObject creation. Use this method to just dereference
+              the shadow file.
+          </description>
+          <class package="org.openide.loaders" name="DataShadow"/>
+      </change>
       <change id="DataObjec.Registration">
           <api name="loaders"/>
           <summary>Introduced <code>DataObject.Registration</code> and <code>DataObject.Registrations</code></summary>

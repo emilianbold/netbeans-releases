@@ -116,7 +116,6 @@ final class ProjectServerPanel extends javax.swing.JPanel implements DocumentLis
         setJ2eeVersionWarningPanel();
         this.wizard = wizard;
         this.j2eeModuleType = j2eeModuleType;
-        initServers(UserProjectSettings.getDefault().getLastUsedServer());
         // preselect the first item in the j2ee spec combo
         if (j2eeSpecComboBox.getModel().getSize() > 0) {
             j2eeSpecComboBox.setSelectedIndex(0);
@@ -150,7 +149,15 @@ final class ProjectServerPanel extends javax.swing.JPanel implements DocumentLis
         jTextFieldContextPath.getDocument().addDocumentListener( this );
         serverLibraryCheckbox.setVisible(false);
     }
-    
+
+    @Override
+    public void addNotify() {
+        super.addNotify();
+        // init list of servers when the panel is going to be shown:
+        initServers(UserProjectSettings.getDefault().getLastUsedServer());
+    }
+
+
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is

@@ -53,7 +53,7 @@ public abstract class PageInspector {
     /** Feature ID used by page-inspection when it sends messages through {@code MessageDispatcher}. */
     public static final String MESSAGE_DISPATCHER_FEATURE_ID = "inspect"; // NOI18N
     /** Default {@code PageInspector}. */
-    private static PageInspector DEFAULT = Lookup.getDefault().lookup(PageInspector.class);
+    private static PageInspector DEFAULT;
     
     /** Name of the property that is fired when the page model changes. */
     public static final String PROP_MODEL = "model"; // NOI18N
@@ -63,7 +63,10 @@ public abstract class PageInspector {
      * 
      * @return default {@code PageInspector}.
      */
-    public static PageInspector getDefault() {
+    public static synchronized PageInspector getDefault() {
+        if(DEFAULT == null) {
+            DEFAULT = Lookup.getDefault().lookup(PageInspector.class);
+        }
         return DEFAULT;
     }
 

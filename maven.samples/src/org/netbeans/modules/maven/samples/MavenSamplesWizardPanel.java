@@ -76,7 +76,6 @@ public class MavenSamplesWizardPanel implements WizardDescriptor.Panel,
         if (component == null) {
             component = new MavenSamplesPanelVisual(this);
             component.setName(NbBundle.getMessage(MavenSamplesWizardPanel.class, "LBL_CreateProjectStep"));
-            component.putClientProperty("NewProjectWizard_Title", NbBundle.getMessage(MavenSamplesWizardPanel.class, "LBL_TXT_NewJ2EESample"));
         }
         return component;
     }

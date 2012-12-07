@@ -164,7 +164,7 @@ public class BrokenReferencesSupport {
      */
     @Deprecated
     public static void showAlert() {
-        ProjectProblems.showCustomizer(ProjectDecorator.create());
+        ProjectProblems.showAlert(ProjectDecorator.create());
     }
 
     /**

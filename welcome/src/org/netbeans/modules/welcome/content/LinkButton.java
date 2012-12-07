@@ -76,6 +76,8 @@ public abstract class LinkButton extends JButton
 
     private boolean underline = false;
     private final boolean showBorder;
+    private Font rollOverFont;
+    private Font regularFont;
 
     private final Color defaultForeground;
 
@@ -105,8 +107,8 @@ public abstract class LinkButton extends JButton
         this.usageTrackingId = usageTrackingId;
 
         if( showBorder ) {
-            setBorder( BorderFactory.createEmptyBorder(5, 11, 5, 11) );
-            setMargin( new Insets(11,11,11,11) );
+            setBorder( BorderFactory.createEmptyBorder(6, 12, 6, 12) );
+            setMargin( new Insets(12,12,12,12) );
         } else {
             setBorder( new EmptyBorder(1, 1, 1, 1) );
             setMargin( new Insets(0, 0, 0, 0) );
@@ -144,8 +146,6 @@ public abstract class LinkButton extends JButton
             underline = true;
             repaint();
             onMouseEntered( e );
-            if( !showBorder )
-                setForeground( Utils.getColor( MOUSE_OVER_LINK_COLOR  )  );
         }
     }
 
@@ -189,15 +189,20 @@ public abstract class LinkButton extends JButton
     }
 
     protected void onMouseExited(MouseEvent e) {
+        if( null != regularFont )
+            super.setFont( regularFont );
     }
 
     protected void onMouseEntered(MouseEvent e) {
+        if( null != rollOverFont )
+            super.setFont( rollOverFont );
     }
 
     @Override
     public void paint(Graphics g) {
         super.paint(g);
         if( underline && isEnabled() && !showBorder) {
+            g.setColor( getForeground() );
             Font f = getFont();
             FontMetrics fm = getFontMetrics(f);
             int iconWidth = 0;
@@ -232,5 +237,16 @@ public abstract class LinkButton extends JButton
 
         Constants.USAGE_LOGGER.log(rec);
         System.err.println("usage: " + id);
+    }
+
+    @Override
+    public void setFont( Font font ) {
+        super.setFont( font );
+        regularFont = font;
+        if( showBorder ) {
+            rollOverFont = font.deriveFont( Font.BOLD );
+        } else {
+            rollOverFont = null;
+        }
     }
 }

@@ -595,6 +595,7 @@ public class ElementNode extends AbstractNode {
         }
     }
 
+    @NbBundle.Messages("LBL_WaitNode=Please Wait...")
     private static class WaitNode extends AbstractNode {
 
         private Image waitIcon = ImageUtilities.loadImage("org/netbeans/modules/refactoring/java/resources/wait.gif"); // NOI18N
@@ -615,7 +616,7 @@ public class ElementNode extends AbstractNode {
 
         @java.lang.Override
         public java.lang.String getDisplayName() {
-            return NbBundle.getMessage(MoveMembersPanel.class, "LBL_WaitNode"); // NOI18N
+            return NbBundle.getMessage(ElementNode.class, "LBL_WaitNode"); // NOI18N
         }
     }
 }

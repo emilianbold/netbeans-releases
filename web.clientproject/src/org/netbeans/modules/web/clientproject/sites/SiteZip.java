@@ -85,6 +85,11 @@ public class SiteZip implements SiteTemplateImplementation {
 
     private Customizer cust;
 
+    @Override
+    public String getId() {
+        return "ARCHIVE"; // NOI18N
+    }
+
     @NbBundle.Messages("SiteZip.name=Archive File")
     @Override
     public String getName() {

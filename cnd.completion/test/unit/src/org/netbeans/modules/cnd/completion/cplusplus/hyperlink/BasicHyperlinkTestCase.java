@@ -963,6 +963,11 @@ public class BasicHyperlinkTestCase extends HyperlinkBaseTestCase {
         // Bug 220680 - C11 parser error for _Noreturn
         performTest("bug220680.c", 1, 17, "bug220680.c", 1, 1);
     }    
+
+    public void DISABLED_testBug223298() throws Exception {
+        // Bug 223298 - Wrong recognition of function
+        performTest("bug223298.cpp", 10, 10, "bug223298.cpp", 6, 1);
+    }    
     
     public static class Failed extends HyperlinkBaseTestCase {
 

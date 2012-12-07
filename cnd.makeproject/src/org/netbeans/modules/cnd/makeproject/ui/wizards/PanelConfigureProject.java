@@ -131,15 +131,18 @@ public class PanelConfigureProject implements MakeSamplePanel<WizardDescriptor>,
     }
 
     protected final void fireChangeEvent() {
+       fireChangeEvent(new ChangeEvent(this));
+    }
+    
+    protected final void fireChangeEvent(ChangeEvent ev) {
         Iterator<ChangeListener> it;
         synchronized (listeners) {
             it = new HashSet<ChangeListener>(listeners).iterator();
         }
-        ChangeEvent ev = new ChangeEvent(this);
         while (it.hasNext()) {
             (it.next()).stateChanged(ev);
         }
-    }
+    }    
 
     @Override
     public void readSettings(WizardDescriptor settings) {

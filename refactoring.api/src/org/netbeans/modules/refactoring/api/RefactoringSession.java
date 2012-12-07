@@ -54,6 +54,7 @@ import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.modules.refactoring.api.impl.ProgressSupport;
 import org.netbeans.modules.refactoring.api.impl.SPIAccessor;
+import org.netbeans.modules.refactoring.spi.ProgressProvider;
 import org.netbeans.modules.refactoring.spi.RefactoringElementImplementation;
 import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
 import org.netbeans.modules.refactoring.spi.Transaction;
@@ -83,6 +84,7 @@ public final class RefactoringSession {
     private UndoManager undoManager = UndoManager.getDefault();
     boolean realcommit = true;
     private AtomicBoolean finished = new AtomicBoolean(false);
+    private static final int COMMITSTEPS = 100;
     
     private RefactoringSession(String description) {
         //internalList = new LinkedList();
@@ -116,7 +118,11 @@ public final class RefactoringSession {
         long time = System.currentTimeMillis();
         
         Iterator it = internalList.iterator();
-        fireProgressListenerStart(0, internalList.size()+1);
+        ArrayList<Transaction> commits = SPIAccessor.DEFAULT.getCommits(bag);
+        float progressStep = (float)COMMITSTEPS / internalList.size();
+        float current = 0F;
+        fireProgressListenerStart(0, COMMITSTEPS + commits.size() * COMMITSTEPS + 1);
+        ProgressListener progressListener = new ProgressL(commits, COMMITSTEPS);
         if (realcommit) {
             undoManager.transactionStarted();
             undoManager.setUndoDescription(description);
@@ -124,32 +130,46 @@ public final class RefactoringSession {
         try {
             try {
                 while (it.hasNext()) {
-                    fireProgressListenerStep();
                     RefactoringElementImplementation element = (RefactoringElementImplementation) it.next();
                     if (element.isEnabled() && !((element.getStatus() == RefactoringElement.GUARDED) || (element.getStatus() == RefactoringElement.READ_ONLY))) {
                         element.performChange();
                     }
+                    current += progressStep;
+                    fireProgressListenerStep((int) current);
                 }
             } finally {
-                for (Transaction commit:SPIAccessor.DEFAULT.getCommits(bag)) {
+                for (Transaction commit : commits) {
                     SPIAccessor.DEFAULT.check(commit, false);
                 }
 
                 UndoableWrapper wrapper = MimeLookup.getLookup("").lookup(UndoableWrapper.class);
-                for (Transaction commit:SPIAccessor.DEFAULT.getCommits(bag)) {
-                    if (wrapper !=null)
+                for (Transaction commit : commits) {
+                    if (wrapper != null) {
                         setWrappers(commit, wrapper);
-                    
-                    commit.commit();
-                    if (wrapper !=null)
+                    }
+
+                    if(commit instanceof ProgressProvider) {
+                        ProgressProvider progressProvider = (ProgressProvider) commit;
+                        progressProvider.addProgressListener(progressListener);
+                    }
+                    try {
+                        commit.commit();
+                    } finally {
+                        if(commit instanceof ProgressProvider) {
+                            ProgressProvider progressProvider = (ProgressProvider) commit;
+                            progressProvider.removeProgressListener(progressListener);
+                        }
+                    }
+                    if (wrapper != null) {
                         unsetWrappers(commit, wrapper);
+                    }
                 }
-                if (wrapper !=null)
+                if (wrapper != null) {
                     wrapper.close();
-                for (Transaction commit : SPIAccessor.DEFAULT.getCommits(bag)) {
+                }
+                for (Transaction commit : commits) {
                     SPIAccessor.DEFAULT.sum(commit);
                 }
-                
             }
             if (saveAfterDone) {
                 LifecycleManager.getDefault().saveAll();
@@ -182,6 +202,37 @@ public final class RefactoringSession {
             timer.log(Level.FINE, "refactoringSession.doRefactoring", new Object[] { description, RefactoringSession.this, time } );
         }
         return null;
+    }
+    
+    private class ProgressL implements ProgressListener {
+
+        private float progressStep;
+        private float current;
+        private final ArrayList<Transaction> commits;
+        private final int start;
+
+        ProgressL(ArrayList<Transaction> commits, int start) {
+            this.commits = commits;
+            this.start = start;
+        }
+
+        @Override
+        public void start(ProgressEvent event) {
+            progressStep = (float) COMMITSTEPS / event.getCount();
+            current = start + commits.indexOf(event.getSource()) * COMMITSTEPS;
+            fireProgressListenerStep((int) current);
+        }
+
+        @Override
+        public void step(ProgressEvent event) {
+            current = current + progressStep;
+            fireProgressListenerStep((int) current);
+        }
+
+        @Override
+        public void stop(ProgressEvent event) {
+            // do not rely on plugins;
+        }
     }
     
     /**
@@ -294,6 +345,12 @@ public final class RefactoringSession {
     private void fireProgressListenerStep() {
         if (progressSupport != null) {
             progressSupport.fireProgressListenerStep(this);
+        }
+    }
+    
+    private void fireProgressListenerStep(int count) {
+        if (progressSupport != null) {
+            progressSupport.fireProgressListenerStep(this, count);
         }
     }
 

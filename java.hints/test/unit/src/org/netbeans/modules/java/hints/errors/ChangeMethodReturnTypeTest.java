@@ -71,7 +71,7 @@ public class ChangeMethodReturnTypeTest extends ErrorHintsTestBase {
     public void test200467() throws Exception {
         performFixTest("test/Test.java",
                        "package test; import java.util.List; public class Test { <A> void getMForm() { List<? extends A> a = null; return a|; } }",
-                       "FIX_ChangeMethodReturnType List<? extends A>",
+                       "FIX_ChangeMethodReturnType List&lt;? extends A>",
                        "package test; import java.util.List; public class Test { <A> List<? extends A> getMForm() { List<? extends A> a = null; return a; } }");
     }
 
@@ -83,7 +83,7 @@ public class ChangeMethodReturnTypeTest extends ErrorHintsTestBase {
     public void test203360() throws Exception {
         performFixTest("test/Test.java",
                        "package test; import java.util.Collections; public class Test { private int t() { return Collections.emptyList(|); } }",
-                       "FIX_ChangeMethodReturnType List<Object>",
+                       "FIX_ChangeMethodReturnType List&lt;Object>",
                        "package test; import java.util.Collections;import java.util.List; public class Test { private List<Object> t() { return Collections.emptyList(); } }");
     }
 

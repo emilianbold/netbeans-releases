@@ -120,21 +120,29 @@ public class HtmlDeclarationFinder implements DeclarationFinder {
      *   otherwise return the character range for the given hyperlink tokens
      */
     @Override
-    public OffsetRange getReferenceSpan(Document doc, int caretOffset) {
-        OffsetRange range = getCoreHtmlReferenceSpan(doc, caretOffset);
-        if (range != null) {
-            return range;
-        }
+    public OffsetRange getReferenceSpan(final Document doc, final int caretOffset) {
+        final AtomicReference<OffsetRange> result_ref = new AtomicReference<OffsetRange>(OffsetRange.NONE);
+        doc.render(new Runnable() {
+            @Override
+            public void run() {
+                OffsetRange range = getCoreHtmlReferenceSpan(doc, caretOffset);
+                if (range != null) {
+                    result_ref.set(range);
+                    return ;
+                }
 
-        //html extensions
-        String mimeType = NbEditorUtilities.getMimeType(doc);
-        for (HtmlExtension ext : HtmlExtensions.getRegisteredExtensions(mimeType)) {
-            range = ext.getReferenceSpan(doc, caretOffset);
-            if (range != null) {
-                return range;
+                //html extensions
+                String mimeType = NbEditorUtilities.getMimeType(doc);
+                for (HtmlExtension ext : HtmlExtensions.getRegisteredExtensions(mimeType)) {
+                    range = ext.getReferenceSpan(doc, caretOffset);
+                    if (range != null) {
+                        result_ref.set(range);
+                        return ;
+                    }
+                }
             }
-        }
-        return OffsetRange.NONE;
+        });
+        return result_ref.get();
     }
 
     private OffsetRange getCoreHtmlReferenceSpan(Document doc, int caretOffset) {

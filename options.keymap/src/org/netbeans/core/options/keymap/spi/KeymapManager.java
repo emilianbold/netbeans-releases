@@ -44,6 +44,8 @@
 
 package org.netbeans.core.options.keymap.spi;
 
+import java.io.IOException;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -148,5 +150,36 @@ public abstract class KeymapManager {
      */
     public final String getName() {
         return name;
+    }
+    
+    /**
+     * This mixin interface should be implemented by those KeymapManagers, which
+     * support rollback of user settings. If a KeymapManager does not support a rollback,
+     * the core keymap management will perform a profile revert by setting defaults
+     * reported by the keymap manager back to it.
+     * <p/>
+     * Revert operation is a different from set-to-default-value in that the user
+     * setting can be removed completely.
+     */
+    public interface WithRevert  {
+        /**
+         * Reverts action key bindings. The method should revert user
+         * modifications written previously by saveKeymap() for the profile.
+         * 
+         * @param profile profile that should be changed
+         * @param action actions to revert
+         * @throws IOException if revert operation fails
+         */
+        public void revertActions(String profile, Collection<ShortcutAction> action) throws IOException;
+        
+        /**
+         * Reverts profile to the default (shipped) state. The method only
+         * applies to built-in profiles. User-defined profiles cannot be
+         * reverted, just deleted.
+         * 
+         * @param profileName profile names to revert or delete
+         * @throws IOException if revert fails
+         */
+        public void revertProfile(String profileName) throws IOException;
     }
 }

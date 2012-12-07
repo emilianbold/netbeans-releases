@@ -77,7 +77,7 @@ public class OverridingMethodsImpl implements OverridingMethods {
     /** just very simple implementation for now*/
     private Set<MethodElement> inheritedMethods = Collections.emptySet();
     private Set<MethodElement> inheritedByMethods = Collections.emptySet();
-    private LinkedHashSet<TypeElement> inheritedByTypes = new LinkedHashSet<TypeElement>();
+    private Set<TypeElement> inheritedByTypes = new LinkedHashSet<TypeElement>();
     @Override
     public Collection<? extends AlternativeLocation> overrides(ParserResult info, ElementHandle handle) {
         assert handle instanceof ModelElement;
@@ -140,7 +140,7 @@ public class OverridingMethodsImpl implements OverridingMethods {
     /**
      * @return the inheritedByTypes
      */
-    private LinkedHashSet<TypeElement> getInheritedByTypes(final ParserResult info, final TypeScope type) {
+    private Set<TypeElement> getInheritedByTypes(final ParserResult info, final TypeScope type) {
         final String signature = type.getIndexSignature();
         if (signature != null && !signature.equals(classSignatureForInheritedByTypes)) {
             Index index = ElementQueryFactory.getIndexQuery(info);

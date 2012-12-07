@@ -247,7 +247,7 @@ public class BrowserConsoleLogger implements Console.Listener {
         // pattern is "at ...... (file:line:column)"
         // file can be also http:// url
         if (!line.endsWith(")")) {
-            return null;
+            return tryToConvertLineURLToHyperlink(line);
         }
         int start = line.lastIndexOf('(');
         if (start == -1) {
@@ -287,6 +287,51 @@ public class BrowserConsoleLogger implements Console.Listener {
         String s2 = "(" +  // NOI18N
                 getProjectPath(file) + 
             line.substring(fileEnd, line.length());
+        MyListener l = new MyListener(file, lineNumber, columnNumber);
+        return new Object[]{l,s1,s2};
+    }
+    
+    private Object[] tryToConvertLineURLToHyperlink(String line) {
+        int u1 = line.indexOf("http://");   // NOI18N
+        if (u1 < 0) {
+            u1 = line.indexOf("https://");  // NOI18N
+        }
+        if (u1 < 0) {
+            return null;
+        }
+        int ue = line.indexOf(' ', u1);
+        if (ue < 0) {
+            ue = line.length();
+        }
+        int col2 = line.lastIndexOf(':', ue);
+        if (col2 < 0) {
+            return null;
+        }
+        int col1 = line.lastIndexOf(':', col2 - 1);
+        if (col1 < 0) {
+            return null;
+        }
+        int lineNumber = -1;
+        int columnNumber = -1;
+        try {
+            lineNumber = Integer.parseInt(line.substring(col1+1, col2));
+            columnNumber = Integer.parseInt(line.substring(col2+1, ue));
+        } catch (NumberFormatException e) {
+            //ignore
+        }
+        if (columnNumber != -1 && lineNumber == -1) {
+            // perhaps stack trace had only line number:
+            lineNumber = columnNumber;
+        }
+        if (lineNumber == -1) {
+            return null;
+        }
+        String file = line.substring(u1, col1);
+        if (file.length() == 0) {
+            return null;
+        }
+        String s1 = line.substring(0, u1);
+        String s2 = line.substring(u1, line.length());
         MyListener l = new MyListener(file, lineNumber, columnNumber);
         return new Object[]{l,s1,s2};
     }

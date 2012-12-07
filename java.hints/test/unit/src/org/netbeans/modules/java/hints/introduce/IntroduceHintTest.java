@@ -173,7 +173,7 @@ public class IntroduceHintTest extends NbTestCase {
 
     public void test142424() throws Exception {
         performFixTest("package test; public class Test {private static void bar(int i) {} public void test() {new Runnable() {public void run() {String foo = \"foo\";bar(|foo.length()|);}}.run();}}",
-                       "package test; public class Test {private static void bar(int i) {} public void test() {new Runnable() {public void run() {String foo = \"foo\";int length = foo.length(); bar( length);}}.run();}}",
+                       "package test; public class Test {private static void bar(int i) {} public void test() {new Runnable() {public void run() {String foo = \"foo\";int length = foo.length(); bar(length);}}.run();}}",
                        new DialogDisplayerImpl(null, false, false, true),
                        4, 0);
     }

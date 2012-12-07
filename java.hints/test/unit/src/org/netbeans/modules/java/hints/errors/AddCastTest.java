@@ -33,6 +33,7 @@ package org.netbeans.modules.java.hints.errors;
 
 import com.sun.source.util.TreePath;
 import java.util.List;
+import java.util.Set;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.modules.java.hints.infrastructure.ErrorHintsTestBase;
 import org.netbeans.spi.editor.hints.Fix;
@@ -136,6 +137,14 @@ public class AddCastTest extends ErrorHintsTestBase {
                        "[AddCastFix:...new Object[...]:T[]]",
                        "package test; public class Test<T> { private T[] f = (T[]) new Object[0]; }");
     }
+    
+    public void test222344() throws Exception {
+        performFixTest("test/Test.java",
+                       "package test; public class Test { static void C(B data) { C(new Object()); } class A<T> { public void method(T data) {} } class B extends A<Test> {} }",
+                       -1,
+                       "[AddCastFix:...new Object(...):B]",
+                       "package test; public class Test { static void C(B data) { C((B) new Object()); } class A<T> { public void method(T data) {} } class B extends A<Test> {} }");
+    }
 
     @Override
     protected List<Fix> computeFixes(CompilationInfo info, int pos, TreePath path) throws Exception {
@@ -149,6 +158,11 @@ public class AddCastTest extends ErrorHintsTestBase {
         }
         
         return super.toDebugString(info, f);
+    }
+
+    @Override
+    protected Set<String> getSupportedErrorKeys() {
+        return new AddCast().getCodes();
     }
     
 }

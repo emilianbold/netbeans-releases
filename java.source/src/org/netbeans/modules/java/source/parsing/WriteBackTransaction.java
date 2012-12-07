@@ -455,7 +455,10 @@ class WriteBackTransaction extends FileManagerTransaction {
 
                 File f = getCurrentFile();
                 if (!f.getParentFile().mkdirs() && !f.getParentFile().exists()) {
-                    throw new IOException();
+                    throw new IOException(
+                        String.format(
+                            "Cannot create folder: %s", //NOI18N
+                            f.getParentFile().getAbsolutePath()));
                 }
                 final FileOutputStream out = new FileOutputStream(f);
                 try {

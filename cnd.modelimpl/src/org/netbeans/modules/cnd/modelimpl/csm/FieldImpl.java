@@ -49,6 +49,7 @@ import java.io.IOException;
 import org.netbeans.modules.cnd.modelimpl.content.file.FileContent;
 import org.netbeans.modules.cnd.modelimpl.csm.ClassImpl.MemberBuilder;
 import org.netbeans.modules.cnd.modelimpl.csm.core.AstUtil;
+import org.netbeans.modules.cnd.modelimpl.csm.deep.ExpressionBase;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
 import org.netbeans.modules.cnd.modelimpl.textcache.NameCache;
@@ -88,8 +89,8 @@ public final class FieldImpl extends VariableImpl<CsmField> implements CsmField 
         return fieldImpl;
     }
 
-    private FieldImpl(CsmType type, CharSequence name, CsmScope cls, CsmVisibility visibility, boolean _static, boolean _extern, CsmFile file, int startOffset, int endOffset) {
-        super(file, startOffset, endOffset, type, name, cls, _static, _extern);
+    private FieldImpl(CsmType type, CharSequence name, CsmScope cls, CsmVisibility visibility, boolean _static, boolean _extern, ExpressionBase initExpr, CsmFile file, int startOffset, int endOffset) {
+        super(type, name, cls, _static, _extern, initExpr, file, startOffset, endOffset);
         this.visibility = visibility;
     }
     
@@ -212,8 +213,12 @@ public final class FieldImpl extends VariableImpl<CsmField> implements CsmField 
                 if(type == null) {
                     type = TypeFactory.createSimpleType(BuiltinTypes.getBuiltIn("int"), file, startOffset, endOffset); // NOI18N
                 }
-                
-                field = new FieldImpl(type, name, scope, visibility, _static, _extern, file, startOffset, endOffset);
+                ExpressionBase initializer = null;
+                if(getInitializerBuilder() != null) {
+                    getInitializerBuilder().setScope(getScope());
+                    initializer = getInitializerBuilder().create();
+                }
+                field = new FieldImpl(type, name, scope, visibility, _static, _extern, initializer, file, startOffset, endOffset);
                 
                 postObjectCreateRegistration(true, field);
                 NameHolder.createName(name).addReference(fileContent, field);;

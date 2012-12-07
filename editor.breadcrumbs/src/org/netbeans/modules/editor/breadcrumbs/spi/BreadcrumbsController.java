@@ -57,8 +57,10 @@ import org.netbeans.modules.editor.breadcrumbs.SideBarFactoryImpl;
 import org.netbeans.modules.editor.breadcrumbs.support.BreadCrumbsScheduler;
 import org.netbeans.modules.parsing.spi.Scheduler;
 import org.openide.explorer.ExplorerManager;
+import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.util.ImageUtilities;
+import org.openide.util.Mutex.Action;
 import org.openide.util.Parameters;
 
 /**
@@ -70,15 +72,20 @@ public class BreadcrumbsController {
     private BreadcrumbsController() {
     }
 
-    public static void setBreadcrumbs(@NonNull Document doc, @NonNull Node root, @NonNull Node selected) {
+    public static void setBreadcrumbs(@NonNull Document doc, @NonNull final Node root, @NonNull final Node selected) {
         Parameters.notNull("doc", doc);
         Parameters.notNull("root", root);
         Parameters.notNull("selected", selected);
         
-        ExplorerManager manager = HolderImpl.get(doc).getManager();
+        final ExplorerManager manager = HolderImpl.get(doc).getManager();
 
-        manager.setRootContext(root);
-        manager.setExploredContext(selected);
+        Children.MUTEX.readAccess(new Action<Void>() {
+            @Override public Void run() {
+                manager.setRootContext(root);
+                manager.setExploredContext(selected);
+                return null;
+            }
+        });
     }
     
     public static boolean areBreadCrumsEnabled(@NonNull Document doc) {

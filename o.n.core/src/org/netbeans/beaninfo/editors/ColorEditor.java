@@ -338,6 +338,9 @@ public final class ColorEditor implements PropertyEditor, XMLPropertyEditor {
         int palette = 0;
         Color color = null;
 
+        if ((index = getIndex(awtGenerate, text)) >= 0) {
+            text = getAWTColorNames()[index];
+        }
         if((index = getIndex(getAWTColorNames(), text)) >= 0) {
             palette = AWT_PALETTE;
             color = awtColors[index];

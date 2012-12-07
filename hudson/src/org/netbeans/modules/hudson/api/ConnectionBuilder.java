@@ -143,6 +143,17 @@ public final class ConnectionBuilder {
     }
 
     /**
+     * Specify the home URL. Useful for login authentication.
+     *
+     * @param url the base URL of the Hudson instance
+     * @return this builder
+     */
+    public ConnectionBuilder homeURL(String url) throws MalformedURLException {
+        this.home = new URL(url);
+        return this;
+    }
+
+    /**
      * Specify the Hudson instance as per {@link #homeURL}.
      * @param instance a Hudson instance
      * @return this builder

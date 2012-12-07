@@ -602,6 +602,12 @@ public final class ToolbarConfiguration implements ToolbarPool.Configuration {
         mid = new Color(r, g, b);
     }
 
+    private static boolean isWindows8() {
+        String osName = System.getProperty ("os.name");
+        return osName.indexOf("Windows 8") >= 0
+            || (osName.equals( "Windows NT (unknown)" ) && "6.2".equals( System.getProperty("os.version") ));
+    }
+
     private static final Border lowerBorder = BorderFactory.createCompoundBorder(
         BorderFactory.createMatteBorder(0, 0, 1, 0,
         fetchColor("controlShadow", Color.DARK_GRAY)),
@@ -623,14 +629,18 @@ public final class ToolbarConfiguration implements ToolbarPool.Configuration {
             //add border
             if ("Windows".equals(UIManager.getLookAndFeel().getID())) { //NOI18N
                 if( isXPTheme() ) {
-                    //Set up custom borders for XP
-                    toolbarPanel.setBorder(BorderFactory.createCompoundBorder(
-                        upperBorder,
-                        BorderFactory.createCompoundBorder(
-                            BorderFactory.createMatteBorder(0, 0, 1, 0,
-                            fetchColor("controlShadow", Color.DARK_GRAY)),
-                            BorderFactory.createMatteBorder(0, 0, 1, 0, mid))
-                    )); //NOI18N
+                    if( isWindows8() ) {
+                        toolbarPanel.setBorder( BorderFactory.createEmptyBorder() );
+                    } else {
+                        //Set up custom borders for XP
+                        toolbarPanel.setBorder(BorderFactory.createCompoundBorder(
+                            upperBorder,
+                            BorderFactory.createCompoundBorder(
+                                BorderFactory.createMatteBorder(0, 0, 1, 0,
+                                fetchColor("controlShadow", Color.DARK_GRAY)),
+                                BorderFactory.createMatteBorder(0, 0, 1, 0, mid))
+                        )); //NOI18N
+                    }
                 } else {
                     toolbarPanel.setBorder( BorderFactory.createEtchedBorder() );
                 }

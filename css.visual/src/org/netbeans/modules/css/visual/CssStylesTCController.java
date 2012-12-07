@@ -122,10 +122,7 @@ public class CssStylesTCController implements PropertyChangeListener {
 
                     //slow IO, do not run in EDT
                     final FileObject file = getFileObject(activated);
-                    if(file == null) {
-                        return ;
-                    }
-                    final boolean supported = isSupportedFileType(file);
+                    final boolean supported = file != null && isSupportedFileType(file);
 
                     SwingUtilities.invokeLater(new Runnable() {
                         @Override
@@ -135,7 +132,12 @@ public class CssStylesTCController implements PropertyChangeListener {
                                 //editor with supported file has been opened
                                 openCssStyles(activated, file);
                             } else {
-                                //some foreign editor activated, close the rule editor
+                                //some foreign editor activated
+                                //1. disable the content of the css styles window as the window group close (#2) 
+                                //doesn't work if user opens the window manually
+                                getCssStylesTC().setUnsupportedContext(file);
+                                
+                                //2. close the css styles window group
                                 if (activeCssContentTC != null) {
                                     closeCssStyles();
                                 }

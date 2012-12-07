@@ -258,4 +258,8 @@ public class ErrorHintsProviderTest extends NbTestCase {
     public void testTestSpaceAfterDot218655() throws Exception {
         performTest("TestSpaceAfterDot", false);
     }
+    
+    public void testOverrideAnnotation() throws Exception {
+        performTest("TestOverrideAnnotation", false);
+    }
 }

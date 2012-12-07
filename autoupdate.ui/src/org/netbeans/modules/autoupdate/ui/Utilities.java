@@ -51,6 +51,7 @@ import java.net.URL;
 import java.text.Collator;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
@@ -159,8 +160,8 @@ public class Utilities {
     
     public static synchronized void initAcceptedLicenseIDs() {
         assert ! SwingUtilities.isEventDispatchThread() : "Don't call in AWT queue";
-        if (acceptedLicenseIDs == null) {
-            acceptedLicenseIDs = new HashSet<String> ();
+        if (acceptedLicenseIDs == null) {            
+            acceptedLicenseIDs = Collections.newSetFromMap(new ConcurrentHashMap<String, Boolean>());
             for (UpdateUnit u : UpdateManager.getDefault().getUpdateUnits(UpdateManager.TYPE.MODULE)) {
                 UpdateElement el;
                 if ((el = u.getInstalled()) != null) {

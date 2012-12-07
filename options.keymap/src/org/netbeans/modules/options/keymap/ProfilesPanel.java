@@ -236,12 +236,17 @@ public class ProfilesPanel extends javax.swing.JPanel {
         duplicateButton.setEnabled(true);
         exportButton.setEnabled(true);
         
-        if(getKeymapPanel().getMutableModel().isCustomProfile(profile)) {
+        MutableShortcutsModel model = getKeymapPanel().getMutableModel();
+        if(model.isCustomProfile(profile)) {
             deleteButton.setEnabled(true);
             restoreButton.setEnabled(false);
         } else {
+            boolean change = model.isChangedProfile(profile);
+            if (!change) {
+                change |= model.differsFromDefault(profile);
+            }
             deleteButton.setEnabled(false);
-            restoreButton.setEnabled(true);
+            restoreButton.setEnabled(change);
         }
     }//GEN-LAST:event_profilesListValueChanged
 
@@ -477,6 +482,8 @@ public class ProfilesPanel extends javax.swing.JPanel {
         if (keymapModel.deleteOrRestoreProfile(currentProfile)) {
             model.removeItem(profilesList.getSelectedIndex());
             profilesList.setSelectedIndex(0);
+        } else {
+            profilesListValueChanged(null);
         }
     }
 

@@ -1,9 +1,17 @@
 foo = true
+^"",foo
+foo = true
  ^f,foo
 foo = true
   ^fo,foo
 foo = true
    ^foo,foo
+foo = true
+    ^"",""
+foo = true
+     ^"",""
+foo = true
+      ^"",""
 foo = true
        ^t,true
 foo = true
@@ -13,9 +21,15 @@ foo = true
 foo = true
           ^true,true
 if !fo
+^"",""
+if !fo
  ^i,if
 if !fo
   ^if,if
+if !fo
+   ^"",""
+if !fo
+    ^"",""
 if !fo
      ^f,fo
 if !fo

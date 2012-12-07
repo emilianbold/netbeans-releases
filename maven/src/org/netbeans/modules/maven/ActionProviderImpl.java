@@ -59,6 +59,7 @@ import javax.swing.JMenuItem;
 import javax.swing.SwingUtilities;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.versioning.ComparableVersion;
+import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ui.OpenProjects;
 import static org.netbeans.modules.maven.Bundle.*;
@@ -92,10 +93,12 @@ import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
+import org.openide.awt.ActionReferences;
 import org.openide.awt.ActionRegistration;
 import org.openide.awt.DynamicMenuContent;
 import org.openide.awt.StatusDisplayer;
 import org.openide.execution.ExecutorTask;
+import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.util.ContextAwareAction;
 import org.openide.util.Lookup;
@@ -425,7 +428,8 @@ public class ActionProviderImpl implements ActionProvider {
 
     // XXX should this be an API somewhere?
     private static abstract class ConditionallyShownAction extends AbstractAction implements ContextAwareAction {
-
+        protected boolean triggeredOnFile = false;
+        
         protected ConditionallyShownAction() {
             setEnabled(false);
             putValue(DynamicMenuContent.HIDE_WHEN_DISABLED, true);
@@ -438,8 +442,20 @@ public class ActionProviderImpl implements ActionProvider {
         protected abstract Action forProject(Project p);
 
         public final @Override Action createContextAwareInstance(Lookup actionContext) {
+            triggeredOnFile = false;
             Collection<? extends Project> projects = actionContext.lookupAll(Project.class);
             if (projects.size() != 1) {
+                Collection<? extends FileObject> fobs = actionContext.lookupAll(FileObject.class);
+                if (fobs.size() == 1) {
+                    if ("pom.xml".equals(fobs.iterator().next().getNameExt())) {
+                        Project p = FileOwnerQuery.getOwner(fobs.iterator().next());
+                        if (p != null) {
+                             triggeredOnFile = true;
+                             Action a = forProject(p);
+                             return a != null ? a : this;
+                        }
+                    }
+                }
                 return this;
             }
             Action a = forProject(projects.iterator().next());
@@ -450,20 +466,26 @@ public class ActionProviderImpl implements ActionProvider {
 
     @ActionID(id = "org.netbeans.modules.maven.customPopup", category = "Project")
     @ActionRegistration(displayName = "#LBL_Custom_Run", lazy=false)
-    @ActionReference(position = 1400, path = "Projects/org-netbeans-modules-maven/Actions")
-    @Messages("LBL_Custom_Run=Custom")
+    @ActionReferences({
+        @ActionReference(position = 1400, path = "Projects/org-netbeans-modules-maven/Actions"),
+        @ActionReference(position = 250, path = "Loaders/text/x-maven-pom+xml/Actions")
+    })
+    @Messages({"LBL_Custom_Run=Custom", "LBL_Custom_Run_File=Run Maven"})
     public static ContextAwareAction customPopupActions() {
         return new ConditionallyShownAction() {
+            
             protected @Override Action forProject(Project p) {
                 ActionProviderImpl ap = p.getLookup().lookup(ActionProviderImpl.class);
-                return ap != null ? ap.new CustomPopupActions() : null;
+                return ap != null ? ap.new CustomPopupActions(triggeredOnFile) : null;
             }
         };
     }
     private final class CustomPopupActions extends AbstractAction implements Presenter.Popup {
+        private final boolean onFile;
 
-        private CustomPopupActions() {
-            putValue(Action.NAME, LBL_Custom_Run());
+        private CustomPopupActions(boolean onFile) {
+            putValue(Action.NAME, onFile ? LBL_Custom_Run_File() : LBL_Custom_Run());
+            this.onFile = onFile;
         }
 
         @Override
@@ -477,7 +499,7 @@ public class ActionProviderImpl implements ActionProvider {
         })
         @Override public JMenuItem getPopupPresenter() {
 
-            final JMenu menu = new JMenu(LBL_Custom_Run());
+            final JMenu menu = new JMenu(onFile ? LBL_Custom_Run_File() : LBL_Custom_Run());
             final JMenuItem loading = new JMenuItem(LBL_Loading());
 
             menu.add(loading);

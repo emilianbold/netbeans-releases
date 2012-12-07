@@ -553,7 +553,10 @@ public class MoveMembersTransformer extends RefactoringVisitor {
 
                         @Override
                         public Void visitIdentifier(IdentifierTree node, Void p) {
-                            fqns.put(node, make.Identifier(trees.getElement(new TreePath(bodyPath, node))));
+                            TreePath treePath = trees.getPath(bodyPath.getCompilationUnit(), node);
+                            if(!workingCopy.getTreeUtilities().isSynthetic(treePath)) {
+                                fqns.put(node, make.Identifier(trees.getElement(treePath)));
+                            }
                             return super.visitIdentifier(node, p);
                         }
                     };

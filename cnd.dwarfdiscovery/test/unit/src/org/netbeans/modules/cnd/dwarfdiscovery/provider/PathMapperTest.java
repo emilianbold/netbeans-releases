@@ -168,6 +168,7 @@ public class PathMapperTest extends NbTestCase {
     public void testMapperDetectorAll() {
         FS fs = new FS("/scratch/user1/view_storage/user1_my_rdbms");
         RelocatablePathMapperImpl mapper = new RelocatablePathMapperImpl(null);
+        int initialSize = new RelocatablePathMapperImpl(null).dump().size();
         String root;
         String unknown;
         ResolvedPath path;
@@ -203,7 +204,7 @@ public class PathMapperTest extends NbTestCase {
         assertNotNull(path);
         assertEquals("/scratch/user1/view_storage/user1_my_rdbms", path.getRoot());
 
-        assertEquals(3, mapper.dump().size());
+        assertEquals(3 + initialSize, mapper.dump().size());
         //for(MapperEntry entry : mapper.dump()) {
         //    System.out.println(entry.from+" -> "+entry.to);
         //}
@@ -278,7 +279,7 @@ public class PathMapperTest extends NbTestCase {
         wr.append("/ade/user1_my_rdbms=/scratch/user1/view_storage/user1_my_rdbms\n");
         wr.append("/ade/b/1226108341=/scratch/user1/view_storage/user1_my_rdbms\n");
         wr.close();
-        
+
         RelocatablePathMapperImpl mapper = new RelocatablePathMapperImpl(new ProjectProxy() {
 
             @Override

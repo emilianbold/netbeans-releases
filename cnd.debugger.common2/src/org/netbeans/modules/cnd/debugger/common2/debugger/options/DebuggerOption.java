@@ -324,6 +324,22 @@ public class DebuggerOption extends Option {
 			    "", //NOI18N // deault value
 			    false, // is engine option
 			    Type.DIRECTORIES, false);  //type , hasToolTip
+    
+    public static final DebuggerOption GDB_FOLLOW_FORK_MODE =
+	new DebuggerOption( // NOI18N
+			    "gdb_follow_fork_mode", // NOI18N //name
+                            new String[] {"parent", "child"}, // NOI18N //values  
+			    "parent", //NOI18N // deault value
+			    true, // is engine option
+			    Type.COMBO_BOX, false);  //type , hasToolTip
+    
+    public static final DebuggerOption GDB_DETACH_ON_FORK =
+	new DebuggerOption( // NOI18N
+			    "gdb_detach_on_fork", // NOI18N //name
+                            new String[] {"on", "off"}, // NOI18N //values  
+			    "on", //NOI18N // deault value
+			    true, // is engine option
+			    Type.COMBO_BOX, false);  //type , hasToolTip
 
     public static final DebuggerOption OUTPUT_BASE  =
 	new DebuggerOption( // NOI18N

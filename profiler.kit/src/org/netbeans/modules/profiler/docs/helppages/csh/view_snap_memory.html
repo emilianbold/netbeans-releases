@@ -12,22 +12,24 @@
     <body>
         <h2>Memory Snapshot</h2>
                 <p><small><a href="#seealso">See Also</a></small></p>
-                <p>A memory snapshot captures data on object allocation and liveness.
+                <p>A memory snapshot captures data on live objects, object allocation and liveness.
+                The data captured in the snapshot depends upon the options that were selected for the profiling session.
                 You can take a memory snapshot when you are analyzing memory usage.
                 The snapshot is displayed in the main editor window.</p>
                 <p>The snapshot contains the following tabs:</p>
                 <ul>
                     <li><b>Memory Results.</b> This tab displays a list of classes
                     (including array classes), with the total size and number of instances
-                    allocated at the time you took the snapshot. You display the stack traces for a specific class by
+                    allocated at the time you took the snapshot. 
+                    <p>If Record Stack Trace for Allocations was selected as a profiling option 
+                    you can display the stack traces for a specific class by
                     right-clicking the name of the class and selecting Show Allocation Stack Traces.
-                    The stack traces are displayed in the Allocation Stack Traces tab.</li>
+                    The stack traces are displayed in the Allocation Stack Traces tab.</p></li>
                     <li><b>Info.</b> This tab displays data on when the snapshot was taken, where it is saved, and the
                     configuration of the profiling session.</li>
                     <li><b>Allocation Stack Traces.</b> This tab displays a reverse call graph with all call paths leading to object allocations for the given
                     class.
-                    This tab is only available if Record Stack Trace for Allocations was
-                    selected as a profiling option.</li>
+                    This tab is only available if Record Stack Trace for Allocations was selected as a profiling option.</li>
                 </ul>
                 <p>You can load the source <tt>.java</tt> file of a class by right-clicking any class in the Memory Results tab or the Allocation Stack Traces
                 tab and selecting Go To Source.</p>
@@ -37,7 +39,7 @@
             <dt><a name="seealso">See Also</a></dt>
             <dd><a href="../snap_taking.html">Taking a Snapshot</a></dd>
             <dd><a href="../snapshots.html">Exploring Snapshots</a></dd>
-            <dd><a href="../profile_analyze_short.html">Analyzing CPU Performance</a></dd>
+            <dd><a href="../profile_memory_short.html">Analyzing Application Memory Usage</a></dd>
             <dd><a href="../profile_results.html">About Profiling Results</a></dd>
         </dl>
         <hr>

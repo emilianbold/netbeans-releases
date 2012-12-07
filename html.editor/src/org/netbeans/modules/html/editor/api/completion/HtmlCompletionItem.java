@@ -177,7 +177,10 @@ public class HtmlCompletionItem implements CompletionItem {
                 Completion.get().hideCompletion();
             }
             int caretOffset = component.getSelectionEnd();
-            substituteText(component, caretOffset - substitutionOffset);
+            int len = caretOffset - substitutionOffset;
+            if(len >= 0) {
+                substituteText(component, len);
+            }
         }
 
     }

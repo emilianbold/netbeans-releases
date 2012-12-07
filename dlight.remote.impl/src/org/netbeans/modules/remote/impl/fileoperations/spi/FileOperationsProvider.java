@@ -84,12 +84,20 @@ abstract public class FileOperationsProvider {
     abstract public static class FileOperations {
 
         private final ExecutionEnvironment env;
-        private final RequestProcessor RP;;
+        private final RemoteFileSystem fileSystem;
+        private final RequestProcessor RP;
+        
+        private static final boolean USE_CACHE;
+        static {
+            String text = System.getProperty("rfs.vcs.cache");
+            USE_CACHE = (text == null) ? true : Boolean.parseBoolean(text);
+        }
 
         protected FileOperations(FileSystem fs) {
             FileObject root = fs.getRoot();
             if (root instanceof RemoteFileObject) {
                 env = ((RemoteFileObject)root).getExecutionEnvironment();
+                fileSystem = (RemoteFileSystem) fs;
                 RP = new RequestProcessor("Refresh for "+env); //NOI18N
             } else {
                 throw new IllegalArgumentException();
@@ -115,6 +123,12 @@ abstract public class FileOperationsProvider {
         }
 
         protected boolean isDirectory(FileProxyO file) {
+            if (USE_CACHE) {
+                Boolean res = fileSystem.vcsSafeIsDirectory(file.getPath());
+                if (res != null) {
+                    return res.booleanValue();
+                }
+            }
             return isDirectory(file, LINK_DEPTH);
         }
         
@@ -154,6 +168,12 @@ abstract public class FileOperationsProvider {
         }
 
         protected boolean isFile(FileProxyO file) {
+            if (USE_CACHE) {
+                Boolean res = fileSystem.vcsSafeIsFile(file.getPath());
+                if (res != null) {
+                    return res.booleanValue();
+                }
+            }
             return isFile(file, LINK_DEPTH);
         }
         
@@ -255,6 +275,12 @@ abstract public class FileOperationsProvider {
         }
 
         protected boolean exists(FileProxyO file) {
+            if (USE_CACHE) {
+                Boolean res = fileSystem.vcsSafeExists(file.getPath());
+                if (res != null) {
+                    return res.booleanValue();
+                }
+            }
             if (!ConnectionManager.getInstance().isConnectedTo(getExecutionEnvironment())) {
                 return false;
             }

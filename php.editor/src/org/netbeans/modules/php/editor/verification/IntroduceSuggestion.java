@@ -133,6 +133,10 @@ public class IntroduceSuggestion extends AbstractSuggestion {
         if (phpParseResult.getProgram() == null) {
             return;
         }
+        FileObject fileObject = phpParseResult.getSnapshot().getSource().getFileObject();
+        if (fileObject == null) {
+            return;
+        }
         final BaseDocument doc = context.doc;
         int lineBegin;
         int lineEnd;
@@ -145,7 +149,7 @@ public class IntroduceSuggestion extends AbstractSuggestion {
             IntroduceFix variableFix = introduceFixVisitor.getIntroduceFix();
             if (variableFix != null) {
                 hints.add(new Hint(IntroduceSuggestion.this, getDisplayName(),
-                        context.parserResult.getSnapshot().getSource().getFileObject(), variableFix.getOffsetRange(),
+                        fileObject, variableFix.getOffsetRange(),
                         Collections.<HintFix>singletonList(variableFix), 500));
             }
         }

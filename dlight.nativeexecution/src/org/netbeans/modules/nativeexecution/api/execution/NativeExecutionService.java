@@ -42,8 +42,7 @@
 package org.netbeans.modules.nativeexecution.api.execution;
 
 import java.awt.event.ActionEvent;
-import java.io.IOException;
-import java.io.PrintWriter;
+import java.io.Reader;
 import java.nio.charset.Charset;
 import java.util.EnumSet;
 import java.util.concurrent.Callable;
@@ -74,10 +73,12 @@ import org.netbeans.modules.terminal.api.IOEmulation;
 import org.netbeans.modules.terminal.api.IOTerm;
 import org.openide.awt.StatusDisplayer;
 import org.openide.util.Cancellable;
-import org.openide.util.Exceptions;
+import org.openide.util.Mutex;
+import org.openide.util.Mutex.Action;
 import org.openide.util.WeakListeners;
 import org.openide.windows.IOSelect;
 import org.openide.windows.IOSelect.AdditionalOperation;
+import org.openide.windows.OutputWriter;
 
 /**
  * This is a wrapper over an <tt>Executionservice</tt> that handles running
@@ -192,31 +193,6 @@ public final class NativeExecutionService {
 
                     final NativeProcess process = processBuilder.call();
 
-                    if (descriptor.frontWindow) {
-                        SwingUtilities.invokeLater(new Runnable() {
-
-                            @Override
-                            public void run() {
-                                IOSelect.select(descriptor.inputOutput,
-                                        EnumSet.<AdditionalOperation>of(
-                                        AdditionalOperation.OPEN,
-                                        AdditionalOperation.REQUEST_ACTIVE,
-                                        AdditionalOperation.REQUEST_VISIBLE));
-
-                                // Still terminal (if any) doesn't get focus in
-                                // this case - so try to request it implicitly
-                                Term term = IOTerm.term(descriptor.inputOutput);
-
-                                if (term != null) {
-                                    JComponent screen = term.getScreen();
-                                    if (screen != null) {
-                                        screen.requestFocusInWindow();
-                                    }
-                                }
-                            }
-                        });
-                    }
-
                     /**
                      * As IO could be re-used we need to 'unlock' it because it
                      * could be 'locked' by previous run... (It is always set to
@@ -234,17 +210,10 @@ public final class NativeExecutionService {
                      * queued after that one. So as soon as our is processed we
                      * are sure that connection is done.
                      */
-                    SwingUtilities.invokeAndWait(new Runnable() {
-
-                        @Override
-                        public void run() {
-                            // connected
-                        }
-                    });
+                    SwingUtilities.invokeAndWait(new PreExecution());
 
                     if (process.getState() == State.ERROR) {
-                        descriptor.inputOutput.getErr().print(ProcessUtils.readProcessErrorLine(process));
-                        descriptor.inputOutput.getErr().println('\r');
+                        out(true, ProcessUtils.readProcessErrorLine(process), "\r"); // NOI18N
                         return 1;
                     }
 
@@ -276,7 +245,6 @@ public final class NativeExecutionService {
                                         }
                                     } finally {
                                         IOTerm.term(descriptor.inputOutput).setReadOnly(true);
-                                        descriptor.inputOutput.getOut().close();
                                     }
                                 }
                             }, "term process post execution"); // NOI18N
@@ -342,6 +310,7 @@ public final class NativeExecutionService {
         ExecutionDescriptor descr =
                 new ExecutionDescriptor().controllable(descriptor.controllable).
                 frontWindow(descriptor.frontWindow).
+                preExecution(new PreExecution()).
                 inputVisible(descriptor.inputVisible).
                 inputOutput(descriptor.inputOutput).
                 outLineBased(descriptor.outLineBased).
@@ -352,42 +321,56 @@ public final class NativeExecutionService {
                 outConvertorFactory(descriptor.outConvertorFactory).
                 charset(charset);
 
-        ExecutionService es = ExecutionService.newService(processBuilder, descr, displayName);
-        final Future<Integer> result = es.run();
+        return ExecutionService.newService(processBuilder, descr, displayName).run();
+    }
 
-        SwingUtilities.invokeLater(new Runnable() {
+    private void out(final boolean toError, final CharSequence... cs) {
+        Mutex.EVENT.writeAccess(new Action<Void>() {
 
             @Override
-            public void run() {
-                // AdditionalOperation.REQUEST_ACTIVE has effect only if
-                // isFocusTaken() is true... 
-                // force this condition ... 
-                boolean prevFocusTaken = descriptor.inputOutput.isFocusTaken();
-                descriptor.inputOutput.setFocusTaken(true);
-
-                IOSelect.select(descriptor.inputOutput,
-                        EnumSet.<AdditionalOperation>of(
-                        AdditionalOperation.OPEN,
-                        AdditionalOperation.REQUEST_ACTIVE,
-                        AdditionalOperation.REQUEST_VISIBLE));
-
-                // ... and restore it to the original state as leaving it
-                // in TRUE state is strongly discouraged  
-                descriptor.inputOutput.setFocusTaken(prevFocusTaken);
+            public Void run() {
+                OutputWriter w = toError
+                        ? descriptor.inputOutput.getErr()
+                        : descriptor.inputOutput.getOut();
+                if (w != null) {
+                    for (CharSequence c : cs) {
+                        w.append(c);
+                    }
+                }
+                return null;
             }
         });
-
-        return result;
     }
 
     private void closeIO() {
-        descriptor.inputOutput.getErr().close();
-        descriptor.inputOutput.getOut().close();
-        try {
-            descriptor.inputOutput.getIn().close();
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
-        }
+        Mutex.EVENT.writeAccess(new Action<Void>() {
+
+            @Override
+            public Void run() {
+                final OutputWriter out = descriptor.inputOutput.getOut();
+                final OutputWriter err = descriptor.inputOutput.getErr();
+                final Reader in = descriptor.inputOutput.getIn();
+                if (err != null) {
+                    try {
+                        err.close();
+                    } catch (Throwable th) {
+                    }
+                }
+                if (out != null) {
+                    try {
+                        out.close();
+                    } catch (Throwable th) {
+                    }
+                }
+                if (in != null) {
+                    try {
+                        in.close();
+                    } catch (Throwable th) {
+                    }
+                }
+                return null;
+            }
+        });
     }
 
     private final class PostRunnable implements Runnable {
@@ -410,24 +393,19 @@ public final class NativeExecutionService {
                 if (descriptor.postMessageDisplayer != null) {
                     final long time = System.currentTimeMillis() - startTimeMillis;
                     String postMsg = descriptor.postMessageDisplayer.getPostMessage(process, time);
-
-                    PrintWriter pw = (rc == 0)
-                            ? descriptor.inputOutput.getOut()
-                            : descriptor.inputOutput.getErr();
-
-                    // use \n\r to correctly move cursor in terminals as well
-                    pw.printf("\n\r%s\n\r", postMsg); // NOI18N
-
+                    out(rc != 0, "\n\r", postMsg, "\n\r"); // NOI18N
                     StatusDisplayer.getDefault().setStatusText(descriptor.postMessageDisplayer.getPostStatusString(process));
                 }
 
-                if (descriptor.closeInputOutputOnFinish) {
-                    closeIO();
-                }
-
-                // Finally, if there was some post executable set before - call it
-                if (postExecutable != null) {
-                    postExecutable.run();
+                try {
+                    // Finally, if there was some post executable set before - call it
+                    if (postExecutable != null) {
+                        postExecutable.run();
+                    }
+                } finally {
+                    if (descriptor.closeInputOutputOnFinish) {
+                        closeIO();
+                    }
                 }
             }
         }
@@ -449,6 +427,35 @@ public final class NativeExecutionService {
                 case ERROR:
                     startTimeMillis = System.currentTimeMillis();
                     break;
+            }
+        }
+    }
+
+    private class PreExecution implements Runnable {
+
+        @Override
+        public void run() {
+            if (descriptor.frontWindow) {
+                if (IOSelect.isSupported(descriptor.inputOutput)) {
+                    IOSelect.select(descriptor.inputOutput,
+                            EnumSet.<AdditionalOperation>of(
+                            AdditionalOperation.OPEN,
+                            AdditionalOperation.REQUEST_VISIBLE));
+                } else {
+                    descriptor.inputOutput.select();
+                }
+            }
+            if (descriptor.requestFocus) {
+                Term term = IOTerm.term(descriptor.inputOutput);
+
+                if (term != null) {
+                    JComponent screen = term.getScreen();
+                    if (screen != null) {
+                        screen.requestFocusInWindow();
+                    }
+                } else {
+                    descriptor.inputOutput.setFocusTaken(true);
+                }
             }
         }
     }

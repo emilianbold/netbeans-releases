@@ -52,6 +52,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.api.project.NativeProjectRegistry;
 import org.netbeans.modules.cnd.api.remote.RemoteFileUtil;
+import org.netbeans.modules.cnd.api.utils.CndVisibilityQuery;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.netbeans.modules.cnd.utils.CndPathUtilitities;
@@ -151,11 +152,32 @@ public class MakeProjectFileOwnerQuery implements FileOwnerQueryImplementation {
                         } else if (fo.isFolder()) {
                             mine = descriptor.findFolderByPath(path) != null;
                         }
-                        if (!mine && isMine(descriptor.getAbsoluteSourceRoots(), fo, path)) {
-                            mine = true;
-                        }
-                        if (!mine && isMine(descriptor.getAbsoluteTestRoots(), fo, path)) {
-                            mine = true;
+                        if (!mine) {
+                            // usually all files are registered in project and are detected by find*Path,
+                            // but new added files or smth. created from template might be not yet registered
+                            // To recognize such files check them by source/test roots
+                            if (isMine(descriptor.getAbsoluteSourceRoots(), fo, path)) {
+                                mine = true;
+                            } else if (isMine(descriptor.getAbsoluteTestRoots(), fo, path)) {
+                                mine = true;
+                            }
+                            CndVisibilityQuery folderVisibilityQuery = descriptor.getFolderVisibilityQuery();
+                            if (mine && folderVisibilityQuery != null) {
+                                // make sure it is not path from Project's user-ignored folders
+                                FileObject toCheck;
+                                if (fo.isFolder()) {
+                                    toCheck = fo;
+                                } else {
+                                    toCheck = fo.getParent();
+                                }
+                                while (toCheck != null && !toCheck.isRoot()) {
+                                    if (folderVisibilityQuery.isIgnored(toCheck)) {
+                                        mine = false;
+                                        break;
+                                    }
+                                    toCheck = toCheck.getParent();
+                                }
+                            }
                         }
                         if (mine) {
                             cachedValue.cacheQuery(fo, (Project)project);

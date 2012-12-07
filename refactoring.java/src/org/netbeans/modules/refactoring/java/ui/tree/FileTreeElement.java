@@ -48,6 +48,7 @@ import java.awt.Image;
 import java.beans.BeanInfo;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
+import org.netbeans.api.actions.Openable;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.refactoring.spi.ui.TreeElement;
@@ -55,13 +56,16 @@ import org.netbeans.modules.refactoring.spi.ui.TreeElementFactory;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.text.Line;
+import org.openide.text.NbDocument;
+import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
 
 /**
  *
  * @author Jan Becicka
  */
-public class FileTreeElement implements TreeElement {
+public class FileTreeElement implements TreeElement, Openable {
 
     private FileObject fo;
     FileTreeElement(FileObject fo) {
@@ -103,5 +107,15 @@ public class FileTreeElement implements TreeElement {
     @Override
     public Object getUserObject() {
         return fo;
+    }
+
+    @Override
+    public void open() {
+        try {
+            DataObject od = DataObject.find(fo);
+            NbDocument.openDocument(od, 0, Line.ShowOpenType.OPEN, Line.ShowVisibilityType.FOCUS);
+        } catch (DataObjectNotFoundException ex) {
+            Exceptions.printStackTrace(ex);
+        }
     }
 }

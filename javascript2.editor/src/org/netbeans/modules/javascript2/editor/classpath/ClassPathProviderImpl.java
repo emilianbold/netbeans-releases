@@ -43,10 +43,12 @@ package org.netbeans.modules.javascript2.editor.classpath;
 
 import java.io.File;
 import java.net.URISyntaxException;
+import java.util.Arrays;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.SwingUtilities;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.classpath.GlobalPathRegistry;
 import org.netbeans.spi.java.classpath.ClassPathProvider;
@@ -63,19 +65,24 @@ import org.openide.util.lookup.ServiceProvider;
  *
  * @author Martin Fousek <marfous@netbeans.org>
  */
-@ServiceProvider(service=ClassPathProvider.class)
+@ServiceProvider(service = ClassPathProvider.class)
 public class ClassPathProviderImpl implements ClassPathProvider {
 
+    private static final Logger LOG = Logger.getLogger(ClassPathProviderImpl.class.getName());
     protected static final RequestProcessor RP = new RequestProcessor(ClassPathProviderImpl.class);
 
-    private static final Logger LOG = Logger.getLogger(ClassPathProviderImpl.class.getName());
     public static final String BOOT_CP = "classpath/javascript-boot"; //NOI18N
     public static final AtomicBoolean JS_CLASSPATH_REGISTERED = new AtomicBoolean(false);
 
     // GuardedBy(this)
     private static ClassPath cachedBootClassPath;
 
-    private static FileObject jsStubsFileObject;
+    /** Names of JavaScript signature bundles. */
+    private static final StubsBundle[] STUBS_BUNDLES = {
+        new StubsBundle("corestubs.zip", "corestubs-doc.zip"),  //NOI18N
+        new StubsBundle("domstubs.zip", "domstubs.zip"),        //NOI18N
+        new StubsBundle("reststubs.zip", "reststubs-doc.zip")   //NOI18N
+    };
 
     @Override
     public ClassPath findClassPath(FileObject file, String type) {
@@ -92,42 +99,39 @@ public class ClassPathProviderImpl implements ClassPathProvider {
         return cachedBootClassPath;
     }
 
-    protected static synchronized FileObject getJsStubs() { // protect for tests
-        if (jsStubsFileObject == null) {
-            // Stubs generated for the "built-in" JavaScript libraries.
-            File allstubs = InstalledFileLocator.getDefault().locate(
-                    "jsstubs/allstubs.zip", "org.netbeans.modules.javascript2.editor", false); //NOI18N
-            if (allstubs == null) {
+    protected static synchronized FileObject[] getJsStubs() {
+        List<FileObject> roots = new LinkedList<FileObject>();
+        for (StubsBundle bundle : STUBS_BUNDLES) {
+            File stubFile = InstalledFileLocator.getDefault().locate("jsstubs/" + bundle.getNameOfDocumented(), "org.netbeans.modules.javascript2.editor", false); //NOI18N
+            if (stubFile == null || !stubFile.exists()) {
+                stubFile = InstalledFileLocator.getDefault().locate("jsstubs/" + bundle.getNameOfPruned(), "org.netbeans.modules.javascript2.editor", false); //NOI18N
+            }
+            if (stubFile == null) {
                 // Probably inside unit test.
                 try {
                     File moduleJar = Utilities.toFile(ClassPathProviderImpl.class.getProtectionDomain().getCodeSource().getLocation().toURI());
-                    allstubs = new File(moduleJar.getParentFile().getParentFile(), "jsstubs/allstubs.zip"); //NOI18N
+                    stubFile = new File(moduleJar.getParentFile().getParentFile(), "jsstubs/" + bundle.getNameOfPruned()); //NOI18N
                 } catch (URISyntaxException x) {
                     assert false : x;
-                    return null;
                 }
             }
-            if (!allstubs.isFile() || !allstubs.exists()) {
-                LOG.log(Level.WARNING, "JavaScript signature files were not found: {0}", allstubs.getAbsolutePath());
-                return null;
+            if (!stubFile.isFile() || !stubFile.exists()) {
+                LOG.log(Level.WARNING, "JavaScript stubs file was not found: {0}", stubFile.getAbsolutePath());
+            } else {
+                roots.add(FileUtil.getArchiveRoot(FileUtil.toFileObject(stubFile)));
             }
-            jsStubsFileObject = FileUtil.getArchiveRoot(FileUtil.toFileObject(allstubs));
         }
-        return jsStubsFileObject;
+        return roots.toArray(new FileObject[roots.size()]);
     }
 
     /**
-     * Registers JavaScript classpath if not already done.
-     *<p>
-     * Class synchronized since more language instances can be created in an undefined way.
-     *<p>
-     * The registration is done lazily in EDT task so it is not ensured that
-     * the JavaScript classpath is properly initialized after returning from this method.
-     *<p>
-     * The JavaScript classpath unregistration is done in module's install class.
+     * Registers JavaScript classpath if not already done. <p> Class synchronized since more language instances can be
+     * created in an undefined way. <p> The registration is done lazily in EDT task so it is not ensured that the
+     * JavaScript classpath is properly initialized after returning from this method. <p> The JavaScript classpath
+     * unregistration is done in module's install class.
      */
     public static synchronized void registerJsClassPathIfNeeded() {
-        if(!JS_CLASSPATH_REGISTERED.get()) {
+        if (!JS_CLASSPATH_REGISTERED.get()) {
             JS_CLASSPATH_REGISTERED.set(true);
             RP.post(new Runnable() {
                 @Override
@@ -139,7 +143,24 @@ public class ClassPathProviderImpl implements ClassPathProvider {
                 }
             });
         }
-        
-        
+    }
+
+    private static class StubsBundle {
+
+        private final String nameOfPruned;
+        private final String nameOfDocumented;
+
+        public StubsBundle(String nameOfPruned, String nameOfDocumented) {
+            this.nameOfPruned = nameOfPruned;
+            this.nameOfDocumented = nameOfDocumented;
+        }
+
+        public String getNameOfPruned() {
+            return nameOfPruned;
+        }
+
+        public String getNameOfDocumented() {
+            return nameOfDocumented;
+        }
     }
 }

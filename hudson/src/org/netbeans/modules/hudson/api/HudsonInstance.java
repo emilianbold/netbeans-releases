@@ -133,4 +133,88 @@ public interface HudsonInstance extends Comparable<HudsonInstance> {
      */
     Preferences prefs();
 
+    /**
+     * Class holding info about Hudson instance persistence.
+     *
+     * @author jhavlin
+     */
+    public static final class Persistence {
+
+        private static final Persistence TRANSIENT_INSTANCE =
+                new Persistence(false);
+        private static final Persistence PERSISTENT_INSTANCE =
+                new Persistence(true);
+        private boolean isPersistent;
+        private String info;
+
+        /**
+         * Constructor for persistence settings that use default info message.
+         */
+        private Persistence(boolean isPersistent) {
+            this.isPersistent = isPersistent;
+            this.info = null;
+        }
+
+        /**
+         * Constructor for persistence settings that use custom info message.
+         */
+        public Persistence(boolean isPersistent, String info) {
+            this.isPersistent = isPersistent;
+            this.info = (info == null ? "" : info);                     //NOI18N
+        }
+
+        /**
+         * Settings for persistent instances, with default info message.
+         */
+        public static Persistence persistent() {
+            return PERSISTENT_INSTANCE;
+        }
+
+        /**
+         * Settings for transient instances.
+         */
+        public static Persistence tranzient() {
+            return TRANSIENT_INSTANCE;
+        }
+
+        /**
+         * Transient instance with a custom info message.
+         */
+        public static Persistence tranzient(String info) {
+            return new Persistence(false, info);
+        }
+
+        /**
+         * Instance with default info message.
+         *
+         * @param persistent True for persistent instance, false for transient
+         * instance.
+         */
+        public static Persistence instance(boolean persistent) {
+            if (persistent) {
+                return PERSISTENT_INSTANCE;
+            } else {
+                return TRANSIENT_INSTANCE;
+            }
+        }
+
+        /**
+         * Get info message, or specified default message if no custom message
+         * was set.
+         */
+        public String getInfo(String defaultInfo) {
+            if (info == null) {
+                return defaultInfo;
+            } else {
+                return info;
+            }
+        }
+
+        /**
+         * Return true if the instance is persistent, false otherwise.
+         */
+        public boolean isPersistent() {
+            return isPersistent;
+        }
+    }
 }

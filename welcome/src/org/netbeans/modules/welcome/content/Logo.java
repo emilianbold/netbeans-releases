@@ -74,6 +74,10 @@ public class Logo extends JPanel implements Constants, MouseListener {
         return new Logo( JAVA_LOGO_IMAGE, BundleSupport.getURL( "JavaLogo" ) ); // NOI18N
     }
 
+    public static Logo createNetBeansLogo() {
+        return new Logo( NETBEANS_LOGO_IMAGE, BundleSupport.getURL( "NetBeansLogo" ) ); // NOI18N
+    }
+
     /** Creates a new instance of RecentProjects */
     public Logo( String img, String url ) {
         super( new BorderLayout() );

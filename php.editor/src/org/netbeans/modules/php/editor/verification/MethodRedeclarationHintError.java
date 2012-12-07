@@ -70,8 +70,8 @@ public class MethodRedeclarationHintError extends AbstractHintError {
             return;
         }
         FileScope fileScope = context.fileScope;
-        if (fileScope != null) {
-            fileObject = context.parserResult.getSnapshot().getSource().getFileObject();
+        fileObject = phpParseResult.getSnapshot().getSource().getFileObject();
+        if (fileScope != null && fileObject != null) {
             this.hints = hints;
             checkTypeScopes(ModelUtils.getDeclaredClasses(fileScope));
             checkTypeScopes(ModelUtils.getDeclaredInterfaces(fileScope));

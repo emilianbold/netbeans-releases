@@ -111,6 +111,7 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
     private final ConfigurationDescriptorProvider projectDescriptorProvider;
     private final Set<NativeProjectItemsListener> listeners = new HashSet<NativeProjectItemsListener>();
     private static final RequestProcessor RP = new RequestProcessor("ReadErrorStream", 2); // NOI18N
+    private static final RequestProcessor RPCC = new RequestProcessor("NativeProjectProvider.CheckConfiguration", 1); // NOI18N
 
     public NativeProjectProvider(Project project, ConfigurationDescriptorProvider projectDescriptorProvider) {
         this.project = project;
@@ -289,7 +290,10 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
         // Remove non C/C++ items
         Iterator<NativeFileItem> iter = nativeFileIetms.iterator();
         while (iter.hasNext()) {
-            NativeFileItem nativeFileIetm = iter.next();
+            final NativeFileItem nativeFileIetm = iter.next();
+            if (nativeFileIetm == null) {
+                continue;
+            }
             PredefinedToolKind tool = ((Item) nativeFileIetm).getDefaultTool();
             if (tool == PredefinedToolKind.CustomTool
                     // check of mime type is better to support headers without extensions
@@ -407,7 +411,7 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
             new Exception().printStackTrace(System.err);
         }
         if (SwingUtilities.isEventDispatchThread()) {
-            RequestProcessor.getDefault().post(new Runnable() {
+            RPCC.post(new Runnable() {
 
                 @Override
                 public void run() {

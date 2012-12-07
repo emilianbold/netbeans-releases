@@ -38,6 +38,7 @@
 package org.netbeans.modules.javascript2.editor.parser;
 
 import com.oracle.nashorn.parser.Token;
+import com.oracle.nashorn.parser.TokenType;
 import com.oracle.nashorn.runtime.ErrorManager;
 import com.oracle.nashorn.runtime.Source;
 import java.util.ArrayList;
@@ -45,9 +46,13 @@ import java.util.Collections;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.api.lexer.Language;
+import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.csl.api.Error;
 import org.netbeans.modules.csl.api.Severity;
-import org.openide.filesystems.FileObject;
+import org.netbeans.modules.javascript2.editor.lexer.JsTokenId;
+import org.netbeans.modules.javascript2.editor.lexer.LexUtilities;
+import org.netbeans.modules.parsing.api.Snapshot;
 
 /**
  *
@@ -57,14 +62,17 @@ public class JsErrorManager extends ErrorManager {
 
     private static final Logger LOGGER = Logger.getLogger(JsErrorManager.class.getName());
 
+    private final Snapshot snapshot;
+
+    private final Language<JsTokenId> language;
+
     private List<ParserError> parserErrors;
 
     private List<JsParserError> convertedErrors;
 
-    private FileObject fileObject;
-
-    public JsErrorManager(FileObject fileObject) {
-        this.fileObject = fileObject;
+    public JsErrorManager(Snapshot snapshot, Language<JsTokenId> language) {
+        this.snapshot = snapshot;
+        this.language = language;
     }
 
     public Error getMissingCurlyError() {
@@ -157,8 +165,10 @@ public class JsErrorManager extends ErrorManager {
         return Collections.unmodifiableList(convertedErrors);
     }
 
-    JsErrorManager fill(JsErrorManager original) {
-        this.fileObject = original.fileObject;
+    JsErrorManager fillErrors(JsErrorManager original) {
+        assert this.snapshot == original.snapshot : this.snapshot + ":" + original.snapshot;
+        assert this.language == original.language : this.language + ":" + original.language;
+
         if (original.parserErrors != null) {
             this.parserErrors = new ArrayList<ParserError>(original.parserErrors);
         } else {
@@ -181,6 +191,23 @@ public class JsErrorManager extends ErrorManager {
         int offset = -1;
         if (error.token > 0) {
             offset = Token.descPosition(error.token);
+            if (Token.descType(error.token) == TokenType.EOF
+                    && snapshot.getOriginalOffset(offset) == -1) {
+
+                int realOffset = -1;
+                TokenSequence<? extends JsTokenId> ts =
+                        LexUtilities.getPositionedSequence(snapshot, offset, language);
+                while (ts.movePrevious()) {
+                    if (snapshot.getOriginalOffset(ts.offset()) > 0) {
+                        realOffset = ts.offset() + ts.token().length() - 1;
+                        break;
+                    }
+                }
+
+                if (realOffset > 0) {
+                    offset = realOffset;
+                }
+            }
         } else if (error.line == -1 && error.column == -1) {
             String parts[] = error.message.split(":");
             if (parts.length > 4) {
@@ -200,7 +227,8 @@ public class JsErrorManager extends ErrorManager {
             }
         }
 
-        return new JsParserError(message, fileObject, offset, offset, Severity.ERROR, null,  true);
+        return new JsParserError(message,
+                snapshot != null ? snapshot.getSource().getFileObject() : null, offset, offset, Severity.ERROR, null,  true);
     }
 
     private static class ParserError {

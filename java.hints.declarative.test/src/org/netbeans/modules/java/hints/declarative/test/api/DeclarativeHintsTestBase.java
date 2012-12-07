@@ -136,6 +136,9 @@ public class DeclarativeHintsTestBase extends NbTestCase {
     @Override
     protected void runTest() throws Throwable {
         Map<TestCase, Collection<String>> result = TestPerformer.performTest(hintFile, testFile, new TestCase[]{test}, new AtomicBoolean());
+        
+        assert result != null;
+        
         Collection<String> actualResults = result.get(test);
 
         assertNotNull(actualResults);

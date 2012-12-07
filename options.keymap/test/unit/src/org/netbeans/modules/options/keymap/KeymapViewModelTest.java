@@ -55,6 +55,7 @@ import javax.swing.Action;
 import javax.swing.text.TextAction;
 import org.netbeans.core.options.keymap.api.ShortcutAction;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.junit.RandomlyFails;
 
 /**
  * @author Jan Jancura
@@ -75,16 +76,15 @@ public class KeymapViewModelTest extends NbTestCase {
         assertEquals (currentProfile, new KeymapViewModel ().getMutableModel().getCurrentProfile ());
     }
     
+    @RandomlyFails
     public void testOkCurrentProfile () {
         MutableShortcutsModel model = new KeymapViewModel().getMutableModel();
         String currentProfile = model.getCurrentProfile ();
         model.setCurrentProfile ("mine");
         assertEquals ("mine", model.getCurrentProfile ());
         assertEquals (currentProfile, new KeymapViewModel ().getMutableModel().getCurrentProfile ());
-        model.apply ();
+        model.postApply().waitFinished();
         assertEquals ("mine", model.getCurrentProfile ());
-        // TODO: this no longer works:
-        // assertEquals ("mine", new KeymapViewModel ().getCurrentProfile ());
     }
     
     public void testChangeShortcuts () {

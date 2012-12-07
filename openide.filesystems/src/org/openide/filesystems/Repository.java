@@ -201,6 +201,9 @@ public class Repository implements Serializable {
 
         private void provideLayer(List<URL> layerUrls) throws IOException {
             ClassLoader l = Thread.currentThread().getContextClassLoader();
+            if (l == null) {
+                l = Repository.class.getClassLoader();
+            }
             for (URL manifest : NbCollections.iterable(l.getResources("META-INF/MANIFEST.MF"))) { // NOI18N
                 InputStream is = manifest.openStream();
                 try {

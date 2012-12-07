@@ -160,16 +160,22 @@ public class ToolbarWithOverflow extends JToolBar {
                         }
                     }
                 } else {
-                    if (overflowButton.isShowing() && (e.getID() == MouseEvent.MOUSE_MOVED || e.getID() == MouseEvent.MOUSE_EXITED)) {
+                    if (popup.isShowing() && overflowButton.isShowing() && (e.getID() == MouseEvent.MOUSE_MOVED || e.getID() == MouseEvent.MOUSE_EXITED)) {
                         int minX = overflowButton.getLocationOnScreen().x;
+                        int maxX_ob = minX + overflowButton.getWidth();
                         int maxX = getOrientation() == HORIZONTAL ? minX + popup.getWidth()
                                 : minX + overflowButton.getWidth() + popup.getWidth();
                         int minY = overflowButton.getLocationOnScreen().y;
+                        int maxY_ob = minY + overflowButton.getHeight();
                         int maxY = getOrientation() == HORIZONTAL ? minY + overflowButton.getHeight() + popup.getHeight()
                                 : minY + popup.getHeight();
-                        if (e.getXOnScreen() < minX || e.getXOnScreen() > maxX || e.getYOnScreen() < minY || e.getYOnScreen() > maxY) {
-                            popup.setVisible(false);
-                        }
+			if (e.getXOnScreen() < minX || e.getYOnScreen() < minY || e.getXOnScreen() > maxX || e.getYOnScreen() > maxY
+				|| (getOrientation() == HORIZONTAL && e.getXOnScreen() > maxX_ob
+					&& e.getYOnScreen() >= minY && e.getYOnScreen() < maxY_ob)
+				|| (getOrientation() == VERTICAL && e.getXOnScreen() >= minX && e.getXOnScreen() < maxX_ob
+					&& e.getYOnScreen() > maxY_ob)) {
+			    popup.setVisible(false);
+			}
                     }
                 }
             }
@@ -218,6 +224,9 @@ public class ToolbarWithOverflow extends JToolBar {
         int height = null == insets ? 0 : insets.top + insets.bottom;
         for (int i = 0; i < comps.length; i++) {
             Component comp = comps[i];
+	    if (!comp.isVisible()) {
+		continue;
+	    }
             width += getOrientation() == HORIZONTAL ? comp.getPreferredSize().width : comp.getPreferredSize().height;
             height = Math.max( height, getOrientation() == HORIZONTAL ? comp.getPreferredSize().height : comp.getPreferredSize().width );
         }

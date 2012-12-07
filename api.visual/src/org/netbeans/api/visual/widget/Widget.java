@@ -93,7 +93,7 @@ import org.netbeans.api.annotations.common.NonNull;
  * @author David Kaspar
  */
 // TODO - Should Widget be an abstract class?
-public class Widget implements Accessible {
+public class Widget implements Accessible, Lookup.Provider {
 
     static final String MESSAGE_NULL_BOUNDS = "Scene.validate was not called after last change. Widget is not validated. See first Q/A at http://graph.netbeans.org/faq.html page.";
 
@@ -493,6 +493,7 @@ public class Widget implements Accessible {
      * Returns a lookup of the widget.
      * @return the lookup
      */
+    @Override
     public Lookup getLookup () {
         return Lookup.EMPTY;
     }

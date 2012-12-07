@@ -43,7 +43,10 @@ package org.netbeans.modules.bugtracking.util;
 
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Font;
+import java.awt.FontMetrics;
 import java.awt.Point;
+import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
@@ -53,6 +56,7 @@ import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.swing.AbstractAction;
@@ -64,6 +68,7 @@ import javax.swing.text.*;
 import org.netbeans.api.jumpto.type.TypeBrowser;
 import org.netbeans.modules.bugtracking.BugtrackingManager;
 import org.netbeans.spi.jumpto.type.TypeDescriptor;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
@@ -75,6 +80,7 @@ final class FindTypesSupport implements MouseMotionListener, MouseListener {
     private static Pattern JAVA_CLASS_NAME_PATTERN = Pattern.compile("\\.?([a-z0-9\\.\\$]*)([A-Z]\\w+)+");  // NOI18N
     private String HIGHLIGHTS_PROPERTY = "highlights.property";                                             // NOI18N
     private String PREV_HIGHLIGHT_PROPERTY = "prev.highlights.property";                                    // NOI18N
+    private String PREV_HIGHLIGHT_ATTRIBUTES = "prev.highlights.attributes";                                    // NOI18N
             
     private static FindTypesSupport instance;
     private Style defStyle;
@@ -159,13 +165,20 @@ final class FindTypesSupport implements MouseMotionListener, MouseListener {
                     StyleConstants.setForeground(hlStyle, Color.BLUE);
                     StyleConstants.setUnderline(hlStyle, true);            
 
-                    List<Integer> l = getHighlightOffsets(pane.getText());
+                    List<Integer> l = Collections.emptyList();
+                    try {
+                        l = getHighlightOffsets(doc.getText(0, doc.getLength()));
+                    } catch (BadLocationException ex) {
+                        BugtrackingManager.LOG.log(Level.SEVERE, null, ex);
+                    }
                     List<Highlight> highlights = new ArrayList<Highlight>(l.size());
                     for (int i = 0; i < l.size(); i++) {
                         highlights.add(new Highlight(l.get(i), l.get(++i)));
                     }
                     pane.putClientProperty(HIGHLIGHTS_PROPERTY, highlights);
+                    pane.removeMouseMotionListener(FindTypesSupport.this);
                     pane.addMouseMotionListener(FindTypesSupport.this);
+                    pane.removeMouseListener(FindTypesSupport.this);
                     pane.addMouseListener(FindTypesSupport.this);
                 }
             });
@@ -187,27 +200,50 @@ final class FindTypesSupport implements MouseMotionListener, MouseListener {
         int offset = pane.viewToModel(e.getPoint());
         Element elem = doc.getCharacterElement(offset);
         
+        Highlight h = getHighlight(pane, offset);
+        Highlight prevHighlight = (Highlight) pane.getClientProperty(PREV_HIGHLIGHT_PROPERTY);
+        AttributeSet prevAs = (AttributeSet) pane.getClientProperty(PREV_HIGHLIGHT_ATTRIBUTES);
+//        if(h != null && h.equals(prevHighlight)) {
+//            return; // nothing to do
+//        } else 
+        if(prevHighlight != null && prevAs != null) {
+            doc.setCharacterAttributes(prevHighlight.startOffset, prevHighlight.endOffset - prevHighlight.startOffset, prevAs, true);
+//            Logger.getLogger("DDD").log(Level.INFO, "{0}-{1} : {2}", new Object[] { prevHighlight.startOffset, prevHighlight.endOffset, prevAs.toString().replace("\n", "").replace("\r", "") });
+            pane.putClientProperty(PREV_HIGHLIGHT_PROPERTY, null);
+            pane.putClientProperty(PREV_HIGHLIGHT_ATTRIBUTES, null);
+        }
+        
         AttributeSet as = elem.getAttributes();
         if (StyleConstants.isUnderline(as)) {
             // do not underline whats already underlined
             return;
         }
-        Highlight h = getHighlight(pane, offset);
-        Highlight prevHighlight = (Highlight) pane.getClientProperty(PREV_HIGHLIGHT_PROPERTY);
-//        if(h != null && h.equals(prevHighlight)) {
-//            return; // nothing to do
-//        } else 
-        if(prevHighlight != null) {
-            doc.setCharacterAttributes(prevHighlight.startOffset, prevHighlight.endOffset - prevHighlight.startOffset, defStyle, true);
-            pane.putClientProperty(PREV_HIGHLIGHT_PROPERTY, null);
+
+        Font font = doc.getFont(as);
+        FontMetrics fontMetrics = pane.getFontMetrics(font);
+        try {
+            Rectangle rectangle = new Rectangle(
+                    pane.modelToView(elem.getStartOffset()).x,
+                    pane.modelToView(elem.getStartOffset()).y,
+                    fontMetrics.stringWidth(doc.getText(elem.getStartOffset(), elem.getEndOffset() - elem.getStartOffset())),
+                    fontMetrics.getHeight());
+
+            if (h != null && offset < elem.getEndOffset() - 1 && rectangle.contains(e.getPoint())) {
+                Style hlStyle = doc.getStyle("regularBlue-findtype");               // NOI18N
+
+                pane.putClientProperty(PREV_HIGHLIGHT_ATTRIBUTES, as.copyAttributes());
+//                Logger.getLogger("ABCD").log(Level.WARNING, as.toString());
+                doc.setCharacterAttributes(h.startOffset, h.endOffset - h.startOffset, hlStyle, true);
+//                doc.setCharacterAttributes(h.startOffset, h.endOffset - h.startOffset, as.copyAttributes(), true);
+                pane.putClientProperty(PREV_HIGHLIGHT_PROPERTY, h);
+//                Logger.getLogger("AAAA").log(Level.INFO, "ON");
+            } else {
+//                Logger.getLogger("AAAA").log(Level.INFO, "OFF");
+            }
+        } catch (BadLocationException ex) {
+            Exceptions.printStackTrace(ex);
         }
-        
-        if(h != null && offset < elem.getEndOffset() - 1) {
-            Style hlStyle = doc.getStyle("regularBlue-findtype");               // NOI18N
-            doc.setCharacterAttributes(h.startOffset, h.endOffset - h.startOffset, hlStyle, true);
-            pane.putClientProperty(PREV_HIGHLIGHT_PROPERTY, h);
-        } 
-        
+
     }
     
     static List<Integer> getHighlightOffsets(String txt) {

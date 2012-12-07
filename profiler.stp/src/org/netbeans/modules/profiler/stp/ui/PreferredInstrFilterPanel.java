@@ -43,7 +43,6 @@
 
 package org.netbeans.modules.profiler.stp.ui;
 
-import org.netbeans.lib.profiler.ui.components.HTMLTextArea;
 
 //import org.netbeans.api.progress.ProgressHandle;
 //import org.netbeans.api.progress.ProgressHandleFactory;
@@ -60,6 +59,7 @@ import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.JTextArea;
 import javax.swing.SwingUtilities;
 import org.openide.util.HelpCtx;
 
@@ -104,7 +104,7 @@ public class PreferredInstrFilterPanel extends JPanel implements HelpCtx.Provide
 
     public JButton CLOSE_BUTTON;
     public JButton OPEN_IN_QUICKFILTER_BUTTON;
-    private HTMLTextArea packagesArea;
+    private JTextArea packagesArea;
     private JLabel label;
     
     private static final String HELP_CTX_KEY = "PreferredInstrFilterPanel.HelpCtx"; // NOI18N
@@ -167,7 +167,7 @@ public class PreferredInstrFilterPanel extends JPanel implements HelpCtx.Provide
                                     packageNamesBuffer.append(it.next());
 
                                     if (it.hasNext()) {
-                                        packageNamesBuffer.append("<br>"); // NOI18N
+                                        packageNamesBuffer.append("\n"); // NOI18N
                                     }
                                 }
 
@@ -197,7 +197,8 @@ public class PreferredInstrFilterPanel extends JPanel implements HelpCtx.Provide
         org.openide.awt.Mnemonics.setLocalizedText(CLOSE_BUTTON, Bundle.PreferredInstrFilterPanel_CloseButtonString());
 
         label = new JLabel();
-        packagesArea = new HTMLTextArea();
+        packagesArea = new JTextArea();
+        packagesArea.setEditable(false);
 
         GridBagConstraints gridBagConstraints;
 

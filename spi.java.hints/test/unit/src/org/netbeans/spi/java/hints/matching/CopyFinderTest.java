@@ -1355,9 +1355,9 @@ public class CopyFinderTest extends NbTestCase {
         if (useBulkSearch) {
             result = new HashMap<TreePath, VariableAssignments>();
 
-            BulkPattern bulkPattern = BulkSearch.getDefault().create(info, patternCode);
+            BulkPattern bulkPattern = BulkSearch.getDefault().create(info, new AtomicBoolean(), patternCode);
 
-            for (Entry<String, Collection<TreePath>> e : BulkSearch.getDefault().match(info, new TreePath(info.getCompilationUnit()), bulkPattern).entrySet()) {
+            for (Entry<String, Collection<TreePath>> e : BulkSearch.getDefault().match(info, new AtomicBoolean(), new TreePath(info.getCompilationUnit()), bulkPattern).entrySet()) {
                 for (TreePath tp : e.getValue()) {
                     VariableAssignments vars = computeVariables(info, patternPath, tp, new AtomicBoolean(), MatchingTestAccessor.getVariable2Type(patternObj));
 

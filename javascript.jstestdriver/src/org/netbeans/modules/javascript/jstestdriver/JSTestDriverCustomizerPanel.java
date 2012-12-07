@@ -161,9 +161,16 @@ public class JSTestDriverCustomizerPanel extends javax.swing.JPanel implements D
             prefs.put(LOCATION, panel.jLocationTextField.getText());
             prefs.put(SERVER_URL, panel.jServerURLTextField.getText());
             prefs.putBoolean(STRICT_MODE, panel.jStrictCheckBox.isSelected());
+            boolean usesIntegratedBrowser = false;
             for (TableRow row : ((BrowsersTableModel)panel.jBrowsersTable.getModel()).model) {
                 prefs.putBoolean(getBrowserPropertyName(row.getBrowser(), row.hasNbIntegration()), row.isSelected());
+                if (row.isSelected() && row.hasNbIntegration()) {
+                    usesIntegratedBrowser = true;
+                }
             }
+            boolean externalServer = (getPort(panel.jServerURLTextField.getText()) == -1);
+            JSTestDriverSupport.logUsage(JSTestDriverCustomizerPanel.class, "USG_JSTESTDRIVER_CONFIGURED", // NOI18N
+                    new Object[]{externalServer ? "YES" : "NO", usesIntegratedBrowser ? "YES" : "NO"}); // NOI18N
             return true;
         } else {
             return false;

@@ -140,7 +140,7 @@ import org.netbeans.spi.lexer.LexerRestartInfo;
 
 /* base structural elements */
 AnyChar = (.|[\n])
-HtmlString = [<] [^"\r"|"\n"|"\r\n"|">"|"*"]* [>]?
+HtmlString = (["<"]("/"|[:letter:])+) [^"\r"|"\n"|"\r\n"|">"|"*"|"<"]* [>]
 Identifier=[[:letter:][:digit:]]+
 LineTerminator = \r|\n|\r\n
 StringCharacter  = [^\r\n\"\\] | \\{LineTerminator}
@@ -172,6 +172,7 @@ CommentEnd = ["*"]+ + "/"
     {HtmlString}                    { return JsDocumentationTokenId.HTML; }
 
     "@"                             { yybegin(AT); yypushback(1); }
+    "<"                             { return JsDocumentationTokenId.OTHER; }
     "*"                             { return JsDocumentationTokenId.ASTERISK; }
     ","                             { return JsDocumentationTokenId.COMMA; }
     "{"                             { return JsDocumentationTokenId.BRACKET_LEFT_CURLY; }

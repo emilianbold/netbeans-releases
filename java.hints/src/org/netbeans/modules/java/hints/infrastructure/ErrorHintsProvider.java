@@ -82,7 +82,6 @@ import javax.lang.model.type.TypeMirror;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Position;
 import javax.swing.text.Position.Bias;
-import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.JavaParserResultTask;
@@ -94,7 +93,6 @@ import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 import org.netbeans.modules.editor.NbEditorDocument;
 import org.netbeans.modules.editor.java.Utilities;
 import org.netbeans.modules.java.hints.jdk.ConvertToDiamondBulkHint;
-import org.netbeans.modules.java.hints.providers.spi.PositionRefresherHelper;
 import org.netbeans.modules.java.hints.spi.ErrorRule;
 import org.netbeans.modules.java.hints.spi.ErrorRule.Data;
 import org.netbeans.spi.editor.hints.ErrorDescription;
@@ -345,6 +343,10 @@ public final class ErrorHintsProvider extends JavaParserResultTask {
             "compiler.warn.has.been.deprecated",
             "compiler.warn.raw.class.use"
     ));
+    
+    private static final Set<String> USE_PROVIDED_SPAN = new HashSet<String>(Arrays.asList(
+            "compiler.err.method.does.not.override.superclass"
+    ));
 
     private static final Set<JavaTokenId> WHITESPACE = EnumSet.of(JavaTokenId.BLOCK_COMMENT, JavaTokenId.JAVADOC_COMMENT, JavaTokenId.LINE_COMMENT, JavaTokenId.WHITESPACE);
     
@@ -472,6 +474,12 @@ public final class ErrorHintsProvider extends JavaParserResultTask {
                 endOffset = originalEndOffset;
                 rangePrepared = true;
             }
+        }
+        
+        if (!rangePrepared && USE_PROVIDED_SPAN.contains(d.getCode())) {
+            startOffset = originalStartOffset;
+            endOffset = info.getSnapshot().getOriginalOffset(endOffset);
+            rangePrepared = true;
         }
         
         if (!rangePrepared) {

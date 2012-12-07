@@ -233,14 +233,48 @@ public class JavaGuardedWriterTest extends TestCase {
         String writeStr = "\nclass A {//"+"GEN-BEGIN:hu\n\n}//"+"GEN-END:hu\n";
         String expStr =   "\nclass A {//"+"GEN-BEGIN:hu\n\n}//"+"GEN-END:hu\n";
         char[] writeBuff = writeStr.toCharArray();
-        
+        JavaGuardedReader.setKeepGuardCommentsForTest(true);
+
         JavaGuardedWriter instance = new JavaGuardedWriter();
         JavaGuardedSectionsProvider provider = new JavaGuardedSectionsProvider(new Editor());
         List<GuardedSection> sections = new ArrayList<GuardedSection>();
         sections.add(provider.createSimpleSection("hu", 1, writeStr.length() - 1));
         
         instance.setGuardedSection(sections);
-        char[] result = instance.translate(writeBuff);
-        assertEquals(expStr, String.valueOf(result));
+        try {
+            char[] result = instance.translate(writeBuff);
+            assertEquals(expStr, String.valueOf(result));
+        } finally {
+            JavaGuardedReader.setKeepGuardCommentsForTest(false);
+        }
+    }
+
+    /**
+     * This tests renaming a section when guarded comments are kept. When the
+     * renaming is processed, there is still the original section name encoded
+     * in the guard comment that is part of the current section text (document).
+     * With the rename a new name needs to be written and the previous comment
+     * removed.
+     */
+    public void testTranslateRenamed() throws BadLocationException {
+        System.out.println("write new name with old guard comments in place");
+
+        String writeStr = "\nclass A {//"+"GEN-BEGIN:oldName\n\n}//"+"GEN-END:hu\n";
+        String expStr =   "\nclass A {//"+"GEN-BEGIN:hu\n\n}//"+"GEN-END:hu\n";
+        char[] writeBuff = writeStr.toCharArray();
+        JavaGuardedReader.setKeepGuardCommentsForTest(true);
+
+        JavaGuardedWriter instance = new JavaGuardedWriter();
+        JavaGuardedSectionsProvider provider = new JavaGuardedSectionsProvider(new Editor());
+        List<GuardedSection> sections = new ArrayList<GuardedSection>();
+        sections.add(provider.createSimpleSection("hu", 1, writeStr.length() - 1));
+        
+        instance.setGuardedSection(sections);
+        try {
+            char[] result = instance.translate(writeBuff);
+            assertEquals(expStr, String.valueOf(result));
+        } finally {
+            JavaGuardedReader.setKeepGuardCommentsForTest(false);
+        }
     }
 }

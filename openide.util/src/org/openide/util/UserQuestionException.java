@@ -54,6 +54,11 @@ package org.openide.util;
 * The <code>getLocalizedMessage</code> method should return the user question,
 * which will be shown to the user in a dialog with OK, Cancel options and
 * if the user chooses OK, method <code>ex.confirmed ()</code> will be called.
+* <p>
+* Since version 8.29 one can just catch the exception and report it to the
+* infrastructure of any NetBeans Platform based application (for example
+* via {@link Exceptions#printStackTrace(java.lang.Throwable)}) and the
+* question dialog will be displayed automatically.
 *
 * @author Jaroslav Tulach
 */

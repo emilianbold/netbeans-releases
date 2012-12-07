@@ -220,12 +220,20 @@ public class StackTraceTranslator
             return -1;
         }
         offset -= 3;
-        if (offset < 0 || offset >= code.getByteCodes().length) return -1;
+        //#214786
+        final byte byteCodes[] = code.getByteCodes();
+        if (offset < 0 || byteCodes == null || offset >= byteCodes.length) {
+            return -1;
+        }
         final int lineTable[] = code.getLineNumberTable();
-        if (lineTable.length == 0) return -1;
+        if (lineTable == null || lineTable.length == 0) {
+            return -1;
+        }
         for (int i=2; i<lineTable.length; i+=2)
         {
-            if (lineTable[i] > offset) return lineTable[i-1];
+            if (lineTable[i] > offset) {
+                return lineTable[i-1];
+            }
         }
         return lineTable[lineTable.length - 1];
     }

@@ -126,7 +126,11 @@ class ModelElementFactory {
                 params.add(new IdentifierImpl("param" + (i + 1), OffsetRange.NONE));
             }
         }
-        return new JsFunctionImpl(parserResult.getSnapshot().getSource().getFileObject(), parentObject, name, params);
+        JsFunctionImpl virtual = new JsFunctionImpl(parserResult.getSnapshot().getSource().getFileObject(), parentObject, name, params);
+        if (virtual.hasExactName()) {
+            virtual.addOccurrence(name.getOffsetRange());
+        }
+        return virtual;
     }
 
     @CheckForNull
@@ -170,6 +174,9 @@ class ModelElementFactory {
             newObject.setDocumentation(docHolder.getDocumentation(objectNode));
         }
         parent.addProperty(name.getName(), newObject);
+        if (newObject.hasExactName()) {
+            newObject.addOccurrence(newObject.getDeclarationName().getOffsetRange());
+        }
         return (JsObjectImpl)newObject;
     }
 
@@ -195,6 +202,9 @@ class ModelElementFactory {
         JsObjectImpl property = new JsObjectImpl(scope, name, name.getOffsetRange());
         JsDocumentationHolder docHolder = parserResult.getDocumentationHolder();
         property.setDocumentation(docHolder.getDocumentation(propertyNode));
+        if (property.hasExactName()) {
+            property.addOccurrence(property.getDeclarationName().getOffsetRange());
+        }
         return property;
     }
 }

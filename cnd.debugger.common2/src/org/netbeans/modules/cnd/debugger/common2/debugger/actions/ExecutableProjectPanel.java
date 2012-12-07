@@ -260,7 +260,7 @@ public final class ExecutableProjectPanel extends javax.swing.JPanel {
         gridBagConstraints.gridy = 1;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 6, 0);
-        if (!NativeDebuggerManager.isStandalone()) {
+        if (!NativeDebuggerManager.isStandalone() && !NativeDebuggerManager.isPL()) {
             add(projectLabel, gridBagConstraints);
         }
 
@@ -271,7 +271,7 @@ public final class ExecutableProjectPanel extends javax.swing.JPanel {
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 4, 6, 0);
-        if (!NativeDebuggerManager.isStandalone()) {
+        if (!NativeDebuggerManager.isStandalone() && !NativeDebuggerManager.isPL()) {
             add(projectComboBox, gridBagConstraints);
         }
 

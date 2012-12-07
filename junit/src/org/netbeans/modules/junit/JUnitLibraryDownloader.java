@@ -242,7 +242,7 @@ public class JUnitLibraryDownloader implements LibraryDefiner {
             return showNoDownloadDialog(name);
         }
         // XXX new library & build.properties apparently do not show up immediately... how to listen properly?
-        for (int i = 0; i < 10; i++) {
+        for (int i = 0; i < 20; i++) {
             Library lib = LibraryManager.getDefault().getLibrary(name);
             if (lib != null) {
                 return lib;

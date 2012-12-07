@@ -51,10 +51,8 @@ import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.editor.completion.Completion;
 import org.netbeans.api.editor.mimelookup.MimeRegistration;
-import org.netbeans.api.editor.mimelookup.MimeRegistrations;
 import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.java.source.CompilationController;
-import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenSequence;
@@ -108,14 +106,10 @@ public class JPACodeCompletionProvider implements CompletionProvider {
         private ArrayList<CompletionContextResolver> resolvers;
         private List<JPACompletionItem> results;
         private byte hasAdditionalItems = 0; //no additional items
-        private CompletionDocumentation documentation;
         private int anchorOffset;
-        private int toolTipOffset;
         private JTextComponent component;
         private int queryType;
         private int caretOffset;
-        private String filterPrefix;
-        private ElementHandle element;
         private boolean hasTask;
 
         public JPACodeCompletionQuery(int queryType, JTextComponent component, int caretOffset, boolean hasTask) {
@@ -141,7 +135,6 @@ public class JPACodeCompletionProvider implements CompletionProvider {
                     //if (queryType == TOOLTIP_QUERY_TYPE || Utilities.isJavaContext(component, caretOffset)) 
                     {
                         results = null;
-                        documentation = null;
                         anchorOffset = -1;
                         Source source = Source.create(doc);
                         if (source != null) {
@@ -186,13 +179,8 @@ public class JPACodeCompletionProvider implements CompletionProvider {
             try {
                 if ((queryType & COMPLETION_QUERY_TYPE) != 0) {
                     if (results != null) {
-                        if (filterPrefix != null) {
-                            resultSet.addAllItems(getFilteredData(results, filterPrefix));
-                            resultSet.setHasAdditionalItems(hasAdditionalItems > 0);
-                        } else {
-                            Completion.get().hideDocumentation();
-                            Completion.get().hideCompletion();
-                        }
+                        Completion.get().hideDocumentation();
+                        Completion.get().hideCompletion();
                     }
                 }
                 resultSet.setAnchorOffset(anchorOffset);
@@ -560,7 +548,7 @@ public class JPACodeCompletionProvider implements CompletionProvider {
             if (mname != null) {
                 Token<JavaTokenId> literalToComplete = null;
                 Token<JavaTokenId> titk = ts.token();
-                JavaTokenId id = titk.id();
+                JavaTokenId id;
                 do {
                     id = titk.id();
                     //ignore whitespaces
@@ -591,7 +579,7 @@ public class JPACodeCompletionProvider implements CompletionProvider {
                     titk = ts.token();//get next token
 
                 } while (titk != null);
-                methodName = this.CCParser.new MD(mname, literalToComplete != null ? literalToComplete.text().toString() : null, literalToComplete != null ? literalToComplete.offset(getController().getTokenHierarchy()) : getCompletionOffset(), true, true);
+                methodName = new CCParser.MD(mname, literalToComplete != null ? literalToComplete.text().toString() : null, literalToComplete != null ? literalToComplete.offset(getController().getTokenHierarchy()) : getCompletionOffset(), true, true);
             }
         }
 

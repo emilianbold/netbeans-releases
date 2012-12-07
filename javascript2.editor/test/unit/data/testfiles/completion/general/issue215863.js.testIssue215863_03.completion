@@ -2,4 +2,5 @@ Code completion result for source line:
 h|istory;
 (QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
 ------------------------------------
+METHOD     hasOwnProperty(V: String): Boo  [PUBLIC]   stub_CORE_Object.js
 FIELD      history: History                [PUBLIC]   stub_DOM_window.js

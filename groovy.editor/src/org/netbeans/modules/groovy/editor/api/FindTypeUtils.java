@@ -448,7 +448,7 @@ public final class FindTypeUtils {
     }
 
     private static OffsetRange getVariableRange(VariableExpression variable, BaseDocument doc, int cursorOffset) {
-        if (variable == null || variable.isDynamicTyped()) {
+        if (variable == null || variable.getAccessedVariable() == null || variable.isDynamicTyped()) {
             return OffsetRange.NONE;
         }
         return getRange(variable.getAccessedVariable().getOriginType(), doc, cursorOffset);

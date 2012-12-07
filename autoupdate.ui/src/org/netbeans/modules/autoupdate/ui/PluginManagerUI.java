@@ -547,6 +547,9 @@ private void bHelpActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:e
     }
     
     void decorateTabTitle (UnitTable table) {
+        if (table == null) {
+            return ;
+        }
         UnitCategoryTableModel model = (UnitCategoryTableModel)table.getModel();
         int index = model.getTabIndex();
         tpTabs.setTitleAt (index, model.getDecoratedTabTitle());

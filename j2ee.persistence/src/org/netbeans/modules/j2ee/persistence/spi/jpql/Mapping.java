@@ -42,8 +42,6 @@
 package org.netbeans.modules.j2ee.persistence.spi.jpql;
 
 import java.lang.annotation.Annotation;
-import javax.lang.model.element.ElementKind;
-import javax.lang.model.element.TypeElement;
 import org.eclipse.persistence.jpa.jpql.spi.IManagedType;
 import org.eclipse.persistence.jpa.jpql.spi.IMapping;
 import org.eclipse.persistence.jpa.jpql.spi.IMappingType;
@@ -90,10 +88,7 @@ public class Mapping implements IMapping {
     public IType getType() {
         if(type == null){
             if(attribute.getType() != null) {
-                TypeElement te = attribute.getType();
-                
-                type = parent.getProvider().getTypeRepository().getType(attribute.getType().getQualifiedName().toString());
-                //type = new Type(parent.getProvider().getTypeRepository(), attribute.getType());
+               type = parent.getProvider().getTypeRepository().getType(attribute.getType().getQualifiedName().toString());
             } else if(attribute.getClass1() !=null) {
                 type = parent.getProvider().getTypeRepository().getType(attribute.getClass1());
             } else {

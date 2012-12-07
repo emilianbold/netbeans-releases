@@ -216,6 +216,12 @@ public class ChangeParametersPlugin extends CsmModificationRefactoringPlugin {
             preCheckProblem = createProblem(preCheckProblem, true, NbBundle.getMessage(ChangeParametersPlugin.class, "ERR_ChangeParamsWrongType"));
             return preCheckProblem;
         }
+        // we do not support constructors yet
+        if (CsmKindUtilities.isConstructor(directReferencedObject)) {
+            preCheckProblem = createProblem(preCheckProblem, true, NbBundle.getMessage(ChangeParametersPlugin.class, "ERR_ChangeParamsWrongType"));
+            return preCheckProblem;
+        }
+        
         // create additional objects to resolve
         if (this.referencedObjects == null) {
             initReferencedObjects(directReferencedObject);

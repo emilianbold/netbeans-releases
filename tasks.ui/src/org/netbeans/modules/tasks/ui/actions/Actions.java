@@ -61,6 +61,7 @@ import org.netbeans.modules.tasks.ui.dashboard.QueryNode;
 import org.netbeans.modules.tasks.ui.dashboard.RepositoryNode;
 import org.netbeans.modules.tasks.ui.dashboard.TaskNode;
 import org.netbeans.modules.tasks.ui.treelist.TreeListNode;
+import org.netbeans.modules.tasks.ui.utils.Utils;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
@@ -374,7 +375,8 @@ public class Actions {
 
         actions.add(null);
         actions.add(new CreateTaskAction(repositoryNodes));
-        actions.add(new SearchRepositoryAction(repositoryNodes));
+        actions.add(new CreateQueryAction(repositoryNodes));
+        actions.add(new QuickSearchAction(repositoryNodes));
         return actions;
     }
 
@@ -421,14 +423,21 @@ public class Actions {
         @Override
         public void actionPerformed(ActionEvent e) {
             Repository repository = getRepositoryNodes()[0].getRepository();
-            RepositoryManager.getInstance().editRepository(repository);
+            repository.edit();
         }
 
         @Override
         public boolean isEnabled() {
             boolean parent = super.isEnabled();
             boolean singleNode = getRepositoryNodes().length == 1;
-            return parent && singleNode;
+            boolean allMutable = true;
+            for(RepositoryNode n : getRepositoryNodes()) {
+                allMutable = n.getRepository().isMutable();
+                if(!allMutable) {
+                    break;
+                }
+            }
+            return parent && singleNode && allMutable;
         }
     }
 
@@ -474,10 +483,10 @@ public class Actions {
         }
     }
 
-    public static class SearchRepositoryAction extends RepositoryAction {
+    public static class CreateQueryAction extends RepositoryAction {
 
-        public SearchRepositoryAction(RepositoryNode... repositoryNodes) {
-            super(NbBundle.getMessage(Actions.class, "CTL_Search"), repositoryNodes); //NOI18N
+        public CreateQueryAction(RepositoryNode... repositoryNodes) {
+            super(NbBundle.getMessage(Actions.class, "CTL_CreateQuery"), repositoryNodes); //NOI18N
         }
 
         @Override
@@ -485,6 +494,26 @@ public class Actions {
             for (RepositoryNode repositoryNode : getRepositoryNodes()) {
                 Util.createNewQuery(repositoryNode.getRepository());
             }
+        }
+    }
+
+    public static class QuickSearchAction extends RepositoryAction {
+
+        public QuickSearchAction(RepositoryNode... repositoryNodes) {
+            super(NbBundle.getMessage(Actions.class, "CTL_Search"), repositoryNodes); //NOI18N
+        }
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            for (RepositoryNode repositoryNode : getRepositoryNodes()) {
+                Utils.quickSearchTask(repositoryNode.getRepository());
+            }
+        }
+
+        @Override
+        public boolean isEnabled() {
+            boolean parentEnabled = super.isEnabled();
+            return parentEnabled ? getRepositoryNodes().length == 1 : parentEnabled;
         }
     }
     //</editor-fold>

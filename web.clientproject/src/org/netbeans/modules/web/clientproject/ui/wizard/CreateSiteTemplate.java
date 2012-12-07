@@ -66,6 +66,8 @@ import org.netbeans.modules.web.clientproject.ClientSideProject;
 import org.netbeans.modules.web.clientproject.ClientSideProjectConstants;
 import org.netbeans.modules.web.clientproject.sites.SiteZip;
 import org.netbeans.modules.web.clientproject.ui.customizer.ClientSideProjectProperties;
+import org.netbeans.modules.web.clientproject.ui.customizer.CustomizerProviderImpl;
+import org.netbeans.modules.web.clientproject.util.ClientSideProjectUtilities;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -96,7 +98,7 @@ import org.openide.util.lookup.Lookups;
     "CreateSiteTemplate_Error1_extension=Template name must be a ZIP file (*.zip).",
     "CreateSiteTemplate_Error2=Destination name must be specified",
     "CreateSiteTemplate_Error3=Destination is not a valid folder",
-    "CreateSiteTemplate_Error4=Template file {0} already exists. Do you want to override it?",
+    "# {0} - template file", "CreateSiteTemplate_Error4=Template file {0} already exists. Do you want to override it?",
     "CreateSiteTemplate_FileChooser=Select folder to store template in",
     "CreateSiteTemplate_FileChooserButton=Select"
 })
@@ -402,6 +404,8 @@ public class CreateSiteTemplate extends javax.swing.JPanel implements ExplorerMa
             }
             createZipFile(f, p, panel.comp.manager.getRootContext());
             StatusDisplayer.getDefault().setStatusText(Bundle.CreateSiteTemplate_info_templateCreated(name));
+            ClientSideProjectUtilities.logUsage(CreateSiteTemplate.class, "USG_PROJECT_HTML5_SAVE_AS_TEMPLATE", // NOI18N
+                    null);
             return null;
         }
 

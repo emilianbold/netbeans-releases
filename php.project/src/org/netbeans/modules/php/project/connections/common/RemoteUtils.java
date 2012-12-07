@@ -41,16 +41,20 @@
  */
 package org.netbeans.modules.php.project.connections.common;
 
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.api.keyring.Keyring;
 import org.netbeans.modules.php.api.util.StringUtils;
 import org.netbeans.modules.php.project.connections.RemoteException;
 import org.netbeans.modules.php.project.connections.transfer.TransferFile;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
+import org.openide.util.NetworkSettings;
 
 /**
  * Utility methods for remote connections.
@@ -58,6 +62,8 @@ import org.openide.util.NbBundle;
 public final class RemoteUtils {
 
     private static final Logger LOGGER = Logger.getLogger(RemoteUtils.class.getName());
+
+    private static final URI URI_FOR_HTTP_PROXY = URI.create("http://oracle.com"); // NOI18N
 
 
     private RemoteUtils() {
@@ -171,6 +177,65 @@ public final class RemoteUtils {
         }
         List<String> parts = new ArrayList<String>(StringUtils.explode(path, TransferFile.REMOTE_PATH_SEPARATOR));
         return parts.get(parts.size() - 1);
+    }
+
+    public static boolean hasHttpProxy() {
+        return NetworkSettings.getProxyHost(URI_FOR_HTTP_PROXY) != null;
+    }
+
+    @CheckForNull
+    public static HttpProxyInfo getHttpProxy() {
+        String proxyHost = NetworkSettings.getProxyHost(URI_FOR_HTTP_PROXY);
+        if (proxyHost == null) {
+            // no proxy
+            return null;
+        }
+        return new HttpProxyInfo(proxyHost,
+                Integer.parseInt(NetworkSettings.getProxyPort(URI_FOR_HTTP_PROXY)),
+                NetworkSettings.getAuthenticationUsername(URI_FOR_HTTP_PROXY),
+                NetworkSettings.getKeyForAuthenticationPassword(URI_FOR_HTTP_PROXY));
+    }
+
+    //~ Inner classes
+
+    public static final class HttpProxyInfo {
+
+        private final String host;
+        private final int port;
+        private final String username;
+        private final String passwordKey;
+
+
+        public HttpProxyInfo(String host, int port, String username, String passwordKey) {
+            this.host = host;
+            this.port = port;
+            this.username = username;
+            this.passwordKey = passwordKey;
+        }
+
+        public String getHost() {
+            return host;
+        }
+
+        public int getPort() {
+            return port;
+        }
+
+        public String getUsername() {
+            return username;
+        }
+
+        public String getPassword() {
+            if (passwordKey == null) {
+                return null;
+            }
+            char[] chars = Keyring.read(passwordKey);
+            if (chars == null) {
+                return null;
+            }
+            return new String(chars);
+        }
+
     }
 
 }

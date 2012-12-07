@@ -117,11 +117,15 @@ public class OptionsConfiguration implements Cloneable {
 
     // Clone and assign
     public void assign(OptionsConfiguration conf) {
-        setDirty(!conf.getValue().equals(getValue()));
-        setValue(conf.getValue());
-        setModified(conf.getModified());
+        final OptionsConfiguration confLocal = conf;
+        if (confLocal == null || confLocal.getValue() == null) {
+            return;
+        }
+        setDirty(!confLocal.getValue().equals(getValue()));
+        setValue(confLocal.getValue());
+        setModified(confLocal.getModified());
         //setDirty(conf.getDirty());
-        setPreDefined(conf.getPreDefined());
+        setPreDefined(confLocal.getPreDefined());
     }
 
     @Override

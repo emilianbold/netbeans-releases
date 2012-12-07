@@ -53,6 +53,7 @@ import org.openide.nodes.Node;
 import org.openide.text.CloneableEditorSupport;
 import org.openide.text.NbDocument;
 import org.openide.util.Lookup;
+import org.openide.util.Mutex;
 import org.openide.util.lookup.ServiceProvider;
 import org.openide.windows.TopComponent;
 
@@ -118,14 +119,19 @@ public class HtmlActionsImplementationProvider extends ActionsImplementationProv
 	return dobj != null ? dobj.getPrimaryFile() : null;
     }
 
-    private static boolean isFromEditor(EditorCookie ec) {
-        if (ec != null && NbDocument.findRecentEditorPane(ec) != null) {
-            TopComponent activetc = TopComponent.getRegistry().getActivated();
-            if (activetc instanceof CloneableEditorSupport.Pane) {
-                return true;
+    private static boolean isFromEditor(final EditorCookie ec) {
+        return Mutex.EVENT.readAccess(new Mutex.Action<Boolean>() {
+            @Override
+            public Boolean run() {
+                if (ec != null && ec.getOpenedPanes() != null) {
+                    TopComponent activetc = TopComponent.getRegistry().getActivated();
+                    if (activetc instanceof CloneableEditorSupport.Pane) {
+                        return true;
+                    }
+                }
+                return false;
             }
-        }
-        return false;
+        });
     }
 
     private static EditorCookie getEditorCookie(Node node) {

@@ -105,7 +105,8 @@ public class BreakpointAnnotationListener extends DebuggerManagerAdapter
     public void propertyChange(PropertyChangeEvent evt) {
         String propertyName = evt.getPropertyName();
         if (Breakpoint.PROP_ENABLED.equals(propertyName) ||
-            LineBreakpoint.PROP_LINE.equals(propertyName)) {
+            LineBreakpoint.PROP_LINE.equals(propertyName) ||
+            Breakpoint.PROP_VALIDITY.equals(propertyName)) {
             
             Breakpoint b = (Breakpoint) evt.getSource();
             removeAnnotation(b);

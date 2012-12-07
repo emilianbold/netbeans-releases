@@ -50,13 +50,11 @@ import java.awt.Rectangle;
 import java.awt.Shape;
 import java.awt.font.TextLayout;
 import java.awt.geom.Rectangle2D;
-import java.text.Bidi;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JComponent;
 import javax.swing.SwingConstants;
 import javax.swing.text.Position.Bias;
-import javax.swing.text.TabExpander;
 import javax.swing.text.TabableView;
 import javax.swing.text.View;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
@@ -145,7 +143,6 @@ final class ParagraphViewChildren extends ViewChildren<EditorView> {
     }
 
     int viewIndexNoWrap(ParagraphView pView, double x, Shape pAlloc) {
-        Rectangle2D pRect = ViewUtils.shapeAsRect(pAlloc);
         return viewIndexFirstVisual(x, size());
     }
     
@@ -465,7 +462,6 @@ final class ParagraphViewChildren extends ViewChildren<EditorView> {
         if (index < 0) {
             return pAlloc;
         }
-        Rectangle2D.Double pRect = ViewUtils.shape2Bounds(pAlloc);
         if (wrapInfo != null) {
             int wrapLineIndex = findWrapLineIndex(pView, offset);
             WrapLine wrapLine = wrapInfo.get(wrapLineIndex);
@@ -479,21 +475,21 @@ final class ParagraphViewChildren extends ViewChildren<EditorView> {
                         append(", orig-pAlloc=").append(ViewUtils.toString(pAlloc)).append("\n    "); // NOI18N
             }
 
-            if (wrapLine.startPart != null && offset < wrapLine.startPart.getEndOffset()) {
+            if (wrapLine.startPart != null && offset < wrapLine.startPart.view.getEndOffset()) {
                 Shape startPartAlloc = startPartAlloc(wrapLineBounds, wrapLine);
                 if (logBuilder != null) {
                     logBuilder.append("START-part:").append(ViewUtils.toString(startPartAlloc)); // NOI18N
                 }
-                ret = wrapLine.startPart.modelToViewChecked(offset, startPartAlloc, bias);
-            } else if (wrapLine.endPart != null && offset >= wrapLine.endPart.getStartOffset()) {
+                ret = wrapLine.startPart.view.modelToViewChecked(offset, startPartAlloc, bias);
+            } else if (wrapLine.endPart != null && (offset >= wrapLine.endPart.view.getStartOffset() ||
+                    !wrapLine.hasFullViews())) // Fallback for invalid offset
+            {
                 Shape endPartAlloc = endPartAlloc(wrapLineBounds, wrapLine, pView);
                 if (logBuilder != null) {
                     logBuilder.append("END-part:").append(ViewUtils.toString(endPartAlloc)); // NOI18N
                 }
-                // getPreferredSpan() perf should be ok since part-view should cache the TextLayout
-                ret = wrapLine.endPart.modelToViewChecked(offset, endPartAlloc, bias);
+                ret = wrapLine.endPart.view.modelToViewChecked(offset, endPartAlloc, bias);
             } else {
-                assert (wrapLine.hasFullViews()) : wrapInfo.dumpWrapLine(pView, wrapLineIndex);
                 for (int i = wrapLine.firstViewIndex; i < wrapLine.endViewIndex; i++) {
                     EditorView view = pView.getEditorView(i);
                     if (offset < view.getEndOffset()) {
@@ -502,6 +498,12 @@ final class ParagraphViewChildren extends ViewChildren<EditorView> {
                         assert (ret != null);
                         break;
                     }
+                }
+                // Fallback for invalid offset - use last offset of last view
+                if (ret == null && wrapLine.hasFullViews()) {
+                    EditorView view = pView.getEditorView(wrapLine.endViewIndex - 1);
+                    Shape viewAlloc = wrapAlloc(wrapLineBounds, wrapLine, wrapLine.endViewIndex - 1, pView);
+                    ret = view.modelToViewChecked(view.getEndOffset() - 1, viewAlloc, bias);
                 }
             }
             if (logBuilder != null) {
@@ -657,14 +659,14 @@ final class ParagraphViewChildren extends ViewChildren<EditorView> {
 
     private Shape startPartAlloc(Shape wrapLineAlloc, WrapLine wrapLine) {
         Rectangle2D.Double startPartBounds = ViewUtils.shape2Bounds(wrapLineAlloc);
-        startPartBounds.width = wrapLine.firstViewX;
+        startPartBounds.width = wrapLine.startPartWidth();
         return startPartBounds;
     }
     
     private Shape endPartAlloc(Shape wrapLineAlloc, WrapLine wrapLine, ParagraphView pView) {
         Rectangle2D.Double endPartBounds = ViewUtils.shape2Bounds(wrapLineAlloc);
-        endPartBounds.width = wrapLine.endPart.getPreferredSpan(View.X_AXIS);
-        endPartBounds.x += wrapLine.firstViewX;
+        endPartBounds.width = wrapLine.endPart.width;
+        endPartBounds.x += wrapLine.startPartWidth();
         if (wrapLine.hasFullViews()) {
             endPartBounds.x += (startVisualOffset(wrapLine.endViewIndex)
                     - startVisualOffset(wrapLine.firstViewIndex));
@@ -678,7 +680,7 @@ final class ParagraphViewChildren extends ViewChildren<EditorView> {
                 ? startVisualOffset(viewIndex)
                 : startX;
         Rectangle2D.Double viewBounds = ViewUtils.shape2Bounds(wrapLineAlloc);
-        viewBounds.x += wrapLine.firstViewX + (x - startX);
+        viewBounds.x += wrapLine.startPartWidth() + (x - startX);
         viewBounds.width = endVisualOffset(viewIndex) - x;
         return viewBounds;
     }
@@ -708,17 +710,17 @@ final class ParagraphViewChildren extends ViewChildren<EditorView> {
             double x, Shape wrapLineAlloc, WrapLine wrapLine)
     {
         IndexAndAlloc indexAndAlloc = new IndexAndAlloc();
-        if (wrapLine.startPart != null && (x < wrapLine.firstViewX
+        if (wrapLine.startPart != null && (x < wrapLine.startPartWidth()
                 || (!wrapLine.hasFullViews() && wrapLine.endPart == null))) {
             indexAndAlloc.index = -1; // start part
-            indexAndAlloc.viewOrPart = wrapLine.startPart;
+            indexAndAlloc.viewOrPart = wrapLine.startPart.view;
             indexAndAlloc.alloc = startPartAlloc(wrapLineAlloc, wrapLine);
             return indexAndAlloc;
         }
         // Go through full views
         if (wrapLine.hasFullViews()) {
             Rectangle2D.Double viewBounds = ViewUtils.shape2Bounds(wrapLineAlloc);
-            viewBounds.x += wrapLine.firstViewX;
+            viewBounds.x += wrapLine.startPartWidth();
             double lastX = startVisualOffset(wrapLine.firstViewIndex);
             for (int i = wrapLine.firstViewIndex; i < wrapLine.endViewIndex; i++) {
                 double nextX = startVisualOffset(i + 1);
@@ -737,9 +739,8 @@ final class ParagraphViewChildren extends ViewChildren<EditorView> {
             // Force last in case there is no end part
         }
         assert (wrapLine.endPart != null) : "Null endViewPart"; // NOI18N
-        // getPreferredSpan() perf should be ok since part-view should cache the TextLayout
         indexAndAlloc.index = -2;
-        indexAndAlloc.viewOrPart = wrapLine.endPart;
+        indexAndAlloc.viewOrPart = wrapLine.endPart.view;
         indexAndAlloc.alloc = endPartAlloc(wrapLineAlloc, wrapLine, pView);
         return indexAndAlloc;
     }
@@ -754,12 +755,12 @@ final class ParagraphViewChildren extends ViewChildren<EditorView> {
     
     private int wrapLineStartOffset(ParagraphView pView, WrapLine wrapLine) {
         if (wrapLine.startPart != null) {
-            return wrapLine.startPart.getStartOffset();
+            return wrapLine.startPart.view.getStartOffset();
         } else if (wrapLine.hasFullViews()) {
             return pView.getEditorView(wrapLine.firstViewIndex).getStartOffset();
         } else {
             assert (wrapLine.endPart != null) : "Invalid wrapLine: " + wrapLine;
-            return wrapLine.endPart.getStartOffset();
+            return wrapLine.endPart.view.getStartOffset();
         }
     }
     

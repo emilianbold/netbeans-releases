@@ -56,9 +56,12 @@ import javax.swing.event.ChangeListener;
 import junit.framework.Assert;
 import org.netbeans.api.queries.VisibilityQuery;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.versioning.core.VersioningManager;
 import org.netbeans.modules.versioning.spi.testvcs.TestVCS;
 import org.netbeans.modules.versioning.spi.testvcs.TestVCSVisibilityQuery;
 import org.netbeans.spi.queries.VisibilityQueryChangeEvent;
+import org.openide.util.Lookup;
+import org.openide.util.test.MockLookup;
 
 /**
  * Versioning SPI unit tests of VCSVisibilityQuery.
@@ -76,24 +79,20 @@ public class VCSVisibilityQueryTest extends NbTestCase {
         File userdir = new File(getWorkDir() + "userdir");
         userdir.mkdirs();
         System.setProperty("netbeans.user", userdir.getAbsolutePath());
+        VisibilityQuery.getDefault().isVisible(userdir); // whatever file. just ensure all VQ impls are alive
         super.setUp();
     }
 
     public void testVQ() throws FileStateInvalidException, IOException, Exception {
-        File folder = new File(getWorkDir(), TestVCS.VERSIONED_FOLDER_SUFFIX);
-        folder.mkdirs();
-        
         VQChangeListener cl = new VQChangeListener();
         VisibilityQuery.getDefault().addChangeListener(cl);
-        File visible = new File(folder, "this-file-is-visible");
-        visible.createNewFile();
+        File visible = createVersionedFile("this-file-is-visible", true);
         FileObject visibleFO = FileUtil.toFileObject(visible);
         cl.testVisibility(true, visible, visibleFO);
         assertTrue(VisibilityQuery.getDefault().isVisible(visible));
         assertTrue(VisibilityQuery.getDefault().isVisible(visibleFO));
 
-        File invisible = new File(folder, "this-file-is-" + TestVCSVisibilityQuery.INVISIBLE_FILE_SUFFIX);
-        invisible.createNewFile();
+        File invisible = createVersionedFile("this-file-is-", false);
         FileObject invisibleFO = FileUtil.toFileObject(invisible);
         cl.testVisibility(false, invisible, invisibleFO);
         assertFalse(VisibilityQuery.getDefault().isVisible(invisible));
@@ -114,6 +113,9 @@ public class VCSVisibilityQueryTest extends NbTestCase {
     }
     
     public void testFireForFiles() throws IOException {
+        File f1 = createVersionedFile("f1", true);
+        File f2 = createVersionedFile("f2", true);
+        
         final List<String> received = new ArrayList<String>();
         VisibilityQuery.getDefault().addChangeListener(new ChangeListener() {
             @Override
@@ -125,13 +127,17 @@ public class VCSVisibilityQueryTest extends NbTestCase {
                 received.add(fos[1].getName());
             }
         });
-        File f1 = new File(getWorkDir(), "f1" + TestVCS.VERSIONED_FOLDER_SUFFIX);
-        File f2 = new File(getWorkDir(), "f2" + TestVCS.VERSIONED_FOLDER_SUFFIX);
-        f1.createNewFile();
-        f2.createNewFile();
         TestVCS.getInstance().getVisibilityQuery().fireVisibilityChanged(new File[] {f1, f2});
         assertTrue(received.contains(f1.getName()));
         assertTrue(received.contains(f2.getName()));
+    }
+
+    private File createVersionedFile(String name, boolean visible) throws IOException {
+        File folder = new File(getWorkDir(), TestVCS.VERSIONED_FOLDER_SUFFIX);
+        folder.mkdirs();
+        File f = new File(folder, name + (!visible ? TestVCSVisibilityQuery.INVISIBLE_FILE_SUFFIX : ""));
+        f.createNewFile();
+        return f;
     }
 
     private class VQChangeListener implements ChangeListener {

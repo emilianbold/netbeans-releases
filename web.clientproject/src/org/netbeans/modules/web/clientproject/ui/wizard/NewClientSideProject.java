@@ -46,6 +46,7 @@ import javax.swing.JPanel;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import org.netbeans.modules.web.clientproject.util.ClientSideProjectUtilities;
 import org.netbeans.modules.web.clientproject.util.ValidationUtilities;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
 import org.openide.filesystems.FileChooserBuilder;
@@ -138,6 +139,7 @@ public class NewClientSideProject extends JPanel {
 
     @NbBundle.Messages({
         "ClientSideProject.error.location.invalid=Project location is not a valid path.",
+        "ClientSideProject.error.location.alreadyProject=Project folder is already NetBeans project (maybe only in memory).",
         "ClientSideProject.error.location.notWritable=Project folder cannot be created.",
         "ClientSideProject.error.location.notEmpty=Project folder already exists and is not empty."
     })
@@ -147,6 +149,9 @@ public class NewClientSideProject extends JPanel {
             return Bundle.ClientSideProject_error_location_invalid();
         }
         final File destFolder = getProjectDirectory();
+        if (ClientSideProjectUtilities.isProject(destFolder)) {
+            return Bundle.ClientSideProject_error_location_alreadyProject();
+        }
         if (!ValidationUtilities.isValidFilename(destFolder)) {
             return Bundle.ClientSideProject_error_location_invalid();
         }

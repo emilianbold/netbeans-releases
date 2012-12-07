@@ -594,7 +594,7 @@ public class FileContainer extends ProjectComponent implements Persistent, SelfP
         CharSequence path = getFileKey(fileImpl.getAbsolutePath(), false);
         return new FileEntry(fileImpl.getUID(), null, path, path);
     }
-
+    private static final boolean TRACE = false;
     public static final class FileEntry {
 
         private final CsmUID<CsmFile> fileNew;
@@ -611,11 +611,19 @@ public class FileContainer extends ProjectComponent implements Persistent, SelfP
                 int cnt = input.readInt();
                 assert cnt > 0;
                 if (cnt == 1) {
-                    data = readStatePair(fs, input, unitIndex);
+                    PreprocessorStatePair pair = readStatePair(fs, input, unitIndex);
+                    if (TRACE && pair != null && !pair.state.isValid()) {
+                        CndUtils.assertTrueInConsole(false, "read INVALID state for ", this.canonical);
+                    }
+                    data = pair;
                 } else {
                     data = new ArrayList<PreprocessorStatePair>(cnt);
                     for (int i = 0; i < cnt; i++) {
-                        ((List<PreprocessorStatePair>) data).add(readStatePair(fs, input, unitIndex));
+                        PreprocessorStatePair pair = readStatePair(fs, input, unitIndex);
+                        if (TRACE && pair != null && !pair.state.isValid()) {
+                            CndUtils.assertTrueInConsole(false, "read INVALID state for ", this.canonical);
+                        }
+                        ((List<PreprocessorStatePair>) data).add(pair);
                     }
                 }
             } else {
@@ -644,12 +652,19 @@ public class FileContainer extends ProjectComponent implements Persistent, SelfP
             if (aData != null) {
                 if(aData instanceof PreprocessorStatePair) {
                     output.writeInt(1);
-                    writeStatePair(output, (PreprocessorStatePair) aData, unitIndex);
+                    PreprocessorStatePair pair = (PreprocessorStatePair) aData;
+                    if (TRACE && !pair.state.isValid()) {
+                        CndUtils.assertTrueInConsole(false, "write INVALID state for ", this.canonical);
+                    }
+                    writeStatePair(output, pair, unitIndex);
                 } else {
                     @SuppressWarnings("unchecked")
                     Collection<PreprocessorStatePair> pairs = (Collection<PreprocessorStatePair>)aData;
                     output.writeInt(pairs.size());
                     for (PreprocessorStatePair pair : pairs) {
+                        if (TRACE && pair != null && !pair.state.isValid()) {
+                            CndUtils.assertTrueInConsole(false, "write INVALID state for ", this.canonical);
+                        }
                         writeStatePair(output, pair, unitIndex);
                     }
                 }

@@ -242,16 +242,16 @@ public abstract class JPACompletionItem implements CompletionItem {
                         completion.hideDocumentation();
                     }
                     break;
-                case ';':
-                case ',':
-                case '(':
-                    completion.hideCompletion();
-                    completion.hideDocumentation();
-                case '.':
-                    if (defaultAction((JTextComponent) evt.getSource(), Character.toString(evt.getKeyChar()))) {
-                        evt.consume();
-                        break;
-                    }
+//                case ';': //TODO, can special handling be added even if we press these buttons within a literal?
+//                case ',':
+//                case '(':
+//                    completion.hideCompletion();
+//                    completion.hideDocumentation();
+//                case '.':
+//                    if (defaultAction((JTextComponent) evt.getSource(), Character.toString(evt.getKeyChar()))) {
+//                        evt.consume();
+//                        break;
+//                    }
             }
         }
     }
@@ -985,14 +985,12 @@ public abstract class JPACompletionItem implements CompletionItem {
 
         private static final String FIELD_ICON = "org/netbeans/modules/editor/resources/completion/field_16.png"; //NOI18N
         private ElementHandle<VariableElement> elemHandle;
-        private boolean deprecated;
         private String displayName;
 
         public ClassPropertyItem(int substitutionOffset, VariableElement elem, ElementHandle<VariableElement> elemHandle,
                 boolean deprecated) {
             super(substitutionOffset);
             this.elemHandle = elemHandle;
-            this.deprecated = deprecated;
             this.displayName = elem.getSimpleName().toString();
         }
 

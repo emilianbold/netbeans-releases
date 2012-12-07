@@ -44,6 +44,7 @@
 
 package org.netbeans.core;
 
+import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.PrintStream;
 import java.io.PrintWriter;
@@ -61,6 +62,7 @@ import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import org.netbeans.core.startup.TopLogging;
+import org.openide.util.UserQuestionException;
 
 /** Wraps errormanager with logger.
  *
@@ -266,6 +268,14 @@ public final class NbErrorManager extends Handler {
                 }
             }
             return false;
+        }
+        
+        final boolean isUserQuestion() {
+            return t instanceof UserQuestionException;
+        }
+        
+        final void  confirm() throws IOException {
+            ((UserQuestionException)t).confirmed();
         }
         
         /** @return class name of the exception */

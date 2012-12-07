@@ -65,6 +65,7 @@ public interface ContainerClassPathModifier {
 
     public final String API_SERVLET = "servlet-api"; //NOI18N
     public final String API_JSP = "jsp-api"; //NOI18N
+    public final String API_JSF = "jsf-api"; //NOI18N
     /**
      * a fallback solution, adds the complete j2ee stack on classpath
      */

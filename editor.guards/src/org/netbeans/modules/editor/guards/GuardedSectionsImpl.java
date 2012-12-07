@@ -254,13 +254,16 @@ public final class GuardedSectionsImpl {
     
     // package
     
+    AbstractGuardedSectionsProvider gr;
+    
     /** Takes the section descriptors from the GuardedReader and
     * fills the table 'sections', also marks as guarded all sections
     * in the given document.
     * @param is Where to take the guarded section descriptions.
     * @param doc Where to mark guarded.
     */
-    void fillSections(List<GuardedSection> l, NewLine newLineType) {
+    void fillSections(AbstractGuardedSectionsProvider gr, List<GuardedSection> l, NewLine newLineType) {
+        this.gr = GuardsSupportAccessor.DEFAULT.isUseReadersWritersOnSet(gr) ? gr : null;
         this.newLineType = newLineType;
         // XXX this should invalidate removed GS instances
         // XXX maybe would be useful to map new list to old list to keep track of valid instances as much as possible

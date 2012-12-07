@@ -113,9 +113,9 @@ public class ImplementAbstractMethodsHintError extends AbstractHintError {
     })
     void compute(PHPRuleContext context, List<Hint> hints) {
         FileScope fileScope = context.fileScope;
-        if (fileScope != null) {
+        FileObject fileObject = context.parserResult.getSnapshot().getSource().getFileObject();
+        if (fileScope != null && fileObject != null) {
             Collection<? extends ClassScope> allClasses = ModelUtils.getDeclaredClasses(fileScope);
-            FileObject fileObject = context.parserResult.getSnapshot().getSource().getFileObject();
             for (FixInfo fixInfo : checkHints(allClasses, context)) {
                 hints.add(new Hint(
                         ImplementAbstractMethodsHintError.this,
@@ -145,7 +145,7 @@ public class ImplementAbstractMethodsHintError extends AbstractHintError {
                 allValidMethods.addAll(toNames(index.getDeclaredMethods(classScope)));
                 ElementFilter declaredMethods = ElementFilter.forExcludedNames(allValidMethods, PhpElementKind.METHOD);
                 Set<MethodElement> accessibleMethods = declaredMethods.filter(index.getAccessibleMethods(classScope, classScope));
-                LinkedHashSet<String> methodSkeletons = new LinkedHashSet<String>();
+                Set<String> methodSkeletons = new LinkedHashSet<String>();
                 MethodElement lastMethodElement = null;
                 FileObject lastFileObject = null;
                 FileScope fileScope = null;
@@ -357,7 +357,7 @@ public class ImplementAbstractMethodsHintError extends AbstractHintError {
         private final String lastMethodOwnerName;
         private final int classDeclarationOffset;
 
-        FixInfo(ClassScope classScope, LinkedHashSet<String> methodSkeletons, MethodElement lastMethodElement, int newMethodsOffset, int classDeclarationOffset) {
+        FixInfo(ClassScope classScope, Set<String> methodSkeletons, MethodElement lastMethodElement, int newMethodsOffset, int classDeclarationOffset) {
             this.methodSkeletons = new ArrayList<String>(methodSkeletons);
             className = classScope.getFullyQualifiedName().toString();
             Collections.sort(this.methodSkeletons);

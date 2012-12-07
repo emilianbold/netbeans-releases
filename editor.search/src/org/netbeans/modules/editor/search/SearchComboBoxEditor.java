@@ -109,14 +109,20 @@ public class SearchComboBoxEditor implements ComboBoxEditor {
         final Border border = referenceTextField.getBorder();
         if (border != null) {
             final Insets borderInsets = border.getBorderInsets(referenceTextField);
-            scrollPane.setBorder(new EmptyBorder(borderInsets));
+            if (isCurrentLF("Aqua")) {  //NOI18N
+                scrollPane.setBorder(new EmptyBorder (0, 0, 0, 0));
+            } else {
+                scrollPane.setBorder(new EmptyBorder(borderInsets));
+            }
         }
         scrollPane.setFont(referenceTextField.getFont());
         scrollPane.setBackground(referenceTextField.getBackground());
         int preferredHeight = referenceTextField.getPreferredSize().height;
         Dimension spDim = scrollPane.getPreferredSize();
-        spDim.height = preferredHeight;
-        spDim.height += margin.bottom + margin.top; //borderInsets.top + borderInsets.bottom;
+        spDim.height = preferredHeight + getLFHeightAdjustment();
+        if (!isCurrentLF("Aqua")) {  //NOI18N 
+            spDim.height += margin.bottom + margin.top; //borderInsets.top + borderInsets.bottom;
+        }
         scrollPane.setPreferredSize(spDim);
         scrollPane.setMinimumSize(spDim);
         scrollPane.setMaximumSize(spDim);
@@ -184,7 +190,6 @@ public class SearchComboBoxEditor implements ComboBoxEditor {
                     }
                 });
         editorPane.setBorder(new EmptyBorder (0, 0, 0, 0));
-        editorPane.setBackground(referenceTextField.getBackground());
         LOG.log(Level.FINE, "Changed editorkit - Set Font: Name: {0}, Size: {1}\n", new Object[]{editorPane.getFont().getFontName(), editorPane.getFont().getSize()}); //NOI18N
         editorPane.setFont(referenceTextField.getFont());
         LOG.log(Level.FINE, "Changed editorkit - Set Font: Name: {0}, Size: {1}\n", new Object[]{editorPane.getFont().getFontName(), editorPane.getFont().getSize()}); //NOI18N
@@ -220,23 +225,27 @@ public class SearchComboBoxEditor implements ComboBoxEditor {
         }
     }
 
+    private static boolean isCurrentLF(String lf) {
+        LookAndFeel laf = UIManager.getLookAndFeel();
+        String lfID = laf.getID();
+        return lf.equals(lfID);
+    }
+
     private static int getLFHeightAdjustment() {
-        LookAndFeel lf = UIManager.getLookAndFeel();
-        String lfID = lf.getID();
-        if ("Metal".equals(lfID)) { //NOI18N
-            return 0;
+        if (isCurrentLF("Metal")) { //NOI18N
+            return -7;
         }
-        if ("GTK".equals(lfID)) { //NOI18N
+        if (isCurrentLF("GTK")) { //NOI18N
             return 2;
         }
-        if ("Motif".equals(lfID)) { //NOI18N
+        if (isCurrentLF("Motif")) { //NOI18N
             return 3;
         }
-        if ("Nimbus".equals(lfID)) { //NOI18N
+        if (isCurrentLF("Nimbus")) { //NOI18N
             return 0;
         }
-        if ("Aqua".equals(lfID)) { //NOI18N
-            return -2;
+        if (isCurrentLF("Aqua")) { //NOI18N
+            return -10;
         }
         return 0;
     }

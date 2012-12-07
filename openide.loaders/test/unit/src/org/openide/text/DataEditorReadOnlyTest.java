@@ -333,6 +333,11 @@ public class DataEditorReadOnlyTest extends NbTestCase {
 
         @Override
         public boolean readOnly(String name) {
+            for (StackTraceElement e : new Exception().getStackTrace()) {
+                if (e.getMethodName().equals("<init>") && e.getClassName().endsWith("Env")) {
+                    throw new IllegalStateException("Don't call into the filesystem now!");
+                }
+            }
             return RUNNING.readOnly;
         }
         

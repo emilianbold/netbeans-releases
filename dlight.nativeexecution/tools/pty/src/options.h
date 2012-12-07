@@ -18,6 +18,7 @@ extern "C" {
         int noecho;
         int nopty;
         int set_erase_key;
+        int redirect_error;
         int waitSignal;
         char *pty;
         char *wdir;

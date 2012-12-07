@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.options.keymap;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -59,8 +60,10 @@ import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.core.options.keymap.api.KeyStrokeUtils;
 import org.netbeans.core.options.keymap.api.ShortcutAction;
 import org.netbeans.core.options.keymap.api.ShortcutsFinder;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
+import org.openide.util.Task;
 import org.openide.util.Utilities;
 
 /**
@@ -81,12 +84,6 @@ class MutableShortcutsModel extends ShortcutsFinderImpl implements ShortcutsFind
     private String              currentProfile;
 
     /**
-     * The underlying model
-     */
-    @NonNull
-    private KeymapModel model;
-
-    /**
      * Key: category name. Value = pair of List&lt;ShortcutAction>. The 1st List
      * holds all actions for the category AND subcategories, the 2nd List holds
      * list of actions in the category only. Initialized lazily by {@link #getItems}
@@ -101,6 +98,10 @@ class MutableShortcutsModel extends ShortcutsFinderImpl implements ShortcutsFind
     private Map<String, Map<ShortcutAction, Set<String>>> modifiedProfiles = 
             new HashMap<String, Map<ShortcutAction, Set<String>>> ();
     
+    private Set<String> revertedProfiles = new HashSet<String>();
+    
+    private Set<ShortcutAction> revertedActions = new HashSet<ShortcutAction>();
+    
     /**
      * Set of profiles to be deleted
      */
@@ -114,7 +115,6 @@ class MutableShortcutsModel extends ShortcutsFinderImpl implements ShortcutsFind
     
     public MutableShortcutsModel(@NonNull KeymapModel model, ShortcutsFinder master) {
         super(model);
-        this.model = model;
         this.master = master == null ? Lookup.getDefault().lookup(ShortcutsFinder.class) : master;
     }
     
@@ -127,19 +127,24 @@ class MutableShortcutsModel extends ShortcutsFinderImpl implements ShortcutsFind
         return r;
     }
     
+    boolean isChangedProfile(String profile) {
+        return modifiedProfiles.containsKey(profile);
+    }
+    
     boolean isCustomProfile (String profile) {
-        return modifiedProfiles.containsKey(profile) || model.isCustomProfile (profile);
+        return model.isCustomProfile (profile);
     }
     
     boolean deleteOrRestoreProfile (String profile) {
         if (model.isCustomProfile (profile)) {
             deletedProfiles.add (profile);
             modifiedProfiles.remove (profile);
+            clearShortcuts(profile);
             return true;
         } else {
-            Map<ShortcutAction, Set<String>> m = model.getKeymapDefaults (profile);
-            m = convertFromEmacs (m);
-            modifiedProfiles.put (profile, m);
+            modifiedProfiles.remove(profile);
+            revertedProfiles.add(profile);
+            clearShortcuts(profile);
             return false;
         }
     }
@@ -160,6 +165,8 @@ class MutableShortcutsModel extends ShortcutsFinderImpl implements ShortcutsFind
         Map<ShortcutAction, Set<String>> result = new HashMap<ShortcutAction, Set<String>> ();
         cloneProfile ("", result);
         modifiedProfiles.put (newProfileName, result);
+        // just in case, if the profile was deleted, then created anew
+        deletedProfiles.remove(newProfileName);
     }
     
     private void cloneProfile (
@@ -270,6 +277,21 @@ class MutableShortcutsModel extends ShortcutsFinderImpl implements ShortcutsFind
         return null;
     }
     
+    protected Map<ShortcutAction,Set<String>> getKeymap (String profile) {
+        Map<ShortcutAction,Set<String>> base;
+        
+        if (revertedProfiles.contains(profile)) {
+            base = model.getKeymapDefaults(profile);
+        } else {
+            base = super.getKeymap(profile);
+        }
+        if (modifiedProfiles.containsKey(profile)) {
+            base = new HashMap<ShortcutAction,Set<String>>(base);
+            base.putAll(modifiedProfiles.get(profile));
+        }
+        return base;
+    }
+    
     public String[] getShortcuts (ShortcutAction action) {
         String profile = getCurrentProfile();
         if (modifiedProfiles.containsKey (profile)) {
@@ -293,8 +315,11 @@ class MutableShortcutsModel extends ShortcutsFinderImpl implements ShortcutsFind
         Set<String> set = new LinkedHashSet<String>();
         //add modified shortcuts, if any
         String profile = getCurrentProfile();
+        
+        Set<ShortcutAction> processed = new HashSet<ShortcutAction>();
         Map<ShortcutAction, Set<String>> modMap = modifiedProfiles.get(profile);
         if (modMap != null) {
+            processed.addAll(modMap.keySet());
             for (Map.Entry<ShortcutAction, Set<String>> entry : modMap.entrySet()) {
                 for (String sc : entry.getValue()) {
                     set.add(sc);
@@ -306,6 +331,10 @@ class MutableShortcutsModel extends ShortcutsFinderImpl implements ShortcutsFind
         }
         //add default shortcuts
         for (Map.Entry<ShortcutAction, Set<String>> entry : getProfileMap(profile).entrySet()) {
+            // ignore entries, which are going to be overriden by modifiedProfiles.
+            if (processed.contains(entry.getKey())) {
+                continue;
+            }
             for (String sc : entry.getValue()) {
                     set.add(sc);
                     if (sc.contains(" ")) {
@@ -336,6 +365,9 @@ class MutableShortcutsModel extends ShortcutsFinderImpl implements ShortcutsFind
      * @return {@code null} for success, or collection of conflicting actions 
      */
     Collection<ShortcutAction> revertShortcutsToDefault(ShortcutAction action, boolean force) {
+        if (model.isCustomProfile(getCurrentProfile())) {
+            return null;
+        }
         Map<ShortcutAction, Set<String>> m = model.getKeymapDefaults (getCurrentProfile());
         m = convertFromEmacs(m);
         Set<String> shortcuts = m.get(action);
@@ -350,10 +382,19 @@ class MutableShortcutsModel extends ShortcutsFinderImpl implements ShortcutsFind
                 conflictingActions.add(ac);
             }
         }
-        if (!conflictingActions.isEmpty() && !force) {
+        // retain only conflicting actions from the same keymap manager
+        Collection<ShortcutAction> filtered = KeymapModel.filterSameScope(conflictingActions, action);
+        if (!filtered.isEmpty() && !force) {
             return conflictingActions;
         }
+        revertedActions.add(action);
         setShortcuts(action, shortcuts);
+        for (ShortcutAction a : filtered) {
+            String[] ss = getShortcuts(a);
+            Set<String> newSs = new HashSet<String>(Arrays.asList(ss));
+            newSs.removeAll(shortcuts);
+            setShortcuts(a, newSs);
+        }
         return null;
     }
 
@@ -379,12 +420,30 @@ class MutableShortcutsModel extends ShortcutsFinderImpl implements ShortcutsFind
     private volatile boolean applyInProgress = false;
     
     public void apply () {
+        postApply();
+    }
+    
+    /* test only */ Task postApply() {
         if (applyInProgress) {
-            return;
+            return null;
         }
         applyInProgress = true;
-        RequestProcessor.getDefault ().post (new Runnable () {
+        return RequestProcessor.getDefault ().post (new Runnable () {
             public void run () {
+                for (String profile : revertedProfiles) {
+                    try {
+                        model.revertProfile(profile);
+                    } catch (IOException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
+                }
+                if (!revertedActions.isEmpty()) {
+                    try {
+                        model.revertActions(revertedActions);
+                    } catch (IOException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
+                }
                 for (String profile: modifiedProfiles.keySet()) {
                     Map<ShortcutAction, Set<String>> actionToShortcuts = modifiedProfiles.get (profile);
                     actionToShortcuts = convertToEmacs (actionToShortcuts);
@@ -397,8 +456,8 @@ class MutableShortcutsModel extends ShortcutsFinderImpl implements ShortcutsFind
                     model.deleteProfile (profile);
                 }
                 model.setCurrentProfile (currentProfile);
-                modifiedProfiles = new HashMap<String, Map<ShortcutAction, Set<String>>> ();
-                deletedProfiles = new HashSet<String> ();
+                
+                clearState();
                 model = new KeymapModel ();
                 applyInProgress = false;
                 clearCache();
@@ -411,13 +470,19 @@ class MutableShortcutsModel extends ShortcutsFinderImpl implements ShortcutsFind
     }
     
     public boolean isChanged () {
-        return (!modifiedProfiles.isEmpty ()) || !deletedProfiles.isEmpty ();
+        return (!modifiedProfiles.isEmpty ()) || !deletedProfiles.isEmpty () || !revertedProfiles.isEmpty() || !revertedActions.isEmpty();
+    }
+    
+    private void clearState() {
+        modifiedProfiles = new HashMap<String, Map<ShortcutAction, Set<String>>> ();
+        deletedProfiles = new HashSet<String> ();
+        revertedActions = new HashSet<ShortcutAction>();
+        revertedProfiles = new HashSet<String>();
+        currentProfile = null;
     }
     
     public void cancel () {
-        modifiedProfiles = new HashMap<String, Map<ShortcutAction, Set<String>>> ();
-        deletedProfiles = new HashSet<String> ();
-        currentProfile = null;
+        clearState();
     }
 
     Map<String, Map<ShortcutAction, Set<String>>> getModifiedProfiles() {
@@ -451,11 +516,11 @@ class MutableShortcutsModel extends ShortcutsFinderImpl implements ShortcutsFind
                 if (ks == null) 
                     continue; // unparsable shortcuts ignorred
                 StringBuffer sb = new StringBuffer (
-                    Utilities.keyToString (ks [0])
+                    Utilities.keyToString (ks [0], true)
                 );
                 int i, k = ks.length;
                 for (i = 1; i < k; i++)
-                    sb.append (' ').append (Utilities.keyToString (ks [i]));
+                    sb.append (' ').append (Utilities.keyToString (ks [i], true));
                 newSet.add (sb.toString ());
             }
             result.put (action, newSet);
@@ -532,5 +597,14 @@ class MutableShortcutsModel extends ShortcutsFinderImpl implements ShortcutsFind
         }
         return (List)(prefix ? result[0] : result[1]);
     }
-    
+
+    boolean differsFromDefault(String profile) {
+        if (modifiedProfiles.containsKey(profile)) {
+            return true;
+        }
+        if (revertedProfiles.contains(profile)) {
+            return false;
+        }
+        return !model.getKeymapDefaults(profile).equals(model.getKeymap(profile));
+    }
 }

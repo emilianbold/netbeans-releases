@@ -47,6 +47,7 @@ import java.util.Map;
 import org.netbeans.modules.cnd.apt.structure.APT;
 import org.netbeans.modules.cnd.apt.support.APTToken;
 import org.netbeans.modules.cnd.apt.support.APTTokenAbstact;
+import org.netbeans.modules.cnd.apt.support.ResolvedPath;
 
 /**
  * wrapper for APT nodes corresponding to preprocessor directives
@@ -56,17 +57,26 @@ public final class APTPreprocessorToken extends APTTokenAbstact {
     private final APT ppNode;
     private final APTToken ppNodeToken;
     private final Map<Object, Object> props;
+    private final ResolvedPath resolvedPath;
+    private final boolean enterInclude;
     private static final Map<Object, Object> EMPTY = Collections.emptyMap();
 
-    public APTPreprocessorToken(APT ppNode, Map<Object, Object> props) {
+    public APTPreprocessorToken(APT ppNode, boolean enterInclude, ResolvedPath resolvedPath, Map<Object, Object> props) {
         assert ppNode != null;
         this.ppNode = ppNode;
+        this.enterInclude = enterInclude;
+        this.resolvedPath = resolvedPath;
         this.ppNodeToken = ppNode.getToken();
         this.props = props == null ? EMPTY : new HashMap<Object, Object>(props);
     }
     
     @Override
     public Object getProperty(Object key) {
+        if (key == ResolvedPath.class) {
+            return resolvedPath;
+        } else if (key == Boolean.class) {
+            return enterInclude;
+        }
         return props.get(key);
     }
 

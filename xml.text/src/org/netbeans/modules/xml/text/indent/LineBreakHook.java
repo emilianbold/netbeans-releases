@@ -214,7 +214,7 @@ public class LineBreakHook implements TypedBreakInterceptor {
         }
         String blankLine = "\n" + 
             IndentUtils.createIndentString(doc, desiredIndent);
-        context.setText(blankLine, -1, desiredIndent + 1, 1, blankLine.length());
+        context.setText(blankLine, -1, blankLine.length(), 1, blankLine.length());
     }
     
     private void insertBlankBetweenTabs(MutableContext context, int openOffset) throws BadLocationException {

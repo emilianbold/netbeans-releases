@@ -137,6 +137,14 @@ public final class LayoutDesigner implements LayoutConstants {
             if (type != LayoutEvent.INTERVAL_SIZE_CHANGED
                     && type != LayoutEvent.INTERVAL_PADDING_TYPE_CHANGED) {
                 selectedGap = null;
+                if (type == LayoutEvent.COMPONENT_UNREGISTERED && selectedComponents != null) {
+                    for (Iterator<LayoutComponent> it = selectedComponents.iterator(); it.hasNext(); ) {
+                        LayoutComponent comp = it.next();
+                        if (layoutModel.getLayoutComponent(comp.getId()) == null) {
+                            it.remove();
+                        }
+                    }
+                }
             }
         }
     }

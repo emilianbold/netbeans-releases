@@ -67,6 +67,7 @@ import org.netbeans.modules.j2ee.deployment.common.api.DatasourceAlreadyExistsEx
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.ArtifactListener.Artifact;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.JDBCDriverDeployer;
 import java.util.*;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -175,7 +176,7 @@ public class ServerInstance implements Node.Cookie, Comparable {
     // last known server state, the initial value is stopped
     private volatile int serverState = STATE_STOPPED;
     // server state listeners
-    private final List stateListeners = new ArrayList();
+    private final List<StateListener> stateListeners = new CopyOnWriteArrayList<StateListener>();
     
     // running check helpers
     private long lastCheck = 0;
@@ -1730,27 +1731,19 @@ public class ServerInstance implements Node.Cookie, Comparable {
     }
     
     public void addStateListener(StateListener sl) {
-        synchronized (stateListeners) {
-            stateListeners.add(sl);
-        }
+        stateListeners.add(sl);
     }
     
     public void removeStateListener(StateListener sl) {
-        synchronized (stateListeners) {
-            stateListeners.remove(sl);
-        }
+        stateListeners.remove(sl);
     }
     
     private void fireStateChanged(int oldState, int newState) {
         if (oldState == newState) {
             return;
         }
-        StateListener[] listeners;
-        synchronized (stateListeners) {
-            listeners = (StateListener[])stateListeners.toArray(new StateListener[stateListeners.size()]);
-        }
-        for (int i = 0; i < listeners.length; i++) {
-            listeners[i].stateChanged(oldState, newState);
+        for (StateListener listener : stateListeners) {
+            listener.stateChanged(oldState, newState);
         }
     }
     

@@ -38,6 +38,7 @@
 package org.netbeans.modules.javascript2.editor.parser;
 
 import com.oracle.nashorn.ir.FunctionNode;
+import org.netbeans.api.lexer.Language;
 import org.netbeans.modules.javascript2.editor.lexer.JsTokenId;
 import org.netbeans.modules.parsing.api.Snapshot;
 
@@ -53,7 +54,7 @@ public class JsParser extends SanitizingParser {
     }
 
     @Override
-    public String getDefaultScriptName() {
+    protected String getDefaultScriptName() {
         return "javascript.js"; // NOI18N
     }
 
