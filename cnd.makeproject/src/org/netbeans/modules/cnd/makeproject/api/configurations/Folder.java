@@ -900,14 +900,7 @@ public class Folder implements FileChangeListener, ChangeListener {
 
         // Remove item from the dataObject's lookup
         if (isProjectFiles()) {
-            DataObject dataObject = item.getDataObject();
-            if (dataObject != null) {
-                NativeFileItemSet myNativeFileItemSet = dataObject.getLookup().lookup(NativeFileItemSet.class);
-                if (myNativeFileItemSet != null) {
-                    myNativeFileItemSet.remove(item);
-                }
-                dataObject.removePropertyChangeListener(item);
-            }
+            item.onClose();
         }
 
 //	item.setFolder(null);
