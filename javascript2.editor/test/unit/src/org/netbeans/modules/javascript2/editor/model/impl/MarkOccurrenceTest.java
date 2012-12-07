@@ -634,6 +634,10 @@ public class MarkOccurrenceTest extends JsTestBase {
     public void testIssue223074_02() throws Exception {
         checkOccurrences("testfiles/markoccurences/issue223074.js", "        a.url = container.na^me;", true);
     }
+    
+    public void testIssue223465() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue223465.js", "var so^me = {", true);
+    }
 
         
     private String getTestPath() {

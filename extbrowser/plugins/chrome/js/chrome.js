@@ -69,7 +69,6 @@ NetBeans.browserCloseCallback = function(tabId) {
     chrome.tabs.remove(tabId);
 };
 
-NetBeans.lastClosedTabId = null;
 NetBeans.debuggedTab = null;
 NetBeans.windowWithDebuggedTab = null;
 NetBeans.browserAttachDebugger = function(tabId) {
@@ -84,6 +83,8 @@ NetBeans.browserAttachDebugger = function(tabId) {
             chrome.tabs.get(tabId, function(tab) {
                 NetBeans.windowWithDebuggedTab = tab.windowId;
             });
+            // detect viewport
+            NetBeans.detectViewPort();
         }
     });
 };
@@ -167,6 +168,13 @@ NetBeans.getWindowInfo = function(callback) {
     chrome.windows.getLastFocused(callback);
 };
 NetBeans.detectViewPort = function(callback) {
+    if (NetBeans.debuggedTab === null) {
+        console.log('No debuggedTab so bypassing the detection');
+        if (callback) {
+            callback();
+        }
+        return;
+    }
     var script = 'NetBeans_ViewPort = {'
             + '    width: window.innerWidth,'
             + '    height: window.innerHeight,'
@@ -231,7 +239,7 @@ NetBeans._resizePage = function(width, height, callback) {
             }
             // #218974
             if (NetBeans_ViewPort.isMac && width < 400) {
-                NetBeans.openWarning('windowTooSmall', 250);
+                NetBeans.openWarning('windowTooSmall', 230);
             }
         });
     });
@@ -289,26 +297,34 @@ NetBeans.addPageInspectionPropertyListener(function(event) {
  * This means that the NetBeans integration will not work.
  * This warning is shown always except these cases:
  * 1. user closes NetBeans IDE
- * 2. user closes the tab that is being debugged by NetBeans
+ * 2. the debugged tab is not more visible (tab or window closed)
  */
 NetBeans._checkUnexpectedDetach = function(tabId) {
+    var debuggedTab = NetBeans.debuggedTab;
+    if (debuggedTab != tabId) {
+        // not "NetBeans" tab
+        return;
+    }
+    // 1. user closes NetBeans IDE
+    //   -> this case already works out-of-the-box
     // delay the check since detach is called before tabClosed
     setTimeout(function() {
-        var warn = false;
-        // 1. user closes NetBeans IDE -> this case already works out-of-the-box
-        // 2. user closes the tab that is being debugged by NetBeans
-        if (NetBeans.lastClosedTabId != tabId) {
-            warn = true;
-        }
-        if (warn) {
-            NetBeans.openWarning('disconnectedDebugger', 410);
-        }
+        // 2. the debugged tab is not more visible (tab or window closed)
+        chrome.tabs.get(debuggedTab, function(tab) {
+            if (tab !== undefined) {
+                // the tab still exists
+                NetBeans.openWarning('disconnectedDebugger', 390);
+            }
+        });
     }, 100);
 };
 
 NetBeans.openWarning = function(ident, height) {
     NetBeans_Warnings.runIfEnabled(ident, function() {
-        NetBeans.openPopup('html/warning.html#' + ident, 550, height);
+        NetBeans.detectViewPort(function() {
+            var windowTitleHeight = NetBeans_ViewPort.marginHeight - 60; // try to remove the height of the location bar
+            NetBeans.openPopup('html/warning.html#' + ident, 550, height + Math.max(windowTitleHeight, 0));
+        });
     });
 };
 
@@ -352,7 +368,6 @@ chrome.tabs.onUpdated.addListener(function(tabId, changeInfo, tab) {
     NetBeans.tabUpdated(tab);
 });
 chrome.tabs.onRemoved.addListener(function(tabId) {
-    NetBeans.lastClosedTabId = tabId;
     NetBeans.tabRemoved(tabId);
 });
 
