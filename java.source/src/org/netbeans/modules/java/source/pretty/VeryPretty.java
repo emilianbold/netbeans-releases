@@ -1402,7 +1402,7 @@ public final class VeryPretty extends JCTree.Visitor {
 	printExpr(tree.lhs, TreeInfo.assignopPrec + 1);
 	if (cs.spaceAroundAssignOps())
             print(' ');
-	print(treeinfo.operatorName(tree.getTag()));
+	print(treeinfo.operatorName(tree.getTag().noAssignOp()));
         print('=');
 	int rm = cs.getRightMargin();
         switch(cs.wrapAssignOps()) {
