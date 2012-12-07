@@ -45,6 +45,7 @@ package org.netbeans.modules.refactoring.spi.impl;
 
 import java.util.IdentityHashMap;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import javax.swing.JOptionPane;
 import javax.swing.event.ChangeListener;
@@ -67,11 +68,11 @@ public final class UndoManager {
     /**
      * stack of undo items
      */
-    private LinkedList<LinkedList<UndoItem>> undoList;
+    private LinkedHashMap<RefactoringSession, LinkedList<UndoItem>> undoList;
     /**
      * stack of redo items
      */
-    private LinkedList<LinkedList<UndoItem>> redoList;
+    private LinkedHashMap<RefactoringSession, LinkedList<UndoItem>> redoList;
     
     private final ChangeSupport changeSupport = new ChangeSupport(this);
     private boolean wasUndo = false;
@@ -110,8 +111,8 @@ public final class UndoManager {
      * Creates a new instance of UndoManager
      */
     private UndoManager() {
-        undoList = new LinkedList<LinkedList<UndoItem>>();
-        redoList = new LinkedList<LinkedList<UndoItem>>();
+        undoList = new LinkedHashMap<RefactoringSession, LinkedList<UndoItem>>();
+        redoList = new LinkedHashMap<RefactoringSession, LinkedList<UndoItem>>();
         descriptionMap = new IdentityHashMap<LinkedList, String>();
     }
 
@@ -132,22 +133,32 @@ public final class UndoManager {
      * Getter for undo description.
      * @return
      */
-    public String getUndoDescription() {
-        if (undoList.isEmpty()) {
+    public String getUndoDescription(RefactoringSession refactoringSession) {
+        if(refactoringSession == null) {
+            refactoringSession = getLastUndo();
+        }
+        final RefactoringSession session = refactoringSession;
+        LinkedList<UndoItem> undoitems = undoList.get(session);
+        if (undoitems == null) {
             return null;
         }
-        return descriptionMap.get(undoList.getFirst());
+        return descriptionMap.get(undoitems);
     }
 
     /**
      * Getter for Redo description.
      * @return
      */
-    public String getRedoDescription() {
-        if (redoList.isEmpty()) {
+    public String getRedoDescription(RefactoringSession refactoringSession) {
+        if(refactoringSession == null) {
+            refactoringSession = getLastUndo();
+        }
+        final RefactoringSession session = refactoringSession;
+        LinkedList<UndoItem> redoitems = redoList.get(session);
+        if (redoitems == null) {
             return null;
         }
-        return descriptionMap.get(redoList.getFirst());
+        return descriptionMap.get(redoitems);
     }
 
     /**
@@ -160,15 +171,15 @@ public final class UndoManager {
     /**
      * called to mark end of transaction
      */
-    public void transactionEnded(boolean fail) {
+    public void transactionEnded(boolean fail, RefactoringSession session) {
         description = null;
         if (fail && !undoList.isEmpty()) {
             //XXX todo 
             //undoList.removeFirst();
         } else {
             // [TODO] (jb) this code disables undos for changes using org.openide.src
-            if (isUndoAvailable() && getUndoDescription() == null) {
-                descriptionMap.remove(undoList.removeFirst());
+            if (isUndoAvailable(session) && getUndoDescription(session) == null) {
+                descriptionMap.remove(undoList.remove(session));
             }
         }
         fireChange();
@@ -177,12 +188,18 @@ public final class UndoManager {
     /**
      * undo last transaction
      */
-    public void undo() {
+    public void undo(RefactoringSession refactoringSession) {
+        if(refactoringSession == null) {
+            refactoringSession = getLastUndo();
+        }
+        final RefactoringSession session = refactoringSession;
         //System.out.println("************* Starting UNDO");
-        if (isUndoAvailable()) {
+        LinkedList<UndoItem> undoitems = undoList.get(session);
+        if (undoitems != null) {
+            final LinkedList<UndoItem> undo = undoitems;
             if (!autoConfirm && JOptionPane.showConfirmDialog(
                     WindowManager.getDefault().getMainWindow(),
-                    NbBundle.getMessage(UndoManager.class, "MSG_ReallyUndo", getUndoDescription()),
+                    NbBundle.getMessage(UndoManager.class, "MSG_ReallyUndo", getUndoDescription(session)),
                     NbBundle.getMessage(UndoManager.class, "MSG_ConfirmUndo"),
                     JOptionPane.YES_NO_OPTION) != JOptionPane.YES_OPTION) {
                 throw new CannotUndoException();
@@ -195,33 +212,33 @@ public final class UndoManager {
                     try {
                         transactionStarted();
                         wasUndo = true;
-                        LinkedList undo = (LinkedList) undoList.getFirst();
                         fireProgressListenerStart(0, undo.size());
                         Iterator undoIterator = undo.iterator();
                         UndoItem item;
-                        redoList.addFirst(new LinkedList<UndoItem>());
-                        descriptionMap.put(redoList.getFirst(), descriptionMap.remove(undo));
+                        redoList.put(session, new LinkedList<UndoItem>());
+                        descriptionMap.put(redoList.get(session), descriptionMap.remove(undo));
                         try {
                             while (undoIterator.hasNext()) {
                                 fireProgressListenerStep();
                                 item = (UndoItem) undoIterator.next();
                                 item.undo();
                                 if (item instanceof SessionUndoItem) {
-                                    addItem(item);
+                                    SessionUndoItem sessionUndoItem = (SessionUndoItem) item;
+                                    addItem(item, sessionUndoItem.change);
                                 }
                             }
                         } catch (CannotUndoException e) {
-                            descriptionMap.put(undo, descriptionMap.get(redoList.getFirst()));
-                            descriptionMap.remove(redoList.getFirst());
-                            redoList.removeFirst();
+                            descriptionMap.put(undo, descriptionMap.get(redoList.get(session)));
+                            descriptionMap.remove(redoList.get(session));
+                            redoList.remove(session);
                             throw e;
                         }
-                        undoList.removeFirst();
+                        undoList.remove(session);
                         fail = false;
                     } finally {
                         try {
                             wasUndo = false;
-                            transactionEnded(fail);
+                            transactionEnded(fail, session);
                         } finally {
                             fireProgressListenerStop();
                             fireChange();
@@ -245,12 +262,18 @@ public final class UndoManager {
     /**
      * redo last undo
      */
-    public void redo() {
+    public void redo(RefactoringSession refactoringSession) {
         //System.out.println("************* Starting REDO");
-        if (isRedoAvailable()) {
+        if(refactoringSession == null) {
+            refactoringSession = getLastRedo();
+        }
+        final RefactoringSession session = refactoringSession;
+        LinkedList<UndoItem> redoitems = redoList.get(session);
+        if (redoitems != null) {
+            final LinkedList<UndoItem> redo = redoitems;
             if (!autoConfirm && JOptionPane.showConfirmDialog(
                     WindowManager.getDefault().getMainWindow(),
-                    NbBundle.getMessage(UndoManager.class, "MSG_ReallyRedo", getRedoDescription()),
+                    NbBundle.getMessage(UndoManager.class, "MSG_ReallyRedo", getRedoDescription(session)),
                     NbBundle.getMessage(UndoManager.class, "MSG_ConfirmRedo"),
                     JOptionPane.YES_NO_OPTION) != JOptionPane.YES_OPTION) {
                 throw new CannotRedoException();
@@ -262,7 +285,6 @@ public final class UndoManager {
                     try {
                         transactionStarted();
                         wasRedo = true;
-                        LinkedList<UndoItem> redo = redoList.getFirst();
                         fireProgressListenerStart(1, redo.size());
                         Iterator<UndoItem> redoIterator = redo.iterator();
                         UndoItem item;
@@ -273,19 +295,19 @@ public final class UndoManager {
                                 item = redoIterator.next();
                                 item.redo();
                                 if (item instanceof SessionUndoItem) {
-                                    addItem(item);
+                                    addItem(item, session);
                                 }
                             }
                         } catch (CannotRedoException ex) {
                             descriptionMap.put(redo, description);
                             throw ex;
                         }
-                        redoList.removeFirst();
+                        redoList.remove(session);
                         fail = false;
                     } finally {
                         try {
                             wasRedo = false;
-                            transactionEnded(fail);
+                            transactionEnded(fail, session);
                         } finally {
                             fireProgressListenerStop();
                             fireChange();
@@ -317,23 +339,23 @@ public final class UndoManager {
     }
 
     public void addItem(RefactoringSession session) {
-        addItem(new SessionUndoItem(session));
+        addItem(new SessionUndoItem(session), session);
     }
 
     /**
      * add new item to undo/redo list
      */
-    private void addItem(UndoItem item) {
+    private void addItem(UndoItem item, RefactoringSession session) {
         if (wasUndo) {
-            LinkedList<UndoItem> redo = this.redoList.getFirst();
+            LinkedList<UndoItem> redo = redoList.get(session);
             redo.addFirst(item);
         } else {
             if (transactionStart) {
-                undoList.addFirst(new LinkedList<UndoItem>());
-                descriptionMap.put(undoList.getFirst(), description);
+                undoList.put(session, new LinkedList<UndoItem>());
+                descriptionMap.put(undoList.get(session), description);
                 transactionStart = false;
             }
-            LinkedList<UndoItem> undo = this.undoList.getFirst();
+            LinkedList<UndoItem> undo = this.undoList.get(session);
             undo.addFirst(item);
         }
         if (!(wasUndo || wasRedo)) {
@@ -341,10 +363,18 @@ public final class UndoManager {
         }
     }
 
+    public boolean isUndoAvailable(RefactoringSession session) {
+        return undoList.containsKey(session);
+    }
+
+    public boolean isRedoAvailable(RefactoringSession session) {
+        return redoList.containsKey(session);
+    }
+    
     public boolean isUndoAvailable() {
         return !undoList.isEmpty();
     }
-
+    
     public boolean isRedoAvailable() {
         return !redoList.isEmpty();
     }
@@ -388,6 +418,28 @@ public final class UndoManager {
             return;
         }
         progress.stop(new ProgressEvent(this, ProgressEvent.STOP));
+    }
+
+    private RefactoringSession getLastUndo() {
+        RefactoringSession session = null;
+        if(!undoList.isEmpty()) {
+            Iterator<RefactoringSession> iterator = undoList.keySet().iterator();
+            while(iterator.hasNext()) {
+                session = iterator.next();
+            }
+        }
+        return session;
+    }
+
+    private RefactoringSession getLastRedo() {
+        RefactoringSession session = null;
+        if(!redoList.isEmpty()) {
+            Iterator<RefactoringSession> iterator = redoList.keySet().iterator();
+            while(iterator.hasNext()) {
+                session = iterator.next();
+            }
+        }
+        return session;
     }
 
     private interface UndoItem {

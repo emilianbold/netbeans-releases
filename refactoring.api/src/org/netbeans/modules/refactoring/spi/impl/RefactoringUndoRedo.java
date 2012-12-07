@@ -41,8 +41,6 @@
  */
 package org.netbeans.modules.refactoring.spi.impl;
 
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.undo.CannotRedoException;
@@ -85,12 +83,12 @@ public class RefactoringUndoRedo implements UndoRedo {
 
     @Override
     public void undo() throws CannotUndoException {
-        manager.undo();
+        manager.undo(null);
     }
 
     @Override
     public void redo() throws CannotRedoException {
-        manager.redo();
+        manager.redo(null);
     }
 
     @Override
@@ -106,12 +104,12 @@ public class RefactoringUndoRedo implements UndoRedo {
 
     @Override
     public String getUndoPresentationName() {
-        return manager.getUndoDescription();
+        return manager.getUndoDescription(null);
     }
 
     @Override
     public String getRedoPresentationName() {
-        return manager.getRedoDescription();
+        return manager.getRedoDescription(null);
     }
     
 }

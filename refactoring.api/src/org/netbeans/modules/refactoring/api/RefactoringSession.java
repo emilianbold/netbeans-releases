@@ -192,7 +192,7 @@ public final class RefactoringSession {
             fireProgressListenerStop();
             if (realcommit) {
                 undoManager.addItem(this);
-                undoManager.transactionEnded(false);
+                undoManager.transactionEnded(false, this);
                 realcommit=false;
             }
         }
@@ -361,7 +361,7 @@ public final class RefactoringSession {
     }
     
     private void setWrappers(Transaction commit, UndoableWrapper wrap) {
-        wrap.setActive(true);
+        wrap.setActive(true, this);
         
         //        if (!(commit instanceof RefactoringCommit))
         //            return;
@@ -373,7 +373,7 @@ public final class RefactoringSession {
     }
 
     private void unsetWrappers(Transaction commit, UndoableWrapper wrap) {
-        wrap.setActive(false);
+        wrap.setActive(false, null);
 
         //        setWrappers(commit, null);
     }
