@@ -134,8 +134,8 @@ implements ContextGlobalProvider, Lookup.Provider, java.beans.PropertyChangeList
         StringBuilder sb = new StringBuilder();
         sb.append("We really get map from the lookup. Map: ").append(map) // NOI18N
             .append(" returned: ").append(q); // NOI18N
-        sb.append("\nprev: ").append(prev.lookupAll(Object.class));
-        sb.append("\nnow : ").append(now.lookupAll(Object.class));
+        sb.append("\nprev: ").append(prev == null ? "null prev" : prev.lookupAll(Object.class)); //NOI18N
+        sb.append("\nnow : ").append(now == null ? "null now" : now.lookupAll(Object.class)); //NOI18N
         return sb.toString();
     }
     
