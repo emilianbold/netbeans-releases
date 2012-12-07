@@ -180,7 +180,7 @@ public class RepositoryRevision {
         return repositoryRoot;
     }
     
-    public class Event {
+    public class Event implements Comparable<Event> {
         /**
          * The file or folder that this event is about. It may be null if the File cannot be computed.
          */ 
@@ -250,6 +250,15 @@ public class RepositoryRevision {
         @Override
         public String toString() {
             return path;
+        }
+
+        @Override
+        public int compareTo (Event other) {
+            int retval = status.compareTo(other.status);
+            if (retval == 0) {
+                retval = path.compareTo(other.path);
+            }
+            return retval;
         }
 
         boolean isUnderRoots () {
@@ -338,6 +347,7 @@ public class RepositoryRevision {
                 }
                 logEvents.add(new Event(info, underRoots));
             }
+            Collections.sort(logEvents);
             return logEvents;
         }
     }
