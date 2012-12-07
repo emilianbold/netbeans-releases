@@ -42,27 +42,19 @@
 package org.netbeans.modules.cnd.remote.sync;
 
 import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.Cursor;
-import java.awt.event.ActionListener;
-import java.io.CharConversionException;
 import java.util.HashSet;
 import java.util.Set;
 import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
-import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.netbeans.modules.remote.api.ui.ConnectionNotifier;
 import org.openide.awt.Notification;
 import org.openide.awt.NotificationDisplayer;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
-import org.openide.util.Parameters;
-import org.openide.xml.XMLUtil;
 
 /**
  *
@@ -82,7 +74,7 @@ public class FsSkewNotifier {
         return INSTANCE;
     }
     
-    public void notify(final ExecutionEnvironment env) {        
+    public void notify(final ExecutionEnvironment env, final long fsSkew) {
         synchronized (lock) {
             if (alreadyNotified.contains(env)) {
                 return;
@@ -96,7 +88,13 @@ public class FsSkewNotifier {
                 String text = null;
                 String title = NbBundle.getMessage(FsSkewNotifier.class, "FS_Skew_Title", envString);
                 ImageIcon icon = ImageUtilities.loadImageIcon("org/netbeans/modules/cnd/remote/sync/exclamation.gif", false); // NOI18N
-                String details = NbBundle.getMessage(FsSkewNotifier.class, "FS_Skew_Details", envString);
+                CharSequence skewString = secondsToString(fsSkew);
+                if (fsSkew > 0) {
+                    skewString = NbBundle.getMessage(FsSkewNotifier.class, "FS_Skew_Faster", skewString);
+                } else {
+                    skewString = NbBundle.getMessage(FsSkewNotifier.class, "FS_Skew_Slower", skewString);
+                }
+                String details = NbBundle.getMessage(FsSkewNotifier.class, "FS_Skew_Details", envString, skewString);
                 JComponent baloonComponent = createDetails(details);
                 JComponent popupComponent = createDetails(details);
                 Notification n = NotificationDisplayer.getDefault().notify(
@@ -113,5 +111,47 @@ public class FsSkewNotifier {
         res.add(text, BorderLayout.CENTER);
         res.setOpaque(false);
         return res;
+    }
+
+    private static CharSequence secondsToString(long skew) {
+        long seconds = skew % 60;
+        long minutes = skew / 60;
+        long hours = minutes / 60;
+        minutes %= 60;
+        long days = hours / 24;
+        hours %= 24;
+        StringBuilder sb = new StringBuilder();
+        String[] unitNamesSingle = new String[] {
+            NbBundle.getMessage(FsSkewNotifier.class, "FS_Skew_Day"),
+            NbBundle.getMessage(FsSkewNotifier.class, "FS_Skew_Hour"),
+            NbBundle.getMessage(FsSkewNotifier.class, "FS_Skew_Minute"),
+            NbBundle.getMessage(FsSkewNotifier.class, "FS_Skew_Second")
+        };
+        String[] unitNamesPlural = new String[] {
+            NbBundle.getMessage(FsSkewNotifier.class, "FS_Skew_Days"),
+            NbBundle.getMessage(FsSkewNotifier.class, "FS_Skew_Hours"),
+            NbBundle.getMessage(FsSkewNotifier.class, "FS_Skew_Minutes"),
+            NbBundle.getMessage(FsSkewNotifier.class, "FS_Skew_Seconds")
+        };
+        long unitVlues[]= new long[] { days, hours, minutes, seconds };
+        assert unitNamesSingle.length == unitVlues.length;
+        String comma = NbBundle.getMessage(FsSkewNotifier.class, "FS_Skew_Comma");
+        String and = NbBundle.getMessage(FsSkewNotifier.class, "FS_Skew_And");
+        for (int i = 0; i < unitVlues.length; i++) {
+            if (unitVlues[i] > 0) {
+                if (sb.length() > 0) {
+                    if (i == unitVlues.length - 1) {
+                        sb.append(' ');
+                        sb.append(NbBundle.getMessage(FsSkewNotifier.class, "FS_Skew_And"));
+                    } else {
+                        sb.append(NbBundle.getMessage(FsSkewNotifier.class, "FS_Skew_Comma"));                       
+                    }
+                    sb.append(' ');
+                }
+                String unitName = (unitVlues[i] > 1) ? unitNamesPlural[i] : unitNamesSingle[i];
+                sb.append(unitVlues[i]).append(' ').append(unitName);
+            }
+        }
+        return sb;
     }
 }
