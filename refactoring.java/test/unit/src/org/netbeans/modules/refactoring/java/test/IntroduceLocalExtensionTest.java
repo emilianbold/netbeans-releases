@@ -980,6 +980,17 @@ public class IntroduceLocalExtensionTest extends RefactoringTestBase {
         performIntroduceLocalExtension("MyList", true, true, "...", IntroduceLocalExtensionRefactoring.Equality.DELEGATE, new Problem(true, "ERR_InvalidPackage"));
     }
     
+    public void testAbstractWrapper() throws Exception {
+        writeFilesAndWaitForScan(src,
+                new File("t/A.java", "package t; public class A { public static void main(String[] args) { AbstractClass some; } }"),
+                new File("t/AbstractClass.java", "package t; public abstract class AbstractClass {\n\n public void doIt() {\n }\n\n public abstract void doItNow();\n}"));
+        performIntroduceLocalExtension("MyList", true, true, "t", IntroduceLocalExtensionRefactoring.Equality.DELEGATE);
+        verifyContent(src,
+                new File("t/A.java", "package t; public class A { public static void main(String[] args) { MyList some; } }"),
+                new File("t/AbstractClass.java", "package t; public abstract class AbstractClass {\n\n public void doIt() {\n }\n\n public abstract void doItNow();\n}"),
+                new File("t/MyList.java", "/* * Refactoring License */ package t; /** * * @author junit */ public class MyList { private AbstractClass delegate; public MyList(AbstractClass delegate) { this.delegate = delegate; } public void doIt() { delegate.doIt(); } public void doItNow() { delegate.doItNow(); } public boolean equals(Object o) { Object target = o; if (o instanceof MyList) { target = ((MyList) o).delegate; } return this.delegate.equals(target); } public int hashCode() { return this.delegate.hashCode(); } } "));
+    }
+    
     public void testInterface() throws Exception {
         writeFilesAndWaitForScan(src,
                 new File("t/A.java", "package t; public class A implements Inter { public void method() { } }"),
@@ -1483,9 +1494,14 @@ public class IntroduceLocalExtensionTest extends RefactoringTestBase {
                 MethodTree method = (MethodTree) clazz.getMembers().get(1);
                 VariableTree statement = (VariableTree) method.getBody().getStatements().get(0);
                 NewClassTree expression = (NewClassTree) statement.getInitializer();
-                ExpressionTree identifier = expression.getIdentifier();
-
-                TreePath tp = TreePath.getPath(cut, identifier);
+                Tree type;
+                if(expression != null) {
+                    type = expression.getIdentifier();
+                } else {
+                    type = statement.getType();
+                }
+                
+                TreePath tp = TreePath.getPath(cut, type);
                 r[0] = new IntroduceLocalExtensionRefactoring(TreePathHandle.create(tp, parameter));
                 r[0].setNewName(name);
                 r[0].setPackageName(packageName);
