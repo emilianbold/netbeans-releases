@@ -47,6 +47,7 @@ import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.datatransfer.Transferable;
 import java.awt.event.ActionEvent;
+import java.awt.event.KeyEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
@@ -66,10 +67,12 @@ import java.util.StringTokenizer;
 import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.ActionMap;
 import javax.swing.JDialog;
 import javax.swing.JFileChooser;
+import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -181,7 +184,13 @@ public class TemplatesPanel extends TopComponent implements ExplorerManager.Prov
     }
     
     private static class TemplateTreeView extends BeanTreeView {
+        
         private Action startEditing;
+        
+        private TemplateTreeView() {
+            tree.getActionMap().put ("startEditing", new RenameTemplateAction()); // NOI18N
+        }
+        
         private void invokeInplaceEditing () {
             if (startEditing == null) {
                 Object o = tree.getActionMap ().get ("startEditing"); // NOI18N
@@ -680,7 +689,7 @@ public class TemplatesPanel extends TopComponent implements ExplorerManager.Prov
                                     SystemAction.get (PasteAction.class),
                                     null,
                                     SystemAction.get (DeleteAction.class),
-                                    SystemAction.get (RenameTemplateAction.class),
+                                    new RenameTemplateAction(),
                                     null,
                                     SystemAction.get (PropertiesAction.class),
         };
@@ -694,7 +703,7 @@ public class TemplatesPanel extends TopComponent implements ExplorerManager.Prov
                                     SystemAction.get (PasteAction.class),
                                     null,
                                     SystemAction.get (DeleteAction.class),
-                                    SystemAction.get (RenameTemplateAction.class),
+                                    new RenameTemplateAction(),
         };
 
         public TemplateNode (Node n) { 
@@ -800,26 +809,28 @@ public class TemplatesPanel extends TopComponent implements ExplorerManager.Prov
         
     }
 
-    private static class RenameTemplateAction extends NodeAction {
-
-        @Override
-        protected boolean surviveFocusChange() {
-            return false;
-        }
+    private static class RenameTemplateAction extends AbstractAction implements HelpCtx.Provider {
 
         @Messages("Action_Rename=&Rename")
         @Override
-        public String getName() {
-            return Action_Rename();
+        public Object getValue(String key) {
+            if (Action.NAME.equals(key)) {
+                return Action_Rename();
+            }
+            if (Action.ACCELERATOR_KEY.equals(key)) {
+                return KeyStroke.getKeyStroke(KeyEvent.VK_F2, 0);
+            }
+            return super.getValue(key);
         }
-
+        
         @Override
         public HelpCtx getHelpCtx() {
             return new HelpCtx("org.netbeans.modules.favorites.templates.TemplatesPanel$RenameTemplateAction");
         }
 
         @Override
-        protected boolean enable(Node[] activatedNodes) {
+        public boolean isEnabled() {
+            Node[] activatedNodes = manager.getSelectedNodes();
             // exactly one node should be selected
             if ((activatedNodes == null) || (activatedNodes.length != 1)) {
                 return false;
@@ -827,10 +838,10 @@ public class TemplatesPanel extends TopComponent implements ExplorerManager.Prov
 
             return true;
         }
-
+        
         @Override
-        protected void performAction(Node[] activatedNodes) {
-            TemplateNode n = (TemplateNode) activatedNodes[0]; // we supposed that one node is activated
+        public void actionPerformed(ActionEvent e) {
+            TemplateNode n = (TemplateNode) manager.getSelectedNodes()[0];
             showRename(n);
         }
 
