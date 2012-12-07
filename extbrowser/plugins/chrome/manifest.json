@@ -4,7 +4,7 @@
   "manifest_version": 2,
   "minimum_chrome_version": "21",
 
-  "version": "0.6.15",
+  "version": "0.6.17",
 
   "homepage_url": "https://chrome.google.com/webstore/detail/netbeans-connector/hafdlehgocfcodbgjnpecfajgkeejnaa",
 
@@ -24,6 +24,7 @@
     "contextMenus",
     "tabs",
     "debugger",
+    "<all_urls>",
     "storage"
   ],
 

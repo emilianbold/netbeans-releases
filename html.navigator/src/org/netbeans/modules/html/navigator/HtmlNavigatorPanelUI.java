@@ -440,6 +440,10 @@ public class HtmlNavigatorPanelUI extends JPanel implements ExplorerManager.Prov
                     @Override
                     public void run(ResultIterator resultIterator) throws Exception {
                         ResultIterator it = WebUtils.getResultIterator(resultIterator, "text/html");
+                        if (it == null) {
+                            //No Html ResultIterator 
+                            return;
+                        }
                         
                         setParserResult((HtmlParserResult) it.getParserResult());
                         //inspectedFileObject = getInspectedFileFromPageModel();

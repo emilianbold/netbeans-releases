@@ -99,7 +99,7 @@ public class BrowserObjectsTest extends GeneralJavaScript {
         eo.setCaretPositionToEndOfLine(eo.getLineNumber() - 1);
         eo.typeKey(' ', InputEvent.CTRL_MASK);
         evt.waitNoEvent(1000);
-
+        
         CompletionInfo completion = getCompletion();
         CompletionJListOperator cjo = completion.listItself;
         checkCompletionItems(cjo, result);
@@ -140,7 +140,6 @@ public class BrowserObjectsTest extends GeneralJavaScript {
         cleanFile(eo);
         eo.setCaretPositionToLine(1);
         type(eo, "var location={foo:1, bar:function(){}};\nlocation.");
-        eo.typeKey(' ', InputEvent.CTRL_MASK);
         evt.waitNoEvent(1000);
 
         CompletionInfo completion = getCompletion();
