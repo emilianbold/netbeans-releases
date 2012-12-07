@@ -628,7 +628,7 @@ public class DiscoveryProjectGeneratorImpl {
     }
     
     public Set<Project> makeProject(){
-        if (projectBridge.isValid()) {
+        if (projectBridge.isValid() && wizard.getConfigurations() != null && wizard.getConfigurations().size() > 0) {
             projectBridge.startModifications();
             process();
             return projectBridge.getResult();
