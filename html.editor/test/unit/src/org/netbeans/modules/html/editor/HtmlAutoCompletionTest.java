@@ -125,6 +125,77 @@ public class HtmlAutoCompletionTest extends TestBase {
         ctx.assertDocumentTextEquals("<a href=\"\"|>");
     }
        
+    public void testDoubleQuoteAutocompleteAfterEQ() throws InterruptedException, InvocationTargetException, Exception {
+        Context ctx = new Context(new HtmlKit(), "<a href|");
+        ctx.typeChar('=');
+        ctx.assertDocumentTextEquals("<a href=\"|\"");
+        ctx.typeChar('v');
+        ctx.typeChar('a');
+        ctx.typeChar('l');
+        ctx.assertDocumentTextEquals("<a href=\"val|\"");
+        ctx.typeChar('"');
+        ctx.assertDocumentTextEquals("<a href=\"val\"|");
+    }
+    
+    public void testDoubleQuoteAutocompleteAfterEQInCSSAttribute() throws InterruptedException, InvocationTargetException, Exception {
+        Context ctx = new Context(new HtmlKit(), "<a class|");
+        ctx.typeChar('=');
+        ctx.assertDocumentTextEquals("<a class=\"|\"");
+        ctx.typeChar('v');
+        ctx.typeChar('a');
+        ctx.typeChar('l');
+        ctx.assertDocumentTextEquals("<a class=\"val|\"");
+        ctx.typeChar('"');
+        ctx.assertDocumentTextEquals("<a class=\"val\"|");
+    }
+ 
+    public void testDoubleQuoteAfterQuotedClassAttribute() throws InterruptedException, InvocationTargetException, Exception {
+        Context ctx = new Context(new HtmlKit(), "<a class=\"val|");
+        ctx.typeChar('"');
+        ctx.assertDocumentTextEquals("<a class=\"val\"|");
+    }
+    
+    public void testDoubleQuoteAfterUnquotedClassAttribute() throws InterruptedException, InvocationTargetException, Exception {
+        Context ctx = new Context(new HtmlKit(), "<a class=val|");
+        ctx.typeChar('"');
+        ctx.assertDocumentTextEquals("<a class=val\"|");
+    }
+    
+    public void testSingleQuoteAutocompleteAfterEQ() throws InterruptedException, InvocationTargetException, Exception {
+        Context ctx = new Context(new HtmlKit(), "<a href=|");
+        ctx.typeChar('\'');
+        ctx.assertDocumentTextEquals("<a href='|'");
+        ctx.typeChar('v');
+        ctx.typeChar('a');
+        ctx.typeChar('l');
+        ctx.assertDocumentTextEquals("<a href='val|'");
+        ctx.typeChar('\'');
+        ctx.assertDocumentTextEquals("<a href='val'|");
+    }
+
+    public void testQuoteChange() throws InterruptedException, InvocationTargetException, Exception {
+        Context ctx = new Context(new HtmlKit(), "<a href|");
+        ctx.typeChar('=');
+        ctx.assertDocumentTextEquals("<a href=\"|\"");
+        ctx.typeChar('\'');
+        ctx.assertDocumentTextEquals("<a href='|'");
+        ctx.typeChar('v');
+        ctx.typeChar('a');
+        ctx.typeChar('l');
+        ctx.assertDocumentTextEquals("<a href='val|'");
+        ctx.typeChar('\'');
+        ctx.assertDocumentTextEquals("<a href='val'|");
+    }
+    
+    public void testTypeSingleQuoteInUnquoteClassAttr() throws InterruptedException, InvocationTargetException, Exception {
+        Context ctx = new Context(new HtmlKit(), "<a class=|");
+        ctx.typeChar('v');
+        ctx.typeChar('a');
+        ctx.typeChar('l');
+        ctx.assertDocumentTextEquals("<a class=val|");
+        ctx.typeChar('\'');
+        ctx.assertDocumentTextEquals("<a class=val'|");
+    }
     
     private static final class Context {
         
