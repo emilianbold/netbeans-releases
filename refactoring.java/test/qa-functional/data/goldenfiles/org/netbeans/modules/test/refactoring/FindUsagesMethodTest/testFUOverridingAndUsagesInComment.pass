@@ -1,14 +1,14 @@
-Usages and Overriding Methods of <b>Iface.method</b> [8 occurrences]
+Usages and Overriding Methods of Iface.method [8 occurrences]
     RefactoringTest
         SubClass.java
-            <font color='!controlShadow'>&nbsp;&nbsp;&nbsp;&nbsp;48:&nbsp;&nbsp;</font><font color=#0000e6>public</font>&nbsp;<font color=#0000e6>void</font>&nbsp;<b>method</b><font color=#000000>(</font><font color=#000000>)</font>&nbsp;<font color=#000000>{</font>
+                48:  public void method() {
         SuperClass.java
-            <font color='!controlShadow'>&nbsp;&nbsp;&nbsp;&nbsp;46:&nbsp;&nbsp;</font><font color=#0000e6>public</font>&nbsp;<font color=#0000e6>void</font>&nbsp;<b>method</b><font color=#000000>(</font><font color=#000000>)</font>&nbsp;<font color=#000000>{</font>
+                46:  public void method() {
         Test.java
-            <font color='!controlShadow'>&nbsp;&nbsp;&nbsp;&nbsp;47:&nbsp;&nbsp;</font><font color=#0000e6>public</font>&nbsp;<font color=#0000e6>void</font>&nbsp;<b>method</b><font color=#000000>(</font><font color=#000000>)</font>&nbsp;<font color=#000000>{</font>
+                47:  public void method() {
         User.java
-            <font color='!controlShadow'>&nbsp;&nbsp;&nbsp;&nbsp;47:&nbsp;&nbsp;</font><font color=#000000>*</font>&nbsp;<font color=#000000>user</font>&nbsp;<font color=#000000>of</font>&nbsp;<b>method</b>
-            <font color='!controlShadow'>&nbsp;&nbsp;&nbsp;&nbsp;52:&nbsp;&nbsp;</font><font color=#000000>t</font><font color=#000000>.</font><b>method</b><font color=#000000>(</font><font color=#000000>)</font><font color=#000000>;</font>
-            <font color='!controlShadow'>&nbsp;&nbsp;&nbsp;&nbsp;53:&nbsp;&nbsp;</font><font color=#0000e6>new</font>&nbsp;<font color=#000000>Test</font><font color=#000000>(</font><font color=#000000>)</font><font color=#000000>.</font><b>method</b><font color=#000000>(</font><font color=#000000>)</font><font color=#000000>;</font>
-            <font color='!controlShadow'>&nbsp;&nbsp;&nbsp;&nbsp;54:&nbsp;&nbsp;</font><font color=#000000>(</font><font color=#000000>(</font><font color=#000000>Test</font><font color=#000000>)</font><font color=#0000e6>new</font>&nbsp;<font color=#000000>Object</font><font color=#000000>(</font><font color=#000000>)</font><font color=#000000>)</font><font color=#000000>.</font><b>method</b><font color=#000000>(</font><font color=#000000>)</font><font color=#000000>;</font>
-            <font color='!controlShadow'>&nbsp;&nbsp;&nbsp;&nbsp;56:&nbsp;&nbsp;</font><font color=#000000>i</font><font color=#000000>.</font><b>method</b><font color=#000000>(</font><font color=#000000>)</font><font color=#000000>;</font>
+                47:  * user of method
+                52:  t.method();
+                53:  new Test().method();
+                54:  ((Test)new Object()).method();
+                56:  i.method();
