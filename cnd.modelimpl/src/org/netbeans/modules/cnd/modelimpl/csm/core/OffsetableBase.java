@@ -202,7 +202,7 @@ public abstract class OffsetableBase implements CsmOffsetable, Disposable, CsmVa
     protected CharSequence getPositionString() {
         StringBuilder sb = new StringBuilder(); 
         sb.append('[');
-        CsmFile containingFile = getContainingFile();
+        CsmFile containingFile = _getFile(false);
         if (containingFile == null) {
             sb.append(" NO CONTAINER ").append(fileUID);// NOI18N
         } else {

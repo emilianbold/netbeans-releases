@@ -325,9 +325,17 @@ public class DefaultProjectActionHandler implements ProjectActionHandler {
             }
         }
 
+        boolean requestFocus = (actionType == PredefinedType.RUN
+                || actionType == PredefinedType.DEBUG
+                || actionType == PredefinedType.DEBUG_STEPINTO
+                || actionType == PredefinedType.DEBUG_TEST
+                || actionType == PredefinedType.DEBUG_STEPINTO_TEST
+                || actionType == PredefinedType.CUSTOM_ACTION);
+
         NativeExecutionDescriptor descr =
                 new NativeExecutionDescriptor().controllable(true).
                 frontWindow(true).
+                requestFocus(requestFocus).
                 inputVisible(showInput).
                 inputOutput(io).
                 outLineBased(!unbuffer).

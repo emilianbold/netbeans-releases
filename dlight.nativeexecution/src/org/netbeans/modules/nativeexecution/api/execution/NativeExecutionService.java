@@ -193,31 +193,6 @@ public final class NativeExecutionService {
 
                     final NativeProcess process = processBuilder.call();
 
-                    if (descriptor.frontWindow) {
-                        SwingUtilities.invokeLater(new Runnable() {
-
-                            @Override
-                            public void run() {
-                                IOSelect.select(descriptor.inputOutput,
-                                        EnumSet.<AdditionalOperation>of(
-                                        AdditionalOperation.OPEN,
-                                        AdditionalOperation.REQUEST_ACTIVE,
-                                        AdditionalOperation.REQUEST_VISIBLE));
-
-                                // Still terminal (if any) doesn't get focus in
-                                // this case - so try to request it implicitly
-                                Term term = IOTerm.term(descriptor.inputOutput);
-
-                                if (term != null) {
-                                    JComponent screen = term.getScreen();
-                                    if (screen != null) {
-                                        screen.requestFocusInWindow();
-                                    }
-                                }
-                            }
-                        });
-                    }
-
                     /**
                      * As IO could be re-used we need to 'unlock' it because it
                      * could be 'locked' by previous run... (It is always set to
@@ -235,13 +210,7 @@ public final class NativeExecutionService {
                      * queued after that one. So as soon as our is processed we
                      * are sure that connection is done.
                      */
-                    SwingUtilities.invokeAndWait(new Runnable() {
-
-                        @Override
-                        public void run() {
-                            // connected
-                        }
-                    });
+                    SwingUtilities.invokeAndWait(new PreExecution());
 
                     if (process.getState() == State.ERROR) {
                         out(true, ProcessUtils.readProcessErrorLine(process), "\r"); // NOI18N
@@ -341,6 +310,7 @@ public final class NativeExecutionService {
         ExecutionDescriptor descr =
                 new ExecutionDescriptor().controllable(descriptor.controllable).
                 frontWindow(descriptor.frontWindow).
+                preExecution(new PreExecution()).
                 inputVisible(descriptor.inputVisible).
                 inputOutput(descriptor.inputOutput).
                 outLineBased(descriptor.outLineBased).
@@ -351,32 +321,7 @@ public final class NativeExecutionService {
                 outConvertorFactory(descriptor.outConvertorFactory).
                 charset(charset);
 
-        ExecutionService es = ExecutionService.newService(processBuilder, descr, displayName);
-        final Future<Integer> result = es.run();
-
-        SwingUtilities.invokeLater(new Runnable() {
-
-            @Override
-            public void run() {
-                // AdditionalOperation.REQUEST_ACTIVE has effect only if
-                // isFocusTaken() is true... 
-                // force this condition ... 
-                boolean prevFocusTaken = descriptor.inputOutput.isFocusTaken();
-                descriptor.inputOutput.setFocusTaken(true);
-
-                IOSelect.select(descriptor.inputOutput,
-                        EnumSet.<AdditionalOperation>of(
-                        AdditionalOperation.OPEN,
-                        AdditionalOperation.REQUEST_ACTIVE,
-                        AdditionalOperation.REQUEST_VISIBLE));
-
-                // ... and restore it to the original state as leaving it
-                // in TRUE state is strongly discouraged  
-                descriptor.inputOutput.setFocusTaken(prevFocusTaken);
-            }
-        });
-
-        return result;
+        return ExecutionService.newService(processBuilder, descr, displayName).run();
     }
 
     private void out(final boolean toError, final CharSequence... cs) {
@@ -482,6 +427,35 @@ public final class NativeExecutionService {
                 case ERROR:
                     startTimeMillis = System.currentTimeMillis();
                     break;
+            }
+        }
+    }
+
+    private class PreExecution implements Runnable {
+
+        @Override
+        public void run() {
+            if (descriptor.frontWindow) {
+                if (IOSelect.isSupported(descriptor.inputOutput)) {
+                    IOSelect.select(descriptor.inputOutput,
+                            EnumSet.<AdditionalOperation>of(
+                            AdditionalOperation.OPEN,
+                            AdditionalOperation.REQUEST_VISIBLE));
+                } else {
+                    descriptor.inputOutput.select();
+                }
+            }
+            if (descriptor.requestFocus) {
+                Term term = IOTerm.term(descriptor.inputOutput);
+
+                if (term != null) {
+                    JComponent screen = term.getScreen();
+                    if (screen != null) {
+                        screen.requestFocusInWindow();
+                    }
+                } else {
+                    descriptor.inputOutput.setFocusTaken(true);
+                }
             }
         }
     }
