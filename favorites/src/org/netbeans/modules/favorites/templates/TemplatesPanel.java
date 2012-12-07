@@ -45,6 +45,7 @@ package org.netbeans.modules.favorites.templates;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;
+import java.awt.datatransfer.Transferable;
 import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -113,6 +114,7 @@ import org.openide.util.NbBundle.Messages;
 import org.openide.util.RequestProcessor;
 import org.openide.util.actions.NodeAction;
 import org.openide.util.actions.SystemAction;
+import org.openide.util.datatransfer.PasteType;
 import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.ProxyLookup;
 import org.openide.windows.TopComponent;
@@ -787,6 +789,15 @@ public class TemplatesPanel extends TopComponent implements ExplorerManager.Prov
             setDisplayName (origDisplayName);
         }
 
+        @Override
+        public PasteType[] getPasteTypes(Transferable t) {
+            PasteType[] pasteTypes = super.getPasteTypes(t);
+            if (pasteTypes.length > 1) {
+                pasteTypes = new PasteType[] { pasteTypes[0] }; // COPY only
+            }
+            return pasteTypes;
+        }
+        
     }
 
     private static class RenameTemplateAction extends NodeAction {
