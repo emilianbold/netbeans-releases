@@ -389,4 +389,9 @@ public class JsTypedBreakInterceptorTest extends JsTestBase {
         insertBreak("(function () { ^ window.$prom = x || window}{);",
                 "(function () { \n    ^window.$prom = x || window\n}}{);");
     }
+
+    public void testIssue223285() throws Exception {
+        insertBreak("/*^\naaa\n*/\nfunction test(foo) {}",
+                "/*\n * ^\naaa\n*/\nfunction test(foo) {}");
+    }
 }
