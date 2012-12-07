@@ -159,10 +159,9 @@ abstract class BusyIcon implements Icon {
         private final Method paintMethod;
         private int currentFrame = 0;
         private static final int POINTS = 8;
-        private static final int HEIGHT = 16;
 
-        private SwingXBusyIcon( Object painter, Method paint, Method setFrame ) {
-            super( HEIGHT, HEIGHT );
+        private SwingXBusyIcon( Object painter, Method paint, Method setFrame, int height ) {
+            super( height, height );
             this.painter = painter;
             this.setFrameMethod = setFrame;
             this.paintMethod = paint;
@@ -174,12 +173,13 @@ abstract class BusyIcon implements Icon {
             try {
                 Class painterClass = cl.loadClass( "org.jdesktop.swingx.painter.BusyPainter" ); //NOI18N
                 Constructor ctor = painterClass.getConstructor( int.class );
-                painter = ctor.newInstance( HEIGHT );
+                int height = getBusyIconSize();
+                painter = ctor.newInstance( height );
                 Method setFrame = painterClass.getMethod( "setFrame", int.class ); //NOI18N
                 Method paint = painterClass.getMethod( "paint", Graphics2D.class, Object.class, int.class, int.class ); //NOI18N
                 Method m = painterClass.getMethod( "setPoints", int.class ); //NOI18N
                 m.invoke( painter, POINTS );
-                return new SwingXBusyIcon( painter, paint, setFrame );
+                return new SwingXBusyIcon( painter, paint, setFrame, height );
             } catch( Exception ex ) {
                 Logger.getLogger( BusyIcon.class.getName() ).log( Level.FINE, null, ex );
             }
@@ -208,5 +208,12 @@ abstract class BusyIcon implements Icon {
                 g2d.translate( -x, -y );
             }
         }
+    }
+
+    private static int getBusyIconSize() {
+        int res = UIManager.getInt( "Nb.BusyIcon.Height" );
+        if( res < 1 )
+            res = 16;
+        return res;
     }
 }
