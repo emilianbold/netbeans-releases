@@ -239,7 +239,7 @@ NetBeans._resizePage = function(width, height, callback) {
             }
             // #218974
             if (NetBeans_ViewPort.isMac && width < 400) {
-                NetBeans.openWarning('windowTooSmall', 250);
+                NetBeans.openWarning('windowTooSmall', 230);
             }
         });
     });
@@ -313,7 +313,7 @@ NetBeans._checkUnexpectedDetach = function(tabId) {
         chrome.tabs.get(debuggedTab, function(tab) {
             if (tab !== undefined) {
                 // the tab still exists
-                NetBeans.openWarning('disconnectedDebugger', 410);
+                NetBeans.openWarning('disconnectedDebugger', 390);
             }
         });
     }, 100);
@@ -321,7 +321,10 @@ NetBeans._checkUnexpectedDetach = function(tabId) {
 
 NetBeans.openWarning = function(ident, height) {
     NetBeans_Warnings.runIfEnabled(ident, function() {
-        NetBeans.openPopup('html/warning.html#' + ident, 550, height);
+        NetBeans.detectViewPort(function() {
+            var windowTitleHeight = NetBeans_ViewPort.marginHeight - 60; // try to remove the height of the location bar
+            NetBeans.openPopup('html/warning.html#' + ident, 550, height + Math.max(windowTitleHeight, 0));
+        });
     });
 };
 
