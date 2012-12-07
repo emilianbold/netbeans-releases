@@ -66,6 +66,7 @@ public abstract class HtmlValidatorRule extends HtmlRule {
     @Override
     protected void run(HtmlRuleContext context, List<Hint> result) {
         Snapshot snapshot = context.getSnapshot();
+        int snapshotLen = snapshot.getText().length();
 
         List<? extends Error> diagnostics = context.getLeftDiagnostics();
         ListIterator<? extends Error> itr = diagnostics.listIterator();
@@ -77,10 +78,11 @@ public abstract class HtmlValidatorRule extends HtmlRule {
             }
 
             itr.remove(); //remove the processed element so the other rules won't see it
-            OffsetRange errorOffsetRange = EmbeddingUtil.getErrorOffsetRange(e, snapshot);
+            OffsetRange errorOffsetRange = EmbeddingUtil.getErrorOffsetRange(e, snapshot); //document offset range
             
-            int from = errorOffsetRange.getStart();
-            boolean isFirstHintForPosition = context.isFirstHintForPosition(from);
+            int from = e.getStartPosition(); //use the embedded offset!
+            boolean valid = from >= 0 && from < snapshotLen;
+            boolean isFirstHintForPosition = valid ? context.isFirstHintForPosition(from) : true;
             
             Hint h = new Hint(this,
                     getModifiedErrorMessage(e.getDescription()),

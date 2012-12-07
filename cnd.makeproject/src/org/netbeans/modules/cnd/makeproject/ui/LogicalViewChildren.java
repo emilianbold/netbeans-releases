@@ -180,7 +180,9 @@ class LogicalViewChildren extends BaseMakeViewChildren implements PropertyChange
                         // If we call this method here then result will be calculated and cached cached. So cached version will be
                         // used in createNodes and won't freeze EDT.
                         // See Bug 221962 - [73cat] 3.s - Blocked by cnd.makeproject.ui.LogicalViewChildren.createNodes().
-                        item.getDataObject();
+                        DataObject dataObject = item.getDataObject();
+                        // remove artifitial item from listening on data object to prevent memory leaks
+                        dataObject.removePropertyChangeListener(item);
                         Folder.insertItemElementInList(collection2, item);
                     }
                 }

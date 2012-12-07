@@ -180,7 +180,8 @@ public final class MakeProject implements Project, MakeProjectListener, Runnable
     private final Set<String> cExtensions = MakeProject.createExtensionSet();
     private final Set<String> cppExtensions = MakeProject.createExtensionSet();
     private String sourceEncoding = null;
-    private final AtomicBoolean isOpenHookDone = new AtomicBoolean(false);
+    // lock and open/close state of make project
+    private final AtomicBoolean openStateAndLock = new AtomicBoolean(false);
     private final AtomicBoolean isDeleted = new AtomicBoolean(false);
     private final AtomicBoolean isDeleting = new AtomicBoolean(false);
     private final MakeSources sources;
@@ -342,7 +343,7 @@ public final class MakeProject implements Project, MakeProjectListener, Runnable
                     new MakeProjectEncodingQueryImpl(this),
                     new RemoteProjectImpl(),
                     new ToolchainProjectImpl(),
-                    new CPPImpl(sources, isOpenHookDone),
+                    new CPPImpl(sources, openStateAndLock),
                     new CacheDirectoryProviderImpl(helper.getProjectDirectory()),
                     this
                 };
@@ -575,15 +576,15 @@ public final class MakeProject implements Project, MakeProjectListener, Runnable
     }
 
     private synchronized void registerClassPath(boolean register) {
-        if (isOpenHookDone.get()) {
-            if (register) {
+        if (register) {
+            if (MakeOptions.getInstance().isFullFileIndexer()) {
                 GlobalPathRegistry.getDefault().register(MakeProjectPaths.SOURCES, sourcepath.getClassPath());
-            } else {
-                try {
-                    GlobalPathRegistry.getDefault().unregister(MakeProjectPaths.SOURCES, sourcepath.getClassPath());
-                } catch (Throwable ex) {
-                    // do nothing because register depends on make options
-                }
+            }
+        } else {
+            try {
+                GlobalPathRegistry.getDefault().unregister(MakeProjectPaths.SOURCES, sourcepath.getClassPath());
+            } catch (Throwable ex) {
+                // do nothing because register depends on make options
             }
         }
     }
@@ -1351,13 +1352,16 @@ public final class MakeProject implements Project, MakeProjectListener, Runnable
         onProjectOpened();
     }
 
-    private synchronized void onProjectOpened() {
-        if (!isOpenHookDone.getAndSet(true)) {
+    private void onProjectOpened() {
+        synchronized (openStateAndLock) {
+            if (openStateAndLock.get()) {
+                return;
+            }
             FileObject dir = getProjectDirectory();
             if (dir != null) { // high resistance mode paranoia
                 final ExecutionEnvironment env = FileSystemProvider.getExecutionEnvironment(dir);
                 ConnectionHelper.INSTANCE.ensureConnection(env);
-            }            
+            }     
             helper.addMakeProjectListener(MakeProject.this);
             checkNeededExtensions();
             if (openedTasks != null) {
@@ -1367,21 +1371,31 @@ public final class MakeProject implements Project, MakeProjectListener, Runnable
                 openedTasks.clear();
                 openedTasks = null;
             }
-            if (MakeOptions.getInstance().isFullFileIndexer()) {
-                registerClassPath(true);
-            }
             MakeOptions.getInstance().addPropertyChangeListener(indexerListener);
+            registerClassPath(true);
+            MakeProjectClassPathProvider.addProjectSources(sources);
+            // project is in opened state
+            openStateAndLock.set(true);
+            // post-initialize configurations in external worker
             RP.post(new Runnable() {
                 @Override
                 public void run() {
+                    synchronized (openStateAndLock) {
+                        if (!openStateAndLock.get()) {
+                            return;
+                        }
+                    }
                     projectDescriptorProvider.opened();
-                    if(nativeProject instanceof NativeProjectProvider) {
-                        NativeProjectRegistry.getDefault().register(nativeProject);
+                    synchronized (openStateAndLock) {
+                        if (openStateAndLock.get()) {
+                            if (nativeProject instanceof NativeProjectProvider) {
+                                NativeProjectRegistry.getDefault().register(nativeProject);
+                            }
+                        }
                     }
                 }
             });
-            MakeProjectClassPathProvider.addProjectSources(sources);
-        }        
+        }
     }
 
     void setDeleted() {
@@ -1394,26 +1408,34 @@ public final class MakeProject implements Project, MakeProjectListener, Runnable
         isDeleting.set(value);
     }
 
-    private synchronized void onProjectClosed() {
-        LOGGER.log(Level.FINE, "on project close MakeProject@{0} {1}", new Object[]{System.identityHashCode(MakeProject.this), helper.getProjectDirectory().getNameExt()}); // NOI18N
-        helper.removeMakeProjectListener(this);
-        save();
-        projectDescriptorProvider.closed();
-        MakeOptions.getInstance().removePropertyChangeListener(indexerListener);
-        if (isOpenHookDone.getAndSet(false)) {
+    private void onProjectClosed() {
+        synchronized (openStateAndLock) {
+            if (!openStateAndLock.get()) {
+                LOGGER.log(Level.WARNING, "on project close for not opened MakeProject@{0} {1}", new Object[]{System.identityHashCode(MakeProject.this), helper.getProjectDirectory().getNameExt()}); // NOI18N
+                return;
+            }
+            LOGGER.log(Level.FINE, "on project close MakeProject@{0} {1}", new Object[]{System.identityHashCode(MakeProject.this), helper.getProjectDirectory().getNameExt()}); // NOI18N
+            helper.removeMakeProjectListener(this);
+            save();
+            projectDescriptorProvider.closed();
+            MakeOptions.getInstance().removePropertyChangeListener(indexerListener);
             registerClassPath(false);
+            MakeProjectFileProviderFactory.removeSearchBase(this);
+            if(nativeProject instanceof NativeProjectProvider) {
+                NativeProjectRegistry.getDefault().unregister(nativeProject);
+            }
+            MakeProjectClassPathProvider.removeProjectSources(sources);
+            // project is in closed state
+            openStateAndLock.set(false);
         }
-        MakeProjectFileProviderFactory.removeSearchBase(this);
-        if(nativeProject instanceof NativeProjectProvider) {
-            NativeProjectRegistry.getDefault().unregister(nativeProject);
-        }
-        MakeProjectClassPathProvider.removeProjectSources(sources);
     }
 
-    public synchronized void save() {
-        if (!isDeleted.get() && !isDeleting.get()) {
-            if (projectDescriptorProvider.getConfigurationDescriptor() != null) {
-                projectDescriptorProvider.getConfigurationDescriptor().save();
+    public void save() {
+        synchronized (openStateAndLock) {
+            if (!isDeleted.get() && !isDeleting.get()) {
+                if (projectDescriptorProvider.getConfigurationDescriptor() != null) {
+                    projectDescriptorProvider.getConfigurationDescriptor().save();
+                }
             }
         }
     }
@@ -1765,20 +1787,22 @@ public final class MakeProject implements Project, MakeProjectListener, Runnable
     private static final class CPPImpl implements ClassPathProvider {
 
         private final MakeSources sources;
-        private final AtomicBoolean isOpenHookDone;
+        private final AtomicBoolean projectOpenStateAndLock;
 
-        public CPPImpl(MakeSources sources, AtomicBoolean isOpenHookDone) {
+        public CPPImpl(MakeSources sources, AtomicBoolean projectOpenStateAndLock) {
             this.sources = sources;
-            this.isOpenHookDone = isOpenHookDone;
+            this.projectOpenStateAndLock = projectOpenStateAndLock;
         }
 
         @Override
         public ClassPath findClassPath(FileObject file, String type) {
-            if (isOpenHookDone.get()) {
-                if (MakeProjectPaths.SOURCES.equals(type)) {
-                    for (SourceGroup sg : sources.getSourceGroups(MakeSources.GENERIC)) {
-                        if (sg.getRootFolder().equals(file)) {
-                            return ClassPathSupport.createClassPath(Arrays.asList(new PathResourceImpl(ClassPathSupport.createResource(file.toURL()))));
+            synchronized (projectOpenStateAndLock) {
+                if (projectOpenStateAndLock.get()) {
+                    if (MakeProjectPaths.SOURCES.equals(type)) {
+                        for (SourceGroup sg : sources.getSourceGroups(MakeSources.GENERIC)) {
+                            if (sg.getRootFolder().equals(file)) {
+                                return ClassPathSupport.createClassPath(Arrays.asList(new PathResourceImpl(ClassPathSupport.createResource(file.toURL()))));
+                            }
                         }
                     }
                 }
