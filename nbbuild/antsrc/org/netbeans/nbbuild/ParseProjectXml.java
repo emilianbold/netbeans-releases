@@ -1449,7 +1449,7 @@ public final class ParseProjectXml extends Task {
             } else {
                 list.append(' ');
             }
-            list.append(reltext);
+            list.append(reltext.replace(" ", "%20"));
         }
         return list != null ? list.toString() : null;
     }

@@ -182,7 +182,7 @@ public class JarWithModuleAttributes extends Jar {
                 cp = classPathExtensions;
             }
             if (cp != null) {
-                added.addConfiguredAttribute(new Manifest.Attribute("Class-Path", cp.replace(" ", "%20")));
+                added.addConfiguredAttribute(new Manifest.Attribute("Class-Path", cp));
             }
             String moduleDeps = getProject().getProperty("module.dependencies");
             if (moduleDeps != null) {
