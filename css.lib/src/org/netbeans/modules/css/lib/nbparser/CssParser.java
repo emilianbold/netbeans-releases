@@ -136,6 +136,12 @@ public class CssParser extends Parser {
                 //lines and the templating mark may not necessarily be at the line with the error.
                 //
                 //so find line bounds...
+                
+                //the "premature end of file" error has position pointing after the last char (=text.length())!
+                if(p.getFrom() == text.length()) {
+                    continue; //consider this as hidden error
+                }
+                
                 int from, to;
                 for(from = p.getFrom(); from > 0;from--) {
                     char c = text.charAt(from);
