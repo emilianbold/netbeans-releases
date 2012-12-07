@@ -107,6 +107,7 @@ import org.netbeans.modules.cnd.makeproject.api.ProjectGenerator;
 import org.netbeans.modules.cnd.makeproject.api.ProjectSupport;
 import org.netbeans.modules.cnd.makeproject.api.SourceFolderInfo;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
+import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider.SnapShot;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Item;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
@@ -1084,7 +1085,7 @@ public class ImportProject implements PropertyChangeListener {
 
     private void fixMacros(List<ProjectConfiguration> confs) {
         ConfigurationDescriptorProvider pdp = makeProject.getLookup().lookup(ConfigurationDescriptorProvider.class);
-        pdp.stratModifications();
+        SnapShot delta = pdp.startModifications();
         boolean changed = false;
         for (ProjectConfiguration conf : confs) {
             List<FileConfiguration> files = conf.getFiles();
@@ -1102,9 +1103,9 @@ public class ImportProject implements PropertyChangeListener {
             }
         }
         if (changed) {
-            DiscoveryProjectGenerator.saveMakeConfigurationDescriptor(makeProject, true);
+            DiscoveryProjectGenerator.saveMakeConfigurationDescriptor(makeProject, delta);
         } else {
-            pdp.endModifications(false, null);
+            pdp.endModifications(delta, false, null);
         }
     }
 

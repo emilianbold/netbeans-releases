@@ -61,6 +61,7 @@ import org.netbeans.modules.cnd.discovery.projectimport.ImportProject;
 import org.netbeans.modules.cnd.discovery.wizard.api.DiscoveryDescriptor;
 import org.netbeans.modules.cnd.discovery.wizard.support.impl.DiscoveryProjectGeneratorImpl;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
+import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider.SnapShot;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Item;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
@@ -115,7 +116,7 @@ public final class DiscoveryProjectGenerator {
             logger.log(Level.INFO, "Start fixing of excluded header files for project {0}", p); // NOI18N
         }
         ConfigurationDescriptorProvider pdp = makeProject.getLookup().lookup(ConfigurationDescriptorProvider.class);
-        pdp.stratModifications();
+        SnapShot delta = pdp.startModifications();
         boolean isChanged = false;
         Set<String> needCheck = new HashSet<String>();
         Set<String> needAdd = new HashSet<String>();
@@ -235,21 +236,21 @@ public final class DiscoveryProjectGenerator {
             }
         }
         if (isChanged) {
-            saveMakeConfigurationDescriptor(makeProject, true);
+            saveMakeConfigurationDescriptor(makeProject, delta);
         } else {
-            pdp.endModifications(false, null);
+            pdp.endModifications(delta, false, null);
         }
         return isChanged;
     }
 
-    public static void saveMakeConfigurationDescriptor(Project lastSelectedProject, boolean isDelta) {
+    public static void saveMakeConfigurationDescriptor(Project lastSelectedProject, SnapShot delta) {
         ConfigurationDescriptorProvider pdp = lastSelectedProject.getLookup().lookup(ConfigurationDescriptorProvider.class);
         final MakeConfigurationDescriptor makeConfigurationDescriptor = pdp.getConfigurationDescriptor();
         if (makeConfigurationDescriptor != null) {
             makeConfigurationDescriptor.setModified();
             makeConfigurationDescriptor.save();
-            if (isDelta) {
-                pdp.endModifications(true, ImportProject.logger);
+            if (delta != null) {
+                pdp.endModifications(delta, true, ImportProject.logger);
             } else {
                 makeConfigurationDescriptor.checkForChangedItems(lastSelectedProject, null, null);
             }
