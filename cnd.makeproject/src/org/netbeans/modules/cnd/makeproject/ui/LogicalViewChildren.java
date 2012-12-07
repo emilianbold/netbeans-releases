@@ -176,6 +176,11 @@ class LogicalViewChildren extends BaseMakeViewChildren implements PropertyChange
 
                         // Add file to the view
                         Item item = Item.createInFileSystem(provider.getMakeConfigurationDescriptor().getBaseDirFileSystem(), child.getPath());
+                        // This method is executed in not EDT and first call to getDataObject() is quite expensive operation.
+                        // If we call this method here then result will be calculated and cached cached. So cached version will be
+                        // used in createNodes and won't freeze EDT.
+                        // See Bug 221962 - [73cat] 3.s - Blocked by cnd.makeproject.ui.LogicalViewChildren.createNodes().
+                        item.getDataObject();
                         Folder.insertItemElementInList(collection2, item);
                     }
                 }
