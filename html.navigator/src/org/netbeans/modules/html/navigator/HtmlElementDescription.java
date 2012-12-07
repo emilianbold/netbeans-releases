@@ -224,6 +224,10 @@ public class HtmlElementDescription extends SourceDescription implements SourceE
             @Override
             public void run(ResultIterator resultIterator) throws Exception {
                 ResultIterator it = WebUtils.getResultIterator(resultIterator, "text/html");
+                if (it == null) {
+                    //No Html ResultIterator 
+                    return;
+                }
                 
                 task.run((HtmlParserResult) it.getParserResult());
             }
