@@ -2403,10 +2403,12 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                         final boolean cifIsChanged = indexers.changedCifs != null && indexers.changedCifs.contains(cifInfo);
                         final boolean forceReindex = votes.get(factory) == Boolean.FALSE && allResources != null;
                         final boolean allFiles = cifIsChanged || forceReindex || (allResources != null && allResources.size() == resources.size());
-                        if (ae && forceReindex && LOGGER.isLoggable(Level.INFO) && resources.size() != allResources.size() && !cifInfo.getMimeTypes().isEmpty()) {
+                        if (forceReindex && resources.size() != allResources.size()) {
                             if (getLogContext() != null) {
                                 getLogContext().reindexForced(root, factory.getIndexerName());
                             }
+                        }
+                        if (ae && forceReindex && LOGGER.isLoggable(Level.INFO) && resources.size() != allResources.size() && !cifInfo.getMimeTypes().isEmpty()) {
                             LOGGER.log(Level.INFO, "Refresh of custom indexer ({0}) for root: {1} forced by: {2}",    //NOI18N
                                     new Object[]{
                                         cifInfo.getMimeTypes(),
@@ -2803,11 +2805,15 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                                             LOGGER.fine("Indexing file " + fileObject.getPath() + " using " + indexerFactory + "; mimeType='" + mimeType + "'"); //NOI18N
                                         }
 
-                                        final Parser.Result pr = resultIterator.getParserResult();
-                                        // must follow getParserResult(), as resultIterators are lazy
-                                        if (!finished) {
-                                            logFinishIndexer(mimeType);
-                                            finished = true;
+                                        final Parser.Result pr;
+                                        try {
+                                             pr = resultIterator.getParserResult();
+                                            // must follow getParserResult(), as resultIterators are lazy
+                                        } finally {
+                                            if (!finished) {
+                                                logFinishIndexer(mimeType);
+                                                finished = true;
+                                            }
                                         }
                                         if (pr != null) {
                                             final String indexerName = indexerFactory.getIndexerName();
@@ -2849,7 +2855,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                                         }
                                     }
                                 } else {
-                                    logFinishIndexer(resultIterator.getSnapshot().getMimeType());
+                                    logFinishIndexer(mimeType);
                                 }
 
                                 for (Embedding embedding : resultIterator.getEmbeddings()) {
