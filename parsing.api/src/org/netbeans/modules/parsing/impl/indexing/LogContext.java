@@ -447,7 +447,15 @@ import org.openide.util.Utilities;
                     }
                 }
                 if (!ok) {
-                    throw new IllegalStateException("Mismatch in indexer: " + indexerName);
+                    LOG.log(Level.WARNING, "Mismatch in indexer: " + indexerName +
+                            ", current: " + indexerName + ", past: " + pastIndexers, new Throwable());
+                    // clean up
+                    if (pastIndexers != null) {
+                        pastIndexers.clear();
+                    }
+                    indexerStartTime = 0;
+                    this.indexerName = null;
+                    return 0;
                 }
             }
             long l = finishCurrentIndexer(System.currentTimeMillis());
@@ -481,7 +489,7 @@ import org.openide.util.Utilities;
         
         RootInfo ri = allCurrentRoots.get(Thread.currentThread());
         if (ri == null) {
-            LOG.log(Level.FINE, "No root specified for crawler run", new Throwable());
+            LOG.log(Level.WARNING, "No root specified for crawler run", new Throwable());
             return;
         }
         ri.crawlerTime = t - crawlerStart;
@@ -500,7 +508,7 @@ import org.openide.util.Utilities;
         this.crawlerTime += time;
         RootInfo ri = allCurrentRoots.get(Thread.currentThread());
         if (ri == null) {
-            LOG.log(Level.FINE, "No root specified for crawler run", new Throwable());
+            LOG.log(Level.WARNING, "No root specified for crawler run", new Throwable());
             return;
         }
         ri.crawlerTime += time;
@@ -552,7 +560,7 @@ import org.openide.util.Utilities;
         }
         RootInfo ri = allCurrentRoots.get(Thread.currentThread());
         if (ri == null) {
-            LOG.log(Level.FINE, "Unreported root for running indexer: " + fName, new Throwable());
+            LOG.log(Level.WARNING, "Unreported root for running indexer: " + fName, new Throwable());
         } else {
             ri.startIndexer(fName);
         }
@@ -564,7 +572,7 @@ import org.openide.util.Utilities;
         }
         RootInfo ri = allCurrentRoots.get(Thread.currentThread());
         if (ri == null) {
-            LOG.log(Level.FINE, "Unreported root for running indexer: " + fName, new Throwable());
+            LOG.log(Level.WARNING, "Unreported root for running indexer: " + fName, new Throwable());
         } else {
             long addTime = ri.finishIndexer(fName);
             Long t = totalIndexerTime.get(fName);
@@ -585,7 +593,7 @@ import org.openide.util.Utilities;
         }
         RootInfo ri = allCurrentRoots.get(Thread.currentThread());
         if (ri == null) {
-            LOG.log(Level.FINE, "Unreported root for running indexer: " + fName, new Throwable());
+            LOG.log(Level.WARNING, "Unreported root for running indexer: " + fName, new Throwable());
         } else {
             if (ri.indexerName != null) {
                 addTime = ri.finishIndexer(fName);
