@@ -107,7 +107,6 @@ public class PanelProjectLocationVisual extends SettingsPanel implements HelpCtx
     private final PanelConfigureProject controller;
     private final String templateName;
     private String name;
-    private AtomicBoolean projectParamsChanged = new AtomicBoolean(false);
     private int type;
     private AtomicBoolean initialized = new AtomicBoolean(false);
     private static final Object FAKE_ITEM = new Object();
@@ -116,7 +115,7 @@ public class PanelProjectLocationVisual extends SettingsPanel implements HelpCtx
     private char fsFileSeparator;
 //    private AtomicBoolean isValid = new AtomicBoolean(false);
     private final WizardValidationWorker validationWorker = new WizardValidationWorker();
-    static final int VALIDATION_DELAY = 300;
+    static final int VALIDATION_DELAY = 300;    
     
     /**
      * Creates new form PanelProjectLocationVisual
@@ -572,7 +571,7 @@ public class PanelProjectLocationVisual extends SettingsPanel implements HelpCtx
 
     @Override
     boolean valid(WizardDescriptor wizardDescriptor) {
-        if (!initialized.get()) {
+        if (!initialized.get() || currentState == null) {
             return false;
         }        
         ValidationResult result = currentState.validationResult;
@@ -867,8 +866,8 @@ public class PanelProjectLocationVisual extends SettingsPanel implements HelpCtx
     }
     
 
-    private String contructProjectMakefileName(int count) {
-        String makefileName = projectNameTextField.getText() + "-" + MakeConfigurationDescriptor.DEFAULT_PROJECT_MAKFILE_NAME; // NOI18N
+    private String contructProjectMakefileName(String projectName, int count) {
+        String makefileName = projectName + "-" + MakeConfigurationDescriptor.DEFAULT_PROJECT_MAKFILE_NAME; // NOI18N
         if (count > 0) {
             makefileName += "" + count + ".mk"; // NOI18N
         } else {
@@ -1041,13 +1040,46 @@ public class PanelProjectLocationVisual extends SettingsPanel implements HelpCtx
             this.validationResult = validationResult;
         }
     }
+    
+    private static final class ProjectValidationParams {
+        
+        private final String projectName;
+        private final String projectLocation;
+        private final String createdProjectFolder;
+        private String makefileTextField;
+        private long eventID;
+        private String createdMain;
+        private boolean isMainCreated;
+        
+        ProjectValidationParams (String projectName, String projectLocation, String createdProjectFolder) {
+            this.projectName = projectName;
+            this.projectLocation = projectLocation;
+            this.createdProjectFolder = createdProjectFolder;            
+        }
+        
+        void setRequestID (long eventID) {
+            this.eventID = eventID;
+        }
+        
+        void setMakefile (String makefileTextField) {
+            this.makefileTextField = makefileTextField;
+        }
+        void setMainAttributes (boolean isMainCreated, String createdMain) {
+            this.isMainCreated = isMainCreated;                    
+            this.createdMain = createdMain;
+        }
+        
+    }
 
     private class WizardValidationWorker implements Runnable, DocumentListener, ChangeListener {
         private final Object wizardValidationExecutorLock = new Object();
         private final ScheduledExecutorService wizardValidationExecutor;
         private ScheduledFuture<?>  wizardValidationTask;        
-        private WizardValidationWorkerCheckState lastCheck = new WizardValidationWorkerCheckState(null, 
-                new ValidationResult(Boolean.FALSE, NbBundle.getMessage(PanelProjectLocationVisual.class, "PanelProjectLocationVisual.Validating_Wizard")));//NOI18N
+        private long lastEventID = 0;        
+        private WizardValidationWorkerCheckState lastCheck = null;
+        private ProjectValidationParams projectParams;
+        private AtomicBoolean makefileNameChangedManually = new AtomicBoolean(false);        
+        
 
         WizardValidationWorker() {
             wizardValidationExecutor = Executors.newScheduledThreadPool(1);
@@ -1058,8 +1090,9 @@ public class PanelProjectLocationVisual extends SettingsPanel implements HelpCtx
             if (SwingUtilities.isEventDispatchThread()) {
                 WizardValidationWorkerCheckState curStatus = lastCheck;
                 currentState = curStatus;
+                
                 ValidationResult validationResult = curStatus.validationResult;
-                if (curStatus.checking == null) {
+                if (curStatus == null || curStatus.checking == null) {
                     validationResult = new ValidationResult(Boolean.TRUE, validationResult.msgError);
                     currentState = new WizardValidationWorkerCheckState(null, validationResult);
                 }
@@ -1071,9 +1104,6 @@ public class PanelProjectLocationVisual extends SettingsPanel implements HelpCtx
                     Thread.sleep(1);
                 } catch (InterruptedException e) {
                     //log.log(Level.FINEST, "Interrupted (1) check for {0}", path);
-                }
-                if (Thread.interrupted()) {
-                    return;
                 }
                 ValidationResult result = validate();
                 if (Thread.interrupted()) {
@@ -1087,16 +1117,18 @@ public class PanelProjectLocationVisual extends SettingsPanel implements HelpCtx
         }
         
         void recalculateProjectParams() {
-            if (!projectParamsChanged.get()) {
+            if (makefileNameChangedManually.get()) {
                 return;
             }
-            String createdFolderTextFieldValue = createdFolderTextField.getText().trim();
+            String createdFolderTextFieldValue = projectParams.createdProjectFolder.trim();
+            String projectName = projectParams.projectName;
+            
             // re-evaluate name of master project file.
             String makefileName;
             if (!templateName.equals(NewMakeProjectWizardIterator.MAKEFILEPROJECT_PROJECT_NAME)) {
                 makefileName = MakeConfigurationDescriptor.DEFAULT_PROJECT_MAKFILE_NAME;
             } else {
-                makefileName = contructProjectMakefileName(0);
+                makefileName = contructProjectMakefileName(projectName, 0);
             }            
            
             //need to construct MakefileName only in case the folder exists
@@ -1111,25 +1143,33 @@ public class PanelProjectLocationVisual extends SettingsPanel implements HelpCtx
                             && !CndFileUtils.isExistingFile(fileSystem, proposedMakefile.toUpperCase())) {
                         break;
                     }
-                    makefileName = contructProjectMakefileName(count++);
+                    makefileName = contructProjectMakefileName(projectName, count++);
                 }
             }
-            if (Thread.interrupted()) {
-                return;
-            }
             final String makefileNameText = makefileName;
+            final long currentEventID = projectParams.eventID;
             SwingUtilities.invokeLater(new Runnable() {
                 @Override
                 public void run() {
+                    //do not set text field if we are already processing next event
+                    if (currentEventID < lastEventID) {                        
+                        return;
+                    }
+                    makefileTextField.getDocument().removeDocumentListener(WizardValidationWorker.this);
                     makefileTextField.setText(makefileNameText);
+                    projectParams.setMakefile(makefileNameText);
+                    makefileTextField.getDocument().addDocumentListener(WizardValidationWorker.this);
                 }
             });
             
         }
 
         public ValidationResult validate() {
-            String projectFolder = createdFolderTextField.getText().trim();
-            String projectLocation = projectLocationTextField.getText().trim();
+            if (projectParams.eventID < lastEventID) {
+                return new ValidationResult(Boolean.FALSE, null);
+            }
+            String projectFolder = projectParams.createdProjectFolder.trim();
+            String projectLocation = projectParams.projectLocation.trim();
             if (projectFolder.isEmpty() || projectLocation.isEmpty()) {
                 String message = NbBundle.getMessage(PanelProjectLocationVisual.class, "MSG_IllegalProjectLocation"); // NOI18N
                 return new ValidationResult(Boolean.FALSE, message);
@@ -1138,7 +1178,7 @@ public class PanelProjectLocationVisual extends SettingsPanel implements HelpCtx
             if (!result.isValid) {
                 return result;
             }
-            String makefileName = makefileTextField.getText();
+            String makefileName = projectParams.makefileTextField;
             if (makefileName.indexOf(" ") >= 0) {//NOI18N
                 String message = NbBundle.getMessage(PanelProjectLocationVisual.class, "MSG_SpacesInMakefile");// NOI18N
                 return new ValidationResult(Boolean.FALSE, message);
@@ -1146,8 +1186,8 @@ public class PanelProjectLocationVisual extends SettingsPanel implements HelpCtx
             if (!isValidMakeFile(makefileName)) {
                 String message = NbBundle.getMessage(PanelProjectLocationVisual.class, "MSG_IllegalMakefileName");//NOI18N
                 return new ValidationResult(Boolean.FALSE, message);
-            }
-            if (createMainCheckBox.isSelected() && !isValidMainFile(createMainTextField.getText())) {
+            }            
+            if (projectParams.isMainCreated && !isValidMainFile(projectParams.createdMain)) {
                 String message = NbBundle.getMessage(PanelProjectLocationVisual.class, "MSG_IllegalMainFileName");//NOI18N
                 return new ValidationResult(Boolean.FALSE, message);
             }
@@ -1244,19 +1284,33 @@ public class PanelProjectLocationVisual extends SettingsPanel implements HelpCtx
         }
 
         private void updateDocument(DocumentEvent e) {
-            if (e.getDocument() == projectNameTextField.getDocument() || e.getDocument() == projectLocationTextField.getDocument()) {
-                projectParamsChanged.set(true);
-                final String projectName = projectNameTextField.getText().trim();
-                String projectFolder = projectLocationTextField.getText().trim();
+            final String projectName = projectNameTextField.getText().trim();
+            String projectFolder = projectLocationTextField.getText().trim();            
+            if (e.getDocument() == projectNameTextField.getDocument() || e.getDocument() == projectLocationTextField.getDocument()) {                
                 while (projectFolder.endsWith("/") || projectFolder.endsWith("\\")) { // NOI18N
                     projectFolder = projectFolder.substring(0, projectFolder.length() - 1);
-                }
+                }                
                 final String projectFolderText = projectFolder;
                 final String createdFolderTextFieldValue = projectFolderText + fsFileSeparator + projectName;
-                createdFolderTextField.setText(createdFolderTextFieldValue);
-            } else {
-                projectParamsChanged.set(false);
-            }
+                createdFolderTextField.setText(createdFolderTextFieldValue);                
+                // re-evaluate name of master project file.
+                if (makefileTextField.getText().trim().isEmpty()) {
+                    String makefileName = 
+                            !templateName.equals(NewMakeProjectWizardIterator.MAKEFILEPROJECT_PROJECT_NAME)
+                            ? MakeConfigurationDescriptor.DEFAULT_PROJECT_MAKFILE_NAME : contructProjectMakefileName(projectName, 0);
+                    makefileTextField.getDocument().removeDocumentListener(this);                    
+                    makefileTextField.setText(makefileName);
+                    makefileTextField.getDocument().addDocumentListener(this);
+                }
+            } 
+            if (e.getDocument() == makefileTextField.getDocument()) {
+                makefileNameChangedManually.set(true);                             
+            } 
+            String createdFolderTextFieldValue = createdFolderTextField.getText().trim();
+            //form here project params which will be used in validation work
+            projectParams = new ProjectValidationParams(projectName, projectFolder, createdFolderTextFieldValue);
+            projectParams.setMainAttributes(createMainCheckBox.isSelected(), createMainTextField.getText().trim());
+            projectParams.setMakefile(makefileTextField.getText().trim());
 
             handleProjectParamsChanges();
             //run pre-validation and to not schedule task
@@ -1269,16 +1323,20 @@ public class PanelProjectLocationVisual extends SettingsPanel implements HelpCtx
         }
 
         private void handleProjectParamsChanges() {
+            //will handle next event
+            if (projectParams != null) {                
+                projectParams.setRequestID(++lastEventID);
+            }
             ValidationResult validationResult = new ValidationResult(Boolean.FALSE, NbBundle.getMessage(PanelProjectLocationVisual.class, "PanelProjectLocationVisual.Validating_Wizard"));
             currentState = new WizardValidationWorkerCheckState(Boolean.TRUE, validationResult);//NOI18N
             setError();
             synchronized (wizardValidationExecutorLock) {
-                if (wizardValidationTask != null) {                    
+                if (wizardValidationTask != null) {
                     wizardValidationTask.cancel(true);
                 }
                 wizardValidationTask = wizardValidationExecutor.schedule(this,
                         VALIDATION_DELAY, TimeUnit.MILLISECONDS);
-            }            
+            }                     
         }
         
         void cancel() {
