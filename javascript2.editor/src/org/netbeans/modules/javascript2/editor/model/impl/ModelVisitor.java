@@ -228,9 +228,11 @@ public class ModelVisitor extends PathNodeVisitor {
                 } else {
                     // probably a property of an object
                     List<Identifier> fqName = getName(aNode);
-                    property = ModelUtils.getJsObject(modelBuilder, fqName, true);
-                    if (property.getParent().getJSKind().isFunction() && !property.getModifiers().contains(Modifier.STATIC)) {
-                        property.getModifiers().add(Modifier.STATIC);
+                    if (fqName != null) {
+                        property = ModelUtils.getJsObject(modelBuilder, fqName, true);
+                        if (property.getParent().getJSKind().isFunction() && !property.getModifiers().contains(Modifier.STATIC)) {
+                            property.getModifiers().add(Modifier.STATIC);
+                        }
                     }
                 }
                 if (property != null) {
@@ -958,7 +960,13 @@ public class ModelVisitor extends PathNodeVisitor {
         } else if (lhs instanceof IndexNode) {
             IndexNode indexNode = (IndexNode)lhs;
             if (indexNode.getBase() instanceof AccessNode) {
-                name.addAll(getName((AccessNode)indexNode.getBase()));
+                List<Identifier> aName = getName((AccessNode)indexNode.getBase());
+                if (aName != null) {
+                    name.addAll(getName((AccessNode)indexNode.getBase()));
+                }
+                else {
+                    return null;
+                }
             }
             if (indexNode.getIndex() instanceof LiteralNode) {
                 LiteralNode lNode = (LiteralNode)indexNode.getIndex();
@@ -978,15 +986,19 @@ public class ModelVisitor extends PathNodeVisitor {
             name.add(new IdentifierImpl(aNode.getProperty().getName(),
                     ModelUtils.documentOffsetRange(parserResult, aNode.getProperty().getStart(), aNode.getProperty().getFinish())));
         }
-        if (name.size() > 0 && aNode.getBase() instanceof IdentNode) {
-            IdentNode ident = (IdentNode) aNode.getBase();
-            if (!"this".equals(ident.getName())) {
-                name.add(new IdentifierImpl(ident.getName(),
-                        ModelUtils.documentOffsetRange(parserResult, ident.getStart(), ident.getFinish())));
+        if (aNode.getBase() instanceof IdentNode) {
+            if (name.size() > 0 && aNode.getBase() instanceof IdentNode) {
+                IdentNode ident = (IdentNode) aNode.getBase();
+                if (!"this".equals(ident.getName())) {
+                    name.add(new IdentifierImpl(ident.getName(),
+                            ModelUtils.documentOffsetRange(parserResult, ident.getStart(), ident.getFinish())));
+                }
             }
+            Collections.reverse(name);
+            return name;
+        } else {
+            return null;
         }
-        Collections.reverse(name);
-        return name;
     }
 
     /**
