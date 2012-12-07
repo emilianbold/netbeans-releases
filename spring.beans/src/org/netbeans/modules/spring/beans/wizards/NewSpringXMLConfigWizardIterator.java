@@ -55,6 +55,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.java.classpath.ClassPath;
@@ -84,6 +86,8 @@ import org.openide.util.MutexException;
 
 public final class NewSpringXMLConfigWizardIterator implements WizardDescriptor.AsynchronousInstantiatingIterator {
 
+    private static final Logger LOG = Logger.getLogger(NewSpringXMLConfigWizardIterator.class.getName());
+    private static final String DEFAULT_SPRING_VERSION = "2.5";
     private int index;
     private WizardDescriptor wizard;
     private WizardDescriptor.Panel[] panels;
@@ -161,13 +165,12 @@ public final class NewSpringXMLConfigWizardIterator implements WizardDescriptor.
             }
         }
         if (version == null || "".equals(version)) {    //NOI18N
-            version = "2.5";    //NOI18N
+            version = DEFAULT_SPRING_VERSION;
         }
 
         HashMap<String, Object> params = new HashMap<String, Object>();
-        
-        if (version.startsWith("3.0")) {    //NOI18N
-            version = "3.0";
+        if (version.startsWith("3.")) { //NOI18N
+            params.put("version", version); //NOI18N
             params.put("springVersion3", Boolean.TRUE); //NOI18N
         }
 
@@ -190,14 +193,23 @@ public final class NewSpringXMLConfigWizardIterator implements WizardDescriptor.
         String[] incNamespaces = (String[]) wizard.getProperty(SpringXMLConfigNamespacesPanel.INCLUDED_NAMESPACES);
         for (String ns : incNamespaces) {
             String prefix = ns.substring(0, ns.indexOf("-")).trim(); // NOI18N
-            String schemaName = ns.substring(ns.indexOf("-") + 1).trim();
+            String schemaName = ns.substring(ns.indexOf("-") + 1).trim(); //NOI18N
             String fileName;
-            if (schemaName.equals("http://www.springframework.org/schema/webflow-config")) {
-                fileName = "spring-"+schemaName.substring(schemaName.lastIndexOf("/")+1)+"-2.0.xsd";   //NOI18N
+            int indexOfSchemaNameBegin = schemaName.lastIndexOf("/") + 1; //NOI18N
+            if (schemaName.equals("http://www.springframework.org/schema/webflow-config")) { //NOI18N
+                fileName = "spring-" + schemaName.substring(indexOfSchemaNameBegin) + "-2.0.xsd"; //NOI18N
+            } else if (schemaName.equals("http://www.springframework.org/schema/osgi")) { //NOI18N
+                fileName = "spring-" + schemaName.substring(indexOfSchemaNameBegin) + "-1.2.xsd"; //NOI18N
             } else {
-                fileName = "spring-"+schemaName.substring(schemaName.lastIndexOf("/")+1)+"-"+version+".xsd";   //NOI18N
+                fileName = "spring-" + schemaName.substring(indexOfSchemaNameBegin) + "-" + version + ".xsd"; //NOI18N
             }
-            namespaces.add(new TemplateData(prefix, schemaName, fileName));
+
+            // c and p namespaces doesn't have any scheme
+            if ("c".equals(prefix) || "p".equals(prefix)) { //NOI18N
+                namespaces.add(new TemplateData(prefix, schemaName, fileName, false));
+            } else {
+                namespaces.add(new TemplateData(prefix, schemaName, fileName));
+            }
 
         }
         return namespaces;
@@ -208,7 +220,15 @@ public final class NewSpringXMLConfigWizardIterator implements WizardDescriptor.
             if (ownerRoot !=null) { //NOI18N
                 if (ownerRoot.getFileSystem() instanceof JarFileSystem) {
                     JarFileSystem jarFileSystem = (JarFileSystem) ownerRoot.getFileSystem();
-                    return SpringUtilities.getImplementationVersion(jarFileSystem);
+                    String implementationVersion = SpringUtilities.getImplementationVersion(jarFileSystem);
+                    if (implementationVersion != null) {
+                        String[] splitedVersion = implementationVersion.split("[.]"); //NOI18N
+                        if (splitedVersion.length < 2) {
+                            LOG.log(Level.SEVERE, "Unknown syntax of implementation version={0}", implementationVersion);
+                            return null;
+                        }
+                        return splitedVersion[0] + "." + splitedVersion[1];
+                    }
                 }
             }
         } catch (FileStateInvalidException e) {
@@ -370,6 +390,11 @@ public final class NewSpringXMLConfigWizardIterator implements WizardDescriptor.
         private String prefix;
         private String namespace;
         private String fileName;
+        private boolean hasSchemeLocation;
+
+        public boolean hasSchemeLocation() {
+            return hasSchemeLocation;
+        }
 
         public String getFileName() {
             return fileName;
@@ -396,9 +421,14 @@ public final class NewSpringXMLConfigWizardIterator implements WizardDescriptor.
         }
 
         public TemplateData(String prefix, String namespace, String fileName) {
+            this(prefix, namespace, fileName, true);
+        }
+
+        public TemplateData(String prefix, String namespace, String fileName, boolean hasSchemeLocation) {
             this.prefix = prefix;
             this.namespace = namespace;
             this.fileName = fileName;
+            this.hasSchemeLocation = hasSchemeLocation;
         }
 
     }
