@@ -96,7 +96,7 @@ public class NetBeansRunParamsIDEChecker implements PrerequisitesChecker {
         }
         String text = null;
         for (String goal : config.getGoals()) {
-            text = PluginPropertyUtils.getPluginProperty(prj, MavenNbModuleImpl.GROUPID_MOJO, MavenNbModuleImpl.NBM_PLUGIN, ADDITIONAL_ARGUMENTS, goal);
+            text = PluginPropertyUtils.getPluginProperty(prj, MavenNbModuleImpl.GROUPID_MOJO, MavenNbModuleImpl.NBM_PLUGIN, ADDITIONAL_ARGUMENTS, goal, "netbeans.run.params");
             if (text != null) {
                 break;
             }
