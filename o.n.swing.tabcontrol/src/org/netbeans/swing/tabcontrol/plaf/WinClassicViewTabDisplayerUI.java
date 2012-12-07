@@ -202,8 +202,8 @@ public final class WinClassicViewTabDisplayerUI extends AbstractViewTabDisplayer
             slidedOut = false;
         if( isTabBusy( index ) && !slidedOut ) {
             Icon busyIcon = BusyTabsSupport.getDefault().getBusyIcon( isSelected( index ) );
-            txtWidth -= busyIcon.getIconWidth() - 3 - TXT_X_PAD;
-            busyIcon.paintIcon( displayer, g, x+TXT_X_PAD, y+(height-busyIcon.getIconHeight())/2);
+            txtWidth -= busyIcon.getIconWidth() + 3 + TXT_X_PAD;
+            busyIcon.paintIcon( displayer, g, x+TXT_X_PAD, y+(height-busyIcon.getIconHeight())/2+1);
             x += busyIcon.getIconWidth() + 3;
         }
         

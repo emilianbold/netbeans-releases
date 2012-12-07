@@ -224,6 +224,9 @@ public class ToolbarWithOverflow extends JToolBar {
         int height = null == insets ? 0 : insets.top + insets.bottom;
         for (int i = 0; i < comps.length; i++) {
             Component comp = comps[i];
+	    if (!comp.isVisible()) {
+		continue;
+	    }
             width += getOrientation() == HORIZONTAL ? comp.getPreferredSize().width : comp.getPreferredSize().height;
             height = Math.max( height, getOrientation() == HORIZONTAL ? comp.getPreferredSize().height : comp.getPreferredSize().width );
         }
