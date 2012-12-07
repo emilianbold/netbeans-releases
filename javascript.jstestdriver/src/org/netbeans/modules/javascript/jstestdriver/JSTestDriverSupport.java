@@ -601,10 +601,14 @@ public class JSTestDriverSupport {
             if (split == null) {
                 return null;
             }
+            List<String> r = new ArrayList<String>();
             for (int i = 0; i < split.length; i++) {
-                split[i] = split[i].trim();
+                String s = split[i].trim();
+                if (s.length() > 0) {
+                    r.add(s);
+                }
             }
-            return split;
+            return r.toArray(new String[r.size()]);
         }
         
     }
