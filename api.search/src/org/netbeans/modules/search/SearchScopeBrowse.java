@@ -42,6 +42,7 @@
 package org.netbeans.modules.search;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -53,9 +54,12 @@ import org.netbeans.api.search.provider.SearchListener;
 import org.netbeans.modules.search.ui.UiUtils;
 import org.netbeans.spi.search.SearchInfoDefinition;
 import org.netbeans.spi.search.SearchScopeDefinition;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileChooserBuilder;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.NbBundle;
 
 /**
  * Search scope that shows a file chooser to select directories that should be
@@ -218,14 +222,44 @@ public class SearchScopeBrowse {
         if (files == null) {
             files = new File[0];
         }
-        FileObject[] fileObjects = new FileObject[files.length];
-        for (int i = 0; i < files.length; i++) {
-            fileObjects[i] = FileUtil.toFileObject(files[i]);
+        List<File> existingFiles = selectExistingFiles(files);
+        FileObject[] fileObjects = new FileObject[existingFiles.size()];
+        for (int i = 0; i < existingFiles.size(); i++) {
+            fileObjects[i] = FileUtil.toFileObject(existingFiles.get(i));
         }
         if (fileObjects.length > 0) {
             roots = fileObjects;
         }
         return fileObjects;
+    }
+
+    /**
+     * Take an array of files and return a list of existing files from that
+     * array. If some of the files does not exist, show an error message, but
+     * only for the first detected non-existing file.
+     */
+    @NbBundle.Messages({
+        "# {0} - file path",
+        "MSG_FileDoesNotExist=File {0} does not exist.",
+        "TTL_FileDoesNotExist=File Error"
+    })
+    private List<File> selectExistingFiles(File[] files) {
+        List<File> existingFiles = new ArrayList<File>(files.length);
+        boolean errorShown = false;
+        for (int i = 0; i < files.length; i++) {
+            if (files[i].exists()) {
+                existingFiles.add(files[i]);
+            } else if (!errorShown) {
+                DialogDisplayer.getDefault().notifyLater(new NotifyDescriptor(
+                        Bundle.MSG_FileDoesNotExist(files[i]),
+                        Bundle.TTL_FileDoesNotExist(),
+                        NotifyDescriptor.DEFAULT_OPTION,
+                        NotifyDescriptor.ERROR_MESSAGE, null,
+                        NotifyDescriptor.OK_OPTION));
+                errorShown = true;
+            }
+        }
+        return existingFiles;
     }
 
     /**
