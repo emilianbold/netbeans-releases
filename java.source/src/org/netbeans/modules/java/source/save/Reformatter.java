@@ -949,8 +949,10 @@ public class Reformatter implements ReformatTask {
                 } else {
                     if (!insideForOrCatch)
                         continuationIndent = true;
-                    if (scan(node.getType(), p)) {
-                        spaces(1, fieldGroup);
+                    if (node.getType() == null || scan(node.getType(), p)) {
+                        if (node.getType() != null) {
+                            spaces(1, fieldGroup);
+                        }
                         if (!ERROR.contentEquals(node.getName()))
                             accept(IDENTIFIER);
                     }
