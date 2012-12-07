@@ -278,7 +278,7 @@ public class HtmlAutoCompletion {
                 //the text looks following in such a situation:
                 //
                 //  atrname="abcd|"", where offset of the | == dotPos
-                if (token.text().charAt(diff) == '"') { // NOI18N
+                if (diff > 0 && token.text().charAt(diff) == '"') { // NOI18N
                     caret.setDot(dotPos + 1);
                     return true;
                 }
