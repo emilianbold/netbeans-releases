@@ -340,33 +340,38 @@ public class JsObjectImpl extends JsElementImpl implements JsObject {
         for(Integer index: assignments.keySet()) {
             resolved.clear();
             Collection<TypeUsage> unresolved = assignments.get(index);
-            for (TypeUsage type : unresolved) {
-                if(!((TypeUsageImpl)type).isResolved()){
-                    resolved.addAll(ModelUtils.resolveTypeFromSemiType(this, type));
-                } else {
-                    resolved.add(type);
-                }
-            }
             JsObject global = ModelUtils.getGlobalObject(parent);
-            for (TypeUsage type : resolved) {
-                if (type.getOffset() > 0) {
-                    JsObject jsObject = ModelUtils.findJsObjectByName(global, type.getType());
-                    if (jsObject == null && type.getType().indexOf('.') == -1) {
-                        JsObject decParent = (
-                                this.parent.getJSKind() != JsElement.Kind.ANONYMOUS_OBJECT
-                                && this.parent.getJSKind() != JsElement.Kind.OBJECT_LITERAL) 
-                                ? this.parent : this.parent.getParent();
-                        while (jsObject == null && decParent != null) {
-                            jsObject = decParent.getProperty(type.getType());
-                            decParent = decParent.getParent();
+            for (TypeUsage type : unresolved) {
+                Collection<TypeUsage> resolvedHere = new ArrayList<TypeUsage>();
+                if(!((TypeUsageImpl)type).isResolved()){
+                    resolvedHere.addAll(ModelUtils.resolveTypeFromSemiType(this, type));
+                } else {
+                    resolvedHere.add(type);
+                }
+                if (!type.getType().contains("this")) {
+                    for (TypeUsage typeHere : resolvedHere) {
+                        if (typeHere.getOffset() > 0) {
+                            JsObject jsObject = ModelUtils.findJsObjectByName(global, typeHere.getType());
+                            if (jsObject == null && typeHere.getType().indexOf('.') == -1) {
+                                JsObject decParent = (
+                                        this.parent.getJSKind() != JsElement.Kind.ANONYMOUS_OBJECT
+                                        && this.parent.getJSKind() != JsElement.Kind.OBJECT_LITERAL) 
+                                        ? this.parent : this.parent.getParent();
+                                while (jsObject == null && decParent != null) {
+                                    jsObject = decParent.getProperty(typeHere.getType());
+                                    decParent = decParent.getParent();
+                                }
+                            }
+                            if (jsObject != null) {
+                                ((JsObjectImpl)jsObject).addOccurrence(new OffsetRange(typeHere.getOffset(), typeHere.getOffset() + typeHere.getType().length()));
+                                moveOccurrenceOfProperties((JsObjectImpl)jsObject, this);
+                            }
                         }
                     }
-                    if (jsObject != null) {
-                        ((JsObjectImpl)jsObject).addOccurrence(new OffsetRange(type.getOffset(), type.getOffset() + type.getType().length()));
-                        moveOccurrenceOfProperties((JsObjectImpl)jsObject, this);
-                    }
                 }
+                resolved.addAll(resolvedHere);
             }
+            
             unresolved.clear();
             unresolved.addAll(resolved);
         }
