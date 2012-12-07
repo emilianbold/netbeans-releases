@@ -183,7 +183,7 @@ public class NavigatorModel implements CsmProgressListener, CsmModelListener {
             if (CsmModelAccessor.getModelState() != CsmModelState.ON) {
                 return;
             }
-            if (!csmFile.isValid()) {
+            if (csmFile == null || !csmFile.isValid()) {
                 return;
             }
             if (busyListener != null) {
