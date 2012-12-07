@@ -42,13 +42,26 @@
 
 package org.netbeans.modules.kenai.ui;
 
+import java.awt.EventQueue;
 import java.awt.Image;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.util.Collections;
+import java.util.LinkedHashSet;
+import java.util.Map;
+import java.util.Set;
+import java.util.WeakHashMap;
+import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.kenai.api.KenaiManager;
 import org.netbeans.spi.project.ProjectIconAnnotator;
 import org.netbeans.modules.kenai.api.KenaiProject;
+import org.openide.filesystems.FileObject;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
+import org.openide.util.WeakListeners;
 import org.openide.util.lookup.ServiceProvider;
 
 /**
@@ -56,33 +69,103 @@ import org.openide.util.lookup.ServiceProvider;
  * @author Jan Becicka
  */
 @ServiceProvider(service=ProjectIconAnnotator.class)
-public class KenaiNBProjectAnnotator implements ProjectIconAnnotator {
+public class KenaiNBProjectAnnotator implements ProjectIconAnnotator, PropertyChangeListener {
 
     private static final Image kenaiBadge = ImageUtilities.loadImage("org/netbeans/modules/kenai/ui/resources/kenai-badge.png");
     private static final String tooltip = "<img src=\""
             + KenaiNBProjectAnnotator.class.getResource("/org/netbeans/modules/kenai/ui/resources/kenai-badge.png")
             + "\">&nbsp;"
             + NbBundle.getMessage(KenaiNBProjectAnnotator.class, "MSG_TeamProject");
+    private final Set<ChangeListener> listeners;
+    private final Map<Project, Boolean> kenaiProjects;
+    private static final RequestProcessor RP = new RequestProcessor("Kenai Project Annotator"); //NOI18N
 
+    public KenaiNBProjectAnnotator () {
+        listeners = new LinkedHashSet<ChangeListener>();
+        kenaiProjects = Collections.synchronizedMap(new WeakHashMap<Project, Boolean>(10));
+        RP.post(new Runnable() {
+            @Override
+            public void run () {
+                KenaiManager.getDefault().addPropertyChangeListener(
+                        WeakListeners.propertyChange(KenaiNBProjectAnnotator.this,
+                        KenaiManager.getDefault()));
+            }
+        });
+    }
+    
     @Override
     public Image annotateIcon(Project p, Image original, boolean openedNode) {
-        String s = (String) p.getProjectDirectory().getAttribute("ProvidedExtensions.RemoteLocation"); //NOI18N
-        if (s != null && KenaiProject.getNameForRepository(s) != null) {
+        Boolean isKenai = kenaiProjects.get(p);
+        if (Boolean.TRUE.equals(isKenai)) {
             original = ImageUtilities.addToolTipToImage(original, tooltip);
             original = ImageUtilities.mergeImages(original, kenaiBadge, 16, 0);
-            return original;
+        } else if (isKenai == null) {
+            refreshAsync(p);
         }
         return original;
     }
 
     @Override
     public void addChangeListener(ChangeListener listener) {
-        //do nothing
+        synchronized (listeners) {
+            listeners.add(listener);
+        }
     }
 
     @Override
     public void removeChangeListener(ChangeListener listener) {
-        //do nothing
+        synchronized (listeners) {
+            listeners.remove(listener);
+        }
+        
     }
 
+    @Override
+    public void propertyChange (PropertyChangeEvent evt) {
+        if (KenaiManager.PROP_INSTANCES.equals(evt.getPropertyName())) {
+            synchronized (kenaiProjects) {
+                kenaiProjects.clear();
+            }
+            EventQueue.invokeLater(new Runnable() {
+                @Override
+                public void run () {
+                    fireChange();
+                }
+            });
+        }
+    }
+
+    private void refreshAsync (final Project p) {
+        final FileObject projectDir = p.getProjectDirectory();
+        if (projectDir != null) {
+            kenaiProjects.put(p, false);
+            RP.post(new Runnable() {
+                @Override
+                public void run () {
+                    String s = (String) projectDir.getAttribute("ProvidedExtensions.RemoteLocation"); //NOI18N
+                    if (s == null || KenaiProject.getNameForRepository(s) == null) {
+                        kenaiProjects.put(p, false);
+                    } else {
+                        kenaiProjects.put(p, true);
+                        EventQueue.invokeLater(new Runnable() {
+                            @Override
+                            public void run () {
+                                fireChange();
+                            }
+                        });
+                    }
+                }
+            });
+        }
+    }
+
+    private void fireChange () {
+        ChangeListener[] lists;
+        synchronized (listeners) {
+            lists = listeners.toArray(new ChangeListener[listeners.size()]);
+        }
+        for (ChangeListener list : lists) {
+            list.stateChanged(new ChangeEvent(this));
+        }
+    }
 }

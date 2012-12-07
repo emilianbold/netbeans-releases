@@ -461,7 +461,7 @@ public class StandardAdminHandler implements AdminHandler {
 
             processEntriesDotLog(new File(file.getParent(), "CVS")); //NOI18N
 
-            final File directory = file.getParentFile();
+            final File directory = entriesFile.getParentFile();
             final File tempFile = new File(directory, "Entries.Backup"); //NOI18N
             tempFile.createNewFile();
             BufferedReader reader = null;

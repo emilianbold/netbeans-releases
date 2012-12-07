@@ -464,8 +464,7 @@ public class MercurialInterceptor extends VCSInterceptor {
                 long time = System.currentTimeMillis();
                 synchronized (events) {
                     Events ev = events.get(hgFolder);
-                    if (ev == null || ev.isExternal() || ev.timeFinished > 0 
-                            && ev.timeFinished < time - 10000) {
+                    if (ev == null || ev.timeFinished > 0 && ev.timeFinished < time - 10000) {
                         // is new lock or is an old unfinished stale event
                         // and is not part of any internal command that could leave
                         // pending events to be delivered with 10s delay
@@ -853,6 +852,7 @@ public class MercurialInterceptor extends VCSInterceptor {
                 boolean refreshNeeded = false;
                 HgFolderTimestamps cached;
                 if (isEnabled(hgFolder)) {
+                    commandLogger.locked(new File(hgFolder, HgUtils.WLOCK_FILE));
                     synchronized (hgFolders) {
                         cached = hgFolders.get(hgFolder);
                     }
