@@ -916,6 +916,25 @@ public class NPECheckTest extends NbTestCase {
                 .assertWarnings();
     }
     
+    public void testLoopExponentialExplosion() throws Exception {
+        String sourceCode = "package test;\n" +
+                            "import java.util.*;\n" +
+                            "class Test {\n" +
+                            "    private void t(List<String> args) {\n";
+        
+        for (int i = 0; i < 20; i++) {
+            sourceCode += "for (Iterator<String> it" + i + " = args.iterator(); it" + i + ".hasNext(); )";
+        }
+        
+        sourceCode += "if (args.size() == 0) System.err.println('a');\n" +
+                      "    }\n" +
+                      "}\n";
+        HintTest.create()
+                .input(sourceCode)
+                .run(NPECheck.class)
+                .assertWarnings();
+    }
+    
     private void performAnalysisTest(String fileName, String code, String... golden) throws Exception {
         HintTest.create()
                 .input(fileName, code)

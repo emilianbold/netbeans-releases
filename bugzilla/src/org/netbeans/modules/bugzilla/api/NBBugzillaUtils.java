@@ -42,14 +42,20 @@
 
 package org.netbeans.modules.bugzilla.api;
 
+import java.io.File;
+import java.io.IOException;
 import java.net.URL;
 import java.util.prefs.Preferences;
 import java.util.regex.Pattern;
+import javax.swing.SwingUtilities;
 import org.netbeans.modules.bugtracking.api.Issue;
 import org.netbeans.modules.bugtracking.api.Repository;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.bugzilla.Bugzilla;
+import org.netbeans.modules.bugzilla.issue.BugzillaIssue;
+import org.netbeans.modules.bugzilla.repository.BugzillaRepository;
 import org.netbeans.modules.bugzilla.repository.NBRepositorySupport;
+import org.netbeans.modules.bugzilla.util.BugzillaUtil;
 
 /**
  *
@@ -131,5 +137,32 @@ public class NBBugzillaUtils {
     public static Repository findNBRepository() {
         return NBRepositorySupport.getInstance().getNBRepository();
     }
-    
+
+    /**
+     * Attaches files to the issue with the given id.
+     * 
+     * @param id issue id
+     * @param comment comment to be added to the issue
+     * @param desc attachment description per file
+     * @param contentType content type per file
+     * @param files files to be attached
+     */
+    public static void attachFiles(String id, String comment, String[] desc, String[] contentType, File[] files) {
+        assert id != null;
+        assert desc != null;
+        assert files != null;
+        assert contentType != null;
+        assert desc.length == files.length;
+        assert contentType.length == files.length;
+        
+        BugzillaRepository nbRepo = NBRepositorySupport.getInstance().getNBBugzillaRepository();
+        BugzillaIssue issue = nbRepo.getIssue(id);
+        if(issue == null) {
+            return;
+        }
+        for (int i = 0; i < files.length; i++) {
+            issue.addAttachment(files[i], comment, desc[i], contentType[i], false);
+        }
+        BugzillaUtil.openIssue(issue);
+    }
 }

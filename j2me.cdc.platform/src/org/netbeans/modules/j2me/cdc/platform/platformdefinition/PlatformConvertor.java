@@ -100,6 +100,7 @@ public class PlatformConvertor implements Environment.Provider, InstanceCookie.O
 
     private Lookup  lookup;
     
+    private static RequestProcessor  RP;
     private RequestProcessor.Task    saveTask;
     
     private Reference<CDCPlatform>   refPlatform = new WeakReference<CDCPlatform>(null);
@@ -208,8 +209,10 @@ public class PlatformConvertor implements Environment.Provider, InstanceCookie.O
     
     public void propertyChange(PropertyChangeEvent evt) {
         synchronized (this) {
-            if (saveTask == null)
-                saveTask = RequestProcessor.getDefault().create(this);
+            if (saveTask == null) {
+                RP = new RequestProcessor(PlatformConvertor.class);
+                saveTask = RP.create(this);
+            }
         }
         synchronized (this) {
             keepAlive.add(evt);

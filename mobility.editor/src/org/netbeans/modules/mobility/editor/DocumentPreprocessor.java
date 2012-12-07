@@ -106,7 +106,8 @@ public class DocumentPreprocessor implements PropertyChangeListener {
 
 
     /** Timer which countdowns the auto-reparsing of configuration blocks. */
-    final RequestProcessor.Task timerTask = RequestProcessor.getDefault().create(new Runnable() {
+    private static final RequestProcessor RP = new RequestProcessor(DocumentPreprocessor.class);
+    final RequestProcessor.Task timerTask = RP.create(new Runnable() {
         @Override
         public void run() {
             JTextComponent component = EditorRegistry.focusedComponent();
