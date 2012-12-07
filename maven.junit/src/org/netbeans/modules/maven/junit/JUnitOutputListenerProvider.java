@@ -347,7 +347,7 @@ public class JUnitOutputListenerProvider implements OutputProcessor {
 
     
     private void generateTest() {
-        String reportNameSuffix = PluginPropertyUtils.getPluginProperty(config.getMavenProject(), Constants.GROUP_APACHE_PLUGINS, Constants.PLUGIN_SUREFIRE, "reportNameSuffix", null);
+        String reportNameSuffix = PluginPropertyUtils.getPluginProperty(config.getMavenProject(), Constants.GROUP_APACHE_PLUGINS, Constants.PLUGIN_SUREFIRE, "reportNameSuffix", "test", "surefire.reportNameSuffix");
         String suffix = reportNameSuffix;
         if (suffix == null) {
             suffix = "";
