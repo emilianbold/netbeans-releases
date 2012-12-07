@@ -906,6 +906,7 @@ public class Folder implements FileChangeListener, ChangeListener {
                 if (myNativeFileItemSet != null) {
                     myNativeFileItemSet.remove(item);
                 }
+                dataObject.removePropertyChangeListener(item);
             }
         }
 

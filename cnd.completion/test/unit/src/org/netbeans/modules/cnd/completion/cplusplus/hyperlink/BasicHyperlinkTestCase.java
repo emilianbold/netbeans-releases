@@ -964,7 +964,7 @@ public class BasicHyperlinkTestCase extends HyperlinkBaseTestCase {
         performTest("bug220680.c", 1, 17, "bug220680.c", 1, 1);
     }    
 
-    public void testBug223298() throws Exception {
+    public void DISABLED_testBug223298() throws Exception {
         // Bug 223298 - Wrong recognition of function
         performTest("bug223298.cpp", 10, 10, "bug223298.cpp", 6, 1);
     }    
