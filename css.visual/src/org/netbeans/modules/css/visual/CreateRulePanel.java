@@ -741,7 +741,9 @@ public class CreateRulePanel extends javax.swing.JPanel {
                 return;
             }
             CssIndex index = CssIndex.create(project);
-            for (FileObject file : index.getAllIndexedFiles()) {
+            DependenciesGraph dependencies = index.getDependencies(context);
+            
+            for (FileObject file : dependencies.getAllReferedFiles()) {
                 if ("text/css".equals(file.getMIMEType())) {
                     items.add(file);
                 }
