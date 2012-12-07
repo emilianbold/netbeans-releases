@@ -69,8 +69,9 @@ public abstract class TypeElementImpl extends FullyQualifiedElementImpl implemen
             final Collection<QualifiedName> fqSuperInterfaces,
             final int flags,
             final String fileUrl,
-            final ElementQuery elementQuery) {
-        super(qualifiedName.toName().toString(), qualifiedName.toNamespaceName().toString(), fileUrl, offset, elementQuery);
+            final ElementQuery elementQuery,
+            final boolean isDeprecated) {
+        super(qualifiedName.toName().toString(), qualifiedName.toNamespaceName().toString(), fileUrl, offset, elementQuery, isDeprecated);
         this.superInterfaces = ifaceNames;
         this.modifiers = PhpModifiers.fromBitMask(flags);
         this.fqSuperInterfaces = fqSuperInterfaces;

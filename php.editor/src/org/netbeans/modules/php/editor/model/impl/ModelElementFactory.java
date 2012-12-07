@@ -81,31 +81,34 @@ final class ModelElementFactory {
         if (currentScope instanceof FunctionScope) {
             currentScope = currentScope.getInScope();
         }
-        ClassScopeImpl clz = new ClassScopeImpl(currentScope, nodeInfo);
+        boolean isDeprecated = VariousUtils.isDeprecatedFromPHPDoc(context.getProgram(), nodeInfo.getOriginalNode());
+        ClassScopeImpl clz = new ClassScopeImpl(currentScope, nodeInfo, isDeprecated);
         return clz;
     }
 
     static InterfaceScopeImpl create(InterfaceDeclarationInfo nodeInfo, ModelBuilder context) {
-        InterfaceScopeImpl iface = new InterfaceScopeImpl(context.getCurrentScope(), nodeInfo);
-        return iface;
+        boolean isDeprecated = VariousUtils.isDeprecatedFromPHPDoc(context.getProgram(), nodeInfo.getOriginalNode());
+        return new InterfaceScopeImpl(context.getCurrentScope(), nodeInfo, isDeprecated);
     }
 
     static TraitScopeImpl create(TraitDeclarationInfo nodeInfo, ModelBuilder context) {
-        return new TraitScopeImpl(context.getCurrentScope(), nodeInfo);
+        boolean isDeprecated = VariousUtils.isDeprecatedFromPHPDoc(context.getProgram(), nodeInfo.getOriginalNode());
+        return new TraitScopeImpl(context.getCurrentScope(), nodeInfo, isDeprecated);
     }
 
     static MethodScopeImpl create(MethodDeclarationInfo nodeInfo, ModelBuilder context, ModelVisitor visitor) {
-        String returnType = VariousUtils.getReturnTypeFromPHPDoc(context.getProgram(),
-                nodeInfo.getOriginalNode().getFunction());
+        String returnType = VariousUtils.getReturnTypeFromPHPDoc(context.getProgram(), nodeInfo.getOriginalNode().getFunction());
+        boolean isDeprecated = VariousUtils.isDeprecatedFromPHPDoc(context.getProgram(), nodeInfo.getOriginalNode().getFunction());
         String qualifiedReturnType = VariousUtils.qualifyTypeNames(returnType, nodeInfo.getOriginalNode().getStartOffset(), context.getCurrentScope());
-        MethodScopeImpl method = new MethodScopeImpl(context.getCurrentScope(), qualifiedReturnType, nodeInfo, visitor);
+        MethodScopeImpl method = new MethodScopeImpl(context.getCurrentScope(), qualifiedReturnType, nodeInfo, visitor, isDeprecated);
         return method;
     }
 
     static FieldElementImpl create(SingleFieldDeclarationInfo nodeInfo, ModelBuilder context) {
         String returnType = VariousUtils.getFieldTypeFromPHPDoc(context.getProgram(), nodeInfo.getOriginalNode());
+        boolean isDeprecated = VariousUtils.isDeprecatedFromPHPDoc(context.getProgram(), nodeInfo.getOriginalNode());
         String returnFQType = VariousUtils.qualifyTypeNames(returnType, nodeInfo.getRange().getStart(), context.getCurrentScope());
-        FieldElementImpl fei = new FieldElementImpl(context.getCurrentScope(), returnType, returnFQType, nodeInfo);
+        FieldElementImpl fei = new FieldElementImpl(context.getCurrentScope(), returnType, returnFQType, nodeInfo, isDeprecated);
         return fei;
     }
 

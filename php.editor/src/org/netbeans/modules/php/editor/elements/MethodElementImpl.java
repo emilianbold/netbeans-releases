@@ -88,8 +88,9 @@ public final class MethodElementImpl extends PhpElementImpl implements MethodEle
             final String fileUrl,
             final ElementQuery elementQuery,
             final List<ParameterElement> parameters,
-            final Set<TypeResolver> returnTypes) {
-        super(methodName, enclosingType.getName(), fileUrl, offset, elementQuery);
+            final Set<TypeResolver> returnTypes,
+            final boolean isDeprecated) {
+        super(methodName, enclosingType.getName(), fileUrl, offset, elementQuery, isDeprecated);
         final boolean isFromInterface = enclosingType.isInterface();
         this.modifiers = PhpModifiers.fromBitMask((isFromInterface) ? (flags | Modifier.ABSTRACT | Modifier.PUBLIC) : flags);
         this.isMagic = isMagic;
@@ -118,7 +119,7 @@ public final class MethodElementImpl extends PhpElementImpl implements MethodEle
 
     public static MethodElement createMagicMethod(final TypeElement type, String methodName, int flags, String... arguments) {
         MethodElement retval = new MethodElementImpl(type, methodName, true, 0, flags, //NOI18N
-                type.getFilenameUrl(), null, fromParameterNames(arguments), Collections.<TypeResolver>emptySet());
+                type.getFilenameUrl(), null, fromParameterNames(arguments), Collections.<TypeResolver>emptySet(), type.isDeprecated());
         return retval;
     }
 
@@ -158,7 +159,7 @@ public final class MethodElementImpl extends PhpElementImpl implements MethodEle
         if (matchesQuery(query, signParser)) {
             retval = new MethodElementImpl(type, signParser.getMethodName(), false,
                     signParser.getOffset(), signParser.getFlags(), indexResult.getUrl().toString(),
-                    indexScopeQuery, signParser.getParameters(), signParser.getReturnTypes());
+                    indexScopeQuery, signParser.getParameters(), signParser.getReturnTypes(), signParser.isDeprecated());
         }
         return retval;
     }
@@ -171,7 +172,8 @@ public final class MethodElementImpl extends PhpElementImpl implements MethodEle
         return new MethodElementImpl(
                 type, info.getName(), false, info.getRange().getStart(), info.getAccessModifiers().toFlags(),
                 fileQuery.getURL().toExternalForm(), fileQuery, info.getParameters(),
-                TypeResolverImpl.parseTypes(VariousUtils.getReturnTypeFromPHPDoc(fileQuery.getResult().getProgram(), node.getFunction())));
+                TypeResolverImpl.parseTypes(VariousUtils.getReturnTypeFromPHPDoc(fileQuery.getResult().getProgram(), node.getFunction())),
+                VariousUtils.isDeprecatedFromPHPDoc(fileQuery.getResult().getProgram(), node.getFunction()));
     }
 
     private static boolean matchesQuery(final NameKind query, MethodSignatureParser signParser) {
@@ -195,7 +197,7 @@ public final class MethodElementImpl extends PhpElementImpl implements MethodEle
         final MethodSignatureParser signParser = new MethodSignatureParser(sig);
         final MethodElement retval = new MethodElementImpl(type, MethodElementImpl.CONSTRUCTOR_NAME, false,
                 signParser.getOffset(), signParser.getFlags(), indexResult.getUrl().toString(),
-                indexScopeQuery, signParser.getParameters(), signParser.getReturnTypes());
+                indexScopeQuery, signParser.getParameters(), signParser.getReturnTypes(), signParser.isDeprecated());
         return retval;
     }
 
@@ -279,6 +281,7 @@ public final class MethodElementImpl extends PhpElementImpl implements MethodEle
         }
         sb.append(Separator.SEMICOLON); //NOI18N
         sb.append(getPhpModifiers().toFlags()).append(Separator.SEMICOLON);
+        sb.append(isDeprecated() ? 1 : 0).append(Separator.SEMICOLON);
         return sb.toString();
     }
 
@@ -343,6 +346,10 @@ public final class MethodElementImpl extends PhpElementImpl implements MethodEle
 
         Set<TypeResolver> getReturnTypes() {
             return TypeResolverImpl.parseTypes(signature.string(4));
+        }
+
+        boolean isDeprecated() {
+            return signature.integer(6) == 1;
         }
     }
 

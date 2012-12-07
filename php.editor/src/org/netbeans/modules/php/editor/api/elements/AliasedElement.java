@@ -178,6 +178,11 @@ public class AliasedElement implements FullyQualifiedElement {
     }
 
     @Override
+    public final boolean isDeprecated() {
+        return element.isDeprecated();
+    }
+
+    @Override
     public final FileObject getFileObject() {
         return element.getFileObject();
     }

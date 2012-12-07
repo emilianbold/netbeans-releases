@@ -41,6 +41,8 @@
  */
 package org.netbeans.modules.refactoring.php.rename;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -49,15 +51,18 @@ import org.netbeans.modules.csl.spi.support.ModificationResult;
 import org.netbeans.modules.csl.spi.support.ModificationResult.Difference;
 import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.api.RenameRefactoring;
-import org.netbeans.modules.refactoring.php.DiffElement;
 import org.netbeans.modules.refactoring.php.findusages.PhpWhereUsedQueryPlugin;
 import org.netbeans.modules.refactoring.php.findusages.WarningFileElement;
 import org.netbeans.modules.refactoring.php.findusages.WhereUsedElement;
 import org.netbeans.modules.refactoring.php.findusages.WhereUsedSupport;
 import org.netbeans.modules.refactoring.php.findusages.WhereUsedSupport.Results;
+import org.netbeans.modules.refactoring.php.rename.PhpRenameRefactoringUI.RenameDeclarationFile;
 import org.netbeans.modules.refactoring.spi.RefactoringCommit;
 import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
+import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
@@ -70,17 +75,32 @@ public class PhpRenameRefactoringPlugin extends PhpWhereUsedQueryPlugin {
         super(refactoring);
     }
 
+    @NbBundle.Messages({
+        "MSG_Error_ElementEmpty=The element name cannot be empty.",
+        "MSG_Error_SameName=The element has the same name as before.",
+        "# {0} - New file name",
+        "MSG_Error_FileExists=The file with name \"{0}\" already exists."
+    })
     @Override
     public Problem checkParameters() {
         String newName = getRefactoring().getNewName();
         if (newName != null) {
             if (newName.length() == 0) {
-                return new Problem(true, NbBundle.getMessage(PhpRenameRefactoringPlugin.class, "MSG_Error_ElementEmpty")); //NOI18N
+                return new Problem(true, Bundle.MSG_Error_ElementEmpty());
             }
             final WhereUsedSupport usages = getUsages();
             String oldName = PhpRenameRefactoringUI.getElementName(usages.getName(), usages.getElementKind());
             if (newName.equals(oldName)) {
-                return new Problem(true, NbBundle.getMessage(PhpRenameRefactoringPlugin.class, "MSG_Error_SameName")); //NOI18N
+                return new Problem(true, Bundle.MSG_Error_SameName());
+            }
+            RenameDeclarationFile renameDeclarationFile = getRefactoring().getContext().lookup(PhpRenameRefactoringUI.RenameDeclarationFile.class);
+            FileObject declarationFileObject = usages.getDeclarationFileObject();
+            if (renameDeclarationFile.renameDeclarationFile()) {
+                File parentFolder = FileUtil.toFile(declarationFileObject.getParent());
+                File possibleNewFile = new File(parentFolder, newName + "." + declarationFileObject.getExt()); //NOI18N
+                if (possibleNewFile.isFile()) {
+                    return new Problem(true, Bundle.MSG_Error_FileExists(newName));
+                }
             }
         }
         return null;
@@ -96,17 +116,21 @@ public class PhpRenameRefactoringPlugin extends PhpWhereUsedQueryPlugin {
     }
 
     @Override
-    protected void refactorResults(Results results, RefactoringElementsBag refactoringElements) {
+    protected void refactorResults(Results results, RefactoringElementsBag refactoringElements, FileObject declarationFileObject) {
         final ModificationResult modificationResult = new ModificationResult();
         final Collection<WhereUsedElement> resultElements = results.getResultElements();
         for (WhereUsedElement whereUsedElement : resultElements) {
             refactorElement(modificationResult, whereUsedElement);
         }
-
+        RenameDeclarationFile renameDeclarationFile = refactoring.getContext().lookup(PhpRenameRefactoringUI.RenameDeclarationFile.class);
         refactoringElements.registerTransaction(new RefactoringCommit(Collections.singletonList(modificationResult)));
         for (FileObject fo : modificationResult.getModifiedFileObjects()) {
             for (Difference diff : modificationResult.getDifferences(fo)) {
-                refactoringElements.add(refactoring, DiffElement.create(diff, fo, modificationResult));
+                FileRenamer fileRenamer = FileRenamer.NONE;
+                if (fo.equals(declarationFileObject) && renameDeclarationFile != null) {
+                    fileRenamer = new DelcarationFileRenamer(fo, renameDeclarationFile);
+                }
+                refactoringElements.add(refactoring, RenameDiffElement.create(diff, fo, modificationResult, fileRenamer));
             }
         }
 
@@ -128,5 +152,32 @@ public class PhpRenameRefactoringPlugin extends PhpWhereUsedQueryPlugin {
             modificationResult.addDifferences(whereUsedElement.getFile(), diffs);
         }
 
+    }
+
+    public static final class DelcarationFileRenamer implements FileRenamer {
+
+        private final FileObject declarationFileObject;
+        private final RenameDeclarationFile renameDeclarationFile;
+
+        private DelcarationFileRenamer(FileObject declarationFileObject, RenameDeclarationFile renameDeclarationFile) {
+            assert declarationFileObject != null;
+            assert renameDeclarationFile != null;
+            this.declarationFileObject = declarationFileObject;
+            this.renameDeclarationFile = renameDeclarationFile;
+        }
+
+        @Override
+        public void rename(String newName) {
+            assert newName != null;
+            if (!newName.equals(declarationFileObject.getName()) && renameDeclarationFile.renameDeclarationFile()) {
+                try {
+                    FileLock lock = declarationFileObject.lock();
+                    declarationFileObject.rename(lock, newName, declarationFileObject.getExt());
+                    lock.releaseLock();
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+        }
     }
 }

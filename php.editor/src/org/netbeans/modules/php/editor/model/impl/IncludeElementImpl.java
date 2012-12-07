@@ -65,7 +65,8 @@ class IncludeElementImpl extends ModelElementImpl implements IncludeElement {
                 Union2.<String, FileObject>createSecond(inScope.getFileObject()),
                 new OffsetRange(0, 0),
                 info.getPhpElementKind(),
-                PhpModifiers.noModifiers());
+                PhpModifiers.noModifiers(),
+                false);
         this.fileName = info.getFileName();
         this.referenceSpanRange = info.getRange();
     }

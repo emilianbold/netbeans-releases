@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,51 +37,22 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2010 Sun Microsystems, Inc.
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-
-package org.netbeans.modules.php.editor.elements;
-
-import org.netbeans.modules.php.editor.api.ElementQuery;
-import org.netbeans.modules.php.editor.api.QualifiedName;
-import org.netbeans.modules.php.editor.api.elements.FullyQualifiedElement;
-import org.netbeans.modules.php.editor.api.elements.NamespaceElement;
-
+package org.netbeans.modules.refactoring.php.rename;
 
 /**
- * @author Radek Matous
+ *
+ * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public abstract class FullyQualifiedElementImpl extends PhpElementImpl implements FullyQualifiedElement {
-    FullyQualifiedElementImpl(final String name, final String in, final String fileUrl,
-            final int offset, final ElementQuery elementQuery, boolean isDeprecated) {
-        super(name, in, fileUrl, offset, elementQuery, isDeprecated);
-    }
+public interface FileRenamer {
 
-    @Override
-    public final QualifiedName getNamespaceName() {
-        return getFullyQualifiedName().toNamespaceName();
-    }
+    FileRenamer NONE = new FileRenamer() {
+        @Override
+        public void rename(String newName) {
+        }
+    };
 
-    @Override
-    public final QualifiedName getFullyQualifiedName() {
-        boolean isDefaultNamespace = isDefaultNamespaceName(getIn());
-        return (isDefaultNamespace) ? QualifiedName.createForDefaultNamespaceName().append(getName()).toFullyQualified()
-                : QualifiedName.createFullyQualified(getName(), getIn());
-    }
+    void rename(String newName);
 
-    static QualifiedName composeQualifiedName(String namespaceName, String className) {
-        boolean isDefaultNamespace = isDefaultNamespaceName(namespaceName);
-        return (isDefaultNamespace) ? QualifiedName.createForDefaultNamespaceName().append(className)
-                : QualifiedName.createFullyQualified(className, namespaceName);
-    }
-
-    static boolean isDefaultNamespaceName(String namespaceName) {
-        boolean isDefaultNamespace = namespaceName == null || NamespaceElement.DEFAULT_NAMESPACE_NAME.equalsIgnoreCase(namespaceName);
-        return isDefaultNamespace;
-    }
-
-    @Override
-    public final boolean isAliased() {
-        return false;
-    }
 }

@@ -102,7 +102,9 @@ class IndexScopeImpl extends ScopeImpl implements IndexScope {
                 name,
                 Union2.<String, FileObject>createSecond(info != null ? info.getSnapshot().getSource().getFileObject() : null),
                 new OffsetRange(0, 0),
-                kind);        assert info != null;
+                kind,
+                false);
+        assert info != null;
         this.model = info.getModel();
         this.index = IndexQueryImpl.create(QuerySupportFactory.get(info), this.model);
     }

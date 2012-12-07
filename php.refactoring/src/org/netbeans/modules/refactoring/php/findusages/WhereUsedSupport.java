@@ -41,7 +41,18 @@
  */
 package org.netbeans.modules.refactoring.php.findusages;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.EnumSet;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.TreeSet;
 import javax.swing.Icon;
 import org.netbeans.modules.csl.api.ElementKind;
 import org.netbeans.modules.csl.api.Modifier;
@@ -61,7 +72,14 @@ import org.netbeans.modules.php.editor.api.QuerySupportFactory;
 import org.netbeans.modules.php.editor.api.elements.MethodElement;
 import org.netbeans.modules.php.editor.api.elements.PhpElement;
 import org.netbeans.modules.php.editor.api.elements.TypeElement;
-import org.netbeans.modules.php.editor.model.*;
+import org.netbeans.modules.php.editor.model.FindUsageSupport;
+import org.netbeans.modules.php.editor.model.Model;
+import org.netbeans.modules.php.editor.model.ModelElement;
+import org.netbeans.modules.php.editor.model.ModelFactory;
+import org.netbeans.modules.php.editor.model.ModelUtils;
+import org.netbeans.modules.php.editor.model.Occurence;
+import org.netbeans.modules.php.editor.model.TypeScope;
+import org.netbeans.modules.php.editor.model.VariableName;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
 import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
 import org.openide.awt.ActionID;
@@ -74,9 +92,9 @@ import org.openide.util.Exceptions;
  *
  * @author Radek Matous
  */
-
 @ActionReferences({
-    @ActionReference(id = @ActionID(category = "Refactoring", id = "org.netbeans.modules.refactoring.api.ui.WhereUsedAction"), path = "Loaders/text/x-php5/Actions", position = 1700)})
+    @ActionReference(id = @ActionID(category = "Refactoring", id = "org.netbeans.modules.refactoring.api.ui.WhereUsedAction"), path = "Loaders/text/x-php5/Actions", position = 1700)
+})
 public final class WhereUsedSupport {
 
     private ASTNode node;
@@ -86,12 +104,11 @@ public final class WhereUsedSupport {
     private final Set<ModelElement> declarations;
     private ModelElement modelElement;
     private Results results;
-    private Set<FileObject> unopenedFiles;
     private Set<Modifier> modifier;
     private FindUsageSupport usageSupport;
     private ElementQuery.Index idx;
 
-    private WhereUsedSupport(ElementQuery.Index idx,Set<ModelElement> declarations, ASTNode node, FileObject fo) {
+    private WhereUsedSupport(ElementQuery.Index idx, Set<ModelElement> declarations, ASTNode node, FileObject fo) {
         this(idx, declarations, node.getStartOffset(), fo);
         this.node = node;
     }
@@ -119,9 +136,9 @@ public final class WhereUsedSupport {
         return node;
     }
 
-    /*public FileObject getFileObject() {
-        return fo;
-    }*/
+    public FileObject getDeclarationFileObject() {
+        return modelElement.getFileObject();
+    }
 
     public int getOffset() {
         return offset;
@@ -139,6 +156,10 @@ public final class WhereUsedSupport {
 
     public ElementKind getElementKind() {
         return modelElement.getPHPElement().getKind();
+    }
+
+    public PhpElementKind getPhpElementKind() {
+        return modelElement.getPhpElementKind();
     }
 
     public Set<Modifier> getModifiers() {
@@ -206,7 +227,7 @@ public final class WhereUsedSupport {
                             public void run(ResultIterator resultIterator) throws Exception {
                                 Result parserResult = resultIterator.getParserResult();
                                 if (parserResult != null && parserResult instanceof PHPParseResult) {
-                                    Model modelForDeclaration = ModelFactory.getModel((PHPParseResult)parserResult);
+                                    Model modelForDeclaration = ModelFactory.getModel((PHPParseResult) parserResult);
                                     declarations.add(modelForDeclaration.findDeclaration(declarationElement));
                                 }
                             }
@@ -288,7 +309,7 @@ public final class WhereUsedSupport {
     }
 
 
-    public class Results {
+    public final class Results {
 
         Collection<WhereUsedElement> elements = new TreeSet<WhereUsedElement>(new Comparator<WhereUsedElement>() {
 
@@ -318,7 +339,11 @@ public final class WhereUsedSupport {
 
         private void addEntry(PhpElement decl) {
             Icon icon = UiUtils.getElementIcon(WhereUsedSupport.this.getElementKind(), decl.getModifiers());
-            WhereUsedElement whereUsedElement = WhereUsedElement.create(decl.getName(), decl.getFileObject(), new OffsetRange(decl.getOffset(), decl.getOffset() + decl.getName().length()), icon);
+            WhereUsedElement whereUsedElement = WhereUsedElement.create(
+                    decl.getName(),
+                    decl.getFileObject(),
+                    new OffsetRange(decl.getOffset(), decl.getOffset() + decl.getName().length()),
+                    icon);
             if (whereUsedElement != null) {
                 elements.add(whereUsedElement);
             }
@@ -332,7 +357,7 @@ public final class WhereUsedSupport {
                 WhereUsedElement wue = WhereUsedElement.create(decl.getName(), fo, occurence.getOccurenceRange(), icon);
                 if (wue != null) {
                     elements.add(wue);
-                } else if(!warningElements.containsKey(fo)) {
+                } else if (!warningElements.containsKey(fo)) {
                     warningElements.put(fo, new WarningFileElement(fo));
                 }
             }

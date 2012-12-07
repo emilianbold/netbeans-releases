@@ -58,7 +58,7 @@ import org.openide.util.Union2;
 public class UseAliasElementImpl extends ModelElementImpl implements UseAliasElement {
 
     private UseAliasElementImpl(Scope inScope, String name, Union2<String, FileObject> file, OffsetRange offsetRange) {
-        super(inScope, name, file, offsetRange, PhpElementKind.USE_ALIAS);
+        super(inScope, name, file, offsetRange, PhpElementKind.USE_ALIAS, false);
     }
 
     UseAliasElementImpl(final UseScope inScope, final ASTNodeInfo<Expression> nodeInfo) {

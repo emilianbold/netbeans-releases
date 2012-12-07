@@ -222,13 +222,21 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
                             final PhpClass type = phpVariable.getType();
                             if (variable != null) {
                                 variable.indexedElement = VariableElementImpl.create(
-                                         varName, phpVariable.getOffset(), phpVariable.getFile(),
-                                        null, type != null ? TypeResolverImpl.parseTypes(type.getFullyQualifiedName()) : Collections.<TypeResolver>emptySet());
+                                        varName,
+                                        phpVariable.getOffset(),
+                                        phpVariable.getFile(),
+                                        null,
+                                        type != null ? TypeResolverImpl.parseTypes(type.getFullyQualifiedName()) : Collections.<TypeResolver>emptySet(),
+                                        false);
                             } else {
                                 int offset = namespaceScope.getOffset();
                                 VariableElementImpl var = VariableElementImpl.create(
-                                         varName, offset, phpVariable.getFile(),
-                                        null, type != null ? TypeResolverImpl.parseTypes(type.getFullyQualifiedName()) : Collections.<TypeResolver>emptySet());
+                                        varName,
+                                        offset,
+                                        phpVariable.getFile(),
+                                        null,
+                                        type != null ? TypeResolverImpl.parseTypes(type.getFullyQualifiedName()) : Collections.<TypeResolver>emptySet(),
+                                        false);
                                 namespaceScope.createElement(var);
                             }
                         }

@@ -48,6 +48,8 @@ import javax.swing.JPanel;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import org.netbeans.modules.csl.api.ElementKind;
+import org.netbeans.modules.php.editor.api.PhpElementKind;
 import org.netbeans.modules.refactoring.spi.ui.CustomRefactoringPanel;
 
 /**
@@ -60,11 +62,13 @@ public class RenamePanel extends JPanel implements CustomRefactoringPanel {
     private final transient String oldName;
     private final transient ChangeListener parent;
     private boolean initialized;
+    private final PhpElementKind phpKind;
 
     /** Creates new form RenamePanelName */
-    public RenamePanel(String oldName, ChangeListener parent, String name, boolean editable, boolean showUpdateReferences) {
+    public RenamePanel(String oldName, PhpElementKind phpKind, ChangeListener parent, String name, boolean editable, boolean showUpdateReferences) {
         setName(name);
         this.oldName = oldName;
+        this.phpKind = phpKind;
         this.parent = parent;
         initComponents();
         updateReferencesCheckBox.setVisible(showUpdateReferences);
@@ -99,6 +103,9 @@ public class RenamePanel extends JPanel implements CustomRefactoringPanel {
         textCheckBox.setVisible(false);
         refactorAllCheckBox.setVisible(false);
         updateReferencesCheckBox.setVisible(false);
+        if (!phpKind.equals(PhpElementKind.CLASS) && !phpKind.equals(PhpElementKind.IFACE) && !phpKind.equals(PhpElementKind.TRAIT)) {
+            renameFileCheckBox.setVisible(false);
+        }
         initialized = true;
     }
 
@@ -120,8 +127,9 @@ public class RenamePanel extends JPanel implements CustomRefactoringPanel {
         nameField = new javax.swing.JTextField();
         jPanel1 = new javax.swing.JPanel();
         warningLabel = new javax.swing.JLabel();
-        textCheckBox = new javax.swing.JCheckBox();
+        renameFileCheckBox = new javax.swing.JCheckBox();
         updateReferencesCheckBox = new javax.swing.JCheckBox();
+        textCheckBox = new javax.swing.JCheckBox();
         refactorAllCheckBox = new javax.swing.JCheckBox();
 
         setBorder(javax.swing.BorderFactory.createEmptyBorder(12, 12, 11, 11));
@@ -148,6 +156,19 @@ public class RenamePanel extends JPanel implements CustomRefactoringPanel {
         org.openide.awt.Mnemonics.setLocalizedText(warningLabel, org.openide.util.NbBundle.getMessage(RenamePanel.class, "LBL_NonAccurateRefactoringWarning")); // NOI18N
         jPanel1.add(warningLabel, java.awt.BorderLayout.NORTH);
         warningLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(RenamePanel.class, "LBL_NonAccurateRefactoringWarning")); // NOI18N
+
+        org.openide.awt.Mnemonics.setLocalizedText(renameFileCheckBox, "Rename Also &File With the Declaration.");
+        jPanel1.add(renameFileCheckBox, java.awt.BorderLayout.PAGE_END);
+
+        org.openide.awt.Mnemonics.setLocalizedText(updateReferencesCheckBox, org.openide.util.NbBundle.getBundle(RenamePanel.class).getString("LBL_RenameWithoutRefactoring")); // NOI18N
+        updateReferencesCheckBox.setEnabled(false);
+        updateReferencesCheckBox.setMargin(new java.awt.Insets(2, 2, 0, 2));
+        updateReferencesCheckBox.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                updateReferencesCheckBoxActionPerformed(evt);
+            }
+        });
+        jPanel1.add(updateReferencesCheckBox, java.awt.BorderLayout.LINE_START);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -179,21 +200,6 @@ public class RenamePanel extends JPanel implements CustomRefactoringPanel {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         add(textCheckBox, gridBagConstraints);
         textCheckBox.getAccessibleContext().setAccessibleDescription(textCheckBox.getText());
-
-        org.openide.awt.Mnemonics.setLocalizedText(updateReferencesCheckBox, org.openide.util.NbBundle.getBundle(RenamePanel.class).getString("LBL_RenameWithoutRefactoring")); // NOI18N
-        updateReferencesCheckBox.setEnabled(false);
-        updateReferencesCheckBox.setMargin(new java.awt.Insets(2, 2, 0, 2));
-        updateReferencesCheckBox.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                updateReferencesCheckBoxActionPerformed(evt);
-            }
-        });
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 4;
-        gridBagConstraints.gridwidth = 2;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        add(updateReferencesCheckBox, gridBagConstraints);
 
         refactorAllCheckBox.setSelected(true);
         org.openide.awt.Mnemonics.setLocalizedText(refactorAllCheckBox, org.openide.util.NbBundle.getMessage(RenamePanel.class, "refactorAllCheckBoxText")); // NOI18N
@@ -234,6 +240,7 @@ public class RenamePanel extends JPanel implements CustomRefactoringPanel {
     private javax.swing.JLabel label;
     private javax.swing.JTextField nameField;
     private javax.swing.JCheckBox refactorAllCheckBox;
+    private javax.swing.JCheckBox renameFileCheckBox;
     private javax.swing.JCheckBox textCheckBox;
     private javax.swing.JCheckBox updateReferencesCheckBox;
     private javax.swing.JLabel warningLabel;
@@ -256,6 +263,10 @@ public class RenamePanel extends JPanel implements CustomRefactoringPanel {
             return false;
         }
         return true;
+    }
+
+    public boolean renameDeclarationFile() {
+        return renameFileCheckBox.isSelected();
     }
 
     @Override

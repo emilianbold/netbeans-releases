@@ -52,7 +52,7 @@ class ScalarConstantElementImpl extends ModelElementImpl implements ConstantElem
     private final String value;
 
     ScalarConstantElementImpl(final NamespaceScopeImpl inScope, final ASTNodeInfo<Scalar> node, final String value) {
-        super(inScope, node.getName(), inScope.getFile(), node.getRange(), PhpElementKind.CONSTANT);
+        super(inScope, node.getName(), inScope.getFile(), node.getRange(), PhpElementKind.CONSTANT, false);
         this.value = value;
     }
     @Override
