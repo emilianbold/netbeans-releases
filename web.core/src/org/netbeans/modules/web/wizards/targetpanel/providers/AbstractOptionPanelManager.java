@@ -43,6 +43,7 @@
  */
 package org.netbeans.modules.web.wizards.targetpanel.providers;
 
+import java.awt.Color;
 import java.awt.GridBagLayout;
 import java.awt.event.ItemEvent;
 
@@ -54,6 +55,7 @@ import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
+import javax.swing.border.LineBorder;
 import javax.swing.event.DocumentEvent;
 
 import org.netbeans.modules.target.iterator.api.TargetChooserPanel;
@@ -114,7 +116,6 @@ abstract class AbstractOptionPanelManager implements TargetPanelUIManager<FileTy
         int gridy=0;
         
         myButtonGroup = new javax.swing.ButtonGroup();
-        myScrollPane = new javax.swing.JScrollPane();
         myDescriptionArea = new javax.swing.JTextArea();
         mySegmentBox = new javax.swing.JCheckBox();
         int segmenty;
@@ -204,8 +205,7 @@ abstract class AbstractOptionPanelManager implements TargetPanelUIManager<FileTy
         myDescriptionArea.setWrapStyleWord(true);
         myDescriptionArea.setOpaque(false);
         myDescriptionArea.getAccessibleContext().setAccessibleDescription(myDescriptionLabel.getText());
-        myScrollPane.setViewportView(myDescriptionArea);
-        myScrollPane.setVerticalScrollBarPolicy(javax.swing.JScrollPane.VERTICAL_SCROLLBAR_NEVER);
+        myDescriptionArea.setBorder(new LineBorder(Color.LIGHT_GRAY, 1));
         
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -214,7 +214,7 @@ abstract class AbstractOptionPanelManager implements TargetPanelUIManager<FileTy
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 2.0;
-        mainPanel.add(myScrollPane, gridBagConstraints);
+        mainPanel.add(myDescriptionArea, gridBagConstraints);
         
         return gridy;
     }
