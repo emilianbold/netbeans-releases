@@ -363,6 +363,11 @@ public class UnresolvedIdentifierTest extends ErrorHighlightingBaseTestCase {
         performStaticTest("bug217798.cpp");
     }      
     
+    public void testBug223298() throws Exception {
+        // Bug 223298 - Wrong recognition of function
+        performStaticTest("bug223298.cpp");
+    }            
+        
     /////////////////////////////////////////////////////////////////////
     // FAILS
 
