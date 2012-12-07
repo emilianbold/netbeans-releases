@@ -158,7 +158,7 @@ public class PropertiesTableModel extends AbstractTableModel {
     }
 
     // A class to encapsulate the property data.
-    private class PropertyData {
+    private static class PropertyData {
         private int modelIndex;
         private String name;
         private String value;

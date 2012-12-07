@@ -23,18 +23,32 @@ you configure the test driver.</p>
 by performing the following steps.</p>
 
 <ol>
-    <li>Download the js-test-driver JAR.</li>
+    <li>Download the js-test-driver JAR to your local system.</li>
     <li>In the Services window, right-click the JS Test Driver node and choose Configure in the popup menu.</li>
-    <li>In the Configure JSTestDriver dialog box, select the browsers that you want to run the test against.
+    <li>In the Configure JSTestDriver dialog box, click Browse and locate the js-test-driver JAR that you downloaded.</li>
+    <li>Select the browsers that you want to run the tests against.
         <p>Only browsers that are installed on your local system are displayed in the list.</p>
-    Click OK to close the dialog box.</li>
+        Click OK to close the dialog box.</li>
     <li>Right-click the JS Test Driver node and choose Start to start the js-test-driver server.
         <p>When you choose Start, each of the browsers that you specified will open a window 
-        and will wait to run the unit tests. You can see the status of the the js-test-driver server 
-        in the Output window.</p></li>
+        and will wait to run the unit tests. You can see the status in the js-test-driver server 
+        tab in the Output window.</p></li>
     <li>Choose New &gt; New File to open the New File wizard.</li>
     <li>Select JsTestDriver Configuration File in the Unit Tests category in the New File wizard.</li>
-    <li>Supply a name and location for the file. Click Finish.
+    <li>Use the default name <tt>jsTestDriver.conf</tt> for the File Name.</li>
+    <li>Click Browse and select the Configuration Files (the <tt>config</tt> folder in 
+        the project) for the Folder.
+    
+        <p>The file name must be <tt>jsTestDriver.conf</tt> and the file must be in the 
+            root of the <tt>config</tt> folder to enable the Test command for the project.
+            The correct path that is displayed in the Created File text field will be
+            similar to the following:<br>
+            <tt>&lt;PROJECT_FOLDER&gt;config/jsTestDriver.conf</tt>.</p>
+        
+        <p>If the <tt>config</tt> folder does not exist you can create the folder by typing
+            <tt>config</tt> in the Folder text field or by creating the folder manually and then
+            configuring the <tt>project.properties</tt>.</p>
+        Click Finish.
         <p>When you click Finish the IDE creates the <tt>jsTestDriver.conf</tt> file and opens the file in the editor.
         In the Projects window you can see the file under the Configuration Files node.</p></li>
     <li>Edit <tt>jsTestDriver.conf</tt> to specify the location of the JavaScript source files and test files.</li>
@@ -44,9 +58,12 @@ by performing the following steps.</p>
 <p>When you click Test the IDE runs the unit tests.
 You can open the Test Results window to view the results.
 You can see details about the specific tests in the Output window. </p>
-    
+
+<p><strong>Notes.</strong></p>
 <ul class="note">
-    <li>To use JS Test Driver in the IDE you need to download the JS Test Driver JAR that is available from the following location.
+    <li>Debugging of unit tests is automatically enabled if you specify Chrome with NetBeans JS Debugger as one 
+        of the JS Test Driver browsers when you configure JS Test Driver in the Services window.</li>   
+    <li>To use JS Test Driver in the IDE you need to download the JS Test Driver JAR that is available from the following location.<br>
 <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
     <param name="content" value="http://code.google.com/p/js-test-driver/">
     <param name="text" value="<html><u>JS Test Driver homepage</u></html>">

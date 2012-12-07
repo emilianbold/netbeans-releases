@@ -184,9 +184,13 @@ public abstract class AbstractNativeProcess extends NativeProcess implements ExP
             setResult(-2);
             setState(State.ERROR);
             destroy();
-            LOG.log(Level.INFO, loc("NativeProcess.exceptionOccured.text", ex.getMessage()), ex); // NOI18N
+            LOG.log(Level.FINE, loc("NativeProcess.exceptionOccured.text", ex.getMessage()), ex); // NOI18N
             String msg = (ex.getMessage() == null ? ex.toString() : ex.getMessage());
-            errorStream = new ByteArrayInputStream((msg + "\n").getBytes()); // NOI18N
+            if (info.isRedirectError()) {
+                inputStream = new ByteArrayInputStream((msg + "\n").getBytes()); // NOI18N
+            } else {
+                errorStream = new ByteArrayInputStream((msg + "\n").getBytes()); // NOI18N
+            }
         }
 
         return this;

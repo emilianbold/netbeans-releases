@@ -45,9 +45,13 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Scanner;
+import java.util.StringTokenizer;
 import java.util.logging.Logger;
+import java.util.regex.MatchResult;
 import org.netbeans.api.html.lexer.HTMLTokenId;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
@@ -539,30 +543,16 @@ public final class JsEmbeddingProvider extends EmbeddingProvider {
             Token<? extends HTMLTokenId> htmlToken = ts.token();
             HTMLTokenId htmlId = htmlToken.id();
             if (htmlId == HTMLTokenId.SCRIPT) {
-                state.in_javascript = true;
-                // Emit the block verbatim
-                int sourceStart = ts.offset();
-                String text = htmlToken.text().toString();
-
-                // Make sure it doesn't start with <!--, if it does, remove it
-                // (this is a mechanism used in files to gracefully handle older browsers)
-                int start = 0;
-                for (; start < text.length(); start++) {
-                    char c = text.charAt(start);
-                    if (!Character.isWhitespace(c)) {
-                        break;
+                String scriptType = (String)htmlToken.getProperty(HTMLTokenId.SCRIPT_TYPE_TOKEN_PROPERTY);
+                if(scriptType == null || "text/javascript".equals(scriptType)) {
+                    state.in_javascript = true;
+                    // Emit the block verbatim
+                    int sourceStart = ts.offset();
+                    String text = htmlToken.text().toString();
+                    List<EmbeddingPosition> jsEmbeddings = extractJsEmbeddings(text, sourceStart);
+                    for (EmbeddingPosition embedding : jsEmbeddings) {
+                        embeddings.add(snapshot.create(embedding.getOffset(), embedding.getLength(), JsTokenId.JAVASCRIPT_MIME_TYPE));
                     }
-                }
-                if (start < text.length() && text.startsWith("<!--", start)) {
-                    int lineEnd = text.indexOf('\n', start);
-                    if (lineEnd != -1) {
-                        lineEnd++; //skip the \n
-                        sourceStart += lineEnd;
-                        text = text.substring(lineEnd);
-                    }
-                }
-
-                embeddings.add(snapshot.create(sourceStart, text.length(), JsTokenId.JAVASCRIPT_MIME_TYPE));
 // XXX: need better support in parsing api for this
 //                embeddings.add(snapshot.create("/*", JsTokenId.JAVASCRIPT_MIME_TYPE));
 //                embeddings.add(snapshot.create(sourceStart, sourceEnd - sourceStart, JsTokenId.JAVASCRIPT_MIME_TYPE));
@@ -574,6 +564,7 @@ public final class JsEmbeddingProvider extends EmbeddingProvider {
 //                CodeBlockData blockData = new CodeBlockData(sourceStart, sourceEnd, generatedStart,
 //                        generatedEnd);
 //                codeBlocks.add(blockData);
+                }
             } else if (htmlId == HTMLTokenId.TAG_OPEN) {
                 String text = htmlToken.text().toString();
 
@@ -732,6 +723,17 @@ public final class JsEmbeddingProvider extends EmbeddingProvider {
         }
     }
 
+    protected static List<EmbeddingPosition> extractJsEmbeddings(String text, int sourceStart) {
+        List<EmbeddingPosition> embeddings = new LinkedList<EmbeddingPosition>();
+        Scanner scanner = new Scanner(text).useDelimiter("(<!--).*(-->)"); //NOI18N
+        while (scanner.hasNext()) {
+            scanner.next();
+            MatchResult match = scanner.match();
+            embeddings.add(new EmbeddingPosition(sourceStart + match.start(), match.group().length()));
+        }
+        return embeddings;
+    }
+
     private static final class JsAnalyzerState {
 
         int inlined_javascript_pieces = 0;
@@ -740,5 +742,25 @@ public final class JsEmbeddingProvider extends EmbeddingProvider {
         boolean opening_quotation_stripped = false;
         Token<?> lastInlinedJavascriptToken = null;
         Embedding lastInlinedJavscriptEmbedding = null;
+    }
+
+    protected static final class EmbeddingPosition {
+
+        private final int offset;
+        private final int length;
+
+        public EmbeddingPosition(int offset, int length) {
+            this.offset = offset;
+            this.length = length;
+        }
+
+        public int getLength() {
+            return length;
+        }
+
+        public int getOffset() {
+            return offset;
+        }
+
     }
 }

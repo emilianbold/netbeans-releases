@@ -58,6 +58,7 @@ import org.netbeans.ProxyURLStreamHandlerFactory;
 import org.netbeans.Stamps;
 import org.netbeans.Util;
 import org.netbeans.core.startup.layers.SystemFileSystem;
+import org.openide.LifecycleManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.Repository;
@@ -250,18 +251,6 @@ public final class Main extends Object {
 
     InstalledFileLocatorImpl.prepareCache();
 
-    // Initialize beans - [PENDING - better place for this ?]
-    //                    [PENDING - can PropertyEditorManager garbage collect ?]
-    String[] sysbisp = Introspector.getBeanInfoSearchPath();
-    String[] nbbisp = new String[] {
-        "org.netbeans.beaninfo", // NOI18N
-    };
-    String[] allbisp = new String[sysbisp.length + nbbisp.length];
-    System.arraycopy(nbbisp, 0, allbisp, 0, nbbisp.length);
-    System.arraycopy(sysbisp, 0, allbisp, nbbisp.length, sysbisp.length);
-    Introspector.setBeanInfoSearchPath(allbisp);
-
-
     try {
         if (!Boolean.getBoolean("netbeans.full.hack") && !Boolean.getBoolean("netbeans.close")) {
 	    // -----------------------------------------------------------------------------------------------------
@@ -307,6 +296,9 @@ public final class Main extends Object {
     // property editors are registered in modules, so wait a while before loading them
     CoreBridge.getDefault().registerPropertyEditors();
     StartLog.logProgress ("PropertyEditors registered"); // NOI18N
+    
+    // clean up the cache before --install, --update CLI options are processed
+    InstalledFileLocatorImpl.discardCache();
 
     org.netbeans.Main.finishInitialization();
     StartLog.logProgress("Ran any delayed command-line options"); // NOI18N
@@ -314,8 +306,6 @@ public final class Main extends Object {
     for (RunLevel level : Lookup.getDefault().lookupAll(RunLevel.class)) {
         level.run();
     }
-
-    InstalledFileLocatorImpl.discardCache();
 
     Splash.getInstance().setRunning(false);
     Splash.getInstance().dispose();
@@ -325,6 +315,8 @@ public final class Main extends Object {
     org.netbeans.JarClassLoader.saveArchive();
     // start to store all caches after 15s
     Stamps.getModulesJARs().flush(15000);
+    // initialize life-cycle manager
+    LifecycleManager.getDefault();
   }
     private static void deleteRec(File f) throws IOException {
         if (f.isDirectory()) {

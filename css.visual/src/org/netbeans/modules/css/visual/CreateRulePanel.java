@@ -44,6 +44,7 @@ package org.netbeans.modules.css.visual;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.EventQueue;
 import java.awt.Font;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
@@ -52,11 +53,15 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeSet;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.AbstractListModel;
 import javax.swing.ComboBoxEditor;
 import javax.swing.DefaultListCellRenderer;
@@ -71,10 +76,12 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
+import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
+import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.css.indexing.api.CssIndex;
 import org.netbeans.modules.css.lib.api.CssParserResult;
 import org.netbeans.modules.css.model.api.Body;
@@ -98,13 +105,18 @@ import org.netbeans.modules.html.editor.lib.api.model.HtmlModelFactory;
 import org.netbeans.modules.html.editor.lib.api.model.HtmlTag;
 import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
+import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.web.common.api.DependenciesGraph;
+import org.netbeans.modules.web.common.api.LexerUtils;
 import org.netbeans.modules.web.common.api.WebUtils;
+import org.netbeans.modules.web.common.spi.ProjectWebRootQuery;
 import org.openide.cookies.EditorCookie;
+import org.openide.cookies.SaveCookie;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.Exceptions;
@@ -112,6 +124,7 @@ import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
 
 /**
+ * Create CSS Rule panel.
  *
  * @author marekfukala
  */
@@ -122,58 +135,118 @@ import org.openide.util.NbBundle;
     "selector.type.compound=Compound",
     "selector.rule.postfix= Rule",
     "none.item=<html><font color=\"777777\">&lt;none&gt;</font></html>",
-    "class.selector.descr=Applies to all elements with this style class assigned.\n\nThe selector name starts with dot.",
-    "id.selector.descr=Applies just to one single element with this id set.\n\nThe selector name starts with hash sign.",
+    "class.selector.descr=Applies to all elements with this style class assigned.",
+    "id.selector.descr=Applies just to one single element with this id set.",
     "element.selector.descr=Applies to html elements with the selector name.",
     "compound.selector.descr=The Compound selector is used to create styles for a combination of tags or tags that are nested in other tags."
 })
 public class CreateRulePanel extends javax.swing.JPanel {
 
+    private static final Logger LOGGER = Logger.getLogger(CreateRulePanel.class.getSimpleName());
+    
     //TODO take the values from editor settings!
     private static Color tagColor = new Color(0, 0, 230);
     private static Color attrNameColor = new Color(0, 153, 0);
     private static Color attrValueColor = new Color(206, 123, 0);
+    
+    /**
+     * Default value of the compound selector - derived from selected html source element.
+     */
     private String compoundSelectorDefaultValue;
-    private OpenTag activeElement;
+    
+    /**
+     * Active html source element.
+     */
+    private HtmlSourceElementHandle activeElement;
     private AtomicReference<String> activeElementClass, activeElementId;
+    
+    /**
+     * SelectorItem for each of the supported selector type. 
+     * null if not modified/defined by user.
+     */
     private SelectorItem selectedClazz, selectedId, selectedElement, selectedCompound;
+    
+    /**
+     * SelectorItem-s for "no class".
+     */
     private final SelectorItem NO_CLASS = SelectorItem.createClass(null, null);
+    /**
+     * SelectorItem-s for "no id".
+     */
     private final SelectorItem NO_ID = SelectorItem.createId(null, null);
     
-    private int activeSelectorType = 0;//class
-    
+    /**
+     * Textual descriptions of the selector types.
+     */
     private String[] SELECTOR_TYPE_DESCRIPTIONS = new String[]{
         Bundle.class_selector_descr(),
         Bundle.id_selector_descr(),
         Bundle.element_selector_descr(),
         Bundle.compound_selector_descr()
     };
+    
     /**
-     * Models for stylesheets and at rules comboboxes.
+     * ComboBoxModel for the selector combobox.
      */
-    private ExtDefaultComboBoxModel STYLESHEETS_MODEL, AT_RULES_MODEL, SELECTORS_MODEL;
+    private ExtDefaultComboBoxModel SELECTORS_MODEL;
+    
+    /**
+     * ComboBoxModel for the selectors combobox.
+     */
+    private ExtDefaultComboBoxModel STYLESHEETS_MODEL;
+    
+    /**
+     * ComboBoxModel for the at-rules combobox.
+     */
+    private ExtDefaultComboBoxModel AT_RULES_MODEL;
+    
+    /**
+     * ListModel for the selector type listbox.
+     */
     private ListModel SELECTORS_LIST_MODEL;
+    
     /**
      * Context of the create rule panel.
      */
     private FileObject context;
+    
     /**
-     * Css source {@link Model} for the selected stylesheet.
+     * Web root of the context file.
      */
-    private Model selectedStyleSheetModel;
+    private FileObject webRoot;
+    /**
+     * Project the context belongs to.
+     */
+    private Project project;
+    
+    /**
+     * Cached all html source element names.
+     */
     private Collection<String> ELEMENT_SELECTOR_ITEMS;
 
-    public CreateRulePanel(FileObject context) {
+    /**
+     * Renderer for selector's combobox dropdown content.
+     */
+    private SelectorItemRenderer SELECTOR_MODEL_ITEM_RENDERER;
+    
+    /**
+     * Creates a new instance of the panel.
+     * 
+     * @param context file context, must not be null.
+     * @param handle html source element handle, can be null.
+     */
+    public CreateRulePanel(FileObject context, HtmlSourceElementHandle handle) {
         assert context != null;
         this.context = context;
+        this.project = FileOwnerQuery.getOwner(context);
+        this.webRoot = ProjectWebRootQuery.getWebRoot(context);
+        this.activeElement = handle;
 
         STYLESHEETS_MODEL = new ExtDefaultComboBoxModel();
         AT_RULES_MODEL = new ExtDefaultComboBoxModel();
         SELECTORS_MODEL = new ExtDefaultComboBoxModel();
 
         createStyleSheetsModel();
-        updateCssModel(context);
-        updateAtRulesModel();
 
         SELECTORS_LIST_MODEL = new AbstractListModel() {
             @Override
@@ -200,6 +273,7 @@ public class CreateRulePanel extends javax.swing.JPanel {
 
         initComponents();
 
+        //listens on changes of the selector type list
         selectorTypeList.addListSelectionListener(new ListSelectionListener() {
             @Override
             public void valueChanged(ListSelectionEvent e) {
@@ -221,30 +295,32 @@ public class CreateRulePanel extends javax.swing.JPanel {
                 selectorTypeLabel.setText(selectorTypeList.getSelectedValue().toString() + Bundle.selector_rule_postfix());
 
                 updateSelectorsModel(); //will also select active element
-               
+
+                //update stylesheet and at-rule models according to the selectors model selected element.
                 SelectorItem activeSelectorItem = getActiveSelectorItem();
                 if (activeSelectorItem != null) {
                     FileObject file = activeSelectorItem.getFile();
+                    if(file != null) { //may be the NO_CLASS or NO_ID item w/o a file
+                        //select active stylesheet
+                        styleSheetCB.setSelectedItem(file);
 
-                    //select active stylesheet
-                    styleSheetCB.setSelectedItem(file);
-
-                    //update current stylesheet model && at rules model 
-                    updateCssModel(file);
-                    updateAtRulesModel();
-                    //select the active at rule
-                    AtRuleItem createInAtRule = activeSelectorItem.getCreateInAtRule();
-                    if (createInAtRule != null) {
-                        atRuleCB.setSelectedItem(createInAtRule);
-                    } else {
-                        atRuleCB.setSelectedIndex(0); //select first
+                        //update current stylesheet model && at rules model 
+                        updateAtRules();
+                        
+                        //select the active at rule
+                        AtRuleItem createInAtRule = activeSelectorItem.getCreateInAtRule();
+                        if (createInAtRule != null) {
+                            atRuleCB.setSelectedItem(createInAtRule);
+                        } else {
+                            atRuleCB.setSelectedIndex(0); //select first
+                        }
                     }
-
                 }
 
             }
         });
 
+        //listens on changes in the selectors combobox
         selectorCB.addItemListener(new ItemListener() {
             @Override
             public void itemStateChanged(ItemEvent e) {
@@ -252,13 +328,15 @@ public class CreateRulePanel extends javax.swing.JPanel {
                     Object item = e.getItem();
                     if (item instanceof SelectorItem) {
                         //user selected sg. from drop down
-                        SelectorItem si = (SelectorItem) e.getItem();
-                        setSelectorItem(si);
+                        setSelectorItem((SelectorItem) e.getItem());
                     }
                 }
             }
         });
 
+        //listens on changes in the selectors combobox' editor content,
+        //the events are also fired when the value from dropdown is selected,
+        //but subsequently and ItemEvent to selectorCB is fired as well!
         final ComboBoxEditor editor = selectorCB.getEditor();
         if (editor.getEditorComponent() instanceof JTextComponent) {
             JTextComponent textEditor = (JTextComponent) editor.getEditorComponent();
@@ -310,19 +388,19 @@ public class CreateRulePanel extends javax.swing.JPanel {
                             break;
                         case 2:
                             //element
-                            if(item.isEmpty()) {
-                                return ;
+                            if (item.isEmpty()) {
+                                return;
                             }
                             selectorItem = SelectorItem.createElement(item);
-                            
+
                             break;
                         case 3:
                             //compound
-                            if(item.isEmpty()) {
-                                return ;
+                            if (item.isEmpty()) {
+                                return;
                             }
                             selectorItem = SelectorItem.createCompound(item);
-                            
+
                             break;
                         default:
                             throw new IllegalStateException();
@@ -338,10 +416,14 @@ public class CreateRulePanel extends javax.swing.JPanel {
             });
         }
 
+        //listens on changes to the stylesheets combobox
         styleSheetCB.addItemListener(new ItemListener() {
             @Override
             public void itemStateChanged(ItemEvent e) {
                 if (e.getStateChange() == ItemEvent.SELECTED) {
+                    //update at-rule
+                    updateAtRules();
+                    
                     //user changed stylesheet in the combobox
                     //update the active SelectorItem to the selected stylesheet
                     SelectorItem activeSelectorItem = getActiveSelectorItem();
@@ -352,6 +434,7 @@ public class CreateRulePanel extends javax.swing.JPanel {
             }
         });
 
+        //listens on changes to the at-rules combobox
         atRuleCB.addItemListener(new ItemListener() {
             @Override
             public void itemStateChanged(ItemEvent e) {
@@ -369,25 +452,37 @@ public class CreateRulePanel extends javax.swing.JPanel {
 
         initializeActiveElement();
 
-//        selectorTypeList.setSelectedIndex(0); //class
+        selectorTypeList.setSelectedIndex(0); //class
+        
+        updateAtRules();
 
-        //fixme:
-//        atRuleCB.setEnabled(AT_RULES_MODEL.getSize() > 1);
+    }
+
+    private Attribute getSelectedElementClass() {
+        if (activeElement != null) {
+            return activeElement.getOpenTag().getAttribute("class"); //NOI18N
+        }
+        return null;
+    }
+
+    private Attribute getSelectedElementId() {
+        if (activeElement != null) {
+            return activeElement.getOpenTag().getAttribute("id"); //NOI18N
+        }
+        return null;
     }
 
     /**
      * Returns value of the class attribute of the selected html source element.
      */
-    private String getSelectedElementClass() {
+    private String getSelectedElementClassName() {
         if (activeElementClass == null) {
             activeElementClass = new AtomicReference<String>();
-            if (activeElement != null) {
-                Attribute clz = activeElement.getAttribute("class"); //NOI18N
-                if (clz != null) {
-                    CharSequence unquotedValue = clz.unquotedValue();
-                    if (unquotedValue != null) {
-                        activeElementClass.set(unquotedValue.toString());
-                    }
+            Attribute clz = getSelectedElementClass();
+            if (clz != null) {
+                CharSequence unquotedValue = clz.unquotedValue();
+                if (unquotedValue != null) {
+                    activeElementClass.set(unquotedValue.toString());
                 }
             }
         }
@@ -397,16 +492,14 @@ public class CreateRulePanel extends javax.swing.JPanel {
     /**
      * Returns value of the id attribute of the selected html source element.
      */
-    private String getSelectedElementId() {
+    private String getSelectedElementIdName() {
         if (activeElementId == null) {
             activeElementId = new AtomicReference<String>();
-            if (activeElement != null) {
-                Attribute id = activeElement.getAttribute("id"); //NOI18N
-                if (id != null) {
-                    CharSequence unquotedValue = id.unquotedValue();
-                    if (unquotedValue != null) {
-                        activeElementId.set(unquotedValue.toString());
-                    }
+            Attribute id = getSelectedElementId();
+            if (id != null) {
+                CharSequence unquotedValue = id.unquotedValue();
+                if (unquotedValue != null) {
+                    activeElementId.set(unquotedValue.toString());
                 }
             }
         }
@@ -414,17 +507,22 @@ public class CreateRulePanel extends javax.swing.JPanel {
     }
 
     private void initializeActiveElement() {
-        activeElement = HtmlEditorSourceTask.getElement();
+        if(activeElement == null) {
+            //if handle was not passed in the constructor, try to obtain
+            //it from the html source task
+            activeElement = HtmlEditorSourceTask.getElement();
+        }
         if (activeElement == null) {
+            //still nothing, out of luck...
             return;
         }
 
-        //set path
+        //set element's path in the UI
         StringBuilder compoundDefaultValue = new StringBuilder();
         StringBuilder elementPathLabelText = new StringBuilder();
         elementPathLabelText.append("<html><body>");
 
-        TreePath path = new TreePath(activeElement);
+        TreePath path = new TreePath(activeElement.getOpenTag());
         for (int i = path.path().size() - 2; i >= 0; i--) { //skip the last "root" element
             Element e = path.path().get(i);
             compoundDefaultValue.append(e.id());
@@ -443,13 +541,14 @@ public class CreateRulePanel extends javax.swing.JPanel {
                 elementPathLabelText.append(' '); //NOI18N
             }
         }
-
         elementPathLabelText.append("</body></html>");
 
         elementPathLabel.setText(elementPathLabelText.toString());
 
+        //enable the "apply changes to element" combobox so user may decide whether to
+        //apply the changes to the element or not. If no html source elemnt is set, 
+        //the checkbox remains disabled.
         applyChangesCB.setEnabled(true);
-        applyChangesCB.setSelected(true);
 
         //update the default for compound rule
         compoundSelectorDefaultValue = compoundDefaultValue.toString();
@@ -457,6 +556,10 @@ public class CreateRulePanel extends javax.swing.JPanel {
         updateElementCodeSample();
     }
 
+    /**
+     * Updates the active html source element sample code.
+     * The sample content mutates as user changes class/id names.
+     */
     private void updateElementCodeSample() {
         if (activeElement == null) {
             return;
@@ -468,11 +571,11 @@ public class CreateRulePanel extends javax.swing.JPanel {
         source.append(WebUtils.toHexCode(tagColor));
         source.append("\">");
         source.append("&lt;");
-        source.append(activeElement.name());
+        source.append(activeElement.getOpenTag().name());
         source.append("</font>");
 
         String selectedClazzName = selectedClazz != null ? selectedClazz.getItemName() : null;
-        String selectedElementClass = getSelectedElementClass();
+        String selectedElementClass = getSelectedElementClassName();
 
         String clz = selectedClazzName != null ? selectedClazzName : selectedElementClass;
         boolean change = selectedClazzName != null && selectedElementClass != null && !selectedClazzName.equals(selectedElementClass)
@@ -500,7 +603,7 @@ public class CreateRulePanel extends javax.swing.JPanel {
         }
 
         String selectedIdName = selectedId != null ? selectedId.getItemName() : null;
-        String selectedElementId = getSelectedElementId();
+        String selectedElementId = getSelectedElementIdName();
 
         String id = selectedIdName != null ? selectedIdName : selectedElementId;
         change = selectedIdName != null && selectedElementId != null && !selectedIdName.equals(selectedElementId)
@@ -538,14 +641,24 @@ public class CreateRulePanel extends javax.swing.JPanel {
 
     }
 
+    /**
+     * Gets selected stylesheet.
+     */
     private FileObject getActiveStylesheet() {
         return (FileObject) styleSheetCB.getSelectedItem();
     }
 
+    /**
+     * Gets selected at-rule.
+     */
     private AtRuleItem getActiveAtRule() {
         return (AtRuleItem) atRuleCB.getSelectedItem();
     }
 
+    /**
+     * Gets instance of "active" {@link SelectorItem}.
+     * What is returned depends on what type of selector is choosen by user in the UI.
+     */
     private SelectorItem getActiveSelectorItem() {
         switch (selectorTypeList.getSelectedIndex()) {
             case 0:
@@ -565,6 +678,11 @@ public class CreateRulePanel extends javax.swing.JPanel {
         }
     }
 
+    /**
+     * Sets an instance of SelectorItem. 
+     * Each type (class,id,element and compound)
+     * are remembered separately.
+     */
     private void setSelectorItem(SelectorItem selector) {
         switch (selector.getType()) {
             case SelectorItem.CLASS_TYPE:
@@ -589,19 +707,25 @@ public class CreateRulePanel extends javax.swing.JPanel {
             STYLESHEETS_MODEL.setSelectedItem(existsIn);
         }
 
-
+        //enable/disable the stylesheet and at-rule comboboxes
+        //existing elements => they are disabled and vice versa.
         styleSheetCB.setEnabled(!exists);
-//        addStylesheetButton.setEnabled(!exists);
         atRuleCB.setEnabled(!exists);
-        //TODO select the at rule in which the element is located
 
-
+//        addStylesheetButton.setEnabled(!exists);
     }
-
+    
     private void createStyleSheetsModel() {
         try {
-            List<FileObject> items = new ArrayList<FileObject>();
-            Project project = FileOwnerQuery.getOwner(context);
+            Collection<FileObject> items = new TreeSet<FileObject>(new Comparator<FileObject>() {
+
+                //alphabetical sort
+                @Override
+                public int compare(FileObject t, FileObject t1) {
+                    return t.getPath().compareTo(t1.getPath());
+                }
+                
+            });
             if (project == null) {
                 return;
             }
@@ -614,8 +738,13 @@ public class CreateRulePanel extends javax.swing.JPanel {
 
             STYLESHEETS_MODEL.setItems(items);
 
+            //set selected item to the model
             if (items.contains(context)) { //the context may be the html file itself!
                 STYLESHEETS_MODEL.setSelectedItem(context);
+            } else {
+                if(STYLESHEETS_MODEL.getSize() > 0) {
+                    STYLESHEETS_MODEL.setSelectedIndex(0);
+                }
             }
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
@@ -623,117 +752,224 @@ public class CreateRulePanel extends javax.swing.JPanel {
 
     }
 
-    private void updateCssModel(FileObject file) {
+    /**
+     * Gets an instance of css {@link Model} for the given file
+     * @param file file context
+     * @return non null instance of the source model.
+     * @throws ParseException 
+     */
+    private Model getCssSourceModel(FileObject file) throws ParseException {
+        final AtomicReference<Model> model_ref = new AtomicReference<Model>();
+        Source source = Source.create(file);
+        ParserManager.parse(Collections.singleton(source), new UserTask() {
+            @Override
+            public void run(ResultIterator resultIterator) throws Exception {
+                resultIterator = WebUtils.getResultIterator(resultIterator, "text/css");
+                if (resultIterator != null) {
+                    CssParserResult result = (CssParserResult) resultIterator.getParserResult();
+                    model_ref.set(Model.getModel(result));
+                }
+            }
+        });
+        return model_ref.get();
+    }
+
+    /**
+     * Refreshes the at-rules combobox model according to the at-rules
+     * defined in the selected stylesheet.
+     * 
+     * Does not set selected element in the model!
+     */
+    private void updateAtRules() {
+        FileObject file = (FileObject) STYLESHEETS_MODEL.getSelectedItem();
+        if (file == null) {
+            return;
+        }
         try {
-            Source source = Source.create(file);
-            ParserManager.parse(Collections.singleton(source), new UserTask() {
+            final Collection<AtRuleItem> items = new ArrayList<AtRuleItem>();
+            items.add(null);
+
+            final Model cssSourceModel = getCssSourceModel(file);
+            cssSourceModel.runReadTask(new Model.ModelTask() {
                 @Override
-                public void run(ResultIterator resultIterator) throws Exception {
-                    resultIterator = WebUtils.getResultIterator(resultIterator, "text/css");
-                    if (resultIterator != null) {
-                        CssParserResult result = (CssParserResult) resultIterator.getParserResult();
-                        selectedStyleSheetModel = Model.getModel(result);
-                    }
+                public void run(StyleSheet styleSheet) {
+                    ModelVisitor visitor = new ModelVisitor.Adapter() {
+                        @Override
+                        public void visitMedia(Media media) {
+                            String displayName = cssSourceModel.getElementSource(media.getMediaQueryList()).toString();
+                            items.add(new AtRuleItem(displayName, media));
+                        }
+                    };
+                    styleSheet.accept(visitor);
                 }
             });
+
+            AT_RULES_MODEL.setItems(items);
+
+            //disable the at-rules combobox if there isn't a single at-rule in the choosen stylesheet
+            atRuleCB.setEnabled(AT_RULES_MODEL.getSize() > 1);
+            
+            atRuleCB.setSelectedIndex(0);
+
         } catch (ParseException ex) {
             Exceptions.printStackTrace(ex);
         }
     }
 
-    private void updateAtRulesModel() {
-        final Collection<AtRuleItem> items = new ArrayList<AtRuleItem>();
-
-        items.add(null);
-        selectedStyleSheetModel.runReadTask(new Model.ModelTask() {
-            @Override
-            public void run(StyleSheet styleSheet) {
-                ModelVisitor visitor = new ModelVisitor.Adapter() {
-                    @Override
-                    public void visitMedia(Media media) {
-                        String displayName = selectedStyleSheetModel.getElementSource(media.getMediaQueryList()).toString();
-                        items.add(new AtRuleItem(displayName, media));
-                    }
-                };
-                styleSheet.accept(visitor);
-            }
-        });
-
-        AT_RULES_MODEL.setItems(items);
-    }
-
     private void dumpSummary() {
         if (selectedClazz != null) {
-            System.out.println("selected class = " + selectedClazz.getInfo());
+            LOGGER.log(Level.FINE, "selected class = {0}", selectedClazz.getInfo());
         }
         if (selectedId != null) {
-            System.out.println("selected id = " + selectedId.getInfo());
+            LOGGER.log(Level.FINE, "selected id = {0}", selectedId.getInfo());
         }
         if (selectedElement != null) {
-            System.out.println("selected element = " + selectedElement.getInfo());
+            LOGGER.log(Level.FINE, "selected element = {0}", selectedElement.getInfo());
         }
         if (selectedCompound != null) {
-            System.out.println("selected compound = " + selectedCompound.getInfo());
+            LOGGER.log(Level.FINE, "selected compound = {0}", selectedCompound.getInfo());
         }
     }
-    
-//     private Media getSelectedMedia() {
-//        Object selected = atRuleCB.getSelectedItem();
-//        if (selected == null) {
-//            return null;
-//        }
-//        return ((MediaItem) selected).getMedia();
-//    }
-//    
+
     /**
-     * call outside of AWT thread, it does some I/Os
+     * Applies changes set in the dialog.
+     *
+     * Note: call outside of AWT thread.
      */
     public void applyChanges() {
+        assert !EventQueue.isDispatchThread();
+
         dumpSummary();
 
-//        if (selectorItem == null) {
-//            //no value set
-//            return;
-//        }
-//
-//        //called if the dialog is confirmed
-//        selectedStyleSheetModel.runWriteTask(new Model.ModelTask() {
-//            @Override
-//            public void run(StyleSheet styleSheet) {
-//
-//                ElementFactory factory = selectedStyleSheetModel.getElementFactory();
-//                Selector s = factory.createSelector(selectorItem.getItemFQName());
-//                SelectorsGroup sg = factory.createSelectorsGroup(s);
-//                Declarations ds = factory.createDeclarations();
-//                Rule rule = factory.createRule(sg, ds);
-//
-//                Media media = getSelectedMedia();
-//                if (media == null) {
-//                    //add to the body
-//                    Body body = styleSheet.getBody();
-//                    if (body == null) {
-//                        //create body if empty file
-//                        body = factory.createBody();
-//                        styleSheet.setBody(body);
-//                    }
-//                    styleSheet.getBody().addRule(rule);
-//                } else {
-//                    //add to the media
-//                    media.addRule(rule);
-//                }
-//
-//                try {
-//                    selectedStyleSheetModel.applyChanges();
-//                    selectTheRuleInEditorIfOpened(selectedStyleSheetModel, rule);
-//                } catch (Exception /*ParseException, IOException, BadLocationException*/ ex) {
-//                    Exceptions.printStackTrace(ex);
-//                }
-//            }
-//        });
+        //Rules:
+        //------
+        //When the dialog is closed just one of the selector type is selected. 
+        //The question is what changes should be applied if were done to the other
+        //selector types:
+        //
+        //1. If class or id or both are modified lets apply both changes even if the selected selector type is
+        //   set to element or compound when closing the dialog.
+        //
+        //2. if neither class nor id is modified then apply changes only for the selected selector type
+        //
+
+        try {
+            //CLASS
+            if (selectedClazz != null) {
+                if (selectedClazz.getExistsInFile() == null && selectedClazz.getCreateInFile() != null && selectedClazz.getItemFQName() != null) {
+                    //a. we need to create new rule 
+                    createNewRule(selectedClazz);
+                }
+            }
+
+            //ID
+            if (selectedId != null) {
+                if (selectedId.getExistsInFile() == null && selectedId.getCreateInFile() != null && selectedId.getItemFQName() != null) {
+                    //a. we need to create new rule 
+                    createNewRule(selectedId);
+                }
+            }
+
+            //b. and modify the html source element
+            if(Settings.getCreateRule_ApplyChangesToSelectedSourceElement()) {
+                if(activeElement != null) {
+                    modifySourceElement();
+                }
+            }
+
+        } catch (/* IOException | ParseException */Exception e) {
+            Exceptions.printStackTrace(e);
+        }
+
+        //ELEMENT || COMPOUND
+        try {
+            switch (selectorTypeList.getSelectedIndex()) {
+                case 2:
+                    //element
+                    if (selectedElement != null) {
+                        //create element selector in the selected location (file/at-rule)
+                        createNewRule(selectedElement);
+                    }
+
+                    break;
+
+                case 3:
+                    //compound
+                    if (selectedCompound != null) {
+                        //create compound selector rule in selected location (file/at-rule)
+                        createNewRule(selectedCompound);
+
+                    }
+                    break;
+            }
+        } catch (/* IOException | ParseException */Exception e) {
+            Exceptions.printStackTrace(e);
+        }
+
     }
 
+    /**
+     * Creates a new css rule.
+     * Doesn't check whether the rule already exists or not.
+     * 
+     * @param selectorItem instance of {@link SelectorItem}
+     * @throws IOException
+     * @throws ParseException 
+     */
+    private void createNewRule(final SelectorItem selectorItem) throws IOException, ParseException {
+        final FileObject createInFile = selectorItem.getCreateInFile();
+        final Model cssSourceModel = getCssSourceModel(createInFile);
+        final AtomicReference<Rule> createdRuleRef = new AtomicReference<Rule>();
+
+        cssSourceModel.runWriteTask(new Model.ModelTask() {
+            @Override
+            public void run(StyleSheet styleSheet) {
+
+                ElementFactory factory = cssSourceModel.getElementFactory();
+                Selector s = factory.createSelector(selectorItem.getItemFQName());
+                SelectorsGroup sg = factory.createSelectorsGroup(s);
+                Declarations ds = factory.createDeclarations();
+                Rule rule = factory.createRule(sg, ds);
+
+                AtRuleItem createInAtRule = selectorItem.getCreateInAtRule();
+                if (createInAtRule == null) {
+                    //add to the body
+                    Body body = styleSheet.getBody();
+                    if (body == null) {
+                        //create body if empty file
+                        body = factory.createBody();
+                        styleSheet.setBody(body);
+                    }
+                    styleSheet.getBody().addRule(rule);
+                } else {
+                    //add to the at-rule
+                    Media oldMedia = createInAtRule.getMedia();  //ref from the old model
+                    ModelUtils utils = new ModelUtils(cssSourceModel);
+                    Media match = utils.findMatchingMedia(oldMedia.getModel(), oldMedia);
+                    match.addRule(rule);
+                }
+
+                try {
+                    cssSourceModel.applyChanges();
+                    createdRuleRef.set(rule);
+                    LOGGER.log(Level.FINE, "Created new rule {0} in file {1} (at-rule: {2}).", new Object[]{selectorItem.getItemFQName(), createInFile.getNameExt(), createInAtRule});
+                } catch (Exception /*ParseException, IOException, BadLocationException*/ ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+        });
+        Rule createdRule = createdRuleRef.get();
+        if(createdRule != null) {
+            selectTheRuleInEditorIfOpened(cssSourceModel, createdRule);
+        }
+
+    }
+
+    /**
+     * Sets caret to the given css rule and focused the corresponding editor document if opened.
+     */
     private void selectTheRuleInEditorIfOpened(final Model omodel, final Rule orule) throws DataObjectNotFoundException, ParseException {
-        FileObject file = omodel.getLookup().lookup(FileObject.class);
+        final FileObject file = omodel.getLookup().lookup(FileObject.class);
         DataObject dobj = DataObject.find(file);
         final EditorCookie ec = dobj.getLookup().lookup(EditorCookie.class);
         //first get instance of the new model so we can resolve the element's positions
@@ -769,22 +1005,199 @@ public class CreateRulePanel extends javax.swing.JPanel {
                 if (openedPanes != null && openedPanes.length > 0) {
                     JEditorPane pane = openedPanes[0];
                     pane.setCaretPosition(ruleOffset.get());
+                    ec.open(); //give it a focus
+                    LOGGER.log(Level.FINE, "Focused file {0} and set caret to offset {1}", new Object[]{file.getNameExt(), ruleOffset.get()});
                 }
             }
         });
 
     }
+    private int pos; //last change offset
+    private int diff; //aggregated document modifications diff
 
+    /**
+     * Changes the class and id attributes of the active html source element.
+     */
+    private void modifySourceElement() throws DataObjectNotFoundException, IOException {
+        final BaseDocument doc = (BaseDocument) getDocument(activeElement.getFile());
+        final AtomicBoolean success = new AtomicBoolean();
+
+        DataObject dataObject = DataObject.find(activeElement.getFile());
+        boolean modified = dataObject.getLookup().lookup(SaveCookie.class) != null;
+
+        pos = Integer.MAX_VALUE;
+        diff = -1;
+        doc.runAtomicAsUser(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    if (selectedClazz != null) {
+                        updateAttribute(doc, getSelectedElementClass(), selectedClazz.getItemName(), "class");
+                    }
+                    if (selectedId != null) {
+                        updateAttribute(doc, getSelectedElementId(), selectedId.getItemName(), "id");
+                    }
+
+                    success.set(true); //better not to do the save from within the atomic modification task
+                } catch (BadLocationException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+        });
+
+        //possibly save the document if not opened in editor
+        if (success.get()) {
+            if (!modified) { //wasn't modified before applying the changes, save...
+                SaveCookie saveCookie = dataObject.getLookup().lookup(SaveCookie.class);
+                if (saveCookie != null) { //the "changes" may not modify the document
+                    saveCookie.save();
+                }
+            }
+        }
+    }
+
+    /**
+     * Saves the given document to its underlying {@link FileObject} if the
+     * document is not opened in the nb editor, more formally if
+     * EditorCookie.getOpenedPanes() == null.
+     *
+     * @param document
+     * @throws IOException
+     */
+    private static void saveDocumentIfNotOpened(Document document) throws IOException {
+
+        Object o = document.getProperty(Document.StreamDescriptionProperty);
+        if (o == null || !(o instanceof DataObject)) {
+            return;
+        }
+        DataObject dobj = (DataObject) o;
+        EditorCookie ec = dobj.getLookup().lookup(EditorCookie.class);
+        if (ec != null && ec.getOpenedPanes() == null) {
+            //file not open in any editor
+            SaveCookie save = dobj.getLookup().lookup(SaveCookie.class);
+            if (save != null) {
+                save.save();
+            }
+        }
+    }
+
+    /**
+     * Gets a {@link Document} instance for the given {@link FileObject}.
+     *
+     * Formally it does EditorCookie.openDocument().
+     *
+     * @param file
+     * @return
+     */
+    private static Document getDocument(FileObject file) {
+        try {
+            DataObject d = DataObject.find(file);
+            EditorCookie ec = (EditorCookie) d.getLookup().lookup(EditorCookie.class);
+
+            if (ec == null) {
+                return null;
+            }
+            return ec.openDocument();
+        } catch (IOException e) {
+            return null;
+        }
+    }
+
+    private void updateAttribute(Document doc, Attribute a, String value, String name) throws BadLocationException {
+        LOGGER.log(Level.FINE, "Source element {0}: updating {1} attribute from {2} to {3}.", 
+                new Object[]{activeElement, name, (a != null ? a.unquotedValue() : null), value});
+        
+        OpenTag ot = activeElement.getOpenTag();
+        Snapshot snap = activeElement.getSnapshot();
+        if (a == null && value == null) {
+            return; //no change
+        }
+
+        if (a == null && value != null) {
+            //insert whole new attribute 
+            int insertPos = snap.getOriginalOffset(ot.from() + 1 + ot.name().length());
+
+            StringBuilder sb = new StringBuilder();
+            sb.append(' ');
+            sb.append(name);
+            sb.append('=');
+            sb.append('"');
+            sb.append(value);
+            sb.append('"');
+
+            doc.insertString(insertPos, sb.toString(), null);
+
+            pos = insertPos;
+            diff = sb.length();
+        } else if (a != null && value == null) {
+            //remove
+            int removeFrom = a.from() - 1; //include the WS before attribute name
+            int removeTo = a.to();
+
+            int rfdoc = snap.getOriginalOffset(removeFrom);
+            int rtdoc = snap.getOriginalOffset(removeTo);
+
+            if (rfdoc >= pos) {
+                rfdoc += diff;
+                rtdoc += diff;
+            }
+
+            doc.remove(rfdoc, rtdoc - rfdoc);
+
+            pos = removeFrom;
+            diff = rfdoc - rtdoc;
+
+        } else {
+            //change
+            CharSequence existingValue = a.unquotedValue();
+            if(existingValue != null) {
+                if(LexerUtils.equals(existingValue, value, false, false)) {
+                    //same values, ignore
+                    return ;
+                }
+            }
+            
+            int removeFrom = a.from();
+            int removeTo = a.to();
+
+            int rfdoc = snap.getOriginalOffset(removeFrom);
+            int rtdoc = snap.getOriginalOffset(removeTo);
+
+            if (rfdoc >= pos) {
+                rfdoc += diff;
+                rtdoc += diff;
+            }
+
+            doc.remove(rfdoc, rtdoc - rfdoc);
+
+            int insertPos = rfdoc;
+
+            StringBuilder sb = new StringBuilder();
+            sb.append(name);
+            sb.append('=');
+            sb.append('"');
+            sb.append(value);
+            sb.append('"');
+
+            doc.insertString(insertPos, sb.toString(), null);
+
+            pos = insertPos;
+            diff = rfdoc - rtdoc + sb.length();
+        }
+    }
+
+    /**
+     * Refreshes the combobox model of the selectors combobox according to the choosen selector type.
+     */
     private void updateSelectorsModel() {
-        Collection<SelectorItem> items = new TreeSet<SelectorItem>();
-        SelectorItem selection = null;
-
-        //1.add classes && ids
-        Project project = FileOwnerQuery.getOwner(context);
         if (project == null) {
             return;
         }
 
+        Collection<SelectorItem> items = new TreeSet<SelectorItem>();
+        SelectorItem selection = null;
+
+        //1.add classes && ids
         try {
             CssIndex index = CssIndex.create(project);
             DependenciesGraph dependencies = index.getDependencies(context);
@@ -794,7 +1207,8 @@ public class CreateRulePanel extends javax.swing.JPanel {
                 case 0:
                     //class
                     items.add(NO_CLASS);
-                    String selectedClassName = selectedClazz == null ? getSelectedElementClass() : null;
+                    String selectedElementClassName = getSelectedElementClassName();
+                    SelectorItem existingClassSI = null;
                     Map<FileObject, Collection<String>> findAllClassDeclarations = index.findAllClassDeclarations();
                     for (FileObject file : findAllClassDeclarations.keySet()) {
                         if (allReferedFiles.contains(file)) { //only refered files
@@ -802,26 +1216,33 @@ public class CreateRulePanel extends javax.swing.JPanel {
                             for (String clz : classes) {
                                 SelectorItem classSelectorItem = SelectorItem.createClass(clz, file);
                                 items.add(classSelectorItem);
-                                if (clz.equals(selectedClassName)) {
+                                if (clz.equals(selectedElementClassName)) {
                                     //remember the element matching the selected html source element class
                                     //if not already modified (selectedClazz != null)
-                                    selection = classSelectorItem;
+                                    existingClassSI = classSelectorItem;
                                 }
                             }
                         }
                     }
+                    
+                    if(selectedElementClassName != null) {
+                        //some class refered in the source element
+                        
+                        if(existingClassSI == null) {
+                            //the class refered in the html source element doesn't exist ->
+                            //create an item for it and make it default
+                            SelectorItem classSelectorItem = SelectorItem.createClass(selectedElementClassName, null);
+                            classSelectorItem.setCreateInFile(getActiveStylesheet());
+                            classSelectorItem.setCreateInAtRule(getActiveAtRule());
 
-                    if (selectedClazz == null || !selectedClazz.getItemName().equals(getSelectedElementClass())) {
-                        //add special item for the class name preset in the html source element code but w/o
-                        //a corresponding css rule
-                        SelectorItem classSelectorItem = SelectorItem.createClass(selectedClassName, null);
-                        classSelectorItem.setCreateInFile(getActiveStylesheet());
-                        classSelectorItem.setCreateInAtRule(getActiveAtRule());
-
-                        items.add(classSelectorItem);
-                        selection = classSelectorItem;
+                            items.add(classSelectorItem);
+                            selection = classSelectorItem; //make it selected
+                        } else {
+                            //the class exists, preselect it
+                            selection = existingClassSI;
+                        }
                     }
-
+            
                     if (selectedClazz != null) {
                         selection = selectedClazz;
                     }
@@ -830,7 +1251,8 @@ public class CreateRulePanel extends javax.swing.JPanel {
                 case 1:
                     //id
                     items.add(NO_ID);
-                    String selectedIdName = selectedId == null ? getSelectedElementId() : null;
+                    String selectedElementIdName = getSelectedElementIdName();
+                    SelectorItem existingIdSI = null;
                     Map<FileObject, Collection<String>> findAllIdDeclarations = index.findAllIdDeclarations();
                     for (FileObject file : findAllIdDeclarations.keySet()) {
                         if (allReferedFiles.contains(file)) { //only refered files
@@ -838,22 +1260,29 @@ public class CreateRulePanel extends javax.swing.JPanel {
                             for (String id : ids) {
                                 SelectorItem idSelectorItem = SelectorItem.createId(id, file);
                                 items.add(idSelectorItem);
-                                if (id.equals(selectedIdName)) {
-                                    selection = idSelectorItem;
+                                if (id.equals(selectedElementIdName)) {
+                                    existingIdSI = idSelectorItem;
                                 }
                             }
                         }
                     }
 
-                    if (selectedId == null || !selectedId.getItemName().equals(getSelectedElementId())) {
-                        //add special item for the class name preset in the html source element code but w/o
-                        //a corresponding css rule
-                        SelectorItem idSelectorItem = SelectorItem.createId(selectedIdName, null);
-                        idSelectorItem.setCreateInFile(getActiveStylesheet());
-                        idSelectorItem.setCreateInAtRule(getActiveAtRule());
+                     if(selectedElementIdName != null) {
+                        //some class refered in the source element
+                        
+                        if(existingIdSI == null) {
+                            //the class refered in the html source element doesn't exist ->
+                            //create an item for it and make it default
+                            SelectorItem idSelectorItem = SelectorItem.createId(selectedElementIdName, null);
+                            idSelectorItem.setCreateInFile(getActiveStylesheet());
+                            idSelectorItem.setCreateInAtRule(getActiveAtRule());
 
-                        items.add(idSelectorItem);
-                        selection = idSelectorItem;
+                            items.add(idSelectorItem);
+                            selection = idSelectorItem; //make it selected
+                        } else {
+                            //the class exists, preselect it
+                            selection = existingIdSI;
+                        }
                     }
 
                     if (selectedId != null) {
@@ -909,6 +1338,9 @@ public class CreateRulePanel extends javax.swing.JPanel {
 
     }
 
+    /**
+     * Gets cached sorted list of all html element's names.
+     */
     private Collection<String> getElementNames() {
         if (ELEMENT_SELECTOR_ITEMS == null) {
             ELEMENT_SELECTOR_ITEMS = new TreeSet<String>();
@@ -919,8 +1351,10 @@ public class CreateRulePanel extends javax.swing.JPanel {
         }
         return ELEMENT_SELECTOR_ITEMS;
     }
-    private SelectorItemRenderer SELECTOR_MODEL_ITEM_RENDERER;
-
+    
+    /**
+     * Gets a renderer for selector's combobox dropdown content.
+     */    
     private SelectorItemRenderer getSelectorModelItemRenderer() {
         if (SELECTOR_MODEL_ITEM_RENDERER == null) {
             SELECTOR_MODEL_ITEM_RENDERER = new SelectorItemRenderer();
@@ -928,6 +1362,9 @@ public class CreateRulePanel extends javax.swing.JPanel {
         return SELECTOR_MODEL_ITEM_RENDERER;
     }
 
+    /**
+     * Creates a renderer for the selectors combobox dropdown.
+     */
     private ListCellRenderer createSelectorsRenderer() {
         return new DefaultListCellRenderer() {
             @Override
@@ -943,10 +1380,10 @@ public class CreateRulePanel extends javax.swing.JPanel {
                         boolean originalElement = false;
                         switch (selectorItem.getType()) {
                             case SelectorItem.CLASS_TYPE:
-                                originalElement = selectorItem.getItemName().equals(getSelectedElementClass());
+                                originalElement = selectorItem.getItemName().equals(getSelectedElementClassName());
                                 break;
                             case SelectorItem.ID_TYPE:
-                                originalElement = selectorItem.getItemName().equals(getSelectedElementId());
+                                originalElement = selectorItem.getItemName().equals(getSelectedElementIdName());
                                 break;
                         }
                         selectorModelItemRenderer.setItem(selectorItem, isSelected, originalElement);
@@ -958,6 +1395,9 @@ public class CreateRulePanel extends javax.swing.JPanel {
         };
     }
 
+    /**
+     * Creates a renderer for the at-rules combobox dropdown.
+     */   
     private ListCellRenderer createAtRulesRenderer() {
         return new DefaultListCellRenderer() {
             @Override
@@ -973,6 +1413,9 @@ public class CreateRulePanel extends javax.swing.JPanel {
         };
     }
 
+    /**
+     * Creates a renderer for the stylesheets combobox dropdown.
+     */    
     private ListCellRenderer createStylesheetsRenderer() {
         return new DefaultListCellRenderer() {
             @Override
@@ -983,18 +1426,18 @@ public class CreateRulePanel extends javax.swing.JPanel {
                     return c;
                 }
                 FileObject file = (FileObject) value;
-                String fileNameExt = file.getNameExt();
-                setText(fileNameExt);
-
-//                if(file.equals(context)) {
-//                    StringBuilder sb = new StringBuilder();
-//                    sb.append("<html><body><b>"); //NOI18N
-//                    sb.append(fileNameExt);
-//                    sb.append("</b></body></html>"); //NOI18N
-//                    setText(sb.toString());
-//                } else {
-//                    setText(fileNameExt);
-//                }
+                if(webRoot == null) {
+                    setText(file.getNameExt());
+                } else {
+                    String relativePath = FileUtil.getRelativePath(webRoot, file);
+                    if(relativePath != null) {
+                        setText(relativePath);
+                    } else {
+                        //should not happen
+                        setText(file.getNameExt());
+                    }
+                }
+                
                 return c;
             }
         };
@@ -1056,11 +1499,6 @@ public class CreateRulePanel extends javax.swing.JPanel {
         styleSheetCB.setModel(STYLESHEETS_MODEL);
         styleSheetCB.setEnabled(false);
         styleSheetCB.setRenderer(createStylesheetsRenderer());
-        styleSheetCB.addItemListener(new java.awt.event.ItemListener() {
-            public void itemStateChanged(java.awt.event.ItemEvent evt) {
-                styleSheetCBItemStateChanged(evt);
-            }
-        });
 
         atRuleCB.setModel(AT_RULES_MODEL);
         atRuleCB.setEnabled(false);
@@ -1082,8 +1520,14 @@ public class CreateRulePanel extends javax.swing.JPanel {
         elementPathLabel.setFont(new java.awt.Font("Monospaced", 0, 13)); // NOI18N
         org.openide.awt.Mnemonics.setLocalizedText(elementPathLabel, org.openide.util.NbBundle.getMessage(CreateRulePanel.class, "CreateRulePanel.elementPathLabel.text")); // NOI18N
 
+        applyChangesCB.setSelected(Settings.getCreateRule_ApplyChangesToSelectedSourceElement());
         org.openide.awt.Mnemonics.setLocalizedText(applyChangesCB, org.openide.util.NbBundle.getMessage(CreateRulePanel.class, "CreateRulePanel.applyChangesCB.text")); // NOI18N
         applyChangesCB.setEnabled(false);
+        applyChangesCB.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                applyChangesCBActionPerformed(evt);
+            }
+        });
 
         org.openide.awt.Mnemonics.setLocalizedText(jLabel8, org.openide.util.NbBundle.getMessage(CreateRulePanel.class, "CreateRulePanel.jLabel8.text")); // NOI18N
 
@@ -1174,16 +1618,9 @@ public class CreateRulePanel extends javax.swing.JPanel {
         );
     }// </editor-fold>//GEN-END:initComponents
 
-    private void styleSheetCBItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_styleSheetCBItemStateChanged
-        FileObject file = (FileObject) STYLESHEETS_MODEL.getSelectedItem();
-        //create css model for the selected stylesheet
-        updateCssModel(file);
-        //update at rules model
-        updateAtRulesModel();
-
-        //fixme:
-        atRuleCB.setEnabled(AT_RULES_MODEL.getSize() > 1);
-    }//GEN-LAST:event_styleSheetCBItemStateChanged
+    private void applyChangesCBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_applyChangesCBActionPerformed
+        Settings.setCreateRule_ApplyChangesToSelectedSourceElement(applyChangesCB.isSelected());
+    }//GEN-LAST:event_applyChangesCBActionPerformed
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JCheckBox applyChangesCB;
     private javax.swing.JComboBox atRuleCB;
@@ -1208,6 +1645,11 @@ public class CreateRulePanel extends javax.swing.JPanel {
     private javax.swing.JComboBox styleSheetCB;
     // End of variables declaration//GEN-END:variables
 
+    /**
+     * Member of the selectors combobox model.
+     * 
+     * One instance if kept for each selector type as user changes the default values.
+     */
     private static class SelectorItem implements Comparable<SelectorItem> {
 
         public static final int CLASS_TYPE = 0;
@@ -1244,14 +1686,29 @@ public class CreateRulePanel extends javax.swing.JPanel {
             this.existsIn = existsIn;
         }
 
+        /**
+         * Gets the selectoritem type. 
+         * Values:
+         * {@link SelectorItem#CLASS_TYPE}
+         * {@link SelectorItem#ID_TYPE}
+         * {@link SelectorItem#ELEMENT_TYPE}
+         * {@link SelectorItem#COMPOUND_TYPE}
+         * 
+         */
         public int getType() {
             return type;
         }
 
+        /**
+         * Sets the at-rule where the selected rule should be placed.
+         */
         public void setCreateInAtRule(AtRuleItem mediaItem) {
             this.createIn = mediaItem;
         }
 
+        /**
+         * Gets the selected at-rule (location where the rule should be created).
+         */
         public AtRuleItem getCreateInAtRule() {
             return createIn;
         }
@@ -1260,14 +1717,28 @@ public class CreateRulePanel extends javax.swing.JPanel {
             return getCreateInAtRule() != null ? getCreateInAtRule().getDisplayName() : null;
         }
 
+        /**
+         * Sets target location for the element. 
+         * The rule will be created there.
+         */
         public void setCreateInFile(FileObject file) {
             this.createNewIn = file;
         }
 
+        /**
+         * Gets target location for the rule.
+         */
         public FileObject getCreateInFile() {
             return createNewIn;
         }
 
+        /**
+         * Gets this element's file.
+         * 
+         * If the element already exist in a stylesheet,
+         * its fileobject will be returned. If the element doesn't
+         * exist yet, it will return the {@link #getCreateInFile() } return value.
+         */
         public FileObject getFile() {
             return getCreateInFile() != null ? getCreateInFile() : getExistsInFile();
         }
@@ -1276,6 +1747,9 @@ public class CreateRulePanel extends javax.swing.JPanel {
             return getCreateInFile() != null ? getCreateInFile().getNameExt() : null;
         }
 
+        /**
+         * Gets the location where the element already exist or null if it doesn't exist.
+         */
         public FileObject getExistsInFile() {
             return existsIn;
         }
@@ -1284,6 +1758,10 @@ public class CreateRulePanel extends javax.swing.JPanel {
             return existsIn != null ? existsIn.getNameExt() : null;
         }
 
+        /**
+         * Gets the element name. 
+         * Class name without leading dot and id without the hash sign.
+         */
         public String getItemName() {
             StringBuilder sb = new StringBuilder();
             if (clz != null) {
@@ -1293,9 +1771,14 @@ public class CreateRulePanel extends javax.swing.JPanel {
             } else if (element != null) {
                 sb.append(element);
             }
-            return sb.toString();
+            
+            return sb.length() == 0 ? null : sb.toString();
         }
 
+        /**
+         * Gets the "fully qualified" element name. 
+         * Class name WITH the leading dot and id WITH the hash sign.
+         */
         public String getItemFQName() {
             StringBuilder sb = new StringBuilder();
             if (clz != null) {
@@ -1307,14 +1790,18 @@ public class CreateRulePanel extends javax.swing.JPanel {
             } else if (element != null) {
                 sb.append(element);
             }
-            return sb.toString();
+            return sb.length() == 0 ? null : sb.toString();
         }
 
         @Override
         public String toString() {
-            return getItemName();
+            String in = getItemName();
+            return in != null ? in : "";
         }
 
+        /**
+         * Gets textual description of this element.
+         */
         public String getInfo() {
             StringBuilder sb = new StringBuilder();
             sb.append("type=");
@@ -1379,10 +1866,24 @@ public class CreateRulePanel extends javax.swing.JPanel {
 
         @Override
         public int compareTo(SelectorItem o) {
-            return o == null ? +1 : getItemFQName().compareTo(o.getItemFQName());
+            String myFQN = getItemFQName();
+            String herFQN = o == null ? null : o.getItemFQName();
+            
+            if(herFQN == null && myFQN != null) {
+                return +1;
+            } else if(herFQN != null && myFQN == null) {
+                return -1;
+            } else if(herFQN == null && myFQN == null) {
+                return 0;
+            } else {
+                return myFQN.compareTo(herFQN);
+            }
         }
     }
 
+    /**
+     * Represents at-rule from a stylesheet.
+     */
     private static class AtRuleItem {
 
         private Media media;
@@ -1426,8 +1927,17 @@ public class CreateRulePanel extends javax.swing.JPanel {
             }
             return true;
         }
+
+        @Override
+        public String toString() {
+            return getDisplayName();
+        }
+        
     }
 
+    /**
+     * JPanel used to render the content of the selector's combobox dropdown.
+     */
     private static class SelectorItemRenderer extends JPanel {
 
         private JLabel west, east;
@@ -1475,7 +1985,9 @@ public class CreateRulePanel extends javax.swing.JPanel {
         }
     }
 
-    //copied and modified platform's DefaultComboBoxModel
+    /**
+     * Copied and modified platform's DefaultComboBoxModel.
+     */
     public class ExtDefaultComboBoxModel extends AbstractListModel implements MutableComboBoxModel, Serializable {
 
         private List objects;
@@ -1496,6 +2008,16 @@ public class CreateRulePanel extends javax.swing.JPanel {
             fireIntervalAdded(this, 0, objects.size());
         }
 
+        public void setSelectedIndex(int index) {
+            if(index >= objects.size()) {
+                return ;
+            }
+            if(index < 0) {
+                return ;
+            }
+            setSelectedItem(objects.get(index));
+        }
+        
         // implements javax.swing.ComboBoxModel
         /**
          * Set the value of the selected item. The selected item may be null.

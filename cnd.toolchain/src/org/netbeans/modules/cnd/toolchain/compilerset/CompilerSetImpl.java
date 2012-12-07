@@ -492,6 +492,16 @@ public final class CompilerSetImpl extends CompilerSet {
         }
 
         @Override
+        public String getFingerPrintFlags() {
+            return "";//NOI18N
+        }
+
+        @Override
+        public String getFingerPrintPattern() {
+            return "";//NOI18N
+        }
+
+        @Override
         public boolean skipSearch() {
             return true;
         }
@@ -500,7 +510,7 @@ public final class CompilerSetImpl extends CompilerSet {
         public AlternativePath[] getAlternativePath() {
             return new AlternativePath[0];
         }
-        
+
     }
 
     public static class UnknownToolchainDescriptor implements ToolchainDescriptor {
@@ -564,6 +574,11 @@ public final class CompilerSetImpl extends CompilerSet {
         @Override
         public String[] getAliases() {
             return new String[]{};
+        }
+
+        @Override
+        public String getSubsitute() {
+            return null;
         }
 
         @Override
@@ -756,6 +771,16 @@ public final class CompilerSetImpl extends CompilerSet {
                 public String getVersionPattern() {
                     return ""; //NOI18N
                 }
+                
+                @Override
+                public String getFingerPrintFlags() {
+                    return ""; //NOI18N
+                }
+
+                @Override
+                public String getFingerPrintPattern() {
+                    return ""; //NOI18N
+                }
 
                 @Override
                 public boolean skipSearch() {
@@ -766,6 +791,7 @@ public final class CompilerSetImpl extends CompilerSet {
                 public AlternativePath[] getAlternativePath() {
                     return new AlternativePath[0];
                 }
+
             };
         }
 
@@ -785,6 +811,16 @@ public final class CompilerSetImpl extends CompilerSet {
 
                 @Override
                 public String getVersionPattern() {
+                    return ""; //NOI18N
+                }
+
+                @Override
+                public String getFingerPrintFlags() {
+                    return ""; //NOI18N
+                }
+
+                @Override
+                public String getFingerPrintPattern() {
                     return ""; //NOI18N
                 }
 

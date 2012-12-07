@@ -80,8 +80,7 @@ public class ReplaceConstructorWithBuilderUI implements RefactoringUI, JavaRefac
     private ReplaceConstructorWithBuilderPanel panel;
     private String name;
     private List <String> paramaterNames;
-    private List <String> parameterTypes; 
-    private boolean varargs;
+    private List <String> parameterTypes;
 
     private ReplaceConstructorWithBuilderUI(TreePathHandle constructor, CompilationInfo info) {
         this.refactoring = new ReplaceConstructorWithBuilderRefactoring(constructor);
@@ -90,7 +89,7 @@ public class ReplaceConstructorWithBuilderUI implements RefactoringUI, JavaRefac
         MethodTree constTree = (MethodTree) constructor.resolve(info).getLeaf();
         paramaterNames = new ArrayList();
         parameterTypes = new ArrayList();
-        varargs = contructorElement.isVarArgs();
+        boolean varargs = contructorElement.isVarArgs();
         List<? extends VariableTree> parameters = constTree.getParameters();
         for (int i = 0; i < parameters.size(); i++) {
             VariableTree var = parameters.get(i);
@@ -100,6 +99,7 @@ public class ReplaceConstructorWithBuilderUI implements RefactoringUI, JavaRefac
                 if(var.getType().getKind() == Tree.Kind.ARRAY_TYPE) {
                     ArrayTypeTree att = (ArrayTypeTree) var.getType();
                     type = att.getType().toString();
+                    type += "..."; //NOI18N
                 }
             }
             parameterTypes.add(type);
@@ -128,7 +128,7 @@ public class ReplaceConstructorWithBuilderUI implements RefactoringUI, JavaRefac
     @Override
     public CustomRefactoringPanel getPanel(final ChangeListener parent) {
         if (panel == null) {
-            panel = new ReplaceConstructorWithBuilderPanel(parent, builderFQN + "Builder", paramaterNames, parameterTypes, varargs);
+            panel = new ReplaceConstructorWithBuilderPanel(parent, builderFQN + "Builder", paramaterNames, parameterTypes);
         }
         return panel;
     }

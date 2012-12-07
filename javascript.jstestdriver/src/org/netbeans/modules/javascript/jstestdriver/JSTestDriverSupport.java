@@ -42,8 +42,10 @@
 package org.netbeans.modules.javascript.jstestdriver;
 
 import java.io.File;
+import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.net.MalformedURLException;
+import java.net.URI;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -51,6 +53,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.Semaphore;
 import java.util.logging.Level;
+import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.extexecution.print.ConvertedLine;
@@ -68,6 +71,8 @@ import org.netbeans.modules.gsf.testrunner.api.TestSuite;
 import org.netbeans.modules.gsf.testrunner.api.Testcase;
 import org.netbeans.modules.gsf.testrunner.api.Trouble;
 import org.netbeans.modules.web.browser.api.WebBrowserPane;
+import org.netbeans.modules.web.common.api.RemoteFileCache;
+import org.netbeans.modules.web.common.api.ServerURLMapping;
 import org.openide.cookies.LineCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.MIMEResolver;
@@ -75,7 +80,9 @@ import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.text.Line;
 import org.openide.util.Exceptions;
+import org.openide.util.NbBundle;
 import org.openide.util.NbBundle.Messages;
+import org.openide.util.Parameters;
 import org.openide.util.RequestProcessor;
 import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
@@ -92,6 +99,7 @@ public class JSTestDriverSupport {
 
     private static JSTestDriverSupport def;
     private static final Logger LOGGER = Logger.getLogger(JSTestDriverSupport.class.getName());
+    private static final Logger USG_LOGGER = Logger.getLogger("org.netbeans.ui.metrics.jstestdriver"); // NOI18N
     private RequestProcessor RP = new RequestProcessor("js-test-driver server", 5);
     private AbstractLookup projectContext;
     private InstanceContent lookupContent;
@@ -204,6 +212,7 @@ public class JSTestDriverSupport {
                                     }
                                     starting = false;
                                     TestDriverServiceNode.getInstance().refresh();
+                                    logUsage(JSTestDriverSupport.class, "USG_JSTESTDRIVER_STARTED", null); // NOI18N
                                 }
                             });
                         }
@@ -353,7 +362,7 @@ public class JSTestDriverSupport {
             // pattern is "at ...... (file:line:column)"
             // file can be also http:// url
             if (!line.endsWith(")")) {
-                return null;
+                return convertLineURL(line);
             }
             int start = line.lastIndexOf('(');
             if (start == -1) {
@@ -365,6 +374,9 @@ public class JSTestDriverSupport {
             }
             int fileEnd = line.lastIndexOf(':', lineNumberEnd-1);
             if (fileEnd == -1) {
+                return null;
+            }
+            if (start >= fileEnd) {
                 return null;
             }
             int lineNumber = -1;
@@ -398,6 +410,67 @@ public class JSTestDriverSupport {
             return res;
         }
         
+        private List<ConvertedLine> convertLineURL(String line) {
+            int u1 = line.indexOf("http://");   // NOI18N
+            if (u1 < 0) {
+                u1 = line.indexOf("https://");  // NOI18N
+            }
+            if (u1 < 0) {
+                return null;
+            }
+            int ue = line.indexOf(' ', u1);
+            if (ue < 0) {
+                ue = line.length();
+            }
+            int col2 = line.lastIndexOf(':', ue);
+            if (col2 < 0) {
+                return null;
+            }
+            int col1 = line.lastIndexOf(':', col2 - 1);
+            if (col1 < 0) {
+                return null;
+            }
+            int lineNumber = -1;
+            int columnNumber = -1;
+            try {
+                lineNumber = Integer.parseInt(line.substring(col1+1, col2));
+                columnNumber = Integer.parseInt(line.substring(col2+1, ue));
+            } catch (NumberFormatException e) {
+                //ignore
+            }
+            if (columnNumber != -1 && lineNumber == -1) {
+                // perhaps stack trace had only line number:
+                lineNumber = columnNumber;
+            }
+            if (lineNumber == -1) {
+                return null;
+            }
+            String file = line.substring(u1, col1);
+            if (file.length() == 0) {
+                return null;
+            }
+            
+            FileObject fo = null;
+            try {
+                URL url = URI.create(file).toURL();
+                fo = ServerURLMapping.fromServer(p, url);
+                if (fo == null) {
+                    fo = RemoteFileCache.getRemoteFile(url);
+                }
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+            if (fo == null) {
+                return null;
+            }
+            List<ConvertedLine> res = new ArrayList<ConvertedLine>();
+            //res.add(ConvertedLine.forText(line.substring(0, start), null));
+            ListenerImpl l = new ListenerImpl(fo, lineNumber, columnNumber);
+            res.add(ConvertedLine.forText(/*line.substring(start, line.length()-1)*/line, l.isValidHyperlink() ? l : null));
+            //res.add(ConvertedLine.forText(line.substring(line.length()-1, line.length()), null));
+            return res;
+        }
+    
     }
     
     private static class ListenerImpl implements OutputListener {
@@ -481,7 +554,7 @@ public class JSTestDriverSupport {
             if (testResult.getResult() == TestResult.Result.failed || testResult.getResult() == TestResult.Result.error) {
                 Trouble t = new Trouble(true);
                 if (testResult.getStack().length() > 0) {
-                    t.setStackTrace(testResult.getStack().split("\\u000d"));
+                    t.setStackTrace(trimArray(testResult.getStack().split("\\u000d")));
                     testCase.addOutputLines(Arrays.asList(testResult.getStack().split("\\u000d")));
                     //manager.displayOutput(testSession, testResult.getStack(), true);
                 }
@@ -523,7 +596,34 @@ public class JSTestDriverSupport {
             }
             manager.displayReport(testSession, report, true);
         }
+
+        private String[] trimArray(String[] split) {
+            if (split == null) {
+                return null;
+            }
+            List<String> r = new ArrayList<String>();
+            for (int i = 0; i < split.length; i++) {
+                String s = split[i].trim();
+                if (s.length() > 0) {
+                    r.add(s);
+                }
+            }
+            return r.toArray(new String[r.size()]);
+        }
         
+    }
+
+    public static void logUsage(Class srcClass, String message, Object[] params) {
+        Parameters.notNull("message", message); // NOI18N
+
+        LogRecord logRecord = new LogRecord(Level.INFO, message);
+        logRecord.setLoggerName(USG_LOGGER.getName());
+        logRecord.setResourceBundle(NbBundle.getBundle(srcClass));
+        logRecord.setResourceBundleName(srcClass.getPackage().getName() + ".Bundle"); // NOI18N
+        if (params != null) {
+            logRecord.setParameters(params);
+        }
+        USG_LOGGER.log(logRecord);
     }
 
 }

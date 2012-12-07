@@ -342,11 +342,6 @@ public class JsTypedBreakInterceptorTest extends JsTestBase {
                 "$(table).find(\"tbody tr\").each(function(){\n    ^\n})");
     }
 
-    public void testIssue220903() throws Exception {
-        insertBreak("<script>function Foo(){^</script>",
-                "<script>function Foo(){\n    ^\n}</script>");
-    }
-
     public void testIssue221676() throws Exception {
         insertBreak("var obj = (new function() {\n"
                 + "   this.myFunc = function () {\n"
@@ -363,8 +358,40 @@ public class JsTypedBreakInterceptorTest extends JsTestBase {
                 + "            this.doSth();\n"
                 + "         }\n"
                 + "         ^\n"
-                + "      }\n"
                 + "   };\n"
                 + "}())\n");
+    }
+
+    public void testIssue222239() throws Exception {
+        insertBreak("var empowered = {\n"
+            + "    showFooter: function() {\n"
+            + "        $(\"footer #footer-permanent-content\").removeClass('fixed');\n"
+            + "        $(\"footer #footer-variable-content\").removeClass('padding-top');\n"
+            + "    },\n"
+            + "    showTestMenu: function() {^,\n"
+            + "    showPhoneMenu: function() {\n"
+            + "        $(\"footer #footer-permanent-content nav ul\").toggleClass('hidden-menu');\n"
+            + "    },\n",
+            "var empowered = {\n"
+            + "    showFooter: function() {\n"
+            + "        $(\"footer #footer-permanent-content\").removeClass('fixed');\n"
+            + "        $(\"footer #footer-variable-content\").removeClass('padding-top');\n"
+            + "    },\n"
+            + "    showTestMenu: function() {\n"
+            + "^\n"
+            + "    },\n"
+            + "    showPhoneMenu: function() {\n"
+            + "        $(\"footer #footer-permanent-content nav ul\").toggleClass('hidden-menu');\n"
+            + "    },\n");
+    }
+
+    public void testIssue222475() throws Exception {
+        insertBreak("(function () { ^ window.$prom = x || window}{);",
+                "(function () { \n    ^window.$prom = x || window\n}}{);");
+    }
+
+    public void testIssue223285() throws Exception {
+        insertBreak("/*^\naaa\n*/\nfunction test(foo) {}",
+                "/*\n * ^\naaa\n*/\nfunction test(foo) {}");
     }
 }

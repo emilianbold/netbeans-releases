@@ -1318,7 +1318,10 @@ public class ActionFactory {
                         findSupport.setFocusedTextComponent(eui.getComponent());
                     }
                     findSupport.putFindProperties(props);
-                    findSupport.find(null, false);
+                    if (findSupport.find(null, false)) {
+                        findSupport.addToHistory(new EditorFindSupport.SPW((String) props.get(EditorFindSupport.FIND_WHAT),
+                                (Boolean) props.get(EditorFindSupport.FIND_WHOLE_WORDS), (Boolean) props.get(EditorFindSupport.FIND_MATCH_CASE), (Boolean) props.get(EditorFindSupport.FIND_REG_EXP)));
+                    }
                 }
             }
         }

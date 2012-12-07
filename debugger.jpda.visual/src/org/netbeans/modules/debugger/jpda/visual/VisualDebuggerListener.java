@@ -57,15 +57,11 @@ import com.sun.jdi.ThreadReference;
 import com.sun.jdi.VMDisconnectedException;
 import com.sun.jdi.Value;
 import com.sun.jdi.VirtualMachine;
-import com.sun.jdi.event.Event;
-import com.sun.jdi.event.MethodEntryEvent;
-import com.sun.jdi.event.WatchpointEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -81,19 +77,13 @@ import org.netbeans.api.debugger.Breakpoint;
 import org.netbeans.api.debugger.DebuggerEngine;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.DebuggerManagerAdapter;
-import org.netbeans.api.debugger.DebuggerManagerListener;
 import org.netbeans.api.debugger.LazyDebuggerManagerListener;
 import org.netbeans.api.debugger.Properties;
-import org.netbeans.api.debugger.jpda.CallStackFrame;
-import org.netbeans.api.debugger.jpda.FieldBreakpoint;
-import org.netbeans.api.debugger.jpda.JPDAClassType;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.api.debugger.jpda.JPDAThread;
 import org.netbeans.api.debugger.jpda.MethodBreakpoint;
-import org.netbeans.api.debugger.jpda.Variable;
 import org.netbeans.api.debugger.jpda.event.JPDABreakpointEvent;
 import org.netbeans.api.debugger.jpda.event.JPDABreakpointListener;
-import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
 import org.netbeans.modules.debugger.jpda.expr.InvocationExceptionTranslated;
 import org.netbeans.modules.debugger.jpda.expr.JDIVariable;
 import org.netbeans.modules.debugger.jpda.jdi.ClassNotPreparedExceptionWrapper;
@@ -112,7 +102,9 @@ import org.netbeans.modules.debugger.jpda.visual.breakpoints.AWTComponentBreakpo
 import org.netbeans.modules.debugger.jpda.visual.ui.ScreenshotComponent;
 import org.netbeans.spi.debugger.DebuggerServiceRegistration;
 import org.openide.util.Exceptions;
+import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
+import org.openide.windows.InputOutput;
 
 /**
  *
@@ -296,9 +288,17 @@ public class VisualDebuggerListener extends DebuggerManagerAdapter {
                 boolean trackComponentChanges = properties.getBoolean(PROPERTIES_TCC, true);
                 isTrackComponentChanges = trackComponentChanges;
                 if (trackComponentChanges && RemoteAWTScreenshot.FAST_SNAPSHOT_RETRIEVAL) {
-                    Method startHierarchyListenerMethod = ClassTypeWrapper.concreteMethodByName(serviceClass, "startHierarchyListener", "()V");
+                    Method startHierarchyListenerMethod = ClassTypeWrapper.concreteMethodByName(serviceClass, "startHierarchyListener", "()Ljava/lang/String;");
                     if (startHierarchyListenerMethod != null) {
-                        ClassTypeWrapper.invokeMethod(serviceClass, tr, startHierarchyListenerMethod, Collections.EMPTY_LIST, ObjectReference.INVOKE_SINGLE_THREADED);
+                        Value res = ClassTypeWrapper.invokeMethod(serviceClass, tr, startHierarchyListenerMethod, Collections.EMPTY_LIST, ObjectReference.INVOKE_SINGLE_THREADED);
+                        if (res instanceof StringReference) {
+                            String reason = ((StringReference) res).value();
+                            InputOutput io = t.getDebugger().getIO();
+                            io.getErr().println(NbBundle.getMessage(VisualDebuggerListener.class, "MSG_NoTrackingOfComponentChanges", reason));
+                            //System.err.println("isHierarchyListenerAdded = false, reason = "+reason);
+                        } else {
+                            //System.err.println("isHierarchyListenerAdded = "+true);
+                        }
                     }
                 }
             } catch (VMDisconnectedExceptionWrapper vmd) {

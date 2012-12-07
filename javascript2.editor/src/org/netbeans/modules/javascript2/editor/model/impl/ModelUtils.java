@@ -48,6 +48,7 @@ import java.util.*;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.javascript2.editor.doc.spi.JsDocumentationHolder;
 import org.netbeans.modules.javascript2.editor.embedding.JsEmbeddingProvider;
 import org.netbeans.modules.javascript2.editor.index.IndexedElement;
 import org.netbeans.modules.javascript2.editor.index.JsIndex;
@@ -84,7 +85,7 @@ public class ModelUtils {
         }
         if (tmpObject == null) {
             DeclarationScope scope = builder.getCurrentDeclarationScope();
-            while (tmpObject == null && scope.getInScope() != null) {
+            while (scope != null && tmpObject == null && scope.getInScope() != null) {
                 tmpObject = ((JsFunction)scope).getParameter(firstName);
                 scope = scope.getInScope();
             }
@@ -128,7 +129,7 @@ public class ModelUtils {
             result = jsObject;
             for (JsObject property : jsObject.getProperties().values()) {
                 JsElement.Kind kind = property.getJSKind();
-                if (kind == JsElement.Kind.OBJECT || kind == JsElement.Kind.ANONYMOUS_OBJECT
+                if (kind == JsElement.Kind.OBJECT || kind == JsElement.Kind.ANONYMOUS_OBJECT || kind == JsElement.Kind.OBJECT_LITERAL
                         || kind == JsElement.Kind.FUNCTION || kind == JsElement.Kind.METHOD || kind == JsElement.Kind.CONSTRUCTOR) {
                     tmpObject = findJsObject(property, offset);
                 }
@@ -236,7 +237,40 @@ public class ModelUtils {
         return new OffsetRange(lStart, lEnd);
     }
     
+    /**
+     * Returns all variables that are available in the scope
+     * @param inScope
+     * @return 
+     */
+    public static Collection<? extends JsObject> getVariables(DeclarationScope inScope) {
+        List<JsObject> result = new ArrayList<JsObject>();
+        while (inScope != null) {
+            for (JsObject object : ((JsObject)inScope).getProperties().values()) {
+                result.add(object);
+            }
+            for (JsObject object : ((JsFunction)inScope).getParameters()) {
+                result.add(object);
+            }
+            inScope = inScope.getInScope();
+        }
+        return result;
+    }
     
+
+    public static Collection<? extends JsObject> getVariables(Model model, int offset) {
+        DeclarationScope scope = ModelUtils.getDeclarationScope(model, offset);
+        return  getVariables(scope);
+    }
+    
+    public static JsObject getJsObjectByName(DeclarationScope inScope, String simpleName) {
+        Collection<? extends JsObject> variables = ModelUtils.getVariables(inScope);
+        for (JsObject jsObject : variables) {
+            if (simpleName.equals(jsObject.getName())) {
+                return jsObject;
+            }
+        }
+        return null;
+    }
     private static final Collection<JsTokenId> CTX_DELIMITERS = Arrays.asList(
             JsTokenId.BRACKET_LEFT_CURLY, JsTokenId.BRACKET_RIGHT_CURLY,
             JsTokenId.OPERATOR_SEMICOLON);
@@ -280,9 +314,9 @@ public class ModelUtils {
     public static Collection<TypeUsage> resolveSemiTypeOfExpression(JsParserResult parserResult, Node expression) {
         SemiTypeResolverVisitor visitor = new SemiTypeResolverVisitor(parserResult);
         if (expression != null) {
-            if (expression instanceof BinaryNode) {
-                expression = ((BinaryNode)expression).lhs();
-            }
+//            if (expression instanceof BinaryNode) {
+//                expression = ((BinaryNode)expression).lhs();
+//            }
             expression.accept(visitor);
             return visitor.getSemiTypes();
         }
@@ -307,11 +341,15 @@ public class ModelUtils {
             if (object.getJSKind() == JsElement.Kind.CONSTRUCTOR) {
                 parent = object;
             } else {
-                parent = object.getParent();
+                if (object.getParent() != null && object.getParent().getJSKind() != JsElement.Kind.FILE) {
+                    parent = object.getParent();
+                } else {
+                    parent = object;
+                }
             } 
-            if (parent.getJSKind() == JsElement.Kind.FUNCTION || parent.getJSKind() == JsElement.Kind.METHOD) {
+            if (parent != null && (parent.getJSKind() == JsElement.Kind.FUNCTION || parent.getJSKind() == JsElement.Kind.METHOD)) {
                 if (parent.getParent().getJSKind() == JsElement.Kind.FILE) {
-                    result.add(new TypeUsageImpl("@global", 0, true)); //NOI18N
+                    result.add(new TypeUsageImpl(ModelUtils.createFQN(parent), 0, true)); //NOI18N
                 } else {
                     JsObject grandParent = parent.getParent();
                     if ( grandParent != null && grandParent.getJSKind() == JsElement.Kind.OBJECT_LITERAL) {
@@ -320,7 +358,7 @@ public class ModelUtils {
                         result.add(new TypeUsageImpl(ModelUtils.createFQN(parent), type.getOffset(), true));
                     }
                 }
-            } else {
+            } else if (parent != null) {
                 result.add(new TypeUsageImpl(ModelUtils.createFQN(parent), type.getOffset(), true));
             }
         } else if (type.getType().startsWith("@this.")) {
@@ -468,15 +506,27 @@ public class ModelUtils {
                     if(localObject == null || (localObject.getJSKind() != JsElement.Kind.PARAMETER
                             && (ModelUtils.isGlobal(localObject.getParent()) || localObject.getJSKind() != JsElement.Kind.VARIABLE))) {
                         // Add global variables from index
-                        Collection<IndexedElement> globalVars = jsIndex.getGlobalVar(name);
-                        for (IndexedElement globalVar : globalVars) {
-                            Collection<TypeUsage> assignments = globalVar.getAssignments();
-                            if (assignments.isEmpty()) {
-                                lastResolvedTypes.add(new TypeUsageImpl(name, -1, true));
-                            } else {
-                                lastResolvedTypes.addAll(assignments);
-                            }
-                        }
+//                        Collection<IndexedElement> globalVars = jsIndex.getGlobalVar(name);
+//                        for (IndexedElement globalVar : globalVars) {
+//                            if(name.equals(globalVar.getName())) {
+//                                Collection<TypeUsage> assignments = globalVar.getAssignments();
+//                                if (assignments.isEmpty()) {
+//                                    lastResolvedTypes.add(new TypeUsageImpl(name, -1, true));
+//                                } else {
+//                                    lastResolvedTypes.addAll(assignments);
+//                                    }
+//                        }
+//                    }
+                        List<TypeUsage> fromAssignments = new ArrayList<TypeUsage>();
+//                        if (localObject != null) {
+//                            //make it only for the right offset
+//                            for(TypeUsage type: localObject.getAssignmentForOffset(offset)) {
+//                                resolveAssignments(jsIndex, type.getType(), fromAssignments);
+//                            }
+//                        } else {
+                            resolveAssignments(jsIndex, name, fromAssignments);
+//                        }
+                        lastResolvedTypes.addAll(fromAssignments);
                     }
                     
                     if(!localObjects.isEmpty()){
@@ -586,7 +636,6 @@ public class ModelUtils {
                                             newResolvedObjects.add(property);
                                         }
                                     }
-                                    newResolvedObjects.add(object);
                                     break;
                                 }
                             }
@@ -631,6 +680,29 @@ public class ModelUtils {
         }
     }
     
+    private static void resolveAssignments(JsIndex jsIndex, String fqn, List<TypeUsage> resolved) {
+        Set<String> alreadyAdded = new HashSet<String>();
+        for(TypeUsage type : resolved) {
+            alreadyAdded.add(type.getType());
+        }
+        if (!alreadyAdded.contains(fqn)) {
+            Collection<IndexedElement> globalVars = jsIndex.getGlobalVar(fqn);
+            resolved.add(new TypeUsageImpl(fqn, -1, true));
+            for (IndexedElement globalVar : globalVars) {
+                if(fqn.equals(globalVar.getName())) {
+                    Collection<TypeUsage> assignments = globalVar.getAssignments();
+                    if (!assignments.isEmpty()) {
+                        for (TypeUsage type: assignments) {
+                            if(!alreadyAdded.contains(type.getType())) {
+                                resolveAssignments(jsIndex, type.getType(), resolved);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    
     public static JsObject findObjectForOffset(String name, int offset, Model model) {
         for (JsObject object : model.getVariables(offset)) {
             if (object.getName().equals(name)) {
@@ -671,6 +743,12 @@ public class ModelUtils {
     
     private static class SemiTypeResolverVisitor extends PathNodeVisitor {
         
+        private static TypeUsage BOOLEAN_TYPE = new TypeUsageImpl(Type.BOOLEAN, -1, true);
+        private static TypeUsage STRING_TYPE = new TypeUsageImpl(Type.STRING, -1, true);
+        private static TypeUsage NUMBER_TYPE = new TypeUsageImpl(Type.NUMBER, -1, true);
+        private static TypeUsage ARRAY_TYPE = new TypeUsageImpl(Type.ARRAY, -1, true);
+        private static TypeUsage REGEXP_TYPE = new TypeUsageImpl(Type.REGEXP, -1, true);
+        
         private final Set<TypeUsage> result = new HashSet<TypeUsage>();
         private StringBuilder sb = new StringBuilder();
         final private JsParserResult parserResult;
@@ -682,6 +760,19 @@ public class ModelUtils {
         public Collection<TypeUsage> getSemiTypes() {
             return result;
         }
+        
+        private void add(TypeUsage type) {
+            boolean isThere = false;
+            for(TypeUsage stored : result) {
+                if(stored.getType().equals(type.getType())) {
+                    isThere = true;
+                    break;
+                }
+            }
+            if (!isThere) {
+                result.add(type);
+            }
+        }
 
         @Override
         public Node enter(AccessNode aNode) {
@@ -692,59 +783,79 @@ public class ModelUtils {
                     if (!(path.size() > 0 && path.get(path.size() - 1) instanceof CallNode)) {
                         sb.append("@this."); //NOI18N
                         sb.append(aNode.getProperty().getName());
-                        result.add(new TypeUsageImpl(sb.toString(), LexUtilities.getLexerOffset(parserResult, iNode.getStart()), false));                //NOI18N
+                        add(new TypeUsageImpl(sb.toString(), LexUtilities.getLexerOffset(parserResult, iNode.getStart()), false));                //NOI18N
                         // plus five due to this.
                     }
                 } else {
-                    if (sb.length() > 5) {
-                        sb.insert(6, aNode.getProperty().getName());
-                    } else {
+                    if ("@call;".equals(sb.toString())) {
                         sb.append(aNode.getProperty().getName());
+                    } else {
+                        sb.insert(0, aNode.getProperty().getName());
+                        sb.insert(0, "@pro;");
                     }
                     sb.insert(0, ((IdentNode)aNode.getBase()).getName());
                     sb.insert(0, "@exp;");
-                    result.add(new TypeUsageImpl(sb.toString(), aNode.getStart()));
+                    add(new TypeUsageImpl(sb.toString(), aNode.getStart()));
                 }
                 return null;
             } else {
-                if(sb.length() > 5) {
-                    sb.insert(6, aNode.getProperty().getName());
-                } else {
+                if ("@call;".equals(sb.toString())) {
                     sb.append(aNode.getProperty().getName());
+                } else {
+                    sb.insert(0, aNode.getProperty().getName());
+                    sb.insert(0, "@pro;");
                 }
             }
             return super.enter(aNode);
         }
 
-//        @Override
-//        public Node enter(BinaryNode binaryNode) {
-//            if (!binaryNode.isAssignment()) {
-//                if(binaryNode.rhs() instanceof LiteralNode) {
-//                    LiteralNode lNode = (LiteralNode)binaryNode.rhs();
-//                    Object value = lNode.getObject();
-//                    if (value instanceof String) {
-//                        result.add(new TypeUsageImpl(Type.STRING, lNode.getStart(), true));
-//                        return null;
-//                    }
-//                }
-//                if (binaryNode.lhs() instanceof LiteralNode) {
-//                    LiteralNode lNode = (LiteralNode)binaryNode.rhs();
-//                    Object value = lNode.getObject();
-//                    if (value instanceof String) {
-//                        result.add(new TypeUsageImpl(Type.STRING, lNode.getStart(), true));
-//                        return null;
-//                    }
-//                }
-//            }
-//            return super.enter(binaryNode);
-//        }
+        @Override
+        public Node enter(BinaryNode binaryNode) {
+            if (!binaryNode.isAssignment()) {
+                if (isResultString(binaryNode)) {
+                    add(STRING_TYPE);
+                    return null;
+                } 
+                TokenType tokenType = binaryNode.tokenType();
+                if (tokenType == TokenType.EQ || tokenType == TokenType.EQ_STRICT
+                        || tokenType == TokenType.NE || tokenType == TokenType.NE_STRICT
+                        || tokenType == TokenType.GE || tokenType == TokenType.GT
+                        || tokenType == TokenType.LE || tokenType == TokenType.LT) {
+                    if (getPath().isEmpty()) {
+                        add(BOOLEAN_TYPE);
+                    }
+                    return null;
+                }
+            }
+            return super.enter(binaryNode);
+        }
 
+        private boolean isResultString (BinaryNode binaryNode) {
+            boolean result = false;
+            TokenType tokenType = binaryNode.tokenType();
+            Node lhs = binaryNode.lhs();
+            Node rhs = binaryNode.rhs();
+            if (tokenType == TokenType.ADD
+                    && ((lhs instanceof LiteralNode && ((LiteralNode) lhs).isString())
+                    || (rhs instanceof LiteralNode && ((LiteralNode) rhs).isString()))) {
+                result = true;
+            } else {
+                if (lhs instanceof BinaryNode) {
+                    result = isResultString((BinaryNode)lhs);
+                } else if (rhs instanceof BinaryNode) {
+                    result = isResultString((BinaryNode)rhs);
+                }
+            }
+            return result;
+        }
+        
         @Override
         public Node enter(CallNode callNode) {
+            super.enter(callNode);
             if (callNode.getFunction() instanceof ReferenceNode) {
                 FunctionNode function = (FunctionNode)((ReferenceNode)callNode.getFunction()).getReference();
                 String name = function.getIdent().getName();
-                result.add(new TypeUsageImpl("@call;" + name, LexUtilities.getLexerOffset(parserResult, function.getStart()), false)); //NOI18N
+                add(new TypeUsageImpl("@call;" + name, LexUtilities.getLexerOffset(parserResult, function.getStart()), false)); //NOI18N
             } else {
                 if (sb.length() < 6) {
                     sb.append("@call;");    //NOI18N
@@ -761,9 +872,21 @@ public class ModelUtils {
         public Node enter(IdentNode iNode) {
             if (getPath().isEmpty()) {
                 if (iNode.getName().equals("this")) {   //NOI18N
-                    result.add(new TypeUsageImpl("@this", LexUtilities.getLexerOffset(parserResult, iNode.getStart()), false));                //NOI18N
+                    add(new TypeUsageImpl("@this", LexUtilities.getLexerOffset(parserResult, iNode.getStart()), false));                //NOI18N
                 } else {
-                    result.add(new TypeUsageImpl("@var;" + iNode.getName(), LexUtilities.getLexerOffset(parserResult, iNode.getStart()), false));
+                    add(new TypeUsageImpl("@var;" + iNode.getName(), LexUtilities.getLexerOffset(parserResult, iNode.getStart()), false));
+                }
+            } else {
+                Node lastNode = getPath().get(getPath().size() - 1);
+                if (lastNode instanceof CallNode) {
+                    sb.append(iNode.getName());
+                    add(new TypeUsageImpl(sb.toString(), LexUtilities.getLexerOffset(parserResult, iNode.getStart()), false));
+                } else if (!(lastNode instanceof AccessNode)) {
+                    if (iNode.getName().equals("this")) {   //NOI18N
+                        add(new TypeUsageImpl("@this", LexUtilities.getLexerOffset(parserResult, iNode.getStart()), false));                //NOI18N
+                    } else {
+                        add(new TypeUsageImpl("@var;" + iNode.getName(), LexUtilities.getLexerOffset(parserResult, iNode.getStart()), false));
+                    }
                 }
             }
             return null;
@@ -773,24 +896,24 @@ public class ModelUtils {
         public Node enter(LiteralNode lNode) {
             Object value = lNode.getObject();
             if (value instanceof Boolean) {
-                result.add(new TypeUsageImpl(Type.BOOLEAN, -1, true));
+                add(BOOLEAN_TYPE);
             } else if (value instanceof String) {
-                result.add(new TypeUsageImpl(Type.STRING, -1, true));
+                add(STRING_TYPE);
             } else if (value instanceof Integer
                     || value instanceof Float
                     || value instanceof Double) {
-                result.add(new TypeUsageImpl(Type.NUMBER, -1, true));
+                add(NUMBER_TYPE);
             } else if (lNode instanceof LiteralNode.ArrayLiteralNode) {
-                result.add(new TypeUsageImpl(Type.ARRAY, -1, true));
+                add(ARRAY_TYPE);
             } else if (value instanceof Lexer.RegexToken) {
-                result.add(new TypeUsageImpl(Type.REGEXP, -1, true));
+                add(REGEXP_TYPE);
             }
             return null;
         }
 
         @Override
         public Node enter(ObjectNode objectNode) {
-            result.add(new TypeUsageImpl("@anonym;" + objectNode.getStart(), LexUtilities.getLexerOffset(parserResult, objectNode.getStart()), false));
+            add(new TypeUsageImpl("@anonym;" + objectNode.getStart(), LexUtilities.getLexerOffset(parserResult, objectNode.getStart()), false));
             return null;
         }
 
@@ -800,11 +923,19 @@ public class ModelUtils {
                 if (uNode.rhs() instanceof CallNode
                     && ((CallNode)uNode.rhs()).getFunction() instanceof IdentNode) {
                         IdentNode iNode = ((IdentNode)((CallNode)uNode.rhs()).getFunction());
-                        result.add(new TypeUsageImpl("@new;" + iNode.getName(), LexUtilities.getLexerOffset(parserResult, iNode.getStart()), false));
+                        add(new TypeUsageImpl("@new;" + iNode.getName(), LexUtilities.getLexerOffset(parserResult, iNode.getStart()), false));
                         return null;
                 }
             }
             return super.enter(uNode);
         }        
+    }
+    
+    public static void addDocTypesOccurence(JsObject jsObject, JsDocumentationHolder docHolder) {
+        if (docHolder.getOccurencesMap().containsKey(jsObject.getName())) {
+            for (OffsetRange offsetRange : docHolder.getOccurencesMap().get(jsObject.getName())) {
+                ((JsObjectImpl)jsObject).addOccurrence(offsetRange);
+            }
+        }
     }
 }

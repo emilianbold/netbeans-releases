@@ -932,24 +932,30 @@ public class ValidateLayerConsistencyTest extends NbTestCase {
         List<String> warnings = new ArrayList<String>();
         FileObject[] keymaps = FileUtil.getConfigFile("Keymaps").getChildren();
         Map<String,Integer> definitionCountById = new HashMap<String,Integer>();
+        assertTrue("Too many keymaps for too little bitfield", keymaps.length < 31);
+        int keymapFlag = 1;
         for (FileObject keymap : keymaps) {
             for (FileObject shortcut : keymap.getChildren()) {
                 DataObject d = DataObject.find(shortcut);
                 if (d instanceof DataShadow) {
                     String id = ((DataShadow) d).getOriginal().getPrimaryFile().getPath();
                     Integer prior = definitionCountById.get(id);
-                    definitionCountById.put(id, prior == null ? 1 : prior + 1);
+                    // a single keymap may provide alternative shortcuts for a given action. Count just once
+                    // per keymap.
+                    definitionCountById.put(id, prior == null ? keymapFlag : prior | keymapFlag);
                 } else if (!d.getPrimaryFile().hasExt("shadow") && !d.getPrimaryFile().hasExt("removed")) {
                     warnings.add("Anomalous file " + d);
                 } // else #172453: BrokenDataShadow, OK
             }
+            keymapFlag <<= 1;
         }
+        int expected = (1 << keymaps.length) - 1;
         for (FileObject shortcut : FileUtil.getConfigFile("Shortcuts").getChildren()) {
             DataObject d = DataObject.find(shortcut);
             if (d instanceof DataShadow) {
                 String id = ((DataShadow) d).getOriginal().getPrimaryFile().getPath();
                 if (!org.openide.util.Utilities.isMac() && // Would fail on Mac due to applemenu module
-                        Integer.valueOf(keymaps.length).equals(definitionCountById.get(id)))
+                        Integer.valueOf(expected).equals(definitionCountById.get(id)))
                 {
                     String layers = Arrays.toString((URL[]) d.getPrimaryFile().getAttribute("layers"));
                     warnings.add(d.getPrimaryFile().getPath() + " " + layers + " useless since " + id + " is bound (somehow) in all keymaps");
@@ -1000,7 +1006,6 @@ public class ValidateLayerConsistencyTest extends NbTestCase {
     }
     */
 
-    /* XXX currently fails
     public void testTemplates() throws Exception { // #167205
         List<String> warnings = new ArrayList<String>();
         for (FileObject f : NbCollections.iterable(FileUtil.getConfigFile("Templates").getData(true))) {
@@ -1017,13 +1022,16 @@ public class ValidateLayerConsistencyTest extends NbTestCase {
                 continue; // same
             }
             String path = f.getPath();
-            if (path.equals("Templates/Other/file")) {
+            if (path.equals("Templates/Other/file") ||
+                path.equals("Templates/Other/group.group")) {
+                
+                // If there're more files like this, consider adding an API
+                // to mark them as intentionally non-editable
                 continue; // intentionally empty and uneditable
             }
             warnings.add(path + " is empty but has no iterator and will therefore not be editable");
         }
         assertNoErrors("Problems in templates", warnings);
     }
-    */
 
 }

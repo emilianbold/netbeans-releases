@@ -521,15 +521,12 @@ public class CssCompletion implements CodeCompletionHandler {
         }
         Token<CssTokenId> t = ts.token();
 
-        if(t.id() != CssTokenId.GENERIC_AT_RULE) {
-            switch (t.id().getTokenCategory()) {
-                case KEYWORDS:
-                case OPERATORS:
-                case BRACES:
-                    return EMPTY_STRING;
-            }
+        switch (t.id().getTokenCategory()) {
+            case KEYWORDS:
+            case OPERATORS:
+            case BRACES:
+                return EMPTY_STRING;
         }
-
 
         int skipPrefixChars = 0;
         switch (t.id()) {
@@ -816,8 +813,6 @@ public class CssCompletion implements CodeCompletionHandler {
             case selectorsGroup:
             case combinator:
             case selector:
-            case body:
-            case imports:
                 //complete selector list without prefix in selector list e.g. BODY, | { ... }
                 completionProposals.addAll(completeHtmlSelectors(completionContext, prefix, caretOffset));
                 break;
@@ -851,9 +846,8 @@ public class CssCompletion implements CodeCompletionHandler {
                 || nodeType == NodeType.media 
                 || nodeType == NodeType.page 
                 || nodeType == NodeType.charSet
-                || nodeType == NodeType.generic_at_rule/*
-                 * || nodeType == NodeType.JJTFONTFACERULE
-                 */) {
+                || nodeType == NodeType.generic_at_rule
+                || nodeType == NodeType.fontFace) {
             //complete at keywords with prefix - parse tree OK
             if (tokenFound) {
                 TokenId id = completionContext.getTokenSequence().token().id();
@@ -861,9 +855,8 @@ public class CssCompletion implements CodeCompletionHandler {
                         || id == CssTokenId.MEDIA_SYM 
                         || id == CssTokenId.PAGE_SYM 
                         || id == CssTokenId.CHARSET_SYM
-                        || id == CssTokenId.GENERIC_AT_RULE/*
-                         * || id == CssTokenId.FONT_FACE_SYM
-                         */
+                        || id == CssTokenId.GENERIC_AT_RULE
+                        || id == CssTokenId.FONT_FACE_SYM
                         || id == CssTokenId.ERROR) {
                     //we are on the right place in the node
 

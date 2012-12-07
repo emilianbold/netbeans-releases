@@ -41,7 +41,8 @@
  */
 package org.netbeans.modules.css.editor.module.main;
 
-import org.netbeans.modules.csl.api.test.CslTestBase;
+import org.netbeans.modules.css.lib.CssTestBase;
+import org.netbeans.modules.css.lib.api.properties.GrammarResolver;
 import org.netbeans.modules.css.lib.api.properties.Properties;
 import org.netbeans.modules.css.lib.api.properties.PropertyDefinition;
 import org.netbeans.modules.css.lib.api.properties.ResolvedProperty;
@@ -51,7 +52,7 @@ import org.netbeans.modules.parsing.spi.ParseException;
  *
  * @author mfukala@netbeans.org
  */
-public class ColorsModuleTest extends CslTestBase {
+public class ColorsModuleTest extends CssTestBase {
 
     public ColorsModuleTest(String name) {
         super(name);
@@ -118,6 +119,15 @@ public class ColorsModuleTest extends CslTestBase {
 //        assertTrue(new PropertyValue(p, "inherit").success());
         assertTrue(new ResolvedProperty(p, "currentColor").isResolved());
         assertTrue(new ResolvedProperty(p, "transparent").isResolved());
+    }
+    
+    public void testInheritInColor() throws ParseException {
+        PropertyDefinition p = Properties.getPropertyDefinition( "color");
+        PRINT_INFO_IN_ASSERT_RESOLVE = true;
+        GrammarResolver.setLogging(GrammarResolver.Log.DEFAULT, true);
+        assertResolve(p.getGrammarElement(null), "inherit");
+        
+//        assertCssCode("div { color: inherit }");
     }
     
     

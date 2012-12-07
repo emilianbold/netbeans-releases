@@ -124,6 +124,7 @@ public abstract class ActionsProvider {
     public void postAction (final Object action,
                             final Runnable actionPerformedNotifier) {
         debuggerActionsRP.post(new Runnable() {
+            @Override
             public void run() {
                 try {
                     doAction(action);
@@ -301,7 +302,7 @@ public abstract class ActionsProvider {
                 actionsDelegate = delegate;
                 if (actionsDelegate == null) {
                     listeners.remove(l);
-                    if (listeners.size() == 0 && contextDispatcherListener != null) {
+                    if (listeners.isEmpty() && contextDispatcherListener != null) {
                         detachContextDispatcherListener();
                     }
                     return ;
@@ -310,6 +311,7 @@ public abstract class ActionsProvider {
             actionsDelegate.removeActionsProviderListener(l);
         }
 
+        @Override
         public ActionsProvider forContext(ContextProvider context) {
             if (context == this.context) {
                 return this;
@@ -351,14 +353,20 @@ public abstract class ActionsProvider {
             if (strArray == null) {
                 return null;
             }
-            if (strArray.startsWith("[")) strArray = strArray.substring(1);
-            if (strArray.endsWith("]")) strArray = strArray.substring(0, strArray.length() - 1);
+            if (strArray.startsWith("[")) {
+                strArray = strArray.substring(1);
+            }
+            if (strArray.endsWith("]")) {
+                strArray = strArray.substring(0, strArray.length() - 1);
+            }
             strArray = strArray.trim();
             int index = 0;
             List<String> strings = new ArrayList<String>();
             while (index < strArray.length()) {
                 int index2 = strArray.indexOf(',', index);
-                if (index2 < 0) index2 = strArray.length();
+                if (index2 < 0) {
+                    index2 = strArray.length();
+                }
                 if (index2 > index) {
                     String s = strArray.substring(index, index2).trim();
                     if (s.length() > 0) { // Can be trimmed to 0 length
@@ -493,6 +501,11 @@ public abstract class ActionsProvider {
             
         }
 
+        @Override
+        public synchronized String toString() {
+            return "ActionsProvider.ContextAware for service "+serviceName+", context = "+context+", path = "+path+", delegate = "+delegate;
+        }
+        
     }
     
 }

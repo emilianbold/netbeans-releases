@@ -59,6 +59,7 @@ import javax.swing.JPanel;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.css.lib.api.CssParserResult;
 import org.netbeans.modules.css.model.api.Declaration;
+import org.netbeans.modules.css.model.api.Declarations;
 import org.netbeans.modules.css.model.api.Expression;
 import org.netbeans.modules.css.model.api.Model;
 import org.netbeans.modules.css.model.api.Property;
@@ -416,29 +417,32 @@ public class CSSStylesPanel extends JPanel implements PageModel.CSSStylesView {
                             controller.setRule(modelRule);
                             if (ruleInfo != null) {
                                 List<String> active = new ArrayList<String>();
-                                List<Declaration> declarations = modelRule.getDeclarations().getDeclarations();
-                                for (int i=declarations.size()-1; i>=0; i--) {
-                                    Declaration declaration = declarations.get(i);
-                                    Property property = declaration.getProperty();
-                                    String propertyName = property.getContent().toString().trim();
-                                    PropertyValue propertyValue = declaration.getPropertyValue();
-                                    Expression expression = propertyValue.getExpression();
-                                    String value = expression.getContent().toString().trim();
-                                    if (isIEHackIgnoredByWebKit(property, result.getSnapshot())) {
-                                        controller.setDeclarationInfo(declaration, DeclarationInfo.INACTIVE);
-                                    } else if (isParsedOk(propertyName, value)) {
-                                        if (!ruleInfo.isInherited() || CSSUtils.isInheritedProperty(propertyName)) {
-                                            if (ruleInfo.isOverriden(propertyName) || active.contains(propertyName)) {
-                                                controller.setDeclarationInfo(declaration, DeclarationInfo.OVERRIDDEN);
+                                Declarations decls = modelRule.getDeclarations();
+                                if (decls != null) {
+                                    List<Declaration> declarations = decls.getDeclarations();
+                                    for (int i=declarations.size()-1; i>=0; i--) {
+                                        Declaration declaration = declarations.get(i);
+                                        Property property = declaration.getProperty();
+                                        String propertyName = property.getContent().toString().trim();
+                                        PropertyValue propertyValue = declaration.getPropertyValue();
+                                        Expression expression = propertyValue.getExpression();
+                                        String value = expression.getContent().toString().trim();
+                                        if (isIEHackIgnoredByWebKit(property, result.getSnapshot())) {
+                                            controller.setDeclarationInfo(declaration, DeclarationInfo.INACTIVE);
+                                        } else if (isParsedOk(propertyName, value)) {
+                                            if (!ruleInfo.isInherited() || CSSUtils.isInheritedProperty(propertyName)) {
+                                                if (ruleInfo.isOverriden(propertyName) || active.contains(propertyName)) {
+                                                    controller.setDeclarationInfo(declaration, DeclarationInfo.OVERRIDDEN);
+                                                } else {
+                                                    active.add(propertyName);
+                                                }
                                             } else {
-                                                active.add(propertyName);
+                                                // Inherited rule but a property that is not inherited
+                                                controller.setDeclarationInfo(declaration, DeclarationInfo.INACTIVE);
                                             }
                                         } else {
-                                            // Inherited rule but a property that is not inherited
-                                            controller.setDeclarationInfo(declaration, DeclarationInfo.INACTIVE);
+                                            controller.setDeclarationInfo(declaration, DeclarationInfo.ERRONEOUS);
                                         }
-                                    } else {
-                                        controller.setDeclarationInfo(declaration, DeclarationInfo.ERRONEOUS);
                                     }
                                 }
                             }

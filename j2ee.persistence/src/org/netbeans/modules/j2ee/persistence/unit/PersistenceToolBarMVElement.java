@@ -49,7 +49,6 @@ import java.beans.PropertyChangeListener;
 import java.util.List;
 import javax.swing.Action;
 import javax.swing.JButton;
-import javax.swing.JComponent;
 import org.netbeans.api.db.explorer.JDBCDriver;
 import org.netbeans.api.db.explorer.JDBCDriverManager;
 import org.netbeans.api.java.classpath.JavaClassPathConstants;
@@ -221,7 +220,7 @@ public class PersistenceToolBarMVElement extends ToolBarMultiViewElement impleme
                 SectionContainer sc = view.getPersistenceUnitsCont();
                 SectionContainerNode sn = (SectionContainerNode) sc.getNode();
                 Children ch=sn.getChildren();
-                NodeSectionPanel nsp = null;
+                NodeSectionPanel nsp;
                 Node mainPUNode = null;
                 for(Node n:ch.getNodes()) {
                     PersistenceUnitNode pun = (PersistenceUnitNode) n;
@@ -237,7 +236,7 @@ public class PersistenceToolBarMVElement extends ToolBarMultiViewElement impleme
                 } else {
                     nsp = sc.getSection(mainPUNode);
                     SectionPanel sp = nsp!=null && nsp instanceof SectionPanel ? ((SectionPanel)nsp) : null;
-                    PersistenceUnitPanel up = (PersistenceUnitPanel) (sp.getInnerPanel() != null && sp.getInnerPanel() instanceof PersistenceUnitPanel ? sp.getInnerPanel() : null);
+                    PersistenceUnitPanel up = (PersistenceUnitPanel) (sp != null && sp.getInnerPanel() != null && sp.getInnerPanel() instanceof PersistenceUnitPanel ? sp.getInnerPanel() : null);
                     if(up != null) {
                         up.initEntityList();
                     }
@@ -332,7 +331,7 @@ public class PersistenceToolBarMVElement extends ToolBarMultiViewElement impleme
     }
     
     
-    private class PersistenceUnitNode extends org.openide.nodes.AbstractNode {
+    private static class PersistenceUnitNode extends org.openide.nodes.AbstractNode {
         PersistenceUnit pu;
         PersistenceUnitNode(Children children, PersistenceUnit persistenceUnit) {
             super(children);
@@ -352,7 +351,7 @@ public class PersistenceToolBarMVElement extends ToolBarMultiViewElement impleme
         
     }
     
-    private class ElementLeafNode extends org.openide.nodes.AbstractNode {
+    private static class ElementLeafNode extends org.openide.nodes.AbstractNode {
 
         ElementLeafNode(String displayName) {
             super(org.openide.nodes.Children.LEAF);
@@ -413,7 +412,7 @@ public class PersistenceToolBarMVElement extends ToolBarMultiViewElement impleme
             
             if (result == NotifyDescriptor.OK_OPTION) {
                 String version=puDataObject.getPersistence().getVersion();
-                PersistenceUnit punit = null;
+                PersistenceUnit punit;
                 boolean useModelgen = false;
                 String modelGenLib = null;
                 if(Persistence.VERSION_2_0.equals(version))
@@ -478,7 +477,9 @@ public class PersistenceToolBarMVElement extends ToolBarMultiViewElement impleme
                 //modelgen
                 if(useModelgen && modelGenLib!=null){
                     Library mLib = LibraryManager.getDefault().getLibrary(modelGenLib);
-                    if(mLib!=null) Util.addLibraryToProject(project, mLib, JavaClassPathConstants.PROCESSOR_PATH);//no real need to add modelgen to compile classpath
+                    if(mLib!=null) {
+                        Util.addLibraryToProject(project, mLib, JavaClassPathConstants.PROCESSOR_PATH);
+                    }//no real need to add modelgen to compile classpath
                 }
             }
         }

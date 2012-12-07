@@ -55,12 +55,14 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.modules.web.clientproject.api.network.NetworkException;
 import org.netbeans.modules.web.clientproject.util.StringUtilities;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -91,28 +93,33 @@ public final class SiteHelper {
      * @param url URL to be downloaded
      * @param target target file
      * @param progressHandle progress handle, can be {@code null}
+     * @throws NetworkException if any network error occurs
      * @throws IOException if any error occurs
      */
     @NbBundle.Messages({
         "# {0} - file name",
         "SiteHelper.progress.download=Downloading file {0}"
     })
-    public static void download(String url, File target, @NullAllowed ProgressHandle progressHandle) throws IOException {
+    public static void download(String url, File target, @NullAllowed ProgressHandle progressHandle) throws NetworkException, IOException {
         assert !EventQueue.isDispatchThread();
         if (progressHandle != null) {
             progressHandle.progress(Bundle.SiteHelper_progress_download(target.getName()));
         }
+        InputStream is;
         try {
-            InputStream is = new URL(url).openStream();
-            try {
-                copyToFile(is, target);
-            } finally {
-                is.close();
-            }
+            is = new URL(url).openStream();
+        } catch (IOException ex) {
+            LOGGER.log(Level.INFO, null, ex);
+            throw new NetworkException(url, ex);
+        }
+        try {
+            copyToFile(is, target);
         } catch (IOException ex) {
             // error => ensure file is deleted
             target.delete();
             throw ex;
+        } finally {
+            is.close();
         }
     }
 
@@ -208,6 +215,10 @@ public final class SiteHelper {
                     }
                     // ignore build folder from mobile boilerplate; unrelated junk IMO.
                     if (entryName.startsWith("build/") || entryName.startsWith("nbproject/")) { //NOI18N
+                        continue;
+                    }
+                    // NetBeans LOCK files
+                    if (entryName.contains("/.LCK") && entryName.endsWith("~")) { //NOI18N
                         continue;
                     }
                     FileObject fo = FileUtil.createData(targetDir, entryName);

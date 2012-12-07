@@ -411,7 +411,7 @@ public class JsFormatter implements Formatter {
 
         // assert we can use the lastOffsetDiff and lastIndentationLevel
         assert tokenBeforeEol.getKind() != FormatToken.Kind.WHITESPACE
-                && tokenBeforeEol.getKind() != FormatToken.Kind.EOL;
+                && tokenBeforeEol.getKind() != FormatToken.Kind.EOL : tokenBeforeEol;
 
         if (style == CodeStyle.WrapStyle.WRAP_IF_LONG) {
             int segmentLength = tokenBeforeEol.getOffset() + tokenBeforeEol.getText().length()
@@ -1242,7 +1242,7 @@ public class JsFormatter implements Formatter {
                     || Utilities.getFirstNonWhiteFwd(doc, startOffset) == context.caretOffset());
             if (indentOnly && indentContext.isEmbedded()) {
                 // Make sure we're not messing with indentation in HTML
-                Token<? extends JsTokenId> token = LexUtilities.getToken(doc, startOffset);
+                Token<? extends JsTokenId> token = LexUtilities.getToken(doc, startOffset, language);
                 if (token == null) {
                     return;
                 }
@@ -1784,7 +1784,7 @@ public class JsFormatter implements Formatter {
                 while (newOffset < lineEnd && token != null) {
                     newOffset = newOffset + token.length();
                     if (newOffset < doc.getLength()) {
-                        token = LexUtilities.getToken(doc, newOffset);
+                        token = LexUtilities.getToken(doc, newOffset, language);
                         if (token != null) {
                             id = token.id();
                             if (id == JsTokenId.WHITESPACE) {
@@ -1823,7 +1823,7 @@ public class JsFormatter implements Formatter {
                     return token;
                 }
             } else {
-                return LexUtilities.getToken(doc, lineBegin);
+                return LexUtilities.getToken(doc, lineBegin, language);
             }
         }
 

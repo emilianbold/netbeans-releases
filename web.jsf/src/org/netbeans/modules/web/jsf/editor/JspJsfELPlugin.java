@@ -281,7 +281,7 @@ public class JspJsfELPlugin extends ELPlugin {
         
         OpenTag openTag = (OpenTag) element;
 
-        String namespacePrefix = openTag.namespacePrefix().toString();
+        String namespacePrefix = openTag.namespacePrefix() == null ? null : openTag.namespacePrefix().toString();
         Map<String, String> namespaces = htmlParserResult.getNamespaces();
         String namespace = null;
 

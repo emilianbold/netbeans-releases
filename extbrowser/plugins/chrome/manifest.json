@@ -2,8 +2,9 @@
   "name": "__MSG__pluginName__",
   "description": "__MSG__pluginDescription__",
   "manifest_version": 2,
+  "minimum_chrome_version": "21",
 
-  "version": "0.6.6",
+  "version": "0.6.15",
 
   "homepage_url": "https://chrome.google.com/webstore/detail/netbeans-connector/hafdlehgocfcodbgjnpecfajgkeejnaa",
 
@@ -23,7 +24,7 @@
     "contextMenus",
     "tabs",
     "debugger",
-    "<all_urls>" 
+    "storage"
   ],
 
   "content_security_policy": "default-src 'self'; connect-src ws://127.0.0.1:8008/",

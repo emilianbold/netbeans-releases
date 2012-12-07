@@ -73,6 +73,7 @@ public class TestUtil extends ProxyLookup {
         setLookups(new Lookup[] {
             Lookups.singleton(TestUtil.class.getClassLoader()),
         });
+        // NOTE: ensure netbeans.user points to a writable dir
         System.setProperty("netbeans.user","test/manowar");
     }
     

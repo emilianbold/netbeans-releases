@@ -85,8 +85,8 @@ public class ModifiersCheckHintError extends AbstractHintError {
         this.hints = hints;
         this.doc = context.doc;
         FileScope fileScope = context.fileScope;
-        if (fileScope != null) {
-            fileObject = context.parserResult.getSnapshot().getSource().getFileObject();
+        fileObject = phpParseResult.getSnapshot().getSource().getFileObject();
+        if (fileScope != null && fileObject != null) {
             Collection<? extends ClassScope> declaredClasses = ModelUtils.getDeclaredClasses(fileScope);
             for (ClassScope classScope : declaredClasses) {
                 processClassScope(classScope);

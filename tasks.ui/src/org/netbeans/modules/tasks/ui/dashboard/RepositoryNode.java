@@ -58,6 +58,8 @@ import org.netbeans.modules.tasks.ui.actions.*;
 import org.netbeans.modules.tasks.ui.actions.Actions.CloseRepositoryNodeAction;
 import org.netbeans.modules.tasks.ui.actions.Actions.CreateTaskAction;
 import org.netbeans.modules.tasks.ui.actions.Actions.OpenRepositoryNodeAction;
+import org.netbeans.modules.tasks.ui.actions.Actions.CreateQueryAction;
+import org.netbeans.modules.tasks.ui.actions.Actions.QuickSearchAction;
 import org.netbeans.modules.tasks.ui.treelist.AsynchronousNode;
 import org.netbeans.modules.tasks.ui.treelist.TreeLabel;
 import org.netbeans.modules.tasks.ui.treelist.TreeListNode;
@@ -74,7 +76,6 @@ public class RepositoryNode extends AsynchronousNode<Collection<Query>> implemen
     private final Repository repository;
     private List<QueryNode> queryNodes;
     private List<QueryNode> filteredQueryNodes;
-    private boolean loaded;
     private boolean refresh;
     private JPanel panel;
     private TreeLabel lblName;
@@ -82,24 +83,24 @@ public class RepositoryNode extends AsynchronousNode<Collection<Query>> implemen
     private LinkButton btnRefresh;
     private LinkButton btnSearch;
     private LinkButton btnCreateTask;
+    private LinkButton btnAddQuery;
     private CloseRepositoryNodeAction closeRepositoryAction;
     private OpenRepositoryNodeAction openRepositoryAction;
     private Map<String, QueryNode> queryNodesMap;
     private RepositoryListener repositoryListener;
 
-    public RepositoryNode(Repository repository, boolean loaded) {
-        this(repository, loaded, true);
+    public RepositoryNode(Repository repository) {
+        this(repository, true);
     }
 
-    public RepositoryNode(Repository repository, boolean loaded, boolean opened) {
+    public RepositoryNode(Repository repository, boolean opened) {
         super(opened, null, repository.getDisplayName());
         this.repository = repository;
-        this.loaded = loaded;
         this.refresh = false;
         queryNodesMap = new HashMap<String, QueryNode>();
         repositoryListener = new RepositoryListener();
     }
-
+ 
     @Override
     protected Collection<Query> load() {
         if (refresh && queryNodes != null) {
@@ -137,12 +138,16 @@ public class RepositoryNode extends AsynchronousNode<Collection<Query>> implemen
         if (isOpened()) {
             btnRefresh = new LinkButton(ImageUtilities.loadImageIcon("org/netbeans/modules/tasks/ui/resources/refresh.png", true), new Actions.RefreshRepositoryAction(this)); //NOI18N
             btnRefresh.setToolTipText(NbBundle.getMessage(CategoryNode.class, "LBL_Refresh")); //NOI18N
-            panel.add(btnRefresh, new GridBagConstraints(8, 0, 1, 1, 0.0, 0.0, GridBagConstraints.EAST, GridBagConstraints.NONE, new Insets(0, 3, 0, 0), 0, 0));
+            panel.add(btnRefresh, new GridBagConstraints(9, 0, 1, 1, 0.0, 0.0, GridBagConstraints.EAST, GridBagConstraints.NONE, new Insets(0, 3, 0, 0), 0, 0));
 
-            btnSearch = new LinkButton(ImageUtilities.loadImageIcon("org/netbeans/modules/tasks/ui/resources/search_repo.png", true), new SearchRepositoryAction(this)); //NOI18N
+            btnSearch = new LinkButton(ImageUtilities.loadImageIcon("org/netbeans/modules/tasks/ui/resources/search_repo.png", true), new QuickSearchAction(this)); //NOI18N
             btnSearch.setToolTipText(NbBundle.getMessage(CategoryNode.class, "LBL_SearchInRepo")); //NOI18N
-            panel.add(btnSearch, new GridBagConstraints(7, 0, 1, 1, 0.0, 0.0, GridBagConstraints.EAST, GridBagConstraints.NONE, new Insets(0, 3, 0, 0), 0, 0));
+            panel.add(btnSearch, new GridBagConstraints(8, 0, 1, 1, 0.0, 0.0, GridBagConstraints.EAST, GridBagConstraints.NONE, new Insets(0, 3, 0, 0), 0, 0));
 
+            btnAddQuery = new LinkButton(ImageUtilities.loadImageIcon("org/netbeans/modules/tasks/ui/resources/query.png", true), new CreateQueryAction(this)); //NOI18N
+            btnAddQuery.setToolTipText(NbBundle.getMessage(CategoryNode.class, "LBL_CreateQuery")); //NOI18N
+            panel.add(btnAddQuery, new GridBagConstraints(7, 0, 1, 1, 0.0, 0.0, GridBagConstraints.EAST, GridBagConstraints.NONE, new Insets(0, 3, 0, 0), 0, 0));
+            
             btnCreateTask = new LinkButton(ImageUtilities.loadImageIcon("org/netbeans/modules/tasks/ui/resources/add_task.png", true), new CreateTaskAction(this)); //NOI18N
             btnCreateTask.setToolTipText(NbBundle.getMessage(CategoryNode.class, "LBL_CreateTask")); //NOI18N
             panel.add(btnCreateTask, new GridBagConstraints(6, 0, 1, 1, 0.0, 0.0, GridBagConstraints.EAST, GridBagConstraints.NONE, new Insets(0, 3, 0, 0), 0, 0));
@@ -168,7 +173,6 @@ public class RepositoryNode extends AsynchronousNode<Collection<Query>> implemen
             if (filteredQueryNodes == null) {
                 return new ArrayList<TreeListNode>(0);
             }
-            loaded = true;
             DashboardViewer dashboard = DashboardViewer.getInstance();
             if (!filteredQueryNodes.isEmpty()) {
                 List<QueryNode> children = filteredQueryNodes;
@@ -197,7 +201,7 @@ public class RepositoryNode extends AsynchronousNode<Collection<Query>> implemen
             for (Query query : queries) {
                 QueryNode queryNode = queryNodesMap.get(query.getDisplayName());
                 if (queryNode == null) {
-                    queryNode = new QueryNode(query, this, !loaded);
+                    queryNode = new QueryNode(query, this, true);
                     queryNodesMap.put(query.getDisplayName(), queryNode);
                 }
                 queryNode.updateContent();
@@ -266,8 +270,10 @@ public class RepositoryNode extends AsynchronousNode<Collection<Query>> implemen
         return queryNodes;
     }
 
-    public List<QueryNode> getFilteredQueryNodes() {
-        return filteredQueryNodes;
+    public final int getFilteredQueryCount() {
+        synchronized (LOCK) {
+            return filteredQueryNodes != null ? filteredQueryNodes.size() : 0;
+        }
     }
 
     public void setFilteredQueryNodes(List<QueryNode> filteredQueryNodes) {
@@ -316,10 +322,6 @@ public class RepositoryNode extends AsynchronousNode<Collection<Query>> implemen
     @Override
     public String toString() {
         return repository.getDisplayName();
-    }
-
-    public boolean isLoaded() {
-        return loaded;
     }
 
     void updateContent() {

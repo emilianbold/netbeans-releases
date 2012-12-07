@@ -56,6 +56,7 @@ import org.netbeans.modules.cnd.api.toolchain.ToolchainManager.ScannerDescriptor
 import org.netbeans.modules.cnd.api.toolchain.ToolchainManager.ScannerPattern;
 import org.netbeans.modules.cnd.toolchain.compilerset.ToolUtils;
 import org.netbeans.modules.cnd.spi.toolchain.ErrorParserProvider;
+import org.netbeans.modules.cnd.spi.toolchain.ErrorParserProvider.OutputListenerRegistry;
 import org.netbeans.modules.cnd.spi.toolchain.ErrorParserProvider.Result;
 import org.netbeans.modules.cnd.spi.toolchain.ErrorParserProvider.Results;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
@@ -77,7 +78,7 @@ public final class GCCErrorParser extends ErrorParser {
     private Stack<Integer> relativesLevel = new Stack<Integer>();
     private ArrayList<StackIncludeItem> errorInludes = new ArrayList<StackIncludeItem>();
     private boolean isEntered;
-    private final OutputListenerFactory listenerFactory = new OutputListenerFactory();
+    private OutputListenerRegistry listenerRegistry;
 
     public GCCErrorParser(Project project, CompilerFlavor flavor, ExecutionEnvironment execEnv, FileObject relativeTo) {
         super(project, execEnv, relativeTo);
@@ -116,6 +117,11 @@ public final class GCCErrorParser extends ErrorParser {
 	    GCC_ERROR_SCANNER.add(pattern);
 	    patterns.add(pattern);
 	}
+    }
+
+    @Override
+    public void setOutputListenerRegistry(OutputListenerRegistry regestry) {
+        listenerRegistry = regestry;
     }
 
     // FIXUP IZ#115960 and all other about EmptyStackException
@@ -164,7 +170,7 @@ public final class GCCErrorParser extends ErrorParser {
                 if (!ToolUtils.isPathAbsolute(directory)) {
                     if (relativeTo != null) {
                         if (relativeTo.isFolder()) {
-                            directory = relativeTo.getURL().getPath() + File.separator + directory;
+                            directory = relativeTo.toURL().getPath() + File.separator + directory;
                         }
                     }
                 }
@@ -183,7 +189,7 @@ public final class GCCErrorParser extends ErrorParser {
             if (!ToolUtils.isPathAbsolute(directory)) {
                 if (relativeTo != null) {
                     if (relativeTo.isFolder()) {
-                        directory = relativeTo.getURL().getPath() + File.separator + directory;
+                        directory = relativeTo.toURL().getPath() + File.separator + directory;
                     }
                 }
             }
@@ -199,7 +205,7 @@ public final class GCCErrorParser extends ErrorParser {
             if (!ToolUtils.isPathAbsolute(directory)) {
                 if (relativeDir != null) {
                     if (relativeDir.isFolder()) {
-                        directory = relativeDir.getURL().getPath() + File.separator + directory;
+                        directory = relativeDir.toURL().getPath() + File.separator + directory;
                     }
                 }
             }
@@ -277,14 +283,14 @@ public final class GCCErrorParser extends ErrorParser {
                         for (Iterator<StackIncludeItem> it = errorInludes.iterator(); it.hasNext();) {
                             StackIncludeItem item = it.next();
                             if (item.fo != null) {
-                                res.add(item.line, listenerFactory.register(item.fo, item.lineNumber, important,
+                                res.add(item.line, listenerRegistry.register(item.fo, item.lineNumber, important,
                                         NbBundle.getMessage(GCCErrorParser.class, "HINT_IncludedFrom"))); // NOI18N
                             } else {
                                 res.add(item.line, null);
                             }
                         }
                         errorInludes.clear();
-                        res.add(line, listenerFactory.register(fo, lineNumber.intValue() - 1, important, description));
+                        res.add(line, listenerRegistry.register(fo, lineNumber.intValue() - 1, important, description));
                         return res;
                     }
                 }

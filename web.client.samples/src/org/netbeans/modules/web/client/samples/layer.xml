@@ -49,14 +49,14 @@ made subject to such option by the copyright holder.
         <folder name="Project">
             <folder name="Samples">
                 <folder name="HTML5">
-                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.client.samples.ui.Bundle"/>
+                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.client.samples.wizard.ui.Bundle"/>
                     <attr name="position" intvalue="210"/>
-                    <file name="EaselDemo" url="Easel.zip">
-                        <attr name="displayName" bundlevalue="org.netbeans.modules.web.client.samples.ui.Bundle#Templates/Project/Samples/HTML5/EaselDemo"/>
+                    <file name="ResponsiveRabbits" url="Easel.zip">
+                        <attr name="displayName" bundlevalue="org.netbeans.modules.web.client.samples.wizard.ui.Bundle#Templates/Project/Samples/HTML5/ResponsiveRabbits"/>
                         <attr name="position" intvalue="100"/>
-                        <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/web/client/samples/ui/resources/HTML5_project_icon.png"/>
-                        <attr name="instantiatingIterator" newvalue="org.netbeans.modules.web.client.samples.ui.SampleWizardIterator"/>
-                        <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/web/client/samples/Easel.html"/>
+                        <attr name="iconBase" stringvalue="org/netbeans/modules/web/client/samples/resources/HTML5_project_icon.png"/>
+                        <attr name="instantiatingIterator" newvalue="org.netbeans.modules.web.client.samples.wizard.iterator.SampleWizardIterator"/>
+                        <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/web/client/samples/resources/ResponsiveRabbits.html"/>
                         <attr name="template" boolvalue="true"/>
                     </file>
                  </folder>

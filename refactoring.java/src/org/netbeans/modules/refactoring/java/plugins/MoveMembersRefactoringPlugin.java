@@ -308,6 +308,10 @@ public class MoveMembersRefactoringPlugin extends JavaRefactoringPlugin {
                 for (TreePathHandle tph : tphs) {
                     set.add(tph.getFileObject());
                     final Element el = tph.resolveElement(info);
+                    if (el == null) {
+                        // Similar to #145291 from JavaWhereUsedQueryPlugin
+                        throw new NullPointerException(String.format("#222979: Cannot resolve handle: %s\n%s", tph, info.getClasspathInfo())); // NOI18N
+                    }
                     if (el.getKind() == ElementKind.METHOD) {
                         // get method references from index
                         set.addAll(idx.getResources(ElementHandle.create((TypeElement) el.getEnclosingElement()), EnumSet.of(ClassIndex.SearchKind.METHOD_REFERENCES), searchScopeType)); //?????

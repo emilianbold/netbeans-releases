@@ -52,7 +52,6 @@ import com.sun.jdi.IncompatibleThreadStateException;
 import com.sun.jdi.InvalidTypeException;
 import com.sun.jdi.InvocationException;
 import com.sun.jdi.Method;
-import com.sun.jdi.ObjectCollectedException;
 import com.sun.jdi.ObjectReference;
 import com.sun.jdi.ReferenceType;
 import com.sun.jdi.StackFrame;
@@ -68,7 +67,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -83,7 +81,6 @@ import java.util.logging.Logger;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import org.netbeans.api.debugger.DebuggerManager;
-import org.netbeans.api.debugger.jpda.JPDAClassType;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.api.debugger.jpda.JPDAThread;
 import org.netbeans.api.debugger.jpda.MethodBreakpoint;
@@ -112,8 +109,10 @@ import org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.VirtualMachineWrapper;
 import org.netbeans.modules.debugger.jpda.models.JPDAThreadImpl;
 import org.openide.util.Exceptions;
+import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.WeakSet;
+import org.openide.windows.InputOutput;
 
 /**
  *
@@ -194,7 +193,7 @@ public class RemoteServices {
                         String className = rc.name;
                         if ((sType == ServiceType.AWT && className.contains("AWT")) ||
                             (sType == ServiceType.FX && className.contains("FX"))) {
-                            ClassObjectReference theUploadedClass = null;
+                            ClassObjectReference theUploadedClass;
                             ArrayReference byteArray = createTargetBytes(vm, rc.bytes);
                             StringReference nameMirror = null;
                             try {
@@ -331,13 +330,12 @@ public class RemoteServices {
      */
     public static void runOnStoppedThread(JPDAThread thread, final Runnable run, ServiceType sType) throws PropertyVetoException {
         final JPDAThreadImpl t = (JPDAThreadImpl) thread;
-        boolean wasSuspended = true;
         
         Lock lock = t.accessLock.writeLock();
         lock.lock();
         try {
             ThreadReference threadReference = t.getThreadReference();
-            wasSuspended = t.isSuspended();
+            boolean wasSuspended = t.isSuspended();
             if (t.isSuspended() && !threadReference.isAtBreakpoint()) {
                 // TODO: Suspended, but will not be able to invoke methods
                 
@@ -456,7 +454,7 @@ public class RemoteServices {
     private static void retrieveAttachedListeners(JPDAThreadImpl thread,
                                                   ObjectReference component,
                                                   List<RemoteListener> rlisteners,
-                                                  boolean combineAllTypes) {
+                                                  final boolean combineAllTypes) {
         ThreadReference t = thread.getThreadReference();
         try {
             ReferenceType clazz = ObjectReferenceWrapper.referenceType(component);
@@ -611,10 +609,15 @@ public class RemoteServices {
                 ReferenceType rt = (ReferenceType) t;
                 String lname = ReferenceTypeWrapper.name(rt);
                 int i = lname.lastIndexOf('.');
-                if (i < 0) i = 0;
-                else i++;
+                if (i < 0) {
+                    i = 0;
+                } else {
+                    i++;
+                }
                 int ii = lname.lastIndexOf('$', i);
-                if (ii > i) i = ii + 1;
+                if (ii > i) {
+                    i = ii + 1;
+                }
                 //System.err.println("  getAttachableListeners() '"+name.substring(3)+"' should equal to '"+lname.substring(i)+"', lname = "+lname+", i = "+i);
                 if (!name.substring(3).equals(lname.substring(i))) {
                     // addXXXListener() method name does not match XXXListener simple class name.
@@ -941,8 +944,13 @@ public class RemoteServices {
                         public void run() {
                             try {
                                 if (attach) {
-                                    Method startHierarchyListenerMethod = ClassTypeWrapper.concreteMethodByName(serviceClass, "startHierarchyListener", "()V");
-                                    ClassTypeWrapper.invokeMethod(serviceClass, tr, startHierarchyListenerMethod, Collections.EMPTY_LIST, ObjectReference.INVOKE_SINGLE_THREADED);
+                                    Method startHierarchyListenerMethod = ClassTypeWrapper.concreteMethodByName(serviceClass, "startHierarchyListener", "()Ljava/lang/String;");
+                                    Value res = ClassTypeWrapper.invokeMethod(serviceClass, tr, startHierarchyListenerMethod, Collections.EMPTY_LIST, ObjectReference.INVOKE_SINGLE_THREADED);
+                                    if (res instanceof StringReference) {
+                                        String reason = ((StringReference) res).value();
+                                        InputOutput io = ((JPDAThreadImpl) t).getDebugger().getIO();
+                                        io.getErr().println(NbBundle.getMessage(VisualDebuggerListener.class, "MSG_NoTrackingOfComponentChanges", reason));
+                                    }
                                 } else {
                                     Method stopHierarchyListenerMethod = ClassTypeWrapper.concreteMethodByName(serviceClass, "stopHierarchyListener", "()V");
                                     ClassTypeWrapper.invokeMethod(serviceClass, tr, stopHierarchyListenerMethod, Collections.EMPTY_LIST, ObjectReference.INVOKE_SINGLE_THREADED);
@@ -998,15 +1006,19 @@ public class RemoteServices {
             List<RemoteClass> rcl = new ArrayList<RemoteClass>();
             while((ze = zin.getNextEntry()) != null) {
                 String fileName = ze.getName();
-                if (!fileName.endsWith(".class")) continue;
+                if (!fileName.endsWith(".class")) {
+                    continue;
+                }
                 String name = fileName.substring(0, fileName.length() - ".class".length());
                 int baseStart = name.lastIndexOf('/');
-                if (baseStart < 0) continue;
-                baseStart++;
+                if (baseStart < 0) {
+                    continue;
+                }
+                /*baseStart++;
                 int baseEnd = name.indexOf('$', baseStart);
                 if (baseEnd < 0) {
                     baseEnd = name.length();
-                }
+                }*/
                 RemoteClass rc = new RemoteClass();
                 rc.name = name.replace('/', '.');
                 int l = (int) ze.getSize();
@@ -1147,7 +1159,9 @@ public class RemoteServices {
         @Override
         public void propertyChange(PropertyChangeEvent evt) {
             JPDAThreadImpl thread = this.t;
-            if (thread == null) return ;
+            if (thread == null) {
+                return ;
+            }
             if (JPDAThread.PROP_SUSPENDED.equals(evt.getPropertyName()) &&
                 !"methodInvoke".equals(evt.getPropagationId())) {               // NOI18N
                 

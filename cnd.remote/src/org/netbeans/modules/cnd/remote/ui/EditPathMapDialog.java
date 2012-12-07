@@ -103,6 +103,8 @@ public class EditPathMapDialog extends JPanel implements ActionListener {
     private static final String ACTION_ESCAPE_TABLE = "escapeTable";  //NOI18N
     private static final String ACTION_TAB_IN_CELL = "tabInCell";  //NOI18N
     private static final String ACTION_SHIFT_TAB_IN_CELL = "shiftTabInCell";  //NOI18N
+    
+    private static final RequestProcessor RP = new RequestProcessor("EditPathMapDialog", 1); // NOI18N
 
     public static boolean showMe(ServerRecord host) {
         return showMe(host, Collections.<String>emptyList());
@@ -286,7 +288,7 @@ public class EditPathMapDialog extends JPanel implements ActionListener {
             handleProgress(true);
             tableModel = new PathMapTableModel();
             cache.put(currentHost, tableModel);
-            RequestProcessor.getDefault().post(new Runnable() {
+            RP.post(new Runnable() {
 
                 @Override
                 public void run() {
@@ -480,7 +482,7 @@ public class EditPathMapDialog extends JPanel implements ActionListener {
     private void restoreActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_restoreActionPerformed
         enableControls(false, NbBundle.getMessage(EditPathMapDialog.class, "EPMD_Loading"));
         handleProgress(true);
-        RequestProcessor.getDefault().post(new Runnable() {
+        RP.post(new Runnable() {
 
             @Override
             public void run() {
@@ -527,7 +529,7 @@ public class EditPathMapDialog extends JPanel implements ActionListener {
             }
             handleProgress(true);
             enableControls(false, NbBundle.getMessage(EditPathMapDialog.class, "EPMD_Validating"));
-            RequestProcessor.getDefault().post(new Runnable() {
+            RP.post(new Runnable() {
 
                 @Override
                 public void run() {

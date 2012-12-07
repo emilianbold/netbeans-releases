@@ -139,7 +139,7 @@ public class Reindenter implements IndentTask {
                     int originalStartOffset = it.next();
                     int originalEndOffset;
                     if (it.hasNext()) {
-                        originalEndOffset = it.next();
+                        originalEndOffset = it.next() - 1;
                         it.previous();
                     } else {
                         originalEndOffset = region.getEndOffset();
@@ -1004,14 +1004,18 @@ public class Reindenter implements IndentTask {
 
     private int getMultilineIndent(List<? extends Tree> trees, LinkedList<? extends Tree> path, int commaOffset, int lastLineStartOffset, int currentIndent, boolean align, boolean addContinuationIndent) throws BadLocationException {
         Tree tree = null;
+        Tree first = null;
         for (Tree t : trees) {
+            if (first == null) {
+                first = tree;
+            }
             if (sp.getEndPosition(cut, t) > commaOffset) {
                 break;
             }
             tree = t;
         }
         if (tree != null && findFirstNonWhitespaceToken(commaOffset, (int)(sp.getEndPosition(cut, tree))) == null) {
-            int startOffset = getOriginalOffset((int)sp.getStartPosition(cut, tree));
+            int startOffset = getOriginalOffset((int)sp.getStartPosition(cut, align ? first : tree));
             if (startOffset < 0) {
                 currentIndent = addContinuationIndent ? getContinuationIndent(path, currentIndent) : currentIndent + cs.getIndentSize();
             } else {

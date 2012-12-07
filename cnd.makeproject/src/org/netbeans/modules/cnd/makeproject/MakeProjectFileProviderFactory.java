@@ -61,6 +61,7 @@ import org.netbeans.api.actions.Editable;
 import org.netbeans.api.actions.Openable;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
+import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.modules.cnd.api.project.NativeFileSearch;
@@ -138,6 +139,8 @@ public class MakeProjectFileProviderFactory implements FileProviderFactory {
      */
     public static void removeSearchBase(Project project){
         searchBase.remove(project);
+        // 223003 - memory leaked project instance 
+        fileNameSearchBase.remove(project); // prevent leak
     }
 
     public static void removeFromSearchBase(Project project, Folder folder, CharSequence item) {
@@ -208,39 +211,38 @@ public class MakeProjectFileProviderFactory implements FileProviderFactory {
 
         @Override
         public boolean computeFiles(Context context, Result result) {
-            if (!MakeOptions.getInstance().isFullFileIndexer()) {
-                cancel.set(false);
-                Project project = context.getProject();
+            cancel.set(false);
+            Project project = context.getProject();
+            // if it's our registered project
+            if (MakeProjectFileProviderFactory.searchBase.containsKey(project)) {
                 SearchContext searchContext = new SearchContext(context.getText(), context.getSearchType(), project);
-                if (project != null) {
-                    // check if anything have changed in context, just compare context instances
-                    if (context != lastContext) {
-                        lastContext = context;
-                        searchedProjects.clear();
-                    }
-                    if (searchedProjects.add(searchContext)) {
-                        ConfigurationDescriptorProvider provider = project.getLookup().lookup(ConfigurationDescriptorProvider.class);
-                        if (provider != null && provider.gotDescriptor()) {
-                            MakeConfigurationDescriptor descriptor = provider.getConfigurationDescriptor();
-                            Sources srcs = project.getLookup().lookup(Sources.class);
-                            final SourceGroup[] genericSG = srcs.getSourceGroups("generic"); // NOI18N
-                            if (genericSG != null && genericSG.length > 0) {
-                                for(SourceGroup group : genericSG) {
-                                    if (group.getRootFolder().equals(context.getRoot())) {
-                                        NameMatcher matcher = NameMatcherFactory.createNameMatcher(context.getText(), context.getSearchType());
-                                        computeFiles(project, descriptor, matcher, result);
-                                        break;
-                                    }
+                // check if anything have changed in context, just compare context instances
+                if (context != lastContext) {
+                    lastContext = context;
+                    searchedProjects.clear();
+                }
+                if (searchedProjects.add(searchContext)) {
+                    ConfigurationDescriptorProvider provider = project.getLookup().lookup(ConfigurationDescriptorProvider.class);
+                    if (provider != null && provider.gotDescriptor()) {
+                        MakeConfigurationDescriptor descriptor = provider.getConfigurationDescriptor();
+                        Sources srcs = ProjectUtils.getSources(project);
+                        final SourceGroup[] genericSG = srcs.getSourceGroups(Sources.TYPE_GENERIC);
+                        if (genericSG != null && genericSG.length > 0) {
+                            for(SourceGroup group : genericSG) {
+                                if (group.getRootFolder().equals(context.getRoot())) {
+                                    NameMatcher matcher = NameMatcherFactory.createNameMatcher(context.getText(), context.getSearchType());
+                                    computeFiles(project, descriptor, matcher, result);
                                 }
                             }
-                            return false;
                         }
-                    } else {
-                        System.err.println("MakeProjectFileProviderFactory.FileProviderImpl.computeFiles: skip already searched context " + searchContext);// NOI18N
                     }
                 } else {
-                    System.err.println("MakeProjectFileProviderFactory.FileProviderImpl.computeFiles: no project for source root " + context.getRoot());// NOI18N
+                    System.err.println("MakeProjectFileProviderFactory.FileProviderImpl.computeFiles: skip already searched context " + searchContext);// NOI18N
                 }
+                // notify infrastructure that project related source root is handled
+                return true;
+            } else {
+                System.err.println("MakeProjectFileProviderFactory.FileProviderImpl.computeFiles: no make project for " + context.getRoot());// NOI18N
             }
             return false;
         }
@@ -339,13 +341,14 @@ public class MakeProjectFileProviderFactory implements FileProviderFactory {
                     list.add(CharSequences.create(item.getAbsPath()));
                 }
                 if (!MakeOptions.getInstance().isFullFileIndexer()) {
-                    Map<Folder,List<CharSequence>> projectSearchBase = searchBase.get(project);
+                    final Map<Folder,List<CharSequence>> projectSearchBase = searchBase.get(project);
                     if (projectSearchBase != null) {
                         // create copy of data
+                        Map<Folder,List<CharSequence>> copy;
                         synchronized (projectSearchBase) {
-                            projectSearchBase = new HashMap<Folder, List<CharSequence>>(projectSearchBase);
+                            copy = new HashMap<Folder, List<CharSequence>>(projectSearchBase);
                         }
-                        for (List<CharSequence> files : projectSearchBase.values()) {
+                        for (List<CharSequence> files : copy.values()) {
                             if (files != null) {
                                 for(CharSequence path : files) {
                                     String absPath = path.toString();

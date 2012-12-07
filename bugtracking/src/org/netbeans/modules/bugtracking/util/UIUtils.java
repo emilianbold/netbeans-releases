@@ -226,6 +226,9 @@ public class UIUtils {
             Component cmp = e.getComponent();
             if(cmp instanceof JComponent) {
                 JViewport vp = getViewport(container);
+                if(vp == null) {
+                    return;
+                }
                 Rectangle vr = vp.getViewRect();
                 Point p = SwingUtilities.convertPoint(cmp.getParent(), cmp.getLocation(), container);
                 final Rectangle r = new Rectangle(p, cmp.getSize());

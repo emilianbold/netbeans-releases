@@ -133,7 +133,10 @@ public class TwigCompletionContextFinder {
                 break;
             }
             TwigTokenId tokenId = token.id();
-            if (acceptTokenChains(tokenSequence, FILTER_TOKEN_CHAINS, true)) {
+            if (TwigTokenId.T_TWIG_OTHER.equals(tokenId)) {
+                result = CompletionContext.NONE;
+                break;
+            } else if (acceptTokenChains(tokenSequence, FILTER_TOKEN_CHAINS, true)) {
                 result = CompletionContext.FILTER;
                 break;
             } else if (TwigTokenId.T_TWIG_BLOCK_START.equals(tokenId) || TwigTokenId.T_TWIG_BLOCK_END.equals(tokenId)) {

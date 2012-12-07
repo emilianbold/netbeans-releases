@@ -47,18 +47,18 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.SwingUtilities;
 import org.apache.maven.artifact.versioning.ComparableVersion;
 import org.apache.maven.model.Build;
 import org.apache.maven.model.Dependency;
-import org.apache.maven.model.Resource;
 import org.apache.maven.project.MavenProject;
-import org.codehaus.plexus.util.DirectoryScanner;
 import org.codehaus.plexus.util.cli.CommandLineException;
 import org.codehaus.plexus.util.cli.CommandLineUtils;
 import org.netbeans.api.annotations.common.StaticResource;
@@ -66,6 +66,7 @@ import org.netbeans.api.extexecution.startup.StartupExtender;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.java.project.runner.JavaRunner;
+import org.netbeans.api.java.source.ui.ScanDialog;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
@@ -175,7 +176,7 @@ public class CosChecker implements PrerequisitesChecker, LateBoundPrerequisitesC
     }
 
     private boolean checkRunMainClass(final RunConfig config) {
-        String actionName = config.getActionName();
+        final String actionName = config.getActionName();
         //compile on save stuff
         if (RunUtils.hasApplicationCompileOnSaveEnabled(config)) {
             if ((NbMavenProject.TYPE_JAR.equals(
@@ -200,7 +201,7 @@ public class CosChecker implements PrerequisitesChecker, LateBoundPrerequisitesC
                     }
                 }
 
-                Map<String, Object> params = new HashMap<String, Object>();
+                final Map<String, Object> params = new HashMap<String, Object>();
                 params.put(JavaRunner.PROP_PROJECT_NAME, config.getExecutionName() + "/CoS");
                 String proppath = config.getProperties().get("exec.workingdir"); //NOI18N
                 if (proppath != null) {
@@ -254,27 +255,46 @@ public class CosChecker implements PrerequisitesChecker, LateBoundPrerequisitesC
 
                 if (params.get(JavaRunner.PROP_EXECUTE_FILE) != null ||
                         params.get(JavaRunner.PROP_CLASSNAME) != null) {
-                    String action2Quick = action2Quick(actionName);
+                    final String action2Quick = action2Quick(actionName);
                     boolean supported = JavaRunner.isSupported(action2Quick, params);
                     if (supported) {
                         try {
-                            collectStartupArgs(config, params);
-                            ExecutorTask tsk = JavaRunner.execute(action2Quick, params);
-                            warnCoSInOutput(tsk, config);
-                            tsk.addTaskListener(new TaskListener() {
-
+                            SwingUtilities.invokeAndWait(new Runnable() {
                                 @Override
-                                public void taskFinished(Task task) {
-                                    warnTestCoS(config);
+                                public void run() {
+                                    ScanDialog.runWhenScanFinished(new Runnable() {
+                                        @Override
+                                        public void run() {
+                                            if (SwingUtilities.isEventDispatchThread()) {
+                                                RP.post(this);
+                                                return;
+                                            }
+                                            try {
+                                                collectStartupArgs(config, params);
+                                                ExecutorTask tsk = JavaRunner.execute(action2Quick, params);
+                                                warnCoSInOutput(tsk, config);
+                                                tsk.addTaskListener(new TaskListener() {
+                                                    @Override
+                                                    public void taskFinished(Task task) {
+                                                        warnTestCoS(config);
+                                                    }
+                                                });
+
+                                            } catch (IOException ex) {
+                                                Exceptions.printStackTrace(ex);
+                                            } catch (UnsupportedOperationException ex) {
+                                                Exceptions.printStackTrace(ex);
+                                            } finally {
+                                                touchCoSTimeStamp(config, false);
+                                            }
+                                        }
+                                    }, config.getTaskDisplayName());
                                 }
                             });
-                            
-                        } catch (IOException ex) {
+                        } catch (InterruptedException ex) {
                             Exceptions.printStackTrace(ex);
-                        } catch (UnsupportedOperationException ex) {
+                        } catch (InvocationTargetException ex) {
                             Exceptions.printStackTrace(ex);
-                        } finally {
-                            touchCoSTimeStamp(config, false);
                         }
                         return false;
                     }
@@ -314,7 +334,7 @@ public class CosChecker implements PrerequisitesChecker, LateBoundPrerequisitesC
                 //CoS requires at least TestNG 6.5.2-SNAPSHOT if JUnit is present
                 return true;
             }
-            Map<String, Object> params = new HashMap<String, Object>();
+            final Map<String, Object> params = new HashMap<String, Object>();
             String test = config.getProperties().get("test"); //NOI18N
             if (test == null) {
                 //user somehow configured mapping in unknown way.
@@ -503,30 +523,50 @@ public class CosChecker implements PrerequisitesChecker, LateBoundPrerequisitesC
             //#168551
             params.put("maven.disableSources", Boolean.TRUE);  //NOI18N
 
-            String action2Quick = action2Quick(actionName);
+            final String action2Quick = action2Quick(actionName);
             boolean supported = JavaRunner.isSupported(action2Quick, params);
             if (supported) {
                 try {
-                    collectStartupArgs(config, params);
-                    final ExecutorTask tsk = JavaRunner.execute(action2Quick, params);
-                    warnCoSInOutput(tsk, config);
-                    tsk.addTaskListener(new TaskListener() {
-
+                    SwingUtilities.invokeAndWait(new Runnable() {
                         @Override
-                        public void taskFinished(Task task) {
-                            warnTestCoS(config);
+                        public void run() {
+                            ScanDialog.runWhenScanFinished(new Runnable() {
+                                @Override
+                                public void run() {
+                                    if (SwingUtilities.isEventDispatchThread()) {
+                                        RP.post(this);
+                                        return;
+                                    }
+
+                                    try {
+                                        collectStartupArgs(config, params);
+                                        final ExecutorTask tsk = JavaRunner.execute(action2Quick, params);
+                                        warnCoSInOutput(tsk, config);
+                                        tsk.addTaskListener(new TaskListener() {
+                                            @Override
+                                            public void taskFinished(Task task) {
+                                                warnTestCoS(config);
+                                            }
+                                        });
+                                        //TODO listen on result of execution
+                                        //if failed, tweak the timestamps to force a non-CoS build
+                                        //next time around.
+                                    } catch (IOException ex) {
+                                        Exceptions.printStackTrace(ex);
+                                    } catch (UnsupportedOperationException ex) {
+                                        Exceptions.printStackTrace(ex);
+                                    } finally {
+                                        touchCoSTimeStamp(config, true);
+                                        touchCoSTimeStamp(config, false);
+                                    }
+                                }
+                            }, config.getTaskDisplayName());
                         }
                     });
-                //TODO listen on result of execution
-                //if failed, tweak the timestamps to force a non-CoS build
-                //next time around.
-                } catch (IOException ex) {
+                } catch (InterruptedException ex) {
                     Exceptions.printStackTrace(ex);
-                } catch (UnsupportedOperationException ex) {
+                } catch (InvocationTargetException ex) {
                     Exceptions.printStackTrace(ex);
-                } finally {
-                    touchCoSTimeStamp(config, true);
-                    touchCoSTimeStamp(config, false);
                 }
                 return false;
             }

@@ -45,6 +45,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import javax.swing.text.BadLocationException;
 import junit.framework.Test;
@@ -1123,5 +1124,37 @@ public class Css3ParserTest extends CssTestBase {
 
         NodeUtil.dumpTree(result.getParseTree());
         assertEquals(0, result.getDiagnostics().size());
+    }
+    
+    //Bug 219587 - parsing error on .box:nth-child(4n - 2)
+    public void testWSInExpression() throws ParseException, BadLocationException {
+        String source = ".box:nth-child(4n - 2) { } ";
+        CssParserResult result = TestUtil.parse(source);
+
+        NodeUtil.dumpTree(result.getParseTree());
+        assertEquals(0, result.getDiagnostics().size());
+        
+    }
+    
+    public void testDataURI() throws ParseException, BadLocationException {
+        String source = "div.menu {"
+                + "    background-image: url('data:image/png;base64,iVBORw0KGgoAA"
+                + "AANSUhEUgAAABAAAAAQAQMAAAAlPW0iAAAABlBMVEUAAAD///+l2Z/dAAAAM0l"
+                + "EQVR4nGP4/5/h/1+G/58ZDrAz3D/McH8yw83NDDeNGe4Ug9C9zwz3gVLMDA/A6"
+                + "P9/AFGGFyjOXZtQAAAAAElFTkSuQmCC');"
+                + "}";
+
+        CssParserResult result = TestUtil.parse(source);
+        NodeUtil.dumpTree(result.getParseTree());
+        
+        assertEquals(0, result.getDiagnostics().size());
+        
+        Node term = NodeUtil.query(result.getParseTree(),
+                "styleSheet/body/bodyItem/rule/declarations/declaration/propertyValue/expression/term");
+        assertNotNull(term);
+        
+        Node uri = NodeUtil.getChildTokenNode(term, CssTokenId.URI);
+        assertNotNull(uri);
+        
     }
 }

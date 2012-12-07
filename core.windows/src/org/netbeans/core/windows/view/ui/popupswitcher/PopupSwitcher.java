@@ -104,6 +104,12 @@ class PopupSwitcher extends JPanel {
         table.setInitialSelection( hits, forward );
     }
 
+    @Override
+    public void addNotify() {
+        super.addNotify();
+        _updateDescription();
+    }
+
     private void configureScrollPane() {
         scrollPane.setHorizontalScrollBarPolicy( JScrollPane.HORIZONTAL_SCROLLBAR_NEVER );
         scrollPane.setBorder( BorderFactory.createEmptyBorder() );
@@ -148,6 +154,10 @@ class PopupSwitcher extends JPanel {
     private void updateDescription() {
         if( !lblDescription.isShowing() )
             return;
+        _updateDescription();
+    }
+
+    private void _updateDescription() {
         if( !lblDescription.isValid() ) {
             SwingUtilities.invokeLater( new Runnable() {
                 @Override

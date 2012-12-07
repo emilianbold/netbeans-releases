@@ -211,14 +211,14 @@ public class JsTypedTextInterceptorTest extends JsTestBase {
         insertChar("x = ((^)", ')', "x = (()^)");
     }
 
-    // see issue #217134 - the feature is more confusing than helpful
+// see issue #217134 - the feature is more confusing than helpful
 //    public void testRegexp1() throws Exception {
 //        insertChar("x = ^", '/', "x = /^/");
 //    }
-
-    public void testRegexp2() throws Exception {
-        insertChar("x = /^/", '/', "x = //^");
-    }
+//
+//    public void testRegexp2() throws Exception {
+//        insertChar("x = /^/", '/', "x = //^");
+//    }
 
     public void testRegexp3() throws Exception {
         insertChar("x = /^/", 'a', "x = /a^/");
@@ -241,10 +241,10 @@ public class JsTypedTextInterceptorTest extends JsTestBase {
 //    public void testRegexp7() throws Exception {
 //        insertChar("x = ^\n", '/', "x = /^/\n");
 //    }
-
-    public void testRegexp8() throws Exception {
-        insertChar("x = /^/\n", '/', "x = //^\n");
-    }
+//
+//    public void testRegexp8() throws Exception {
+//        insertChar("x = /^/\n", '/', "x = //^\n");
+//    }
 
     public void testRegexp9() throws Exception {
         insertChar("x = /^/\n", 'a', "x = /a^/\n");

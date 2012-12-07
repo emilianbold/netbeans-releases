@@ -277,7 +277,11 @@ public abstract class TransferFile {
         if (remotePath == REMOTE_PROJECT_ROOT) {
             return baseRemoteDirectoryPath;
         }
-        return baseRemoteDirectoryPath + REMOTE_PATH_SEPARATOR + remotePath;
+        String baseRemotePath = baseRemoteDirectoryPath;
+        if (!baseRemotePath.endsWith(REMOTE_PATH_SEPARATOR)) {
+            baseRemotePath += REMOTE_PATH_SEPARATOR;
+        }
+        return baseRemotePath + remotePath;
     }
 
     /**

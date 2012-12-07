@@ -140,6 +140,9 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
     private static final Logger LOGGER = Logger.getLogger("org.netbeans.modules.cnd.makeproject"); // NOI18N
     private Project project = null;
     
+    private static final RequestProcessor RP = new RequestProcessor("MakeConfigurationDescriptor", 1); // NOI18N
+        
+    
     /*
      * For full remote, configuration base and project base might be different -
      * in 7.0 project base is local (shadow project), configuration base is remote.
@@ -186,7 +189,10 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
         rootFolder = new Folder(this, null, "root", "root", true, Folder.Kind.ROOT); // NOI18N
         projectItems = new ConcurrentHashMap<String, Item>();
         setModified();
-        ToolsPanelSupport.addCompilerSetModifiedListener(MakeConfigurationDescriptor.this);
+    }
+
+    void opened() {
+        ToolsPanelSupport.addCompilerSetModifiedListener(this);
     }
 
     /*
@@ -661,7 +667,7 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
 
     private void checkForChangedItems2(final Folder folder, final Item item) {
         if (SwingUtilities.isEventDispatchThread()) {
-            RequestProcessor.getDefault().post(new Runnable() {
+            RP.post(new Runnable() {
 
                 @Override
                 public void run() {
@@ -886,7 +892,7 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
 
     private void checkForChangedItems2(final Delta delta) {
         if (SwingUtilities.isEventDispatchThread()) {
-            RequestProcessor.getDefault().post(new Runnable() {
+            RP.post(new Runnable() {
 
                 @Override
                 public void run() {
@@ -940,9 +946,10 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
         Configuration[] newConfs = new Configuration[clonedConfs.length];
 
         for (int i = 0; i < clonedConfs.length; i++) {
-            if (clonedConfs[i].getCloneOf() != null) {
-                clonedConfs[i].getCloneOf().assign(clonedConfs[i]);
-                newConfs[i] = clonedConfs[i].getCloneOf();
+            final Configuration cloneOf = clonedConfs[i].getCloneOf();
+            if (cloneOf != null) {
+                cloneOf.assign(clonedConfs[i]);
+                newConfs[i] = cloneOf;
             } else {
                 newConfs[i] = clonedConfs[i];
             }
@@ -1066,7 +1073,7 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
         Object oldLock = projectWriteLocks.putIfAbsent(project.getProjectDirectory().getPath(), lock);
         return (oldLock == null) ? lock : oldLock;
     }
-    
+
     private class SaveRunnable implements Runnable {
 
         private boolean ret = false;
@@ -1480,7 +1487,7 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
             if (canonicalPath != null) {
                 int canonicalPathLength = canonicalPath.length();
                 for (String sourceRoot : sourceRoots) {
-                    String absSourceRoot = CndPathUtilitities.toAbsolutePath(getBaseDir(), sourceRoot);
+                    String absSourceRoot = CndPathUtilitities.toAbsolutePath(getBaseDirFileObject(), sourceRoot);
                     String canonicalSourceRoot;
                     try {
                         canonicalSourceRoot = FileSystemProvider.getCanonicalPath(baseDirFS, absSourceRoot);
@@ -1774,24 +1781,27 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
             return;
         }
         ArrayList<NativeFileItem> filesAdded = new ArrayList<NativeFileItem>();
-        Folder top;
-        top = folder.findFolderByAbsolutePath(dir.getPath());
-        if (top == null) {
-            top = new Folder(folder.getConfigurationDescriptor(), folder, dir.getNameExt(), dir.getNameExt(), true, folderKind);
-            folder.addFolder(top, true);
-        }
-        assert top.getKind() == folderKind;
+        Folder srcRoot;
+        srcRoot = folder.findFolderByAbsolutePath(dir.getPath());
+        String rootPath = null;
         if (folderKind == Folder.Kind.SOURCE_DISK_FOLDER) {
-            String rootPath = ProjectSupport.toProperPath(baseDirFO, dir, project);
+            rootPath = ProjectSupport.toProperPath(baseDirFO, dir, project);
             rootPath = CndPathUtilitities.normalizeSlashes(rootPath);
-            top.setRoot(rootPath);
-        }        
-        addFilesImpl(new HashSet<String>(), top, dir, null, filesAdded, true, true, fileFilter, true/*all found are included by default*/);
+        }
+        if (srcRoot == null) {
+            srcRoot = new Folder(folder.getConfigurationDescriptor(), folder, dir.getNameExt(), dir.getNameExt(), true, folderKind);
+            if (folderKind == Folder.Kind.SOURCE_DISK_FOLDER) {
+                srcRoot.setRoot(rootPath);
+            }
+            srcRoot = folder.addFolder(srcRoot, true);
+        }
+        assert srcRoot.getKind() == folderKind;
+        addFilesImpl(new HashSet<String>(), srcRoot, dir, null, filesAdded, true, true, fileFilter, true/*all found are included by default*/);
         if (getNativeProjectChangeSupport() != null) { // once not null, it never becomes null
             getNativeProjectChangeSupport().fireFilesAdded(filesAdded);
         }
         if (attachListeners) {
-            top.attachListeners();
+            srcRoot.attachListeners();
         }
 
         addSourceRoot(dir.getPath());

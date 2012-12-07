@@ -175,8 +175,8 @@ public class InstantRenamePerformer implements DocumentListener, KeyListener {
         List<MutablePositionRegion> regions = new ArrayList<MutablePositionRegion>();
 
         for (Token h : highlights) {
-            // type parameter name is represented as html tag -> ignore surrounding <> in rename
-            int delta = h.id() == JavadocTokenId.HTML_TAG ? 1 : 0;
+            // type parameter name is represented as ident -> ignore surrounding <> in rename
+            int delta = h.id() == JavadocTokenId.IDENT && h.text().charAt(0) == '<' && h.text().charAt(h.length() - 1) == '>' ? 1 : 0;
             Position start = NbDocument.createPosition(doc, h.offset(null) + delta, Bias.Backward);
             Position end = NbDocument.createPosition(doc, h.offset(null) + h.length() - delta, Bias.Forward);
             MutablePositionRegion current = new MutablePositionRegion(start, end);
@@ -499,7 +499,7 @@ public class InstantRenamePerformer implements DocumentListener, KeyListener {
                     // ann type is not final even if it cannot be subclassed
                     || enclosingKind == ElementKind.ANNOTATION_TYPE;
             return isAnyEncloserPrivate(e) && !eu.overridesMethod((ExecutableElement) e) && !eu.implementsMethod((ExecutableElement)e) &&
-                    (isEnclosingFinal || !isOverridenInsideOutermostEnclosingClass((ExecutableElement)e, eu));
+                    (isEnclosingFinal || !isOverriddenInsideOutermostEnclosingClass((ExecutableElement)e, eu));
         }
         return false;
     }
@@ -516,7 +516,7 @@ public class InstantRenamePerformer implements DocumentListener, KeyListener {
         return false;
     }
     
-    private static boolean isOverridenInsideOutermostEnclosingClass(final ExecutableElement ee, final ElementUtilities eu) {
+    private static boolean isOverriddenInsideOutermostEnclosingClass(final ExecutableElement ee, final ElementUtilities eu) {
         final boolean[] ret = new boolean[] {false};
         new ElementScanner6<Void, Void>() {
             @Override

@@ -208,6 +208,7 @@ public final class AddCompilerSetPanel extends javax.swing.JPanel implements Doc
                 }
             }
             if (flavors.size() > 0) {
+                flavors = moveBestFlavorFirst(flavors);
                 String compilerSetName = getCompilerSetName().trim();
                 CompilerSet cs = CompilerSetFactory.getCustomCompilerSet(path, flavors.get(0), compilerSetName);
                 ((CompilerSetManagerImpl)CompilerSetManager.get(ExecutionEnvironmentFactory.getLocal())).initCompilerSet(cs);
@@ -228,7 +229,7 @@ public final class AddCompilerSetPanel extends javax.swing.JPanel implements Doc
                 showError(NbBundle.getMessage(getClass(), "CANNOT_CONNECT"));
                 return;
             }
-            final List<CompilerSet> css = csm.findRemoteCompilerSets(path);
+            List<CompilerSet> css = csm.findRemoteCompilerSets(path);
             //check if we are not shutdowned already
             try {
                 Thread.sleep(1);
@@ -241,6 +242,7 @@ public final class AddCompilerSetPanel extends javax.swing.JPanel implements Doc
                 return;
             }
             if (css.size() > 0) {
+                css = moveBestCompilerSetFirst(css);
                 synchronized (lastFoundLock) {
                     lastFoundRemoteCompilerSet = css.get(0);
                     lastFoundRemoteCompilerSets.clear();
@@ -281,6 +283,70 @@ public final class AddCompilerSetPanel extends javax.swing.JPanel implements Doc
             time = System.currentTimeMillis() - time;
             log.log(Level.FINEST, "Done check for {0}; check took {1} ms", new Object[] { path, time });
         }
+    }
+
+    private List<CompilerFlavor> moveBestFlavorFirst(List<CompilerFlavor> flavors) {
+        CompilerFlavor best = null;
+        for (CompilerFlavor flavor : flavors) {
+            boolean found = true;
+            for (CompilerFlavor flavor2 : flavors) {
+                if (flavor2 != flavor) {
+                    String subsitute = flavor2.getToolchainDescriptor().getSubsitute();
+                    if (subsitute != null) {
+                        if (subsitute.equals(flavor.getToolchainDescriptor().getName())) {
+                            found = false;
+                        }
+                    }
+                }
+            }
+            if (found) {
+                best = flavor;
+                break;
+            }
+        }
+        if (best == null) {
+            best = flavors.get(0);
+        }
+        List<CompilerFlavor> res = new ArrayList<CompilerFlavor>();
+        res.add(best);
+        for (CompilerFlavor flavor : flavors) {
+            if (flavor != best) {
+                res.add(flavor);
+            }
+        }
+        return res;
+    }
+    
+    private List<CompilerSet> moveBestCompilerSetFirst(List<CompilerSet> sets) {
+        CompilerSet best = null;
+        for (CompilerSet set : sets) {
+            boolean found = true;
+            for (CompilerSet set2 : sets) {
+                if (set2 != set) {
+                    String subsitute = set2.getCompilerFlavor().getToolchainDescriptor().getSubsitute();
+                    if (subsitute != null) {
+                        if (subsitute.equals(set.getCompilerFlavor().getToolchainDescriptor().getName())) {
+                            found = false;
+                        }
+                    }
+                }
+            }
+            if (found) {
+                best = set;
+                break;
+            }
+        }
+        if (best == null) {
+            best = sets.get(0);
+        }
+        List<CompilerSet> res = new ArrayList<CompilerSet>();
+        res.add(best);
+        for (CompilerSet flavor : sets) {
+            if (flavor != best) {
+                res.add(flavor);
+            }
+        }
+        return res;
     }
 
     private boolean checkConnection() {

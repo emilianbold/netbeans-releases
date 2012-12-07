@@ -2,6 +2,7 @@ Code completion result for source line:
 window.|location.toString();
 (QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
 ------------------------------------
+CLASS      prototype                       [PUBLIC]   stub_DOM_Window.js
 METHOD     Image(width: Number, height: N  [PUBLIC]   stub_DOM_window.js
 METHOD     Option(text: String, value: St  [PUBLIC]   stub_DOM_window.js
 METHOD     Worker(uri: String): Worker     [PUBLIC]   stub_DOM_window.js
@@ -131,7 +132,6 @@ FIELD      pageYOffset: Number             [PUBLIC]   stub_DOM_window.js
 FIELD      parent: Window                  [PUBLIC]   stub_DOM_Window.js
 FIELD      performance: Object             [PUBLIC]   stub_DOM_window.js
 FIELD      personalbar: Object             [PUBLIC]   stub_DOM_window.js
-FIELD      prototype                       [PUBLIC]   stub_DOM_window.js
 FIELD      screen: Screen                  [PUBLIC]   stub_DOM_window.js
 FIELD      scrollMaxX: Number              [PUBLIC]   stub_DOM_window.js
 FIELD      scrollMaxY: Number              [PUBLIC]   stub_DOM_window.js

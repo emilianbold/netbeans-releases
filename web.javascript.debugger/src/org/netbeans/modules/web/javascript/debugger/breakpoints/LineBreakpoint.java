@@ -52,6 +52,7 @@ import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.web.common.api.RemoteFileCache;
 import org.netbeans.modules.web.common.api.ServerURLMapping;
+import org.openide.cookies.LineCookie;
 import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
@@ -97,6 +98,10 @@ public class LineBreakpoint extends AbstractBreakpoint {
     public final void setInvalid(String message) {
         setValidity(VALIDITY.INVALID, message);
     }
+    
+    final void resetValidity() {
+        setValidity(VALIDITY.UNKNOWN, null);
+    }
 
 
     public Line getLine() {
@@ -116,6 +121,15 @@ public class LineBreakpoint extends AbstractBreakpoint {
             fileObject.addFileChangeListener(myWeakListener);
         }
         firePropertyChange(PROP_LINE, oldLine, line);
+    }
+    
+    void setLine(int lineNumber) {
+        if (myLine.getLineNumber() == lineNumber) {
+            return ;
+        }
+        LineCookie lineCookie = myLine.getLookup().lookup(LineCookie.class);
+        Line line = lineCookie.getLineSet().getCurrent(lineNumber);
+        setLine(line);
     }
     
 //    @Override

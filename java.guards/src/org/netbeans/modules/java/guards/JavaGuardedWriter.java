@@ -47,8 +47,6 @@ package org.netbeans.modules.java.guards;
 import java.io.CharArrayWriter;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import org.netbeans.api.editor.guards.GuardedSection;
@@ -107,6 +105,7 @@ final class JavaGuardedWriter {
             for (char c : writeBuff) {
                 writeOneChar(c);
             }
+            writer.append(currentLine);
             return this.writer.toCharArray();
         } catch (IOException ex) {
             // it hardly occurs since we write to CharArrayWriter, but for sure
@@ -130,75 +129,72 @@ final class JavaGuardedWriter {
             if (offsetCounter == current.getBegin()) {
                 wasNewLine = false;
             }
-            if (current.getBegin() <= offsetCounter) {
-                if (b == '\n') {
-                    switch(current.getType()) {
-                        case LINE:
+            if (current.getBegin() <= offsetCounter && b == '\n') {
+                switch(current.getType()) {
+                    case LINE:
 
-                            if (!wasNewLine) {
-                                if (offsetCounter + 1 >= current.getEnd()) {
-                                    writeMagic(GuardTag.LINE, current.getName());
-                                    nextSection();
-                                }
-                                else {
-                                    writeMagic(GuardTag.BEGIN, current.getName());
-                                    wasNewLine = true;
-                                }
+                        if (!wasNewLine) {
+                            if (offsetCounter + 1 >= current.getEnd()) {
+                                writeMagic(GuardTag.LINE, current.getName());
+                                nextSection();
                             }
                             else {
-                                if (offsetCounter + 1 >= current.getEnd()) {
-                                    writeMagic(GuardTag.END, current.getName());
-                                    nextSection();
-                                }
+                                writeMagic(GuardTag.BEGIN, current.getName());
+                                wasNewLine = true;
                             }
+                        }
+                        else {
+                            if (offsetCounter + 1 >= current.getEnd()) {
+                                writeMagic(GuardTag.END, current.getName());
+                                nextSection();
+                            }
+                        }
 
-                            break;
-                        case FIRST:
-                        case HEADER:
+                        break;
+                    case FIRST:
+                    case HEADER:
 
-                            if (!wasNewLine) {
-                                if (offsetCounter + 1 >= current.getEnd()) {
-                                    writeMagic(GuardTag.FIRST, current.getName());
-                                    nextSection();
-                                }
-                                else {
-                                    writeMagic(GuardTag.FIRST, current.getName());
-                                    wasNewLine = true;
-                                }
+                        if (!wasNewLine) {
+                            if (offsetCounter + 1 >= current.getEnd()) {
+                                writeMagic(GuardTag.FIRST, current.getName());
+                                nextSection();
                             }
                             else {
-                                if (offsetCounter + 1 >= current.getEnd()) {
-                                    writeMagic(GuardTag.HEADEREND, current.getName());
-                                    nextSection();
-                                }
+                                writeMagic(GuardTag.FIRST, current.getName());
+                                wasNewLine = true;
                             }
+                        }
+                        else {
+                            if (offsetCounter + 1 >= current.getEnd()) {
+                                writeMagic(GuardTag.HEADEREND, current.getName());
+                                nextSection();
+                            }
+                        }
 
-                            break;
-                        case LAST:
-                        case END:
+                        break;
+                    case LAST:
+                    case END:
 
-                            writeMagic(GuardTag.LAST, current.getName());
+                        writeMagic(GuardTag.LAST, current.getName());
 
-                            nextSection();
+                        nextSection();
 
-                            break;
-                    }
-                    currentLine.delete(0, currentLine.length());
-                } else {
-                    currentLine.append((char)b);
+                        break;
                 }
             }
         }
-        if (b==' ')
+        if (b == ' ') {
             spaces++;
-        else {
-            if (spaces > 0) {
-                char[] sp = new char[spaces];
-                Arrays.fill(sp,' ');
-                writer.write(sp);
-                spaces=0;
+        } else {
+            while (spaces > 0) {
+                currentLine.append(' ');
+                spaces--;
             }
-            writer.write(b);
+            currentLine.append((char)b);
+            if (b == '\n') {
+                writer.append(currentLine);
+                currentLine.delete(0, currentLine.length());
+            }
         }
         offsetCounter++;
     }
@@ -220,19 +216,15 @@ final class JavaGuardedWriter {
 //            shouldReload = spaces != SECTION_MAGICS[type].length()  + name.length();
 //        }
         spaces = 0;
-        String magic = JavaGuardedReader.MAGIC_PREFIX + type.name() + ':' + name;
-        int i1 = magic.length()-1;
-        int i2 = currentLine.length()-1;
-        while (i1 >= 0 && i2 >= 0) {
-            if (currentLine.charAt(i2) != magic.charAt(i1)) {
-                break;
+        String magic = JavaGuardedReader.MAGIC_PREFIX + type.name() + ':';
+        if (JavaGuardedReader.getKeepGuardedComments()) {
+            int i = currentLine.lastIndexOf(magic);
+            if (i >= 0) { // after section rename there could still be a comment with the previous name
+                currentLine.delete(i, currentLine.length());
             }
-            i1--;
-            i2--;
         }
-        if (i1 >= 0) {
-            writer.write(magic, 0, magic.length());
-        } // otherwise the magic comment was already present
+        currentLine.append(magic);
+        currentLine.append(name);
     }
 
     /** This method prepares the iterator of the SectionDesc classes

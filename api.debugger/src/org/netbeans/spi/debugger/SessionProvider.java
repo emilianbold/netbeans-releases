@@ -172,6 +172,12 @@ public abstract class SessionProvider {
             String serviceName = (String) attrs.get(ContextAwareServiceHandler.SERVICE_NAME);
             return new SessionProvider.ContextAware(serviceName);
         }
+        
+        @Override
+        public synchronized String toString() {
+            return "SessionProvider.ContextAware for service "+serviceName+", context = "+context+", delegate = "+delegate;
+        }
+        
     }
 
 }

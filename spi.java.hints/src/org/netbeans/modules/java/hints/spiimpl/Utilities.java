@@ -1111,9 +1111,7 @@ public class Utilities {
         @Override
         public Void visitNewClass(NewClassTree node, Void p) {
             //XXX:
-            List<? extends ExpressionTree> arguments = node.getArguments();
-
-            if (!arguments.isEmpty() && arguments.get(0).getKind() == Kind.OTHER) {
+            if (node.getEnclosingExpression() != null) {
                 tree2Variable.put(node, make.Identifier("$" + currentVariableIndex++));
                 return null;
             }

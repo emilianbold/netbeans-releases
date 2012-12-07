@@ -41,6 +41,8 @@
  */
 package org.netbeans.modules.web.webkit.debugging.api.debugger;
 
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.netbeans.modules.web.webkit.debugging.api.WebKitDebugging;
@@ -49,6 +51,12 @@ import org.netbeans.modules.web.webkit.debugging.api.WebKitDebugging;
  * Wrapper for Debugger.setBreakpointByUrl return value.
  */
 public class Breakpoint extends AbstractObject {
+    
+    public static final String PROP_LOCATION = "location";
+    
+    private PropertyChangeSupport pcs = new PropertyChangeSupport(this);
+    
+    private JSONObject location;
 
     Breakpoint(JSONObject object, WebKitDebugging webkit) {
         super(object, webkit);
@@ -58,8 +66,50 @@ public class Breakpoint extends AbstractObject {
         return (String)getObject().get("breakpointId");
     }
 
+    /**
+     * Get the breakpoint's location
+     * @return The location or <code>null</code> when not defined.
+     */
     public JSONObject getBreakpointLocation() {
-        return (JSONObject)((JSONArray)getObject().get("locations")).get(0);
+        synchronized (this) {
+            if (location == null) {
+                JSONArray locations = (JSONArray)getObject().get("locations");
+                if (!locations.isEmpty()) {
+                    location = (JSONObject) locations.get(0);
+                }
+            }
+            return location;
+        }
+    }
+    
+    /**
+     * Get the breakpoint's line number
+     * @return The line number, or -1 when not defined.
+     */
+    public long getLineNumber() {
+        JSONObject location = getBreakpointLocation();
+        if (location != null) {
+            return (Long) location.get("lineNumber");
+        } else {
+            return -1l;
+        }
+    }
+
+    void notifyResolved(JSONObject location) {
+        JSONObject oldLocation;
+        synchronized (this) {
+            oldLocation = this.location;
+            this.location = location;
+        }
+        pcs.firePropertyChange(PROP_LOCATION, oldLocation, location);
+    }
+    
+    public void addPropertyChangeListener(PropertyChangeListener pcl) {
+        pcs.addPropertyChangeListener(pcl);
+    }
+    
+    public void removePropertyChangeListener(PropertyChangeListener pcl) {
+        pcs.removePropertyChangeListener(pcl);
     }
     
 }

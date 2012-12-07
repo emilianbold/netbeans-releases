@@ -509,7 +509,7 @@ public class TreeNodeAdapter implements TreeNode, DocumentElementListener {
                     try {
                         //the endoffset if increased by +1 due to still not yet resolved issue with element boundaries
                         //should be removed once it is properly fixed. On the other hand the issue has no user impact now.
-                        int endOfs = del.getEndOffset() - del.getStartOffset() + 1;
+                        int endOfs = del.getEndOffset() - del.getStartOffset();
                         //check document boundary - the condition should never be true
                         endOfs = endOfs > del.getDocument().getLength() ? del.getDocument().getLength() : endOfs;
                         buf.append((del.getDocument().getText(del.getStartOffset(), endOfs)).trim());

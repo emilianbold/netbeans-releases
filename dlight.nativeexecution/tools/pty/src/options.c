@@ -18,6 +18,9 @@ int readopts(int argc, char** argv, options_t* opts) {
             } else if (strcmp(argv[idx], "--set-erase-key") == 0) {
                 opts->set_erase_key = 1;
                 nopt += 1;
+            } else if (strcmp(argv[idx], "--redirect-error") == 0) {
+                opts->redirect_error = 1;
+                nopt += 1;
             } else if (strcmp(argv[idx], "--report") == 0) {
                 idx++;
                 if (argv[idx] == NULL || argv[idx][0] == '\0') {

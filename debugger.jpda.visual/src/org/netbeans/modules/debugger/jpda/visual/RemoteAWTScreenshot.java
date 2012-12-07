@@ -62,7 +62,6 @@ import java.awt.Rectangle;
 import java.awt.image.BufferedImage;
 import java.awt.image.WritableRaster;
 import java.beans.PropertyVetoException;
-import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -96,15 +95,11 @@ import org.netbeans.modules.debugger.jpda.visual.actions.GoToFieldDeclarationAct
 import org.netbeans.modules.debugger.jpda.visual.actions.GoToSourceAction;
 import org.netbeans.modules.debugger.jpda.visual.actions.ShowListenersAction;
 import org.netbeans.modules.debugger.jpda.visual.actions.ToggleComponentBreakpointAction;
-import org.netbeans.modules.debugger.jpda.visual.breakpoints.AWTComponentBreakpoint;
 import org.netbeans.modules.debugger.jpda.visual.breakpoints.ComponentBreakpoint;
 import org.netbeans.modules.debugger.jpda.visual.models.ComponentBreakpointsActionsProvider;
 import org.netbeans.modules.debugger.jpda.visual.spi.ComponentInfo;
 import org.netbeans.modules.debugger.jpda.visual.spi.RemoteScreenshot;
 import org.openide.nodes.Node;
-import org.openide.nodes.Node.Property;
-import org.openide.nodes.Node.PropertySet;
-import org.openide.nodes.PropertySupport.ReadOnly;
 import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -826,7 +821,9 @@ public class RemoteAWTScreenshot {
 
         @Override
         protected void retrieve() throws RetrievalException {
-            if (componentClass == null) return ;
+            if (componentClass == null) {
+                return ;
+            }
             try {
                 retrieveComponents(this, getThread(), vm, componentClass, containerClass, getComponent(), getComponents, getBounds,
                         shiftX, shiftY);
@@ -845,7 +842,7 @@ public class RemoteAWTScreenshot {
 
             @Override
             public String getName() {
-                return NbBundle.getBundle(RemoteAWTScreenshot.class).getString("CTL_Component_Breakpoint_Customize_Label");
+                return NbBundle.getMessage(RemoteAWTScreenshot.class, "CTL_Component_Breakpoint_Customize_Label");
             }
 
             @Override

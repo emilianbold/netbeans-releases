@@ -41,7 +41,7 @@
  */
 package org.netbeans.modules.editor.impl;
 
-import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
@@ -51,7 +51,6 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.Element;
 import javax.swing.text.Position;
-import javax.swing.undo.UndoableEdit;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.mimelookup.MimeRegistration;
@@ -159,7 +158,8 @@ public class ReformatBeforeSaveTask implements OnSaveTask {
                         ? modRootElement
                         : DocumentInternalUtils.customElement(doc, 0, doc.getLength());
                 int modElementCount = modRootOrDocElement.getElementCount();
-                List<PositionRegion> formatBlocks = new ArrayList<PositionRegion>(modElementCount);
+                LinkedList<PositionRegion> formatBlocks = new LinkedList<PositionRegion>();
+                Element rootElement = doc.getDefaultRootElement();
                 for (int i = 0; i < modElementCount; i++) {
                     if (canceled.get()) {
                         return;
@@ -169,6 +169,18 @@ public class ReformatBeforeSaveTask implements OnSaveTask {
                     boolean add;
                     int startOffset = modElement.getStartOffset();
                     int modElementEndOffset = modElement.getEndOffset();
+                    int lineNumber = rootElement.getElementIndex(startOffset);
+                    if (lineNumber >= 0) {
+                        Element lineElement = rootElement.getElement(lineNumber);
+                        startOffset = lineElement.getStartOffset();
+                        if (lineElement.getEndOffset() >= modElementEndOffset) {
+                            modElementEndOffset = lineElement.getEndOffset();
+                        } else {
+                            lineNumber = rootElement.getElementIndex(modElementEndOffset);
+                            lineElement = rootElement.getElement(lineNumber);
+                            modElementEndOffset = lineElement.getEndOffset();
+                        }
+                    }
                     int endOffset = modElementEndOffset;
                     do {
                         if (guardedBlockStartPos != null) {
@@ -225,6 +237,14 @@ public class ReformatBeforeSaveTask implements OnSaveTask {
                         if (add) {
                             try {
                                 if (startOffset != endOffset) {
+                                    PositionRegion last = formatBlocks.peekLast();
+                                    if (last != null && startOffset <= last.getEndOffset()) {
+                                        formatBlocks.removeLast();
+                                        if (LOG.isLoggable(Level.FINE)) {
+                                            LOG.fine("Reformat-at-save: remove block=" + last);
+                                        }
+                                        startOffset = last.getStartOffset();
+                                    }
                                     PositionRegion block = new PositionRegion(doc, startOffset, endOffset);
                                     if (LOG.isLoggable(Level.FINE)) {
                                         LOG.fine("Reformat-at-save: add block=" + block);

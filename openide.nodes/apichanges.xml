@@ -49,6 +49,23 @@ made subject to such option by the copyright holder.
 <apidef name="nodes">Nodes API</apidef>
 </apidefs>
 <changes>
+    <change id="BeanInfoSearchPath">
+        <api name="nodes"/>
+        <summary>Adding <code>@BeanInfoSearchPath</code> annotation</summary>
+        <version major="7" minor="32"/>
+        <date year="2012" month="11" day="22"/>
+        <author login="jhorvath"/>
+        <compatibility addition="yes" binary="compatible" source="compatible" deprecation="no" deletion="no"/>
+        <description>
+            <p>
+                Adding <code>@BeanInfoSearchPath</code> annotation
+                to allow convenient way of registering BeanInfo search path.
+            </p>
+        </description>
+        <class package="org.openide.nodes" name="NodeOp"/>
+        <class package="org.openide.nodes" name="BeanInfoSearchPath"/>
+        <issue number="210323"/>
+    </change>
     <change id="PropertyEditorRegistration">
         <api name="nodes"/>
         <summary>Adding <code>@PropertyEditorRegistration</code> and <code>@PropertyEditorSearchPath</code> annotations</summary>

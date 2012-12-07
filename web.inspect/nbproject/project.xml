@@ -96,7 +96,7 @@ Portions Copyrighted 2011 Sun Microsystems, Inc.
                     <compile-dependency/>
                     <run-dependency>
                         <release-version>3</release-version>
-                        <specification-version>3.11</specification-version>
+                        <specification-version>3.13</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -148,7 +148,7 @@ Portions Copyrighted 2011 Sun Microsystems, Inc.
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <specification-version>1.3</specification-version>
+                        <specification-version>1.11</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -164,7 +164,7 @@ Portions Copyrighted 2011 Sun Microsystems, Inc.
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <specification-version>1.0</specification-version>
+                        <specification-version>1.4</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>

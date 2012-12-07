@@ -19,7 +19,21 @@
         <p>The Advanced Settings pane enables you to set the following options:</p>
         
         <h3>Settings</h3>
+        <p>The following Settings options are only available when you select the Advanced
+        option in the Basic Settings pane.</p>
         <ul>
+            <li><b>Track every X allocations.</b> Sets the interval /proportion 
+            for stack sampling, e.g., if set to 10, this means that 
+            for each class only every 10<SUP>th</SUP> object allocation will be recorded 
+            completely.<br>
+            (This only applies to stack sampling 
+            and tracking the object. The total number of 
+            object allocations is recorded separately, and includes all allocations.)
+            To record all information for each object, set this number to 1. However, doing this may substantially 
+            affect the profiling overhead when profiling allocation-intensive applications. For 
+            server-side applications under real-life workload conditions, setting this
+            number to 20 or more should be sufficient to minimize the overhead, 
+            and still obtain sufficient information for practical purposes.</li>
         <li><b>Record Stack Trace for Allocations.</b> This setting can be modified when you select Record Stack Traces for Allocation 
         in the Basic Settings. 
         <p>When recording object creation, the call stack at that moment is also recorded.

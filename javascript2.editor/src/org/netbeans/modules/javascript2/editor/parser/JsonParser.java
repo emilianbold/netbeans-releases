@@ -55,7 +55,7 @@ public class JsonParser extends SanitizingParser {
     }
 
     @Override
-    public String getDefaultScriptName() {
+    protected String getDefaultScriptName() {
         return "json.json"; // NOI18N
     }
 

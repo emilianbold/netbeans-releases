@@ -394,7 +394,25 @@ public class DebuggerManagerListener extends DebuggerManagerAdapter {
     }
 
     @Override
-    public void engineRemoved (DebuggerEngine engine) {
+    public void engineRemoved (final DebuggerEngine engine) {
+        if (DebuggerModule.findObject(DebuggerModule.class).isClosing()) {
+            // Do not interfere with closeDebuggerUI()
+            SwingUtilities.invokeLater(new Runnable() {
+                @Override
+                public void run() {
+                    if (SwingUtilities.isEventDispatchThread()) {
+                        RP.post(this);
+                    } else {
+                        doEngineRemoved(engine);
+                    }
+                }
+            });
+        } else {
+            doEngineRemoved(engine);
+        }
+    }
+    
+    private void doEngineRemoved(DebuggerEngine engine) {
         //boolean doCloseToolbar = false;
         synchronized (openedComponents) {
             final Map<EngineComponentsProvider, List<? extends ComponentInfo>> openedWindowsByProvider = openedComponents.remove(engine);

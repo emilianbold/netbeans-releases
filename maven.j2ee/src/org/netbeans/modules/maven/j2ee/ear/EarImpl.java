@@ -317,7 +317,7 @@ public class EarImpl implements EarImplementation, EarImplementation2,
      *  Currently uses its own {@link RootedEntry} interface.
      *  If the J2eeModule instance describes a
      *  j2ee application, the result should not contain module archives.
-     * 
+     *
      * @return Iterator through {@link RootedEntry}s
      */
     @Override
@@ -340,16 +340,23 @@ public class EarImpl implements EarImplementation, EarImplementation2,
      */
     @Override
     public FileObject getContentDirectory() throws IOException {
-        MavenProject proj = mavenproject().getMavenProject();
-        String finalName = proj.getBuild().getFinalName();
-        String loc = proj.getBuild().getDirectory();
-        File fil = FileUtil.normalizeFile(new File(loc, finalName));
-//        System.out.println("earimpl. get content=" + fil);
-        FileObject fo = FileUtil.toFileObject(fil);
+        final MavenProject proj = mavenproject().getMavenProject();
+        final String finalName = proj.getBuild().getFinalName();
+        final String buildDir = proj.getBuild().getDirectory();
+
+        final File file;
+        if (finalName != null) {
+            file = FileUtil.normalizeFile(new File(buildDir, finalName));
+        } else {
+            // Not sure how, but it might happen - see issue #222839
+            file = FileUtil.normalizeFile(new File(buildDir));
+        }
+
+        final FileObject fo = FileUtil.toFileObject(file);
         if (fo != null) {
             fo.refresh();
         }
-        return FileUtil.toFileObject(fil);
+        return FileUtil.toFileObject(file);
     }
 
     /**
@@ -532,62 +539,62 @@ public class EarImpl implements EarImplementation, EarImplementation2,
     }
 
 
-
-    // inspired by netbeans' webmodule codebase, not really sure what is the point
-    // of the iterator..
     private static final class ContentIterator implements Iterator {
-        private ArrayList<FileObject> ch;
+
+        private List<FileObject> filesUnderRoot;
         private FileObject root;
 
-        private ContentIterator(FileObject f) {
-            this.ch = new ArrayList<FileObject>();
-            ch.add(f);
-            this.root = f;
+
+        private ContentIterator(FileObject root) {
+            this.root = root;
+
+            filesUnderRoot = new ArrayList<FileObject>();
+            filesUnderRoot.add(root);
         }
 
         @Override
         public boolean hasNext() {
-            return ! ch.isEmpty();
+            return !filesUnderRoot.isEmpty();
         }
 
         @Override
         public Object next() {
-            FileObject f = ch.get(0);
-            ch.remove(0);
-            if (f.isFolder()) {
-                f.refresh();
-                FileObject[] chArr = f.getChildren();
-                for (int i = 0; i < chArr.length; i++) {
-                    ch.add(chArr [i]);
+            FileObject nextFile = filesUnderRoot.get(0);
+            filesUnderRoot.remove(0);
+            if (nextFile.isFolder()) {
+                nextFile.refresh();
+                for (FileObject child : nextFile.getChildren()) {
+                    filesUnderRoot.add(child);
                 }
             }
-            return new FSRootRE(root, f);
+            return new RootedFileObject(root, nextFile);
         }
 
         @Override
         public void remove() {
             throw new UnsupportedOperationException();
         }
-
     }
 
-    private static final class FSRootRE implements J2eeModule.RootedEntry {
-        private FileObject f;
+    private static final class RootedFileObject implements J2eeModule.RootedEntry {
+
+        private FileObject file;
         private FileObject root;
 
-        FSRootRE(FileObject rt, FileObject fo) {
-            f = fo;
-            root = rt;
+
+        private RootedFileObject(FileObject root, FileObject file) {
+            this.file = file;
+            this.root = root;
         }
 
         @Override
         public FileObject getFileObject() {
-            return f;
+            return file;
         }
 
         @Override
         public String getRelativePath() {
-            return FileUtil.getRelativePath(root, f);
+            return FileUtil.getRelativePath(root, file);
         }
     }
 

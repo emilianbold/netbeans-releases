@@ -217,13 +217,19 @@ public class NbEditorKit extends ExtKit implements Callable {
         List<Action> declaredActionList = EditorActionsProvider.getEditorActions(getContentType());
         Action[] declaredActions = new Action[declaredActionList.size()];
         declaredActionList.toArray(declaredActions);
+        if (LOG.isLoggable(Level.FINE)) {
+            LOG.log(Level.FINE, "Declared Actions (found ({0})): ", new Object[]{Integer.valueOf(declaredActions.length)}); // NOI18N
+            for (Action a : declaredActions) {
+                LOG.log(Level.FINE, "Action: {0}", new Object[]{a}); // NOI18N
+            }
+        }
         return declaredActions;
     }
 
     protected void addSystemActionMapping(String editorActionName, Class systemActionClass) {
         Action a = getActionByName(editorActionName);
         if (a != null) {
-            a.putValue(SYSTEM_ACTION_CLASS_NAME_PROPERTY, systemActionClass.getName().replaceAll("\\.", "-"));
+            a.putValue(SYSTEM_ACTION_CLASS_NAME_PROPERTY, systemActionClass.getName());
         }
         systemAction2editorAction.put(systemActionClass.getName(), editorActionName);
     }

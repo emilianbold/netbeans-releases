@@ -62,6 +62,7 @@ import org.netbeans.modules.css.lib.api.Node;
 import org.netbeans.modules.css.lib.api.NodeType;
 import org.netbeans.modules.css.lib.api.NodeUtil;
 import org.netbeans.modules.css.lib.api.NodeVisitor;
+import org.netbeans.modules.parsing.api.Snapshot;
 import org.openide.util.lookup.ServiceProvider;
 
 /**
@@ -193,13 +194,14 @@ public class SelectorsModule extends CssEditorModule {
 
     @Override
     public <T extends Map<OffsetRange, Set<ColoringAttributes>>> NodeVisitor<T> getSemanticHighlightingNodeVisitor(FeatureContext context, T result) {
+        final Snapshot snapshot = context.getSnapshot();
         return new NodeVisitor<T>(result) {
 
             @Override
             public boolean visit(Node node) {
                 switch (node.type()) {
                     case pseudo:
-                        getResult().put(Css3Utils.getOffsetRange(node), ColoringAttributes.CLASS_SET);
+                        getResult().put(Css3Utils.getDocumentOffsetRange(node, snapshot), ColoringAttributes.CLASS_SET);
                         break;
                 }
                 return false;

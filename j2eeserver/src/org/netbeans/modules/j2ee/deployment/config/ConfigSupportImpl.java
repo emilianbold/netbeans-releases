@@ -202,7 +202,7 @@ public final class ConfigSupportImpl implements J2eeModuleProvider.ConfigSupport
                 String configFileName = getPrimaryConfigurationFileName();
                 File file = j2eeModule.getDeploymentConfigurationFile(configFileName);
                 if (file != null) {
-                    fo = FileUtil.toFileObject(file);
+                    fo = FileUtil.toFileObject(FileUtil.normalizeFile(file));
                 }
             }
             if (fo == null) {

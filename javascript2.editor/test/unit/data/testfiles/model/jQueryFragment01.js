@@ -36,3 +36,6 @@ formatter.println(jQuery.event.name);
 jQuery.event.customEvent.test();
 
 }());
+
+jQuery.ajaxStart().addClass();
+

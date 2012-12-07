@@ -48,6 +48,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.modules.javascript2.editor.doc.spi.JsDocumentationHolder;
 import org.netbeans.modules.javascript2.editor.model.impl.JsFunctionImpl;
 import org.netbeans.modules.javascript2.editor.model.impl.JsObjectImpl;
 import org.netbeans.modules.javascript2.editor.model.impl.ModelUtils;
@@ -85,7 +86,7 @@ public final class Model {
             if (root != null) {
                 root.accept(visitor);
             }
-            resolveLocalTypes(getGlobalObject());
+            resolveLocalTypes(getGlobalObject(), parserResult.getDocumentationHolder());
             long end = System.currentTimeMillis();
             LOGGER.log(Level.FINE, "Building model took {0}ms.", (end - start));
         }
@@ -115,14 +116,14 @@ public final class Model {
         return result;
     }
 
-    private void resolveLocalTypes(JsObject object) {
-        if(object instanceof JsFunctionImpl) {
-            ((JsFunctionImpl)object).resolveTypes();
+    private void resolveLocalTypes(JsObject object, JsDocumentationHolder docHolder) {
+         if(object instanceof JsFunctionImpl) {
+            ((JsFunctionImpl)object).resolveTypes(docHolder);
         } else {
-            ((JsObjectImpl)object).resolveTypes();
+            ((JsObjectImpl)object).resolveTypes(docHolder);
         }
         for(JsObject property: object.getProperties().values()) {
-            resolveLocalTypes(property);
+            resolveLocalTypes(property, docHolder);
         }
     }
 

@@ -1061,4 +1061,133 @@ public class PHPBracketCompleterTest extends PHPCodeCompletionTestBase {
         insertBreak("while (true)\n    {^", "while (true)\n    {\n    ^\n    }", options);
     }
 
+    public void testIssue198810_01() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
+        insertChar("if (true)\n    ^", '{', "if (true)\n{^", null, false, options);
+    }
+
+    public void testIssue198810_02() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
+        insertChar("if (true)\n{    foo();\n    ^", '}', "if (true)\n{    foo();\n}^", null, false, options);
+    }
+
+    public void testIssue198810_03() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
+        options.put(FmtOptions.IF_BRACE_PLACEMENT, CodeStyle.BracePlacement.NEW_LINE_INDENTED);
+        insertChar("if (true)\n    ^", '{', "if (true)\n    {^", null, false, options);
+    }
+
+    public void testIssue198810_04() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
+        options.put(FmtOptions.IF_BRACE_PLACEMENT, CodeStyle.BracePlacement.NEW_LINE_INDENTED);
+        insertChar("if (true)\n    {    foo();\n    ^", '}', "if (true)\n    {    foo();\n    }^", null, false, options);
+    }
+
+    public void testIssue198810_05() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
+        insertChar("function foo()\n{\n    while ($bar)\n    ^", '{', "function foo()\n{\n    while ($bar)\n    {^", null, false, options);
+    }
+
+    public void testIssue198810_06() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
+        insertChar("function foo()\n{\n    while ($bar)\n    {\n        if (true)\n        ^", '{', "function foo()\n{\n    while ($bar)\n    {\n        if (true)\n        {^", null, false, options);
+    }
+
+    public void testIssue198810_07() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
+        insertChar("function foo()\n{\n    while ($bar)\n    {\n        if (true)\n        {\n            doSmt();\n            ^", '}', "function foo()\n{\n    while ($bar)\n    {\n        if (true)\n        {\n            doSmt();\n        }^", null, false, options);
+    }
+
+    public void testIssue198810_08() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
+        insertChar("function foo()\n{\n    while ($bar)\n    {\n        if (true)\n        {\n            doSmt();\n        }\n        ^", '}', "function foo()\n{\n    while ($bar)\n    {\n        if (true)\n        {\n            doSmt();\n        }\n    }^", null, false, options);
+    }
+
+    public void testIssue198810_09() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
+        insertChar("function foo()\n{\n    while ($bar)\n    {\n        if (true)\n        {\n            doSmt();\n        }\n    }\n    ^", '}', "function foo()\n{\n    while ($bar)\n    {\n        if (true)\n        {\n            doSmt();\n        }\n    }\n}^", null, false, options);
+    }
+
+    public void testIssue198810_10() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
+        options.put(FmtOptions.IF_BRACE_PLACEMENT, CodeStyle.BracePlacement.NEW_LINE_INDENTED);
+        options.put(FmtOptions.WHILE_BRACE_PLACEMENT, CodeStyle.BracePlacement.NEW_LINE_INDENTED);
+        options.put(FmtOptions.METHOD_DECL_BRACE_PLACEMENT, CodeStyle.BracePlacement.NEW_LINE_INDENTED);
+        insertChar("function foo()\n{\n    while ($bar)\n    ^", '{', "function foo()\n{\n    while ($bar)\n        {^", null, false, options);
+    }
+
+    public void testIssue198810_11() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
+        options.put(FmtOptions.IF_BRACE_PLACEMENT, CodeStyle.BracePlacement.NEW_LINE_INDENTED);
+        options.put(FmtOptions.WHILE_BRACE_PLACEMENT, CodeStyle.BracePlacement.NEW_LINE_INDENTED);
+        options.put(FmtOptions.METHOD_DECL_BRACE_PLACEMENT, CodeStyle.BracePlacement.NEW_LINE_INDENTED);
+        insertChar("function foo()\n{\n    while ($bar)\n        {\n        if (true)\n        ^", '{', "function foo()\n{\n    while ($bar)\n        {\n        if (true)\n            {^", null, false, options);
+    }
+
+    public void testIssue198810_12() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
+        options.put(FmtOptions.IF_BRACE_PLACEMENT, CodeStyle.BracePlacement.NEW_LINE_INDENTED);
+        options.put(FmtOptions.WHILE_BRACE_PLACEMENT, CodeStyle.BracePlacement.NEW_LINE_INDENTED);
+        options.put(FmtOptions.METHOD_DECL_BRACE_PLACEMENT, CodeStyle.BracePlacement.NEW_LINE_INDENTED);
+        insertChar("function foo()\n{\n    while ($bar)\n        {\n        if (true)\n            {\n            doSmt();\n            ^", '}', "function foo()\n{\n    while ($bar)\n        {\n        if (true)\n            {\n            doSmt();\n            }^", null, false, options);
+    }
+
+    public void testIssue198810_13() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
+        options.put(FmtOptions.IF_BRACE_PLACEMENT, CodeStyle.BracePlacement.NEW_LINE_INDENTED);
+        options.put(FmtOptions.WHILE_BRACE_PLACEMENT, CodeStyle.BracePlacement.NEW_LINE_INDENTED);
+        options.put(FmtOptions.METHOD_DECL_BRACE_PLACEMENT, CodeStyle.BracePlacement.NEW_LINE_INDENTED);
+        insertChar("function foo()\n{\n    while ($bar)\n        {\n        if (true)\n            {\n            doSmt();\n            }\n        ^", '}', "function foo()\n{\n    while ($bar)\n        {\n        if (true)\n            {\n            doSmt();\n            }\n        }^", null, false, options);
+    }
+
+    public void testIssue198810_14() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
+        options.put(FmtOptions.IF_BRACE_PLACEMENT, CodeStyle.BracePlacement.NEW_LINE_INDENTED);
+        options.put(FmtOptions.WHILE_BRACE_PLACEMENT, CodeStyle.BracePlacement.NEW_LINE_INDENTED);
+        options.put(FmtOptions.METHOD_DECL_BRACE_PLACEMENT, CodeStyle.BracePlacement.NEW_LINE_INDENTED);
+        insertChar("function foo()\n    {\n    while ($bar)\n        {\n        if (true)\n            {\n            doSmt();\n            }\n        }\n    ^", '}', "function foo()\n    {\n    while ($bar)\n        {\n        if (true)\n            {\n            doSmt();\n            }\n        }\n    }^", null, false, options);
+    }
+
+    public void testIssue170779_01() throws Exception {
+        String original = "switch($value) {\n    case^\n}";
+        String expected = "switch($value) {\n    case ^\n}";
+        insertChar(original, ' ', expected);
+    }
+
+    public void testIssue170779_02() throws Exception {
+        String original = "switch ($value) {\n    case 1:\n        break;\n    case^\n}";
+        String expected = "switch ($value) {\n    case 1:\n        break;\n    case ^\n}";
+        insertChar(original, ' ', expected);
+    }
+
+    public void testIssue170779_03() throws Exception {
+        String original = "switch ($value) {\n    case 1:\n        break;\n    case 2:\n        case^\n}";
+        String expected = "switch ($value) {\n    case 1:\n        break;\n    case 2:\n    case ^\n}";
+        insertChar(original, ' ', expected);
+    }
+
+    public void testIssue170779_04() throws Exception {
+        String original = "switch ($value) {\n    case 1:\n        break;\n    case 2:\n        default^\n}";
+        String expected = "switch ($value) {\n    case 1:\n        break;\n    case 2:\n    default:^\n}";
+        insertChar(original, ':', expected);
+    }
+
+    public void testIssue223165() throws Exception {
+        String original = "switch ($a) {\n    case 1: break;\n}if^";
+        String expected = "switch ($a) {\n    case 1: break;\n}if ^";
+        insertChar(original, ' ', expected);
+    }
+
+    public void testIssue223395_01() throws Exception {
+        String original = "# first^\n# second";
+        String expected = "# first\n# ^\n# second";
+        insertBreak(original, expected);
+    }
+
+    public void testIssue223395_02() throws Exception {
+        String original = "    # first^\n    # second";
+        String expected = "    # first\n    # ^\n    # second";
+        insertBreak(original, expected);
+    }
+
 }

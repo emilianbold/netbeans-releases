@@ -71,6 +71,8 @@ import org.openide.util.lookup.ServiceProvider;
  */
 @ServiceProvider(service = RemoteBinaryService.class)
 public class RemoteBinaryServiceImpl extends RemoteBinaryService {
+    
+    private static final RequestProcessor RP = new RequestProcessor("RemoteBinaryServiceImpl", 1); // NOI18N
 
     private final Map<ExecutionEnvironment, Delegate> impls = new HashMap<ExecutionEnvironment, Delegate>();
     private static int downloadCount = 0;
@@ -256,7 +258,7 @@ public class RemoteBinaryServiceImpl extends RemoteBinaryService {
                 }
             });
 
-            RequestProcessor.getDefault().post(task);
+            RP.post(task);
             RemoteBinaryResult remoteBinaryResult = new RemoteBinaryResult(localFile.getAbsolutePath(), task);
             remoteBinaryResult.setTimeStamp(newTimestamp);
 

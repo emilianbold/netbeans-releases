@@ -110,12 +110,30 @@ public class FileComponentDeclarations extends FileComponent implements Persiste
 
     FileComponentDeclarations(FileComponentDeclarations other, boolean empty) {
         super(other);
-        declarations = new TreeMap<OffsetSortedKey, CsmUID<CsmOffsetableDeclaration>>(
-                empty ? Collections.<OffsetSortedKey, CsmUID<CsmOffsetableDeclaration>>emptyMap() : other.declarations);
-        staticFunctionDeclarationUIDs = new ArrayList<CsmUID<CsmFunction>>(
-                empty ? Collections.<CsmUID<CsmFunction>>emptyList() : other.staticFunctionDeclarationUIDs);
-        staticVariableUIDs = new ArrayList<CsmUID<CsmVariable>>(
-                empty ? Collections.<CsmUID<CsmVariable>>emptyList() : other.staticVariableUIDs);
+        try {
+            if (!empty) {
+                other.declarationsLock.readLock().lock();
+            }
+            declarations = new TreeMap<OffsetSortedKey, CsmUID<CsmOffsetableDeclaration>>(
+                    empty ? Collections.<OffsetSortedKey, CsmUID<CsmOffsetableDeclaration>>emptyMap() : other.declarations);
+        } finally {
+            if (!empty) {
+                other.declarationsLock.readLock().unlock();
+            }
+        }
+        try {
+            if (!empty) {
+                other.staticLock.readLock().lock();
+            }
+            staticFunctionDeclarationUIDs = new ArrayList<CsmUID<CsmFunction>>(
+                    empty ? Collections.<CsmUID<CsmFunction>>emptyList() : other.staticFunctionDeclarationUIDs);
+            staticVariableUIDs = new ArrayList<CsmUID<CsmVariable>>(
+                    empty ? Collections.<CsmUID<CsmVariable>>emptyList() : other.staticVariableUIDs);
+        } finally {
+            if (!empty) {
+                other.staticLock.readLock().unlock();
+            }
+        }
     }
     
     public FileComponentDeclarations(FileImpl file) {

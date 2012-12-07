@@ -44,6 +44,7 @@
 
 package org.netbeans.modules.editor.guards;
 
+import java.beans.PropertyVetoException;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Position;
 import javax.swing.text.StyledDocument;
@@ -74,12 +75,23 @@ public final class InteriorSectionImpl extends GuardedSectionImpl {
         this.footer = footer;
     }
 
+    @Override
+    public void setName(String name) throws PropertyVetoException {
+        super.setName(name);
+        setHeader(getHeader());
+        setFooter(getFooter());
+    }
+
     /**
      * Set the text of the body.
      * @param text the new text
      */
     public void setBody(String text) {
-        setText(body, text, false);
+        setText(body, text, false, new ContentGetter() {
+            @Override public PositionBounds getContent(GuardedSectionImpl t) {
+                return ((InteriorSectionImpl) t).body;
+            }
+        });
     }
 
     public String getBody() {
@@ -99,7 +111,11 @@ public final class InteriorSectionImpl extends GuardedSectionImpl {
      * @param text the new text
      */
     public void setHeader(String text) {
-        setText(header, text, true);
+        setText(header, text, true, new ContentGetter() {
+            @Override public PositionBounds getContent(GuardedSectionImpl t) {
+                return ((InteriorSectionImpl) t).header;
+            }
+        });
     }
 
     /**
@@ -137,7 +153,11 @@ public final class InteriorSectionImpl extends GuardedSectionImpl {
             }
             text = text.replace('\n', ' ');
         }
-        setText(footer, text, true);
+        setText(footer, text, true, new ContentGetter() {
+            @Override public PositionBounds getContent(GuardedSectionImpl t) {
+                return ((InteriorSectionImpl) t).footer;
+            }
+        });
     }
 
     /**

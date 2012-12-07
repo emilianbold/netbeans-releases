@@ -112,8 +112,9 @@ public class RunSQLAction extends SQLExecutionBaseAction implements ActionProvid
             return false;
         }
         for (DataObject d : files) {
-            if (FileUtil.getMIMEType(d.getPrimaryFile()) != null
-                    && FileUtil.getMIMEType(d.getPrimaryFile()).equals("text/x-sql")) { // NOI18N
+            if (d.getLookup().lookup(SQLExecuteCookie.class) != null
+                    || (FileUtil.getMIMEType(d.getPrimaryFile()) != null
+                    && FileUtil.getMIMEType(d.getPrimaryFile()).equals("text/x-sql"))) { // NOI18N
                 return true;
             }
         }

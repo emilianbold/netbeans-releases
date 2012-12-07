@@ -143,7 +143,6 @@ made subject to such option by the copyright holder.
                 </presetdef>
             </sequential>
         </macrodef>
-        <custom-javac-presetdef javacval="${nbjdk.javac}"/>
     </target>
 
     <target name="-javac-init-bootclasspath-prepend" depends="build-init" if="bootclasspath.prepend">
@@ -228,11 +227,20 @@ made subject to such option by the copyright holder.
     <target name="compile-single" depends="init">
         <fail unless="javac.includes">Must select some files in the IDE or set javac.includes</fail>
         <mkdir dir="${build.classes.dir}"/>
-        <!-- XXX consider forcing debug=true and deprecation=true -->
-        <!-- XXX consider deleting the .class file first to force a rebuild -->
-        <depend srcdir="${src.dir}" destdir="${build.classes.dir}" cache="${build.dir}/depcache">
-            <classpath refid="cp"/>
-        </depend>
+        <pathconvert pathsep="${line.separator}" property="javac.includes.binary">
+            <path>
+                <filelist dir="${build.classes.dir}" files="${javac.includes}"/>
+            </path>
+            <globmapper from="*.java" to="*.class"/>
+        </pathconvert>
+        <tempfile deleteonexit="true" property="javac.includesfile.binary"/>
+        <echo file="${javac.includesfile.binary}" message="${javac.includes.binary}"/>
+        <delete>
+            <files includesfile="${javac.includesfile.binary}"/>
+        </delete>
+        <delete>
+            <fileset file="${javac.includesfile.binary}"/>
+        </delete>
         <nb-javac srcdir="${src.dir}" destdir="${build.classes.dir}"
                   debug="${build.compiler.debug}" deprecation="${build.compiler.deprecation}" encoding="UTF-8"
                   source="${javac.source}" target="${javac.target}" includes="${javac.includes}" optimize="${build.compiler.optimize}" includeantruntime="false">
@@ -433,6 +441,7 @@ made subject to such option by the copyright holder.
         <property name="license.file.override" value="${license.file}"/>
         <property name="use.pack200" value="true"/>
         <property name="pack200.excludes" value=""/>
+        <property name="nbm.locales" value="${locales}"/>
         <makenbm file="${build.dir}/${nbm}"
                  productdir="${cluster}"
                  module="${module.jar}"
@@ -445,7 +454,9 @@ made subject to such option by the copyright holder.
                  pack200excludes="${pack200.excludes}"
                  targetcluster="${nbm.target.cluster}"
                  releasedate="${nbm.release.date}"
-                 moduleauthor="${nbm.module.author}">
+                 moduleauthor="${nbm.module.author}"
+                 locales="${nbm.locales}"
+                 >
             <license file="${license.file.override}"/>
             <signature keystore="${keystore}" storepass="${storepass}" alias="${nbm_alias}"/>
             <updaterjar>

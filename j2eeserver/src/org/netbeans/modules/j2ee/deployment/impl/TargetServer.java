@@ -828,7 +828,16 @@ public class TargetServer {
             return DeployOnSaveManager.DeploymentState.MODULE_NOT_DEPLOYED;
         }
         
-        TargetModule[] modules = getDeploymentDirectoryModules();
+        TargetModule[] modules;
+        try {
+            modules = getDeploymentDirectoryModules();
+        } catch (IllegalStateException ex) {
+            // this is strange and might signal we don't have access to server
+            // (tomcat) or something more serious such as disconnected DM
+            // being use
+            LOGGER.log(Level.INFO, null, ex);
+            return DeployOnSaveManager.DeploymentState.SERVER_STATE_UNSUPPORTED;
+        }
 
         try {
             if (!supportsDeployOnSave(modules)) {
@@ -868,6 +877,9 @@ public class TargetServer {
             } catch (DatasourceAlreadyExistsException ex) {
                 LOGGER.log(Level.INFO, null, ex);
                 return DeployOnSaveManager.DeploymentState.DEPLOYMENT_FAILED;
+            } catch (ConfigurationException ex) {
+                LOGGER.log(Level.INFO, null, ex);
+                return DeployOnSaveManager.DeploymentState.DEPLOYMENT_FAILED;
             }
 
             DeploymentChangeDescriptor changes = distributeChangesOnSave(targetModule, artifacts);
@@ -890,9 +902,6 @@ public class TargetServer {
             }
             return DeployOnSaveManager.DeploymentState.MODULE_UPDATED;
         } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
-            return DeployOnSaveManager.DeploymentState.DEPLOYMENT_FAILED;
-        }  catch (ConfigurationException ex) {
             Exceptions.printStackTrace(ex);
             return DeployOnSaveManager.DeploymentState.DEPLOYMENT_FAILED;
         } finally {

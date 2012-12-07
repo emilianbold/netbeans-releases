@@ -42,6 +42,7 @@
 package org.netbeans.modules.php.editor.parser;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -50,6 +51,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.php.api.annotation.PhpAnnotations;
+import org.netbeans.modules.php.api.util.StringUtils;
 import org.netbeans.modules.php.editor.parser.astnodes.PHPDocBlock;
 import org.netbeans.modules.php.editor.parser.astnodes.PHPDocMethodTag;
 import org.netbeans.modules.php.editor.parser.astnodes.PHPDocNode;
@@ -394,7 +396,7 @@ public class PHPDocCommentParser {
                     // we are not able to thread such tag
                     result = fetchCustomAnnotationLine(line.substring(1));
                     if (result == null) {
-                        result = new UnknownAnnotationLine(name, tokens.length > 1 ? tokens[1] : "");
+                        result = new UnknownAnnotationLine(name, composeDescription(tokens));
                     }
                 }
             }
@@ -402,6 +404,13 @@ public class PHPDocCommentParser {
             result = fetchCustomAnnotationLine(line);
         }
         return result;
+    }
+
+    private static String composeDescription(String[] tokens) {
+        assert tokens.length > 0;
+        List<String> tokenList = new ArrayList(Arrays.asList(tokens));
+        tokenList.remove(0); // remove annotation name
+        return StringUtils.implode(tokenList, " ");
     }
 
     private AnnotationParsedLine fetchCustomAnnotationLine(final String line) {

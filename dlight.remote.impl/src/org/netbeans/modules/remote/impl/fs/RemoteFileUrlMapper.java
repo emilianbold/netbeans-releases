@@ -100,13 +100,22 @@ public class RemoteFileUrlMapper extends URLMapper {
     }
 
     private static URL getURL(ExecutionEnvironment env, String path, boolean folder) throws MalformedURLException {
-        String host = env.getUser() + '@' + env.getHost(); //NOI18N
-        path = escapePath(path);
-        URL url = new URL(RemoteFileURLStreamHandler.PROTOCOL, host, env.getSSHPort(), path);
-        String ext = url.toExternalForm() + (folder ? "/" : ""); // is there a way to set authority? // NOI18N
-        return new URL(ext);
+        /*
+         * Prepare URL here as a string to be used in the URL(String spec)
+         * constructor as it works with userinfo as expected (ipv6 address case).
+         * URL(String protocol, String host, int port, String file) cannot be
+         * used here, as 'host' should contain only host information, without 
+         * username/password etc... 
+         */
+        StringBuilder sb = new StringBuilder(RemoteFileURLStreamHandler.PROTOCOL);
+        sb.append("://"); // NOI18N
+        sb.append(env.getUser()).append('@').append(env.getHost());
+        sb.append(':').append(env.getSSHPort()).append(escapePath(path));
+        if (folder && !(path.endsWith("/"))) { // NOI18N
+            sb.append('/'); // NOI18N
+        }
+        return new URL(sb.toString());
     }
-
 
     private static String escapePath(String path) {
         if (path.indexOf('#') >= 0) { //NOI18N

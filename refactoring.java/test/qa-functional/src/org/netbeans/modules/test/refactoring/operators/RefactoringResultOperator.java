@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ ** Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -39,295 +39,322 @@
  * 
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.test.refactoring.operators;
 
 import java.awt.Component;
+import java.awt.Container;
 import java.util.HashSet;
 import java.util.LinkedList;
-import java.util.List;
 import java.util.Queue;
-import java.util.ResourceBundle;
 import java.util.Set;
-import javax.swing.AbstractButton;
-import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.JSplitPane;
 import javax.swing.JTabbedPane;
-import javax.swing.JToggleButton;
-import javax.swing.JToolBar;
 import javax.swing.JTree;
-import javax.swing.JViewport;
-import javax.swing.tree.TreeModel;
+import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.TopComponentOperator;
+import org.netbeans.jemmy.ComponentChooser;
 import org.netbeans.jemmy.operators.ContainerOperator;
+import org.netbeans.jemmy.operators.JButtonOperator;
+import org.netbeans.jemmy.operators.JScrollPaneOperator;
 import org.netbeans.jemmy.operators.JSplitPaneOperator;
 import org.netbeans.jemmy.operators.JTabbedPaneOperator;
-import org.netbeans.jemmy.operators.JTreeOperator;
+import org.netbeans.jemmy.operators.JToggleButtonOperator;
 import org.netbeans.modules.refactoring.java.ui.tree.FileTreeElement;
 import org.netbeans.modules.refactoring.spi.impl.CheckNode;
-import org.netbeans.modules.refactoring.spi.impl.RefactoringPanel;
 import org.netbeans.modules.refactoring.spi.impl.RefactoringPanelContainer;
 import org.openide.filesystems.FileObject;
 
 /**
  *
- * @author Jiri Prox Jiri.Prox@Sun.COM
+ * @author Jiri.Prox@oracle.com, Marian.Mirilovic@oracle.com
  */
-public class RefactoringResultOperator extends TopComponentOperator{
+public class RefactoringResultOperator extends TopComponentOperator {
 
-    private JButton refresh;
-    private JToggleButton collapse;
-    private JToggleButton logical;
-    private JToggleButton physical;
-    private JButton prev;
-    private JButton next;
-    private JButton cancel;
-    private JButton doRefactor;
-    
+    private JButtonOperator _btRefresh;
+    private JButtonOperator _btPrevious;
+    private JButtonOperator _btNext;
+    private JButtonOperator _btCancel;
+    private JButtonOperator _btDoRefactor;
+    private JToggleButtonOperator _tbtCollapse;
+    private JToggleButtonOperator _tbtLogical;
+    private JToggleButtonOperator _tbtPhysical;
+    private JTabbedPaneOperator _tabpResults;
+
     private RefactoringResultOperator() {
-        super(ResourceBundle.getBundle("org.netbeans.modules.refactoring.spi.impl.Bundle").getString("LBL_Usages"));
+        super(Bundle.getStringTrimmed("org.netbeans.modules.refactoring.spi.impl.Bundle", "LBL_Usages"));
     }
-    
+
     private RefactoringResultOperator(String windowTitle) {
         super(windowTitle);
     }
-    
+
     public static RefactoringResultOperator getFindUsagesResult() {
-        return new RefactoringResultOperator(ResourceBundle.getBundle("org.netbeans.modules.refactoring.spi.impl.Bundle").getString("LBL_Usages"));
+        return new RefactoringResultOperator(Bundle.getStringTrimmed("org.netbeans.modules.refactoring.spi.impl.Bundle", "LBL_Usages"));
     }
-    
+
     public static RefactoringResultOperator getPreview() {
-        return new RefactoringResultOperator(ResourceBundle.getBundle("org.netbeans.modules.refactoring.spi.impl.Bundle").getString("LBL_Refactoring"));
+        return new RefactoringResultOperator(Bundle.getStringTrimmed("org.netbeans.modules.refactoring.spi.impl.Bundle", "LBL_Refactoring"));
     }
-    
-    
+
+    public JTabbedPaneOperator getTabbedPane() {
+        if (_tabpResults == null) {
+            _tabpResults = new JTabbedPaneOperator(this);
+        }
+        return _tabpResults;
+    }
+
     public int getTabCount() {
-        JTabbedPane tabbedPane = getTabbedPane();
-        if(tabbedPane==null) {
+        getTabbedPane();
+        if (_tabpResults == null) {
             return 0;
         }
-        return tabbedPane.getTabCount();
+        return _tabpResults.getTabCount();
     }
-    
+
     public void selectTab(String name) {
-        JComponent content = getContent();        
-        if("org.netbeans.modules.refactoring.spi.impl.RefactoringPanel".equals(content.getClass().getName())) {
-            throw new  IllegalArgumentException("There are no tabs");
-        } else if(content instanceof JTabbedPane) {
-            JTabbedPaneOperator jtpo = new JTabbedPaneOperator((JTabbedPane)content);
-            jtpo.selectPage(name);            
-        } else {
-            throw new  IllegalArgumentException("Wrong structure");
-        }
+        getTabbedPane();
+        _tabpResults.selectPage(name);
     }
-    
-    public JTabbedPane getTabbedPane() {
-        JComponent component = getContent();
-        if(component instanceof JTabbedPane) {
-            return (JTabbedPane) component;
-        }
-        else {
-            return null;
-        }
-    }
-            
+
     public JPanel getRefactoringPanel() {
-        JComponent content = getContent();
-        
-        if("org.netbeans.modules.refactoring.spi.impl.RefactoringPanel".equals(content.getClass().getName())) {
+        Component source = this.getSource();
+        Component[] components = ((JComponent) source).getComponents();
+        JComponent content = (JComponent) components[0];
+
+        if ("org.netbeans.modules.refactoring.spi.impl.RefactoringPanel".equals(content.getClass().getName())) {
             return (JPanel) content;
         }
-        if("org.netbeans.modules.refactoring.spi.impl.RefactoringPanelContainer".equals(content.getClass().getName())) {
+        if ("org.netbeans.modules.refactoring.spi.impl.RefactoringPanelContainer".equals(content.getClass().getName())) {
             return ((RefactoringPanelContainer) content).getCurrentPanel();
         }
-        if(content instanceof JTabbedPane) {
+        if (content instanceof JTabbedPane) {
             JTabbedPane tab = (JTabbedPane) content;
             return (JPanel) tab.getSelectedComponent();
-        }        
-        throw new IllegalArgumentException("Wrong structure "+ content.getClass().getName());
-        
+        }
+        throw new IllegalArgumentException("Wrong structure " + content.getClass().getName());
+
     }
-    
-    private JComponent getContent() {
-        Component source = this.getSource();        
-        Component[] components = ((JComponent) source).getComponents();
-        return (JComponent) components[0];
-    }
-    
-    
-    private void dumpChilds(Object root, int indentation,JTreeOperator jto) {
-        Object[] children = jto.getChildren(root);
-        if(children.length==0) {
-            return;
-        }
-        for (int i = 0; i < children.length; i++) {
-            Object child = children[i];
-            for (int j = 0; j < indentation; j++) {
-                System.out.print(" ");
-            }
-            System.out.println(child.toString());     
-            dumpChilds(child, indentation+4, jto);                           
-        }
-    }
-           
-    public void test(Component source,int level,int no) { 
-        if(level==0) {
-            System.out.println("--------------------------");
-        }
-        for(int j = 0;j<level;j++) {
-            System.out.print("  ");
-        }
-        System.out.print(no);
-        System.out.print(source.getClass().getName());
-        if(source.getClass().getName().endsWith("JButton")) {
-            System.out.print(((JButton)source).getText());
-        }
-        System.out.println("");
-        if(!(source instanceof JComponent)) {
-            return;
-        }
-        Component[] components = ((JComponent) source).getComponents();        
-        for (int i = 0; i < components.length; i++) {
-            Component component = components[i];            
-            test(component, level+1,i);
-            
-        }                                
-        if(level==0) {
-            System.out.println("--------------------------");
-        }
-    }
-    
-    public JToolBar getJToolbar() {
-        JPanel refactoringPanel = getRefactoringPanel();
-        ContainerOperator ct = new ContainerOperator(refactoringPanel);
-        JSplitPaneOperator splitPane = new JSplitPaneOperator(ct);
+
+    private ContainerOperator getDoRefactoringCancelPanel() {
+        JSplitPane splitPane = JSplitPaneOperator.findJSplitPane(getRefactoringPanel());
         JComponent leftComponent = (JComponent) splitPane.getLeftComponent();
-        JPanel panelWithToolbars= (JPanel) leftComponent.getComponent(0);
-        JToolBar toolbar = (JToolBar) panelWithToolbars.getComponent(0);
-        
-        return toolbar;                        
+        return new ContainerOperator((Container) leftComponent.getComponent(0));
     }
 
-    private JPanel getDoRefactoringCancelPanel() {
-        JPanel refactoringPanel = getRefactoringPanel();
-        ContainerOperator ct = new ContainerOperator(refactoringPanel);
-        JSplitPaneOperator splitPane = new JSplitPaneOperator(ct);
-        JComponent leftComponent = (JComponent) splitPane.getLeftComponent();
-        JPanel panel = (JPanel) leftComponent.getComponent(0);
-        return panel;
-    }
-
-    private JButton getDoRefactoringButton() {
-        JPanel panel = getDoRefactoringCancelPanel();
-        return (JButton) panel.getComponent(0);
-    }
-
-    private JButton getCancelButton() {
-        JPanel panel = getDoRefactoringCancelPanel();
-        return (JButton) panel.getComponent(1);
-    }
-    
     public JTree getPreviewTree() {
-        JPanel refactoringPanel = getRefactoringPanel();
-        ContainerOperator ct = new ContainerOperator(refactoringPanel);
+        ContainerOperator ct = new ContainerOperator(getRefactoringPanel());
         JSplitPaneOperator splitPane = new JSplitPaneOperator(ct);
         JComponent leftComponent = (JComponent) splitPane.getLeftComponent();
-        JScrollPane jScrollPane = null;
-        for (Component component : leftComponent.getComponents()) {
-            if (component instanceof JScrollPane) {
-                jScrollPane = (JScrollPane) component;
-            }
-        }
-        JViewport viewport = jScrollPane.getViewport();        
-        return (JTree) viewport.getComponent(0);        
+        JScrollPane jScrollPane = JScrollPaneOperator.findJScrollPane(leftComponent);
+        javax.swing.JViewport viewport = jScrollPane.getViewport();
+        return (JTree) viewport.getComponent(0);
+    }
+
+    public ContainerOperator getToolbar() {
+        ComponentChooser chooser = new ToolbarChooser();
+        return new ContainerOperator((Container)waitComponent((Container)getSource(), chooser));
+    }
+
+    private JButtonOperator getToolbarButton(String buttonTooltip) {
+        ToolbarButtonChooser chooser = new ToolbarButtonChooser(buttonTooltip, getComparator());
+        return new JButtonOperator(JButtonOperator.waitJButton((Container)getToolbar().getSource(), chooser));
     }
     
-    public JButton getRefresh() {
-        if(refresh==null) {
-            refresh = (JButton) getJToolbar().getComponent(0);
-        }
-        return refresh;
+    private JToggleButtonOperator getToolbarToogleButton(String buttonTooltip) {
+        ToolbarButtonChooser chooser = new ToolbarButtonChooser(buttonTooltip, getComparator());
+        return new JToggleButtonOperator(JToggleButtonOperator.waitJToggleButton((Container)getToolbar().getSource(), chooser));
     }
     
-    public JToggleButton getCollapse() {
-        if(collapse==null) {
-            collapse = (JToggleButton) getJToolbar().getComponent(6);
+    private JButtonOperator getRefresh() {
+        if (_btRefresh == null) {
+            _btRefresh = getToolbarButton(org.netbeans.jellytools.Bundle.getStringTrimmed("org.netbeans.modules.refactoring.spi.impl.Bundle", "HINT_refresh")); // Refresh the refactoring data
         }
-        return collapse;
+        return _btRefresh;
     }
 
-    public JToggleButton getLogical() {
-        if(logical==null) {
-            logical = (JToggleButton) getJToolbar().getComponent(5);
+    private JToggleButtonOperator getCollapse() {
+        if (_tbtCollapse == null) {
+            _tbtCollapse = getToolbarToogleButton(org.netbeans.jellytools.Bundle.getStringTrimmed("org.netbeans.modules.refactoring.spi.impl.Bundle", "HINT_expandAll")); // Expand all nodes in the tree
         }
-        return logical;
+        return _tbtCollapse;
     }
 
-    public JToggleButton getPhysical() {
-        if(physical==null) {
-            physical = (JToggleButton) getJToolbar().getComponent(4);
+    private JToggleButtonOperator getLogical() {
+        if (_tbtLogical == null) {
+            _tbtLogical = getToolbarToogleButton(org.netbeans.jellytools.Bundle.getStringTrimmed("org.netbeans.modules.refactoring.spi.impl.Bundle", "HINT_logicalView")); // Show Logical View
         }
-        return physical;
+        return _tbtLogical;
     }
 
-    public JButton getPrev() {
-        if(prev==null) {
-            prev = (JButton) getJToolbar().getComponent(2);
+    private JToggleButtonOperator getPhysical() {
+        if (_tbtPhysical == null) {
+            _tbtPhysical = getToolbarToogleButton(org.netbeans.jellytools.Bundle.getStringTrimmed("org.netbeans.modules.refactoring.spi.impl.Bundle", "HINT_physicalView")); // Show Physical View
         }
-        return prev;
+        return _tbtPhysical;
     }
 
-    public JButton getNext() {
-        if(next==null) {
-            next = (JButton) getJToolbar().getComponent(3);
+    private JButtonOperator getPrev() {
+        if (_btPrevious == null) {
+            _btPrevious = getToolbarButton(org.netbeans.jellytools.Bundle.getStringTrimmed("org.netbeans.modules.refactoring.spi.impl.Bundle", "HINT_prevMatch")); // Previous Occurence - Ctrl+Comma
         }
-        return next;
+        return _btPrevious;
     }
 
-    public JButton getDoRefactor() {
-        if(doRefactor==null) {
-            doRefactor = getDoRefactoringButton();
+    private JButtonOperator getNext() {
+        if (_btNext == null) {
+            _btNext = getToolbarButton(org.netbeans.jellytools.Bundle.getStringTrimmed("org.netbeans.modules.refactoring.spi.impl.Bundle", "HINT_nextMatch")); // Next Occurence - Ctrl+Period
         }
-        return doRefactor;
+        return _btNext;
     }
 
-    public JButton getcancel() {
-        if(cancel==null) {
-            cancel = getCancelButton();
+    private JButtonOperator getDoRefactor() {
+        if (_btDoRefactor == null) {
+            _btDoRefactor = new JButtonOperator(getDoRefactoringCancelPanel(), 0);
         }
-        return cancel;
+        return _btDoRefactor;
+    }
+
+    private JButtonOperator getCancel() {
+        if (_btCancel == null) {
+            _btCancel = new JButtonOperator(getDoRefactoringCancelPanel(), 1);
+        }
+        return _btCancel;
+    }
+
+    public void doRefactoring() {
+        getDoRefactor().pushNoBlock();
+    }
+    
+    public void collapse() {
+        getCollapse().pushNoBlock();
+    }
+    
+    public void refresh() {
+        getRefresh().pushNoBlock();
+    }
+
+    public void logical() {
+        getLogical().push();
+    }
+    
+    public boolean logicalIsSelected() {
+        return getLogical().isSelected();
+    }
+
+    public void physical() {
+        getPhysical().push();
+    }
+    
+    public boolean physicalIsSelected() {
+        return getPhysical().isSelected();
+    }
+    
+    public void previous() {
+        getPrev().push();
+    }
+
+    public void next() {
+        getNext().push();
+    }
+
+    public void cancel() {
+        getCancel().pushNoBlock();
     }
 
     public Set<FileObject> getInvolvedFiles() {
-        JTree tree = this.getPreviewTree();
-        return browseForFileObjects(tree.getModel());
+        return browseForFileObjects(getPreviewTree().getModel());
     }
 
-    private Set<FileObject> browseForFileObjects(TreeModel model) {
+    private Set<FileObject> browseForFileObjects(javax.swing.tree.TreeModel model) {
         Queue<CheckNode> q = new LinkedList<CheckNode>();
-        q.add((CheckNode)model.getRoot());
-        Set<FileObject> result = new HashSet<FileObject>();        
-        while(!q.isEmpty()) {
+        q.add((CheckNode) model.getRoot());
+        Set<FileObject> result = new HashSet<FileObject>();
+        while (!q.isEmpty()) {
             CheckNode node = q.remove();
             Object uo = node.getUserObject();
-            if(uo instanceof FileTreeElement) {
+            if (uo instanceof FileTreeElement) {
                 FileTreeElement fileTreeElement = (FileTreeElement) uo;
                 Object userObject = fileTreeElement.getUserObject();
-                if(userObject instanceof FileObject) {
-                    result.add((FileObject)userObject);
+                if (userObject instanceof FileObject) {
+                    result.add((FileObject) userObject);
                 } else {
-                    throw new IllegalArgumentException("Object of type FileObject was expected, but got "+userObject.getClass().getName());
+                    throw new IllegalArgumentException("Object of type FileObject was expected, but got " + userObject.getClass().getName());
                 }
-                                
+
             }
             for (int i = 0; i < model.getChildCount(node); i++) {
-                q.add((CheckNode)model.getChild(node, i));
+                q.add((CheckNode) model.getChild(node, i));
             }
         }
         return result;
     }
-    
 
+    /** Chooser which can be used to find a org.openide.awt.Toolbar component or
+     * count a number of such components in given container.
+     */
+    private static class ToolbarChooser implements ComponentChooser {
+        private String toolbarName;
+        private StringComparator comparator;
+        private int count = 0;
+        
+        /** Use this to find org.openide.awt.Toolbar component with given name. */
+        public ToolbarChooser(String toolbarName, StringComparator comparator) {
+            this.toolbarName = toolbarName;
+            this.comparator = comparator;
+        }
+        
+        /** Use this to count org.openide.awt.Toolbar components in given container. */
+        public ToolbarChooser() {
+            this.comparator = null;
+        }
+        
+        @Override
+        public boolean checkComponent(Component comp) {
+            if(comp instanceof javax.swing.JToolBar) {
+                count++;
+                if(comparator != null) {
+                    return comparator.equals(((javax.swing.JToolBar)comp).getName(), toolbarName);
+                } else {
+                    return true;
+                }
+            }
+            return false;
+        }
+        
+        @Override
+        public String getDescription() {
+            return "javax.swing.JToolBar";
+        }
+        
+        public int getCount() {
+            return count;
+        }
+    }
+    
+    /** Chooser which can be used to find a component with given tooltip,
+     * for example a toolbar button.
+     */
+    private static class ToolbarButtonChooser implements ComponentChooser {
+        private String buttonTooltip;
+        private StringComparator comparator;
+        
+        public ToolbarButtonChooser(String buttonTooltip, StringComparator comparator) {
+            this.buttonTooltip = buttonTooltip;
+            this.comparator = comparator;
+        }
+        
+        @Override
+        public boolean checkComponent(Component comp) {
+            return comparator.equals(((JComponent)comp).getToolTipText(), buttonTooltip);
+        }
+        
+        @Override
+        public String getDescription() {
+            return "Toolbar button with tooltip \""+buttonTooltip+"\".";
+        }
+    }
+    
 }

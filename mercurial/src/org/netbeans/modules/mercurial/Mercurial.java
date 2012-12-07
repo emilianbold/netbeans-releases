@@ -331,9 +331,10 @@ public class Mercurial {
      * Runs a given callable and refreshes cached modification timestamp of the repository's hg folder after
      * @param callable code to run
      * @param repository owner of the hg folder to refresh
+     * @param commandName name of the hg command if available
      */
-    public <T> T runWithoutExternalEvents (File repository, Callable<T> callable) throws Exception {
-        return getMercurialInterceptor().runWithoutExternalEvents(repository, callable);
+    public <T> T runWithoutExternalEvents (File repository, String commandName, Callable<T> callable) throws Exception {
+        return getMercurialInterceptor().runWithoutExternalEvents(repository, commandName, callable);
     }
 
     /**

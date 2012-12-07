@@ -44,7 +44,6 @@
 
 package org.netbeans.modules.web.jsf;
 
-import org.netbeans.modules.web.jsf.api.facesmodel.JSFVersion;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.IOException;
@@ -57,16 +56,12 @@ import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.libraries.LibraryManager;
-import org.netbeans.editor.ActionFactory;
 import org.netbeans.modules.j2ee.common.Util;
 import org.netbeans.modules.j2ee.dd.api.common.InitParam;
 import org.netbeans.modules.j2ee.dd.api.web.DDProvider;
 import org.netbeans.modules.j2ee.dd.api.web.WebApp;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.jsf.api.ConfigurationUtils;
-import org.netbeans.spi.project.libraries.LibraryFactory;
-import org.netbeans.spi.project.libraries.LibraryImplementation;
-import org.netbeans.spi.project.libraries.support.LibrariesSupport;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
@@ -253,12 +248,28 @@ public class JSFUtils {
         return (tmpPath != null ? path + tmpPath : null);
     }
 
-    public static boolean isJSF20Plus(WebModule wm) {
-        if (wm == null)
+    public static boolean isJSF12Plus(WebModule webModule) {
+        return isJSFPlus(webModule, JSF_1_2__API_SPECIFIC_CLASS);
+    }
+
+    public static boolean isJSF20Plus(WebModule webModule) {
+        return isJSFPlus(webModule, JSF_2_0__API_SPECIFIC_CLASS);
+    }
+
+    public static boolean isJSF21Plus(WebModule webModule) {
+        return isJSFPlus(webModule, JSF_2_1__API_SPECIFIC_CLASS);
+    }
+
+    private static boolean isJSFPlus(WebModule webModule, String versionSpecificClass) {
+        if (webModule == null) {
             return false;
-        ClassPath classpath = ClassPath.getClassPath(wm.getDocumentBase(), ClassPath.COMPILE);
-        boolean isJSF20 = classpath.findResource(JSF_2_0__API_SPECIFIC_CLASS.replace('.', '/') + ".class") != null; //NOI18N
-        return isJSF20;
+        }
+
+        final ClassPath compileCP = ClassPath.getClassPath(webModule.getDocumentBase(), ClassPath.COMPILE);
+        if (compileCP != null) {
+            return compileCP.findResource(versionSpecificClass.replace('.', '/') + ".class") != null; //NOI18N
+        }
+        return false;
     }
 
     public static boolean isJavaEE5(TemplateWizard wizard) {

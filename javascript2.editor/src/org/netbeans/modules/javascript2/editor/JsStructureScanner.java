@@ -49,7 +49,6 @@ import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.csl.api.*;
-import org.netbeans.modules.csl.spi.GsfUtilities;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.javascript2.editor.index.JsIndex;
 import org.netbeans.modules.javascript2.editor.lexer.JsTokenId;
@@ -118,8 +117,8 @@ public class JsStructureScanner implements StructureScanner {
                     && (children.size() > 0 || child.isDeclared())) {
                 collectedItems.add(new JsObjectStructureItem(child, children, result));
             } else if (child.getJSKind() == JsElement.Kind.PROPERTY) {
-                if(child.getModifiers().contains(Modifier.PUBLIC)
-                        || !(jsObject.getParent() instanceof JsFunction))
+                if(child.isDeclared() && (child.getModifiers().contains(Modifier.PUBLIC)
+                        || !(jsObject.getParent() instanceof JsFunction)))
                 collectedItems.add(new JsSimpleStructureItem(child, "prop-", result)); //NOI18N
             } else if (child.getJSKind() == JsElement.Kind.VARIABLE && child.isDeclared()
                     /*&& (jsObject.getJSKind() == JsElement.Kind.FILE || jsObject.getJSKind() == JsElement.Kind.CONSTRUCTOR)*/) {
@@ -137,7 +136,7 @@ public class JsStructureScanner implements StructureScanner {
         }
         return false;
     }
-    
+
     private static class FoldingItem {
         String kind;
         int start;
@@ -170,15 +169,13 @@ public class JsStructureScanner implements StructureScanner {
                     // hardcoded values should be ok since token comes in case if it's completed (/** ... */)
                     int startOffset = ts.offset() + 3;
                     int endOffset = ts.offset() + ts.token().length() - 2;
-                    getRanges(folds, FOLD_JSDOC).add(new OffsetRange(
-                            info.getSnapshot().getOriginalOffset(startOffset), 
-                            info.getSnapshot().getOriginalOffset(endOffset)));
+                    appendFold(folds, FOLD_JSDOC,  info.getSnapshot().getOriginalOffset(startOffset),
+                            info.getSnapshot().getOriginalOffset(endOffset));
                 } else if (tokenId == JsTokenId.BLOCK_COMMENT) {
                     int startOffset = ts.offset() + 2;
                     int endOffset = ts.offset() + ts.token().length() - 2;
-                    getRanges(folds, FOLD_COMMENT).add(new OffsetRange(
-                            info.getSnapshot().getOriginalOffset(startOffset), 
-                            info.getSnapshot().getOriginalOffset(endOffset)));
+                    appendFold(folds, FOLD_COMMENT, info.getSnapshot().getOriginalOffset(startOffset),
+                            info.getSnapshot().getOriginalOffset(endOffset));
                 } else if (((JsTokenId) tokenId).isKeyword()) {
                     lastContextId = (JsTokenId) tokenId;
                 } else if (tokenId == JsTokenId.BRACKET_LEFT_CURLY) {
@@ -191,9 +188,8 @@ public class JsStructureScanner implements StructureScanner {
                     stack.add(new FoldingItem(kind, ts.offset()));
                 } else if (tokenId == JsTokenId.BRACKET_RIGHT_CURLY && !stack.isEmpty()) {
                     FoldingItem fromStack = stack.remove(stack.size() - 1);
-                    getRanges(folds, fromStack.kind).add(new OffsetRange(
-                            info.getSnapshot().getOriginalOffset(fromStack.start),
-                            info.getSnapshot().getOriginalOffset(ts.offset() + 1)));
+                    appendFold(folds, fromStack.kind, info.getSnapshot().getOriginalOffset(fromStack.start),
+                            info.getSnapshot().getOriginalOffset(ts.offset() + 1));
                 }
             }
         }
@@ -201,7 +197,13 @@ public class JsStructureScanner implements StructureScanner {
         LOGGER.log(Level.FINE, "Folding took %s ms", (end - start));
         return folds;
     }
-    
+
+    private void appendFold(Map<String, List<OffsetRange>> folds, String kind, int startOffset, int endOffset) {
+        if (startOffset >= 0 && endOffset >= startOffset) {
+            getRanges(folds, kind).add(new OffsetRange(startOffset, endOffset));
+        }
+    }
+
     private List<OffsetRange> getRanges(Map<String, List<OffsetRange>> folds, String kind) {
         List<OffsetRange> ranges = folds.get(kind);
         if (ranges == null) {
@@ -372,7 +374,6 @@ public class JsStructureScanner implements StructureScanner {
             }
             formatter.appendText(getFunctionScope().getDeclarationName().getName());
             formatter.appendText("(");   //NOI18N
-            formatter.parameters(true);
             boolean addComma = false;
             for(JsObject jsObject : function.getParameters()) {
                 if (addComma) {
@@ -380,9 +381,25 @@ public class JsStructureScanner implements StructureScanner {
                 } else {
                     addComma = true;
                 }
+                Collection<? extends TypeUsage> types = jsObject.getAssignmentForOffset(jsObject.getDeclarationName().getOffsetRange().getStart());
+                if (!types.isEmpty()) {
+                    formatter.appendHtml(FONT_GRAY_COLOR);
+                    StringBuilder typeSb = new StringBuilder();
+                    for (TypeUsage type : types) {
+
+                        if (typeSb.length() > 0) {
+                            typeSb.append("|"); //NOI18N
+                        }
+                        typeSb.append(type.getType());
+                    }
+                    if (typeSb.length() > 0) {
+                        formatter.appendText(typeSb.toString());
+                    }
+                    formatter.appendText(" ");   //NOI18N
+                    formatter.appendHtml(CLOSE_FONT);
+                }
                 formatter.appendText(jsObject.getName());
             }
-            formatter.parameters(false);
             formatter.appendText(")");   //NOI18N
             
             appendTypeInfo(formatter, function.getReturnTypes());
@@ -460,13 +477,13 @@ public class JsStructureScanner implements StructureScanner {
                         if (sexp.startsWith("@exp;")) {
                             sexp = sexp.substring(5);
                             List<String> nExp = new ArrayList<String>();
-                            String[] split = sexp.split("@call;");
+                            String[] split = sexp.split("@");
                             for (int i = split.length - 1; i > -1; i--) {
-                                nExp.add(split[i]);
-                                if (i == 0) {
-                                    nExp.add("@pro");
-                                } else {
+                                nExp.add(split[i].substring(split[i].indexOf(';') + 1));
+                                if (split[i].startsWith("call;")) {
                                     nExp.add("@mtd");
+                                } else {
+                                    nExp.add("@pro");
                                 }
                             }
                             resolved.addAll(ModelUtils.resolveTypeFromExpression(model, jsIndex, nExp, cycle));

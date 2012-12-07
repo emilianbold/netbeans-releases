@@ -256,19 +256,14 @@ public final class EditorBridge extends KeymapManager {
                                 // mkb is the same.
                                 continue;
                             }
-                            /*
-                            List<MultiKeyBinding> defaultBindings = defaultActions.get(editorAction.getId());
-                            if (defaultBindings != null && defaultBindings.contains(mkb)) {
-                                continue;
-                            }
-                            */
                         }
                     } else {
-                        if (!exists && !mimeActions.containsKey(editorAction.getId())) {
-                            // do not define in default iff not already defined
+                        if (!presentInDefault && !exists) {
+                            // do not define in default iff not already defined and its editorKit does not know it
                             continue;
                         }
                         nullBindings.add(mkb);
+                        presentInDefault = true;
                     }
                     List<MultiKeyBinding> l = mimeTypeToKeyBinding.get(mimeType);
                     if (l == null) {
@@ -521,7 +516,7 @@ public final class EditorBridge extends KeymapManager {
                 if (j > 0) {
                     sb.append(' '); //NOI18N
                 }
-                sb.append(Utilities.keyToString(mkb.getKeyStrokeList().get(j)));
+                sb.append(Utilities.keyToString(mkb.getKeyStrokeList().get(j), true));
             }
 
             Set<String> keyStrokes = actionNameToShortcuts.get(mkb.getActionName());
@@ -627,6 +622,9 @@ public final class EditorBridge extends KeymapManager {
         public String getDelegatingActionId() {
             if (delegaitngActionId == null) {
                 delegaitngActionId = (String) action.getValue(NbEditorKit.SYSTEM_ACTION_CLASS_NAME_PROPERTY);
+                if (delegaitngActionId != null) {
+                    delegaitngActionId = delegaitngActionId.replaceAll("\\.", "-");
+                }
             }
             return delegaitngActionId;
         }

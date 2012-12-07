@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.parsing.lucene;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -58,6 +59,7 @@ import org.apache.lucene.search.Query;
 import org.apache.lucene.search.Searcher;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.RAMDirectory;
+import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.modules.parsing.lucene.support.Convertor;
@@ -114,6 +116,9 @@ public class MemoryIndex implements Index {
         lock.readLock().lock();
         try {
             final IndexReader in = getReader();
+            if (in == null) {
+                return;
+            }
             final BitSet bs = new BitSet(in.maxDoc());
             final Collector c = new BitSetCollector(bs);
             final Searcher searcher = new IndexSearcher(in);
@@ -163,6 +168,9 @@ public class MemoryIndex implements Index {
         lock.readLock().lock();
         try {
             final IndexReader in = getReader();
+            if (in == null) {
+                return;
+            }
             final BitSet bs = new BitSet(in.maxDoc());
             final Collector c = new BitSetCollector(bs);
             final Searcher searcher = new IndexSearcher(in);
@@ -215,6 +223,9 @@ public class MemoryIndex implements Index {
         lock.readLock().lock();
         try {
             final IndexReader in = getReader();
+            if (in == null) {
+                return;
+            }
             final TermEnum terms = start == null ? in.terms () : in.terms (start);
             try {
                 do {
@@ -300,10 +311,15 @@ public class MemoryIndex implements Index {
             lock.writeLock().unlock();
         }
     }
-    
+
+    @CheckForNull
     private synchronized IndexReader getReader() throws IOException {
         if (cachedReader == null) {
-            cachedReader = IndexReader.open(getDirectory(),true);
+            try {
+                cachedReader = IndexReader.open(getDirectory(),true);
+            } catch (FileNotFoundException fnf) {
+                //pass - returns null
+            }
         }
         return cachedReader;
     }

@@ -49,7 +49,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.NoSuchElementException;
 import java.util.Set;
@@ -157,6 +156,17 @@ public final class ClientSideProjectWizardIterator implements WizardDescriptor.P
         }
 
         handle.finish();
+
+        SiteTemplateImplementation siteTemplate = (SiteTemplateImplementation) wizardDescriptor.getProperty(NewProjectWizard.SITE_TEMPLATE);
+        String libraryNames = (String)wizardDescriptor.getProperty(NewProjectWizard.LIBRARY_NAMES);
+        boolean newProjWizard = wizard instanceof NewProjectWizard;
+        ClientSideProjectUtilities.logUsage(ClientSideProjectWizardIterator.class, "USG_PROJECT_HTML5_CREATE", // NOI18N
+                new Object[] { newProjWizard ? "NEW" : "EXISTING", // NOI18N
+                siteTemplate != null ? siteTemplate.getId() : "NONE", // NOI18N
+                libraryNames == null ? "" : libraryNames,
+                !newProjWizard && siteRoot != null ? (FileUtil.isParentOf(dir, siteRoot) ? "YES" : "NO") : "" // NOI18N
+                });
+
         return files;
     }
 
@@ -166,6 +176,7 @@ public final class ClientSideProjectWizardIterator implements WizardDescriptor.P
     }
 
     @Override
+    @SuppressWarnings({"unchecked", "rawtypes"})
     public void initialize(WizardDescriptor wiz) {
         this.wizardDescriptor = wiz;
         index = 0;
@@ -178,14 +189,14 @@ public final class ClientSideProjectWizardIterator implements WizardDescriptor.P
 
 
         //Compute steps from extenders
-        ArrayList<Panel<? extends WizardDescriptor>> extenderPanelsCol = new ArrayList();
+        ArrayList<Panel<? extends WizardDescriptor>> extenderPanelsCol = new ArrayList<Panel<? extends WizardDescriptor>>();
         for (ClientProjectExtender extender: extenders) {
             for (Panel<WizardDescriptor> panel: extender.createWizardPanels()) {
                 extenderPanelsCol.add(panel);
                 steps.add(panel.getComponent().getName());
             }
         }
-        
+
         extenderPanels = extenderPanelsCol.toArray(new Panel[0]);
        
         //Regular panels
@@ -305,11 +316,12 @@ public final class ClientSideProjectWizardIterator implements WizardDescriptor.P
         public static final String SITE_TEMPLATE = "SITE_TEMPLATE"; // NOI18N
         public static final String LIBRARIES_FOLDER = "LIBRARIES_FOLDER"; // NOI18N
         public static final String LIBRARIES_PATH = "LIBRARIES_PATH";
+        public static final String LIBRARY_NAMES = "LIBRARY_NAMES"; // NOI18N
 
 
         @Override
         public Panel<WizardDescriptor>[] createPanels() {
-            @SuppressWarnings("unchecked")
+            @SuppressWarnings({"rawtypes", "unchecked"})
             WizardDescriptor.Panel<WizardDescriptor>[] panels = new WizardDescriptor.Panel[] {
                 new NewClientSideProjectPanel(),
                 new SiteTemplateWizardPanel(),
@@ -441,7 +453,7 @@ public final class ClientSideProjectWizardIterator implements WizardDescriptor.P
 
         @Override
         public Panel<WizardDescriptor>[] createPanels() {
-            @SuppressWarnings("unchecked")
+            @SuppressWarnings({"unchecked", "rawtypes"})
             WizardDescriptor.Panel<WizardDescriptor>[] panels = new WizardDescriptor.Panel[] {
                 new ExistingClientSideProjectPanel(),
             };
