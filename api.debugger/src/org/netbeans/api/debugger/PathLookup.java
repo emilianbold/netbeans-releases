@@ -64,8 +64,8 @@ import org.openide.util.lookup.Lookups;
  */
 class PathLookup extends org.openide.util.Lookup {
 
-    private org.openide.util.Lookup delegate;
-    private String path;
+    private final org.openide.util.Lookup delegate;
+    private final String path;
 
     PathLookup(String path) {
         this.delegate = Lookups.forPath(path);
