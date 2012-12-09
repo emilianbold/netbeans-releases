@@ -57,6 +57,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.StringTokenizer;
 import java.util.WeakHashMap;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.project.FileOwnerQuery;
@@ -100,6 +101,8 @@ public final class WebServer {
      * Start serving project's sources under given web context root.
      */
     public void start(Project p, FileObject siteRoot, String webContextRoot) {
+        assert webContextRoot != null && webContextRoot.startsWith("/") : // NOI18N
+                "webContextRoot must start with slash character"; // NOI18N
         checkStartedServer();
         deployedApps.remove(p);
         deployedApps.put(p, new Pair(webContextRoot, siteRoot));
@@ -213,7 +216,7 @@ public final class WebServer {
 
     private static class Server implements Runnable {
 
-        private boolean stop = false;
+        private AtomicBoolean stop = new AtomicBoolean(false);
         private ServerSocket sock;
         private int port;
 
@@ -233,25 +236,35 @@ public final class WebServer {
         
         @Override
         public void run() {
-            try {
-                while (!stop) {
-                    Socket s = sock.accept();
-                    if (stop) {
-                        break;
+            while (!stop.get()) {
+                Socket s;
+                try {
+                    s = sock.accept();
+                } catch (SocketException ex) {
+                    if (!stop.get()) {
+                        Exceptions.printStackTrace(ex);
                     }
-                    read(s.getInputStream(), s.getOutputStream());
-                }
-            } catch (SocketException ex) {
-                if (!stop) {
+                    // abort server:
+                    return;
+                } catch (IOException ex) {
                     Exceptions.printStackTrace(ex);
+                    // abort server:
+                    return;
                 }
-            } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
+                if (stop.get()) {
+                    break;
+                }
+                try {
+                    read(s.getInputStream(), s.getOutputStream());
+                } catch (IOException ex) {
+                    // do not abort server in this case
+                    LOGGER.log(Level.FINE, "reading socket failed", ex); // NOI18N
+                }
             }
         }
 
         private void stop() {
-            stop = true;
+            stop.set(true);
             try {
                 sock.close();
             } catch (IOException ex) {
