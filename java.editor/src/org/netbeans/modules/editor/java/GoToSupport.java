@@ -104,6 +104,7 @@ import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.api.progress.ProgressUtils;
 import org.netbeans.lib.editor.hyperlink.spi.HyperlinkType;
+import org.netbeans.lib.editor.util.StringEscapeUtils;
 import org.netbeans.modules.java.editor.javadoc.JavadocImports;
 import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
@@ -761,7 +762,7 @@ public class GoToSupport {
             if (highlightName) {
                 if (e.getConstantValue() != null) {
                     result.append(" = ");
-                    result.append(e.getConstantValue().toString());
+                    result.append(StringEscapeUtils.escapeHtml(e.getConstantValue().toString()));
                 }
                 
                 Element enclosing = e.getEnclosingElement();

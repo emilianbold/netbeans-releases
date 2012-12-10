@@ -267,7 +267,8 @@ public class ClipboardHandler {
                         Element elm = cc.getTrees().getElement(new TreePath(tp, ((MemberSelectTree) simpleName).getExpression()));
                         if (el.equals(elm)) continue;
                     } else {
-                        if (!cc.getTreeUtilities().isAccessible(context, el, el.getEnclosingElement().asType())) continue;
+                        if (!cc.getTreeUtilities().isAccessible(context, el, el.getEnclosingElement().asType())
+                                || cc.getElementUtilities().outermostTypeElement(el) == cc.getElementUtilities().outermostTypeElement(context.getEnclosingClass())) continue;
                         for (ImportTree importTree : cc.getCompilationUnit().getImports()) {
                             if (importTree.isStatic() && importTree.getQualifiedIdentifier().getKind() == Tree.Kind.MEMBER_SELECT) {
                                 MemberSelectTree mst = (MemberSelectTree) importTree.getQualifiedIdentifier();
@@ -447,7 +448,9 @@ public class ClipboardHandler {
                                                 simple2ImportFQN.put(el.getSimpleName().toString(), ((TypeElement) el).getQualifiedName().toString());
                                                 spans.add(new int[] {s - start, e - start});
                                             }
-                                        } else if ((el.getKind().isField() || el.getKind() == ElementKind.METHOD) && el.getModifiers().contains(Modifier.STATIC)) {
+                                        } else if ((el.getKind().isField() || el.getKind() == ElementKind.METHOD)
+                                                && el.getModifiers().contains(Modifier.STATIC)
+                                                && !el.getModifiers().contains(Modifier.PRIVATE)) {
                                             simple2ImportFQN.put(el.getSimpleName().toString(), ((TypeElement) el.getEnclosingElement()).getQualifiedName().toString() + '.' + el.getSimpleName().toString());
                                             spans.add(new int[] {s - start, e - start});
                                         }
