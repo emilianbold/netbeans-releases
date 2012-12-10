@@ -55,9 +55,9 @@ import org.openide.filesystems.FileUtil;
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public class DeprecatedMethodsSemanticAnalyzerTest extends PHPCodeCompletionTestBase {
+public class DeprecatedMethodsSemanticAnalysisTest extends PHPCodeCompletionTestBase {
 
-    public DeprecatedMethodsSemanticAnalyzerTest(String testName) {
+    public DeprecatedMethodsSemanticAnalysisTest(String testName) {
         super(testName);
     }
 
