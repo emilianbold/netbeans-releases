@@ -133,7 +133,7 @@ public final class LexUtilities {
         try {
             dobj = DataObject.find(fileObject);
 
-            EditorCookie ec = dobj.getCookie(EditorCookie.class);
+            EditorCookie ec = dobj.getLookup().lookup(EditorCookie.class);
 
             if (ec == null) {
                 throw new IOException("Can't open " + fileObject.getNameExt());
