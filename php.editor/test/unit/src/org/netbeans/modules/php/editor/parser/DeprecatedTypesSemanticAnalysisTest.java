@@ -61,7 +61,7 @@ public class DeprecatedTypesSemanticAnalysisTest extends PHPCodeCompletionTestBa
         super(testName);
     }
 
-    public void testDeprecatedMethodDeclarations() throws Exception {
+    public void testDeprecatedTypesDeclarations() throws Exception {
         checkSemantic("testfiles/semantic/deprecatedTypes/deprecatedTypes.php");
     }
 

@@ -61,7 +61,7 @@ public class DeprecatedFieldsSemanticAnalysisTest extends PHPCodeCompletionTestB
         super(testName);
     }
 
-    public void testDeprecatedMethodDeclarations() throws Exception {
+    public void testDeprecatedFieldsDeclarations() throws Exception {
         checkSemantic("testfiles/semantic/deprecatedFields/deprecatedFields.php");
     }
 

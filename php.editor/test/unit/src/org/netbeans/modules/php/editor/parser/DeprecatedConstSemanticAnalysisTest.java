@@ -61,7 +61,7 @@ public class DeprecatedConstSemanticAnalysisTest extends PHPCodeCompletionTestBa
         super(testName);
     }
 
-    public void testDeprecatedMethodDeclarations() throws Exception {
+    public void testDeprecatedConstantsDeclarations() throws Exception {
         checkSemantic("testfiles/semantic/deprecatedConst/deprecatedConst.php");
     }
 
