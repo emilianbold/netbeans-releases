@@ -344,7 +344,13 @@ public class RemoteLinksTestCase extends RemoteFileTestBase {
             FileObject baseDirFO = getFileObject(baseDir);
             baseDirFO.refresh();
             FileObject folderFO = baseDirFO.getFileObject(folderName);
-            folderFO.isFolder();
+            FileObject linkFO = baseDirFO.getFileObject(selfLinkName);
+            assertTrue(!folderFO.canRead());
+            assertTrue(folderFO.isData());
+            assertTrue(!folderFO.isFolder());
+            assertTrue(!linkFO.canRead());
+            assertTrue(linkFO.isData());
+            assertTrue(!linkFO.isFolder());            
         } finally {
             removeRemoteDirIfNotNull(baseDir);
         }
