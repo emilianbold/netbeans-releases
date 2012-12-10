@@ -59,6 +59,7 @@ import org.netbeans.modules.php.editor.CodeUtils;
 import org.netbeans.modules.php.editor.api.NameKind;
 import org.netbeans.modules.php.editor.api.QualifiedName;
 import org.netbeans.modules.php.editor.api.elements.ElementFilter;
+import org.netbeans.modules.php.editor.api.elements.MethodElement;
 import org.netbeans.modules.php.editor.api.elements.TypeElement;
 import org.netbeans.modules.php.editor.model.Model;
 import org.netbeans.modules.php.editor.model.VariableScope;
@@ -102,8 +103,16 @@ public class SemanticAnalysis extends SemanticAnalyzer {
     public static final EnumSet<ColoringAttributes> UNUSED_FIELD_SET = EnumSet.of(ColoringAttributes.UNUSED, ColoringAttributes.FIELD);
     public static final EnumSet<ColoringAttributes> UNUSED_STATIC_FIELD_SET = EnumSet.of(ColoringAttributes.UNUSED, ColoringAttributes.FIELD, ColoringAttributes.STATIC);
     public static final EnumSet<ColoringAttributes> UNUSED_METHOD_SET = EnumSet.of(ColoringAttributes.UNUSED, ColoringAttributes.METHOD);
+    public static final EnumSet<ColoringAttributes> DEPRECATED_UNUSED_METHOD_SET = EnumSet.of(ColoringAttributes.DEPRECATED, ColoringAttributes.UNUSED, ColoringAttributes.METHOD);
     public static final EnumSet<ColoringAttributes> STATIC_METHOD_SET = EnumSet.of(ColoringAttributes.STATIC, ColoringAttributes.METHOD);
+    public static final EnumSet<ColoringAttributes> DEPRECATED_STATIC_METHOD_SET = EnumSet.of(ColoringAttributes.DEPRECATED, ColoringAttributes.STATIC, ColoringAttributes.METHOD);
+    public static final EnumSet<ColoringAttributes> DEPRECATED_METHOD_SET = EnumSet.of(ColoringAttributes.DEPRECATED, ColoringAttributes.METHOD);
     public static final EnumSet<ColoringAttributes> UNUSED_STATIC_METHOD_SET = EnumSet.of(ColoringAttributes.STATIC, ColoringAttributes.METHOD, ColoringAttributes.UNUSED);
+    public static final EnumSet<ColoringAttributes> DEPRECATED_UNUSED_STATIC_METHOD_SET = EnumSet.of(
+            ColoringAttributes.DEPRECATED,
+            ColoringAttributes.STATIC,
+            ColoringAttributes.METHOD,
+            ColoringAttributes.UNUSED);
     public static final EnumSet<ColoringAttributes> UNUSED_USES_SET = EnumSet.of(ColoringAttributes.UNUSED);
     public static final EnumSet<ColoringAttributes> DEPRECATED_CLASS_SET = EnumSet.of(ColoringAttributes.DEPRECATED, ColoringAttributes.CLASS);
     private static final String NAMESPACE_SEPARATOR = "\\"; //NOI18N
@@ -210,6 +219,9 @@ public class SemanticAnalysis extends SemanticAnalyzer {
         private final Model model;
 
         private final Set<TypeElement> deprecatedTypes;
+
+        private final Set<MethodElement> deprecatedMethods;
+
         // last visited type declaration
         private TypeDeclaration typeDeclaration;
 
@@ -222,6 +234,7 @@ public class SemanticAnalysis extends SemanticAnalyzer {
             this.snapshot = snapshot;
             this.model = model;
             deprecatedTypes = ElementFilter.forDeprecated(true).filter(model.getIndexScope().getIndex().getTypes(NameKind.empty()));
+            deprecatedMethods = ElementFilter.forDeprecated(true).filter(model.getIndexScope().getIndex().getMethods(NameKind.empty()));
         }
 
         public Set<UnusedOffsetRanges> getUnusedUsesOffsetRanges() {
@@ -282,9 +295,17 @@ public class SemanticAnalysis extends SemanticAnalyzer {
                 // are there unused private methods?
                 for (ASTNodeColoring item : privateUnusedMethods.values()) {
                     if (item.coloring.contains(ColoringAttributes.STATIC)) {
-                        addOffsetRange(item.identifier, UNUSED_STATIC_METHOD_SET);
+                        if (item.coloring.contains(ColoringAttributes.DEPRECATED)) {
+                            addOffsetRange(item.identifier, DEPRECATED_UNUSED_STATIC_METHOD_SET);
+                        } else {
+                            addOffsetRange(item.identifier, UNUSED_STATIC_METHOD_SET);
+                        }
                     } else {
-                        addOffsetRange(item.identifier, UNUSED_METHOD_SET);
+                        if (item.coloring.contains(ColoringAttributes.DEPRECATED)) {
+                            addOffsetRange(item.identifier, DEPRECATED_UNUSED_METHOD_SET);
+                        } else {
+                            addOffsetRange(item.identifier, UNUSED_METHOD_SET);
+                        }
                     }
                 }
             }
@@ -311,14 +332,21 @@ public class SemanticAnalysis extends SemanticAnalyzer {
         public void visit(MethodDeclaration md) {
             scan(md.getFunction().getFormalParameters());
             boolean isPrivate = Modifier.isPrivate(md.getModifier());
-            EnumSet<ColoringAttributes> coloring = ColoringAttributes.METHOD_SET;
-
-            if (Modifier.isStatic(md.getModifier())) {
-                coloring = STATIC_METHOD_SET;
-            }
-
             Identifier identifier = md.getFunction().getFunctionName();
             String name = identifier.getName();
+            boolean isDeprecated = false;
+            VariableScope variableScope = model.getVariableScope(identifier.getStartOffset());
+            QualifiedName typeFullyQualifiedName = VariousUtils.getFullyQualifiedName(QualifiedName.create(typeDeclaration.getName()), identifier.getStartOffset(), variableScope);
+            for (MethodElement methodElement : deprecatedMethods) {
+                if (methodElement.getName().equals(name) && methodElement.getType().getFullyQualifiedName().equals(typeFullyQualifiedName)) {
+                    isDeprecated = true;
+                    break;
+                }
+            }
+            EnumSet<ColoringAttributes> coloring = isDeprecated ? DEPRECATED_METHOD_SET : ColoringAttributes.METHOD_SET;
+            if (Modifier.isStatic(md.getModifier())) {
+                coloring = isDeprecated ? DEPRECATED_STATIC_METHOD_SET : STATIC_METHOD_SET;
+            }
             // don't color private magic private method. methods which start __
             if (isPrivate && name != null && !name.startsWith("__")) {
                 privateUnusedMethods.put(new UnusedIdentifier(identifier.getName(), typeDeclaration), new ASTNodeColoring(identifier, coloring));
@@ -354,7 +382,6 @@ public class SemanticAnalysis extends SemanticAnalyzer {
             } else if (node.getMethod().getFunctionName().getName() instanceof Identifier) {
                 identifier = (Identifier) node.getMethod().getFunctionName().getName();
             }
-
             if (identifier != null) {
                 ASTNodeColoring item = privateUnusedMethods.remove(new UnusedIdentifier(identifier.getName(), typeDeclaration));
                 if (item != null) {
