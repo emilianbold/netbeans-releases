@@ -114,6 +114,9 @@ public class FileEntry extends MultiDataObject.Entry {
         try {
             String newName = fo.getName() + suffix;
             FileObject dest = fo.move (lock, f, newName, fo.getExt ());
+            if (dest == null) {
+                throw new IOException(fo + "move(" + lock + ", " + f + ", " + newName + ", " + fo.getExt() + " yields null!");
+            }
             return dest;
         } finally {
             if (!locked)

@@ -1052,10 +1052,10 @@ public final class FileUtil extends Object {
         if (asserts) {
             File normFile = normalizeFile(file);
             if (!file.equals(normFile)) {
-                LOG.log(Level.WARNING, null, new IllegalArgumentException(
-                "Parameter file was not " + // NOI18N   
-                "normalized. Was " + file + " instead of " + normFile
-                ));
+                final String msg = "Parameter file was not " + // NOI18N   
+                    "normalized. Was " + file + " instead of " + normFile;
+                LOG.log(Level.WARNING, msg);
+                LOG.log(Level.INFO, msg, new IllegalArgumentException(msg));
             }
             file = normFile;
         }
