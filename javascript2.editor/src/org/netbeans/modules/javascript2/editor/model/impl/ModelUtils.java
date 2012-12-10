@@ -857,6 +857,17 @@ public class ModelUtils {
                 String name = function.getIdent().getName();
                 add(new TypeUsageImpl("@call;" + name, LexUtilities.getLexerOffset(parserResult, function.getStart()), false)); //NOI18N
             } else {
+                int pathSize = getPath().size();
+                if (pathSize > 1) {
+                    Node previousNode = getPath().get(pathSize - 2);
+                    if (previousNode instanceof AccessNode
+                            && callNode.getFunction() instanceof IdentNode) {
+                        String name = ((IdentNode)callNode.getFunction()).getName();
+                        sb.insert(0, name);
+                        sb.insert(0, "@call;"); //NOI18N
+                        return null;
+                    }
+                }
                 if (sb.length() < 6) {
                     sb.append("@call;");    //NOI18N
                 } else {
@@ -877,9 +888,17 @@ public class ModelUtils {
                     add(new TypeUsageImpl("@var;" + iNode.getName(), LexUtilities.getLexerOffset(parserResult, iNode.getStart()), false));
                 }
             } else {
-                Node lastNode = getPath().get(getPath().size() - 1);
+                int pathSize = getPath().size();
+                Node lastNode = getPath().get(pathSize - 1);
                 if (lastNode instanceof CallNode) {
-                    sb.append(iNode.getName());
+                    boolean addFunctionName = true;
+                    if (pathSize > 1) {
+                        lastNode = getPath().get(pathSize - 2);
+                        addFunctionName = !(lastNode instanceof AccessNode);
+                    }
+                    if (addFunctionName) {
+                        sb.append(iNode.getName());
+                    }
                     add(new TypeUsageImpl(sb.toString(), LexUtilities.getLexerOffset(parserResult, iNode.getStart()), false));
                 } else if (!(lastNode instanceof AccessNode)) {
                     if (iNode.getName().equals("this")) {   //NOI18N
