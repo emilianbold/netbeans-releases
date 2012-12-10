@@ -194,6 +194,9 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
 
     void opened() {
         ToolsPanelSupport.addCompilerSetModifiedListener(this);
+        for (Item item : getProjectItems()) {
+            item.onOpen();
+        }        
         Task foldersTask = this.initFoldersTask;
         if (foldersTask != null) {
             foldersTask.schedule(0);
