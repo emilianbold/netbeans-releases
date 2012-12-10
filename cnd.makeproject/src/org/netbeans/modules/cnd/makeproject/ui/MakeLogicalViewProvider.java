@@ -47,10 +47,8 @@ import java.awt.Image;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import javax.swing.SwingUtilities;
@@ -68,7 +66,6 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Item;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.netbeans.modules.cnd.makeproject.ui.BrokenLinks.BrokenLink;
-import static org.netbeans.modules.cnd.makeproject.ui.MakeLogicalViewProvider.checkForChangedViewItemNodes;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.spi.project.ui.LogicalViewProvider;
 import org.netbeans.spi.search.SearchInfoDefinition;
@@ -334,25 +331,37 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
     }
 
     public static void setVisible(final Project project, final Item[] items) {
-        SwingUtilities.invokeLater(new Runnable() {
+        final Runnable runnable = new Runnable() {
+
             @Override
             public void run() {
-                Node rootNode = ProjectTabBridge.getInstance().getExplorerManager().getRootContext();
-                List<Node> nodes = new ArrayList<Node>();
-                for (int i = 0; i < items.length; i++) {
-                    Node root = findProjectNode(rootNode, project);
+                SwingUtilities.invokeLater(new Runnable() {
 
-                    if (root != null) {
-                        nodes.add(findItemNode(root, items[i]));
+                    @Override
+                    public void run() {
+                        Node rootNode = ProjectTabBridge.getInstance().getExplorerManager().getRootContext();
+                        List<Node> nodes = new ArrayList<Node>();
+                        for (int i = 0; i < items.length; i++) {
+                            Node root = findProjectNode(rootNode, project);
+
+                            if (root != null) {
+                                nodes.add(findItemNode(root, items[i]));
+                            }
+                        }
+                        try {
+                            ProjectTabBridge.getInstance().getExplorerManager().setSelectedNodes(nodes.toArray(new Node[0]));
+                        } catch (Exception e) {
+                            // skip
+                        }
                     }
-                }
-                try {
-                    ProjectTabBridge.getInstance().getExplorerManager().setSelectedNodes(nodes.toArray(new Node[0]));
-                } catch (Exception e) {
-                    // skip
-                }
+                });
             }
-        });
+        };
+        // See IZ223587. The intention is to guarantee that the selection logic
+        // is executed after update loop is performed.
+        // Unfortunately this approach uses static metod (as there is no access
+        // to the needed children refresher...
+        BaseMakeViewChildren.postSetVisibleAction(runnable);
     }
 
     public static void checkForChangedName(final Project project) {
