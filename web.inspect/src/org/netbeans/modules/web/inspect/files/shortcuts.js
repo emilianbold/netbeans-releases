@@ -49,9 +49,11 @@ if (typeof(NetBeans_Shortcuts) === 'undefined') {
         var ctrl = e.ctrlKey;
         var meta = e.metaKey;
         if (keyCode === 83 /* 'S' */ && shift && (ctrl || meta)) {
-            chrome.extension.sendMessage({
-                type: 'switchSelectionMode'
-            });
+            // HACK: notify NetBeans
+            var attr = ':netbeans_select_mode';
+            var element = document.documentElement;
+            element.setAttribute(attr, 'switch');
+            element.removeAttribute(attr);
         }
     }, true);
 }
