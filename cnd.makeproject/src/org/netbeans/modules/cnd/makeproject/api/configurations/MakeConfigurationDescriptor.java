@@ -167,6 +167,7 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
     public static final String DEFAULT_PROJECT_MAKFILE_NAME = "Makefile"; // NOI18N
     private String projectMakefileName = DEFAULT_PROJECT_MAKFILE_NAME;
     private Task initTask = null;
+    private volatile Task initFoldersTask = null;
     private CndVisibilityQuery folderVisibilityQuery = null;
     private boolean defaultConfigurationsRestored = false;
     
@@ -193,6 +194,10 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
 
     void opened() {
         ToolsPanelSupport.addCompilerSetModifiedListener(this);
+        Task foldersTask = this.initFoldersTask;
+        if (foldersTask != null) {
+            foldersTask.schedule(0);
+        }
     }
 
     /*
@@ -1072,6 +1077,14 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
         Object lock = new Object();
         Object oldLock = projectWriteLocks.putIfAbsent(project.getProjectDirectory().getPath(), lock);
         return (oldLock == null) ? lock : oldLock;
+    }
+
+    public void setFoldersTask(Task task) {
+        RequestProcessor.Task prevTask = this.initFoldersTask;
+        if (prevTask != null) {
+            prevTask.cancel();
+        }
+        this.initFoldersTask = task;
     }
 
     private class SaveRunnable implements Runnable {
