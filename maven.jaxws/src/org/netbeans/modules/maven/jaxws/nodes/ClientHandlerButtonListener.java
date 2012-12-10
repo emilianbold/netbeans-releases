@@ -62,6 +62,7 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.net.URI;
+import java.nio.charset.Charset;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -188,7 +189,7 @@ public class ClientHandlerButtonListener implements ActionListener {
                         FileLock lock = bindingHandlerFO.lock();
                         try {
                             os = bindingHandlerFO.getOutputStream(lock);
-                            osw = new OutputStreamWriter(os);
+                            osw = new OutputStreamWriter(os, Charset.forName("UTF-8")); //  NOI18N
                             bw = new BufferedWriter(osw);
                             bw.write(bindingsContent);
                         } finally {
@@ -415,9 +416,8 @@ public class ClientHandlerButtonListener implements ActionListener {
         InputStreamReader isr = null;
         StringBuilder sb = new StringBuilder();
         try {
-
             String lineSep = System.getProperty("line.separator");//NOI18N
-            isr = new InputStreamReader(is);
+            isr = new InputStreamReader(is, Charset.forName("UTF-8"));
             br = new BufferedReader(isr);
 
             String line = br.readLine();
@@ -427,9 +427,15 @@ public class ClientHandlerButtonListener implements ActionListener {
                 line = br.readLine();
             }
         } finally {
-            isr.close();
-            br.close();
-            is.close();
+            if ( isr!= null ){
+                isr.close();
+            }
+            if ( br!= null ){
+                br.close();
+            }
+            if ( is!= null ){
+                is.close();
+            }
         }
         return sb.toString();
     }

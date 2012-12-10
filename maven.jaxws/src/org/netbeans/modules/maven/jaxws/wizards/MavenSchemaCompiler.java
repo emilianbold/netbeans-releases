@@ -110,11 +110,11 @@ public class MavenSchemaCompiler implements SchemaCompiler {
         if (xsdFileList != null) {
             String schemaName = (String) wiz.getProperty(JAXBWizModuleConstants.SCHEMA_NAME);
 
-            List<String> bindingFileList = (List<String>) wiz.getProperty(
+            /*List<String> bindingFileList = (List<String>) wiz.getProperty(
                     JAXBWizModuleConstants.JAXB_BINDING_FILES);
 
             String catlogFile = (String) wiz.getProperty(
-                    JAXBWizModuleConstants.CATALOG_FILE);
+                    JAXBWizModuleConstants.CATALOG_FILE);*/
 
             boolean srcLocTypeUrl = JAXBWizModuleConstants.SRC_LOC_TYPE_URL.equals(
                     (String) wiz.getProperty(
