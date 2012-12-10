@@ -67,8 +67,8 @@ class ClassConstantElementImpl extends ModelElementImpl implements ClassConstant
         value = indexedConstant.getValue();
     }
 
-    ClassConstantElementImpl(Scope inScope, ClassConstantDeclarationInfo clsConst) {
-        super(inScope, clsConst, PhpModifiers.noModifiers(), inScope.isDeprecated());
+    ClassConstantElementImpl(Scope inScope, ClassConstantDeclarationInfo clsConst, boolean isDeprecated) {
+        super(inScope, clsConst, PhpModifiers.noModifiers(), isDeprecated);
         typeName = inScope.getName();
         value = clsConst.getValue();
     }
@@ -85,6 +85,7 @@ class ClassConstantElementImpl extends ModelElementImpl implements ClassConstant
         sb.append(getName()).append(Signature.ITEM_DELIMITER);
         sb.append(getOffset()).append(Signature.ITEM_DELIMITER);
         sb.append(getValue() != null ? Signature.encodeItem(getValue()) : "?").append(Signature.ITEM_DELIMITER); //NOI18N
+        sb.append(isDeprecated() ? 1 : 0).append(Signature.ITEM_DELIMITER); //NOI18N
         return sb.toString();
     }
 

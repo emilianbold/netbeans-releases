@@ -61,6 +61,7 @@ import org.netbeans.modules.php.editor.api.QualifiedName;
 import org.netbeans.modules.php.editor.api.elements.ElementFilter;
 import org.netbeans.modules.php.editor.api.elements.FieldElement;
 import org.netbeans.modules.php.editor.api.elements.MethodElement;
+import org.netbeans.modules.php.editor.api.elements.TypeConstantElement;
 import org.netbeans.modules.php.editor.api.elements.TypeElement;
 import org.netbeans.modules.php.editor.model.Model;
 import org.netbeans.modules.php.editor.model.VariableScope;
@@ -233,6 +234,8 @@ public class SemanticAnalysis extends SemanticAnalyzer {
 
         private final Set<FieldElement> deprecatedFields;
 
+        private final Set<TypeConstantElement> deprecatedConstants;
+
         // last visited type declaration
         private TypeDeclaration typeDeclaration;
 
@@ -247,6 +250,7 @@ public class SemanticAnalysis extends SemanticAnalyzer {
             deprecatedTypes = ElementFilter.forDeprecated(true).filter(model.getIndexScope().getIndex().getTypes(NameKind.empty()));
             deprecatedMethods = ElementFilter.forDeprecated(true).filter(model.getIndexScope().getIndex().getMethods(NameKind.empty()));
             deprecatedFields = ElementFilter.forDeprecated(true).filter(model.getIndexScope().getIndex().getFields(NameKind.empty()));
+            deprecatedConstants = ElementFilter.forDeprecated(true).filter(model.getIndexScope().getIndex().getTypeConstants(NameKind.empty()));
         }
 
         public Set<UnusedOffsetRanges> getUnusedUsesOffsetRanges() {
@@ -544,11 +548,27 @@ public class SemanticAnalysis extends SemanticAnalyzer {
                 List<Identifier> names = node.getNames();
                 if (!names.isEmpty()) {
                     for (Identifier identifier : names) {
-                        addOffsetRange(identifier, ColoringAttributes.STATIC_FIELD_SET);
+                        addOffsetRange(identifier, isDeprecatedConstant(identifier) ? DEPRECATED_STATIC_FIELD_SET : ColoringAttributes.STATIC_FIELD_SET);
                     }
                 }
             }
             super.visit(node);
+        }
+
+        private boolean isDeprecatedConstant(Identifier identifier) {
+            boolean isDeprecated = false;
+            VariableScope variableScope = model.getVariableScope(identifier.getStartOffset());
+            QualifiedName typeFullyQualifiedName = VariousUtils.getFullyQualifiedName(
+                    QualifiedName.create(typeDeclaration.getName()),
+                    identifier.getStartOffset(),
+                    variableScope);
+            for (TypeConstantElement constantElement : deprecatedConstants) {
+                if (constantElement.getName().equals(identifier.getName()) && constantElement.getType().getFullyQualifiedName().equals(typeFullyQualifiedName)) {
+                    isDeprecated = true;
+                    break;
+                }
+            }
+            return isDeprecated;
         }
 
         @Override

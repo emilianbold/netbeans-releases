@@ -113,7 +113,7 @@ final class ModelElementFactory {
     }
 
     static ClassConstantElementImpl create(ClassConstantDeclarationInfo clsConst, ModelBuilder context) {
-        //TODO: addElement(retval);
-        return new ClassConstantElementImpl(context.getCurrentScope(), clsConst);
+        boolean isDeprecated = VariousUtils.isDeprecatedFromPHPDoc(context.getProgram(), clsConst.getOriginalNode());
+        return new ClassConstantElementImpl(context.getCurrentScope(), clsConst, isDeprecated);
     }
 }
