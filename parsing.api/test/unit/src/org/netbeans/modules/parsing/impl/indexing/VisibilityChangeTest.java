@@ -471,7 +471,19 @@ public class VisibilityChangeTest extends NbTestCase {
                     src1file1.toURI(),
                     src1file2.toURI()
                 },
-                MimeLookup.getLookup(MimePath.get(FOO_MIME)).lookup(FooIndexerFactory.class).clearRemovedFiles());            
+                MimeLookup.getLookup(MimePath.get(FOO_MIME)).lookup(FooIndexerFactory.class).clearRemovedFiles());
+            handler.reset(RepositoryUpdaterTest.TestHandler.Type.FILELIST);
+            Lookup.getDefault().lookup(MockVisibilityQuery.class).show(src1);
+            assertTrue (handler.await());
+            assertEquals(
+                new URI[]{
+                    src1file1.toURI(),
+                    src1file2.toURI()
+                },
+                MimeLookup.getLookup(MimePath.get(FOO_MIME)).lookup(FooIndexerFactory.class).clearIndexedFiles());
+            assertEquals(
+                new URI[0],
+                MimeLookup.getLookup(MimePath.get(FOO_MIME)).lookup(FooIndexerFactory.class).clearRemovedFiles());
         } finally {
             logger.removeHandler(handler);
         }
