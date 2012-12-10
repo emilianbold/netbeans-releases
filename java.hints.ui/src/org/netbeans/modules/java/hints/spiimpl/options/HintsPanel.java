@@ -306,10 +306,10 @@ public final class HintsPanel extends javax.swing.JPanel   {
         }
 
         initialized.set(true);
-        update();
+        update(inOptionsDialog);
         
         if (toSelect != null) {
-            select(toSelect);
+            select(toSelect, true);
             
             toSelect = null;
         }
@@ -841,13 +841,13 @@ public final class HintsPanel extends javax.swing.JPanel   {
         }
         return null;
     }    
-    synchronized void update() {
+    synchronized void update(boolean inOptionsDialog) {
         if (!initialized.get()) return;
         if ( logic != null ) {
             logic.disconnect();
         }
         logic = new HintsPanelLogic();
-        logic.connect(errorTree, errorTreeModel, severityLabel, severityComboBox, toProblemCheckBox, customizerPanel, descriptionTextArea, configCombo, editScriptButton);
+        logic.connect(errorTree, errorTreeModel, severityLabel, severityComboBox, toProblemCheckBox, customizerPanel, descriptionTextArea, configCombo, editScriptButton, inOptionsDialog);
     }
     
     void cancel() {
@@ -928,8 +928,7 @@ public final class HintsPanel extends javax.swing.JPanel   {
                 renderer.setText(treeRule.displayName);
 
                 if (logic != null) {
-                    Preferences node = logic.getCurrentPrefernces(treeRule.id);
-                    renderer.setSelected(HintsSettings.isEnabled(treeRule, node));
+                    renderer.setSelected(logic.isEnabled(treeRule));
                 }
             } else {
                 renderer.setText(value.toString());
@@ -1150,7 +1149,7 @@ public final class HintsPanel extends javax.swing.JPanel   {
                 if (queryStatus == QueryStatus.NEVER) {
                     continue;
                 }
-                if (queryStatus == QueryStatus.ONLY_ENABLED && logic != null && !HintsSettings.isEnabled(m, logic.getCurrentPrefernces(m.id))) {
+                if (queryStatus == QueryStatus.ONLY_ENABLED && logic != null && !logic.isEnabled(m)) {
                     continue;
                 }
             }
@@ -1216,6 +1215,10 @@ public final class HintsPanel extends javax.swing.JPanel   {
     }
 
     public void select(HintMetadata hm) {
+        select(hm, false);
+    }
+    
+    public void select(HintMetadata hm, boolean setFocus) {
         if (errorTree == null) {
             //lazy init:
             toSelect = hm;
@@ -1228,6 +1231,8 @@ public final class HintsPanel extends javax.swing.JPanel   {
 	
         errorTree.setSelectionPath(path);
 	errorTree.scrollPathToVisible(path);
+        if (setFocus)
+            errorTree.requestFocusInWindow();
     }
 
     private static int compare(String s1, String s2) {
