@@ -54,6 +54,7 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -121,6 +122,24 @@ public class WSUtils {
     private static final String JAX_WS_XML_PATH = "nbproject/jax-ws.xml"; // NOI18N
 
     public static final String JAX_WS_ENDORSED="JAX-WS-ENDORSED"; //NOI18N
+    
+    /**
+     * XXX: This is "workaround" as a temporary fix for 
+     * BZ#187145 - [69cat] Projects with a WS client created on one machine 
+     * will not load on another.
+     * This static method invocation is introduced in the 7.3 release and 
+     * should be removed in 
+     * future ( post 7.3+ ) release because of the reasons:
+     * - real issue with library is fixed in {@link#getJaxWsApiJars()} method 
+     *   ( jar:nbinst URLs are used instead of absolute file path ).
+     * - migration from 7.3 to any future release will not be issued   
+     *    
+     * @author ads
+     *
+     */
+    static {
+        checkEndorsedLib();
+    }
     
     /** downloads XML resources from source URI to target folder
      * (USAGE : this method can download a wsdl file and all wsdl/XML schemas,
@@ -767,6 +786,50 @@ public class WSUtils {
                 }                
             }
         });
+    }
+    
+    private static void checkEndorsedLib(){
+        Library jaxWsApiLib = LibraryManager.getDefault().getLibrary(
+                WSUtils.JAX_WS_ENDORSED);
+        if ( jaxWsApiLib == null ){
+            return;
+        }
+        List<URL> urls = jaxWsApiLib.getContent("classpath");       // NOI18N
+        boolean isBroken = false;
+        try {
+            for (URL url : urls) {
+                url = FileUtil.getArchiveFile(url);
+                if ( url == null ){
+                    isBroken = true;
+                    break;
+                }
+                File file = new File(url.toURI());
+                file = FileUtil.normalizeFile(file);
+                if ( file == null ){
+                    isBroken = true;
+                    break;
+                }
+                if ( FileUtil.toFileObject(file) == null){
+                    isBroken = true;
+                    break;
+                }
+            }
+            if ( isBroken ){
+                LibraryManager.getDefault().removeLibrary(jaxWsApiLib);
+            }
+        }
+        catch(URISyntaxException e ){
+            Logger.getLogger(WSUtils.class.getName()).log(
+                    Level.INFO, null , e);
+        }
+        catch (IllegalArgumentException e) {
+            Logger.getLogger(WSUtils.class.getName()).log(
+                    Level.INFO, null , e);
+        }
+        catch (IOException e) {
+            Logger.getLogger(WSUtils.class.getName()).log(
+                    Level.INFO, null , e);
+        } 
     }
 
 }
