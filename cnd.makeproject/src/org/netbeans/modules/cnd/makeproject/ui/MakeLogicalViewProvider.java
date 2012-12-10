@@ -47,8 +47,10 @@ import java.awt.Image;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import javax.swing.SwingUtilities;
@@ -66,6 +68,7 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Item;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.netbeans.modules.cnd.makeproject.ui.BrokenLinks.BrokenLink;
+import static org.netbeans.modules.cnd.makeproject.ui.MakeLogicalViewProvider.checkForChangedViewItemNodes;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.spi.project.ui.LogicalViewProvider;
 import org.netbeans.spi.search.SearchInfoDefinition;
@@ -375,17 +378,19 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
         if (CndUtils.isStandalone()) {
             return;
         }
+        if (delta.getAdded().isEmpty() &&
+            //delta.getChanged().isEmpty() &&
+            delta.getDeleted().isEmpty() &&
+            delta.getExcluded().isEmpty() &&
+            delta.getIncluded().isEmpty() &&
+            delta.getReplaced().isEmpty()) {
+            // only changed properties => no changes in project tree
+            return;
+        }
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
-                Node rootNode = ProjectTabBridge.getInstance().getExplorerManager().getRootContext();
-                Node root = findProjectNode(rootNode, project);
-                if (root != null) {
-                    MakeLogicalViewProvider provider = project.getLookup().lookup(MakeLogicalViewProvider.class);
-                    if (provider != null && provider.projectRootNode != null) {
-                        provider.projectRootNode.reInit(provider.projectRootNode.getMakeConfigurationDescriptor());
-                    }
-                }
+                checkForChangedViewItemNodes(project);
             }
         });
     }
