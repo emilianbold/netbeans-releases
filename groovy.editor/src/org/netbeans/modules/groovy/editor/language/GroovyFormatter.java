@@ -136,7 +136,7 @@ public class GroovyFormatter implements org.netbeans.modules.csl.api.Formatter {
 
     /** Compute the initial balance of brackets at the given offset. */
     private int getFormatStableStart(BaseDocument doc, int offset) {
-        TokenSequence<?extends GroovyTokenId> ts = LexUtilities.getGroovyTokenSequence(doc, offset);
+        TokenSequence<GroovyTokenId> ts = LexUtilities.getGroovyTokenSequence(doc, offset);
         if (ts == null) {
             return 0;
         }
@@ -150,7 +150,7 @@ public class GroovyFormatter implements org.netbeans.modules.csl.api.Formatter {
         // Look backwards to find a suitable context - a class, module or method definition
         // which we will assume is properly indented and balanced
         do {
-            Token<?extends GroovyTokenId> token = ts.token();
+            Token<GroovyTokenId> token = ts.token();
             TokenId id = token.id();
 
             if (id == GroovyTokenId.LITERAL_class) {
@@ -257,7 +257,7 @@ public class GroovyFormatter implements org.netbeans.modules.csl.api.Formatter {
             throws BadLocationException {
         int pos = Utilities.getRowFirstNonWhite(doc, offset);
         if(pos != -1) {
-            Token<?extends GroovyTokenId> token = LexUtilities.getToken(doc, pos);
+            Token<GroovyTokenId> token = LexUtilities.getToken(doc, pos);
             if(token != null) {
                 TokenId id = token.id();
                 if(id == GroovyTokenId.BLOCK_COMMENT) {
@@ -322,7 +322,7 @@ public class GroovyFormatter implements org.netbeans.modules.csl.api.Formatter {
             }
         } else {
             // Empty line inside a string, documentation etc. literal?
-            Token<?extends GroovyTokenId> token = LexUtilities.getToken(doc, offset);
+            Token<GroovyTokenId> token = LexUtilities.getToken(doc, offset);
 
             if (token != null) {
                 TokenId id = token.id();
@@ -345,15 +345,15 @@ public class GroovyFormatter implements org.netbeans.modules.csl.api.Formatter {
     /** 
      * Get the first token on the given line. 
      */
-    private Token<? extends GroovyTokenId> getFirstToken(BaseDocument doc, int offset) throws BadLocationException {
+    private Token<GroovyTokenId> getFirstToken(BaseDocument doc, int offset) throws BadLocationException {
         int lineBegin = Utilities.getRowFirstNonWhite(doc, offset);
 
         if (lineBegin != -1) {
             if (isGspDocument) {
-                TokenSequence<? extends GroovyTokenId> ts = LexUtilities.getGroovyTokenSequence(doc, lineBegin);
+                TokenSequence<GroovyTokenId> ts = LexUtilities.getGroovyTokenSequence(doc, lineBegin);
                 if (ts != null) {
                     ts.moveNext();
-                    Token<?extends GroovyTokenId> token = ts.token();
+                    Token<GroovyTokenId> token = ts.token();
                     while (token != null && token.id() == GroovyTokenId.WHITESPACE) {
                         if (!ts.moveNext()) {
                             return null;
@@ -374,7 +374,7 @@ public class GroovyFormatter implements org.netbeans.modules.csl.api.Formatter {
         int lineBegin = Utilities.getRowFirstNonWhite(doc, offset);
 
         if (lineBegin != -1) {
-            Token<?extends GroovyTokenId> token = getFirstToken(doc, offset);
+            Token<GroovyTokenId> token = getFirstToken(doc, offset);
             
             if (token == null) {
                 return false;
@@ -400,7 +400,7 @@ public class GroovyFormatter implements org.netbeans.modules.csl.api.Formatter {
         }
 
         
-        TokenSequence<?extends GroovyTokenId> ts = LexUtilities.getGroovyTokenSequence(doc, offset);
+        TokenSequence<GroovyTokenId> ts = LexUtilities.getGroovyTokenSequence(doc, offset);
 
         if (ts == null) {
             return false;
@@ -411,7 +411,7 @@ public class GroovyFormatter implements org.netbeans.modules.csl.api.Formatter {
             return false;
         }
 
-        Token<?extends GroovyTokenId> token = ts.token();
+        Token<GroovyTokenId> token = ts.token();
 
         if (token != null) {
             TokenId id = token.id();
