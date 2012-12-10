@@ -61,7 +61,7 @@ import org.netbeans.spi.lexer.LexerRestartInfo;
 public enum GroovyTokenId implements TokenId {
 
     // update also GroovyLexer.getTokenId(int) if you make changes here
-    
+
     QUOTED_STRING_LITERAL(null, "string"),
     QUOTED_STRING_END(null, "string"),
     QUOTED_STRING_BEGIN(null, "string"),
@@ -176,7 +176,7 @@ public enum GroovyTokenId implements TokenId {
     LE(null, "operator"),
     LETTER(null, "default"),
     LIST_CONSTRUCTOR(null, "default"),
-    
+
     LITERAL_as(null, "keyword"),
     LITERAL_assert(null, "keyword"),
     LITERAL_boolean(null, "keyword"),
@@ -228,7 +228,7 @@ public enum GroovyTokenId implements TokenId {
     LITERAL_void(null, "keyword"),
     LITERAL_volatile(null, "keyword"),
     LITERAL_while(null, "keyword"),
-    
+
     LNOT(null, "operator"),
     LOR(null, "operator"),
     LT(null, "operator"),
@@ -310,17 +310,17 @@ public enum GroovyTokenId implements TokenId {
     VARIABLE_PARAMETER_DEF(null, "default"),
     VOCAB(null, "default"),
     WILDCARD_TYPE(null, "default"),
-    
+
     // Non-unary operators which indicate a line continuation if used at the end of a line
     NONUNARY_OP(null, "operator");
-    
+
     /**
      * MIME type for Groovy. Don't change this without also consulting the various XML files
      * that cannot reference this value directly.
      */
     public static final String GROOVY_MIME_TYPE = "text/x-groovy"; // NOI18N
 
-    private static final Language<GroovyTokenId> language = new GroovyHierarchy().language();
+    private static final Language<GroovyTokenId> LANGUAGE = new GroovyHierarchy().language();
     private final String primaryCategory;
     private final String fixedText;
 
@@ -339,7 +339,7 @@ public enum GroovyTokenId implements TokenId {
     }
 
     public static Language<GroovyTokenId> language() {
-        return language;
+        return LANGUAGE;
     }
 
     private static class GroovyHierarchy extends LanguageHierarchy<GroovyTokenId> {

@@ -128,7 +128,7 @@ public class GroovyDeclarationFinder implements DeclarationFinder {
     @Override
     public OffsetRange getReferenceSpan(Document document, int lexOffset) {
         final TokenHierarchy<Document> th = TokenHierarchy.get(document);
-        final TokenSequence<?extends GroovyTokenId> ts = LexUtilities.getGroovyTokenSequence(th, lexOffset);
+        final TokenSequence<?extends GroovyTokenId> ts = LexUtilities.getGroovyTokenSequence(document, lexOffset);
         if (ts == null) {
             return OffsetRange.NONE;
         }
@@ -341,7 +341,7 @@ public class GroovyDeclarationFinder implements DeclarationFinder {
                 // move to first keyword by tokens and figure out extends, implements
                 ClassNode node = (ClassNode) closest;
 
-                TokenSequence<?extends GroovyTokenId> ts = LexUtilities.getGroovyTokenSequence(th, lexOffset);
+                TokenSequence<?extends GroovyTokenId> ts = LexUtilities.getGroovyTokenSequence(doc, lexOffset);
                 if (ts == null) {
                     return DeclarationLocation.NONE;
                 }
