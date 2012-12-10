@@ -1,4 +1,14 @@
+nobugid - Cleanup and better naming for examples directory
+
+	- demosrc/lib.termsupport/nbterm -> examples/TermApp
+	- demosrc/lib.termsupport -> <rm>
+	- demosrc/Suite -> examples/TermSuite
+	- demosrc/Examples -> examples/TermExample
+	- demosrc -> examples
+	
 nobugid - sequence logging for debugging and testing
+	changeset:   240884:6efe424d9990
+
         API enhanced with the following:
 
             void Term.setSequenceLogging(boolean)
