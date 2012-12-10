@@ -55,6 +55,8 @@ import org.openide.filesystems.FileObject;
  * @author Vladimir Kvashin
  */
 public final class RemoteLink extends RemoteLinkBase {
+    
+    private static final int MAXSYMLINKS = Integer.getInteger("remote.max.sym.links", 20); // NOI18N
 
     private String normalizedTargetPath;
 
@@ -81,11 +83,21 @@ public final class RemoteLink extends RemoteLinkBase {
     }
 
     @Override
-    public RemoteFileObjectBase getDelegate() {
-        HashSet<String> antiLoop = new HashSet<String>();
-        antiLoop.add(getPath());
-        RemoteFileObjectBase delegate = getFileSystem().findResource(normalizedTargetPath, antiLoop);
-        return delegate;
+    public RemoteFileObjectBase getCanonicalDelegate() {
+        RemoteFileObjectBase fileObject = getDelegateImpl();
+        int level = 0;
+        while (fileObject instanceof RemoteLinkBase) {
+            if (++level > MAXSYMLINKS) {
+                return null;
+            }
+            RemoteFileObjectBase delegate = ((RemoteLinkBase) fileObject).getDelegateImpl();
+            if (delegate == null) {
+                return null;
+            } else {
+                fileObject = delegate;
+            }
+        }
+        return fileObject;        
     }
 
     @Override
@@ -96,7 +108,7 @@ public final class RemoteLink extends RemoteLinkBase {
     /*package*/ final void setLink(String link, RemoteFileObjectBase parent) {
         initListeners(false);
         this.normalizedTargetPath = normalize(link, parent);
-        RemoteFileObjectBase delegate = getDelegate();
+        RemoteFileObjectBase delegate = getCanonicalDelegate();
         if (delegate != null && delegate.isFolder()) {
             for (RemoteFileObject child: delegate.getChildren()) {
                 String childAbsPath = getPath() + '/' + child.getNameExt();
@@ -108,11 +120,19 @@ public final class RemoteLink extends RemoteLinkBase {
 
     @Override
     protected void postDeleteChild(FileObject child) {
-        getDelegate().postDeleteChild(child);
+        getCanonicalDelegate().postDeleteChild(child);
     }
 
     @Override
     protected boolean deleteImpl(FileLock lock) throws IOException {
         return RemoteFileSystemUtils.delete(getExecutionEnvironment(), getPath(), false);
+    }
+
+    @Override
+    protected RemoteFileObjectBase getDelegateImpl() {
+        HashSet<String> antiLoop = new HashSet<String>();
+        antiLoop.add(getPath());
+        RemoteFileObjectBase delegate = getFileSystem().findResource(normalizedTargetPath, antiLoop);
+        return delegate;
     }
 }
