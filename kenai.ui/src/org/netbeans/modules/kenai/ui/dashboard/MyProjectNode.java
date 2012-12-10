@@ -201,24 +201,26 @@ public class MyProjectNode<S extends TeamServer, P> extends LeafNode implements 
                 component.add(rightPar, new GridBagConstraints(4, 0, 1, 1, 0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
                 setOnline(mh.getOnlineCount() >= 0 && count >0);
                 
-                issuesRP.post(new Runnable() {
-
-                    public void run() {
-                        dashboard.myProjectsProgressStarted();
-                        allIssuesQuery = qaccessor.getAllIssuesQuery(project);
-                        if (allIssuesQuery != null) {
-                            allIssuesQuery.addPropertyChangeListener(projectListener);
-                            List<QueryResultHandle> queryResults = qaccessor.getQueryResults(allIssuesQuery);
-                            for (QueryResultHandle queryResult:queryResults) {
-                                if (queryResult.getResultType()==QueryResultHandle.ResultType.ALL_CHANGES_RESULT) {
-                                    setBugsLater(queryResult);
-                                    return;
+                if (qaccessor != null) {
+                    issuesRP.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            dashboard.myProjectsProgressStarted();
+                            allIssuesQuery = qaccessor.getAllIssuesQuery(project);
+                            if (allIssuesQuery != null) {
+                                allIssuesQuery.addPropertyChangeListener(projectListener);
+                                List<QueryResultHandle> queryResults = qaccessor.getQueryResults(allIssuesQuery);
+                                for (QueryResultHandle queryResult:queryResults) {
+                                    if (queryResult.getResultType()==QueryResultHandle.ResultType.ALL_CHANGES_RESULT) {
+                                        setBugsLater(queryResult);
+                                        return;
+                                    }
                                 }
                             }
+                            dashboard.myProjectsProgressFinished();
                         }
-                        dashboard.myProjectsProgressFinished();
-                    }
-                });
+                    });
+                }
 
 
                 component.add( new JLabel(), new GridBagConstraints(5,0,1,1,1.0,0.0, GridBagConstraints.CENTER, GridBagConstraints.NONE, new Insets(0,0,0,0), 0,0) );

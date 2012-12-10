@@ -217,6 +217,10 @@ public final class SiteHelper {
                     if (entryName.startsWith("build/") || entryName.startsWith("nbproject/")) { //NOI18N
                         continue;
                     }
+                    // NetBeans LOCK files
+                    if (entryName.contains("/.LCK") && entryName.endsWith("~")) { //NOI18N
+                        continue;
+                    }
                     FileObject fo = FileUtil.createData(targetDir, entryName);
                     writeFile(str, fo);
                 }

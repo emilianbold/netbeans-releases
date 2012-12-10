@@ -62,7 +62,7 @@ h1 {
 
 div.topLevel {
     display: none;
-    margin: 40px 76px 61px 76px;
+    margin: 40px 76px 0 76px;
 }
 
 .perex {
@@ -80,6 +80,12 @@ div.topLevel {
     position: absolute;
     left: 13px;
     top: 13px;
+}
+
+#buttons {
+    position: relative;
+    height: 61px;
+    margin: 0;
 }
 
 #doNotShowAgain {

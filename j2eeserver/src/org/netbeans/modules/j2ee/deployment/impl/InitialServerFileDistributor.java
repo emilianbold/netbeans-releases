@@ -53,8 +53,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.channels.FileChannel;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Locale;
+import java.util.Set;
 import java.util.jar.JarOutputStream;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -120,7 +122,7 @@ public class InitialServerFileDistributor extends ServerProgress {
             setStatusDistributeRunning(NbBundle.getMessage(
                 InitialServerFileDistributor.class, "MSG_RunningInitialDeploy", dtarget.getDeploymentName(), dir));
 
-            _distribute(source.getArchiveContents(), dir);
+            _distribute(source.getArchiveContents(), dir, collectChildModuleNames(source));
 
             if (source instanceof J2eeApplication) {
                 J2eeModule[] childModules = ((J2eeApplication) source).getModules();
@@ -128,7 +130,7 @@ public class InitialServerFileDistributor extends ServerProgress {
                     String uri = childModules[i].getUrl();
                     J2eeModule childModule = deployment.getJ2eeModule(uri);
                     File subdir = incDeployment.getDirectoryForNewModule(dir, uri, childModule, deployment.getModuleConfiguration());
-                    _distribute(childModules[i].getArchiveContents(), subdir);
+                    _distribute(childModules[i].getArchiveContents(), subdir, null);
                 }
             }
 
@@ -147,6 +149,27 @@ public class InitialServerFileDistributor extends ServerProgress {
         return null;
     }
 
+    // We are collecting module names to be able to skip .jar and .war files under
+    // the application root with the same name as one of the deployed modules. Those
+    // are typically jars coresponding to already existing exploded directory and we
+    // don't want to deploy them  -->  see also #199096 and #222924 for more details
+    private Set<String> collectChildModuleNames(J2eeModule source) {
+        final Set<String> childModuleNames = new HashSet<String>();
+        if (source instanceof J2eeApplication) {
+            for (J2eeModule module : ((J2eeApplication) source).getModules()) {
+
+                // We have to use getUrl() --> it's the only method that take the
+                // maven ear plugin fileNameMapping attribute into account
+                String moduleURL = module.getUrl();
+                if (moduleURL != null) {
+                    moduleURL = moduleURL.substring(moduleURL.lastIndexOf("/") + 1); // NOI18N
+                    childModuleNames.add(moduleURL);
+                }
+            }
+        }
+        return childModuleNames;
+    }
+
     private boolean cleanup(File f) {
         String [] chNames = f.list();
         boolean deleted = true;
@@ -162,7 +185,7 @@ public class InitialServerFileDistributor extends ServerProgress {
         return deleted;
     }
 
-    private void _distribute(Iterator<J2eeModule.RootedEntry> rootedEntries, File dir) {
+    private void _distribute(Iterator<J2eeModule.RootedEntry> rootedEntries, File dir, Set<String> childModuleNames) {
         FileLock lock = null;
 
         try {
@@ -195,20 +218,18 @@ public class InitialServerFileDistributor extends ServerProgress {
                 }
             }
 
-            if (rootedEntries.hasNext()) {
-                final FileObject root = rootedEntries.next().getFileObject();
+            while (rootedEntries.hasNext()) {
+                J2eeModule.RootedEntry entry = rootedEntries.next();
+                String relativePath = entry.getRelativePath();
+                FileObject sourceFO = entry.getFileObject();
 
-                while (rootedEntries.hasNext()) {
-                    J2eeModule.RootedEntry entry = rootedEntries.next();
-                    String relativePath = entry.getRelativePath();
-                    FileObject sourceFO = entry.getFileObject();
-                    if (sourceFO.isData() && isArchiveInRootDir(root, sourceFO)) {
-                        continue;
-                    }
-                    FileObject destFolder = ServerFileDistributor.findOrCreateParentFolder(destRoot, relativePath);
-                    if (sourceFO.isData()) {
-                        copyFile(sourceFO, dir, relativePath);
-                    }
+                if (childModuleNames != null && childModuleNames.contains(relativePath) && sourceFO.isData()) {
+                    continue;
+                }
+
+                ServerFileDistributor.findOrCreateParentFolder(destRoot, relativePath);
+                if (sourceFO.isData()) {
+                    copyFile(sourceFO, dir, relativePath);
                 }
             }
         } catch (Exception e) {
@@ -226,13 +247,6 @@ public class InitialServerFileDistributor extends ServerProgress {
         }
     }
 
-    private boolean isArchiveInRootDir(FileObject root, FileObject sourceFO) {
-        if (sourceFO.getParent().equals(root) && ("jar".equals(sourceFO.getExt()) || "war".equals(sourceFO.getExt()))) {
-            return true;
-        }
-        return false;
-    }
-
     //ServerProgress methods
     private void setStatusDistributeRunning(String message) {
         notify(createRunningProgressEvent(CommandType.DISTRIBUTE, message));
@@ -241,7 +255,7 @@ public class InitialServerFileDistributor extends ServerProgress {
         notify(createFailedProgressEvent(CommandType.DISTRIBUTE, message));
     }
     private void setStatusDistributeCompleted(String message) {
-        notify(createCompletedProgressEvent(CommandType.DISTRIBUTE, message)); 
+        notify(createCompletedProgressEvent(CommandType.DISTRIBUTE, message));
     }
 
     // Make this method speedie quick... since folks can have large

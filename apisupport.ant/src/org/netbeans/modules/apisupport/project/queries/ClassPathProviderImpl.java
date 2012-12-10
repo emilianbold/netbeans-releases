@@ -48,13 +48,17 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.File;
+import java.net.MalformedURLException;
 import java.net.URL;
+import java.text.MessageFormat;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
@@ -71,10 +75,15 @@ import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.netbeans.spi.java.classpath.PathResourceImplementation;
 import org.netbeans.spi.java.project.classpath.support.ProjectClassPathSupport;
 import org.netbeans.spi.project.support.ant.AntProjectEvent;
+import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.AntProjectListener;
+import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
+import org.openide.util.Parameters;
+import org.openide.util.Utilities;
 import org.openide.util.WeakListeners;
 import org.openide.xml.XMLUtil;
 import org.w3c.dom.Element;
@@ -93,12 +102,15 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
     private ClassPath source;
     private ClassPath compile;
     private ClassPath execute;
+    private ClassPath processor;
     private ClassPath testSource;
     private ClassPath testCompile;
     private ClassPath testExecute;
+    private ClassPath testProcessor;
     private ClassPath funcTestSource;
     private ClassPath funcTestCompile;
     private ClassPath funcTestExecute;
+    private ClassPath funcTestProcessor;
     private Map<FileObject,ClassPath> extraCompilationUnitsCompile = null;
     private Map<FileObject,ClassPath> extraCompilationUnitsExecute = null;
 
@@ -137,7 +149,7 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
                     LOG.log(Level.FINE, "compile/execute-time classpath for file ''{0}'' (prj: {1}): {2}", new Object[] {file.getPath(), project, compile});
                 }
                 return compile;
-            } else if (type.equals(ClassPath.EXECUTE) || type.equals(JavaClassPathConstants.PROCESSOR_PATH)) {
+            } else if (type.equals(ClassPath.EXECUTE)) {
                 if (execute == null) {
                     execute = ClassPathFactory.createClassPath(createExecuteClasspath());
                 }
@@ -147,6 +159,11 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
                     source = ClassPathSupport.createClassPath(srcDir.toURL(), generatedClasses);
                 }
                 return source;
+            } else if (type.equals(JavaClassPathConstants.PROCESSOR_PATH)) {
+                if (processor == null) {
+                    processor = ClassPathFactory.createClassPath(createProcessorPath());
+                }
+                return processor;
             }
         } else if (testSrcDir != null && generatedUnitTestClasses != null &&
                 (FileUtil.isParentOf(testSrcDir, file) || file == testSrcDir || fileU.startsWith(generatedUnitTestClasses.toString()))) {
@@ -158,7 +175,7 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
                     LOG.log(Level.FINE, "compile-time classpath for tests for file ''{0}'' (prj: {1}): {2}", new Object[] {file.getPath(), project, testCompile});
                 }
                 return testCompile;
-            } else if (type.equals(ClassPath.EXECUTE) || type.equals(JavaClassPathConstants.PROCESSOR_PATH)) {
+            } else if (type.equals(ClassPath.EXECUTE)) {
                 if (testExecute == null) {
                     testExecute = ClassPathFactory.createClassPath(createTestExecuteClasspath("unit"));
                     LOG.log(Level.FINE, "runtime classpath for tests for file ''{0}'' (prj: {1}): {2}", new Object[] {file.getPath(), project, testExecute});
@@ -169,6 +186,11 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
                     testSource = ClassPathSupport.createClassPath(testSrcDir.toURL(), generatedUnitTestClasses);
                 }
                 return testSource;
+            } else if (type.equals(JavaClassPathConstants.PROCESSOR_PATH)) {
+                if (testProcessor == null) {
+                    testProcessor = ClassPathFactory.createClassPath(createTestProcessorPath("unit"));  //NOI18N
+                }
+                return testProcessor;
             }
         } else if (funcTestSrcDir != null && generatedFunctionalTestClasses != null &&
                 (FileUtil.isParentOf(funcTestSrcDir, file) || file == funcTestSrcDir || fileU.startsWith(generatedFunctionalTestClasses.toString()))) {
@@ -185,11 +207,16 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
                     LOG.log(Level.FINE, "compile-time classpath for func tests for file ''{0}'' (prj: {1}): {2}", new Object[] {file.getPath(), project, funcTestCompile});
                 }
                 return funcTestCompile;
-            } else if (type.equals(ClassPath.EXECUTE) || type.equals(JavaClassPathConstants.PROCESSOR_PATH)) {
+            } else if (type.equals(ClassPath.EXECUTE)) {
                 if (funcTestExecute == null) {
                     funcTestExecute = ClassPathFactory.createClassPath(createTestExecuteClasspath("qa-functional"));
                 }
                 return funcTestExecute;
+            } else if (type.equals(JavaClassPathConstants.PROCESSOR_PATH)) {
+                if (funcTestProcessor == null) {
+                    funcTestProcessor = ClassPathFactory.createClassPath(createTestProcessorPath("qa-functional"));  //NOI18N
+                }
+                return funcTestProcessor;
             }
         } else if (classesDir != null && (classesDir.equals(file) || FileUtil.isParentOf(classesDir,file))) {
             if (ClassPath.EXECUTE.equals(type)) {
@@ -278,13 +305,31 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
     private ClassPathImplementation createTestCompileClasspath(String testType) {
         return createPathFromProperty("test." + testType + ".cp"); // NOI18N
     }
-    
+
     private ClassPathImplementation createTestExecuteClasspath(String testType) {
         return createPathFromProperty("test." + testType + ".run.cp"); // NOI18N
+    }
+
+    @NonNull
+    private ClassPathImplementation createTestProcessorPath(@NonNull final String testType) {
+        return new FilteredClassPathImplementation(
+                createTestExecuteClasspath(testType),
+                project.getHelper(),
+                project.evaluator(),
+                MessageFormat.format("build.test.{0}.classes.dir", testType));    //NOI18N
     }
     
     private ClassPathImplementation createExecuteClasspath() {
         return createPathFromProperty(Evaluator.RUN_CP);
+    }
+
+    @NonNull
+    private ClassPathImplementation createProcessorPath() {
+        return new FilteredClassPathImplementation(
+                createExecuteClasspath(),
+                project.getHelper(),
+                project.evaluator(),
+                "build.classes.dir");   //NOI18N
     }
     
     private void calculateExtraCompilationUnits() {
@@ -418,6 +463,103 @@ public final class ClassPathProviderImpl implements ClassPathProvider {
             }
         }
         return paths.toArray(new ClassPath[paths.size()]);
+    }
+
+    private static final class FilteredClassPathImplementation implements ClassPathImplementation, PropertyChangeListener {
+
+        private final ClassPathImplementation delegate;
+        private final AntProjectHelper helper;
+        private final PropertyEvaluator eval;
+        private final String filteredProp;
+        private final AtomicReference<List<PathResourceImplementation>> cache;
+        private final PropertyChangeSupport listeners;
+
+        FilteredClassPathImplementation(
+            @NonNull final ClassPathImplementation delegate,
+            @NonNull final AntProjectHelper helper,
+            @NonNull final PropertyEvaluator eval,
+            @NonNull final String filteredProp) {
+            Parameters.notNull("delegate", delegate);   //NOI18N
+            Parameters.notNull("helper", helper);       //NOI18N
+            Parameters.notNull("eval", eval);   //NOI18N
+            Parameters.notNull("filteredProp", filteredProp);   //NOI18N
+            this.delegate = delegate;
+            this.helper = helper;
+            this.eval = eval;
+            this.filteredProp = filteredProp;
+            this.cache = new AtomicReference<List<PathResourceImplementation>>();
+            this.listeners = new PropertyChangeSupport(this);
+            this.delegate.addPropertyChangeListener(WeakListeners.propertyChange(this, this.delegate));
+            this.eval.addPropertyChangeListener(WeakListeners.propertyChange(this, this.eval));
+        }
+
+        @Override
+        @NonNull
+        public List<? extends PathResourceImplementation> getResources() {
+            List<PathResourceImplementation> res = cache.get();
+            if (res != null) {
+                return res;
+            }
+            final String propVal = eval.getProperty(filteredProp);
+            final File propFile = propVal == null ? null : helper.resolveFile(propVal);
+            URL propURL = null;
+            try {
+                if (propFile != null) {
+                    propURL = Utilities.toURI(propFile).toURL();
+                }
+            } catch (MalformedURLException e) {
+                Exceptions.printStackTrace(e);
+            }
+            final List<? extends PathResourceImplementation> resources = delegate.getResources();
+            res = new ArrayList<PathResourceImplementation>(resources.size());
+next:       for (PathResourceImplementation pri : resources) {
+                if (propURL != null) {
+                    final URL[] roots = pri.getRoots();
+                    for (URL root : roots) {
+                        if (propURL.equals(root) && roots.length == 1) {
+                            continue next;
+                        }
+                    }
+                }
+                res.add(pri);
+            }
+            res = Collections.unmodifiableList(res);
+            if (!cache.compareAndSet(null, res)) {
+                final List<PathResourceImplementation> cur = cache.get();
+                if (cur != null) {
+                    res = cur;
+                }
+            }
+            return res;
+        }
+
+        @Override
+        public void addPropertyChangeListener(@NonNull final PropertyChangeListener listener) {
+            Parameters.notNull("listener", listener);   //NOI18N
+            this.listeners.addPropertyChangeListener(listener);
+        }
+
+        @Override
+        public void removePropertyChangeListener(@NonNull final PropertyChangeListener listener) {
+            Parameters.notNull("listener", listener);   //NOI18N
+            this.listeners.removePropertyChangeListener(listener);
+        }
+
+        @Override
+        public void propertyChange(@NonNull final PropertyChangeEvent event) {
+            final String propName = event.getPropertyName();
+            if (propName == null ||
+                PROP_RESOURCES.equals(propName) ||
+                filteredProp.equals(propName)) {
+                reset();
+            }
+        }
+
+        private void reset() {
+            cache.set(null);
+            listeners.firePropertyChange(PROP_RESOURCES, null, null);
+        }
+
     }
     
 }

@@ -651,7 +651,14 @@ public class CSSStylesSelectionPanel extends JPanel {
                     @Override
                     public void run() {
                         Node[] nodes = propertyPaneRoot.getChildren().getNodes();
-                        if (nodes.length > 0) {
+                        if (nodes.length == 0) {
+                            nodes = rulePaneRoot.getChildren().getNodes();
+                            if (nodes.length > 0) {
+                                try {
+                                    rulePaneManager.setSelectedNodes(new Node[] { nodes[0] });
+                                } catch (PropertyVetoException pvex) {}                                
+                            }
+                        } else {
                             try {
                                 propertyPaneManager.setSelectedNodes(new Node[] { nodes[0] });
                             } catch (PropertyVetoException pvex) {}

@@ -543,14 +543,16 @@ public final class JsEmbeddingProvider extends EmbeddingProvider {
             Token<? extends HTMLTokenId> htmlToken = ts.token();
             HTMLTokenId htmlId = htmlToken.id();
             if (htmlId == HTMLTokenId.SCRIPT) {
-                state.in_javascript = true;
-                // Emit the block verbatim
-                int sourceStart = ts.offset();
-                String text = htmlToken.text().toString();
-                List<EmbeddingPosition> jsEmbeddings = extractJsEmbeddings(text, sourceStart);
-                for (EmbeddingPosition embedding : jsEmbeddings) {
-                    embeddings.add(snapshot.create(embedding.getOffset(), embedding.getLength(), JsTokenId.JAVASCRIPT_MIME_TYPE));
-                }
+                String scriptType = (String)htmlToken.getProperty(HTMLTokenId.SCRIPT_TYPE_TOKEN_PROPERTY);
+                if(scriptType == null || "text/javascript".equals(scriptType)) {
+                    state.in_javascript = true;
+                    // Emit the block verbatim
+                    int sourceStart = ts.offset();
+                    String text = htmlToken.text().toString();
+                    List<EmbeddingPosition> jsEmbeddings = extractJsEmbeddings(text, sourceStart);
+                    for (EmbeddingPosition embedding : jsEmbeddings) {
+                        embeddings.add(snapshot.create(embedding.getOffset(), embedding.getLength(), JsTokenId.JAVASCRIPT_MIME_TYPE));
+                    }
 // XXX: need better support in parsing api for this
 //                embeddings.add(snapshot.create("/*", JsTokenId.JAVASCRIPT_MIME_TYPE));
 //                embeddings.add(snapshot.create(sourceStart, sourceEnd - sourceStart, JsTokenId.JAVASCRIPT_MIME_TYPE));
@@ -562,6 +564,7 @@ public final class JsEmbeddingProvider extends EmbeddingProvider {
 //                CodeBlockData blockData = new CodeBlockData(sourceStart, sourceEnd, generatedStart,
 //                        generatedEnd);
 //                codeBlocks.add(blockData);
+                }
             } else if (htmlId == HTMLTokenId.TAG_OPEN) {
                 String text = htmlToken.text().toString();
 

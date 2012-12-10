@@ -82,6 +82,7 @@ import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.api.webmodule.WebProjectConstants;
 import java.util.HashSet;
 import java.util.LinkedList;
+import java.util.concurrent.atomic.AtomicBoolean;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.TypeElement;
 import javax.swing.JLabel;
@@ -95,6 +96,7 @@ import org.netbeans.api.java.project.runner.JavaRunner;
 import org.netbeans.modules.java.api.common.ant.UpdateHelper;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.api.progress.ProgressUtils;
 import org.netbeans.modules.j2ee.common.project.WhiteListUpdater;
 import org.netbeans.modules.j2ee.common.project.ui.J2EEProjectProperties;
 import org.netbeans.modules.java.api.common.project.BaseActionProvider;
@@ -121,7 +123,9 @@ import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.DialogDescriptor;
+import org.openide.util.Cancellable;
 import org.openide.util.Exceptions;
+import org.openide.util.NbBundle.Messages;
 import org.openide.util.Parameters;
 
 /** Action provider of the Web project. This is the place where to do
@@ -301,6 +305,9 @@ public class WebActionProvider extends BaseActionProvider {
         return runServlet(p, javaFile, "LBL_RunAction", COMMAND_DEBUG_SINGLE.equals(command), COMMAND_PROFILE_SINGLE.equals(command), targetNames);
     }
 
+    @Messages({
+        "WebActionProvider.lbl.running.action=Running file..."
+    })
     @Override
     public String[] getTargetNames(String command, Lookup context, Properties p, boolean doJavaChecks) throws IllegalArgumentException {
         if (command.equals(COMMAND_RUN_SINGLE) ||command.equals(COMMAND_RUN) ||
@@ -345,33 +352,16 @@ public class WebActionProvider extends BaseActionProvider {
                 if (!compile) {
                     setAllPropertiesForSingleJSPCompilation(p, files);
                 }
-
-                String requestParams = RequestParametersQuery.getFileAndParameters(files[0]);
-                if (requestParams != null) {
-                    p.setProperty("client.urlPart", requestParams); //NOI18N
-                    p.setProperty(BaseActionProvider.PROPERTY_RUN_SINGLE_ON_SERVER, "yes");
-                    return targetNames;
-                } else {
-                    return null;
-                }
+                AtomicBoolean completeAction = new AtomicBoolean(false);
+                ProgressUtils.showProgressDialogAndRun(new RunSingleJspFileAction(files[0], p, completeAction), Bundle.WebActionProvider_lbl_running_action());
+                return completeAction.get() ? targetNames : null;
             } else {
                 // run HTML file
                 FileObject[] htmlFiles = findHtml(context);
                 if ((htmlFiles != null) && (htmlFiles.length > 0)) {
-                    String requestParams = RequestParametersQuery.getFileAndParameters(htmlFiles[0]);
-                    if (requestParams == null) {
-                        requestParams = FileUtil.getRelativePath(WebModule.getWebModule(htmlFiles[0]).getDocumentBase(), htmlFiles[0]); // NOI18N
-                        if (requestParams != null) {
-                            requestParams = "/" + requestParams.replace(" ", "%20"); // NOI18N
-                        }
-                    }
-                    if (requestParams != null) {
-                        p.setProperty("client.urlPart", requestParams); //NOI18N
-                        p.setProperty(BaseActionProvider.PROPERTY_RUN_SINGLE_ON_SERVER, "yes"); // NOI18N
-                        return targetNames;
-                    } else {
-                        return null;
-                    }
+                    AtomicBoolean completeAction = new AtomicBoolean(false);
+                    ProgressUtils.showProgressDialogAndRun(new RunSingleHtmlFileAction(htmlFiles[0], p, completeAction), Bundle.WebActionProvider_lbl_running_action());
+                    return completeAction.get() ? targetNames : null;
                 }
             }
         } else if (command.equals(COMMAND_RUN) || command.equals(WebProjectConstants.COMMAND_REDEPLOY)) {
@@ -1054,6 +1044,52 @@ public class WebActionProvider extends BaseActionProvider {
         @Override
         public void antTargetInvocationStarted(String command, Lookup context) {
             Deployment.getDefault().suspendDeployOnSave(provider);
+        }
+    }
+
+    private static class RunSingleJspFileAction implements Runnable {
+
+        protected final AtomicBoolean run;
+        protected final FileObject fileObject;
+        protected final Properties properties;
+
+        protected RunSingleJspFileAction(FileObject fileObject, Properties properties, AtomicBoolean completeAction) {
+            this.fileObject = fileObject;
+            this.properties = properties;
+            this.run = completeAction;
+        }
+
+        @Override
+        public void run() {
+            String requestParams = RequestParametersQuery.getFileAndParameters(fileObject);
+            if (requestParams != null) {
+                setStatus(properties, requestParams);
+            }
+        }
+
+        protected void setStatus(Properties p, String requestParams) {
+            properties.setProperty("client.urlPart", requestParams); //NOI18N
+            properties.setProperty(BaseActionProvider.PROPERTY_RUN_SINGLE_ON_SERVER, "yes");
+            run.set(true);
+        }
+    }
+
+    private static class RunSingleHtmlFileAction extends RunSingleJspFileAction {
+
+        public RunSingleHtmlFileAction(FileObject fileObject, Properties properties, AtomicBoolean completeAction) {
+            super(fileObject, properties, completeAction);
+        }
+
+        @Override
+        public void run() {
+            super.run();
+            if (!run.get()) {
+                String requestParams = FileUtil.getRelativePath(WebModule.getWebModule(fileObject).getDocumentBase(),fileObject);
+                if (requestParams != null) {
+                    requestParams = "/" + requestParams.replace(" ", "%20"); //NOI18N
+                    setStatus(properties, requestParams);
+                }
+            }
         }
     }
 

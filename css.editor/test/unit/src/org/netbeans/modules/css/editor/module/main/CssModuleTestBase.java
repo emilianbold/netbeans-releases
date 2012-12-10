@@ -477,7 +477,7 @@ public class CssModuleTestBase extends CslTestBase {
             exp.removeAll(real);
             assertEquals(exp, Collections.emptyList());
         } else if (type == Match.EMPTY) {
-            assertEquals(0, real.size());
+            assertEquals("The unexpected element(s) '" + arrayToString(real.toArray(new String[]{})) + "' are present in the completion items list", 0, real.size());
         } else if (type == Match.NOT_EMPTY) {
             assertTrue(real.size() > 0);
         } else if (type == Match.DOES_NOT_CONTAIN) {

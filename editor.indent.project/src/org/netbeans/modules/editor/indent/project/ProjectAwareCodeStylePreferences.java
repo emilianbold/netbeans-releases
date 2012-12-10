@@ -53,6 +53,7 @@ import java.util.prefs.AbstractPreferences;
 import java.util.prefs.PreferenceChangeEvent;
 import java.util.prefs.PreferenceChangeListener;
 import java.util.prefs.Preferences;
+import javax.swing.SwingUtilities;
 import javax.swing.text.Document;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.mimelookup.MimePath;
@@ -64,6 +65,7 @@ import org.netbeans.modules.editor.indent.api.IndentUtils;
 import org.netbeans.modules.editor.indent.spi.CodeStylePreferences;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
+import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
 import org.openide.util.WeakListeners;
 import org.openide.util.lookup.ServiceProvider;
@@ -109,13 +111,14 @@ public final class ProjectAwareCodeStylePreferences implements CodeStylePreferen
         private final Map<Object, Reference<Map<String, Csp>>> cache = new WeakHashMap<Object, Reference<Map<String, Csp>>>();
 
         private Csp getCsp(final Object obj, final String mimeType) {
+            Csp csp;
+            FileObject file = null;
             synchronized (cache) {
                 Reference<Map<String, Csp>> cspsRef = cache.get(obj);
                 Map<String, Csp> csps = cspsRef != null ? cspsRef.get() : null;
-                Csp csp = csps != null ? csps.get(mimeType) : null;
+                csp = csps != null ? csps.get(mimeType) : null;
                 if (csp == null) {
                     Document doc;
-                    FileObject file;
 
                     if (obj instanceof FileObject) {
                         doc = null;
@@ -135,9 +138,24 @@ public final class ProjectAwareCodeStylePreferences implements CodeStylePreferen
                     }
                     csps.put(mimeType, csp);
                 }
-
-                return csp;
             }
+            
+            if (file != null) {
+                if (SwingUtilities.isEventDispatchThread()) {
+                    final FileObject ffo = file;
+                    final Csp fcsp = csp;
+                    RequestProcessor.getDefault().post(new Runnable() {
+                        @Override
+                        public void run() {
+                            fcsp.initProjectPreferences(ffo);
+                        }
+                    });
+                } else {
+                    csp.initProjectPreferences(file);
+                }
+            }
+            
+            return csp;
         }
 
         final class CleaningWeakReference extends WeakReference<Document> implements Runnable {
@@ -190,12 +208,22 @@ public final class ProjectAwareCodeStylePreferences implements CodeStylePreferen
             this.globalPrefs = MimeLookup.getLookup(mimeType == null ? MimePath.EMPTY : MimePath.parse(mimeType)).lookup(Preferences.class);
             this.projectPrefs = null;
             this.useProject = false;
-
+        }
+        
+        public Preferences getPreferences() {
+            synchronized (this) {
+                Preferences prefs = useProject ? projectPrefs : globalPrefs;
+                // to support tests that don't use editor.mimelookup.impl
+                return prefs == null ? AbstractPreferences.systemRoot() : prefs;
+            }
+        }
+        
+        private void initProjectPreferences(final FileObject file) {
             ProjectManager.mutex().postReadRequest(new Runnable() {
                 public @Override void run() {
-                    synchronized (Csp.this) {
-                        Preferences projectRoot = findProjectPreferences(file);
-                        if (projectRoot != null) {
+                    Preferences projectRoot = findProjectPreferences(file);
+                    if (projectRoot != null) {
+                        synchronized (Csp.this) {
                             Preferences allLangCodeStyle = projectRoot.node(NODE_CODE_STYLE);
                             Preferences p = allLangCodeStyle.node(PROJECT_PROFILE);
 
@@ -208,27 +236,14 @@ public final class ProjectAwareCodeStylePreferences implements CodeStylePreferen
 
                             // listen on changes
                             allLangCodeStyle.addPreferenceChangeListener(WeakListeners.create(PreferenceChangeListener.class, switchTrakcer, allLangCodeStyle));
-                        } else {
-                            useProject = false;
-                            projectPrefs = null;
                         }
                     }
                 }
             });
-
             LOG.fine("file '" + filePath + "' (" + mimeType + ") is using " + (useProject ? "project" : "global") + " Preferences; doc=" + s2s(refDoc == null ? null : refDoc.get())); //NOI18N
         }
-        
-        public Preferences getPreferences() {
-            synchronized (this) {
-                Preferences prefs = useProject ? projectPrefs : globalPrefs;
-                // to support tests that don't use editor.mimelookup.impl
-                return prefs == null ? AbstractPreferences.systemRoot() : prefs;
-            }
-        }
-        
     } // End of Csp class
-
+    
     private static Preferences findProjectPreferences(FileObject file) {
         if (file != null) {
             Project p = FileOwnerQuery.getOwner(file);

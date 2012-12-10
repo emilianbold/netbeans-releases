@@ -52,6 +52,7 @@ import org.netbeans.modules.web.common.api.LexerUtils;
  * or null {@link Model#runWriteTask(org.netbeans.modules.css.model.api.Model.ModelTask) !!!
  *
  * TODO: add model tasks checking
+ * TODO: generify the findMatchingXXX code so it works for more elements w/o extra coding
  *
  * @author marekfukala
  */
@@ -158,6 +159,47 @@ public class ModelUtils {
     }
     
     /**
+     * Finds corresponding {@link Media} in another instance of {@link Model}.
+     * 
+     * Should not be called under Model's read lock! It does it own locking
+     * 
+     * @since 1.13
+     * @param model
+     * @param media
+     * @return An instance of {@link Media} belonging to current model and corresponding to 
+     * the given media from the other model.
+     */
+    public Media findMatchingMedia(Model model, Media media) {
+       assert media.getModel() == model;
+        
+       if(media.getParent() == null) {
+           //detached or not attached yet rule
+           return null;
+       }
+       
+       //find id of the given rule in the given model 
+       final MediaRefModelVisitor ruleRef = new MediaRefModelVisitor(model, media);
+       model.runReadTask(new Model.ModelTask() {
+            @Override
+            public void run(StyleSheet styleSheet) {
+                styleSheet.accept(ruleRef);
+            }
+       });
+       
+       int mediaIndex = ruleRef.getMediaIndex();
+       assert mediaIndex != -1; //the rule must be found
+       
+       CharSequence ruleId = LexerUtils.trim(ruleRef.getMediaId());
+       
+       //now resolve the rule ref to the current model
+       final ResolveMediaRefModelVisitor resolveRuleRef = new ResolveMediaRefModelVisitor(this.model, ruleId, mediaIndex);
+       this.styleSheet.accept(resolveRuleRef); //we are under lock already, at least should be
+       
+       return resolveRuleRef.getResolvedMedia();
+        
+    }
+    
+    /**
      * Finds an index of the given rule in rules with same ID (selectors group).
      * 
      * If there's just one rule of the name index will be 0, if there are 
@@ -245,6 +287,99 @@ public class ModelUtils {
         }
         
         public Rule getResolvedRule() {
+            return rule;
+        }
+        
+    }
+    
+    /**
+     * Finds an index of the given rule in rules with same ID (selectors group).
+     * 
+     * If there's just one rule of the name index will be 0, if there are 
+     * for example two div rules and the second is passed then the index will be 1.
+     */
+    private static class MediaRefModelVisitor extends ModelVisitor.Adapter {
+        
+        private final Model model;
+        private final Media media;
+        private CharSequence ruleId;
+        
+        private int ruleIndex = -1; //if there're more Rules with same ID
+        
+        private boolean cancelled;
+
+        public MediaRefModelVisitor(Model model, Media rule) {
+            this.model = model;
+            this.media = rule;
+        }
+        
+        @Override
+        public void visitMedia(Media rule) {
+            if(cancelled) {
+                return ;
+            }
+            
+            CharSequence foundRuleId = LexerUtils.trim(model.getElementSource(rule.getMediaQueryList()));
+            if (LexerUtils.equals(getMediaId(), foundRuleId, false, false)) {
+                ruleIndex++;
+            }
+            
+            if(this.media == rule) {
+                cancelled = true;
+            }
+            
+        }
+        
+        public int getMediaIndex() {
+            return ruleIndex;
+        }
+        
+        public synchronized CharSequence getMediaId() {
+            if(ruleId == null) {
+                ruleId = LexerUtils.trim(model.getElementSource(media.getMediaQueryList()));
+            }
+            return ruleId;
+        }
+        
+    }
+    
+    /**
+     * Finds an instance of {@link Rule} corresponding to the given ruleid and the rule index.
+     */
+    private static class ResolveMediaRefModelVisitor extends ModelVisitor.Adapter {
+        
+        private final Model model;
+        private final CharSequence mediaId;
+        private final int ruleIndex;
+        
+        private int index;
+        private Media rule;
+        private boolean cancelled;
+
+        public ResolveMediaRefModelVisitor(Model model, CharSequence ruleId, int ruleIndex) {
+            this.model = model;
+            this.mediaId = ruleId;
+            this.ruleIndex = ruleIndex;
+        }
+        
+        @Override
+        public void visitMedia(Media rule) {
+            if(cancelled) {
+                return ;
+            }
+            
+            CharSequence foundRuleId = LexerUtils.trim(model.getElementSource(rule.getMediaQueryList()));
+            if (LexerUtils.equals(mediaId, foundRuleId, false, false)) {
+                if(index == ruleIndex) {
+                    this.rule = rule;
+                    cancelled = true;
+                } else {
+                    index++;
+                }
+            }
+        }
+        
+        public Media getResolvedMedia() {
             return rule;
         }
         

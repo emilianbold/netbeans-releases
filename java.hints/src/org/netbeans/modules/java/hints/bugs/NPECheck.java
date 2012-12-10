@@ -618,36 +618,7 @@ public class NPECheck {
 
         @Override
         public State visitWhileLoop(WhileLoopTree node, Void p) {
-            Map<VariableElement, State> oldVariable2State = new HashMap<VariableElement, State>(variable2State);
-
-            boolean oldNot = not;
-            boolean oldDoNotRecord = doNotRecord;
-            
-            not = true;
-            doNotRecord = true;
-            
-            scan(node.getCondition(), p);
-            
-            not = oldNot;
-            doNotRecord = oldDoNotRecord;
-            
-            Map<VariableElement, State> negConditionVariable2State = new HashMap<VariableElement, State>(variable2State);
-            
-            variable2State = new HashMap<VariableElement, State>(oldVariable2State);
-            
-            scan(node.getCondition(), p);
-            
-            scan(node.getStatement(), p);
-            
-            mergeIntoVariable2State(oldVariable2State);
-            
-            scan(node.getCondition(), p);
-            
-            scan(node.getStatement(), p);
-            
-            mergeIntoVariable2State(negConditionVariable2State);
-            
-            return null;
+            return handleGeneralizedFor(null, node.getCondition(), null, node.getStatement(), p);
         }
 
         @Override
@@ -696,7 +667,11 @@ public class NPECheck {
 
         @Override
         public State visitForLoop(ForLoopTree node, Void p) {
-            scan(node.getInitializer(), p);
+            return handleGeneralizedFor(node.getInitializer(), node.getCondition(), node.getUpdate(), node.getStatement(), p);
+        }
+        
+        private State handleGeneralizedFor(Iterable<? extends Tree> initializer, Tree condition, Iterable<? extends Tree> update, Tree statement, Void p) {
+            scan(initializer, p);
             
             Map<VariableElement, State> oldVariable2State = new HashMap<VariableElement, State>(variable2State);
 
@@ -706,24 +681,31 @@ public class NPECheck {
             not = true;
             doNotRecord = true;
             
-            scan(node.getCondition(), p);
+            scan(condition, p);
             
             not = oldNot;
-            doNotRecord = oldDoNotRecord;
             
             Map<VariableElement, State> negConditionVariable2State = new HashMap<VariableElement, State>(variable2State);
             
-            variable2State = new HashMap<VariableElement, State>(oldVariable2State);
+                
+            if (!oldDoNotRecord) {
+                variable2State = new HashMap<VariableElement, State>(oldVariable2State);
+                
+                scan(condition, p);
+                scan(statement, p);
+                scan(update, p);
+                
+                mergeIntoVariable2State(oldVariable2State);
+            } else {
+                variable2State = oldVariable2State;
+            }
+        
             
-            scan(node.getCondition(), p);
-            scan(node.getStatement(), p);
-            scan(node.getUpdate(), p);
+            doNotRecord = oldDoNotRecord;
             
-            mergeIntoVariable2State(oldVariable2State);
-            
-            scan(node.getCondition(), p);
-            scan(node.getStatement(), p);
-            scan(node.getUpdate(), p);
+            scan(condition, p);
+            scan(statement, p);
+            scan(update, p);
             
             mergeIntoVariable2State(negConditionVariable2State);
             

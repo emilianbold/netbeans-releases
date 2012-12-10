@@ -94,6 +94,8 @@ import org.openide.util.Utilities;
 
 class RfsLocalController extends NamedRunnable {
 
+    public static final int SKEW_THRESHOLD = Integer.getInteger("cnd.remote.skew.threshold", 1);
+
     private final RfsSyncWorker.RemoteProcessController remoteController;
     private final BufferedReader requestReader;
     private final PrintWriter responseStream;
@@ -110,9 +112,11 @@ class RfsLocalController extends NamedRunnable {
     private String timeStampFile;
 
     private static final boolean USE_TIMESTAMPS = DebugUtils.getBoolean("cnd.rfs.timestamps", true);
+    private static  final char VERSION = USE_TIMESTAMPS ? '5' : '3';
+
     private static final boolean CHECK_ALIVE = DebugUtils.getBoolean("cnd.rfs.check.alive", true);
 
-    private static final RequestProcessor RP = new RequestProcessor("RfsLocalController", 1); // NOI18N    
+    private static final RequestProcessor RP = new RequestProcessor("RfsLocalController", 1); // NOI18N
     /**
      * Maps remote canonical remote path remote controller operates with
      * to the absolute remote path local controller uses
@@ -179,7 +183,7 @@ class RfsLocalController extends NamedRunnable {
                     //BZ #193114 - IllegalArgumentException: Protocol error: Killed
                     //let's check the process state
                     if (remoteController.isStopped()){
-                        return RequestKind.KILLED;                        
+                        return RequestKind.KILLED;
                     }
                 }
                 return RequestKind.UNKNOWN;
@@ -208,7 +212,7 @@ class RfsLocalController extends NamedRunnable {
                     logger.log(Level.FINEST, "PING from remote controller");
                     // no response needed
                     // respond_ok();
-                } else {                
+                } else {
                     if (request.charAt(1) != ' ') {
                         throw new IllegalArgumentException("Protocol error: " + request); // NOI18N
                     }
@@ -369,7 +373,7 @@ class RfsLocalController extends NamedRunnable {
             }
             extOptions.append(" -name Makefile"); // NOI18N
         }
-        
+
         String script = String.format(
             "for F in `find %s %s -newer %s`; do test -f $F &&  echo $F;  done;", // NOI18N
             remoteDirs, extOptions.toString(), timeStampFile);
@@ -417,7 +421,7 @@ class RfsLocalController extends NamedRunnable {
     }
 
     private static class FileGatheringInfo {
-        
+
         public final File file;
         public final String remotePath;
         private String linkTarget;
@@ -456,7 +460,7 @@ class RfsLocalController extends NamedRunnable {
         }
     }
 
-    private boolean checkVersion(char version) throws IOException {
+    private boolean checkVersion() throws IOException {
         String versionsString = requestReader.readLine();
         if (versionsString == null) {
             return false;
@@ -476,38 +480,107 @@ class RfsLocalController extends NamedRunnable {
                 }
                 return false;
             }
-            if (v.charAt(0) == version) {
+            if (v.charAt(0) == VERSION) {
                 return true;
             }
         }
         return true;
     }
-    
+
+    /*package*/ static char testGetVersion() {
+        return VERSION;
+    }
+
+    private static class FormatException extends Exception {
+        public FormatException(String message) {
+            super(message);
+        }        
+        public FormatException(String message, Throwable cause) {
+            super(message, cause);
+        }        
+    }
+
+    private long getTimeSkew() throws IOException, CancellationException, FormatException {        
+        final int cnt = 10;
+        responseStream.printf("SKEW_COUNT=%d\n", cnt); //NOI18N
+        responseStream.flush();
+        long[] deltas = new long[cnt];
+        for (int i = 0; i < cnt; i++) {
+            long localTime1 = System.currentTimeMillis();
+            responseStream.printf("SKEW %d\n", i); //NOI18N
+            responseStream.flush();
+            String line = requestReader.readLine();
+            long localTime2 = System.currentTimeMillis();
+            try {
+                long remoteTime = Long.parseLong(line);
+                deltas[i] = remoteTime - (localTime1 + localTime2)/ 2;
+            } catch (NumberFormatException nfe) {
+                throw new FormatException("Wrong skew format: " + line, nfe); //NOI18N
+            }
+        }
+        responseStream.printf("SKEW_END\n"); //NOI18N
+        responseStream.flush();
+        
+        long skew = 0;
+        for (int i = 0; i < cnt; i++) {
+            skew += deltas[i];
+        }
+        skew /= cnt;
+        
+        String line = requestReader.readLine();
+        if (!line.startsWith("FS_SKEW ")) { //NOI18N
+            throw new FormatException("Wrong file system skew response: " + line); //NOI18N
+        }   
+        try {
+            long fsSkew = Long.parseLong(line.substring(8));
+            fsSkew /=  1000;
+            if (Math.abs(fsSkew) > SKEW_THRESHOLD) {
+                FsSkewNotifier.getInstance().notify(execEnv, fsSkew);
+            }
+            return skew + fsSkew;
+        } catch (NumberFormatException nfe) {
+            throw new FormatException("Wrong file system skew format: " + line, nfe); //NOI18N
+        }
+    }
+
     /**
      * Feeds remote controller with the list of files and their lengths
      * @return true in the case of success, otherwise false
      * NB: in the case false is returned, no shutdown will be called
      */
-    boolean init() throws IOException, CancellationException {
-        char version = USE_TIMESTAMPS ? '4' : '3';
-        if (!checkVersion(version)) {
+    boolean init() throws IOException, CancellationException {        
+        if (!checkVersion()) {
             return false;
-        }        
-        logger.log(Level.FINE, "Initialization. Version=%c", version);
+        }
+        logger.log(Level.FINE, "Initialization. Version=%c", VERSION);
         if (CHECK_ALIVE && !remoteController.isAlive()) { // fixup for remote tests unstable failure (caused by jsch issue)
             if (err != null) {
                 err.printf("Process exited unexpectedly when initializing\n"); //NOI18N
             }
             return false;
         }
-        responseStream.printf("VERSION=%c\n", version); //NOI18N
+        responseStream.printf("VERSION=%c\n", VERSION); //NOI18N
         responseStream.flush();
+
+        long clockSkew;
+        try {
+            clockSkew = getTimeSkew();
+            if (logger .isLoggable(Level.FINE)) {
+                logger .log(Level.FINE, "HostInfo skew={0} calculated skew={1}", //NOI18N
+                        new Object[]{HostInfoUtils.getHostInfo(execEnv).getClockSkew(), clockSkew}); 
+            }
+        } catch (FormatException ex) {
+            if (err != null) {
+                err.printf("protocol errpr: %s\n", ex.getMessage()); // NOI18N
+            }
+            return false;
+        }
 
         long time = System.currentTimeMillis();
         long timeTotal = System.currentTimeMillis();
         List<FileGatheringInfo> filesToFeed = new ArrayList<FileGatheringInfo>(512);
 
-        // the set of top-level dirs 
+        // the set of top-level dirs
         Set<File> topDirs = new HashSet<File>();
 
         for (File file : files) {
@@ -565,7 +638,6 @@ class RfsLocalController extends NamedRunnable {
         logger.log(Level.FINE, "sorting file list took %d ms", System.currentTimeMillis() - time);
 
         time = System.currentTimeMillis();
-        long clockSkew = HostInfoUtils.getHostInfo(execEnv).getClockSkew();
         for (FileGatheringInfo info : filesToFeed) {
             try {
                 sendFileInitRequest(info, clockSkew);
@@ -585,14 +657,16 @@ class RfsLocalController extends NamedRunnable {
         responseStream.printf("\n"); // NOI18N
         responseStream.flush();
         logger.log(Level.FINE, "sending file list took %d ms", System.currentTimeMillis() - time);
-        
+
         try {
             time = System.currentTimeMillis();
             readFileInitResponse();
             logger.log(Level.FINE, "reading initial response took %d ms", System.currentTimeMillis() - time);
         } catch (IOException ex) {
-            err.printf("%s\n", ex.getMessage());
-            return false;
+            if (err != null) {
+                err.printf("%s\n", ex.getMessage());
+                return false;
+            }
         }
         fileData.store();
         if (!initNewFilesDiscovery()) {
@@ -649,7 +723,7 @@ class RfsLocalController extends NamedRunnable {
             logger.log(Level.INFO, "Error when checking links: %s", ex.getMessage());
             return addedInfos;
         }
-        
+
         RP.post(new Runnable() {
             @Override
             public void run() {
@@ -802,7 +876,7 @@ class RfsLocalController extends NamedRunnable {
             }
         }
     }
-    
+
     private void sendFileInitRequest(FileGatheringInfo fgi, long timeSkew) throws IOException {
         if (CHECK_ALIVE && !remoteController.isAlive()) { // fixup for remote tests unstable failure (caused by jsch issue)
             throw new IOException("process already exited"); //NOI18N
@@ -842,7 +916,7 @@ class RfsLocalController extends NamedRunnable {
             } else {
                 newState = FileState.INEXISTENT;
             }
-            CndUtils.assertTrue(newState == FileState.INITIAL || newState == FileState.COPIED 
+            CndUtils.assertTrue(newState == FileState.INITIAL || newState == FileState.COPIED
                     || newState == FileState.TOUCHED || newState == FileState.UNCONTROLLED
                     || newState == FileState.INEXISTENT,
                     "State shouldn't be ", newState); //NOI18N

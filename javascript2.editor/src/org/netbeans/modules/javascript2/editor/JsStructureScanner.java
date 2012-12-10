@@ -477,13 +477,13 @@ public class JsStructureScanner implements StructureScanner {
                         if (sexp.startsWith("@exp;")) {
                             sexp = sexp.substring(5);
                             List<String> nExp = new ArrayList<String>();
-                            String[] split = sexp.split("@call;");
+                            String[] split = sexp.split("@");
                             for (int i = split.length - 1; i > -1; i--) {
-                                nExp.add(split[i]);
-                                if (i == 0) {
-                                    nExp.add("@pro");
-                                } else {
+                                nExp.add(split[i].substring(split[i].indexOf(';') + 1));
+                                if (split[i].startsWith("call;")) {
                                     nExp.add("@mtd");
+                                } else {
+                                    nExp.add("@pro");
                                 }
                             }
                             resolved.addAll(ModelUtils.resolveTypeFromExpression(model, jsIndex, nExp, cycle));

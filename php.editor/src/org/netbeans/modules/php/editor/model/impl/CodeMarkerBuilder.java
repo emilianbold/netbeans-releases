@@ -90,11 +90,8 @@ class CodeMarkerBuilder {
             if (canBePrepared(node, scope)) {
                 methodDeclarations.put(nodeInfo, scope);
             }
-
         }
     }
-
-
 
     void prepare(ReturnStatement returnStatement, Scope scope) {
         ASTNodeInfo<ReturnStatement> nodeInfo = ASTNodeInfo.create(returnStatement);
@@ -134,7 +131,7 @@ class CodeMarkerBuilder {
                 FunctionDeclaration function = nodInfo.getOriginalNode();
                 Identifier functionName = function.getFunctionName();
                 OffsetRange range = new OffsetRange(function.getStartOffset(), functionName.getStartOffset());
-                fileScope.addCodeMarker(new CodeMarkerImpl.InvisibleCodeMarker(scope, range, fileScope));
+                fileScope.addCodeMarker(new CodeMarkerImpl.InvisibleCodeMarker(range, fileScope));
             }
         }
     }
@@ -152,12 +149,11 @@ class CodeMarkerBuilder {
                     FunctionDeclaration function = nodInfo.getOriginalNode().getFunction();
                     Identifier functionName = function.getFunctionName();
                     OffsetRange range = new OffsetRange(function.getStartOffset(), functionName.getStartOffset());
-                    fileScope.addCodeMarker(new CodeMarkerImpl.InvisibleCodeMarker(scope, range, fileScope));
+                    fileScope.addCodeMarker(new CodeMarkerImpl.InvisibleCodeMarker(range, fileScope));
                 }
             }
         }
     }
-
 
     private void buildReturnStatement(FileScopeImpl fileScope) {
         String scopeName = currentScope.getName();
@@ -169,18 +165,16 @@ class CodeMarkerBuilder {
             ASTNodeInfo<ReturnStatement> nodInfo = entry.getKey();
             if (scopeName.equalsIgnoreCase(scope.getName())) {
                 if (parentCurrentScope != null && parentScope != null && parentCurrentScope.getName().equalsIgnoreCase(parentScope.getName())) {
-                    fileScope.addCodeMarker(new CodeMarkerImpl(scope, nodInfo, fileScope));
+                    fileScope.addCodeMarker(new CodeMarkerImpl(nodInfo, fileScope));
                 }
             }
         }
     }
 
-
     void build(FileScopeImpl fileScope, final int offset) {
         if (currentNodeInfo == null && offset >= 0) {
             setCurrentContextInfo(offset);
         }
-
         if (currentNodeInfo != null && currentScope != null) {
             ASTNodeInfo.Kind kind = currentNodeInfo.getKind();
             currentNodeInfo = null;
@@ -202,8 +196,6 @@ class CodeMarkerBuilder {
                 default:
                     throw new IllegalStateException(kind.toString());
             }
-
-
         }
     }
 
@@ -221,22 +213,18 @@ class CodeMarkerBuilder {
                 range = new OffsetRange(returnStatement.getStartOffset(), expression.getStartOffset());
             }
         } else if (originalNode instanceof MethodDeclaration) {
-                FunctionDeclaration function = ((MethodDeclaration) originalNode).getFunction();
-                Identifier functionName = function.getFunctionName();
-                range = new OffsetRange(function.getStartOffset(), functionName.getStartOffset());
-
+            FunctionDeclaration function = ((MethodDeclaration) originalNode).getFunction();
+            Identifier functionName = function.getFunctionName();
+            range = new OffsetRange(function.getStartOffset(), functionName.getStartOffset());
         } else if (originalNode instanceof FunctionDeclaration) {
-                FunctionDeclaration function = (FunctionDeclaration) originalNode;
-                Identifier functionName = function.getFunctionName();
-                range = new OffsetRange(function.getStartOffset(), functionName.getStartOffset());
-
+            FunctionDeclaration function = (FunctionDeclaration) originalNode;
+            Identifier functionName = function.getFunctionName();
+            range = new OffsetRange(function.getStartOffset(), functionName.getStartOffset());
         }
         if (range.containsInclusive(offset)) {
             currentNodeInfo = nodeInfo;
             currentScope = scope;
-
         }
-
     }
 
 }

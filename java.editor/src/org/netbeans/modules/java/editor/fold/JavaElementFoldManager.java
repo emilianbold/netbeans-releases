@@ -364,7 +364,21 @@ public class JavaElementFoldManager extends JavaFoldManager {
                 insideRender = true;
                 Document d = operation.getHierarchy().getComponent().getDocument();
                 if (d != doc) {
-                    throw new IllegalStateException("Different documents used for folds computation and commit.\nDocument used for computation:" + doc + "\nDocument used for commit:" + d); //NOI18N
+                    StringBuilder dSB = new StringBuilder();
+                    Exception de = (Exception) d.getProperty("Issue-222763-debug"); //NOI18N
+                    if (de != null) {
+                        for (StackTraceElement trace : de.getStackTrace()) {
+                            dSB.append("\tat ").append(trace).append('\n'); //NOI18N
+                        }
+                    }
+                    StringBuilder docSB = new StringBuilder();
+                    de = (Exception) doc.getProperty("Issue-222763-debug"); //NOI18N
+                    if (de != null) {
+                        for (StackTraceElement trace : de.getStackTrace()) {
+                            docSB.append("\tat ").append(trace).append('\n'); //NOI18N
+                        }
+                    }
+                    throw new IllegalStateException("Different documents used for folds computation and commit.\nDocument used for computation:" + doc + "\ncreated:\n" + docSB.toString() + "\nDocument used for commit:" + d + "\ncreated:\n" + dSB.toString()); //NOI18N
                 }
                 d.render(this);
                 

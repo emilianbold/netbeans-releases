@@ -544,9 +544,13 @@ public class PHPBracketCompleter implements KeystrokeHandler {
                 int indent = GsfUtilities.getLineIndent(doc, offset);
                 StringBuilder sb = new StringBuilder();
                 sb.append(IndentUtils.createIndentString(doc, indent));
-                sb.append("//"); // NOI18N
+                String commentDelimiter = "//"; //NOI18N
+                if (ts.movePrevious() && ts.token().text().charAt(0) == '#') { //NOI18N
+                    commentDelimiter = "#"; //NOI18N
+                }
+                sb.append(commentDelimiter);
                 // Copy existing indentation
-                int afterHash = begin + 2;
+                int afterHash = begin + commentDelimiter.length();
                 String line = doc.getText(afterHash, Utilities.getRowEnd(doc, afterHash) - afterHash);
                 for (int i = 0; i < line.length(); i++) {
                     char c = line.charAt(i);

@@ -42,7 +42,10 @@
 
 package org.netbeans.modules.cnd.remote.test;
 
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.util.Arrays;
 import java.util.Collections;
@@ -79,6 +82,7 @@ import org.netbeans.modules.nativeexecution.test.RcFile.FormatException;
 import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.netbeans.spi.project.ActionProvider;
 import org.openide.filesystems.FileSystem;
+import org.openide.util.Exceptions;
 import org.openide.windows.IOProvider;
 
 /**
@@ -106,6 +110,31 @@ public abstract class RemoteTestBase extends CndBaseTestCase {
         public final String ID;
         Toolchain(String id) {
             this.ID = id;
+        }
+    }
+
+    protected static class ProcessReader implements Runnable {
+
+        private final BufferedReader errorReader;
+        private final PrintWriter errorWriter;
+
+        public ProcessReader(InputStream errorStream, PrintWriter errorWriter) {
+            this.errorReader = new BufferedReader(new InputStreamReader(errorStream));
+            this.errorWriter = errorWriter;
+        }
+        @Override
+        public void run() {
+            try {
+                String line;
+                while ((line = errorReader.readLine()) != null) {
+                    if (errorWriter != null) {
+                         errorWriter.println(line);
+                    }
+                    RemoteUtil.LOGGER.fine(line);
+                }
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            }
         }
     }
 

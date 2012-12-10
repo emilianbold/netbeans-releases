@@ -95,6 +95,7 @@ public class VisibilityChangeTest extends NbTestCase {
     private FileObject src2;
     private FileObject src3;
     private FileObject src4;
+    private FileObject src2fld;
     private FileObject outside;
     private FileObject src1file1;
     private FileObject src1file2;
@@ -133,9 +134,11 @@ public class VisibilityChangeTest extends NbTestCase {
         assertNotNull(src1file1);
         src1file2 = src1.createData("test2", FOO_EXT);  //NOI18N
         assertNotNull(src1file2);
-        src2file1 = src2.createData("test", FOO_EXT);   //NOI18N
+        src2fld = src2.createFolder("folder"); //NOI18N
+        assertNotNull(src2fld);
+        src2file1 = src2fld.createData("test", FOO_EXT);   //NOI18N
         assertNotNull(src2file1);
-        src2file2 = src2.createData("test2", FOO_EXT);  //NOI18N
+        src2file2 = src2fld.createData("test2", FOO_EXT);  //NOI18N
         assertNotNull(src2file2);
         src3file1 = src3.createData("test", FOO_EXT);   //NOI18N
         assertNotNull(src3file1);
@@ -184,43 +187,45 @@ public class VisibilityChangeTest extends NbTestCase {
         final Logger logger = Logger.getLogger(RepositoryUpdater.class.getName()+".tests"); //NOI18N
         logger.setLevel (Level.FINEST);
         logger.addHandler(handler);
-
-        globalPathRegistry_register(FOO_SOURCES,new ClassPath[]{cp1});
-        assertTrue (handler.await());
-        assertEquals(0, handler.getBinaries().size());
-        assertEquals(4, handler.getSources().size());
-        assertEquals(
-            new URI[] {
-                src1file1.toURI(),
-                src1file2.toURI(),
-                src2file1.toURI(),
-                src2file2.toURI(),
-                src3file1.toURI(),
-                src3file2.toURI(),
-                src4file1.toURI(),
-                src4file2.toURI()
-            },
-            MimeLookup.getLookup(MimePath.get(FOO_MIME)).lookup(FooIndexerFactory.class).clearIndexedFiles());
-        assertEquals(
-            new URI[0],
-            MimeLookup.getLookup(MimePath.get(FOO_MIME)).lookup(FooIndexerFactory.class).clearRemovedFiles());
-        handler.reset();
-        Lookup.getDefault().lookup(MockVisibilityQuery.class).globalChange();
-        assertTrue (handler.await());
-        assertEquals(0, handler.getBinaries().size());
-        assertEquals(4, handler.getSources().size());
-        assertEquals(
-            new URI[0],
-            MimeLookup.getLookup(MimePath.get(FOO_MIME)).lookup(FooIndexerFactory.class).clearIndexedFiles());
-        assertEquals(
-            new URI[0],
-            MimeLookup.getLookup(MimePath.get(FOO_MIME)).lookup(FooIndexerFactory.class).clearRemovedFiles());        
+        try {
+            globalPathRegistry_register(FOO_SOURCES,new ClassPath[]{cp1});
+            assertTrue (handler.await());
+            assertEquals(0, handler.getBinaries().size());
+            assertEquals(4, handler.getSources().size());
+            assertEquals(
+                new URI[] {
+                    src1file1.toURI(),
+                    src1file2.toURI(),
+                    src2file1.toURI(),
+                    src2file2.toURI(),
+                    src3file1.toURI(),
+                    src3file2.toURI(),
+                    src4file1.toURI(),
+                    src4file2.toURI()
+                },
+                MimeLookup.getLookup(MimePath.get(FOO_MIME)).lookup(FooIndexerFactory.class).clearIndexedFiles());
+            assertEquals(
+                new URI[0],
+                MimeLookup.getLookup(MimePath.get(FOO_MIME)).lookup(FooIndexerFactory.class).clearRemovedFiles());
+            handler.reset();
+            Lookup.getDefault().lookup(MockVisibilityQuery.class).globalChange();
+            assertTrue (handler.await());
+            assertEquals(0, handler.getBinaries().size());
+            assertEquals(4, handler.getSources().size());
+            assertEquals(
+                new URI[0],
+                MimeLookup.getLookup(MimePath.get(FOO_MIME)).lookup(FooIndexerFactory.class).clearIndexedFiles());
+            assertEquals(
+                new URI[0],
+                MimeLookup.getLookup(MimePath.get(FOO_MIME)).lookup(FooIndexerFactory.class).clearRemovedFiles());
+        } finally {
+            logger.removeHandler(handler);
+        }
     }
 
     /**
      * Tests specific VisibilityChange but outside of the source roots.
-     * Change to file (folder) outside of source roots -> be defensive and refresh everything,
-     * may be parent of some root or metadata.
+     * Change to file (folder) outside of source roots -> no scan.
      */
     public void testVisibilityChangeOutsideOfRoot() throws InterruptedException, IOException {
 
@@ -229,38 +234,34 @@ public class VisibilityChangeTest extends NbTestCase {
         final Logger logger = Logger.getLogger(RepositoryUpdater.class.getName()+".tests"); //NOI18N
         logger.setLevel (Level.FINEST);
         logger.addHandler(handler);
-
-        globalPathRegistry_register(FOO_SOURCES,new ClassPath[]{cp1});
-        assertTrue (handler.await());
-        assertEquals(0, handler.getBinaries().size());
-        assertEquals(4, handler.getSources().size());
-        assertEquals(
-            new URI[] {
-                src1file1.toURI(),
-                src1file2.toURI(),
-                src2file1.toURI(),
-                src2file2.toURI(),
-                src3file1.toURI(),
-                src3file2.toURI(),
-                src4file1.toURI(),
-                src4file2.toURI()
-            },
-            MimeLookup.getLookup(MimePath.get(FOO_MIME)).lookup(FooIndexerFactory.class).clearIndexedFiles());
-        assertEquals(
-            new URI[0],
-            MimeLookup.getLookup(MimePath.get(FOO_MIME)).lookup(FooIndexerFactory.class).clearRemovedFiles());
-        handler.reset();
-        Lookup.getDefault().lookup(MockVisibilityQuery.class).change(outside);
-        assertTrue (handler.await());
-        assertEquals(0, handler.getBinaries().size());
-        assertEquals(4, handler.getSources().size());
-        assertEquals(
-            new URI[0],
-            MimeLookup.getLookup(MimePath.get(FOO_MIME)).lookup(FooIndexerFactory.class).clearIndexedFiles());
-        assertEquals(
-            new URI[0],
-            MimeLookup.getLookup(MimePath.get(FOO_MIME)).lookup(FooIndexerFactory.class).clearRemovedFiles());
-
+        try {
+            globalPathRegistry_register(FOO_SOURCES,new ClassPath[]{cp1});
+            assertTrue (handler.await());
+            assertEquals(0, handler.getBinaries().size());
+            assertEquals(4, handler.getSources().size());
+            assertEquals(
+                new URI[] {
+                    src1file1.toURI(),
+                    src1file2.toURI(),
+                    src2file1.toURI(),
+                    src2file2.toURI(),
+                    src3file1.toURI(),
+                    src3file2.toURI(),
+                    src4file1.toURI(),
+                    src4file2.toURI()
+                },
+                MimeLookup.getLookup(MimePath.get(FOO_MIME)).lookup(FooIndexerFactory.class).clearIndexedFiles());
+            assertEquals(
+                new URI[0],
+                MimeLookup.getLookup(MimePath.get(FOO_MIME)).lookup(FooIndexerFactory.class).clearRemovedFiles());
+            handler.reset();
+            Lookup.getDefault().lookup(MockVisibilityQuery.class).hide(outside);
+            assertFalse(handler.await(RepositoryUpdaterTest.NEGATIVE_TIME));
+            assertNull(handler.getBinaries());
+            assertNull(handler.getSources());
+        } finally {
+            logger.removeHandler(handler);
+        }
     }
 
     public void testVisibilityChangeInSingleRoot() throws InterruptedException, IOException {
@@ -270,39 +271,163 @@ public class VisibilityChangeTest extends NbTestCase {
         final Logger logger = Logger.getLogger(RepositoryUpdater.class.getName()+".tests"); //NOI18N
         logger.setLevel (Level.FINEST);
         logger.addHandler(handler);
+        try {
+            globalPathRegistry_register(FOO_SOURCES,new ClassPath[]{cp1});
+            assertTrue (handler.await());
+            assertEquals(0, handler.getBinaries().size());
+            assertEquals(4, handler.getSources().size());
+            assertEquals(
+                new URI[] {
+                    src1file1.toURI(),
+                    src1file2.toURI(),
+                    src2file1.toURI(),
+                    src2file2.toURI(),
+                    src3file1.toURI(),
+                    src3file2.toURI(),
+                    src4file1.toURI(),
+                    src4file2.toURI()
+                },
+                MimeLookup.getLookup(MimePath.get(FOO_MIME)).lookup(FooIndexerFactory.class).clearIndexedFiles());
+            assertEquals(
+                new URI[0],
+                MimeLookup.getLookup(MimePath.get(FOO_MIME)).lookup(FooIndexerFactory.class).clearRemovedFiles());
+            handler.reset(RepositoryUpdaterTest.TestHandler.Type.DELETE);
+            Lookup.getDefault().lookup(MockVisibilityQuery.class).hide(src1file1);
+            assertTrue (handler.await());
+            assertEquals(
+                new URI[0],
+                MimeLookup.getLookup(MimePath.get(FOO_MIME)).lookup(FooIndexerFactory.class).clearIndexedFiles());
+            assertEquals(
+                new URI[]{
+                    src1file1.toURI()
+                },
+                MimeLookup.getLookup(MimePath.get(FOO_MIME)).lookup(FooIndexerFactory.class).clearRemovedFiles());
+            handler.reset(RepositoryUpdaterTest.TestHandler.Type.FILELIST);
+            Lookup.getDefault().lookup(MockVisibilityQuery.class).show(src1file1);
+            assertTrue (handler.await());
+            assertEquals(
+                new URI[]{
+                    src1file1.toURI()
+                },
+                MimeLookup.getLookup(MimePath.get(FOO_MIME)).lookup(FooIndexerFactory.class).clearIndexedFiles());
+            assertEquals(
+                new URI[0],
+                MimeLookup.getLookup(MimePath.get(FOO_MIME)).lookup(FooIndexerFactory.class).clearRemovedFiles());
+        } finally {
+            logger.removeHandler(handler);
+        }
+    }
 
-        globalPathRegistry_register(FOO_SOURCES,new ClassPath[]{cp1});
-        assertTrue (handler.await());
-        assertEquals(0, handler.getBinaries().size());
-        assertEquals(4, handler.getSources().size());
-        assertEquals(
-            new URI[] {
-                src1file1.toURI(),
-                src1file2.toURI(),
-                src2file1.toURI(),
-                src2file2.toURI(),
-                src3file1.toURI(),
-                src3file2.toURI(),
-                src4file1.toURI(),
-                src4file2.toURI()
-            },
-            MimeLookup.getLookup(MimePath.get(FOO_MIME)).lookup(FooIndexerFactory.class).clearIndexedFiles());
-        assertEquals(
-            new URI[0],
-            MimeLookup.getLookup(MimePath.get(FOO_MIME)).lookup(FooIndexerFactory.class).clearRemovedFiles());
-        handler.reset();
-//        Lookup.getDefault().lookup(MockVisibilityQuery.class).change(src1file1);
-//        assertTrue (handler.await());
-//        assertEquals(0, handler.getBinaries().size());
-//        assertEquals(1, handler.getSources().size());
-//        assertEquals(
-//            new URI[0],
-//            MimeLookup.getLookup(MimePath.get(FOO_MIME)).lookup(FooIndexerFactory.class).clearIndexedFiles());
-//        assertEquals(
-//            new URI[]{
-//                src1file1.toURI()
-//            },
-//            MimeLookup.getLookup(MimePath.get(FOO_MIME)).lookup(FooIndexerFactory.class).clearRemovedFiles());
+    public void testMultipleVisibilityChangesInSingleRoot() throws InterruptedException, IOException {
+
+        assertTrue(GlobalPathRegistry.getDefault().getPaths(FOO_SOURCES).isEmpty());
+        final RepositoryUpdaterTest.TestHandler handler = new RepositoryUpdaterTest.TestHandler();
+        final Logger logger = Logger.getLogger(RepositoryUpdater.class.getName()+".tests"); //NOI18N
+        logger.setLevel (Level.FINEST);
+        logger.addHandler(handler);
+        try {
+            globalPathRegistry_register(FOO_SOURCES,new ClassPath[]{cp1});
+            assertTrue (handler.await());
+            assertEquals(0, handler.getBinaries().size());
+            assertEquals(4, handler.getSources().size());
+            assertEquals(
+                new URI[] {
+                    src1file1.toURI(),
+                    src1file2.toURI(),
+                    src2file1.toURI(),
+                    src2file2.toURI(),
+                    src3file1.toURI(),
+                    src3file2.toURI(),
+                    src4file1.toURI(),
+                    src4file2.toURI()
+                },
+                MimeLookup.getLookup(MimePath.get(FOO_MIME)).lookup(FooIndexerFactory.class).clearIndexedFiles());
+            assertEquals(
+                new URI[0],
+                MimeLookup.getLookup(MimePath.get(FOO_MIME)).lookup(FooIndexerFactory.class).clearRemovedFiles());
+            handler.reset(RepositoryUpdaterTest.TestHandler.Type.DELETE);
+            Lookup.getDefault().lookup(MockVisibilityQuery.class).hide(src1file1, src1file2);
+            assertTrue (handler.await());
+            assertEquals(
+                new URI[0],
+                MimeLookup.getLookup(MimePath.get(FOO_MIME)).lookup(FooIndexerFactory.class).clearIndexedFiles());
+            assertEquals(
+                new URI[]{
+                    src1file1.toURI(),
+                    src1file2.toURI()
+                },
+                MimeLookup.getLookup(MimePath.get(FOO_MIME)).lookup(FooIndexerFactory.class).clearRemovedFiles());
+            handler.reset(RepositoryUpdaterTest.TestHandler.Type.FILELIST);
+            Lookup.getDefault().lookup(MockVisibilityQuery.class).show(src1file1, src1file2);
+            assertTrue (handler.await());
+            assertEquals(
+                new URI[]{
+                    src1file1.toURI(),
+                    src1file2.toURI()
+                },
+                MimeLookup.getLookup(MimePath.get(FOO_MIME)).lookup(FooIndexerFactory.class).clearIndexedFiles());
+            assertEquals(
+                new URI[0],
+                MimeLookup.getLookup(MimePath.get(FOO_MIME)).lookup(FooIndexerFactory.class).clearRemovedFiles());
+        } finally {
+            logger.removeHandler(handler);
+        }
+    }
+
+    public void testFolderVisibilityChangeInSingleRoot() throws InterruptedException, IOException {
+
+        assertTrue(GlobalPathRegistry.getDefault().getPaths(FOO_SOURCES).isEmpty());
+        final RepositoryUpdaterTest.TestHandler handler = new RepositoryUpdaterTest.TestHandler();
+        final Logger logger = Logger.getLogger(RepositoryUpdater.class.getName()+".tests"); //NOI18N
+        logger.setLevel (Level.FINEST);
+        logger.addHandler(handler);
+        try {
+            globalPathRegistry_register(FOO_SOURCES,new ClassPath[]{cp1});
+            assertTrue (handler.await());
+            assertEquals(0, handler.getBinaries().size());
+            assertEquals(4, handler.getSources().size());
+            assertEquals(
+                new URI[] {
+                    src1file1.toURI(),
+                    src1file2.toURI(),
+                    src2file1.toURI(),
+                    src2file2.toURI(),
+                    src3file1.toURI(),
+                    src3file2.toURI(),
+                    src4file1.toURI(),
+                    src4file2.toURI()
+                },
+                MimeLookup.getLookup(MimePath.get(FOO_MIME)).lookup(FooIndexerFactory.class).clearIndexedFiles());
+            assertEquals(
+                new URI[0],
+                MimeLookup.getLookup(MimePath.get(FOO_MIME)).lookup(FooIndexerFactory.class).clearRemovedFiles());
+            handler.reset(RepositoryUpdaterTest.TestHandler.Type.DELETE);
+            Lookup.getDefault().lookup(MockVisibilityQuery.class).hide(src2fld);
+            assertTrue (handler.await());
+            assertEquals(
+                new URI[0],
+                MimeLookup.getLookup(MimePath.get(FOO_MIME)).lookup(FooIndexerFactory.class).clearIndexedFiles());
+            assertEquals(
+                new URI[]{
+                    src2file1.toURI(),
+                    src2file2.toURI()
+                },
+                MimeLookup.getLookup(MimePath.get(FOO_MIME)).lookup(FooIndexerFactory.class).clearRemovedFiles());
+            handler.reset(RepositoryUpdaterTest.TestHandler.Type.FILELIST);
+            Lookup.getDefault().lookup(MockVisibilityQuery.class).show(src2fld);
+            assertTrue (handler.await());
+            assertEquals(
+                new URI[]{
+                    src2file1.toURI(),
+                    src2file2.toURI()
+                },
+                MimeLookup.getLookup(MimePath.get(FOO_MIME)).lookup(FooIndexerFactory.class).clearIndexedFiles());
+            assertEquals(
+                new URI[0],
+                MimeLookup.getLookup(MimePath.get(FOO_MIME)).lookup(FooIndexerFactory.class).clearRemovedFiles());
+        } finally {
+            logger.removeHandler(handler);
+        }
     }
     
     private void assertEquals(URI[] expected, URI[] result) {
@@ -430,10 +555,16 @@ public class VisibilityChangeTest extends NbTestCase {
         private final Set<FileObject> invisibles = Collections.synchronizedSet(new HashSet<FileObject>());
         private final List<ChangeListener> listeners = new CopyOnWriteArrayList<ChangeListener>();
 
-        void change(FileObject... fos) {
+        void hide(FileObject... fos) {
             synchronized (invisibles) {
-                invisibles.clear();
                 invisibles.addAll(Arrays.asList(fos));
+            }
+            fire(new VisibilityQueryChangeEvent(this, fos));
+        }
+
+        void show(FileObject... fos) {
+            synchronized (invisibles) {
+                invisibles.removeAll(Arrays.asList(fos));
             }
             fire(new VisibilityQueryChangeEvent(this, fos));
         }

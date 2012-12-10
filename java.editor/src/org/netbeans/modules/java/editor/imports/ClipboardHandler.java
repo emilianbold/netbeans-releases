@@ -267,6 +267,7 @@ public class ClipboardHandler {
                         Element elm = cc.getTrees().getElement(new TreePath(tp, ((MemberSelectTree) simpleName).getExpression()));
                         if (el.equals(elm)) continue;
                     } else {
+                        if (!cc.getTreeUtilities().isAccessible(context, el, el.getEnclosingElement().asType())) continue;
                         for (ImportTree importTree : cc.getCompilationUnit().getImports()) {
                             if (importTree.isStatic() && importTree.getQualifiedIdentifier().getKind() == Tree.Kind.MEMBER_SELECT) {
                                 MemberSelectTree mst = (MemberSelectTree) importTree.getQualifiedIdentifier();

@@ -1877,47 +1877,55 @@ declaration_specifiers [boolean allowTypedef, boolean noTypeId]
     // fix for unknown specifiers
     unknown_pretype_declaration_specifiers
 
-    (   ( (LITERAL_constexpr | cv_qualifier | LITERAL_static | literal_inline | LITERAL_friend)* LITERAL_auto declarator[declOther, 0]) => 
-        (LITERAL_constexpr | tq = cv_qualifier | LITERAL_static | literal_inline | LITERAL_friend)*
+    ((LITERAL_static IDENT (SEMICOLON | ASSIGNEQUAL | COMMA)) =>
+        sc = storage_class_specifier
     |
-        (   options {warnWhenFollowAmbig = false;} : sc = storage_class_specifier
-        |   tq = cv_qualifier 
-        |   literal_inline {ds = dsINLINE;}
-        |   LITERAL__Noreturn
-        |   LITERAL_virtual {ds = dsVIRTUAL;}
-        |   LITERAL_explicit {ds = dsEXPLICIT;}
-        |   LITERAL_final
-        |   LITERAL_enum
-        |   {if (statementTrace>=1) printf("declaration_specifiers_1[%d]: Typedef\n", LT(1).getLine());}                        
-            {allowTypedef}? LITERAL_typedef (options {greedy=true;} : LITERAL_typename)? {td=true;} 
-        |   LITERAL_typename
-        |   LITERAL_friend {fd=true;}
-        |   LITERAL_constexpr
-        |   literal_stdcall
-        |   literal_clrcall
-        |   (options {greedy=true;} : type_attribute_specification!)
-        )*
-    ) 
-    (
-        (options {greedy=true;} :type_attribute_specification)?
-        ts = type_specifier[ds, noTypeId]
-        // support for "A const*";
-        // need to catch postfix_cv_qualifier
-        (postfix_cv_qualifier | LITERAL_constexpr)? 
-        (
-            (literal_inline {ds = dsINLINE;})
+        (   ( (LITERAL_constexpr | cv_qualifier | LITERAL_static | literal_inline | LITERAL_friend)* 
+              LITERAL_auto 
+              (postfix_cv_qualifier | LITERAL_constexpr)? 
+              (literal_inline | storage_class_specifier | LITERAL_virtual)*
+              declarator[declOther, 0]) => 
+            (LITERAL_constexpr | tq = cv_qualifier | LITERAL_static | literal_inline | LITERAL_friend)*
         |
-            (sc = storage_class_specifier)
-        | 
-            LITERAL_virtual
-        )*
-        (options {greedy=true;} :type_attribute_specification)?
+            (   options {warnWhenFollowAmbig = false;} : sc = storage_class_specifier
+            |   tq = cv_qualifier 
+            |   literal_inline {ds = dsINLINE;}
+            |   LITERAL__Noreturn
+            |   LITERAL_virtual {ds = dsVIRTUAL;}
+            |   LITERAL_explicit {ds = dsEXPLICIT;}
+            |   LITERAL_final
+            |   LITERAL_enum
+            |   {if (statementTrace>=1) printf("declaration_specifiers_1[%d]: Typedef\n", LT(1).getLine());}                        
+                {allowTypedef}? LITERAL_typedef (options {greedy=true;} : LITERAL_typename)? {td=true;} 
+            |   LITERAL_typename
+            |   LITERAL_friend {fd=true;}
+            |   LITERAL_constexpr
+            |   literal_stdcall
+            |   literal_clrcall
+            |   (options {greedy=true;} : type_attribute_specification!)
+            )*
+        ) 
+        (
+            (options {greedy=true;} :type_attribute_specification)?
+            ts = type_specifier[ds, noTypeId]
+            // support for "A const*";
+            // need to catch postfix_cv_qualifier
+            (postfix_cv_qualifier | LITERAL_constexpr)? 
+            (
+                (literal_inline {ds = dsINLINE;})
+            |
+                (sc = storage_class_specifier)
+            | 
+                LITERAL_virtual
+            )*
+            (options {greedy=true;} :type_attribute_specification)?
 
-        // fix for unknown specifiers
-        unknown_posttype_declaration_specifiers
+            // fix for unknown specifiers
+            unknown_posttype_declaration_specifiers
 
-//  |   LITERAL_typename	{td=true;}	direct_declarator 
-    |   literal_typeof LPAREN typeof_param RPAREN
+    //  |   LITERAL_typename	{td=true;}	direct_declarator 
+        |   literal_typeof LPAREN typeof_param RPAREN
+        )
     )
     ({allowTypedef}? LITERAL_typedef {td=true;})?
 )

@@ -136,6 +136,13 @@ NetBeans.sendMessage = function(message) {
     }
 };
 
+NetBeans.sendReadyMessage = function(version) {
+    this.sendMessage({
+        message: 'ready',
+        version: version
+    });
+};
+
 NetBeans.sendInitMessage = function(tab) {
     this.sendMessage({
         message: 'init',

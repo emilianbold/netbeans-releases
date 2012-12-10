@@ -517,6 +517,7 @@ abstract class WebKitBreakpointManager implements PropertyChangeListener {
 
         private final XHRBreakpoint xb;
         private org.netbeans.modules.web.webkit.debugging.api.debugger.Breakpoint b;
+        private String lastUrlSubstring;
         
         public WebKitXHRBreakpointManager(Debugger d, XHRBreakpoint xb) {
             super(d, xb);
@@ -530,6 +531,7 @@ abstract class WebKitBreakpointManager implements PropertyChangeListener {
             }
             String urlSubstring = xb.getUrlSubstring();
             b = d.addXHRBreakpoint(urlSubstring);
+            lastUrlSubstring = urlSubstring;
         }
 
         @Override
@@ -541,11 +543,31 @@ abstract class WebKitBreakpointManager implements PropertyChangeListener {
                 if (b.getBreakpointID() != null) {
                     d.removeLineBreakpoint(b);
                 } else {
-                    String urlSubstring = xb.getUrlSubstring();
-                    d.removeXHRBreakpoint(urlSubstring);
+                    d.removeXHRBreakpoint(lastUrlSubstring);
                 }
             }
             b = null;
+        }
+
+        @Override
+        public void propertyChange(PropertyChangeEvent event) {
+            if (XHRBreakpoint.PROP_URL_SUBSTRING.equals(event.getPropertyName())) {
+                if (SwingUtilities.isEventDispatchThread()) {
+                    rp.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            remove();
+                            add();
+                        }
+                    });
+                    return ;
+                } else {
+                    remove();
+                    add();
+                }
+            } else {
+                super.propertyChange(event);
+            }
         }
         
     }

@@ -41,10 +41,8 @@
  */
 package org.netbeans.modules.php.project.connections.sftp;
 
-import java.io.File;
 import org.netbeans.modules.php.api.util.FileUtils;
 import org.netbeans.modules.php.api.util.StringUtils;
-import org.netbeans.modules.php.project.connections.common.RemoteUtils;
 import org.netbeans.modules.php.project.connections.common.RemoteValidator;
 import org.netbeans.modules.php.project.validation.ValidationResult;
 import org.openide.util.NbBundle;
@@ -93,14 +91,18 @@ public class SftpConfigurationValidator {
             result.addError(new ValidationResult.Message("user", err)); // NOI18N
         }
 
-        err = FileUtils.validateFile(Bundle.SftpConfigurationValidator_identityFile(), identityFile, false);
-        if (err != null) {
-            result.addError(new ValidationResult.Message("identityFile", err)); // NOI18N
+        if (StringUtils.hasText(identityFile)) {
+            err = FileUtils.validateFile(Bundle.SftpConfigurationValidator_identityFile(), identityFile, false);
+            if (err != null) {
+                result.addError(new ValidationResult.Message("identityFile", err)); // NOI18N
+            }
         }
 
-        err = FileUtils.validateFile(Bundle.SftpConfigurationValidator_knownHosts(), knownHostsFile, false);
-        if (err != null) {
-            result.addError(new ValidationResult.Message("knownHostsFile", err)); // NOI18N
+        if (StringUtils.hasText(knownHostsFile)) {
+            err = FileUtils.validateFile(Bundle.SftpConfigurationValidator_knownHosts(), knownHostsFile, false);
+            if (err != null) {
+                result.addError(new ValidationResult.Message("knownHostsFile", err)); // NOI18N
+            }
         }
 
         err = RemoteValidator.validateUploadDirectory(initialDirectory);

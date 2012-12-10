@@ -295,8 +295,12 @@ public class CSSUtils {
             while ((index = mediaQuery.indexOf("and")) != -1) { // NOI18N
                 String part = mediaQuery.substring(0,index);
                 mediaQuery = mediaQuery.substring(index+3);
+                // 'part' is not a selector, but the same normalization
+                // works well here as well.
+                part = normalizeSelector(part);
                 parts.add(part);
             }
+            mediaQuery = normalizeSelector(mediaQuery);
             parts.add(mediaQuery);
             Collections.sort(parts);
             Collections.reverse(parts); // Make sure that media type is before expressions
@@ -305,9 +309,6 @@ public class CSSUtils {
                     result.append(" and "); // NOI18N
                 }
                 String part = parts.get(i);
-                // 'part' is not a selector, but the same normalization
-                // works well here as well.
-                part = normalizeSelector(part);
                 result.append(part);
             }
             if (st.hasMoreTokens()) {

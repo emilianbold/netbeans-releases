@@ -334,6 +334,28 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
             scheduleWork(flw, wait);
         }
     }
+
+    void addDeleteJob(
+        @NonNull final URL root,
+        @NonNull final Set<String> relativePaths,
+        @NonNull final LogContext logCtx) {
+        final Work wrk = new DeleteWork(
+            root,
+            relativePaths,
+            suspendSupport.getSuspendStatus(),
+            logCtx);
+        scheduleWork(wrk, false);
+    }
+
+    void addBinaryJob(
+        @NonNull final URL root,
+        @NonNull final LogContext logCtx) {
+        final Work wrk = new BinaryWork(
+            root,
+            suspendSupport.getSuspendStatus(),
+            logCtx);
+        scheduleWork(wrk, false);
+    }
     
     public void enforcedFileListUpdate(
             @NonNull final URL rootUrl,
@@ -1558,7 +1580,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
         }
     }
 
-    private Pair<URL, FileObject> getOwningBinaryRoot(final FileObject fo) {
+    Pair<URL, FileObject> getOwningBinaryRoot(final FileObject fo) {
         if (fo == null) {
             return null;
         }
@@ -2381,10 +2403,12 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                         final boolean cifIsChanged = indexers.changedCifs != null && indexers.changedCifs.contains(cifInfo);
                         final boolean forceReindex = votes.get(factory) == Boolean.FALSE && allResources != null;
                         final boolean allFiles = cifIsChanged || forceReindex || (allResources != null && allResources.size() == resources.size());
-                        if (ae && forceReindex && LOGGER.isLoggable(Level.INFO) && resources.size() != allResources.size() && !cifInfo.getMimeTypes().isEmpty()) {
+                        if (forceReindex && resources.size() != allResources.size()) {
                             if (getLogContext() != null) {
                                 getLogContext().reindexForced(root, factory.getIndexerName());
                             }
+                        }
+                        if (ae && forceReindex && LOGGER.isLoggable(Level.INFO) && resources.size() != allResources.size() && !cifInfo.getMimeTypes().isEmpty()) {
                             LOGGER.log(Level.INFO, "Refresh of custom indexer ({0}) for root: {1} forced by: {2}",    //NOI18N
                                     new Object[]{
                                         cifInfo.getMimeTypes(),
@@ -2781,11 +2805,15 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                                             LOGGER.fine("Indexing file " + fileObject.getPath() + " using " + indexerFactory + "; mimeType='" + mimeType + "'"); //NOI18N
                                         }
 
-                                        final Parser.Result pr = resultIterator.getParserResult();
-                                        // must follow getParserResult(), as resultIterators are lazy
-                                        if (!finished) {
-                                            logFinishIndexer(mimeType);
-                                            finished = true;
+                                        final Parser.Result pr;
+                                        try {
+                                             pr = resultIterator.getParserResult();
+                                            // must follow getParserResult(), as resultIterators are lazy
+                                        } finally {
+                                            if (!finished) {
+                                                logFinishIndexer(mimeType);
+                                                finished = true;
+                                            }
                                         }
                                         if (pr != null) {
                                             final String indexerName = indexerFactory.getIndexerName();
@@ -2827,7 +2855,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                                         }
                                     }
                                 } else {
-                                    logFinishIndexer(resultIterator.getSnapshot().getMimeType());
+                                    logFinishIndexer(mimeType);
                                 }
 
                                 for (Embedding embedding : resultIterator.getEmbeddings()) {
@@ -3463,11 +3491,17 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                 final Map<Pair<String,Integer>,Pair<SourceIndexerFactory,Context>> contexts = new HashMap<Pair<String,Integer>,Pair<SourceIndexerFactory,Context>>();
                 final UsedIndexables usedIterables = new UsedIndexables();
                 final SourceIndexers indexers = SourceIndexers.load(false);
+                final TimeStamps ts = TimeStamps.forRoot(root, false);
                 try {
                     scanStarted(root, false, indexers, votes, contexts);
                     delete(indexables, contexts, usedIterables);
+                    ts.remove(relativePaths);
                 } finally {
-                    scanFinished(contexts.values(), usedIterables, !getCancelRequest().isRaised());
+                    final boolean finished = !getCancelRequest().isRaised();
+                    if (finished) {
+                        ts.store();
+                        scanFinished(contexts.values(), usedIterables, finished);
+                    }
                 }
                 TEST_LOGGER.log(Level.FINEST, "delete"); //NOI18N
             } catch (IOException ioe) {

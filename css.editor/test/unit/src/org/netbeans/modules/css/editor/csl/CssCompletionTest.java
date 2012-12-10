@@ -66,6 +66,17 @@ public class CssCompletionTest extends CssModuleTestBase {
         checkCC("@| h1 { }", AT_RULES, Match.CONTAINS);
         checkCC("@pa| h1 { }", new String[]{"@page"}, Match.CONTAINS);
     }
+    
+    public void testAtRules2() throws ParseException {
+        checkCC("@charset| ", new String[]{"@font-face"}, Match.DOES_NOT_CONTAIN);
+        checkCC("@charset| div { }", new String[]{"@font-face"}, Match.DOES_NOT_CONTAIN);
+        
+        checkCC("@fon| div { }", new String[]{"@font-face"}, Match.EXACT);
+        
+        checkCC("@media| div { }", new String[]{"@media"}, Match.EXACT);
+        
+        checkCC("@page| div { }", new String[]{"@page"}, Match.EXACT);
+    }
 
     public void testPropertyNames() throws ParseException {
         //empty rule

@@ -73,7 +73,7 @@ import org.openide.windows.TopComponent;
  *
  * @author marekfukala
  */
-@OnShowing
+//@OnShowing
 public class PageInspectorListener implements Runnable, PropertyChangeListener {
 
     private static final Logger LOGGER = Logger.getLogger(PageInspectorListener.class.getSimpleName());

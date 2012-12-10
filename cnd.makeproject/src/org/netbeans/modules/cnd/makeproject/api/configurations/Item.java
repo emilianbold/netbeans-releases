@@ -120,6 +120,20 @@ public final class Item implements NativeFileItem, PropertyChangeListener {
         return new Item(fileSystem, path);
     }
 
+    public static Item createDetachedViewItem(FileSystem fileSystem, String path) {
+        CndUtils.assertNonUiThread();
+        Item out = new Item(fileSystem, path);
+        // This method is executed in not EDT and first call to getDataObject() is quite expensive operation.
+        // If we call this method here then result will be calculated and cached. So cached version will be
+        // used in createNodes and won't freeze EDT.
+        // See Bug 221962 - [73cat] 3.s - Blocked by cnd.makeproject.ui.LogicalViewChildren.createNodes().
+        DataObject dobj = out.getDataObject();
+        // detach resources to prevent memory leaks
+        out.onClose(); 
+        CndUtils.assertTrueInConsole(out.lastDataObject == dobj, "data object should stay the same ", out.lastDataObject);
+        return out;
+    }
+
     // XXX:fullRemote deprecate and remove!
     private Item(FileSystem fileSystem, String path) {
         CndUtils.assertNotNull(path, "Path should not be null"); //NOI18N
@@ -236,14 +250,8 @@ public final class Item implements NativeFileItem, PropertyChangeListener {
         // leave folder if it is remove
         if (folder == null) { // Item is removed, let's clean up.
             synchronized (this) {
-                if (lastDataObject != null) {
-                    lastDataObject.removePropertyChangeListener(this);
-                    NativeFileItemSet set = lastDataObject.getLookup().lookup(NativeFileItemSet.class);
-                    if (set != null) {
-                        set.remove(this);
-                    }
-                    lastDataObject = null;
-                }
+                onClose();
+                lastDataObject = null;
             }
         } else {
             this.folder = folder;
@@ -466,13 +474,7 @@ public final class Item implements NativeFileItem, PropertyChangeListener {
             if (dataObject != lastDataObject) {
                 // DataObject can change without notification. We need to track this
                 // and properly attach/detach listeners.
-                if (lastDataObject != null) {
-                    lastDataObject.removePropertyChangeListener(this);
-                    NativeFileItemSet set = lastDataObject.getLookup().lookup(NativeFileItemSet.class);
-                    if (set != null) {
-                        set.remove(this);
-                    }                    
-                }
+                onClose();
                 if (dataObject != null) {
                     dataObject.addPropertyChangeListener(this);
                     NativeFileItemSet set = dataObject.getLookup().lookup(NativeFileItemSet.class);
@@ -487,12 +489,14 @@ public final class Item implements NativeFileItem, PropertyChangeListener {
     }
 
     public final void onClose() {
-        DataObject dao = lastDataObject;
-        if (dao != null) {
-            dao.removePropertyChangeListener(this);
-            NativeFileItemSet set = dao.getLookup().lookup(NativeFileItemSet.class);
-            if (set != null) {
-                set.remove(this);
+        synchronized (this) {
+            DataObject dao = lastDataObject;
+            if (dao != null) {
+                dao.removePropertyChangeListener(this);
+                NativeFileItemSet set = dao.getLookup().lookup(NativeFileItemSet.class);
+                if (set != null) {
+                    set.remove(this);
+                }
             }
         }
     }

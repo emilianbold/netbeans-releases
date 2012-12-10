@@ -901,13 +901,6 @@ public class CasualDiff {
         } else {
             copyTo(localPointer, localPointer = oldT.pos + 1);
         }
-        // syntetic super() found, skip it
-        if (diffContext.syntheticTrees.contains(oldT.stats.head)) {
-            oldT.stats = oldT.stats.tail;
-        }
-        if (diffContext.syntheticTrees.contains(newT.stats.head)) {
-            newT.stats = newT.stats.tail;
-        }
         PositionEstimator est = EstimatorFactory.statements(
                 filterHidden(oldT.stats),
                 filterHidden(newT.stats),
@@ -2733,6 +2726,7 @@ public class CasualDiff {
         List<JCVariableDecl> enumConstants = new ArrayList<JCVariableDecl>();
         for (JCTree tree : list) {
             if (tree.pos == (-1)) continue;
+            if (diffContext.syntheticTrees.contains(tree)) continue;
             else if (Kind.VARIABLE == tree.getKind()) {
                 JCVariableDecl var = (JCVariableDecl) tree;
                 if ((var.mods.flags & Flags.ENUM) != 0) {
