@@ -588,7 +588,7 @@ public class JaxWsChildren extends Children.Keys<Object>/* implements MDRChangeL
 //        return globalWsdlFolder.createFolder(name);
 //    }
     
-    private class WebOperationInfo {
+    private static class WebOperationInfo {
         private String operationName;
         private List<String> paramTypes;
         private String returnType;

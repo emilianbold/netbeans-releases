@@ -121,7 +121,7 @@ public class EditWSAttributesCookieImpl implements EditWSAttributesCookie {
         mainWin.getGlassPane().setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
         mainWin.getGlassPane().setVisible(true);
 
-        tc = cachedTopComponents.get(node);
+        tc = cachedTopComponents.get(this);
         if (tc == null) {
             //populate the editor registry if needed
             populateWSEditorProviderRegistry();

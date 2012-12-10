@@ -115,7 +115,6 @@ public class WsTesterPageAction extends NodeAction {
                                 } catch (java.net.ConnectException ex) {
                                     // doing nothing - display warning
                                 } finally {
-                                    if (httpConnection!=null) 
                                     httpConnection.disconnect();
                                 }
                                 // logging usage of action
