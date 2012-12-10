@@ -53,10 +53,13 @@ import javax.swing.event.DocumentListener;
 import javax.swing.text.*;
 import java.awt.*;
 import java.awt.event.*;
-import org.netbeans.core.output2.Controller;
+import org.netbeans.core.output2.Lines;
 import org.netbeans.core.output2.OutputDocument;
 import org.netbeans.core.output2.options.OutputOptions;
 import org.openide.util.Exceptions;
+import org.openide.windows.InputOutput;
+import org.openide.windows.OutputEvent;
+import org.openide.windows.OutputListener;
 
 /**
  * A scroll pane containing an editor pane, with special handling of the caret
@@ -471,6 +474,8 @@ public abstract class AbstractOutputPane extends JScrollPane implements Document
     
     protected abstract void lineClicked (int line, int pos);
     
+    protected abstract void enterPressed();
+
     protected abstract void postPopupMenu (Point p, Component src);
     
     public final int getCaretLine() {
@@ -729,6 +734,9 @@ public abstract class AbstractOutputPane extends JScrollPane implements Document
             case KeyEvent.VK_PAGE_UP:
             case KeyEvent.VK_PAGE_DOWN:
                 unlockScroll();
+                break;
+            case KeyEvent.VK_ENTER:
+                enterPressed();
                 break;
         }
     }
