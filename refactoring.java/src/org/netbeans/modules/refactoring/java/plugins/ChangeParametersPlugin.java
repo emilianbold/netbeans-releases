@@ -479,6 +479,7 @@ public class ChangeParametersPlugin extends JavaRefactoringPlugin {
         Problem parameterType(Problem p, ParameterInfo[] paramTable, int index, ExecutableElement method, TypeElement enclosingTypeElement) {
             String type = paramTable[index].getType();
             String name = paramTable[index].getName();
+            type = type.split("<", 2)[0];
             String[] split = type.split(" "); //NOI18N
             type = split[split.length-1];
             TypeMirror parseType = null;
