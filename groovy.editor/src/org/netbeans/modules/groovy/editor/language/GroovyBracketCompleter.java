@@ -875,7 +875,7 @@ public class GroovyBracketCompleter implements KeystrokeHandler {
     
     private void reindent(BaseDocument doc, int offset, TokenId id, Caret caret)
         throws BadLocationException {
-        TokenSequence<?extends GroovyTokenId> ts = LexUtilities.getGroovyTokenSequence(doc, offset);
+        TokenSequence<GroovyTokenId> ts = LexUtilities.getGroovyTokenSequence(doc, offset);
 
         if (ts != null) {
             ts.move(offset);
@@ -884,7 +884,7 @@ public class GroovyBracketCompleter implements KeystrokeHandler {
                 return;
             }
 
-            Token<?extends GroovyTokenId> token = ts.token();
+            Token<GroovyTokenId> token = ts.token();
 
             if ((token.id() == id)) {
                 final int rowFirstNonWhite = Utilities.getRowFirstNonWhite(doc, offset);
