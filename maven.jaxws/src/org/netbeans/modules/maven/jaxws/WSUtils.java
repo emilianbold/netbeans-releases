@@ -53,11 +53,13 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.net.URI;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.logging.Level;
@@ -126,21 +128,22 @@ public class WSUtils {
             Retriever retriever = Retriever.getDefault();
             FileObject result = retriever.retrieveResource(targetFolder, catalog, source);
             if (result==null) {
-                Map map = retriever.getRetrievedResourceExceptionMap();
+                Map<RetrieveEntry,Exception> map = 
+                        retriever.getRetrievedResourceExceptionMap();
                 if (map!=null) {
-                    Set keys = map.keySet();
-                    Iterator it = keys.iterator();
-                    while (it.hasNext()) {
-                        RetrieveEntry key = (RetrieveEntry)it.next();
-                        Object exc = map.get(key);
+                    for(Entry<RetrieveEntry,Exception> entry : map.entrySet()){
+                        RetrieveEntry key = entry.getKey();
+                        Exception exc = entry.getValue(); 
                         if (exc instanceof IOException) {
                             throw (IOException)exc;
                         } else if (exc instanceof java.net.URISyntaxException) {
                             throw (java.net.URISyntaxException)exc;
-                        } else if (exc instanceof Exception) {
-                            IOException ex = new IOException(NbBundle.getMessage(WSUtils.class,"ERR_retrieveResource",key.getCurrentAddress()));
-                            ex.initCause((Exception)exc);
-                            throw (IOException)(ex);
+                        } else  {
+                            IOException ex = new IOException(NbBundle.getMessage(
+                                    WSUtils.class,"ERR_retrieveResource",       // NOI18N
+                                    key.getCurrentAddress()));
+                            ex.initCause(exc);
+                            throw ex;
                         }
                     }
                 }
@@ -165,7 +168,7 @@ public class WSUtils {
                 OutputStreamWriter osw = null;
                 try {
                     os = sunJaxwsFo.getOutputStream(lock);
-                    osw = new OutputStreamWriter(os);
+                    osw = new OutputStreamWriter(os, Charset.forName("UTF-8"));     // NOI18N
                     bw = new BufferedWriter(osw);
                     bw.write(sunJaxwsContent);
                 } finally {
@@ -190,7 +193,8 @@ public class WSUtils {
         // read the config from resource first
         StringBuffer sb = new StringBuffer();
         String lineSep = System.getProperty("line.separator");//NOI18N
-        BufferedReader br = new BufferedReader(new InputStreamReader(is));
+        BufferedReader br = new BufferedReader(new InputStreamReader(is, 
+                Charset.forName("UTF-8")));
         String line = br.readLine();
         while (line != null) {
             sb.append(line);
@@ -550,7 +554,6 @@ public class WSUtils {
         }
         sunjaxwsFile = ddFolder.getFileObject("sun-jaxws.xml"); //NOI18N
         Endpoints endpoints = EndpointsProvider.getDefault().getEndpoints(sunjaxwsFile);
-        String serviceName = service.getServiceName();
         Endpoint oldEndpoint = endpoints.findEndpointByName(service.getServiceName());
         if (oldEndpoint == null) {
             addService(endpoints, service);
@@ -613,7 +616,6 @@ public class WSUtils {
         FileObject sunjaxwsFile = ddFolder.getFileObject("sun-jaxws.xml"); //NOI18N
         if (sunjaxwsFile != null) {
             Endpoints endpoints = EndpointsProvider.getDefault().getEndpoints(sunjaxwsFile);
-            String serviceName = service.getServiceName();
             Endpoint endpoint = endpoints.findEndpointByName(service.getServiceName());
             if (endpoint != null) {
                 endpoints.removeEndpoint(endpoint);

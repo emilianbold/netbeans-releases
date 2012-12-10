@@ -790,6 +790,8 @@ public class JaxWsCodeGenerator {
                 invocationBody = MessageFormat.format(JSP_STATIC_STUB_ASYNC_CALLBACK, args);
                 break;
             }
+            default:
+                break;
         }
         return invocationBody;
     }
@@ -992,7 +994,7 @@ public class JaxWsCodeGenerator {
                                 make.Assignment(make.Identifier("wsdlLocation"), 
                                         make.Literal(wsdlUrl)))); //NOI18N
                 // create field modifier: private(static) with @WebServiceRef annotation
-                FileObject targetFo = workingCopy.getFileObject();
+//                FileObject targetFo = workingCopy.getFileObject();
                 Set<Modifier> modifiers = new HashSet<Modifier>();
 //                if (Car.getCar(targetFo) != null) {
 //                    modifiers.add(Modifier.STATIC);
@@ -1038,7 +1040,6 @@ public class JaxWsCodeGenerator {
         public void run(WorkingCopy workingCopy) throws Exception {
             boolean changed = false;
             workingCopy.toPhase(Phase.RESOLVED);
-            ClassTree javaClass = SourceUtils.getPublicTopLevelTree(workingCopy);
             TreeMaker make = workingCopy.getTreeMaker();
             CompilationUnitTree cut = workingCopy.getCompilationUnit();
             CompilationUnitTree copy = cut;
