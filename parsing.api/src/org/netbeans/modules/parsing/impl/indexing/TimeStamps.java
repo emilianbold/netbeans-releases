@@ -112,7 +112,7 @@ public final class TimeStamps {
     @NonNull
     Collection<? extends String> getEnclosedFiles(@NonNull String folder) {
         Parameters.notNull("folder", folder);           //NOI18N
-        if (folder.charAt(folder.length()-1) != '/') {  //NOI18N
+        if (!folder.isEmpty() && folder.charAt(folder.length()-1) != '/') {  //NOI18N
             folder = folder + '/';                      //NOI18N
         }
         Collection<? extends String> res = impl.getEnclosedFiles(folder);
