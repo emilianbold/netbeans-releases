@@ -123,7 +123,7 @@ public final class FriendClassImpl extends OffsetableDeclarationBase<CsmFriendCl
         super(file, startOffset, endOffset);
         this.parentUID = UIDs.get(parent);
         this.name = name;
-        nameParts = Utils.splitQualifiedName(name.toString());;
+        nameParts = Utils.splitQualifiedName(name.toString());
         classForwardUID = UIDCsmConverter.declarationToUID(cfd);
     }
     

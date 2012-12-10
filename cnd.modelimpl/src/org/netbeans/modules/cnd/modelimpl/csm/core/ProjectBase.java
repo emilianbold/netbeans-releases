@@ -468,7 +468,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
                         }
                     }
                 } catch (IOException ex) {
-                    ex.printStackTrace();
+                    ex.printStackTrace(System.err);
                 }
             }
         }
