@@ -289,7 +289,7 @@ public class SemanticAnalysis extends SemanticAnalyzer {
             scan(cldec.getSuperClass());
             scan(cldec.getInterfaes());
             Identifier name = cldec.getName();
-            createTypeNameColoring(name);
+            addOffsetRange(name, createTypeNameColoring(name));
             needToScan = new ArrayList<Block>();
             if (cldec.getBody() != null) {
                 cldec.getBody().accept(this);
@@ -335,21 +335,27 @@ public class SemanticAnalysis extends SemanticAnalyzer {
             }
         }
 
-        private void createTypeNameColoring(Identifier name) {
+        private Set<ColoringAttributes> createTypeNameColoring(Identifier typeName) {
+            Set<ColoringAttributes> result;
+            if (isDeprecatedTypeDeclaration(typeName)) {
+                result = DEPRECATED_CLASS_SET;
+            } else {
+                result = ColoringAttributes.CLASS_SET;
+            }
+            return result;
+        }
+
+        private boolean isDeprecatedTypeDeclaration(Identifier typeName) {
             boolean isDeprecated = false;
-            VariableScope variableScope = model.getVariableScope(name.getStartOffset());
-            QualifiedName fullyQualifiedName = VariousUtils.getFullyQualifiedName(QualifiedName.create(name), name.getStartOffset(), variableScope);
+            VariableScope variableScope = model.getVariableScope(typeName.getStartOffset());
+            QualifiedName fullyQualifiedName = VariousUtils.getFullyQualifiedName(QualifiedName.create(typeName), typeName.getStartOffset(), variableScope);
             for (TypeElement typeElement : deprecatedTypes) {
                 if (typeElement.getFullyQualifiedName().equals(fullyQualifiedName)) {
                     isDeprecated = true;
                     break;
                 }
             }
-            if (isDeprecated) {
-                addOffsetRange(name, DEPRECATED_CLASS_SET);
-            } else {
-                addOffsetRange(name, ColoringAttributes.CLASS_SET);
-            }
+            return isDeprecated;
         }
 
         @Override
@@ -358,19 +364,7 @@ public class SemanticAnalysis extends SemanticAnalyzer {
             boolean isPrivate = Modifier.isPrivate(md.getModifier());
             Identifier identifier = md.getFunction().getFunctionName();
             String name = identifier.getName();
-            boolean isDeprecated = false;
-            VariableScope variableScope = model.getVariableScope(identifier.getStartOffset());
-            QualifiedName typeFullyQualifiedName = VariousUtils.getFullyQualifiedName(QualifiedName.create(typeDeclaration.getName()), identifier.getStartOffset(), variableScope);
-            for (MethodElement methodElement : deprecatedMethods) {
-                if (methodElement.getName().equals(name) && methodElement.getType().getFullyQualifiedName().equals(typeFullyQualifiedName)) {
-                    isDeprecated = true;
-                    break;
-                }
-            }
-            EnumSet<ColoringAttributes> coloring = isDeprecated ? DEPRECATED_METHOD_SET : ColoringAttributes.METHOD_SET;
-            if (Modifier.isStatic(md.getModifier())) {
-                coloring = isDeprecated ? DEPRECATED_STATIC_METHOD_SET : STATIC_METHOD_SET;
-            }
+            Set<ColoringAttributes> coloring = createMethodDeclarationColoring(md);
             // don't color private magic private method. methods which start __
             if (isPrivate && name != null && !name.startsWith("__")) {
                 privateUnusedMethods.put(new UnusedIdentifier(identifier.getName(), typeDeclaration), new ASTNodeColoring(identifier, coloring));
@@ -386,6 +380,28 @@ public class SemanticAnalysis extends SemanticAnalyzer {
                     needToScan.add(body);
                 }
             }
+        }
+
+        private Set<ColoringAttributes> createMethodDeclarationColoring(MethodDeclaration methodDeclaration) {
+            boolean isDeprecated = isDeprecatedMethodDeclaration(methodDeclaration.getFunction().getFunctionName());
+            Set<ColoringAttributes> coloring = isDeprecated ? DEPRECATED_METHOD_SET : ColoringAttributes.METHOD_SET;
+            if (Modifier.isStatic(methodDeclaration.getModifier())) {
+                coloring = isDeprecated ? DEPRECATED_STATIC_METHOD_SET : STATIC_METHOD_SET;
+            }
+            return coloring;
+        }
+
+        private boolean isDeprecatedMethodDeclaration(Identifier methodName) {
+            boolean isDeprecated = false;
+            VariableScope variableScope = model.getVariableScope(methodName.getStartOffset());
+            QualifiedName typeFullyQualifiedName = VariousUtils.getFullyQualifiedName(QualifiedName.create(typeDeclaration.getName()), methodName.getStartOffset(), variableScope);
+            for (MethodElement methodElement : deprecatedMethods) {
+                if (methodElement.getName().equals(methodName.getName()) && methodElement.getType().getFullyQualifiedName().equals(typeFullyQualifiedName)) {
+                    isDeprecated = true;
+                    break;
+                }
+            }
+            return isDeprecated;
         }
 
         @Override
@@ -422,7 +438,7 @@ public class SemanticAnalysis extends SemanticAnalyzer {
             }
             typeDeclaration = node;
             Identifier name = node.getName();
-            createTypeNameColoring(name);
+            addOffsetRange(name, createTypeNameColoring(name));
             super.visit(node);
         }
 
@@ -433,7 +449,7 @@ public class SemanticAnalysis extends SemanticAnalyzer {
             }
             typeDeclaration = node;
             Identifier name = node.getName();
-            createTypeNameColoring(name);
+            addOffsetRange(name, createTypeNameColoring(name));
             needToScan = new ArrayList<Block>();
             if (node.getBody() != null) {
                 node.getBody().accept(this);
@@ -454,23 +470,7 @@ public class SemanticAnalysis extends SemanticAnalyzer {
             Variable[] variables = node.getVariableNames();
             for (int i = 0; i < variables.length; i++) {
                 Variable variable = variables[i];
-                String variableName = CodeUtils.extractVariableName(variable);
-                boolean isDeprecated = false;
-                VariableScope variableScope = model.getVariableScope(variable.getStartOffset());
-                QualifiedName typeFullyQualifiedName = VariousUtils.getFullyQualifiedName(
-                        QualifiedName.create(typeDeclaration.getName()),
-                        variable.getStartOffset(),
-                        variableScope);
-                for (FieldElement fieldElement : deprecatedFields) {
-                    if (fieldElement.getName().equals(variableName) && fieldElement.getType().getFullyQualifiedName().equals(typeFullyQualifiedName)) {
-                        isDeprecated = true;
-                        break;
-                    }
-                }
-                EnumSet<ColoringAttributes> coloring = isDeprecated ? DEPRECATED_FIELD_SET : ColoringAttributes.FIELD_SET;
-                if (isStatic) {
-                    coloring = isDeprecated ? DEPRECATED_STATIC_FIELD_SET : ColoringAttributes.STATIC_FIELD_SET;
-                }
+                Set<ColoringAttributes> coloring = createFieldDeclarationColoring(variable, isStatic);
                 if (!isPrivate) {
                     addOffsetRange(variable.getName(), coloring);
                 } else {
@@ -481,6 +481,32 @@ public class SemanticAnalysis extends SemanticAnalyzer {
                 }
             }
             super.visit(node);
+        }
+
+        private Set<ColoringAttributes> createFieldDeclarationColoring(Variable variable, boolean isStatic) {
+            boolean isDeprecated = isDeprecatedFieldDeclaration(variable);
+            Set<ColoringAttributes> coloring = isDeprecated ? DEPRECATED_FIELD_SET : ColoringAttributes.FIELD_SET;
+            if (isStatic) {
+                coloring = isDeprecated ? DEPRECATED_STATIC_FIELD_SET : ColoringAttributes.STATIC_FIELD_SET;
+            }
+            return coloring;
+        }
+
+        private boolean isDeprecatedFieldDeclaration(Variable variable) {
+            boolean isDeprecated = false;
+            String variableName = CodeUtils.extractVariableName(variable);
+            VariableScope variableScope = model.getVariableScope(variable.getStartOffset());
+            QualifiedName typeFullyQualifiedName = VariousUtils.getFullyQualifiedName(
+                    QualifiedName.create(typeDeclaration.getName()),
+                    variable.getStartOffset(),
+                    variableScope);
+            for (FieldElement fieldElement : deprecatedFields) {
+                if (fieldElement.getName().equals(variableName) && fieldElement.getType().getFullyQualifiedName().equals(typeFullyQualifiedName)) {
+                    isDeprecated = true;
+                    break;
+                }
+            }
+            return isDeprecated;
         }
 
         @Override
@@ -548,22 +574,26 @@ public class SemanticAnalysis extends SemanticAnalyzer {
                 List<Identifier> names = node.getNames();
                 if (!names.isEmpty()) {
                     for (Identifier identifier : names) {
-                        addOffsetRange(identifier, isDeprecatedConstant(identifier) ? DEPRECATED_STATIC_FIELD_SET : ColoringAttributes.STATIC_FIELD_SET);
+                        addOffsetRange(identifier, createConstantDeclarationColoring(identifier));
                     }
                 }
             }
             super.visit(node);
         }
 
-        private boolean isDeprecatedConstant(Identifier identifier) {
+        private Set<ColoringAttributes> createConstantDeclarationColoring(Identifier constantName) {
+            return isDeprecatedConstantDeclaration(constantName) ? DEPRECATED_STATIC_FIELD_SET : ColoringAttributes.STATIC_FIELD_SET;
+        }
+
+        private boolean isDeprecatedConstantDeclaration(Identifier constantName) {
             boolean isDeprecated = false;
-            VariableScope variableScope = model.getVariableScope(identifier.getStartOffset());
+            VariableScope variableScope = model.getVariableScope(constantName.getStartOffset());
             QualifiedName typeFullyQualifiedName = VariousUtils.getFullyQualifiedName(
                     QualifiedName.create(typeDeclaration.getName()),
-                    identifier.getStartOffset(),
+                    constantName.getStartOffset(),
                     variableScope);
             for (TypeConstantElement constantElement : deprecatedConstants) {
-                if (constantElement.getName().equals(identifier.getName()) && constantElement.getType().getFullyQualifiedName().equals(typeFullyQualifiedName)) {
+                if (constantElement.getName().equals(constantName.getName()) && constantElement.getType().getFullyQualifiedName().equals(typeFullyQualifiedName)) {
                     isDeprecated = true;
                     break;
                 }
