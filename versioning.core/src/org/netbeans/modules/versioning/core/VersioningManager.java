@@ -254,9 +254,7 @@ public class VersioningManager implements PropertyChangeListener, ChangeListener
             }
         }
 
-        flushFileOwnerCache();
-        fireFileStatusChanged(null);
-        refreshAllAnnotations();
+        versionedRootsChanged();
     }
 
     private void fireFileStatusChanged(Set<VCSFileProxy> files) {
@@ -568,6 +566,7 @@ public class VersioningManager implements PropertyChangeListener, ChangeListener
     }
     
     public void versionedRootsChanged(VersioningSystem owner) {
+        flushCachedContext();
         flushFileOwnerCache();
         fireFileStatusChanged(null);
         refreshAllAnnotations();
@@ -636,5 +635,9 @@ public class VersioningManager implements PropertyChangeListener, ChangeListener
 
     boolean isLocalHistory(VersioningSystem system) {
         return system == localHistory;
+    }
+
+    private void flushCachedContext () {
+        SPIAccessor.IMPL.flushCachedContext();
     }
 }
