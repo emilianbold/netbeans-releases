@@ -236,7 +236,13 @@ class VisibilitySupport implements ChangeListener {
                                     files = new ArrayList<URL>();
                                     srcShownPerRoot.put(ownerURI, files);
                                 }
-                                files.add(chf.toURL());
+                                if (chf.equals(owner.second)) {
+                                    for (FileObject cld : chf.getChildren()) {
+                                        files.add(cld.toURL());
+                                    }
+                                } else {
+                                    files.add(chf.toURL());
+                                }
                             } else if (owner.second != null) {
                                 Set<String> files = srcHiddenPerRoot.get(ownerURI);
                                 if (files == null) {
