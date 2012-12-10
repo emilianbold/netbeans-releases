@@ -139,6 +139,10 @@ public class BreadCrumbsTask extends ElementScanningTask {
                 
                 if (sin.item.getPosition() <= caret && caret <= sin.item.getEndPosition()) {
                     toSelect = sin;
+                    // see #223480, mimetype nodes look ugly in the breadcrumb bar
+                    if (toSelect.item instanceof ElementScanningTask.MimetypeRootNode) {
+                        root = sin;
+                    }
                     continue OUTER;
                 }
             }

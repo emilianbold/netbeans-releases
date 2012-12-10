@@ -57,6 +57,7 @@ import java.util.Set;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import org.netbeans.api.annotations.common.NonNull;
 
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.project.ant.AntArtifact;
@@ -723,8 +724,10 @@ public final class ClassPathSupport {
             assert getType() == Item.TYPE_JAR : getType();
             EditableProperties ep = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
             String value = ep.getProperty(CommonProjectUtils.getAntPropertyName(getReference()));
-            RelativePath rp = (RelativePath)object;
-            rp.filePath = value;
+            if (value != null) {
+                RelativePath rp = (RelativePath)object;
+                rp.setFilePath(value);
+            }
             
             String ref = getSourceProperty();
             if (ref != null) {
@@ -841,7 +844,7 @@ public final class ClassPathSupport {
         private final File base;
         private final File resolvedFile;
 
-        private RelativePath(String filePath, File base) {
+        private RelativePath(@NonNull String filePath, @NonNull File base) {
             Parameters.notNull("filePath", filePath);
             Parameters.notNull("base", base);
             this.filePath = filePath;
@@ -855,6 +858,11 @@ public final class ClassPathSupport {
         
         public String getFilePath() {
             return filePath;
+        }
+
+        private void setFilePath(@NonNull final String filePath) {
+            Parameters.notNull("filePath", filePath);   //NOI18N
+            this.filePath = filePath;
         }
 
         public File getResolvedFile() {

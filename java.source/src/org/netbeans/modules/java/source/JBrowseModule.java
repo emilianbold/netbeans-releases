@@ -53,6 +53,8 @@ import org.openide.modules.ModuleInstall;
  * @author Tomas Zezula
  */
 public class JBrowseModule extends ModuleInstall {
+
+    private static volatile boolean closed;
         
     /** Creates a new instance of JBrowseModule */
     public JBrowseModule() {
@@ -62,6 +64,11 @@ public class JBrowseModule extends ModuleInstall {
     @Override
     public void close () {
         super.close();
+        closed = true;
         ClassIndexManager.getDefault().close();
-    }        
+    }
+
+    public static boolean isClosed() {
+        return closed;
+    }
 }
