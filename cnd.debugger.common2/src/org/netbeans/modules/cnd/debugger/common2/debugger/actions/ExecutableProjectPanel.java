@@ -548,6 +548,10 @@ public final class ExecutableProjectPanel extends javax.swing.JPanel {
         PathMap map = HostInfoProvider.getMapper(executionEnvironment);
 
         String filePath = map.getLocalPath(path);
+        if (filePath == null) {
+            return null;
+        }
+        
         do {
             f = CndFileUtils.toFileObject(FileSystemProvider.getFileSystem(ExecutionEnvironmentFactory.getLocal()), filePath);
             if (f != null && f.isValid()) {
