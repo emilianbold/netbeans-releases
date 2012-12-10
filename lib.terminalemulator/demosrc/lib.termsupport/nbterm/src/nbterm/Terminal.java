@@ -56,8 +56,13 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.PrintStream;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.prefs.Preferences;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
@@ -144,6 +149,8 @@ class Terminal extends JFrame implements Runnable {
         actions.add(pasteAction);
         actions.add(findAction);
         actions.add(wrapAction);
+        actions.add(logSequencesAction);
+        actions.add(dumpSequencesAction);
         actions.add(clearAction);
         actions.add(optionsAction);
 	setupKeymap(actions);
@@ -392,6 +399,63 @@ class Terminal extends JFrame implements Runnable {
         }
     }
 
+    private final class LogSequencesAction extends AbstractAction {
+
+        public LogSequencesAction() {
+            super("Log Sequences");
+            putValue(BOOLEAN_STATE_ACTION_KEY, true);
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            if (term.isSequenceLogging())
+                term.setSequenceLogging(false);
+            else
+                term.setSequenceLogging(true);
+        }
+
+        @Override
+        public Object getValue(String key) {
+            if (key.equals(BOOLEAN_STATE_ENABLED_KEY)) {
+                return term.isSequenceLogging();
+            } else {
+                return super.getValue(key);
+            }
+        }
+    }
+
+    private final class DumpSequencesAction extends AbstractAction {
+
+        public DumpSequencesAction() {
+            super("Dump Sequences");
+        }
+
+        private void dump(String title, Set<String> set) {
+            File file = new File(String.format("/tmp/term-sequences-%s", title));
+            PrintStream ps;
+            try {
+                ps = new PrintStream(file);
+            } catch (FileNotFoundException ex) {
+                Logger.getLogger(Terminal.class.getName()).log(Level.SEVERE, null, ex);
+                return;
+            }
+
+            if (set != null) {
+                for (String s : set)
+                    ps.printf("%s\n", s);
+            }
+
+            ps.close();
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            if (!isEnabled())
+                return;
+            dump("completed", term.getCompletedSequences());
+            dump("unrecognized", term.getUnrecognizedSequences());
+        }
+    }
+
+
     private boolean isBooleanStateAction(Action a) {
         Boolean isBooleanStateAction = (Boolean) a.getValue(BOOLEAN_STATE_ACTION_KEY);
         return isBooleanStateAction != null && isBooleanStateAction;
@@ -472,6 +536,9 @@ class Terminal extends JFrame implements Runnable {
         addMenuItem(menu, clearAction);
         addMenuItem(menu, new JSeparator());
         addMenuItem(menu, optionsAction);
+        addMenuItem(menu, new JSeparator());
+        addMenuItem(menu, logSequencesAction);
+        addMenuItem(menu, dumpSequencesAction);
 
         findAction.setEnabled(!findState.isVisible());
 
@@ -494,6 +561,8 @@ class Terminal extends JFrame implements Runnable {
     private final Action pasteAction = new PasteAction();
     private final Action findAction = new FindAction();
     private final Action wrapAction = new WrapAction();
+    private final Action logSequencesAction = new LogSequencesAction();
+    private final Action dumpSequencesAction = new DumpSequencesAction();
     private final Action clearAction = new ClearAction();
     private final Action optionsAction = new OptionsAction();
 

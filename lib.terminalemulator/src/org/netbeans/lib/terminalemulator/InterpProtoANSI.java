@@ -94,8 +94,6 @@ public class InterpProtoANSI extends InterpDumb {
 	static final class ACT_TO_ESC implements Actor {
 	    @Override
 	    public String action(AbstractInterp ai, char c) {
-		InterpDumb i = (InterpDumb) ai;
-		i.ctl_sequence = "";	// NOI18N
 		return null;
 	    }
 	}

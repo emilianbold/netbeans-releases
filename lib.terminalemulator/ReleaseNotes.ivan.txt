@@ -1,4 +1,42 @@
+nobugid - sequence logging for debugging and testing
+        API enhanced with the following:
+
+            void Term.setSequenceLogging(boolean)
+            boolean Term.isSequenceLogging()
+
+            Set<String> Term.getCompletedSequences();
+            Set<String> Term.getUnrecognizedSequences();
+
+            void Ops.logCompletedSequence(String);
+            void Ops.logUnrecognizedSequence(String);
+
+        The idea is to turn this logging on, run some terminal-heavy
+        apps like vim, rogue/nethack, mc, alsamixer etc and see what 
+        escape sequences were actually processed and which were, 
+        silently, ignored. This can help with determining coverage
+        of a given application.
+
+        A corresponding change in the Terminal module enables 
+        logging if -J-DTerm.debug=sequences is used on the NB cmdline.
+        The property will additionally enable a Terminal context menu item
+        "Dump Sequences" which will dump the above respectively into
+                /tmp/term-sequences-completed
+                /tmp/term-sequences-unrecognized
+
+        So, if a user complains about some fancy sequence not working,
+        the thing to do is to run NB with -J-DTerm.debug=sequences, run
+        the misbehaving application and then issue "Dump Sequences" from
+        the terminal context menu. "term-sequences-unrecognized" is likely
+        to contain a sequence that is not yet implemented.
+
+        Implementation:
+            protected String InterDumb.ctl_sequence
+        was replaced with a more comprehensive and efficient
+            private StringBuilder ctlSequence
+
 207965 - Terminal incorrectly displays prompt string
+	changeset   : 240883:4e7a19ec8f00
+
 	Preparation for introduction of xterm emulation.
 
 	Introduced a table to track control sequences common to ansi, dtterm

@@ -179,7 +179,8 @@ public class InterpDumb extends AbstractInterp {
             stack.pop();
         }
     }
-    protected String ctl_sequence = null;
+    private StringBuilder ctlSequence;
+
     private InterpTypeDumb type;
     private static final InterpTypeDumb type_singleton = new InterpTypeDumb();
 
@@ -187,14 +188,14 @@ public class InterpDumb extends AbstractInterp {
         super(ops);
         this.type = type_singleton;
         setup();
-        ctl_sequence = null;
+        ctlSequence = new StringBuilder();
     }
 
     protected InterpDumb(Ops ops, InterpTypeDumb type) {
         super(ops);
         this.type = type;
         setup();
-        ctl_sequence = null;
+        ctlSequence = new StringBuilder();
     }
 
     @Override
@@ -207,7 +208,7 @@ public class InterpDumb extends AbstractInterp {
         super.reset();
         pop_all_states();
         state = type.st_base;
-        ctl_sequence = null;
+        ctlSequence = new StringBuilder();
     }
 
     private void setup() {
@@ -215,30 +216,13 @@ public class InterpDumb extends AbstractInterp {
     }
 
     private void reset_state_bad() {
-        /*
-        DEBUG
-        System.out.println("Unrecognized sequence in state " + state.name());	// NOI18N
-        if (ctl_sequence != null) {
-        for (int sx = 0; sx < ctl_sequence.length(); sx++)
-        System.out.print(String.valueOf((int)ctl_sequence.charAt(sx)) +
-        " ");	// NOI18N
-        System.out.print("\n\t");	// NOI18N
-        for (int sx = 0; sx < ctl_sequence.length(); sx++)
-        System.out.print(ctl_sequence.charAt(sx) + "  ");	// NOI18N
-
-        System.out.println();	// NOI18N
-        }
-         */
         reset();
     }
 
     @Override
     public void processChar(char c) {
 
-        // If we're collecting stuff into a control sequence remember the char
-        if (ctl_sequence != null) {
-            ctl_sequence += c;
-        }
+        ctlSequence.append(c);
 
         try {
             State.Action a = state.getAction(c);
@@ -254,9 +238,7 @@ public class InterpDumb extends AbstractInterp {
              */
             String err_str = a.actor.action(this, c);
             if (err_str != null) {
-                /* DEBUG
-                System.out.printf("F \"%s\" %s\n", ctl_sequence, err_str);	// NOI18N
-                */
+                ops.logUnrecognizedSequence(ctlSequence.toString());
                 reset_state_bad();
                 return;
             }
@@ -269,16 +251,9 @@ public class InterpDumb extends AbstractInterp {
 
         } finally {
             if (state == type.st_base) {
-                /* DEBUG
-                if (ctl_sequence != null)
-                    System.out.printf("S \"%s\"\n", ctl_sequence);	// NOI18N
-                */
-                ctl_sequence = null;
+                ops.logCompletedSequence(ctlSequence.toString());
+                ctlSequence = new StringBuilder();
             }
         }
     }
-
-    /*
-     * Actions ..............................................................
-     */
 }
