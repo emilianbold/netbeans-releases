@@ -113,7 +113,7 @@ public class GdbVersionPeculiarity {
     }
     
     public boolean isSyscallBreakpointsSupported() {
-        return platform == Platform.MacOSX_x86;
+        return platform != Platform.MacOSX_x86;
     }
 
     private static final boolean DISABLE_PENDING = Boolean.getBoolean("gdb.breakpoints.pending.disabled"); //NOI18N
