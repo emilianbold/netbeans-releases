@@ -187,9 +187,14 @@ public class LexUtilities {
     
     /** Find the Groovy token sequence (in case it's embedded in something else at the top level */
     @SuppressWarnings("unchecked")
-    public static TokenSequence<?extends GroovyTokenId> getGroovyTokenSequence(BaseDocument doc, int offset) {
-        TokenHierarchy<Document> th = TokenHierarchy.get((Document)doc);
-        return getGroovyTokenSequence(th, offset);
+    public static TokenSequence<?extends GroovyTokenId> getGroovyTokenSequence(Document doc, int offset) {
+        final BaseDocument baseDocument = (BaseDocument) doc;
+        try {
+            baseDocument.readLock();
+            return getGroovyTokenSequence(TokenHierarchy.get(doc), offset);
+        } finally {
+            baseDocument.readUnlock();
+        }
     }
     
     @SuppressWarnings("unchecked")
@@ -213,7 +218,7 @@ public class LexUtilities {
     }
     
     @SuppressWarnings("unchecked")
-    public static TokenSequence<?extends GroovyTokenId> getGroovyTokenSequence(TokenHierarchy<Document> th, int offset) {
+    private static TokenSequence<?extends GroovyTokenId> getGroovyTokenSequence(TokenHierarchy<Document> th, int offset) {
         TokenSequence<?extends GroovyTokenId> ts = th.tokenSequence(GroovyTokenId.language());
 
         if (ts == null) {
