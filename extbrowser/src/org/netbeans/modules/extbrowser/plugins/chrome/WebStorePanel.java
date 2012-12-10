@@ -236,12 +236,14 @@ class WebStorePanel extends javax.swing.JPanel {
         add(webStoreButton, gridBagConstraints);
 
         jScrollPane1.setBorder(null);
+        jScrollPane1.setOpaque(false);
 
         notConnectedLink.setEditable(false);
         notConnectedLink.setBackground(new java.awt.Color(240, 240, 240));
         notConnectedLink.setBorder(null);
         notConnectedLink.setContentType("text/html"); // NOI18N
         notConnectedLink.setText(org.openide.util.NbBundle.getMessage(WebStorePanel.class, "LBL_NotConnected")); // NOI18N
+        notConnectedLink.setOpaque(false);
         jScrollPane1.setViewportView(notConnectedLink);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -257,6 +259,7 @@ class WebStorePanel extends javax.swing.JPanel {
         description.setContentType("text/html"); // NOI18N
         description.setText(org.openide.util.NbBundle.getMessage(WebStorePanel.class, "WebStorePanel.description.text")); // NOI18N
         description.setMinimumSize(new java.awt.Dimension(350, 60));
+        description.setOpaque(false);
         description.setPreferredSize(new java.awt.Dimension(350, 100));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;

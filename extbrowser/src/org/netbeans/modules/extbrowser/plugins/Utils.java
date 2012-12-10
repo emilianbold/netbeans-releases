@@ -60,6 +60,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.HashMap;
@@ -88,6 +89,8 @@ import org.xml.sax.SAXException;
 public final class Utils {
     
     private static final String APPDATA_CMD = "cmd /c echo %AppData%"; // NOI18N
+    
+    public static final Charset UTF_8 = Charset.forName("UTF-8");     // NOI18N
     
     private Utils(){
     }
@@ -122,7 +125,8 @@ public final class Utils {
     public static JSONObject readFile( File file ){
         BufferedReader reader = null;
         try {
-            reader = new BufferedReader(new FileReader(file));
+            reader = new BufferedReader(new InputStreamReader( 
+                    new FileInputStream(file), UTF_8)); 
             return (JSONObject)JSONValue.parseWithException(reader);
         } catch (ParseException ex) {
             Logger.getLogger( Utils.class.getCanonicalName()).log(Level.WARNING, 
@@ -253,7 +257,8 @@ public final class Utils {
     public static String readStream( InputStream inputStream )
             throws IOException
     {
-        BufferedReader reader = new BufferedReader(new InputStreamReader( inputStream ));
+        BufferedReader reader = new BufferedReader(new InputStreamReader( 
+                inputStream ,UTF_8));
         return read( reader );
     }
     

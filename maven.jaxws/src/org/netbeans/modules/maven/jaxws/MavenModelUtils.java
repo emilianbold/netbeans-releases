@@ -175,7 +175,6 @@ public final class MavenModelUtils {
             config = model.getFactory().createConfiguration();
             plugin.setConfiguration(config);
         }
-        List<POMExtensibilityElement> ex = config.getConfigurationElements();
         POMExtensibilityElement webResources = findChild(config.getConfigurationElements(), "webResources");
         if (webResources == null) {
             webResources = model.getFactory().createPOMExtensibilityElement(

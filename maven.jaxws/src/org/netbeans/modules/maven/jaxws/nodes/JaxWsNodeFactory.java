@@ -85,7 +85,7 @@ public class JaxWsNodeFactory implements NodeFactory {
         return new WsNodeList(p);
     }
     
-    private class WsNodeList implements NodeList<String>, PropertyChangeListener, LookupListener {
+    private static class WsNodeList implements NodeList<String>, PropertyChangeListener, LookupListener {
         // Web Services
         private static final String KEY_SERVICES = "web_services"; // NOI18N
         // Web Service Client

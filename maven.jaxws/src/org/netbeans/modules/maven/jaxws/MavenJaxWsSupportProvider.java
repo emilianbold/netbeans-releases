@@ -451,7 +451,7 @@ public class MavenJaxWsSupportProvider extends ProjectOpenedHook
         
     }
 
-    private class ServiceInfo {
+    private static class ServiceInfo {
         private String serviceName;
         private String portName;
         private String implClass;
