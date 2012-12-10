@@ -59,6 +59,7 @@ import org.netbeans.modules.php.editor.CodeUtils;
 import org.netbeans.modules.php.editor.api.NameKind;
 import org.netbeans.modules.php.editor.api.QualifiedName;
 import org.netbeans.modules.php.editor.api.elements.ElementFilter;
+import org.netbeans.modules.php.editor.api.elements.FieldElement;
 import org.netbeans.modules.php.editor.api.elements.MethodElement;
 import org.netbeans.modules.php.editor.api.elements.TypeElement;
 import org.netbeans.modules.php.editor.model.Model;
@@ -101,7 +102,15 @@ import org.netbeans.modules.php.editor.parser.astnodes.visitors.DefaultVisitor;
 public class SemanticAnalysis extends SemanticAnalyzer {
 
     public static final EnumSet<ColoringAttributes> UNUSED_FIELD_SET = EnumSet.of(ColoringAttributes.UNUSED, ColoringAttributes.FIELD);
+    public static final EnumSet<ColoringAttributes> DEPRECATED_UNUSED_FIELD_SET = EnumSet.of(ColoringAttributes.DEPRECATED, ColoringAttributes.UNUSED, ColoringAttributes.FIELD);
+    public static final EnumSet<ColoringAttributes> DEPRECATED_FIELD_SET = EnumSet.of(ColoringAttributes.DEPRECATED, ColoringAttributes.FIELD);
     public static final EnumSet<ColoringAttributes> UNUSED_STATIC_FIELD_SET = EnumSet.of(ColoringAttributes.UNUSED, ColoringAttributes.FIELD, ColoringAttributes.STATIC);
+    public static final EnumSet<ColoringAttributes> DEPRECATED_UNUSED_STATIC_FIELD_SET = EnumSet.of(
+            ColoringAttributes.DEPRECATED,
+            ColoringAttributes.UNUSED,
+            ColoringAttributes.FIELD,
+            ColoringAttributes.STATIC);
+    public static final EnumSet<ColoringAttributes> DEPRECATED_STATIC_FIELD_SET = EnumSet.of(ColoringAttributes.DEPRECATED, ColoringAttributes.FIELD, ColoringAttributes.STATIC);
     public static final EnumSet<ColoringAttributes> UNUSED_METHOD_SET = EnumSet.of(ColoringAttributes.UNUSED, ColoringAttributes.METHOD);
     public static final EnumSet<ColoringAttributes> DEPRECATED_UNUSED_METHOD_SET = EnumSet.of(ColoringAttributes.DEPRECATED, ColoringAttributes.UNUSED, ColoringAttributes.METHOD);
     public static final EnumSet<ColoringAttributes> STATIC_METHOD_SET = EnumSet.of(ColoringAttributes.STATIC, ColoringAttributes.METHOD);
@@ -222,6 +231,8 @@ public class SemanticAnalysis extends SemanticAnalyzer {
 
         private final Set<MethodElement> deprecatedMethods;
 
+        private final Set<FieldElement> deprecatedFields;
+
         // last visited type declaration
         private TypeDeclaration typeDeclaration;
 
@@ -235,6 +246,7 @@ public class SemanticAnalysis extends SemanticAnalyzer {
             this.model = model;
             deprecatedTypes = ElementFilter.forDeprecated(true).filter(model.getIndexScope().getIndex().getTypes(NameKind.empty()));
             deprecatedMethods = ElementFilter.forDeprecated(true).filter(model.getIndexScope().getIndex().getMethods(NameKind.empty()));
+            deprecatedFields = ElementFilter.forDeprecated(true).filter(model.getIndexScope().getIndex().getFields(NameKind.empty()));
         }
 
         public Set<UnusedOffsetRanges> getUnusedUsesOffsetRanges() {
@@ -285,9 +297,17 @@ public class SemanticAnalysis extends SemanticAnalyzer {
                 // are there unused private fields?
                 for (ASTNodeColoring item : privateFieldsUnused.values()) {
                     if (item.coloring.contains(ColoringAttributes.STATIC)) {
-                        addOffsetRange(item.identifier, UNUSED_STATIC_FIELD_SET);
+                        if (item.coloring.contains(ColoringAttributes.DEPRECATED)) {
+                            addOffsetRange(item.identifier, DEPRECATED_UNUSED_STATIC_FIELD_SET);
+                        } else {
+                            addOffsetRange(item.identifier, UNUSED_STATIC_FIELD_SET);
+                        }
                     } else {
-                        addOffsetRange(item.identifier, UNUSED_FIELD_SET);
+                        if (item.coloring.contains(ColoringAttributes.DEPRECATED)) {
+                            addOffsetRange(item.identifier, DEPRECATED_UNUSED_FIELD_SET);
+                        } else {
+                            addOffsetRange(item.identifier, UNUSED_FIELD_SET);
+                        }
                     }
 
                 }
@@ -425,17 +445,28 @@ public class SemanticAnalysis extends SemanticAnalyzer {
             if (isCancelled()) {
                 return;
             }
-
             boolean isPrivate = Modifier.isPrivate(node.getModifier());
-            EnumSet<ColoringAttributes> coloring = ColoringAttributes.FIELD_SET;
-
-            if (Modifier.isStatic(node.getModifier())) {
-                coloring = ColoringAttributes.STATIC_FIELD_SET;
-            }
-
+            boolean isStatic = Modifier.isStatic(node.getModifier());
             Variable[] variables = node.getVariableNames();
             for (int i = 0; i < variables.length; i++) {
                 Variable variable = variables[i];
+                String variableName = CodeUtils.extractVariableName(variable);
+                boolean isDeprecated = false;
+                VariableScope variableScope = model.getVariableScope(variable.getStartOffset());
+                QualifiedName typeFullyQualifiedName = VariousUtils.getFullyQualifiedName(
+                        QualifiedName.create(typeDeclaration.getName()),
+                        variable.getStartOffset(),
+                        variableScope);
+                for (FieldElement fieldElement : deprecatedFields) {
+                    if (fieldElement.getName().equals(variableName) && fieldElement.getType().getFullyQualifiedName().equals(typeFullyQualifiedName)) {
+                        isDeprecated = true;
+                        break;
+                    }
+                }
+                EnumSet<ColoringAttributes> coloring = isDeprecated ? DEPRECATED_FIELD_SET : ColoringAttributes.FIELD_SET;
+                if (isStatic) {
+                    coloring = isDeprecated ? DEPRECATED_STATIC_FIELD_SET : ColoringAttributes.STATIC_FIELD_SET;
+                }
                 if (!isPrivate) {
                     addOffsetRange(variable.getName(), coloring);
                 } else {
