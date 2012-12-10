@@ -42,6 +42,7 @@
 package org.netbeans.modules.php.editor.parser;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -63,7 +64,10 @@ import org.netbeans.modules.php.editor.api.elements.FieldElement;
 import org.netbeans.modules.php.editor.api.elements.MethodElement;
 import org.netbeans.modules.php.editor.api.elements.TypeConstantElement;
 import org.netbeans.modules.php.editor.api.elements.TypeElement;
+import org.netbeans.modules.php.editor.model.MethodScope;
 import org.netbeans.modules.php.editor.model.Model;
+import org.netbeans.modules.php.editor.model.ModelUtils;
+import org.netbeans.modules.php.editor.model.TypeScope;
 import org.netbeans.modules.php.editor.model.VariableScope;
 import org.netbeans.modules.php.editor.model.impl.VariousUtils;
 import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
@@ -125,6 +129,8 @@ public class SemanticAnalysis extends SemanticAnalyzer {
             ColoringAttributes.UNUSED);
     public static final EnumSet<ColoringAttributes> UNUSED_USES_SET = EnumSet.of(ColoringAttributes.UNUSED);
     public static final EnumSet<ColoringAttributes> DEPRECATED_CLASS_SET = EnumSet.of(ColoringAttributes.DEPRECATED, ColoringAttributes.CLASS);
+    public static final EnumSet<ColoringAttributes> DEPRECATED_SET = EnumSet.of(ColoringAttributes.DEPRECATED);
+    public static final EnumSet<ColoringAttributes> DEPRECATED_STATIC_SET = EnumSet.of(ColoringAttributes.DEPRECATED, ColoringAttributes.STATIC);
     private static final String NAMESPACE_SEPARATOR = "\\"; //NOI18N
 
     // @GuarderBy("this")
@@ -423,6 +429,15 @@ public class SemanticAnalysis extends SemanticAnalyzer {
                 identifier = (Identifier) node.getMethod().getFunctionName().getName();
             }
             if (identifier != null) {
+                Collection<? extends TypeScope> typeScopes = ModelUtils.resolveType(model, node);
+                for (TypeScope typeScope : typeScopes) {
+                    for (MethodScope methodScope : typeScope.getMethods()) {
+                        if (methodScope.getName().equals(identifier.getName()) && methodScope.isDeprecated()) {
+                            addOffsetRange(identifier, DEPRECATED_SET);
+                            break;
+                        }
+                    }
+                }
                 ASTNodeColoring item = privateUnusedMethods.remove(new UnusedIdentifier(identifier.getName(), typeDeclaration));
                 if (item != null) {
                     addOffsetRange(item.identifier, item.coloring);
@@ -527,15 +542,26 @@ public class SemanticAnalysis extends SemanticAnalyzer {
             if (isCancelled()) {
                 return;
             }
+            boolean isDeprecated = false;
             FunctionName fnName = node.getMethod().getFunctionName();
             if (fnName.getName() instanceof Identifier) {
-                String name = ((Identifier) fnName.getName()).getName();
+                Identifier identifier = (Identifier) fnName.getName();
+                Collection<? extends TypeScope> typeScopes = ModelUtils.resolveType(model, node);
+                for (TypeScope typeScope : typeScopes) {
+                    for (MethodScope methodScope : typeScope.getMethods()) {
+                        if (methodScope.getName().equals(identifier.getName()) && methodScope.isDeprecated()) {
+                            isDeprecated = true;
+                            break;
+                        }
+                    }
+                }
+                String name = identifier.getName();
                 ASTNodeColoring item = privateUnusedMethods.remove(new UnusedIdentifier(name, typeDeclaration));
                 if (item != null) {
                     addOffsetRange(item.identifier, item.coloring);
                 }
             }
-            addOffsetRange(fnName, ColoringAttributes.STATIC_SET);
+            addOffsetRange(fnName, isDeprecated ? DEPRECATED_STATIC_SET : ColoringAttributes.STATIC_SET);
             super.visit(node);
         }
 
