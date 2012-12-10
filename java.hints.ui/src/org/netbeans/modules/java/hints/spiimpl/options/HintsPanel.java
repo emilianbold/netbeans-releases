@@ -213,13 +213,22 @@ public final class HintsPanel extends javax.swing.JPanel   {
         return hasNewHints;
     }
     
-
+    private org.netbeans.modules.java.hints.spiimpl.refactoring.OptionsFilter optionsFilter;
+    
+    private void setModel(DefaultTreeModel errorTreeModel) {
+        if (optionsFilter!=null) {
+            optionsFilter.installFilteringModel(errorTree, errorTreeModel, new AcceptorImpl());
+        } else {
+            errorTree.setModel(errorTreeModel);
+        }
+    }
+    
     private void init(@NullAllowed OptionsFilter filter, boolean inOptionsDialog, boolean useConfigCombo, boolean showOkCancel, boolean showCheckBoxes) {
         initComponents();
         scriptScrollPane.setVisible(false);
-        org.netbeans.modules.java.hints.spiimpl.refactoring.OptionsFilter f = null;
+        optionsFilter = null;
         if (!inOptionsDialog && filter==null) {
-            f = new org.netbeans.modules.java.hints.spiimpl.refactoring.OptionsFilter(
+            optionsFilter = new org.netbeans.modules.java.hints.spiimpl.refactoring.OptionsFilter(
                     searchTextField.getDocument(), new Runnable() {
         
                 @Override
@@ -292,10 +301,8 @@ public final class HintsPanel extends javax.swing.JPanel   {
 
         if (filter != null) {
              ((OptionsFilter) filter).installFilteringModel(errorTree, errorTreeModel, new AcceptorImpl());
-        } else if (f!=null) {
-                ((org.netbeans.modules.java.hints.spiimpl.refactoring.OptionsFilter) f).installFilteringModel(errorTree, errorTreeModel, new AcceptorImpl());
         } else {
-            errorTree.setModel(errorTreeModel);
+            setModel(errorTreeModel);
         }
 
         initialized.set(true);
@@ -686,7 +693,7 @@ public final class HintsPanel extends javax.swing.JPanel   {
         }
         if (queryStatus == QueryStatus.ONLY_ENABLED) {
             errorTreeModel = constructTM(Utilities.getBatchSupportedHints(cpBased).keySet(), false);
-            errorTree.setModel(errorTreeModel);
+            setModel(errorTreeModel);
             if (logic != null) {
                 logic.errorTreeModel = errorTreeModel;
             }
@@ -706,7 +713,7 @@ public final class HintsPanel extends javax.swing.JPanel   {
             RulesManager.getInstance().reload();
             cpBased.reset();
             errorTreeModel = constructTM(Utilities.getBatchSupportedHints(cpBased).keySet(), false);
-            errorTree.setModel(errorTreeModel);
+            setModel(errorTreeModel);
             logic.errorTreeModel = errorTreeModel;
             HintMetadata newHint = getHintByName(newIfcDO.getPrimaryFile().getNameExt());
             HintsSettings.setEnabled(logic.getCurrentPrefernces(newHint.id), true);
@@ -815,7 +822,7 @@ public final class HintsPanel extends javax.swing.JPanel   {
         RulesManager.getInstance().reload();
         cpBased.reset();
         errorTreeModel = constructTM(Utilities.getBatchSupportedHints(cpBased).keySet(), false);
-        errorTree.setModel(errorTreeModel);
+        setModel(errorTreeModel);
         select(getHintByName(selectedHintId));
         customHintCodeBeforeEditing = null;
         cancelEditActionPerformed(evt);
@@ -1194,7 +1201,7 @@ public final class HintsPanel extends javax.swing.JPanel   {
                         RulesManager.getInstance().reload();
                         cpBased.reset();
                         errorTreeModel = constructTM(Utilities.getBatchSupportedHints(cpBased).keySet(), false);
-                        errorTree.setModel(errorTreeModel);
+                        setModel(errorTreeModel);
                         select(getHintByName((String) newValue));
                         hasNewHints = true;
                     } catch (IOException ex) {
@@ -1331,7 +1338,7 @@ public final class HintsPanel extends javax.swing.JPanel   {
                     cpBased.reset();
                     //errorTreeModel.removeNodeFromParent(node);
                     errorTreeModel = constructTM(Utilities.getBatchSupportedHints(cpBased).keySet(), false);
-                    errorTree.setModel(errorTreeModel);
+                    setModel(errorTreeModel);
                     hasNewHints = true;
                 }
             } catch (IOException ex) {
