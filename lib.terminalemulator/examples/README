@@ -16,8 +16,8 @@ TermSuite
 
 TermApp
 	A standalone terminal emulator application.
-	-E option enables compiler error processing (Although currently
-	they are not actually hyperlinks - because TERM=ansi?)
+	-E option enables compiler error processing which requires -t dtterm
+	as well for hyperlinks to work.
 
 Older examples
 --------------

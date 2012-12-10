@@ -50,9 +50,9 @@ import java.awt.event.WindowEvent;
 import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.lib.richexecution.Pty.Mode;
 import org.netbeans.lib.richexecution.program.Command;
 import org.netbeans.lib.richexecution.program.Program;
-import org.netbeans.lib.richexecution.Pty.Mode;
 import org.netbeans.lib.richexecution.program.Shell;
 
 /**
@@ -63,6 +63,7 @@ public class Main {
     // defaults for unix
     static Boolean optLineDiscipline = null;  // line_discipline overriden by options
     static Mode mode = Mode.REGULAR;
+    static String termType = "ansi";
     static boolean debug = false;
     static boolean processErrors = false;
     static int rows = 24;
@@ -78,6 +79,7 @@ public class Main {
         System.out.printf("\t-e <executable> [ <arg> ... ] (has to appear last)\n");
         System.out.printf("\t-geometry CCxRR\n");
         System.out.printf("\t-m pipe|pty_raw|pty|pty_packet (default = pty)\n");
+        System.out.printf("\t-t dumb|xterm|ansi|dtterm (default = ansi)\n");
         System.out.printf("\t-l\tDon't use Term's own line discipline\n");
         System.out.printf("\t+l\tDo use Term's own line discipline\n");
         System.out.printf("\t-d\tTurn on term debugging\n");
@@ -113,7 +115,7 @@ public class Main {
             program = new Program(command);
         }
 
-        Terminal terminal = new Terminal(executor(), program, processErrors, rows, cols);
+        Terminal terminal = new Terminal(executor(), termType, program, processErrors, rows, cols);
         Thread thread = new Thread(terminal);
         thread.start();
     }
@@ -128,7 +130,7 @@ public class Main {
 
         if (editorTerminal == null) {
             Program program = new Command("vi");
-            editorTerminal = new Terminal(executor(), program, false, rows, cols);
+            editorTerminal = new Terminal(executor(), termType, program, false, rows, cols);
 
             editorTerminal.addWindowListener(new WindowAdapter() {
                 @Override
@@ -183,6 +185,11 @@ public class Main {
                         mode = Mode.PACKET;
                     else
                         uerror("Unrecognized mode '%s'", args[cx]);
+                } else if (args[cx].equals("-t")) {
+                    cx++;
+                    if (cx >= args.length || args[cx].startsWith("-")) 
+                        uerror("expected argument after -t");
+                    termType = args[cx];
                 } else if (args[cx].equals("-l")) {
                     optLineDiscipline = Boolean.FALSE;
                 } else if (args[cx].equals("+l")) {

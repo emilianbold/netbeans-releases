@@ -1,3 +1,20 @@
+207965 - Terminal incorrectly displays prompt string
+187345 - wrong characters in Terminals
+	Barebones xterm support
+
+	Introduced package scoped class InterpXTerm.
+
+	Term.setEmulation() now accepts "xterm". xterm sequences are
+	similar to those of ansi and dtterm so this barebones implementation
+	isn't really differentiated.
+
+	In particular xterm emulation doesn't handle alternative renditions,
+	the main issue in this bug, correctly yet which is why ansi
+	should still be used as the default emulation.
+
+	TermApp enhanced with a -t option which allows setting of the 
+	terminal type to one of dumb|ansi|dtterm|xterm.
+
 nobugid - Cleanup and better naming for examples directory
 
 	- demosrc/lib.termsupport/nbterm -> examples/TermApp
@@ -45,6 +62,7 @@ nobugid - sequence logging for debugging and testing
             private StringBuilder ctlSequence
 
 207965 - Terminal incorrectly displays prompt string
+187345 - wrong characters in Terminals
 	changeset   : 240883:4e7a19ec8f00
 
 	Preparation for introduction of xterm emulation.

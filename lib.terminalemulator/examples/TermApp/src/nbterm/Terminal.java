@@ -123,7 +123,7 @@ class Terminal extends JFrame implements Runnable {
         term.setAttribute(0);   // default
     }
 
-    Terminal(TermExecutor executor, Program program, boolean processErrors, int rows, int cols) {
+    Terminal(TermExecutor executor, String termType, Program program, boolean processErrors, int rows, int cols) {
         super();
 
         setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
@@ -136,7 +136,9 @@ class Terminal extends JFrame implements Runnable {
         term.setRowsColumns(rows, cols);
 
         term.setHorizontallyScrollable(false);
-        term.setEmulation("ansi");
+        term.setEmulation(termType);
+        if (!term.getEmulation().equals(termType))
+            tprintf("nbterm: Terminal type '%s' not supported -- reverting to '%s'\n", termType, term.getEmulation());
         term.setBackground(Color.white);
         term.setHistorySize(4000);
 

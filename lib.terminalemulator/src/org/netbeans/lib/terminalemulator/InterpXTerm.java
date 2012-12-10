@@ -22,7 +22,7 @@
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
- * "Portions Copyrighted [year] [name of copyright owner]"
+ *			"Portions Copyrighted [year] [name of copyright owner]"
  *
  * Contributor(s):
  *
@@ -44,30 +44,43 @@
  * Contributor(s): Ivan Soleimanipour.
  */
 
-/*
- * "InterpKit.java"
- * InterpKit.java 1.3 01/07/23
- * The abstract operations the terminal can perform.
- */
-
 package org.netbeans.lib.terminalemulator;
 
 
-/*
- * Registry and locator for various built-in Interp's
- */
+class InterpXTerm extends InterpProtoANSIX {
 
-abstract class InterpKit {
-    static Interp forName(String name, Ops ops) {
-        if (name.equals("xterm"))	// NOI18N
-	    return new InterpXTerm(ops);      
-        else if (name.equals("dumb"))	// NOI18N
-	    return new InterpDumb(ops);
-	else if (name.equals("ansi"))	// NOI18N
-	    return new InterpANSI(ops);	
-        else if (name.equals("dtterm"))	// NOI18N
-	    return new InterpDtTerm(ops);      
-	else
-	    return null;
+    protected static class InterpTypeXTerm extends InterpTypeProtoANSIX {
+
+	protected InterpTypeXTerm() {
+	}
+    }
+
+    private InterpTypeXTerm type;
+
+    private static final InterpTypeXTerm type_singleton = new InterpTypeXTerm();
+
+    public InterpXTerm(Ops ops) {
+	super(ops, type_singleton);
+	this.type = type_singleton;
+	setup();
     } 
+
+    protected InterpXTerm(Ops ops, InterpTypeXTerm type) {
+	super(ops, type);
+	this.type = type;
+	setup();
+    } 
+
+    @Override
+    public String name() {
+	return "xterm";	// NOI18N
+    } 
+
+    @Override
+    public void reset() {
+	super.reset();
+    }
+
+    private void setup() {
+    }
 }
