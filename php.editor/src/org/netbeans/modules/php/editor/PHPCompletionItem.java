@@ -147,6 +147,7 @@ public abstract class PHPCompletionItem implements CompletionProposal {
     private static final Cache<FileObject, PhpLanguageProperties> PROPERTIES_CACHE
             = new Cache<FileObject, PhpLanguageProperties>(new WeakHashMap<FileObject, PhpLanguageProperties>());
     private final boolean isPlatform;
+    private final boolean isDeprecated;
 
     PHPCompletionItem(ElementHandle element, CompletionRequest request, QualifiedNameKind generateAs) {
         this.request = request;
@@ -155,8 +156,10 @@ public abstract class PHPCompletionItem implements CompletionProposal {
         if (element instanceof PhpElement) {
             final PhpElement phpElement = (PhpElement) element;
             isPlatform = phpElement.isPlatform();
+            isDeprecated = phpElement.isDeprecated();
         } else {
             isPlatform = false;
+            isDeprecated = false;
         }
     }
 
@@ -191,7 +194,13 @@ public abstract class PHPCompletionItem implements CompletionProposal {
 
     @Override
     public String getLhsHtml(HtmlFormatter formatter) {
-        formatter.appendText(getName());
+        if (isDeprecated()) {
+            formatter.deprecated(true);
+            formatter.appendText(getName());
+            formatter.deprecated(false);
+        } else {
+            formatter.appendText(getName());
+        }
         return formatter.getText();
     }
 
@@ -216,6 +225,10 @@ public abstract class PHPCompletionItem implements CompletionProposal {
     public boolean isSmart() {
         String url = getFileNameURL();
         return (url != null && url.equals(request.currentlyEditedFileURL)) || (element instanceof AliasedElement);
+    }
+
+    protected boolean isDeprecated() {
+        return isDeprecated;
     }
 
     private static NamespaceDeclaration findEnclosingNamespace(PHPParseResult info, int offset) {
@@ -648,13 +661,24 @@ public abstract class PHPCompletionItem implements CompletionProposal {
             ElementKind kind = getKind();
 
             formatter.name(kind, true);
-
             if (emphasisName()) {
                 formatter.emphasis(true);
-                formatter.appendText(getName());
+                if (isDeprecated()) {
+                    formatter.deprecated(true);
+                    formatter.appendText(getName());
+                    formatter.deprecated(false);
+                } else {
+                    formatter.appendText(getName());
+                }
                 formatter.emphasis(false);
             } else {
-                formatter.appendText(getName());
+                if (isDeprecated()) {
+                    formatter.deprecated(true);
+                    formatter.appendText(getName());
+                    formatter.deprecated(false);
+                } else {
+                    formatter.appendText(getName());
+                }
             }
 
             formatter.name(kind, false);
@@ -734,6 +758,9 @@ public abstract class PHPCompletionItem implements CompletionProposal {
 
         @Override
         public String getLhsHtml(HtmlFormatter formatter) {
+            if (isDeprecated()) {
+                formatter.deprecated(true);
+            }
             formatter.type(true);
             formatter.appendText(getTypeName() == null ? "" : getTypeName()); //NOI18N
             formatter.type(false);
@@ -741,6 +768,9 @@ public abstract class PHPCompletionItem implements CompletionProposal {
             formatter.name(getKind(), true);
             formatter.appendText(getName());
             formatter.name(getKind(), false);
+            if (isDeprecated()) {
+                formatter.deprecated(false);
+            }
             return formatter.getText();
         }
 
