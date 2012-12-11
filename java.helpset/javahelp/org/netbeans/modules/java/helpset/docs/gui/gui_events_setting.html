@@ -15,52 +15,35 @@
         <p><small><a href="#seealso">See Also</a></small></p>
         <p> You can use the Connection wizard to set events between two components within
         a form without having to write code manually. </p>
-        <p><b>To set and event using the Connection wizard:</b></p>
+        <p><b>To set an event using the Connection wizard:</b></p>
         <ol>
             <li>Click the Connection Mode button (<img src="images/connection_mode.png" alt="Image of Connection Mode button">)
             in the GUI Builder toolbar. </li>
             <li>In the GUI Builder or Navigator window, select the component 
-            that will fire the event. Notice that the selected component is highlighted
-            in red when selected.</li>
-            <li>Select the component whose state you want to affect with the event.</li>
+            that will fire the event.
+			<ul class="note"> 
+            <li>The selected component is highlighted in red when selected.</li></ul> </li>
+            <li>Select the component whose state you want to affect with the event.
+			<ul class="note"> 
+            <li>The selected component is highlighted in red when selected.</li></ul></li>
             <li>On the Connection wizard's Select Source Event page, select the event that
             the trigger component will fire from the Events list by expanding the event type directory nodes.
             Accept the default handler method name or type in a new name and click Next.</li>
             <li>On the Specify Target Operation page, specify the operation to be performed
             on the target component by selecting the appropriate radio button and choosing
-            from the list of operations. Click Next. Notice that if you chose
-            a method call with no parameters, the Finish button of the wizard becomes
-            available.</li>
+            from the list of operations. Click Next. 
+			<ul class="note"> 
+            <li>If you choose a method call with no parameters, the Finish button of the wizard becomes available.</li></ul></li>
             <li>(Optional) If you wish to enter event handler code directly, choose the
             User Code radio button and click Finish. The insertion point is placed in
             the new event handler in the Source Editor, where you can write the event
             handler code yourself.</li>
             <li> On the Enter Parameters page, specify the values for each tab's target property
-            or method by selecting the source from which each parameter's value is acquired.</li>
-            <p> You can choose to get the parameter from any of the following: </p>
-            <ul>
-                <li> <b>Value.</b>&nbsp; Enter the property value or method parameter into
-                the text field. This option is available only if the value is a primitive
-                type (<tt>int</tt>, <tt>float</tt>, and so on) or a <tt>String</tt>. </li>
-                <li> <b>Bean.</b>&nbsp; Acquire the value from a bean on the form. This
-                option is available only if there are beans of the specified type to
-                choose from (for example, type Component or Object). </li>
-                <li> <b>Property.</b>&nbsp; Acquire the value from a property of a component
-                on the form. Click the ellipsis (...) button to display a dialog box
-                from which you can select the component and its property. Only properties
-                of the correct type are listed. </li>
-                <li> <b>Method Call.</b>&nbsp; Acquire the value from a method call of
-                a component on the form. Click the ellipsis (...) button to display a
-                dialog box from which you can select the component and its method. Only
-                methods that return the correct type and that do not take any parameters
-                are listed. </li>
-                <li> <b>User Code.</b>&nbsp; Write your own code to acquire the property
-                or method parameter value. </li>
-            </ul>
-            <p> The source code generated for each of the parameters is displayed in
-            the Generated Parameters Preview field. </p>
+            or method by selecting the source from which each parameter's value is acquired.
+            <br> The source code generated for each of the parameters is displayed in
+            the Generated Parameters Preview field.</li>
             <li>Click Finish.
-            <p>The IDE automatically generates the code to connect the form's components.
+            <br>The IDE automatically generates the code to connect the form's components.</li>
         </ol>
         <dl>
             <dt><a name="seealso">See Also</a></dt>
