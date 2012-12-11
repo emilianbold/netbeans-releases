@@ -54,12 +54,14 @@ import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
 import javax.swing.*;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.text.JTextComponent;
+import org.netbeans.api.search.ReplacePattern;
 import org.netbeans.api.search.SearchHistory;
 import org.netbeans.api.search.SearchPattern;
 import org.netbeans.api.search.provider.SearchInfo;
@@ -72,6 +74,7 @@ import org.netbeans.api.search.ui.SearchPatternController.Option;
 import org.netbeans.modules.search.ui.CheckBoxWithButtonPanel;
 import org.netbeans.modules.search.ui.FormLayoutHelper;
 import org.netbeans.modules.search.ui.PatternChangeListener;
+import org.netbeans.modules.search.ui.ShorteningCellRenderer;
 import org.netbeans.modules.search.ui.TextFieldFocusListener;
 import org.netbeans.modules.search.ui.UiUtils;
 import org.netbeans.spi.search.SearchScopeDefinition;
@@ -225,6 +228,7 @@ final class BasicSearchForm extends JPanel implements ChangeListener,
             lblReplacement = new JLabel();
             cboxReplacement = new JComboBox();
             cboxReplacement.setEditable(true);
+            cboxReplacement.setRenderer(new ShorteningCellRenderer());
             lblReplacement.setLabelFor(cboxReplacement);
             chkPreserveCase = new JCheckBox();
         }
@@ -345,7 +349,9 @@ final class BasicSearchForm extends JPanel implements ChangeListener,
             boolean searchAndReplace) {
         cboxTextToFind.setSearchPattern(initialCriteria.getSearchPattern());
         if (cboxReplacement != null) {
-            cboxReplacement.setSelectedItem(initialCriteria.getReplaceExpr());
+            cboxReplacement.setSelectedItem(new ReplaceModelItem(
+                    ReplacePattern.create(initialCriteria.getReplaceExpr(),
+                    initialCriteria.isPreserveCase())));
         }
 
         selectChk(chkPreserveCase, initialCriteria.isPreserveCase());
@@ -469,11 +475,12 @@ final class BasicSearchForm extends JPanel implements ChangeListener,
      */
     private void initHistory() {
 
-        FindDialogMemory memory = FindDialogMemory.getDefault();
-        List<String> entries;
-
+        List<ReplaceModelItem> entries = new ArrayList<ReplaceModelItem>(10);
         if (cboxReplacement != null) {
-            entries = memory.getReplacementExpressions();
+            for (ReplacePattern replacePattern
+                    : SearchHistory.getDefault().getReplacePatterns()) {
+                entries.add(0, new ReplaceModelItem(replacePattern));
+            }
             if (!entries.isEmpty()) {
                 cboxReplacement.setModel(new ListComboBoxModel(entries, true));
             }
@@ -644,8 +651,9 @@ final class BasicSearchForm extends JPanel implements ChangeListener,
             memory.setFileNamePatternSpecified(false);
         }
         if (replacementPatternEditor != null) {
-            memory.storeReplacementExpression(
-                    replacementPatternEditor.getText());
+            SearchHistory.getDefault().addReplace(
+                    ReplacePattern.create(replacementPatternEditor.getText(),
+                    chkPreserveCase.isSelected()));
         }
         memory.setWholeWords(chkWholeWords.isSelected());
         memory.setCaseSensitive(chkCaseSensitive.isSelected());
@@ -878,6 +886,24 @@ final class BasicSearchForm extends JPanel implements ChangeListener,
             if (cboxReplacement != null) {
                 updateReplacePatternColor();
             }
+        }
+    }
+
+    private static class ReplaceModelItem {
+
+        private ReplacePattern replacePattern;
+
+        public ReplaceModelItem(ReplacePattern replacePattern) {
+            this.replacePattern = replacePattern;
+        }
+
+        public ReplacePattern getReplacePattern() {
+            return replacePattern;
+        }
+
+        @Override
+        public String toString() {
+            return replacePattern.getReplaceExpression();
         }
     }
 }

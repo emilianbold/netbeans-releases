@@ -64,6 +64,8 @@ import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
 import org.netbeans.modules.cnd.api.model.xref.CsmReferenceKind;
 import org.netbeans.modules.cnd.modelimpl.content.file.FileContent;
+import org.netbeans.modules.cnd.modelimpl.csm.ClassImpl.MemberBuilder;
+import org.netbeans.modules.cnd.modelimpl.csm.NamespaceDefinitionImpl.NamespaceBuilder;
 import org.netbeans.modules.cnd.modelimpl.parser.CsmAST;
 import org.netbeans.modules.cnd.modelimpl.csm.core.*;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
@@ -352,7 +354,7 @@ public final class UsingDeclarationImpl extends OffsetableDeclarationBase<CsmUsi
         }
     }
     
-    public static class UsingDeclarationBuilder implements CsmObjectBuilder {
+    public static class UsingDeclarationBuilder implements CsmObjectBuilder, MemberBuilder {
         
         private CharSequence name;// = CharSequences.empty();
         private int nameStartOffset;
@@ -464,7 +466,9 @@ public final class UsingDeclarationImpl extends OffsetableDeclarationBase<CsmUsi
             if (using == null && s != null && name != null && getScope() != null) {
                 using = new UsingDeclarationImpl(name, getRawName(), scope, visibility, file, startOffset, endOffset);
                 if(parent != null) {
-                    ((NamespaceDefinitionImpl.NamespaceBuilder)parent).addDeclaration(using);
+                    if(parent instanceof NamespaceBuilder) {
+                        ((NamespaceDefinitionImpl.NamespaceBuilder)parent).addDeclaration(using);
+                    }
                 } else {
                     fileContent.addDeclaration(using);
                 }

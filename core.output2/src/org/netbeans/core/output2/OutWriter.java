@@ -52,6 +52,8 @@ import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
 import java.nio.channels.ClosedByInterruptException;
 import java.util.Collection;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.openide.util.Exceptions;
@@ -63,6 +65,8 @@ import org.openide.util.Utilities;
  * @author  Tim Boudreau
  */
 class OutWriter extends PrintWriter {
+    private static final Logger LOG =
+            Logger.getLogger(OutWriter.class.getName());
     /** A flag indicating an io exception occurred */
     private boolean trouble = false;
 
@@ -442,6 +446,9 @@ class OutWriter extends PrintWriter {
                 if (c == '\t') {
                     charBuff.put(c);
                     int tabLength = WrappedTextView.TAB_SIZE - ((this.lineCharLengthWithTabs + lineCLVT) % WrappedTextView.TAB_SIZE);
+                    LOG.log(Level.FINEST, "Going to add tab: charOffset = {0}, i = {1}, off = {2}," //NOI18N
+                            + "tabLength = {3}, tabIndex = {4}", //NOI18N
+                            new Object[]{charOffset, i, off, tabLength, charOffset + (i - off)}); // #201450
                     lines.addTabAt(charOffset + (i - off), tabLength);
                     lineCLVT += tabLength;
                 } else if (c == '\b') {

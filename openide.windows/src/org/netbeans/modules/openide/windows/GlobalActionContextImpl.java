@@ -52,7 +52,6 @@ import java.lang.ref.WeakReference;
 import javax.swing.AbstractButton;
 import javax.swing.Action;
 import javax.swing.ActionMap;
-import javax.swing.ButtonModel;
 import org.openide.util.ContextAwareAction;
 import org.openide.util.Lookup;
 import org.openide.util.ContextGlobalProvider;
@@ -119,7 +118,7 @@ implements ContextGlobalProvider, Lookup.Provider, java.beans.PropertyChangeList
             try {
                 temporary = new ProxyLookup (arr);
                 Object q = org.openide.util.Utilities.actionsGlobalContext ().lookup (javax.swing.ActionMap.class);
-                assert q == map : "We really get map from the lookup. Map: " + map + " returned: " + q; // NOI18N
+                assert q == map : dumpActionMapInfo(map, q, prev, temporary);
                 if (focus != null) {
                     setFocusOwner(focus[0]);
                 }
@@ -129,6 +128,15 @@ implements ContextGlobalProvider, Lookup.Provider, java.beans.PropertyChangeList
                 org.openide.util.Utilities.actionsGlobalContext ().lookup (javax.swing.ActionMap.class);
             }
         }
+    }
+
+    private static String dumpActionMapInfo(ActionMap map, Object q, Lookup prev, Lookup now) {
+        StringBuilder sb = new StringBuilder();
+        sb.append("We really get map from the lookup. Map: ").append(map) // NOI18N
+            .append(" returned: ").append(q); // NOI18N
+        sb.append("\nprev: ").append(prev == null ? "null prev" : prev.lookupAll(Object.class)); //NOI18N
+        sb.append("\nnow : ").append(now == null ? "null now" : now.lookupAll(Object.class)); //NOI18N
+        return sb.toString();
     }
     
     private static void setFocusOwner(Component focus) {

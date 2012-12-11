@@ -46,10 +46,15 @@ package org.netbeans.modules.editor.guards;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyVetoException;
+import java.io.ByteArrayOutputStream;
+import java.nio.charset.Charset;
+import java.util.Collections;
+import java.util.List;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Position;
 import javax.swing.text.StyledDocument;
 import org.netbeans.api.editor.guards.GuardedSection;
+import org.netbeans.spi.editor.guards.support.AbstractGuardedSectionsProvider.Result;
 import org.openide.text.NbDocument;
 
 /** Represents one guarded section.
@@ -163,7 +168,7 @@ public abstract class GuardedSectionImpl {
      * @param minLen If true the text has to have length more than 2 chars.
      * @return <code>true</code> if the operation was successful, otherwise <code>false</code>
      */
-    protected boolean setText(PositionBounds bounds, String text, boolean minLen) {
+    protected boolean setText(PositionBounds bounds, String text, boolean minLen, ContentGetter contentGetter) {
         if (!valid)
             return false;
         
@@ -179,10 +184,24 @@ public abstract class GuardedSectionImpl {
         
         try {
             bounds.setText(text);
+            if (guards.gr != null) {
+                int offset = getStartPosition().getOffset();
+                char[] data = guards.gr.writeSections(Collections.singletonList(GuardsAccessor.DEFAULT.clone(guard, offset - 1)), ("\n" + new PositionBounds(getStartPosition(), getEndPosition(), guards).getText() + "\n").toCharArray());
+                Result result = guards.gr.readSections(data);
+                List<GuardedSection> guardedSections = result.getGuardedSections();
+                if (guardedSections.size() == 1) {
+                    PositionBounds contentBounds = contentGetter.getContent(GuardsAccessor.DEFAULT.getImpl(guardedSections.get(0)));
+                    bounds.setText(new String(result.getContent(), contentBounds.getBegin().getOffset(), contentBounds.getEnd().getOffset() - contentBounds.getBegin().getOffset()));
+                }
+            }
             return true;
         } catch (BadLocationException e) {
         }
         return false;
+    }
+    
+    interface ContentGetter<T extends GuardedSectionImpl> {
+        public PositionBounds getContent(GuardedSectionImpl t);
     }
     
     /** Marks or unmarks the section as guarded.

@@ -47,12 +47,13 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import javax.swing.Action;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import org.netbeans.modules.css.visual.actions.OpenLocationAction;
 import org.netbeans.modules.web.common.spi.ProjectWebRootQuery;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.nodes.AbstractNode;
-import org.openide.nodes.ChildFactory;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.util.actions.SystemAction;
@@ -83,8 +84,8 @@ public class StyleSheetNode extends AbstractNode {
         updateDisplayName();
         setIconBaseWithExtension(ICON_BASE);
     }
-
-    /**
+    
+     /**
      * Updates the display name of the node.
      */
     private void updateDisplayName() {
@@ -113,7 +114,7 @@ public class StyleSheetNode extends AbstractNode {
     /**
      * Factory for children of {@code StyleSheetNode}.
      */
-    static class StyleSheetChildren extends Children.Keys<RuleHandle> {
+    static class StyleSheetChildren extends Children.Keys<RuleHandle> implements ChangeListener  {
         
         private DocumentViewModel model;
         private FileObject stylesheet;
@@ -127,6 +128,17 @@ public class StyleSheetNode extends AbstractNode {
             this.filter = filter;
             filter.addPropertyChangeListener(createListener());
             
+            refreshKeys();
+        }
+
+        void setModel(DocumentViewModel newModel) {
+            if (model != null) {
+                model.removeChangeListener(this);
+            }
+            model = newModel;
+            if (model != null) {
+                model.addChangeListener(this);
+            }
             refreshKeys();
         }
 
@@ -154,9 +166,12 @@ public class StyleSheetNode extends AbstractNode {
 
         private void refreshKeys() {
             Collection<RuleHandle> keys = new ArrayList<RuleHandle>();
-            for(RuleHandle handle : model.getFilesToRulesMap().get(stylesheet)) {
-                if(includeKey(handle)) {
-                    keys.add(handle);
+            List<RuleHandle> ruleHandles = model.getFilesToRulesMap().get(stylesheet);
+            if(ruleHandles != null) {
+                for(RuleHandle handle : ruleHandles) {
+                    if(includeKey(handle)) {
+                        keys.add(handle);
+                    }
                 }
             }
             setKeys(keys);
@@ -184,6 +199,12 @@ public class StyleSheetNode extends AbstractNode {
             return new Node[]{new RuleNode(key)};
         }
 
+         //document model change listener
+        @Override
+        public void stateChanged(ChangeEvent ce) {
+            refreshKeys();
+        }
+        
     }
 
 }

@@ -45,6 +45,7 @@
 package org.openide.filesystems;
 
 import java.io.Externalizable;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectInput;
@@ -52,8 +53,11 @@ import java.io.ObjectOutput;
 import java.io.OutputStream;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
+import java.util.Date;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -64,9 +68,12 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.WeakHashMap;
+import java.util.concurrent.Callable;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.openide.util.Enumerations;
 import org.openide.util.Exceptions;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
 /** Implementation of the file object for multi file system.
@@ -843,6 +850,13 @@ final class MultiFileObject extends AbstractFolder implements FileObject.Priorit
         Number maxWeight = 0;
         Object attr = null;
         FileSystem writable = getMultiFileSystem().writableLayer(path);
+        
+        boolean revealEntries = isFolder() && "revealEntries".equals(attrName) &&
+                writable != null && !writable.isReadOnly(); //NOI18N
+        
+        if (revealEntries) {
+            return collectRevealedFiles();
+        }
 
         //        boolean isLoaderAttr = /* DataObject.EA_ASSIGNED_LOADER */ "NetBeansAttrAssignedLoader".equals (attrName); // NOI18N                
         for (int i = 0; i < systems.length; i++) {
@@ -874,7 +888,7 @@ final class MultiFileObject extends AbstractFolder implements FileObject.Priorit
                         maxWeight = weight;
                     }
                 }
-            }
+            } 
 
             if (prefixattr != null) {
                 if (
@@ -1804,6 +1818,428 @@ final class MultiFileObject extends AbstractFolder implements FileObject.Priorit
         
         private String getAttributeName() {
             return attribName;
+        }
+    }
+    
+    /**
+     * Revealed FileObject represents a FileObject which has been either overriden by
+     * the writable layer, or masked out by the layer. It delegates to the original object,
+     * and its Callable mixing interface allows to revert the change by removing the 
+     * override file.
+     */
+    private final class RevealedFileObject extends FileObject implements Callable<FileObject> {
+        /**
+         * The masking file. It may be either _hidden file, or a replacing
+         * file on the writable layer
+         */
+        private final FileObject  maskFile;
+        
+        /**
+         * Original file on lower layer
+         */
+        private final FileObject  delegate;
+
+        public RevealedFileObject(FileObject parent, FileObject delegate) {
+            this.maskFile = parent;
+            this.delegate = delegate;
+        }
+
+        @Override
+        public Object getAttribute(String attrName) {
+            return delegate.getAttribute(attrName);
+        }
+
+        /**
+         * Return the revived file from the MFS
+         * @return the revived file, if the operation succeeds.
+         * @throws IOException from the deletion of the masking file.
+         */
+        @Override
+        public FileObject call() throws IOException {
+            if (maskFile.isValid()) {
+                maskFile.delete();
+            }
+            return MultiFileObject.this.getFileObject(maskFile.getNameExt());
+        }
+
+        @Override
+        public String getName() {
+            return delegate.getName();
+        }
+
+        @Override
+        public String getExt() {
+            return delegate.getExt();
+        }
+
+        @Override
+        public void rename(FileLock lock, String name, String ext) throws IOException {
+            throw new IOException("Unsupported oepration"); // NOI18N
+        }
+
+        @Override
+        public FileObject copy(FileObject target, String name, String ext) throws IOException {
+            return delegate.copy(target, name, ext);
+        }
+
+        @Override
+        public FileObject move(FileLock lock, FileObject target, String name, String ext) throws IOException {
+            throw new IOException("Unsupported oepration"); // NOI18N
+        }
+
+        @Override
+        public String toString() {
+            return delegate.toString();
+        }
+
+        @Override
+        public String getPath() {
+            return delegate.getPath();
+        }
+
+        @Override
+        public String getPackageNameExt(char separatorChar, char extSepChar) {
+            return delegate.getPackageNameExt(separatorChar, extSepChar);
+        }
+
+        @Override
+        public String getPackageName(char separatorChar) {
+            return delegate.getPackageName(separatorChar);
+        }
+
+        @Override
+        public String getNameExt() {
+            return delegate.getNameExt();
+        }
+
+        @Override
+        public FileSystem getFileSystem() throws FileStateInvalidException {
+            return MultiFileObject.this.getFileSystem();
+        }
+
+        @Override
+        public FileObject getParent() {
+            return MultiFileObject.this;
+        }
+
+        @Override
+        public boolean isFolder() {
+            return delegate.isFolder();
+        }
+
+        @Override
+        public Date lastModified() {
+            return delegate.lastModified();
+        }
+
+        @Override
+        public boolean isRoot() {
+            return delegate.isRoot();
+        }
+
+        @Override
+        public boolean isData() {
+            return delegate.isData();
+        }
+
+        @Override
+        public boolean isValid() {
+            return false;
+        }
+
+        @Override
+        public boolean existsExt(String ext) {
+            return delegate.existsExt(ext);
+        }
+
+        @Override
+        public void delete(FileLock lock) throws IOException {
+            throw new IOException("Unsupported oepration"); //NOI18N
+        }
+
+        @Override
+        public Lookup getLookup() {
+            return delegate.getLookup();
+        }
+
+        @Override
+        public void setAttribute(String attrName, Object value) throws IOException {
+            throw new IOException("Unsupported oepration"); //NOI18N
+        }
+
+        @Override
+        public Enumeration<String> getAttributes() {
+            return delegate.getAttributes();
+        }
+
+        @Override
+        boolean isHasExtOverride() {
+            return delegate.isHasExtOverride();
+        }
+
+        @Override
+        boolean hasExtOverride(String ext) {
+            return delegate.hasExtOverride(ext);
+        }
+
+        @Override
+        public void addFileChangeListener(FileChangeListener fcl) {
+            delegate.addFileChangeListener(fcl);
+        }
+
+        @Override
+        public void removeFileChangeListener(FileChangeListener fcl) {
+            delegate.removeFileChangeListener(fcl);
+        }
+
+        @Override
+        public void addRecursiveListener(FileChangeListener fcl) {
+            delegate.addRecursiveListener(fcl);
+        }
+
+        @Override
+        public void removeRecursiveListener(FileChangeListener fcl) {
+            delegate.removeRecursiveListener(fcl);
+        }
+
+        @Override
+        protected void fireFileDataCreatedEvent(Enumeration<FileChangeListener> en, FileEvent fe) {
+        }
+
+        @Override
+        protected void fireFileFolderCreatedEvent(Enumeration<FileChangeListener> en, FileEvent fe) {
+        }
+
+        @Override
+        protected void fireFileChangedEvent(Enumeration<FileChangeListener> en, FileEvent fe) {
+        }
+
+        @Override
+        protected void fireFileDeletedEvent(Enumeration<FileChangeListener> en, FileEvent fe) {
+        }
+
+        @Override
+        protected void fireFileAttributeChangedEvent(Enumeration<FileChangeListener> en, FileAttributeEvent fe) {
+        }
+
+        @Override
+        protected void fireFileRenamedEvent(Enumeration<FileChangeListener> en, FileRenameEvent fe) {
+        }
+
+        @Override
+        public String getMIMEType() {
+            return delegate.getMIMEType();
+        }
+
+        @Override
+        public String getMIMEType(String... withinMIMETypes) {
+            return delegate.getMIMEType(withinMIMETypes);
+        }
+
+        @Override
+        public long getSize() {
+            return delegate.getSize();
+        }
+
+        @Override
+        public InputStream getInputStream() throws FileNotFoundException {
+            return delegate.getInputStream();
+        }
+
+        @Override
+        public byte[] asBytes() throws IOException {
+            return delegate.asBytes();
+        }
+
+        @Override
+        public String asText(String encoding) throws IOException {
+            return delegate.asText(encoding);
+        }
+
+        @Override
+        public String asText() throws IOException {
+            return delegate.asText();
+        }
+
+        @Override
+        public List<String> asLines() throws IOException {
+            return delegate.asLines();
+        }
+
+        @Override
+        public List<String> asLines(String encoding) throws IOException {
+            return delegate.asLines(encoding);
+        }
+
+        @Override
+        public OutputStream getOutputStream(FileLock lock) throws IOException {
+            throw new IOException("Unsupported oepration"); //NOI18N
+        }
+
+        @Override
+        public FileLock lock() throws IOException {
+            throw new IOException("Unsupported oepration"); //NOI18N
+        }
+
+        @Override
+        public boolean isLocked() {
+            return delegate.isLocked();
+        }
+
+        @Override
+        public void setImportant(boolean b) {
+        }
+
+        @Override
+        public FileObject[] getChildren() {
+            return new FileObject[0];
+        }
+
+        @Override
+        public Enumeration<? extends FileObject> getChildren(boolean rec) {
+            return Enumerations.empty();
+        }
+
+        @Override
+        public Enumeration<? extends FileObject> getFolders(boolean rec) {
+            return Enumerations.empty();
+        }
+
+        @Override
+        public Enumeration<? extends FileObject> getData(boolean rec) {
+            return Enumerations.empty();
+        }
+
+        @Override
+        public FileObject getFileObject(String name, String ext) {
+            if (maskFile.isFolder()) {
+                return maskFile.getFileObject(name, ext);
+            } else {
+                return null;
+            }
+        }
+
+        @Override
+        public FileObject getFileObject(String relativePath) {
+            if (maskFile.isFolder()) {
+                return maskFile.getFileObject(relativePath);
+            } else {
+                return null;
+            }
+        }
+
+        @Override
+        public FileObject createFolder(String name) throws IOException {
+            throw new IOException("Unsupported oepration"); //NOI18N
+        }
+
+        @Override
+        public FileObject createData(String name, String ext) throws IOException {
+            throw new IOException("Unsupported oepration"); //NOI18N
+        }
+
+        @Override
+        public FileObject createData(String name) throws IOException {
+            throw new IOException("Unsupported oepration"); //NOI18N
+        }
+
+        @Override
+        public OutputStream createAndOpen(String name) throws IOException {
+            throw new IOException("Unsupported oepration"); //NOI18N
+        }
+
+        @Override
+        public boolean isReadOnly() {
+            return delegate.isReadOnly();
+        }
+
+        @Override
+        public boolean canWrite() {
+            return false;
+        }
+
+        @Override
+        public boolean canRead() {
+            return delegate.canRead();
+        }
+
+        @Override
+        public void refresh(boolean expected) {
+            delegate.refresh(expected);
+        }
+
+        @Override
+        public void refresh() {
+            delegate.refresh();
+        }
+
+        @Override
+        public boolean isVirtual() {
+            return delegate.isVirtual();
+        }
+        
+        public int hashCode() {
+            return 0xaa ^ delegate.hashCode() << 3;
+        }
+        
+        public boolean equals(Object o) {
+            if (!(o instanceof RevealedFileObject)) {
+                return false;
+            }
+            RevealedFileObject other = (RevealedFileObject)o;
+            return other.delegate.equals(delegate) && other.maskFile.equals(maskFile);
+        }
+    }
+    
+    /**
+     * The returned collection contains hidden or removed FileObjects, from
+     * the lower layers. The returned FileObjects are 'special' in that DataObjects
+     * cannot be created from them, and they cannot be changed. All mutation methods
+     * will throw IOException - unsupported operation.
+     */
+    private Collection<FileObject> collectRevealedFiles() {
+        String path = getPath();
+        FileSystem[] systems = getMultiFileSystem().getDelegates();
+        FileSystem writable = getMultiFileSystem().writableLayer(path);
+        
+        if (writable == null) {
+            return Collections.emptyList();
+        }
+        FileObject writableFolder = writable.findResource(path);
+        // no overrides as the containing folder does not exist on the writable fs.
+        if (writableFolder == null) {
+            return Collections.emptyList();
+        }
+        FileObject[] ch = writableFolder.getChildren();
+        int sl = systems.length;
+        
+        Collection<FileObject> result = null;
+        String parentPath = writableFolder.getPath();
+        for (FileObject mask : ch) {
+            String fn = mask.getNameExt();
+            if (fn.endsWith(MultiFileSystem.MASK)) {
+                fn = fn.substring(0, fn.length() - MultiFileSystem.MASK.length());
+            }
+            String p = parentPath + "/" + fn; // NOI18N
+            for (int i = 0; i < sl; i++) {
+                if (writable == systems[i]) {
+                    continue;
+                }
+                FileObject hiddenFo = systems[i].findResource(p);
+                if (hiddenFo != null) {
+                    if (result == null) {
+                        result = new ArrayList<FileObject>(ch.length);
+                    }
+
+                    result.add(new RevealedFileObject(mask, hiddenFo));
+                    break;
+                }
+            }
+        }
+        if (result == null) {
+            return Collections.emptyList();
+        } else {
+            return result;
         }
     }
 }

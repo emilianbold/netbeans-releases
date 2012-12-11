@@ -65,6 +65,8 @@ import org.openide.util.RequestProcessor;
  */
 public class Terminator implements Runnable {
     
+    private static final RequestProcessor RP = new RequestProcessor("CND.Terminator", 1); // NOI18N
+    
     private ProjectBase project;
     private static boolean timeout = false;
     
@@ -78,7 +80,7 @@ public class Terminator implements Runnable {
     private static int inParse = 0;
     
     public static void create(ProjectBase project) {
-        RequestProcessor.getDefault().post(new Terminator(project));
+        RP.post(new Terminator(project));
     }
     
     @Override

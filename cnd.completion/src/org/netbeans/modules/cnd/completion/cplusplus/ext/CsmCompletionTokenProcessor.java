@@ -436,9 +436,12 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<Token
                         case SCOPE_OPEN:
                             if (isSeparatorOrOperator(tokenID)) {
                                 switch (tokenID) {
-                                    case LT:
                                     case LPAREN:
                                         break;
+                                    case LT:
+                                        if(supportTemplates) {
+                                            break;
+                                        }
                                     default:
                                         popExp();
                                         top2.addParameter(top);
@@ -1857,6 +1860,13 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<Token
                                         top2.addParameter(top);
                                         top = top2;
                                         top2 = peekExp2();
+                                        // revert #223298 - Wrong recognition of function
+//                                        if (getValidExpID(top2) == DOT_OPEN) {
+//                                            popExp();
+//                                            top2.addParameter(top);
+//                                            top = top2;
+//                                        }
+//                                        top2 = peekExp2();
                                         if (getValidExpID(top2) != METHOD_OPEN) {
                                             break;
                                         }

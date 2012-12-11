@@ -53,6 +53,7 @@ import org.netbeans.modules.css.lib.api.properties.GrammarResolver;
 import org.netbeans.modules.css.lib.api.properties.GroupGrammarElement;
 import org.netbeans.modules.css.lib.api.properties.PropertyDefinition;
 import org.netbeans.modules.css.lib.api.properties.ResolvedProperty;
+import org.netbeans.modules.css.lib.api.properties.Token;
 import org.netbeans.modules.css.lib.api.properties.ValueGrammarElement;
 import org.netbeans.modules.css.lib.properties.GrammarParser;
 
@@ -171,8 +172,26 @@ public class CssTestBase extends CslTestBase {
         if (PRINT_GRAMMAR_RESOLVE_TIMES) {
             System.out.println(String.format("Input '%s' resolved in %s ms.", inputText, c - a));
         }
+//        if(pv.isResolved()) {
+//            List<Token> unresolvedTokens = pv.getUnresolvedTokens();
+//            assertTrue(unresolvedTokens.isEmpty());
+//        }
+        
         if (pv.isResolved() != expectedSuccess) {
-            assertTrue("Unexpected parsing result", false);
+            StringBuilder sb = new StringBuilder();
+            sb.append("Unexpected parsing result");
+            
+            if(!pv.isResolved()) {
+                sb.append(", tokens left:");
+                List<Token> unresolvedTokens = pv.getUnresolvedTokens();
+                for(Token t : unresolvedTokens) {
+                    sb.append(t);
+                    sb.append(',');
+                }
+            } else {
+                sb.append('.');
+            }
+            assertTrue(sb.toString(), false);
         }
 
         return pv;

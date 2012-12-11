@@ -74,6 +74,7 @@ import javax.lang.model.element.Element;
 import javax.swing.Action;
 import javax.swing.Icon;
 import org.netbeans.api.actions.Openable;
+import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.JavaSource;
@@ -82,6 +83,7 @@ import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.api.java.source.UiUtils;
 import org.netbeans.api.java.source.ui.ElementIcons;
+import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.editor.breadcrumbs.spi.BreadcrumbsController;
 import org.openide.actions.OpenAction;
 import org.openide.cookies.OpenCookie;
@@ -108,8 +110,8 @@ public class BreadCrumbsNodeImpl extends AbstractNode {
     private String htmlDisplayName;
 //    private OpenAction openAction;
 
-    public BreadCrumbsNodeImpl(TreePathHandle tph, Image icon, String htmlDisplayName, FileObject fileObject, int pos) {
-        super(Children.create(new ChildrenFactoryImpl(tph), false), Lookups.fixed(tph, Integer.valueOf(pos), new OpenableImpl(fileObject, pos)));
+    public BreadCrumbsNodeImpl(TreePathHandle tph, Image icon, String htmlDisplayName, FileObject fileObject, int[] pos) {
+        super(Children.create(new ChildrenFactoryImpl(tph), false), Lookups.fixed(tph, pos, new OpenableImpl(fileObject, pos[0])));
         this.icon = icon;
         this.htmlDisplayName = htmlDisplayName;
 //        this.openAction = new OpenAction(fileObject, pos);
@@ -172,10 +174,10 @@ public class BreadCrumbsNodeImpl extends AbstractNode {
 
     private static final String CONSTRUCTOR_NAME = "<init>";
     
-    public static Node createBreadcrumbs(final CompilationInfo info, TreePath path) {
+    public static Node createBreadcrumbs(final CompilationInfo info, TreePath path, boolean elseSection) {
         final Trees trees = info.getTrees();
         final SourcePositions sp = trees.getSourcePositions();
-        int pos = (int) sp.getStartPosition(path.getCompilationUnit(), path.getLeaf());
+        int[] pos = new int[] {(int) sp.getStartPosition(path.getCompilationUnit(), path.getLeaf()), (int) sp.getEndPosition(path.getCompilationUnit(), path.getLeaf())};
         TreePathHandle tph = TreePathHandle.create(path, info);
             final Tree leaf = path.getLeaf();
             switch (leaf.getKind()) {
@@ -206,19 +208,19 @@ public class BreadCrumbsNodeImpl extends AbstractNode {
                         sb.append(":"); //NOI18N
                         sb.append("</font>"); //NOI18N
                     }
-                    return new BreadCrumbsNodeImpl(tph, DEFAULT_ICON, sb.toString(), info.getFileObject(), (int) sp.getStartPosition(path.getCompilationUnit(), leaf));
+                    return new BreadCrumbsNodeImpl(tph, DEFAULT_ICON, sb.toString(), info.getFileObject(), pos);
                 case CATCH:
                     sb = new StringBuilder("catch "); //NOI18N
                     sb.append("<font color=").append(COLOR).append(">"); // NOI18N
                     sb.append(escape(((CatchTree) leaf).getParameter().toString()));
                     sb.append("</font>"); //NOI18N
-                    return new BreadCrumbsNodeImpl(tph, DEFAULT_ICON, sb.toString(), info.getFileObject(), (int) sp.getStartPosition(path.getCompilationUnit(), leaf));
+                    return new BreadCrumbsNodeImpl(tph, DEFAULT_ICON, sb.toString(), info.getFileObject(), pos);
                 case DO_WHILE_LOOP:
                     sb = new StringBuilder("do ... while "); //NOI18N
                     sb.append("<font color=").append(COLOR).append(">"); // NOI18N
                     sb.append(escape(((DoWhileLoopTree) leaf).getCondition().toString()));
                     sb.append("</font>"); //NOI18N
-                    return new BreadCrumbsNodeImpl(tph, null, sb.toString(), info.getFileObject(), (int) sp.getStartPosition(path.getCompilationUnit(), leaf));
+                    return new BreadCrumbsNodeImpl(tph, null, sb.toString(), info.getFileObject(), pos);
                 case ENHANCED_FOR_LOOP:
                     sb = new StringBuilder("for "); //NOI18N
                     sb.append("<font color=").append(COLOR).append(">"); // NOI18N
@@ -228,7 +230,7 @@ public class BreadCrumbsNodeImpl extends AbstractNode {
                     sb.append(escape(((EnhancedForLoopTree) leaf).getExpression().toString()));
                     sb.append(")"); //NOI18N
                     sb.append("</font>"); //NOI18N
-                    return new BreadCrumbsNodeImpl(tph, DEFAULT_ICON, sb.toString(), info.getFileObject(), (int) sp.getStartPosition(path.getCompilationUnit(), leaf));
+                    return new BreadCrumbsNodeImpl(tph, DEFAULT_ICON, sb.toString(), info.getFileObject(), pos);
                 case FOR_LOOP:
                     sb = new StringBuilder("for "); //NOI18N
                     sb.append("<font color=").append(COLOR).append(">"); // NOI18N
@@ -240,38 +242,71 @@ public class BreadCrumbsNodeImpl extends AbstractNode {
                     sb.append(escape(((ForLoopTree) leaf).getUpdate().toString()));
                     sb.append(")"); //NOI18N
                     sb.append("</font>"); //NOI18N
-                    return new BreadCrumbsNodeImpl(tph, DEFAULT_ICON, sb.toString(), info.getFileObject(), (int) sp.getStartPosition(path.getCompilationUnit(), leaf));
+                    return new BreadCrumbsNodeImpl(tph, DEFAULT_ICON, sb.toString(), info.getFileObject(), pos);
                 case IF:
-                    sb = new StringBuilder("if "); //NOI18N
-                    sb.append("<font color=").append(COLOR).append(">"); // NOI18N
-                    sb.append(escape(((IfTree) leaf).getCondition().toString()));
-                    sb.append("</font>"); //NOI18N
-                    return new BreadCrumbsNodeImpl(tph, DEFAULT_ICON, sb.toString(), info.getFileObject(), (int) sp.getStartPosition(path.getCompilationUnit(), leaf));
+                    sb = new StringBuilder(""); //NOI18N
+                    Tree last = leaf;
+                    while (path != null && path.getLeaf().getKind() == Kind.IF) {
+                        StringBuilder temp = new StringBuilder(""); //NOI18N
+                        temp.append("if "); //NOI18N
+                        temp.append("<font color=").append(COLOR).append(">"); // NOI18N
+                        temp.append(escape(((IfTree) path.getLeaf()).getCondition().toString()));
+                        temp.append("</font>"); //NOI18N
+                        
+                        if (((IfTree) path.getLeaf()).getElseStatement() == last || (path.getLeaf() == leaf && elseSection)) {
+                            temp.append(" else");
+                        }
+                        temp.append(" ");
+                        sb.insert(0, temp.toString());
+                        last = path.getLeaf();
+                        path = path.getParentPath();
+                    }
+                    sb.delete(sb.length() - 1, sb.length());
+                    IfTree it = (IfTree) leaf;
+                    int elseStart = pos[1] + 1;
+                    if (it.getElseStatement() != null) {
+                        TokenSequence<JavaTokenId> ts = info.getTokenHierarchy().tokenSequence(JavaTokenId.language());
+                        ts.move(elseStart = (int) sp.getStartPosition(path.getCompilationUnit(), it.getElseStatement()));
+                        boolean success;
+                        while ((success = ts.movePrevious()) && ts.token().id() != JavaTokenId.ELSE)
+                            ;
+                        elseStart = success ? Math.min(ts.offset(), elseStart) : elseStart;
+                    }
+                    if (elseSection) {
+                        int endPos = (int) sp.getEndPosition(path.getCompilationUnit(), it.getElseStatement());
+                        if (it.getElseStatement().getKind() == Kind.IF) {
+                            endPos = (int) sp.getStartPosition(path.getCompilationUnit(), it.getElseStatement()) - 1;
+                        }
+                        pos = new int[] {elseStart, endPos};
+                    } else {
+                        pos[1] = elseStart - 1;
+                    }
+                    return new BreadCrumbsNodeImpl(tph, DEFAULT_ICON, sb.toString(), info.getFileObject(), pos);
                 case SWITCH:
                     sb = new StringBuilder("switch "); //NOI18N
                     sb.append("<font color=").append(COLOR).append(">"); // NOI18N
                     sb.append(escape(((SwitchTree) leaf).getExpression().toString()));
                     sb.append("</font>"); //NOI18N
-                    return new BreadCrumbsNodeImpl(tph, DEFAULT_ICON, sb.toString(), info.getFileObject(), (int) sp.getStartPosition(path.getCompilationUnit(), leaf));
+                    return new BreadCrumbsNodeImpl(tph, DEFAULT_ICON, sb.toString(), info.getFileObject(), pos);
                 case SYNCHRONIZED:
                     sb = new StringBuilder("synchronized "); //NOI18N
                     sb.append("<font color=").append(COLOR).append(">"); // NOI18N
                     sb.append(escape(((SynchronizedTree) leaf).getExpression().toString()));
                     sb.append("</font>"); //NOI18N
-                    return new BreadCrumbsNodeImpl(tph, DEFAULT_ICON, sb.toString(), info.getFileObject(), (int) sp.getStartPosition(path.getCompilationUnit(), leaf));
+                    return new BreadCrumbsNodeImpl(tph, DEFAULT_ICON, sb.toString(), info.getFileObject(), pos);
                 case TRY:
                     sb = new StringBuilder("try"); //NOI18N
-                    return new BreadCrumbsNodeImpl(tph, DEFAULT_ICON, sb.toString(), info.getFileObject(), (int) sp.getStartPosition(path.getCompilationUnit(), leaf));
+                    return new BreadCrumbsNodeImpl(tph, DEFAULT_ICON, sb.toString(), info.getFileObject(), pos);
                 case WHILE_LOOP:
                     sb = new StringBuilder("while "); //NOI18N
                     sb.append("<font color=").append(COLOR).append(">"); // NOI18N
                     sb.append(escape(((WhileLoopTree) leaf).getCondition().toString()));
                     sb.append("</font>"); //NOI18N
-                    return new BreadCrumbsNodeImpl(tph, DEFAULT_ICON, sb.toString(), info.getFileObject(), (int) sp.getStartPosition(path.getCompilationUnit(), leaf));
+                    return new BreadCrumbsNodeImpl(tph, DEFAULT_ICON, sb.toString(), info.getFileObject(), pos);
                 case BLOCK:
                     if (path.getParentPath().getLeaf().getKind() == Kind.TRY && ((TryTree) path.getParentPath().getLeaf()).getFinallyBlock() == leaf) {
                         sb = new StringBuilder("finally"); //NOI18N
-                        return new BreadCrumbsNodeImpl(tph, DEFAULT_ICON, sb.toString(), info.getFileObject(), (int) sp.getStartPosition(path.getCompilationUnit(), leaf));
+                        return new BreadCrumbsNodeImpl(tph, DEFAULT_ICON, sb.toString(), info.getFileObject(), pos);
                     }
                     break;
             }
@@ -351,9 +386,25 @@ public class BreadCrumbsNodeImpl extends AbstractNode {
                         tp.getLeaf().accept(new TreeScanner<Void, TreePath>() {
                             @Override public Void scan(Tree node, TreePath p) {
                                 if (node == null) return null;
+                                if (node.getKind() == Kind.IF) {
+                                    IfTree it = (IfTree) node;
+                                    Node n = createBreadcrumbs(cc, new TreePath(p, node), false);
+                                    assert n != null;
+                                    toPopulate.add(n);
+                                    if (it.getElseStatement() != null) {
+                                        n = createBreadcrumbs(cc, new TreePath(p, node), true);
+                                        assert n != null;
+                                        toPopulate.add(n);
+                                        
+                                        if (it.getElseStatement().getKind() == Kind.IF) {
+                                            scan((IfTree) it.getElseStatement(), new TreePath(p, node));
+                                        }
+                                    }
+                                    return null;
+                                }
                                 p = new TreePath(p, node);
                                 if (cc.getTreeUtilities().isSynthetic(p)) return null;
-                                Node n = createBreadcrumbs(cc, p);
+                                Node n = createBreadcrumbs(cc, p, false);
                                 if (n != null) {
                                     toPopulate.add(n);
                                 } else {

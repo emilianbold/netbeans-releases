@@ -48,6 +48,7 @@ import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
+import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.csl.api.*;
@@ -87,7 +88,9 @@ class JsCodeCompletion implements CodeCompletionHandler {
 
     private boolean caseSensitive;
     private final JQueryCodeCompletion jqueryCC = new JQueryCodeCompletion();
-    
+
+    private static final List<String> WINDOW_EXPRESSION_CHAIN = Arrays.<String>asList("window", "@pro"); //NOI18N
+
     @Override
     public CodeCompletionResult complete(CodeCompletionContext ccContext) {
         long start = System.currentTimeMillis();
@@ -163,6 +166,11 @@ class JsCodeCompletion implements CodeCompletionHandler {
             switch (context) {
                 case GLOBAL:
                     HashMap<String, JsElement> addedProperties = new HashMap<String, JsElement>();
+                    Map<String, JsElement> results = getDomCompletionResults(request);
+                    for (JsElement element : results.values()) {
+                        resultList.add(JsCompletionItem.Factory.create(element, request));
+                    }
+                    addedProperties.putAll(results);
                     for (JsObject libGlobal : getLibrariesGlobalObjects()) {
                         for (JsObject object : libGlobal.getProperties().values()) {
                             if (startsWith(object.getName(), request.prefix)) {
@@ -192,8 +200,6 @@ class JsCodeCompletion implements CodeCompletionHandler {
                     completeKeywords(request, resultList);
                     JsIndex jsIndex = JsIndex.get(fileObject);
                     Collection<IndexedElement> fromIndex = jsIndex.getGlobalVar(request.prefix);
-                    //  enhance results for all window properties - see issue #218412, #215863, #218122, ...
-                    fromIndex.addAll(jsIndex.getPropertiesWithPrefix("window", request.prefix)); //NOI18N
                     for (IndexedElement indexElement : fromIndex) {
                         if (startsWith(indexElement.getName(), request.prefix)) {
                             JsElement element = addedProperties.get(indexElement.getName());
@@ -216,6 +222,7 @@ class JsCodeCompletion implements CodeCompletionHandler {
                     }
                     break;
                 case EXPRESSION:
+                    completeKeywords(request, resultList);
                     completeExpression(request, resultList);
                     break;
                 case OBJECT_PROPERTY:
@@ -340,7 +347,14 @@ class JsCodeCompletion implements CodeCompletionHandler {
                     ts.moveNext();
                 }
             }
-            if (id == JsTokenId.IDENTIFIER || id.isKeyword() || id == JsTokenId.STRING) {
+            if (id == JsTokenId.STRING) {
+                prefix = token.text().toString();
+                if (upToOffset) {
+                    int prefixIndex = getPrefixIndexFromSequence(prefix.substring(0, caretOffset - ts.offset()));
+                    prefix = prefix.substring(prefixIndex, caretOffset - ts.offset());
+                }
+            }
+            if (id == JsTokenId.IDENTIFIER || id.isKeyword()) {
                 prefix = token.text().toString();
                 if (upToOffset) {
                     prefix = prefix.substring(0, caretOffset - ts.offset());
@@ -379,11 +393,39 @@ class JsCodeCompletion implements CodeCompletionHandler {
             }
         }
         LOGGER.log(Level.FINE, String.format("Prefix for cc: %s", prefix));
-        return prefix.length() > 0 ? prefix : null;
+        return prefix;
     }
 
     @Override
     public QueryType getAutoQuery(JTextComponent component, String typedText) {
+        if (typedText.length() == 0) {
+            return QueryType.NONE;
+        }
+
+        int offset = component.getCaretPosition();
+        TokenSequence<? extends JsTokenId> ts = LexUtilities.getJsTokenSequence(component.getDocument(), offset);
+        if (ts != null) {
+            int diff = ts.move(offset);
+            TokenId currentTokenId = null;
+            if (diff == 0 && ts.movePrevious() || ts.moveNext()) {
+                currentTokenId = ts.token().id();
+            }
+
+            char lastChar = typedText.charAt(typedText.length() - 1);
+            if (currentTokenId == JsTokenId.BLOCK_COMMENT || currentTokenId == JsTokenId.DOC_COMMENT
+                    || currentTokenId == JsTokenId.LINE_COMMENT) {
+                if (lastChar == '@') { //NOI18N
+                    return QueryType.COMPLETION;
+                }
+            } else {
+                switch (lastChar) {
+                    case '.': //NOI18N
+                        return QueryType.COMPLETION;
+                    default:
+                        return QueryType.NONE;
+                }
+            }
+        }
         return QueryType.NONE;
     }
 
@@ -408,10 +450,10 @@ class JsCodeCompletion implements CodeCompletionHandler {
         HashMap <String, JsElement> foundObjects = new HashMap<String, JsElement>();
         
         FileObject fo = request.info.getSnapshot().getSource().getFileObject();
+        foundObjects.putAll(getDomCompletionResults(request));
         // from index
         JsIndex index = JsIndex.get(fo);
         Collection<IndexedElement> fromIndex = index.getGlobalVar(request.prefix);
-        fromIndex.addAll(index.getPropertiesWithPrefix("window", request.prefix));  //NOI18N
         for (IndexedElement indexedElement : fromIndex) {
             JsElement object = foundObjects.get(indexedElement.getName());
             if(object == null) {
@@ -471,12 +513,114 @@ class JsCodeCompletion implements CodeCompletionHandler {
     private int checkRecursion;
 
     private void completeObjectProperty(CompletionRequest request, List<CompletionProposal> resultList) {
+        List<String> expChain = resolveExpressionChain(request);
+        Map<String, JsElement> results = getCompletionFromExpressionChain(request, expChain);
+
+        // create code completion results
+        for (JsElement element : results.values()) {
+            resultList.add(JsCompletionItem.Factory.create(element, request));
+        }
+    }
+
+    private HashMap<String, JsElement> getCompletionFromExpressionChain(CompletionRequest request, List<String> expChain) {
+        FileObject fo = request.info.getSnapshot().getSource().getFileObject();
+        JsIndex jsIndex = JsIndex.get(fo);
+        Collection<TypeUsage> resolveTypeFromExpression = new ArrayList<TypeUsage>();
+        resolveTypeFromExpression.addAll(ModelUtils.resolveTypeFromExpression(request.result.getModel(), jsIndex, expChain, request.anchor));
+
+        int cycle = 0;
+        boolean resolvedAll = false;
+        while(!resolvedAll && cycle < 10) {
+            cycle++;
+            resolvedAll = true;
+            Collection<TypeUsage> resolved = new ArrayList<TypeUsage>();
+            for (TypeUsage typeUsage : resolveTypeFromExpression) {
+                if(!((TypeUsageImpl)typeUsage).isResolved()) {
+                    resolvedAll = false;
+                    String sexp = typeUsage.getType();
+                    if (sexp.startsWith("@exp;")) {
+                        sexp = sexp.substring(5);
+                        List<String> nExp = new ArrayList<String>();
+                        String[] split = sexp.split("@");
+                        for (int i = split.length - 1; i > -1; i--) {
+                            nExp.add(split[i].substring(split[i].indexOf(';') + 1));
+                            if (split[i].startsWith("call;")) {
+                                nExp.add("@mtd");
+                            } else {
+                                nExp.add("@pro");
+                            }
+                        }
+                        resolved.addAll(ModelUtils.resolveTypeFromExpression(request.result.getModel(), jsIndex, nExp, cycle));
+                    } else {
+                        resolved.add(new TypeUsageImpl(typeUsage.getType(), typeUsage.getOffset(), true));
+                    }
+                } else {
+                    resolved.add(typeUsage);
+                }
+            }
+            resolveTypeFromExpression.clear();
+            resolveTypeFromExpression.addAll(resolved);
+        }
+        Collection<String> prototypeChain = new ArrayList<String>();
+        for (TypeUsage typeUsage : resolveTypeFromExpression) {
+            prototypeChain.addAll(ModelUtils.findPrototypeChain(typeUsage.getType(), jsIndex));
+        }
+
+        for (String string : prototypeChain) {
+            resolveTypeFromExpression.add(new TypeUsageImpl(string));
+        }
+
+        HashMap<String, JsElement> addedProperties = new HashMap<String, JsElement>();
+        boolean isFunction = false; // addding Function to the prototype chain?
+        List<JsObject> lastResolvedObjects = new ArrayList<JsObject>();
+        for (TypeUsage typeUsage : resolveTypeFromExpression) {
+            checkRecursion = 0;
+            isFunction = processTypeInModel(request, request.result.getModel(), typeUsage, lastResolvedObjects, expChain.get(1).equals("@pro"), jsIndex, addedProperties);
+        }
+        for (JsObject resolved : lastResolvedObjects) {
+            if(!isFunction && resolved.getJSKind().isFunction()) {
+                isFunction = true;
+            }
+            addObjectPropertiesToCC(resolved, request, addedProperties);
+            if (!resolved.isDeclared()) {
+                // if the object is not defined here, look to the index as well
+                addObjectPropertiesFromIndex(ModelUtils.createFQN(resolved), jsIndex, request, addedProperties);
+            }
+        }
+
+        if (isFunction) {
+            addObjectPropertiesFromIndex("Function", jsIndex, request, addedProperties); //NOI18N
+        }
+
+        addObjectPropertiesFromIndex("Object", jsIndex, request, addedProperties); //NOI18N
+
+        // now look to the index again for declared item outside
+        StringBuilder fqn = new StringBuilder();
+        for (int i = expChain.size() - 1; i > -1; i--) {
+            fqn.append(expChain.get(--i));
+            fqn.append('.');
+        }
+        fqn.append(request.prefix);
+        Collection<? extends IndexResult> indexResults = jsIndex.query(JsIndex.FIELD_FQ_NAME, fqn.toString(), QuerySupport.Kind.PREFIX, JsIndex.TERMS_BASIC_INFO);
+        for (IndexResult indexResult : indexResults) {
+            IndexedElement indexedElement = IndexedElement.create(indexResult);
+            JsElement element = addedProperties.get(indexedElement.getName());
+            if (startsWith(indexedElement.getName(), request.prefix)
+                    && !indexedElement.isAnonymous()
+                    && indexedElement.getFQN().indexOf('.', fqn.length()) == -1
+                    && indexedElement.getModifiers().contains(Modifier.PUBLIC)
+                    && (element == null || (!element.isDeclared() && indexedElement.isDeclared()))) {
+                addedProperties.put(indexedElement.getName(), indexedElement);
+            }
+        }
+        return addedProperties;
+    }
+
+    private List<String> resolveExpressionChain(CompletionRequest request) {
         TokenHierarchy<?> th = request.info.getSnapshot().getTokenHierarchy();
         TokenSequence<? extends JsTokenId> ts = LexUtilities.getJsTokenSequence(th, request.anchor);
-
-
-        if (ts == null){
-            return;
+        if (ts == null) {
+            return Collections.<String>emptyList();
         }
 
         int offset = request.info.getSnapshot().getEmbeddedOffset(request.anchor);
@@ -490,7 +634,7 @@ class JsCodeCompletion implements CodeCompletionHandler {
             boolean methodCall = false;
             boolean wasLastDot = false;
             List<String> exp = new ArrayList();
-            
+
             while (token.id() != JsTokenId.WHITESPACE && token.id() != JsTokenId.OPERATOR_SEMICOLON
                     && token.id() != JsTokenId.BRACKET_RIGHT_CURLY && token.id() != JsTokenId.BRACKET_LEFT_CURLY
                     && token.id() != JsTokenId.BRACKET_LEFT_PAREN
@@ -542,106 +686,11 @@ class JsCodeCompletion implements CodeCompletionHandler {
                 }
                 token = ts.token();
             }
-            
-            FileObject fo = request.info.getSnapshot().getSource().getFileObject();
-            JsIndex jsIndex = JsIndex.get(fo);
-            Collection<TypeUsage> resolveTypeFromExpression = new ArrayList<TypeUsage>();
-            resolveTypeFromExpression.addAll(ModelUtils.resolveTypeFromExpression(request.result.getModel(), jsIndex, exp, request.anchor));
-            
-            int cycle = 0;
-            boolean resolvedAll = false;
-            while(!resolvedAll && cycle < 10) {
-                cycle++;
-                resolvedAll = true;
-                Collection<TypeUsage> resolved = new ArrayList<TypeUsage>();
-                for (TypeUsage typeUsage : resolveTypeFromExpression) {
-                    if(!((TypeUsageImpl)typeUsage).isResolved()) {
-                        resolvedAll = false;
-                        String sexp = typeUsage.getType();
-                        if (sexp.startsWith("@exp;")) {
-                            sexp = sexp.substring(5);
-                            List<String> nExp = new ArrayList<String>();
-                            String[] split = sexp.split("@call;");
-                            for (int i = split.length - 1; i > -1; i--) {
-                                String string = split[i];
-                                nExp.add(split[i]);
-                                if (i == 0) {
-                                    nExp.add("@pro");
-                                } else {
-                                    nExp.add("@mtd");
-                                }
-                            }
-                            resolved.addAll(ModelUtils.resolveTypeFromExpression(request.result.getModel(), jsIndex, nExp, cycle));
-                        } else {
-                            resolved.add(new TypeUsageImpl(typeUsage.getType(), typeUsage.getOffset(), true));
-                        }
-                    } else {
-                        resolved.add(typeUsage);
-                    }
-                }
-                resolveTypeFromExpression.clear();
-                resolveTypeFromExpression.addAll(resolved);
-            }
-            Collection<String> prototypeChain = new ArrayList<String>();
-            for (TypeUsage typeUsage : resolveTypeFromExpression) {
-                prototypeChain.addAll(ModelUtils.findPrototypeChain(typeUsage.getType(), jsIndex));
-            }
-            
-            for (String string : prototypeChain) {
-                resolveTypeFromExpression.add(new TypeUsageImpl(string));
-            }
-            
-            HashMap<String, JsElement> addedProperties = new HashMap<String, JsElement>();
-            boolean isFunction = false; // addding Function to the prototype chain?
-            List<JsObject> lastResolvedObjects = new ArrayList<JsObject>();
-            for (TypeUsage typeUsage : resolveTypeFromExpression) {
-                checkRecursion = 0;
-                isFunction = processTypeInModel(request, request.result.getModel(), typeUsage, lastResolvedObjects, exp.get(1).equals("@pro"), jsIndex, addedProperties);
-            }
-            for (JsObject resolved : lastResolvedObjects) {
-                if(!isFunction && resolved.getJSKind().isFunction()) {
-                    isFunction = true;
-                }
-                addObjectPropertiesToCC(resolved, request, addedProperties);
-                if (!resolved.isDeclared()) {
-                    // if the object is not defined here, look to the index as well
-                    addObjectPropertiesFromIndex(ModelUtils.createFQN(resolved), jsIndex, request, addedProperties);
-                }
-            }
-            
-            if (isFunction) {
-                addObjectPropertiesFromIndex("Function", jsIndex, request, addedProperties); //NOI18N
-            }
-            
-            addObjectPropertiesFromIndex("Object", jsIndex, request, addedProperties); //NOI18N
-                        
-            // now look to the index again for declared item outside
-            StringBuilder fqn = new StringBuilder();
-            for (int i = exp.size() - 1; i > -1; i--) {
-                fqn.append(exp.get(--i));
-                fqn.append('.');
-            }
-            fqn.append(request.prefix);
-            Collection<? extends IndexResult> indexResults = jsIndex.query(JsIndex.FIELD_FQ_NAME, fqn.toString(), QuerySupport.Kind.PREFIX, JsIndex.TERMS_BASIC_INFO);
-            for (IndexResult indexResult : indexResults) {
-                IndexedElement indexedElement = IndexedElement.create(indexResult);
-                JsElement element = addedProperties.get(indexedElement.getName());
-                if (startsWith(indexedElement.getName(), request.prefix)
-                        && !indexedElement.isAnonymous()
-                        && indexedElement.getFQN().indexOf('.', fqn.length()) == -1 
-                        && indexedElement.getModifiers().contains(Modifier.PUBLIC)
-                        && (element == null || (!element.isDeclared() && indexedElement.isDeclared()))) {
-                    addedProperties.put(indexedElement.getName(), indexedElement);
-                }
-            }
-            
-            // create code completion results
-            for (JsElement element : addedProperties.values()) {
-                resultList.add(JsCompletionItem.Factory.create(element, request));
-            }
+            return exp;
         }
+        return Collections.<String>emptyList();
     }
-    
+
     private void completeObjectMember(CompletionRequest request, List<CompletionProposal> resultList) {
         JsParserResult result = (JsParserResult)request.info;
         JsObject jsObject = (JsObject)ModelUtils.getDeclarationScope(result.getModel(), request.anchor);
@@ -815,4 +864,20 @@ class JsCodeCompletion implements CodeCompletionHandler {
         }
         return result;
     }
+
+    private Map<String, JsElement> getDomCompletionResults(CompletionRequest request) {
+        Map<String, JsElement> result = new HashMap<String, JsElement>(1);
+        // default window object
+        result.putAll(getCompletionFromExpressionChain(request, WINDOW_EXPRESSION_CHAIN));
+        return result;
+    }
+
+    /** XXX - Once the JS framework support becomes plugable, should be moved to jQueryCompletionHandler getPrefix() */
+    private static int getPrefixIndexFromSequence(String prefix) {
+        int spaceIndex = prefix.lastIndexOf(" ") + 1; //NOI18N
+        int dotIndex = prefix.lastIndexOf("."); //NOI18N
+        int hashIndex = prefix.lastIndexOf("#"); //NOI18N
+        return (Math.max(0, Math.max(hashIndex, Math.max(dotIndex, spaceIndex))));
+    }
+
 }

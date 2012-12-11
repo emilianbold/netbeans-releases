@@ -130,7 +130,7 @@ public class AddDependencyPanel extends javax.swing.JPanel {
      * @param selectedScope an initial scope selection (such as {@code compile})
      * @return groupId + artifactId + version + scope + type + classifier, or null if canceled
      */
-    @Messages("TIT_Add_Library=Add Library")
+    @Messages("TIT_Add_Library=Add Dependency")
     public static @CheckForNull String[] show(Project prj, boolean showDepMan, String selectedScope) {
         NbMavenProject nbproj = prj.getLookup().lookup(NbMavenProject.class);
         AddDependencyPanel pnl = new AddDependencyPanel(nbproj.getMavenProject(), showDepMan, prj);
@@ -1068,7 +1068,9 @@ public class AddDependencyPanel extends javax.swing.JPanel {
                 }
         
 
-        @Messages("MSG_ClassesExcluded=Too general query. Class names excluded from the search.")
+        @Messages({"MSG_ClassesExcluded=Too general query. Class names excluded from the search.",
+                   "MSG_Narrow=Only {0} of {1} results shown. Consider narrowing your search."
+                  })
         void find(String queryText) {
             synchronized (LOCK) {
                 if (inProgressText != null) {
@@ -1125,7 +1127,13 @@ public class AddDependencyPanel extends javax.swing.JPanel {
                     if (cancel()) return;//we no longer care
                     //first try with classes search included,
                     try {
-                        Result<NBVersionInfo> result = RepositoryQueries.findResult(fields, RepositoryPreferences.getInstance().getRepositoryInfos());
+                        SwingUtilities.invokeLater(new Runnable() {
+                            @Override
+                            public void run() {
+                                AddDependencyPanel.this.nls.setInformationMessage(null); //NOI18N
+                            }
+                        });
+                        final Result<NBVersionInfo> result = RepositoryQueries.findResult(fields, RepositoryPreferences.getInstance().getRepositoryInfos());
                         if (cancel()) return;//we no longer care
                         updateResults(result.getResults(), result.isPartial());
                         if (result.isPartial()) {
@@ -1134,6 +1142,14 @@ public class AddDependencyPanel extends javax.swing.JPanel {
                             if (cancel()) return;//we no longer care
                             updateResults(result.getResults(), false);
                         }
+                        SwingUtilities.invokeLater(new Runnable() {
+                            @Override
+                            public void run() {
+                                if (result.getReturnedResultCount() < result.getTotalResultCount()) {
+                                    AddDependencyPanel.this.nls.setInformationMessage(MSG_Narrow(result.getReturnedResultCount(), result.getTotalResultCount()));
+                                }
+                            }
+                        });
                         
                     } catch (BooleanQuery.TooManyClauses exc) {
                         if (cancel()) return;//we no longer care
@@ -1142,7 +1158,7 @@ public class AddDependencyPanel extends javax.swing.JPanel {
                             SwingUtilities.invokeLater(new Runnable() {
                                 @Override
                                 public void run() {
-                                    AddDependencyPanel.this.nls.setInformationMessage(MSG_ClassesExcluded()); //NOI18N
+                                    AddDependencyPanel.this.nls.setInformationMessage(MSG_ClassesExcluded());
                                 }
                             });
                             Result<NBVersionInfo> result = RepositoryQueries.findResult(fieldsNonClasses, RepositoryPreferences.getInstance().getRepositoryInfos());

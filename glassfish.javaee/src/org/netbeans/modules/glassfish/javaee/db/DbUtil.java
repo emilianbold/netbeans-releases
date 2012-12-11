@@ -104,8 +104,18 @@ public class DbUtil {
         String password = poolValues.get(__Password);
         String user = poolValues.get(__User);
         
-        if(driverClassName.indexOf("pointbase") != -1){
+        if (driverClassName.indexOf("pointbase") != -1) {
             url = poolValues.get(__DatabaseName);
+        }
+        // Search for server name key should be case insensitive.
+        if (serverName == null) {
+            for (String key : poolValues.keySet()) {
+                if (__ServerName.equalsIgnoreCase(key)) {
+                    serverName = poolValues.get(key);
+                    break;
+                }
+            }
+            poolValues.put(__ServerName, serverName);
         }
         if (urlValue == null || urlValue.equals("")) { //NOI18N
             if (driverClassName.indexOf("derby") != -1) {

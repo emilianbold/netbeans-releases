@@ -191,16 +191,12 @@ public class BaseKit extends DefaultEditorKit {
     /** Remove line */
     public static final String removeLineAction = "remove-line"; // NOI18N
     
-    /** Move selection else line up */
     public static final String moveSelectionElseLineUpAction = "move-selection-else-line-up"; // NOI18N
     
-    /** Move selection else line down */
     public static final String moveSelectionElseLineDownAction = "move-selection-else-line-down"; // NOI18N
     
-    /** Copy selection else line up */
     public static final String copySelectionElseLineUpAction = "copy-selection-else-line-up"; // NOI18N
     
-    /** Copy selection else line down */
     public static final String copySelectionElseLineDownAction = "copy-selection-else-line-down"; // NOI18N
 
     /** Toggle the typing mode to overwrite mode or back to insert mode */

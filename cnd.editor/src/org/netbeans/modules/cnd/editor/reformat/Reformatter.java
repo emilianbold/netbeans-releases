@@ -43,6 +43,7 @@
 package org.netbeans.modules.cnd.editor.reformat;
 
 import java.util.LinkedList;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
@@ -71,6 +72,7 @@ public class Reformatter implements ReformatTask {
     private JTextComponent currentComponent;
     private boolean expandTabToSpaces = true;
     private int tabSize = 8;
+    private static final Logger LOG = Logger.getLogger("org.netbeans.modules.cnd.editor"); // NOI18N
 
 
     public Reformatter(Context context) {
@@ -108,6 +110,7 @@ public class Reformatter implements ReformatTask {
             int endOffset = doc.getLength();
             TokenHierarchy<?> hierarchy = TokenHierarchy.get(doc);
             if (hierarchy == null) {
+                LOG.log(Level.SEVERE, "Token hierarchy is not found in the document {1}", new Object[]{doc});
                 return;
             }
             reformatImpl(hierarchy, 0, endOffset);
@@ -126,12 +129,15 @@ public class Reformatter implements ReformatTask {
         Language<CppTokenId> language = CndLexerUtilities.getLanguage(context.mimePath());
         if (language != null) {
             reformatLanguage(language, startOffset, endOffset);
+        } else {
+            //LOG.log(Level.SEVERE, "Language of mime type {0} is not found in the document {1}", new Object[]{context.mimePath(), doc});
         }
     }
 
     private void reformatLanguage(Language<CppTokenId> language, int startOffset, int endOffset) throws BadLocationException {
         TokenHierarchy<?> hierarchy = TokenHierarchy.create(doc.getText(0, doc.getLength()), language);
         if (hierarchy == null) {
+            LOG.log(Level.SEVERE, "Token hierarchy {0} is not found in the document {1}", new Object[]{language, doc});
             return;
         }
         reformatImpl(hierarchy, startOffset, endOffset);
@@ -240,10 +246,8 @@ public class Reformatter implements ReformatTask {
                 if (end - start > 0) {
                     if (!checkRemoved(what)){
                         // Reformat failed
-                        Logger log = Logger.getLogger("org.netbeans.modules.cnd.editor"); // NOI18N
-                        String error = NbBundle.getMessage(Reformatter.class, "REFORMATTING_FAILED", // NOI18N
-                                doc.getText(start, end - start), text);
-                        log.severe(error);
+                        LOG.log(Level.SEVERE, NbBundle.getMessage(Reformatter.class, "REFORMATTING_FAILED", // NOI18N
+                                doc.getText(start, end - start), text));
                         return;
                     }
                     buf.delete(start, end);
@@ -274,10 +278,8 @@ public class Reformatter implements ReformatTask {
             }
             if (!checkRemoved(what)){
                 // Reformat failed
-                Logger log = Logger.getLogger("org.netbeans.modules.cnd.editor"); // NOI18N
-                String error = NbBundle.getMessage(Reformatter.class, "REFORMATTING_FAILED", // NOI18N
-                        doc.getText(start, end - start), text);
-                log.severe(error);
+                LOG.log(Level.SEVERE, NbBundle.getMessage(Reformatter.class, "REFORMATTING_FAILED", // NOI18N
+                        doc.getText(start, end - start), text));
                 return false;
             }
             doc.remove(start, end - start);

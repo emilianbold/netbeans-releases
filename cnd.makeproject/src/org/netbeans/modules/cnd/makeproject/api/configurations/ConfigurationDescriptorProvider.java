@@ -86,7 +86,6 @@ public class ConfigurationDescriptorProvider {
     private String relativeOffset = null;
     private List<FileObject> trackedFiles;
     private volatile boolean needReload;
-    private Delta delta;
 
     // for unit tests only
     public ConfigurationDescriptorProvider(FileObject projectDirectory) {
@@ -162,7 +161,7 @@ public class ConfigurationDescriptorProvider {
                     //                            // return null;
                     //                        }
                     try {
-                        stratModifications();
+                        SnapShot delta = startModifications();
                         MakeConfigurationDescriptor newDescriptor = reader.read(relativeOffset);
                         LOGGER.log(Level.FINE, "End of reading project descriptor for project {0} in ConfigurationDescriptorProvider@{1}", // NOI18N
                                 new Object[]{projectDirectory.getNameExt(), System.identityHashCode(this)});
@@ -180,7 +179,7 @@ public class ConfigurationDescriptorProvider {
                                 newDescriptor.setProject(project);
                                 newDescriptor.waitInitTask();
                                 projectDescriptor.assign(newDescriptor);
-                                endModifications(true, LOGGER);
+                                endModifications(delta, true, LOGGER);
                                 LOGGER.log(Level.FINE, "Reassigned project descriptor MakeConfigurationDescriptor@{0} for project {1} in ConfigurationDescriptorProvider@{2}", // NOI18N
                                         new Object[]{System.identityHashCode(projectDescriptor), projectDirectory.getNameExt(), System.identityHashCode(this)});
                             } else {
@@ -203,21 +202,24 @@ public class ConfigurationDescriptorProvider {
         return projectDescriptor;
     }
 
-    public void stratModifications() {
+    public SnapShot startModifications() {
         if (projectDescriptor != null) {
-            delta = new Delta(projectDescriptor);
+            return new Delta(projectDescriptor);
         }
+        return null;
     }
 
-    public void endModifications(boolean sendChangeEvent, Logger logger) {
-        if (sendChangeEvent && delta != null) {
-            delta.computeDelta(projectDescriptor);
-            if (logger != null) {
-                delta.printStatistic(logger);
+    public void endModifications(SnapShot snapShot, boolean sendChangeEvent, Logger logger) {
+        if (snapShot instanceof Delta) {
+            Delta delta = (Delta) snapShot;
+            if (sendChangeEvent && projectDescriptor != null) {
+                delta.computeDelta(projectDescriptor);
+                if (logger != null) {
+                    delta.printStatistic(logger);
+                }
+                projectDescriptor.checkForChangedItems(delta);
             }
-            projectDescriptor.checkForChangedItems(delta);
         }
-        delta = null;
     }
     
     public boolean gotDescriptor() {
@@ -418,6 +420,20 @@ public class ConfigurationDescriptorProvider {
         return strSize;
     }
 
+    public void closed() {
+        MakeConfigurationDescriptor descr = getConfigurationDescriptor();
+        if (descr != null) {
+            descr.closed();
+        }
+    }
+
+    public void opened() {
+        MakeConfigurationDescriptor descr = getConfigurationDescriptor(true);
+        if (descr != null) {
+            descr.opened();
+        }
+    }
+
     /**
      * This listener will be notified about updates of files
      * <code>nbproject/configurations.xml</code> and
@@ -479,7 +495,10 @@ public class ConfigurationDescriptorProvider {
         }
     }
 
-    public static final class Delta {
+    public interface SnapShot {
+    }
+    
+    public static final class Delta implements SnapShot {
 
         private final Map<String, Pair> oldState = new HashMap<String, Pair>();
         private final List<Item> included = new ArrayList<Item>();

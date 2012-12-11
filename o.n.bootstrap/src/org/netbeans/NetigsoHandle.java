@@ -59,7 +59,7 @@ final class NetigsoHandle {
     private final ModuleManager mgr;
     // @GuardedBy("toEnable")
     private final ArrayList<Module> toEnable = new ArrayList<Module>();
-    // @GuardedBy("this")    
+    // @GuardedBy("NetigsoFramework.class")    
     private NetigsoFramework framework;
     // @GuardedBy("this")
     private List<NetigsoModule> toInit = new ArrayList<NetigsoModule>();
@@ -72,20 +72,22 @@ final class NetigsoHandle {
         return getDefault(null);
     }
 
-    private synchronized NetigsoFramework getDefault(Lookup lkp) {
-        if (framework == null && lkp != null) {
-            NetigsoFramework prototype = lkp.lookup(NetigsoFramework.class);
-            if (prototype == null) {
-                throw new IllegalStateException("No NetigsoFramework found, is org.netbeans.core.netigso module enabled?"); // NOI18N
+    private NetigsoFramework getDefault(Lookup lkp) {
+        synchronized (NetigsoFramework.class) {
+            if (framework == null && lkp != null) {
+                NetigsoFramework prototype = lkp.lookup(NetigsoFramework.class);
+                if (prototype == null) {
+                    throw new IllegalStateException("No NetigsoFramework found, is org.netbeans.core.netigso module enabled?"); // NOI18N
+                }
+                framework = prototype.bindTo(mgr);
             }
-            framework = prototype.bindTo(mgr);
+            return framework;
         }
-        return framework;
     }
     /** Used on shutdown */
     final void shutdownFramework() {
         NetigsoFramework f;
-        synchronized (this) {
+        synchronized (NetigsoFramework.class) {
             f = framework;
             framework = null;
             toInit = new ArrayList<NetigsoModule>();

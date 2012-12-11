@@ -57,6 +57,7 @@ import org.netbeans.modules.refactoring.spi.RefactoringCommit;
 import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
 import org.netbeans.modules.refactoring.spi.ui.UI;
 import org.openide.filesystems.FileObject;
+import org.openide.text.PositionBounds;
 
 /**
  * Implementation of the rename refactoring for groovy.
@@ -75,7 +76,7 @@ public class RenameRefactoringPlugin extends FindUsagesPlugin {
         refactoring.getContext().add(UI.Constants.REQUEST_PREVIEW);
         return (RenameRefactoring) refactoring;
     }
-    
+
     @Override
     protected void refactorResults(RefactoringElementsBag elementsBag, List<FindUsagesElement> usages) {
         final ModificationResult modificationResult = collectModifications(usages);
@@ -116,9 +117,13 @@ public class RenameRefactoringPlugin extends FindUsagesPlugin {
     }
 
     private boolean isAlreadyInResult(ModificationResult modificationResult, FindUsagesElement whereUsedElement) {
+        assert modificationResult != null;
+        assert whereUsedElement != null;
+
         final FileObject file = whereUsedElement.getParentFile();
-        final int start = whereUsedElement.getPosition().getBegin().getOffset();
-        final int end = whereUsedElement.getPosition().getEnd().getOffset();
+        final PositionBounds position = whereUsedElement.getPosition();
+        final int start = position.getBegin().getOffset();
+        final int end = position.getEnd().getOffset();
         
         List<? extends Difference> differences = modificationResult.getDifferences(file);
         if (differences != null && !differences.isEmpty()) {

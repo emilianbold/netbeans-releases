@@ -45,6 +45,9 @@ package org.netbeans.modules.csl.core;
 import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.LogRecord;
+import java.util.logging.Logger;
 import org.netbeans.modules.csl.api.Error;
 import org.netbeans.modules.csl.spi.ErrorFilter;
 import org.netbeans.modules.csl.spi.ParserResult;
@@ -58,18 +61,41 @@ import org.openide.util.Lookup;
  * @author marekfukala
  */
 public class ErrorFilterQuery {
-    
+    private static final Logger UPDATER_BACKDOOR = Logger.getLogger("org.netbeans.modules.parsing.impl.indexing.LogContext.backdoor");
+
     public static List<? extends Error> getFilteredErrors(ParserResult parserResult, String featureName) {
         Collection<? extends ErrorFilter.Factory> factories = Lookup.getDefault().lookupAll(ErrorFilter.Factory.class);
         List<Error> filtered = new LinkedList<Error>();
         for(ErrorFilter.Factory factory : factories) {
             ErrorFilter filter = factory.createErrorFilter(featureName);
-            List<? extends Error> result = filter.filter(parserResult);
-            if(result != null) {
-                filtered.addAll(result); 
+            String fn = "TLIndexer:" + filterName(filter);
+            try {
+                LogRecord lr = new LogRecord(Level.INFO, "INDEXER_START");
+                lr.setParameters(new Object[] { fn });
+                UPDATER_BACKDOOR.log(lr);
+                List<? extends Error> result = filter.filter(parserResult);
+                if(result != null) {
+                    filtered.addAll(result); 
+                }
+            } finally {
+                LogRecord lr = new LogRecord(Level.INFO, "INDEXER_END");
+                lr.setParameters(new Object[] { fn });
+                UPDATER_BACKDOOR.log(lr);
             }
         }
         return filtered.isEmpty() ? parserResult.getDiagnostics() :  filtered;
     }
-    
+
+    static String filterName(ErrorFilter f) {
+        Class c = f.getClass();
+        String n = c.getName();
+        int idx = n.indexOf(".modules.");
+        int last = n.lastIndexOf('.');
+        if (idx > -1) {
+            int n2 = n.indexOf('.', idx + 9);
+            return n.substring(idx + 9, n2 + 1) + n.substring(last + 1);
+        } else {
+           return n.substring(last + 1);
+        }
+    }
 }

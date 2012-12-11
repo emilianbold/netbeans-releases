@@ -213,6 +213,8 @@ public final class AquaLFCustoms extends LFCustoms {
             "Nb.MainWindow.Toolbar.Border", BorderFactory.createEmptyBorder(0, 0, 0, 3),
             
             "Nb.MenuBar.VerticalAlign", Boolean.FALSE,
+
+            "Nb.SplitPaneUI.clean", "org.netbeans.swing.plaf.aqua.CleanSplitPaneUI",
         }; //NOI18N
         return result;
     }

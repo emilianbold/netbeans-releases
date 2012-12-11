@@ -58,6 +58,7 @@ import java.awt.event.WindowListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.lang.ref.WeakReference;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.AbstractButton;
 import javax.swing.JButton;
@@ -490,16 +491,18 @@ public class OptionsDisplayerImpl {
             synchronized (lookupListener) {
                 descriptorRef = new WeakReference<DialogDescriptor>(null);
                 // #156947 - close dialog when categories change
-                if (dialog != null) {
-                    Mutex.EVENT.readAccess(new Runnable() {
-
-                        @Override
-                        public void run() {
-                            dialog.setVisible(false);
-                            dialog = null;
-                        }
-                    });
-                }
+		if (dialog != null) {
+		    Mutex.EVENT.readAccess(new Runnable() {
+			@Override
+			public void run() {
+			    if (dialog != null) {
+				log.log(Level.FINE, "Options Dialog - closing dialog when categories change."); //NOI18N
+				dialog.setVisible(false);
+				dialog = null;
+			    }
+			}
+		    });
+		}
             }
         }
         

@@ -84,6 +84,7 @@ public class BugzillaAutoupdate {
 
     private static BugzillaAutoupdate instance;
     private Map<String, Boolean> updateAvailableMap = new HashMap<String, Boolean>();
+    private boolean wrongVersionAlreadyNotified;
 
     private BugzillaAutoupdate() {
     }
@@ -202,10 +203,11 @@ public class BugzillaAutoupdate {
             return true; // do not force the wrong version notification 
         }
         boolean ret = isSupportedVersion(version);
-        if(!ret) {
+        if(!ret && !wrongVersionAlreadyNotified) {
             Bugzilla.LOG.log(Level.INFO,
                          "Bugzilla repository [{0}] has version {1}. ", // NOI18N
                          new Object[] {repository.getUrl(), version});
+            wrongVersionAlreadyNotified = true;
         }
         return ret;
     }

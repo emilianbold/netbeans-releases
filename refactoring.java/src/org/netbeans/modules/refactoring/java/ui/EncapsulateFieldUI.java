@@ -67,6 +67,7 @@ import org.netbeans.modules.refactoring.spi.ui.CustomRefactoringPanel;
 import org.netbeans.modules.refactoring.spi.ui.RefactoringUI;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
+import org.openide.text.NbDocument;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -214,10 +215,10 @@ public final class EncapsulateFieldUI implements RefactoringUI, JavaRefactoringU
     @Override
     public RefactoringUI create(CompilationInfo info, TreePathHandle[] handles, FileObject[] files, NonRecursiveFolder[] packages) {
         EditorCookie ec = lookup.lookup(EditorCookie.class);
-        if (ec == null || ec.getOpenedPanes() == null) {
+        JEditorPane textC = NbDocument.findRecentEditorPane(ec);
+        if (ec == null || textC == null) {
             return EncapsulateFieldUI.create(info, handles);
         }
-        JEditorPane textC = ec.getOpenedPanes()[0];
         int startOffset = textC.getSelectionStart();
         int endOffset = textC.getSelectionEnd();
 

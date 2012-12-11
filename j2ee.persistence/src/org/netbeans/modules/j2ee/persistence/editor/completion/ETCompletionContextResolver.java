@@ -43,9 +43,10 @@
 package org.netbeans.modules.j2ee.persistence.editor.completion;
 
 import java.io.IOException;
-import org.netbeans.modules.j2ee.persistence.editor.completion.db.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.text.BadLocationException;
 import org.eclipse.persistence.jpa.jpql.ContentAssistProposals;
 import org.eclipse.persistence.jpa.jpql.JPQLQueryHelper;
@@ -67,7 +68,7 @@ import org.netbeans.modules.j2ee.persistence.spi.jpql.Query;
  */
 public class ETCompletionContextResolver implements CompletionContextResolver {
     
-    private static final String PERSISTENCE_PKG = "javax.persistence";
+    private static final Logger LOGGER = Logger.getLogger(ETCompletionContextResolver.class.getName());
     
     @Override
     public List resolve(JPACodeCompletionProvider.Context ctx) {
@@ -81,13 +82,19 @@ public class ETCompletionContextResolver implements CompletionContextResolver {
         CCParser.NNAttr nnattr = null;
         if (methodName == null){
             parsedNN = ctx.getParsedAnnotation();
-            if (parsedNN == null) return result;
+            if (parsedNN == null) {
+                return result;
+            }
 
             nnattr = parsedNN.getAttributeForOffset(ctx.getCompletionOffset());
-            if(nnattr == null) return result;
+            if(nnattr == null) {
+                return result;
+            }
 
             annotationName = parsedNN.getName();
-            if(annotationName == null) return result;
+            if(annotationName == null) {
+                return result;
+            }
         }
         if(CCParser.CREATE_NAMEDQUERY.equals(methodName)) {
             result = completecreateNamedQueryparameters(ctx, result);
@@ -121,10 +128,11 @@ public class ETCompletionContextResolver implements CompletionContextResolver {
             } catch (IOException ex) {
             }
         }
-        if(entities != null)
-        for (Entity entity : entities) {
-            for(NamedQuery nq:entity.getNamedQuery()){
-                results.add(new JPACompletionItem.NamedQueryNameItem(nq.getName(), entity.getName(), nq.getQuery(), ctx.getMethod().isWithQ(), ctx.getMethod().getValueOffset()));
+        if(entities != null) {
+            for (Entity entity : entities) {
+                for(NamedQuery nq:entity.getNamedQuery()){
+                    results.add(new JPACompletionItem.NamedQueryNameItem(nq.getName(), entity.getName(), nq.getQuery(), ctx.getMethod().isWithQ(), ctx.getMethod().getValueOffset()));
+                }
             }
         }
         return results;
@@ -140,7 +148,13 @@ public class ETCompletionContextResolver implements CompletionContextResolver {
             Project project = FileOwnerQuery.getOwner(ctx.getFileObject());
             helper.setQuery(new Query(null, completedValue, new ManagedTypeProvider(project, ctx.getEntityMappings(), ctx.getController().getElements())));
             int offset = ctx.getCompletionOffset() - nnattr.getValueOffset() - (nnattr.isValueQuoted() ? 1 : 0);
-            ContentAssistProposals buildContentAssistProposals = ((offset<=completedValue.length()) ? helper.buildContentAssistProposals(offset) : null);
+            ContentAssistProposals buildContentAssistProposals = null;
+            try{
+                buildContentAssistProposals = ((offset<=completedValue.length()) ? helper.buildContentAssistProposals(offset) : null);
+            } catch (NullPointerException ex) {
+                //al npe from 3rd party lib shouldn't affect nb much, see #222208
+                LOGGER.log(Level.INFO, "exception in eclipsleink", ex);//NOI18N
+            }
             
             if(buildContentAssistProposals!=null && buildContentAssistProposals.hasProposals()){
                 for (String var : buildContentAssistProposals.identificationVariables()) {
@@ -163,7 +177,9 @@ public class ETCompletionContextResolver implements CompletionContextResolver {
      private List completeJPQLContext(JPACodeCompletionProvider.Context ctx, CCParser.MD method, List<JPACompletionItem> results) {
 
             String completedValue = method.getValue();
-            if(completedValue == null)return results;//do not support case if "" isn't typed yet (there should be quite a lot of general java items, avoid mixing
+            if(completedValue == null) {
+                return results;
+            }//do not support case if "" isn't typed yet (there should be quite a lot of general java items, avoid mixing
             JPQLQueryHelper helper = new JPQLQueryHelper();
             completedValue = org.netbeans.modules.j2ee.persistence.editor.completion.Utils.unquote(completedValue);
 
@@ -206,7 +222,9 @@ public class ETCompletionContextResolver implements CompletionContextResolver {
         
         @Override
         public boolean add(Object o) {
-            if(!(o instanceof JPACompletionItem)) return false;
+            if(!(o instanceof JPACompletionItem)) {
+                return false;
+            }
             
             JPACompletionItem ri = (JPACompletionItem)o;
             //check if the pretext corresponds to the result item text

@@ -181,7 +181,7 @@ public class BatchSearch {
             additionalConstraints.add(pattern.getAdditionalConstraints());
         }
 
-        return BulkSearch.getDefault().create(code, trees, additionalConstraints);
+        return BulkSearch.getDefault().create(code, trees, additionalConstraints, new AtomicBoolean());
     }
 
     public static void getVerifiedSpans(BatchResult candidates, @NonNull ProgressHandleWrapper progress, final VerifiedSpansCallBack callback, final Collection<? super MessageImpl> problems, AtomicBoolean cancel) {
@@ -276,6 +276,8 @@ public class BatchSearch {
 
                                     List<ErrorDescription> hints = new HintsInvoker(parameter, true, new AtomicBoolean()).computeHints(parameter, r.hints, problems);
 
+                                    assert hints != null;
+                                    
                                     cont = callback.spansVerified(parameter, r, hints);
                                 } catch (ThreadDeath td) {
                                     throw td;
@@ -477,7 +479,7 @@ public class BatchSearch {
 
         private Collection<int[]> doComputeSpans(CompilationInfo ci) {
             Collection<int[]> result = new LinkedList<int[]>();
-            Map<String, Collection<TreePath>> found = BulkSearch.getDefault().match(ci, new TreePath(ci.getCompilationUnit()), pattern);
+            Map<String, Collection<TreePath>> found = BulkSearch.getDefault().match(ci, new AtomicBoolean(), new TreePath(ci.getCompilationUnit()), pattern);
             
             for (Entry<String, Collection<TreePath>> e : found.entrySet()) {
                 Tree treePattern = Utilities.parseAndAttribute(ci, e.getKey(), null);
@@ -585,7 +587,7 @@ public class BatchSearch {
                                 }
 
                                 try {
-                                    boolean matches = BulkSearch.getDefault().matches(cc, new TreePath(cc.getCompilationUnit()), bulkPattern.call());
+                                    boolean matches = BulkSearch.getDefault().matches(cc, new AtomicBoolean(), new TreePath(cc.getCompilationUnit()), bulkPattern.call());
 
                                     if (matches) {
                                         result.add(new Resource(FileSystemBasedIndexEnquirer.this, FileUtil.getRelativePath(src, cc.getFileObject()), hints, bulkPattern.call()));

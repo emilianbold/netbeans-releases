@@ -50,7 +50,6 @@ import java.io.Writer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
-import javax.swing.text.BadLocationException;
 import org.netbeans.api.xml.cookies.CheckXMLCookie;
 import org.netbeans.api.xml.cookies.ValidateXMLCookie;
 import org.netbeans.core.spi.multiview.MultiViewElement;
@@ -137,24 +136,22 @@ public class HibernateCfgDataObject extends XmlMultiViewDataObject {
             try {
                 configuration = getHibernateConfiguration();
             } catch (RuntimeException ex) { // must catch RTE (thrown by schema2beans when document is not valid)
-                //ErrorManager.getDefault().notify(org.openide.ErrorManager.INFORMATIONAL, ex);
                 return false;
             } 
         } else {
             try {
                 java.io.InputStream is = getEditorSupport().getInputStream();
-                HibernateConfiguration newConfiguration = null;
+                HibernateConfiguration newConfiguration;
                 try {
                     newConfiguration = HibernateConfiguration.createGraph(is);
                 } catch (RuntimeException ex) { // must catch RTE (thrown by schema2beans when document is not valid)
-                    //ErrorManager.getDefault().notify(org.openide.ErrorManager.INFORMATIONAL, ex);
                     return false;
                 }
                 if (newConfiguration != null) {
                     try {
+                        configuration.merge(new HibernateConfiguration(), BaseBean.MERGE_UPDATE);//need to refresh with inner nodes, see #187592 and PUDataObject
                         configuration.merge(newConfiguration, BaseBean.MERGE_UPDATE);
                     } catch (IllegalArgumentException iae) {
-                        //ErrorManager.getDefault().notify(org.openide.ErrorManager.INFORMATIONAL, iae);
                         return false;
                     }
                 }
@@ -215,6 +212,7 @@ public class HibernateCfgDataObject extends XmlMultiViewDataObject {
             // this enables to finish the current action first (e.g. painting particular view)
             // see the issue 67580
             SwingUtilities.invokeLater(new Runnable(){
+                @Override
                 public void run() {
                     goToXmlView();
                 }
@@ -258,7 +256,7 @@ public class HibernateCfgDataObject extends XmlMultiViewDataObject {
      * @see EditorCookie#saveDocument
      */
     public void save() {
-        EditorCookie edit = (EditorCookie) getCookie(EditorCookie.class);
+        EditorCookie edit = (EditorCookie) getLookup().lookup(EditorCookie.class);
         if (edit != null) {
             try {
                 edit.saveDocument();
@@ -285,6 +283,7 @@ public class HibernateCfgDataObject extends XmlMultiViewDataObject {
         return new HibernateCfgDataNode(this);
     }
 
+    @Override
     protected String getPrefixMark() {
         return null;
     }
@@ -316,6 +315,7 @@ public class HibernateCfgDataObject extends XmlMultiViewDataObject {
             final Object key = target;
             org.netbeans.modules.xml.multiview.Utils.runInAwtDispatchThread(new Runnable() {
 
+                @Override
                 public void run() {
                     getActiveMultiViewElement0().getSectionView().openPanel(key);
                 }
@@ -330,50 +330,18 @@ public class HibernateCfgDataObject extends XmlMultiViewDataObject {
         return (ToolBarMultiViewElement) super.getActiveMultiViewElement();
     }
 
-//    protected DesignMultiViewDesc[] getMultiViewDesc() {
-//        return new DesignMultiViewDesc[]{new DesignView(this, TYPE_TOOLBAR)};
-//    }
-
-//    private static class DesignView extends DesignMultiViewDesc {
-//
-//        private static final long serialVersionUID = 1L;
-//        private int type;
-//
-//        DesignView(HibernateCfgDataObject dObj, int type) {
-//            super(dObj, NbBundle.getMessage(HibernateCfgDataObject.class, "LBL_Design"));
-//            this.type = type;
-//        }
-//
-//        public MultiViewElement createElement() {
-//            HibernateCfgDataObject dObj = (HibernateCfgDataObject) getDataObject();
-//            return new HibernateCfgToolBarMVElement(dObj);
-//        }
-//
-//        public Image getIcon() {
-//            return ImageUtilities.loadImage("org/netbeans/modules/hibernate/resources/hibernate-configuration.png");
-//        }
-//
-//        public String preferredID() {
-//            return DESIGN_VIEW_ID + String.valueOf(type);
-//        }
-//
-//        @Override
-//        public HelpCtx getHelpCtx() {
-//            //return new HelpCtx(HELP_ID_DESIGN_HIBERNATE_CONFIGURATION); //NOI18N
-//            return null;
-//        }
-//    }
-
     private class ModelSynchronizer extends XmlMultiViewDataSynchronizer {
 
         public ModelSynchronizer(XmlMultiViewDataObject dataObject) {
             super(dataObject, UPDATE_DELAY);
         }
 
+        @Override
         protected boolean mayUpdateData(boolean allowDialog) {
             return true;
         }
 
+        @Override
         protected void updateDataFromModel(Object model, FileLock lock, boolean modify) {
             if (model == null) {
                 return;
@@ -394,10 +362,12 @@ public class HibernateCfgDataObject extends XmlMultiViewDataObject {
             }
         }
 
+        @Override
         protected Object getModel() {
             return getHibernateConfiguration();
         }
 
+        @Override
         protected void reloadModelFromData() {
             parseDocument();
         }

@@ -158,7 +158,10 @@ public class CodeAssistanceConfiguration implements Cloneable {
         set.setDisplayName(getString("CodeAssistanceTxt"));
         set.setShortDescription(getString("CodeAssistanceHint"));
         set.put(new BooleanNodeProp(getBuildAnalyzer(), true, "BuildAnalyzer", getString("BuildAnalyzerTxt"), getString("BuildAnalyzerHint"))); // NOI18N
-        set.put(new StringNodeProp(getTools(), DEFAULT_TOOLS, "Tools", getString("ToolsTxt2"), getString("ToolsHint2"))); // NOI18N
+        if (System.getProperty("cnd.buildtrace.tools") != null) {
+            // hide node by default
+            set.put(new StringNodeProp(getTools(), DEFAULT_TOOLS, "Tools", getString("ToolsTxt2"), getString("ToolsHint2"))); // NOI18N
+        }
         set.put(new StringListNodeProp(getTransientMacros(), null,
                 new String[]{"transient-macros", // NOI18N
                              getString("TransientMacrosTxt"), // NOI18N

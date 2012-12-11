@@ -48,7 +48,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import javax.swing.AbstractListModel;
 import javax.swing.ComboBoxModel;
 import javax.swing.JComboBox;
@@ -115,6 +117,21 @@ public final class DatabaseExplorerUIs {
 
         @Override
         public void newItemActionPerformed() {
+            Set oldConnections = new HashSet(Arrays.asList(connectionManager.getConnections()));
+            connectionManager.showAddConnectionDialog(null);
+
+            // try to find the new connection
+            DatabaseConnection[] newConnections = connectionManager.getConnections();
+            if (newConnections.length == oldConnections.size()) {
+                // no new connection, so...
+                return;
+            }
+            for (int i = 0; i < newConnections.length; i++) {
+                if (!oldConnections.contains(newConnections[i])) {
+                    comboBoxModel.setSelectedItem(newConnections[i]);
+                    break;
+                }
+            }
         }
 
         @Override

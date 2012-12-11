@@ -50,8 +50,8 @@ import org.netbeans.modules.tasks.ui.treelist.TreeListNode;
 
 public class ClosedRepositoryNode extends RepositoryNode {
 
-    public ClosedRepositoryNode(Repository repository, boolean loaded) {
-        super(repository, loaded, false);
+    public ClosedRepositoryNode(Repository repository) {
+        super(repository, false);
     }
 
     @Override

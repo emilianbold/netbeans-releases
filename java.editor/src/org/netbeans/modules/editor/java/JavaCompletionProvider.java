@@ -4376,7 +4376,8 @@ public class JavaCompletionProvider implements CompletionProvider {
                             }
                             Element elem = controller.getTrees().getElement(path);
                             ExecutableElement ncElem = elem != null && elem.getKind() == CONSTRUCTOR ? (ExecutableElement)elem : null;
-                            ExecutableType ncType = ncElem != null ? (ExecutableType)ncElem.asType() : null;
+                            TypeMirror ncTM = ncElem != null ? ncElem.asType() : null;
+                            ExecutableType ncType = ncTM != null && ncTM.getKind() == TypeKind.EXECUTABLE ? (ExecutableType)ncTM : null;
                             Tree mid = nc.getIdentifier();
                             path = new TreePath(path, mid);
                             TypeMirror tm = trees.getTypeMirror(path);
@@ -4798,7 +4799,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                     boolean varArgs = ((ExecutableElement)e).isVarArgs();
                     if (!varArgs && (parSize <= argTypes.length))
                         continue;
-                    ExecutableType meth = e == prototypeSym ? prototype : (ExecutableType)asMemberOf(e, type, types);
+                    ExecutableType meth = e == prototypeSym && prototype != null ? prototype : (ExecutableType)asMemberOf(e, type, types);
                     Iterator<? extends TypeMirror> parIt = meth.getParameterTypes().iterator();
                     TypeMirror param = null;
                     for (int i = 0; i <= argTypes.length; i++) {
@@ -4814,7 +4815,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                                 toAdd = param;
                             if (varArgs && !parIt.hasNext() && param.getKind() == TypeKind.ARRAY)
                                 toAdd = ((ArrayType)param).getComponentType();
-                            if (toAdd != null && ret.add(toAdd)) {
+                            if (toAdd != null && ret.add(toAdd) && toAdd.getKind() != TypeKind.TYPEVAR) {
                                 TypeMirror toRemove = null;
                                 for (TypeMirror tm : ret) {
                                     if (tm != toAdd) {

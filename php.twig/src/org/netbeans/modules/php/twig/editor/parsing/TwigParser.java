@@ -99,6 +99,9 @@ public class TwigParser extends Parser {
 
         PARSE_ELEMENTS.add("sandbox"); //NOI18N
         PARSE_ELEMENTS.add("endsandbox"); //NOI18N
+
+        PARSE_ELEMENTS.add("trans"); //NOI18N
+        PARSE_ELEMENTS.add("endtrans"); //NOI18N
     }
 
     @Override

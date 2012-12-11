@@ -51,6 +51,7 @@ import org.netbeans.modules.php.project.connections.spi.RemoteClient;
 import org.netbeans.modules.php.project.connections.spi.RemoteConfiguration;
 import org.netbeans.modules.php.project.connections.spi.RemoteConfigurationPanel;
 import org.netbeans.modules.php.project.connections.spi.RemoteConnectionProvider;
+import org.netbeans.modules.php.project.validation.ValidationResult;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 import org.openide.windows.InputOutput;
@@ -148,6 +149,15 @@ public final class SftpConnectionProvider implements RemoteConnectionProvider {
         }
         return null;
     }
+
+    @Override
+    public ValidationResult validate(RemoteConfiguration remoteConfiguration) {
+        if (remoteConfiguration instanceof SftpConfiguration) {
+            return new SftpConfigurationValidator().validate((SftpConfiguration) remoteConfiguration).getResult();
+        }
+        return null;
+    }
+
 
     private boolean accept(ConfigManager.Configuration configuration) {
         String type = configuration.getValue(TYPE);

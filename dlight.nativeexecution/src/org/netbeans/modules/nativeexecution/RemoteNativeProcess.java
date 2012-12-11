@@ -109,6 +109,10 @@ public final class RemoteNativeProcess extends AbstractNativeProcess {
             streams.in.write("while [ -z \"$ITS_TIME_TO_START\" ]; do sleep 1; done\n".getBytes()); // NOI18N
         }
 
+        if (info.isRedirectError()) {
+            streams.in.write(("exec 2>&1\n").getBytes()); // NOI18N
+        }
+
         // 5. finally do exec
         streams.in.write(EnvWriter.getBytes("exec " + commandLine + "\n", true)); // NOI18N
         streams.in.flush();

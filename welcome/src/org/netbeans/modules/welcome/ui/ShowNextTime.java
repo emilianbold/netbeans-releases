@@ -45,15 +45,18 @@
 package org.netbeans.modules.welcome.ui;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import javax.swing.JCheckBox;
 import javax.swing.JPanel;
+import javax.swing.SwingConstants;
 import org.netbeans.modules.welcome.WelcomeOptions;
 import org.netbeans.modules.welcome.content.BundleSupport;
 import org.netbeans.modules.welcome.content.Constants;
+import org.netbeans.modules.welcome.content.Utils;
 
 /**
  *
@@ -72,11 +75,14 @@ class ShowNextTime extends JPanel
         button = new JCheckBox( BundleSupport.getLabel( "ShowOnStartup" ) ); // NOI18N
         button.setSelected( WelcomeOptions.getDefault().isShowOnStartup() );
         button.setOpaque( false );
+        button.setForeground( Color.white );
+        button.setHorizontalTextPosition( SwingConstants.LEFT );
         BundleSupport.setAccessibilityProperties( button, "ShowOnStartup" ); //NOI18N
         add( button, BorderLayout.CENTER );
         button.addActionListener( this );
     }
     
+    @Override
     public void actionPerformed(ActionEvent e) {
         WelcomeOptions.getDefault().setShowOnStartup( button.isSelected() );
     }
@@ -93,6 +99,7 @@ class ShowNextTime extends JPanel
         WelcomeOptions.getDefault().removePropertyChangeListener( this );
     }
 
+    @Override
     public void propertyChange(PropertyChangeEvent evt) {
         button.setSelected( WelcomeOptions.getDefault().isShowOnStartup() );
     }

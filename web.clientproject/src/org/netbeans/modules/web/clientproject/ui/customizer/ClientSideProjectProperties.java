@@ -345,6 +345,25 @@ public final class ClientSideProjectProperties {
         this.newJsLibraries.addAll(newJsLibraries);
     }
 
+    List<SelectedLibrary> getNewJsLibraries() {
+        return newJsLibraries;
+    }
+
+    public static String createListOfJsLibraries(List<SelectedLibrary> libs) {
+        StringBuilder sb = new StringBuilder();
+        List<SelectedLibrary> selectedLibraries = libs;
+        for (SelectedLibrary lib : selectedLibraries) {
+            if (lib.isDefault()) {
+                continue;
+            }
+            if (sb.length() > 0) {
+                sb.append("|"); // NOI18N
+            }
+            sb.append(lib.getLibraryVersion().getLibrary().getName());
+        }
+        return sb.toString();
+    }
+
     public void setJsLibFolder(String jsLibFolder) {
         assert jsLibFolder != null;
         this.jsLibFolder = jsLibFolder;
@@ -360,7 +379,7 @@ public final class ClientSideProjectProperties {
 
     @CheckForNull
     public File getResolvedStartFile() {
-        return resolveFile(getStartFile());
+        return resolveFile(getSiteRootFolder() + "/" + getStartFile());
     }
 
     private static void errorOccured(String message) {

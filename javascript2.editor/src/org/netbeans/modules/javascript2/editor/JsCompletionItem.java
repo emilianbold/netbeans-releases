@@ -404,6 +404,7 @@ public class JsCompletionItem implements CompletionProposal {
                 case PROPERTY_GETTER:
                 case PROPERTY_SETTER:
                 case FIELD:
+                case VARIABLE:
                     result = new JsPropertyCompletionItem(object, request);
                     break;
                 default:

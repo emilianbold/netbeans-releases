@@ -66,6 +66,17 @@ public class CssCompletionTest extends CssModuleTestBase {
         checkCC("@| h1 { }", AT_RULES, Match.CONTAINS);
         checkCC("@pa| h1 { }", new String[]{"@page"}, Match.CONTAINS);
     }
+    
+    public void testAtRules2() throws ParseException {
+        checkCC("@charset| ", new String[]{"@font-face"}, Match.DOES_NOT_CONTAIN);
+        checkCC("@charset| div { }", new String[]{"@font-face"}, Match.DOES_NOT_CONTAIN);
+        
+        checkCC("@fon| div { }", new String[]{"@font-face"}, Match.EXACT);
+        
+        checkCC("@media| div { }", new String[]{"@media"}, Match.EXACT);
+        
+        checkCC("@page| div { }", new String[]{"@page"}, Match.EXACT);
+    }
 
     public void testPropertyNames() throws ParseException {
         //empty rule
@@ -275,8 +286,21 @@ public class CssCompletionTest extends CssModuleTestBase {
     
     //http://netbeans.org/bugzilla/show_bug.cgi?id=221349
     public void testNoCompletionAfterImport() throws ParseException, BadLocationException {
-        checkCC("@import \"s1.css\"; |  root { display: block;}", arr("body"), Match.CONTAINS);
+        checkCC("@import \"s1.css\"; |  root { display: block;}", arr("body"), Match.CONTAINS_ONCE);
         
     }
     
+    //http://netbeans.org/bugzilla/show_bug.cgi?id=221461
+    //doubled items between rule w/o prefix
+    public void testDoubledItemsBetweenRulesWithoutPrefix() throws ParseException, BadLocationException {
+        //this works already (w/ prefix)
+        checkCC("root { } bo| .x {  }", arr("body"), Match.CONTAINS_ONCE);
+        //this doesn't
+        checkCC("root { } | .x {  }", arr("body"), Match.CONTAINS_ONCE);
+        
+    }
+    
+    public void testInheritInColor() throws ParseException {
+        checkCC("div { color:|  }", arr("inherit"), Match.CONTAINS_ONCE);
+    }
 }

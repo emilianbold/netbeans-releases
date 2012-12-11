@@ -51,7 +51,6 @@ import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
-import org.netbeans.modules.kenai.api.Kenai;
 import org.netbeans.modules.kenai.api.KenaiActivity;
 import org.netbeans.modules.kenai.api.KenaiException;
 import org.netbeans.modules.kenai.api.KenaiFeature;
@@ -79,7 +78,7 @@ public class CreateChatAction extends AbstractAction {
 
     public void actionPerformed(ActionEvent e) {
         final JButton source = (e.getSource() instanceof JButton)?(JButton) e.getSource():null;
-        final TopComponent mainWindow = WindowManager.getDefault().findTopComponent("KenaiTopComponent"); // NOI18N
+        final TopComponent mainWindow = WindowManager.getDefault().findTopComponent("TeamTopComponent"); //NOI18N
         mainWindow.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
         final ProgressHandle progress = ProgressHandleFactory.createHandle(NbBundle.getMessage(CreateChatAction.class, "LBL_CheckPermissions"));
         progress.setInitialDelay(0);

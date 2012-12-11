@@ -60,13 +60,12 @@ import javax.swing.SwingConstants;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
-import org.netbeans.modules.php.api.util.StringUtils;
 import org.netbeans.modules.php.project.connections.ConfigManager.Configuration;
 import org.netbeans.modules.php.project.connections.common.RemoteUtils;
-import org.netbeans.modules.php.project.connections.common.RemoteValidator;
 import org.netbeans.modules.php.project.connections.spi.RemoteConfigurationPanel;
 import org.netbeans.modules.php.project.ui.LastUsedFolders;
 import org.netbeans.modules.php.project.ui.Utils;
+import org.netbeans.modules.php.project.validation.ValidationResult;
 import org.openide.awt.Mnemonics;
 import org.openide.util.ChangeSupport;
 import org.openide.util.NbBundle;
@@ -107,50 +106,21 @@ public class SftpConfigurationPanel extends JPanel implements RemoteConfiguratio
 
     @Override
     public boolean isValidConfiguration() {
-        String err = RemoteValidator.validateHost(hostTextField.getText());
-        if (err != null) {
-            setError(err);
-            return false;
-        }
-
-        err = RemoteValidator.validatePort(portTextField.getText());
-        if (err != null) {
-            setError(err);
-            return false;
-        }
-
-        err = RemoteValidator.validateUser(userTextField.getText());
-        if (err != null) {
-            setError(err);
-            return false;
-        }
-
-        if (!validateIdentityFile()) {
-            return false;
-        }
-
-        if (!validateKnownHostsFile()) {
-            return false;
-        }
-
-        if (!validateInitialDirectory()) {
-            return false;
-        }
-
-        err = RemoteValidator.validateTimeout(timeoutTextField.getText());
-        if (err != null) {
-            setError(err);
-            return false;
-        }
-
-        err = RemoteValidator.validateKeepAliveInterval(keepAliveTextField.getText());
-        if (err != null) {
-            setError(err);
-            return false;
-        }
-
-        // ok
+        // cleanup
         setError(null);
+        setWarning(null);
+
+        // validate
+        ValidationResult validationResult = new SftpConfigurationValidator()
+                .validate(getHostName(), getPort(), getUserName(), getIdentityFile(), getKnownHostsFile(), getInitialDirectory(), getTimeout(), getKeepAliveInterval())
+                .getResult();
+        if (validationResult.hasErrors()) {
+            setError(validationResult.getErrors().get(0).getMessage());
+            return false;
+        }
+        if (validationResult.hasWarnings()) {
+            setWarning(validationResult.getWarnings().get(0).getMessage());
+        }
         return true;
     }
 
@@ -187,39 +157,6 @@ public class SftpConfigurationPanel extends JPanel implements RemoteConfiguratio
 
     void fireChange() {
         changeSupport.fireChange();
-    }
-
-    private boolean validateIdentityFile() {
-        return validateFile(getIdentityFile(), NbBundle.getMessage(SftpConfiguration.class, "LBL_IdentityFile"));
-    }
-
-    private boolean validateKnownHostsFile() {
-        return validateFile(getKnownHostsFile(), NbBundle.getMessage(SftpConfiguration.class, "LBL_KnownHostsFile"));
-    }
-
-    private boolean validateFile(String path, String label) {
-        if (!StringUtils.hasText(path)) {
-            return true;
-        }
-        File file = new File(path);
-        if (!file.isFile()) {
-            setError(NbBundle.getMessage(SftpConfigurationPanel.class, "MSG_FileNotFile", label));
-            return false;
-        }
-        if (!file.isAbsolute()) {
-            setError(NbBundle.getMessage(SftpConfigurationPanel.class, "MSG_FileNotAbsolute", label));
-            return false;
-        }
-        return true;
-    }
-
-    private boolean validateInitialDirectory() {
-        String err = RemoteValidator.validateUploadDirectory(getInitialDirectory());
-        if (err != null) {
-            setError(err);
-            return false;
-        }
-        return true;
     }
 
     /** This method is called from within the constructor to

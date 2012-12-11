@@ -76,7 +76,7 @@ public class JQueryModel {
         if (skipInTest) {
             return null;
         }
-        File apiFile = InstalledFileLocator.getDefault().locate(JQueryCodeCompletion.HELP_LOCATION, null, false); //NoI18N
+        File apiFile = InstalledFileLocator.getDefault().locate(JQueryCodeCompletion.HELP_LOCATION, "org.netbeans.modules.javascript2.editor", false); //NoI18N
         if (globalObject == null && apiFile != null) {
             globalObject = JsFunctionImpl.createGlobal(FileUtil.toFileObject(apiFile), (int) apiFile.length());
             jQuery =  new JQFunctionImpl((DeclarationScope)globalObject, globalObject, new IdentifierImpl("jQuery", OffsetRange.NONE), Collections.<Identifier>emptyList(), OffsetRange.NONE); // NOI18N
@@ -110,6 +110,21 @@ public class JQueryModel {
             this.inScope = inScope;
         }
 
+        @Override
+        public JsObject getProperty(String name) {
+            JsObject result = super.getProperty(name);
+            if(result == null) {
+                String lookingFor = name + "#";  //NOI18N
+                for(String proName : getProperties().keySet()) {
+                    if(proName.startsWith(lookingFor)) {
+                        result = super.getProperty(proName);
+                        break;
+                    }
+                }
+            }
+            return result;
+        }
+        
         @Override
         public JsObject getParent() {
             return this.parent;

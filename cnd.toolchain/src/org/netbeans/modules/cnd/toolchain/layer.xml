@@ -3,6 +3,20 @@
 <filesystem>
     <folder name="CND">
         <folder name="Tool">
+<!-- OSS -->
+            <file name="OSS_solaris-sparc_flavor" url="resources/toolchaindefinition/OSS_solaris-sparc_flavor.xml"/>
+            <file name="OSS_solaris-sparc_c" url="resources/toolchaindefinition/OSS_solaris-sparc_c.xml"/>
+            <file name="OSS_solaris-sparc_cpp" url="resources/toolchaindefinition/OSS_solaris-sparc_cpp.xml"/>
+            <file name="OSS_solaris-sparc_fortran" url="resources/toolchaindefinition/OSS_solaris-sparc_fortran.xml"/>
+            <file name="OSS_linuxGNU_flavor" url="resources/toolchaindefinition/OSS_linuxGNU_flavor.xml"/>
+            <file name="OSS_linuxGNU_cpp" url="resources/toolchaindefinition/OSS_linuxGNU_cpp.xml"/>
+            <file name="OSS_linuxGNU_linker" url="resources/toolchaindefinition/OSS_linuxGNU_linker.xml">
+                <attr name="extends" stringvalue="SunStudio_linker"/>
+            </file>
+            <file name="OSS_solaris-x86_linux_flavor" url="resources/toolchaindefinition/OSS_solaris-x86_linux_flavor.xml"/>
+            <file name="OSS_solaris-x86_linux_c" url="resources/toolchaindefinition/OSS_solaris-x86_linux_c.xml"/>
+            <file name="OSS_solaris-x86_linux_cpp" url="resources/toolchaindefinition/OSS_solaris-x86_linux_cpp.xml"/>
+            <file name="OSS_solaris-x86_linux_fortran" url="resources/toolchaindefinition/OSS_solaris-x86_linux_fortran.xml"/>
 <!-- SunStudio_12.3 -->
             <file name="SunStudio_12.3_solaris-sparc_flavor" url="resources/toolchaindefinition/SunStudio_12.3_solaris-sparc_flavor.xml">
                 <attr name="extends" stringvalue="SunStudio_12_flavor"/>
@@ -392,6 +406,118 @@
             </file>
         </folder>
         <folder name="ToolChains">
+<!-- OSS -->
+            <folder name="OSS_solaris-sparc">
+                <attr name="position" intvalue="950"/>
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.toolchain.Bundle"/>
+                <file name="flavor.shadow">
+                    <attr name="originalFile" stringvalue="CND/Tool/OSS_solaris-sparc_flavor"/>
+                </file>
+                <file name="c.shadow">
+                    <attr name="originalFile" stringvalue="CND/Tool/OSS_solaris-sparc_c"/>
+                </file>
+                <file name="cpp.shadow">
+                    <attr name="originalFile" stringvalue="CND/Tool/OSS_solaris-sparc_cpp"/>
+                </file>
+                <file name="fortran.shadow">
+                    <attr name="originalFile" stringvalue="CND/Tool/OSS_solaris-sparc_fortran"/>
+                </file>
+                <file name="assembler.shadow">
+                    <attr name="originalFile" stringvalue="CND/Tool/SunStudio_assembler"/>
+                </file>
+                <file name="scanner.shadow">
+                    <attr name="originalFile" stringvalue="CND/Tool/SunStudio_scanner"/>
+                </file>
+                <file name="linker.shadow">
+                    <attr name="originalFile" stringvalue="CND/Tool/SunStudio_linker"/>
+                </file>
+                <file name="make.shadow">
+                    <attr name="originalFile" stringvalue="CND/Tool/SunStudio_make"/>
+                </file>
+                <file name="debugger.shadow">
+                    <attr name="originalFile" stringvalue="CND/Tool/GNU_debugger"/>
+                </file>
+                <file name="qmake.shadow">
+                    <attr name="originalFile" stringvalue="CND/Tool/SunStudio_qmake"/>
+                </file>
+                <file name="cmake.shadow">
+                    <attr name="originalFile" stringvalue="CND/Tool/SunStudio_cmake"/>
+                </file>
+            </folder>
+            <folder name="OSS_solaris-x86_linux">
+                <attr name="position" intvalue="955"/>
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.toolchain.Bundle"/>
+                <file name="flavor.shadow">
+                    <attr name="originalFile" stringvalue="CND/Tool/OSS_solaris-x86_linux_flavor"/>
+                </file>
+                <file name="c.shadow">
+                    <attr name="originalFile" stringvalue="CND/Tool/OSS_solaris-x86_linux_c"/>
+                </file>
+                <file name="cpp.shadow">
+                    <attr name="originalFile" stringvalue="CND/Tool/OSS_solaris-x86_linux_cpp"/>
+                </file>
+                <file name="fortran.shadow">
+                    <attr name="originalFile" stringvalue="CND/Tool/OSS_solaris-x86_linux_fortran"/>
+                </file>
+                <file name="assembler.shadow">
+                    <attr name="originalFile" stringvalue="CND/Tool/SunStudio_assembler"/>
+                </file>
+                <file name="scanner.shadow">
+                    <attr name="originalFile" stringvalue="CND/Tool/SunStudio_scanner"/>
+                </file>
+                <file name="linker.shadow">
+                    <attr name="originalFile" stringvalue="CND/Tool/SunStudio_linker"/>
+                </file>
+                <file name="make.shadow">
+                    <attr name="originalFile" stringvalue="CND/Tool/SunStudio_make"/>
+                </file>
+                <file name="debugger.shadow">
+                    <attr name="originalFile" stringvalue="CND/Tool/GNU_debugger"/>
+                </file>
+                <file name="qmake.shadow">
+                    <attr name="originalFile" stringvalue="CND/Tool/SunStudio_qmake"/>
+                </file>
+                <file name="cmake.shadow">
+                    <attr name="originalFile" stringvalue="CND/Tool/SunStudio_cmake"/>
+                </file>
+            </folder>
+            <folder name="OSS_linuxCompatGNU">
+                <attr name="position" intvalue="956"/>
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.toolchain.Bundle"/>
+                <file name="flavor.shadow">
+                    <attr name="originalFile" stringvalue="CND/Tool/OSS_linuxGNU_flavor"/>
+                </file>
+                <file name="c.shadow">
+                    <attr name="originalFile" stringvalue="CND/Tool/OSS_solaris-x86_linux_c"/>
+                </file>
+                <file name="cpp.shadow">
+                    <attr name="originalFile" stringvalue="CND/Tool/OSS_linuxGNU_cpp"/>
+                </file>
+                <file name="fortran.shadow">
+                    <attr name="originalFile" stringvalue="CND/Tool/OSS_solaris-x86_linux_fortran"/>
+                </file>
+                <file name="assembler.shadow">
+                    <attr name="originalFile" stringvalue="CND/Tool/SunStudio_assembler"/>
+                </file>
+                <file name="scanner.shadow">
+                    <attr name="originalFile" stringvalue="CND/Tool/SunStudio_scanner"/>
+                </file>
+                <file name="linker.shadow">
+                    <attr name="originalFile" stringvalue="CND/Tool/OSS_linuxGNU_linker"/>
+                </file>
+                <file name="make.shadow">
+                    <attr name="originalFile" stringvalue="CND/Tool/SunStudio_make"/>
+                </file>
+                <file name="debugger.shadow">
+                    <attr name="originalFile" stringvalue="CND/Tool/GNU_debugger"/>
+                </file>
+                <file name="qmake.shadow">
+                    <attr name="originalFile" stringvalue="CND/Tool/SunStudio_qmake"/>
+                </file>
+                <file name="cmake.shadow">
+                    <attr name="originalFile" stringvalue="CND/Tool/SunStudio_cmake"/>
+                </file>
+            </folder>
 <!-- SunStudio_12.3 -->
             <folder name="SunStudio_12.3_solaris-sparc">
                 <attr name="position" intvalue="1010"/>

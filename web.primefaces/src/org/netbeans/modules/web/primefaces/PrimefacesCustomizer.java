@@ -67,7 +67,7 @@ import org.openide.util.RequestProcessor;
  */
 public class PrimefacesCustomizer implements JsfComponentCustomizer {
 
-    private static final RequestProcessor RP = new RequestProcessor(JsfComponentCustomizer.class);
+    private static final RequestProcessor RP = new RequestProcessor(PrimefacesCustomizer.class);
     private final ChangeSupport changeSupport = new ChangeSupport(this);
     private PrimefacesCustomizerPanel panel;
     private Future<Boolean> result = null;

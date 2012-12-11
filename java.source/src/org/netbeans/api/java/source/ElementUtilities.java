@@ -539,19 +539,19 @@ public final class ElementUtilities {
 
     private List<? extends ExecutableElement> findUnimplementedMethods(TypeElement impl, TypeElement element) {
         List<ExecutableElement> undef = new ArrayList<ExecutableElement>();
+        Types types = JavacTypes.instance(ctx);
+        com.sun.tools.javac.code.Types implTypes = com.sun.tools.javac.code.Types.instance(ctx);
+        DeclaredType implType = (DeclaredType)impl.asType();
         if (element.getModifiers().contains(Modifier.ABSTRACT)) {
             for (Element e : element.getEnclosedElements()) {
                 if (e.getKind() == ElementKind.METHOD && e.getModifiers().contains(Modifier.ABSTRACT)) {
                     ExecutableElement ee = (ExecutableElement)e;
                     Element eeImpl = getImplementationOf(ee, impl);
-                    if (eeImpl == null || (eeImpl == ee && impl != element))
+                    if ((eeImpl == null || (eeImpl == ee && impl != element)) && implTypes.asSuper((Type)implType, (Symbol)ee.getEnclosingElement()) != null)
                         undef.add(ee);
                 }
             }
         }
-        Types types = JavacTypes.instance(ctx);
-        com.sun.tools.javac.code.Types implTypes = com.sun.tools.javac.code.Types.instance(ctx);
-        DeclaredType implType = (DeclaredType)impl.asType();
         for (TypeMirror t : types.directSupertypes(element.asType())) {
             for (ExecutableElement ee : findUnimplementedMethods(impl, (TypeElement) ((DeclaredType) t).asElement())) {
                 //check if "the same" method has already been added:

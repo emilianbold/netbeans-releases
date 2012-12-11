@@ -131,6 +131,9 @@ public final class RunAnalysisPanel extends javax.swing.JPanel implements Lookup
     private final Lookup.Result<AnalyzerFactory> analyzersResult;
     private final Map<String, AnalyzerAndWarning> warningId2Description = new HashMap<String, AnalyzerAndWarning>();
     private final JButton runAnalysis;
+    //GuardedBy(AWT)
+    private       boolean inspectionsReady;
+    private       boolean started;
 
     public RunAnalysisPanel(ProgressHandle handle, Lookup context, JButton runAnalysis) {
         this(handle, context, runAnalysis, null);
@@ -279,6 +282,8 @@ public final class RunAnalysisPanel extends javax.swing.JPanel implements Lookup
     }
 
     void started() {
+        started = true;
+        
         ((CardLayout) progress.getLayout()).show(progress, "progress");
         progress.invalidate();
 
@@ -345,6 +350,8 @@ public final class RunAnalysisPanel extends javax.swing.JPanel implements Lookup
         
         final Collection<? extends AnalyzerFactory> analyzersCopy = new ArrayList<AnalyzerFactory>(analyzers);
         
+        inspectionsReady = false;
+        
         WORKER.post(new Runnable() {
             @Override public void run() {
                 final Map<AnalyzerFactory, Iterable<? extends WarningDescription>> analyzer2Warnings = new HashMap<AnalyzerFactory, Iterable<? extends WarningDescription>>();
@@ -362,6 +369,7 @@ public final class RunAnalysisPanel extends javax.swing.JPanel implements Lookup
                 SwingUtilities.invokeLater(new Runnable() {
                     @Override public void run() {
                         fillInspectionCombo(state, analyzer2Warnings);
+                        inspectionsReady = true;
                         updatePlugins();
                     }
                 });
@@ -418,9 +426,16 @@ public final class RunAnalysisPanel extends javax.swing.JPanel implements Lookup
     }
 
     private void updatePlugins() {
+        if (started) return ;
+        
         Collection<? extends AnalyzerFactory> toRun;
 
         if (singleInspectionRadio.isSelected()) {
+            if (!inspectionsReady) {
+                runAnalysis.setEnabled(false);
+                return ;
+            }
+            
             Object selectedInspection = inspectionCombo.getSelectedItem();
             
             if (selectedInspection instanceof AnalyzerAndWarning) {
@@ -670,6 +685,8 @@ public final class RunAnalysisPanel extends javax.swing.JPanel implements Lookup
     // End of variables declaration//GEN-END:variables
 
     private void updateEnableDisable() {
+        if (started) return ;
+        
         boolean configuration = configurationRadio.isSelected();
 
         configurationCombo.setEnabled(configuration);

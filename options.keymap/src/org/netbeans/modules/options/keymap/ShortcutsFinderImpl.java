@@ -64,7 +64,7 @@ import org.openide.util.lookup.ServiceProvider;
  */
 @ServiceProvider(service= ShortcutsFinder.class)
 public class ShortcutsFinderImpl implements ShortcutsFinder {
-    private KeymapModel model;
+    protected KeymapModel model;
     
     // Map (String (keymapName) > Map (ShortcutAction > Set (String (shortcut Ctrl+F)))).
     private volatile Map<String, Map<ShortcutAction, Set<String>>> shortcutsCache = 
@@ -181,7 +181,15 @@ public class ShortcutsFinderImpl implements ShortcutsFinder {
         }
         return shortcuts.toArray (new String [shortcuts.size ()]);
     }
-
+    
+    protected void clearShortcuts(String profile) {
+        shortcutsCache.remove(profile);
+    }
+    
+    protected Map<ShortcutAction,Set<String>> getKeymap (String profile) {
+        return model.getKeymap (profile);
+    }
+    
     /**
      * Provides mapping of actions to their (non modified) shortcuts for a profile
      * @param profile given profile
@@ -191,7 +199,7 @@ public class ShortcutsFinderImpl implements ShortcutsFinder {
         Map<ShortcutAction, Set<String>> res = shortcutsCache.get(profile);
         if (res == null) {
             // read profile and put it to cache
-            Map<ShortcutAction, Set<String>> profileMap = convertFromEmacs (model.getKeymap (profile));
+            Map<ShortcutAction, Set<String>> profileMap = convertFromEmacs (getKeymap(profile));
             synchronized (this) {
                 if (!shortcutsCache.containsKey(profile)) {
                     Map m = new HashMap(shortcutsCache);

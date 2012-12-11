@@ -49,6 +49,22 @@ made subject to such option by the copyright holder.
     <apidef name="refactoring">Refactoring API</apidef>
 </apidefs>
 <changes>
+    <change id="TransactionProgress">
+        <api name="refactoring"/>
+        <summary>RefactoringCommit implements the interface ProgressProvider.</summary>
+        <version major="1" minor="33"/>
+        <date day="27" month="11" year="2012"/>
+        <author login="ralphbenjamin"/>
+        <compatibility addition="yes"/>
+        <description>
+            <p>
+                RefactoringCommit now implements the interface ProgressProvider
+                to notify the progress of the commit.
+            </p>
+        </description>
+        <class package="org.netbeans.modules.refactoring.spi" name="RefactoringCommit"/>
+        <issue number="221295"/>
+    </change>
     <change id="ServerSideQueries">
         <api name="refactoring"/>
         <summary>Added support for Scope Providers and ExpandableTreeElements.</summary>

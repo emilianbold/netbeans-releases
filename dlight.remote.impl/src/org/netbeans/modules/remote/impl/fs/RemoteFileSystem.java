@@ -678,6 +678,59 @@ public final class RemoteFileSystem extends FileSystem implements ConnectionList
             CommonTasksSupport.rmFile(execEnv, filename, null);
         }
     }
+    
+    private RemoteFileObjectBase vcsSafeGetFileObject(String path) {
+        return factory.getCachedFileObject(path);
+        //RemoteFileObject fo = findResource(path);
+        //return (fo == null) ? null : fo.getImplementor();
+    }
+    
+    public Boolean vcsSafeIsDirectory(String path) {
+        path = PathUtilities.normalizeUnixPath(path);
+        RemoteFileObjectBase fo = vcsSafeGetFileObject(path);
+        if (fo == null) {
+            return null;
+        } else {
+            return fo.isFolder() ? Boolean.TRUE : Boolean.FALSE;
+        }            
+    }
+
+    public Boolean vcsSafeIsFile(String path) {
+        path = PathUtilities.normalizeUnixPath(path);
+        RemoteFileObjectBase fo = vcsSafeGetFileObject(path);
+        if (fo == null) {
+            return null;
+        } else {
+            switch(fo.getType()) {
+                // TODO: should we change isData() instead?
+                case Regular:
+                    return true;
+                case SymbolicLink:
+                    return fo.isData() ? Boolean.TRUE : Boolean.FALSE;
+                default:
+                    return false;
+            }            
+        }            
+    }
+
+    public Boolean vcsSafeExists(String path) {
+        path = PathUtilities.normalizeUnixPath(path);
+        RemoteFileObjectBase fo = vcsSafeGetFileObject(path);
+        if (fo == null) {
+            String parentPath = PathUtilities.getDirName(path);            
+            if (parentPath != null) {
+                RemoteFileObjectBase parentFO = vcsSafeGetFileObject(parentPath);
+                if (parentFO != null) {
+                    String childNameExt = PathUtilities.getBaseName(path);
+                    RemoteFileObject childFO = parentFO.getFileObject(childNameExt);
+                    return (childFO != null && childFO.isValid()) ? Boolean.TRUE : Boolean.FALSE;
+                }
+            }
+            return null;
+        } else {
+            return fo.isValid() ? Boolean.TRUE : Boolean.FALSE;
+        }            
+    }
 
     private final class StatusImpl implements FileSystem.HtmlStatus, LookupListener, FileStatusListener {
 

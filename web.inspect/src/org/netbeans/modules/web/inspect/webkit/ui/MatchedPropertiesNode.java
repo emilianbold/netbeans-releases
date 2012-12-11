@@ -42,6 +42,7 @@
 package org.netbeans.modules.web.inspect.webkit.ui;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -53,6 +54,7 @@ import org.netbeans.modules.web.inspect.actions.Resource;
 import org.netbeans.modules.web.inspect.webkit.Utilities;
 import org.netbeans.modules.web.webkit.debugging.api.css.InheritedStyleEntry;
 import org.netbeans.modules.web.webkit.debugging.api.css.MatchedStyles;
+import org.netbeans.modules.web.webkit.debugging.api.css.PropertyInfo;
 import org.netbeans.modules.web.webkit.debugging.api.css.Rule;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
@@ -66,6 +68,8 @@ import org.openide.util.NbBundle;
 public class MatchedPropertiesNode extends AbstractNode {
     /** Rules matching a node. */
     private MatchedStyles matchedStyles;
+    /** Information about the supported properties. */
+    private Map<String,PropertyInfo> propertyInfos;
     /** Owning project of the inspected page. */
     private Project project;
 
@@ -74,14 +78,14 @@ public class MatchedPropertiesNode extends AbstractNode {
      *
      * @param project owning project of the inspected page.
      * @param matchedStyles rules matching a node.
+     * @param propertyInfos information about the supported properties.
      */
-    MatchedPropertiesNode(Project project, MatchedStyles matchedStyles) {
+    MatchedPropertiesNode(Project project, MatchedStyles matchedStyles, Map<String,PropertyInfo> propertyInfos) {
         super(new Children.Array());
         this.project = project;
         this.matchedStyles = matchedStyles;
-        if (matchedStyles != null) {
-            initChildren();
-        }
+        this.propertyInfos = propertyInfos;
+        initChildren();
         setDisplayName(NbBundle.getMessage(MatchedPropertiesNode.class, "MatchedPropertiesNode.displayName")); // NOI18N
     }
 
@@ -118,36 +122,52 @@ public class MatchedPropertiesNode extends AbstractNode {
      */
     private void addChildrenFor(Rule rule, List<MatchedPropertyNode> toPopulate, Set<String> properties, boolean matchingSelection) {
         List<org.netbeans.modules.web.webkit.debugging.api.css.Property> ruleProperties = rule.getStyle().getProperties();
+        int index = toPopulate.size();
         Map<String, MatchedPropertyNode> parentMap = new HashMap<String, MatchedPropertyNode>();
-        Map<String, List<MatchedPropertyNode>> childrenMap = new HashMap<String, List<MatchedPropertyNode>>();
+        Map<String, MatchedPropertyNode> childrenMap = new HashMap<String, MatchedPropertyNode>();
         for (int i=ruleProperties.size()-1; i>=0; i--) {
             org.netbeans.modules.web.webkit.debugging.api.css.Property property = ruleProperties.get(i);
             String name = property.getName();
             if (property.isParsedOk() && !properties.contains(name) && (matchingSelection || CSSUtils.isInheritedProperty(name))) {
                 properties.add(name);
-                MatchedPropertyNode node = new MatchedPropertyNode(rule, new Resource(project, rule.getSourceURL()), property);
-                String shorthandName = property.getShorthandName();
-                if (shorthandName == null) {
+                // Declared properties
+                if (property.getText() != null) {
+                    MatchedPropertyNode node = new MatchedPropertyNode(rule, new Resource(project, rule.getSourceURL()), property);
                     parentMap.put(name, node);
                     toPopulate.add(node);
-                    List<MatchedPropertyNode> children = childrenMap.get(name);
-                    if (children != null) {
-                        for (MatchedPropertyNode child : children) {
-                            node.addSubNode(child);
-                        }
-                    }
+                }
+            }
+        }
+        // Shorthands
+        for (org.netbeans.modules.web.webkit.debugging.api.css.Property property : ruleProperties) {
+            if (property.getText() == null) {
+                String shorthandName = property.getShorthandName();
+                MatchedPropertyNode child = new MatchedPropertyNode(rule, new Resource(project, rule.getSourceURL()), property);
+                if (shorthandName == null) {
+                    childrenMap.put(property.getName(), child);
                 } else {
                     MatchedPropertyNode parent = parentMap.get(shorthandName);
-                    if (parent == null) {
-                        List<MatchedPropertyNode> children = childrenMap.get(shorthandName);
-                        if (children == null) {
-                            children = new ArrayList<MatchedPropertyNode>();
-                            childrenMap.put(shorthandName, children);
-                        }
-                        children.add(node);
-                    } else {
-                        parent.addSubNode(node);
+                    if (parent != null) {
+                        parent.addSubNode(child);
                     }
+                }
+            }
+        }
+        // Longhands
+        for (int i=index; i<toPopulate.size(); i++) {
+            MatchedPropertyNode parent = toPopulate.get(i);
+            String propertyName = parent.property.getName();
+            List<String> longhands = Collections.EMPTY_LIST;
+            if (propertyInfos != null) {
+                PropertyInfo info = propertyInfos.get(propertyName);
+                if (info != null) {
+                    longhands = info.getLonghands();
+                }
+            }
+            for (String longhand : longhands) {
+                MatchedPropertyNode child = childrenMap.remove(longhand);
+                if (child != null) {
+                    parent.addSubNode(child);
                 }
             }
         }

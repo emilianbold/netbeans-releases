@@ -42,7 +42,6 @@
 package org.netbeans.modules.j2ee.persistence.spi.jpql;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.util.Elements;
@@ -50,24 +49,19 @@ import org.eclipse.persistence.jpa.jpql.TypeHelper;
 import org.eclipse.persistence.jpa.jpql.spi.IType;
 import org.eclipse.persistence.jpa.jpql.spi.ITypeRepository;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.j2ee.persistence.api.metadata.orm.EntityMappingsMetadata;
-import org.netbeans.modules.j2ee.persistence.util.MetadataModelReadHelper;
 
 /**
  *
  * @author sp153251
  */
 public class TypeRepository implements ITypeRepository {
-    private final Project project;
     private final Map<String, IType[]> types;
     private final Map<String, Boolean> packages;
-    private MetadataModelReadHelper<EntityMappingsMetadata, List<org.netbeans.modules.j2ee.persistence.api.metadata.orm.Entity>> readHelper;
     private final ManagedTypeProvider mtp;
     private final Elements elements;
 
 
     TypeRepository(Project project, ManagedTypeProvider mtp, Elements elements) {
-        this.project = project;
         this.mtp = mtp;
         this.elements = elements;
         types = new HashMap<String, IType[]>();

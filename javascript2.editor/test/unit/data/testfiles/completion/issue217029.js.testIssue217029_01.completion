@@ -1,3 +1,6 @@
 Code completion result for source line:
 element.ch|arAt(10);
 (QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
+------------------------------------
+METHOD     charAt(param)                   [PUBLIC]   issue217029.js
+FIELD      childElementCount: Number       [PUBLIC]   stub_DOM_Element.js

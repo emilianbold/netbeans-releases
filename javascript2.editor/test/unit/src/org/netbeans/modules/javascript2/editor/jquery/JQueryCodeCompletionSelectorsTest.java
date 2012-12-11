@@ -150,6 +150,18 @@ public class JQueryCodeCompletionSelectorsTest extends JsCodeComplationBase {
         checkAppliedCompletion("testfiles/completion/jQuery/selectors/basic/issue211769_1.js", "$('^')", "$('.notMe^')", ".notMe", false);
     }
 
+    public void testIssue221481() throws Exception {
+        checkAppliedCompletion("testfiles/completion/jQuery/selectors/basic/issue221481.js", "$(document).find('a #foo .^');", "$(document).find('a #foo .myClass^');", ".myClass", false);
+    }
+
+    public void testIssue221481_1() throws Exception {
+        checkAppliedCompletion("testfiles/completion/jQuery/selectors/basic/issue221481_1.js", "$(document).find('a #foo i^');", "$(document).find('a #foo img^');", "img", false);
+    }
+
+    public void testIssue221481_2() throws Exception {
+        checkAppliedCompletion("testfiles/completion/jQuery/selectors/basic/issue221481_2.js", "$(document).find('a #foo img[^');", "$(document).find('a #foo img[title^');", "title", false);
+    }
+
     @Override
     protected Map<String, ClassPath> createClassPathsForTest() {
         return Collections.singletonMap(

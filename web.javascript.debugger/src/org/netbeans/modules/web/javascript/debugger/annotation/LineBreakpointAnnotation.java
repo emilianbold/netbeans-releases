@@ -49,7 +49,9 @@ import org.netbeans.api.debugger.Breakpoint.VALIDITY;
 import org.netbeans.modules.web.javascript.debugger.MiscEditorUtil;
 import org.netbeans.modules.web.javascript.debugger.breakpoints.LineBreakpoint;
 import org.netbeans.spi.debugger.ui.BreakpointAnnotation;
+import org.openide.ErrorManager;
 import org.openide.text.Annotatable;
+import org.openide.util.NbBundle;
 
 /**
  * Debugger Annotation class.
@@ -70,9 +72,38 @@ public final class LineBreakpointAnnotation extends BreakpointAnnotation {
         return type;
     }
     
+    @NbBundle.Messages({
+        "# {0} - validity message",
+        "TOOLTIP_BREAKPOINT_BROKEN_INVALID=Unresolved breakpoint: {0}",
+        "TOOLTIP_BREAKPOINT_BROKEN=Unresolved breakpoint",
+        "TOOLTIP_BREAKPOINT=Line Breakpoint",
+        "TOOLTIP_DISABLED_BREAKPOINT=Disabled Line Breakpoint",
+        "TOOLTIP_CONDITIONAL_BREAKPOINT=Conditional Breakpoint",
+        "TOOLTIP_DISABLED_CONDITIONAL_BREAKPOINT=Disabled Conditional Breakpoint"
+    })
     @Override
     public String getShortDescription() {
-        return "";
+        if (type.endsWith("_broken")) {
+            if (breakpoint.getValidity() == Breakpoint.VALIDITY.INVALID) {
+                String msg = breakpoint.getValidityMessage();
+                return Bundle.TOOLTIP_BREAKPOINT_BROKEN_INVALID(msg);
+            }
+            return Bundle.TOOLTIP_BREAKPOINT_BROKEN();
+        }
+        if (type == MiscEditorUtil.BREAKPOINT_ANNOTATION_TYPE) {
+            return Bundle.TOOLTIP_BREAKPOINT();
+        }
+        if (type == MiscEditorUtil.DISABLED_BREAKPOINT_ANNOTATION_TYPE) {
+            return Bundle.TOOLTIP_DISABLED_BREAKPOINT();
+        }
+        if (type == MiscEditorUtil.CONDITIONAL_BREAKPOINT_ANNOTATION_TYPE) {
+            return Bundle.TOOLTIP_CONDITIONAL_BREAKPOINT();
+        }
+        if (type == MiscEditorUtil.DISABLED_CONDITIONAL_BREAKPOINT_ANNOTATION_TYPE) {
+            return Bundle.TOOLTIP_DISABLED_CONDITIONAL_BREAKPOINT();
+        }
+        ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, new IllegalStateException("Unknown breakpoint type '"+type+"'."));
+        return null;
     }
     
 

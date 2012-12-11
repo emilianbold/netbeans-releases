@@ -54,7 +54,7 @@ public class PERegistrationSupportTest extends NbTestCase {
     }
     
     public void doTest(String type) throws ClassNotFoundException {
-        Class<?> cls = PERegistrationSupport.getClassFromCanonicalName(type);
+        Class<?> cls = NodesRegistrationSupport.getClassFromCanonicalName(type);
         assertEquals(type, cls.getCanonicalName());
     }
     

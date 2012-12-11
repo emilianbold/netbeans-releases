@@ -46,7 +46,6 @@ import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
-import java.io.FilenameFilter;
 import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.Alignment;
 import javax.swing.JButton;
@@ -58,6 +57,7 @@ import javax.swing.SwingConstants;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import org.netbeans.modules.web.clientproject.util.ClientSideProjectUtilities;
 import org.netbeans.modules.web.clientproject.util.ValidationUtilities;
 import org.openide.awt.Mnemonics;
 import org.openide.filesystems.FileChooserBuilder;
@@ -170,7 +170,7 @@ public class ExistingClientSideProject extends JPanel {
     @NbBundle.Messages({
         "ExistingClientSideProject.error.siteRoot.empty=Site root must be selected.",
         "ExistingClientSideProject.error.siteRoot.invalid=Site root is not a valid path.",
-        "ExistingClientSideProject.error.siteRoot.nbproject=Site root is already NetBeans project."
+        "ExistingClientSideProject.error.siteRoot.nbproject=Site root is already NetBeans project (maybe only in memory)."
     })
     private String validateSiteRoot() {
         String siteRoot = getSiteRoot();
@@ -180,7 +180,7 @@ public class ExistingClientSideProject extends JPanel {
         File siteRootDir = FileUtil.normalizeFile(new File(siteRoot).getAbsoluteFile());
         if (!siteRootDir.isDirectory()) {
             return Bundle.ExistingClientSideProject_error_siteRoot_invalid();
-        } else if (new File(siteRootDir, "nbproject").isDirectory()) { // NOI18N
+        } else if (ClientSideProjectUtilities.isProject(siteRootDir)) {
             return Bundle.ExistingClientSideProject_error_siteRoot_nbproject();
         }
         return null;
@@ -198,7 +198,7 @@ public class ExistingClientSideProject extends JPanel {
     @NbBundle.Messages({
         "ExistingClientSideProject.error.projectDirectory.invalid=Project directory is not a valid path.",
         "ExistingClientSideProject.error.projectDirectory.empty=Project directory must be selected.",
-        "ExistingClientSideProject.error.projectDirectory.nbproject=Project directory is already NetBeans project.",
+        "ExistingClientSideProject.error.projectDirectory.alreadyProject=Project directory is already NetBeans project (maybe only in memory).",
         "ExistingClientSideProject.error.projectDirectory.notWritable=Project directory cannot be created."
     })
     private String validateProjectDirectory() {
@@ -207,21 +207,14 @@ public class ExistingClientSideProject extends JPanel {
             return Bundle.ExistingClientSideProject_error_projectDirectory_empty();
         }
         File projDir = FileUtil.normalizeFile(new File(projectDirectory).getAbsoluteFile());
+        if (ClientSideProjectUtilities.isProject(projDir)) {
+            return Bundle.ExistingClientSideProject_error_projectDirectory_alreadyProject();
+        }
         File siteRoot = FileUtil.normalizeFile(new File(getSiteRoot()).getAbsoluteFile());
         if (projDir.isDirectory()) {
             if (projDir.equals(siteRoot)) {
                 // same as site root, do nothing
                 return null;
-            }
-            // 1. already has nbproject?
-            File[] nbprojects = projDir.listFiles(new FilenameFilter() {
-                @Override
-                public boolean accept(File dir, String name) {
-                    return "nbproject".equals(name); // NOI18N
-                }
-            });
-            if (nbprojects != null && nbprojects.length > 0) {
-                return Bundle.ExistingClientSideProject_error_projectDirectory_nbproject();
             }
             // XXX ideally warn about possibly non-empty directory
         } else {

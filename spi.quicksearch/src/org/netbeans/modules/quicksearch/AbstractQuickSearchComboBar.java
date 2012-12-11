@@ -194,6 +194,7 @@ public abstract class AbstractQuickSearchComboBar extends javax.swing.JPanel imp
             displayer.clearModel();
         } else if (evt.getKeyCode() == KeyEvent.VK_F10 &&
                 evt.isShiftDown()) {
+            evt.consume();
             maybeShowPopup(null);
         }
     }

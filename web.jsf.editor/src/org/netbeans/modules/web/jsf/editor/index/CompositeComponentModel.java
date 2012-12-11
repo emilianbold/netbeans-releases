@@ -49,6 +49,8 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.StringTokenizer;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.modules.html.editor.api.gsf.HtmlParserResult;
 import org.netbeans.modules.html.editor.lib.api.elements.*;
 import org.netbeans.modules.html.editor.lib.api.elements.OpenTag;
@@ -84,6 +86,7 @@ public class CompositeComponentModel extends JsfPageModel {
 //        }
 //        
 //    }
+    private static final Logger LOGGER = Logger.getLogger(CompositeComponentModel.class.getSimpleName());
     
     //index keys
     static final String LIBRARY_NAME_KEY = "library"; //NOI18N
@@ -412,9 +415,14 @@ public class CompositeComponentModel extends JsfPageModel {
                 StringTokenizer st2 = new StringTokenizer(attrText, Character.valueOf(VALUES_SEPARATOR).toString());
                 while (st2.hasMoreTokens()) {
                     String pair = st2.nextToken();
-                    String key = pair.substring(0, pair.indexOf(KEY_VALUE_SEPARATOR));
-                    String value = decode(pair.substring(pair.indexOf(KEY_VALUE_SEPARATOR) + 1));
-                    pairs.put(key, value);
+                    int key_value_separatorIndex = pair.indexOf(KEY_VALUE_SEPARATOR);
+                    if(key_value_separatorIndex == -1) {
+                        LOGGER.log(Level.INFO, "Bad interface_attributes section in IndexResult: ", attrs); //NOI18N
+                    } else {
+                        String key = pair.substring(0, key_value_separatorIndex);
+                        String value = decode(pair.substring(pair.indexOf(KEY_VALUE_SEPARATOR) + 1));
+                        pairs.put(key, value);
+                    }
                 }
                 parsedAttrs.add(pairs);
             }
@@ -431,11 +439,13 @@ public class CompositeComponentModel extends JsfPageModel {
             String displayName = null;
             String shortDescription = null;
             String descr = result.getValue(INTERFACE_DESCRIPTION_KEY);
-            StringTokenizer dst = new StringTokenizer(descr, Character.valueOf(VALUES_SEPARATOR).toString());
-            assert dst.hasMoreTokens();
-            displayName = dst.nextToken();
-            assert dst.hasMoreTokens();
-            shortDescription = dst.nextToken();
+            int separatorIndex = descr.indexOf(VALUES_SEPARATOR);
+            if(separatorIndex >= 0) {
+                displayName = descr.substring(0, separatorIndex);
+                shortDescription = descr.substring(separatorIndex + 1);
+            } else {
+                LOGGER.log(Level.INFO, "Bad interface_description section in IndexResult: ", descr); //NOI18N
+            }
             
             return new CompositeComponentModel(result.getFile(), result.getRelativePath(), 
                     parsedAttrs, hasImplementation, facetDeclarations,

@@ -66,9 +66,9 @@ made subject to such option by the copyright holder.
     <bind actionName="caret-previous-word" key="D-LEFT"/>
     <bind actionName="caret-up" key="UP"/>
     <bind actionName="caret-up" key="KP_UP"/>
-    <bind actionName="collapse-all-folds" key="DS-SLASH"/>
+    <!--<bind actionName="collapse-all-folds" key="DS-SLASH"/>-->
     <bind actionName="collapse-all-folds" key="DS-DIVIDE"/>
-    <bind actionName="collapse-fold" key="D-MINUS"/>
+    <!--<bind actionName="collapse-fold" key="D-MINUS"/>-->
     <bind actionName="collapse-fold" key="D-SUBTRACT"/>
     <bind actionName="completion-show" key="D-SPACE"/>
     <bind actionName="completion-show" key="D-BACK_SLASH"/>
@@ -85,7 +85,7 @@ made subject to such option by the copyright holder.
     <bind actionName="delete-previous" key="S-BACK_SPACE"/>
     <bind actionName="documentation-show" key="F2"/>
     <bind actionName="documentation-show" key="DS-SPACE"/>
-    <bind actionName="documentation-show" key="DS-BACK_SLASH"/>
+<!--    <bind actionName="documentation-show" key="DS-BACK_SLASH"/>-->
     <bind actionName="expand-all-folds" key="DS-ADD"/>
     <bind actionName="expand-all-folds" key="DS-PLUS"/>
     <bind actionName="expand-all-folds" key="D-MULTIPLY"/>
@@ -98,7 +98,7 @@ made subject to such option by the copyright holder.
     <bind actionName="find-previous" key="DS-K"/>
     <bind actionName="fix-imports" key="DS-O"/>
     <bind actionName="format" key="D-I"/>
-    <bind actionName="generate-code" key="OS-S"/>
+<!--    <bind actionName="generate-code" key="OS-S"/>-->
     <bind actionName="goto" key="D-L"/>
     <bind actionName="goto-declaration" key="F3"/>
     <bind actionName="in-place-refactoring" key="OS-R"/>
@@ -149,7 +149,7 @@ made subject to such option by the copyright holder.
     <bind actionName="show-popup-menu" key="S-F10"/>
     <bind actionName="split-line" key="D-ENTER"/>
     <bind actionName="start-new-line" key="S-ENTER"/>
-    <bind actionName="switch-case" key="D-U$S"/>
+    <!--<bind actionName="switch-case" key="D-U$S"/>-->
     <bind actionName="to-lower-case" key="DS-Y"/>
     <bind actionName="to-upper-case" key="DS-X"/>
     <bind actionName="toggle-comment" key="D-SLASH"/>
@@ -162,4 +162,31 @@ made subject to such option by the copyright holder.
     <bind actionName="word-match-next" key="O-SLASH"/>
     <bind actionName="word-match-next" key="O-DIVIDE"/>
     <bind remove="true" key="OS-J"/>
+    
+    <bind actionName="in-place-refactoring" key="D-2$R"/>
+    <bind actionName="toggle-comment" key="D-7"/>
+    <bind actionName="toggle-comment" key="SD-SLASH"/>
+    <bind actionName="toggle-comment" key="ESCAPE$D-C"/>
+    <bind actionName="reindent-line" key="D-I"/>
+    <bind actionName="introduce-field" key="D-2$F"/>
+    <bind actionName="introduce-variable" key="D-2$L"/>
+    <bind actionName="introduce-variable" key="SO-L"/>
+    <bind actionName="introduce-method" key="SO-M"/>
+    <bind actionName="format" key="ESCAPE$D-F"/>
+    <bind actionName="format" key="SD-F"/>
+    <!-- incremental search forward action is gone ?-->
+    <bind actionName="find" key="D-J"/>
+    <bind actionName="start-new-line" key="S-ENTER"/>
+    <bind actionName="match-brace" key="DS-PERIOD"/>
+    <bind actionName="documentation-show" key="S-F2"/>
+    <bind actionName="toggle-comment" key="D-BACK_SLASH"/>
+    <bind actionName="toggle-rectangular-selection" key="SO-A"/>
+    <bind actionName="toggle-typing-mode" key="SD-INSERT"/>
+    
+    <bind actionName="zoom-text-in" key="D-EQUALS"/>
+    <bind actionName="zoom-text-out" key="D-MINUS"/>
+
+    <!-- Possibly java specific, but might be useful as well for PHP -->
+    <bind actionName="introduce-field" key="D-2$F"/>
+    <bind actionName="introduce-variable" key="D-2$L"/>
 </bindings>

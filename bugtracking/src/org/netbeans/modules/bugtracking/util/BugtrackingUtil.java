@@ -95,6 +95,7 @@ import org.openide.windows.TopComponent;
  * @author Marian Petras
  */
 public class BugtrackingUtil {
+    private static RequestProcessor parallelRP;
 
     public static boolean show(JPanel panel, String title, String okName) {
         JButton ok = new JButton(okName);
@@ -394,6 +395,13 @@ public class BugtrackingUtil {
             char[] password = Keyring.read(getPasswordKey(keyPrefix, user, url));
             return password != null ? password : new char[0];
         }
+    }
+
+    public static RequestProcessor getParallelRP () {
+        if (parallelRP == null) {
+            parallelRP = new RequestProcessor("Bugtracking parallel tasks", 5, true); //NOI18N
+        }
+        return parallelRP;
     }
     
     private static String getPasswordKey(String prefix, String user, String url) {

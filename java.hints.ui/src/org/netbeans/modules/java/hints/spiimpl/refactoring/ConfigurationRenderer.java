@@ -49,6 +49,7 @@ import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.ListCellRenderer;
 import javax.swing.border.Border;
+import javax.swing.border.CompoundBorder;
 import javax.swing.plaf.UIResource;
 
 /**
@@ -61,6 +62,10 @@ public class ConfigurationRenderer extends JLabel implements ListCellRenderer, U
         setOpaque(true);
     }
 
+    private boolean bordersInitialized;
+    private Border originalBorder;
+    private Border separatorBorder;
+    
     @Override
     public Component getListCellRendererComponent(
             JList list,
@@ -76,11 +81,20 @@ public class ConfigurationRenderer extends JLabel implements ListCellRenderer, U
                 setText(value.toString());
             }
         }
+    
+        if (!bordersInitialized) {
+            //#222894: the original border must be kept for GTK
+            originalBorder = getBorder();
+            Separator separator = new Separator(list.getForeground());
+            if (originalBorder != null) separatorBorder = new CompoundBorder(originalBorder, separator);
+            else separatorBorder = separator;
+            bordersInitialized = true;
+        }
         
         if (index == list.getModel().getSize()-5 && ((ConfigurationsComboModel) list.getModel()).canModify() ) {
-            setBorder(new Separator(list.getForeground()));
+            setBorder(separatorBorder);
         } else {
-            setBorder(null);
+            setBorder(originalBorder);
         }
         
         if (isSelected) {

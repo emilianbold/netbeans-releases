@@ -8,7 +8,7 @@ CONSTRUCTO Car(color, maker): Car          [PUBLIC]   typeInferenceNew.js
 CONSTRUCTO jQuery()                        [PUBLIC]   jquery-api.xml
 CLASS      Context                         [PUBLIC]   typeInferenceNew.js
 CLASS      formatter                       [PUBLIC]   typeInferenceNew.js
-VARIABLE   object                          [PUBLIC]   typeInferenceNew.js
+VARIABLE   object: Car                     [PUBLIC]   typeInferenceNew.js
 KEYWORD    break                                      null
 KEYWORD    case                                       null
 KEYWORD    catch                                      null

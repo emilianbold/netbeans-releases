@@ -63,6 +63,7 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipException;
 import java.util.zip.ZipFile;
 import org.openide.ErrorManager;
+import org.openide.util.Exceptions;
 
 /**
  * Custom classloader for Persistence plugin. It subclasses URLClassLoader
@@ -208,8 +209,9 @@ public class CustomClassLoader extends URLClassLoader {
                 }
             } else {
                 if (entry.isFile() && entry.exists()) {
+                    ZipFile zf = null;
                     try {
-                        ZipFile zf = new ZipFile(entry);
+                        zf = new ZipFile(entry);
                         // Zip entries are delimited by /
                         name = name.replaceAll("\\\\", "/");
                         ZipEntry zipEntry = zf.getEntry(name);
@@ -227,6 +229,13 @@ public class CustomClassLoader extends URLClassLoader {
                         // continue
                     } catch (IOException ex) {
                         // continue
+                    } finally {
+                        try {
+                            if(zf!=null){
+                                zf.close();
+                            }
+                        } catch (IOException ex) {
+                        }
                     }
                 }
             }

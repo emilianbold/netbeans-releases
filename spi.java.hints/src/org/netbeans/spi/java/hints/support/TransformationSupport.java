@@ -41,9 +41,6 @@
  */
 package org.netbeans.spi.java.hints.support;
 
-import com.sun.source.tree.CompilationUnitTree;
-import com.sun.source.tree.Tree;
-import com.sun.source.util.SourcePositions;
 import com.sun.source.util.TreePath;
 import java.util.*;
 import java.util.Map.Entry;
@@ -180,6 +177,9 @@ public final class TransformationSupport {
         Iterable<? extends HintDescription> hints = PatternConvertor.create(jackpotPattern);
         HintsInvoker inv = new HintsInvoker(workingCopy, cancel);
         Map<HintDescription, List<ErrorDescription>> computeHints = inv.computeHints(workingCopy, on, false, hints, new ArrayList<MessageImpl>());
+        
+        if (computeHints == null || cancel.get()) return ;
+        
         List<ErrorDescription> errs = new ArrayList<ErrorDescription>();
         for (Entry<HintDescription, List<ErrorDescription>> entry: computeHints.entrySet()) {
             errs.addAll(entry.getValue());

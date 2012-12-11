@@ -42,7 +42,6 @@
 
 package org.netbeans.modules.cnd.toolchain.compilerset;
 
-import org.netbeans.modules.cnd.spi.toolchain.ToolchainScriptGenerator;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -105,10 +104,6 @@ public class CompilerSetManagerAccessorImpl {
         }
     }
 
-    public static String getRemoteScript(String path) {
-        return ToolchainScriptGenerator.generateScript(path);
-    }
-
     public static void save(CompilerSetManagerImpl csm) {
         synchronized (MASTER_LOCK) {
             CompilerSetPreferences.saveToDisk(csm);
@@ -120,7 +115,7 @@ public class CompilerSetManagerAccessorImpl {
     }
 
     private static CompilerSetManager getDefaultImpl(ExecutionEnvironment env, boolean initialize) {
-        CompilerSetManagerImpl csm = null;
+        CompilerSetManagerImpl csm;
         boolean no_compilers = false;
 
         synchronized (MASTER_LOCK) {

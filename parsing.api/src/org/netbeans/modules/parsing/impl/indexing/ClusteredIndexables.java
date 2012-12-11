@@ -42,16 +42,32 @@
 
 package org.netbeans.modules.parsing.impl.indexing;
 
+import java.lang.ref.Reference;
+import java.lang.ref.SoftReference;
+import java.text.MessageFormat;
+import java.util.AbstractCollection;
+import java.util.ArrayList;
 import java.util.BitSet;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
+import java.util.concurrent.Callable;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.NullAllowed;
+import org.netbeans.modules.parsing.impl.indexing.lucene.DocumentBasedIndexManager;
+import org.netbeans.modules.parsing.lucene.support.DocumentIndex;
+import org.netbeans.modules.parsing.lucene.support.DocumentIndexCache;
+import org.netbeans.modules.parsing.lucene.support.IndexDocument;
 import org.netbeans.modules.parsing.spi.indexing.Indexable;
 import org.openide.util.Parameters;
+import org.openide.util.Utilities;
 
 /**
  *
@@ -60,6 +76,11 @@ import org.openide.util.Parameters;
  */
 //@NotThreadSafe
 public final class ClusteredIndexables {
+
+    public static final String DELETE = "ci-delete-set";    //NOI18N
+    public static final String INDEX = "ci-index-set";      //NOI18N
+
+    private static final Logger LOG = Logger.getLogger(ClusteredIndexables.class.getName());
 
     // -----------------------------------------------------------------------
     // Public implementation
@@ -81,7 +102,7 @@ public final class ClusteredIndexables {
             }
 
             if (mimeType.length() == 0) {
-                return Collections.unmodifiableList(indexables);
+                return new AllIndexables();
             }
             
             BitSet cluster = mimeTypeClusters.get(mimeType);
@@ -101,39 +122,103 @@ public final class ClusteredIndexables {
             return new BitSetIterable(cluster);
     }
 
+    public static AttachableDocumentIndexCache createDocumentIndexCache() {
+        return new DocumentIndexCacheImpl();
+    }
+
+    public static interface AttachableDocumentIndexCache extends DocumentIndexCache {
+        void attach(@NonNull final String mode, @NonNull final ClusteredIndexables ci);
+        void detach();
+    }
+
     // -----------------------------------------------------------------------
     // Private implementation
     // -----------------------------------------------------------------------
-
+    private static final String ALL_MIME_TYPES = ""; //NOI18N
     private final List<Indexable> indexables;
     private final BitSet sorted;
-
     private final Map<String, BitSet> mimeTypeClusters = new HashMap<String, BitSet>();
-    private static final String ALL_MIME_TYPES = ""; //NOI18N
+    private IndexedIterator currentIt;
 
 
-    private class BitSetIterator implements Iterator<Indexable> {
+    @NonNull
+    private Indexable get(final int index) {
+        return indexables.get(index);
+    }
+
+    private int current() {
+        final IndexedIterator tmpIt = currentIt;
+        return tmpIt == null ? -1 : tmpIt.index();
+    }
+
+    private static interface IndexedIterator<T> extends Iterator<T> {
+        int index();
+    }
+    
+    private static final class AllIndexablesIt implements IndexedIterator<Indexable> {
+
+        private final Iterator<? extends Indexable> delegate;
+        private int index = -1;
+
+        AllIndexablesIt(Iterator<? extends Indexable> delegate) {
+            this.delegate = delegate;
+        }
+
+        @Override
+        public boolean hasNext() {
+            return delegate.hasNext();
+        }
+
+        @Override
+        public Indexable next() {
+            final Indexable res = delegate.next();
+            index++;
+            return res;
+        }
+
+        @Override
+        public void remove() {
+            throw new UnsupportedOperationException("Immutable type"); //NOI18N
+        }
+
+        @Override
+        public int index() {
+            return index;
+        }
+        
+    }
+
+    private final class AllIndexables implements Iterable<Indexable> {
+
+        @Override
+        public Iterator<Indexable> iterator() {
+            return ClusteredIndexables.this.currentIt = new AllIndexablesIt(indexables.iterator());
+        }
+
+    }
+
+    private final class BitSetIterator implements IndexedIterator<Indexable> {
 
         private final BitSet bs;
         private int index;
 
         BitSetIterator(@NonNull final BitSet bs) {
             this.bs = bs;
-            this.index = 0;
+            this.index = -1;
         }
 
         @Override
         public boolean hasNext() {
-            return bs.nextSetBit(index) >= 0;
+            return bs.nextSetBit(index + 1) >= 0;
         }
 
         @Override
         public Indexable next() {
-            int tmp = bs.nextSetBit(index);
+            int tmp = bs.nextSetBit(index + 1);
             if (tmp < 0) {
                 throw new NoSuchElementException();
             }
-            index = tmp + 1;
+            index = tmp;
             return indexables.get(tmp);
         }
 
@@ -142,9 +227,13 @@ public final class ClusteredIndexables {
             throw new UnsupportedOperationException("Immutable type"); //NOI18N
         }
 
+        public int index() {
+            return index;
+        }
+
     }
 
-    private class BitSetIterable implements Iterable<Indexable> {
+    private final class BitSetIterable implements Iterable<Indexable> {
 
         private final BitSet bs;
 
@@ -153,9 +242,395 @@ public final class ClusteredIndexables {
         }
 
         @Override
+        @NonNull
         public Iterator<Indexable> iterator() {
-            return new BitSetIterator(bs);
+            return ClusteredIndexables.this.currentIt = new BitSetIterator(bs);
+        }
+    }
+
+    private static final class DocumentIndexCacheImpl implements AttachableDocumentIndexCache {
+      
+        private ClusteredIndexables deleteIndexables;
+        private ClusteredIndexables indexIndexables;
+        private BitSet deleteFromDeleted;
+        private BitSet deleteFromIndex;
+        private List<IndexDocument> toAdd;
+        private List<String> toDeleteOutOfOrder;
+        private Reference<List[]> dataRef;
+
+        private volatile Pair<Long,StackTraceElement[]> attachDeleteStackTrace;
+        private volatile Pair<Long,StackTraceElement[]> attachIndexStackTrace;
+        private volatile Pair<Long,StackTraceElement[]> detachStackTrace;
+
+        private DocumentIndexCacheImpl() {}
+
+        @Override
+        public void attach(
+            @NonNull final String mode,
+            @NonNull final ClusteredIndexables ci) {
+            Parameters.notNull("mode", mode);   //NOI18N
+            Parameters.notNull("ci", ci);       //NOI18N
+            if (TransientUpdateSupport.isTransientUpdate()) {
+                return;
+            }
+            if (DELETE.equals(mode)) {
+                ensureNotReBound(this.deleteIndexables, ci);
+                if (!ci.equals(this.deleteIndexables)) {
+                    this.deleteIndexables = ci;
+                    attachDeleteStackTrace = Pair.<Long,StackTraceElement[]>of(
+                            System.nanoTime(),Thread.currentThread().getStackTrace());
+                    detachStackTrace = null;
+                }
+            } else if (INDEX.equals(mode)) {
+                ensureNotReBound(this.indexIndexables, ci);
+                if (!ci.equals(this.indexIndexables)) {
+                    this.indexIndexables = ci;
+                    attachIndexStackTrace = Pair.<Long,StackTraceElement[]>of(
+                            System.nanoTime(),Thread.currentThread().getStackTrace());
+                    detachStackTrace = null;
+                }
+            } else {
+                throw new IllegalArgumentException(mode);
+            }
         }
 
+        @Override
+        public void detach() {
+            if (TransientUpdateSupport.isTransientUpdate()) {
+                return;
+            }
+            detachStackTrace = Pair.<Long,StackTraceElement[]>of(
+                System.nanoTime(),Thread.currentThread().getStackTrace());
+            this.deleteIndexables = null;
+            this.indexIndexables = null;
+        }
+
+        @Override
+        public boolean addDocument(IndexDocument document) {
+            final boolean shouldFlush = init();
+            handleDelete(
+                indexIndexables,
+                deleteFromIndex,
+                toDeleteOutOfOrder,
+                document.getPrimaryKey());
+            toAdd.add(document);
+            return shouldFlush;
+        }
+
+        @Override
+        public boolean removeDocument(String primaryKey) {
+            final boolean shouldFlush = init();
+            handleDelete(
+                deleteIndexables,
+                deleteFromDeleted,
+                toDeleteOutOfOrder,
+                primaryKey);
+            return shouldFlush;
+        }
+
+        @Override
+        public void clear() {
+            toAdd = null;
+            toDeleteOutOfOrder = null;
+            deleteFromDeleted = null;
+            deleteFromIndex = null;
+            dataRef = null;
+        }
+
+        @Override
+        public Collection<? extends String> getRemovedKeys() {
+            return toDeleteOutOfOrder != null ?
+                new RemovedCollection (
+                    toDeleteOutOfOrder,
+                    deleteIndexables,
+                    deleteFromDeleted,
+                    indexIndexables,
+                    deleteFromIndex,
+                    attachDeleteStackTrace,
+                    attachIndexStackTrace,
+                    detachStackTrace) :
+                Collections.<String>emptySet();
+        }
+
+        @Override
+        public Collection<? extends IndexDocument> getAddedDocuments() {
+            return toAdd != null ? toAdd : Collections.<IndexDocument>emptySet();
+        }
+
+        private static void ensureNotReBound(
+                @NullAllowed final ClusteredIndexables oldCi,
+                @NonNull final ClusteredIndexables newCi) {
+            if (oldCi != null && !oldCi.equals(newCi)) {
+                throw new IllegalStateException(
+                    String.format(
+                        "Cannot bind to ClusteredIndexables(%d), already bound to ClusteredIndexables(%d)", //NOI18N
+                        System.identityHashCode(newCi),
+                        System.identityHashCode(oldCi)
+                ));
+            }
+        }
+
+        private static void handleDelete(
+            @NullAllowed ClusteredIndexables ci,
+            @NonNull BitSet bs,
+            @NonNull List<? super String> toDelete,
+            @NonNull String primaryKey) {
+            final int index = isCurrent(ci, primaryKey);
+                if (index >= 0) {
+                    bs.set(index);
+                } else {
+                    toDelete.add(primaryKey);
+                }
+        }
+
+        private static int isCurrent(
+            @NullAllowed final ClusteredIndexables ci,
+            @NonNull final String primaryKey) {
+            if (ci == null) {
+                return -1;
+            }
+            final int currentIndex = ci.current();
+            if (currentIndex == -1) {
+                return -1;
+            }
+            final Indexable currentIndexable = ci.get(currentIndex);
+            if (primaryKey.equals(currentIndexable.getRelativePath())) {
+                return currentIndex;
+            }
+            return -1;
+        }
+
+        private boolean init() {
+            if (toAdd == null || toDeleteOutOfOrder == null) {
+                assert toAdd == null &&
+                    toDeleteOutOfOrder == null &&
+                    deleteFromDeleted == null &&
+                    deleteFromIndex == null;
+                assert dataRef == null;
+                toAdd = new ArrayList<IndexDocument>();
+                toDeleteOutOfOrder = new ArrayList<String>();
+                deleteFromDeleted = new BitSet();
+                deleteFromIndex = new BitSet();
+                dataRef = new ClearReference(
+                        new List[] {toAdd, toDeleteOutOfOrder},
+                        this);
+            }
+            return dataRef.get() == null;
+        }
     }
+
+    private static final class ClearReference extends SoftReference<List[]> implements Runnable, Callable<Void> {
+
+        private final DocumentIndexCacheImpl owner;
+        private final AtomicInteger state = new AtomicInteger();
+
+        public ClearReference(
+                @NonNull final List[] data,
+                @NonNull final DocumentIndexCacheImpl owner) {
+            super(data, Utilities.activeReferenceQueue());
+            Parameters.notNull("data", data);   //NOI18N
+            Parameters.notNull("owner", owner); //NOI18N
+            this.owner = owner;
+        }
+
+        @Override
+        public void run() {
+            if (!state.compareAndSet(0, 1)) {
+                throw new IllegalStateException(Integer.toString(state.get()));
+            }
+            InjectedTasksSupport.enqueueTask(this);
+            LOG.log(
+                Level.FINEST,
+                "Reference Task Enqueued for: {0}", //NOI18N
+                owner);
+        }
+         
+
+        @Override
+        public Void call () throws Exception {
+            if (!state.compareAndSet(1, 2)) {
+                throw new IllegalStateException(Integer.toString(state.get()));
+            }
+            final DocumentIndex.Transactional txIndex = DocumentBasedIndexManager.getDefault().getIndex(owner);
+            if (txIndex != null) {
+                txIndex.txStore();
+            }
+            LOG.log(
+                Level.FINEST,
+                "Reference Task Executed for: {0}", //NOI18N
+                owner);
+            return null;
+        }
+    }
+    
+    private static class RemovedCollection extends AbstractCollection<String> {
+        
+        private final List<? extends String> outOfOrder;
+        private final ClusteredIndexables deleteIndexables;
+        private final BitSet deleteFromDeleted;
+        private final ClusteredIndexables indexIndexables;
+        private final BitSet deleteFromIndex;
+
+        private final Pair<Long,StackTraceElement[]> attachDeleteStackTrace;
+        private final Pair<Long,StackTraceElement[]> attachIndexStackTrace;
+        private final Pair<Long, StackTraceElement[]> detachStackTrace;
+        
+        RemovedCollection(
+            @NonNull final List<? extends String> outOfOrder,
+            @NullAllowed final ClusteredIndexables deleteIndexables,
+            @NonNull final BitSet deleteFromDeleted,
+            @NullAllowed final ClusteredIndexables indexIndexables,
+            @NonNull final BitSet deleteFromIndex,
+            @NullAllowed final Pair<Long,StackTraceElement[]> attachDeleteStackTrace,
+            @NullAllowed final Pair<Long, StackTraceElement[]> attachIndexStackTrace,
+            @NullAllowed final Pair<Long, StackTraceElement[]> detachStackTrace) {
+            assert outOfOrder != null;
+            assert deleteFromDeleted != null;
+            assert deleteFromIndex != null;
+            this.outOfOrder = outOfOrder;
+            this.deleteIndexables = deleteIndexables;
+            this.deleteFromDeleted = deleteFromDeleted;
+            this.indexIndexables = indexIndexables;
+            this.deleteFromIndex = deleteFromIndex;
+            this.attachDeleteStackTrace = attachDeleteStackTrace;
+            this.attachIndexStackTrace = attachIndexStackTrace;
+            this.detachStackTrace = detachStackTrace;
+        }
+
+        @Override
+        public Iterator<String> iterator() {
+            return new It(
+                outOfOrder.iterator(),
+                deleteIndexables,
+                deleteFromDeleted,
+                indexIndexables,
+                deleteFromIndex,
+                attachDeleteStackTrace,
+                attachIndexStackTrace,
+                detachStackTrace);
+        }
+
+        @Override
+        public int size() {
+            return outOfOrder.size() + deleteFromDeleted.cardinality() + deleteFromIndex.cardinality();
+        }
+        
+        @Override
+        public boolean isEmpty() {
+            return outOfOrder.isEmpty() && deleteFromDeleted.isEmpty() && deleteFromIndex.isEmpty();
+        }
+        
+        
+        private static class It implements Iterator<String> {
+
+            private final Iterator<? extends String> outOfOrderIt;
+            private final ClusteredIndexables deleteIndexables;
+            private final BitSet deleteFromDeleted;
+            private final ClusteredIndexables indexIndexables;
+            private final BitSet deleteFromIndex;
+            private int state;
+            private int index;
+            private String current;
+
+            private final Pair<Long,StackTraceElement[]> attachDeleteStackTrace;
+            private final Pair<Long,StackTraceElement[]> attachIndexStackTrace;
+            private final Pair<Long, StackTraceElement[]> detachStackTrace;
+
+            It(
+                @NonNull final Iterator<? extends String> outOfOrderIt,
+                @NullAllowed final ClusteredIndexables deleteIndexables,
+                @NonNull final BitSet deleteFromDeleted,
+                @NullAllowed final ClusteredIndexables indexIndexables,
+                @NonNull final BitSet deleteFromIndex,
+                @NullAllowed final Pair<Long,StackTraceElement[]> attachDeleteStackTrace,
+                @NullAllowed final Pair<Long, StackTraceElement[]> attachIndexStackTrace,
+                @NullAllowed final Pair<Long, StackTraceElement[]> detachStackTrace) {
+                this.outOfOrderIt = outOfOrderIt;
+                this.deleteIndexables = deleteIndexables;
+                this.deleteFromDeleted = deleteFromDeleted;
+                this.indexIndexables = indexIndexables;
+                this.deleteFromIndex = deleteFromIndex;
+                this.attachDeleteStackTrace = attachDeleteStackTrace;
+                this.attachIndexStackTrace = attachIndexStackTrace;
+                this.detachStackTrace = detachStackTrace;
+            }
+
+            @Override
+            public boolean hasNext() {
+                if (current != null) {
+                    return true;
+                }
+                switch (state) {
+                    case 0:
+                        if (outOfOrderIt.hasNext()) {
+                            current = outOfOrderIt.next();
+                            return true;
+                        } else {
+                            index = -1;
+                            state = 1;
+                        }
+                    case 1:
+                        index = deleteFromDeleted.nextSetBit(index+1);
+                        if (index >=0) {
+                            if (deleteIndexables == null) {
+                                throw new IllegalStateException(
+                                    MessageFormat.format(
+                                        "Attached at: {0} by: {1}, Detached at: {2} by: {3}",   //NOI18N
+                                        attachDeleteStackTrace == null ? null : attachDeleteStackTrace.first,
+                                        attachDeleteStackTrace == null ? null : attachDeleteStackTrace.second,
+                                        detachStackTrace == null ? null : detachStackTrace.first,
+                                        detachStackTrace == null ? null : detachStackTrace.second));
+                            }
+                            final Indexable file = deleteIndexables.get(index);
+                            current = file.getRelativePath();
+                            return true;
+                        } else {
+                            index = -1;
+                            state = 2;
+                        }
+                    case 2:
+                        index = deleteFromIndex.nextSetBit(index+1);
+                        if (index >= 0) {
+                            if (indexIndexables == null) {
+                                throw new IllegalStateException(
+                                    MessageFormat.format(
+                                        "Attached at: {0} by: {1}, Detached at: {2} by: {3}",   //NOI18N
+                                        attachIndexStackTrace == null ? null : attachIndexStackTrace.first,
+                                        attachIndexStackTrace == null ? null : attachIndexStackTrace.second,
+                                        detachStackTrace == null ? null : detachStackTrace.first,
+                                        detachStackTrace == null ? null : detachStackTrace.second));
+                            }
+                            final Indexable file = indexIndexables.get(index);
+                            current = file.getRelativePath();
+                            return true;
+                        } else {
+                            index = -1;
+                            state = 3;
+                        }
+                    default:
+                        return false;
+                }
+            }
+
+            @Override
+            public String next() {
+                if (!hasNext()) {
+                    throw new NoSuchElementException();
+                }
+                final String res = current;
+                assert res != null;
+                current = null;
+                return res;
+            }
+
+            @Override
+            public void remove() {
+                throw new UnsupportedOperationException("Immutable collection");    //NOI18N
+            }
+            
+        }
+    }
+
+
+
 }

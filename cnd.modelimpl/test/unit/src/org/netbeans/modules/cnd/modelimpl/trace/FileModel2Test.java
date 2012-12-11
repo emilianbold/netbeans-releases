@@ -85,6 +85,11 @@ public class FileModel2Test extends TraceModelTestBase {
         performTest("sharp_pp_directives.cc"); // NOI18N
     }
 
+    public void test222800() throws Exception {
+        // #222800 - Unexpected token "{" in declaration with __attribute__ ((packed)) 
+        performTest("iz222800.cc");
+    }
+    
     public void test217089() throws Exception {
         // #217089: "#define AAA 1 ## 0" line breaks parser
         performTest("iz217089.c");

@@ -48,6 +48,7 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ItemConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ui.CustomizerNode;
 import org.openide.nodes.Sheet;
+import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 
 class GeneralItemCustomizerNode extends CustomizerNode {
@@ -64,4 +65,9 @@ class GeneralItemCustomizerNode extends CustomizerNode {
         }
         return null;
     }
+    
+    @Override
+    public HelpCtx getHelpCtx() {
+        return new HelpCtx("SettingCandC++FileProperties"); // NOI18N
+    }         
 }

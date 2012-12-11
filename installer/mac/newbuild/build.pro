@@ -59,11 +59,6 @@
     <property name="glassfish_v3_location_ml"  value="${glassfish.v3.location.prefix}/b05/bundles/glassfish-3.1.2-2-b05-ml.zip"/>
     <property name="glassfish.v3.subdir"       value="glassfish3"/>
     
-    <!-- Java ME SDK 3.0 Properties-->
-    <property name="javame_sdk30_bits_location" value="${binary_cache_host}/wtk/javame_sdk_30/mac/java-me-sdk-mac.zip"/>
-    <property name="javame_sdk30_bits_update_location" value="${binary_cache_host}/wtk/javame_sdk_30/mac/java-me-sdk-mac-update.zip"/>
-    <property name="javame_sdk30_xml_location"  value="${binary_cache_host}/wtk/javame_sdk_30/mac/Java_TM__Platform_Micro_Edition_SDK_3_0.xml"/>
-
     <property name="dmg.prefix.name" value="${prefix}-${buildnumber}"/>                         
 
     <!-- JDK Properties-->    
@@ -73,7 +68,7 @@
     <property name="jdk.bundle.files.suffix" value="nb-dev"/>
     <property name="output.jdk7.dir" value="jdk/"/>
     <property name="default.jdk7.home" value="/Library/Java/JavaVirtualMachines/jdk1.7.0_10.jdk/Contents/Home"/>
-    <property name="jdk_bits_location" value="${jdk_builds_host}/java/re/jdk/7u10/promoted/ea/b16/bundles/macosx-x64/jdk-7u10-ea-macosx-x64.dmg"/>
+    <property name="jdk_bits_location" value="${jdk_builds_host}/java/re/jdk/7u10/promoted/fcs/b18/bundles/macosx-x64/jdk-7u10-macosx-x64.dmg"/>
     <property name="jdk.package.name" value="JDK\ 7\ Update\ 10"/>
 
 </project>

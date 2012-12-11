@@ -211,7 +211,12 @@ public abstract class BaseAnnotation extends Annotation {
     }
     
     public boolean attach() {
-        if(pos.getOffset() == -1 || pos.getOffset() >= document.getEndPosition().getOffset()) {
+        int offset = pos.getOffset();
+        if (offset == -1) {
+            return false;
+        }
+        Position endPos = document.getEndPosition();
+        if (endPos == null || offset >= endPos.getOffset()) {
             return false;
         }
         if (!(document instanceof NbDocument.Annotatable)) {

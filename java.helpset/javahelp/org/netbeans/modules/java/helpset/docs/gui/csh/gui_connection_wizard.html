@@ -6,24 +6,29 @@
 <html>
 <head>
 <meta http-equiv="content-type" content="text/html; charset=UTF-8">
-        <title>GUI Builder: Connection Wizard</title>
+        <title>GUI Builder Connection Wizard: Select Source Event</title>
 <link rel="StyleSheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
     </head>
     <body>
-        <h2>GUI Builder: Connection Wizard</h2>
+        <h2>GUI Builder Connection Wizard: Select Source Event</h2>
         <p><small><a href="#seealso">See Also</a></small></p>
-        <p>The Connection wizard enables you to set events between two components within
-        a form without having to write code manually. 
-        <p>You can launch the Connection 
-        wizard by selecting the component that will fire the event in the GUI Builder or
-        Navigator window and then clicking the Connection Mode button 
-        (<img src="../images/connection_mode.png" alt="Image of Connection Mode button">)
-        in the GUI Builder toolbar.</p>
+        <p>The Connection wizard enables you to establish a connection between two components triggered by an event within a form without having to write code manually.</p> 
+        <p>You can launch the Connection wizard by clicking the Connection Mode button (<img src="../images/connection_mode.png" alt="Image of Connection Mode button">)
+        in the GUI Builder toolbar and selecting a component that will generate the event and then a component that will receive it in the GUI Builder or
+        Navigator window.</p>
+		<p>In the Select Source Event page of the Connection wizard, you specify the following properties:</p>
+		<ul>
+		<li><b>Source Component.</b> The source component of the triggering event is automatically set for you after it is selected in the GUI Builder or Navigator window.</li>
+		<li><b>Events.</b> Select the event of a source component on which  the trigger component will react by expanding the event type directory nodes.</li>
+		<li><b>Event Handler Method.</b> Accept the default handler method name or type in a new name.</li>
+		</ul>
+		<p>Click Next to specify an operation to be performed on the target component.</p>
 
         <dl>
             <dt><a name="seealso">See Also</a></dt>
-            <dd><a href="../gui_events_managing.html">Managing Component Events</a></dd>
-            <dd><a href="../gui_events_setting.html">Setting Events with the Connection Wizard</a></dd>            <dd><a href="../gui_designing.html">Designing Java GUIs with the GUI Builder</a></dd>            
+			<dd><a href="../gui_events_managing.html">Managing Component Events</a></dd>
+            <dd><a href="../gui_events_setting.html">Setting Events with the Connection Wizard</a></dd>
+			<dd><a href="../gui_designing.html">Designing Java GUIs with the GUI Builder</a></dd>            
         </dl>
 
         <hr><small><a href="../../credits.html">Legal Notices</a></small>

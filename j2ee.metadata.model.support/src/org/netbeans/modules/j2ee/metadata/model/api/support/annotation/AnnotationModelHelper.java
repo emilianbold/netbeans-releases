@@ -46,8 +46,6 @@ package org.netbeans.modules.j2ee.metadata.model.api.support.annotation;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -57,13 +55,9 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import javax.lang.model.element.AnnotationMirror;
-import javax.lang.model.element.Element;
-import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.DeclaredType;
-import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
-import javax.lang.model.util.Types;
 import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.ClassIndex;
 import org.netbeans.api.java.source.ClassIndexListener;
@@ -162,6 +156,7 @@ public final class AnnotationModelHelper {
      */
     public void runJavaSourceTask(final Runnable run) throws IOException {
         runJavaSourceTask(new Callable<Void>() {
+            @Override
             public Void call() {
                 run.run();
                 return null;
@@ -184,9 +179,11 @@ public final class AnnotationModelHelper {
         final List<V> result = new ArrayList<V>();
         try {
             newJavaSource.runUserActionTask(new CancellableTask<CompilationController>() {
+                @Override
                 public void run(CompilationController controller) throws Exception {
                     result.add(runCallable(callable, controller, notify));
                 }
+                @Override
                 public void cancel() {
                     // we can't cancel
                 }
@@ -216,9 +213,11 @@ public final class AnnotationModelHelper {
         final DelegatingFuture<V> result = new DelegatingFuture<V>();
         try {
             result.setDelegate(newJavaSource.runWhenScanFinished(new CancellableTask<CompilationController>() {
+                @Override
                 public void run(CompilationController controller) throws Exception {
                     result.setResult(runCallable(callable, controller, true));
                 }
+                @Override
                 public void cancel() {
                     // we can't cancel
                 }
@@ -373,9 +372,11 @@ public final class AnnotationModelHelper {
 
     private final class ClassIndexListenerImpl implements ClassIndexListener {
 
+        @Override
         public void typesAdded(final TypesEvent event) {
             try {
                 runInJavacContext(new Callable<Void>() {
+                    @Override
                     public Void call() {
                         for (PersistentObjectManager<? extends PersistentObject> manager : managers) {
                             manager.typesAdded(event.getTypes());
@@ -388,9 +389,11 @@ public final class AnnotationModelHelper {
             }
         }
 
+        @Override
         public void typesRemoved(final TypesEvent event) {
             try {
                 runInJavacContext(new Callable<Void>() {
+                    @Override
                     public Void call() {
                         for (PersistentObjectManager<? extends PersistentObject> manager : managers) {
                             manager.typesRemoved(event.getTypes());
@@ -403,9 +406,11 @@ public final class AnnotationModelHelper {
             }
         }
 
+        @Override
         public void typesChanged(final TypesEvent event) {
             try {
                 runInJavacContext(new Callable<Void>() {
+                    @Override
                     public Void call() {
                         for (PersistentObjectManager<? extends PersistentObject> manager : managers) {
                             manager.typesChanged(event.getTypes());
@@ -418,10 +423,12 @@ public final class AnnotationModelHelper {
             }
         }
 
+        @Override
         public void rootsAdded(RootsEvent event) {
             rootsChanged();
         }
 
+        @Override
         public void rootsRemoved(RootsEvent event) {
             rootsChanged();
         }
@@ -429,6 +436,7 @@ public final class AnnotationModelHelper {
         private void rootsChanged() {
             try {
                 runInJavacContext(new Callable<Void>() {
+                    @Override
                     public Void call() {
                         for (PersistentObjectManager<? extends PersistentObject> manager : managers) {
                             manager.rootsChanged();
@@ -455,7 +463,6 @@ public final class AnnotationModelHelper {
 
         private volatile Future<Void> delegate;
         private volatile V result;
-        private volatile ExecutionException executionException;
 
         public void setDelegate(Future<Void> delegate) {
             assert this.delegate == null;
@@ -466,23 +473,28 @@ public final class AnnotationModelHelper {
             this.result = result;
         }
 
+        @Override
         public boolean cancel(boolean mayInterruptIfRunning) {
             return delegate.cancel(mayInterruptIfRunning);
         }
 
+        @Override
         public boolean isCancelled() {
             return delegate.isCancelled();
         }
 
+        @Override
         public boolean isDone() {
             return delegate.isDone();
         }
 
+        @Override
         public V get() throws InterruptedException, ExecutionException {
             delegate.get();
             return result;
         }
 
+        @Override
         public V get(long timeout, TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
             delegate.get(timeout, unit);
             return result;

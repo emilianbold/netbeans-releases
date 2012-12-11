@@ -42,7 +42,14 @@
 package org.netbeans.modules.cnd.remote.ui.networkneighbour;
 
 import java.io.IOException;
-import java.net.*;
+import java.net.Inet4Address;
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
+import java.net.InterfaceAddress;
+import java.net.NetworkInterface;
+import java.net.Socket;
+import java.net.SocketException;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.HashSet;
@@ -261,7 +268,19 @@ public final class NetworkRegistry {
                         continue;
                     }
 
-                    for (InterfaceAddress address : ifc.getInterfaceAddresses()) {
+                    List<InterfaceAddress> interfaceAddresses = null;
+
+                    try {
+                        interfaceAddresses = ifc.getInterfaceAddresses();
+                    } catch (Throwable th) {
+                        // http://netbeans.org/bugzilla/show_bug.cgi?id=223119
+                    }
+
+                    if (interfaceAddresses == null) {
+                        continue;
+                    }
+
+                    for (InterfaceAddress address : interfaceAddresses) {
                         InetAddress broadcast = address.getBroadcast();
                         if (broadcast == null) {
                             // will not deal with IPv6

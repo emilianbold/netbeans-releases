@@ -196,6 +196,7 @@ public class FilterPanel extends javax.swing.JPanel {
     }
 
     void clear() {
+        textFilter.setText("");
         lblCount.setText("");
         lblCount.setVisible(false);
     }

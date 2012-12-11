@@ -972,7 +972,23 @@ public class ElementsFactory {
 
         @Override
         public CharSequence value() {
-            return valueLen == -1 ? null : source.subSequence(valueOffset(), valueOffset() + valueLen);
+            if(valueLen == -1) {
+                return null;
+            }
+            //Bug 221821 - StringIndexOutOfBoundsException: String index out of range: 234
+            int diff = source.length() - valueOffset();
+            if(diff < 0) {
+                assert false : String.format("valueOffset:%s > source.length:%s", 
+                        valueOffset(), source.length()); //report in dev builds
+                return null;
+            }
+            if(diff < valueLen) {
+                assert false : String.format("valueOffset:%s + valueLen:%s > source.length:%s", 
+                        valueOffset(), valueLen, source.length()); //report in dev builds
+                return null;
+            }
+            
+            return source.subSequence(valueOffset(), valueOffset() + valueLen);
         }
 
         @Override

@@ -83,12 +83,10 @@ import org.openide.util.Exceptions;
 public class DocumentViewModel implements ChangeListener {
 
     private final FileObject file;
-    
     private Project project;
     private CssIndex index;
     private boolean needsRefresh;
     private ChangeSupport changeSupport;
-
     private boolean initialized;
     /**
      * Map of stylesheet -> list of rules
@@ -101,7 +99,7 @@ public class DocumentViewModel implements ChangeListener {
         changeSupport = new ChangeSupport(this);
         needsRefresh = true;
     }
-    
+
     private synchronized void initialize() {
         if (!initialized) {
             project = FileOwnerQuery.getOwner(file);
@@ -113,22 +111,22 @@ public class DocumentViewModel implements ChangeListener {
             }
             try {
                 index = CssIndex.get(project);
-                index.addChangeListener(DocumentViewModel.this);
+                index.addChangeListener(this);
             } catch (IOException ex) {
                 Exceptions.printStackTrace(ex);
             }
             initialized = true;
         }
     }
-    
+
     public void addChangeListener(ChangeListener l) {
         changeSupport.addChangeListener(l);
     }
-    
+
     public void removeChangeListener(ChangeListener l) {
         changeSupport.removeChangeListener(l);
     }
-    
+
     void dispose() {
         if (index != null) {
             index.removeChangeListener(this);
@@ -147,7 +145,7 @@ public class DocumentViewModel implements ChangeListener {
 
     /**
      * Gets a map of stylesheets -> list of rules
-     * 
+     *
      * Do not call in EDT as is involves slow I/O operations!
      */
     public synchronized Map<FileObject, List<RuleHandle>> getFilesToRulesMap() {
@@ -159,7 +157,7 @@ public class DocumentViewModel implements ChangeListener {
             update();
             needsRefresh = false;
         }
-        
+
         return relatedStylesheets;
     }
 

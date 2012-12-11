@@ -221,8 +221,10 @@ public class QmakeProjectWriter {
         write(bw, Variable.LIBS, Operation.ADD, getLibs());
         if (configuration.getCCCompilerConfiguration().getCppStandard().getValue() != CCCompilerConfiguration.STANDARD_DEFAULT) {
             AbstractCompiler ccCompiler = compilerSet == null ? null : (AbstractCompiler)compilerSet.getTool(PredefinedToolKind.CCCompiler);
-            write(bw, Variable.QMAKE_CXXFLAGS, Operation.ADD,
-                ccCompiler.getCppStandardOptions(configuration.getCCCompilerConfiguration().getCppStandard().getValue()));
+            if (ccCompiler != null) {
+                write(bw, Variable.QMAKE_CXXFLAGS, Operation.ADD,
+                        ccCompiler.getCppStandardOptions(configuration.getCCCompilerConfiguration().getCppStandard().getValue()));
+            }
         }
 
         for (String line : configuration.getQmakeConfiguration().getCustomDefs().getValue()) {

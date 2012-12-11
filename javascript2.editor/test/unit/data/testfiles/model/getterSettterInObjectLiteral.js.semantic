@@ -1,7 +1,7 @@
 var |>GLOBAL:Dog<| = {
 
-    |>METHOD:get<| |>FIELD:years<|() {return this.old;},
-    |>METHOD:set<| |>FIELD:years<|(count){this.old = count + 1;},
+    |>METHOD:get<| |>FIELD:years<|() {return this.|>FIELD:old<|;},
+    |>METHOD:set<| |>FIELD:years<|(count){this.|>FIELD:old<| = count + 1;},
     |>METHOD:getColor<| : function() {return this.color}
             
 }
@@ -20,4 +20,4 @@ var |>GLOBAL:o<| = {
 |>GLOBAL:formatter<|.println('a: ' + |>GLOBAL:o<|.k);
 |>GLOBAL:Dog<|.|>FIELD:years<| = 10;
 |>GLOBAL:formatter<|.println("The dos is old " + |>GLOBAL:Dog<|.|>FIELD:years<| + " years.");
-|>GLOBAL:formatter<|.println("Dog.old: " + |>GLOBAL:Dog<|.old);
+|>GLOBAL:formatter<|.println("Dog.old: " + |>GLOBAL:Dog<|.|>FIELD:old<|);

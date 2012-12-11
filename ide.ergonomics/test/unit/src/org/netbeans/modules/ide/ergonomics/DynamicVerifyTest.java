@@ -84,7 +84,7 @@ public class DynamicVerifyTest extends NbTestCase {
             addTest(LibrariesCheck.class, "testGetLibraries", "testCheckLibrariesPretest").
             gui(false).
             clusters("ergonomics.*").
-            clusters(".*").
+            clusters("^(?!(mobility)).*$").
             enableModules(".*").
             honorAutoloadEager(true)
         );
@@ -101,7 +101,7 @@ public class DynamicVerifyTest extends NbTestCase {
             addTest(LibrariesCheck.class, "testCheckLibrariesReal").
             gui(false).
             clusters("ergonomics.*").
-            clusters(".*").
+            clusters("^(?!(mobility)).*$").
             enableModules("ide[0-9]*", ".*").
             honorAutoloadEager(true)
         );

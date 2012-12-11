@@ -51,6 +51,7 @@ import java.util.Map;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.html.editor.api.gsf.HtmlParserResult;
+import org.netbeans.modules.html.editor.lib.api.SourceElementHandle;
 import org.netbeans.modules.html.editor.lib.api.elements.*;
 import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
@@ -58,15 +59,16 @@ import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.spi.ParseException;
+import org.netbeans.modules.parsing.spi.Parser;
+import org.netbeans.modules.web.common.api.WebUtils;
 import org.openide.filesystems.FileObject;
-import org.openide.util.Exceptions;
 
 /**
  * Implementation of {@link Description} for html parse tree elements.
  * 
  * @author marekfukala
  */
-public class HtmlElementDescription extends SourceDescription {
+public class HtmlElementDescription extends SourceDescription implements SourceElementHandle {
 
     private final String elementPath;
     private final Map<String, String> attributes;
@@ -180,7 +182,8 @@ public class HtmlElementDescription extends SourceDescription {
         return attributes;
     }
 
-    public Node resolve(ParserResult result) {
+    @Override
+    public Node resolve(Parser.Result result) {
         if(!(result instanceof HtmlParserResult)) {
             return null;
         }
@@ -220,7 +223,13 @@ public class HtmlElementDescription extends SourceDescription {
         ParserManager.parse(Collections.singleton(source), new UserTask() {
             @Override
             public void run(ResultIterator resultIterator) throws Exception {
-                task.run((HtmlParserResult) resultIterator.getParserResult());
+                ResultIterator it = WebUtils.getResultIterator(resultIterator, "text/html");
+                if (it == null) {
+                    //No Html ResultIterator 
+                    return;
+                }
+                
+                task.run((HtmlParserResult) it.getParserResult());
             }
         });
 
@@ -244,7 +253,7 @@ public class HtmlElementDescription extends SourceDescription {
         }
         return collected;
     }
-    
+
     public static interface Task {
 
         public void run(HtmlParserResult result);

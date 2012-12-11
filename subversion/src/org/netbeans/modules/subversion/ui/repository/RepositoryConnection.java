@@ -215,6 +215,9 @@ public class RepositoryConnection {
         int idx = urlString.lastIndexOf('@');
         int hostIdx = urlString.indexOf("://");                         // NOI18N
         int firstSlashIdx = urlString.indexOf("/", hostIdx + 3);        // NOI18N
+        if (urlString.contains("\\")) {
+            throw new MalformedURLException(NbBundle.getMessage(Repository.class, "MSG_Repository_InvalidSvnUrl", urlString)); //NOI18N
+        }
         if(idx < 0 || firstSlashIdx < 0 || idx < firstSlashIdx) {
             svnRevision = SVNRevision.HEAD;
         } else /*if (acceptRevision)*/ {
@@ -230,9 +233,13 @@ public class RepositoryConnection {
                 svnRevision = SVNRevision.HEAD;
             }
             urlString = urlString.substring(0, idx);
-        }    
-        svnUrl = removeEmptyPathSegments(new SVNUrl(urlString));
-
+        }
+        SVNUrl normalizedUrl = removeEmptyPathSegments(new SVNUrl(urlString));
+        if ("file".equals(normalizedUrl.getProtocol()) && normalizedUrl.getHost() != null //NOI18N
+                && normalizedUrl.getPathSegments().length == 0) {
+            throw new MalformedURLException(NbBundle.getMessage(Repository.class, "MSG_Repository_InvalidSvnUrl", normalizedUrl.toString())); //NOI18N
+        }
+        svnUrl = normalizedUrl;
     }
     
     private SVNUrl removeEmptyPathSegments(SVNUrl url) throws MalformedURLException {

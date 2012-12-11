@@ -176,6 +176,139 @@ public class IndentAddedElemTest extends GeneratorTestBase {
         assertEquals(golden, res);
     }
     
+    public void test113413a() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile,
+                "package test;\n\n" +
+                "public class Test {\n" +
+                "  public void test() {\n" +
+                "    new Runnable() {\n" +
+                "        public void run() {\n" +
+                "        }\n" +
+                "    }\n" +
+                "  }\n" +
+                "}\n"
+                );
+        String golden =
+                "package test;\n\n" +
+                "public class Test {\n" +
+                "  public void test() {\n" +
+                "    new Runnable() {\n" +
+                "        @Override\n" +
+                "        public void run() {\n" +
+                "        }\n" +
+                "    }\n" +
+                "  }\n" +
+                "}\n";
+        
+        process(
+                new Transformer<Void, Object>() {
+            @Override
+            public Void visitMethod(MethodTree node, Object p) {
+                super.visitMethod(node, p);
+                if ("run".contentEquals(node.getName())) {
+                    AnnotationTree annotation = make.Annotation(make.Identifier("Override"), Collections.<ExpressionTree>emptyList());
+                    this.copy.rewrite(node.getModifiers(), make.addModifiersAnnotation(node.getModifiers(), annotation));
+                }
+                return null;
+            }
+        }
+        
+        );
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println("res=" + res);
+        assertEquals(golden, res);
+    }
+    
+    public void test113413b() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile,
+                "package test;\n\n" +
+                "public class Test {\n" +
+                "  public void test() {\n" +
+                "    new Runnable() {\n" +
+                "    }\n" +
+                "  }\n" +
+                "}\n"
+                );
+        String golden =
+                "package test;\n\n" +
+                "public class Test {\n" +
+                "  public void test() {\n" +
+                "    new Runnable() {\n" +
+                "\n" +
+                "        @Override\n" +
+                "        public void run() {\n" +
+                "        }\n" +
+                "    }\n" +
+                "  }\n" +
+                "}\n";
+        
+        process(
+                new Transformer<Void, Object>() {
+            @Override
+            public Void visitClass(ClassTree node, Object p) {
+                super.visitClass(node, p);
+                if ("".contentEquals(node.getSimpleName())) {
+                    AnnotationTree annotation = make.Annotation(make.Identifier("Override"), Collections.<ExpressionTree>emptyList());
+                    ModifiersTree mods = make.Modifiers(EnumSet.of(Modifier.PUBLIC), Collections.<AnnotationTree>singletonList(annotation));
+                    MethodTree method = make.Method(mods, "run", make.PrimitiveType(TypeKind.VOID), Collections.<TypeParameterTree>emptyList(), Collections.<VariableTree>emptyList(), Collections.<ExpressionTree>emptyList(), "{}", null);
+                    this.copy.rewrite(node, make.addClassMember(node, method));
+                }
+                return null;
+            }
+        }
+        
+        );
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println("res=" + res);
+        assertEquals(golden, res);
+    }
+    
+    public void test113413c() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile,
+                "package test;\n\n" +
+                "public class Test {\n" +
+                "  public void test() {\n" +
+                "    new Runnable() {\n" +
+                "      public void run() {\n" +
+                "      }\n" +
+                "    }\n" +
+                "  }\n" +
+                "}\n"
+                );
+        String golden =
+                "package test;\n\n" +
+                "public class Test {\n" +
+                "  public void test() {\n" +
+                "    new Runnable() {\n" +
+                "      @Override\n" +
+                "      public void run() {\n" +
+                "      }\n" +
+                "    }\n" +
+                "  }\n" +
+                "}\n";
+        
+        process(
+                new Transformer<Void, Object>() {
+            @Override
+            public Void visitMethod(MethodTree node, Object p) {
+                super.visitMethod(node, p);
+                if ("run".contentEquals(node.getName())) {
+                    AnnotationTree annotation = make.Annotation(make.Identifier("Override"), Collections.<ExpressionTree>emptyList());
+                    this.copy.rewrite(node.getModifiers(), make.addModifiersAnnotation(node.getModifiers(), annotation));
+                }
+                return null;
+            }
+        }
+        
+        );
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println("res=" + res);
+        assertEquals(golden, res);
+    }
+    
     String getGoldenPckg() {
         return "";
     }

@@ -68,6 +68,7 @@ public class GeneratedAndReplacedContentModuleTest extends CssModuleTestBase {
         assertPropertyDeclaration("content: counter(item, decimal) '.';");
 
         assertPropertyDeclaration("content: url(\"link\")");
+        assertPropertyDeclaration("content: \" (\" attr(href) \")\"");
     }
 
     public void testContent2() {

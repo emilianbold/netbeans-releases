@@ -65,11 +65,11 @@ import org.openide.filesystems.FileUtil;
  */
 public final class LineDiff {
     
-    public static int CONTEXT = 3;
+    public static final int CONTEXT = 3;
     
-    boolean ignoreCase;
-    boolean ignoreEmptyLines;
-    int contextLines;
+    private final boolean ignoreCase;
+    private final boolean ignoreEmptyLines;
+    private final int contextLines;
 
     public static List<String> diff(List<? extends CharSequence> first, List<? extends CharSequence> second) {
         LineDiff diff = new LineDiff(false);

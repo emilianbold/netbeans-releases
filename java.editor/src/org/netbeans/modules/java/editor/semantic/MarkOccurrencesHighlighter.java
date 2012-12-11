@@ -88,6 +88,7 @@ import javax.swing.text.AttributeSet;
 import javax.swing.text.Document;
 
 import org.netbeans.api.java.lexer.JavaTokenId;
+import org.netbeans.api.java.lexer.JavadocTokenId;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.JavaParserResultTask;
 import org.netbeans.api.java.source.JavaSource.Phase;
@@ -95,6 +96,7 @@ import org.netbeans.api.java.source.TreeUtilities;
 import org.netbeans.api.java.source.support.CaretAwareJavaSourceTaskFactory;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.editor.errorstripe.privatespi.Mark;
 import org.netbeans.modules.java.editor.javadoc.JavadocImports;
@@ -143,6 +145,15 @@ public class MarkOccurrencesHighlighter extends JavaParserResultTask {
             Logger.getLogger(MarkOccurrencesHighlighter.class.getName()).log(Level.FINE, "SemanticHighlighter: Cannot get document!");
             return ;
         }
+        
+        int caretPosition = event instanceof CursorMovedSchedulerEvent ? 
+            ((CursorMovedSchedulerEvent) event).getCaretOffset () :
+            CaretAwareJavaSourceTaskFactory.getLastPosition(file);//XXX
+
+        Object prop = doc.getProperty(GoToMarkOccurrencesAction.markedOccurence);
+        if (prop != null && ((long[])prop)[0] == DocumentUtilities.getDocumentVersion(doc) && ((long[])prop)[1] == caretPosition) {
+            return;
+        }
 
         Preferences node = MarkOccurencesSettings.getCurrentNode();
 
@@ -153,10 +164,6 @@ public class MarkOccurrencesHighlighter extends JavaParserResultTask {
         }
 
         long start = System.currentTimeMillis();
-
-        int caretPosition = event instanceof CursorMovedSchedulerEvent ? 
-            ((CursorMovedSchedulerEvent) event).getCaretOffset () :
-            CaretAwareJavaSourceTaskFactory.getLastPosition(file);//XXX
 
         if (isCancelled())
             return;
@@ -450,7 +457,9 @@ public class MarkOccurrencesHighlighter extends JavaParserResultTask {
             try {
                 List<int[]> bag = new ArrayList<int[]>();
                 for (Token t : fluq.findUsages(el, info, doc)) {
-                    bag.add(new int[] {t.offset(null), t.offset(null) + t.length()});
+                    // type parameter name is represented as ident -> ignore surrounding <> in rename
+                    int delta = t.id() == JavadocTokenId.IDENT && t.text().charAt(0) == '<' && t.text().charAt(t.length() - 1) == '>' ? 1 : 0;
+                    bag.add(new int[] {t.offset(null) + delta, t.offset(null) + t.length() - delta});
                 }
 
                 return bag;

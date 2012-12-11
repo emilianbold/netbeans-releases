@@ -200,7 +200,7 @@ public class ElementsParser implements Iterator<Element> {
                     //one part value
                     TokenInfo ti = values.get(0);
 
-                    assert key.token.length() < Byte.MAX_VALUE;
+                    assert key.token.length() < Short.MAX_VALUE;
                     Attribute ta = new AttributeElement(
                             sourceCode,
                             key.offset,
@@ -231,22 +231,35 @@ public class ElementsParser implements Iterator<Element> {
             }
         }
 
+        //Bug 220775 - AssertionError: element length must be positive! debug>>>
+        if(start == -1) {
+            throw new IllegalStateException(getCodeSnippet());
+        }
+        int len = ts.offset() + ts.token().length() - start;
+        if(len > Short.MAX_VALUE) {
+            throw new IllegalStateException();
+        }
+        if(len <= 0) {
+            throw new IllegalStateException(getCodeSnippet());
+        }
+        //<<<
+        
         if (openTag) {
-
+            
             if (attributes.isEmpty()) {
                 //no attributes
                 if (problem == null) {
                     current = new AttributelessOpenTagElement(
                             sourceCode,
                             start,
-                            (short) (ts.offset() + ts.token().length() - start),
+                            (short) len,
                             (byte) tagName.length(),
                             emptyTag);
                 } else {
                     current = new ProblematicAttributelessOpenTagElement(
                             sourceCode,
                             start,
-                            (short) (ts.offset() + ts.token().length() - start),
+                            (short) len,
                             (byte) tagName.length(),
                             emptyTag,
                             problem);
@@ -258,7 +271,7 @@ public class ElementsParser implements Iterator<Element> {
                     current = new OpenTagElement(
                             sourceCode,
                             start,
-                            (short) (ts.offset() + ts.token().length() - start),
+                            (short) len,
                             (byte) tagName.length(),
                             attributes,
                             emptyTag);
@@ -266,7 +279,7 @@ public class ElementsParser implements Iterator<Element> {
                     current = new ProblematicOpenTagElement(
                             sourceCode,
                             start,
-                            (short) (ts.offset() + ts.token().length() - start),
+                            (short) len,
                             (byte) tagName.length(),
                             attributes,
                             emptyTag,
@@ -279,7 +292,7 @@ public class ElementsParser implements Iterator<Element> {
             current = new EndTagElement(
                     sourceCode,
                     start,
-                    (short) (ts.offset() + ts.token().length() - start),
+                    (short) len,
                     (byte) tagName.length());
         }
 
@@ -289,6 +302,14 @@ public class ElementsParser implements Iterator<Element> {
         attr_values = new ArrayList<List<TokenInfo>>();
     }
 
+    private static final int SNIPPET_LEN = 50; 
+    private String getCodeSnippet() {
+        int offset = ts.offset();
+        int from = Math.max(0, offset - (SNIPPET_LEN / 2) );
+        int to = Math.min(sourceCode.length(), offset - (SNIPPET_LEN / 2));
+        return sourceCode.subSequence(from, to).toString();
+    }
+    
     //an error inside a tag, at least the tag name is known
     private void tag_with_error(ProblemDescription problem) {
         //lets put back the errorneous symbol first

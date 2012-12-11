@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ ** Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -39,68 +39,73 @@
  * 
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.test.refactoring.operators;
 
+import org.netbeans.jellytools.Bundle;
+import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.jemmy.operators.JCheckBoxOperator;
-import org.netbeans.jemmy.operators.JDialogOperator;
 
 /**
  *
- * @author Jiri Prox Jiri.Prox@Sun.COM
+ * @author Jiri.Prox@oracle.com, Marian.Mirilovic@oracle.com
  */
-public class ParametersPanelOperator extends JDialogOperator {
+public class ParametersPanelOperator extends NbDialogOperator {
 
     public ParametersPanelOperator(String name) {
         super(name);
     }
-    
-    private JButtonOperator back;
-    private JButtonOperator preview;
-    private JButtonOperator refactor;
-    private JCheckBoxOperator openInNewTab;
-    
-    public JButtonOperator getBack() {
-        if(back==null) {
-            back = new JButtonOperator(this, "< Back");            
+    private JButtonOperator _btBack;
+    private JButtonOperator _btPreview;
+    private JButtonOperator _btRefactor;
+    private JCheckBoxOperator _chbxOpenInNewTab;
+
+    public JButtonOperator btBack() {
+        if (_btBack == null) {
+            _btBack = new JButtonOperator(this, Bundle.getStringTrimmed("org.netbeans.modules.refactoring.spi.impl.Bundle", "CTL_Back"));  // < Back
         }
-        return back;
-    }
-    
-    public JButtonOperator getPreview() {
-        if(preview==null) {
-            preview = new JButtonOperator(this, "Preview");            
-        }
-        return preview;
-    }
-    
-    public JButtonOperator getRefactor() {
-        if(refactor==null) {
-            refactor = new JButtonOperator(this, "Refactor");            
-        }
-        return refactor;
+        return _btBack;
     }
 
-    public JCheckBoxOperator getOpenInNewTab() {
-        if(openInNewTab == null) {
-            openInNewTab = new JCheckBoxOperator(this, "Open In New Tab");
+    public JButtonOperator btPreview() {
+        if (_btPreview == null) {
+            _btPreview = new JButtonOperator(this, Bundle.getStringTrimmed("org.netbeans.modules.refactoring.spi.impl.Bundle", "CTL_PreviewAll"));  //Preview
         }
-        return openInNewTab;
-    }
-    
-    public FindUsagesClassOperator getFindUsagesClassOperator() {
-        return null;
-        //return new FindUsagesClassOperator()
+        return _btPreview;
     }
 
-    protected String getBungleText(String bundlePath, String bundleKey) {
-        String bundleText = java.util.ResourceBundle.getBundle(bundlePath).getString(bundleKey);
-        int index = bundleText.indexOf('&');
-        if (index == -1) {
-            return bundleText;
+    public JButtonOperator btRefactor() {
+        if (_btRefactor == null) {
+            _btRefactor = new JButtonOperator(this, Bundle.getStringTrimmed("org.netbeans.modules.refactoring.spi.impl.Bundle", "CTL_Finish"));  // Refactor
         }
-        return bundleText.substring(0, index) + bundleText.substring(index + 1);
+        return _btRefactor;
     }
 
+    public JCheckBoxOperator cbxOpenInNewTab() {
+        if (_chbxOpenInNewTab == null) {
+            _chbxOpenInNewTab = new JCheckBoxOperator(this, Bundle.getStringTrimmed("org.netbeans.modules.refactoring.spi.impl.Bundle", "ParametersPanel.openInNewTab.text"));  // Open In New Tab
+        }
+        return _chbxOpenInNewTab;
+    }
+
+    /**
+     * Pushes "< Back" button.
+     */
+    public void back() {
+        btBack().push();
+    }
+
+    /**
+     * Pushes "Preview" button.
+     */
+    public void preview() {
+        btPreview().push();
+    }
+
+    /**
+     * Pushes "Refactor" button.
+     */
+    public void refactor() {
+        btRefactor().push();
+    }
 }

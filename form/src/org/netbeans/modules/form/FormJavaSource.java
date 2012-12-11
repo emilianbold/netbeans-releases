@@ -87,11 +87,9 @@ public final class FormJavaSource {
     public <T> T query(Function<Queries,T> queryFnc) {
         try {
             setTransientContext(true);
-            return Queries.query(getJavaFile().getURL(), queryFnc);
+            return Queries.query(getJavaFile().toURL(), queryFnc);
         } catch(QueryException ex) {
-            Logger.getLogger(getClass().getName()).log(Level.SEVERE, null, ex);
-        } catch (FileStateInvalidException ex) {
-            Logger.getLogger(getClass().getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(getClass().getName()).log(Level.WARNING, null, ex);
         } finally {
             setTransientContext(false);
         }
@@ -101,11 +99,9 @@ public final class FormJavaSource {
     public Boolean update(Function<Updates,Boolean> updateFnc) {
         try {
             setTransientContext(true);
-            return Updates.update(getJavaFile().getURL(), updateFnc);
+            return Updates.update(getJavaFile().toURL(), updateFnc);
         } catch(QueryException ex) {
-            Logger.getLogger(getClass().getName()).log(Level.SEVERE, null, ex);
-        } catch (FileStateInvalidException ex) {
-            Logger.getLogger(getClass().getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(getClass().getName()).log(Level.WARNING, null, ex);
         } finally {
             setTransientContext(false);
         }

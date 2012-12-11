@@ -256,7 +256,7 @@ public class AndroidPlatform implements MobilePlatform {
 
     @Override
     public boolean isReady() {
-        return getSdkLocation() != null;
+        return getSdkLocation() != null && !getSdkLocation().isEmpty();
     }
     
     /**

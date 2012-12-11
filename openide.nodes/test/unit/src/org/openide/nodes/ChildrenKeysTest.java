@@ -610,16 +610,22 @@ public class ChildrenKeysTest extends NbTestCase {
         Node root = createNode(k);
         
         Node[] n = root.getChildren().getNodes ();
+        LOG.log(Level.INFO, "root nodes created {0}", Arrays.toString(n));
         
         n = k.getNodes ();
+        LOG.log(Level.INFO, "k nodes created {0}", Arrays.toString(n));
+        
         assertEquals ("1 left", 1, n.length);
         assertEquals("Once add notify", 1, k.addNotify);
         
         WeakReference ref = new WeakReference (n[0]);
+        LOG.log(Level.INFO, "about to null reference to n[0]: {0}", ref.get());
         n = null;
         assertGC ("Node can be gced", ref);
+        LOG.log(Level.INFO, "reference to n[0]: {0}", ref.get());
 
         for (int i = 0; i < 10; i++) {
+            LOG.log(Level.INFO, "round {0} of GCing. k's removeNotify: {1}", new Object[]{i, k.removeNotify});
             if (k.removeNotify == 1) {
                 break;
             }
@@ -630,14 +636,18 @@ public class ChildrenKeysTest extends NbTestCase {
         assertEquals("Remove notify is being called, support: " + root.getChildren().getEntrySupport(), 1, k.removeNotify);
 
         n = root.getChildren().getNodes();
+        LOG.log(Level.INFO, "new root nodes created {0}", Arrays.toString(n));
         assertEquals("Still remains one", 1, n.length);
         assertEquals("Name A", "A", n[0].getName());
 
+        LOG.log(Level.INFO, "about to countDown on k's latch}");
         k.slowRemoveNotify.countDown();
         waitActiveReferenceQueue();
+        LOG.log(Level.INFO, "waitActiveReferenceQueue is over");
 
         for (int i = 0; i < 5; i++) {
             n = root.getChildren().getNodes();
+            LOG.log(Level.INFO, "round {0} verify root nodes: {1}", new Object[]{i, Arrays.toString(n)});
             assertEquals("Still one node", 1, n.length);
             assertEquals("Still named right", "A", n[0].getName());
             Thread.sleep(100);

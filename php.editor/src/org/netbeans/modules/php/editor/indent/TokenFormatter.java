@@ -883,16 +883,28 @@ public class TokenFormatter {
                                                     countSpaces = indent;
                                                     break;
                                                 case WRAP_NEVER:
-                                                    newLines = 0;
-                                                    countSpaces = docOptions.spaceAroundBinaryOps ? 1 : 0;
+                                                    if (isAfterLineComment(formatTokens, index)) {
+                                                        indentRule = true;
+                                                        newLines = 1;
+                                                        countSpaces = indent;
+                                                    } else {
+                                                        newLines = 0;
+                                                        countSpaces = docOptions.spaceAroundBinaryOps ? 1 : 0;
+                                                    }
                                                     break;
                                                 case WRAP_IF_LONG:
                                                     if (column + 1 + countLengthOfNextSequence(formatTokens, index + 1) > docOptions.margin) {
                                                         newLines = 1;
                                                         countSpaces = indent;
                                                     } else {
-                                                        newLines = 0;
-                                                        countSpaces = 1;
+                                                        if (isAfterLineComment(formatTokens, index)) {
+                                                            indentRule = true;
+                                                            newLines = 1;
+                                                            countSpaces = indent;
+                                                        } else {
+                                                            newLines = 0;
+                                                            countSpaces = docOptions.spaceAroundBinaryOps ? 1 : 0;
+                                                        }
                                                     }
                                                     break;
                                                 default:
@@ -925,7 +937,14 @@ public class TokenFormatter {
                                                     assert false : docOptions.wrapBinaryOps;
                                             }
                                         } else {
-                                            countSpaces = docOptions.spaceAroundBinaryOps ? 1 : 0;
+                                            if (isAfterLineComment(formatTokens, index)) {
+                                                indentRule = true;
+                                                newLines = 1;
+                                                countSpaces = indent;
+                                            } else {
+                                                newLines = 0;
+                                                countSpaces = docOptions.spaceAroundBinaryOps ? 1 : 0;
+                                            }
                                         }
                                         break;
                                     case WHITESPACE_AROUND_TERNARY_OP:
@@ -1141,14 +1160,26 @@ public class TokenFormatter {
                                         break;
                                     case WHITESPACE_BEFORE_FOR_STATEMENT:
                                         indentRule = true;
-                                        ws = countWSBeforeAStatement(docOptions.wrapForStatement, true, column, countLengthOfNextSequence(formatTokens, index + 1), indent);
+                                        ws = countWSBeforeAStatement(
+                                                docOptions.wrapForStatement,
+                                                true,
+                                                column,
+                                                countLengthOfNextSequence(formatTokens, index + 1),
+                                                indent,
+                                                isAfterLineComment(formatTokens, index));
                                         newLines = ws.lines;
                                         countSpaces = ws.spaces;
                                         break;
                                     case WHITESPACE_BEFORE_WHILE_STATEMENT:
                                         indentRule = true;
                                         if (!isBeforeEmptyStatement(formatTokens, index)) {
-                                            ws = countWSBeforeAStatement(docOptions.wrapWhileStatement, true, column, countLengthOfNextSequence(formatTokens, index + 1), indent);
+                                            ws = countWSBeforeAStatement(
+                                                    docOptions.wrapWhileStatement,
+                                                    true,
+                                                    column,
+                                                    countLengthOfNextSequence(formatTokens, index + 1),
+                                                    indent,
+                                                    isAfterLineComment(formatTokens, index));
                                             newLines = ws.lines;
                                             countSpaces = ws.spaces;
                                         } else {
@@ -1158,7 +1189,13 @@ public class TokenFormatter {
                                         break;
                                     case WHITESPACE_BEFORE_DO_STATEMENT:
                                         indentRule = true;
-                                        ws = countWSBeforeAStatement(docOptions.wrapDoWhileStatement, true, column, countLengthOfNextSequence(formatTokens, index + 1), indent);
+                                        ws = countWSBeforeAStatement(
+                                                docOptions.wrapDoWhileStatement,
+                                                true,
+                                                column,
+                                                countLengthOfNextSequence(formatTokens, index + 1),
+                                                indent,
+                                                isAfterLineComment(formatTokens, index));
                                         newLines = ws.lines;
                                         countSpaces = ws.spaces;
                                         break;
@@ -1168,14 +1205,26 @@ public class TokenFormatter {
                                             newLines = 0;
                                             countSpaces = 1;
                                         } else {
-                                            ws = countWSBeforeAStatement(docOptions.wrapIfStatement, true, column, countLengthOfNextSequence(formatTokens, index + 1), indent);
+                                            ws = countWSBeforeAStatement(
+                                                    docOptions.wrapIfStatement,
+                                                    true,
+                                                    column,
+                                                    countLengthOfNextSequence(formatTokens, index + 1),
+                                                    indent,
+                                                    isAfterLineComment(formatTokens, index));
                                             newLines = ws.lines;
                                             countSpaces = ws.spaces;
                                         }
                                         break;
                                     case WHITESPACE_IN_FOR:
                                         indentRule = true;
-                                        ws = countWSBeforeAStatement(docOptions.wrapFor, true, column, countLengthOfNextSequence(formatTokens, index + 1), indent);
+                                        ws = countWSBeforeAStatement(
+                                                docOptions.wrapFor,
+                                                true,
+                                                column,
+                                                countLengthOfNextSequence(formatTokens, index + 1),
+                                                indent,
+                                                isAfterLineComment(formatTokens, index));
                                         newLines = ws.lines;
                                         countSpaces = ws.spaces;
                                         break;
@@ -1186,7 +1235,8 @@ public class TokenFormatter {
                                                 docOptions.spaceAroundTernaryOps,
                                                 column,
                                                 countLengthOfNextSequence(formatTokens, index + 1),
-                                                indent);
+                                                indent,
+                                                isAfterLineComment(formatTokens, index));
                                         newLines = ws.lines;
                                         countSpaces = ws.spaces;
                                         break;
@@ -1327,7 +1377,25 @@ public class TokenFormatter {
                                             newLines = ((FormatToken.InitToken) formatTokens.get(0)).hasHTML()
                                                     ? docOptions.blankLinesAfterOpenPHPTagInHTML + 1
                                                     : docOptions.blankLinesAfterOpenPHPTag + 1;
-                                            countSpaces = indent;
+                                            suggestedLineIndents = (Map<Integer, Integer>) doc.getProperty("AbstractIndenter.lineIndents");
+                                            if (suggestedLineIndents != null) {
+                                                try {
+                                                    int offset = formatToken.getOffset() + delta;
+                                                    int lineNumber = Utilities.getLineOffset(doc, offset) + 1;
+                                                    Integer suggestedIndent = suggestedLineIndents.get(lineNumber);
+                                                    if (suggestedIndent != null) {
+                                                        htmlIndent = suggestedIndent.intValue();
+                                                        indent = htmlIndent + docOptions.initialIndent + lastPHPIndent;
+                                                        countSpaces = indent;
+                                                    } else {
+                                                        countSpaces = indent;
+                                                    }
+                                                } catch (BadLocationException ex) {
+                                                    Exceptions.printStackTrace(ex);
+                                                }
+                                            } else {
+                                                countSpaces = indent;
+                                            }
                                             helpIndex = index + 1;
                                             while (helpIndex < formatTokens.size()
                                                     && formatTokens.get(helpIndex).isWhitespace()) {
@@ -1426,20 +1494,28 @@ public class TokenFormatter {
                                             int hindent = indent;
                                             if (hIndex < formatTokens.size()) {
                                                 FormatToken token;
+                                                int lastIndent = 0;
+                                                boolean bracketsInLine = false;
                                                 do {
                                                     token = formatTokens.get(hIndex);
                                                     if (token.getId() == FormatToken.Kind.INDENT) {
+                                                        lastIndent = ((FormatToken.IndentToken) token).getDelta();
                                                         hindent += ((FormatToken.IndentToken) token).getDelta();
+                                                    } else if (token.getId() == FormatToken.Kind.TEXT
+                                                            && (")".equals(token.getOldText()) || "]".equals(token.getOldText()))) {
+                                                        bracketsInLine = true;
                                                     }
 
                                                     hIndex++;
                                                 } while (hIndex < formatTokens.size()
                                                         && token.getId() != FormatToken.Kind.WHITESPACE_INDENT
                                                         && token.getId() != FormatToken.Kind.WHITESPACE
-                                                        && (token.isWhitespace() || token.getId() == FormatToken.Kind.INDENT));
-                                                if (FormatToken.Kind.TEXT == token.getId()
-                                                        && (")".equals(token.getOldText()) || ";".equals(token.getOldText()) || "]".equals(formatToken.getOldText()))) {
-                                                    countSpaces = hindent;
+                                                        && (token.isWhitespace() || token.getId() == FormatToken.Kind.INDENT
+                                                                || token.getId() == FormatToken.Kind.UNBREAKABLE_SEQUENCE_END
+                                                                || (token.getId() == FormatToken.Kind.TEXT
+                                                                    && (")".equals(token.getOldText()) || "]".equals(token.getOldText())))));
+                                                if (FormatToken.Kind.TEXT == token.getId() && ";".equals(token.getOldText())) {
+                                                    countSpaces = hindent == 0 && bracketsInLine ? lastIndent * -1 : hindent;
                                                     handlingSpecialCases = true;
                                                 }
                                             }
@@ -1715,7 +1791,13 @@ public class TokenFormatter {
                 return result;
             }
 
-            private Whitespace countWSBeforeAStatement(CodeStyle.WrapStyle style, boolean addSpaceIfNoLine, int column, int lengthOfNexSequence, int currentIndent) {
+            private Whitespace countWSBeforeAStatement(
+                    CodeStyle.WrapStyle style,
+                    boolean addSpaceIfNoLine,
+                    int column,
+                    int lengthOfNexSequence,
+                    int currentIndent,
+                    boolean isAfterLineComment) {
                 int lines = 0;
                 int spaces = 0;
                 switch (style) {
@@ -1724,16 +1806,26 @@ public class TokenFormatter {
                         spaces = currentIndent;
                         break;
                     case WRAP_NEVER:
-                        lines = 0;
-                        spaces = addSpaceIfNoLine ? 1 : 0;
+                        if (isAfterLineComment) {
+                            lines = 1;
+                            spaces = currentIndent;
+                        } else {
+                            lines = 0;
+                            spaces = addSpaceIfNoLine ? 1 : 0;
+                        }
                         break;
                     case WRAP_IF_LONG:
                         if (column + 1 + lengthOfNexSequence > docOptions.margin) {
                             lines = 1;
                             spaces = currentIndent + docOptions.indentSize;
                         } else {
-                            lines = 0;
-                            spaces = addSpaceIfNoLine ? 1 : 0;
+                            if (isAfterLineComment) {
+                                lines = 1;
+                                spaces = currentIndent;
+                            } else {
+                                lines = 0;
+                                spaces = addSpaceIfNoLine ? 1 : 0;
+                            }
                         }
                         break;
                     default:

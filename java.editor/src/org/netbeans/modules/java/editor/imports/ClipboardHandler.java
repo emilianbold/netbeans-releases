@@ -37,6 +37,7 @@
  */
 package org.netbeans.modules.java.editor.imports;
 
+import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.IdentifierTree;
 import com.sun.source.tree.MemberSelectTree;
@@ -75,7 +76,10 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Logger;
 import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.util.Elements;
 import javax.swing.Icon;
 import javax.swing.JButton;
 import javax.swing.JComponent;
@@ -87,10 +91,13 @@ import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.Position;
 import javax.swing.text.StyledDocument;
+
+import com.sun.source.tree.ImportTree;
 import org.netbeans.api.editor.EditorActionRegistration;
 import org.netbeans.api.editor.EditorActionRegistrations;
 import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.java.source.CompilationController;
+import org.netbeans.api.java.source.GeneratorUtilities;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.ModificationResult;
 import org.netbeans.api.java.source.SourceUtils;
@@ -150,9 +157,17 @@ public class ClipboardHandler {
                         if (handled == null) {
                             String fqn = simple2ImportFQN.get(currentSimpleName);
 
-                            if (fqn == null || copy.getElements().getTypeElement(fqn) == null) continue;
+                            Element e = fqn2element(copy.getElements(), fqn);
+                            if (e == null) continue;
 
-                            imported.put(currentSimpleName, handled = SourceUtils.resolveImport(copy, context, fqn));
+                            if (e.getKind().isClass() || e.getKind().isInterface()) {
+                                handled = SourceUtils.resolveImport(copy, context, fqn);
+                            } else {
+                                CompilationUnitTree cut = (CompilationUnitTree) copy.resolveRewriteTarget(copy.getCompilationUnit());
+                                copy.rewrite(copy.getCompilationUnit(), GeneratorUtilities.get(copy).addImports(cut, Collections.singleton(e)));
+                                handled = e.getSimpleName().toString();
+                            }
+                            imported.put(currentSimpleName, handled);
                         }
 
                         putFQNs.put(span, handled);
@@ -243,20 +258,25 @@ public class ClipboardHandler {
                 SourcePositions[] sps = new SourcePositions[1];
 
                 OUTER: for (Entry<String, String> e : simple2FQNs.entrySet()) {
-                    TypeElement type = cc.getElements().getTypeElement(e.getValue());
-
-                    if (type != null) {
-                        ExpressionTree simpleName = cc.getTreeUtilities().parseExpression(e.getKey() + ".class", sps);
-
-                        cc.getTreeUtilities().attributeTree(simpleName, context);
-
-                        Element el = cc.getTrees().getElement(new TreePath(tp, ((MemberSelectTree) simpleName).getExpression()));
-
-                        if (type.equals(el)) continue OUTER;
-                    } else {
+                    Element el = fqn2element(cc.getElements(), e.getValue());
+                    if (el == null) {
                         continue;
+                    } else if (el.getKind().isClass() || el.getKind().isInterface()) {
+                        ExpressionTree simpleName = cc.getTreeUtilities().parseExpression(e.getKey() + ".class", sps);
+                        cc.getTreeUtilities().attributeTree(simpleName, context);
+                        Element elm = cc.getTrees().getElement(new TreePath(tp, ((MemberSelectTree) simpleName).getExpression()));
+                        if (el.equals(elm)) continue;
+                    } else {
+                        if (!cc.getTreeUtilities().isAccessible(context, el, el.getEnclosingElement().asType())
+                                || cc.getElementUtilities().outermostTypeElement(el) == cc.getElementUtilities().outermostTypeElement(context.getEnclosingClass())) continue;
+                        for (ImportTree importTree : cc.getCompilationUnit().getImports()) {
+                            if (importTree.isStatic() && importTree.getQualifiedIdentifier().getKind() == Tree.Kind.MEMBER_SELECT) {
+                                MemberSelectTree mst = (MemberSelectTree) importTree.getQualifiedIdentifier();
+                                Element elm = cc.getTrees().getElement(TreePath.getPath(cc.getCompilationUnit(), mst.getExpression()));
+                                if (el.getEnclosingElement().equals(elm) && ("*".contentEquals(mst.getIdentifier()) || el.getSimpleName().contentEquals(mst.getIdentifier()))) continue OUTER; //NOI18N
+                            }
+                        }
                     }
-
                     unavailable.add(e.getValue());
                 }
             }
@@ -267,6 +287,29 @@ public class ClipboardHandler {
         } else {
             return null;
         }
+    }
+    
+    private static Element fqn2element(final Elements elements, final String fqn) {
+        if (fqn == null) {
+            return null;
+        }
+        TypeElement type = elements.getTypeElement(fqn);
+        if (type != null) {
+            return type;
+        }
+        int idx = fqn.lastIndexOf('.');
+        if (idx > 0) {
+            type = elements.getTypeElement(fqn.substring(0, idx));
+            String name = fqn.substring(idx + 1);
+            if (type != null && name.length() > 0) {
+                for (Element el : type.getEnclosedElements()) {
+                    if (el.getModifiers().contains(Modifier.STATIC) && name.contentEquals(el.getSimpleName())) {
+                        return el;
+                    }
+                }
+            }
+        }
+        return null;
     }
 
     private static boolean runQuickly(final JavaSource js, final Task<CompilationController> task) {
@@ -396,12 +439,19 @@ public class ClipboardHandler {
                                     int e = (int) parameter.getTrees().getSourcePositions().getEndPosition(parameter.getCompilationUnit(), node);
                                     javax.lang.model.element.Element el = parameter.getTrees().getElement(getCurrentPath());
 
-                                    if (s >= start && e >= start && e <= end && el != null && (el.getKind().isClass() || el.getKind().isInterface())) {
-                                        TreePath parentPath = getCurrentPath().getParentPath();
-                                        if (parentPath == null || parentPath.getLeaf().getKind() != Tree.Kind.NEW_CLASS
-                                                || ((NewClassTree)parentPath.getLeaf()).getEnclosingExpression() == null
-                                                || ((NewClassTree)parentPath.getLeaf()).getIdentifier() != node) {
-                                            simple2ImportFQN.put(el.getSimpleName().toString(), ((TypeElement) el).getQualifiedName().toString());
+                                    if (s >= start && e >= start && e <= end && el != null) {
+                                        if (el.getKind().isClass() || el.getKind().isInterface()) {
+                                            TreePath parentPath = getCurrentPath().getParentPath();
+                                            if (parentPath == null || parentPath.getLeaf().getKind() != Tree.Kind.NEW_CLASS
+                                                    || ((NewClassTree)parentPath.getLeaf()).getEnclosingExpression() == null
+                                                    || ((NewClassTree)parentPath.getLeaf()).getIdentifier() != node) {
+                                                simple2ImportFQN.put(el.getSimpleName().toString(), ((TypeElement) el).getQualifiedName().toString());
+                                                spans.add(new int[] {s - start, e - start});
+                                            }
+                                        } else if ((el.getKind().isField() || el.getKind() == ElementKind.METHOD)
+                                                && el.getModifiers().contains(Modifier.STATIC)
+                                                && !el.getModifiers().contains(Modifier.PRIVATE)) {
+                                            simple2ImportFQN.put(el.getSimpleName().toString(), ((TypeElement) el.getEnclosingElement()).getQualifiedName().toString() + '.' + el.getSimpleName().toString());
                                             spans.add(new int[] {s - start, e - start});
                                         }
                                     }

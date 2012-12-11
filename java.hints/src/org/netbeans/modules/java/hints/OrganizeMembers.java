@@ -43,6 +43,7 @@ package org.netbeans.modules.java.hints;
 
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.List;
@@ -51,10 +52,13 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 
+import com.sun.source.tree.BlockTree;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompilationUnitTree;
+import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
+import com.sun.source.tree.VariableTree;
 import com.sun.source.util.SourcePositions;
 import com.sun.source.util.TreePath;
 
@@ -78,7 +82,6 @@ import org.netbeans.modules.editor.java.Utilities;
 import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.api.UserTask;
-import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.Fix;
 import org.netbeans.spi.java.hints.ErrorDescriptionFactory;
@@ -108,7 +111,7 @@ public class OrganizeMembers {
                     doOrganizeMembers(copy, context.getPath());
                 }
             });
-            List<? extends Difference> diffs = result != null ? result.getDifferences(source.getFileObject()) : null;
+            List<? extends Difference> diffs = result.getDifferences(source.getFileObject());
             if (diffs != null && !diffs.isEmpty() && !checkGuarded(context.getInfo().getDocument(), diffs)) {
                 Fix fix = new OrganizeMembersFix(context.getInfo(), context.getPath()).toEditorFix();
                 SourcePositions sp = context.getInfo().getTrees().getSourcePositions();
@@ -132,7 +135,25 @@ public class OrganizeMembers {
         ClassTree clazz = (ClassTree) path.getLeaf();
         TreeMaker maker = copy.getTreeMaker();
         ClassTree nue = maker.Class(clazz.getModifiers(), clazz.getSimpleName(), clazz.getTypeParameters(), clazz.getExtendsClause(), clazz.getImplementsClause(), Collections.<Tree>emptyList());
-        nue = GeneratorUtilities.get(copy).insertClassMembers(nue, clazz.getMembers());
+        List<Tree> members = new ArrayList<Tree>(clazz.getMembers().size());
+        for (Tree tree : clazz.getMembers()) {
+            Tree member;
+            switch (tree.getKind()) {
+                case VARIABLE:
+                    member = maker.setLabel(tree, ((VariableTree)tree).getName());
+                    break;
+                case METHOD:
+                    member = maker.setLabel(tree, ((MethodTree)tree).getName());
+                    break;
+                case BLOCK:
+                    member = maker.Block(((BlockTree)tree).getStatements(), ((BlockTree)tree).isStatic());
+                    break;
+                default:
+                    member = tree;    
+            }
+            members.add(member);
+        }
+        nue = GeneratorUtilities.get(copy).insertClassMembers(nue, members);
         copy.rewrite(clazz, nue);
     }
     
@@ -196,15 +217,21 @@ public class OrganizeMembers {
                                     if (path != null) {
                                         doOrganizeMembers(copy, path);
                                     } else {
-                                        Toolkit.getDefaultToolkit().beep();                                        
+                                        CompilationUnitTree cut = copy.getCompilationUnit();
+                                        List<? extends Tree> typeDecls = cut.getTypeDecls();
+                                        if (typeDecls.isEmpty()) {
+                                            Toolkit.getDefaultToolkit().beep();
+                                        } else {
+                                            doOrganizeMembers(copy, copy.getTrees().getPath(cut, typeDecls.get(0)));
+                                        }
                                     }
                                 }
                             });
-                            List<? extends Difference> diffs = result != null ? result.getDifferences(source.getFileObject()) : null;
+                            List<? extends Difference> diffs = result.getDifferences(source.getFileObject());
                             if (diffs != null && !diffs.isEmpty() && !checkGuarded(doc, diffs)) {
                                 result.commit();
                             } else {
-                                Toolkit.getDefaultToolkit().beep();                                        
+                                Toolkit.getDefaultToolkit().beep();
                             }
                         } catch (Exception ex) {
                             Toolkit.getDefaultToolkit().beep();

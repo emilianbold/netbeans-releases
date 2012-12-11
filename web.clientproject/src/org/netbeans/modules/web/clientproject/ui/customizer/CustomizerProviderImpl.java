@@ -57,6 +57,7 @@ import javax.swing.JFrame;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.web.clientproject.ClientSideProject;
+import org.netbeans.modules.web.clientproject.util.ClientSideProjectUtilities;
 import org.netbeans.spi.project.ui.CustomizerProvider;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
 import org.openide.util.Lookup;
@@ -149,6 +150,12 @@ public class CustomizerProviderImpl implements CustomizerProvider {
         public void actionPerformed(ActionEvent e) {
             assert !EventQueue.isDispatchThread();
             uiProperties.save();
+            ClientSideProjectProperties.ProjectServer server = uiProperties.getProjectServer();
+            ClientSideProjectUtilities.logUsage(CustomizerProviderImpl.class, "USG_PROJECT_HTML5_CONFIGURE", // NOI18N
+                    new Object[] { ClientSideProjectProperties.createListOfJsLibraries(uiProperties.getNewJsLibraries()),
+                        ClientSideProjectProperties.ProjectServer.INTERNAL.equals(server) ? "EMBEDDED" : "EXTERNAL", // NOI18N
+                        ClientSideProjectProperties.ProjectServer.INTERNAL.equals(server) ? (uiProperties.getWebRoot().length() > 1 ? "YES" : "NO") : "" // NOI18N
+                });
         }
 
     }

@@ -464,7 +464,6 @@ public final class TextDetail implements Selectable {
             
             this.txtDetail = txtDetail;
             
-            setShortDescription(DetailNode.getShortDesc(txtDetail));
             setValue(SearchDisplayer.ATTR_OUTPUT_LINE,
                      DetailNode.getFullDesc(txtDetail));
             // A workaround for #124559 - when the detail becomes visible,

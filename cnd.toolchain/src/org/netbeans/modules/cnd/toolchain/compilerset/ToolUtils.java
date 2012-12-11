@@ -420,22 +420,35 @@ public final class ToolUtils {
                 }
             }
         }
-        String flag = c.getVersionFlags();
-        if (flag == null) {
-            return true;
+        if (c.getVersionFlags() != null && c.getVersionPattern() != null) {
+            String flag = c.getVersionFlags();
+            pattern = Pattern.compile(c.getVersionPattern());
+            String command = LinkSupport.resolveWindowsLink(file.getAbsolutePath());
+            String s = getCommandOutput(path, command, flag, true);
+            boolean res = pattern.matcher(s).find();
+            if (ToolchainManagerImpl.TRACE && !res) {
+                System.err.println("No match for pattern [" + c.getVersionPattern() + "]:"); // NOI18N
+                System.err.println("Run " + path + "/" + c.getNames()[0] + " " + flag + "\n" + s); // NOI18N
+            }
+            return res;
+        } else if (c.getFingerPrintFlags() != null && c.getFingerPrintPattern() != null) {
+            String flag = c.getFingerPrintFlags();
+            String command = LinkSupport.resolveWindowsLink(file.getAbsolutePath());
+            String s = getCommandOutput(path, command,flag, false);
+            pattern = Pattern.compile(c.getFingerPrintPattern());
+            final Matcher matcher = pattern.matcher(s);
+            boolean res = matcher.find();
+            if (ToolchainManagerImpl.TRACE && !res) {
+                System.err.println("No match for pattern [" + c.getFingerPrintPattern() + "]:"); // NOI18N
+                System.err.println("Run " + path + "/" + c.getNames()[0] + " " + flag + "\n" + s); // NOI18N
+            }
+            if (res && matcher.groupCount() >= 1) {
+                String version = matcher.group(1);
+                System.err.println(version);
+            }
+            return res;
         }
-        if (c.getVersionPattern() == null) {
-            return true;
-        }
-        pattern = Pattern.compile(c.getVersionPattern());
-        String command = LinkSupport.resolveWindowsLink(file.getAbsolutePath());
-        String s = getCommandOutput(path, command, flag);
-        boolean res = pattern.matcher(s).find();
-        if (ToolchainManagerImpl.TRACE && !res) {
-            System.err.println("No match for pattern [" + c.getVersionPattern() + "]:"); // NOI18N
-            System.err.println("Run " + path + "/" + c.getNames()[0] + " " + flag + "\n" + s); // NOI18N
-        }
-        return res;
+        return true;
     }
 
     public static String getBaseFolder(ToolchainDescriptor d, int platform) {
@@ -472,7 +485,7 @@ public final class ToolUtils {
         if (list == null || list.isEmpty()) {
             return null;
         }
-        String base = null;
+        String base;
         for (BaseFolder folder : list) {
             String pattern = folder.getFolderPattern();
             String key = folder.getFolderKey();
@@ -532,7 +545,7 @@ public final class ToolUtils {
         return base;
     }
 
-    private static String getCommandOutput(String path, String command, String flags) {
+    private static String getCommandOutput(String path, String command, String flags, boolean bothStreams) {
         String res = commandCache.get(command+" "+flags); // NOI18N
         if (res != null) {
             //System.err.println("Get command output from cache #"+command); // NOI18N
@@ -553,8 +566,10 @@ public final class ToolUtils {
             buf.append(status.output);
         }
         buf.append('\n');
-        if (status.error != null) {
-            buf.append(status.error);
+        if (bothStreams) {
+            if (status.error != null) {
+                buf.append(status.error);
+            }
         }
         commandCache.put(command+" "+flags, buf.toString()); // NOI18N
         return buf.toString();
@@ -574,7 +589,7 @@ public final class ToolUtils {
                 reg_exe = new File(sys32, "reg.exe").getPath(); // NOI18N
             }
         } catch (Throwable th) {
-            th.printStackTrace();
+            th.printStackTrace(System.err);
         }
 
         ExitStatus status = ProcessUtils.executeWithoutMacroExpansion(null, ExecutionEnvironmentFactory.getLocal(), reg_exe, "query", key, "/s"); // NOI18N

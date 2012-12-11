@@ -77,7 +77,6 @@ public final class JFXProjectOpenedHook extends ProjectOpenedHook {
     private static final Logger LOGGER = Logger.getLogger("javafx"); // NOI18N
     private final Project prj;
     private final J2SEPropertyEvaluator eval;
-    private ProjectConfigurationProvider<?> pcp;
     private ConfigChangeListener chl = null;
 
     public JFXProjectOpenedHook(final Lookup lkp) {
@@ -98,7 +97,7 @@ public final class JFXProjectOpenedHook extends ProjectOpenedHook {
             Preferences prefs = ProjectUtils.getPreferences(prj, Project.class, false);
             prefs.put("issue214819_fx_enabled", "true"); //NOI18N
 
-            pcp = prj.getLookup().lookup(ProjectConfigurationProvider.class);
+            ProjectConfigurationProvider<?> pcp = prj.getLookup().lookup(ProjectConfigurationProvider.class);
             assert pcp != null;
             LOGGER.log(Level.INFO, "FX PCP: " + pcp.toString());
             chl = new ConfigChangeListener(prj);
@@ -175,8 +174,9 @@ public final class JFXProjectOpenedHook extends ProjectOpenedHook {
     protected void projectClosed() {
         if(isFXProject(eval)) {
             JFXProjectGenerator.logUsage(JFXProjectGenerator.Action.CLOSE);
-            assert pcp != null;
             if(chl != null) {
+                ProjectConfigurationProvider<?> pcp = prj.getLookup().lookup(ProjectConfigurationProvider.class);
+                assert pcp != null;
                 pcp.removePropertyChangeListener(chl);
                 chl = null;
             }

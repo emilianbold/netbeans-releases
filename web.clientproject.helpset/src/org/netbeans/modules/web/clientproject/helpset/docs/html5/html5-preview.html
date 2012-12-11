@@ -6,66 +6,94 @@
 <html>
 <head>
 <meta http-equiv="content-type" content="text/html; charset=UTF-8">
-<title>Previewing an HTML5 Application</title>
+<title>Changing Browser Screen Sizes</title>
 <link rel="stylesheet" href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/ide.css" type="text/css">
 </head>
 <body>
-<h2>Previewing an HTML5 Application</h2>
+<h2>Changing Browser Screen Sizes</h2>
 <p> <small><a href="#seealso">See Also</a>&nbsp; </small> 
 
-<p>Content to come.</p>
-<!--<p>An HTML5 application project is typically run in a browser on your desktop or a mobile device.
-    When you run an HTML5 application on your local system for testing or debugging 
-    you do not need to compile or deploy the application to a server because the JavaScript engine in the browser 
-    generally handles any scripts in the application.
-    To run the application you only need to specify the browser and then run the application.</p>
+<p>A single HTML5 application might be viewed on various devices with different screen sizes.
+    The IDE can help you develop projects that can respond and adapt to different
+    display devices by enabling you to view pages at different screen sizes.
+    When you run the HTML5 application from the IDE you can choose to view the pages 
+    in one of the default screen sizes or create a custom screen size.</p>
 
-<h3>Specifying the browser</h3>
-<p>When you want to run an HTML5 application or file from the IDE you need to specify
-the target browser. The IDE enables you to easily select any of the browsers that
-are installed on your local system or you can select the embedded WebKit browser.</p>
+<p>You can view your application in any browser, but if you want to 
+   be able to quickly switch between screen sizes 
+   you need to specify one of the following integrated browsers as the target browser.</p>
 
-<p>You can specify the target browser for the application in the following ways.</p>
 <ul>
-    <li>Select the application in the Projects window and then select the browser from the dropdown list in the Toolbar.</li>
-    <li>Open the Project Properties window and select the browser in the Run panel of the window.</li>
-</ul>
-<ul class="note">
-    <li>If you want to debug an HTML5 application or file, or synchronize the IDE with your browser to inspect 
-        your code, you should select either Chrome with NetBeans Integration or Embedded WebKit Browser 
-        as the target browser.</li>
+    <li><strong>Chrome with NetBeans Integration</strong></li>
+    <li><strong>Embedded WebKit Browser</strong></li>
 </ul>
 
-<h3>Running an application</h3>
-<p>After you specify the browser, you can run the application in the following ways.</p>
-<ul>
-    <li>Right-click the project node in the Projects window and choose Run in the popup menu.</li>
-    <li>Select the application in the Projects window and then click Run in the Toolbar
-    or choose Run &gt; Run Project (F6) in the main menu.</li>
-</ul>
-<p>When you run an application the IDE opens the application in the selected browser.</p>
+<p>When you view the application in one of the integrated browsers you can choose 
+    the display size in a menu in the browser.</p>
 
 <ul class="note">
-    <li>If more than one project is open you can specify one of the projects as the Main Project.
-    After you specify the project as the Main Project, the F6 keyboard shortcut
-    will always run the Main Project regardless of the project that is selected in the Projects window.</li>
+    <li>You can specify the target browser for the application in the Project Properties window
+    or in the Set Project Configuration dropdown list in the toolbar of the IDE.</li>
 </ul>
 
-<h3>Running a file</h3>
-<p>You can run an HTML file in an HTML5 application in the following ways.
-<ul>
-    <li>Right-click the HTML file in the Projects window and choose Run File from the popup menu (Shift-F6). </li>
-    <li>If the HTML file is open in the editor, you can right-click in the file and choose Run File (Shift-F6)
-        from the popup menu or click the Run File button in the Selection tab of the CSS Styles window.</li> 
-</ul>
-<p>When you run a file the IDE opens the file in the target browser for the application.</p>
--->
+
+<h3>Switching Between Screen Sizes</h3>
+<p>The integrated browsers provide menus that enable you to switch between
+    common screen sizes that are pre-configured in the menu.
+    When you select a new screen size the display area of the browser resizes to 
+    the selected size. 
+    By changing the screen size you can view how the layout of the application
+    responds to different sizes, for example, as a result of media queries that
+    are specified in the style sheet.</p>
+
+<p>After you launch the application you can select a screen size from the menu in the browser.
+    The location of the menu for selecting the screen size options depends upon the target browser.</p>
+        <ul>
+            <li><strong>Chrome with NetBeans Integration.</strong>
+            Click the NetBeans icon in the URL location bar to open the menu and select a screen size.</li>
+            <li><strong>Embedded WebKit Browser.</strong>
+            Select a screen size in the Other Options menu or click an icon in the toolbar.
+            The toolbar in the Web Browser window contains the following elements.
+            <ul>
+                <li><strong>Display device icons.</strong> Click a display device icon to resize 
+                the display area to the selected size.
+                You can place your cursor over an icon to display the dimensions of the display device.
+                You can modify which icons are displayed in the toolbar by
+                choosing Customize in the Other Options dropdown list.
+                </li>
+                <li><strong>Other Options menu.</strong> Select a window size in the dropdown list
+                to view the page contents in the selected window size. 
+                The dropdown list displays all the available window sizes.
+                Choose Customize to open a dialog that enables you to modify,
+                create or remove window sizes.
+                </li>
+                <li><strong>Magnification selector.</strong> Type a value in the text field
+                or select a value in the dropdown list to change the magnification 
+                of the contents of the page.</li>
+                <li><strong>Inspect icon.</strong> Select to enable Inspect mode in the page.</li>
+            </ul>
+            <ul class="note">
+                <li>When you run an HTML5 application the location of the current page
+                is displayed in the Location bar.
+                Pages are rendered using the WebKit browser engine running on the
+                embedded lightweight server (<tt>localhost:8383</tt>).
+                You can modify the server details in the Project Properties window.</li>
+            </ul>
+        </li>
+        </ul>
+
+<h3>Creating a Custom Screen Size</h3>
+<p>You can create custom sizes for windows by selecting Customize in the screen size menu.
+    When you select Customize the browser displays a window that enables you to
+    create a new size and to modify the default screen size options.
+    You can also edit the contents of the menu.</p>
 
 <dl>
     <dt><a name="seealso">See Also</a></dt>
     <dd><a href="html5-runproject.html">Running an HTML5 Application</a></dd>
     <dd><a href="html5-chrome.html">Integrating an HTML5 Project with the Browser</a></dd>
     <dd><a href="html5-inspect.html">Inspecting HTML5 Code with the Browser</a></dd>
+    <dd><a href="nbdocs://org.netbeans.modules.usersguide/org/netbeans/modules/usersguide/webbrowser/default.html">Changing the Default Web Browser</a></dd>
 </dl>
 <hr><small><a href="../credits.html">Legal Notices</a></small>
 

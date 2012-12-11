@@ -461,16 +461,22 @@ public class InteceptorTest extends NbTestCase {
         assertEquals(SVNStatusKind.NORMAL, getSVNStatus(file).getTextStatus());
         assertEquals(FileInformation.STATUS_VERSIONED_UPTODATE, getStatus(file));
 
-        // delete externally
-        file.delete();
+        String prop = System.getProperty("org.netbeans.modules.subversion.deleteMissingFiles", "");
+        try {
+            System.setProperty("org.netbeans.modules.subversion.deleteMissingFiles", "true");
+            // delete externally
+            file.delete();
 
-        // test
-        assertFalse(file.exists());
-        assertEquals(SVNStatusKind.MISSING, getSVNStatus(file).getTextStatus());
+            // test
+            assertFalse(file.exists());
+            assertEquals(SVNStatusKind.MISSING, getSVNStatus(file).getTextStatus());
 
-        // notify changes
-        FileUtil.refreshFor(file);
-        assertCachedStatus(file, FileInformation.STATUS_VERSIONED_REMOVEDLOCALLY);
+            // notify changes
+            FileUtil.refreshFor(file);
+            assertCachedStatus(file, FileInformation.STATUS_VERSIONED_REMOVEDLOCALLY);
+        } finally {
+            System.setProperty("org.netbeans.modules.subversion.deleteMissingFiles", prop);
+        }
         assertEquals(SVNStatusKind.DELETED, getSVNStatus(file).getTextStatus());
         commit(wc);
         assertEquals(SVNStatusKind.UNVERSIONED, getSVNStatus(file).getTextStatus());
@@ -684,8 +690,8 @@ public class InteceptorTest extends NbTestCase {
         
         file.delete();
         FileUtil.refreshFor(file);
-        assertCachedStatus(file, FileInformation.STATUS_VERSIONED_REMOVEDLOCALLY);
-        assertEquals(SVNStatusKind.DELETED, getSVNStatus(file).getTextStatus());
+        assertEquals(SVNStatusKind.MISSING, getSVNStatus(file).getTextStatus());
+        assertCachedStatus(file, FileInformation.STATUS_VERSIONED_DELETEDLOCALLY);
         
         TestKit.write(file, "modification");
         FileUtil.refreshFor(file.getParentFile());

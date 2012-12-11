@@ -100,10 +100,10 @@ public class HtmlAutoCompletion {
         }
 
         //handle quotation marks
-        if (ch == '"') { //NOI18N
+        if (ch == '"' || ch == '\'') { //NOI18N
             //user has pressed quotation mark
             if (HtmlPreferences.autocompleteQuotes()) {
-                return handleQuotationMark(doc, dotPos, caret);
+                return handleQuotationMark(doc, dotPos, caret, ch);
             }
         }
 
@@ -253,7 +253,7 @@ public class HtmlAutoCompletion {
     }
 
     //must be called before the change in the document!
-    private static boolean handleQuotationMark(final BaseDocument doc, final int dotPos, final Caret caret) throws BadLocationException {
+    private static boolean handleQuotationMark(final BaseDocument doc, final int dotPos, final Caret caret, char qchar) throws BadLocationException {
         //test whether the user typed an ending quotation in the attribute value
         TokenSequence<HTMLTokenId> ts = LexUtilities.getTokenSequence((BaseDocument) doc, dotPos, HTMLTokenId.language());
         if (ts == null) {
@@ -278,14 +278,15 @@ public class HtmlAutoCompletion {
                 //the text looks following in such a situation:
                 //
                 //  atrname="abcd|"", where offset of the | == dotPos
-                if (token.text().charAt(diff) == '"') { // NOI18N
+                if (diff > 0 && token.text().charAt(diff) == qchar) { // NOI18N
                     caret.setDot(dotPos + 1);
                     return true;
                 }
                 
             } else if (token.id() == HTMLTokenId.OPERATOR) {
                 //user typed quation just after equal sign after tag attribute name => complete the second quote
-                doc.insertString(dotPos, "\"\"", null); // NOI18N
+                StringBuilder insert = new StringBuilder().append(qchar).append(qchar);
+                doc.insertString(dotPos, insert.toString(), null); // NOI18N
                 caret.setDot(dotPos + 1);
 
                 return true;

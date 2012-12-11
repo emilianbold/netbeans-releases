@@ -84,10 +84,14 @@ public class Rule {
      */
     Rule(JSONObject rule) {
         this.json = rule;
+        // Determines whether the given rule object is CSS.RuleMatch or CSS.CSSRule.
+        boolean isRuleMatch = rule.containsKey("rule"); // NOI18N
+        if (isRuleMatch) {
+            rule = (JSONObject)json.get("rule"); // NOI18N
+        }
         if (rule.containsKey("ruleId")) { // NOI18N
             id = new RuleId((JSONObject)rule.get("ruleId")); // NOI18N
         }
-        selector = (String)rule.get("selectorText"); // NOI18N
         sourceURL = (String)rule.get("sourceURL"); // NOI18N
         if (rule.containsKey("sourceLine")) { // NOI18N
             sourceLine = ((Number)rule.get("sourceLine")).intValue(); // NOI18N
@@ -96,14 +100,7 @@ public class Rule {
         }
         String originCode = (String)rule.get("origin"); // NOI18N
         origin = StyleSheetOrigin.forCode(originCode);
-        if (rule.containsKey("style")) { // NOI18N
-            style = new Style((JSONObject)rule.get("style")); // NOI18N
-        } else {
-            throw new IllegalArgumentException("Style attribute is missing! Rule: " + rule); // NOI18N
-        }
-        if (rule.containsKey("selectorRange")) { // NOI18N
-            selectorRange = new SourceRange((JSONObject)rule.get("selectorRange")); // NOI18N
-        }
+        style = new Style((JSONObject)rule.get("style")); // NOI18N
         if (rule.containsKey("media")) { // NOI18N
             JSONArray array = (JSONArray)rule.get("media"); // NOI18N
             media = new ArrayList<Media>(array.size());
@@ -112,6 +109,18 @@ public class Rule {
             }
         } else {
             media = Collections.EMPTY_LIST;
+        }
+        if (isRuleMatch) {
+            JSONObject selectorList = (JSONObject)rule.get("selectorList"); // NOI18N
+            selector = (String)selectorList.get("text"); // NOI18N
+            if (selectorList.containsKey("range")) { // NOI18N
+                selectorRange = new SourceRange((JSONObject)selectorList.get("range")); // NOI18N
+            }
+        } else {
+            selector = (String)rule.get("selectorText"); // NOI18N
+            if (rule.containsKey("selectorRange")) { // NOI18N
+                selectorRange = new SourceRange((JSONObject)rule.get("selectorRange")); // NOI18N
+            }
         }
     }
 

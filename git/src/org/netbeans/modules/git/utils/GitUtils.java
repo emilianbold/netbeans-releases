@@ -105,6 +105,7 @@ import org.openide.windows.TopComponent;
 public final class GitUtils {
 
     public static final String DOT_GIT = ".git"; //NOI18N
+    public static final String INDEX_LOCK = "index.lock"; //NOI18N
     private static final Pattern METADATA_PATTERN = Pattern.compile(".*\\" + File.separatorChar + "(\\.)git(\\" + File.separatorChar + ".*|$)"); // NOI18N
     private static final String FILENAME_GITIGNORE = ".gitignore"; // NOI18N
     public static final String HEAD = "HEAD"; //NOI18N
@@ -667,7 +668,7 @@ public final class GitUtils {
     }
 
     public static boolean isRepositoryLocked (File repository) {
-        return new File(getGitFolderForRoot(repository), "index.lock").exists(); //NOI18N
+        return new File(getGitFolderForRoot(repository), INDEX_LOCK).exists(); //NOI18N
     }
 
     public static void openInRevision (File originalFile, String revision1, int lineNumber,

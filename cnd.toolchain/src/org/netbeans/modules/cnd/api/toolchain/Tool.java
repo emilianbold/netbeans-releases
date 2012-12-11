@@ -161,6 +161,9 @@ public class Tool {
         if (p != null) {
             path = p;
             name = ToolUtils.getBaseName(path);
+            if (Utilities.isWindows() && name.endsWith(".exe")) { // NOI18N
+                name = name.substring(0, name.length() - 4);
+            }
         }
     }
 

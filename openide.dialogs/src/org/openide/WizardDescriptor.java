@@ -506,6 +506,7 @@ public class WizardDescriptor extends DialogDescriptor {
         data.getIterator(this).addChangeListener(weakChangeListener);
         init = false;
         //callInitialize ();
+        initialized.set( true );
 
         _updateState();
     }
@@ -527,6 +528,7 @@ public class WizardDescriptor extends DialogDescriptor {
         data.getIterator(this).addChangeListener(weakChangeListener);
         init = false;
         //callInitialize ();
+        initialized.set( true );
 
         _updateState();
     }

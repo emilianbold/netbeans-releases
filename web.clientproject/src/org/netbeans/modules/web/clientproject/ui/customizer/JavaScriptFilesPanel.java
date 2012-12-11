@@ -118,9 +118,9 @@ public final class JavaScriptFilesPanel extends JPanel implements HelpCtx.Provid
         assert EventQueue.isDispatchThread();
         // set js files
         File siteRootFolder = uiProperties.getResolvedSiteRootFolder();
-        ProjectFoldersValidator projectFoldersValidator = new ProjectFoldersValidator();
-        projectFoldersValidator.validateSiteRootFolder(siteRootFolder);
-        ValidationResult result = projectFoldersValidator.getResult();
+        ValidationResult result = new ProjectFoldersValidator()
+                .validateSiteRootFolder(siteRootFolder)
+                .getResult();
         Collection<String> jsFiles;
         if (result.hasErrors()) {
             jsFiles = Collections.<String>emptyList();

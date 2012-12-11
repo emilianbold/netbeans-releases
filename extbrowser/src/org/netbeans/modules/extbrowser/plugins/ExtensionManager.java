@@ -86,7 +86,7 @@ public final class ExtensionManager {
     /**
      * @return true if extension is available
      */
-    public static boolean installExtension(  BrowserFamilyId id , PluginLoader loader, 
+    public static boolean installExtension(  BrowserFamilyId id , 
             ExtensionManager.ExtensitionStatus currentStatus){
         if ( id == null ){
             // TODO : show browser chooser
@@ -97,7 +97,7 @@ public final class ExtensionManager {
                 return false ;
             }
             BrowserExtensionManager manager = accessor.getManager();
-            return manager.install( loader , currentStatus );
+            return manager.install( currentStatus );
         }
         return false;
     }

@@ -154,7 +154,7 @@ public class ChangeMethodReturnType implements ErrorRule<Void> {
 
         @Override
         protected String getText() {
-            return NbBundle.getMessage(ChangeMethodReturnType.class, "FIX_ChangeMethodReturnType", targetTypeDN);
+            return NbBundle.getMessage(ChangeMethodReturnType.class, "FIX_ChangeMethodReturnType", ChangeTypeFix.escape(targetTypeDN));
         }
 
         @Override

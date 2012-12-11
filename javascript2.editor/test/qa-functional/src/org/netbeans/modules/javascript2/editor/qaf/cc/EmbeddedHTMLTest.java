@@ -105,7 +105,6 @@ public class EmbeddedHTMLTest extends GeneralJavaScript {
             evt.waitNoEvent(3000); // fallback
         }
 
-        eo.typeKey(' ', InputEvent.CTRL_MASK);
         evt.waitNoEvent(1000);
 
 
@@ -156,7 +155,6 @@ public class EmbeddedHTMLTest extends GeneralJavaScript {
         type(eo, "\n \n");
         eo.setCaretPositionToLine(eo.getLineNumber() - 1);
         type(eo, "person.");
-        eo.typeKey(' ', InputEvent.CTRL_MASK);
         evt.waitNoEvent(100);
 
         CompletionInfo completion = getCompletion();
@@ -176,7 +174,6 @@ public class EmbeddedHTMLTest extends GeneralJavaScript {
 
         type(eo, "var person = { get name(){return this.myname;}, set name(n){this.myname=n;}}");
         type(eo, ";\n person.");
-        eo.typeKey(' ', InputEvent.CTRL_MASK);
         evt.waitNoEvent(100);
 
         CompletionInfo completion = getCompletion();
@@ -217,7 +214,6 @@ public class EmbeddedHTMLTest extends GeneralJavaScript {
         type(eo, "var foo = {\n value:0,\nincrement: function(inc){\nthis.value += typeof inc === 'number' ? inc : 1;}");
         eo.setCaretPosition("</script>", true);
         type(eo, "} foo.");
-        eo.typeKey(' ', InputEvent.CTRL_MASK);
         evt.waitNoEvent(100);
 
         CompletionInfo completion = getCompletion();
@@ -288,7 +284,6 @@ public class EmbeddedHTMLTest extends GeneralJavaScript {
 
         type(eo, "Foo(); o.");
         // public variable & method & prototype
-        eo.typeKey(' ', InputEvent.CTRL_MASK);
         evt.waitNoEvent(100);
         completion = getCompletion();
         String[] res2 = {"name", "start", "setName"};

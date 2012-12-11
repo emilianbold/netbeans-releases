@@ -53,6 +53,7 @@ import org.netbeans.modules.java.hints.infrastructure.HintsTestBase;
 import org.netbeans.spi.editor.hints.Fix;
 import org.openide.cookies.EditorCookie;
 import org.openide.loaders.DataObject;
+import org.openide.util.NbBundle;
 
 
 /**
@@ -515,4 +516,7 @@ public class CreateElementTest extends HintsTestBase {
         return false;
     }
 
+    static {
+        NbBundle.setBranding("test");
+    }    
 }

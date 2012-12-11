@@ -6,28 +6,58 @@
 -->
 <html>
     <head><meta http-equiv="content-type" content="text/html; charset=UTF-8">
-	<title>Options Window: Web Browser</title>
+	<title>Options Window: Web Browsers Manager</title>
 	<link rel="StyleSheet" href="../ide.css" type="text/css">
     </head>
     <body>
-	<!-- This page is CSH for Web Browser node in Options window-->
-	<h2>Options Window: Web Browser</h2>
+	<h2>Options Window: Web Browsers Manager</h2>
 	<p><small><a href="#seealso">See Also</a></small></p>
-	<p>You can use the Options window to specify options for the web browsers registered with the IDE.</p>
-	<p>You can access the web browser options by choosing Tools &gt; Options from the main menu, and then
-        clicking General.</p>
-	<p>The Web Browsers drop-down in the Options window contains subnodes for each of 
-	the IDE's registered web browsers, such as Internet Explorer and Mozilla Firefox. The 
-	&lt;Default System Browser&gt; node represents your operating system's default web browser. </p>
+	<p>You can use the Web Browsers Manager to specify options for the web browsers that are registered with the IDE.
+        You can also use this window to add and remove browsers from the list of registered browsers.</p>
 	
-	<h3>Properties:</h3>
-	<ul>
-	    <li><b>Browser Executable.</b> This property enables you to specify the path to the browser executable 
-	    and any arguments that are used when the browser is activated.
-	    To specify the path to the browser executable, click the ellipsis button (..) to open the Browser Executable dialog box
-	    and enter the path to the browser executable in the Process field.
-	    Alternately, click the ellipsis button (...) and navigate to the location of the web browser executable.</li>
-	</ul>
+        <p>You access the Web Browsers Manager by clicking Edit next to the Web Browsers dropdown list
+        in the General category of the Options window.</p>
+        
+        <p>To add a web browser to the list of registered browsers, click Add below the Web Browsers list
+        and specify the properties of the new web browser. 
+        To remove a web browser, select the browser in the list and click Remove.</p>
+        
+        <p>To configure a web browser, select a browser from the list and modify the browser properties.</p>
+	
+        <h3>Properties</h3>
+        <p>The Web Browsers Manager contains the following options for modifying web browser properties.</p>
+        <ul>
+            <li><strong>Web Browsers.</strong> This pane displays a list of web browsers on your local system and registered with the IDE. 
+                Select a browser from the list to edit the browser properties.
+                <p>In addition to the installed browsers, the list contains the following browsers by default.</p>
+                <ul>
+                    <li><strong><tt>&lt;Default System Browser&gt;</tt>.</strong> This option represents the default browser of
+                your local system.</li>
+                    <li><strong>Embedded WebKit Browser.</strong> This option is a web browser that is based on the WebKit browser engine
+                    and bundled with the IDE.</li>
+                    <li><strong>External Browser.</strong> This option is a command-line browser.</li>
+                </ul>    
+            </li>
+            <li><strong>Name.</strong> The display name for the browser that is used by the IDE.</li>
+            <li><strong>Process.</strong> The full path to the browser executable. 
+                Click Browse to locate the executable on the local system.</li>
+            <li><strong>Arguments.</strong> Arguments to pass to the executable when the browser is run.</li>
+        </ul>
+	
+        <ul class="note">
+            <li>If you select Embedded WebKit Browser in the list you can modify the following properties.
+                <ul>
+                    <li>Use Another Browser for Web Application Development. When selected you can 
+                    choose a web browser from the dropdown list to use as the default browser when
+                    you run web applications.</li>
+                    <li>JavaFX Runtime Location. Click Browse to specify the location of the local JavaFX runtime.
+                    JavaFX is required to run the Embedded WebKit Browser.
+                    You might need to explicitly specify the JavaFX runtime location if your 
+                    runtime is not installed in the default location or the Embedded WebKit Browser fails to run.</li>
+                </ul>
+            </li>
+        </ul>
+	
 	<dl>
 	    <dt><a name="seealso">See Also</a></dt>
 

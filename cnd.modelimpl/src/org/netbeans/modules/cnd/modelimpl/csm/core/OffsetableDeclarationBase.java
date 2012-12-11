@@ -68,6 +68,7 @@ import org.netbeans.modules.cnd.modelimpl.csm.TemplateUtils;
 import org.netbeans.modules.cnd.modelimpl.csm.TypeFactory;
 import org.netbeans.modules.cnd.modelimpl.csm.TypeFactory.TypeBuilder;
 import org.netbeans.modules.cnd.modelimpl.csm.deep.CompoundStatementImpl;
+import org.netbeans.modules.cnd.modelimpl.csm.deep.ExpressionBase.ExpressionBuilder;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
@@ -258,6 +259,16 @@ public abstract class OffsetableDeclarationBase<T> extends OffsetableIdentifiabl
         private boolean global = true;
         private CsmObjectBuilder parent;
         private CsmScope scope;
+
+        public ScopedDeclarationBuilder() {
+        }
+        
+        protected ScopedDeclarationBuilder(ScopedDeclarationBuilder builder) {
+            super(builder);
+            global = builder.global;
+            parent = builder.parent;
+            scope = builder.scope;
+        }        
         
         public void setScope(CsmScope scope) {
             this.scope = scope;
@@ -334,6 +345,7 @@ public abstract class OffsetableDeclarationBase<T> extends OffsetableIdentifiabl
         private TypeBuilder typeBuilder;
         private CsmObjectBuilder parametersListBuilder;
         private TemplateDescriptor.TemplateDescriptorBuilder templateDescriptorBuilder;
+        private ExpressionBuilder initializerBuilder;
         
         private boolean _static = false;
         private boolean _extern = false;
@@ -342,6 +354,38 @@ public abstract class OffsetableDeclarationBase<T> extends OffsetableIdentifiabl
         private boolean constructor = false;
         private boolean destructor = false;
 
+        public SimpleDeclarationBuilder() {
+        }
+        
+        protected SimpleDeclarationBuilder(SimpleDeclarationBuilder builder) {
+            super(builder);
+            typedefSpecifier = builder.typeSpecifier;
+            friendSpecifier = builder.friendSpecifier;
+            typeSpecifier = builder.typeSpecifier;
+            inDeclSpecifiers = builder.inDeclSpecifiers;
+            
+            declaratorBuilder = builder.declaratorBuilder;
+            typeBuilder = builder.typeBuilder;
+            parametersListBuilder = builder.parametersListBuilder;
+            templateDescriptorBuilder = builder.templateDescriptorBuilder;
+            initializerBuilder = builder.initializerBuilder;
+
+            _static = builder._static;
+            _extern = builder._extern;
+            _const = builder._const;
+
+            constructor = builder.constructor;
+            destructor = builder.destructor;
+        }
+        
+        public void setInitializerBuilder(ExpressionBuilder initializerBuilder) {
+            this.initializerBuilder = initializerBuilder;
+        }
+
+        public ExpressionBuilder getInitializerBuilder() {
+            return initializerBuilder;
+        }
+        
         public void setConstructor() {
             this.constructor = true;
         }

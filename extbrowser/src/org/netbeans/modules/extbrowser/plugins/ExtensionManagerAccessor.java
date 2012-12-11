@@ -92,7 +92,7 @@ public interface ExtensionManagerAccessor {
         
         ExtensionManager.ExtensitionStatus isInstalled();
         
-        boolean install( PluginLoader loader, ExtensionManager.ExtensitionStatus currentStatus);
+        boolean install( ExtensionManager.ExtensitionStatus currentStatus);
     }
     
 }

@@ -43,12 +43,16 @@
 package org.netbeans.modules.maven.j2ee.customizer;
 import java.awt.Component;
 import java.awt.Font;
-import java.text.MessageFormat;
+import java.io.File;
 import java.util.IdentityHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.*;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.FutureTask;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.DefaultListModel;
 import javax.swing.JLabel;
@@ -83,7 +87,7 @@ import org.openide.util.RequestProcessor.Task;
 import org.openide.util.TaskListener;
 
 /**
- * 
+ *
  * @author mkleint
  */
 public class CustomizerFrameworks extends JPanel implements ApplyChangesCustomizer, ListSelectionListener {
@@ -92,7 +96,7 @@ public class CustomizerFrameworks extends JPanel implements ApplyChangesCustomiz
 
     private final ProjectCustomizer.Category category;
     private final Project project;
-    
+
     private final List<WebModuleExtender> newExtenders = new LinkedList<WebModuleExtender>();
     private final List<WebModuleExtender> existingExtenders = new LinkedList<WebModuleExtender>();
     private final List<WebFrameworkProvider> usedFrameworks = new LinkedList<WebFrameworkProvider>();
@@ -100,23 +104,23 @@ public class CustomizerFrameworks extends JPanel implements ApplyChangesCustomiz
     private final List<WebFrameworkProvider> addedFrameworks = new LinkedList<WebFrameworkProvider>();
 
     private final ExtenderController controller = ExtenderController.create();
-    
-    
+
+
     public CustomizerFrameworks(ProjectCustomizer.Category category, Project project) {
         this.category = category;
         this.project = project;
-        
+
         initComponents();
         initFrameworksList();
-        
+
         btnRemoveAdded.setEnabled(false);
         jListFrameworks.setCellRenderer(new DefaultListCellRenderer() {
             @Override
             public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
-                WebFrameworkProvider prov = (WebFrameworkProvider)value;
+                WebFrameworkProvider prov = (WebFrameworkProvider) value;
                 Component toRet = super.getListCellRendererComponent(list, prov.getName(), index, isSelected, cellHasFocus);
                 if (toRet instanceof JLabel) {
-                    JLabel lbl = (JLabel)toRet;
+                    JLabel lbl = (JLabel) toRet;
                     if (addedFrameworks.contains(prov)) {
                         lbl.setFont(lbl.getFont().deriveFont(Font.BOLD));
                     } else {
@@ -141,17 +145,17 @@ public class CustomizerFrameworks extends JPanel implements ApplyChangesCustomiz
     @Override
     public void applyChangesInAWT() {
     }
-    
+
     private void doUIandUsageLogging() {
         if ((addedFrameworks != null) && (addedFrameworks.size() > 0)) {
             LoggingUtils.logUI(this.getClass(), "UI_PROJECT_CONFIG_MAVEN_FRAMEWORK_ADDED", addedFrameworks.toArray(), "web.project");  //NOI18N
-            LoggingUtils.logUsage(this.getClass(), "USG_PROJECT_CONFIG_WEB", new Object[] { findServerName(), addedFrameworks.toArray()}, "web.project");  //NOI18N
+            LoggingUtils.logUsage(this.getClass(), "USG_PROJECT_CONFIG_WEB", new Object[] {findServerName(), addedFrameworks.toArray()}, "web.project");  //NOI18N
         }
     }
-    
+
     private String findServerName() {
         J2eeModuleProvider provider = project.getLookup().lookup(J2eeModuleProvider.class);
-        
+
         if (provider != null) {
             ServerInstance si = Deployment.getDefault().getServerInstance(provider.getServerInstanceID());
             try {
@@ -162,11 +166,11 @@ public class CustomizerFrameworks extends JPanel implements ApplyChangesCustomiz
         }
         return null;
     }
-    
+
     private void initFrameworksList() {
         final WebModule webModule = WebModule.getWebModule(project.getProjectDirectory());
         existingExtenders.clear();
-        
+
         ExtenderController.Properties properties = controller.getProperties();
         String j2eeVersion = webModule.getJ2eePlatformVersion();
         properties.setProperty("j2eeLevel", j2eeVersion); // NOI18N
@@ -182,10 +186,11 @@ public class CustomizerFrameworks extends JPanel implements ApplyChangesCustomiz
         jListFrameworks.setModel(new DefaultListModel());
         jListFrameworks.getSelectionModel().setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         jListFrameworks.addListSelectionListener(this);
+        ((DefaultListModel) jListFrameworks.getModel()).addElement(new LoadingFrameworksFakeProvider());
 
         loadFrameworks();
     }
-    
+
     private void loadFrameworks() {
         final WebModule webModule = WebModule.getWebModule(project.getProjectDirectory());
         final Task task = createLoadFrameworksTask(webModule);
@@ -199,6 +204,7 @@ public class CustomizerFrameworks extends JPanel implements ApplyChangesCustomiz
                     @Override
                     public void run() {
                         final DefaultListModel model = (DefaultListModel) jListFrameworks.getModel();
+                        model.clear();
                         for (WebFrameworkProvider framework : usedFrameworks) {
                             model.addElement(framework);
                         }
@@ -215,31 +221,31 @@ public class CustomizerFrameworks extends JPanel implements ApplyChangesCustomiz
         });
     }
 
-    @NbBundle.Messages({"CustomizerFrameworks.label.loading.frameworks=Loading framework list..."})
+    @NbBundle.Messages({
+        "CustomizerFrameworks.label.loading.frameworks=Loading framework list..."
+    })
     private Task createLoadFrameworksTask(final WebModule webModule) {
         return RP.post(new Runnable() {
 
             @Override
             public void run() {
-                ProgressUtils.showProgressDialogAndRun(new Runnable() {
-
-                    @Override
-                    public void run() {
-                        for (WebFrameworkProvider framework : WebFrameworks.getFrameworks()) {
-                            if (framework.isInWebModule(webModule)) {
-                                usedFrameworks.add(framework);
-                                WebModuleExtender extender = framework.createWebModuleExtender(webModule, controller);
-                                extenders.put(framework, extender);
-                                existingExtenders.add(extender);
-                                extender.addChangeListener(new ExtenderListener(extender));
-                            }
-                        }
-                    }
-                }, Bundle.CustomizerFrameworks_label_loading_frameworks());
+                loadFrameworksFor(webModule);
             }
         });
     }
-    
+
+    private void loadFrameworksFor(final WebModule webModule) {
+        for (WebFrameworkProvider framework : WebFrameworks.getFrameworks()) {
+            if (framework.isInWebModule(webModule)) {
+                usedFrameworks.add(framework);
+                WebModuleExtender extender = framework.createWebModuleExtender(webModule, controller);
+                extenders.put(framework, extender);
+                existingExtenders.add(extender);
+                extender.addChangeListener(new ExtenderListener(extender));
+            }
+        }
+    }
+
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -341,7 +347,7 @@ public class CustomizerFrameworks extends JPanel implements ApplyChangesCustomiz
         gridBagConstraints.weighty = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(12, 12, 0, 12);
         inner.add(panel, gridBagConstraints);
- 
+
         DialogDescriptor desc = new DialogDescriptor(inner, NbBundle.getMessage(CustomizerFrameworks.class, "LBL_SelectWebExtension_DialogTitle")); //NOI18N
         Object res = DialogDisplayer.getDefault().notify(desc);
         if (res.equals(NotifyDescriptor.YES_OPTION)) {
@@ -358,14 +364,14 @@ public class CustomizerFrameworks extends JPanel implements ApplyChangesCustomiz
                     added = true;
                 } else {
                     for (int j = 0; j < usedFrameworks.size(); j++) {
-                        if (! usedFrameworks.get(j).getName().equals(framework.getName())) {
+                        if (!usedFrameworks.get(j).getName().equals(framework.getName())) {
                             usedFrameworks.add(framework);
                             added = true;
                             break;
                         }
                     }
                 }
-                
+
                 if (added) {
                     WebModuleExtender extender = framework.createWebModuleExtender(wm, controller);
                     if (extender != null) {
@@ -378,7 +384,7 @@ public class CustomizerFrameworks extends JPanel implements ApplyChangesCustomiz
                 jListFrameworks.setSelectedValue(framework, true);
             }
         }
-        
+
         if (WebFrameworks.getFrameworks().size() == jListFrameworks.getModel().getSize()) {
             jButtonAdd.setEnabled(false);
         }
@@ -389,7 +395,7 @@ public class CustomizerFrameworks extends JPanel implements ApplyChangesCustomiz
         if (framework != null) {
             WebModuleExtender extender = extenders.get(framework);
             if (extender != null) {
-                ((DefaultListModel)jListFrameworks.getModel()).removeElement(framework);
+                ((DefaultListModel) jListFrameworks.getModel()).removeElement(framework);
                 addedFrameworks.remove(framework);
                 newExtenders.remove(extender);
                 extenders.remove(framework);
@@ -414,8 +420,8 @@ public class CustomizerFrameworks extends JPanel implements ApplyChangesCustomiz
             }
         }
     }//GEN-LAST:event_btnRemoveAddedActionPerformed
-    
-    
+
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnRemoveAdded;
     private javax.swing.JButton jButtonAdd;
@@ -426,7 +432,7 @@ public class CustomizerFrameworks extends JPanel implements ApplyChangesCustomiz
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JSeparator jSeparator1;
     // End of variables declaration//GEN-END:variables
-    
+
     @Override
     public void valueChanged(javax.swing.event.ListSelectionEvent e) {
         btnRemoveAdded.setEnabled(false);
@@ -437,7 +443,7 @@ public class CustomizerFrameworks extends JPanel implements ApplyChangesCustomiz
             }
             WebModuleExtender extender = extenders.get(framework);
             if (extender != null) {
-                String message = MessageFormat.format(NbBundle.getMessage(CustomizerFrameworks.class, "LBL_FrameworkConfiguration"), new Object[]{framework.getName()}); //NOI18N
+                String message = NbBundle.getMessage(CustomizerFrameworks.class, "LBL_FrameworkConfiguration", framework.getName()); //NOI18N
                 jLabelConfig.setText(message);
                 jPanelConfig.removeAll();
 
@@ -550,9 +556,9 @@ public class CustomizerFrameworks extends JPanel implements ApplyChangesCustomiz
     }
 
     private final class ExtenderListener implements ChangeListener {
-    
+
         private final WebModuleExtender extender;
-        
+
         public ExtenderListener(WebModuleExtender extender) {
             this.extender = extender;
             extender.update();
@@ -577,11 +583,28 @@ public class CustomizerFrameworks extends JPanel implements ApplyChangesCustomiz
             }
         }
     }
-    
+
     private void hideConfigPanel() {
-	jLabelConfig.setText(""); //NOI18N
+	jLabelConfig.setText(""); // NOI18N
 	jPanelConfig.removeAll();
 	jPanelConfig.repaint();
 	jPanelConfig.revalidate();
+    }
+
+    private static class LoadingFrameworksFakeProvider extends WebFrameworkProvider {
+
+        public LoadingFrameworksFakeProvider() {
+            super(Bundle.CustomizerFrameworks_label_loading_frameworks(), ""); // NOI18N
+        }
+
+        @Override
+        public boolean isInWebModule(WebModule wm) {
+            return true;
+        }
+
+        @Override
+        public File[] getConfigurationFiles(WebModule wm) {
+            return null;
+        }
     }
 }

@@ -518,6 +518,8 @@ public final class ParserProviderImpl extends CsmParserProvider {
         static private class MyTokenStream implements org.antlr.runtime.TokenStream {
             org.netbeans.modules.cnd.antlr.TokenBuffer tb;
 
+            int lastMark;
+            
             public MyTokenStream(org.netbeans.modules.cnd.antlr.TokenBuffer tb) {
                 this.tb = tb;
             }
@@ -539,6 +541,7 @@ public final class ParserProviderImpl extends CsmParserProvider {
 
             @Override
             public int mark() {
+                lastMark = tb.index();
                 return tb.mark();
             }
 
@@ -554,7 +557,8 @@ public final class ParserProviderImpl extends CsmParserProvider {
 
             @Override
             public void rewind() {
-                tb.rewind(0);
+                tb.mark();
+                tb.rewind(lastMark);
             }
 
             @Override

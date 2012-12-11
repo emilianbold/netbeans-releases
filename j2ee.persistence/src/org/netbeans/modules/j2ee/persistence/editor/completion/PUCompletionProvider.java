@@ -42,22 +42,16 @@
 package org.netbeans.modules.j2ee.persistence.editor.completion;
 
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Iterator;
 import java.util.List;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.Element;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.StyledDocument;
-import org.netbeans.api.editor.completion.Completion;
 import org.netbeans.api.editor.mimelookup.MimeRegistration;
-import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.modules.j2ee.persistence.editor.CompletionContext;
 import org.netbeans.modules.j2ee.persistence.editor.completion.db.DBCompletionContextResolver;
 import org.netbeans.modules.j2ee.persistence.unit.PUDataLoader;
-import org.netbeans.spi.editor.completion.CompletionDocumentation;
-import org.netbeans.spi.editor.completion.CompletionItem;
 import org.netbeans.spi.editor.completion.CompletionProvider;
 import org.netbeans.spi.editor.completion.CompletionResultSet;
 import org.netbeans.spi.editor.completion.CompletionTask;
@@ -112,30 +106,18 @@ public class PUCompletionProvider implements CompletionProvider {
                 return i;
             }
         }
-        org.netbeans.editor.ext.ExtSyntaxSupport f = new org.netbeans.editor.ext.ExtSyntaxSupport(null);
         return -1;
     }
 
-    class PUCompletionQuery extends AsyncCompletionQuery {
+    static class PUCompletionQuery extends AsyncCompletionQuery {
 
         private ArrayList<CompletionContextResolver> resolvers;
-        private List<JPACompletionItem> results;
         private byte hasAdditionalItems = 0; //no additional items
-        private CompletionDocumentation documentation;
         private int anchorOffset;
-        private int toolTipOffset;
-        private JTextComponent component;
         private int queryType;
-        private int caretOffset;
-        private String filterPrefix;
-        private ElementHandle element;
-        private boolean hasTask;
 
         public PUCompletionQuery(int queryType, JTextComponent component, int caretOffset, boolean hasTask) {
             this.queryType = queryType;
-            this.caretOffset = caretOffset;
-            this.hasTask = hasTask;
-            this.component = component;
             initResolvers();
         }
 
@@ -194,34 +176,11 @@ public class PUCompletionProvider implements CompletionProvider {
         @Override
         protected void filter(CompletionResultSet resultSet) {
             try {
-                if ((queryType & COMPLETION_QUERY_TYPE) != 0) {
-                    if (results != null) {
-                        if (filterPrefix != null) {
-                            resultSet.addAllItems(getFilteredData(results, filterPrefix));
-                            resultSet.setHasAdditionalItems(hasAdditionalItems > 0);
-                        } else {
-                            Completion.get().hideDocumentation();
-                            Completion.get().hideCompletion();
-                        }
-                    }
-                } 
                 resultSet.setAnchorOffset(anchorOffset);
             } catch (Exception ex) {
                 Exceptions.printStackTrace(ex);
             }
             resultSet.finish();
         }
-        private Collection getFilteredData(Collection<JPACompletionItem> data, String prefix) {
-            if (prefix.length() == 0)
-                return data;
-            List ret = new ArrayList();
-            for (Iterator<JPACompletionItem> it = data.iterator(); it.hasNext();) {
-                CompletionItem itm = it.next();
-                if (itm.getInsertPrefix().toString().startsWith(prefix))
-                    ret.add(itm);
-            }
-            return ret;
-        }
     }
-
 }

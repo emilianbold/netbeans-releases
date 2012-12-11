@@ -60,6 +60,7 @@ import edu.umd.cs.findbugs.FindBugs2;
 import edu.umd.cs.findbugs.FindBugsProgress;
 import edu.umd.cs.findbugs.MethodAnnotation;
 import edu.umd.cs.findbugs.PackageMemberAnnotation;
+import edu.umd.cs.findbugs.Priorities;
 import edu.umd.cs.findbugs.Project;
 import edu.umd.cs.findbugs.SourceLineAnnotation;
 import edu.umd.cs.findbugs.config.UserPreferences;
@@ -188,8 +189,8 @@ public class RunFindBugs {
                 }                
             };
 
-            r.setPriorityThreshold(Integer.MAX_VALUE);
-            r.setRankThreshold(Integer.MAX_VALUE);
+            r.setPriorityThreshold(Priorities.LOW_PRIORITY);
+            r.setRankThreshold(20);
 
             FindBugs2 engine = new FindBugs2();
 

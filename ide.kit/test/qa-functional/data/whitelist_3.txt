@@ -1,14 +1,18 @@
 #include whitelist_2.txt
 
+#223335
+org.netbeans.modules.maven.queries.AbstractMavenForBinaryQueryImpl
+org.netbeans.modules.maven.queries.RepositoryForBinaryQueryImpl
+org.netbeans.modules.maven.queries.RepositoryForBinaryQueryImpl$SrcResult
+org.netbeans.modules.maven.queries.RepositoryMavenCPProvider
+
 #218046
 org.netbeans.spi.debugger.ui.MethodChooser
 org.netbeans.spi.debugger.ui.MethodChooser$ReleaseListener
 org.netbeans.spi.debugger.ui.MethodChooser$Segment
 
-#218044
-org.netbeans.modules.javascript2.editor.JsLanguage
+#OK on Nov 22, 2012, was #218044
 org.netbeans.modules.javascript2.editor.classpath.ClassPathProviderImpl
-org.netbeans.modules.javascript2.editor.index.JsIndexer$Factory
 
 #218043
 org.netbeans.lib.nbjavac.services.CancelService
@@ -56,8 +60,7 @@ org.netbeans.modules.whitelist.project.WhiteListLookupProvider$WhiteListLookup
 org.netbeans.modules.whitelist.project.WhiteListLookupProvider
 org.netbeans.spi.whitelist.WhiteListQueryImplementation
 
-#204446
-org.netbeans.modules.php.smarty.editor.gsf.TplLanguage
+#OK on Nov 22, 2012, was #204446
 org.netbeans.modules.php.api.util.FileUtils$ZipEntryFilter
 
 #204445

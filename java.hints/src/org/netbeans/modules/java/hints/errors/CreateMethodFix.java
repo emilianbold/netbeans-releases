@@ -54,6 +54,7 @@ import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
+import javax.lang.model.type.TypeVariable;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.CompilationInfo;
@@ -83,6 +84,8 @@ public final class CreateMethodFix implements Fix {
     private TypeMirrorHandle returnType;
     private List<TypeMirrorHandle> argumentTypes;
     private List<String> argumentNames;
+    private final List<TypeMirrorHandle> typeParameterTypes;
+    private final List<String> typeParameterNames;
     private ClasspathInfo cpInfo;
     private Set<Modifier> modifiers;
     
@@ -90,7 +93,7 @@ public final class CreateMethodFix implements Fix {
     private String inFQN;
     private String methodDisplayName;
     
-    public CreateMethodFix(CompilationInfo info, String name, Set<Modifier> modifiers, TypeElement target, TypeMirror returnType, List<? extends TypeMirror> argumentTypes, List<String> argumentNames, FileObject targetFile) {
+    public CreateMethodFix(CompilationInfo info, String name, Set<Modifier> modifiers, TypeElement target, TypeMirror returnType, List<? extends TypeMirror> argumentTypes, List<String> argumentNames, List<? extends TypeMirror> typeParameterTypes, List<String> typeParameterNames, FileObject targetFile) {
         this.name = name;
         this.inFQN = Utilities.target2String(target);
         this.cpInfo = info.getClasspathInfo();
@@ -108,6 +111,14 @@ public final class CreateMethodFix implements Fix {
         }
         
         this.argumentNames = argumentNames;
+        
+        this.typeParameterTypes = new ArrayList<TypeMirrorHandle>();
+        
+        for (TypeMirror tm : typeParameterTypes) {
+            this.typeParameterTypes.add(TypeMirrorHandle.create(tm));
+        }
+        
+        this.typeParameterNames = typeParameterNames;
         
         StringBuilder methodDisplayName = new StringBuilder();
         
@@ -192,13 +203,41 @@ public final class CreateMethodFix implements Fix {
                     argTypes.add(make.Variable(make.Modifiers(EnumSet.noneOf(Modifier.class)), nameIt.next(), make.Type(tm), null));
                 }
                 
+                List<TypeParameterTree> typeParameters = new ArrayList<TypeParameterTree>();
+                Iterator<TypeMirrorHandle> tpTypeIt   = CreateMethodFix.this.typeParameterTypes.iterator();
+                Iterator<String>           tpNameIt   = CreateMethodFix.this.typeParameterNames.iterator();
+                
+                while (tpTypeIt.hasNext() && tpNameIt.hasNext()) {
+                    TypeMirrorHandle tmh = tpTypeIt.next();
+                    TypeMirror tm = tmh.resolve(working);
+                    
+                    if (tm == null) {
+                        ErrorHintsProvider.LOG.log(Level.INFO, "Cannot resolve type argument type."); // NOI18N
+                        return;
+                    }
+
+                    List<ExpressionTree> bounds = new ArrayList<ExpressionTree>();
+                    List<? extends TypeMirror> boundTypes = new ArrayList<TypeMirror>(working.getTypes().directSupertypes(tm));
+                    TypeElement jlObject = working.getElements().getTypeElement("java.lang.Object");
+                    
+                    if (boundTypes.size() == 1 && jlObject != null && boundTypes.get(0).equals(jlObject.asType())) {
+                        boundTypes.remove(0);
+                    }
+                    
+                    for (TypeMirror bound : boundTypes) {
+                        bounds.add((ExpressionTree) make.Type(bound));
+                    }
+
+                    typeParameters.add(make.TypeParameter(((TypeVariable) tm).asElement().getSimpleName(), bounds));
+                }
+                
                 BlockTree body = targetType.getKind().isClass() ? createDefaultMethodBody(working, targetTree, returnType, name) : null;
                 
                 if(body != null && !body.getStatements().isEmpty()) {
                     working.tag(body.getStatements().get(0), methodBodyTag);
                 }
                 
-                MethodTree mt = make.Method(make.Modifiers(modifiers), name, returnType != null ? make.Type(returnType) : null, Collections.<TypeParameterTree>emptyList(), argTypes, Collections.<ExpressionTree>emptyList(), body, null);
+                MethodTree mt = make.Method(make.Modifiers(modifiers), name, returnType != null ? make.Type(returnType) : null, typeParameters, argTypes, Collections.<ExpressionTree>emptyList(), body, null);
                 ClassTree decl = GeneratorUtilities.get(working).insertClassMember((ClassTree)targetTree.getLeaf(), mt);
                 working.rewrite(targetTree.getLeaf(), decl);
             }

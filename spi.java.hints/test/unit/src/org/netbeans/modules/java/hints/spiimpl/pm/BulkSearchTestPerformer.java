@@ -58,6 +58,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.regex.Pattern;
 import javax.swing.text.Document;
 import org.netbeans.api.java.lexer.JavaTokenId;
@@ -516,9 +517,9 @@ public abstract class BulkSearchTestPerformer extends NbTestCase {
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         EncodingContext ec = new EncodingContext(out, false);
 
-        createSearch().encode(info.getCompilationUnit(), ec);
+        createSearch().encode(info.getCompilationUnit(), ec, new AtomicBoolean());
         
-        boolean matches = createSearch().matches(new ByteArrayInputStream(out.toByteArray()), createSearch().create(info, "{ $p$; $T $v; if($a) $v = $b; else $v = $c; $q$; }"));
+        boolean matches = createSearch().matches(new ByteArrayInputStream(out.toByteArray()), new AtomicBoolean(), createSearch().create(info, new AtomicBoolean(), "{ $p$; $T $v; if($a) $v = $b; else $v = $c; $q$; }"));
 
         assertTrue(matches);
     }
@@ -531,9 +532,9 @@ public abstract class BulkSearchTestPerformer extends NbTestCase {
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         EncodingContext ec = new EncodingContext(out, false);
 
-        createSearch().encode(info.getCompilationUnit(), ec);
+        createSearch().encode(info.getCompilationUnit(), ec, new AtomicBoolean());
         
-        Map<String, Integer> actual = createSearch().matchesWithFrequencies(new ByteArrayInputStream(out.toByteArray()), createSearch().create(info, "$1.isDirectory()", "new ImageIcon($1)"));
+        Map<String, Integer> actual = createSearch().matchesWithFrequencies(new ByteArrayInputStream(out.toByteArray()), createSearch().create(info, new AtomicBoolean(), "$1.isDirectory()", "new ImageIcon($1)"), new AtomicBoolean());
         Map<String, Integer> golden = new HashMap<String, Integer>();
 
         golden.put("$1.isDirectory()", 2);
@@ -547,7 +548,7 @@ public abstract class BulkSearchTestPerformer extends NbTestCase {
 
         prepareTest("test/Test.java", text);
 
-        BulkPattern bp = createSearch().create(info, "$0.isDirectory()");
+        BulkPattern bp = createSearch().create(info, new AtomicBoolean(), "$0.isDirectory()");
 
         assertEquals(Arrays.asList(new HashSet<String>(Arrays.asList("isDirectory"))), bp.getIdentifiers());
         //TODO: the actual code for kinds differs for NFABased search and REBased search:
@@ -570,9 +571,9 @@ public abstract class BulkSearchTestPerformer extends NbTestCase {
     private void performMatchesTest(String text, List<String> patterns, boolean golden) throws Exception {
         prepareTest("test/Test.java", text);
 
-        BulkPattern p = createSearch().create(info, patterns);
+        BulkPattern p = createSearch().create(info, new AtomicBoolean(), patterns);
 
-        boolean result = createSearch().matches(info, new TreePath(info.getCompilationUnit()), p);
+        boolean result = createSearch().matches(info, new AtomicBoolean(), new TreePath(info.getCompilationUnit()), p);
 
         assertEquals(golden, result);
     }
@@ -586,13 +587,13 @@ public abstract class BulkSearchTestPerformer extends NbTestCase {
         patterns.addAll(notContainedPatterns);
 
         long s1 = System.currentTimeMillis();
-        BulkPattern p = createSearch().create(info, patterns);
+        BulkPattern p = createSearch().create(info, new AtomicBoolean(), patterns);
         long e1 = System.currentTimeMillis();
 
 //        System.err.println("create: " + (e1 - s1));
 
         long s2 = System.currentTimeMillis();
-        Map<String, Collection<TreePath>> result = createSearch().match(info, new TreePath(info.getCompilationUnit()), p);
+        Map<String, Collection<TreePath>> result = createSearch().match(info, new AtomicBoolean(), new TreePath(info.getCompilationUnit()), p);
         long e2 = System.currentTimeMillis();
 
 //        System.err.println("match: " + (e2 - s2));
@@ -628,7 +629,7 @@ public abstract class BulkSearchTestPerformer extends NbTestCase {
         ByteArrayOutputStream data = new ByteArrayOutputStream();
         EncodingContext ec = new EncodingContext(data, false);
         
-        createSearch().encode(info.getCompilationUnit(), ec);
+        createSearch().encode(info.getCompilationUnit(), ec, new AtomicBoolean());
 
         for (int i = 0; i < containedPatterns.size(); i++) {
             assertTrue("expected: " + p.getIdentifiers().get(i) + ", but exist only: " + ec.getIdentifiers(), ec.getIdentifiers().containsAll(p.getIdentifiers().get(i)));
@@ -639,7 +640,7 @@ public abstract class BulkSearchTestPerformer extends NbTestCase {
         }
 
         data.close();
-        assertEquals(!containedPatterns.isEmpty(), createSearch().matches(new ByteArrayInputStream(data.toByteArray()), p));
+        assertEquals(!containedPatterns.isEmpty(), createSearch().matches(new ByteArrayInputStream(data.toByteArray()), new AtomicBoolean(), p));
     }
     
     private void prepareTest(String fileName, String code) throws Exception {

@@ -43,6 +43,7 @@
  */
 package org.netbeans.api.editor.guards;
 
+import org.netbeans.modules.editor.guards.OffsetPosition;
 import java.beans.PropertyVetoException;
 import javax.swing.text.Position;
 import org.netbeans.modules.editor.guards.GuardedSectionImpl;
@@ -50,9 +51,11 @@ import org.netbeans.modules.editor.guards.GuardedSectionImpl;
 /**
  * Represents one guarded section.
  */
-public class GuardedSection {
+public abstract class GuardedSection {
     
     private final GuardedSectionImpl impl;
+    private final GuardedSection delegate;
+            final int offset;
 
     /**
      * Creates new section.
@@ -62,6 +65,14 @@ public class GuardedSection {
         assert impl != null;
         this.impl = impl;
         impl.attach(this);
+        this.delegate = null;
+        this.offset = 0;
+    }
+    
+    GuardedSection(GuardedSection delegate, int offset) {
+        this.impl = null;
+        this.delegate = delegate;
+        this.offset = offset;
     }
     
     /**
@@ -69,7 +80,7 @@ public class GuardedSection {
      * @return the name
      */
     public String getName() {
-        return impl.getName();
+        return impl != null ? impl.getName() : delegate.getName();
     }
 
     /**
@@ -78,6 +89,7 @@ public class GuardedSection {
      * @exception PropertyVetoException if the new name is already in use
      */
     public void setName(String name) throws PropertyVetoException {
+        if (impl == null) throw new IllegalStateException();
         impl.setName(name);
     }
 
@@ -87,6 +99,7 @@ public class GuardedSection {
      * and it will be impossible to use its methods.
      */
     public void deleteSection() {
+        if (impl == null) throw new IllegalStateException();
         impl.deleteSection();
     }
 
@@ -95,7 +108,7 @@ public class GuardedSection {
      * source.
      */
     public boolean isValid() {
-        return impl.isValid();
+        return impl != null ? impl.isValid() : delegate.isValid();
     }
 
     /**
@@ -104,6 +117,7 @@ public class GuardedSection {
      * instead of calling NbDocument.
      */
     public void removeSection() {
+        if (impl == null) throw new IllegalStateException();
         impl.removeSection();
     }
     
@@ -113,7 +127,7 @@ public class GuardedSection {
      * @return the position to place the caret.
      */
     public Position getCaretPosition() {
-        return impl.getCaretPosition();
+        return impl != null ? impl.getCaretPosition() : new OffsetPosition(delegate.getCaretPosition(), offset);
     }
     
     /**
@@ -121,7 +135,7 @@ public class GuardedSection {
      * @return The text contained in the section.
      */
     public String getText() {
-        return impl.getText();
+        return impl != null ? impl.getText() : delegate.getText();
     }
 
     /**
@@ -134,7 +148,7 @@ public class GuardedSection {
      * @return <code>true</code> if the position is inside section.
      */
     public boolean contains(Position pos, boolean permitHoles) {
-        return impl.contains(pos, permitHoles);
+        return impl != null ? impl.contains(pos, permitHoles) : delegate.contains(new OffsetPosition(pos, -offset), permitHoles);
     }
     
     /**
@@ -142,7 +156,7 @@ public class GuardedSection {
      * @return the end position of the guarded section.
      */
     public Position getEndPosition() {
-        return impl.getEndPosition();
+        return impl != null ? impl.getEndPosition() : new OffsetPosition(delegate.getEndPosition(), offset);
     }
     
     /** 
@@ -150,11 +164,16 @@ public class GuardedSection {
      * @return the start position of the guarded section.
      */
     public Position getStartPosition() {
-        return impl.getStartPosition();
+        return impl != null ? impl.getStartPosition() : new OffsetPosition(delegate.getStartPosition(), offset);
     }
     
     GuardedSectionImpl getImpl() {
         return impl;
     }
 
+    GuardedSection getDelegate() {
+        return delegate;
+    }
+
+    abstract GuardedSection clone(int offset);
 }

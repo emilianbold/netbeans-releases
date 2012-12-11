@@ -2883,6 +2883,8 @@ public class FortranParserEx {
     static public class MyTokenStream implements org.antlr.runtime.TokenStream {
         TokenBuffer tb;
 
+        int lastMark;
+        
         public MyTokenStream(TokenBuffer tb) {
             this.tb = tb;
         }
@@ -2913,6 +2915,7 @@ public class FortranParserEx {
 
         @Override
         public int mark() {
+            lastMark = tb.index();
             return tb.mark();
         }
 
@@ -2928,7 +2931,8 @@ public class FortranParserEx {
 
         @Override
         public void rewind() {
-            tb.rewind(0);
+            tb.mark();
+            tb.rewind(lastMark);
         }
 
         @Override

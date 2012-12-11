@@ -131,4 +131,60 @@ public class JsStructureScannerTest extends JsTestBase {
     public void testIssue149408() throws Exception {
         checkStructure("testfiles/coloring/issue149408.js");
     }
+    
+    public void testIssue215764() throws Exception {
+        checkStructure("testfiles/completion/general/issue215764.js");
+    }
+    
+    public void testIssue22601() throws Exception {
+        checkStructure("testfiles/completion/general/issue222601.js");
+    }
+    
+    public void testIssue222691() throws Exception {
+        checkStructure("testfiles/coloring/issue222691.js");
+    }
+    
+    public void testIssue222852() throws Exception {
+        checkStructure("testfiles/coloring/issue222852.js");
+    }
+    
+    public void testIssue222893() throws Exception {
+        checkStructure("testfiles/coloring/issue222893.js");
+    }
+    
+    public void testIssue222910() throws Exception {
+        checkStructure("testfiles/coloring/issue222910.js");
+    }
+    
+    public void testIssue222954() throws Exception {
+        checkStructure("testfiles/coloring/issue222954.js");
+    }
+    
+    public void testIssue222977() throws Exception {
+        checkStructure("testfiles/coloring/issue222977.js");
+    }
+    
+    public void testIssue223037() throws Exception {
+        checkStructure("testfiles/completion/general/issue223037.js");
+    }
+    
+    public void testIssue223121() throws Exception {
+        checkStructure("testfiles/coloring/issue223121.js");
+    }
+    
+    public void testIssue223313() throws Exception {
+        checkStructure("testfiles/coloring/issue223313.js");
+    }
+    
+    public void testIssue223306() throws Exception {
+        checkStructure("testfiles/coloring/issue223306.js");
+    }
+    
+    public void testIssue223423() throws Exception {
+        checkStructure("testfiles/coloring/issue223423.js");
+    }
+    
+    public void testIssue223264() throws Exception {
+        checkStructure("testfiles/coloring/issue223264.js");
+    }
 }

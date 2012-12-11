@@ -112,17 +112,8 @@ public class ItemConfiguration implements ConfigurationAuxObject {
     }
 
     public boolean isDefaultConfiguration() {
-        if (org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider.VCS_WRITE) {
-            // was included => not default state to allow serialization
-            if (!excluded.getValue()) {
-                return false;
-            }
-        } else {
-            if (excluded.getValue()) {
-                return false;
-            }
-        }
-        if (getTool() != item.getDefaultTool()) {
+        // was included => not default state to allow serialization
+        if (!excluded.getValue()) {
             return false;
         }
         if (lastConfiguration != null && lastConfiguration.getModified()) {
@@ -133,6 +124,13 @@ public class ItemConfiguration implements ConfigurationAuxObject {
         }
         if (getLanguageFlavor() != null && getLanguageFlavor() != LanguageFlavor.UNKNOWN) {
             return false;
+        }
+        // we do not check tools for excluded items in unmanaged projects
+        // but check for all logical as before
+        if (!isItemFromDiskFolder()) {
+            if (getTool() != item.getDefaultTool()) {
+                return false;
+            }
         }
         return true;
     }
@@ -355,12 +353,8 @@ public class ItemConfiguration implements ConfigurationAuxObject {
     }
     
     public boolean isVCSVisible() {
-        assert org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider.VCS_WRITE;
-        if (item != null && getExcluded() != null) {
-            Folder folder = item.getFolder();
-            if (folder != null && folder.isDiskFolder()) {
-                return !getExcluded().getValue();
-            }
+        if (item != null && getExcluded() != null && isItemFromDiskFolder()) {
+            return !getExcluded().getValue();
         }
         return shared();
     }
@@ -449,6 +443,7 @@ public class ItemConfiguration implements ConfigurationAuxObject {
         ItemConfiguration i = (ItemConfiguration) profileAuxObject;
         getExcluded().assign(i.getExcluded());
         setTool(i.getTool());
+        setLanguageFlavor(i.getLanguageFlavor());
         switch (getTool()) {
             case Assembler:
                 getAssemblerConfiguration().assign(i.getAssemblerConfiguration());
@@ -603,6 +598,16 @@ public class ItemConfiguration implements ConfigurationAuxObject {
                         return true;
                     }
                 }
+            }
+        }
+        return false;
+    }
+
+    private boolean isItemFromDiskFolder() {
+        if (item != null) {
+            Folder folder = item.getFolder();
+            if (folder != null && folder.isDiskFolder()) {
+                return true;
             }
         }
         return false;

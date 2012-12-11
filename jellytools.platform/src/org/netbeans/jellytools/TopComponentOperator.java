@@ -45,6 +45,7 @@ import java.awt.Point;
 import java.awt.Rectangle;
 import java.io.IOException;
 import javax.swing.JComponent;
+import org.netbeans.api.actions.Savable;
 import org.netbeans.jemmy.QueueTool;
 import org.netbeans.jemmy.TestOut;
 import org.netbeans.jellytools.actions.AttachWindowAction;
@@ -65,10 +66,8 @@ import org.netbeans.jemmy.operators.ContainerOperator;
 import org.netbeans.jemmy.operators.JComponentOperator;
 import org.netbeans.jemmy.operators.JPopupMenuOperator;
 import org.netbeans.jemmy.operators.Operator;
-import org.openide.cookies.SaveCookie;
 import org.openide.loaders.DataObject;
 import org.openide.windows.TopComponent;
-//import org.netbeans.core.multiview.MultiViewCloneableTopComponent;
 import org.netbeans.swing.tabcontrol.TabbedContainer;
 
 /**
@@ -285,21 +284,15 @@ public class TopComponentOperator extends JComponentOperator {
      * unmodified. Used in closeDiscard method.
      */
     public void setUnmodified() {
-        // should be just one node
-        org.openide.nodes.Node[] nodes = ((TopComponent) getSource()).getActivatedNodes();
-        if (nodes == null) {
+        DataObject dob = ((TopComponent) getSource()).getLookup().lookup(DataObject.class);
+        if (dob == null) {
             // try to find possible enclosing MultiviewTopComponent
             TopComponentOperator parentTco = findParentTopComponent();
             if (parentTco != null) {
                 parentTco.setUnmodified();
             }
-        }
-        // TopComponent like Execution doesn't have any nodes associated
-        if (nodes != null) {
-            for (int i = 0; i < nodes.length; i++) {
-                DataObject dob = (DataObject) nodes[i].getCookie(DataObject.class);
-                dob.setModified(false);
-            }
+        } else {
+            dob.setModified(false);
         }
     }
 
@@ -307,53 +300,36 @@ public class TopComponentOperator extends JComponentOperator {
      * @return boolean true if this object is modified; false otherwise
      */
     public boolean isModified() {
-        // should be just one node
-        org.openide.nodes.Node[] nodes = ((TopComponent) getSource()).getActivatedNodes();
-        if (nodes == null) {
+        Savable savable = ((TopComponent) getSource()).getLookup().lookup(Savable.class);
+        if (savable == null) {
             // try to find possible enclosing MultiviewTopComponent
             TopComponentOperator parentTco = findParentTopComponent();
             if (parentTco != null) {
                 return parentTco.isModified();
+            } else {
+                return false;
             }
+        } else {
+            return true;
         }
-        // TopComponent like Execution doesn't have any nodes associated
-        boolean modified = false;
-        if (nodes != null) {
-            for (int i = 0; i < nodes.length; i++) {
-                DataObject dob = (DataObject) nodes[i].getCookie(DataObject.class);
-                if (dob != null) {
-                    // any from data objects is modified
-                    modified = modified || dob.isModified();
-                }
-            }
-        }
-        return modified;
     }
 
     /** Saves content of this TopComponent. If it is not applicable or content
      * of TopComponent is not modified, it does nothing.
      */
     public void save() {
-        // should be just one node
-        org.openide.nodes.Node[] nodes = ((TopComponent) getSource()).getActivatedNodes();
-        if (nodes == null) {
+        Savable savable = ((TopComponent) getSource()).getLookup().lookup(Savable.class);
+        if (savable == null) {
             // try to find possible enclosing MultiviewTopComponent
             TopComponentOperator parentTco = findParentTopComponent();
             if (parentTco != null) {
                 parentTco.save();
             }
-        }
-        // TopComponent like Execution doesn't have any nodes associated
-        if (nodes != null) {
-            for (int i = 0; i < nodes.length; i++) {
-                SaveCookie sc = (SaveCookie) nodes[i].getCookie(SaveCookie.class);
-                if (sc != null) {
-                    try {
-                        sc.save();
-                    } catch (IOException e) {
-                        throw new JemmyException("Exception while saving this TopComponent.", e);
-                    }
-                }
+        } else {
+            try {
+                savable.save();
+            } catch (IOException e) {
+                throw new JemmyException("Saving of TopComponent " + ((TopComponent) getSource()).getDisplayName() + " failed (Savable=" + savable + ").", e);  //NOI18N
             }
         }
     }

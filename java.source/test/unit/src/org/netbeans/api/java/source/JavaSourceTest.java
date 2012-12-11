@@ -2237,7 +2237,7 @@ public class JavaSourceTest extends NbTestCase {
         final TestIndex instance = new TestIndex();
 
         @Override
-        public Index createIndex(File cacheFolder, Analyzer analyzer) {
+        public Index.Transactional createIndex(File cacheFolder, Analyzer analyzer) {
             return instance;
         }
 
@@ -2248,7 +2248,7 @@ public class JavaSourceTest extends NbTestCase {
 
     }
 
-    private static class TestIndex implements Index {
+    private static class TestIndex implements Index.Transactional {
         //Activate the TestIndex.await after scan is done
         //during the scan the prebuildArgs may call the index
         //and cause deadlock
@@ -2295,6 +2295,18 @@ public class JavaSourceTest extends NbTestCase {
 
         @Override
         public <S, T> void store(Collection<T> toAdd, Collection<S> toDelete, Convertor<? super T, ? extends org.apache.lucene.document.Document> docConvertor, Convertor<? super S, ? extends Query> queryConvertor, boolean optimize) throws IOException {
+        }
+
+        @Override
+        public void commit() throws IOException {
+        }
+
+        @Override
+        public void rollback() throws IOException {
+        }
+
+        @Override
+        public <S, T> void txStore(Collection<T> toAdd, Collection<S> toDelete, Convertor<? super T, ? extends org.apache.lucene.document.Document> docConvertor, Convertor<? super S, ? extends Query> queryConvertor) throws IOException {
         }
         
         public boolean isUpToDate(String resourceName, long timeStamp) throws IOException {

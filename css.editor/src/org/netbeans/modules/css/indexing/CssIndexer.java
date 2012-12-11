@@ -234,11 +234,11 @@ public class CssIndexer extends EmbeddingIndexer {
         
         @Override
         public void scanFinished(Context context) {
+            computedImportsHashCodes = new HashMap<FileObject, AtomicLong>(importsHashCodes); //shallow copy
             FileObject root = context.getRoot();
             if(root != null) {
                 fireChange(root);
             }
-            computedImportsHashCodes = new HashMap<FileObject, AtomicLong>(importsHashCodes); //shallow copy
             super.scanFinished(context);
         }
 

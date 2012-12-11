@@ -319,6 +319,7 @@ public class BaseFileObjectTestHid extends TestBaseHid{
                 }            
             };
         try {
+            fs.refresh(true); // catch and skip changes made in VCS metadata, they are not part of this test
             fs.addFileChangeListener(fListener);
 
             File file = new File(wDir, "testao.f");

@@ -83,6 +83,7 @@ public class BugtrackingRegistrationProcessor extends LayerGeneratingProcessor {
             f.bundlevalue("displayName", r.displayName());                                           // NOI18N
             f.bundlevalue("tooltip", r.tooltip());                                                   // NOI18N
             f.stringvalue("id", r.id());                                                             // NOI18N
+            f.boolvalue("providesRepositoryManagement", r.providesRepositoryManagement());                                             // NOI18N
             if (!r.iconPath().isEmpty()) {
                 f.bundlevalue("iconPath", r.iconPath());                                             // NOI18N
             }

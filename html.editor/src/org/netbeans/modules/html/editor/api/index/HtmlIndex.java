@@ -210,12 +210,16 @@ public class HtmlIndex {
         }
         List<URL> urls = new ArrayList<URL>();
         for (String p : paths) {
+            // #215468 - better handling of protocol-relative JavaScript files:
+            if (p.startsWith("//")) { // NOI18N
+                p = "http:" + p; // NOI18N
+            }
             // TODO: any better way to pick only remote URLs?
-            if (p.startsWith("http")) {
+            if (p.startsWith("http")) { // NOI18N
                 try {
                     urls.add(new URL(p));
                 } catch (MalformedURLException ex) {
-                    Exceptions.printStackTrace(ex);
+                    // #219118 - ignore invalid URLs silently
                 }
             }
         }

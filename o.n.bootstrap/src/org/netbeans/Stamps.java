@@ -259,10 +259,13 @@ public final class Stamps {
      * @param append write from scratch or append?
      */
     public void scheduleSave(Updater updater, String cache, boolean append) {
-        LOG.log(Level.FINE, "Scheduling save for {0} cache", cache);
+        boolean firstAdd;
         synchronized (worker) {
-            worker.addStorage(new Store(updater, cache, append));
+            firstAdd = worker.addStorage(new Store(updater, cache, append));
         }
+        LOG.log(firstAdd ? Level.FINE : Level.FINER, 
+            "Scheduling save for {0} cache", cache
+        );
     }
     
     /** Flushes all caches.
@@ -798,15 +801,18 @@ public final class Stamps {
             }
         }
         
-        public synchronized void addStorage(Store s) {
+        public synchronized boolean addStorage(Store s) {
+            boolean addNew = true;
             processing.add(s.cache);
             for (Iterator<Stamps.Store> it = storages.iterator(); it.hasNext();) {
                 Stamps.Store store = it.next();
                 if (store.equals(s)) {
                     it.remove();
+                    addNew = false;
                 }
             }
             storages.add(s);
+            return addNew;
         }
         
         @Override

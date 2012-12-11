@@ -357,6 +357,7 @@ public class DerbyOptions {
             try {
                 File location = new File(newLocation);
                 if (location.exists() && location.isDirectory()) {
+                    location = FileUtil.normalizeFile(location);
                     libsFolder.getFileSystem().runAtomicAction(
                             new DerbyLibraryRegistrar(location, libsFolder));
                 }

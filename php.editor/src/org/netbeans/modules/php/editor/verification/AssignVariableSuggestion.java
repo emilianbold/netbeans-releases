@@ -66,6 +66,7 @@ import org.netbeans.modules.php.editor.parser.astnodes.MethodInvocation;
 import org.netbeans.modules.php.editor.parser.astnodes.StaticMethodInvocation;
 import org.netbeans.modules.php.editor.parser.astnodes.Variable;
 import org.netbeans.modules.php.editor.parser.astnodes.visitors.DefaultVisitor;
+import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle.Messages;
 
 /**
@@ -99,6 +100,10 @@ public class AssignVariableSuggestion extends AbstractSuggestion {
         if (phpParseResult.getProgram() == null) {
             return;
         }
+        FileObject fileObject = phpParseResult.getSnapshot().getSource().getFileObject();
+        if (fileObject == null) {
+            return;
+        }
         int lineBegin = caretOffset > 0 ? Utilities.getRowStart(context.doc, caretOffset) : -1;
         int lineEnd = (lineBegin != -1) ? Utilities.getRowEnd(context.doc, caretOffset) : -1;
         if (lineBegin != -1 && lineEnd != -1 && caretOffset > lineBegin) {
@@ -107,7 +112,7 @@ public class AssignVariableSuggestion extends AbstractSuggestion {
             IntroduceFix variableFix = introduceFixVisitor.getIntroduceFix();
             if (variableFix != null) {
                 hints.add(new Hint(AssignVariableSuggestion.this, getDisplayName(),
-                        context.parserResult.getSnapshot().getSource().getFileObject(), variableFix.getOffsetRange(),
+                        fileObject, variableFix.getOffsetRange(),
                         Collections.<HintFix>singletonList(variableFix), 500));
             }
         }

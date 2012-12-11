@@ -81,13 +81,11 @@ import org.netbeans.modules.cnd.utils.ui.CndUIConstants;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
-import org.netbeans.modules.nativeexecution.api.util.ConnectionManager.CancellationException;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
-import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
@@ -993,10 +991,10 @@ private void btVersionsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
         @Override
         public void run() {
             final ExecutionEnvironment env = getSelectedRecord().getExecutionEnvironment();
-            if (!ConnectionManager.getInstance().connect(env)) {
-                return;
+            String versions = null;
+            if (ConnectionManager.getInstance().connect(env)) {
+                versions = getToolCollectionPanel().getVersion(set);
             }
-            String versions = getToolCollectionPanel().getVersion(set);
             SwingUtilities.invokeLater(new Runnable() {
 
                 @Override
@@ -1034,7 +1032,7 @@ private void btVersionsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
                 label.setIcon(getUserDefinedIcon());
                 showToolTip = true;
             }
-            if (cs != null && cs.isDefault()) {
+            if (cs.isDefault()) {
                 label.setFont(label.getFont().deriveFont(Font.BOLD));
             }
             if (showToolTip) {
@@ -1107,16 +1105,15 @@ private void btRestoreActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
     Runnable longWork = new Runnable() {
         @Override
         public void run() {
-            CompilerSetManagerImpl newCsm = null;
             try {
                 HostInfoUtils.updateHostInfo(execEnv);
-                newCsm = tcm.restoreCompilerSets(csm);
+                CompilerSetManagerImpl newCsm = tcm.restoreCompilerSets(csm);
                 if (newCsm != null) {
                     csm = newCsm;
                     newCsmCreated.set(true);
                 }
             } catch (IOException ex) {
-                ex.printStackTrace();
+                ex.printStackTrace(System.err);
             } catch (InterruptedException ex) {
                 // don't report InterruptedException
             } finally {

@@ -155,6 +155,9 @@ public class ConfigurationXMLReader extends XMLDocReader {
         try {
             inputStream = xml.getInputStream();
             success = read(inputStream, xml.getPath());
+            if (getMasterComment() != null && project instanceof MakeProject) {
+                ((MakeProject) project).setConfigurationXMLComment(getMasterComment());
+            }
         } finally {
             deregisterXMLDecoder(decoder);
             if (inputStream != null) {

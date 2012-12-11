@@ -55,6 +55,7 @@ import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu.Separator;
 import javax.swing.JRadioButtonMenuItem;
+import javax.swing.SwingUtilities;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectUtils;
@@ -63,17 +64,22 @@ import org.netbeans.modules.project.ui.ProjectsRootNode;
 import static org.netbeans.modules.project.ui.actions.Bundle.*;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
+import org.openide.awt.ActionReferences;
 import org.openide.awt.ActionRegistration;
 import org.openide.awt.DynamicMenuContent;
 import org.openide.awt.Mnemonics;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle.Messages;
 import org.openide.util.NbPreferences;
+import org.openide.util.RequestProcessor;
 import org.openide.util.WeakListeners;
 
 @ActionID(id = "org.netbeans.modules.project.ui.SetMainProject", category = "Project")
 @ActionRegistration(lazy = false, displayName = "#LBL_SetAsMainProjectAction_Name")
-@ActionReference(path = "Menu/BuildProject", position = 310)
+@ActionReferences({
+    @ActionReference(path = "Menu/BuildProject", position = 310),
+    @ActionReference(path = ProjectsRootNode.ACTIONS_FOLDER, position = 1400)
+})
 @Messages("LBL_SetAsMainProjectAction_Name=Set as Main Project")
 public class SetMainProject extends ProjectAction implements PropertyChangeListener {
 
@@ -87,8 +93,10 @@ public class SetMainProject extends ProjectAction implements PropertyChangeListe
     private static Preferences prefs() {
         return NbPreferences.forModule(SetMainProject.class);
     }
+    private static RequestProcessor RP = new RequestProcessor(SetMainProject.class);
     
     protected JMenu subMenu;
+    private boolean empty;
     
     // private PropertyChangeListener wpcl;
     
@@ -109,16 +117,20 @@ public class SetMainProject extends ProjectAction implements PropertyChangeListe
     }
     
     @Override protected void actionPerformed(Lookup context) {
-        Project[] projects = ActionsUtil.getProjectsFromLookup( context, null );        
+        final Project[] projects = ActionsUtil.getProjectsFromLookup( context, null );        
         
         if (projects != null && projects.length == 1) {
-            if (projects[0] == OpenProjectList.getDefault().getMainProject()) {
-                OpenProjectList.getDefault().setMainProject(null);
-            } else {
-                OpenProjectList.getDefault().setMainProject(projects[0]);
-            }
-        }
-        
+            RP.post(new Runnable() {
+                @Override
+                public void run() {
+                    if (projects[0] == OpenProjectList.getDefault().getMainProject()) {
+                        OpenProjectList.getDefault().setMainProject(null);
+                    } else {
+                        OpenProjectList.getDefault().setMainProject(projects[0]);
+                    }
+                }
+            });            
+        }        
     }
 
     @Messages("LBL_UnSetAsMainProjectAction_Name=Unset as Main Project")
@@ -138,7 +150,8 @@ public class SetMainProject extends ProjectAction implements PropertyChangeListe
             } else {
                 putValue("popupText", null);
             }
-        }        
+        }
+        empty = projects.length == 0;
     }
     
     @Override public Action createContextAwareInstance(Lookup actionContext) {
@@ -149,6 +162,17 @@ public class SetMainProject extends ProjectAction implements PropertyChangeListe
         createSubMenu();
         return subMenu;
     }
+    
+    @Override public JMenuItem getPopupPresenter() {
+        //#220595 hack in a hack.. merging of multiple instance of @ActionReference into one class leads to confusing code.
+        if (empty) {
+            // Hack!
+            subMenu = null;
+            return getMenuPresenter();
+        } else {
+            return super.getPopupPresenter();
+        }
+    }    
         
     @Messages({
         "LBL_SetMainProjectAction_Name=Set Main Project",
@@ -238,10 +262,24 @@ public class SetMainProject extends ProjectAction implements PropertyChangeListe
     @Override public void propertyChange(PropertyChangeEvent e) {
         
         if ( OpenProjectList.PROPERTY_OPEN_PROJECTS.equals( e.getPropertyName() ) ) {
-            createSubMenu();
+            SwingUtilities.invokeLater(new Runnable() {
+                @Override
+                public void run() {
+                   createSubMenu();
+                }
+            });
+            
         }
-        else if ( OpenProjectList.PROPERTY_MAIN_PROJECT.equals( e.getPropertyName() ) && subMenu != null ) {
-            selectMainProject();
+        else if ( OpenProjectList.PROPERTY_MAIN_PROJECT.equals( e.getPropertyName() )) {
+            SwingUtilities.invokeLater(new Runnable() {
+                @Override
+                public void run() {
+                    if (subMenu != null) {
+                        selectMainProject();
+                    }
+                }
+            });            
+            
         }
         
         
@@ -255,40 +293,15 @@ public class SetMainProject extends ProjectAction implements PropertyChangeListe
             
             if ( e.getSource() instanceof JMenuItem ) {
                 JMenuItem jmi = (JMenuItem)e.getSource();
-                Project project = (Project)jmi.getClientProperty( PROJECT_KEY );
-                OpenProjectList.getDefault().setMainProject(project);
+                final Project project = (Project)jmi.getClientProperty( PROJECT_KEY );
                 prefs().putBoolean(CONTEXT_MENU_ITEM_ENABLED, project != null);
-            }
-            
-        }
-        
-    }
-    
-    /**
-     * Variant which behaves just like the menu presenter without a context, but
-     * can be displayed in a context menu.
-     */
-    @ActionID(id = "org.netbeans.modules.project.ui.SetMainProjectPopupWithoutContext", category = "Project")
-    @ActionRegistration(lazy = false, displayName = "#LBL_SetAsMainProjectAction_Name")
-    @ActionReference(path = ProjectsRootNode.ACTIONS_FOLDER, position = 1400)
-    public static final class PopupWithoutContext extends SetMainProject {
-        
-        public PopupWithoutContext() {}
-        
-        private PopupWithoutContext(Lookup actionContext) {
-            super(actionContext);
-        }
-        
-        @Override public JMenuItem getPopupPresenter() {
-            // Hack!
-            subMenu = null;
-            return getMenuPresenter();
-        }
-        
-        @Override public Action createContextAwareInstance(Lookup actionContext) {
-            return new PopupWithoutContext(actionContext);
-        }
-
-    }
-    
+                RP.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        OpenProjectList.getDefault().setMainProject(project);
+                    }
+                });   
+            }            
+        }   
+    }       
 }

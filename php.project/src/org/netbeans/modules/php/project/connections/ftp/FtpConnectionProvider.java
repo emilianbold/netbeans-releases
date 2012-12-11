@@ -50,6 +50,7 @@ import org.netbeans.modules.php.project.connections.spi.RemoteClient;
 import org.netbeans.modules.php.project.connections.spi.RemoteConfiguration;
 import org.netbeans.modules.php.project.connections.spi.RemoteConfigurationPanel;
 import org.netbeans.modules.php.project.connections.spi.RemoteConnectionProvider;
+import org.netbeans.modules.php.project.validation.ValidationResult;
 import org.openide.util.NbBundle;
 import org.openide.windows.InputOutput;
 
@@ -161,4 +162,13 @@ public final class FtpConnectionProvider implements RemoteConnectionProvider {
         String type = configuration.getValue(TYPE);
         return FTP_CONNECTION_TYPE.equals(type);
     }
+
+    @Override
+    public ValidationResult validate(RemoteConfiguration remoteConfiguration) {
+        if (remoteConfiguration instanceof FtpConfiguration) {
+            return new FtpConfigurationValidator().validate((FtpConfiguration) remoteConfiguration).getResult();
+        }
+        return null;
+    }
+
 }

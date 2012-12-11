@@ -51,6 +51,7 @@ import java.util.LinkedList;
 import java.util.Map;
 import java.util.StringTokenizer;
 import java.util.WeakHashMap;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
@@ -148,7 +149,7 @@ public class CssIndex {
      * @since 1.34
      */
     public void removeChangeListener(ChangeListener l) {
-        changeSupport.addChangeListener(l);
+        changeSupport.removeChangeListener(l);
     }
     
     // TODO: should not be in the API; for now it is OK; need to talk to Marek
@@ -427,20 +428,60 @@ public class CssIndex {
      * @throws IOException
      */
     public AllDependenciesMaps getAllDependencies() throws IOException {
+        if(LOGGER.isLoggable(Level.FINE)) {
+            LOGGER.log(Level.FINE, "getAllDependencies", new Throwable());
+        }
         long freshAllDeps_hashCode = CssIndexer.getImportsHashCodeForRoots(sourceRoots);
+        StringBuilder sb = new StringBuilder();
+        for(FileObject sr : sourceRoots) {
+            sb.append(sr.getPath());
+            sb.append(',');
+        }
+        
+        LOGGER.log(Level.FINE, "Fresh deps hash code for roots {0} is {1}", new Object[]{sb.toString(), freshAllDeps_hashCode});
+        
         if(allDepsCache != null) {
+            LOGGER.fine("allDepsCache is NOT null");
             //verify whether the cache is still valid
             if(allDepsCache_hashCode == freshAllDeps_hashCode) {
-                LOGGER.fine("Refreshing dependencies maps cache");
+                LOGGER.fine("Returning cached dependencies.");
                 return allDepsCache;
             }
         } else {
-            LOGGER.fine("Creating dependencies maps cache");
+            LOGGER.fine("allDepsCache is null");
         }
         
         //not cached or invalidated
         allDepsCache = createAllDependencies();
         allDepsCache_hashCode = freshAllDeps_hashCode;
+        LOGGER.log(Level.FINE, "Created new dependencties map with with hashcode {0}", allDepsCache_hashCode);
+        
+        if(LOGGER.isLoggable(Level.FINE)) {
+            StringBuilder deps = new StringBuilder();
+            deps.append("dest2source:\n");
+            for(FileObject dest : allDepsCache.dest2source.keySet()) {
+                Collection<FileReference> source = allDepsCache.dest2source.get(dest);
+                deps.append(dest.getNameExt());
+                deps.append("->");
+                for(FileReference fref : source) {
+                    deps.append(fref.source().getNameExt());
+                    deps.append(',');
+                }
+                deps.append('\n');
+            }
+            deps.append("source2dest:\n");
+            for(FileObject source : allDepsCache.source2dest.keySet()) {
+                Collection<FileReference> dest = allDepsCache.source2dest.get(source);
+                deps.append(source.getNameExt());
+                deps.append("->");
+                for(FileReference fref : dest) {
+                    deps.append(fref.target().getNameExt());
+                    deps.append(',');
+                }
+                deps.append('\n');
+            }
+            LOGGER.log(Level.FINE, deps.toString());
+        }
         
         return allDepsCache;
     }

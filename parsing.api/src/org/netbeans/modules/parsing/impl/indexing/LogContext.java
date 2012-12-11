@@ -67,6 +67,16 @@ import org.openide.util.Utilities;
     
     private static int serial;
     
+    /**
+     * Implemented as one-time flag. Not exactly correct, but will suffice since
+     * it only suppresses some error detection.
+     */
+    private static volatile boolean closing;
+    
+    public static void notifyClosing() {
+        closing = true;
+    }
+    
     public enum EventType {
         PATH(1, 10),
         FILE(2, 20),
@@ -160,9 +170,26 @@ import org.openide.util.Utilities;
         return sb.toString();
     }
     
+    private synchronized void checkConsistency() {
+        long total = 0;
+        for (RootInfo ri : scannedSourceRoots.values()) {
+            total += ri.spent;
+        }
+        if (total != totalScanningTime) {
+            System.err.println("total scanning time mismatch");
+        }
+    }
+    
     private synchronized void freeze() {
-        this.frozen = true;
+        // finish all roots
         this.timeCutOff = System.currentTimeMillis();
+        for (RootInfo ri : allCurrentRoots.values()) {
+            ri.finishCurrentIndexer(timeCutOff);
+            long diff = timeCutOff - ri.startTime;
+            ri.spent += diff;
+        }
+        this.frozen = true;
+        checkConsistency();
     }
     
     void log() {
@@ -227,6 +254,7 @@ import org.openide.util.Utilities;
     
     void recordFinished() {
         finished = System.currentTimeMillis();
+        freeze();
     }
     
     void setPredecessor(LogContext pred) {
@@ -244,6 +272,9 @@ import org.openide.util.Utilities;
     long getFinishedTime() {
         return finished;
     }
+    
+    private static ThreadLocal<RootInfo>    currentlyIndexedRoot = new ThreadLocal<RootInfo>();
+    private static ThreadLocal<LogContext>    currentLogContext = new ThreadLocal<LogContext>();
 
     private int mySerial;
     private long storeTime;
@@ -259,6 +290,8 @@ import org.openide.util.Utilities;
     private String threadDump;
     private String secondDump;
     
+    private Map<URL, Set<String>> reindexInitiators = Collections.emptyMap();
+    private List<String> indexersAdded = Collections.emptyList();
     // various path/root informaation, which was the reason for indexing.
     private Set<String>  filePathsChanged = Collections.emptySet();
     private Set<String>  classPathsChanged = Collections.emptySet();
@@ -302,15 +335,21 @@ import org.openide.util.Utilities;
     
     private Map<String, Long>   totalIndexerTime = new HashMap<String, Long>();
     
+    private long crawlerStart;
+    
     private class RootInfo {
         private URL     url;
         private long    startTime;
         private long    spent;
         private Map<String, Long>   rootIndexerTime = new HashMap<String, Long>();
+        // indexer name and start time, to capture in statistics
+        private long    indexerStartTime;
+        private String  indexerName;
         private int count;
         private long    crawlerTime;
         private int     resCount = -1;
         private int     allResCount = -1;
+        private LinkedList<Object> pastIndexers = null;
 
         public RootInfo(URL url, long startTime) {
             this.url = url;
@@ -319,11 +358,18 @@ import org.openide.util.Utilities;
         
         public String toString() {
             long time = spent == 0 ? timeCutOff - startTime : spent;
-            return "< root = " + url.toString() + "; spent = " + time + "; crawler = " + crawlerTime + "; res = "
-                    + resCount + "; allRes = " + allResCount + " >";
+            String s = "< root = " + url.toString() + "; spent = " + time + "; crawler = " + crawlerTime + "; res = "
+                    + resCount + "; allRes = " + allResCount;
+            if (indexerName != null) {
+                s = s + "; indexer: " + indexerName;
+            }
+            return s + ">";
         }
         
         public void merge(RootInfo ri) {
+            if (this == ri) {
+                return;
+            }
             if (!url.equals(ri.url)) {
                 throw new IllegalArgumentException();
             }
@@ -335,6 +381,88 @@ import org.openide.util.Utilities;
             if (ri.allResCount > -1) {
                 this.allResCount = ri.allResCount;
             }
+            for (String id : ri.rootIndexerTime.keySet()) {
+                Long spent = ri.rootIndexerTime.get(id);
+                Long my = rootIndexerTime.get(id);
+                if (my == null) {
+                    my = spent;
+                } else {
+                    my += spent;
+                }
+                rootIndexerTime.put(id, my);
+            }
+        }
+        
+        void startIndexer(String indexerName) {
+            if (indexerStartTime != 0) {
+                if (pastIndexers == null) {
+                    pastIndexers = new LinkedList<Object>();
+                }
+                pastIndexers.add(Long.valueOf(indexerStartTime));
+                pastIndexers.add(this.indexerName);
+            }
+            this.indexerStartTime = System.currentTimeMillis();
+            this.indexerName = indexerName;
+        }
+        
+        long finishCurrentIndexer(long now) {
+            if (indexerStartTime == 0) {
+                return 0;
+            }
+            long time = now - indexerStartTime;
+            Long t = rootIndexerTime.get(indexerName);
+            if (t == null) {
+                t = Long.valueOf(0);
+            }
+            t += time;
+            rootIndexerTime.put(indexerName, t);
+            if (pastIndexers != null && !pastIndexers.isEmpty()) {
+                indexerName = (String)pastIndexers.removeLast();
+                indexerStartTime = (Long)pastIndexers.removeLast();
+            } else {
+                indexerStartTime = 0;
+            }
+            return time;
+        }
+        
+        long finishIndexer(String indexerName) {
+            if (frozen) {
+                return 0;
+            }
+            if (indexerStartTime == 0 || indexerName == null) {
+                return 0;
+            }
+            if (!indexerName.equals(this.indexerName)) {
+                boolean ok = false;
+                if (pastIndexers != null) {
+                    for (int i = 1; i < pastIndexers.size(); i += 2) {
+                        if (indexerName.equals(pastIndexers.get(i))) {
+                            long t = System.currentTimeMillis();
+                            // rollback past indexers to the currently finishing one
+                            while (pastIndexers.size() > i) {
+                                finishCurrentIndexer(t);
+                            }
+                            ok = true;
+                        }
+                    }
+                }
+                if (!ok) {
+                    LOG.log(Level.WARNING, "Mismatch in indexer: " + indexerName +
+                            ", current: " + indexerName + ", past: " + pastIndexers, new Throwable());
+                    // clean up
+                    if (pastIndexers != null) {
+                        pastIndexers.clear();
+                    }
+                    indexerStartTime = 0;
+                    this.indexerName = null;
+                    return 0;
+                }
+            }
+            long l = finishCurrentIndexer(System.currentTimeMillis());
+            if (indexerStartTime == 0) {
+                this.indexerName = null;
+            }
+            return l;
         }
     }
     
@@ -348,7 +476,29 @@ import org.openide.util.Utilities;
                     currentRoot,
                     System.currentTimeMillis()
         ));
-        scannedSourceRoots.put(currentRoot, ri);
+        currentlyIndexedRoot.set(ri);
+        currentLogContext.set(this);
+    }
+    
+    public synchronized void startCrawler() {
+        crawlerStart = System.currentTimeMillis();
+    }
+    
+    public synchronized void reportCrawlerProgress(int resCount, int allResCount) {
+        long t = System.currentTimeMillis();
+        
+        RootInfo ri = allCurrentRoots.get(Thread.currentThread());
+        if (ri == null) {
+            LOG.log(Level.WARNING, "No root specified for crawler run", new Throwable());
+            return;
+        }
+        ri.crawlerTime = t - crawlerStart;
+        if (resCount != -1) {
+            ri.resCount = resCount;
+        }
+        if (allResCount != -1) {
+            ri.allResCount = allResCount;
+        }
     }
     
     public synchronized void addCrawlerTime(long time, int resCount, int allResCount) {
@@ -358,7 +508,7 @@ import org.openide.util.Utilities;
         this.crawlerTime += time;
         RootInfo ri = allCurrentRoots.get(Thread.currentThread());
         if (ri == null) {
-            LOG.log(Level.FINE, "No root specified for crawler run", new Throwable());
+            LOG.log(Level.WARNING, "No root specified for crawler run", new Throwable());
             return;
         }
         ri.crawlerTime += time;
@@ -368,6 +518,7 @@ import org.openide.util.Utilities;
         if (allResCount != -1) {
             ri.allResCount = allResCount;
         }
+        checkConsistency();
     }
     
     public synchronized void addStoreTime(long time) {
@@ -391,6 +542,8 @@ import org.openide.util.Utilities;
         // support multiple entries
         ri.spent += diff;
         allCurrentRoots.remove(Thread.currentThread());
+        currentlyIndexedRoot.remove();
+        currentLogContext.remove();
 
         RootInfo ri2 = scannedSourceRoots.get(ri.url);
         if (ri2 == null) {
@@ -398,6 +551,36 @@ import org.openide.util.Utilities;
             scannedSourceRoots.put(ri.url, ri2);
         }
         ri2.merge(ri);
+        checkConsistency();
+    }
+    
+    public synchronized void startIndexer(String fName) {
+        if (frozen) {
+            return;
+        }
+        RootInfo ri = allCurrentRoots.get(Thread.currentThread());
+        if (ri == null) {
+            LOG.log(Level.WARNING, "Unreported root for running indexer: " + fName, new Throwable());
+        } else {
+            ri.startIndexer(fName);
+        }
+    }
+    
+    public synchronized void finishIndexer(String fName) {
+        if (frozen) {
+            return;
+        }
+        RootInfo ri = allCurrentRoots.get(Thread.currentThread());
+        if (ri == null) {
+            LOG.log(Level.WARNING, "Unreported root for running indexer: " + fName, new Throwable());
+        } else {
+            long addTime = ri.finishIndexer(fName);
+            Long t = totalIndexerTime.get(fName);
+            if (t == null) {
+                t = Long.valueOf(0);
+            }
+            totalIndexerTime.put(fName, t + addTime);
+        }
     }
     
     public synchronized void addIndexerTime(String fName, long addTime) {
@@ -408,17 +591,14 @@ import org.openide.util.Utilities;
         if (t == null) {
             t = Long.valueOf(0);
         }
-        totalIndexerTime.put(fName, t + addTime);
         RootInfo ri = allCurrentRoots.get(Thread.currentThread());
         if (ri == null) {
-            LOG.log(Level.FINE, "Unreported root for running indexer: " + fName, new Throwable());
+            LOG.log(Level.WARNING, "Unreported root for running indexer: " + fName, new Throwable());
         } else {
-             t = ri.rootIndexerTime.get(fName);
-            if (t == null) {
-                t = Long.valueOf(0);
+            if (ri.indexerName != null) {
+                addTime = ri.finishIndexer(fName);
             }
-            t += addTime;
-            ri.rootIndexerTime.put(fName, t);
+            totalIndexerTime.put(fName, t + addTime);
         }
     }
     
@@ -543,30 +723,50 @@ import org.openide.util.Utilities;
         sb.append("\nCurrent indexer(s): ");
         for (RootInfo ri : allCurrentRoots.values()) {
             sb.append("\n\t").append(ri.url);
-            for (Map.Entry<String, Long> indexTime : ri.rootIndexerTime.entrySet()) {
-                sb.append("\n\t\t").append(indexTime.getKey()).
-                        append(": ").append(indexTime.getValue());
+            List<String> indexerNames = new ArrayList<String>(ri.rootIndexerTime.keySet());
+            Collections.sort(indexerNames);
+            for (String s : indexerNames) {
+                long l = ri.rootIndexerTime.get(s);
+                sb.append("\n\t\t").append(s).
+                        append(": ").append(l);
             }
         }
         sb.append("\nTime spent in indexers:");
         List<String> iNames = new ArrayList<String>(totalIndexerTime.keySet());
         Collections.sort(iNames);
-        for (Map.Entry<String, Long> indexTime : totalIndexerTime.entrySet()) {
-            sb.append("\n\t").append(indexTime.getKey()).
-                    append(": ").append(indexTime.getValue());
+        for (String s : iNames) {
+            long l = totalIndexerTime.get(s);
+            sb.append("\n\t").append(s).
+                    append(": ").append(l);
         }
         sb.append("\nTime spent in indexers, in individual roots:");
         for (Map.Entry<URL, RootInfo> rootEn : scannedSourceRoots.entrySet()) {
             sb.append("\n\t").append(rootEn.getKey());
             RootInfo ri = rootEn.getValue();
-            for (Map.Entry<String, Long> indexTime : ri.rootIndexerTime.entrySet()) {
-                sb.append("\n\t\t").append(indexTime.getKey()).
-                        append(": ").append(indexTime.getValue());
+            List<String> indexerNames = new ArrayList<String>(ri.rootIndexerTime.keySet());
+            Collections.sort(indexerNames);
+            for (String s : indexerNames) {
+                long l = ri.rootIndexerTime.get(s);
+                sb.append("\n\t\t").append(s).
+                        append(": ").append(l);
             }
         }
         
         sb.append("\nTime in index store: " + storeTime);
         sb.append("\nTime crawling: " + crawlerTime);
+        
+        if (!reindexInitiators.isEmpty()) {
+            sb.append("\nReindexing demanded by indexers:\n");
+            for (URL u : reindexInitiators.keySet()) {
+                List<String> indexers = new ArrayList<String>(reindexInitiators.get(u));
+                Collections.sort(indexers);
+                sb.append("\t").append(u).append(": ").append(indexers).append("\n");
+            }
+        }
+        if (!indexersAdded.isEmpty()) {
+            sb.append("\nIndexers added: " + indexersAdded);
+        }
+        
         sb.append("\nStacktrace:\n");    //NOI18N
         for (StackTraceElement se : stackTrace) {
             sb.append('\t').append(se).append('\n'); //NOI18N
@@ -816,6 +1016,9 @@ import org.openide.util.Utilities;
             if (found == null) {
                 return;
             }
+            if (closing || RepositoryUpdater.getDefault().getState() == RepositoryUpdater.State.STOPPED) {
+                return;
+            }
             
             LOG.log(Level.WARNING, "Excessive indexing rate detected: " + dataSize(found.first, found.second) + " in " + minutes + "mins, treshold is " + treshold + 
                     ". Dumping suspicious contexts");
@@ -909,4 +1112,65 @@ import org.openide.util.Utilities;
         
     private static final Stats STATS = new Stats();
 
+    synchronized void reindexForced(URL root, String indexerName) {
+        if (reindexInitiators.isEmpty()) {
+            reindexInitiators = new HashMap<URL, Set<String>>();
+        }
+        Set<String> inits = reindexInitiators.get(root);
+        if (inits == null) {
+            inits = new HashSet<String>();
+            reindexInitiators.put(root, inits);
+        }
+        inits.add(indexerName);
+    }
+    synchronized void newIndexerSeen(String s) {
+        if (indexersAdded.isEmpty()) {
+            indexersAdded = new ArrayList<String>();
+        }
+        indexersAdded.add(s);
+    }
+    
+    private static final Logger BACKDOOR_LOG = Logger.getLogger(LogContext.class.getName() + ".backdoor");
+    
+    static {
+        BACKDOOR_LOG.addHandler(new LH());
+        BACKDOOR_LOG.setUseParentHandlers(false);
+    }
+    
+    private static class LH extends java.util.logging.Handler {
+        @Override
+        public void publish(LogRecord record) {
+            String msg = record.getMessage();
+            if (msg.equals("INDEXER_START")) {
+                String indexerName = (String)record.getParameters()[0];
+//                RootInfo ri = currentlyIndexedRoot.get();
+//                if (ri != null) {
+//                    ri.startIndexer(indexerName);
+//                }
+                LogContext lcx = currentLogContext.get();
+                if (lcx != null) {
+                    lcx.startIndexer(indexerName);
+                }
+            } else if (msg.equals("INDEXER_END")) {
+                String indexerName = (String)record.getParameters()[0];
+                LogContext lcx = currentLogContext.get();
+                if (lcx != null) {
+                    lcx.finishIndexer(indexerName);
+                }
+//                RootInfo ri = currentlyIndexedRoot.get();
+//                if (ri != null) {
+//                    ri.finishIndexer(indexerName);
+//                }
+            }
+            record.setLevel(Level.OFF);
+        }
+
+        @Override
+        public void flush() {
+        }
+
+        @Override
+        public void close() throws SecurityException {
+        }
+    }
 }

@@ -288,6 +288,22 @@ public final class BuildConfig {
         return projectPluginsDir;
     }
 
+    public synchronized List<File> getCompileDependencies() {
+        try {
+            if (buildSettingsInstance != null) {
+                Method getCompileDependenciesMethod = buildSettingsInstance.getClass().getMethod("getCompileDependencies", new Class[] {}); // NOI18N
+                return (List<File>) getCompileDependenciesMethod.invoke(buildSettingsInstance, new Object[] {});
+            }
+        } catch (NoSuchMethodException ex) {
+            LOGGER.log(Level.FINE, null, ex);
+        } catch (IllegalAccessException ex) {
+            LOGGER.log(Level.FINE, null, ex);
+        } catch (InvocationTargetException ex) {
+            LOGGER.log(Level.FINE, null, ex);
+        }
+        return Collections.emptyList();
+    }
+
     private File getProjectPluginsDir10() {
         assert Thread.holdsLock(this);
         return FileUtil.normalizeFile(new File(projectRoot, "plugins")); // NOI18N
