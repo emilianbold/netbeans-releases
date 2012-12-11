@@ -270,11 +270,14 @@ public class RemoteFileSystemUtils {
     }
 
     public static RemoteFileObjectBase getCanonicalFileObject(RemoteFileObjectBase fileObject) throws IOException {
-        RemoteFileObjectBase delegate = ((RemoteLinkBase) fileObject).getCanonicalDelegate();
-        if (delegate == null) {
-            throw new FileNotFoundException("Null delegate for remote link " + fileObject); //NOI18N
-        } 
-        return delegate;
+        if (fileObject instanceof RemoteLinkBase) {
+            RemoteFileObjectBase delegate = ((RemoteLinkBase) fileObject).getCanonicalDelegate();
+            if (delegate == null) {
+                throw new FileNotFoundException("Null delegate for remote link " + fileObject); //NOI18N
+            }
+            return delegate;
+        }                 
+        return fileObject;
     }
 
     public static RemoteDirectory getCanonicalParent(RemoteFileObjectBase fo) throws IOException {

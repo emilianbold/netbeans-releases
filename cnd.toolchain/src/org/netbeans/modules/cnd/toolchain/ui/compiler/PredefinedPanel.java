@@ -359,7 +359,7 @@ public class PredefinedPanel extends javax.swing.JPanel {
             if (notifyDescriptor.getValue() != NotifyDescriptor.OK_OPTION) {
                 return;
             }
-            String newS = notifyDescriptor.getInputText();
+            String newS = notifyDescriptor.getInputText().trim();
             if (defs != null) {
                 defs.setUserAdded(true, i);
             }
@@ -436,7 +436,7 @@ public class PredefinedPanel extends javax.swing.JPanel {
             if (notifyDescriptor.getValue() != NotifyDescriptor.OK_OPTION) {
                 return null;
             }
-            String def = notifyDescriptor.getInputText();
+            String def = notifyDescriptor.getInputText().trim();
             if (def.length() != 0) {
                 if (defs != null) {
                     defs.setUserAdded(true, getListDataSize());
@@ -487,7 +487,7 @@ public class PredefinedPanel extends javax.swing.JPanel {
             if (notifyDescriptor.getValue() != NotifyDescriptor.OK_OPTION) {
                 return;
             }
-            String newS = notifyDescriptor.getInputText();
+            String newS = notifyDescriptor.getInputText().trim();
             if (defs != null) {
                 defs.setUserAdded(true, i);
             }

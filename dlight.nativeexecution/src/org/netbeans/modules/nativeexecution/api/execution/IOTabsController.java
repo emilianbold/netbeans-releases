@@ -39,7 +39,7 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.cnd.makeproject.api;
+package org.netbeans.modules.nativeexecution.api.execution;
 
 import java.io.IOException;
 import java.lang.ref.WeakReference;
@@ -48,7 +48,6 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
-import org.netbeans.modules.cnd.utils.CndUtils;
 import org.openide.util.Mutex;
 import org.openide.util.Mutex.Action;
 import org.openide.windows.InputOutput;
@@ -58,7 +57,7 @@ import org.openide.windows.OutputWriter;
  *
  * @author akrasny
  */
-final class IOTabsController {
+public final class IOTabsController {
 
     private static final IOTabsController instance = new IOTabsController();
     private static final TabsGroupGroupsComparator comparator = new TabsGroupGroupsComparator();
@@ -115,11 +114,8 @@ final class IOTabsController {
         }
     }
 
-    public void startHandlerInTab(ProjectActionHandler handler, InputOutputTab ioTab) {
-        InputOutput io = ioTab.inputOutputRef.get();
-        if (io != null) {
-            handler.execute(io);
-        }
+    public static InputOutput getInputOutput(final InputOutputTab ioTab) {
+        return ioTab.inputOutputRef.get();
     }
 
     public static final class TabsGroup {
@@ -129,7 +125,7 @@ final class IOTabsController {
         private final String groupName;
         private final int seqID;
 
-        public TabsGroup(final String groupName, final int seqID) {
+        private TabsGroup(final String groupName, final int seqID) {
             this.seqID = seqID;
             this.groupName = groupName;
         }
@@ -259,7 +255,6 @@ final class IOTabsController {
         }
 
         private OutputWriter getOutputWriter() {
-            CndUtils.assertUiThread();
             InputOutput io = inputOutputRef.get();
             return (io == null) ? null : io.getOut();
         }
@@ -315,7 +310,7 @@ final class IOTabsController {
         }
     }
 
-    interface IOTabFactory {
+    public interface IOTabFactory {
 
         InputOutput createNewTab(String tabName);
     }
