@@ -420,6 +420,12 @@ class ContextManager extends Object {
         }
 
         @Override
+        public boolean add(ContextAction e) {
+            assert e != null;
+            return super.add(e);
+        }
+
+        @Override
         public void resultChanged(LookupEvent ev) {
             Mutex.EVENT.readAccess(this);
         }
