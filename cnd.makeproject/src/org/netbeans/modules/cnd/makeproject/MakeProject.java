@@ -1688,6 +1688,11 @@ public final class MakeProject implements Project, MakeProjectListener, Runnable
             SourceGroup[] groups = sources.getSourceGroups("generic"); // NOI18N
             for (SourceGroup g : groups) {
                 FileObject rootFolder = g.getRootFolder();
+                //bz#215822 - exception when starting IDE where expected drive is missing
+                //should not add invalid objects to the list of resources
+                if (!rootFolder.isValid()) {
+                    continue;
+                }
                 URL url = rootFolder.toURL();
                 // A workaround for #196328 - IllegalArgumentException on save Project properties
                 if (rootFolder.isFolder() && !url.toExternalForm().endsWith("/")) { //NOI18N
