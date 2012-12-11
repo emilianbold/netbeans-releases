@@ -635,7 +635,9 @@ class FilesystemHandler extends VCSInterceptor {
 
     @Override
     public void beforeEdit (final File file) {
-        NotificationsManager.getInstance().scheduleFor(file);
+        if (cache.ready()) {
+            NotificationsManager.getInstance().scheduleFor(file);
+        }
         ensureLocked(file);
     }
 

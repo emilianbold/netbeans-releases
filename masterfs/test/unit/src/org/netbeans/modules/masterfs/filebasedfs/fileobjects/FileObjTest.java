@@ -46,6 +46,8 @@ package org.netbeans.modules.masterfs.filebasedfs.fileobjects;
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.Arrays;
+import java.util.List;
 import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
@@ -57,6 +59,7 @@ import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
+import org.openide.util.Utilities;
 
 /**
  * 
@@ -172,6 +175,53 @@ public class FileObjTest extends NbTestCase {
             assertNotNull("The exception comes with a localized message", msg);
         } finally {
             f.setWritable(true);
+        }
+    }
+
+    public void testFileObjectForBrokenLinkWithGetChildren() throws Exception {
+        if (!Utilities.isUnix()) {
+            return;
+        }
+        doFileObjectForBrokenLink(true);
+    }
+//    public void testFileObjectForBrokenLink() throws Exception {
+//        if (!Utilities.isUnix()) {
+//            return;
+//        }
+//        doFileObjectForBrokenLink(false);
+//    }
+    
+    private void doFileObjectForBrokenLink(boolean listFirst) throws Exception {
+        clearWorkDir();
+        File wd = new File(getWorkDir(), "wd");
+        wd.mkdirs();
+        
+        File original = new File(wd, "original");
+//        original.createNewFile();
+        File lockFile = new File(wd, "wlock");
+        try {
+            ProcessBuilder pb = new ProcessBuilder().directory(wd).command(
+                new String[] { "ln", "-s", original.getName(), lockFile.getName() }
+            );
+            pb.start().waitFor();
+            final List<String> names = Arrays.asList(lockFile.getParentFile().list());
+            assertEquals("One file", 1, names.size());
+            // file exists, or at least dir.listFiles lists the file
+            assertTrue(names.contains(lockFile.getName()));
+            // java.io.File.exists returns false
+            assertFalse(lockFile.exists());
+
+            if (listFirst) {
+                FileObject root = FileUtil.toFileObject(wd);
+                List<FileObject> arr = Arrays.asList(root.getChildren());
+                assertEquals("One files: " + arr, 1, arr.size());
+                assertEquals("Has the right name", lockFile.getName(), arr.get(0).getName());
+            }
+
+            // and no FileObject is reated for such a file
+            assertNotNull(FileUtil.toFileObject(lockFile));
+        } finally {
+            lockFile.delete();
         }
     }
 }

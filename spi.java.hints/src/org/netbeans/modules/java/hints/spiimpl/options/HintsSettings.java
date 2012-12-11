@@ -104,12 +104,11 @@ public class HintsSettings {
         boolean useDefault = preferences.parent()==null || DEFAULT_PROFILE.equals(preferences.parent().name());
         return preferences.getBoolean(ENABLED_KEY, useDefault && enabledDefault);
     }
-//
-//    public static boolean isEnabled( AbstractHint hint, Preferences preferences ) {
-//        boolean useDefault = preferences.parent()==null || DEFAULT_PROFILE.equals(preferences.parent().name());
-//        return preferences.getBoolean(ENABLED_KEY, useDefault && HintsSettings.HINTS_ACCESSOR.isEnabledDefault(hint));
-//    }
-//
+    
+    public static boolean isEnabledWithDefault(Preferences preferences, boolean enabledDefault) {
+        return preferences.getBoolean(ENABLED_KEY, enabledDefault);
+    }
+    
     public static void setEnabled( HintMetadata metadata, boolean value ) {
 	setEnabled(getPreferences(metadata.id, HintsSettings.getCurrentProfileId()), value);
 	fireChangeEvent();

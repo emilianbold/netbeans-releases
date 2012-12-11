@@ -295,7 +295,10 @@ public final class FolderObj extends BaseFileObj {
             FSException.io("EXC_CannotCreateFolder", folder2Create.getName(), getPath());// NOI18N   
         } else if (FileChangedManager.getInstance().exists(folder2Create)) {
             extensions.createFailure(this, folder2Create.getName(), true);            
-            throw new SyncFailedException(folder2Create.getAbsolutePath());// NOI18N               
+            SyncFailedException sfe = new SyncFailedException(folder2Create.getAbsolutePath()); // NOI18N               
+            String msg = NbBundle.getMessage(FileBasedFileSystem.class, "EXC_CannotCreateFolder", folder2Create.getName(), getPath()); // NOI18N
+            Exceptions.attachLocalizedMessage(sfe, msg);
+            throw sfe;
         } else if (!folder2Create.mkdirs()) {
             extensions.createFailure(this, folder2Create.getName(), true);
             FSException.io("EXC_CannotCreateFolder", folder2Create.getName(), getPath());// NOI18N               
