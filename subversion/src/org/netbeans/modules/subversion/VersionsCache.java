@@ -45,6 +45,8 @@
 package org.netbeans.modules.subversion;
 
 import java.io.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.modules.subversion.client.*;
 import org.netbeans.modules.subversion.ui.diff.Setup;
 import org.netbeans.modules.subversion.util.*;
@@ -53,7 +55,6 @@ import org.netbeans.modules.versioning.historystore.StorageManager;
 import org.netbeans.modules.versioning.util.FileUtils;
 import org.netbeans.modules.versioning.util.Utils;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.Lookup;
 import org.tigris.subversion.svnclientadapter.*;
 
 /**
@@ -245,6 +246,10 @@ public class VersionsCache {
                     if (topmost != null && (newMetadataFolder = new File(topmost, SvnUtils.SVN_ADMIN_DIR)).exists()) {
                         svnDir = newMetadataFolder;
                         newMetadataFormat = new File(svnDir, "pristine").exists(); //NOI18N
+                        if (!newMetadataFormat) {
+                            Logger.getLogger(VersionsCache.class.getName()).log(Level.FINE,
+                                    "No 1.7 metadata in {0}", svnDir); //NOI18N
+                        }
                     }
                 }
             if (svnDir == null) {

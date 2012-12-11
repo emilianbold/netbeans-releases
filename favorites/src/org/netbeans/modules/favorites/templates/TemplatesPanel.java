@@ -1372,8 +1372,10 @@ public class TemplatesPanel extends TopComponent implements ExplorerManager.Prov
         RenameTemplatePanel editPanel = new RenameTemplatePanel(isUserFile(fo));
         editPanel.setFileName(name);
         editPanel.setFileDisplayName(displayName);
+        editPanel.setOtherFileNames(getOtherFileNames(n));
         String title = RenameTemplatePanel_title_text();
         DialogDescriptor dd = new DialogDescriptor(editPanel, title);
+        editPanel.setDescriptor(dd);
         Object res = DialogDisplayer.getDefault().notify(dd);
         if (DialogDescriptor.OK_OPTION.equals(res)) {
             name = editPanel.getFileName();
@@ -1387,6 +1389,30 @@ public class TemplatesPanel extends TopComponent implements ExplorerManager.Prov
             }
             n.setDisplayName(displayName);
         }
+    }
+    
+    private static Set<String> getOtherFileNames(FileObject fo) {
+        FileObject parent = fo.getParent();
+        FileObject[] children = parent.getChildren();
+        Set<String> siblings = new HashSet<String>(children.length);
+        for (FileObject ch : children) {
+            if (ch != fo) {
+                siblings.add(ch.getNameExt());
+            }
+        }
+        return siblings;
+    }
+
+    private static Set<String> getOtherFileNames(TemplateNode n) {
+        Node parent = n.getParentNode();
+        Node[] children = parent.getChildren().getNodes();
+        Set<String> siblings = new HashSet<String>(children.length);
+        for (Node ch : children) {
+            if (ch != n) {
+                siblings.add(((TemplateNode) ch).getFileName());
+            }
+        }
+        return siblings;
     }
 
     /** Test if the file physically exists on disk and thus was created by user and can be renamed. */
