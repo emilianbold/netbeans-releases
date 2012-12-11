@@ -40,6 +40,8 @@ package org.netbeans.modules.javascript2.editor.parser;
 import com.oracle.nashorn.ir.FunctionNode;
 import com.oracle.nashorn.ir.Node;
 import com.oracle.nashorn.runtime.JSException;
+import com.oracle.nashorn.runtime.Source;
+import com.oracle.nashorn.runtime.options.Options;
 import java.util.Collections;
 import org.netbeans.modules.javascript2.editor.lexer.JsTokenId;
 import org.netbeans.modules.parsing.api.Snapshot;
@@ -60,9 +62,9 @@ public class JsonParser extends SanitizingParser {
     }
 
     @Override
-    protected com.oracle.nashorn.ir.FunctionNode parseSource(Snapshot snapshot, String name, String text, JsErrorManager errorManager) throws Exception {
-        com.oracle.nashorn.runtime.Source source = new com.oracle.nashorn.runtime.Source(name, text);
-        com.oracle.nashorn.runtime.options.Options options = new com.oracle.nashorn.runtime.options.Options("nashorn");
+    protected FunctionNode parseSource(Snapshot snapshot, String name, String text, JsErrorManager errorManager) throws Exception {
+        Source source = new Source(name, text);
+        Options options = new Options("nashorn");
         options.process(new String[] {
             "--parse-only=true", // NOI18N
             "--empty-statements=true", // NOI18N
@@ -74,7 +76,7 @@ public class JsonParser extends SanitizingParser {
         com.oracle.nashorn.codegen.Compiler compiler = new com.oracle.nashorn.codegen.Compiler(source, contextN);
         com.oracle.nashorn.parser.JsonParser parser = new com.oracle.nashorn.parser.JsonParser(source, errorManager, contextN._strict);
 
-        com.oracle.nashorn.ir.Node objectNode = null;
+        Node objectNode = null;
         try {
             objectNode = parser.parse();
         } catch (JSException ex) {
@@ -84,7 +86,7 @@ public class JsonParser extends SanitizingParser {
 
         // we are doing this as our infrusture requires function node on top
         // TODO we may get rid of such dep later
-        com.oracle.nashorn.ir.FunctionNode node = null;
+        FunctionNode node = null;
         if (objectNode != null) {
             node = new FunctionNode(source, 0, text.length(), compiler, null, null, "runScript"); // NOI18N
             node.setKind(FunctionNode.Kind.SCRIPT);
