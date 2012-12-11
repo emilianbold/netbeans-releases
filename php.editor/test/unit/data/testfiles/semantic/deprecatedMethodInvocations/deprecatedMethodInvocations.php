@@ -10,6 +10,8 @@ class ClassName {
 
     function info($param) {
         $this->delegate->deprecatedFunction($param);
+        $this->delegate->deprecatedFunction($param)->foo();
+        $this->delegate->deprecatedFunction($param)->bar;
         Delegate::deprecatedStaticFunction($param);
     }
 

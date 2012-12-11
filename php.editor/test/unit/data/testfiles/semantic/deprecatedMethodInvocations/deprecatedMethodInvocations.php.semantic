@@ -10,6 +10,8 @@ class |>CLASS:ClassName<| {
 
     function |>METHOD:info<|($param) {
         $this->|>FIELD:delegate<|->|>DEPRECATED:deprecatedFunction<|($param);
+        $this->|>FIELD:delegate<|->|>DEPRECATED:deprecatedFunction<|($param)->foo();
+        $this->|>FIELD:delegate<|->|>DEPRECATED:deprecatedFunction<|($param)->|>FIELD:bar<|;
         Delegate::|>DEPRECATED,STATIC:deprecatedStaticFunction<|($param);
     }
 
