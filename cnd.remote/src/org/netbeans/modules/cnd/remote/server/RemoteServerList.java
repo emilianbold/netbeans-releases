@@ -243,7 +243,11 @@ public class RemoteServerList implements ServerListImplementation, ConnectionLis
     @Override
     public synchronized ServerRecord addServer(final ExecutionEnvironment execEnv, String displayName,
             RemoteSyncFactory syncFactory, boolean asDefault, boolean connect) {
+        return addServerImpl(execEnv, displayName, syncFactory, asDefault, connect, true);
+    }
 
+    private synchronized ServerRecord addServerImpl(final ExecutionEnvironment execEnv, String displayName,
+            RemoteSyncFactory syncFactory, boolean asDefault, boolean connect, boolean fireChanges) {
         RemoteServerRecord record = null;
         if (syncFactory == null) {
             syncFactory = RemoteServerList.getDefaultFactory(execEnv);
@@ -282,10 +286,12 @@ public class RemoteServerList implements ServerListImplementation, ConnectionLis
         if (asDefault) {
             defaultIndex = items.indexOf(record);
         }
-        refresh();
-        storePreferences();
-        getPreferences().putInt(DEFAULT_INDEX, defaultIndex);
-        firePropertyChange(ServerList.PROP_RECORD_LIST, oldItems, new ArrayList<RemoteServerRecord>(items));
+        if (fireChanges) {
+            refresh();
+            storePreferences();
+            getPreferences().putInt(DEFAULT_INDEX, defaultIndex);
+            firePropertyChange(ServerList.PROP_RECORD_LIST, oldItems, new ArrayList<RemoteServerRecord>(items));
+        }
         return record;
     }
 
@@ -333,11 +339,13 @@ public class RemoteServerList implements ServerListImplementation, ConnectionLis
         Collection<ExecutionEnvironment> removed = clear();
         List<ExecutionEnvironment> allEnv = new ArrayList<ExecutionEnvironment>();
         for (ServerRecord rec : records) {
-            addServer(rec.getExecutionEnvironment(), rec.getDisplayName(), rec.getSyncFactory(), false, false);
+            addServerImpl(rec.getExecutionEnvironment(), rec.getDisplayName(), rec.getSyncFactory(), false, false, false);
             removed.remove(rec.getExecutionEnvironment());
             allEnv.add(rec.getExecutionEnvironment());
         }
         setDefaultRecord(defaultRecord);
+        refresh();
+        storePreferences();
         PasswordManager.getInstance().setServerList(allEnv);
         firePropertyChange(ServerList.PROP_RECORD_LIST, oldItems, new ArrayList<RemoteServerRecord>(items));
     }
