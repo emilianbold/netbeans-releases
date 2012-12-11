@@ -60,10 +60,10 @@ import org.netbeans.spi.lexer.Lexer;
 import org.netbeans.spi.lexer.LexerRestartInfo;
 
 /**
- * Token Ids for Embedded Groovy (GSP)
+ * Token Ids for Embedded Groovy (GSP).
  *
  * @todo Worry about trim mode - See section 22.1 of Agile Web Development With Rails
- * 
+ *
  * @author Marek Fukala
  * @author Tor Norbye
  * @author Martin Adamek
@@ -72,28 +72,23 @@ import org.netbeans.spi.lexer.LexerRestartInfo;
 public enum GspTokenId implements TokenId {
 
     HTML("html"),
-    /** Contents inside <%# %> */
     GROOVYCOMMENT("comment"),
-    /** Contents inside <%= %> */
     GROOVY_EXPR("groovy"),
-    /** Contents inside <% %> */
     GROOVY("groovy"),
-    /** <% or %> */
     DELIMITER("groovy-delimiter"), // Note - referenced in LexUtilities
-    /** <g: and </g: */
-    GTAG("gtag"),
+    GTAG("gtag"), // <g: and </g:
     ERROR("gsp_error");
 
     public static final String MIME_TYPE = "text/x-gsp"; // NOI18N
-    
     private final String primaryCategory;
-    
-    public static boolean isGroovy(TokenId id) {
-        return id == GROOVY || id == GROOVY_EXPR || id == GROOVYCOMMENT;
+
+
+    private GspTokenId(String primaryCategory) {
+        this.primaryCategory = primaryCategory;
     }
 
-    GspTokenId(String primaryCategory) {
-        this.primaryCategory = primaryCategory;
+    public static boolean isGroovy(TokenId id) {
+        return id == GROOVY || id == GROOVY_EXPR || id == GROOVYCOMMENT;
     }
 
     @Override
@@ -101,23 +96,22 @@ public enum GspTokenId implements TokenId {
         return primaryCategory;
     }
 
-    // Token ids declaration
-    private static final Language<GspTokenId> language = new LanguageHierarchy<GspTokenId>() {
+    private static final Language<GspTokenId> LANGUAGE = new LanguageHierarchy<GspTokenId>() {
         @Override
         protected Collection<GspTokenId> createTokenIds() {
             return EnumSet.allOf(GspTokenId.class);
         }
-        
+
         @Override
-        protected Map<String,Collection<GspTokenId>> createTokenCategories() {
+        protected Map<String, Collection<GspTokenId>> createTokenCategories() {
             return null;
         }
-        
+
         @Override
         public Lexer<GspTokenId> createLexer(LexerRestartInfo<GspTokenId> info) {
             return new GspLexer(info);
         }
-        
+
         @Override
         protected LanguageEmbedding<? extends TokenId> embedding(Token<GspTokenId> token,
                                   LanguagePath languagePath, InputAttributes inputAttributes) {
@@ -132,14 +126,14 @@ public enum GspTokenId implements TokenId {
                     return null;
             }
         }
-        
+
         @Override
         public String mimeType() {
             return GspTokenId.MIME_TYPE;
         }
     }.language();
-    
+
     public static Language<GspTokenId> language() {
-        return language;
+        return LANGUAGE;
     }
 }
