@@ -64,9 +64,11 @@ import org.netbeans.modules.php.editor.api.elements.FieldElement;
 import org.netbeans.modules.php.editor.api.elements.MethodElement;
 import org.netbeans.modules.php.editor.api.elements.TypeConstantElement;
 import org.netbeans.modules.php.editor.api.elements.TypeElement;
+import org.netbeans.modules.php.editor.model.ClassScope;
 import org.netbeans.modules.php.editor.model.MethodScope;
 import org.netbeans.modules.php.editor.model.Model;
 import org.netbeans.modules.php.editor.model.ModelUtils;
+import org.netbeans.modules.php.editor.model.TraitScope;
 import org.netbeans.modules.php.editor.model.TypeScope;
 import org.netbeans.modules.php.editor.model.VariableScope;
 import org.netbeans.modules.php.editor.model.impl.VariousUtils;
@@ -538,10 +540,36 @@ public class SemanticAnalysis extends SemanticAnalyzer {
             }
             if (!node.getField().isDollared()) {
                 Expression expr = node.getField().getName();
-                (new FieldAccessVisitor(ColoringAttributes.FIELD_SET)).scan(expr);
+                Collection<? extends TypeScope> resolvedTypes = ModelUtils.resolveType(model, node);
+                String variableName = CodeUtils.extractVariableName(node.getField());
+                boolean isDeprecated = isDeprecatedFieldAccess(resolvedTypes, "$" + variableName); //NOI18N
+                (new FieldAccessVisitor(isDeprecated ? DEPRECATED_FIELD_SET : ColoringAttributes.FIELD_SET)).scan(expr);
             }
             scan(node.getField());
             super.scan(node.getDispatcher());
+        }
+
+        private boolean isDeprecatedFieldAccess(Collection<? extends TypeScope> typeScopes, String variableName) {
+            boolean isDeprecated = false;
+            for (TypeScope typeScope : typeScopes) {
+                Collection<? extends org.netbeans.modules.php.editor.model.FieldElement> declaredFields = null;
+                if (typeScope instanceof ClassScope) {
+                    ClassScope classScope = (ClassScope) typeScope;
+                    declaredFields = classScope.getDeclaredFields();
+                } else if (typeScope instanceof TraitScope) {
+                    TraitScope traitScope = (TraitScope) typeScope;
+                    declaredFields = traitScope.getDeclaredFields();
+                }
+                if (declaredFields != null) {
+                    for (org.netbeans.modules.php.editor.model.FieldElement fieldElement : declaredFields) {
+                        if (fieldElement.getName().equals(variableName) && fieldElement.isDeprecated()) {
+                            isDeprecated = true;
+                            break;
+                        }
+                    }
+                }
+            }
+            return isDeprecated;
         }
 
         @Override
@@ -582,7 +610,10 @@ public class SemanticAnalysis extends SemanticAnalyzer {
                 ArrayAccess arrayAccess = (ArrayAccess) expr;
                 expr = arrayAccess.getName();
             }
-            (new FieldAccessVisitor(ColoringAttributes.STATIC_FIELD_SET)).scan(expr);
+            Collection<? extends TypeScope> resolvedTypes = ModelUtils.resolveType(model, node);
+            String variableName = CodeUtils.extractVariableName(node.getField());
+            boolean isDeprecated = isDeprecatedFieldAccess(resolvedTypes, variableName);
+            (new FieldAccessVisitor(isDeprecated ? DEPRECATED_STATIC_FIELD_SET : ColoringAttributes.STATIC_FIELD_SET)).scan(expr);
             super.visit(node);
 
         }
