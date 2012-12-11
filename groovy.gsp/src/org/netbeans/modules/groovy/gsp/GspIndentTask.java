@@ -70,12 +70,14 @@ import org.netbeans.modules.groovy.gsp.lexer.GspTokenId;
  */
 public class GspIndentTask implements IndentTask {
 
-    private Context context;
+    private final Context context;
 
     GspIndentTask(Context context) {
         this.context = context;
     }
 
+
+    @Override
     public void reindent() throws BadLocationException {
         BaseDocument doc = (BaseDocument) context.document();
         int start = context.startOffset();
@@ -85,15 +87,14 @@ public class GspIndentTask implements IndentTask {
     }
 
     private void reindent(BaseDocument doc, int start, int end) throws BadLocationException {
-        //doc.putProperty(HTMLLexerFormatter.HTML_FORMATTER_ACTS_ON_TOP_LEVEL, Boolean.TRUE);
         doc.putProperty("HTML_FORMATTER_ACTS_ON_TOP_LEVEL", Boolean.TRUE);
-        
-        TokenHierarchy<Document> th = TokenHierarchy.get((Document)doc);
-        TokenSequence<?extends GspTokenId> ts = th.tokenSequence(GspTokenId.language());
-        if (ts == null) {
+
+        final TokenHierarchy<Document> th = TokenHierarchy.get((Document) doc);
+        final TokenSequence<GspTokenId> tokenSequence = th.tokenSequence(GspTokenId.language());
+        if (tokenSequence == null) {
             return;
         }
-        
+
         int offset = Utilities.getRowStart(doc, end);
         List<Integer> offsets = new ArrayList<Integer>();
         boolean prevWasNonHtml = false;
@@ -101,9 +102,9 @@ public class GspIndentTask implements IndentTask {
             int lineStart = Utilities.getRowFirstNonWhite(doc, offset);
             if (lineStart != -1) {
                 prevWasNonHtml = false;
-                ts.move(lineStart);
-                if (ts.moveNext()) {
-                    TokenId id = ts.token().id();
+                tokenSequence.move(lineStart);
+                if (tokenSequence.moveNext()) {
+                    TokenId id = tokenSequence.token().id();
                     if (id != GspTokenId.HTML) {
                         prevWasNonHtml = true;
                         offsets.add(offset);
@@ -114,7 +115,7 @@ public class GspIndentTask implements IndentTask {
                 // will treat these as part of the block to be indented
                 offsets.add(offset);
             }
-            
+
             if (offset > 0) {
                 // XXX >= ? What about empty first line?
                 offset--;
@@ -132,6 +133,7 @@ public class GspIndentTask implements IndentTask {
         }
     }
 
+    @Override
     public ExtraLock indentLock() {
         return null;
     }
