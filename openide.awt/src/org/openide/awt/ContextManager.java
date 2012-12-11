@@ -436,8 +436,18 @@ class ContextManager extends Object {
             synchronized (CACHE) {
                 arr = toArray(new ContextAction[0]);
             }
+            long now = 0; 
+            assert (now = System.currentTimeMillis()) >= 0;
             for (ContextAction a : arr) {
                 a.updateState();
+            }
+            long took = 0;
+            assert (took = System.currentTimeMillis() - now) >= 0;
+            if (took > 2000) {
+                LOG.log(Level.WARNING, "Updating state of {1} actions took {0} ms. here is the action list:", new Object[] { took, arr.length });
+                for (ContextAction a : arr) {
+                    LOG.log(Level.INFO, "  {0}", a);
+                }
             }
         }
     }
