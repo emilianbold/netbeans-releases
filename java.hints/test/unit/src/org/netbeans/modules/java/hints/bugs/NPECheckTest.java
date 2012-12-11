@@ -935,6 +935,45 @@ public class NPECheckTest extends NbTestCase {
                 .assertWarnings();
     }
     
+    public void test223297() throws Exception {
+        HintTest.create()
+                .input("package test;\n" +
+                       "import java.util.*;\n" +
+                       "import java.util.concurrent.*;\n" +
+                       "class Test {\n" +
+                       "    public boolean foo() {\n" +
+                       "        String name = \"a\";\n" +
+                       "        String path = \"b\";\n" +
+                       "        ConcurrentMap<String, List<String>> result = new ConcurrentHashMap<String, List<String>>();\n" +
+                       "        List<String> list = result.get(name);\n" +
+                       "        if (list == null) {\n" +
+                       "            List<String> prev = result.putIfAbsent(name, list = new ArrayList<String>(1));\n" +
+                       "            if (prev != null) {\n" +
+                       "                list = prev;\n" +
+                       "            }\n" +
+                       "        }\n" +
+                       "        return list.add(path);\n" +
+                       "    }\n" +
+                       "}")
+                .run(NPECheck.class)
+                .assertWarnings();
+    }
+    
+    public void testTestedProduceWarning() throws Exception {
+        HintTest.create()
+                .input("package test;\n" +
+                       "import java.util.*;\n" +
+                       "import java.util.concurrent.*;\n" +
+                       "class Test {\n" +
+                       "    public void foo(String param) {\n" +
+                       "        boolean b = param != null;\n" +
+                       "        System.err.println(param.toString());\n" +
+                       "    }\n" +
+                       "}")
+                .run(NPECheck.class)
+                .assertWarnings("6:33-6:41:verifier:Possibly Dereferencing null");
+    }
+    
     private void performAnalysisTest(String fileName, String code, String... golden) throws Exception {
         HintTest.create()
                 .input(fileName, code)
