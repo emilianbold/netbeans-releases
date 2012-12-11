@@ -74,6 +74,7 @@ import javax.swing.UIManager;
 import javax.swing.border.Border;
 import org.netbeans.modules.cnd.api.model.CsmFunction;
 import org.netbeans.modules.cnd.api.model.CsmFunctionDefinition;
+import org.netbeans.modules.cnd.api.model.CsmModelAccessor;
 import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.utils.ui.PopupUtil;
@@ -209,8 +210,7 @@ public class OverridesPopup extends JPanel implements FocusListener {
             }
             setEnabled(true);
             setFont(list.getFont());
-            Border border = null;
-            border = BorderFactory.createEmptyBorder(1, 1, 1, 1);
+            Border border = BorderFactory.createEmptyBorder(1, 1, 1, 1);
             if (hasFocus) {
                 if (selected) {
                     border = UIManager.getBorder("List.focusSelectedCellHighlightBorder"); // NOI18N
@@ -348,19 +348,27 @@ public class OverridesPopup extends JPanel implements FocusListener {
     }
 
     private void openSelected() {
-        Item el = (Item) list.getSelectedValue();
-        if (el != null) {
-            CsmOffsetableDeclaration decl = el.declaration;
-            if (gotoDefinitions) {
-                if (CsmKindUtilities.isFunctionDeclaration(decl)) {
-                    CsmFunctionDefinition definition = ((CsmFunction) decl).getDefinition();
-                    if (definition != null) {
-                        decl = definition;
+        final String taskName = "Open override function"; //NOI18N
+        Runnable run = new Runnable() {
+
+            @Override
+            public void run() {
+                Item el = (Item) list.getSelectedValue();
+                if (el != null) {
+                    CsmOffsetableDeclaration decl = el.declaration;
+                    if (gotoDefinitions) {
+                        if (CsmKindUtilities.isFunctionDeclaration(decl)) {
+                            CsmFunctionDefinition definition = ((CsmFunction) decl).getDefinition();
+                            if (definition != null) {
+                                decl = definition;
+                            }
+                        }
                     }
+                    CsmUtilities.openSource(decl);
                 }
             }
-            CsmUtilities.openSource(decl);
-        }
+        };
+        CsmModelAccessor.getModel().enqueue(run, taskName);
         PopupUtil.hidePopup();
     }
 
