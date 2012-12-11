@@ -849,7 +849,13 @@ public abstract class PHPCompletionItem implements CompletionProposal {
         @Override
         public String getLhsHtml(HtmlFormatter formatter) {
             formatter.name(getKind(), true);
-            formatter.appendText(getName());
+            if (isDeprecated()) {
+                formatter.deprecated(true);
+                formatter.appendText(getName());
+                formatter.deprecated(false);
+            } else {
+                formatter.appendText(getName());
+            }
             formatter.name(getKind(), false);
             formatter.appendText(" "); //NOI18N
             String value = getConstant().getValue();
