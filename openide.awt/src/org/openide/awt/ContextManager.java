@@ -52,6 +52,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -256,10 +257,15 @@ class ContextManager extends Object {
         perf.actionPerformed(e, Collections.unmodifiableList(all), new LkpAE());
     }
 
-    @SuppressWarnings("unchecked") // XXX cast Collection<? extends T> -> List<? extends T> should not be unsafe, right? maybe javac bug
     private <T> List<? extends T> listFromResult(Lookup.Result<T> result) {
-        List<? extends T> all;
         Collection<? extends T> col = result.allInstances();
+        Collection<T> tmp = new LinkedHashSet<T>(col);
+        if (tmp.size() != col.size()) {
+            Collection<T> nt = new ArrayList<T>(tmp.size());
+            nt.addAll(tmp);
+            col = nt;
+        }
+        List<? extends T> all;
         if (col instanceof List) {
             all = (List<? extends T>)col;
         } else {
