@@ -47,6 +47,7 @@ package org.netbeans.modules.websvc.api.jaxws.project;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -56,11 +57,13 @@ import java.io.OutputStreamWriter;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
 import java.util.StringTokenizer;
@@ -154,20 +157,20 @@ public class WSUtils {
             Retriever retriever = Retriever.getDefault();
             FileObject result = retriever.retrieveResource(targetFolder, source);
             if (result==null) {
-                Map map = retriever.getRetrievedResourceExceptionMap();
+                Map<RetrieveEntry,Exception> map = retriever.getRetrievedResourceExceptionMap();
                 if (map!=null) {
-                    Set keys = map.keySet();
-                    Iterator it = keys.iterator();
-                    while (it.hasNext()) {
-                        RetrieveEntry key = (RetrieveEntry)it.next();
-                        Object exc = map.get(key);
+                    for(Entry<RetrieveEntry,Exception> entry: map.entrySet()){
+                        RetrieveEntry key = entry.getKey();
+                        Exception exc = entry.getValue();
                         if (exc instanceof IOException) {
                             throw (IOException)exc;
                         } else if (exc instanceof java.net.URISyntaxException) {
                             throw (java.net.URISyntaxException)exc;
-                        } else if (exc instanceof Exception) {
-                            IOException ex = new IOException(NbBundle.getMessage(WSUtils.class,"ERR_retrieveResource",key.getCurrentAddress()));
-                            ex.initCause((Exception)exc);
+                        } else  {
+                            IOException ex = new IOException(NbBundle.getMessage(
+                                    WSUtils.class,"ERR_retrieveResource",
+                                    key.getCurrentAddress()));
+                            ex.initCause(exc);
                             throw (IOException)(ex);
                         }
                     }
@@ -198,12 +201,16 @@ public class WSUtils {
             public void run() throws IOException {
                 FileObject jaxWsFo = FileUtil.createData(nbprojFo, "jax-ws.xml");//NOI18N
                 FileLock lock = jaxWsFo.lock();
+                BufferedWriter bw = null;
                 try {
-                    BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(jaxWsFo.getOutputStream(lock)));
+                    bw = new BufferedWriter(new OutputStreamWriter(
+                            jaxWsFo.getOutputStream(lock), Charset.forName("UTF-8")));  // NOI18N
                     bw.write(jaxWsContent);
-                    bw.close();
                 } finally {
                     lock.releaseLock();
+                    if( bw!= null ){
+                        bw.close();
+                    }
                 }
             }
         });
@@ -221,7 +228,8 @@ public class WSUtils {
                 OutputStream os = null;
                 try {
                     os = handlerFo.getOutputStream(lock);
-                    bw = new BufferedWriter(new OutputStreamWriter(os));
+                    bw = new BufferedWriter(new OutputStreamWriter(os, 
+                            Charset.forName("UTF-8")));             // NOI18N
                     bw.write(handlerContent);
                     bw.close();
                 } finally {
@@ -263,7 +271,7 @@ public class WSUtils {
                 OutputStreamWriter osw = null;
                 try {
                     os = sunJaxwsFo.getOutputStream(lock);
-                    osw = new OutputStreamWriter(os);
+                    osw = new OutputStreamWriter(os, Charset.forName("UTF-8"));     // NOI18N
                     bw = new BufferedWriter(osw);
                     bw.write(sunJaxwsContent);
                 } finally {
@@ -609,18 +617,23 @@ public class WSUtils {
     public static FileObject retrieveJaxWsCatalogFromResource(final FileObject webInf) throws IOException {
         assert  webInf != null : "WEB-INF (META-INF) directory"; //NOI18N
         final String jaxWsContent =
-                readResource(WSUtils.class.getResourceAsStream("/org/netbeans/modules/websvc/jaxwsmodel/resources/jax-ws-catalog.xml")); //NOI18N
+                readResource(WSUtils.class.getResourceAsStream(
+                        "/org/netbeans/modules/websvc/jaxwsmodel/resources/jax-ws-catalog.xml")); //NOI18N
         FileSystem fs = webInf.getFileSystem();
         fs.runAtomicAction(new FileSystem.AtomicAction() {
             public void run() throws IOException {
                 FileObject jaxWsCatalog = FileUtil.createData(webInf, "jax-ws-catalog.xml");//NOI18N
                 FileLock lock = jaxWsCatalog.lock();
+                BufferedWriter bw =null;
                 try {
-                    BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(jaxWsCatalog.getOutputStream(lock)));
+                    bw = new BufferedWriter(new OutputStreamWriter(
+                            jaxWsCatalog.getOutputStream(lock), Charset.forName("UTF-8"))); // NOI18N
                     bw.write(jaxWsContent);
-                    bw.close();
                 } finally {
                     lock.releaseLock();
+                    if ( bw!= null) {
+                        bw.close();
+                    }
                 }
             }
         });
@@ -632,7 +645,9 @@ public class WSUtils {
         BufferedReader br = null;
         boolean found = false;
         try {
-            br = new BufferedReader(new FileReader(FileUtil.toFile(jaxWsFo)));
+            br = new BufferedReader(new InputStreamReader( 
+                    new FileInputStream( FileUtil.toFile(jaxWsFo)), 
+                        Charset.forName("UTF-8")));                 // NOI18N
             String line = null;
             while ((line = br.readLine()) != null) {
                 if (line.contains("<client ")) { //NOI18N
@@ -652,7 +667,9 @@ public class WSUtils {
         BufferedReader br = null;
         boolean found = false;
         try {
-            br = new BufferedReader(new FileReader(FileUtil.toFile(jaxWsFo)));
+            br = new BufferedReader(new InputStreamReader( 
+                    new FileInputStream( FileUtil.toFile(jaxWsFo)), 
+                        Charset.forName("UTF-8")));                 // NOI18N
             String line = null;
             while ((line = br.readLine()) != null) {
                 if (line.contains("<client ") || line.contains("<service ")) { //NOI18N
