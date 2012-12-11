@@ -44,10 +44,13 @@
 package org.netbeans.modules.websvc.core.client.wizard;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.LineNumberReader;
+import java.io.Reader;
 import java.net.HttpURLConnection;
 import java.util.Iterator;
 import java.util.List;
@@ -62,6 +65,7 @@ import java.net.Proxy;
 import java.net.ProxySelector;
 import java.net.URL;
 import java.net.URLDecoder;
+import java.nio.charset.Charset;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JLabel;
@@ -1002,6 +1006,7 @@ private void saasBrowse(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_saasB
         return null;
     }
     
+    @org.netbeans.api.annotations.common.SuppressWarnings("RV_RETURN_VALUE_IGNORED_BAD_PRACTICE")
     void validatePanel() throws WizardValidationException {
         if (!valid(wizardDescriptor))
             throw new WizardValidationException(this, "", ""); //NOI18N
@@ -1022,8 +1027,10 @@ private void saasBrowse(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_saasB
                 }
                 wizardDescriptor.putProperty(PROP_ERROR_MESSAGE, errorMessage); // NOI18N
                 throw new WizardValidationException(this, errorMessage, errorMessage); //NOI18N
-            } else
-                wizardDescriptor.putProperty(ClientWizardProperties.WSDL_FILE_PATH, retriever == null ? "" : retriever.getWsdlFileName()); //NOI18N
+            } else {
+                wizardDescriptor.putProperty(ClientWizardProperties.WSDL_FILE_PATH, 
+                        retriever.getWsdlFileName());
+            }
         }
         if (jComboBoxJaxVersion.getSelectedItem().equals(ClientWizardProperties.JAX_WS)
                 &&  wsdlSource != WSDL_FROM_FILE && wsdlSource!= WSDL_FROM_SAAS) 
@@ -1116,6 +1123,7 @@ private void saasBrowse(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_saasB
             case WSDL_FROM_SAAS:
                 result = saasWs;
                 break;
+            default:
         }
         
         return result;
@@ -1269,10 +1277,10 @@ private void saasBrowse(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_saasB
             }
             
             File f = new File(wsdlFilePath);
-            if(f == null) {
-                wizardDescriptor.putProperty(PROP_ERROR_MESSAGE, NbBundle.getMessage(ClientInfo.class, "ERR_WsdlInvalid")); // NOI18N
-                return false; // invalid WSDL file
-            }
+//            if(f == null) {
+//                wizardDescriptor.putProperty(PROP_ERROR_MESSAGE, NbBundle.getMessage(ClientInfo.class, "ERR_WsdlInvalid")); // NOI18N
+//                return false; // invalid WSDL file
+//            }
             
             if(!f.exists()) {
                 wizardDescriptor.putProperty(PROP_ERROR_MESSAGE, NbBundle.getMessage(ClientInfo.class, "ERR_WsdlDoesNotExist")); // NOI18N
@@ -1280,11 +1288,12 @@ private void saasBrowse(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_saasB
             }
             
             // 50103 - could be done via xml api, but this way should be quicker and suffice the need
-            FileReader fr = null;
+            Reader fr = null;
             LineNumberReader lnReader = null;
             boolean foundWsdlNamespace = false;
             try {
-                fr = new FileReader(f);
+                fr = new InputStreamReader( new FileInputStream(f), 
+                        Charset.forName( "UTF-8"));                         // NOI18N
                 lnReader = new LineNumberReader(fr);
                 if (lnReader != null) {
                     String line = null;
@@ -1308,7 +1317,8 @@ private void saasBrowse(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_saasB
                     }
                 }
             } catch (FileNotFoundException fne) {
-                wizardDescriptor.putProperty(PROP_ERROR_MESSAGE, NbBundle.getMessage(ClientInfo.class, "ERR_WsdlDoesNotExist")); // NOI18N
+                wizardDescriptor.putProperty(PROP_ERROR_MESSAGE, 
+                        NbBundle.getMessage(ClientInfo.class, "ERR_WsdlDoesNotExist")); // NOI18N
             } finally{
                 try{
                     if(lnReader != null){
@@ -1366,7 +1376,7 @@ private void saasBrowse(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_saasB
         }
 
         String packageName = getPackageName();
-        if(packageName == null || packageName.length() == 0) {
+        if(packageName.length() == 0) {
             String jaxwsVersion = (String)this.jComboBoxJaxVersion.getSelectedItem();
             if(!jaxwsVersion.equals(ClientWizardProperties.JAX_WS)){
                 wizardDescriptor.putProperty(PROP_ERROR_MESSAGE, NbBundle.getMessage(ClientInfo.class, "MSG_EnterJavaPackageName")); // NOI18N
@@ -1630,7 +1640,7 @@ private void saasBrowse(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_saasB
         return false;
     }
 
-    private class CBRenderer extends JTextField implements ListCellRenderer {
+    private static class CBRenderer extends JTextField implements ListCellRenderer {
 
         CBRenderer() {
             setOpaque(true);
