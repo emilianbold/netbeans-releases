@@ -46,5 +46,5 @@ made subject to such option by the copyright holder.
 
 <toolchaindefinition xmlns="http://www.netbeans.org/ns/cnd-toolchain-definition/1">
     <toolchain name="CLang" display="CLang Compiler Collection" family="GNU" qmakespec="${os}-llvm"/>
-    <platforms stringvalue="linux,unix,none"/>
+    <platforms stringvalue="linux,unix,none,windows"/>
 </toolchaindefinition>
