@@ -229,16 +229,19 @@ public final class ProjectImpl implements ProjectProperties {
    
     private void updateFolder(SourceFileProperties source){
         File file = new File(source.getItemPath());
-        String path = CndFileUtils.normalizeFile(file.getParentFile()).getAbsolutePath();
-        // folders should use unix style
-        if (Utilities.isWindows()) {
-            path = path.replace('\\', '/');
-        }
-        FolderProperties folder = folders.get(path);
-        if (folder == null) {
-            folders.put(path,new FolderImpl(path,source));
-        } else {
-            ((FolderImpl)folder).update(source);
+        File parent = file.getParentFile();
+        if (parent != null) {
+            String path = CndFileUtils.normalizeFile(parent).getAbsolutePath();
+            // folders should use unix style
+            if (Utilities.isWindows()) {
+                path = path.replace('\\', '/');
+            }
+            FolderProperties folder = folders.get(path);
+            if (folder == null) {
+                folders.put(path,new FolderImpl(path,source));
+            } else {
+                ((FolderImpl)folder).update(source);
+            }
         }
     }
     
