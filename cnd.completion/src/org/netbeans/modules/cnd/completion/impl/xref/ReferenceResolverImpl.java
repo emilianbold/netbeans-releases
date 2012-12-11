@@ -104,7 +104,7 @@ public class ReferenceResolverImpl extends CsmReferenceResolver {
             JEditorPane pane = CsmUtilities.findRecentEditorPaneInEQ(cookie);
             if (pane != null) {
                 //System.err.printf("caret: %d, %d, %d\n",panes[0].getCaretPosition(), panes[0].getSelectionStart(), panes[0].getSelectionEnd());
-                int offset = pane.getSelectionStart();
+                int offset = pane.getSelectionEnd();
                 StyledDocument doc = CsmUtilities.openDocument(cookie);
                 return findReferenceInDoc(doc, offset);
             }

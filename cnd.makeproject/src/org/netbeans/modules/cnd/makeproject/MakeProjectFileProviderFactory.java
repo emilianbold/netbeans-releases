@@ -55,6 +55,8 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import org.netbeans.api.actions.Editable;
@@ -102,6 +104,7 @@ public class MakeProjectFileProviderFactory implements FileProviderFactory {
     private static final ConcurrentMap<Lookup.Provider, Map<Folder,List<CharSequence>>> searchBase = new ConcurrentHashMap<Lookup.Provider, Map<Folder, List<CharSequence>>>();
     private static final ConcurrentMap<Lookup.Provider, ConcurrentMap<CharSequence,List<CharSequence>>> fileNameSearchBase = new ConcurrentHashMap<Lookup.Provider, ConcurrentMap<CharSequence, List<CharSequence>>>();
     private static final Collection<? extends UserOptionsProvider> packageSearch = Lookup.getDefault().lookupAll(UserOptionsProvider.class);
+    private static final Logger LOG = Logger.getLogger(MakeProjectFileProviderFactory.class.getName());
 
     /**
      * Store/update/remove list of non cnd files for project folder
@@ -213,38 +216,42 @@ public class MakeProjectFileProviderFactory implements FileProviderFactory {
         public boolean computeFiles(Context context, Result result) {
             cancel.set(false);
             Project project = context.getProject();
-            // if it's our registered project
-            if (MakeProjectFileProviderFactory.searchBase.containsKey(project)) {
-                SearchContext searchContext = new SearchContext(context.getText(), context.getSearchType(), project);
-                // check if anything have changed in context, just compare context instances
-                if (context != lastContext) {
-                    lastContext = context;
-                    searchedProjects.clear();
-                }
-                if (searchedProjects.add(searchContext)) {
-                    ConfigurationDescriptorProvider provider = project.getLookup().lookup(ConfigurationDescriptorProvider.class);
-                    if (provider != null && provider.gotDescriptor()) {
-                        MakeConfigurationDescriptor descriptor = provider.getConfigurationDescriptor();
-                        Sources srcs = ProjectUtils.getSources(project);
-                        final SourceGroup[] genericSG = srcs.getSourceGroups(Sources.TYPE_GENERIC);
-                        if (genericSG != null && genericSG.length > 0) {
-                            for(SourceGroup group : genericSG) {
-                                if (group.getRootFolder().equals(context.getRoot())) {
-                                    NameMatcher matcher = NameMatcherFactory.createNameMatcher(context.getText(), context.getSearchType());
-                                    computeFiles(project, descriptor, matcher, result);
-                                }
+            if (project == null) {
+                LOG.log(Level.FINE, "ComputeFiles: no project for {0}", context.getRoot());// NOI18N
+                return false;
+            }
+            ConfigurationDescriptorProvider provider = project.getLookup().lookup(ConfigurationDescriptorProvider.class);
+            if (provider == null) {
+                LOG.log(Level.FINE, "ComputeFiles: no make project for {0}", context.getRoot());// NOI18N
+                return false;
+            }
+            SearchContext searchContext = new SearchContext(context.getText(), context.getSearchType(), project);
+            // check if anything have changed in context, just compare context instances
+            if (context != lastContext) {
+                lastContext = context;
+                searchedProjects.clear();
+            }
+            if (searchedProjects.add(searchContext)) {
+                if (provider.gotDescriptor()) {
+                    MakeConfigurationDescriptor descriptor = provider.getConfigurationDescriptor();
+                    Sources srcs = ProjectUtils.getSources(project);
+                    final SourceGroup[] genericSG = srcs.getSourceGroups(Sources.TYPE_GENERIC);
+                    if (genericSG != null && genericSG.length > 0) {
+                        for(SourceGroup group : genericSG) {
+                            if (group.getRootFolder().equals(context.getRoot())) {
+                                NameMatcher matcher = NameMatcherFactory.createNameMatcher(context.getText(), context.getSearchType());
+                                computeFiles(project, descriptor, matcher, result);
                             }
                         }
                     }
                 } else {
-                    System.err.println("MakeProjectFileProviderFactory.FileProviderImpl.computeFiles: skip already searched context " + searchContext);// NOI18N
+                    LOG.log(Level.FINE, "ComputeFiles: skip search because project is not ready yet {0}", searchContext);// NOI18N
                 }
-                // notify infrastructure that project related source root is handled
-                return true;
             } else {
-                System.err.println("MakeProjectFileProviderFactory.FileProviderImpl.computeFiles: no make project for " + context.getRoot());// NOI18N
+                LOG.log(Level.FINE, "ComputeFiles: skip already searched context {0}", searchContext);// NOI18N
             }
-            return false;
+            // notify infrastructure that project related source root is handled
+            return true;
         }
 
         @Override

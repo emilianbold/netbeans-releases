@@ -65,6 +65,7 @@ import org.netbeans.modules.cnd.apt.support.APTDriver;
 import org.netbeans.modules.cnd.apt.support.APTFileCacheManager;
 import org.netbeans.modules.cnd.modelimpl.csm.core.AbstractFileBuffer;
 import org.openide.filesystems.FileObject;
+import org.openide.loaders.DataObject;
 
 /**
  * FileBuffer implementation
@@ -262,6 +263,17 @@ public class FileBufferDoc extends AbstractFileBuffer {
             //e.printStackTrace(System.err);
             throw convert(e);
         }
+    }
+
+    @Override
+    public FileObject getFileObject() {
+        Document aDoc = this.doc;
+        FileObject fo = null;
+        Object sdp = aDoc == null ? null : aDoc.getProperty(Document.StreamDescriptionProperty);
+        if (sdp instanceof DataObject) {
+            fo = ((DataObject)sdp).getPrimaryFile();
+        }
+        return fo != null ? fo : super.getFileObject();
     }
     
     @Override

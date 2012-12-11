@@ -161,6 +161,7 @@ public class CppTypingCompletion {
                     if (tokenAtDot != null && (CppTokenId.IDENTIFIER == tokenAtDot.id() || CppTokenId.PREPROCESSOR_IDENTIFIER == tokenAtDot.id())) {
                         CharSequence tokText = tokenAtDot.text();
                         if (CppStringTokenId.PREFIX_R.fixedText().contentEquals(tokText)
+                                || CppStringTokenId.PREFIX_LR.fixedText().contentEquals(tokText)
                                 || CppStringTokenId.PREFIX_UR.fixedText().contentEquals(tokText)
                                 || CppStringTokenId.PREFIX_u8R.fixedText().contentEquals(tokText)) {
                             // this is start of raw string, need to close it, otherwise it will continue
@@ -297,6 +298,7 @@ public class CppTypingCompletion {
                 case PREFIX_U:
                 case PREFIX_u:
                 case PREFIX_u8:
+                case PREFIX_LR:
                 case PREFIX_UR:
                 case PREFIX_uR:
                 case PREFIX_u8R:

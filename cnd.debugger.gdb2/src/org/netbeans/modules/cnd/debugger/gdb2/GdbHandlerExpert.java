@@ -198,6 +198,10 @@ public class GdbHandlerExpert implements HandlerExpert {
             LOG.warning(Catalog.get("MSG_OnlyStopGdb")); // NOI18N
 //	    return HandlerCommand.makeError(Catalog.get("MSG_OnlyStopGdb")); // NOI18N
         }
+        
+        if (breakpoint.getBreakpointType() instanceof SysCallBreakpointType && !debugger.getGdbVersionPeculiarity().isSyscallBreakpointsSupported()) {
+            return  HandlerCommand.makeError(null);
+        }
 
 	if (!IpeUtils.isEmpty(breakpoint.getWhileIn())) {
             LOG.warning(Catalog.get("MSG_NoWhileGdb")); // NOI18N

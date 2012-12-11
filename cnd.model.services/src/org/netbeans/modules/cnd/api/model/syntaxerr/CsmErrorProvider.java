@@ -65,6 +65,20 @@ import org.openide.util.RequestProcessor;
  */
 public abstract class CsmErrorProvider extends NamedOption {
     private static final boolean TRACE_TASKS = false;
+    private final Collection<? extends RequestValidator> requestAndProviderValidators;
+
+    public CsmErrorProvider() {
+        requestAndProviderValidators = Lookup.getDefault().lookupAll(CsmErrorProvider.RequestValidator.class);
+    }
+
+    private boolean checkValidators(Request request) {
+        for (CsmErrorProvider.RequestValidator p : requestAndProviderValidators) {
+            if (!p.isValid(this, request)) {
+                return false;
+            }
+        }
+        return true;
+    }
 
     //
     // Interface part
@@ -107,7 +121,7 @@ public abstract class CsmErrorProvider extends NamedOption {
     
 
     public final void getErrors(Request request, Response response) {
-        if (validate(request)) {
+        if (validate(request) && checkValidators(request)) {
             doGetErrors(request, response);
         }
         response.done();
