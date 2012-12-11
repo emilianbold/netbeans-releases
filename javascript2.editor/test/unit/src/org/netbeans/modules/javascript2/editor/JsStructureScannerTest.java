@@ -196,7 +196,4 @@ public class JsStructureScannerTest extends JsTestBase {
         checkStructure("testfiles/completion/issue217029.js");
     }
     
-    public void testIssue223602() throws Exception {
-        checkStructure("testfiles/completion/issue223602.js");
-    }
 }
