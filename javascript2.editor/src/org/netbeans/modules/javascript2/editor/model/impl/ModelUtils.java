@@ -58,6 +58,7 @@ import org.netbeans.modules.javascript2.editor.lexer.LexUtilities;
 import org.netbeans.modules.javascript2.editor.model.*;
 import org.netbeans.modules.javascript2.editor.parser.JsParserResult;
 import org.netbeans.modules.parsing.spi.indexing.support.IndexResult;
+import org.openide.filesystems.FileObject;
 
 /**
  *
@@ -620,7 +621,14 @@ public class ModelUtils {
                                 Collection<? extends TypeUsage> resolvedTypes = IndexedElement.getReturnTypes(indexResult);
                                 newResolvedTypes.addAll(resolvedTypes);
                             } else {
-                                newResolvedTypes.add(new TypeUsageImpl(typeUsage.getType() + "." + name));
+                                String propertyFQN = typeUsage.getType() + "." + name;
+                                List<TypeUsage> fromAssignment = new ArrayList<TypeUsage>();
+                                resolveAssignments(jsIndex, propertyFQN, fromAssignment);
+                                if (fromAssignment.isEmpty()) {
+                                    newResolvedTypes.add(new TypeUsageImpl(propertyFQN));
+                                } else {
+                                    newResolvedTypes.addAll(fromAssignment);
+                                }
                             }
                         }
                         // from libraries look for top level types
@@ -664,6 +672,48 @@ public class ModelUtils {
             return resultTypes.values();
     }
 
+    public static Collection<TypeUsage> resolveTypes(Collection<? extends TypeUsage> unresolved, JsParserResult parserResult) {
+        Collection<TypeUsage> types = new ArrayList<TypeUsage>(unresolved);
+        Model model = parserResult.getModel();
+        FileObject fo = parserResult.getSnapshot().getSource().getFileObject();
+        JsIndex jsIndex = JsIndex.get(fo);
+        int cycle = 0;
+        boolean resolvedAll = false;
+        while (!resolvedAll && cycle < 10) {
+            cycle++;
+            resolvedAll = true;
+            Collection<TypeUsage> resolved = new ArrayList<TypeUsage>();
+            for (Type typeUsage : types) {
+                if (!((TypeUsageImpl) typeUsage).isResolved()) {
+                    resolvedAll = false;
+                    String sexp = typeUsage.getType();
+                    if (sexp.startsWith("@exp;")) {
+                        int start = sexp.charAt(5) == '@' ? 6 : 5;
+                        sexp = sexp.substring(start);
+                        List<String> nExp = new ArrayList<String>();
+                        String[] split = sexp.split("@");
+                        for (int i = split.length - 1; i > -1; i--) {
+                            nExp.add(split[i].substring(split[i].indexOf(';') + 1));
+                            if (split[i].startsWith("call;")) {
+                                nExp.add("@mtd");
+                            } else {
+                                nExp.add("@pro");
+                            }
+                        }
+                        ModelUtils.addUnigueType(resolved, ModelUtils.resolveTypeFromExpression(model, jsIndex, nExp, cycle));
+                    } else {
+                        ModelUtils.addUnigueType(resolved, new TypeUsageImpl(typeUsage.getType(), typeUsage.getOffset(), true));
+                    }
+                } else {
+                    ModelUtils.addUnigueType(resolved, (TypeUsage) typeUsage);
+                }
+            }
+            types.clear();
+            types = new ArrayList<TypeUsage>(resolved);
+        }
+        return types;
+    }
+    
     private static void resolveAssignments(Model model, JsObject jsObject, int offset, List<JsObject> resolvedObjects, List<TypeUsage> resolvedTypes) {
         Collection<? extends Type> assignments = jsObject.getAssignmentForOffset(offset);
         for (Type typeName : assignments) {
@@ -681,25 +731,62 @@ public class ModelUtils {
     }
     
     private static void resolveAssignments(JsIndex jsIndex, String fqn, List<TypeUsage> resolved) {
-        Set<String> alreadyAdded = new HashSet<String>();
+        Set<String> alreadyProcessed = new HashSet<String>();
         for(TypeUsage type : resolved) {
-            alreadyAdded.add(type.getType());
+            alreadyProcessed.add(type.getType());
         }
-        if (!alreadyAdded.contains(fqn)) {
-            Collection<IndexedElement> globalVars = jsIndex.getGlobalVar(fqn);
-            resolved.add(new TypeUsageImpl(fqn, -1, true));
-            for (IndexedElement globalVar : globalVars) {
-                if(fqn.equals(globalVar.getName())) {
-                    Collection<TypeUsage> assignments = globalVar.getAssignments();
+        resolveAssignments(jsIndex, fqn, resolved, alreadyProcessed);
+    }
+    
+    private static void resolveAssignments(JsIndex jsIndex, String fqn, List<TypeUsage> resolved, Set<String> alreadyProcessed) {
+        if (!alreadyProcessed.contains(fqn)) {
+            alreadyProcessed.add(fqn);
+            if (!fqn.startsWith("@exp;")) {
+                Collection<? extends IndexResult> indexResults = jsIndex.findFQN(fqn);
+                boolean hasAssignments = false;
+                boolean isType = false;
+                for(IndexResult indexResult: indexResults) {
+                    Collection<IndexedElement> properties = IndexedElement.createProperties(indexResult, fqn);
+
+                    for (IndexedElement property : properties) {
+                        if (property.isDeclared() || "prototype".equals(property.getName())) {
+                            isType = true;
+                            break;
+                        }
+                    }
+                    if (isType) {
+                        ModelUtils.addUnigueType(resolved, new TypeUsageImpl(fqn, -1, true));
+                    }
+                    Collection<TypeUsage> assignments = IndexedElement.getAssignments(indexResult);
                     if (!assignments.isEmpty()) {
-                        for (TypeUsage type: assignments) {
-                            if(!alreadyAdded.contains(type.getType())) {
-                                resolveAssignments(jsIndex, type.getType(), resolved);
+                        hasAssignments = true;
+                        for (TypeUsage type : assignments) {
+                            if (!alreadyProcessed.contains(type.getType())) {
+                                resolveAssignments(jsIndex, type.getType(), resolved, alreadyProcessed);
                             }
                         }
                     }
                 }
+                if(!hasAssignments) {
+                    ModelUtils.addUnigueType(resolved, new TypeUsageImpl(fqn, -1, true));
+                }
+            } else {
+                ModelUtils.addUnigueType(resolved, new TypeUsageImpl(fqn, -1, false));
             }
+//            Collection<IndexedElement> globalVars = jsIndex.getGlobalVar(fqn);
+//            resolved.add(new TypeUsageImpl(fqn, -1, true));
+//            for (IndexedElement globalVar : globalVars) {
+//                if(fqn.equals(globalVar.getName())) {
+//                    Collection<TypeUsage> assignments = globalVar.getAssignments();
+//                    if (!assignments.isEmpty()) {
+//                        for (TypeUsage type: assignments) {
+//                            if(!alreadyAdded.contains(type.getType())) {
+//                                resolveAssignments(jsIndex, type.getType(), resolved);
+//                            }
+//                        }
+//                    }
+//                }
+//            }
         }
     }
     
@@ -739,6 +826,26 @@ public class ModelUtils {
             result.add(libGlobal);
         }
         return result;
+    }
+    
+    public static void addUnigueType(Collection <TypeUsage> where, TypeUsage type) {
+        boolean isThere = false;
+        String typeName = type.getType();
+        for(TypeUsage utype : where) {
+            if (utype.getType().equals(typeName)) {
+                isThere = true;
+                break;
+            }
+        }
+        if (!isThere) {
+            where.add(type);
+        }
+    }
+    
+    public static void addUnigueType(Collection <TypeUsage> where, Collection <TypeUsage> what) {
+        for(TypeUsage type: what) {
+            addUnigueType(where, type);
+        }
     }
     
     private static class SemiTypeResolverVisitor extends PathNodeVisitor {
@@ -895,6 +1002,7 @@ public class ModelUtils {
                     if (pathSize > 1) {
                         lastNode = getPath().get(pathSize - 2);
                         addFunctionName = !(lastNode instanceof AccessNode);
+                        sb.insert(0, "@exp;"); //NOI18N
                     }
                     if (addFunctionName) {
                         sb.append(iNode.getName());
