@@ -74,12 +74,14 @@ import org.openide.util.Exceptions;
 public abstract class AbstractFileBuffer implements FileBuffer {
     private final CharSequence absPath;
     private final FileSystem fileSystem;
+    private final FileObject fileObject;
     private Reference<Line2Offset> lines = new WeakReference<Line2Offset>(null);
     private final BufferType bufType;
 
     protected AbstractFileBuffer(FileObject fileObject) {
         this.absPath = FilePathCache.getManager().getString(CndFileUtils.normalizePath(fileObject));
         this.fileSystem = getFileSystem(fileObject);
+        this.fileObject = fileObject;
         this.bufType = MIMENames.isCppOrCOrFortran(fileObject.getMIMEType()) ? APTFileBuffer.BufferType.START_FILE : APTFileBuffer.BufferType.INCLUDED;
 // remote link file objects are just lightweight delegating wrappers, so they have multiple instances
 //        if (CndUtils.isDebugMode()) {
@@ -139,9 +141,12 @@ public abstract class AbstractFileBuffer implements FileBuffer {
 
     @Override
     public FileObject getFileObject() {
+        if (fileObject.isValid()) {
+            return fileObject;
+        }
         FileObject result = CndFileUtils.toFileObject(fileSystem, absPath);
         if (result == null) {
-            result = InvalidFileObjectSupport.getInvalidFileObject(fileSystem, absPath);
+            return fileObject;
         }
         return result;
     }
@@ -161,6 +166,11 @@ public abstract class AbstractFileBuffer implements FileBuffer {
         this.absPath = APTSerializeUtils.readFileNameIndex(input, FilePathCache.getManager(), unitId);
         this.fileSystem = PersistentUtils.readFileSystem(input);
         assert this.absPath != null;
+        FileObject result = CndFileUtils.toFileObject(fileSystem, absPath);
+        if (result == null) {
+            result = InvalidFileObjectSupport.getInvalidFileObject(fileSystem, absPath);
+        }
+        fileObject = result;
         bufType = BufferType.values()[input.readByte()];
     }
 

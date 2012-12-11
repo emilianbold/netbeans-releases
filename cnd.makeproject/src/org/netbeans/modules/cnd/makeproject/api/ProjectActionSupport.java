@@ -76,9 +76,9 @@ import org.netbeans.modules.cnd.api.remote.RemoteSyncSupport;
 import org.netbeans.modules.cnd.makeproject.MakeOptions;
 import org.netbeans.modules.cnd.makeproject.api.BuildActionsProvider.BuildAction;
 import org.netbeans.modules.cnd.makeproject.api.BuildActionsProvider.OutputStreamHandler;
-import org.netbeans.modules.cnd.makeproject.api.IOTabsController.IOTabFactory;
-import org.netbeans.modules.cnd.makeproject.api.IOTabsController.InputOutputTab;
-import org.netbeans.modules.cnd.makeproject.api.IOTabsController.TabsGroup;
+import org.netbeans.modules.nativeexecution.api.execution.IOTabsController.IOTabFactory;
+import org.netbeans.modules.nativeexecution.api.execution.IOTabsController.InputOutputTab;
+import org.netbeans.modules.nativeexecution.api.execution.IOTabsController.TabsGroup;
 import org.netbeans.modules.cnd.makeproject.api.ProjectActionEvent.PredefinedType;
 import org.netbeans.modules.cnd.makeproject.api.ProjectActionEvent.Type;
 import org.netbeans.modules.cnd.makeproject.api.configurations.DebuggerChooserConfiguration;
@@ -93,6 +93,7 @@ import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.dlight.api.terminal.TerminalSupport;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionListener;
+import org.netbeans.modules.nativeexecution.api.execution.IOTabsController;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager.CancellationException;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
@@ -539,8 +540,7 @@ public class ProjectActionSupport {
                         handlerToUse.addExecutionListener(eventExecutionListener);
                         progressHandle = createProgressHandle(ioTab, handlerToUse);
                         progressHandle.start();
-                        IOTabsController.getDefault().startHandlerInTab(handlerToUse, ioTab);
-
+                        handlerToUse.execute(IOTabsController.getInputOutput(ioTab));
                         try {
                             eventProcessed.await();
                         } catch (InterruptedException ex) {
