@@ -999,7 +999,13 @@ abstract public class CsmCompletionQuery {
 
                             CsmCompletionTokenProcessor tp = new CsmCompletionTokenProcessor(initialValue.getEndOffset(), initialValue.getStartOffset());
                             tp.enableTemplateSupport(true);
-                            CndTokenUtilities.processTokens(tp, getBaseDocument(), initialValue.getStartOffset(), initialValue.getEndOffset());
+                            BaseDocument bDoc = getBaseDocument();
+                            bDoc.readLock();
+                            try {
+                                CndTokenUtilities.processTokens(tp, bDoc, initialValue.getStartOffset(), initialValue.getEndOffset());
+                            } finally {
+                                bDoc.readUnlock();
+                            }
                             CsmCompletionExpression exp = tp.getResultExp();
 
                             resolveType = resolveType(exp);
