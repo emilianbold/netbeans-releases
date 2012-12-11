@@ -1,0 +1,8 @@
+Code completion result for source line:
+p223602_3.b|ig();
+(QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
+------------------------------------
+METHOD     big(): String                   [PUBLIC]   stub_CORE_String.js
+METHOD     bind(thisArg: Object): String   [PUBLIC]   stub_CORE_Function.js
+METHOD     blink(): String                 [PUBLIC]   stub_CORE_String.js
+METHOD     bold(): String                  [PUBLIC]   stub_CORE_String.js
