@@ -307,10 +307,17 @@ public class GroupsMenu extends AbstractAction implements Presenter.Menu, Presen
         dd.setOptions(new Object[] {create, cancel});
         Object result = DialogDisplayer.getDefault().notify(dd);
         if (result.equals(create)) {
-            final Group g = panel.create();
+            assert panel.isReady();
+            final NewGroupPanel.Type type = panel.getSelectedType();
+            final boolean autoSync = panel.isAutoSyncField();
+            final boolean useOpen = panel.isUseOpenedField();
+            final String name = panel.getNameField();
+            final String masterProject = panel.getMasterProjectField();
+            final String directory = panel.getDirectoryField();
             RP.post(new Runnable() {
                 @Override
                 public void run() {
+                    Group g = NewGroupPanel.create(type, name, autoSync, useOpen, masterProject, directory);
                     Group.setActiveGroup(g);
                 }
             });
