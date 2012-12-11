@@ -84,6 +84,9 @@ public class FileBufferFile extends AbstractFileBuffer {
             if( end > buf.length ) {
                 new IllegalArgumentException("").printStackTrace(System.err); // NOI18N
                 end = buf.length;
+                if (start > end) {
+                    start = end;
+                }
             }
             return new String(buf, start, end - start);
         } catch( IOException e ) {

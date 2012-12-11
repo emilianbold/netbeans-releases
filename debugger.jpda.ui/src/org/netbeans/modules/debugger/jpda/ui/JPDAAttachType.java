@@ -60,6 +60,7 @@ public class JPDAAttachType extends AttachType {
 
     private Reference<ConnectPanel> customizerRef = new WeakReference<ConnectPanel>(null);
 
+    @Override
     public JComponent getCustomizer () {
         ConnectPanel panel = new ConnectPanel ();
         customizerRef = new WeakReference<ConnectPanel>(panel);
