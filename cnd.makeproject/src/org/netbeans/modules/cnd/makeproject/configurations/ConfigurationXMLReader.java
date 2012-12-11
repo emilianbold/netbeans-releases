@@ -155,6 +155,9 @@ public class ConfigurationXMLReader extends XMLDocReader {
         try {
             inputStream = xml.getInputStream();
             success = read(inputStream, xml.getPath());
+            if (getMasterComment() != null && project instanceof MakeProject) {
+                ((MakeProject) project).setConfigurationXMLComment(getMasterComment());
+            }
         } finally {
             deregisterXMLDecoder(decoder);
             if (inputStream != null) {
@@ -223,7 +226,7 @@ public class ConfigurationXMLReader extends XMLDocReader {
         if (configurationDescriptor.getVersion() >= 0 && configurationDescriptor.getVersion() < CommonConfigurationXMLCodec.VERSION_WITH_INVERTED_SERIALIZATION) {
             schemeWithExcludedItems = true;
         }
-        attachListeners(configurationDescriptor, schemeWithExcludedItems);
+        prepareFoldersTask(configurationDescriptor, schemeWithExcludedItems);
         configurationDescriptor.setState(State.READY);
 
         // Some samples are generated without generated makefile. Don't mark these 'not modified'. Then
@@ -280,32 +283,37 @@ public class ConfigurationXMLReader extends XMLDocReader {
     }
 
     // Attach listeners to all disk folders
-    private void attachListeners(final MakeConfigurationDescriptor configurationDescriptor, final boolean oldSchemeWasRestored) {
-        Task task = REQUEST_PROCESSOR.post(new Runnable() {
-
+    private void prepareFoldersTask(final MakeConfigurationDescriptor configurationDescriptor, final boolean oldSchemeWasRestored) {
+        Task task = REQUEST_PROCESSOR.create(new Runnable() {
+            // retstore in only scheme only once, then switch to new scheme
+            private volatile boolean restoreInOldScheme = oldSchemeWasRestored;
             @Override
             public void run() {
+                String postfix = configurationDescriptor.getBaseDir();
+                String threadName = "Attach listeners and refresh content of all disk folders " + postfix; // NOI18N
+                LOGGER.log(Level.FINE, "Start {0}", threadName);
                 long time = System.currentTimeMillis();
-                LOGGER.log(Level.FINE, "Start attach folder listeners");
                 String oldName = Thread.currentThread().getName();
                 try {
                     //boolean currentState = configurationDescriptor.getModified();
-                    Thread.currentThread().setName("Attach listeners to all disk folders"); // NOI18N
+                    Thread.currentThread().setName(threadName); // NOI18N
                     List<Folder> firstLevelFolders = configurationDescriptor.getLogicalFolders().getFolders();
                     for (Folder f : firstLevelFolders) {
                         if (f.isDiskFolder()) {
-                            if (oldSchemeWasRestored) {
-                                LOGGER.log(Level.FINE, "Restore based on old scheme");
+                            if (restoreInOldScheme) {
+                                LOGGER.log(Level.FINE, "Restore based on old scheme {0}", f);
+                                restoreInOldScheme = false;
                                 f.refreshDiskFolderAfterRestoringOldScheme();
                             } else {
-                                LOGGER.log(Level.FINE, "Restore based on new scheme");
+                                LOGGER.log(Level.FINE, "Restore based on new scheme {0}", f);
                                 f.refreshDiskFolder();
                             }
                             f.attachListeners();
                         }
                     }
                     //configurationDescriptor.setModified(currentState);
-                    LOGGER.log(Level.FINE, "End attach folder listeners, time {0}ms.", (System.currentTimeMillis() - time));
+                    LOGGER.log(Level.FINE, "End attach listeners and refresh content of all disk folders, time {0}ms. {1}", 
+                            new Object[] {(System.currentTimeMillis() - time), postfix});
                 } finally {
                     // restore thread name - it might belong to the pool
                     Thread.currentThread().setName(oldName);
@@ -315,6 +323,7 @@ public class ConfigurationXMLReader extends XMLDocReader {
         // Refresh disk folders in background process
         // revert changes bacause opening project time is increased.
         //task.waitFinished(); // See IZ https://netbeans.org/bugzilla/show_bug.cgi?id=184260
+        configurationDescriptor.setFoldersTask(task);
     }
 
     // interface XMLDecoder

@@ -53,10 +53,6 @@ import org.netbeans.modules.html.editor.api.HtmlKit;
 import org.netbeans.modules.html.editor.indent.HtmlIndentTaskFactory;
 import org.netbeans.modules.javascript2.editor.JsTestBase;
 import org.netbeans.modules.javascript2.editor.lexer.JsTokenId;
-//import org.netbeans.modules.php.editor.lexer.PHPTokenId;
-//import org.netbeans.modules.php.smarty.editor.TplKit;
-//import org.netbeans.modules.php.smarty.editor.indent.TplIndentTaskFactory;
-//import org.netbeans.modules.php.smarty.editor.lexer.TplTokenId;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
@@ -75,9 +71,6 @@ public class JsFormatterEmbeddedTest extends JsTestBase {
         MockMimeLookup.setInstances(MimePath.parse("text/javascript"), JsTokenId.javascriptLanguage());
         HtmlIndentTaskFactory htmlReformatFactory = new HtmlIndentTaskFactory();
         MockMimeLookup.setInstances(MimePath.parse("text/html"), htmlReformatFactory, new HtmlKit("text/html"), HTMLTokenId.language());
-//        MockMimeLookup.setInstances(MimePath.parse("text/php"), PHPTokenId.language());
-//        TplIndentTaskFactory tplReformatFactory = new TplIndentTaskFactory();
-//        MockMimeLookup.setInstances(MimePath.parse("text/x-tpl"), tplReformatFactory, new TplKit("text/x-tpl"), TplTokenId.language());
     }
 
     @Override

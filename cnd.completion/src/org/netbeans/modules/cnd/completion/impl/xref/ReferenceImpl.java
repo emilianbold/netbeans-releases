@@ -50,6 +50,7 @@ import org.netbeans.cnd.api.lexer.TokenItem;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmObject;
+import org.netbeans.modules.cnd.api.model.services.CsmFileInfoQuery;
 import org.netbeans.modules.cnd.api.model.util.CsmBaseUtilities;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
@@ -106,7 +107,9 @@ public class ReferenceImpl extends DocOffsetableImpl implements CsmReference {
                     initOwner();
                     initKind(target);
                     initClosestTopLevelObject();
-                    CsmReferenceStorage.getDefault().put(this, target);
+                    if (!CsmFileInfoQuery.getDefault().isDocumentBasedFile(getContainingFile())) {
+                        CsmReferenceStorage.getDefault().put(this, target);
+                    }
                 }
 //            } else {
 //                Logger.getLogger("xRef").log(Level.INFO, "got candidate from storage\n{0} {1}\n", new Object[] {candidate, target});
@@ -135,7 +138,7 @@ public class ReferenceImpl extends DocOffsetableImpl implements CsmReference {
             if (candidate != null) {
                 target = candidate.getReferencedObject();
                 if (target == null) {
-                    Logger.getLogger("xRef").log(Level.INFO, "Reference {0}\n doesn''t have target in candidate {1}\n", new Object[]{this, candidate});
+                    Logger.getLogger("xRef").log(Level.FINE, "Reference {0}\n doesn''t have target in candidate {1}\n", new Object[]{this, candidate});
                 }
                 CsmReferenceKind aKind = candidate.getKind();
                 assert this.kind == null || this.kind == aKind : this.kind + " vs. " + aKind;

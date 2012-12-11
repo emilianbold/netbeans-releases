@@ -1979,16 +1979,6 @@ public final class ModuleManager extends Modules {
         Task task = installer.closeAsync(sortedModules);
         return new TaskFuture(true, task);
     }
-    static {
-        Runtime.getRuntime().addShutdownHook(new Thread("close modules") { // NOI18N
-            public @Override void run() {
-                if (System.getSecurityManager() instanceof TopSecurityManager) {
-                    TopSecurityManager.officialExit = true;
-                    LifecycleManager.getDefault().exit();
-                }
-            }
-        });
-    }
     private class ModuleDataCache implements Stamps.Updater {
         private static final String CACHE = "all-manifests.dat";
         private final Map<String,byte[]> path2Data;

@@ -473,7 +473,7 @@ public final class UnitTab extends javax.swing.JPanel {
         bTabAction.setAction (new UpdateAction ());
         bTabAction1.setVisible(false);
         bTabAction2.setVisible(false);
-        prepareTopButton (reloadAction = new ReloadAction ());
+        prepareTopButton (reloadAction = new ReloadAction ("UnitTab_ReloadActionUpdates"));
          initReloadTooltip();
         break;
         case AVAILABLE :
@@ -494,7 +494,7 @@ public final class UnitTab extends javax.swing.JPanel {
         bTabAction.setAction (new AvailableAction ());
         bTabAction1.setVisible(false);
         bTabAction2.setVisible(false);
-        prepareTopButton (reloadAction = new ReloadAction ());
+        prepareTopButton (reloadAction = new ReloadAction ("UnitTab_ReloadAction"));
         table.setEnableRenderer (new SourceCategoryRenderer ());
          initReloadTooltip();
         break;
@@ -594,7 +594,9 @@ public final class UnitTab extends javax.swing.JPanel {
                     return ;
                 }
                 //Ignore extra messages.
-                if (e.getValueIsAdjusting ()) return;
+                if (e.getValueIsAdjusting()) {
+                    return;
+                }
                 ListSelectionModel lsm =
                         (ListSelectionModel)e.getSource ();
                 if (lsm.isSelectionEmpty ()) {
@@ -685,7 +687,7 @@ public final class UnitTab extends javax.swing.JPanel {
         org.openide.awt.Mnemonics.setLocalizedText(topButton, "jButton1");
 
         detailViewInit();
-        org.openide.awt.Mnemonics.setLocalizedText(detailView, org.openide.util.NbBundle.getBundle(UnitTab.class).getString("UnitTab.detailView.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(detailView, org.openide.util.NbBundle.getMessage(UnitTab.class, "UnitTab.detailView.text")); // NOI18N
         detailView.addItemListener(new java.awt.event.ItemListener() {
             public void itemStateChanged(java.awt.event.ItemEvent evt) {
                 detailViewItemStateChanged(evt);
@@ -752,6 +754,7 @@ public final class UnitTab extends javax.swing.JPanel {
     private void detailViewItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_detailViewItemStateChanged
         if (this.model.supportsTwoViews()) {
             manager.setDetailView(detailView.isSelected());
+            uncheckAll();
             manager.updateUnitsChanged();
             System.setProperty(PluginManagerUI.DETAIL_VIEW_SELECTED_PROP, "" + detailView.isSelected());
         }
@@ -893,9 +896,9 @@ public final class UnitTab extends javax.swing.JPanel {
                 if (model.isExpansionControlAtRow(row)) {
                     moreAction.unitChanged(row, null);
                     lessAction.unitChanged(row, null);
-                    if (moreAction != null && moreAction.isEnabled()) {
+                    if (moreAction.isEnabled()) {
                         moreAction.performAction();
-                    } else if (lessAction != null && lessAction.isEnabled()) {
+                    } else if (lessAction.isEnabled()) {
                         lessAction.performAction();
                     }                    
                 }
@@ -1774,6 +1777,17 @@ public final class UnitTab extends javax.swing.JPanel {
             return getActionName () + " \"" + u.getCategoryName ()+"\""; //NOI18N
         }
     }
+    
+    private void uncheckAll() {
+        Collection<Unit> markedUnits = model.getMarkedUnits();
+        for (Unit u : markedUnits) {
+            if (u != null && u.isMarked() && u.canBeMarked()) {
+                u.setMarked(false);
+            }
+        }
+        model.fireTableDataChanged();
+    }
+    
     private class CheckAllAction extends RowTabAction {
         public CheckAllAction () {
             super ("UnitTab_CheckAllAction", KeyStroke.getKeyStroke (KeyEvent.VK_A, KeyEvent.CTRL_DOWN_MASK), "Check");
@@ -1809,12 +1823,7 @@ public final class UnitTab extends javax.swing.JPanel {
         @Override
         public void performerImpl (Unit uu) {
             final int row = getSelectedRow();
-            Collection<Unit> markedUnits = model.getMarkedUnits();
-            for (Unit u : markedUnits) {
-                if (u != null && u.isMarked ()  && u.canBeMarked ()) {
-                    u.setMarked (false);
-                }                
-            }
+            uncheckAll();
             model.fireTableDataChanged ();            
             restoreSelectedRow(row);
         }
@@ -1922,8 +1931,8 @@ public final class UnitTab extends javax.swing.JPanel {
     private class ReloadAction extends TabAction {
         Task reloadTask = null;
         @SuppressWarnings("OverridableMethodCallInConstructor")
-        public ReloadAction () {
-            super ("UnitTab_ReloadAction", KeyStroke.getKeyStroke (KeyEvent.VK_R, KeyEvent.CTRL_DOWN_MASK), null);
+        public ReloadAction (String nameKey) {            
+            super (nameKey, KeyStroke.getKeyStroke (KeyEvent.VK_R, KeyEvent.CTRL_DOWN_MASK), null);
             String tooltip = NbBundle.getMessage (UnitTab.class, "UnitTab_Tooltip_RefreshAction");//NOI18N
             putValue (TOOL_TIP_TEXT_KEY, tooltip);
             setEnabled (false);

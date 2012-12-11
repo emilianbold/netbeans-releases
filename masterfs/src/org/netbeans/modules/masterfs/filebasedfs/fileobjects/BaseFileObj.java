@@ -311,8 +311,12 @@ public abstract class BaseFileObj extends FileObject {
     }
 
     private File getToFile(FileObject target, String name, String ext) {
-        File to = (target instanceof FolderObj) ? new File(((BaseFileObj) target).getFileName().getFile(), FileInfo.composeName(name, ext)) : new File(FileUtil.toFile(target), FileInfo.composeName(name, ext));
-        return to;
+        if (target instanceof FolderObj) {
+            final File tf = ((BaseFileObj) target).getFileName().getFile();
+            return new File(tf, FileInfo.composeName(name, ext));
+        }
+        final File tf = FileUtil.toFile(target);
+        return tf == null ? null : new File(tf, FileInfo.composeName(name, ext));
     }
     
     static void dumpFileInfo(final File f, Throwable ex) {

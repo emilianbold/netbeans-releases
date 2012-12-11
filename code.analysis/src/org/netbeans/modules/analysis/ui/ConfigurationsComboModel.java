@@ -84,6 +84,7 @@ public class ConfigurationsComboModel extends AbstractListModel implements Combo
     private Object selected;
     private Configuration lastSelected;
     private boolean canModify;
+            Confirmable currentActiveItem;
 
     public ConfigurationsComboModel(boolean canModify) {
         selected = getSize() == 0 ? null :getElementAt(0);
@@ -140,7 +141,7 @@ public class ConfigurationsComboModel extends AbstractListModel implements Combo
         fireContentsChanged(this, -1, -1);
     }
 
-    private class New implements ActionListener, FocusListener, KeyListener, PopupMenuListener {
+    private class New implements ActionListener, FocusListener, KeyListener, PopupMenuListener, Confirmable {
 
         private final String actionName;
         private final String configName;
@@ -152,6 +153,8 @@ public class ConfigurationsComboModel extends AbstractListModel implements Combo
 
         @Override
         public void actionPerformed(ActionEvent ae) {
+            currentActiveItem = this;
+            
             JComboBox combo = (JComboBox) ae.getSource();
             combo.setEditable(true);
             combo.getEditor().getEditorComponent().addFocusListener(this);
@@ -174,7 +177,7 @@ public class ConfigurationsComboModel extends AbstractListModel implements Combo
             confirm(fe);
         }
 
-        private void confirm(EventObject fe) {
+        public void confirm(EventObject fe) {
             JTextField tf = (JTextField) fe.getSource();
             JComboBox combo = (JComboBox) tf.getParent();
             if (combo==null)
@@ -189,6 +192,7 @@ public class ConfigurationsComboModel extends AbstractListModel implements Combo
                     ConfigurationsManager.getDefault().create(tf.getText(), tf.getText());
             combo.setSelectedItem(config);
             combo.setEditable(false);
+            currentActiveItem = null;
         }
 
         @Override
@@ -222,10 +226,12 @@ public class ConfigurationsComboModel extends AbstractListModel implements Combo
         }
     }
 
-    private class Rename implements ActionListener, FocusListener, KeyListener, PopupMenuListener {
+    private class Rename implements ActionListener, FocusListener, KeyListener, PopupMenuListener, Confirmable {
 
         @Override
         public void actionPerformed(ActionEvent ae) {
+            currentActiveItem = this;
+            
             JComboBox combo = (JComboBox) ae.getSource();
             combo.setEditable(true);
             JTextField editorComponent = (JTextField) combo.getEditor().getEditorComponent();
@@ -249,7 +255,7 @@ public class ConfigurationsComboModel extends AbstractListModel implements Combo
             confirm(fe);
         }
 
-        private void confirm(EventObject fe) {
+        public void confirm(EventObject fe) {
             JTextField tf = (JTextField) fe.getSource();
             JComboBox combo = (JComboBox) tf.getParent();
             if (combo==null)
@@ -263,6 +269,7 @@ public class ConfigurationsComboModel extends AbstractListModel implements Combo
             config.setDisplayName(tf.getText());
             combo.setSelectedItem(config);
             combo.setEditable(false);
+            currentActiveItem = null;
         }
 
         @Override
@@ -320,5 +327,9 @@ public class ConfigurationsComboModel extends AbstractListModel implements Combo
         public String toString() {
             return Bundle.CTL_Delete();
         }
+    }
+    
+    interface Confirmable {
+        public void confirm(EventObject fe);
     }
 }

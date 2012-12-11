@@ -78,14 +78,16 @@ public class GroovyRefactoringFactory implements RefactoringPluginFactory {
         final RefactoringElement element = lookup.lookup(RefactoringElement.class);
         FileObject sourceFO = lookup.lookup(FileObject.class);
 
-        if (sourceFO == null){
-            if (pkg != null){
+        if (element == null) {
+            return null; // Might happened #221580
+        }
+
+        if (sourceFO == null) {
+            if (pkg != null) {
                 sourceFO = pkg.getFolder();
             } else {
                 if (element != null) {
                     sourceFO = element.getFileObject();
-                } else {
-                    return null; // Might happened #221580
                 }
             }
         }
@@ -94,7 +96,7 @@ public class GroovyRefactoringFactory implements RefactoringPluginFactory {
             return null;
         }
 
-        if (refactoring instanceof WhereUsedQuery){
+        if (refactoring instanceof WhereUsedQuery) {
             return new FindUsagesPlugin(sourceFO, element, refactoring);
         }
         if (refactoring instanceof RenameRefactoring) {

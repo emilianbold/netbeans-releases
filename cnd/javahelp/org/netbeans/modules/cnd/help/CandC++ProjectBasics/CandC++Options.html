@@ -72,13 +72,13 @@ Copyright &copy; 2009, 2012 Oracle and/or its affiliates. All rights reserved.
       </li>
       <li>
         To map shared project sources on the local host to a remote host, click Edit. In the
-        Development Host Manager dialog box, click Path Mapper. In the Edit Path's Map dialog box,
+        Build Host Manager dialog box, click Path Mapper. In the Edit Path's Map dialog box,
         select the remote host in the Host list. For each mapping, in the Local Path field, type
         the path used to access the shared project sources from the local host. In the Remote Path
         field, type the path used to access the shared project sources from the remote host.
       </li>
       <li>
-        To change IDE properties related to the remote development host, click Properties. In the
+        To change IDE properties related to the remote build host, click Properties. In the
         Host Properties dialog box, you can change the name displayed in the IDE for the host by
         typing in the Name field. To change the way project files are shared with the remote host,
         select the file synchronization method in the Synchronization list. If the project files
@@ -89,9 +89,9 @@ Copyright &copy; 2009, 2012 Oracle and/or its affiliates. All rights reserved.
     </ul>
     <p>
        <b>Tool Collection.</b> The tool collection list displays the collections found on the
-      currently selected development host. The default collection for that selected host is listed
+      currently selected build host. The default collection for that selected host is listed
       in bold type. You can modify the tool collection list by adding or removing collections. Be
-      sure to select the Development Host before you modify any information about the tool
+      sure to select the Build Host before you modify any information about the tool
       collection.
     </p>
     <ul>
@@ -116,7 +116,7 @@ Copyright &copy; 2009, 2012 Oracle and/or its affiliates. All rights reserved.
       </li>
     </ul>
     <p>
-       <b>Base Directory.</b> The base directory for compilers for the current development host.
+       <b>Base Directory.</b> The base directory for compilers for the current build host.
       The path can be edited for the local host or remote hosts, but browsing to select a different
       path only works on the local host.
     </p>
@@ -210,7 +210,7 @@ Copyright &copy; 2009, 2012 Oracle and/or its affiliates. All rights reserved.
       <li>
         <b>Show warning dialog about missing makefiles due to mismatched platforms.</b> If
         selected, the IDE will warn you if you attempt to run a project that was created on a
-        platform that is not the same as your current development host's platform.
+        platform that is not the same as your current build host's platform.
       </li>
       <li><b>Support indexing of non C/C++/Fortran files in projects (slows down parsing)</b>
           If selected, the IDE indexes project files that are not C, C++, or Fortran source files.
@@ -231,7 +231,7 @@ Copyright &copy; 2009, 2012 Oracle and/or its affiliates. All rights reserved.
     <p>
        Select the appropriate tool collection and compiler tab. Modify the settings for include
       files and macro definitions that are used by the built-in parser. For tool collections on
-      remote development hosts, the include files are located in your .netbeans directory
+      remote build hosts, the include files are located in your .netbeans directory
     </p>
     <h3>
        <a name="highlightingtab"></a> Highlighting Tab

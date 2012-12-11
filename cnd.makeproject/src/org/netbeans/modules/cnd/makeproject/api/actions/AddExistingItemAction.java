@@ -74,6 +74,8 @@ import org.openide.util.RequestProcessor;
 import org.openide.util.actions.NodeAction;
 
 public class AddExistingItemAction extends NodeAction {
+    
+    private static final RequestProcessor RP = new RequestProcessor("AddExistingItemAction", 1); // NOI18N
 
     @Override
     protected boolean enable(Node[] activatedNodes)  {
@@ -167,7 +169,7 @@ public class AddExistingItemAction extends NodeAction {
     }
 
     private void addFilesWorker(final Project project, final ConfigurationDescriptor projectDescriptor, final Folder folder, final File[] files) {
-        RequestProcessor.getDefault().post(new Runnable() {
+        RP.post(new Runnable() {
 
             @Override
             public void run() {

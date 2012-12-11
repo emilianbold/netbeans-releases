@@ -8,12 +8,12 @@ x = /eeeee/i
 
 adad = /sdsdsd/
 
-/dfdfdf/
+        /dfdfdf/
 
 // nice and simple function
-function println(text) {
-    document.writeln(text + "<br/>");
-}
+        function println(text) {
+            document.writeln(text + "<br/>");
+        }
 
 /*
  * another nice and simple function

@@ -107,6 +107,7 @@ public final class Report {
         Project prj = project.get();
         if (prj == null) {
             prj = FileOwnerQuery.getOwner(projectURI);
+	    assert prj != null : "Project was null for projectURI: " + projectURI; //NOI18N
             project = new WeakReference<Project>(prj);
         }
         return prj;

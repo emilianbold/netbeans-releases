@@ -130,6 +130,8 @@ final class TestNGOutputReader {
     private boolean failedInAfterMethod;
     private boolean failedInBeforeMethod;
     private boolean canAddToStackTrace;
+    private long currentTime;
+    private String currentSuitename;
 
     /**
      * Creates a new instance of TestNGOutputReader
@@ -520,6 +522,12 @@ final class TestNGOutputReader {
             return;
         }
         if (in.contains(" CONFIGURATION: ")) {
+	    if(txt.size() > 0 && failedInAfterClass) {
+                testStarted(suiteName, testCase, parameters, values);
+                addStackTrace(txt);
+                txt.clear();
+                testFinished("FAILED", suiteName, testCase, parameters, values, duration);
+            }
             if (txt.size() > 0) {
                 addStackTrace(txt);
                 txt.clear();
@@ -899,9 +907,6 @@ final class TestNGOutputReader {
             tc = new TestNGTestcase(testCase, parameters, values, testSession);
             testSession.addTestCase(tc);
             manager.testStarted(testSession);
-            Report r = reports.get(suiteName);
-            r.update(testSession.getReport(0));
-            manager.displayReport(testSession, r, false);
         } else {
             tc.addValues(values);
             //TODO: increment test case time
@@ -934,9 +939,16 @@ final class TestNGOutputReader {
         }
         tc.setTimeMillis(dur);
         elapsedTime += dur;
-        Report r = reports.get(suiteName);
-        r.update(testSession.getReport(dur));
-        manager.displayReport(testSession, r, false);
+	if("FAILED".equals(st)) {
+	    currentTime = dur;
+	    currentSuitename = suiteName;
+	} else {
+	    currentTime = -1;
+	    currentSuitename = null;
+	    Report r = reports.get(suiteName);
+	    r.update(testSession.getReport(dur));
+	    manager.displayReport(testSession, r, false);
+	}
     }
 
     private String getMessage(String msg) {
@@ -972,5 +984,11 @@ final class TestNGOutputReader {
         }
         t.setStackTrace(txt.toArray(new String[txt.size()]));
         testSession.getCurrentTestCase().setTrouble(t);
+
+	if (currentTime != -1 && currentSuitename != null) {
+	    Report r = reports.get(currentSuitename);
+	    r.update(testSession.getReport(currentTime));
+	    manager.displayReport(testSession, r, false);
+	}
     }
 }

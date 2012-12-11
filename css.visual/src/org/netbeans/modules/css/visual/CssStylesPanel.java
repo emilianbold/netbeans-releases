@@ -51,6 +51,7 @@ import java.util.HashMap;
 import java.util.Map;
 import javax.swing.ButtonGroup;
 import javax.swing.JComponent;
+import javax.swing.JSplitPane;
 import javax.swing.JToggleButton;
 import javax.swing.JToolBar;
 import javax.swing.UIManager;
@@ -163,6 +164,18 @@ public class CssStylesPanel extends javax.swing.JPanel {
         Boolean isXP = (Boolean)Toolkit.getDefaultToolkit().
                         getDesktopProperty("win.xpstyle.themeActive"); //NOI18N
         return isXP == null ? false : isXP.booleanValue();
+    }
+
+    private JSplitPane createSplitPane() {
+        return new JSplitPane() {
+
+            @Override
+            public String getUIClassID() {
+                if( AQUA && UIManager.get("Nb.SplitPaneUI.clean") != null ) //NOI18N
+                    return "Nb.SplitPaneUI.clean"; //NOI18N
+                return super.getUIClassID();
+            }
+        };
     }
         
     
@@ -311,11 +324,12 @@ public class CssStylesPanel extends javax.swing.JPanel {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        splitPane = new javax.swing.JSplitPane();
+        splitPane = createSplitPane();
         topPanel = new javax.swing.JPanel();
 
         setLayout(new java.awt.BorderLayout());
 
+        splitPane.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         splitPane.setDividerSize(4);
         splitPane.setOrientation(javax.swing.JSplitPane.VERTICAL_SPLIT);
 
@@ -388,7 +402,5 @@ public class CssStylesPanel extends javax.swing.JPanel {
         public boolean providesContentFor(FileObject file) {
             return delegate.providesContentFor(file);
         }
-        
     }
-
 }

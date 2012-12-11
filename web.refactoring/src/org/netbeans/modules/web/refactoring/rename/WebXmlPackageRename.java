@@ -69,6 +69,10 @@ public class WebXmlPackageRename extends BaseWebXmlRename{
                 continue;
             }
             String oldName = JavaIdentifiers.getQualifiedName(each);
+            // #222734 -- skip files outside source packages
+            if (oldName == null) {
+                continue;
+            }
             
             // #153294 - additional check before refactoring starts
             if ( JavaIdentifiers.isValidPackageName( oldName )){

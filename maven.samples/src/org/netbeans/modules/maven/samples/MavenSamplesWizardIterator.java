@@ -75,11 +75,21 @@ public class MavenSamplesWizardIterator implements WizardDescriptor.ProgressInst
     private int index;
     private WizardDescriptor.Panel[] panels;
     protected WizardDescriptor wiz;
+    private final String title;
     
-    public MavenSamplesWizardIterator() {}
+    public MavenSamplesWizardIterator(String title) {
+        this.title = title;
+    }
     
-    public static MavenSamplesWizardIterator createIterator() {
-        return new MavenSamplesWizardIterator();
+    public static MavenSamplesWizardIterator createCalculatorIterator() {
+        return new MavenSamplesWizardIterator(NbBundle.getMessage(MavenSamplesWizardIterator.class, "Templates/Project/Samples/Maven/MavenCalculator"));
+    }
+    
+    public static MavenSamplesWizardIterator createCalculatorClientIterator() {
+        return new MavenSamplesWizardIterator(NbBundle.getMessage(MavenSamplesWizardIterator.class, "Templates/Project/Samples/Maven/MavenCalculatorClient"));
+    }
+    public static MavenSamplesWizardIterator createScrumToysIterator() {
+        return new MavenSamplesWizardIterator(NbBundle.getMessage(MavenSamplesWizardIterator.class, "Templates/Project/Samples/Maven/MavenScrumToys"));
     }
     
     protected WizardDescriptor.Panel[] createPanels() {
@@ -147,6 +157,7 @@ public class MavenSamplesWizardIterator implements WizardDescriptor.ProgressInst
     @Override
     public void initialize(WizardDescriptor wiz) {
         this.wiz = wiz;
+        wiz.putProperty ("NewProjectWizard_Title", title); // NOI18N        
         index = 0;
         panels = createPanels();
         // Make sure list of steps is accurate.

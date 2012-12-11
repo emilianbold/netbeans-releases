@@ -37,7 +37,7 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2012 Sun Microsystems, Inc.
+ *** Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 package moveSource;
 

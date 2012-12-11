@@ -381,8 +381,8 @@ public final class CodeTemplateParameterImpl {
                 value = handler.getComponent().getSelectedText();
                 if (value == null)
                     value = ""; //NOI18N
-                else
-                    value = value.trim();
+                if (value.endsWith("\n"))
+                    value = value.substring(0, value.length() - 1);
                 if (getHints().get(CodeTemplateParameter.LINE_HINT_NAME) != null && !value.endsWith("\n")) //NOI18N
                     value += "\n"; //NOI18N
             }

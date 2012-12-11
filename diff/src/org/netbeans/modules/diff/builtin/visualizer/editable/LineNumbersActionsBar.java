@@ -398,6 +398,9 @@ class LineNumbersActionsBar extends JPanel implements Scrollable, MouseMotionLis
                         --lineNumber;
                     }
                     View view = rootView.getView(lineNumber);
+                    if(view == null) { // this might happen
+                        return;
+                    }
                     Rectangle rec = master.getEditorPane().modelToView(view.getStartOffset());
                     if (rec == null) {
                         return;
@@ -410,6 +413,9 @@ class LineNumbersActionsBar extends JPanel implements Scrollable, MouseMotionLis
                     }
                     for (int i = 0; i < linesDrawn; i++) {
                         view = rootView.getView(lineNumber);
+                        if (view == null) {
+                            break;
+                        }
                         Rectangle rec1 = master.getEditorPane().modelToView(view.getStartOffset());
                         Rectangle rec2 = master.getEditorPane().modelToView(view.getEndOffset() - 1);
                         if (rec1 == null || rec2 == null) {

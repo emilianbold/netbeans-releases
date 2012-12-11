@@ -41,19 +41,20 @@
  */
 package org.netbeans.modules.nativeexecution;
 
+import java.util.concurrent.ConcurrentHashMap;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.netbeans.modules.nativeexecution.spi.ExecutionEnvironmentFactoryService;
-import org.openide.util.Exceptions;
 import org.openide.util.lookup.ServiceProvider;
 
 @ServiceProvider(service = org.netbeans.modules.nativeexecution.spi.ExecutionEnvironmentFactoryService.class, position = 100)
-public class ExecutionEnvironmentFactoryServiceImpl implements ExecutionEnvironmentFactoryService {
-    
+public final class ExecutionEnvironmentFactoryServiceImpl implements ExecutionEnvironmentFactoryService {
+
     /*package*/ static final String DEFAULT_USER = System.getProperty("user.name"); //NOI18N
     private static final int DEFAULT_PORT = Integer.getInteger("cnd.remote.port", 22); //NOI18N
 
     private static final ExecutionEnvironment LOCAL = new ExecutionEnvironmentImpl(DEFAULT_USER, HostInfoUtils.LOCALHOST, 0);
+    private static final ConcurrentHashMap<String, ExecutionEnvironment> cache = new ConcurrentHashMap<String, ExecutionEnvironment>();
 
     /**
      * Returns an instance of <tt>ExecutionEnvironment</tt> for local execution.
@@ -109,22 +110,12 @@ public class ExecutionEnvironmentFactoryServiceImpl implements ExecutionEnvironm
      * either user@host or "localhost"
      */
     @Override
-    public String toUniqueID(ExecutionEnvironment executionEnvironment) {
+    public String toUniqueID(final ExecutionEnvironment executionEnvironment) {
         if (!(executionEnvironment instanceof ExecutionEnvironmentImpl)) {
             return null;
         }
 
-        if (executionEnvironment.isLocal()) {
-            // "localhost" is for compatibility with remote development 6.5
-            return "localhost"; //NOI18N
-        } else {
-            String hostAndPort = executionEnvironment.getHost() + ':' + executionEnvironment.getSSHPort();
-            if (executionEnvironment.getUser() == null || executionEnvironment.getUser().length() == 0) {
-                return hostAndPort;
-            } else {
-                return executionEnvironment.getUser() + '@' + hostAndPort;
-            }
-        }
+        return toExternalForm((ExecutionEnvironmentImpl) executionEnvironment);
     }
 
     /**
@@ -134,35 +125,67 @@ public class ExecutionEnvironmentFactoryServiceImpl implements ExecutionEnvironm
      */
     @Override
     public ExecutionEnvironment fromUniqueID(String hostKey) {
+        ExecutionEnvironment env = cache.get(hostKey);
+        if (env == null) {
+            env = fromExternalForm(hostKey);
+            ExecutionEnvironment old = cache.putIfAbsent(hostKey, env);
+            if (old != null) {
+                env = old;
+            }
+        }
+        return env;
+    }
+
+    static String toExternalForm(final ExecutionEnvironmentImpl env) {
+        final int sshPort = env.getSSHPort();
+        if (sshPort == 0) {
+            return HostInfoUtils.LOCALHOST;
+        }
+
+        final String host = env.getHost();
+        final String user = env.getUser();
+
+        StringBuilder sb = new StringBuilder();
+        if (user != null) {
+            sb.append(user).append('@');
+        }
+        sb.append(host).append(':').append(sshPort);
+        return sb.toString();
+    }
+
+    ExecutionEnvironment fromExternalForm(String externalForm) {
         // TODO: remove this check and refactor clients to use getLocal() instead
-        if ("localhost".equals(hostKey) || "127.0.0.1".equals(hostKey)) { //NOI18N
+        if (HostInfoUtils.LOCALHOST.equals(externalForm) || "127.0.0.1".equals(externalForm) || "::1".contains(externalForm)) { //NOI18N
             return LOCAL;
         }
 
         String user;
         String host;
-        int pos = hostKey.indexOf('@', 0); //NOI18N
+        String port;
 
-        if (pos < 0) {
-            user = "";
-            host = hostKey;
-        } else {
-            user = hostKey.substring(0, pos);
-            host = hostKey.substring(pos + 1);
+        int atPos = externalForm.indexOf('@');
+        user = (atPos > 0) ? externalForm.substring(0, atPos) : null;
+        if (user != null) {
+            externalForm = externalForm.substring(user.length() + 1);
         }
-        int colonPos = host.indexOf(':');
-        if (colonPos > 0) {
-            String strPort = host.substring(colonPos + 1);
-            host = host.substring(0, colonPos);
+
+        int pos = externalForm.lastIndexOf(':');
+        if (pos < 0) {
+            port = null;
+            host = externalForm;
+        } else {
+            port = externalForm.substring(pos + 1);
+            host = externalForm.substring(0, pos);
+        }
+
+        int sshPort = 0;
+        if (port != null) {
             try {
-                int port = Integer.parseInt(strPort);
-                return createNew(user, host, port);
-            } catch (NumberFormatException e) {
-                Exceptions.printStackTrace(e);
-                return createNew(user, host);
+                sshPort = Integer.parseInt(port);
+            } catch (NumberFormatException ex) {
             }
         }
-        return createNew(user, host);
+        return createNew(user, host, sshPort);
     }
 
     @Override

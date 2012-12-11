@@ -765,48 +765,54 @@ public final class GitClient {
         }
         
         private <T> T runMethodIntern (final Callable<T> toRun, final String methodName, final File[] roots) throws Throwable {
-            try {
-                Utils.logVCSClientEvent("GIT", "JAVALIB"); //NOI18N
-                Callable<T> callable = new Callable<T>() {
-                    @Override
-                    public T call() throws Exception {
-                        boolean refreshIndexTimestamp = modifiesWorkingTree(methodName);
-                        boolean repositoryInfoRefreshNeeded = NEED_REPOSITORY_REFRESH_COMMANDS.contains(methodName);
-                        long t = 0;
-                        if (LOG.isLoggable(Level.FINE)) {
-                            t = System.currentTimeMillis();
-                            LOG.log(Level.FINE, "Starting a git command: [{0}] on repository [{1}]", new Object[] { methodName, repositoryRoot.getAbsolutePath() }); //NOI18N
-                        }
-                        try {
-                            if (withoutAuthenticator(methodName)) {
-                                return NetworkSettings.suppressAuthenticationDialog(toRun);
-                            } else {
-                                return toRun.call();
-                            }
-                        } catch (Exception ex) {
-                            if ((progressSupport == null || !progressSupport.isCanceled()) && new GitClientExceptionHandler(GitClient.this, handleAuthenticationIssues).handleException(ex)) {
-                                return this.call();
-                            } else {
-                                throw (Exception) ex;
-                            }
-                        } finally {
+            Utils.logVCSClientEvent("GIT", "JAVALIB"); //NOI18N
+            boolean refreshIndexTimestamp = modifiesWorkingTree(methodName);
+            Callable<T> callable = new Callable<T>() {
+                @Override
+                public T call() throws Exception {
+                    Callable<T> callable = new Callable<T>() {
+                        @Override
+                        public T call() throws Exception {
+                            boolean repositoryInfoRefreshNeeded = NEED_REPOSITORY_REFRESH_COMMANDS.contains(methodName);
+                            long t = 0;
                             if (LOG.isLoggable(Level.FINE)) {
-                                LOG.log(Level.FINE, "Git command finished: [{0}] on repository [{1}], lasted {2} ms", new Object[] { methodName, repositoryRoot.getAbsolutePath(), System.currentTimeMillis() - t}); //NOI18N
+                                t = System.currentTimeMillis();
+                                LOG.log(Level.FINE, "Starting a git command: [{0}] on repository [{1}]", new Object[] { methodName, repositoryRoot.getAbsolutePath() }); //NOI18N
                             }
-                            if (refreshIndexTimestamp) {
-                                LOG.log(Level.FINER, "Refreshing index timestamp after: {0} on {1}", new Object[] { methodName, repositoryRoot.getAbsolutePath() }); //NOI18N
-                                Git.getInstance().refreshWorkingCopyTimestamp(repositoryRoot);
-                            }
-                            if (repositoryInfoRefreshNeeded) {
-                                LOG.log(Level.FINER, "Refreshing repository info after: {0} on {1}", new Object[] { methodName, repositoryRoot.getAbsolutePath() }); //NOI18N
-                                RepositoryInfo.refreshAsync(repositoryRoot);
+                            try {
+                                if (withoutAuthenticator(methodName)) {
+                                    return NetworkSettings.suppressAuthenticationDialog(toRun);
+                                } else {
+                                    return toRun.call();
+                                }
+                            } catch (Exception ex) {
+                                if ((progressSupport == null || !progressSupport.isCanceled()) && new GitClientExceptionHandler(GitClient.this, handleAuthenticationIssues).handleException(ex)) {
+                                    return this.call();
+                                } else {
+                                    throw ex;
+                                }
+                            } finally {
+                                if (LOG.isLoggable(Level.FINE)) {
+                                    LOG.log(Level.FINE, "Git command finished: [{0}] on repository [{1}], lasted {2} ms", new Object[] { methodName, repositoryRoot.getAbsolutePath(), System.currentTimeMillis() - t}); //NOI18N
+                                }
+                                if (repositoryInfoRefreshNeeded) {
+                                    LOG.log(Level.FINER, "Refreshing repository info after: {0} on {1}", new Object[] { methodName, repositoryRoot.getAbsolutePath() }); //NOI18N
+                                    RepositoryInfo.refreshAsync(repositoryRoot);
+                                }
                             }
                         }
+                    };
+                    if (runsWithBlockedIndexing(methodName)) {
+                        LOG.log(Level.FINER, "Running command in indexing bridge: {0} on {1}", new Object[] { methodName, repositoryRoot.getAbsolutePath() }); //NOI18N
+                        return IndexingBridge.getInstance().runWithoutIndexing(callable, roots.length > 0 ? roots : new File[] { repositoryRoot });
+                    } else {
+                        return callable.call();
                     }
-                };
-                if (runsWithBlockedIndexing(methodName)) {
-                    LOG.log(Level.FINER, "Running command in indexing bridge: {0} on {1}", new Object[] { methodName, repositoryRoot.getAbsolutePath() }); //NOI18N
-                    return IndexingBridge.getInstance().runWithoutIndexing(callable, roots.length > 0 ? roots : new File[] { repositoryRoot });
+                }
+            };
+            try {
+                if (refreshIndexTimestamp) {
+                    return Git.getInstance().runWithoutExternalEvents(repositoryRoot, methodName, callable);
                 } else {
                     return callable.call();
                 }

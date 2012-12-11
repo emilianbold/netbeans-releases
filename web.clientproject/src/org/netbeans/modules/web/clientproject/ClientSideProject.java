@@ -150,12 +150,15 @@ public class ClientSideProject implements Project {
                         lastActiveConfiguration.deactivate();
                     }
                     lastActiveConfiguration = getProjectConfigurations().getActiveConfiguration();
+                    ClientSideProjectUtilities.logUsage(ClientSideProject.class, 
+                            "USG_PROJECT_HTML5_CONFIGURATION_CHANGE", // NOI18N
+                            new Object[] { lastActiveConfiguration.getBrowserId()});
                 }
             }
         });
     }
 
-    public ClientSideConfigurationProvider getProjectConfigurations() {
+    public final ClientSideConfigurationProvider getProjectConfigurations() {
         return configurationProvider;
     }
 
@@ -423,6 +426,9 @@ public class ClientSideProject implements Project {
             project.getEvaluator().addPropertyChangeListener(this);
             addSiteRootListener();
             GlobalPathRegistry.getDefault().register(ClassPathProviderImpl.SOURCE_CP, new ClassPath[]{project.getSourceClassPath()});
+            ClientSideProjectUtilities.logUsage(ClientSideProject.class, "USG_PROJECT_HTML5_OPEN", // NOI18N
+                    new Object[] { project.getProjectConfigurations().getActiveConfiguration().getBrowserId(),
+                    project.getTestsFolder() != null && project.getTestsFolder().getChildren().length > 0 ? "YES" : "NO"}); // NOI18N
         }
 
         @Override
@@ -636,18 +642,7 @@ public class ClientSideProject implements Project {
 
             @Override
             public String getWebContextRoot() {
-                ClientSideProjectProperties projectProperties = getProjectProperties();
-                ClientSideProjectProperties.ProjectServer projectServer = projectProperties.getProjectServer();
-                switch (projectServer) {
-                    case EXTERNAL:
-                        return projectProperties.getProjectUrl();
-                        //break;
-                    case INTERNAL:
-                        return projectProperties.getWebRoot();
-                        //break;
-                    default:
-                        throw new IllegalStateException("Unknown project server: " + projectServer);
-                }
+                return getProjectProperties().getWebRoot();
             }
 
             private ClientSideProjectProperties getProjectProperties() {

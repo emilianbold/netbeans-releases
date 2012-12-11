@@ -189,4 +189,10 @@ public class DefaultCssModuleTest extends CssModuleTestBase {
             
         }
     }
+    
+    public void testCalc() {
+        assertPropertyValues("width", "calc(100%/3 - 2*1em - 2*1px)");
+    }
+    
+    
 }

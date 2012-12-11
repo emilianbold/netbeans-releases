@@ -83,7 +83,6 @@ import org.netbeans.lib.terminalemulator.ActiveRegion;
 import org.netbeans.lib.terminalemulator.ActiveTerm;
 import org.netbeans.lib.terminalemulator.ActiveTermListener;
 import org.netbeans.lib.terminalemulator.Term;
-// OLD import org.netbeans.lib.terminalemulator.support.TermExecutor;
 import org.netbeans.lib.terminalemulator.support.DefaultFindState;
 import org.netbeans.lib.terminalemulator.support.FindBar;
 import org.netbeans.lib.terminalemulator.support.FindState;

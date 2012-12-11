@@ -44,6 +44,7 @@ package org.netbeans.modules.javascript2.editor.model.impl;
 import java.util.*;
 import org.netbeans.modules.csl.api.Modifier;
 import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.javascript2.editor.doc.spi.JsDocumentationHolder;
 import org.netbeans.modules.javascript2.editor.model.*;
 
 /**
@@ -191,7 +192,16 @@ public class JsObjectImpl extends JsElementImpl implements JsObject {
     }
     
     public void addOccurrence(OffsetRange offsetRange) {
-        occurrences.add(new OccurrenceImpl(offsetRange, this));
+        boolean isThere = false;
+        for (Occurrence occurrence : occurrences) {
+            if (occurrence.getOffsetRange().equals(offsetRange)) {
+                isThere = true;
+                break;
+            }
+        }
+        if (!isThere) {
+            occurrences.add(new OccurrenceImpl(offsetRange, this));
+        }
     }
     
     public void addAssignment(Collection<TypeUsage> typeNames, int offset){
@@ -305,7 +315,8 @@ public class JsObjectImpl extends JsElementImpl implements JsObject {
                     if(assign.isResolved()) {
                         result.add(assign);
                     } else {
-                        JsObject object = ModelUtils.findJsObjectByName(ModelUtils.getGlobalObject(jsObject), assign.getType());
+                        DeclarationScope scope = ModelUtils.getDeclarationScope(jsObject);
+                        JsObject object = ModelUtils.getJsObjectByName(scope, assign.getType());
                         if(object != null) {
                             Collection<TypeUsage> resolvedFromObject = resolveAssignments(object, closeOffset, visited);
                             if(resolvedFromObject.isEmpty()) {
@@ -321,7 +332,7 @@ public class JsObjectImpl extends JsElementImpl implements JsObject {
         return result;
     }
     
-    public void resolveTypes() {
+    public void resolveTypes(JsDocumentationHolder jsDocHolder) {
         if (parent == null) {
             return;
         }
@@ -329,32 +340,38 @@ public class JsObjectImpl extends JsElementImpl implements JsObject {
         for(Integer index: assignments.keySet()) {
             resolved.clear();
             Collection<TypeUsage> unresolved = assignments.get(index);
-            for (TypeUsage type : unresolved) {
-                if(!((TypeUsageImpl)type).isResolved()){
-                    resolved.addAll(ModelUtils.resolveTypeFromSemiType(this, type));
-                } else {
-                    resolved.add(type);
-                }
-            }
             JsObject global = ModelUtils.getGlobalObject(parent);
-            for (TypeUsage type : resolved) {
-                if (type.getOffset() > 0) {
-                    JsObject jsObject = ModelUtils.findJsObjectByName(global, type.getType());
-                    if (jsObject == null && type.getType().indexOf('.') == -1) {
-                        JsObject decParent = (
-                                this.parent.getJSKind() != JsElement.Kind.ANONYMOUS_OBJECT
-                                && this.parent.getJSKind() != JsElement.Kind.OBJECT_LITERAL) 
-                                ? this.parent : this.parent.getParent();
-                        while (jsObject == null && decParent != null) {
-                            jsObject = decParent.getProperty(type.getType());
-                            decParent = decParent.getParent();
+            for (TypeUsage type : unresolved) {
+                Collection<TypeUsage> resolvedHere = new ArrayList<TypeUsage>();
+                if(!((TypeUsageImpl)type).isResolved()){
+                    resolvedHere.addAll(ModelUtils.resolveTypeFromSemiType(this, type));
+                } else {
+                    resolvedHere.add(type);
+                }
+                if (!type.getType().contains("this")) {
+                    for (TypeUsage typeHere : resolvedHere) {
+                        if (typeHere.getOffset() > 0) {
+                            JsObject jsObject = ModelUtils.findJsObjectByName(global, typeHere.getType());
+                            if (jsObject == null && typeHere.getType().indexOf('.') == -1) {
+                                JsObject decParent = (
+                                        this.parent.getJSKind() != JsElement.Kind.ANONYMOUS_OBJECT
+                                        && this.parent.getJSKind() != JsElement.Kind.OBJECT_LITERAL) 
+                                        ? this.parent : this.parent.getParent();
+                                while (jsObject == null && decParent != null) {
+                                    jsObject = decParent.getProperty(typeHere.getType());
+                                    decParent = decParent.getParent();
+                                }
+                            }
+                            if (jsObject != null) {
+                                ((JsObjectImpl)jsObject).addOccurrence(new OffsetRange(typeHere.getOffset(), typeHere.getOffset() + typeHere.getType().length()));
+                                moveOccurrenceOfProperties((JsObjectImpl)jsObject, this);
+                            }
                         }
                     }
-                    if (jsObject != null) {
-                        ((JsObjectImpl)jsObject).addOccurrence(new OffsetRange(type.getOffset(), type.getOffset() + type.getType().length()));
-                    }
                 }
+                resolved.addAll(resolvedHere);
             }
+            
             unresolved.clear();
             unresolved.addAll(resolved);
         }
@@ -365,13 +382,13 @@ public class JsObjectImpl extends JsElementImpl implements JsObject {
             List<Occurrence> correctedOccurrences = new ArrayList<Occurrence>();
 
             JsObjectImpl obAssignment = findRightTypeAssignment(getDeclarationName().getOffsetRange().getStart(), global);
-            if(obAssignment != null) {
+            if(obAssignment != null && !obAssignment.getModifiers().contains(Modifier.PRIVATE)) {
                 obAssignment.addOccurrence(getDeclarationName().getOffsetRange());
             }
             
             for(Occurrence occurrence: new ArrayList<Occurrence>(occurrences)) {
                 obAssignment = findRightTypeAssignment(occurrence.getOffsetRange().getStart(), global);
-                if(obAssignment != null) {
+                if(obAssignment != null && !obAssignment.getModifiers().contains(Modifier.PRIVATE)) {
                     obAssignment.addOccurrence(occurrence.getOffsetRange());
                 } else {
                     correctedOccurrences.add(occurrence);
@@ -384,6 +401,35 @@ public class JsObjectImpl extends JsElementImpl implements JsObject {
             }
         }
         
+    }
+    
+    private void clearOccurrences() {
+        occurrences.clear();
+    }
+    
+    protected void moveOccurrenceOfProperties(JsObjectImpl original, JsObject created) {
+        if (original.equals(created)) {
+            return;
+        }
+        for(JsObject origProperty : original.getProperties().values()) {
+            if(origProperty.getModifiers().contains(Modifier.PUBLIC)
+                    || origProperty.getModifiers().contains(Modifier.PROTECTED)) {
+                JsObjectImpl usedProperty = (JsObjectImpl)created.getProperty(origProperty.getName());
+                if (usedProperty != null) {
+                    ((JsObjectImpl)origProperty).addOccurrence(usedProperty.getDeclarationName().getOffsetRange());
+                    for(Occurrence occur : usedProperty.getOccurrences()) {
+                        ((JsObjectImpl)origProperty).addOccurrence(occur.getOffsetRange());
+                    }
+                    usedProperty.clearOccurrences();
+                    usedProperty.setDeclared(false); // the property is not declared here
+                    moveOccurrenceOfProperties((JsObjectImpl)origProperty, usedProperty);
+                }
+            }
+        }
+        JsObject prototype = original.getProperty("prototype");
+        if (prototype != null) {
+            moveOccurrenceOfProperties((JsObjectImpl)prototype, created);
+        }
     }
     
     /**

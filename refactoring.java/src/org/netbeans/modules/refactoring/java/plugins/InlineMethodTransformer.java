@@ -352,7 +352,7 @@ public class InlineMethodTransformer extends RefactoringVisitor {
             public Void visitMemberSelect(MemberSelectTree node, ExecutableElement p) {
                 TreePath currentPath = getCurrentPath();
                 Element el = trees.getElement(currentPath);
-                if (el != null) {
+                if (el != null && el.getKind() != ElementKind.PACKAGE) {
                     DeclaredType declaredType = workingCopy.getTypes().getDeclaredType(scope.getEnclosingClass());
                     if (methodSelect != null
                             && el.getEnclosingElement() != method

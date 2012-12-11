@@ -44,6 +44,7 @@ package org.netbeans.modules.javascript2.editor.model.impl;
 import java.util.*;
 import org.netbeans.modules.csl.api.Modifier;
 import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.javascript2.editor.doc.spi.JsDocumentationHolder;
 import org.netbeans.modules.javascript2.editor.model.*;
 import org.openide.filesystems.FileObject;
 
@@ -156,13 +157,23 @@ public class JsFunctionImpl extends DeclarationScopeImpl implements JsFunction {
     @Override
     public Collection<? extends TypeUsage> getReturnTypes() {
         Collection<TypeUsage> returns = new HashSet();
+        HashSet<String> nameReturnTypes = new HashSet<String>();
         for(TypeUsage type : returnTypes) {
              if (((TypeUsageImpl)type).isResolved()) {
-                returns.add(type);
+                 if (!nameReturnTypes.contains(type.getType())){
+                    returns.add(type);
+                    nameReturnTypes.add(type.getType());
+                 }
             } else {
-                 JsObject jsObject = ModelUtils.findJsObjectByName(ModelUtils.getGlobalObject(this), type.getType());
+                 JsObject jsObject = ModelUtils.getJsObjectByName(this,type.getType());
                  if(jsObject != null) {
-                     returns.addAll(resolveAssignments(jsObject, type.getOffset()));
+                    Collection<TypeUsage> resolveAssignments = resolveAssignments(jsObject, type.getOffset());
+                    for (TypeUsage typeResolved: resolveAssignments) {
+                        if (!nameReturnTypes.contains(type.getType())){
+                           returns.add(typeResolved);
+                           nameReturnTypes.add(typeResolved.getType());
+                        }
+                    }
                  }
             }
         }
@@ -170,11 +181,21 @@ public class JsFunctionImpl extends DeclarationScopeImpl implements JsFunction {
     }    
         
     public void addReturnType(TypeUsage type) {
-        this.returnTypes.add(type);
+        boolean isThere = false;
+        for (TypeUsage typeUsage : this.returnTypes) {
+            if (type.getType().equals(typeUsage.getType())) {
+                isThere = true;
+            }
+        }
+        if (!isThere){
+            this.returnTypes.add(type);
+        }
     }
     
     public void addReturnType(Collection<TypeUsage> types) {
-        this.returnTypes.addAll(types);
+        for (TypeUsage typeUsage : types) {
+            addReturnType(typeUsage);
+        }
     }
     
     public boolean areReturnTypesEmpty() {
@@ -182,8 +203,8 @@ public class JsFunctionImpl extends DeclarationScopeImpl implements JsFunction {
     }
 
     @Override
-    public void resolveTypes() {
-        super.resolveTypes();
+    public void resolveTypes(JsDocumentationHolder docHolder) {
+        super.resolveTypes(docHolder);
         HashSet<String> nameReturnTypes = new HashSet<String>();
         Collection<TypeUsage> resolved = new ArrayList();
         for (TypeUsage type : returnTypes) {
@@ -195,7 +216,7 @@ public class JsFunctionImpl extends DeclarationScopeImpl implements JsFunction {
                             nameReturnTypes.add(rType.getType());
                         } 
                     }
-                    resolved.addAll(ModelUtils.resolveTypeFromSemiType(this, type));
+//                    resolved.addAll(ModelUtils.resolveTypeFromSemiType(this, type));
                 } else {
                     if (!nameReturnTypes.contains(type.getType())) {
                         resolved.add(type);
@@ -205,10 +226,9 @@ public class JsFunctionImpl extends DeclarationScopeImpl implements JsFunction {
             }
         }
         
-        JsObject global = ModelUtils.getGlobalObject(this);
         for (TypeUsage type : resolved) {
             if (type.getOffset() > 0) {
-                JsObject jsObject = ModelUtils.findJsObjectByName(global, type.getType());
+                JsObject jsObject = ModelUtils.findJsObjectByName(this, type.getType());
                 if (jsObject != null) {
                     ((JsObjectImpl)jsObject).addOccurrence(new OffsetRange(type.getOffset(), type.getOffset() + type.getType().length()));
                 }
@@ -216,6 +236,18 @@ public class JsFunctionImpl extends DeclarationScopeImpl implements JsFunction {
         }
         returnTypes.clear();
         returnTypes.addAll(resolved);
+        
+        // parameters and type type resolving for occurrences
+        for(JsObject param : parameters) {
+            Collection<? extends TypeUsage> types = param.getAssignmentForOffset(param.getDeclarationName().getOffsetRange().getStart());
+            for(TypeUsage type: types) {
+                JsObject jsObject = ModelUtils.getJsObjectByName(this, type.getType());
+                if (jsObject != null) {
+                    ModelUtils.addDocTypesOccurence(jsObject, docHolder);
+                    moveOccurrenceOfProperties((JsObjectImpl)jsObject, param);
+                }
+            }
+        }
     }
     
     

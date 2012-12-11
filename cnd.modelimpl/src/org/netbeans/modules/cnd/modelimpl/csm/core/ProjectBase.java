@@ -106,7 +106,9 @@ import org.netbeans.modules.cnd.apt.support.PostIncludeData;
 import org.netbeans.modules.cnd.apt.support.StartEntry;
 import org.netbeans.modules.cnd.apt.utils.APTSerializeUtils;
 import org.netbeans.modules.cnd.apt.utils.APTUtils;
+import org.netbeans.modules.cnd.debug.CndTraceFlags;
 import org.netbeans.modules.cnd.debug.DebugUtils;
+import org.netbeans.modules.cnd.indexing.api.CndTextIndex;
 import org.netbeans.modules.cnd.modelimpl.cache.impl.WeakContainer;
 import org.netbeans.modules.cnd.modelimpl.content.project.ClassifierContainer;
 import org.netbeans.modules.cnd.modelimpl.content.project.DeclarationContainerProject;
@@ -447,7 +449,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         return getUniqueName(platformProject.getFileSystem(), platformProject);
     }
 
-    /*package*/ CacheLocation getCacheLocation() {
+    public final CacheLocation getCacheLocation() {
         return cacheLocation;
     }
 
@@ -466,7 +468,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
                         }
                     }
                 } catch (IOException ex) {
-                    ex.printStackTrace();
+                    ex.printStackTrace(System.err);
                 }
             }
         }
@@ -831,6 +833,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
                         CndFileSystemProvider.removeFileSystemProblemListener(this, fs);
                     }
                 }
+                projectListener = null;
             }
         }
     }
@@ -2486,6 +2489,9 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
                     APTDriver.invalidateAPT(buf);
                     APTFileCacheManager.getInstance(buf.getFileSystem()).invalidate(buf.getAbsolutePath());
                     ParserQueue.instance().remove(impl);
+                    if (CndTraceFlags.TEXT_INDEX) {
+                        CndTextIndex.remove(impl.getProjectImpl(true).getCacheLocation(), impl.getTextIndexKey());
+                    }
                 }
             }
         }
@@ -2824,13 +2830,32 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         return res;
     }
 
+
+    /**
+     * Creates a dummy ClassImpl for unresolved name, stores in map
+     * @param nameTokens name
+     * @param owner an owner to get file and offset from 
+     */
+    public static CsmClass getDummyForUnresolved(CharSequence[] nameTokens, OffsetableBase owner) {
+        if  (owner != null) {
+            CsmFile file = owner.getContainingFile();
+            if (file != null) {
+                ProjectBase project = (ProjectBase) file.getProject();
+                if (project != null) {
+                    return project.getDummyForUnresolved(nameTokens, file, owner.getStartOffset());
+                }
+            }            
+        }
+        return null;
+    }
+
     /**
      * Creates a dummy ClassImpl for unresolved name, stores in map
      * @param nameTokens name
      * @param file file that contains unresolved name (used for the purpose of statistics)
      * @param name offset that contains unresolved name (used for the purpose of statistics)
      */
-    public final CsmClass getDummyForUnresolved(CharSequence[] nameTokens, CsmFile file, int offset) {
+    private CsmClass getDummyForUnresolved(CharSequence[] nameTokens, CsmFile file, int offset) {
         if (Diagnostic.needStatistics()) {
             Diagnostic.onUnresolvedError(nameTokens, file, offset);
         }
@@ -3561,7 +3586,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
     private static final class FileContainerLock {}
     private final Object fileContainerLock = new FileContainerLock();
     private final Key graphStorageKey;
-    private NativeProjectListenerImpl projectListener;
+    private volatile NativeProjectListenerImpl projectListener;
     private final Object projectListenerLock = new Object();
     
     // test variables.

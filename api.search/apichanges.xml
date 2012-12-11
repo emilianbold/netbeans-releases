@@ -105,6 +105,25 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
     <changes>
+        <change id="ReplaceHistory">
+            <api name="api.search"/>
+            <summary>Added ReplacePattern and replace history to SearchHistory class</summary>
+            <version major="1" minor="1.8"/>
+            <date day="20" month="11" year="2012"/>
+            <author login="mkristofic"/>
+            <compatibility addition="yes"/>
+            <description>
+                <p>
+                    Search History is extended for replace history.
+                </p>
+                <p> 
+                    New ReplacePattern is a wrap class for replace expression.
+                </p>
+            </description>
+            <class package="org.netbeans.api.search" name="ReplacePattern"/>
+            <class package="org.netbeans.api.search" name="SearchHistory"/>
+        </change>
+        
         <change id="SearchResultsDisplayer-closed">
             <api name="api.search"/>
             <summary>Added method SearchResultsDisplayer.closed()</summary>

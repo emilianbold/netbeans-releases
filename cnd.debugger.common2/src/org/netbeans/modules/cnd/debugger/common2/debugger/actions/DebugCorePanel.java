@@ -118,7 +118,7 @@ final class DebugCorePanel extends javax.swing.JPanel {
 	this.readonly = readonly;
 	initialize(corePath, exePaths, host);
     }
-
+    
     private void initialize(String corePath, String[] exePaths, String host) {
         initComponents();
 	if (readonly) {
@@ -564,7 +564,7 @@ final class DebugCorePanel extends javax.swing.JPanel {
         //gridBagConstraints.gridy = 3;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 12, 6, 0);
-	if (!NativeDebuggerManager.isStandalone())
+	if (!NativeDebuggerManager.isStandalone() && !NativeDebuggerManager.isPL())
 	    add(projectLabel, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -575,7 +575,7 @@ final class DebugCorePanel extends javax.swing.JPanel {
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 4, 6, 12);
-	if (!NativeDebuggerManager.isStandalone())
+	if (!NativeDebuggerManager.isStandalone() && !NativeDebuggerManager.isPL())
 	    add(projectComboBox, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();

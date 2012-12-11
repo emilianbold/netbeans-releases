@@ -56,7 +56,7 @@ import org.netbeans.spi.editor.guards.support.AbstractGuardedSectionsProvider;
 public final class JavaGuardedSectionsProvider extends AbstractGuardedSectionsProvider {
     
     public JavaGuardedSectionsProvider(GuardedEditorSupport editor) {
-        super(editor);
+        super(editor, true);
     }
 
     public char[] writeSections(List<GuardedSection> sections, char[] buff) {

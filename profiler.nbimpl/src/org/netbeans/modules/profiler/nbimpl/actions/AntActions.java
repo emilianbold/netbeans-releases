@@ -123,7 +123,7 @@ public class AntActions {
         return delegate;
     }
     
-    @Messages("LBL_ProfileFile=Profile File")
+    @Messages("LBL_ProfileFile=Profile &File")
     @ActionID(category="Profile", id="org.netbeans.modules.profiler.actions.ProfileSingle")
     @ActionRegistration(displayName="#LBL_ProfileFile", lazy=false)
     @ActionReferences({
@@ -140,7 +140,7 @@ public class AntActions {
         return delegate;
     }
         
-    @Messages("LBL_ProfileTest=Profile Test File")
+    @Messages("LBL_ProfileTest=Prof&ile Test File")
     @ActionID(category = "Profile", id = "org.netbeans.modules.profiler.actions.ProfileTest")
     @ActionRegistration(displayName = "#LBL_ProfileTest", lazy=false)
     @ActionReferences(value = {

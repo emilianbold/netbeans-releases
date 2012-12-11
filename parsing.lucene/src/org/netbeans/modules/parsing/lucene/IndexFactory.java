@@ -53,6 +53,6 @@ import org.netbeans.modules.parsing.lucene.support.Index;
  * @author Tomas Zezula
  */
 public interface IndexFactory {
-    Index createIndex (@NonNull File cacheFolder, @NonNull Analyzer analyzer) throws IOException;
+    Index.Transactional createIndex (@NonNull File cacheFolder, @NonNull Analyzer analyzer) throws IOException;
     Index createMemoryIndex (@NonNull Analyzer analyzer) throws IOException;
 }

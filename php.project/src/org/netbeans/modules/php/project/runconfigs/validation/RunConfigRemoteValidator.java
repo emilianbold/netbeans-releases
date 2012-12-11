@@ -42,11 +42,13 @@
 package org.netbeans.modules.php.project.runconfigs.validation;
 
 import org.netbeans.modules.php.api.util.StringUtils;
+import org.netbeans.modules.php.project.connections.RemoteConnections;
 import org.netbeans.modules.php.project.connections.common.RemoteValidator;
 import org.netbeans.modules.php.project.connections.spi.RemoteConfiguration;
 import org.netbeans.modules.php.project.runconfigs.RunConfigRemote;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties.UploadFiles;
 import org.netbeans.modules.php.project.ui.customizer.RunAsRemoteWeb;
+import org.netbeans.modules.php.project.validation.ValidationResult;
 import org.openide.util.NbBundle;
 
 /**
@@ -118,12 +120,20 @@ public final class RunConfigRemoteValidator {
         return null;
     }
 
+    @NbBundle.Messages({
+        "# {0} - error",
+        "RunConfigRemoteValidator.error.remoteConnection=Remote Connection: {0}"
+    })
     static String validateRemoteConfiguration(RemoteConfiguration remoteConfiguration) {
         if (remoteConfiguration == null
                 || remoteConfiguration == RunConfigRemote.NO_REMOTE_CONFIGURATION) {
             return NbBundle.getMessage(RunAsRemoteWeb.class, "MSG_NoConfigurationSelected");
         } else if (remoteConfiguration == RunConfigRemote.MISSING_REMOTE_CONFIGURATION) {
             return NbBundle.getMessage(RunAsRemoteWeb.class, "MSG_NonExistingConfigurationSelected");
+        }
+        ValidationResult validationResult = RemoteConnections.get().validateRemoteConfiguration(remoteConfiguration);
+        if (validationResult != null && validationResult.hasErrors()) {
+            return Bundle.RunConfigRemoteValidator_error_remoteConnection(validationResult.getErrors().get(0).getMessage());
         }
         return null;
     }

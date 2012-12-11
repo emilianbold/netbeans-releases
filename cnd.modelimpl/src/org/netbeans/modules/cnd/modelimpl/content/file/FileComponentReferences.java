@@ -105,10 +105,19 @@ public class FileComponentReferences extends FileComponent implements Persistent
 
     FileComponentReferences(FileComponentReferences other, boolean empty) {
         super(other);
-        references = new TreeMap<ReferenceImpl, CsmUID<CsmObject>>(
-                empty ? Collections.<ReferenceImpl, CsmUID<CsmObject>>emptyMap() : other.references);
-        type2classifier = new TreeMap<ReferenceImpl, CsmUID<CsmObject>>(
-                empty ? Collections.<ReferenceImpl, CsmUID<CsmObject>>emptyMap() : other.type2classifier);
+        try {
+            if (!empty) {
+                other.referencesLock.readLock().lock();
+            }
+            references = new TreeMap<ReferenceImpl, CsmUID<CsmObject>>(
+                    empty ? Collections.<ReferenceImpl, CsmUID<CsmObject>>emptyMap() : other.references);
+            type2classifier = new TreeMap<ReferenceImpl, CsmUID<CsmObject>>(
+                    empty ? Collections.<ReferenceImpl, CsmUID<CsmObject>>emptyMap() : other.type2classifier);
+        } finally {
+            if (!empty) {
+                other.referencesLock.readLock().unlock();
+            }
+        }
         this.fileUID = other.fileUID;
     }
     

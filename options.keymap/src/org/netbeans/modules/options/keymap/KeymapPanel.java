@@ -82,6 +82,7 @@ import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.util.Exceptions;
+import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.Task;
 import org.openide.util.TaskListener;
@@ -218,11 +219,13 @@ public class KeymapPanel extends javax.swing.JPanel implements ActionListener, P
         column.setCellEditor(new ButtonCellEditor(getModel()));
         column.setCellRenderer(new ButtonCellRenderer(actionsTable.getDefaultRenderer(ButtonCellRenderer.class)));
         setColumnWidths();
-
-        popup.add(new ShortcutPopupPanel(actionsTable, popup));
+        popupPanel = new ShortcutPopupPanel(actionsTable, popup);
+        popup.add(popupPanel);
         cbProfile.addActionListener(this);
         manageButton.addActionListener(this);
     }
+    
+    private ShortcutPopupPanel popupPanel;
 
     private class KeymapTable extends JTable {
         int lastRow;
@@ -727,6 +730,7 @@ public class KeymapPanel extends javax.swing.JPanel implements ActionListener, P
                 x = button.getX() + 1;
                 y = button.getY() + 1;
             }
+            panel.setCustomProfile(keymapModel.getMutableModel().isCustomProfile(keymapModel.getMutableModel().getCurrentProfile()));
             popup.show(table, x, y);
             SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
@@ -759,19 +763,19 @@ public class KeymapPanel extends javax.swing.JPanel implements ActionListener, P
 
             //show manage profiles dialog
             final ProfilesPanel profilesPanel = new ProfilesPanel(this);
-            DialogDescriptor dd = new DialogDescriptor(profilesPanel, NbBundle.getMessage(KeymapPanel.class, "CTL_Manage_Keymap_Profiles"));
+            DialogDescriptor dd = new DialogDescriptor(
+                    profilesPanel, 
+                    NbBundle.getMessage(KeymapPanel.class, "CTL_Manage_Keymap_Profiles"),
+                    true, new Object[] { DialogDescriptor.CLOSED_OPTION }, DialogDescriptor.CLOSED_OPTION, 
+                    DialogDescriptor.BOTTOM_ALIGN,
+                    new HelpCtx("org.netbeans.modules.options.keymap.ProfilesPanel"), 
+                    null
+            );
             DialogDisplayer.getDefault().notify(dd);
 
-            if (dd.getValue().equals(DialogDescriptor.OK_OPTION)) {
-                final String selectedProfile = profilesPanel.getSelectedProfile();
-                getMutableModel().setCurrentProfile(selectedProfile);
-                refreshProfileCombo();
-
-            } else {
-                //revert changes
-                getMutableModel().setModifiedProfiles(modifiedProfiles);
-                getMutableModel().setDeletedProfiles(deletedProfiles);
-            }
+            final String selectedProfile = profilesPanel.getSelectedProfile();
+            getMutableModel().setCurrentProfile(selectedProfile);
+            refreshProfileCombo();
         }
         return;
     }

@@ -47,11 +47,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
-import java.net.MalformedURLException;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketException;
-import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLDecoder;
@@ -59,9 +57,11 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.StringTokenizer;
 import java.util.WeakHashMap;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.web.common.api.WebUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
@@ -73,6 +73,8 @@ public final class WebServer {
 
     private static int PORT = 8383;
     
+    private static final Logger LOGGER = Logger.getLogger(WebServer.class.getName());
+
     private WeakHashMap<Project, Pair> deployedApps = new WeakHashMap<Project, Pair>();
     private boolean init = false;
     private Server server;
@@ -99,6 +101,8 @@ public final class WebServer {
      * Start serving project's sources under given web context root.
      */
     public void start(Project p, FileObject siteRoot, String webContextRoot) {
+        assert webContextRoot != null && webContextRoot.startsWith("/") : // NOI18N
+                "webContextRoot must start with slash character"; // NOI18N
         checkStartedServer();
         deployedApps.remove(p);
         deployedApps.put(p, new Pair(webContextRoot, siteRoot));
@@ -141,7 +145,7 @@ public final class WebServer {
             if (pair != null) {
                 String path = pair.webContextRoot + (pair.webContextRoot.equals("/") ? "" : "/") +  //NOI18N
                         FileUtil.getRelativePath(pair.siteRoot, projectFile);
-                return WebUtils.stringToUrl("http://localhost:"+PORT+path); //NOI18N
+                return WebUtils.stringToUrl("http://localhost:"+getPort()+path); //NOI18N
             }
         } else {
             // fallback if project was not found:
@@ -151,7 +155,7 @@ public final class WebServer {
                 if (relPath != null) {
                     String path = pair.webContextRoot + (pair.webContextRoot.equals("/") ? "" : "/") +  //NOI18N
                             relPath;
-                    return WebUtils.stringToUrl("http://localhost:"+PORT+path); //NOI18N
+                    return WebUtils.stringToUrl("http://localhost:"+getPort()+path); //NOI18N
                 }
             }
         }
@@ -190,7 +194,6 @@ public final class WebServer {
     }
 
     private FileObject findFile(Entry<Project, Pair> entry, String serverURL) {
-        Project p = entry.getKey();
         int index = entry.getValue().webContextRoot.length()+1;
         if (entry.getValue().webContextRoot.equals("/")) { //NOI18N
             index = 1;
@@ -213,7 +216,7 @@ public final class WebServer {
 
     private static class Server implements Runnable {
 
-        private boolean stop = false;
+        private AtomicBoolean stop = new AtomicBoolean(false);
         private ServerSocket sock;
         private int port;
 
@@ -233,25 +236,35 @@ public final class WebServer {
         
         @Override
         public void run() {
-            try {
-                while (!stop) {
-                    Socket s = sock.accept();
-                    if (stop) {
-                        break;
+            while (!stop.get()) {
+                Socket s;
+                try {
+                    s = sock.accept();
+                } catch (SocketException ex) {
+                    if (!stop.get()) {
+                        Exceptions.printStackTrace(ex);
                     }
-                    read(s.getInputStream(), s.getOutputStream());
-                }
-            } catch (SocketException ex) {
-                if (!stop) {
+                    // abort server:
+                    return;
+                } catch (IOException ex) {
                     Exceptions.printStackTrace(ex);
+                    // abort server:
+                    return;
                 }
-            } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
+                if (stop.get()) {
+                    break;
+                }
+                try {
+                    read(s.getInputStream(), s.getOutputStream());
+                } catch (IOException ex) {
+                    // do not abort server in this case
+                    LOGGER.log(Level.FINE, "reading socket failed", ex); // NOI18N
+                }
             }
         }
 
         private void stop() {
-            stop = true;
+            stop.set(true);
             try {
                 sock.close();
             } catch (IOException ex) {
@@ -276,7 +289,13 @@ public final class WebServer {
                     StringTokenizer st = new StringTokenizer(line, " "); //NOI18N
                     st.nextToken();
                     String file = st.nextToken();
-                    file = URLDecoder.decode(file, "UTF-8"); //NOI18N
+                    try {
+                        file = URLDecoder.decode(file, "UTF-8"); //NOI18N
+                    } catch (IllegalArgumentException ex) {
+                        // #222858 - IllegalArgumentException: URLDecoder: Illegal hex characters in escape (%) pattern - For input string: "%2"
+                        // silently ignore
+                        LOGGER.log(Level.FINE, "cannot decode '"+file+"'", ex); // NOI18N
+                    }
                     FileObject fo = getWebserver().fromServer(file);
                     if (fo != null && fo.isFolder()) {
                         fo = fo.getFileObject("index", "html"); //NOI18N

@@ -66,6 +66,7 @@ import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Node;
 import org.openide.util.NbBundle.Messages;
+import org.openide.util.WeakListeners;
 import org.openide.util.lookup.Lookups;
 
 /**
@@ -126,9 +127,10 @@ public final class ModuleLogicalView implements LogicalViewProvider {
         return null;
     }
     
-    private static final class RootNode extends AbstractNode {
+    private static final class RootNode extends AbstractNode implements PropertyChangeListener {
         
         private final @NonNull NbModuleProject project;
+        private final @NonNull ProjectInformation pi;
         
         @Messages({"# {0} - folder", "HINT_project_root_node=Module project in {0}"})
         RootNode(@NonNull NbModuleProject project) {
@@ -149,22 +151,10 @@ public final class ModuleLogicalView implements LogicalViewProvider {
                 osgi ? NbModuleProject.NB_PROJECT_OSGI_ICON_PATH :
                 NbModuleProject.NB_PROJECT_ICON_PATH
             );
-            ProjectInformation pi = ProjectUtils.getInformation(project);
+            pi = ProjectUtils.getInformation(project); // must keep reference to PI, it is a wrapper and would be immediately GCed
             setDisplayName(pi.getDisplayName());
             setShortDescription(HINT_project_root_node(FileUtil.getFileDisplayName(project.getProjectDirectory())));
-            pi.addPropertyChangeListener(new PropertyChangeListener() {
-                public @Override void propertyChange(final PropertyChangeEvent evt) {
-                    ImportantFilesNodeFactory.getNodesSyncRP().post(new Runnable() {
-                        public @Override void run() {
-                            if (ProjectInformation.PROP_DISPLAY_NAME.equals(evt.getPropertyName())) {
-                                RootNode.this.setDisplayName((String) evt.getNewValue());
-                            } else if (ProjectInformation.PROP_NAME.equals(evt.getPropertyName())) {
-                                RootNode.this.setName((String) evt.getNewValue());
-                            }
-                        }
-                    });
-                }
-            });
+            pi.addPropertyChangeListener(WeakListeners.propertyChange(this, pi));
         }
         
         public @Override Action[] getActions(boolean ignore) {
@@ -176,11 +166,21 @@ public final class ModuleLogicalView implements LogicalViewProvider {
         }
         
         public @Override String getName() {
-            return ProjectUtils.getInformation(project).getDisplayName();
+            return pi.getDisplayName();
         }
         
         public @Override void setName(String name) {
             DefaultProjectOperations.performDefaultRenameOperation(project, name);
+        }
+
+        @Override
+        public void propertyChange (final PropertyChangeEvent evt) {
+            ImportantFilesNodeFactory.getNodesSyncRP().post(new Runnable() {
+                public @Override void run() {
+                    fireNameChange(null, null);
+                    fireDisplayNameChange(null, null);
+                }
+            });
         }
         
     }

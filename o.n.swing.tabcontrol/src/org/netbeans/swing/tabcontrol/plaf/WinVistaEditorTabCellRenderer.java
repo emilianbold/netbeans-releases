@@ -48,8 +48,8 @@
 
 package org.netbeans.swing.tabcontrol.plaf;
 
-import javax.swing.*;
 import java.awt.*;
+import javax.swing.*;
 import org.netbeans.swing.tabcontrol.TabDisplayer;
 
 /**
@@ -57,7 +57,7 @@ import org.netbeans.swing.tabcontrol.TabDisplayer;
  *
  * @author S. Aubrecht
  */
-final class WinVistaEditorTabCellRenderer extends AbstractTabCellRenderer {
+class WinVistaEditorTabCellRenderer extends AbstractTabCellRenderer {
     //Default insets values for Vista look and feel
     private static final int TOP_INSET = 0;
     private static final int LEFT_INSET = 3;
@@ -80,17 +80,19 @@ final class WinVistaEditorTabCellRenderer extends AbstractTabCellRenderer {
     /**
      * Vista look and feel makes selected tab wider by 2 pixels on each side
      */
+    @Override
     public int getPixelsToAddToSelection() {
         return 0;
     }
 
+    @Override
     public Dimension getPadding() {
         Dimension d = super.getPadding();
         d.width = isShowCloseButton() && !Boolean.getBoolean("nb.tabs.suppressCloseButton") ? 32 : 16;
         return d;
     }
 
-    private static final Color getUnselFillBrightUpperColor() {
+    private static Color getUnselFillBrightUpperColor() {
         Color result = UIManager.getColor("tab_unsel_fill_bright_upper"); //NOI18N
         if (result == null) {
             result = new Color(235,235,235);
@@ -98,7 +100,7 @@ final class WinVistaEditorTabCellRenderer extends AbstractTabCellRenderer {
         return result;
     }
     
-    private static final Color getUnselFillDarkUpperColor() {
+    private static Color getUnselFillDarkUpperColor() {
         Color result = UIManager.getColor("tab_unsel_fill_dark_upper"); //NOI18N
         if (result == null) {
             result = new Color(229, 229, 229);
@@ -106,7 +108,7 @@ final class WinVistaEditorTabCellRenderer extends AbstractTabCellRenderer {
         return result;
     }
     
-    private static final Color getUnselFillBrightLowerColor() {
+    private static Color getUnselFillBrightLowerColor() {
         Color result = UIManager.getColor("tab_unsel_fill_bright_lower"); //NOI18N
         if (result == null) {
             result = new Color(214,214,214);
@@ -114,7 +116,7 @@ final class WinVistaEditorTabCellRenderer extends AbstractTabCellRenderer {
         return result;
     }
     
-    private static final Color getUnselFillDarkLowerColor() {
+    private static Color getUnselFillDarkLowerColor() {
         Color result = UIManager.getColor("tab_unsel_fill_dark_lower"); //NOI18N
         if (result == null) {
             result = new Color(203, 203, 203);
@@ -122,7 +124,7 @@ final class WinVistaEditorTabCellRenderer extends AbstractTabCellRenderer {
         return result;
     }
     
-    private static final Color getSelFillColor() {
+    private static Color getSelFillColor() {
         Color result = UIManager.getColor("tab_sel_fill"); //NOI18N
         if (result == null) {
             result = new Color(244,244,244);
@@ -130,7 +132,7 @@ final class WinVistaEditorTabCellRenderer extends AbstractTabCellRenderer {
         return result;
     }
     
-    private static final Color getFocusFillUpperColor() {
+    private static Color getFocusFillUpperColor() {
         Color result = UIManager.getColor("tab_focus_fill_upper"); //NOI18N
         if (result == null) {
             result = new Color(242, 249, 252);
@@ -138,7 +140,7 @@ final class WinVistaEditorTabCellRenderer extends AbstractTabCellRenderer {
         return result;
     }
     
-    private static final Color getFocusFillBrightLowerColor() {
+    private static Color getFocusFillBrightLowerColor() {
         Color result = UIManager.getColor("tab_focus_fill_bright_lower"); //NOI18N
         if (result == null) {
             result = new Color(225, 241, 249);
@@ -146,7 +148,7 @@ final class WinVistaEditorTabCellRenderer extends AbstractTabCellRenderer {
         return result;
     }
     
-    private static final Color getFocusFillDarkLowerColor() {
+    private static Color getFocusFillDarkLowerColor() {
         Color result = UIManager.getColor("tab_focus_fill_dark_lower"); //NOI18N
         if (result == null) {
             result = new Color(216, 236, 246);
@@ -154,7 +156,7 @@ final class WinVistaEditorTabCellRenderer extends AbstractTabCellRenderer {
         return result;
     }
     
-    private static final Color getMouseOverFillBrightUpperColor() {
+    private static Color getMouseOverFillBrightUpperColor() {
         Color result = UIManager.getColor("tab_mouse_over_fill_bright_upper"); //NOI18N
         if (result == null) {
             result = new Color(223,242,252);
@@ -162,7 +164,7 @@ final class WinVistaEditorTabCellRenderer extends AbstractTabCellRenderer {
         return result;
     }
     
-    private static final Color getMouseOverFillDarkUpperColor() {
+    private static Color getMouseOverFillDarkUpperColor() {
         Color result = UIManager.getColor("tab_mouse_over_fill_dark_upper"); //NOI18N
         if (result == null) {
             result = new Color(214,239,252);
@@ -170,7 +172,7 @@ final class WinVistaEditorTabCellRenderer extends AbstractTabCellRenderer {
         return result;
     }
     
-    private static final Color getMouseOverFillBrightLowerColor() {
+    private static Color getMouseOverFillBrightLowerColor() {
         Color result = UIManager.getColor("tab_mouse_over_fill_bright_lower"); //NOI18N
         if (result == null) {
             result = new Color(189,228,250);
@@ -178,7 +180,7 @@ final class WinVistaEditorTabCellRenderer extends AbstractTabCellRenderer {
         return result;
     }
     
-    private static final Color getMouseOverFillDarkLowerColor() {
+    private static Color getMouseOverFillDarkLowerColor() {
         Color result = UIManager.getColor("tab_mouse_over_fill_dark_lower"); //NOI18N
         if (result == null) {
             result = new Color(171,221,248);
@@ -186,7 +188,7 @@ final class WinVistaEditorTabCellRenderer extends AbstractTabCellRenderer {
         return result;
     }
     
-    private static final Color getTxtColor() {
+    private static Color getTxtColor() {
         Color result = UIManager.getColor("TabbedPane.foreground"); //NOI18N
         if (result == null) {
             result = new Color(0, 0, 0);
@@ -194,7 +196,7 @@ final class WinVistaEditorTabCellRenderer extends AbstractTabCellRenderer {
         return result;
     }
     
-    static final Color getBorderColor() {
+    static Color getBorderColor() {
         Color result = UIManager.getColor("tab_border"); //NOI18N
         if (result == null) {
             result = new Color(137,140,149);
@@ -202,7 +204,7 @@ final class WinVistaEditorTabCellRenderer extends AbstractTabCellRenderer {
         return result;
     }
     
-    private static final Color getSelBorderColor() {
+    private static Color getSelBorderColor() {
         Color result = UIManager.getColor("tab_sel_border"); //NOI18N
         if (result == null) {
             result = new Color(60,127,177);
@@ -210,7 +212,7 @@ final class WinVistaEditorTabCellRenderer extends AbstractTabCellRenderer {
         return result;
     }
     
-    private static final Color getBorderInnerColor() {
+    private static Color getBorderInnerColor() {
         Color result = UIManager.getColor("tab_border_inner"); //NOI18N
         if (result == null) {
             result = new Color(255,255,255);
@@ -218,28 +220,22 @@ final class WinVistaEditorTabCellRenderer extends AbstractTabCellRenderer {
         return result;
     }
     
-    
-    
-    
-    
-            
-
+    @Override
     public Color getSelectedActivatedForeground() {
         return getTxtColor();
     }
 
+    @Override
     public Color getSelectedForeground() {
         return getTxtColor();
     }
 
-
-    
-    private static void paintTabGradient( Graphics g, WinVistaEditorTabCellRenderer ren, Polygon poly ) {
+    void paintTabGradient( Graphics g, Polygon poly ) {
         Rectangle rect = poly.getBounds(); 
-        boolean selected = ren.isSelected();
-        boolean focused = selected && ren.isActive();
-        boolean attention = ren.isAttention();
-        boolean mouseOver = ren.isArmed();
+        boolean selected = isSelected();
+        boolean focused = selected && isActive();
+        boolean attention = isAttention();
+        boolean mouseOver = isArmed();
         if (focused && !attention) {
             rect.height++;
             ColorUtil.vistaFillRectGradient((Graphics2D) g, rect,
@@ -266,10 +262,12 @@ final class WinVistaEditorTabCellRenderer extends AbstractTabCellRenderer {
         
     }
     
+    @Override
     protected int getCaptionYAdjustment() {
         return 0;
     }
 
+    @Override
     protected int getIconYAdjustment() {
         return -2;
     }
@@ -284,10 +282,12 @@ final class WinVistaEditorTabCellRenderer extends AbstractTabCellRenderer {
     
     private static class WinVistaPainter implements TabPainter {
 
+        @Override
         public Insets getBorderInsets(Component c) {
             return new Insets(TOP_INSET, LEFT_INSET, BOTTOM_INSET, RIGHT_INSET);
         }
 
+        @Override
         public void getCloseButtonRectangle(JComponent jc,
                                             final Rectangle rect,
                                             Rectangle bounds) {
@@ -326,6 +326,7 @@ final class WinVistaEditorTabCellRenderer extends AbstractTabCellRenderer {
             return "org/openide/awt/resources/vista_close_enabled.png"; // NOI18N       
         }
     
+        @Override
         public Polygon getInteriorPolygon(Component c) {
             WinVistaEditorTabCellRenderer ren = (WinVistaEditorTabCellRenderer) c;
 
@@ -345,10 +346,12 @@ final class WinVistaEditorTabCellRenderer extends AbstractTabCellRenderer {
             return p;
         }
 
+        @Override
         public boolean isBorderOpaque() {
             return true;
         }
 
+        @Override
         public void paintBorder(Component c, Graphics g, int x, int y,
                                 int width, int height) {
             WinVistaEditorTabCellRenderer ren = (WinVistaEditorTabCellRenderer) c;
@@ -394,10 +397,11 @@ final class WinVistaEditorTabCellRenderer extends AbstractTabCellRenderer {
         }
 
 
+        @Override
         public void paintInterior(Graphics g, Component c) {
             WinVistaEditorTabCellRenderer ren = (WinVistaEditorTabCellRenderer) c;
             Polygon poly = getInteriorPolygon(ren);
-            paintTabGradient( g, ren, poly );
+            ren.paintTabGradient( g, poly );
             
             //Get the close button bounds, more or less
             Rectangle r = new Rectangle();
@@ -415,6 +419,7 @@ final class WinVistaEditorTabCellRenderer extends AbstractTabCellRenderer {
             icon.paintIcon(ren, g, r.x, r.y);
         }
 
+        @Override
         public boolean supportsCloseButton(JComponent renderer) {
             return renderer instanceof TabDisplayer ? 
                 ((TabDisplayer) renderer).isShowCloseButton() : true;
@@ -424,10 +429,12 @@ final class WinVistaEditorTabCellRenderer extends AbstractTabCellRenderer {
 
     private static class WinVistaLeftClipPainter implements TabPainter {
 
+        @Override
         public Insets getBorderInsets(Component c) {
             return new Insets(TOP_INSET, LEFT_INSET, BOTTOM_INSET, RIGHT_INSET);
         }
 
+        @Override
         public Polygon getInteriorPolygon(Component c) {
             WinVistaEditorTabCellRenderer ren = (WinVistaEditorTabCellRenderer) c;
             
@@ -447,6 +454,7 @@ final class WinVistaEditorTabCellRenderer extends AbstractTabCellRenderer {
             return p;
         }
 
+        @Override
         public void paintBorder(Component c, Graphics g, int x, int y,
                                 int width, int height) {
             
@@ -487,21 +495,25 @@ final class WinVistaEditorTabCellRenderer extends AbstractTabCellRenderer {
             g.translate(-x, -y);
         }
 
+        @Override
         public void paintInterior(Graphics g, Component c) {
             WinVistaEditorTabCellRenderer ren = (WinVistaEditorTabCellRenderer) c;
             
             Polygon poly = getInteriorPolygon(ren);
-            paintTabGradient( g, ren, poly );
+            ren.paintTabGradient( g, poly );
         }
 
+        @Override
         public boolean isBorderOpaque() {
             return true;
         }
 
+        @Override
         public boolean supportsCloseButton(JComponent renderer) {
             return false;
         }
 
+        @Override
         public void getCloseButtonRectangle(JComponent jc,
                                             final Rectangle rect,
                                             Rectangle bounds) {
@@ -512,14 +524,17 @@ final class WinVistaEditorTabCellRenderer extends AbstractTabCellRenderer {
 
     private static class WinVistaRightClipPainter implements TabPainter {
 
+        @Override
         public Insets getBorderInsets(Component c) {
             return new Insets(TOP_INSET, LEFT_INSET, BOTTOM_INSET, RIGHT_INSET);
         }
 
+        @Override
         public boolean isBorderOpaque() {
             return true;
         }
 
+        @Override
         public Polygon getInteriorPolygon(Component c) {
             WinVistaEditorTabCellRenderer ren = (WinVistaEditorTabCellRenderer) c;
 
@@ -539,6 +554,7 @@ final class WinVistaEditorTabCellRenderer extends AbstractTabCellRenderer {
             return p;
         }
 
+        @Override
         public void paintBorder(Component c, Graphics g, int x, int y,
                                 int width, int height) {
             WinVistaEditorTabCellRenderer ren = (WinVistaEditorTabCellRenderer) c;
@@ -577,17 +593,20 @@ final class WinVistaEditorTabCellRenderer extends AbstractTabCellRenderer {
             g.translate(-x, -y);
         }
 
+        @Override
         public void paintInterior(Graphics g, Component c) {
             WinVistaEditorTabCellRenderer ren = (WinVistaEditorTabCellRenderer) c;
             
             Polygon poly = getInteriorPolygon(ren);
-            paintTabGradient( g, ren, poly );
+            ren.paintTabGradient( g, poly );
         }
 
+        @Override
         public boolean supportsCloseButton(JComponent renderer) {
             return false;
         }
 
+        @Override
         public void getCloseButtonRectangle(JComponent jc,
                                             final Rectangle rect,
                                             Rectangle bounds) {

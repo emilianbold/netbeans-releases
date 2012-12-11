@@ -49,6 +49,7 @@ import java.awt.event.ActionEvent;
 import java.beans.BeanInfo;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 import java.io.IOException;
 import java.io.File;
 import java.net.MalformedURLException;
@@ -58,11 +59,13 @@ import java.net.URL;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.jar.JarFile;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
@@ -71,6 +74,7 @@ import javax.swing.ImageIcon;
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
 import javax.swing.filechooser.FileFilter;
+import org.netbeans.api.annotations.common.NonNull;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
@@ -106,7 +110,12 @@ import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.netbeans.spi.project.support.ant.ReferenceHelper;
 import org.netbeans.spi.java.project.support.ui.PackageView;
 import org.netbeans.spi.project.libraries.support.LibrariesSupport;
+import org.openide.filesystems.FileAttributeEvent;
+import org.openide.filesystems.FileChangeListener;
+import org.openide.filesystems.FileEvent;
+import org.openide.filesystems.FileRenameEvent;
 import org.openide.util.Exceptions;
+import org.openide.util.Parameters;
 import org.openide.util.Utilities;
 import org.openide.util.lookup.Lookups;
 
@@ -263,7 +272,7 @@ public final class LibrariesNode extends AbstractNode {
         //XXX: Workaround: classpath is used only to listen on non existent files.
         // This should be removed when there will be API for it
         // See issue: http://www.netbeans.org/issues/show_bug.cgi?id=33162
-        private ClassPath fsListener;
+        private RootsListener fsListener;
 
 
         LibrariesChildren (Project project, PropertyEvaluator eval, UpdateHelper helper, ReferenceHelper refHelper,
@@ -284,11 +293,12 @@ public final class LibrariesNode extends AbstractNode {
         @Override
         public void propertyChange(PropertyChangeEvent evt) {
             String propName = evt.getPropertyName();
-            final boolean propRoots = ClassPath.PROP_ROOTS.equals(propName);
+            final boolean propRoots = RootsListener.PROP_ROOTS.equals(propName);
             if (classPathProperty.equals(propName) || propRoots || LibraryManager.PROP_LIBRARIES.equals(propName)) {
                 synchronized (this) {
                     if (fsListener!=null) {
                         fsListener.removePropertyChangeListener (this);
+                        fsListener = null;
                     }
                 }
                 rp.post (new Runnable () {
@@ -405,13 +415,10 @@ public final class LibrariesNode extends AbstractNode {
             if (platformProperty!=null) {
                 result.add (Key.platform());
             }
-            //XXX: Workaround: Remove this when there will be API for listening on nonexistent files
-            // See issue: http://www.netbeans.org/issues/show_bug.cgi?id=33162
-            ClassPath cp = org.netbeans.spi.java.classpath.support.ClassPathSupport.createClassPath (rootsList.toArray(new URL[rootsList.size()]));
-            cp.addPropertyChangeListener (this);
-            cp.getRoots();
+            final RootsListener rootsListener = new RootsListener(rootsList);
+            rootsListener.addPropertyChangeListener(this);
             synchronized (this) {
-                fsListener = cp;
+                fsListener = rootsListener;
             }
             if (extraKeys != null) {
                 result.addAll(extraKeys.getExtraKeys());
@@ -980,6 +987,89 @@ public final class LibrariesNode extends AbstractNode {
                 }
             }
             return result;
+        }
+
+    }
+
+    private static class RootsListener implements FileChangeListener  {
+
+        static final String PROP_ROOTS = "roots";   //NOI18N
+
+        private final PropertyChangeSupport support = new PropertyChangeSupport(this);
+        private final Collection<File> listensOn;
+        private final AtomicInteger state = new AtomicInteger();
+
+        RootsListener(List<? extends URL> roots) {
+            listensOn = new HashSet<File>();
+            for (URL root : roots) {
+                try {
+                    final URL archiveURL = FileUtil.getArchiveFile(root);
+                    if (archiveURL != null) {
+                        root = archiveURL;
+                    }
+                    listensOn.add(Utilities.toFile(root.toURI()));
+                } catch (IllegalArgumentException e) {
+                    //Ignore - not a local file
+                } catch (URISyntaxException e) {
+                    //Ignore - not a local file
+                }
+            }
+        }
+
+
+        public void addPropertyChangeListener(@NonNull final PropertyChangeListener listener) {
+            Parameters.notNull("listener", listener);   //NOI18N
+            if (!state.compareAndSet(0, 1)) {
+                throw new IllegalStateException("Already in state: " + state.get());    //NOI18N
+            }
+            support.addPropertyChangeListener(listener);
+            for (File f : listensOn) {
+                FileUtil.addFileChangeListener(this, f);
+            }
+        }
+
+        public void removePropertyChangeListener(@NonNull final PropertyChangeListener listener) {
+            Parameters.notNull("listener", listener);   //NOI18N
+            if (!state.compareAndSet(1, 2)) {
+                throw new IllegalStateException("Already in state: " + state.get());    //NOI18N
+            }
+            support.removePropertyChangeListener(listener);
+            for (File f : listensOn) {
+                FileUtil.removeFileChangeListener(this, f);
+            }
+        }        
+
+        @Override
+        public void fileFolderCreated(FileEvent fe) {
+            fire();
+        }
+
+        @Override
+        public void fileDataCreated(FileEvent fe) {
+            fire();
+        }
+
+        @Override
+        public void fileChanged(FileEvent fe) {
+            fire();
+        }
+
+        @Override
+        public void fileDeleted(FileEvent fe) {
+            fire();
+        }
+
+        @Override
+        public void fileRenamed(FileRenameEvent fe) {
+            fire();
+        }
+
+        @Override
+        public void fileAttributeChanged(FileAttributeEvent fe) {
+        }
+
+        private void fire() {
+            support.firePropertyChange(PROP_ROOTS, null, null);
         }
 
     }

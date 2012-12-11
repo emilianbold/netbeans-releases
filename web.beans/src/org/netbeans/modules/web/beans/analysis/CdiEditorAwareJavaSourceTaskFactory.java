@@ -58,7 +58,7 @@ public abstract class CdiEditorAwareJavaSourceTaskFactory extends
 {
 
     protected CdiEditorAwareJavaSourceTaskFactory( Priority priority ) {
-        super(Phase.RESOLVED,  priority, TaskIndexingMode.ALLOWED_DURING_SCAN ,
+        super(Phase.RESOLVED,  priority, /*TaskIndexingMode.ALLOWED_DURING_SCAN ,*/
                 "text/x-java");    // NOI18N
     }
     

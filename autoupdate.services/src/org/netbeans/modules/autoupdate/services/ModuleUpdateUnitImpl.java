@@ -44,7 +44,6 @@
 
 package org.netbeans.modules.autoupdate.services;
 
-import java.io.File;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashSet;
@@ -58,8 +57,6 @@ import org.netbeans.api.autoupdate.UpdateManager.TYPE;
 import org.netbeans.api.autoupdate.UpdateUnit;
 import org.openide.modules.ModuleInfo;
 import static org.netbeans.modules.autoupdate.services.Bundle.*;
-import org.netbeans.updater.UpdateTracking;
-import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle.Messages;
 
 public class ModuleUpdateUnitImpl extends UpdateUnitImpl {
@@ -86,8 +83,7 @@ public class ModuleUpdateUnitImpl extends UpdateUnitImpl {
     public UpdateUnit getVisibleAncestor() {
         if (visibleAncestor == null) {
             assert getInstalled() != null : this + " is installed";
-            UpdateElementImpl installedImpl = Trampoline.API.impl(getInstalled());
-            String targetCluster = getTargetCluster(getInstalled());
+            ModuleUpdateElementImpl installedImpl = (ModuleUpdateElementImpl) Trampoline.API.impl(getInstalled());
             TreeSet<Module> visible = new TreeSet<Module> (new Comparator<Module> () {
 
                 @Override
@@ -100,6 +96,7 @@ public class ModuleUpdateUnitImpl extends UpdateUnitImpl {
                 visible.addAll(findVisibleAncestor(Utilities.toModule(mi), seen));
             }
             String cat = installedImpl.getCategory();
+            String installationCluster = installedImpl.getInstallationCluster();
             if (BROAD_CATEGORY.contains(cat)) {
                 cat = null;
             }
@@ -108,12 +105,16 @@ public class ModuleUpdateUnitImpl extends UpdateUnitImpl {
             UpdateUnit strike = null;
             for (Module visMod : visible) {
                 visibleAncestor = Utilities.toUpdateUnit(visMod);
-                String visTargetCluster = getTargetCluster(visibleAncestor.getInstalled());
-                boolean scored1 = targetCluster != null && targetCluster.equals(visTargetCluster);
-                boolean scored2 = cat != null && cat.equals(visibleAncestor.getInstalled().getCategory());
-                if (scored1) {
+                UpdateElementImpl visibleImpl = Trampoline.API.impl(visibleAncestor.getInstalled());
+                String visTargetCluster = null;
+                String visCat = null;
+                if (visibleImpl != null && visibleImpl instanceof ModuleUpdateElementImpl) {
+                    visTargetCluster = ((ModuleUpdateElementImpl) visibleImpl).getInstallationCluster();
+                    visCat = visibleImpl.getCategory();
+                }
+                if (installationCluster != null && installationCluster.equals(visTargetCluster)) {
                     spare = visibleAncestor;
-                } else if (scored2) {
+                } else if (visCat != null && visCat.equals(cat)) {
                     strike = visibleAncestor;
                     break;
                 } else if (shot == null) {
@@ -121,6 +122,17 @@ public class ModuleUpdateUnitImpl extends UpdateUnitImpl {
                 }
             }
             visibleAncestor = strike != null ? strike : spare != null ? spare : shot;
+            
+            // if it's still unknown - try visible representative in given cluster
+            if (visibleAncestor == null && installationCluster != null) {
+                for (UpdateElement visEl : UpdateManagerImpl.getInstance().getInstalledKits(installationCluster)) {
+                    visibleAncestor = visEl.getUpdateUnit();
+                    if (installedImpl.getRawCategory().equals(visEl.getCategory())) {
+                        visibleAncestor = visEl.getUpdateUnit();
+                        break;
+                    }
+                }
+            }
         }
         return visibleAncestor;
     }
@@ -131,7 +143,7 @@ public class ModuleUpdateUnitImpl extends UpdateUnitImpl {
         }
         Set<Module> visible = new HashSet<Module> ();
         ModuleManager manager = module.getManager();
-        Set<Module> moduleInterdependencies = manager.getModuleInterdependencies(module, true, false, true);
+        Set<Module> moduleInterdependencies = manager.getModuleInterdependencies(module, ! module.isEager(), false, true);
         for (Module m : moduleInterdependencies) {
             if (m.isEnabled() && Utilities.isKitModule(m)) {
                 visible.add(m);
@@ -162,35 +174,4 @@ public class ModuleUpdateUnitImpl extends UpdateUnitImpl {
         return res;
     }
 
-    private static String getTargetCluster(UpdateElement installed) {
-        ModuleUpdateElementImpl i = (ModuleUpdateElementImpl) Trampoline.API.impl(installed);
-        Module m = Utilities.toModule (i.getModuleInfo ());
-        if (m == null) {
-            return null;
-        }
-        File jarFile = m.getJarFile ();
-        String res = null;
-        
-        if (jarFile != null) {
-            for (File cluster : UpdateTracking.clusters (true)) {       
-                cluster = FileUtil.normalizeFile (cluster);
-                if (isParentOf (cluster, jarFile)) {
-                    res = cluster.getName();
-                    break;
-                }
-            }
-        } else {
-            return UpdateTracking.getPlatformDir().getName();
-        }
-        return res;
-    }
-    
-    private static boolean isParentOf (File parent, File child) {
-        File tmp = child.getParentFile ();
-        while (tmp != null && ! parent.equals (tmp)) {
-            tmp = tmp.getParentFile ();
-        }
-        return tmp != null;
-    }
-    
 }

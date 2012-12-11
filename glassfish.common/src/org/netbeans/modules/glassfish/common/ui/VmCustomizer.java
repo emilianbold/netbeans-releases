@@ -94,7 +94,7 @@ public class VmCustomizer extends javax.swing.JPanel {
         }
         String address = gm.getInstanceProperties().get(GlassfishModule.DEBUG_PORT);
         SpinnerNumberModel addressModel = (SpinnerNumberModel) addressValue.getModel();
-        if (null == address || "".equals(address)) {
+        if (null == address || "0".equals(address) || "".equals(address)) {
             useUserDefinedAddress.setSelected(false);
         } else {
             useUserDefinedAddress.setSelected(true);
@@ -132,7 +132,7 @@ public class VmCustomizer extends javax.swing.JPanel {
      * Set value of number stored in
      * <code>addressValue</code> field.
      * <p/>
-     * Value will be set to <code>-0</code> if there is any problem with
+     * Value will be set to <code>0</code> if there is any problem with
      * retrieving integer value from <code>String</code> argument.
      * <p/>
      * @param number Value of number to be stored in

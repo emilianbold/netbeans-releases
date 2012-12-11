@@ -1901,6 +1901,7 @@ outer:  do {
         public Processor() {
             super(TOP_GROUP.getTopLevelThreadGroup(), "Inactive RequestProcessor thread"); // NOI18N
             setDaemon(true);
+            assert !Thread.holdsLock(pool); // new Thread may lead to huge classloading
         }
 
         /** Provide an inactive Processor instance. It will return either
@@ -1910,20 +1911,26 @@ outer:  do {
          * @return inactive Processor
          */
         static Processor get() {
-            synchronized (pool) {
-                if (pool.isEmpty()) {
-                    Processor proc = new Processor();
-                    proc.idle = false;
-                    proc.start();
+            Processor newP = null;
+            for (;;) {
+                synchronized (pool) {
+                    if (pool.isEmpty()) {
+                        if (newP != null) {
+                            Processor proc = newP;
+                            proc.idle = false;
+                            proc.start();
 
-                    return proc;
-                } else {
-                    assert checkAccess(TOP_GROUP.getTopLevelThreadGroup());
-                    Processor proc = pool.pop();
-                    proc.idle = false;
+                            return proc;
+                        }
+                    } else {
+                        assert checkAccess(TOP_GROUP.getTopLevelThreadGroup());
+                        Processor proc = pool.pop();
+                        proc.idle = false;
 
-                    return proc;
+                        return proc;
+                    }
                 }
+                newP = new Processor();
             }
         }
         private static boolean checkAccess(ThreadGroup g) throws SecurityException {

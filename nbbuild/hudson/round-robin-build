@@ -17,7 +17,11 @@ dobuild() {
     if ant check-sigtests-version -Dsigtest.fail.on.error=true; then
         echo Sigtest version check OK
     else
+        echo ***************************************************
+        echo
         echo More info at http://wiki.netbeans.org/SignatureTest
+        echo
+        echo ***************************************************
         exit 6
     fi
 

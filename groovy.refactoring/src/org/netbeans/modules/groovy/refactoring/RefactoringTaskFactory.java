@@ -62,11 +62,15 @@ import org.openide.util.Lookup;
  *
  * @author Martin Janicek
  */
-public class RefactoringTaskFactory {
+public final class RefactoringTaskFactory {
 
     public enum RefactoringType {
         FIND_USAGES, RENAME, MOVE
     }
+
+    private RefactoringTaskFactory() {
+    }
+
 
     public static RefactoringTask createRefactoringTask(Lookup lookup, RefactoringType type) {
         final EditorCookie ec = lookup.lookup(EditorCookie.class);
@@ -77,20 +81,21 @@ public class RefactoringTaskFactory {
             return getNodeToElementTask(lookup, type);
         }
     }
-    
+
     private static RefactoringTask getTextComponentTask(Lookup lookup, RefactoringType type) {
         final EditorCookie ec = lookup.lookup(EditorCookie.class);
         final FileObject fileObject = getFileObject(lookup);
 
         switch (type) {
-            case FIND_USAGES: 
+            case FIND_USAGES:
                 return new FindUsagesTextComponentTask(ec, fileObject);
             case RENAME:
                 return new RenameRefactoringTextComponentTask(ec, fileObject);
             case MOVE:
                 return new MoveRefactoringTextComponentTask(ec, fileObject);
+            default:
+                return null;
         }
-        return null;
     }
 
     private static RefactoringTask getNodeToElementTask(Lookup lookup, RefactoringType type) {
@@ -105,6 +110,8 @@ public class RefactoringTaskFactory {
                 break;
             case MOVE:
                 return new MoveNodeToElementTask(nodes, fileObject);
+            default:
+                return null;
         }
         return null;
     }
@@ -128,7 +135,7 @@ public class RefactoringTaskFactory {
         return (dataObject != null) ? dataObject.getPrimaryFile() : null;
     }
 
-    
+
     private static class FindUsagesTextComponentTask extends TextComponentTask {
 
         public FindUsagesTextComponentTask(EditorCookie ec, FileObject fileObject) {
@@ -147,7 +154,7 @@ public class RefactoringTaskFactory {
     private static class FindUsagesNodeToElementTask extends NodeToElementTask {
 
         public FindUsagesNodeToElementTask(Collection<? extends Node> nodes, FileObject fileObject) {
-            super(nodes, fileObject);
+            super(fileObject);
         }
 
         @Override
@@ -192,7 +199,7 @@ public class RefactoringTaskFactory {
     private static class MoveNodeToElementTask extends NodeToElementTask {
 
         public MoveNodeToElementTask(Collection<? extends Node> nodes, FileObject fileObject) {
-            super(nodes, fileObject);
+            super(fileObject);
         }
 
         @Override

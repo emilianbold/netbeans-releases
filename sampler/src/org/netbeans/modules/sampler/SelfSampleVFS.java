@@ -153,6 +153,9 @@ implements AbstractFileSystem.List, AbstractFileSystem.Info, AbstractFileSystem.
 
     @Override
     public Object readAttribute(String name, String attrName) {
+        if ("java.io.File".equals(attrName)) {  // NOI18N
+            return findFile(name);
+        }
         return null;
     }
 

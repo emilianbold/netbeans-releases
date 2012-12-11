@@ -110,6 +110,7 @@ implements Runnable {
             }
         }, true);
         WAIT_CURSOR_CHECKER.setPriority(Thread.MIN_PRIORITY);
+        ignoreTill = System.currentTimeMillis() + PAUSE;
     }
 
     static void initialize() {

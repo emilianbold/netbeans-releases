@@ -67,7 +67,9 @@ import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.logging.Handler;
 import java.util.logging.Level;
+import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import java.util.prefs.AbstractPreferences;
 import java.util.prefs.BackingStoreException;
@@ -126,6 +128,7 @@ import org.openide.filesystems.URLMapper;
 import org.openide.filesystems.XMLFileSystem;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.lookup.Lookups;
@@ -474,7 +477,21 @@ public class HintTest {
 
         List<ErrorDescription> result = new ArrayList<ErrorDescription>();
 
-        for (Entry<HintDescription, List<ErrorDescription>> e : computeErrors(info, total, new AtomicBoolean()).entrySet()) {
+        Handler h = new Handler() {
+            @Override public void publish(LogRecord record) {
+                if (   record.getLevel().intValue() >= Level.WARNING.intValue()
+                    && record.getThrown() != null) {
+                    throw new IllegalStateException(record.getThrown());
+                }
+            }
+            @Override public void flush() { }
+            @Override public void close() throws SecurityException { }
+        };
+        Logger log = Logger.getLogger(Exceptions.class.getName());
+        log.addHandler(h);
+        Map<HintDescription, List<ErrorDescription>> errors = computeErrors(info, total, new AtomicBoolean());
+        log.removeHandler(h);
+        for (Entry<HintDescription, List<ErrorDescription>> e : errors.entrySet()) {
             result.addAll(e.getValue());
         }
 
@@ -971,7 +988,6 @@ public class HintTest {
         }
         
         private String reduceWhitespaces(String str) {
-            if (true) return str.replaceAll("[ \t\n]+", " ");
             StringBuilder result = new StringBuilder();
             int i = 0;
             boolean wasWhitespace = false;

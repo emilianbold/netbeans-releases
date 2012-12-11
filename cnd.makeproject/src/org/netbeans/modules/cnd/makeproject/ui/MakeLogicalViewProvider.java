@@ -89,9 +89,11 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
 
     private static final String brokenLinkBadgePath = "org/netbeans/modules/cnd/makeproject/ui/resources/brokenProjectBadge.gif"; // NOI18N
     private static final String brokenProjectBadgePath = "org/netbeans/modules/cnd/makeproject/ui/resources/brokenProjectBadge.gif"; // NOI18N
+    private static final String brokenFolderBadgePath = "org/netbeans/modules/cnd/makeproject/ui/resources/brokenProjectBadge.gif"; // NOI18N
     private static final String brokenIncludeImgPath = "org/netbeans/modules/cnd/makeproject/ui/resources/brokenIncludeBadge.png"; // NOI18N
     static final Image brokenLinkBadge = loadToolTipImage(brokenLinkBadgePath, "BrokenLinkTxt"); // NOI18N
     static final Image brokenProjectBadge = loadToolTipImage(brokenProjectBadgePath, "BrokenProjectTxt"); // NOI18N
+    static final Image brokenFolderBadge = loadToolTipImage(brokenFolderBadgePath, "BrokenFolderTxt"); // NOI18N
     static final Image brokenIncludeBadge = loadToolTipImage(brokenIncludeImgPath, "BrokenIncludeTxt"); // NOI18N
     static final String SUBTYPE = "x-org-netbeans-modules-cnd-makeproject-uidnd"; // NOI18N
     static final String SUBTYPE_FOLDER = "x-org-netbeans-modules-cnd-makeproject-uidnd-folder"; // NOI18N
@@ -329,25 +331,37 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
     }
 
     public static void setVisible(final Project project, final Item[] items) {
-        SwingUtilities.invokeLater(new Runnable() {
+        final Runnable runnable = new Runnable() {
+
             @Override
             public void run() {
-                Node rootNode = ProjectTabBridge.getInstance().getExplorerManager().getRootContext();
-                List<Node> nodes = new ArrayList<Node>();
-                for (int i = 0; i < items.length; i++) {
-                    Node root = findProjectNode(rootNode, project);
+                SwingUtilities.invokeLater(new Runnable() {
 
-                    if (root != null) {
-                        nodes.add(findItemNode(root, items[i]));
+                    @Override
+                    public void run() {
+                        Node rootNode = ProjectTabBridge.getInstance().getExplorerManager().getRootContext();
+                        List<Node> nodes = new ArrayList<Node>();
+                        for (int i = 0; i < items.length; i++) {
+                            Node root = findProjectNode(rootNode, project);
+
+                            if (root != null) {
+                                nodes.add(findItemNode(root, items[i]));
+                            }
+                        }
+                        try {
+                            ProjectTabBridge.getInstance().getExplorerManager().setSelectedNodes(nodes.toArray(new Node[0]));
+                        } catch (Exception e) {
+                            // skip
+                        }
                     }
-                }
-                try {
-                    ProjectTabBridge.getInstance().getExplorerManager().setSelectedNodes(nodes.toArray(new Node[0]));
-                } catch (Exception e) {
-                    // skip
-                }
+                });
             }
-        });
+        };
+        // See IZ223587. The intention is to guarantee that the selection logic
+        // is executed after update loop is performed.
+        // Unfortunately this approach uses static metod (as there is no access
+        // to the needed children refresher...
+        BaseMakeViewChildren.postSetVisibleAction(runnable);
     }
 
     public static void checkForChangedName(final Project project) {
@@ -373,17 +387,19 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
         if (CndUtils.isStandalone()) {
             return;
         }
+        if (delta.getAdded().isEmpty() &&
+            //delta.getChanged().isEmpty() &&
+            delta.getDeleted().isEmpty() &&
+            delta.getExcluded().isEmpty() &&
+            delta.getIncluded().isEmpty() &&
+            delta.getReplaced().isEmpty()) {
+            // only changed properties => no changes in project tree
+            return;
+        }
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
-                Node rootNode = ProjectTabBridge.getInstance().getExplorerManager().getRootContext();
-                Node root = findProjectNode(rootNode, project);
-                if (root != null) {
-                    MakeLogicalViewProvider provider = project.getLookup().lookup(MakeLogicalViewProvider.class);
-                    if (provider != null && provider.projectRootNode != null) {
-                        provider.projectRootNode.reInit(provider.projectRootNode.getMakeConfigurationDescriptor());
-                    }
-                }
+                checkForChangedViewItemNodes(project);
             }
         });
     }

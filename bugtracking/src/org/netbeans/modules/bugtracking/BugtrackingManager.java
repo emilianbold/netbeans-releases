@@ -43,8 +43,6 @@
  */
 package org.netbeans.modules.bugtracking;
 
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -58,15 +56,11 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.bugtracking.kenai.spi.KenaiAccessor;
 import org.netbeans.modules.bugtracking.spi.BugtrackingConnector;
-import org.netbeans.modules.bugtracking.ui.issue.IssueTopComponent;
 import org.netbeans.modules.bugtracking.kenai.spi.RecentIssue;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
 import org.openide.util.RequestProcessor;
-import org.openide.windows.TopComponent;
-import org.openide.windows.TopComponent.Registry;
-import org.openide.windows.WindowManager;
 
 /**
  * Top level class that manages issues from all repositories.  
@@ -205,4 +199,13 @@ public final class BugtrackingManager implements LookupListener {
         }
     }
 
+    DelegatingConnector getConnector(String connectorId) {
+        assert connectorId != null;
+        for(DelegatingConnector c : getConnectors()) {
+            if(connectorId.equals(c.getID())) {
+                return c;
+            }
+        }
+        return null;
+    }
 }

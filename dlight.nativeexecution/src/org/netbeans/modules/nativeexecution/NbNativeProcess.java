@@ -138,6 +138,10 @@ public abstract class NbNativeProcess extends AbstractNativeProcess {
             command.add(envFile);
         }
 
+        if (info.isRedirectError()) {
+            command.add("--redirect-error"); // NOI18N
+        }
+
         MacroMap userEnv = info.getEnvironment();
         if (userEnv != null) {
             Map<String, String> userDefinedMap = userEnv.getUserDefinedMap();
@@ -156,7 +160,8 @@ public abstract class NbNativeProcess extends AbstractNativeProcess {
         if (info.isCommandLineDefined()) {
             command.add(hostInfo.getShell());
             command.add("-c"); // NOI18N
-            command.add("exec " + info.getCommandLineForShell()); // NOI18N
+            final String origCommand = info.getCommandLineForShell();
+            command.add("exec " + origCommand); // NOI18N
         } else {
             command.add(fixForWindows(info.getExecutable()));
             command.addAll(info.getArguments());

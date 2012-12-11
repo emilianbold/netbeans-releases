@@ -161,7 +161,7 @@ public final class ServerListImpl {
             listenersCopy = new ArrayList<PropertyChangeListener>(listeners.size());
             for (WeakReference<PropertyChangeListener> ref : listeners) {
                 PropertyChangeListener listener = ref.get();
-                if (ref != null) {
+                if (listener != null) {
                     listenersCopy.add(listener);
                 }
             }

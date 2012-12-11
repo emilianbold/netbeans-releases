@@ -60,16 +60,18 @@ public final class ProjectFoldersValidator {
         return result;
     }
 
-    public void validate(File projectDirectory, File siteRootFolder, File testFolder) {
+    public ProjectFoldersValidator validate(File projectDirectory, File siteRootFolder, File testFolder) {
         validateSiteRootFolder(siteRootFolder);
         validateTestFolder(projectDirectory, testFolder);
+        return this;
     }
 
     @NbBundle.Messages("ProjectFoldersValidator.error.siteRoot.invalid=Site Root must be a valid directory.")
-    public void validateSiteRootFolder(File siteRootFolder) {
+    public ProjectFoldersValidator validateSiteRootFolder(File siteRootFolder) {
         if (siteRootFolder == null || !siteRootFolder.isDirectory()) {
             result.addError(new ValidationResult.Message(SITE_ROOT_FOLDER, Bundle.ProjectFoldersValidator_error_siteRoot_invalid()));
         }
+        return this;
     }
 
     @NbBundle.Messages({

@@ -91,6 +91,13 @@ public final class LexUtilities {
     }
 
     @CheckForNull
+    public static TokenSequence<? extends JsTokenId> getTokenSequence(Document doc,
+            int offset, Language<JsTokenId> language) {
+        TokenHierarchy<Document> th = TokenHierarchy.get(doc);
+        return getTokenSequence(th, offset, language);
+    }
+
+    @CheckForNull
     public static TokenSequence<? extends JsTokenId> getJsTokenSequence(Snapshot snapshot,
             int offset) {
         TokenHierarchy<?> th = snapshot.getTokenHierarchy();
@@ -225,8 +232,8 @@ public final class LexUtilities {
         return OffsetRange.NONE;
     }
 
-    public static Token<? extends JsTokenId> getToken(Document doc, int offset) {
-        TokenSequence<? extends JsTokenId> ts = getJsPositionedSequence(doc, offset);
+    public static Token<? extends JsTokenId> getToken(Document doc, int offset, Language<JsTokenId> language) {
+        TokenSequence<? extends JsTokenId> ts = getPositionedSequence(doc, offset, language);
 
         if (ts != null) {
             return ts.token();
@@ -235,8 +242,8 @@ public final class LexUtilities {
         return null;
     }
 
-    public static char getTokenChar(Document doc, int offset) {
-        Token<? extends JsTokenId> token = getToken(doc, offset);
+    public static char getTokenChar(Document doc, int offset, Language<JsTokenId> language) {
+        Token<? extends JsTokenId> token = getToken(doc, offset, language);
 
         if (token != null) {
             String text = token.text().toString();
@@ -256,9 +263,9 @@ public final class LexUtilities {
      * @param open the token that increses the count
      * @param close the token that decreses the count
      */
-    public static int getTokenBalance(Document doc, TokenId open, TokenId close, int offset)
-        throws BadLocationException {
-        TokenSequence<? extends JsTokenId> ts = LexUtilities.getJsTokenSequence(doc, offset);
+    public static int getTokenBalance(Document doc, TokenId open, TokenId close,
+            int offset, Language<JsTokenId> language) throws BadLocationException {
+        TokenSequence<? extends JsTokenId> ts = LexUtilities.getTokenSequence(doc, offset, language);
         if (ts == null) {
             return 0;
         }
@@ -290,7 +297,7 @@ public final class LexUtilities {
      * This will return false for lines that contain comments (even when the
      * offset is within the comment portion) but also contain code.
      */
-    public static boolean isCommentOnlyLine(BaseDocument doc, int offset)
+    public static boolean isCommentOnlyLine(BaseDocument doc, int offset, Language<JsTokenId> language)
             throws BadLocationException {
 
         int begin = Utilities.getRowFirstNonWhite(doc, offset);
@@ -299,7 +306,7 @@ public final class LexUtilities {
             return false; // whitespace only
         }
 
-        Token<? extends JsTokenId> token = LexUtilities.getToken(doc, begin);
+        Token<? extends JsTokenId> token = LexUtilities.getToken(doc, begin, language);
         if (token != null) {
             return token.id() == JsTokenId.LINE_COMMENT;
         }
@@ -348,6 +355,11 @@ public final class LexUtilities {
     public static TokenSequence<? extends JsTokenId> getPositionedSequence(
             Document doc, int offset, Language<JsTokenId> language) {
         return getPositionedSequence(doc, offset, true, language);
+    }
+
+    public static TokenSequence<? extends JsTokenId> getPositionedSequence(
+            Snapshot snapshot, int offset, Language<JsTokenId> language) {
+        return getPositionedSequence(snapshot, offset, true, language);
     }
 
     public static TokenSequence<? extends JsTokenId> getJsPositionedSequence(

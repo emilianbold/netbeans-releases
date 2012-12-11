@@ -497,7 +497,7 @@ public final class ActionsManager {
                 sb.append(".registerActionsProviders:");
                 for (ActionsProvider ap : aps) {
                     sb.append("\n  ");
-                    sb.append(ap.toString());
+                    sb.append(ap != null ? ap.toString() : "NULL element in list " + System.identityHashCode(aps)); // NOI18N
                 }
                 sb.append("\n");
                 logger.info(sb.toString());

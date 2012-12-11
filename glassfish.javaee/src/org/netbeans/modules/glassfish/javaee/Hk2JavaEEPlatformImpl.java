@@ -48,33 +48,26 @@ import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
-
-import org.netbeans.api.java.platform.JavaPlatform;
-import org.netbeans.modules.j2ee.deployment.common.api.J2eeLibraryTypeProvider;
-import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule.Type;
-import org.netbeans.modules.glassfish.spi.ServerUtilities;
-import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.api.j2ee.core.Profile;
-import org.netbeans.api.java.classpath.JavaClassPathConstants;
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.classpath.JavaClassPathConstants;
+import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.java.project.classpath.ProjectClassPathModifier;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.glassfish.spi.GlassfishModule;
+import org.netbeans.modules.glassfish.spi.ServerUtilities;
+import org.netbeans.modules.j2ee.deployment.common.api.J2eeLibraryTypeProvider;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule.Type;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.J2eePlatformImpl2;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.support.LookupProviderSupport;
@@ -83,18 +76,13 @@ import org.netbeans.modules.javaee.specs.support.api.JaxWs;
 import org.netbeans.modules.javaee.specs.support.spi.JaxRsStackSupportImplementation;
 import org.netbeans.modules.websvc.wsstack.api.WSStack;
 import org.netbeans.modules.websvc.wsstack.spi.WSStackFactory;
+import org.netbeans.api.project.libraries.Library;
 import org.netbeans.spi.project.libraries.LibraryImplementation;
-import org.openide.filesystems.FileAttributeEvent;
-import org.openide.filesystems.FileChangeListener;
-import org.openide.filesystems.FileEvent;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileRenameEvent;
-import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.URLMapper;
-import org.openide.util.Exceptions;
+import org.openide.filesystems.*;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
+import org.openide.util.Utilities;
 import org.openide.util.lookup.Lookups;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
@@ -113,6 +101,8 @@ public class Hk2JavaEEPlatformImpl extends J2eePlatformImpl2 {
     private FileChangeListener fcl;
     /** Keep local Lookup instance to be returned by getLookup method. */
     private volatile Lookup lkp;
+    /** Jersey Library support. */
+    private Hk2LibraryProvider libraryProvider;
 
     /**
      * 
@@ -121,6 +111,7 @@ public class Hk2JavaEEPlatformImpl extends J2eePlatformImpl2 {
     public Hk2JavaEEPlatformImpl(Hk2DeploymentManager dm, Hk2JavaEEPlatformFactory pf) {
         this.dm = dm;
         this.pf = pf;
+        this.libraryProvider = new Hk2LibraryProvider(dm);
         addFcl();
         initLibraries();
     }
@@ -310,7 +301,7 @@ public class Hk2JavaEEPlatformImpl extends J2eePlatformImpl2 {
                 return cPath.toArray(new File[cPath.size()]);
             }
 
-            File domainDir = null;
+            File domainDir;
             File gfRoot = new File(gfRootStr);
             if ((gfRoot != null) && (gfRoot.exists())) {
                 String domainDirName = dm.getProperties().getDomainDir();
@@ -566,7 +557,16 @@ public class Hk2JavaEEPlatformImpl extends J2eePlatformImpl2 {
         }
         return null;
     }
-    
+
+    /**
+     * Get GlassFish bundled libraries provider.
+     * <p/>
+     * @return GlassFish bundled libraries provider.
+     */
+    public Hk2LibraryProvider getLibraryProvider() {
+        return libraryProvider;
+    }
+
     private class JaxRsStackSupportImpl implements JaxRsStackSupportImplementation {
         
         private static final String VERSION_30X = "v3";     // NOI18N
@@ -577,20 +577,34 @@ public class Hk2JavaEEPlatformImpl extends J2eePlatformImpl2 {
          */
         @Override
         public boolean addJsr311Api( Project project ) {
+            Library library = libraryProvider.getJaxRsLibrary();
+            if ( library!= null ){
+                try {
+                    return ProjectClassPathModifier.addLibraries(
+                            new Library[] { library }, getSourceRoot(project), 
+                            ClassPath.COMPILE);
+                }
+                catch (UnsupportedOperationException ex) {
+                    return false;
+                }
+                catch (IOException e) {
+                    return false;
+                }
+            }
             String version = getGFVersion();
             try {
                 if (version == null) {
                     return false;
-                } 
+                }
                 else if (version.startsWith(VERSION_30X)) {
-                    File jsr311 = ServerUtilities.getJarName(dm.getProperties().
-                            getGlassfishRoot(), "jsr311-api.jar");          // NOI18N
-                    if ( jsr311== null || !jsr311.exists()){
+                    File jsr311 = ServerUtilities.getJarName(dm.getProperties()
+                            .getGlassfishRoot(), "jsr311-api.jar"); // NOI18N
+                    if (jsr311 == null || !jsr311.exists()) {
                         return false;
                     }
-                    return addJars(project, Collections.singletonList(
-                            jsr311.toURI().toURL()));
-                } 
+                    return addJars(project, Collections.singletonList(Utilities
+                            .toURI(jsr311).toURL()));
+                }
                 else if (version.startsWith(VERSION_31X)) {
                     File jerseyCore = ServerUtilities.getJarName(dm.getProperties().
                             getGlassfishRoot(), "jersey-core.jar");          // NOI18N
@@ -598,7 +612,7 @@ public class Hk2JavaEEPlatformImpl extends J2eePlatformImpl2 {
                         return false;
                     }
                     return addJars(project, Collections.singletonList(
-                            jerseyCore.toURI().toURL()));
+                            Utilities.toURI(jerseyCore).toURL()));
                 }
             } catch (MalformedURLException ex) {
                 return false;
@@ -611,16 +625,57 @@ public class Hk2JavaEEPlatformImpl extends J2eePlatformImpl2 {
          */
         @Override
         public boolean extendsJerseyProjectClasspath( Project project ) {
-            List<URL> urls = getJerseyLibraryURLs();
+            Library library = libraryProvider.getJerseyLibrary();
+            FileObject sourceRoot = getSourceRoot(project);
+            if (sourceRoot == null) {
+                return false;
+            }
+            try {
+                String classPathType;
+                if (hasJee6Profile()) {
+                    classPathType = JavaClassPathConstants.COMPILE_ONLY;
+                }
+                else {
+                    classPathType = ClassPath.COMPILE;
+                }
+                return ProjectClassPathModifier.addLibraries(
+                        new Library[] { library }, sourceRoot, classPathType);
+            }
+            catch (UnsupportedOperationException ex) {
+                return false;
+            }
+            catch (IOException e) {
+                return false;
+            }
+            /*List<URL> urls = getJerseyLibraryURLs();
             if ( urls.size() >0 ){
                 return addJars( project , urls );
-            }
-            return false;
+            }*/
         }
         
         @Override
         public void removeJaxRsLibraries(Project project) {
-            List<URL> urls = getJerseyLibraryURLs();
+            Library library = libraryProvider.getJerseyLibrary();
+            FileObject sourceRoot = getSourceRoot(project);
+            if ( sourceRoot != null){
+                String[] classPathTypes = new String[]{ ClassPath.COMPILE , 
+                        JavaClassPathConstants.COMPILE_ONLY };
+                for (String type : classPathTypes) {
+                    try {
+                        ProjectClassPathModifier.removeLibraries( new Library[]{
+                                library} ,sourceRoot, type);
+                    }    
+                    catch(UnsupportedOperationException ex) {
+                        Logger.getLogger( JaxRsStackSupportImpl.class.getName() ).
+                                log (Level.INFO, null , ex );
+                    }
+                    catch( IOException e ){
+                        Logger.getLogger( JaxRsStackSupportImpl.class.getName() ).
+                                log(Level.INFO, null , e );
+                    }
+                }     
+            }
+            /*List<URL> urls = getJerseyLibraryURLs();
             if ( urls.size() >0 ){
                 SourceGroup[] sourceGroups = ProjectUtils.getSources(project).getSourceGroups(
                     JavaProjectConstants.SOURCES_TYPE_JAVA);
@@ -643,7 +698,7 @@ public class Hk2JavaEEPlatformImpl extends J2eePlatformImpl2 {
                                 log(Level.INFO, null , e );
                     }
                 }     
-            }
+            }*/
         }
         
         @Override
@@ -667,6 +722,15 @@ public class Hk2JavaEEPlatformImpl extends J2eePlatformImpl2 {
                 }
             }
             return false;
+        }
+
+        private FileObject getSourceRoot(Project project) {
+            SourceGroup[] sourceGroups = ProjectUtils.getSources(project)
+                    .getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
+            if (sourceGroups == null || sourceGroups.length < 1) {
+                return null;
+            }
+            return sourceGroups[0].getRootFolder();
         }
         
         private boolean hasJee6Profile(){
@@ -748,7 +812,7 @@ public class Hk2JavaEEPlatformImpl extends J2eePlatformImpl2 {
                 return;
             }
             try {
-                urls.add( file.toURI().toURL());
+                urls.add(Utilities.toURI(file).toURL());
             } catch (MalformedURLException ex) {
                 // ignore the file
             }

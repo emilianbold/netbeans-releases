@@ -203,7 +203,8 @@ public class SlidingButtonUI extends BasicToggleButtonUI {
         
         Insets insets = b.getInsets();
         Insets margin = b.getMargin();
-        
+        if( null == insets || null == margin )
+            return;
         g.fillRect(insets.left - margin.left,
             insets.top - margin.top,
         size.width - (insets.left-margin.left) - (insets.right - margin.right),

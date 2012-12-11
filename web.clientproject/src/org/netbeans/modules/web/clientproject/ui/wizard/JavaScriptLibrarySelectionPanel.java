@@ -44,6 +44,7 @@ package org.netbeans.modules.web.clientproject.ui.wizard;
 import java.awt.EventQueue;
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
@@ -56,9 +57,11 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
+import org.netbeans.modules.web.clientproject.api.network.NetworkSupport;
 import org.netbeans.modules.web.clientproject.spi.SiteTemplateImplementation;
 import org.netbeans.modules.web.clientproject.ui.JavaScriptLibrarySelection;
 import org.netbeans.modules.web.clientproject.ui.JavaScriptLibrarySelection.SelectedLibrary;
+import org.netbeans.modules.web.clientproject.ui.customizer.ClientSideProjectProperties;
 import org.netbeans.modules.web.clientproject.util.ClientSideProjectUtilities;
 import org.netbeans.modules.web.clientproject.util.FileUtilities;
 import org.netbeans.modules.web.common.api.Pair;
@@ -132,6 +135,8 @@ public class JavaScriptLibrarySelectionPanel implements WizardDescriptor.Asynchr
     public void storeSettings(WizardDescriptor settings) {
         wizardDescriptor.putProperty(ClientSideProjectWizardIterator.NewProjectWizard.LIBRARIES_FOLDER, librariesFolder);
         wizardDescriptor.putProperty(ClientSideProjectWizardIterator.NewProjectWizard.LIBRARIES_PATH, javaScriptLibrarySelection.getLibrariesFolder());
+        wizardDescriptor.putProperty(ClientSideProjectWizardIterator.NewProjectWizard.LIBRARY_NAMES,
+                ClientSideProjectProperties.createListOfJsLibraries(getComponent().getSelectedLibraries()));
     }
 
     @Override
@@ -149,20 +154,27 @@ public class JavaScriptLibrarySelectionPanel implements WizardDescriptor.Asynchr
         ProgressHandle progressHandle = ProgressHandleFactory.createHandle(Bundle.JavaScriptLibrarySelectionPanel_jsLibs_downloading());
         progressHandle.start();
         List<SelectedLibrary> selectedLibraries = getComponent().getSelectedLibraries();
-        asynchError = false;
         try {
-            FileUtilities.cleanupFolder(librariesFolder);
-            if (selectedLibraries.isEmpty()) {
-                // clean up failed libraries
-                getComponent().updateFailedLibraries(Collections.<SelectedLibrary>emptyList());
-                return;
-            }
-            List<SelectedLibrary> failedLibs = ClientSideProjectUtilities.applyJsLibraries(selectedLibraries, getComponent().getLibrariesFolder(), librariesFolder, progressHandle);
-            getComponent().updateFailedLibraries(failedLibs);
-            if (!failedLibs.isEmpty()) {
+            for (;;) {
+                asynchError = false;
+                FileUtilities.cleanupFolder(librariesFolder);
+                if (selectedLibraries.isEmpty()) {
+                    // clean up failed libraries
+                    getComponent().updateFailedLibraries(Collections.<SelectedLibrary>emptyList());
+                    return;
+                }
+                List<SelectedLibrary> failedLibs = ClientSideProjectUtilities.applyJsLibraries(
+                        selectedLibraries, getComponent().getLibrariesFolder(), librariesFolder, progressHandle);
+                getComponent().updateFailedLibraries(failedLibs);
+                if (failedLibs.isEmpty()) {
+                    // everything ok
+                    return;
+                }
                 asynchError = true;
                 LOGGER.log(Level.INFO, "Failed download of JS libraries: {0}", failedLibs);
-                throw new WizardValidationException(getComponent(), "ERROR_DOWNLOAD", Bundle.JavaScriptLibrarySelectionPanel_error_downloading(failedLibs.size())); // NOI18N
+                if (!NetworkSupport.showNetworkErrorDialog(convertToStrings(failedLibs))) {
+                    throw new WizardValidationException(getComponent(), "ERROR_DOWNLOAD", Bundle.JavaScriptLibrarySelectionPanel_error_downloading(failedLibs.size())); // NOI18N
+                }
             }
         } catch (IOException ex) {
             LOGGER.log(Level.INFO, null, ex);
@@ -233,6 +245,14 @@ public class JavaScriptLibrarySelectionPanel implements WizardDescriptor.Asynchr
                 }
             }
         }
+    }
+
+    List<String> convertToStrings(List<SelectedLibrary> failedLibs) {
+        List<String> result = new ArrayList<String>(failedLibs.size());
+        for (SelectedLibrary library : failedLibs) {
+            result.add(library.getLibraryVersion().getLibrary().getDisplayName());
+        }
+        return result;
     }
 
     //~ Inner classes

@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.refactoring.java.ui;
 
+import com.sun.source.tree.ArrayTypeTree;
 import org.netbeans.modules.refactoring.java.api.ReplaceConstructorWithBuilderRefactoring;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.Tree;
@@ -53,6 +54,8 @@ import java.util.List;
 import java.util.Set;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.fileinfo.NonRecursiveFolder;
@@ -60,7 +63,6 @@ import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.netbeans.modules.refactoring.api.Problem;
-import org.netbeans.modules.refactoring.java.ui.JavaRefactoringUIFactory;
 import org.netbeans.modules.refactoring.spi.ui.CustomRefactoringPanel;
 import org.netbeans.modules.refactoring.spi.ui.RefactoringUI;
 import org.openide.filesystems.FileObject;
@@ -78,19 +80,31 @@ public class ReplaceConstructorWithBuilderUI implements RefactoringUI, JavaRefac
     private ReplaceConstructorWithBuilderPanel panel;
     private String name;
     private List <String> paramaterNames;
-    private List <String> parameterTypes; 
+    private List <String> parameterTypes;
 
     private ReplaceConstructorWithBuilderUI(TreePathHandle constructor, CompilationInfo info) {
         this.refactoring = new ReplaceConstructorWithBuilderRefactoring(constructor);
-        this.name = constructor.resolveElement(info).getSimpleName().toString();
+        ExecutableElement contructorElement = (ExecutableElement) constructor.resolveElement(info);
+        this.name = contructorElement.getSimpleName().toString();
         MethodTree constTree = (MethodTree) constructor.resolve(info).getLeaf();
         paramaterNames = new ArrayList();
         parameterTypes = new ArrayList();
-        for (VariableTree var:constTree.getParameters()) {
+        boolean varargs = contructorElement.isVarArgs();
+        List<? extends VariableTree> parameters = constTree.getParameters();
+        for (int i = 0; i < parameters.size(); i++) {
+            VariableTree var = parameters.get(i);
             paramaterNames.add(var.getName().toString());
-            parameterTypes.add(var.getType().toString());
+            String type = var.getType().toString();
+            if(varargs && i+1 == parameters.size()) {
+                if(var.getType().getKind() == Tree.Kind.ARRAY_TYPE) {
+                    ArrayTypeTree att = (ArrayTypeTree) var.getType();
+                    type = att.getType().toString();
+                    type += "..."; //NOI18N
+                }
+            }
+            parameterTypes.add(type);
         }
-        builderFQN = ((TypeElement) constructor.resolveElement(info).getEnclosingElement()).getQualifiedName().toString();
+        builderFQN = ((TypeElement) contructorElement.getEnclosingElement()).getQualifiedName().toString();
     }
 
     private ReplaceConstructorWithBuilderUI() {
@@ -162,7 +176,8 @@ public class ReplaceConstructorWithBuilderUI implements RefactoringUI, JavaRefac
         }
         if (path != null && treeKinds.contains(path.getLeaf().getKind())) {
             Element selected = info.getTrees().getElement(path);
-            if (selected.getKind() == ElementKind.CONSTRUCTOR && selected.getEnclosingElement().getKind() != ElementKind.ENUM) {
+            if (selected.getKind() == ElementKind.CONSTRUCTOR &&
+                    selected.getEnclosingElement().getKind() != ElementKind.ENUM) {
                 return new ReplaceConstructorWithBuilderUI(TreePathHandle.create(selected, info), info);
             }
         }

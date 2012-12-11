@@ -42,6 +42,8 @@
 package org.netbeans.core.windows.view.ui.tabcontrol.tabbedpane;
 
 import java.awt.BorderLayout;
+import java.awt.Font;
+import java.awt.Graphics;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import javax.swing.Icon;
@@ -60,7 +62,15 @@ import org.openide.util.NbBundle;
 public class CloseableTabComponent extends JPanel {
 
     private final NBTabbedPane parent;
-    private final JLabel lblTitle = new JLabel();
+    private final JLabel lblTitle = new JLabel(){
+        @Override
+        public void paint(Graphics g) {
+            //#220901
+	    setFont(getFont().deriveFont(Font.PLAIN));
+            super.paint(g);
+            setFont(getFont().deriveFont(Font.BOLD | Font.ITALIC));
+        }
+    };
     private final JButton closeButton;
 
     public CloseableTabComponent(Icon icon, String title, boolean closeable, String tooltip, final NBTabbedPane parent, MouseListener controller) {

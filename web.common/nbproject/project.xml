@@ -208,6 +208,7 @@
                 <friend>org.netbeans.modules.html.navigator</friend>
                 <friend>org.netbeans.modules.html.parser</friend>
                 <friend>org.netbeans.modules.html.validation</friend>
+                <friend>org.netbeans.modules.javascript.jstestdriver</friend>
                 <friend>org.netbeans.modules.maven.j2ee</friend>
                 <friend>org.netbeans.modules.php.project</friend>
                 <friend>org.netbeans.modules.ruby.railsprojects</friend>

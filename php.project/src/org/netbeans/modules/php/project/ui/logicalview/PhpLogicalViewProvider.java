@@ -348,7 +348,8 @@ public class PhpLogicalViewProvider implements LogicalViewProvider {
 
         @Override
         public String getName() {
-            return projectInfo.getName();
+            // i would expect getName() here but see #222588
+            return projectInfo.getDisplayName();
         }
 
         @Override

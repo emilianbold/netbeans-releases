@@ -766,7 +766,14 @@ public final class ParserQueue {
                     latch = projectsAwaitLatches.get(project);
                     if (latch == null) {
                         latch = new ProjectWaitLatch();
+                        if (TraceFlags.TRACE_CLOSE_PROJECT) {
+                            Utils.LOG.log(Level.WARNING, "Adding a latch {0} for {1}:{2}", new Object[] { System.identityHashCode(latch), project.getName(), System.identityHashCode(project)});
+                        } 
                         projectsAwaitLatches.put(project, latch);
+                    } else {
+                        if (TraceFlags.TRACE_CLOSE_PROJECT) {
+                            Utils.LOG.log(Level.WARNING, "Reuse latch {0} for {1}:{2}", new Object[]{System.identityHashCode(latch), project.getName(), System.identityHashCode(project)});
+                        }
                     }
                 }
             }
@@ -879,8 +886,6 @@ public final class ParserQueue {
             if (idle) {
                 ProgressSupport.instance().fireIdle();
             }
-            // notify all "wait" empty listeners
-            notifyWaitEmpty(project);
         }
     }
 
@@ -903,6 +908,8 @@ public final class ParserQueue {
             }
         }
         if (last) {
+            // notify all "wait" empty listeners
+            notifyWaitEmpty(project);
             project.notifyOnWaitParseLock();
             ProgressSupport.instance().fireProjectParsingFinished(project);
         }
@@ -910,8 +917,14 @@ public final class ParserQueue {
 
     private void notifyWaitEmpty(ProjectBase project) {
         synchronized (projectsAwaitLatches) {
+            if (TraceFlags.TRACE_CLOSE_PROJECT) {
+                Utils.LOG.log(Level.WARNING, "notifyWaitEmpty for {0}:{1}", new Object[] {project.getName(), System.identityHashCode(project)});
+            }
             CountDownLatch latch = projectsAwaitLatches.remove(project);
             if (latch != null) {
+                if (TraceFlags.TRACE_CLOSE_PROJECT) {
+                    Utils.LOG.log(Level.WARNING, "notifyWaitEmpty on latch {0} for {1}:{2}", new Object[] { System.identityHashCode(latch), project.getName(), System.identityHashCode(project)});
+                } 
                 latch.countDown();
             }
         }

@@ -112,9 +112,9 @@ public class RunPanel extends JPanel implements DocumentListener, ItemListener, 
     public void addNotify() {
         super.addNotify();
         File siteRoot = getSiteRoot();
-        ProjectFoldersValidator projectFoldersValidator = new ProjectFoldersValidator();
-        projectFoldersValidator.validateSiteRootFolder(siteRoot);
-        ValidationResult result = projectFoldersValidator.getResult();
+        ValidationResult result = new ProjectFoldersValidator()
+                .validateSiteRootFolder(siteRoot)
+                .getResult();
         boolean siteRootValid = !result.hasErrors();
         String info;
         if (siteRootValid) {
@@ -173,8 +173,8 @@ public class RunPanel extends JPanel implements DocumentListener, ItemListener, 
     }
 
     private void validateData() {
-        RunProjectValidator validator = new RunProjectValidator();
-        validator.validateStartFile(getSiteRoot(), getResolvedStartFile());
+        RunProjectValidator validator = new RunProjectValidator()
+                .validateStartFile(getSiteRoot(), getResolvedStartFile());
         if (jProjectURLTextField.isVisible()) {
             validator.validateProjectUrl(getProjectUrl());
         }

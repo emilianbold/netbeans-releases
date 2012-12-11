@@ -67,6 +67,10 @@ public class SQLExecuteHelperTest extends NbTestCase {
         assertSplit("select ##line\n from dual", "select \n from dual");
         assertSplit("select #line from dual", "select");
         assertSplit("# This should be ignored \nselect from dual", "select from dual");
+        assertSplit("select #line\n from dual", false, "select #line\n from dual");
+        assertSplit("select ##line\n from dual", false, "select ##line\n from dual");
+        assertSplit("select #line from dual", false, "select #line from dual");
+        assertSplit("# This should not valid", false, "# This should not valid");
 
         // removing block comments
         assertSplit("select /* block */ from dual", "select  from dual");
@@ -136,7 +140,13 @@ public class SQLExecuteHelperTest extends NbTestCase {
     }
     
     private static void assertSplit(String script, String... expected) {
-        List<StatementInfo> stmts = SQLExecuteHelper.split(script);
+        assertSplit(script, true, expected);
+    }
+
+    private static void assertSplit(String script, boolean useHashComments,
+            String... expected) {
+        List<StatementInfo> stmts = SQLExecuteHelper.split(script,
+                useHashComments);
         assertEquals(expected.length, stmts.size());
         for (int i = 0; i < expected.length; i++) {
             assertEquals(expected[i], stmts.get(i).getSQL());

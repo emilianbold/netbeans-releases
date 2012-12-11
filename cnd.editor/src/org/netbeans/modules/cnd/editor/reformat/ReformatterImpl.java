@@ -1368,7 +1368,7 @@ public class ReformatterImpl {
 
         Token<CppTokenId> next = ts.lookNext();
         if (isClassDeclaration) {
-            if (next != null && !(next.id() == WHITESPACE || next.id() == ESCAPED_WHITESPACE || next.id() == NEW_LINE)) {
+            if (next != null && !isNextWitespace(next)) {
                 ts.addAfterCurrent(current, 0, 1, false);
             }
             return;
@@ -1388,7 +1388,7 @@ public class ReformatterImpl {
                     StackEntry top = braces.peek();
                     if (top != null && top.getKind() == DO) {
                         if (!codeStyle.newLineWhile()) {
-                            if (ts.isLastLineToken()) {
+                            if (ts.isLastLineToken() && isNextWitespace(next)) {
                                 Token<CppTokenId> n2 = ts.lookNext(2);
                                 if (n2 == null || n2.id() != PREPROCESSOR_DIRECTIVE) {
                                     ts.replaceNext(current, next, 0, 0, false);
@@ -1408,7 +1408,7 @@ public class ReformatterImpl {
                     if (statementEntry != null &&
                         (statementEntry.getKind() == TRY || statementEntry.getKind() == CATCH)) {
                         if (!codeStyle.newLineCatch()) {
-                            if (ts.isLastLineToken()) {
+                            if (ts.isLastLineToken() && isNextWitespace(next)) {
                                 Token<CppTokenId> n2 = ts.lookNext(2);
                                 if (n2 == null || n2.id() != PREPROCESSOR_DIRECTIVE) {
                                     ts.replaceNext(current, next, 0, 0, false);
@@ -1426,7 +1426,7 @@ public class ReformatterImpl {
                 case ELSE:
                 {
                     if (!codeStyle.newLineElse()) {
-                        if (ts.isLastLineToken()) {
+                        if (ts.isLastLineToken() && isNextWitespace(next)) {
                             Token<CppTokenId> n2 = ts.lookNext(2);
                             if (n2 == null || n2.id() != PREPROCESSOR_DIRECTIVE) {
                                 ts.replaceNext(current, next, 0, 0, false);
@@ -1447,6 +1447,10 @@ public class ReformatterImpl {
         }
     }
 
+    private boolean isNextWitespace(Token<CppTokenId> next) {
+        return next.id() == WHITESPACE || next.id() == ESCAPED_WHITESPACE || next.id() == NEW_LINE;
+    }
+    
     private void newLineFormat(Token<CppTokenId> previous, Token<CppTokenId> current, int parenDepth) {
         if (previous != null) {
             boolean done = false;
@@ -2050,8 +2054,7 @@ public class ReformatterImpl {
         Token<CppTokenId> next = ts.lookNext();
         if (next != null) {
             if (add) {
-                if (!(next.id() == WHITESPACE || next.id() == ESCAPED_WHITESPACE ||
-                      next.id() == NEW_LINE)) {
+                if (!isNextWitespace(next)) {
                     ts.addAfterCurrent(current, 0, 1, false);
                 }
             } else if (canRemoveSpaceAfter(current) && !keepExtra){

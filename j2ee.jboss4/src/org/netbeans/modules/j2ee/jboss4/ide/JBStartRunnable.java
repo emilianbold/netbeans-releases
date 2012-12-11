@@ -346,7 +346,15 @@ class JBStartRunnable implements Runnable {
         }
 
         try {
-            return pd.exec(null, envp, true, null );
+            File rootFile = null;
+            String rootDir = ip.getProperty(JBPluginProperties.PROPERTY_ROOT_DIR);
+            if (rootDir != null) {
+                rootFile = new File(rootDir, "bin"); // NOI18N
+            }
+            if (rootFile != null && !rootFile.isDirectory()) {
+                rootFile = null;
+            }
+            return pd.exec(null, envp, true, rootFile);
         } catch (java.io.IOException ioe) {
             Logger.getLogger("global").log(Level.INFO, null, ioe);
 

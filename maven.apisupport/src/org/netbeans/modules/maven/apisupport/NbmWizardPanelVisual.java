@@ -56,6 +56,9 @@ import org.netbeans.modules.maven.indexer.api.RepositoryInfo;
 import org.netbeans.modules.maven.indexer.api.RepositoryPreferences;
 import org.netbeans.modules.maven.indexer.api.RepositoryQueries;
 import org.netbeans.modules.maven.indexer.api.RepositoryQueries.Result;
+import org.netbeans.validation.api.Problems;
+import org.netbeans.validation.api.Severity;
+import org.netbeans.validation.api.Validator;
 import org.netbeans.validation.api.ValidatorUtils;
 import org.netbeans.validation.api.builtin.stringvalidation.StringValidators;
 import org.netbeans.validation.api.ui.ValidationGroup;
@@ -77,7 +80,9 @@ public class NbmWizardPanelVisual extends javax.swing.JPanel {
     private static final String SEARCHING = NbmWizardPanelVisual_wait();
     private final NbmWizardPanel panel;
     private ValidationGroup vg = ValidationGroup.create();
+    private ValidationGroup vgEnabled = ValidationGroup.create();
     boolean isApp = false;
+    private boolean isLoaded = false;
 
     @SuppressWarnings("unchecked") // SIMPLEVALIDATION-48
     @Messages("ADD_Module_Name=NetBeans Module ArtifactId")
@@ -91,13 +96,31 @@ public class NbmWizardPanelVisual extends javax.swing.JPanel {
                     StringValidators.REQUIRE_VALID_FILENAME
                     ));
             SwingValidationGroup.setComponentName(txtAddModule, ADD_Module_Name());
+            vgEnabled.add(versionCombo, new Validator<String>() {
+
+                @Override
+                public void validate(Problems prblms, String name, String value) {
+                    if (SEARCHING.equals(value) || !isLoaded) {
+                        prblms.add("still searching", Severity.FATAL);
+                    }
+                }
+
+                @Override
+                public Class modelType() {
+                    return String.class;
+                }
+            });
         } else {
             cbAddModule.setVisible(false);
             txtAddModule.setVisible(false);
         }
         RP.post(new Runnable() {
             public @Override void run() {
-
+                EventQueue.invokeLater(new Runnable()  {
+                        public @Override void run() {
+                            versionCombo.setModel(new DefaultComboBoxModel(new Object[] {SEARCHING}));
+                        }
+                    });
                 RepositoryInfo info = MavenNbModuleImpl.netbeansRepo();
                 final Object key = this;
                 if (info == null) {
@@ -109,12 +132,6 @@ public class NbmWizardPanelVisual extends javax.swing.JPanel {
                     }
                 }
                 if (info != null) {
-                    EventQueue.invokeLater(new Runnable()  {
-                        public @Override void run() {
-                            versionCombo.setModel(new DefaultComboBoxModel(new Object[] {SEARCHING}));
-                        }
-                    });
-
                     final List<String> versions = new ArrayList<String>();
                     final Result<NBVersionInfo> result = RepositoryQueries.getVersionsResult("org.netbeans.cluster", "platform", Collections.singletonList(info));
                     for (NBVersionInfo version : result.getResults()) { // NOI18N
@@ -146,6 +163,7 @@ public class NbmWizardPanelVisual extends javax.swing.JPanel {
                     } else {
                         RepositoryPreferences.getInstance().removeTransientRepositories(key);
                     }
+                    isLoaded = true;
                     EventQueue.invokeLater(new Runnable()  {
                                             public @Override void run() {
                                                 versionCombo.setModel(new DefaultComboBoxModel(versions.toArray()));
@@ -252,11 +270,12 @@ public class NbmWizardPanelVisual extends javax.swing.JPanel {
         NBVersionInfo nbvi = new NBVersionInfo("x", "x", "x", version, null, null, null, null, null);
         if (version != null && (version.equals("SNAPSHOT") || nbvi.compareTo(new NBVersionInfo("x", "x", "x", "RELEASE69-BETA", null, null, null, null, null)) <= 0)) {
             cbOsgiDeps.setEnabled(true);
-            cbOsgiDeps.setSelected(version.equals("SNAPSHOT") || nbvi.compareTo(new NBVersionInfo("x", "x", "x", "RELEASE71", null, null, null, null, null)) <= 0);
+            //cbOsgiDeps.setSelected(version.equals("SNAPSHOT") || nbvi.compareTo(new NBVersionInfo("x", "x", "x", "RELEASE71", null, null, null, null, null)) <= 0);
         } else {
             cbOsgiDeps.setEnabled(false);
             cbOsgiDeps.setSelected(false);
         }
+        vgEnabled.performValidation();
     }//GEN-LAST:event_versionComboActionPerformed
 
 
@@ -287,6 +306,7 @@ public class NbmWizardPanelVisual extends javax.swing.JPanel {
                 @Override
                 public void run() {
                     panel.getValidationGroup().remove(vg);
+                    panel.getEnabledStateValidationGroup().remove(vgEnabled);
                 }
             });
          }
@@ -310,6 +330,8 @@ public class NbmWizardPanelVisual extends javax.swing.JPanel {
                 @Override
                 public void run() {
                     panel.getValidationGroup().addItem(vg, true);
+                    panel.getEnabledStateValidationGroup().addItem(vgEnabled, true);
+                    vgEnabled.performValidation();
                 }
             });
         }

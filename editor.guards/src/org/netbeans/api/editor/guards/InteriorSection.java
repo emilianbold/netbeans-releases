@@ -43,6 +43,7 @@
  */
 package org.netbeans.api.editor.guards;
 
+import org.netbeans.modules.editor.guards.OffsetPosition;
 import javax.swing.text.Position;
 import org.netbeans.modules.editor.guards.InteriorSectionImpl;
 
@@ -60,11 +61,16 @@ public final class InteriorSection extends GuardedSection {
         super(impl);
     }
 
+    InteriorSection(GuardedSection delegate, int offset) {
+        super(delegate, offset);
+    }
+    
     /**
      * Sets the text of the body.
      * @param text the new text
      */
     public void setBody(String text) {
+        if (getImpl() == null) throw new IllegalStateException();
         getImpl().setBody(text);
     }
     
@@ -74,6 +80,7 @@ public final class InteriorSection extends GuardedSection {
      * @return contents of the body or null, if the section is not valid.
      */
     public String getBody() {
+        if (getImpl() == null) return getDelegate().getBody();
         return getImpl().getBody();
     }
 
@@ -82,6 +89,7 @@ public final class InteriorSection extends GuardedSection {
      * @param text the new text
      */
     public void setHeader(String text) {
+        if (getImpl() == null) throw new IllegalStateException();
         getImpl().setHeader(text);
     }
 
@@ -91,6 +99,7 @@ public final class InteriorSection extends GuardedSection {
      * @return contents of the header or null, if the section is not valid.
      */
     public String getHeader() {
+        if (getImpl() == null) return getDelegate().getHeader();
         return getImpl().getHeader();
     }
 
@@ -102,6 +111,7 @@ public final class InteriorSection extends GuardedSection {
      * @param text the new text
      */
     public void setFooter(String text) {
+        if (getImpl() == null) throw new IllegalStateException();
         getImpl().setFooter(text);
     }
 
@@ -111,6 +121,7 @@ public final class InteriorSection extends GuardedSection {
      * @return contents of the footer part, or null if the section is not valid.
      */
     public String getFooter() {
+        if (getImpl() == null) return getDelegate().getFooter();
         return getImpl().getFooter();
     }
     
@@ -119,6 +130,7 @@ public final class InteriorSection extends GuardedSection {
      * @return the start position of the body part
      */
     public Position getBodyStartPosition() {
+        if (getImpl() == null) return new OffsetPosition(getDelegate().getBodyStartPosition(), offset);
         return getImpl().getBodyStartPosition();
     }
     
@@ -127,6 +139,7 @@ public final class InteriorSection extends GuardedSection {
      * @return the end position of the body part
      */
     public Position getBodyEndPosition() {
+        if (getImpl() == null) return new OffsetPosition(getDelegate().getBodyEndPosition(), offset);
         return getImpl().getBodyEndPosition();
     }
     
@@ -154,4 +167,14 @@ public final class InteriorSection extends GuardedSection {
       }
       return buf.toString();
     }*/
+
+    @Override
+    InteriorSection getDelegate() {
+        return (InteriorSection) super.getDelegate();
+    }
+
+    @Override
+    GuardedSection clone(int offset) {
+        return new InteriorSection(this, offset);
+    }
 }

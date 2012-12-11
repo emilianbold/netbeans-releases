@@ -103,6 +103,9 @@ public class AccidentalAssignmentHint extends AbstractHint implements PHPRuleWit
             return;
         }
         FileObject fileObject = phpParseResult.getSnapshot().getSource().getFileObject();
+        if (fileObject == null) {
+            return;
+        }
         CheckVisitor checkVisitor = new CheckVisitor(fileObject, context.doc);
         phpParseResult.getProgram().accept(checkVisitor);
         hints.addAll(checkVisitor.getHints());

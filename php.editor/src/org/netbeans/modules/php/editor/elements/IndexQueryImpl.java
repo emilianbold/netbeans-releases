@@ -420,7 +420,7 @@ public final class IndexQueryImpl implements ElementQuery.Index {
         return retval;
     }
 
-    private Set<MethodElement> getConstructorsImpl(final ClassElement originalClass, final ClassElement inheritedClass, final LinkedHashSet<ClassElement> check) {
+    private Set<MethodElement> getConstructorsImpl(final ClassElement originalClass, final ClassElement inheritedClass, final Set<ClassElement> check) {
         final Set<MethodElement> methods = new HashSet<MethodElement>();
         if (!check.contains(inheritedClass)) {
             check.add(inheritedClass);
@@ -936,7 +936,7 @@ public final class IndexQueryImpl implements ElementQuery.Index {
                 final ElementQuery elementQuery = enclosingType.getElementQuery();
                 if (elementQuery.getQueryScope().isIndexScope()) {
                     final ElementQuery.Index elementQueryIndex = (ElementQuery.Index) elementQuery;
-                    final LinkedHashSet<TypeElement> inheritedTypes = elementQueryIndex.getInheritedTypes(enclosingType);
+                    final Set<TypeElement> inheritedTypes = elementQueryIndex.getInheritedTypes(enclosingType);
                     for (final TypeElement nextType : inheritedTypes) {
                         filters.add(ElementFilter.forMembersOfType(nextType));
                     }
@@ -978,9 +978,9 @@ public final class IndexQueryImpl implements ElementQuery.Index {
         return Collections.unmodifiableSet(retval);
     }
 
-    private LinkedHashSet<TypeMemberElement> getDirectInheritedTypeMembers(final TypeElement typeElement,
+    private Set<TypeMemberElement> getDirectInheritedTypeMembers(final TypeElement typeElement,
             EnumSet<PhpElementKind> typeKinds, EnumSet<PhpElementKind> memberKinds) {
-        final LinkedHashSet<TypeMemberElement> directTypes = new LinkedHashSet<TypeMemberElement>();
+        final Set<TypeMemberElement> directTypes = new LinkedHashSet<TypeMemberElement>();
         if (typeKinds.contains(PhpElementKind.CLASS) && (typeElement instanceof ClassElement)) {
             final Set<TypeMemberElement> classTypes = new LinkedHashSet<TypeMemberElement>();
             QualifiedName superClassName;
@@ -1093,7 +1093,7 @@ public final class IndexQueryImpl implements ElementQuery.Index {
     @Override
     public Set<MethodElement> getInheritedMethods(final TypeElement typeElement) {
         final long start = (LOG.isLoggable(Level.FINE)) ? System.currentTimeMillis() : 0;
-        final LinkedHashSet<TypeMemberElement> typeMembers =
+        final Set<TypeMemberElement> typeMembers =
                 getInheritedTypeMembers(typeElement, new LinkedHashSet<TypeElement>(),
                 new LinkedHashSet<TypeMemberElement>(),
                 EnumSet.of(PhpElementKind.CLASS, PhpElementKind.IFACE, PhpElementKind.TRAIT),
@@ -1113,7 +1113,7 @@ public final class IndexQueryImpl implements ElementQuery.Index {
     @Override
     public Set<MethodElement> getAllMethods(TypeElement typeElement) {
         final long start = (LOG.isLoggable(Level.FINE)) ? System.currentTimeMillis() : 0;
-        final LinkedHashSet<TypeMemberElement> typeMembers =
+        final Set<TypeMemberElement> typeMembers =
                 getInheritedTypeMembers(typeElement, new LinkedHashSet<TypeElement>(),
                 new LinkedHashSet<TypeMemberElement>(getDeclaredMethods(typeElement)),
                 EnumSet.of(PhpElementKind.CLASS, PhpElementKind.IFACE, PhpElementKind.TRAIT),
@@ -1133,7 +1133,7 @@ public final class IndexQueryImpl implements ElementQuery.Index {
     @Override
     public Set<FieldElement> getAlllFields(TypeElement typeElement) {
         final long start = (LOG.isLoggable(Level.FINE)) ? System.currentTimeMillis() : 0;
-        final LinkedHashSet<TypeMemberElement> typeMembers =
+        final Set<TypeMemberElement> typeMembers =
                 getInheritedTypeMembers(typeElement, new LinkedHashSet<TypeElement>(),
                 new LinkedHashSet<TypeMemberElement>(getDeclaredFields(typeElement)),
                 EnumSet.of(PhpElementKind.CLASS, PhpElementKind.TRAIT),
@@ -1153,7 +1153,7 @@ public final class IndexQueryImpl implements ElementQuery.Index {
     @Override
     public Set<TypeConstantElement> getAllTypeConstants(TypeElement typeElement) {
         final long start = (LOG.isLoggable(Level.FINE)) ? System.currentTimeMillis() : 0;
-        final LinkedHashSet<TypeMemberElement> typeMembers =
+        final Set<TypeMemberElement> typeMembers =
                 getInheritedTypeMembers(typeElement, new LinkedHashSet<TypeElement>(),
                 new LinkedHashSet<TypeMemberElement>(getDeclaredTypeConstants(typeElement)),
                 EnumSet.of(PhpElementKind.CLASS, PhpElementKind.IFACE),
@@ -1221,17 +1221,16 @@ public final class IndexQueryImpl implements ElementQuery.Index {
         return Collections.unmodifiableSet(retval);
     }
 
-    private LinkedHashSet<TypeMemberElement> getInheritedTypeMembers(final TypeElement typeElement, final LinkedHashSet<TypeElement> recursionPrevention,
-            LinkedHashSet<TypeMemberElement> retval, EnumSet<PhpElementKind> typeKinds, EnumSet<PhpElementKind> memberKinds) {
+    private Set<TypeMemberElement> getInheritedTypeMembers(final TypeElement typeElement, final Set<TypeElement> recursionPrevention,
+            Set<TypeMemberElement> retval, EnumSet<PhpElementKind> typeKinds, EnumSet<PhpElementKind> memberKinds) {
         if (recursionPrevention.add(typeElement)) {
-            final LinkedHashSet<TypeMemberElement> typeMembers =
-                    getDirectInheritedTypeMembers(typeElement, typeKinds, memberKinds);
-            retval.addAll(forEmptyElements().filter(forComparingNameKinds(retval).reverseFilter(typeMembers)));
+            final Set<TypeMemberElement> typeMembers = getDirectInheritedTypeMembers(typeElement, typeKinds, memberKinds);
+            retval.addAll(forEmptyElements().filter(forComparingNonAbstractNameKinds(retval).reverseFilter(typeMembers)));
             for (final TypeElement tp : typeMembers.isEmpty() ? getDirectInheritedTypes(typeElement) : toTypes(typeMembers)) {
                 retval.addAll(getInheritedTypeMembers(tp, recursionPrevention, retval, typeKinds, memberKinds));
             }
         }
-        return retval;
+        return forPrefereMethodImplementation(retval).filter(retval);
     }
 
     @Override
@@ -1296,7 +1295,7 @@ public final class IndexQueryImpl implements ElementQuery.Index {
     public Set<FieldElement> getInheritedFields(final TypeElement classElement) {
         final long start = (LOG.isLoggable(Level.FINE)) ? System.currentTimeMillis() : 0;
         final Set<FieldElement> retval = new HashSet<FieldElement>();
-        final LinkedHashSet<ClassElement> inheritedClasses = getInheritedClasses(classElement);
+        final Set<ClassElement> inheritedClasses = getInheritedClasses(classElement);
         final Set<String> declaredFieldNames = toNames(getDeclaredFields(classElement));
         for (ClassElement oneClass : inheritedClasses) {
             final Set<FieldElement> fields = getNotPrivateFields(oneClass);
@@ -1319,7 +1318,7 @@ public final class IndexQueryImpl implements ElementQuery.Index {
     public Set<TypeConstantElement> getInheritedTypeConstants(TypeElement typeElement) {
         final long start = (LOG.isLoggable(Level.FINE)) ? System.currentTimeMillis() : 0;
         final Set<TypeConstantElement> retval = new HashSet<TypeConstantElement>();
-        final LinkedHashSet<? extends TypeElement> inheritedTypes = getInheritedTypes(typeElement);
+        final Set<? extends TypeElement> inheritedTypes = getInheritedTypes(typeElement);
         final Set<String> declaredConstantNames = toNames(getDeclaredTypeConstants(typeElement));
         for (TypeElement oneType : inheritedTypes) {
             final Set<TypeConstantElement> constants = getNotPrivateTypeConstants(oneType);
@@ -1338,9 +1337,9 @@ public final class IndexQueryImpl implements ElementQuery.Index {
     }
 
     @Override
-    public LinkedHashSet<TypeElement> getInheritedByTypes(final TypeElement typeElement) {
+    public Set<TypeElement> getInheritedByTypes(final TypeElement typeElement) {
         final long start = (LOG.isLoggable(Level.FINE)) ? System.currentTimeMillis() : 0;
-        final LinkedHashSet<TypeElement> retval = new LinkedHashSet<TypeElement>();
+        final Set<TypeElement> retval = new LinkedHashSet<TypeElement>();
         getInheritedByTypes(typeElement, retval);
         retval.remove(typeElement);
         if (LOG.isLoggable(Level.FINE)) {
@@ -1350,9 +1349,9 @@ public final class IndexQueryImpl implements ElementQuery.Index {
     }
 
     @Override
-    public LinkedHashSet<TypeElement> getInheritedTypes(final TypeElement typeElement) {
+    public Set<TypeElement> getInheritedTypes(final TypeElement typeElement) {
         final long start = (LOG.isLoggable(Level.FINE)) ? System.currentTimeMillis() : 0;
-        final LinkedHashSet<TypeElement> retval = new LinkedHashSet<TypeElement>();
+        final Set<TypeElement> retval = new LinkedHashSet<TypeElement>();
         getInheritedTypes(typeElement, retval, true, true);
         retval.remove(typeElement);
         if (LOG.isLoggable(Level.FINE)) {
@@ -1362,10 +1361,10 @@ public final class IndexQueryImpl implements ElementQuery.Index {
     }
 
     @Override
-    public LinkedHashSet<ClassElement> getInheritedClasses(final TypeElement classElement) {
+    public Set<ClassElement> getInheritedClasses(final TypeElement classElement) {
         final long start = (LOG.isLoggable(Level.FINE)) ? System.currentTimeMillis() : 0;
-        final LinkedHashSet<ClassElement> retvalClasses = new LinkedHashSet<ClassElement>();
-        final LinkedHashSet<TypeElement> retvalTypes = new LinkedHashSet<TypeElement>();
+        final Set<ClassElement> retvalClasses = new LinkedHashSet<ClassElement>();
+        final Set<TypeElement> retvalTypes = new LinkedHashSet<TypeElement>();
         getInheritedTypes(classElement, retvalTypes, true, false);
         retvalTypes.remove(classElement);
         for (TypeElement te : retvalTypes) {
@@ -1382,10 +1381,10 @@ public final class IndexQueryImpl implements ElementQuery.Index {
     }
 
     @Override
-    public LinkedHashSet<InterfaceElement> getInheritedInterfaces(TypeElement ifaceElement) {
+    public Set<InterfaceElement> getInheritedInterfaces(TypeElement ifaceElement) {
         final long start = (LOG.isLoggable(Level.FINE)) ? System.currentTimeMillis() : 0;
-        final LinkedHashSet<InterfaceElement> retvalIfaces = new LinkedHashSet<InterfaceElement>();
-        final LinkedHashSet<TypeElement> retvalTypes = new LinkedHashSet<TypeElement>();
+        final Set<InterfaceElement> retvalIfaces = new LinkedHashSet<InterfaceElement>();
+        final Set<TypeElement> retvalTypes = new LinkedHashSet<TypeElement>();
         getInheritedTypes(ifaceElement, retvalTypes, false, true);
         retvalTypes.remove(ifaceElement);
         for (TypeElement te : retvalTypes) {
@@ -1401,7 +1400,7 @@ public final class IndexQueryImpl implements ElementQuery.Index {
         return retvalIfaces;
     }
 
-    private static ElementFilter forComparingNameKinds(final Collection<? extends PhpElement> elements) {
+    private static ElementFilter forComparingNonAbstractNameKinds(final Collection<? extends PhpElement> elements) {
         return new ElementFilter() {
 
             @Override
@@ -1410,10 +1409,33 @@ public final class IndexQueryImpl implements ElementQuery.Index {
                 final ElementFilter forName = ElementFilter.forName(NameKind.exact(element.getName()));
                 for (PhpElement nextElement : elements) {
                     if (forKind.isAccepted(nextElement) && forName.isAccepted(nextElement)) {
-                        return true;
+                        if (!nextElement.getPhpModifiers().isAbstract()) {
+                            return true;
+                        }
                     }
                 }
                 return false;
+            }
+        };
+    }
+
+    private static ElementFilter forPrefereMethodImplementation(final Collection<? extends PhpElement> elements) {
+        return new ElementFilter() {
+
+            @Override
+            public boolean isAccepted(PhpElement element) {
+                boolean isAbstract = element.getPhpModifiers().isAbstract();
+                boolean isMethod = PhpElementKind.METHOD.equals(element.getPhpElementKind());
+                if (isAbstract && isMethod) {
+                    final ElementFilter forKind = ElementFilter.forKind(element.getPhpElementKind());
+                    final ElementFilter forName = ElementFilter.forName(NameKind.exact(element.getName()));
+                    for (PhpElement phpElement : elements) {
+                        if (!phpElement.equals(element) && forKind.isAccepted(phpElement) && forName.isAccepted(phpElement) && !phpElement.getPhpModifiers().isAbstract()) {
+                            return false;
+                        }
+                    }
+                }
+                return true;
             }
         };
     }
@@ -1432,18 +1454,18 @@ public final class IndexQueryImpl implements ElementQuery.Index {
         };
     }
 
-    private static LinkedHashSet<TypeElement> toTypes(final Collection<? extends TypeMemberElement> typeMembers) {
-        final LinkedHashSet<TypeElement> retval = new LinkedHashSet<TypeElement>();
+    private static Set<TypeElement> toTypes(final Collection<? extends TypeMemberElement> typeMembers) {
+        final Set<TypeElement> retval = new LinkedHashSet<TypeElement>();
         for (final TypeMemberElement typeMemberElement : typeMembers) {
             retval.add(typeMemberElement.getType());
         }
         return retval;
     }
 
-    private void getInheritedTypes(final TypeElement typeElement, final LinkedHashSet<TypeElement> retval,
+    private void getInheritedTypes(final TypeElement typeElement, final Set<TypeElement> retval,
             final boolean includeClasses, final boolean includeIfaces) {
         if (retval.add(typeElement)) {
-            LinkedHashSet<TypeElement> directTypes = getDirectInheritedTypes(typeElement, includeClasses, includeIfaces);
+            Set<TypeElement> directTypes = getDirectInheritedTypes(typeElement, includeClasses, includeIfaces);
             for (TypeElement tp : directTypes) {
                 getInheritedTypes(tp, retval, includeClasses, includeIfaces);
             }
@@ -1451,9 +1473,9 @@ public final class IndexQueryImpl implements ElementQuery.Index {
     }
 
     @Override
-    public LinkedHashSet<ClassElement> getDirectInheritedClasses(final TypeElement typeElement) {
-        final LinkedHashSet<ClassElement> retval = new LinkedHashSet<ClassElement>();
-        final LinkedHashSet<TypeElement> types = getDirectInheritedTypes(typeElement, true, false);
+    public Set<ClassElement> getDirectInheritedClasses(final TypeElement typeElement) {
+        final Set<ClassElement> retval = new LinkedHashSet<ClassElement>();
+        final Set<TypeElement> types = getDirectInheritedTypes(typeElement, true, false);
         for (final TypeElement nextType : types) {
             if (nextType instanceof ClassElement) {
                 retval.add((ClassElement) nextType);
@@ -1463,9 +1485,9 @@ public final class IndexQueryImpl implements ElementQuery.Index {
     }
 
     @Override
-    public LinkedHashSet<InterfaceElement> getDirectInheritedInterfaces(final TypeElement typeElement) {
-        final LinkedHashSet<InterfaceElement> retval = new LinkedHashSet<InterfaceElement>();
-        final LinkedHashSet<TypeElement> types = getDirectInheritedTypes(typeElement, false, true);
+    public Set<InterfaceElement> getDirectInheritedInterfaces(final TypeElement typeElement) {
+        final Set<InterfaceElement> retval = new LinkedHashSet<InterfaceElement>();
+        final Set<TypeElement> types = getDirectInheritedTypes(typeElement, false, true);
         for (final TypeElement nextType : types) {
             if (nextType instanceof InterfaceElement) {
                 retval.add((InterfaceElement) nextType);
@@ -1475,12 +1497,12 @@ public final class IndexQueryImpl implements ElementQuery.Index {
     }
 
     @Override
-    public LinkedHashSet<TypeElement> getDirectInheritedTypes(final TypeElement typeElement) {
+    public Set<TypeElement> getDirectInheritedTypes(final TypeElement typeElement) {
         return getDirectInheritedTypes(typeElement, true, true);
     }
 
-    private LinkedHashSet<TypeElement> getDirectInheritedTypes(final TypeElement typeElement, final boolean includeClasses, final boolean includeIfaces) {
-        final LinkedHashSet<TypeElement> directTypes = new LinkedHashSet<TypeElement>();
+    private Set<TypeElement> getDirectInheritedTypes(final TypeElement typeElement, final boolean includeClasses, final boolean includeIfaces) {
+        final Set<TypeElement> directTypes = new LinkedHashSet<TypeElement>();
         if (includeClasses && (typeElement instanceof ClassElement)) {
             QualifiedName superClassName;
             Collection<QualifiedName> possibleFQSuperClassNames = ((ClassElement) typeElement).getPossibleFQSuperClassNames();
@@ -1501,9 +1523,9 @@ public final class IndexQueryImpl implements ElementQuery.Index {
         return directTypes;
     }
 
-    private void getInheritedByTypes(final TypeElement typeElement, final LinkedHashSet<TypeElement> retval) {
+    private void getInheritedByTypes(final TypeElement typeElement, final Set<TypeElement> retval) {
         if (retval.add(typeElement)) {
-            LinkedHashSet<TypeElement> directTypes = getDirectInheritedByTypes(typeElement);
+            Set<TypeElement> directTypes = getDirectInheritedByTypes(typeElement);
             for (TypeElement tp : directTypes) {
                 getInheritedByTypes(tp, retval);
             }
@@ -1511,8 +1533,8 @@ public final class IndexQueryImpl implements ElementQuery.Index {
     }
 
     @Override
-    public LinkedHashSet<TypeElement> getDirectInheritedByTypes(final TypeElement typeElement) {
-        final LinkedHashSet<TypeElement> directTypes = new LinkedHashSet<TypeElement>();
+    public Set<TypeElement> getDirectInheritedByTypes(final TypeElement typeElement) {
+        final Set<TypeElement> directTypes = new LinkedHashSet<TypeElement>();
         final Exact query = NameKind.exact(typeElement.getFullyQualifiedName());
         if (typeElement.isClass()) {
             final Collection<? extends IndexResult> result = results(PHPIndexer.FIELD_SUPER_CLASS, query,

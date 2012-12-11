@@ -47,8 +47,10 @@ package org.netbeans.modules.refactoring.spi;
 import org.netbeans.modules.refactoring.api.ProgressListener;
 
 /**
- * Refactoring plugins should implement this interface, if they want to notify their progress of preCheck,
- * prepare and checkParameters method.
+ * Refactoring plugins and transactions should implement this interface, if they
+ * want to notify their progress of commit, preCheck, prepare and
+ * checkParameters method.
+ *
  * @author Jan Becicka
  */
 public interface ProgressProvider {

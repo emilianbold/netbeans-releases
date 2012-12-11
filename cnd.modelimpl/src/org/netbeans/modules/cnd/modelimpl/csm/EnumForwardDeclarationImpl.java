@@ -279,7 +279,7 @@ public class EnumForwardDeclarationImpl extends OffsetableDeclarationBase<CsmEnu
                 result = ((ProjectBase) getContainingFile().getProject()).findClassifier(name);
             }
             if (result == null) {
-                result = ((ProjectBase) getContainingFile().getProject()).getDummyForUnresolved(nameParts, getContainingFile(), getStartOffset());
+                result = ProjectBase.getDummyForUnresolved(nameParts, this);
             }
             lastResult = result;
             updateCache(newParseCount, currentResolver);

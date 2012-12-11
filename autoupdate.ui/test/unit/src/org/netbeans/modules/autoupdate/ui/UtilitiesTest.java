@@ -39,52 +39,68 @@
  *
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.autoupdate.ui;
 
-import java.util.HashMap;
+import java.util.ConcurrentModificationException;
+import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
-import org.netbeans.api.autoupdate.UpdateManager;
-import org.netbeans.api.autoupdate.UpdateUnit;
-import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.junit.RandomlyFails;
-import org.netbeans.spi.autoupdate.UpdateItem;
 
 public class UtilitiesTest extends NbTestCase {
+
+    private ConcurrentModificationException exp;
 
     public UtilitiesTest(String n) {
         super(n);
     }
 
-    @Override
-    protected void setUp() throws Exception {
-        System.setProperty("netbeans.user", getWorkDirPath());
-        MockServices.setServices(
-            MockUpdateProvider.class,
-            MockInstalledModuleProvider.class
-        );
-        MockModuleInfo enabled = MockModuleInfo.create("module.one", "1.0", true);
-        MockModuleInfo disabled = MockModuleInfo.create("module.two", "1.0", false);
-        MockInstalledModuleProvider.setModuleItems(enabled, disabled);
-        
-        Map<String,UpdateItem> ui = new HashMap<String, UpdateItem>();
-        ui.put(enabled.getCodeNameBase(), enabled.toUpdateItem("1.1"));
-        ui.put(disabled.getCodeNameBase(), disabled.toUpdateItem("1.1"));
-        MockUpdateProvider.setUpdateItems(ui);
-    }
+    public void testConcurrentModificationException() throws InterruptedException {
+        Runnable addingRunnable = new Runnable() {
+            @Override
+            public void run() {
+                for (int i = 0; i < 100; i++) {
+                    List<String> accepted = new LinkedList<String>();
+                    for (int j = 1; j < 300; j++) {
+                        accepted.add("licence" + i + j);
+                    }
+                    System.out.println("Adding " + i);
+                    Utilities.addAcceptedLicenseIDs(accepted);
+                    try {
+                        Thread.sleep(18);
+                    } catch (InterruptedException ex) {
+                        ex.printStackTrace();
+                    }
+                }
+            }
+        };
+        Thread addingThread = new Thread(addingRunnable);
 
-    @RandomlyFails // NB-Core-Build #5746: "Pending items are provided" from MockUpdateProvider.getUpdateItems
-    public void testIgnoresDisabledModules() {
-        List<UpdateUnit> uu = UpdateManager.getDefault().getUpdateUnits();
-        List<UnitCategory> categories = Utilities.makeUpdateCategories(uu, false);
-        
-        assertNotNull("Categories created", categories);
-        assertEquals("Something in there", 1, categories.size());
-        List<Unit> units = categories.get(0).getUnits();
-        assertEquals("Only one unit in category: " + units, 1, units.size());
-        assertEquals("Only the enabled module present: " + units, "module.one", units.get(0).getDisplayName());
-    }
+        Runnable storingRunnable = new Runnable() {
+            @Override
+            public void run() {
+                for (int i = 0; i < 100; i++) {
+                    try {
+                        Utilities.storeAcceptedLicenseIDs();
+                        System.out.println("Storing " + i);
+                        try {
+                            Thread.sleep(22);
+                        } catch (InterruptedException ex) {
+                            ex.printStackTrace();
+                        }
+                    } catch (ConcurrentModificationException ex) {
+                        ex.printStackTrace();
+                        exp = ex;
+                    }
+                }
+            }
+        };
+        Thread storingThread = new Thread(storingRunnable);
 
+        addingThread.start();
+        storingThread.start();
+        addingThread.join();
+        storingThread.join();
+
+        assertNull("ConcurrentModificationException thrown.", exp);
+    }
 }

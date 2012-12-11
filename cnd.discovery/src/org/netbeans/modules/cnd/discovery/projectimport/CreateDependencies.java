@@ -231,7 +231,7 @@ public class CreateDependencies implements PropertyChangeListener {
                         addReqProject(aProject);
                     }
                 }
-                DiscoveryProjectGenerator.saveMakeConfigurationDescriptor(mainProject, false);
+                DiscoveryProjectGenerator.saveMakeConfigurationDescriptor(mainProject, null);
                 for(Project aProject : projects) {
                     String executable;
                     if (createdProjects.containsKey(aProject)){
@@ -280,7 +280,7 @@ public class CreateDependencies implements PropertyChangeListener {
                         if (extension.canApply(map, lastSelectedProject)) {
                             try {
                                 extension.apply(map, lastSelectedProject);
-                                DiscoveryProjectGenerator.saveMakeConfigurationDescriptor(lastSelectedProject, false);
+                                DiscoveryProjectGenerator.saveMakeConfigurationDescriptor(lastSelectedProject, null);
                             } catch (IOException ex) {
                                 ex.printStackTrace(System.err);
                             }
@@ -305,7 +305,8 @@ public class CreateDependencies implements PropertyChangeListener {
 
                 @Override
                 public void projectParsingFinished(CsmProject project) {
-                    if (project.getPlatformProject().equals(np)) {
+                    final Object id = project.getPlatformProject();
+                    if (id != null && id.equals(np)) {
                         CsmListeners.getDefault().removeProgressListener(this);
                         listeners.remove(this);
                         DiscoveryProjectGenerator.fixExcludedHeaderFiles(makeProject, ImportProject.logger);

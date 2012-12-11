@@ -42,15 +42,19 @@
 package org.netbeans.modules.javafx2.editor.css;
 
 import java.lang.ref.SoftReference;
+import java.net.URL;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.StringTokenizer;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.csl.api.ElementKind;
 import org.netbeans.modules.css.editor.module.spi.*;
 import org.netbeans.modules.css.lib.api.CssModule;
+import org.netbeans.modules.css.lib.api.properties.PropertyCategory;
 import org.netbeans.modules.css.lib.api.properties.PropertyDefinition;
 import org.netbeans.modules.javafx2.project.api.JavaFXProjectUtils;
 import org.openide.filesystems.FileObject;
@@ -73,10 +77,39 @@ public class JavaFXCSSModule extends CssEditorModule implements CssModule {
     private static final String PROPERTIES_DEFINITION_PATH = "org/netbeans/modules/javafx2/editor/css/javafx2"; // NOI18N
     private static Map<String, PropertyDefinition> propertyDescriptors;
     private static SoftReference<Map<String, Boolean>> fileTypeCache;
+    private static final String PSEUDO_CLASSES_PROPERTY = "@pseudo-classes"; // NOI18N
+    private static Collection<String> pseudoClasses;
+    private static Browser FX_BROWSER = new FxBrowser();
+    
+    @Override
+    public Collection<String> getPseudoClasses(EditorFeatureContext context) {
+        if(pseudoClasses == null) {
+            pseudoClasses = new ArrayList<String>();
+            PropertyDefinition prop = getJavaFXProperties().get(PSEUDO_CLASSES_PROPERTY);
+            if(prop != null) {
+                String grammar = prop.getGrammar();
+                StringTokenizer tokenizer = new StringTokenizer(grammar, "| "); //NOI18N
+                while(tokenizer.hasMoreTokens()) {
+                    pseudoClasses.add(tokenizer.nextToken());
+                }
+            }
+        }
+        return pseudoClasses;
+    }
+
+    @Override
+    public Collection<Browser> getExtraBrowsers(FileObject file) {
+        return isJavaFXContext(file) ? Collections.singleton(FX_BROWSER) : null;
+    }
 
     @Override
     public Collection<String> getPropertyNames(FileObject file) {
         return isJavaFXContext(file) ? getJavaFXProperties().keySet() : Collections.<String>emptyList();
+    }
+
+    @Override
+    public PropertyDefinition getPropertyDefinition(String propertyName) {
+        return getJavaFXProperties().get(propertyName);
     }
 
     private synchronized Map<String, PropertyDefinition> getJavaFXProperties() {
@@ -136,5 +169,71 @@ public class JavaFXCSSModule extends CssEditorModule implements CssModule {
     @Override
     public String getSpecificationURL() {
         return "http://docs.oracle.com/javafx/2/api/javafx/scene/doc-files/cssref.html"; // NOI18N
+    }
+    
+    private static class FxBrowser extends Browser {
+        
+        private static final String VENDOR = "Oracle"; // NOI18N
+        private static final String NAME = "JavaFX"; // NOI18N
+        private static final String RENDERING_ENGINE = "javafx"; // NOI18N
+        private static final String PREFIX = "fx"; // NOI18N
+        
+        private static final String ICONS_LOCATION = "/org/netbeans/modules/javafx2/editor/resources/"; //NOI18N
+        private static final String iconBase = "javafxicon"; // NOI18N
+        private URL active, inactive;
+      
+        @Override
+        public PropertyCategory getPropertyCategory() {
+            return PropertyCategory.UNKNOWN;
+        }
+
+        @Override
+        public String getVendor() {
+            return VENDOR;
+        }
+
+        @Override
+        public String getName() {
+            return NAME;
+        }
+
+        @Override
+        public String getDescription() {
+            return new StringBuilder().append(getVendor()).append(' ').append(getName()).toString(); // NOI18N
+        }
+
+        @Override
+        public String getRenderingEngineId() {
+            return RENDERING_ENGINE;
+        }
+
+        @Override
+        public String getVendorSpecificPropertyId() {
+            return PREFIX;
+        }
+
+        //why icon by an URL??? - its put to the generated html source this way:
+        //         sb.append("<img src=\""); //NOI18N
+        //         sb.append(browserIcon.toExternalForm());
+        //         sb.append("\">"); // NOI18N
+
+        @Override
+        public synchronized URL getActiveIcon() {
+            if(active == null) {
+                active = FxBrowser.class.getResource(
+                    ICONS_LOCATION + iconBase + ".png"); //NOI18N
+            }
+            return active;
+        }
+
+        @Override
+        public synchronized URL getInactiveIcon() {
+            if(inactive == null) {
+                inactive = FxBrowser.class.getResource(
+                    ICONS_LOCATION + iconBase + "-disabled.png"); //NOI18N
+            }
+            return inactive;
+        }
+    
     }
 }

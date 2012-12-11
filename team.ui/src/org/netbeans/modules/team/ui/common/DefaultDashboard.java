@@ -354,6 +354,9 @@ public final class DefaultDashboard<S extends TeamServer, P> {
             if( isOpened() ) {
                 if( null != login ) {
                     startLoadingMemberProjects(false);
+                    if (!otherProjectsLoaded) {
+                        startLoadingAllProjects(false);
+                    }
                 }
                 switchContent();
             }
@@ -508,11 +511,13 @@ public final class DefaultDashboard<S extends TeamServer, P> {
                         TeamUIUtils.waitStartupFinished();
                         myProjectLoadingStarted();
                         projectLoadingStarted();
-                        if (null != login && !memberProjectsLoaded) {
-                            startLoadingMemberProjects(false);
-                        }
-                        if (!otherProjectsLoaded) {
-                            startLoadingAllProjects(false);
+                        if (null != login) {
+                            if (!memberProjectsLoaded) {
+                                startLoadingMemberProjects(false);
+                            }
+                            if (!otherProjectsLoaded) {
+                                startLoadingAllProjects(false);
+                            }
                         }
                     }
                 });

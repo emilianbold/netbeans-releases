@@ -210,4 +210,29 @@ public class HintTestTest {
             return null;
         }
     }
+
+    @Test
+    public void testHintThrowsException() throws Exception {
+        HintTest ht = HintTest.create()
+                              .input("package test;\n" +
+                                     "public class Test { }\n");
+        try {
+            ht.run(HintThrowsException.class);
+            Assert.fail("No exception thrown");
+        } catch (Exception ex) {
+            //ok
+            Assert.assertEquals(IllegalStateException.class, ex.getClass());
+            Assert.assertNotNull(ex.getCause());
+            Assert.assertEquals(NullPointerException.class, ex.getCause().getClass());
+            Assert.assertEquals("a", ex.getCause().getMessage());
+        }
+    }
+    
+    @Hint(displayName="hintThrowsException", description="hintThrowsException", category="test")
+    public static final class HintThrowsException {
+        @TriggerTreeKind(Kind.CLASS)
+        public static ErrorDescription hint(HintContext ctx) {
+            throw new NullPointerException("a");
+        }
+    }
 }

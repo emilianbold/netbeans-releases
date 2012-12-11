@@ -75,6 +75,8 @@ public final class ToolchainManager {
 
         String[] getAliases();
 
+        String getSubsitute();
+
         String getDriveLetterPrefix();
 
         List<BaseFolder> getBaseFolders();
@@ -126,6 +128,10 @@ public final class ToolchainManager {
         String getVersionFlags();
 
         String getVersionPattern();
+
+        String getFingerPrintFlags();
+
+        String getFingerPrintPattern();
 
         boolean skipSearch();
 

@@ -47,11 +47,9 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Graphics;
-import java.awt.Graphics2D;
 import java.awt.Image;
 import java.awt.LayoutManager;
 import java.awt.Point;
-import java.awt.RenderingHints;
 import java.awt.Toolkit;
 import java.awt.event.AWTEventListener;
 import java.awt.event.MouseAdapter;
@@ -137,8 +135,6 @@ public class BreadCrumbComponent<T extends JLabel&Renderer> extends JComponent i
             setBackground(UIManager.getColor("NbExplorerView.background")); //NOI18N
         
         int height = getHeight();
-        
-        ((Graphics2D) g).addRenderingHints(Collections.singletonMap(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON));
         
         if (nodes.length == 0) {
             g.drawImage(SEPARATOR, START_INSET, (height - SEPARATOR.getHeight(null)) / 2, null);
@@ -246,7 +242,9 @@ public class BreadCrumbComponent<T extends JLabel&Renderer> extends JComponent i
         List<Node> path = new ArrayList<Node>();
         Node sel = manager.getExploredContext();
 
-        while (sel != null) {
+        // see #223480; root context need not be the root of the node structure.
+        Node stopAt = manager.getRootContext().getParentNode();
+        while (sel != null && sel != stopAt) {
             path.add(sel);
             sel = sel.getParentNode();
         }
@@ -369,6 +367,7 @@ public class BreadCrumbComponent<T extends JLabel&Renderer> extends JComponent i
             renderer.setHtml(false);
             renderer.setText(node.getDisplayName());
         }
-//        renderer.setFont(getFont());
+        renderer.setFont(getFont());
     }
+    
 }

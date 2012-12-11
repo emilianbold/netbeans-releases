@@ -39,11 +39,12 @@
  *
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.remote.api.ui;
 
 import java.awt.Component;
 import java.awt.Cursor;
+import java.awt.FileDialog;
+import java.awt.Frame;
 import java.awt.HeadlessException;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -65,6 +66,7 @@ import org.netbeans.modules.remote.support.RemoteLogger;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 
 /**
  *
@@ -175,12 +177,73 @@ public final class FileChooserBuilder {
                 }
             }
         }
+
+        /** 
+         * See bz#82821 for more details,
+         * C/C++ file choosers do no respect nb.native.filechooser
+         * now it will be supported  for local case, in remote case we will show file chooser 
+         * in currently used L&F
+         * 
+         */ 
+        @Override
+        public int showDialog(Component parent, String approveButtonText) throws HeadlessException {
+            if (Boolean.getBoolean("nb.native.filechooser")) { //NOI18N
+                FileDialog fileDialog = createFileDialog(parent, getCurrentDirectory());
+                if (null != fileDialog) {
+                    return showFileDialog(fileDialog, FileDialog.LOAD);
+                }
+            }
+            return super.showDialog(parent, approveButtonText);
+        }
+
+        private FileDialog createFileDialog(Component parentComponent, File currentDirectory) {
+            boolean dirsOnly = getFileSelectionMode() == DIRECTORIES_ONLY;
+            if (!Boolean.getBoolean("nb.native.filechooser")) { //NOI18N
+                return null;
+            }
+            if (dirsOnly && !Utilities.isMac()) {
+                return null;
+            }
+            Frame parentFrame = (Frame) SwingUtilities.getAncestorOfClass(Frame.class, parentComponent);
+            FileDialog fileDialog = new FileDialog(parentFrame);
+            String dialogTitle = getDialogTitle();
+            if (dialogTitle != null) {
+                fileDialog.setTitle(dialogTitle);
+            }
+            if (null != currentDirectory) {
+                fileDialog.setDirectory(currentDirectory.getAbsolutePath());
+            }
+            return fileDialog;
+        }
+
+        public int showFileDialog(FileDialog fileDialog, int mode) {
+            String oldFileDialogProp = System.getProperty("apple.awt.fileDialogForDirectories"); //NOI18N
+            boolean dirsOnly = getFileSelectionMode() == DIRECTORIES_ONLY;
+            if (dirsOnly) {
+                System.setProperty("apple.awt.fileDialogForDirectories", "true"); //NOI18N
+            }
+            fileDialog.setMode(mode);
+            fileDialog.setVisible(true);
+            if (dirsOnly) {
+                if (null != oldFileDialogProp) {
+                    System.setProperty("apple.awt.fileDialogForDirectories", oldFileDialogProp); //NOI18N
+                } else {
+                    System.clearProperty("apple.awt.fileDialogForDirectories"); //NOI18N
+                }
+            }
+            if (fileDialog.getDirectory() != null && fileDialog.getFile() != null) {
+                setSelectedFile(new File(fileDialog.getDirectory(), fileDialog.getFile()));
+                setSelectedFiles(new File[]{new File(fileDialog.getDirectory(), fileDialog.getFile())});
+                return JFileChooser.APPROVE_OPTION;
+            }
+            return JFileChooser.CANCEL_OPTION;
+        }
     }
 
     private static class RemoteFileChooserImpl extends JFileChooserEx
             implements PropertyChangeListener {
         private final Preferences forModule;
-       private final ExecutionEnvironment env;
+        private final ExecutionEnvironment env;
 
         public RemoteFileChooserImpl(String currentDirectory, RemoteFileSystemView fsv, ExecutionEnvironment env, Preferences forModule) {
             super(currentDirectory, fsv);
@@ -262,7 +325,7 @@ public final class FileChooserBuilder {
         protected void fireActionPerformed(String command) {
             super.fireActionPerformed(command);
         }
-        
+
         @Override
         public void propertyChange(final PropertyChangeEvent evt) {
             if (RemoteFileSystemView.LOADING_STATUS.equals(evt.getPropertyName())) {
@@ -306,7 +369,7 @@ public final class FileChooserBuilder {
             return ret;
         }
     }
-    
+
     private static class CustomFileView extends FileView {
         final FileSystemView view;
 

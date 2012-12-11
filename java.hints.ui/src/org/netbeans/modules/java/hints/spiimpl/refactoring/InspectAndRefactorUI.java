@@ -86,6 +86,7 @@ public class InspectAndRefactorUI implements RefactoringUI {
         this.verify = verify;
         this.query = query;
         this.refactoring = new FindDuplicatesRefactoring(query);
+        this.refactoring.getContext().add(UI.Constants.REQUEST_PREVIEW);
         this.context = context;
     }
 

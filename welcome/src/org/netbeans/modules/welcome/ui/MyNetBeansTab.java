@@ -44,9 +44,9 @@
 
 package org.netbeans.modules.welcome.ui;
 
-import java.awt.BorderLayout;
 import java.awt.GridLayout;
 import javax.swing.BorderFactory;
+import javax.swing.JComponent;
 import javax.swing.JPanel;
 import org.netbeans.modules.welcome.content.BundleSupport;
 import org.netbeans.modules.welcome.content.ContentSection;
@@ -59,28 +59,27 @@ import org.netbeans.modules.welcome.content.RecentProjectsPanel;
 class MyNetBeansTab extends AbstractTab {
     
     public MyNetBeansTab() {
-        setName(BundleSupport.getLabel( "MyNetBeansTab")); //NOI18N
+        super(BundleSupport.getLabel( "MyNetBeansTab")); //NOI18N
     }
 
     @Override
-    protected void buildContent() {
+    protected JComponent buildContent() {
         JPanel main = new JPanel( new GridLayout(1,0) );
         main.setOpaque(false);
         main.setBorder(BorderFactory.createEmptyBorder());
-        add( main, BorderLayout.CENTER );
 
         main.add( new ContentSection( BundleSupport.getLabel( "SectionRecentProjects" ), //NOI18N
-                new RecentProjectsPanel(), false, false ) );
+                new RecentProjectsPanel(), false ) );
 
 
-        main.add( new ContentSection( new PluginsPanel(true), true, false ) );
+        main.add( new ContentSection( new PluginsPanel(true), false ) );
 
         InstallConfig ic = InstallConfig.getDefault();
 
         if( ic.isErgonomicsEnabled() ) {
-            main.add( new ContentSection( new PluginsPanel(false), true, false ) );
+            main.add( new ContentSection( new PluginsPanel(false), false ) );
         }
 
-        add( new BottomBar(), BorderLayout.SOUTH );
+        return main;
     }
 }

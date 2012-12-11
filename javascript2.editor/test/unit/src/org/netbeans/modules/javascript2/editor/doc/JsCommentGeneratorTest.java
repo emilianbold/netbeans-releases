@@ -137,6 +137,14 @@ public class JsCommentGeneratorTest extends JsTestBase {
         insertBreak(getOriginalContent("html"), getExpectedContent("html"));
     }
 
+    public void testIssue222650_1() throws Exception {
+        insertBreak(getOriginalContent("html"), getExpectedContent("html"));
+    }
+
+    public void testIssue222650_2() throws Exception {
+        insertBreak(getOriginalContent("html"), getExpectedContent("html"));
+    }
+
     @Override
     public void insertNewline(String source, String reformatted, IndentPrefs preferences) throws Exception {
         int sourcePos = source.indexOf('^');

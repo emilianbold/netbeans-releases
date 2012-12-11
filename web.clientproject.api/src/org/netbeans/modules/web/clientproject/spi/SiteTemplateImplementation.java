@@ -60,6 +60,12 @@ import org.openide.util.Parameters;
  */
 public interface SiteTemplateImplementation {
 
+    /**
+     * Non localizable ID of the template; only used for tracking usage statistic.
+     */
+    @NonNull
+    String getId();
+
     @NonNull
     String getName();
 
@@ -79,8 +85,13 @@ public interface SiteTemplateImplementation {
      * and {@link #apply(FileObject, ProjectProperties, ProgressHandle)  applying} this site template
      * but only if the site template is not already {@link #isPrepared() prepared}.
      * <p>
+     * For network errors, {@link org.netbeans.modules.web.clientproject.api.network.NetworkException} can be used.
+     * This exception is handled via
+     * {@link org.netbeans.modules.web.clientproject.api.network.NetworkSupport#showNetworkErrorDialog(String)}.
+     * <p>
      * This method is never called in the UI thread.
      * @throws IOException if any error occurs
+     * @see org.netbeans.modules.web.clientproject.api.network.NetworkException
      * @since 1.3
      */
     void prepare() throws IOException;

@@ -94,7 +94,7 @@ public class HtmlPaletteCompletionProvider implements CompletionProvider {
     @Override
     public CompletionTask createTask(int queryType, JTextComponent component) {
         if ((queryType & COMPLETION_QUERY_TYPE & COMPLETION_ALL_QUERY_TYPE) != 0) {
-            return new AsyncCompletionTask(new CCQuery(component.getCaret().getDot()),
+            return new AsyncCompletionTask(new CCQuery(),
                     component);
         }
         return null;
@@ -107,14 +107,9 @@ public class HtmlPaletteCompletionProvider implements CompletionProvider {
 
     static final class CCQuery extends AsyncCompletionQuery {
 
-        private int creationCaretOffset;
         private int completionExpressionStartOffset = -1;
         private JTextComponent component;
         private Collection<PaletteCompletionItem> items;
-
-        CCQuery(int caretOffset) {
-            this.creationCaretOffset = caretOffset;
-        }
 
         @Override
         protected void query(final CompletionResultSet resultSet, final Document doc, final int offset) {
@@ -167,11 +162,7 @@ public class HtmlPaletteCompletionProvider implements CompletionProvider {
                             prefix = prefix.substring(i, prefix.length());
                         }
 
-                        //remember the start of the completion source expression for later removal
-                        //do not refresh the value during subsequent queries on this query instance as user goes on typing
-                        if(completionExpressionStartOffset == -1) {
-                            completionExpressionStartOffset = creationCaretOffset - prefix.length();
-                        }
+                        completionExpressionStartOffset = offset - prefix.length();
 
                         TopComponent tc = NbEditorUtilities.getTopComponent(component);
                         if (tc == null) {
@@ -243,7 +234,7 @@ public class HtmlPaletteCompletionProvider implements CompletionProvider {
             });
 
 
-            return false;
+            return retval.get();
 
         }
 

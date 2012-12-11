@@ -90,6 +90,7 @@ import org.netbeans.modules.cnd.apt.support.APTIncludeHandler;
 import org.netbeans.modules.cnd.apt.support.APTPreprocHandler;
 import org.netbeans.modules.cnd.apt.utils.APTUtils;
 import org.netbeans.modules.cnd.debug.CndTraceFlags;
+import org.netbeans.modules.cnd.indexing.api.CndTextIndexKey;
 import org.netbeans.modules.cnd.modelimpl.content.file.FakeIncludePair;
 import org.netbeans.modules.cnd.modelimpl.content.file.FileContentSignature;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
@@ -99,6 +100,7 @@ import org.netbeans.modules.cnd.modelimpl.parser.spi.CsmParserProvider;
 import org.netbeans.modules.cnd.modelimpl.parser.spi.CsmParserProvider.ParserError;
 import org.netbeans.modules.cnd.modelimpl.platform.FileBufferDoc;
 import org.netbeans.modules.cnd.modelimpl.platform.FileBufferDoc.ChangedSegment;
+import org.netbeans.modules.cnd.modelimpl.repository.KeyUtilities;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
 import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
 import org.netbeans.modules.cnd.modelimpl.trace.TraceUtils;
@@ -536,7 +538,7 @@ public final class FileImpl implements CsmFile,
                     }
                     
                     if (CndTraceFlags.TEXT_INDEX) {
-                        APTIndexingWalker aptIndexingWalker = new APTIndexingWalker(fullAPT);
+                        APTIndexingWalker aptIndexingWalker = new APTIndexingWalker(fullAPT, getTextIndexKey(), getProjectImpl(true).getCacheLocation());
                         aptIndexingWalker.index();
                     }
                     
@@ -1912,6 +1914,14 @@ public final class FileImpl implements CsmFile,
         return uid;
     }
     private CsmUID<CsmFile> uid = null;
+    
+    CndTextIndexKey getTextIndexKey() {
+        return new CndTextIndexKey(getUnitId(), getFileId());
+    }
+    
+    private int getFileId() {
+        return KeyUtilities.getProjectFileIndex(((KeyBasedUID)uid).getKey());
+    }
 
     public int getUnitId() {
         return ((KeyBasedUID)projectUID).getKey().getUnitId();

@@ -79,6 +79,10 @@ public final class APIFactory {
         return Accessor2.DEFAULT.createBreakpoint(property, webkit);
     }
     
+    public static void breakpointResolved(Breakpoint bp, JSONObject location) {
+        Accessor2.DEFAULT.breakpointResolved(bp, location);
+    }
+    
     public static CallFrame createCallFrame(JSONObject property, WebKitDebugging webkit, TransportHelper transport) {
         return Accessor2.DEFAULT.createCallFrame(property, webkit, transport);
     }
@@ -127,6 +131,7 @@ public final class APIFactory {
         public abstract PropertyDescriptor createPropertyDescriptor(JSONObject property, WebKitDebugging webkit);
         public abstract Script createScript(JSONObject property, WebKitDebugging webkit);
         public abstract Breakpoint createBreakpoint(JSONObject property, WebKitDebugging webkit);
+        public abstract void breakpointResolved(Breakpoint bp, JSONObject location);
         public abstract CallFrame createCallFrame(JSONObject property, WebKitDebugging webkit, TransportHelper transport);
 
     }

@@ -187,4 +187,45 @@ public class JsSemanticAnalyzerTest extends JsTestBase {
     public void testIssue221464() throws Exception {
         checkSemantic("testfiles/coloring/issue221464.js");
     }
+    
+    public void testIssue222498() throws Exception {
+        checkSemantic("testfiles/markoccurences/issue222498.js");
+    }
+    
+    public void testIssue218191() throws Exception {
+        checkSemantic("testfiles/markoccurences/issue218191.js");
+    }
+    
+    public void testIssue218136() throws Exception {
+        // this basically reflects also issue 222880
+        checkSemantic("testfiles/markoccurences/issue218136.js");
+    }
+    
+    public void testIssue218090() throws Exception {
+        checkSemantic("testfiles/coloring/issue218090.js");
+    }
+    
+    public void testIssue218041() throws Exception {
+        checkSemantic("testfiles/coloring/issue218041.js");
+    }
+    
+    public void testIssue223037() throws Exception {
+        checkSemantic("testfiles/completion/general/issue223037.js");
+    }
+    
+    public void testIssue218100() throws Exception {
+        checkSemantic("testfiles/coloring/issue218100.js");
+    }
+
+    public void testIssue223109() throws Exception {
+        checkSemantic("testfiles/coloring/issue223109.js");
+    }
+
+    public void testIssue218467() throws Exception {
+        checkSemantic("testfiles/coloring/issue218467.js");
+    }
+    
+    public void testIssue223465() throws Exception {
+        checkSemantic("testfiles/markoccurences/issue223465.js");
+    }
 }

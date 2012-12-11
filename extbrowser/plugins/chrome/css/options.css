@@ -82,28 +82,35 @@ button.disabled, button[disabled=disabled], .button.disabled {
     background-image: -webkit-gradient(linear, left top, left bottom, color-stop(1.00, #f0f0f0), color-stop(1.00, #dddddd));
 }
 
-#presetCustomizer {
+.panel {
     margin: 25px;
     padding-left: 25px;
     padding-right: 10px;
     border: 1px solid #a8a8a8;
     border-radius: 1px;
 }
-#close {
-    float: right;
-    margin-top: 10px;
-    width: 10px;
-    height: 10px;
-    text-align: right;
-}
-#title {
+.title {
     clear: both;
     margin-top: 35px;
     font-size: 14pt;
     font-weight: bold;
 }
-#perex {
+.perex {
     margin-top: 10px;
+}
+.perex a {
+    text-decoration: underline;
+}
+#help {
+    display: none;
+    margin-left: 40px;
+    margin-top: 10px;
+}
+#help ul {
+    margin-left: 20px;
+}
+#help p {
+    margin-top: 5px;
 }
 #sizes {
     margin-top: 20px;
@@ -190,15 +197,23 @@ button.disabled, button[disabled=disabled], .button.disabled {
     margin-bottom: 5px;
 }
 
-#mainButtons {
+.mainButtons {
     float: right;
     margin-top: 25px;
     margin-bottom: 10px;
 }
-#mainButtons button {
+.mainButtons button {
     margin-left: 5px;
 }
 
 #presetCustomizerCancel {
     margin-right: 0;
+}
+
+#resetWarningsPanel .perex {
+    float: left;
+    margin-top: 15px;
+}
+#resetWarningsPanel .mainButtons {
+    margin-top: 10px;
 }

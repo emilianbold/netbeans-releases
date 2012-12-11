@@ -205,29 +205,6 @@ class JavaCodeGenerator extends CodeGenerator {
     private static int indentSize = 4;
     private static boolean braceOnNewLine = false;
 
-    private static final String GUARD_BEGIN_INITCOMPONENTS;
-    private static final String GUARD_END_INITCOMPONENTS;
-    private static final String GUARD_BEGIN_VARIABLES;
-    private static final String GUARD_END_VARIABLES;
-    static {
-        if (FormUtils.getPresetValue("KEEP_GUARD_COMMENTS", false)) { // NOI18N
-            GUARD_BEGIN_INITCOMPONENTS = "//GEN-BEGIN:initComponents"; // NOI18N
-            GUARD_END_INITCOMPONENTS = "//GEN-END:initComponents"; // NOI18N
-            GUARD_BEGIN_VARIABLES = "//GEN-BEGIN:variables"; // NOI18N
-            GUARD_END_VARIABLES = "//GEN-END:variables"; // NOI18N
-        } else if (FormUtils.getPresetValue("REPLACE_GUARD_COMMENTS_WITH_SPACES", false)) { // NOI18N
-            GUARD_BEGIN_INITCOMPONENTS = "                          "; // NOI18N
-            GUARD_END_INITCOMPONENTS = "                        "; // NOI18N
-            GUARD_BEGIN_VARIABLES = "                     "; // NOI18N
-            GUARD_END_VARIABLES = "                   "; // NOI18N
-        } else {
-            GUARD_BEGIN_INITCOMPONENTS = ""; // NOI18N
-            GUARD_END_INITCOMPONENTS = ""; // NOI18N
-            GUARD_BEGIN_VARIABLES = ""; // NOI18N
-            GUARD_END_VARIABLES = ""; // NOI18N
-        }
-    }
-
     private static class PropertiesFilter implements FormProperty.Filter {
 		
 	private final java.util.List<FormProperty> properties;
@@ -1082,14 +1059,6 @@ class JavaCodeGenerator extends CodeGenerator {
             if (indentEngine == null) {
                 newText = indentCode(newText, 1);
             }
-            if (GUARD_BEGIN_INITCOMPONENTS.length() > 0) {
-                int i1 = newText.indexOf('\n');
-                int i2 = newText.lastIndexOf('\n');
-                if (i1 > 0 && i2 > i1 && i2 == newText.length()-1) {
-                    newText = newText.substring(0, i1) + GUARD_BEGIN_INITCOMPONENTS
-                            + newText.substring(i1, i2) + GUARD_END_INITCOMPONENTS + "\n"; // NOI18N
-                }
-            }
             initComponentsSection.setText(newText);
             
             clearUndo();
@@ -1164,14 +1133,6 @@ class JavaCodeGenerator extends CodeGenerator {
             String newText = variablesBuffer.toString();
             if (indentEngine == null) {
                 newText = indentCode(newText, 1);
-            }
-            if (GUARD_BEGIN_VARIABLES.length() > 0) {
-                int i1 = newText.indexOf('\n');
-                int i2 = newText.lastIndexOf('\n');
-                if (i1 > 0 && i2 > i1 && i2 == newText.length()-1) {
-                    newText = newText.substring(0, i1) + GUARD_BEGIN_VARIABLES
-                            + newText.substring(i1, i2) + GUARD_END_VARIABLES + "\n"; // NOI18N
-                }
             }
 
             variablesSection.setText(newText);        

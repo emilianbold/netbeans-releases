@@ -57,11 +57,14 @@ import org.openide.util.ImageUtilities;
  */
 public class DelegatingConnector extends BugtrackingConnector {
     
+    private static final boolean OVERRIDE_REPOSITORY_MANAGEMENT = Boolean.getBoolean("org.netbeans.modules.bugtracking.connector.overrrideRepositoryManagement"); // NOI18N
+    
     private final Map<?, ?> map;
     private final String tooltip;
     private Image image;
     private final String id;
     private final String displayName;
+    private final boolean providesRepositoryManagement;
     
     private BugtrackingConnector delegate;
     
@@ -75,6 +78,7 @@ public class DelegatingConnector extends BugtrackingConnector {
         this.id = id;
         this.displayName = displayName;
         this.delegate = delegate;
+        this.providesRepositoryManagement = true;
         map = null;
     }
     
@@ -85,6 +89,7 @@ public class DelegatingConnector extends BugtrackingConnector {
         image = path != null && !path.equals("") ? ImageUtilities.loadImage(path) : null; 
         id = (String) map.get("id"); //NOI18N
         displayName = (String) map.get("displayName"); //NOI18N
+        providesRepositoryManagement = (Boolean) map.get("providesRepositoryManagement"); //NOI18N
         BugtrackingManager.LOG.log(Level.FINE, "Created DelegatingConnector for : {0}", map.get("displayName")); // NOI18N
     }
 
@@ -117,6 +122,10 @@ public class DelegatingConnector extends BugtrackingConnector {
         return displayName;
     }
 
+    public boolean providesRepositoryManagement() {
+        return OVERRIDE_REPOSITORY_MANAGEMENT ? true : providesRepositoryManagement;
+    }
+    
     @Override
     public Repository createRepository(RepositoryInfo info) {
         BugtrackingConnector d = getDelegate();

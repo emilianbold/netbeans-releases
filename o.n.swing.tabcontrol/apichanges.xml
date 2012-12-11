@@ -109,6 +109,20 @@ is the proper place.
 
 <changes>
 
+    <change id="windows8laf">
+      <api name="tabcontrol"/>
+      <summary>New UI delegates for Windows 8 look and feel.</summary>
+      <version major="1" minor="41"/>
+      <date day="27" month="11" year="2012"/>
+      <author login="saubrecht"/>
+      <compatibility addition="yes" binary="compatible" deprecation="no"/>
+      <description>
+        New UI delegates for editor and non-editor tabs for Windows 8 look and feel.
+      </description>
+      <class package="org.netbeans.swing.tabcontrol.plaf" name="Windows8ViewTabDisplayerUI"/>
+      <class package="org.netbeans.swing.tabcontrol.plaf" name="Windows8EditorTabDisplayerUI"/>
+    </change>
+
     <change id="attentionhighlight">
       <api name="tabcontrol"/>
       <summary>Allow a tab to be permanently highlighted until user activates it.</summary>

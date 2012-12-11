@@ -45,7 +45,6 @@ import org.netbeans.modules.csl.spi.LanguageRegistration;
 import org.netbeans.modules.javascript2.editor.classpath.ClassPathProviderImpl;
 import org.netbeans.modules.javascript2.editor.formatter.JsFormatter;
 import org.netbeans.modules.javascript2.editor.hints.JsHintsProvider;
-import org.netbeans.modules.javascript2.editor.index.JsIndexer;
 import org.netbeans.modules.javascript2.editor.lexer.JsTokenId;
 import org.netbeans.modules.javascript2.editor.model.impl.JsInstantRenamer;
 import org.netbeans.modules.javascript2.editor.navigation.DeclarationFinderImpl;
@@ -53,7 +52,6 @@ import org.netbeans.modules.javascript2.editor.navigation.JsIndexSearcher;
 import org.netbeans.modules.javascript2.editor.navigation.OccurrencesFinderImpl;
 import org.netbeans.modules.javascript2.editor.parser.JsParser;
 import org.netbeans.modules.parsing.spi.Parser;
-import org.netbeans.modules.parsing.spi.indexing.EmbeddingIndexerFactory;
 import org.netbeans.modules.parsing.spi.indexing.PathRecognizerRegistration;
 import org.openide.filesystems.MIMEResolver;
 import org.openide.util.Lookup;
@@ -158,6 +156,12 @@ public class JsLanguage extends DefaultLanguageConfig {
         return new JsCodeCompletion();
     }
 
+    @Override
+    public KeystrokeHandler getKeystrokeHandler() {
+        // Temporary keystroke handler used till issue #217163 will be resolved.
+        return new JsKeystrokeHandler();
+    }
+
 //    @Override
 //    public EmbeddingIndexerFactory getIndexerFactory() {
 //        return new JsIndexer.Factory();
@@ -185,8 +189,13 @@ public class JsLanguage extends DefaultLanguageConfig {
 
     @Override
     public boolean isIdentifierChar(char c) {
-        // due to CC filtering of DOC annotations - see GsfCompletionProvider#getCompletableLanguage()
-        return super.isIdentifierChar(c) || c == '@';
+        return super.isIdentifierChar(c)
+                // due to CC filtering of DOC annotations - see GsfCompletionProvider#getCompletableLanguage()
+                || c == '@'; //NOI18N
+                // see issue #214978 - it goes to the CodeTemplateCompletionProvider#query(), it would probably deserve
+                //  new API in the next release or are we wrongly embedding the jQuery? For now this fix doesn't look to
+                //  make troubles to another areas.
+//                || c == '#' || c == ':' || c == '.'; //NOI18N
     }
 
     @Override

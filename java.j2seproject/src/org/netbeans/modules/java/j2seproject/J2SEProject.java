@@ -66,6 +66,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.Icon;
+import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.xml.parsers.DocumentBuilder;
@@ -90,7 +91,6 @@ import org.netbeans.api.queries.FileBuiltQuery.Status;
 import org.netbeans.modules.java.api.common.Roots;
 import org.netbeans.modules.java.api.common.SourceRoots;
 import org.netbeans.modules.java.api.common.ant.UpdateHelper;
-import org.netbeans.modules.java.api.common.ant.UpdateImplementation;
 import org.netbeans.modules.java.api.common.classpath.ClassPathModifier;
 import org.netbeans.modules.java.api.common.classpath.ClassPathProviderImpl;
 import org.netbeans.modules.java.api.common.project.ProjectProperties;
@@ -124,7 +124,6 @@ import org.netbeans.spi.project.ui.support.UILookupMergerSupport;
 import org.netbeans.spi.queries.FileBuiltQueryImplementation;
 import org.netbeans.spi.queries.FileEncodingQueryImplementation;
 import org.openide.DialogDisplayer;
-import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
@@ -149,6 +148,7 @@ import static org.netbeans.spi.project.support.ant.GeneratedFilesHelper.FLAG_UNK
 import org.netbeans.spi.whitelist.support.WhiteListQueryMergerSupport;
 import org.openide.filesystems.URLMapper;
 import org.openide.modules.SpecificationVersion;
+import org.openide.util.RequestProcessor;
 import org.openide.xml.XMLUtil;
 /**
  * Represents one plain J2SE project.
@@ -185,6 +185,7 @@ public final class J2SEProject implements Project {
     };
     private static final Icon J2SE_PROJECT_ICON = ImageUtilities.loadImageIcon("org/netbeans/modules/java/j2seproject/ui/resources/j2seProject.png", false); // NOI18N
     private static final Logger LOG = Logger.getLogger(J2SEProject.class.getName());
+    private static final RequestProcessor PROJECT_OPENED_RP = new RequestProcessor(J2SEProject.class);
 
     private final AuxiliaryConfiguration aux;
     private final AntProjectHelper helper;
@@ -567,7 +568,10 @@ public final class J2SEProject implements Project {
                         true);
                 }
             } catch (IOException e) {
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+                LOG.log(
+                   Level.INFO,
+                   NbBundle.getMessage(J2SEProject.class, "ERR_RegenerateProjectFiles"),
+                   e);
             }
 
             // register project's classpaths to GlobalPathRegistry
@@ -651,7 +655,7 @@ public final class J2SEProject implements Project {
                                                 J2SEProject.this.getProjectDirectory().getName()));
                                         DialogDisplayer.getDefault().notify(nd);
                                     } else {
-                                        ErrorManager.getDefault().notify(e);
+                                        Exceptions.printStackTrace(e);
                                     }
                                 }
                                 return null;
@@ -682,28 +686,37 @@ public final class J2SEProject implements Project {
 
         @Override
         protected void projectClosed() {
-            // just do if the whole project was not deleted...
-            if (getProjectDirectory().isValid()) {
-                // Probably unnecessary, but just in case:
-                try {
-                    ProjectManager.getDefault().saveProject(J2SEProject.this);
-                } catch (IOException e) {
-                    if (!J2SEProject.this.getProjectDirectory().canWrite()) {
-                        // #91398 - ignore, we already reported on project open.
-                        // not counting with someone setting the ro flag while the project is opened.
-                    } else {
-                        ErrorManager.getDefault().notify(e);
+            final Runnable r = new Runnable() {
+                @Override
+                public void run() {
+                    // just do if the whole project was not deleted...
+                    if (getProjectDirectory().isValid()) {
+                        // Probably unnecessary, but just in case:
+                        try {
+                            ProjectManager.getDefault().saveProject(J2SEProject.this);
+                        } catch (IOException e) {
+                            if (!J2SEProject.this.getProjectDirectory().canWrite()) {
+                                // #91398 - ignore, we already reported on project open.
+                                // not counting with someone setting the ro flag while the project is opened.
+                            } else {
+                                Exceptions.printStackTrace(e);
+                            }
+                        }
+                    }
+                    // unregister project's classpaths to GlobalPathRegistry
+                    GlobalPathRegistry.getDefault().unregister(ClassPath.BOOT, cpProvider.getProjectClassPaths(ClassPath.BOOT));
+                    GlobalPathRegistry.getDefault().unregister(ClassPath.SOURCE, cpProvider.getProjectClassPaths(ClassPath.SOURCE));
+                    GlobalPathRegistry.getDefault().unregister(ClassPath.COMPILE, cpProvider.getProjectClassPaths(ClassPath.COMPILE));
+                    if (mainClassUpdater != null) {
+                        mainClassUpdater.stop();
+                        mainClassUpdater = null;
                     }
                 }
-            }
-
-            // unregister project's classpaths to GlobalPathRegistry
-            GlobalPathRegistry.getDefault().unregister(ClassPath.BOOT, cpProvider.getProjectClassPaths(ClassPath.BOOT));
-            GlobalPathRegistry.getDefault().unregister(ClassPath.SOURCE, cpProvider.getProjectClassPaths(ClassPath.SOURCE));
-            GlobalPathRegistry.getDefault().unregister(ClassPath.COMPILE, cpProvider.getProjectClassPaths(ClassPath.COMPILE));
-            if (mainClassUpdater != null) {
-                mainClassUpdater.stop();
-                mainClassUpdater = null;
+            };
+            if (SwingUtilities.isEventDispatchThread()) {
+                PROJECT_OPENED_RP.execute(r);
+            } else {
+                r.run();
             }
         }
 

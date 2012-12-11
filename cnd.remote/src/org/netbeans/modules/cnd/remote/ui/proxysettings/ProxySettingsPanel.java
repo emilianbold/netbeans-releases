@@ -69,6 +69,8 @@ public final class ProxySettingsPanel extends javax.swing.JPanel {
     private OptionsPanelController controller = null;
     private ScheduledFuture<?> stateQueryTask;
     private final JComponent origPanel;
+    
+    private static final RequestProcessor RP = new RequestProcessor("ProxySettingsPanel", 1); // NOI18N
 
     /**
      * Creates new form ProxySettingsPanel
@@ -100,7 +102,7 @@ public final class ProxySettingsPanel extends javax.swing.JPanel {
         super.addNotify();
         if (controller != null) {
 
-            stateQueryTask = RequestProcessor.getDefault().scheduleAtFixedRate(new Runnable() {
+            stateQueryTask = RP.scheduleAtFixedRate(new Runnable() {
 
                 @Override
                 public void run() {

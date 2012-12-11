@@ -33,7 +33,7 @@ public abstract class DashboardProvider<S extends TeamServer, P> {
     public abstract MemberAccessor<P> getMemberAccessor();
     public abstract SourceAccessor<P> getSourceAccessor();
     public abstract QueryAccessor<P> getQueryAccessor();
-    public abstract BuildAccessor<P> getBuildAccessor();
+    public abstract BuilderAccessor<P> getBuilderAccessor();
     
     public abstract Collection<ProjectHandle<P>> getMyProjects(); // XXX move to accessor
     public abstract S forProject(ProjectHandle<P> project);
@@ -48,9 +48,9 @@ public abstract class DashboardProvider<S extends TeamServer, P> {
         return null;
     }
     
-    public BuildAccessor<P> getBuildAccessor(Class<P> p) {
-        Collection<? extends BuildAccessor> c = Lookup.getDefault().lookupAll(BuildAccessor.class);
-        for (BuildAccessor a : c) {
+    public BuilderAccessor<P> getBuildAccessor(Class<P> p) {
+        Collection<? extends BuilderAccessor> c = Lookup.getDefault().lookupAll(BuilderAccessor.class);
+        for (BuilderAccessor a : c) {
             if(a.type().equals(p)) {
                 return a;
             }

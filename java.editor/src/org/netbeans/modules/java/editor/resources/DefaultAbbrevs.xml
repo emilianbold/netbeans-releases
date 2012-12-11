@@ -132,7 +132,7 @@ made subject to such option by the copyright holder.
     <codetemplate abbreviation="for" contexts="BLOCK,CASE,LABELED_STATEMENT,DO_WHILE_LOOP,ENHANCED_FOR_LOOP,FOR_LOOP,IF,WHILE_LOOP">
         <code>
 <![CDATA[for (int ${IDX newVarName default="i"} = 0; ${IDX} < ${MAX default="10"}; ${IDX}++) {
-    ${selection}${cursor}
+${selection}${cursor}
 }
 ]]>
         </code>
@@ -142,7 +142,7 @@ made subject to such option by the copyright holder.
         <code>
 <![CDATA[for (int ${IDX newVarName default="idx"} = 0; ${IDX} < ${ARR array default="arr"}.length; ${IDX}++) {
    ${TYPE rightSideType default="Object"} ${ELEM newVarName default="elem"} = ${TYPE_CAST cast default="" editable=false}${ARR}[${IDX}];
-   ${selection}${cursor}
+${selection}${cursor}
 }
 ]]>
         </code>
@@ -151,7 +151,7 @@ made subject to such option by the copyright holder.
         <code>
 <![CDATA[for (${IT_TYPE rightSideType type="java.util.Iterator" default="Iterator" editable=false} ${IT newVarName default="it"} = ${COL instanceof="java.util.Collection" default="col"}.iterator(); ${IT}.hasNext();) {
    ${TYPE rightSideType default="Object"} ${ELEM newVarName default="elem"} = ${TYPE_CAST cast default="" editable=false}${IT}.next();
-   ${selection}${cursor}
+${selection}${cursor}
 }
 ]]>
         </code>
@@ -160,7 +160,7 @@ made subject to such option by the copyright holder.
         <code>
 <![CDATA[for (int ${IDX newVarName default="idx"} = 0; ${IDX} < ${LIST instanceof="java.util.List" default="lst"}.size(); ${IDX}++) {
    ${TYPE rightSideType default="Object"} ${ELEM newVarName default="elem"} = ${TYPE_CAST cast default="" editable=false}${LIST}.get(${IDX});
-   ${selection}${cursor}
+${selection}${cursor}
 }
 ]]>
         </code>
@@ -169,7 +169,7 @@ made subject to such option by the copyright holder.
         <code>
 <![CDATA[for (int ${IDX newVarName default="idx"} = 0; ${IDX} < ${VECTOR instanceof="java.util.Vector" default="vct"}.size(); ${IDX}++) {
    ${TYPE rightSideType default="Object"} ${ELEM newVarName default="elem"} = ${TYPE_CAST cast default="" editable=false}${VECTOR}.elementAt(${IDX});
-   ${selection}${cursor}
+${selection}${cursor}
 }
 ]]>
         </code>
@@ -177,7 +177,7 @@ made subject to such option by the copyright holder.
     <codetemplate abbreviation="fore" contexts="BLOCK,CASE,LABELED_STATEMENT,DO_WHILE_LOOP,ENHANCED_FOR_LOOP,FOR_LOOP,IF,WHILE_LOOP">
         <code>
 <![CDATA[for (${TYPE iterableElementType default="Object" editable=false} ${ELEM newVarName default="elem"} : ${ITER iterable default="col"}) {
-   ${selection}${cursor}
+${selection}${cursor}
 }
 ]]>
         </code>
@@ -209,7 +209,7 @@ made subject to such option by the copyright holder.
         <code>
 <![CDATA[while (${ENUM instanceof="java.util.Enumeration" default="en"}.hasMoreElements()) {
    ${TYPE rightSideType default="Object"} ${ELEM newVarName default="elem"} = ${TYPE_CAST cast default="" editable=false} ${ENUM}.nextElement();
-   ${selection}${cursor}
+${selection}${cursor}
 }
 ]]>
         </code>
@@ -218,7 +218,7 @@ made subject to such option by the copyright holder.
         <code>
 <![CDATA[while (${IT instanceof="java.util.Iterator" default="it"}.hasNext()) {
    ${TYPE rightSideType default="Object"} ${ELEM newVarName default="elem"} = ${TYPE_CAST cast default="" editable=false} ${IT}.next();
-   ${selection}${cursor}
+${selection}${cursor}
 }
 ]]>
         </code>
@@ -226,7 +226,7 @@ made subject to such option by the copyright holder.
     <codetemplate abbreviation="iff" contexts="BLOCK,CASE,LABELED_STATEMENT,DO_WHILE_LOOP,ENHANCED_FOR_LOOP,FOR_LOOP,IF,WHILE_LOOP" descriptionId="CT_iff">
         <code>
 <![CDATA[if (${EXP instanceof="boolean" default="true"}) {
-   ${selection}${cursor}
+${selection}${cursor}
 }
 ]]>
         </code>
@@ -234,7 +234,7 @@ made subject to such option by the copyright holder.
     <codetemplate abbreviation="ifelse" contexts="BLOCK,CASE,LABELED_STATEMENT,DO_WHILE_LOOP,ENHANCED_FOR_LOOP,FOR_LOOP,IF,WHILE_LOOP" descriptionId="CT_ifelse">
         <code>
 <![CDATA[if (${EXP instanceof="boolean" default="true"}) {
-   ${selection}${cursor}
+${selection}${cursor}
 } else {
 }
 ]]>
@@ -243,7 +243,7 @@ made subject to such option by the copyright holder.
     <codetemplate abbreviation="whilexp" contexts="BLOCK,CASE,LABELED_STATEMENT,DO_WHILE_LOOP,ENHANCED_FOR_LOOP,FOR_LOOP,IF,WHILE_LOOP">
         <code>
 <![CDATA[while (${EXP instanceof="boolean" default="true"}) { 
-   ${selection}${cursor}
+${selection}${cursor}
 }
 ]]>
         </code>
@@ -251,7 +251,7 @@ made subject to such option by the copyright holder.
     <codetemplate abbreviation="dowhile" contexts="BLOCK,CASE,LABELED_STATEMENT,DO_WHILE_LOOP,ENHANCED_FOR_LOOP,FOR_LOOP,IF,WHILE_LOOP">
         <code>
 <![CDATA[do { 
-   ${selection}${cursor}
+${selection}${cursor}
 } while (${EXP instanceof="boolean" default="true"});
 ]]>
         </code>
@@ -260,7 +260,7 @@ made subject to such option by the copyright holder.
         <code>
 <![CDATA[${RUNN_TYPE type="java.lang.Runnable" default="Runnable" editable=false} ${RUNN newVarName default="r"} = new ${RUNN_TYPE}() {
    public void run() {
-     ${selection}${cursor}
+${selection}${cursor}
    }
 };
 ]]>
@@ -269,7 +269,7 @@ made subject to such option by the copyright holder.
     <codetemplate abbreviation="trycatch" contexts="BLOCK,CASE,LABELED_STATEMENT,DO_WHILE_LOOP,ENHANCED_FOR_LOOP,FOR_LOOP,IF,WHILE_LOOP">
         <code>
 <![CDATA[try {
-   ${selection}${cursor}
+${selection}${cursor}
 } ${CATCH_STMTS uncaughtExceptionCatchStatements default="catch (Exception e) {}" editable=false}
 ]]>
         </code>
@@ -304,6 +304,12 @@ ${selection}${cursor}
         </code>
     </codetemplate>
 
+    <codetemplate abbreviation="par" contexts="{EXPRESSION}">
+        <code>
+<![CDATA[${no-format}(${selection}${cursor})]]>
+        </code>
+    </codetemplate>
+
     <!-- Added in 6.9 -->
 
     <!-- Arrays and List conversion and sorting -->
@@ -326,11 +332,15 @@ ${cursor}]]></code></codetemplate>
      ${cursor}]]></code></codetemplate>
      <codetemplate abbreviation="csort"><code><![CDATA[${collsType type="java.util.Collections" default="Collections" editable="false"}.sort(${var instanceof="java.util.List"});
          ${cursor}]]></code></codetemplate>
-     <codetemplate abbreviation="form" contexts="BLOCK,CASE,LABELED_STATEMENT,DO_WHILE_LOOP,ENHANCED_FOR_LOOP,FOR_LOOP,IF,WHILE_LOOP" descriptionId="CT_form"><code><![CDATA[for (${entryType iterableElementType default="Map.Entry<Object, Object>" editable=false} ${entry newVarName default="en"} : ${map instanceof="java.util.Map" default="m"}.entrySet()) {
-            ${KeyType rightSideType default="Object"} ${key newVarName default="key"} = ${entry}.getKey();
-            ${ValType rightSideType default="Object"} ${val newVarName default="val"} = ${entry}.getValue();
-            ${selection}${cursor}
-        }]]></code></codetemplate>
+     <codetemplate abbreviation="form" contexts="BLOCK,CASE,LABELED_STATEMENT,DO_WHILE_LOOP,ENHANCED_FOR_LOOP,FOR_LOOP,IF,WHILE_LOOP" descriptionId="CT_form">
+         <code>
+<![CDATA[for (${entryType iterableElementType default="Map.Entry<Object, Object>" editable=false} ${entry newVarName default="en"} : ${map instanceof="java.util.Map" default="m"}.entrySet()) {
+    ${KeyType rightSideType default="Object"} ${key newVarName default="key"} = ${entry}.getKey();
+    ${ValType rightSideType default="Object"} ${val newVarName default="val"} = ${entry}.getValue();
+${selection}${cursor}
+}]]>
+         </code>
+     </codetemplate>
 
      <!-- Instantiating common classes -->
      <codetemplate abbreviation="map"><code><![CDATA[${map type="java.util.Map" default="Map" editable="false"}<${keytype default="String"},${valtype default="String"}> ${var newVarName default="m"} = new ${mtype type="java.util.HashMap" editable="false"}<${keytype},${valtype}>(${cursor});
@@ -409,7 +419,7 @@ ${cursor}]]></code></codetemplate>
         ${cursor}
      }
      ]]></code></codetemplate>
-     <codetemplate abbreviation="psfm"><code><![CDATA[    private static final ${ret default="void"} ${mname default="method"}(${args default=""}) {
+     <codetemplate abbreviation="psm"><code><![CDATA[    private static ${ret default="void"} ${mname default="method"}(${args default=""}) {
         ${cursor}
      }
      ]]></code></codetemplate>

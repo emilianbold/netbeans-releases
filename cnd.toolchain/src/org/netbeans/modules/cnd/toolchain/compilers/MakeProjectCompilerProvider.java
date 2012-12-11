@@ -62,7 +62,7 @@ public class MakeProjectCompilerProvider extends CompilerProvider {
     /**
      * Create a class derived from Tool
      *
-     * Thomas: If you want/need different informatio to choose which Tool derived class to create we can change
+     * Thomas: If you want/need different information to choose which Tool derived class to create we can change
      * this method. We can also add others, if desired. This was mainly a proof-of-concept that tool creation
      * could be deferred to makeproject.
      */
@@ -70,9 +70,17 @@ public class MakeProjectCompilerProvider extends CompilerProvider {
     public Tool createCompiler(ExecutionEnvironment env, CompilerFlavor flavor, ToolKind kind, String name, String displayName, String path) {
         if (flavor.isSunStudioCompiler()) {
             if (kind == PredefinedToolKind.CCompiler) {
-                return SunCCompiler.create(env, flavor, kind, name, displayName, path);
+                if (flavor.getToolchainDescriptor().getC() != null && flavor.getToolchainDescriptor().getC().getFingerPrintFlags() != null) {
+                    return OracleCCompiler.create(env, flavor, kind, name, displayName, path);
+                } else {
+                    return SunCCompiler.create(env, flavor, kind, name, displayName, path);
+                }
             } else if (kind == PredefinedToolKind.CCCompiler) {
-                return SunCCCompiler.create(env, flavor, kind, name, displayName, path);
+                if (flavor.getToolchainDescriptor().getCpp()!= null && flavor.getToolchainDescriptor().getCpp().getFingerPrintFlags() != null) {
+                    return OracleCppCompiler.create(env, flavor, kind, name, displayName, path);
+                } else {
+                    return SunCCCompiler.create(env, flavor, kind, name, displayName, path);
+                }
             } else if (kind == PredefinedToolKind.FortranCompiler) {
                 return SunFortranCompiler.create(env, flavor, kind, name, displayName, path);
             } else if (kind == PredefinedToolKind.MakeTool) {

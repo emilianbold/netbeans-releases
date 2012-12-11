@@ -41,13 +41,16 @@
  */
 package org.netbeans.modules.web.inspect.webkit;
 
+import java.awt.EventQueue;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JToolBar;
@@ -55,7 +58,6 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.web.inspect.PageModel;
 import org.netbeans.modules.web.inspect.files.Files;
 import org.netbeans.modules.web.inspect.webkit.ui.CSSStylesPanel;
-import org.netbeans.modules.web.webkit.debugging.api.TransportStateException;
 import org.netbeans.modules.web.webkit.debugging.api.dom.DOM;
 import org.netbeans.modules.web.webkit.debugging.api.WebKitDebugging;
 import org.netbeans.modules.web.webkit.debugging.api.css.CSS;
@@ -107,6 +109,9 @@ public class WebKitPageModel extends PageModel {
      * the document node to the corresponding {@code RemoteObject}.
      */
     private Map<Integer,RemoteObject> contentDocumentMap = new HashMap<Integer,RemoteObject>();
+    /** Maps a node ID to pseudoclasses forced for the node. */
+    private Map<Integer,EnumSet<CSS.PseudoClass>> pseudoClassMap = Collections.synchronizedMap(
+            new HashMap<Integer,EnumSet<CSS.PseudoClass>>());
     /** Logger used by this class */
     static final Logger LOG = Logger.getLogger(WebKitPageModel.class.getName());
 
@@ -121,6 +126,7 @@ public class WebKitPageModel extends PageModel {
         this.project = pageContext.lookup(Project.class);
         this.external = (pageContext.lookup(JToolBar.class) == null); // Ugly heuristics
         addPropertyChangeListener(new WebPaneSynchronizer());
+        addPropertyChangeListener(new EditorSynchronizer());
 
         // Register DOM domain listener
         domListener = createDOMListener();
@@ -132,12 +138,7 @@ public class WebKitPageModel extends PageModel {
         CSS css = webKit.getCSS();
         css.addListener(cssListener);
 
-        try {
-            initializePage();
-        } catch (TransportStateException tsex) {
-            // The underlying transport became invalid
-            // before the page was initialized.
-        }
+        initializePage();
     }
 
     /**
@@ -204,6 +205,7 @@ public class WebKitPageModel extends PageModel {
 
     @Override
     public org.openide.nodes.Node getDocumentNode() {
+        assert !EventQueue.isDispatchThread();
         synchronized (this) {
             if (documentNode == null) {
                 DOM dom = webKit.getDOM();
@@ -218,12 +220,10 @@ public class WebKitPageModel extends PageModel {
 
     @Override
     public void removeNode(org.openide.nodes.Node node) {
-        try {
-            Node webKitNode = node.getLookup().lookup(Node.class);
-            if (webKitNode != null) {
-                webKit.getDOM().removeNode(webKitNode);
-            }
-        } catch (TransportStateException tsex) {}
+        Node webKitNode = node.getLookup().lookup(Node.class);
+        if (webKitNode != null) {
+            webKit.getDOM().removeNode(webKitNode);
+        }
     }
 
     @Override
@@ -297,6 +297,7 @@ public class WebKitPageModel extends PageModel {
                 synchronized(WebKitPageModel.this) {
                     nodes.clear();
                     contentDocumentMap.clear();
+                    pseudoClassMap.clear();
                     documentNode = null;
                     selectedNodes = Collections.EMPTY_LIST;
                     highlightedNodes = Collections.EMPTY_LIST;
@@ -408,11 +409,9 @@ public class WebKitPageModel extends PageModel {
                 RP.post(new Runnable() {
                     @Override
                     public void run() {
-                        try {
-                            // Issue 217896
-                            String script = "NetBeans.repaintGlassPane();"; // NOI18N
-                            invokeInAllDocuments(script);
-                        } catch (TransportStateException tsex) {}
+                        // Issue 217896
+                        String script = "NetBeans.repaintGlassPane();"; // NOI18N
+                        invokeInAllDocuments(script);
                     }
                 });
             }
@@ -485,6 +484,7 @@ public class WebKitPageModel extends PageModel {
 
     @Override
     public void setSelectedNodes(List<? extends org.openide.nodes.Node> nodes) {
+        assert !EventQueue.isDispatchThread();
         synchronized (this) {
             if (selectedNodes.equals(nodes)) {
                 return;
@@ -499,7 +499,7 @@ public class WebKitPageModel extends PageModel {
         for (org.openide.nodes.Node node : nodeList) {
             Node webKitNode = node.getLookup().lookup(Node.class);
             if (webKitNode == null) {
-                LOG.log(Level.INFO, "Not a wrapper of a WebKit node: {0}.", node); // NOI18N
+                knownNodes.add(node);
             } else {
                 int nodeId = webKitNode.getNodeId();
                 org.openide.nodes.Node knownNode = nodes.get(nodeId);
@@ -522,6 +522,7 @@ public class WebKitPageModel extends PageModel {
 
     @Override
     public void setHighlightedNodes(List<? extends org.openide.nodes.Node> nodes) {
+        assert !EventQueue.isDispatchThread();
         if (isSynchronizeSelection()) {
             setHighlightedNodesImpl(nodes);
         }
@@ -711,6 +712,56 @@ public class WebKitPageModel extends PageModel {
         return view;
     }
 
+    /**
+     * Returns pseudo-classes forced for the specified node.
+     * 
+     * @param node node whose forced pseudo-classes should be returned.
+     * @return pseudo-classes forced for the specified node.
+     */
+    public CSS.PseudoClass[] getPseudoClasses(Node node) {
+        int nodeId = node.getNodeId();
+        Set<CSS.PseudoClass> pseudoClassSet = pseudoClassMap.get(nodeId);
+        if (pseudoClassSet == null) {
+            pseudoClassSet = Collections.EMPTY_SET;
+        }
+        CSS.PseudoClass[] pseudoClasses = new CSS.PseudoClass[pseudoClassSet.size()];
+        int i=0;
+        for (CSS.PseudoClass pseudoClass : pseudoClassSet) {
+            pseudoClasses[i++]=pseudoClass;
+        }
+        return pseudoClasses;
+    }
+
+    /**
+     * Adds a forced pseudo-class for the specified node.
+     * 
+     * @param node node for which the pseudo-class should be forced.
+     * @param pseudoClass pseudo-class to force.
+     */
+    public void addPseudoClass(Node node, CSS.PseudoClass pseudoClass) {
+        int nodeId = node.getNodeId();
+        EnumSet<CSS.PseudoClass> pseudoClassSet = pseudoClassMap.get(nodeId);
+        if (pseudoClassSet == null) {
+            pseudoClassSet = EnumSet.noneOf(CSS.PseudoClass.class);
+            pseudoClassMap.put(nodeId, pseudoClassSet);
+        }
+        pseudoClassSet.add(pseudoClass);
+    }
+
+    /**
+     * Removes a pseudo-class from the set of pseudo-classes forced for a node.
+     * 
+     * @param node node for which the pseudo-class should removed.
+     * @param pseudoClass pseudo-class that should no longer be forced.
+     */
+    public void removePseudoClass(Node node, CSS.PseudoClass pseudoClass) {
+        int nodeId = node.getNodeId();
+        Set<CSS.PseudoClass> pseudoClassSet = pseudoClassMap.get(nodeId);
+        if (pseudoClassSet != null) {
+            pseudoClassSet.remove(pseudoClass);
+        }
+    }
+
     /** Determines whether this page model corresponds to a page in an external browser. */
     private boolean external;
     
@@ -753,34 +804,28 @@ public class WebKitPageModel extends PageModel {
 
         @Override
         public void propertyChange(PropertyChangeEvent evt) {
-            try {
-                String propName = evt.getPropertyName();
-                if (propName.equals(PageModel.PROP_HIGHLIGHTED_NODES)) {
-                    if (shouldSynchronizeHighlight()) {
-                        updateHighlight();
-                    }
-                } else if (propName.equals(PageModel.PROP_SELECTED_NODES)) {
-                    if (shouldSynchronizeSelection()) {
-                        updateSelection();
-                    }
-                } else if (propName.equals(PageModel.PROP_SELECTED_RULE)) {
-                    if (shouldSynchronizeSelection()) {
-                        updateSelectedRule(getNodesMatchingSelectedRule());
-                    }
-                } else if (propName.equals(PageModel.PROP_SELECTION_MODE)) {
-                    updateSelectionMode();
-                    updateSynchronization();
-                } else if (propName.equals(PageModel.PROP_SYNCHRONIZE_SELECTION)) {
-                    updateSelectionMode();
-                    updateSynchronization();
-                } else if (propName.equals(PageModel.PROP_DOCUMENT)) {
-                    initializePage();
-                    updateSelectionMode();
+            String propName = evt.getPropertyName();
+            if (propName.equals(PageModel.PROP_HIGHLIGHTED_NODES)) {
+                if (shouldSynchronizeHighlight()) {
+                    updateHighlight();
                 }
-            } catch (TransportStateException tse) {
-                // The underlying transport became invalid. No need to worry
-                // about failed synchronization as this means that the debugging
-                // session has been finished.
+            } else if (propName.equals(PageModel.PROP_SELECTED_NODES)) {
+                if (shouldSynchronizeSelection()) {
+                    updateSelection();
+                }
+            } else if (propName.equals(PageModel.PROP_SELECTED_RULE)) {
+                if (shouldSynchronizeSelection()) {
+                    updateSelectedRule(getNodesMatchingSelectedRule());
+                }
+            } else if (propName.equals(PageModel.PROP_SELECTION_MODE)) {
+                updateSelectionMode();
+                updateSynchronization();
+            } else if (propName.equals(PageModel.PROP_SYNCHRONIZE_SELECTION)) {
+                updateSelectionMode();
+                updateSynchronization();
+            } else if (propName.equals(PageModel.PROP_DOCUMENT)) {
+                initializePage();
+                updateSelectionMode();
             }
         }
 
@@ -849,6 +894,9 @@ public class WebKitPageModel extends PageModel {
                 // Add selected nodes into the next selection (in their document)
                 for (org.openide.nodes.Node node : nodes) {
                     Node webKitNode = node.getLookup().lookup(Node.class);
+                    if (webKitNode == null) {
+                        continue;
+                    }
                     webKitNode = convertNode(webKitNode);
                     RemoteObject remote = webKit.getDOM().resolveNode(webKitNode, null);
                     if (remote != null) {

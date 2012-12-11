@@ -45,11 +45,14 @@ package org.netbeans.modules.git;
 import java.io.File;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.concurrent.Callable;
+import java.util.logging.ConsoleHandler;
 import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import org.netbeans.junit.MockServices;
+import org.netbeans.junit.RandomlyFails;
 import org.netbeans.libs.git.GitBranch;
 import org.netbeans.modules.git.FileInformation.Status;
 import org.netbeans.modules.git.client.GitClient;
@@ -57,6 +60,7 @@ import org.netbeans.modules.git.ui.repository.RepositoryInfo;
 import org.netbeans.modules.git.utils.GitUtils;
 import org.netbeans.modules.versioning.masterfs.VersioningAnnotationProvider;
 import org.netbeans.modules.versioning.core.VersioningManager;
+import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
@@ -124,9 +128,13 @@ public class ExternalChangesTest extends AbstractGitTestCase {
     public void testNoExternalEventsManualTimestampRefresh () throws Exception {
         waitForInitialScan();
         assertTrue(getCache().getStatus(modifiedFile).containsStatus(Status.NEW_HEAD_INDEX));
-
-        getClient(repositoryLocation).remove(new File[] { modifiedFile }, true, GitUtils.NULL_PROGRESS_MONITOR);
-        Git.getInstance().refreshWorkingCopyTimestamp(repositoryLocation);
+        Git.getInstance().runWithoutExternalEvents(repositoryLocation, "remove", new Callable<Void>() {
+            @Override
+            public Void call () throws Exception {
+                getClient(repositoryLocation).remove(new File[] { modifiedFile }, true, GitUtils.NULL_PROGRESS_MONITOR);
+                return null;
+            }
+        });
         assertTrue(getCache().getStatus(modifiedFile).containsStatus(Status.NEW_HEAD_INDEX));
         failIfRefreshed();
         assertTrue(getCache().getStatus(modifiedFile).containsStatus(Status.NEW_HEAD_INDEX));
@@ -139,7 +147,7 @@ public class ExternalChangesTest extends AbstractGitTestCase {
         waitForInitialScan();
         assertTrue(getCache().getStatus(modifiedFile).containsStatus(Status.NEW_HEAD_INDEX));
 
-        Logger logger = Logger.getLogger(GitClient.class.getName());
+        Logger logger = Logger.getLogger(FilesystemInterceptor.class.getName());
         logger.setLevel(Level.ALL);
         final boolean[] refreshed = new boolean[1];
         logger.addHandler(new Handler() {
@@ -243,6 +251,190 @@ public class ExternalChangesTest extends AbstractGitTestCase {
         waitForRefresh();
         assertTrue(getCache().getStatus(modifiedFile).containsStatus(Status.UPTODATE));
     }
+    
+    public void testExternalCommandLoggedNoChanges () throws Exception {
+        waitForInitialScan();
+        FileChangeAdapter fca = new FileChangeAdapter();
+        workdirFO.addRecursiveListener(fca);
+        FileUtil.refreshFor(repositoryLocation);
+        Thread.sleep(11000); // some time for initial scans to finish and event logger to settle down
+        File gitFolder = new File(repositoryLocation, ".git");
+        final File lockFile = new File(gitFolder, "index.lock");
+        Logger GESTURES_LOG = Logger.getLogger("org.netbeans.ui.vcs");
+        ExternalCommandUsageHandler h = new ExternalCommandUsageHandler();
+        GESTURES_LOG.addHandler(h);
+        lockFile.createNewFile();
+        FileUtil.refreshFor(repositoryLocation);
+        pause(); 
+        lockFile.delete();
+        FileUtil.refreshFor(repositoryLocation);
+        
+        h.waitForEvent();
+        assertNotNull(h.event);
+        assertEquals(1, h.numberOfEvents);
+        assertTrue(h.event.time > 0);
+        assertEquals("GIT", h.event.vcs);
+        assertEquals("UNKNOWN", h.event.command);
+        assertTrue(h.event.external);
+        assertEquals(Long.valueOf(0), h.event.modifications);
+        GESTURES_LOG.removeHandler(h);
+        workdirFO.removeRecursiveListener(fca);
+    }
+    
+    @RandomlyFails
+    public void testExternalCommandLoggedChanges () throws Exception {
+        waitForInitialScan();
+        FileChangeAdapter fca = new FileChangeAdapter();
+        workdirFO.addRecursiveListener(fca);
+        final File toAdd = new File(modifiedFile.getParentFile(), "toAdd");
+        File toDelete = new File(modifiedFile.getParentFile(), "toDelete");
+        toDelete.createNewFile();
+        FileUtil.refreshFor(repositoryLocation);
+        Thread.sleep(11000); // some time for initial scans to finish and event logger to settle down
+        File gitFolder = new File(repositoryLocation, ".git");
+        final File lockFile = new File(gitFolder, "index.lock");
+        
+        Logger.getLogger(FilesystemInterceptor.class.getName()).setLevel(Level.ALL);
+        ConsoleHandler ch = new ConsoleHandler();
+        ch.setLevel(Level.ALL);
+        Logger.getLogger(FilesystemInterceptor.class.getName()).addHandler(ch);
+        
+        Logger GESTURES_LOG = Logger.getLogger("org.netbeans.ui.vcs");
+        ExternalCommandUsageHandler h = new ExternalCommandUsageHandler();
+        GESTURES_LOG.addHandler(h);
+        assertTrue(lockFile.createNewFile());
+        FileUtil.refreshFor(repositoryLocation);
+        // modification
+        write(modifiedFile, "testExternalCommandLoggedChanges");
+        // delete
+        toDelete.delete();
+        // create
+        toAdd.createNewFile();
+        FileUtil.refreshFor(repositoryLocation);
+        pause();        
+        assertTrue(lockFile.delete());
+        FileUtil.refreshFor(repositoryLocation);
+        
+        h.waitForEvent();
+        assertNotNull(h.event);
+        assertEquals(1, h.numberOfEvents);
+        assertTrue(h.event.time > 0);
+        assertEquals("GIT", h.event.vcs);
+        assertEquals("UNKNOWN", h.event.command);
+        assertTrue(h.event.external);
+        assertEquals(Long.valueOf(3), h.event.modifications);
+        GESTURES_LOG.removeHandler(h);
+        workdirFO.removeRecursiveListener(fca);
+        Logger.getLogger(FilesystemInterceptor.class.getName()).removeHandler(ch);
+    }
+    
+    public void testInternalCommandLoggedChanges () throws Exception {
+        waitForInitialScan();
+        FileChangeAdapter fca = new FileChangeAdapter();
+        workdirFO.addRecursiveListener(fca);
+        final File toAdd = new File(modifiedFile.getParentFile(), "toAdd");
+        final File toDelete = new File(modifiedFile.getParentFile(), "toDelete");
+        toDelete.createNewFile();
+        FileUtil.refreshFor(repositoryLocation);
+        Thread.sleep(11000); // some time for initial scans to finish and event logger to settle down
+        File gitFolder = new File(repositoryLocation, ".git");
+        final File lockFile = new File(gitFolder, "index.lock");
+        Logger GESTURES_LOG = Logger.getLogger("org.netbeans.ui.vcs");
+        ExternalCommandUsageHandler h = new ExternalCommandUsageHandler();
+        GESTURES_LOG.addHandler(h);
+        Git.getInstance().runWithoutExternalEvents(repositoryLocation, "MY_COMMAND", new Callable<Void>() {
+            @Override
+            public Void call () throws Exception {
+                lockFile.createNewFile();
+                FileUtil.refreshFor(repositoryLocation);
+                // modification
+                write(modifiedFile, "testExternalCommandLoggedChanges");
+                // delete
+                toDelete.delete();
+                // create
+                toAdd.createNewFile();
+                FileUtil.refreshFor(repositoryLocation);
+                pause();
+                lockFile.delete();
+                FileUtil.refreshFor(repositoryLocation);
+                return null;
+            }
+        });
+        h.waitForEvent();
+        assertNotNull(h.event);
+        assertEquals(1, h.numberOfEvents);
+        assertTrue(h.event.time > 0);
+        assertEquals("GIT", h.event.vcs);
+        assertFalse(h.event.external);
+        assertEquals("MY_COMMAND", h.event.command);
+        assertEquals(Long.valueOf(3), h.event.modifications);
+        GESTURES_LOG.removeHandler(h);
+        workdirFO.removeRecursiveListener(fca);
+    }
+    
+    public void testInternalCommandLoggedChangesAfterUnlock () throws Exception {
+        waitForInitialScan();
+        FileChangeAdapter fca = new FileChangeAdapter();
+        workdirFO.addRecursiveListener(fca);
+        final File toAdd = new File(modifiedFile.getParentFile(), "toAdd");
+        final File toDelete = new File(modifiedFile.getParentFile(), "toDelete");
+        toDelete.createNewFile();
+        FileUtil.refreshFor(repositoryLocation);
+        Thread.sleep(11000); // some time for initial scans to finish and event logger to settle down
+        File gitFolder = new File(repositoryLocation, ".git");
+        final File lockFile = new File(gitFolder, "index.lock");
+        Logger GESTURES_LOG = Logger.getLogger("org.netbeans.ui.vcs");
+        ExternalCommandUsageHandler h = new ExternalCommandUsageHandler();
+        GESTURES_LOG.addHandler(h);
+        Git.getInstance().runWithoutExternalEvents(repositoryLocation, "MY_COMMAND", new Callable<Void>() {
+            @Override
+            public Void call () throws Exception {
+                // modification
+                write(modifiedFile, "testExternalCommandLoggedChanges");
+                // delete
+                toDelete.delete();
+                // create
+                toAdd.createNewFile();
+                pause();
+                FileUtil.refreshFor(repositoryLocation);
+                return null;
+            }
+        });
+        Thread.sleep(2000);
+        // coming with delay after some time
+        // still considered as part of internal command
+        lockFile.createNewFile();
+        FileUtil.refreshFor(repositoryLocation);
+        pause();
+        lockFile.delete();
+        FileUtil.refreshFor(repositoryLocation);
+        
+        h.waitForEvent();
+        assertNotNull(h.event);
+        assertEquals(1, h.numberOfEvents);
+        assertTrue(h.event.time > 0);
+        assertEquals("GIT", h.event.vcs);
+        assertFalse(h.event.external);
+        assertEquals("MY_COMMAND", h.event.command);
+        assertEquals(Long.valueOf(3), h.event.modifications);
+        
+        Thread.sleep(9000);
+        // coming after some reasonable pause, now considered as part of external command
+        lockFile.createNewFile();
+        FileUtil.refreshFor(repositoryLocation);
+        pause();
+        lockFile.delete();
+        FileUtil.refreshFor(repositoryLocation);
+        h.waitForEvent();
+        assertNotNull(h.event);
+        assertEquals(2, h.numberOfEvents);
+        assertEquals("GIT", h.event.vcs);
+        assertTrue(h.event.external);
+        assertEquals("UNKNOWN", h.event.command);
+        assertEquals(Long.valueOf(0), h.event.modifications);
+        GESTURES_LOG.removeHandler(h);
+        workdirFO.removeRecursiveListener(fca);
+    }
 
     private void waitForRefresh () throws Exception {
         InterceptorRefreshHandler handler = new InterceptorRefreshHandler();
@@ -281,6 +473,11 @@ public class ExternalChangesTest extends AbstractGitTestCase {
         assertTrue(handler.waitForFilesToRefresh());
     }
 
+    private void pause () throws InterruptedException {
+        // uncomment if decided to log only longer commands
+//        Thread.sleep(3100); // only commands running longer than 3s are logged
+    }
+
     private class InterceptorRefreshHandler extends Handler {
         private boolean refreshed;
         private boolean refreshStarted;
@@ -307,5 +504,55 @@ public class ExternalChangesTest extends AbstractGitTestCase {
         @Override
         public void close() throws SecurityException {
         }
+    }
+    
+    private class ExternalCommandUsageHandler extends Handler {
+        
+        volatile CommandUsageEvent event;
+        volatile int numberOfEvents;
+        
+        @Override
+        public void publish(LogRecord record) {
+            String message = record.getMessage();
+            if ("USG_VCS_CMD".equals(message)) {
+                ++numberOfEvents;
+                event = new CommandUsageEvent();
+                event.vcs = (String) record.getParameters()[0];
+                event.time = (Long) record.getParameters()[1];
+                event.modifications = (Long) record.getParameters()[2];
+                event.command = (String) record.getParameters()[3];
+                event.external = "EXTERNAL".equals(record.getParameters()[4]);
+            }
+        }
+
+        @Override
+        public void flush() {
+        }
+
+        @Override
+        public void close() throws SecurityException {
+        }
+
+        private void waitForEvent () throws Exception {
+            for (int i = 0; i < 20; ++i) {
+                Thread.sleep(1000);
+                if (event != null) {
+                    break;
+                }
+            }
+            if (event == null) {
+                fail("no event logged");
+            }
+        }
+
+    }
+
+    static class CommandUsageEvent {
+        private boolean external;
+        private String command;
+        private Long modifications;
+        private Long time;
+        private String vcs;
+
     }
 }

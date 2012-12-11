@@ -1100,7 +1100,7 @@ public final class DocumentViewOp
 
     public boolean isNonPrintableCharactersVisible() {
         checkSettingsInfo();
-        return isAnyStatusBit(NON_PRINTABLE_CHARACTERS_VISIBLE);
+        return isAnyStatusBit(NON_PRINTABLE_CHARACTERS_VISIBLE) && !asTextField;
     }
 
     LineWrapType getLineWrapType() {

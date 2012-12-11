@@ -210,10 +210,10 @@ public final class SearchPattern {
         char m = isMatchCase() ? 'M' : 'm';
         char r = isRegExp() ? 'R' : 'r';
         char w = isWholeWords() ? 'W' : 'w';
-        return "" + m + r + w + "-" + getSearchExpression();
+        return "" + m + r + w + "-" + getSearchExpression(); //NOI18N
     }
 
-    static SearchPattern parseSearchPattern(String canonicalString) {
+    static SearchPattern parsePattern(String canonicalString) {
         //format mrw-findwhat
         if (canonicalString == null
                 || Character.toUpperCase(canonicalString.charAt(0)) != 'M'

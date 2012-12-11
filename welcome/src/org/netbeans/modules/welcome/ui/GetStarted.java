@@ -135,7 +135,7 @@ class GetStarted extends JPanel implements Constants {
             JPanel panel = new JPanel( new GridBagLayout() );
             panel.setOpaque(false);
             ActionButton lb = new ActionButton( action, Utils.getUrlString( dob ),
-                    Utils.getColor( COLOR_HEADER ), true, dob.getPrimaryFile().getPath() );
+                    Utils.getColor( COLOR_BIG_BUTTON ), true, dob.getPrimaryFile().getPath() );
             panel.add( lb, new GridBagConstraints(1,0,1,3,1.0,0.0,GridBagConstraints.WEST,GridBagConstraints.HORIZONTAL,new Insets(0,0,0,0),0,0) );
             lb.setFont( GET_STARTED_FONT );
             
@@ -144,7 +144,7 @@ class GetStarted extends JPanel implements Constants {
                     BundleSupport.getAccessibilityDescription( "GettingStarted", lb.getText() ) ); //NOI18N
             add( panel, new GridBagConstraints( 0,row++,1,1,1.0,0.0,
                 GridBagConstraints.NORTHWEST, GridBagConstraints.HORIZONTAL,
-                new Insets(0,0,7,0), 0, 0 ) );
+                new Insets(0,0,3,0), 0, 0 ) );
         }
         return row;
     }

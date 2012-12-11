@@ -77,6 +77,14 @@ public class RemoteUtil {
                 LOGGER.log(level, text);
             }
         }
+
+        public Level getLevel() {
+            return LOGGER.getLevel();
+        }
+
+        public boolean isLoggable(Level level) {
+            return LOGGER.isLoggable(level);
+        }        
     }
 
     private RemoteUtil() {}

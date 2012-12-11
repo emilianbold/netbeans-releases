@@ -668,25 +668,25 @@ public class ErrorIncludeDialog extends JPanel implements CsmModelListener {
                 }
                 
                 CsmFile file = error.getContainingFile();
-                if (handleIncludeError) {
-                    getObjectFile(found, file.getAbsolutePath().toString(), buf);
-                }
-                if (file.isHeaderFile()) {
-                    List<CsmInclude> list = CsmFileInfoQuery.getDefault().getIncludeStack(file);
-                    if (list.size() > 0) {
-                        buf.append(i18n("PathToHeader"));  // NOI18N
-                        file = list.get(0).getContainingFile();
-                        for (CsmInclude inc : list) {
-                            buf.append("\n<br>&nbsp;&nbsp;&nbsp;&nbsp;");  // NOI18N
-                            buf.append(inc.getContainingFile().getAbsolutePath());
-                            buf.append(i18n("PathToHeaderLine", inc.getStartPosition().getLine()));  // NOI18N
-                        }
-                        buf.append("\n<br>"); // NOI18N
-                    } else {
-                        file = null;
-                    }
-                }
                 if (file != null) {
+                    if (handleIncludeError) {
+                        getObjectFile(found, file.getAbsolutePath().toString(), buf);
+                    }
+                    if (file.isHeaderFile()) {
+                        List<CsmInclude> list = CsmFileInfoQuery.getDefault().getIncludeStack(file);
+                        if (list.size() > 0) {
+                            buf.append(i18n("PathToHeader"));  // NOI18N
+                            file = list.get(0).getContainingFile();
+                            for (CsmInclude inc : list) {
+                                buf.append("\n<br>&nbsp;&nbsp;&nbsp;&nbsp;");  // NOI18N
+                                buf.append(inc.getContainingFile().getAbsolutePath());
+                                buf.append(i18n("PathToHeaderLine", inc.getStartPosition().getLine()));  // NOI18N
+                            }
+                            buf.append("\n<br>"); // NOI18N
+                        } else {
+                            file = null;
+                        }
+                    }
                     List<FSPath> list = CsmFileInfoQuery.getDefault().getUserIncludePaths(file);
                     if (list.size() > 0) {
                         buf.append(i18n("SourceUserPaths"));  // NOI18N

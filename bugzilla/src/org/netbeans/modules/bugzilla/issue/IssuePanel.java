@@ -221,6 +221,9 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
     }
 
     private void initDefaultButton() {
+        if(Boolean.getBoolean("bugtracking.suppressActionKeys")) {
+            return;
+        }
         InputMap inputMap = getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
         inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0), "submit"); // NOI18N
         ActionMap actionMap = getActionMap();

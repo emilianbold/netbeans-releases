@@ -64,6 +64,7 @@ import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.text.NbDocument;
 import org.openide.windows.WindowManager;
 
 /**
@@ -72,7 +73,7 @@ import org.openide.windows.WindowManager;
  */
 public final class CssCaretAwareSourceTask extends ParserResultTask<CssParserResult> {
 
-    private static final Logger LOG = RuleEditorPanel.LOG;
+    private static final Logger LOG = Logger.getLogger("rule.editor");
     private static final String CSS_MIMETYPE = "text/css"; //NOI18N
     private boolean cancelled;
 
@@ -137,9 +138,8 @@ public final class CssCaretAwareSourceTask extends ParserResultTask<CssParserRes
                 DataObject dobj = DataObject.find(file);
                 EditorCookie ec = dobj.getLookup().lookup(EditorCookie.class);
                 if (ec != null) {
-                    JEditorPane[] panes = ec.getOpenedPanes(); //needs EDT
-                    if (panes != null && panes.length > 0) {
-                        JEditorPane pane = panes[0]; //hopefully the active one
+                    JEditorPane pane = NbDocument.findRecentEditorPane(ec);
+                    if (pane != null) {
                         caretOffset = pane.getCaretPosition();
                     }
                 }
@@ -192,7 +192,7 @@ public final class CssCaretAwareSourceTask extends ParserResultTask<CssParserRes
         }
     }
 
-    private Rule findRuleAtOffset(Snapshot snapshot, Model model, int documentOffset) {
+    private Rule findRuleAtOffset(final Snapshot snapshot, Model model, int documentOffset) {
         final int astOffset = snapshot.getEmbeddedOffset(documentOffset);
         if (astOffset == -1) {
             return null;
@@ -207,8 +207,30 @@ public final class CssCaretAwareSourceTask extends ParserResultTask<CssParserRes
                         if (cancelled) {
                             return;
                         }
-                        if (astOffset >= rule.getStartOffset() && astOffset < rule.getEndOffset()) {
-                            ruleRef.set(rule);
+                        if (astOffset >= rule.getStartOffset()) {
+                            if(astOffset <= rule.getEndOffset()) {
+                                //exactly in the rule or at its boundaries
+                                ruleRef.set(rule);
+                            } else {
+                                //behind the rule close curly bracket.
+                                //if the offset is at the same line as the rule
+                                //end and there're only WS between,
+                                //activate the rule
+                                CharSequence source = snapshot.getText();
+                                for(int i = astOffset - 1; i >= 0; i--) {
+                                    if(i == rule.getEndOffset()) {
+                                        ruleRef.set(rule);
+                                        return ;
+                                    }
+                                    char c = source.charAt(i);
+                                    if(!(c == ' ' || c == '\t')) {
+                                        break; //some non-ws text //todo fix comments
+                                    }
+                                    if(c == '\n') {
+                                        break;
+                                    }
+                                }
+                            }
                         }
                     }
                 });

@@ -101,6 +101,7 @@ final public class Settings {
         ext2comments.put( "SCALA", new CommentTags( "//", "/*", "*/") ); //NOI18N //NOI18N //NOI18N //NOI18N
         ext2comments.put( "GROOVY", new CommentTags( "//", "/*", "*/") ); //NOI18N //NOI18N //NOI18N //NOI18N
         ext2comments.put( "FX", new CommentTags( "//", "/*", "*/") ); //NOI18N //NOI18N //NOI18N //NOI18N
+        ext2comments.put( "TWIG", new CommentTags( "{#", "#}") ); //NOI18N //NOI18N //NOI18N
         
         mime2comments.put( "text/x-java", new CommentTags( "//", "/*", "*/") ); //NOI18N //NOI18N //NOI18N //NOI18N
         mime2comments.put( "text/html", new CommentTags( "<!--", "-->") ); //NOI18N //NOI18N //NOI18N

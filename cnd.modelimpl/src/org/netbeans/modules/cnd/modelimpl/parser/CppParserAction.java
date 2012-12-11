@@ -345,6 +345,8 @@ public interface CppParserAction extends CsmParserProvider.CsmParseCallback {
     void decltype_specifier(int kind, Token token);
     void end_decltype_specifier(Token token);
     void end_elaborated_type_specifier(Token token);
+    void typename_specifier(Token token);
+    void end_typename_specifier(Token token);    
     void asm_definition(Token asmToken, Token lparenToken, Token stringToken, Token rparenToken, Token semicolonToken);
     void linkage_specification(Token externToken, Token stringToken);
     void linkage_specification(int kind, Token token);

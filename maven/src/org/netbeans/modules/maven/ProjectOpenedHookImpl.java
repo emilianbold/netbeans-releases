@@ -110,7 +110,6 @@ public class ProjectOpenedHookImpl extends ProjectOpenedHook {
     private final Project proj;
     private TransientRepositories transRepos;
     private final List<URI> uriReferences = new ArrayList<URI>();
-    private CopyResourcesOnSave copyResourcesOnSave;
 
     // ui logging
     static final String UI_LOGGER_NAME = "org.netbeans.ui.maven.project"; //NOI18N
@@ -164,9 +163,11 @@ public class ProjectOpenedHookImpl extends ProjectOpenedHook {
         //registerCoordinates() doesn't attach listeners
         MavenFileOwnerQueryImpl.getInstance().attachProjectListener(project);
         Set<URI> uris = getProjectExternalSourceRoots(project);
-        for (URI uri : uris) {
-            FileOwnerQuery.markExternalOwner(uri, proj, FileOwnerQuery.EXTERNAL_ALGORITHM_TRANSIENT);
-            uriReferences.add(uri);
+        synchronized (uriReferences) {
+            for (URI uri : uris) {
+                FileOwnerQuery.markExternalOwner(uri, proj, FileOwnerQuery.EXTERNAL_ALGORITHM_TRANSIENT);
+                uriReferences.add(uri);
+            }
         }
         NbMavenProject watcher = project.getProjectWatcher();
         //XXX: is there an ordering problem? should this be done first right after the project changes, instead of ordinary listener?
@@ -198,8 +199,7 @@ public class ProjectOpenedHookImpl extends ProjectOpenedHook {
         }
         transRepos.register();
 
-        copyResourcesOnSave = new CopyResourcesOnSave(watcher, proj);
-        copyResourcesOnSave.opened();
+        project.getCopyOnSaveResources().opened();
 
         //only check for the updates of index, if the indexing was already used.
         if (checkedIndices.compareAndSet(false, true) && existsDefaultIndexLocation()) {
@@ -285,10 +285,7 @@ public class ProjectOpenedHookImpl extends ProjectOpenedHook {
         GlobalPathRegistry.getDefault().unregister(ClassPath.COMPILE, cpProvider.getProjectClassPaths(ClassPath.COMPILE));
         GlobalPathRegistry.getDefault().unregister(ClassPath.EXECUTE, cpProvider.getProjectClassPaths(ClassPath.EXECUTE));
         BatchProblemNotifier.closed(project);
-        if (copyResourcesOnSave != null) {
-            copyResourcesOnSave.closed();
-        }
-        copyResourcesOnSave = null;
+        project.getCopyOnSaveResources().closed();
 
         if (transRepos != null) { // XXX #212555 projectOpened was not called first?
             transRepos.unregister();

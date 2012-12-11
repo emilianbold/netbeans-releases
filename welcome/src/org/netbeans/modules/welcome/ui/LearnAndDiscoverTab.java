@@ -44,8 +44,8 @@
 
 package org.netbeans.modules.welcome.ui;
 
-import java.awt.BorderLayout;
 import java.awt.GridLayout;
+import javax.swing.JComponent;
 import javax.swing.JPanel;
 import org.netbeans.modules.welcome.content.BundleSupport;
 import org.netbeans.modules.welcome.content.ContentSection;
@@ -58,22 +58,20 @@ import org.netbeans.modules.welcome.content.ContentSection;
 class LearnAndDiscoverTab extends AbstractTab {
 
     public LearnAndDiscoverTab() {
-        setName(BundleSupport.getLabel( "LearnAndDiscoverTab" )); //NOI18N
+        super(BundleSupport.getLabel( "LearnAndDiscoverTab" )); //NOI18N
     }
 
     @Override
-    protected void buildContent() {
+    protected JComponent buildContent() {
         JPanel panel = new JPanel(new GridLayout(1,0));
         panel.setOpaque(false);
-        panel.add(new ContentSection( new GetStarted(), false, false ));
+        panel.add(new ContentSection( new GetStarted(), false ));
 
-        panel.add( new ContentSection( BundleSupport.getLabel("SectionDemosAndTutorials"), new Tutorials(), true, false )); //NOI18N
+        panel.add( new ContentSection( BundleSupport.getLabel("SectionDemosAndTutorials"), new Tutorials(), false )); //NOI18N
 
         panel.add( new ContentSection( BundleSupport.getLabel( "SectionDemo" ), //NOI18N
-                new DemoPanel(), true, false ));
+                new DemoPanel(), false ));
 
-        add( panel, BorderLayout.CENTER );
-
-        add( new BottomBar(), BorderLayout.SOUTH );
+        return panel;
     }
 }

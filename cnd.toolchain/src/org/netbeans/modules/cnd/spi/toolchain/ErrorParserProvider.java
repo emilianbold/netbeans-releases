@@ -45,10 +45,13 @@ package org.netbeans.modules.cnd.spi.toolchain;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import org.netbeans.api.extexecution.print.ConvertedLine;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.api.toolchain.CompilerFlavor;
+import org.netbeans.modules.cnd.toolchain.execution.OutputListenerImpl;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Lookup;
@@ -78,8 +81,33 @@ public abstract class ErrorParserProvider {
     
     public abstract String getID();
 
+    public final static class OutputListenerRegistry {
+        private final Map<FileObject,List<OutputListener>> storage = new HashMap<FileObject,List<OutputListener>>();
+        private final Map<OutputListener,FileObject> listeners = new HashMap<OutputListener,FileObject>();
+    
+        protected OutputListenerRegistry() {
+        }
+
+        public OutputListener register(FileObject file, int line, boolean isError, String description) {
+            OutputListenerImpl res = new OutputListenerImpl(this, file, line, isError, description);
+            List<OutputListener> list = storage.get(file);
+            if (list == null) {
+                list = new ArrayList<OutputListener>();
+                storage.put(file, list);
+            }
+            list.add(res);
+            listeners.put(res, file);
+            return res;
+        }
+
+        public List<OutputListener> getFileListeners(FileObject file){
+            return storage.get(file);
+        }
+    }
+    
     public interface ErrorParser {
 	Result handleLine(String line) throws IOException;
+        void setOutputListenerRegistry(OutputListenerRegistry regestry);
     }
     public interface Result {
         public abstract boolean result();

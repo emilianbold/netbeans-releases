@@ -43,8 +43,6 @@
  */
 package org.openide.util;
 
-import org.openide.util.Lookup;
-
 
 /** An interface that can be registered in a lookup by subsystems
  * wish to provide a global context actions should react to. The global
@@ -56,6 +54,13 @@ import org.openide.util.Lookup;
  * <a href="@org-openide-nodes@/org/openide/nodes/Node.html">Node</a>, their cookies and {@link javax.swing.ActionMap}.
  * By default this interface is implemented by window system to delegate
  * to currently activated <a href="@org-openide-windows@/org/openide/windows/TopComponent.html#getLookup()">TopComponent's  lookup</a>.
+ * <p>
+ * There is an external FAQ entry describing how to
+ * <a href="http://wiki.netbeans.org/DevFaqAddGlobalContext">add content to
+ * the global context</a> by providing customized implementation of this
+ * interface.
+ * 
+ * </p>
  *
  * @author Jaroslav Tulach
  * @since 4.10

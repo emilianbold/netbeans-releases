@@ -52,6 +52,7 @@ import org.netbeans.modules.html.editor.api.HtmlKit;
 import org.netbeans.modules.html.editor.api.gsf.HtmlParserResult;
 import org.netbeans.modules.html.editor.api.index.HtmlIndex;
 import org.netbeans.modules.parsing.api.Snapshot;
+import org.netbeans.modules.parsing.api.indexing.IndexingManager;
 import org.netbeans.modules.parsing.spi.Parser.Result;
 import org.netbeans.modules.parsing.spi.indexing.Context;
 import org.netbeans.modules.parsing.spi.indexing.EmbeddingIndexer;
@@ -95,14 +96,13 @@ public class HtmlIndexer extends EmbeddingIndexer {
             storeEntries(model.getReferences(), document, REFERS_KEY);
 
             support.addDocument(document);
-            fireChange(model.getFileObject());
 
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
         }
     }
 
-    static private void fireChange(final FileObject fo) {
+    private static void fireChange(final FileObject fo) {
         // handle events firing in separate thread:
         RP.post(new Runnable() {
             @Override
@@ -178,6 +178,9 @@ public class HtmlIndexer extends EmbeddingIndexer {
                 IndexingSupport is = IndexingSupport.getInstance(context);
                 for(Indexable i : dirty) {
                     is.markDirtyDocuments(i);
+                }
+                if (context.getRoot() != null) {
+                    fireChange(context.getRoot());
                 }
             } catch (IOException ioe) {
                 LOGGER.log(Level.WARNING, null, ioe);

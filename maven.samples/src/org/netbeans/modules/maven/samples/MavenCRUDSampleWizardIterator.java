@@ -64,7 +64,9 @@ public class MavenCRUDSampleWizardIterator extends MavenSamplesWizardIterator {
     
     private CRUDSampleDbPersistencePanel configurationPanel;
     
-    public MavenCRUDSampleWizardIterator() {}
+    public MavenCRUDSampleWizardIterator() {
+        super(NbBundle.getMessage(MavenCRUDSampleWizardIterator.class, "Templates/Project/Samples/Maven/MavenCRUDSample"));
+    }
     
     public static MavenCRUDSampleWizardIterator createIterator() {
         return new MavenCRUDSampleWizardIterator();

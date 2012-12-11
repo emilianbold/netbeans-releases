@@ -47,14 +47,19 @@ package org.openide.loaders;
 import java.io.File;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
+import java.lang.reflect.Method;
 import java.net.URI;
 import java.net.URL;
 import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.core.startup.layers.SystemFileSystem;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.RandomlyFails;
+import org.openide.actions.NewTemplateAction;
+import org.openide.actions.SaveAsTemplateAction;
+import org.openide.cookies.InstanceCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileSystem;
@@ -120,6 +125,47 @@ implements java.net.URLStreamHandlerFactory {
             return FileUtil.nbfsURLStreamHandler ();
         }
         return null;
+    }
+    
+    
+    public void testShadowFileRedirected() throws Exception {
+
+        clearWorkDir();
+        
+        File wd = getWorkDir();
+        File homeDir = new File(wd, "home");
+        File localDir = new File(wd, "data");
+        localDir.mkdirs();
+        homeDir.mkdirs();
+        
+        LocalFileSystem lfs1 = new LocalFileSystem();
+        lfs1.setRootDirectory(homeDir);
+        FileObject r = lfs1.getRoot();
+
+        FileObject file1 = r.createData("org-openide-actions-NewTemplateAction.instance");
+        FileObject file2 = r.createData("org-openide-actions-SaveAsTemplateAction.instance");
+        FileObject shadow = r.createData("file.shadow");
+        shadow.setAttribute("originalFile", "org-openide-actions-NewTemplateAction.instance");
+
+        DataShadow s = (DataShadow)DataObject.find(shadow);
+        {
+            InstanceCookie ic = s.getLookup().lookup(InstanceCookie.class);
+            assertSame("Instance cookie is new", NewTemplateAction.class, ic.instanceClass());
+        }
+        
+        
+        assertEquals(
+                file1.getPath(),
+                s.getOriginal().getPrimaryFile().getPath());
+        
+        shadow.setAttribute("originalFile", "org-openide-actions-SaveAsTemplateAction.instance");
+        assertEquals(
+                file2.getPath(),
+                s.getOriginal().getPrimaryFile().getPath());
+        InstanceCookie ic = s.getLookup().lookup(InstanceCookie.class);
+        assertSame("Instance cookie is updated", SaveAsTemplateAction.class, ic.instanceClass());
+        
+        
     }
     
     public void testCreateTheShadow61175() throws Exception {
@@ -436,5 +482,47 @@ implements java.net.URLStreamHandlerFactory {
         }
         R action = new R();
         FileUtil.runAtomicAction(action);
+    }
+    
+    /**
+     * Tests the method findOriginal()
+     * @throws Exception 
+     */
+    public void testFindOriginal() throws Exception {
+        FileSystem fs = FileUtil.createMemoryFileSystem();
+        FileObject orig = FileUtil.createData(fs.getRoot(), "path/to/orig");
+        FileObject shadow = FileUtil.createData(fs.getRoot(), "link.shadow");
+        shadow.setAttribute("originalFile", "path/to/orig");
+        assertEquals("found the right original file", 
+                orig, DataShadow.findOriginal(shadow));
+    }
+    
+    /**
+     * Checks that findOriginal returns null on broken (but formally
+     * correct) shadow
+     * @throws Exception C
+     */
+    public void testFindMissingOriginal() throws Exception {
+        FileSystem fs = FileUtil.createMemoryFileSystem();
+        FileObject shadow = FileUtil.createData(fs.getRoot(), "link.shadow");
+        shadow.setAttribute("originalFile", "path/to/orig");
+        assertNull("null should be returned for missing target", DataShadow.findOriginal(shadow));
+    }
+    
+    /**
+     * Checks that findOriginal throws Exception on a malformed 
+     * shadow
+     * @throws Exception 
+     */
+    public void testFindBrokenOriginal() throws Exception {
+        FileSystem fs = FileUtil.createMemoryFileSystem();
+        FileObject orig = FileUtil.createData(fs.getRoot(), "path/to/orig");
+        FileObject shadow = FileUtil.createData(fs.getRoot(), "link.shadow");
+        try {
+            DataShadow.findOriginal(shadow);
+            fail("IOException should be thrown on malformed shadow");
+        } catch (IOException ex) {
+            // this is oK
+        }
     }
 }

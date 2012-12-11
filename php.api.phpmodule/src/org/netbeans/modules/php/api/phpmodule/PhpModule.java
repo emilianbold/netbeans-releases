@@ -140,6 +140,7 @@ public abstract class PhpModule {
      * @return PHP module or <code>null</code> if not found
      */
     public static PhpModule forFileObject(FileObject fo) {
+        Parameters.notNull("fo", fo); // NOI18N
         Project project = FileOwnerQuery.getOwner(fo);
         if (project == null) {
             return null;

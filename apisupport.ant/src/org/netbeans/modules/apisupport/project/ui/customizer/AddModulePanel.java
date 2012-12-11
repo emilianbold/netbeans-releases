@@ -61,6 +61,7 @@ import javax.swing.InputMap;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.KeyStroke;
+import javax.swing.Timer;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
@@ -99,6 +100,7 @@ public final class AddModulePanel extends JPanel {
     private URL currectJavadoc;
     
     private final SingleModuleProperties props;
+    private Timer timer;
     
     public static ModuleDependency[] selectDependencies(final SingleModuleProperties props) {
         final AddModulePanel addPanel = new AddModulePanel(props);
@@ -331,6 +333,7 @@ public final class AddModulePanel extends JPanel {
                     }
                     Mutex.EVENT.readAccess(new Runnable() {
                         public @Override void run() {
+                            timer.stop();
                             // XXX would be better to have more fine-grained control over the thread
                             if (!text.equals(filterValue.getText())) {
                                 return; // no longer valid, don't apply
@@ -343,24 +346,31 @@ public final class AddModulePanel extends JPanel {
                     });
                 }
             };
-            if (filterer == null) {
-                // Slow to create it, so show Please wait...
-                moduleList.setModel(UIUtil.createListWaitModel());
-                synchronized (this) {
-                    filterTask = RP.post(new Runnable() {
-                        public @Override void run() {
-                            if (filterer == null) {
-                                filterer = new AddModuleFilter(universeModules.getDependencies(), props.getCodeNameBase());
-                            }
-                            compute.run();
+            restartTimer();
+            synchronized (this) {
+                filterTask = RP.post(new Runnable() {
+                    public @Override void run() {
+                        if (filterer == null) {
+                            filterer = new AddModuleFilter(universeModules.getDependencies(), props.getCodeNameBase());
                         }
-                    });
-                }
-            } else {
-                // Pretty fast once we have it, so do right now and avoid flickering.
-                compute.run();
+                        compute.run();
+                    }
+                });
             }
         }
+    }
+    
+    private void restartTimer () {
+        if (timer == null) {
+            timer = new Timer(1000, new ActionListener() {
+                @Override
+                public void actionPerformed (ActionEvent e) {
+                    moduleList.setModel(UIUtil.createListWaitModel());
+                }
+            });
+            timer.setRepeats(false);
+        }
+        timer.restart();
     }
     
     private void initAccessibility() {

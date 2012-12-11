@@ -353,26 +353,28 @@ public class CvsVersioningSystem {
             userIgnorePatternsTimestamp = lm;
             parseUserPatterns(userIgnores);
         }
-        if (userIgnorePatternsReset) {
-            patterns.clear();
+        synchronized (userIgnorePatterns) {
+            if (userIgnorePatternsReset) {
+                patterns.clear();
+            }
+            patterns.addAll(userIgnorePatterns);
         }
-        patterns.addAll(userIgnorePatterns);
     }
 
     private void parseUserPatterns(File userIgnores) {
-        userIgnorePatternsReset = false;
-        userIgnorePatterns.clear();
+        boolean reset = false;
+        Set<Pattern> patterns = new LinkedHashSet<Pattern>();
         BufferedReader r = null;
         try {
             r = new BufferedReader(new FileReader(userIgnores));
             String s;
             while ((s = r.readLine()) != null) {
                 if ("!".equals(s)) { // NOI18N
-                    userIgnorePatternsReset = true;
-                    userIgnorePatterns.clear();
+                    reset = true;
+                    patterns.clear();
                 } else {
                     try {
-                        userIgnorePatterns.add(sh2regex(s));
+                        patterns.add(sh2regex(s));
                     } catch (IOException e) {
                         // unsupported pattern
                     }
@@ -382,6 +384,13 @@ public class CvsVersioningSystem {
             // user has invalid ignore list, ignore it
         } finally {
             if (r != null) try { r.close(); } catch (IOException e) {}
+            synchronized (userIgnorePatterns) {
+                userIgnorePatterns.clear();
+                userIgnorePatterns.addAll(patterns);
+                if (reset) {
+                    userIgnorePatternsReset = true;
+                }
+            }
         }
     }
 

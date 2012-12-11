@@ -45,7 +45,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
@@ -53,7 +52,8 @@ import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionListener;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
-import org.openide.util.Exceptions;
+import org.openide.awt.StatusDisplayer;
+import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.WeakListeners;
 import org.openide.util.lookup.ServiceProvider;
@@ -151,10 +151,10 @@ public class ConnectionStatusActionPerformer implements ActionListener, Property
                     } else {
                         ConnectionManager.getInstance().disconnect(executionEnvironment);
                     }
-                } catch (IOException ex) {
-                    Exceptions.printStackTrace(ex);
-                } catch (ConnectionManager.CancellationException ex) {
-                    Exceptions.printStackTrace(ex);
+                } catch (Exception ex) {
+                    String message = NbBundle.getMessage(ConnectionStatusActionPerformer.class, 
+                            "ErrorConnectingHost", executionEnvironment.getDisplayName(), ex.getMessage()); // NOI18N
+                    StatusDisplayer.getDefault().setStatusText(message);
                 }
             }
         });

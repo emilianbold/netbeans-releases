@@ -101,28 +101,30 @@ public class NbmWizardIterator implements WizardDescriptor.BackgroundInstantiati
     private WizardDescriptor.Panel<WizardDescriptor>[] panels;
     private WizardDescriptor wiz;
     private final Archetype archetype;
+    private final String title;
 
-    private NbmWizardIterator(Archetype archetype) {
+    private NbmWizardIterator(Archetype archetype, String title) {
         this.archetype = archetype;
+        this.title = title;
     }
 
     @TemplateRegistration(folder=ArchetypeWizards.TEMPLATE_FOLDER, position=400, displayName="#template.module", iconBase="org/netbeans/modules/maven/apisupport/nbmicon.png", description="NbModuleDescription.html")
     @Messages("template.module=NetBeans Module")
     public static NbmWizardIterator createNbModuleIterator() {
-        return new NbmWizardIterator(NB_MODULE_ARCH);
+        return new NbmWizardIterator(NB_MODULE_ARCH, template_module());
     }
 
     @TemplateRegistration(folder=ArchetypeWizards.TEMPLATE_FOLDER, position=450, displayName="#template.app", iconBase="org/netbeans/modules/maven/apisupport/suiteicon.png", description="NbAppDescription.html")
     @Messages("template.app=NetBeans Application")
     public static NbmWizardIterator createNbAppIterator() {
-        return new NbmWizardIterator(NB_APP_ARCH);
+        return new NbmWizardIterator(NB_APP_ARCH, template_app());
     }
 
     @SuppressWarnings({"unchecked", "rawtypes"}) // XXX until rewrite panel storage
-    private WizardDescriptor.Panel<WizardDescriptor>[] createPanels(ValidationGroup vg) {
+    private WizardDescriptor.Panel<WizardDescriptor>[] createPanels(ValidationGroup enabledVG, ValidationGroup errorMsgVG) {
             return new WizardDescriptor.Panel[] {
-                ArchetypeWizards.basicWizardPanel(vg, false, archetype),
-                new NbmWizardPanel(vg, archetype)
+                ArchetypeWizards.basicWizardPanel(errorMsgVG, false, archetype),
+                new NbmWizardPanel(enabledVG, errorMsgVG, archetype)
             };
     }
     
@@ -181,11 +183,12 @@ public class NbmWizardIterator implements WizardDescriptor.BackgroundInstantiati
     @Override
     public void initialize(WizardDescriptor wiz) {
         index = 0;
-        ValidationGroup vg = ValidationGroup.create(new WizardDescriptorAdapter(wiz));
-
-        panels = createPanels(vg);
+        ValidationGroup enabledVG = ValidationGroup.create(new WizardDescriptorAdapter(wiz, WizardDescriptorAdapter.Type.VALID));
+        ValidationGroup errorMsgVG = ValidationGroup.create(new WizardDescriptorAdapter(wiz, WizardDescriptorAdapter.Type.MESSAGE));
+        enabledVG.addItem(errorMsgVG, false);
+        panels = createPanels(enabledVG, errorMsgVG);
         this.wiz = wiz;
-
+        wiz.putProperty ("NewProjectWizard_Title", title); // NOI18N
         // Make sure list of steps is accurate.
         String[] steps = createSteps();
         for (int i = 0; i < panels.length; i++) {

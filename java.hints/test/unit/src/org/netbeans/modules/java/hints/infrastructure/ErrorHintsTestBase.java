@@ -50,6 +50,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 import javax.swing.text.Document;
 import javax.tools.Diagnostic;
 import org.netbeans.api.editor.mimelookup.MimePath;
@@ -264,8 +265,9 @@ public abstract class ErrorHintsTestBase extends NbTestCase {
         prepareTest(fileName, code);
         
         if (pos == (-1)) {
+            Set<String> supportedErrorKeys = getSupportedErrorKeys();
             for (Diagnostic<?> d : info.getDiagnostics()) {
-                if (d.getKind() == Diagnostic.Kind.ERROR) {
+                if (d.getKind() == Diagnostic.Kind.ERROR && (supportedErrorKeys == null || supportedErrorKeys.contains(d.getCode()))) {
                     if (pos == (-1)) {
                         pos = (int) d.getPosition();
                     } else {
@@ -315,4 +317,7 @@ public abstract class ErrorHintsTestBase extends NbTestCase {
         LifecycleManager.getDefault().saveAll();
     }
     
+    protected Set<String> getSupportedErrorKeys() {
+        return null;
+    }
 }

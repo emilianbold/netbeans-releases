@@ -162,6 +162,7 @@ import org.openide.windows.WindowManager;
  */
 public final class NativeDebuggerManager extends DebuggerManagerAdapter {
     private final static boolean standalone = "on".equals(System.getProperty("spro.dbxtool")); // NOI18N
+    private static final boolean pl = "on".equals(System.getProperty("PL_MODE")); // NOI18N;
 
     private NativeDebugger currentDebugger;
     private InputOutput io;
@@ -471,6 +472,10 @@ public final class NativeDebuggerManager extends DebuggerManagerAdapter {
 
     public static boolean isStandalone() {
         return standalone;
+    }
+    
+    public static boolean isPL() {
+       return pl;
     }
 
     /**
@@ -987,7 +992,7 @@ public final class NativeDebuggerManager extends DebuggerManagerAdapter {
         // See "./README.startup"
 
         if (isAsyncStart()) {
-            RequestProcessor.getDefault().post(new Runnable() {
+            getRequestProcessor().post(new Runnable() {
 
                 public void run() {
                     delegate().startDebugging(di);

@@ -51,6 +51,7 @@ import org.netbeans.modules.cnd.repository.spi.Key;
 import org.netbeans.modules.cnd.repository.spi.Persistent;
 import org.netbeans.modules.cnd.repository.testbench.Stats;
 import org.netbeans.modules.cnd.repository.util.RepositoryListenersManager;
+import org.netbeans.modules.cnd.utils.CndUtils;
 
 /**
  *
@@ -121,10 +122,14 @@ public class RepositoryWritingThread implements Runnable {
                     rwLock.readLock().lock();
                     while (queue.isReady()) {
                         entry = queue.poll();
-                        numOfSpareCycles = 0;
-                        maintenanceIsNeeded = true;
-                        if (Stats.queueTrace) { System.err.printf("%s: writing %s\n", getName(), entry.getKey()); } // NOI18N
-                        writer.write(entry.getKey(), entry.getValue());
+                        // Sometimes NPE (null entry) shows in test logs, see issue #222972
+                        CndUtils.assertNotNullInConsole(entry, "null repository queue entry"); //NOI18N
+                        if (entry != null) {
+                            numOfSpareCycles = 0;
+                            maintenanceIsNeeded = true;
+                            if (Stats.queueTrace) { System.err.printf("%s: writing %s\n", getName(), entry.getKey()); } // NOI18N
+                            writer.write(entry.getKey(), entry.getValue());
+                        }
                     }
                 }  finally {
                     rwLock.readLock().unlock();

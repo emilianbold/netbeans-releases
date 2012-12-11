@@ -60,6 +60,8 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
+import org.netbeans.modules.web.clientproject.api.network.NetworkException;
+import org.netbeans.modules.web.clientproject.api.network.NetworkSupport;
 import org.netbeans.modules.web.clientproject.sites.SiteZip;
 import org.netbeans.modules.web.clientproject.spi.SiteTemplateImplementation;
 import org.openide.filesystems.FileObject;
@@ -87,7 +89,7 @@ public class SiteTemplateWizard extends JPanel {
 
     // @GuardedBy("siteTemplateLock")
     SiteTemplateImplementation siteTemplate = NO_SITE_TEMPLATE;
-    
+
     public SiteTemplateWizard() {
         assert EventQueue.isDispatchThread();
 
@@ -278,8 +280,18 @@ public class SiteTemplateWizard extends JPanel {
         ProgressHandle progressHandle = ProgressHandleFactory.createHandle(Bundle.SiteTemplateWizard_template_preparing(templateName));
         progressHandle.start();
         try {
-            synchronized (siteTemplateLock) {
-                siteTemplate.prepare();
+            for (;;) {
+                try {
+                    synchronized (siteTemplateLock) {
+                        siteTemplate.prepare();
+                    }
+                    break;
+                } catch (NetworkException ex) {
+                    LOGGER.log(Level.INFO, null, ex.getCause());
+                    if (!NetworkSupport.showNetworkErrorDialog(ex.getFailedRequests())) {
+                        return Bundle.SiteTemplateWizard_error_preparing(templateName);
+                    }
+                }
             }
         } catch (IOException ex) {
             LOGGER.log(Level.INFO, null, ex);
@@ -416,6 +428,11 @@ public class SiteTemplateWizard extends JPanel {
 
         public DummySiteTemplateImplementation(String name) {
             this.name = name;
+        }
+
+        @Override
+        public String getId() {
+            return "NONE"; // NOI18N
         }
 
         @Override

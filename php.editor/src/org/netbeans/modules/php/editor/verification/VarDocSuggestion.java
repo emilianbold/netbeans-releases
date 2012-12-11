@@ -65,6 +65,7 @@ import org.netbeans.modules.php.editor.model.VariableName;
 import org.netbeans.modules.php.editor.model.VariableScope;
 import org.netbeans.modules.php.editor.model.impl.VariousUtils;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
+import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle.Messages;
 
 /**
@@ -95,7 +96,8 @@ public class VarDocSuggestion extends AbstractSuggestion {
         final BaseDocument doc = context.doc;
         int lineBegin = caretOffset > 0 ? Utilities.getRowStart(doc, caretOffset) : -1;
         int lineEnd = (lineBegin != -1) ? Utilities.getRowEnd(doc, caretOffset) : -1;
-        if (lineBegin != -1 && lineEnd != -1 && caretOffset > lineBegin) {
+        FileObject fileObject = context.parserResult.getSnapshot().getSource().getFileObject();
+        if (lineBegin != -1 && lineEnd != -1 && caretOffset > lineBegin && fileObject != null) {
             String identifier = Utilities.getIdentifier(doc, caretOffset);
             if (identifier != null && identifier.startsWith("$")) {
                 PHPParseResult parseResult = (PHPParseResult) context.parserResult;
@@ -116,7 +118,7 @@ public class VarDocSuggestion extends AbstractSuggestion {
                                 }
                             }
                             hints.add(new Hint(VarDocSuggestion.this, getDisplayName(),
-                                    context.parserResult.getSnapshot().getSource().getFileObject(), identifierRange,
+                                    fileObject, identifierRange,
                                     Collections.<HintFix>singletonList(new Fix(context, variable)), 500));
                         }
                     }

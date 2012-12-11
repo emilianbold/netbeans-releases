@@ -757,6 +757,21 @@ made subject to such option by the copyright holder.
             <class package="org.netbeans.api.visual.graph.layout" name="GraphLayoutSupport" link="yes"/>
             <issue number="178705"/>
         </change>
+        <change>
+            <api name="general"/>
+            <summary>Widget Implements Lookup.Provider</summary>
+            <version major="2" minor="36"/>
+            <date day="29" month="11" year="2012"/>
+            <author login="jhavlin"/>
+            <compatibility addition="yes"/>
+            <description>
+                Class <code>Widget</code> implements interface
+                <code>Lookup.Provider</code>. It already contains method
+                <code>getLookup()</code>.
+            </description>
+            <class package="org.netbeans.api.visual.widget" name="Widget"/>
+            <issue number="216581"/>
+        </change>
     </changes>
 
     <htmlcontents>
