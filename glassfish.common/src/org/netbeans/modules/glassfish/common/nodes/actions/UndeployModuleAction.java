@@ -47,7 +47,7 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeoutException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.glassfish.tools.ide.admin.ResultString;
+import org.netbeans.modules.glassfish.spi.GlassfishModule.OperationState;
 import org.netbeans.modules.glassfish.spi.ServerUtilities;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
@@ -74,7 +74,7 @@ public class UndeployModuleAction extends NodeAction {
             UndeployModuleCookie uCookie = node.getCookie(UndeployModuleCookie.class);
 
             if(uCookie != null) {
-                final Future<ResultString> result = uCookie.undeploy();
+                final Future<OperationState> result = uCookie.undeploy();
                 Node pNode = node.getParentNode();
                 final Node gpNode = null != pNode ? pNode.getParentNode() : null;
                 final Node fnode = node;

@@ -43,11 +43,13 @@
  */
 package org.netbeans.modules.glassfish.common.nodes.actions;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeoutException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.glassfish.tools.ide.admin.ResultString;
+import org.netbeans.modules.glassfish.spi.GlassfishModule.OperationState;
 import org.netbeans.modules.glassfish.spi.ServerUtilities;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
@@ -76,7 +78,7 @@ public class DisableModulesAction extends NodeAction {
             DisableModulesCookie uCookie = node.getCookie(DisableModulesCookie.class);
 
             if(uCookie != null) {
-                final Future<ResultString> result = uCookie.disableModule();
+                final Future<OperationState> result = uCookie.disableModule();
                 final Node pNode = node.getParentNode().getParentNode();
                 final Node fnode = node;
 

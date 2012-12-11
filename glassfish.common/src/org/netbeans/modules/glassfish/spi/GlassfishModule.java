@@ -46,9 +46,8 @@ import java.io.File;
 import java.util.Map;
 import java.util.concurrent.Future;
 import javax.swing.event.ChangeListener;
-import org.glassfish.tools.ide.admin.ResultString;
-import org.glassfish.tools.ide.admin.TaskStateListener;
 import org.netbeans.modules.glassfish.common.GlassfishInstanceProvider;
+import org.openide.filesystems.FileObject;
 
 
 /**
@@ -307,7 +306,7 @@ public interface GlassfishModule {
      * @return Future instance that finishes when the deploy command has been
      *   completed.
      */
-    public Future<ResultString> undeploy(TaskStateListener stateListener, 
+    public Future<OperationState> undeploy(OperationStateListener stateListener, 
             String name);
     
     /**
@@ -320,7 +319,7 @@ public interface GlassfishModule {
      * @return Future instance that finishes when the deploy command has been
      *   completed.
      */
-    public Future<ResultString> enable(TaskStateListener stateListener,
+    public Future<OperationState> enable(OperationStateListener stateListener,
             String name);
     /**
      * Disable the named application.
@@ -332,7 +331,7 @@ public interface GlassfishModule {
      * @return Future instance that finishes when the deploy command has been
      *   completed.
      */
-    public Future<ResultString> disable(TaskStateListener stateListener,
+    public Future<OperationState> disable(OperationStateListener stateListener,
             String name);
     /**
      * Execute the specified server command.

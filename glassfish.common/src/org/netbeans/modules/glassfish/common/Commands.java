@@ -467,6 +467,199 @@ public class Commands {
         }
     }
 
+    /**
+     * Command to undeploy a deployed application.
+     */
+    public static final class UndeployCommand extends ServerCommand {
+
+        public UndeployCommand(final String name, String target) {
+            super("undeploy"); // NOI18N
+            query = "DEFAULT=" + Utils.sanitizeName(name); // NOI18N
+            if (null != target) {
+                query += ServerCommand.PARAM_SEPARATOR + "target=" + target; // NOI18N
+            }
+        }
+    }
+
+    /**
+     * Command to enable a deployed application.
+     */
+    public static final class EnableCommand extends ServerCommand {
+
+        public EnableCommand(final String name, final String target) {
+            super("enable"); // NOI18N
+            query = "DEFAULT=" + Utils.sanitizeName(name); // NOI18N
+            if (null != target) {
+                query += ServerCommand.PARAM_SEPARATOR + "target=" + target; // NOI18N
+            }
+        }
+    }
+
+    /**
+     * Command to disable a deployed application.
+     */
+    public static final class DisableCommand extends ServerCommand {
+
+        public DisableCommand(final String name, final String target) {
+            super("disable"); // NOI18N
+            query = "DEFAULT=" + Utils.sanitizeName(name); // NOI18N
+            if (null != target) {
+                query += ServerCommand.PARAM_SEPARATOR + "target=" + target; // NOI18N
+            }
+        }
+    }
+    /**
+     * Command to unregister a resource.
+     */
+    public static final class UnregisterCommand extends ServerCommand {
+
+        public UnregisterCommand(final String name, final String resourceCmdSuffix,
+                final String cmdPropertyName, final boolean cascade, final String target) {
+            super("delete-" + resourceCmdSuffix); // NOI18N
+
+            StringBuilder cmd = new StringBuilder(128);
+            if(cascade) {
+                cmd.append("cascade=true"); // NOI18N
+                cmd.append(PARAM_SEPARATOR);
+            }
+            cmd.append(cmdPropertyName);
+            cmd.append('=');
+            cmd.append(name);
+            query = cmd.toString();
+            if (null != target) {
+                query += ServerCommand.PARAM_SEPARATOR + "target=" + target; // NOI18N
+            }
+        }
+    }
+
+    /**
+     * Command to get version information from the server.
+     */
+    public static final class VersionCommand extends ServerCommand {
+
+        private Manifest info;
+
+        public VersionCommand() {
+            super("version"); // NOI18N
+        }
+
+        @Override
+        public void readManifest(Manifest manifest) throws IOException {
+            info = manifest;
+        }
+
+        @Override
+        public boolean processResponse() {
+            return true;
+        }
+    }
+
+    /**
+     * Command to get version information from the server.
+     */
+    public static final class LocationCommand extends ServerCommand {
+
+        private Manifest info;
+        private String installRoot;
+        private String domainRoot;
+
+        public LocationCommand() {
+            super("__locations"); // NOI18N
+        }
+
+        public String getInstallRoot() {
+            return installRoot;
+        }
+
+        public String getDomainRoot() {
+            return domainRoot;
+        }
+
+        @Override
+        public void readManifest(Manifest manifest) throws IOException {
+            info = manifest;
+        }
+
+        @Override
+        public boolean processResponse() {
+            if(info == null) {
+                return false;
+            }
+
+            Attributes mainAttrs = info.getMainAttributes();
+            if(mainAttrs != null) {
+                installRoot = mainAttrs.getValue("Base-Root_value");  // NOI18N
+                domainRoot = mainAttrs.getValue("Domain-Root_value");  // NOI18N
+            }
+
+            return true;
+        }
+    }
+    
+    /*
+     * Command to get log data from the server
+     */
+    public static final class FetchLogData extends ServerCommand {
+        private String lines = "";
+        private String nextURL = "";
+        
+        public FetchLogData(String query) {
+            super("view-log");
+            this.query = query;
+        }
+        
+        public String getLines() {
+            return lines;
+        }
+
+        public String getNextQuery() {
+            return nextURL;
+        }
+
+        @Override
+        public boolean acceptsGzip() {
+            return true;
+        }
+        
+        @Override
+        public boolean readResponse(InputStream in, HttpURLConnection hconn) {
+            StringWriter sw = new StringWriter();
+            try {
+                InputStream cooked = in;
+                String ce = hconn.getContentEncoding();
+                if (null != ce && ce.contains("gzip")) {
+                    cooked = new GZIPInputStream(in);
+                }
+                java.io.InputStreamReader isr = new java.io.InputStreamReader(cooked);
+                java.io.BufferedReader br = new java.io.BufferedReader(isr);
+                while (br.ready()) {
+                    sw.write(br.readLine());
+                    sw.write("\n");
+                }
+            } catch (IOException ex) {
+                Logger.getLogger("glassfish").log(Level.INFO,"",ex);
+            } finally {
+                try {
+                    sw.close();
+                } catch (IOException ex) {
+                    Logger.getLogger("glassfish").log(Level.INFO,"",ex);
+                }
+            }
+            lines = sw.toString();
+            nextURL = hconn.getHeaderField("X-Text-Append-Next");
+            int delim = nextURL.lastIndexOf("?");
+            if (-1 != delim) {
+                nextURL = nextURL.substring(delim+1);
+            }
+            return -1 == delim ? false : true;
+        }
+        
+        @Override
+        public String getSrc() {
+            return "/management/domain/";
+        }
+    }
+
     static class ListWebservicesCommand extends ServerCommand {
 
         private Manifest manifest;

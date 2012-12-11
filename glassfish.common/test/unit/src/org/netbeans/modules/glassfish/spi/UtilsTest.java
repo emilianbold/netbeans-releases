@@ -42,18 +42,25 @@
 
 package org.netbeans.modules.glassfish.spi;
 
-import java.io.File;
-import java.io.IOException;
 import java.net.ServerSocket;
-import java.util.HashMap;
-import java.util.Map;
+import java.io.IOException;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
-import org.junit.*;
-import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.glassfish.common.CommandRunner;
-import org.netbeans.modules.glassfish.common.GlassfishInstance;
 import org.netbeans.modules.glassfish.spi.GlassfishModule.OperationState;
+import java.util.concurrent.Future;
+import org.netbeans.modules.glassfish.common.Commands;
+import java.util.Collections;
+import java.util.Map;
+import org.netbeans.modules.glassfish.common.CommandRunner;
+import java.util.HashMap;
+import java.io.File;
+import org.junit.After;
+import org.junit.AfterClass;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Test;
+import org.netbeans.junit.NbTestCase;
+import static org.junit.Assert.*;
+import org.netbeans.modules.glassfish.common.GlassfishInstance;
 
 /**
  *
@@ -74,12 +81,10 @@ public class UtilsTest extends NbTestCase {
     }
 
     @Before
-    @Override
     public void setUp() {
     }
 
     @After
-    @Override
     public void tearDown() {
     }
 
@@ -211,12 +216,22 @@ public class UtilsTest extends NbTestCase {
                 ip.put(GlassfishModule.HOSTNAME_ATTR, hostname);
                 ip.put(GlassfishModule.ADMINPORT_ATTR, port+"");
                 GlassfishInstance instance = GlassfishInstance.create(ip, null);
-                CommandRunner cr = new CommandRunner(Utils.isLocalPortOccupied(port), null,
+                CommandRunner cr = new CommandRunner(
+                        Utils.isLocalPortOccupied(port), null, instance,
+                        (OperationStateListener)null);
+                Commands.LocationCommand lc = new Commands.LocationCommand();
+                Future<OperationState> x = cr.execute(lc);
+                System.out.println(x.get() == OperationState.COMPLETED);
+                System.out.println(lc.getDomainRoot()+":"+lc.getInstallRoot());
+                System.out.println(lc.getServerMessage());
+                System.out.println(lc.getSrc());
+
+                cr = new CommandRunner(Utils.isLocalPortOccupied(port), null,
                         instance, (OperationStateListener)null);
                 ServerCommand.GetPropertyCommand gpc
                         = new ServerCommand.GetPropertyCommand(
                         "*.server-config.*.http-listener-1.port");
-                Future<OperationState> x = cr.execute(gpc);
+                x = cr.execute(gpc);
                 System.out.println(x.get() == OperationState.COMPLETED);
                 System.out.println(gpc.getData());
                 System.out.println(gpc.getServerMessage());

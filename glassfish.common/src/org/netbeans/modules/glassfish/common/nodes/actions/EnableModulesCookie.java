@@ -45,7 +45,7 @@
 package org.netbeans.modules.glassfish.common.nodes.actions;
 
 import java.util.concurrent.Future;
-import org.glassfish.tools.ide.admin.ResultString;
+import org.netbeans.modules.glassfish.spi.GlassfishModule.OperationState;
 import org.openide.nodes.Node;
 
 
@@ -58,7 +58,7 @@ import org.openide.nodes.Node;
  */
 public interface EnableModulesCookie extends Node.Cookie {
     
-    public Future<ResultString> enableModule();
+    public Future<OperationState> enableModule();
     
     public boolean isRunning();
     
