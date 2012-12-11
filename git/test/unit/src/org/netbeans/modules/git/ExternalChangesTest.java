@@ -52,6 +52,7 @@ import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import org.netbeans.junit.MockServices;
+import org.netbeans.junit.RandomlyFails;
 import org.netbeans.libs.git.GitBranch;
 import org.netbeans.modules.git.FileInformation.Status;
 import org.netbeans.modules.git.client.GitClient;
@@ -280,6 +281,7 @@ public class ExternalChangesTest extends AbstractGitTestCase {
         workdirFO.removeRecursiveListener(fca);
     }
     
+    @RandomlyFails
     public void testExternalCommandLoggedChanges () throws Exception {
         waitForInitialScan();
         FileChangeAdapter fca = new FileChangeAdapter();
