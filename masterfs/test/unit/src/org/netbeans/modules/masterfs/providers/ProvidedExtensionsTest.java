@@ -787,6 +787,7 @@ public class ProvidedExtensionsTest extends NbTestCase {
         }
 
         public void beforeMove(FileObject fo, File to) {
+            to.getClass();
             assertLock();
             beforeMoveCalls++;
         }
@@ -795,26 +796,31 @@ public class ProvidedExtensionsTest extends NbTestCase {
         }    
 
         public void moveSuccess(FileObject fo, File to) {
+            to.getClass();
             assertLock();
             moveSuccessCalls++;
         }
 
         public void moveFailure(FileObject fo, File to) {
+            to.getClass();
             assertLock();
             moveFailureCalls++;
         }
 
         public void beforeCopy(FileObject fo, File to) {
+            to.getClass();
             assertLock();
             beforeCopyCalls++;
         }
 
         public void copySuccess(FileObject fo, File to) {
+            to.getClass();
             assertLock();
             copySuccessCalls++;
         }
 
         public void copyFailure(FileObject fo, File to) {
+            to.getClass();
             assertLock();
             copyFailureCalls++;
         }
@@ -879,6 +885,7 @@ public class ProvidedExtensionsTest extends NbTestCase {
         
         @Override
         public ProvidedExtensions.IOHandler getMoveHandler(final File from, final File to) {
+            to.getClass();
             implsMoveCalls++;
             return (!isImplsMoveRetVal() || to == null) ? null : new ProvidedExtensions.IOHandler(){
                 public void handle() throws IOException {
@@ -912,6 +919,10 @@ public class ProvidedExtensionsTest extends NbTestCase {
         
         @Override
         public ProvidedExtensions.IOHandler getCopyHandler(final File from, final File to) {
+            to.getClass();
+            if (from.isDirectory()) {
+                return null;
+            }
             implsCopyCalls++;
             return (!isImplsCopyRetVal() || to == null) ? null : new ProvidedExtensions.IOHandler(){
                 @Override
