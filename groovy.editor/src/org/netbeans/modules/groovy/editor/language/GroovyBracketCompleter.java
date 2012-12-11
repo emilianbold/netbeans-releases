@@ -759,6 +759,12 @@ public class GroovyBracketCompleter implements KeystrokeHandler {
         case '[': {
             
             if (!isInsertMatchingEnabled(doc)) {
+                // Reindent blocks (won't do anything if } is not at the beginning of a line
+                if (ch == '}') {
+                    reindent(doc, dotPos, GroovyTokenId.RBRACE, caret);
+                } else if (ch == ']') {
+                    reindent(doc, dotPos, GroovyTokenId.RBRACKET, caret);
+                }
                 return false;
             }
 
