@@ -429,14 +429,8 @@ public class SemanticAnalysis extends SemanticAnalyzer {
                 identifier = (Identifier) node.getMethod().getFunctionName().getName();
             }
             if (identifier != null) {
-                Collection<? extends TypeScope> typeScopes = ModelUtils.resolveType(model, node);
-                for (TypeScope typeScope : typeScopes) {
-                    for (MethodScope methodScope : typeScope.getMethods()) {
-                        if (methodScope.getName().equals(identifier.getName()) && methodScope.isDeprecated()) {
-                            addOffsetRange(identifier, DEPRECATED_SET);
-                            break;
-                        }
-                    }
+                if (isDeprecatedMethodInvocation(ModelUtils.resolveType(model, node), identifier)) {
+                    addOffsetRange(identifier, DEPRECATED_SET);
                 }
                 ASTNodeColoring item = privateUnusedMethods.remove(new UnusedIdentifier(identifier.getName(), typeDeclaration));
                 if (item != null) {
@@ -444,6 +438,19 @@ public class SemanticAnalysis extends SemanticAnalyzer {
                 }
             }
             super.visit(node);
+        }
+
+        private boolean isDeprecatedMethodInvocation(Collection<? extends TypeScope> typeScopes, Identifier identifier) {
+            boolean isDeprecated = false;
+            for (TypeScope typeScope : typeScopes) {
+                for (MethodScope methodScope : typeScope.getMethods()) {
+                    if (methodScope.getName().equals(identifier.getName()) && methodScope.isDeprecated()) {
+                        isDeprecated = true;
+                        break;
+                    }
+                }
+            }
+            return isDeprecated;
         }
 
         @Override
@@ -546,15 +553,7 @@ public class SemanticAnalysis extends SemanticAnalyzer {
             FunctionName fnName = node.getMethod().getFunctionName();
             if (fnName.getName() instanceof Identifier) {
                 Identifier identifier = (Identifier) fnName.getName();
-                Collection<? extends TypeScope> typeScopes = ModelUtils.resolveType(model, node);
-                for (TypeScope typeScope : typeScopes) {
-                    for (MethodScope methodScope : typeScope.getMethods()) {
-                        if (methodScope.getName().equals(identifier.getName()) && methodScope.isDeprecated()) {
-                            isDeprecated = true;
-                            break;
-                        }
-                    }
-                }
+                isDeprecated = isDeprecatedMethodInvocation(ModelUtils.resolveType(model, node), identifier);
                 String name = identifier.getName();
                 ASTNodeColoring item = privateUnusedMethods.remove(new UnusedIdentifier(name, typeDeclaration));
                 if (item != null) {
