@@ -111,12 +111,14 @@ public class StringListPanel extends javax.swing.JPanel implements HelpCtx.Provi
         return new ArrayList<String>(getListData());
     }
 
+    @Override
     public void propertyChange(PropertyChangeEvent evt) {
         if (PropertyEnv.PROP_STATE.equals(evt.getPropertyName()) && evt.getNewValue() == PropertyEnv.STATE_VALID) {
             editor.setValue(getPropertyValue());
         }
     }
 
+    @Override
     public HelpCtx getHelpCtx() {
         return helpCtx;
 //        return new HelpCtx("RuntimeSearchDirectories"); // NOI18N
@@ -277,7 +279,7 @@ public class StringListPanel extends javax.swing.JPanel implements HelpCtx.Provi
             if (notifyDescriptor.getValue() != NotifyDescriptor.OK_OPTION) {
                 return;
             }
-            String newS = notifyDescriptor.getInputText();
+            String newS = notifyDescriptor.getInputText().trim();
             replaceElement(o, newS, i);
         }
     }
