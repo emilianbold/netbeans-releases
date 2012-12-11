@@ -46,6 +46,7 @@ import java.io.File;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.concurrent.Callable;
+import java.util.logging.ConsoleHandler;
 import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
@@ -290,10 +291,16 @@ public class ExternalChangesTest extends AbstractGitTestCase {
         Thread.sleep(11000); // some time for initial scans to finish and event logger to settle down
         File gitFolder = new File(repositoryLocation, ".git");
         final File lockFile = new File(gitFolder, "index.lock");
+        
+        Logger.getLogger(FilesystemInterceptor.class.getName()).setLevel(Level.ALL);
+        ConsoleHandler ch = new ConsoleHandler();
+        ch.setLevel(Level.ALL);
+        Logger.getLogger(FilesystemInterceptor.class.getName()).addHandler(ch);
+        
         Logger GESTURES_LOG = Logger.getLogger("org.netbeans.ui.vcs");
         ExternalCommandUsageHandler h = new ExternalCommandUsageHandler();
         GESTURES_LOG.addHandler(h);
-        lockFile.createNewFile();
+        assertTrue(lockFile.createNewFile());
         FileUtil.refreshFor(repositoryLocation);
         // modification
         write(modifiedFile, "testExternalCommandLoggedChanges");
@@ -303,7 +310,7 @@ public class ExternalChangesTest extends AbstractGitTestCase {
         toAdd.createNewFile();
         FileUtil.refreshFor(repositoryLocation);
         pause();        
-        lockFile.delete();
+        assertTrue(lockFile.delete());
         FileUtil.refreshFor(repositoryLocation);
         
         h.waitForEvent();
@@ -316,6 +323,7 @@ public class ExternalChangesTest extends AbstractGitTestCase {
         assertEquals(Long.valueOf(3), h.event.modifications);
         GESTURES_LOG.removeHandler(h);
         workdirFO.removeRecursiveListener(fca);
+        Logger.getLogger(FilesystemInterceptor.class.getName()).removeHandler(ch);
     }
     
     public void testInternalCommandLoggedChanges () throws Exception {
