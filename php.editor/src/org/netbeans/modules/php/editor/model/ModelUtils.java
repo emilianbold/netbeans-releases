@@ -237,7 +237,11 @@ public final class ModelUtils {
                     QualifiedName qName = ASTNodeInfo.toQualifiedName(rightHandSide, true);
                     if (qName != null) {
                         VariableScope variableScope = model.getVariableScope(rightHandSide.getStartOffset());
-                        NamespaceIndexFilter filter = new NamespaceIndexFilter(qName.toString());
+                        QualifiedName fullyQualifiedName = VariousUtils.getFullyQualifiedName(
+                                qName,
+                                rightHandSide.getStartOffset(),
+                                variableScope);
+                        NamespaceIndexFilter filter = new NamespaceIndexFilter(fullyQualifiedName.toString());
                         Collection<? extends TypeScope> staticTypeName = VariousUtils.getStaticTypeName(
                                 variableScope != null ? variableScope : model.getFileScope(), filter.getName());
                         return filter.filterModelElements(staticTypeName, true);
