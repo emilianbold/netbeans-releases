@@ -129,7 +129,7 @@ public final class Item implements NativeFileItem, PropertyChangeListener {
         // See Bug 221962 - [73cat] 3.s - Blocked by cnd.makeproject.ui.LogicalViewChildren.createNodes().
         DataObject dobj = out.getDataObject();
         // detach resources to prevent memory leaks
-        out.onClose(); 
+        out.detachFrom(dobj);
         CndUtils.assertTrueInConsole(out.lastDataObject == dobj, "data object should stay the same ", out.lastDataObject);
         return out;
     }
@@ -250,7 +250,7 @@ public final class Item implements NativeFileItem, PropertyChangeListener {
         // leave folder if it is remove
         if (folder == null) { // Item is removed, let's clean up.
             synchronized (this) {
-                onClose();
+                detachFrom(lastDataObject);
                 lastDataObject = null;
             }
         } else {
@@ -474,30 +474,45 @@ public final class Item implements NativeFileItem, PropertyChangeListener {
             if (dataObject != lastDataObject) {
                 // DataObject can change without notification. We need to track this
                 // and properly attach/detach listeners.
-                onClose();
-                if (dataObject != null) {
-                    dataObject.addPropertyChangeListener(this);
-                    NativeFileItemSet set = dataObject.getLookup().lookup(NativeFileItemSet.class);
-                    if (set != null) {
-                        set.add(this);
-                    }                    
-                }
-                lastDataObject = dataObject;
+                detachFrom(lastDataObject);
+                attachTo(dataObject);
             }
         }
         return dataObject;
     }
-
+    
+    private void attachTo(DataObject dataObject) {
+        if (dataObject != null) {
+            dataObject.addPropertyChangeListener(this);
+            NativeFileItemSet set = dataObject.getLookup().lookup(NativeFileItemSet.class);
+            if (set != null) {
+                set.add(this);
+            }
+        }
+        lastDataObject = dataObject;
+    }
+    
+    public final void onOpen() {
+        synchronized (this) {
+            // attach only if was initialized
+            attachTo(lastDataObject);
+        }
+    }
+    
+    private void detachFrom(DataObject dao) {
+        if (dao != null) {
+            dao.removePropertyChangeListener(this);
+            NativeFileItemSet set = dao.getLookup().lookup(NativeFileItemSet.class);
+            if (set != null) {
+                set.remove(this);
+            }
+        }
+    }
+    
     public final void onClose() {
         synchronized (this) {
-            DataObject dao = lastDataObject;
-            if (dao != null) {
-                dao.removePropertyChangeListener(this);
-                NativeFileItemSet set = dao.getLookup().lookup(NativeFileItemSet.class);
-                if (set != null) {
-                    set.remove(this);
-                }
-            }
+            // detach but leave object reference for further possible reopen
+            detachFrom(lastDataObject);
         }
     }
     

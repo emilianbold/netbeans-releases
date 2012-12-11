@@ -138,7 +138,7 @@ public class ReferenceImpl extends DocOffsetableImpl implements CsmReference {
             if (candidate != null) {
                 target = candidate.getReferencedObject();
                 if (target == null) {
-                    Logger.getLogger("xRef").log(Level.INFO, "Reference {0}\n doesn''t have target in candidate {1}\n", new Object[]{this, candidate});
+                    Logger.getLogger("xRef").log(Level.FINE, "Reference {0}\n doesn''t have target in candidate {1}\n", new Object[]{this, candidate});
                 }
                 CsmReferenceKind aKind = candidate.getKind();
                 assert this.kind == null || this.kind == aKind : this.kind + " vs. " + aKind;

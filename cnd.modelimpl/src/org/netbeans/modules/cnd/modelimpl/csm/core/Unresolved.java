@@ -327,7 +327,7 @@ public final class Unresolved implements Disposable {
     public CsmClass getDummyForUnresolved(CharSequence[] nameTokens) {
         return getDummyForUnresolved(getName(nameTokens));
     }
-
+    
     public CsmClass getDummyForUnresolved(CharSequence name) {
         name = NameCache.getManager().getString(name);
         Reference<UnresolvedClass> ref = dummiesForUnresolved.get(name);

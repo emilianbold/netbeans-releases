@@ -64,10 +64,15 @@ public class RemoteLinkChild extends RemoteLinkBase {
     }
 
     @Override
-    public RemoteFileObjectBase getDelegate() {
+    public RemoteFileObjectBase getCanonicalDelegate() {
         return delegate;
     }
 
+    @Override
+    protected RemoteFileObjectBase getDelegateImpl() {
+        return delegate;
+    }
+        
     @Override
     protected String getDelegateNormalizedPath() {
         return delegate.getPath();
@@ -85,17 +90,17 @@ public class RemoteLinkChild extends RemoteLinkBase {
     
     @Override
     protected void postDeleteChild(FileObject child) {
-        getDelegate().postDeleteChild(child);
+        getCanonicalDelegate().postDeleteChild(child);
     }
 
     @Override
     protected boolean deleteImpl(FileLock lock) throws IOException {
-        return getDelegate().deleteImpl(lock);
+        return getCanonicalDelegate().deleteImpl(lock);
     }
 
     protected void renameImpl(FileLock lock, String name, String ext, RemoteFileObjectBase orig) throws IOException {
         // all work in delegate
-        RemoteFileObjectBase dlg = getDelegate();
+        RemoteFileObjectBase dlg = getCanonicalDelegate();
         if (dlg != null) {
             dlg.renameImpl(lock, name, ext, orig);
         } else {
