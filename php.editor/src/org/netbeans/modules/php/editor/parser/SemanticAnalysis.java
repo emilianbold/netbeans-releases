@@ -64,6 +64,7 @@ import org.netbeans.modules.php.editor.api.elements.FieldElement;
 import org.netbeans.modules.php.editor.api.elements.MethodElement;
 import org.netbeans.modules.php.editor.api.elements.TypeConstantElement;
 import org.netbeans.modules.php.editor.api.elements.TypeElement;
+import org.netbeans.modules.php.editor.model.ClassConstantElement;
 import org.netbeans.modules.php.editor.model.ClassScope;
 import org.netbeans.modules.php.editor.model.MethodScope;
 import org.netbeans.modules.php.editor.model.Model;
@@ -661,9 +662,24 @@ public class SemanticAnalysis extends SemanticAnalyzer {
         public void visit(StaticConstantAccess node) {
             Identifier constant = node.getConstant();
             if (constant != null) {
-                addOffsetRange(constant, ColoringAttributes.STATIC_FIELD_SET);
+                Collection<? extends TypeScope> resolvedTypes = ModelUtils.resolveType(model, node);
+                boolean isDeprecated = isDeprecatedConstantAccess(resolvedTypes, constant.getName());
+                addOffsetRange(constant, isDeprecated ? DEPRECATED_STATIC_FIELD_SET : ColoringAttributes.STATIC_FIELD_SET);
             }
             super.visit(node);
+        }
+
+        private boolean isDeprecatedConstantAccess(Collection<? extends TypeScope> typeScopes, String constantName) {
+            boolean isDeprecated = false;
+            for (TypeScope typeScope : typeScopes) {
+                for (ClassConstantElement constantElement : typeScope.getDeclaredConstants()) {
+                    if (constantElement.getName().equals(constantName) && constantElement.isDeprecated()) {
+                        isDeprecated = true;
+                        break;
+                    }
+                }
+            }
+            return isDeprecated;
         }
 
         @Override
