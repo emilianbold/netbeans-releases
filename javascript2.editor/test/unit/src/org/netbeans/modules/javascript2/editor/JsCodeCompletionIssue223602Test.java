@@ -74,7 +74,11 @@ public class JsCodeCompletionIssue223602Test extends JsCodeComplationBase {
     public void testIssue223602_03() throws Exception {
         checkCompletion("testfiles/structure/issue223602/issue223602.js", "p223602_3.b^ig();", false);
     }
-        
+    
+    public void testIssue223679_01() throws Exception {
+        checkCompletion("testfiles/structure/issue223602/issue223602.js", "p223602^_3.big();", false);
+    }
+    
     @Override
     protected Map<String, ClassPath> createClassPathsForTest() {
         List<FileObject> cpRoots = new LinkedList<FileObject>(Arrays.asList(ClasspathProviderImplAccessor.getJsStubs()));
