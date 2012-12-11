@@ -127,7 +127,7 @@ public class NewGroupPanel extends JPanel {
         if (subprojectsKindRadio.isSelected()) {
             String s = masterProjectField.getText();
             if (s != null && s.length() > 0 && s.length() < MAX_NAME) {
-                File f = new File(s);
+                File f = FileUtil.normalizeFile(new File(s));
                 FileObject fo = FileUtil.toFileObject(f);
                 if (fo != null && fo.isFolder()) {
                     try {
@@ -179,27 +179,64 @@ public class NewGroupPanel extends JPanel {
             }
         }
     }
-
-    public Group create() {
-        assert isReady();
+    
+    public enum Type {
+        ADHOC, SUB, DIR
+    }
+    
+    public Type getSelectedType() {
         if (adHocKindRadio.isSelected()) {
-            AdHocGroup g = AdHocGroup.create(nameField.getText().trim(), autoSynchCheckbox.isSelected());
-            if (useOpenCheckbox.isSelected()) {
+            return Type.ADHOC;
+        }
+        if (subprojectsKindRadio.isSelected()) {
+            return Type.SUB;
+        }
+        if (directoryKindRadio.isSelected()) {
+            return Type.DIR;
+        }
+        throw new IllegalStateException();
+    }
+    
+    public String getNameField() {
+        return nameField.getText().trim();
+    }
+    
+    public boolean isAutoSyncField() {
+        return autoSynchCheckbox.isSelected();
+    }
+    
+    public boolean isUseOpenedField() {
+        return useOpenCheckbox.isSelected();
+    }
+    
+    public String getMasterProjectField() {
+        return masterProjectField.getText();
+    }
+    
+    public String getDirectoryField() {
+        return directoryField.getText() != null ? directoryField.getText().trim() : null;
+    }
+    
+
+    public static Group create(Type type, String name, boolean autoSync, boolean useOpen, String masterProject, String directory) {
+        if (Type.ADHOC.equals(type)) {
+            AdHocGroup g = AdHocGroup.create(name, autoSync);
+            if (useOpen) {
                 g.setProjects(new HashSet<Project>(Arrays.asList(OpenProjects.getDefault().getOpenProjects())));
                 g.setMainProject(OpenProjects.getDefault().getMainProject());
             }
             return g;
-        } else if (subprojectsKindRadio.isSelected()) {
-            FileObject fo = FileUtil.toFileObject(new File(masterProjectField.getText()));
+        } else if (Type.SUB.equals(type)) {
+            FileObject fo = FileUtil.toFileObject(new File(masterProject));
             try {
-                return SubprojectsGroup.create(nameField.getText().trim(), ProjectManager.getDefault().findProject(fo));
+                return SubprojectsGroup.create(name, ProjectManager.getDefault().findProject(fo));
             } catch (IOException x) {
                 throw new AssertionError(x);
             }
         } else {
-            assert directoryKindRadio.isSelected();
-            FileObject f = FileUtil.toFileObject(FileUtil.normalizeFile(new File(directoryField.getText().trim())));
-            return DirectoryGroup.create(nameField.getText().trim(), f);
+            assert Type.DIR.equals(type);
+            FileObject f = FileUtil.toFileObject(FileUtil.normalizeFile(new File(directory)));
+            return DirectoryGroup.create(name, f);
         }
     }
 
