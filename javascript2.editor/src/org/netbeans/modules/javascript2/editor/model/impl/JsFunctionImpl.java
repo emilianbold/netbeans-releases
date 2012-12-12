@@ -165,14 +165,24 @@ public class JsFunctionImpl extends DeclarationScopeImpl implements JsFunction {
                     nameReturnTypes.add(type.getType());
                  }
             } else {
-                 JsObject jsObject = ModelUtils.getJsObjectByName(this,type.getType());
-                 if(jsObject != null) {
-                    Collection<TypeUsage> resolveAssignments = resolveAssignments(jsObject, type.getOffset());
-                    for (TypeUsage typeResolved: resolveAssignments) {
-                        if (!nameReturnTypes.contains(type.getType())){
-                           returns.add(typeResolved);
-                           nameReturnTypes.add(typeResolved.getType());
-                        }
+                 if (type.getType().startsWith("@")) {
+                     Collection<TypeUsage> resolved = ModelUtils.resolveTypeFromSemiType(this, type);
+                     for (TypeUsage typeResolved : resolved) {
+                         if (!nameReturnTypes.contains(type.getType())) {
+                             returns.add(typeResolved);
+                             nameReturnTypes.add(typeResolved.getType());
+                         }
+                     }
+                 } else {
+                    JsObject jsObject = ModelUtils.getJsObjectByName(this,type.getType());
+                    if(jsObject != null) {
+                       Collection<TypeUsage> resolveAssignments = resolveAssignments(jsObject, type.getOffset());
+                       for (TypeUsage typeResolved: resolveAssignments) {
+                           if (!nameReturnTypes.contains(type.getType())){
+                              returns.add(typeResolved);
+                              nameReturnTypes.add(typeResolved.getType());
+                           }
+                       }
                     }
                  }
             }

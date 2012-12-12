@@ -218,12 +218,12 @@ public class GroovyParser extends Parser {
                     if (sanitizing == Sanitize.ERROR_LINE) {
                         // groovy-only, this is not done in Ruby or JavaScript sanitization
                         // look backwards if there is unfinished line with trailing dot and remove that dot
-                        TokenSequence<? extends GroovyTokenId> ts = (context.document != null)
+                        TokenSequence<GroovyTokenId> ts = (context.document != null)
                                 ? LexUtilities.getPositionedSequence(context.document, offset)
                                 : null;
 
                         if (ts != null) {
-                            Token<? extends GroovyTokenId> token = LexUtilities.findPreviousNonWsNonComment(ts);
+                            Token<GroovyTokenId> token = LexUtilities.findPreviousNonWsNonComment(ts);
                             if (token.id() == GroovyTokenId.DOT) {
                                 int removeStart = ts.offset();
                                 int removeEnd = removeStart + 1;
