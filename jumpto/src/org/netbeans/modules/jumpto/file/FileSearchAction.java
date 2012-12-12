@@ -760,10 +760,7 @@ public class FileSearchAction extends AbstractAction implements FileSearchPanel.
 	    String text = (String) getClientProperty(TOOL_TIP_TEXT_KEY);
 	    if( text == null ) {
                 if( fd != null) {
-                    final FileObject file = fd.getFileObject();
-                    if (file != null) {
-                        text = FileUtil.getFileDisplayName(file);
-                    }
+                    text = fd.getFileDisplayPath();
                 }
                 putClientProperty(TOOL_TIP_TEXT_KEY, text);
 	    }
@@ -838,6 +835,11 @@ public class FileSearchAction extends AbstractAction implements FileSearchPanel.
                     });
             }
             return res;
+        }
+
+        @Override
+        public String getFileDisplayPath() {
+            return delegate.getFileDisplayPath();
         }
 
         @Override
