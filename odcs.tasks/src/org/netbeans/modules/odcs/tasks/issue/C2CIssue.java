@@ -108,7 +108,6 @@ public class C2CIssue {
     
     private String initialProduct = null;
     
-    private static final RequestProcessor parallelRP = new RequestProcessor("C2CIssue", 5); //NOI18N
     private C2CIssueNode node;
     private static final Set<IssueField> UNAVAILABLE_FIELDS_IF_PARTIAL_DATA = new HashSet<IssueField>(Arrays.asList(
             IssueField.SUBTASK
