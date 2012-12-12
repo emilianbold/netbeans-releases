@@ -1,6 +1,13 @@
 207965 - Terminal incorrectly displays prompt string
 187345 - wrong characters in Terminals
+	Distribute "text parameter" sequence interpretation properly
+	between InterpXTerm and InterpProtoANSIX.
+
+207965 - Terminal incorrectly displays prompt string
+187345 - wrong characters in Terminals
 	Barebones xterm support
+
+	changeset:   240886:95ea4996d8d5
 
 	Introduced package scoped class InterpXTerm.
 
@@ -16,6 +23,7 @@
 	terminal type to one of dumb|ansi|dtterm|xterm.
 
 nobugid - Cleanup and better naming for examples directory
+	changeset:   240885:eaea739e914d
 
 	- demosrc/lib.termsupport/nbterm -> examples/TermApp
 	- demosrc/lib.termsupport -> <rm>

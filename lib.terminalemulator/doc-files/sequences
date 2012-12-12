@@ -189,13 +189,16 @@ sequence	mnemonic		termcap op	numbers	margin	ansi	dtterm	xterm	Term
 							0		--	S-	S-	protoanisx	set window  title + set icon name
 							1		--	S-	S-	protoanisx	set icon name
 							2		--	S-	S-	protoanisx	set window  title
-							3		--	S-	--	dtterm		cwd and persist
+							3		--	S-	--	protoansix [ -> dtterm ]
+\ESC]10;%s;%sBEL					10		--	--	--	protoanisx	"nbterm" hyperlink
+														cwd and persist
 
-\ESC]%d;%s\ESC\  							--	--	S-	protoanisx [ -> xterm ]	set text parameters
-							0		--	--	S-	protoanisx [ -> xterm ]		set window  title + set icon name
-							1		--	--	S-	protoanisx [ -> xterm ]		set icon name
-							2		--	--	S-	protoanisx [ -> xterm ]		set window  title
+\ESC]%d;%s\ESC\  							--	--	S-	xterm		set text parameters
+							0		--	--	S-	xterm		set window  title + set icon name
+							1		--	--	S-	xterm		set icon name
+							2		--	--	S-	xterm		set window  title
 							3		--	--	S-	N [ -> xterm ]	set X property
+\ESC]10;%s;%s\ESC\  					10		--	--	--	xterm		"nbterm" hyperlink
 
 \ESC]l%s\ESC\								--	S-	--	dtterm		set window  title
 \ESC]I%s\ESC\								--	S-	--	N		set icon image file

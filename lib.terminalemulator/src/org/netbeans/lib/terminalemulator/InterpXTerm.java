@@ -51,8 +51,55 @@ class InterpXTerm extends InterpProtoANSIX {
 
     protected static class InterpTypeXTerm extends InterpTypeProtoANSIX {
 
+	protected final Actor act_done_collect_escbs = new ACT_DONE_COLLECT_ESCBS();
+
 	protected InterpTypeXTerm() {
+	    st_esc_rb_N.setAction((char) 27, st_wait, act_nop);         // ESC
+	    st_wait.setAction('\\', st_base, act_done_collect_escbs);
 	}
+
+	static final class ACT_DONE_COLLECT_ESCBS implements Actor {
+            @Override
+	    public String action(AbstractInterp ai, char c) {
+		InterpProtoANSIX i = (InterpProtoANSIX) ai;
+                int semix = i.text.indexOf(';');
+                if (semix == -1)
+                    return null;
+                String p1 = i.text.substring(0, semix);
+                String p2 = i.text.substring(semix+1);
+                int code = Integer.parseInt(p1);
+                switch (code) {
+                    case 0:
+                        ai.ops.op_icon_name(p2);
+                        ai.ops.op_win_title(p2);
+                        break;
+                    case 1:
+                        ai.ops.op_icon_name(p2);
+                        break;
+                    case 2:
+                        ai.ops.op_win_title(p2);
+                        break;
+                    case 3:
+                        /* LATER
+                        cwd is a dttermism. For xterm we're supposed to set X properties
+                        ai.ops.op_cwd(p2);
+                        */
+                        break;
+
+                    case 10: {
+                        // This is specific to nbterm!
+                        int semix2 = p2.indexOf(';');
+                        if (semix == -1)
+                            return null;
+                        String p3 = p2.substring(semix2+1);
+                        p2 = p2.substring(0, semix2);
+                        ai.ops.op_hyperlink(p2, p3);
+                    }
+                }
+		return null;
+	    }
+	}
+
     }
 
     private InterpTypeXTerm type;

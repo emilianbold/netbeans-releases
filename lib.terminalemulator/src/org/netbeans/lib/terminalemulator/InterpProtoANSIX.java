@@ -61,26 +61,24 @@ public class InterpProtoANSIX extends InterpProtoANSI {
 
 	protected final Actor act_start_collect = new ACT_START_COLLECT();
 	protected final Actor act_collect = new ACT_COLLECT();
-	protected final Actor act_done_collect = new ACT_DONE_COLLECT();
-	protected final Actor act_done_collect2 = new ACT_DONE_COLLECT2();
+	protected final Actor act_done_collect_bel = new ACT_DONE_COLLECT_BEL();
 	protected final Actor act_DEC_private = new ACT_DEC_PRIVATE();
 
 	protected InterpTypeProtoANSIX() {
 	    st_esc.setAction('D', st_base, act_D);
 
+            // \ESC]%d;%s\BEL
 	    st_esc.setAction(']', st_esc_rb, act_start_collect);
 	    for (char c = '0'; c <= '9'; c++)
 		st_esc_rb.setAction(c, st_esc_rb_N, act_collect);
 	    for (char c = 0; c < 128; c++)
 		st_esc_rb_N.setAction(c, st_esc_rb_N, act_collect);
+	    st_esc_rb_N.setAction((char) 7, st_base, act_done_collect_bel);// BEL
 
-            // XTerm only
-	    st_esc_rb_N.setAction((char) 27, st_wait, act_nop);         // ESC
-	    st_wait.setAction('\\', st_base, act_done_collect);
-
-	    st_esc_rb_N.setAction((char) 7, st_base, act_done_collect2);// BEL
-
-
+            // \ESC[?%dh
+            // \ESC[?%dl
+            // \ESC[?%dr
+            // \ESC[?%ds
 	    st_esc_lb.setAction('?', st_esc_lb_q, act_reset_number);
 	    for (char c = '0'; c <= '9'; c++)
 		st_esc_lb_q.setAction(c, st_esc_lb_q, act_remember_digit);
@@ -89,6 +87,7 @@ public class InterpProtoANSIX extends InterpProtoANSI {
 	    st_esc_lb_q.setAction('r', st_base, act_DEC_private);
 	    st_esc_lb_q.setAction('s', st_base, act_DEC_private);
 
+            // \ESC[!p
 	    st_esc_lb.setAction('!', st_esc_lb_b, act_reset_number);
 	    st_esc_lb_b.setAction('p', st_base, new ACT_DEC_STR());
         }
@@ -120,29 +119,15 @@ public class InterpProtoANSIX extends InterpProtoANSI {
 	    }
 	}
 
-	static final class ACT_DONE_COLLECT implements Actor {
-            @Override
-	    public String action(AbstractInterp ai, char c) {
-		/* DEBUG
-		System.out.println("DtTerm emulation: got '" + text + "'");	// NOI18N
-		*/
-		return null;
-	    }
-	}
-
-	static final class ACT_DONE_COLLECT2 implements Actor {
+	static final class ACT_DONE_COLLECT_BEL implements Actor {
             @Override
 	    public String action(AbstractInterp ai, char c) {
 		InterpProtoANSIX i = (InterpProtoANSIX) ai;
-		// OLD i.text = "";	// NOI18N
                 int semix = i.text.indexOf(';');
                 if (semix == -1)
                     return null;
                 String p1 = i.text.substring(0, semix);
                 String p2 = i.text.substring(semix+1);
-		/* DEBUG
-		System.out.println("DtTerm emulation done_collect2: got '" + p1 + "' '" + p2 + "'");	// NOI18N
-		*/
                 int code = Integer.parseInt(p1);
                 switch (code) {
                     case 0:
@@ -156,10 +141,14 @@ public class InterpProtoANSIX extends InterpProtoANSI {
                         ai.ops.op_win_title(p2);
                         break;
                     case 3:
+                        // cwd is a dttermism.
+                        // This will be inherited by InterpXTerm but it's really
+                        // not supported by xterm.
                         ai.ops.op_cwd(p2);
                         break;
 
                     case 10: {
+                        // This is specific to nbterm!
                         int semix2 = p2.indexOf(';');
                         if (semix == -1)
                             return null;
