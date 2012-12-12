@@ -221,7 +221,7 @@ public class SearchForJavaAction extends WizardAction {
                 JavaInfo info2 = JavaUtils.getInfo(javaLocations.get(j - 1));
                                                
                 if (info1.isNonFinal() == info2.isNonFinal()) {
-                    if (isRecommended(info1) == isRecommended(info2)) {                        
+                    if (JavaUtils.isRecommended(info1.getVersion()) == JavaUtils.isRecommended(info2.getVersion())) {                        
                         if (info1.getVersion().equals(info2.getVersion())) {
                             // better than compare directly archs is to compare if archs are both 64bit
                             if (info1.getArch().endsWith("64") == info2.getArch().endsWith("64")) {                                                            
@@ -240,7 +240,7 @@ public class SearchForJavaAction extends WizardAction {
                         } else if (info1.getVersion().newerThan(info2.getVersion())) {
                             switchNeighbours(j, file2, file1, label2, label1);
                         }
-                    } else if (isRecommended(info1) && !isRecommended(info2)) {
+                    } else if (JavaUtils.isRecommended(info1.getVersion()) && !JavaUtils.isRecommended(info2.getVersion())) {
                         switchNeighbours(j, file2, file1, label2, label1);
                     }                    
                 } else if (!info1.isNonFinal() && info2.isNonFinal()) {
@@ -248,15 +248,7 @@ public class SearchForJavaAction extends WizardAction {
                 }
             }
         }        
-    }
-    
-    private static boolean isRecommended(JavaInfo info) {
-        /*to and from versions - not recommended - all JDK 7 versions older than 7u10 */
-        Version toVersion = Version.getVersion("1.7.0_09");
-        Version fromVersion = Version.getVersion("1.7.0_00");
-        
-        return info.getVersion().olderThan(fromVersion) || info.getVersion().newerThan(toVersion);
-    }
+    }        
 
     private static void switchNeighbours (int j, File file2, File file1, String label2, String label1) {
         javaLocations.set(j, file2);

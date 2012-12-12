@@ -459,6 +459,7 @@ public class JdkLocationPanel extends ApplicationLocationPanel {
         return closestLocation;
     }
     
+    @Override
     public String validateLocation(final String path) {
         final File file = new File(path);
         
@@ -471,8 +472,7 @@ public class JdkLocationPanel extends ApplicationLocationPanel {
             return StringUtils.format(
                     getProperty(ERROR_NOT_VALID_PATH_PROPERTY), path);
         }
-        
-        
+                
         if (!file.exists()) {
             if(JavaUtils.getInfo(file)==null) { 
                 // JDK location does not exist and is not in the list of installable JDKs
@@ -488,14 +488,13 @@ public class JdkLocationPanel extends ApplicationLocationPanel {
             if (!isJreAllowed() && !JavaUtils.isJdk(file)) {
                 return StringUtils.format(
                         getProperty(ERROR_NOT_JDK_PROPERTY), path);                
-            }
+            }          
         }
         
         Version version = JavaUtils.getVersion(file);
         if (version == null) {
-            for (Product jdk: Registry.getInstance().getProducts(JDK_PRODUCT_UID)) {
-                if ((jdk.getStatus() == Status.TO_BE_INSTALLED) &&
-                        jdk.getInstallationLocation().equals(file)) {
+            for (Product jdk : Registry.getInstance().getProducts(JDK_PRODUCT_UID)) {
+                if ((jdk.getStatus() == Status.TO_BE_INSTALLED) && jdk.getInstallationLocation().equals(file)) {
                     version = jdk.getVersion();
                 }
             }
@@ -503,7 +502,7 @@ public class JdkLocationPanel extends ApplicationLocationPanel {
         
         if (version == null) {
             return StringUtils.format(getProperty(ERROR_UNKNOWN_PROPERTY), path);
-        }
+        }                
         
         if (version.olderThan(minimumVersion)) {
             return StringUtils.format(
@@ -520,6 +519,11 @@ public class JdkLocationPanel extends ApplicationLocationPanel {
                     version,
                     maximumVersion);
         }
+        
+        if (!JavaUtils.isRecommended(version)) {
+            return "This JDK version is older than the recommended JDK 7u10. For stability reasons we recommend that you download and install the latest JDK 7 update from <a href=\"http://www.oracle.com/technetwork/java/javase/downloads/\">http://www.oracle.com/technetwork/java/javase/downloads/</a> and restart NetBeans installer.";                             
+        }
+        
         String vendor = JavaUtils.getInfo(file).getVendor();
         if(!vendor.matches(vendorAllowed)) {
             return StringUtils.format(
