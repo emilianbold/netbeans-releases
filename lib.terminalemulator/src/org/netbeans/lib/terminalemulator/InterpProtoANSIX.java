@@ -44,7 +44,7 @@ package org.netbeans.lib.terminalemulator;
 import org.netbeans.lib.terminalemulator.AbstractInterp.Actor;
 
 /**
- * Stuff common to InterpANSI, InterpDtTerm and InterpXTerm but 
+ * Stuff common to InterpDtTerm and InterpXTerm but 
  * @author ivan
  */
 public class InterpProtoANSIX extends InterpProtoANSI {
