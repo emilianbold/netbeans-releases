@@ -45,6 +45,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.Future;
 import org.netbeans.api.extexecution.ExecutionDescriptor;
 import org.netbeans.modules.php.api.executable.InvalidPhpExecutableException;
 import org.netbeans.modules.php.api.executable.PhpExecutable;
@@ -96,7 +97,7 @@ public final class Composer {
     /**
      * Get the default, <b>valid only</b> Composer.
      * @return the default, <b>valid only</b> Composer.
-     * @throws InvalidPhpProgramException if Composer is not valid.
+     * @throws InvalidPhpExecutableException if Composer is not valid.
      */
     public static Composer getDefault() throws InvalidPhpExecutableException {
         String composerPath = ComposerOptions.getInstance().getComposerPath();
@@ -118,11 +119,11 @@ public final class Composer {
         "# {0} - project name",
         "Composer.init.description=Description of project {0}."
     })
-    public void init(PhpModule phpModule) {
+    public Future<Integer> init(PhpModule phpModule) {
         FileObject lockFile = getLockFile(phpModule);
         if (lockFile != null && lockFile.isValid()) {
             if (!userConfirmation(phpModule.getDisplayName(), Bundle.Composer_lockFile_exists())) {
-                return;
+                return null;
             }
         }
         // command params
@@ -131,7 +132,7 @@ public final class Composer {
                 String.format(NAME_PARAM, getInitName(options.getVendor(), phpModule.getName())),
                 String.format(AUTHOR_PARAM, options.getAuthorName(), options.getAuthorEmail()),
                 String.format(DESCRIPTION_PARAM, Bundle.Composer_init_description(phpModule.getDisplayName())));
-        runCommand(phpModule, INIT_COMMAND, Bundle.Composer_run_init(), params);
+        return runCommand(phpModule, INIT_COMMAND, Bundle.Composer_run_init(), params);
     }
 
     private String getInitName(String vendor, String projectName) {
@@ -143,51 +144,56 @@ public final class Composer {
     }
 
     @NbBundle.Messages("Composer.run.install=Composer (install)")
-    public void install(PhpModule phpModule) {
-        runCommand(phpModule, INSTALL_COMMAND, Bundle.Composer_run_install());
+    public Future<Integer> install(PhpModule phpModule) {
+        return runCommand(phpModule, INSTALL_COMMAND, Bundle.Composer_run_install());
     }
 
     @NbBundle.Messages("Composer.run.installDev=Composer (install dev)")
-    public void installDev(PhpModule phpModule) {
-        runCommand(phpModule, INSTALL_COMMAND, Bundle.Composer_run_installDev(), Collections.singletonList(DEV_PARAM));
+    public Future<Integer> installDev(PhpModule phpModule) {
+        return runCommand(phpModule, INSTALL_COMMAND, Bundle.Composer_run_installDev(), Collections.singletonList(DEV_PARAM));
     }
 
     @NbBundle.Messages("Composer.run.update=Composer (update)")
-    public void update(PhpModule phpModule) {
-        runCommand(phpModule, UPDATE_COMMAND, Bundle.Composer_run_update());
+    public Future<Integer> update(PhpModule phpModule) {
+        return runCommand(phpModule, UPDATE_COMMAND, Bundle.Composer_run_update());
     }
 
     @NbBundle.Messages("Composer.run.updateDev=Composer (update dev)")
-    public void updateDev(PhpModule phpModule) {
-        runCommand(phpModule, UPDATE_COMMAND, Bundle.Composer_run_updateDev(), Collections.singletonList(DEV_PARAM));
+    public Future<Integer> updateDev(PhpModule phpModule) {
+        return runCommand(phpModule, UPDATE_COMMAND, Bundle.Composer_run_updateDev(), Collections.singletonList(DEV_PARAM));
     }
 
     @NbBundle.Messages("Composer.run.validate=Composer (validate)")
-    public void validate(PhpModule phpModule) {
-        runCommand(phpModule, VALIDATE_COMMAND, Bundle.Composer_run_validate());
+    public Future<Integer> validate(PhpModule phpModule) {
+        return runCommand(phpModule, VALIDATE_COMMAND, Bundle.Composer_run_validate());
     }
 
     @NbBundle.Messages("Composer.run.selfUpdate=Composer (self-update)")
-    public void selfUpdate(PhpModule phpModule) {
-        runCommand(phpModule, SELF_UPDATE_COMMAND, Bundle.Composer_run_selfUpdate());
+    public Future<Integer> selfUpdate() {
+        return runCommand(null, SELF_UPDATE_COMMAND, Bundle.Composer_run_selfUpdate());
     }
 
-    private void runCommand(PhpModule phpModule, String command, String title) {
-        runCommand(phpModule, command, title, Collections.<String>emptyList());
+    private Future<Integer> runCommand(PhpModule phpModule, String command, String title) {
+        return runCommand(phpModule, command, title, Collections.<String>emptyList());
     }
 
-    private void runCommand(PhpModule phpModule, String command, String title, List<String> commandParams) {
-        FileObject sourceDirectory = phpModule.getSourceDirectory();
-        if (sourceDirectory == null) {
-            warnNoSources(phpModule.getDisplayName());
-            return;
+    private Future<Integer> runCommand(PhpModule phpModule, String command, String title, List<String> commandParams) {
+        FileObject sourceDirectory = null;
+        if (phpModule != null) {
+            sourceDirectory = phpModule.getSourceDirectory();
+            if (sourceDirectory == null) {
+                warnNoSources(phpModule.getDisplayName());
+                return null;
+            }
         }
-        new PhpExecutable(composerPath)
+        PhpExecutable composer = new PhpExecutable(composerPath)
                 .optionsSubcategory(ComposerOptionsPanelController.OPTIONS_SUBPATH)
-                .workDir(FileUtil.toFile(sourceDirectory))
                 .displayName(title)
-                .additionalParameters(getAllParameters(command, commandParams))
-                .run(getDescriptor());
+                .additionalParameters(getAllParameters(command, commandParams));
+        if (sourceDirectory != null) {
+            composer.workDir(FileUtil.toFile(sourceDirectory));
+        }
+        return composer.run(getDescriptor());
     }
 
     private List<String> getAllParameters(String command, List<String> commandParams) {
