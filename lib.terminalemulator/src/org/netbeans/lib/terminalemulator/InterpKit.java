@@ -59,7 +59,9 @@ package org.netbeans.lib.terminalemulator;
 
 abstract class InterpKit {
     static Interp forName(String name, Ops ops) {
-	if (name.equals("dumb"))	// NOI18N
+        if (name.equals("xterm"))	// NOI18N
+	    return new InterpXTerm(ops);      
+        else if (name.equals("dumb"))	// NOI18N
 	    return new InterpDumb(ops);
 	else if (name.equals("ansi"))	// NOI18N
 	    return new InterpANSI(ops);	

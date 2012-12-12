@@ -77,6 +77,12 @@ public class WebJaxWsOpenHook extends ProjectOpenedHook {
     /** Creates a new instance of WebJaxWsOpenHook */
     public WebJaxWsOpenHook(Project prj) {
         this.prj = prj;
+        try {
+            Class.forName(WSUtils.class.getName());
+        }
+        catch (ClassNotFoundException e) {
+            assert false;
+        }
     }
 
     @Override

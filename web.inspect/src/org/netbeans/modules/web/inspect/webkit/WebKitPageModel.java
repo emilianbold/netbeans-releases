@@ -162,6 +162,10 @@ public class WebKitPageModel extends PageModel {
                 // init
                 String initScript = Files.getScript("initialization"); // NOI18N
                 webKit.getRuntime().evaluate(initScript);
+                if (isExternal()) {
+                    String shortcutsScript = Files.getScript("shortcuts"); // NOI18N
+                    webKit.getRuntime().evaluate(shortcutsScript);
+                }
                 cSSUpdater.start(webKit);
             }
         }
@@ -316,6 +320,7 @@ public class WebKitPageModel extends PageModel {
                     // Attribute modifications that represent selection/highlight
                     final boolean selected = ":netbeans_selected".equals(attrName); // NOI18N
                     final boolean highlighted = ":netbeans_highlighted".equals(attrName); // NOI18N
+                    final boolean selectMode = ":netbeans_select_mode".equals(attrName); // NOI18N
                     if (selected || highlighted) {
                         if (!isSelectionMode()) {
                             // Some delayed selection/highlight modifications
@@ -355,6 +360,15 @@ public class WebKitPageModel extends PageModel {
                                 } else {
                                     setHighlightedNodesImpl(selection);
                                 }
+                            }
+                        });
+                        return;
+                    } else if (selectMode) {
+                        final boolean newSelectMode = !isSelectionMode();
+                        RP.post(new Runnable() {
+                            @Override
+                            public void run() {
+                                setSelectionMode(newSelectMode);
                             }
                         });
                         return;

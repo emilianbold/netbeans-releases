@@ -36,6 +36,8 @@ import javax.swing.Action;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
+import javax.swing.event.PopupMenuEvent;
+import javax.swing.event.PopupMenuListener;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -113,7 +115,23 @@ public class CodeAssistanceSubmenuAction extends NodeAction {
                     add(action);
                 }
             }
-            return super.getPopupMenu();
+            JPopupMenu out = super.getPopupMenu();
+            out.addPopupMenuListener(new PopupMenuListener() {
+
+                @Override
+                public void popupMenuWillBecomeVisible(PopupMenuEvent e) {
+                }
+
+                @Override
+                public void popupMenuWillBecomeInvisible(PopupMenuEvent e) {
+                    LazyPopupMenu.this.removeAll();
+                }
+
+                @Override
+                public void popupMenuCanceled(PopupMenuEvent e) {
+                }
+            });
+            return out;
         }
     }
 }

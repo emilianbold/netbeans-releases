@@ -47,6 +47,7 @@ import java.util.Collection;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.text.Document;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.modules.parsing.spi.indexing.ConstrainedBinaryIndexer;
 import org.netbeans.modules.parsing.spi.indexing.Context;
@@ -110,21 +111,22 @@ public class SpringBinaryIndexer extends ConstrainedBinaryIndexer {
         Context context) {
         for (FileObject fileObject : findSpringLibraryDescriptors(files.get(XSD_MIME), XSD_SUFFIX)) {
             try {
-                ModelSource source = Utilities.getModelSource(fileObject, true);
-                SchemaModel model = SchemaModelFactory.getDefault().getModel(source);
+                ModelSource modelSource = Utilities.getModelSource(fileObject, true);
+                if (modelSource.getLookup().lookup(Document.class) != null) {
+                    SchemaModel model = SchemaModelFactory.getDefault().getModel(modelSource);
 
+                    Schema schema = model.getSchema();
+                    String targetNamespace = schema.getTargetNamespace();
+                    if (targetNamespace !=null) {
+                        IndexingSupport sup = IndexingSupport.getInstance(context);
+                        IndexDocument doc = sup.createDocument(fileObject);
+                        doc.addPair(NAMESPACE_MARK_KEY, targetNamespace, true, true);
+                        doc.addPair(LIBRARY_MARK_KEY, Boolean.TRUE.toString(), true, true);
+                        sup.addDocument(doc);
 
-                Schema schema = model.getSchema();
-                String targetNamespace = schema.getTargetNamespace();
-                if (targetNamespace !=null) {
-                    IndexingSupport sup = IndexingSupport.getInstance(context);
-                    IndexDocument doc = sup.createDocument(fileObject);
-                    doc.addPair(NAMESPACE_MARK_KEY, targetNamespace, true, true);
-                    doc.addPair(LIBRARY_MARK_KEY, Boolean.TRUE.toString(), true, true);
-                    sup.addDocument(doc);
+                        LOGGER.log(Level.INFO, "The file " + fileObject + " indexed as a XSD (namespace=" + targetNamespace + ")"); //NOI18N
 
-                    LOGGER.log(Level.INFO, "The file " + fileObject + " indexed as a XSD (namespace=" + targetNamespace + ")"); //NOI18N
-
+                    }
                 }
             }catch(Exception ex) {
                 Exceptions.printStackTrace(ex);

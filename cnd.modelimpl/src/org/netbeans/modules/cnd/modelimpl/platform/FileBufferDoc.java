@@ -266,17 +266,6 @@ public class FileBufferDoc extends AbstractFileBuffer {
     }
 
     @Override
-    public FileObject getFileObject() {
-        Document aDoc = this.doc;
-        FileObject fo = null;
-        Object sdp = aDoc == null ? null : aDoc.getProperty(Document.StreamDescriptionProperty);
-        if (sdp instanceof DataObject) {
-            fo = ((DataObject)sdp).getPrimaryFile();
-        }
-        return fo != null ? fo : super.getFileObject();
-    }
-    
-    @Override
     public boolean isFileBased() {
         return false;
     }

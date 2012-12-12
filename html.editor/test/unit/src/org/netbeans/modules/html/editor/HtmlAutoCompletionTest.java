@@ -197,6 +197,86 @@ public class HtmlAutoCompletionTest extends TestBase {
         ctx.assertDocumentTextEquals("<a class=val'|");
     }
     
+    public void testAutocompleteDoubleQuoteOnlyAfterEQ() throws InterruptedException, InvocationTargetException, Exception {
+        Context ctx = new Context(new HtmlKit(), "<a class|");
+        ctx.typeChar('=');
+        ctx.assertDocumentTextEquals("<a class=\"|\"");
+        ctx.typeChar('x');
+        ctx.assertDocumentTextEquals("<a class=\"x|\"");
+        ctx.typeChar('"');
+        ctx.assertDocumentTextEquals("<a class=\"x\"|");
+        ctx.typeChar('"');
+        ctx.assertDocumentTextEquals("<a class=\"x\"\"|");
+    }
+
+    public void testAutocompleteSingleQuoteOnlyAfterEQ() throws InterruptedException, InvocationTargetException, Exception {
+        Context ctx = new Context(new HtmlKit(), "<a class|");
+        ctx.typeChar('=');
+        ctx.assertDocumentTextEquals("<a class=\"|\"");
+        ctx.typeChar('\'');
+        ctx.assertDocumentTextEquals("<a class='|'");
+        ctx.typeChar('x');
+        ctx.assertDocumentTextEquals("<a class='x|'");
+        ctx.typeChar('\'');
+        ctx.assertDocumentTextEquals("<a class='x'|");
+        ctx.typeChar('\'');
+        ctx.assertDocumentTextEquals("<a class='x''|");
+    }
+    
+    public void testDeleteAutocompletedQuote() throws InterruptedException, InvocationTargetException, Exception {
+        Context ctx = new Context(new HtmlKit(), "<a class|");
+        ctx.typeChar('=');
+        ctx.assertDocumentTextEquals("<a class=\"|\"");
+        ctx.typeChar('\b');
+        ctx.assertDocumentTextEquals("<a class=");
+    }
+    
+    public void testDeleteQuote() throws InterruptedException, InvocationTargetException, Exception {
+        Context ctx = new Context(new HtmlKit(), "<a class=\"|\"");
+        ctx.typeChar('\b');
+        ctx.assertDocumentTextEquals("<a class=");
+    }
+    
+    public void testDeleteQuoteWithWSAfter() throws InterruptedException, InvocationTargetException, Exception {
+        Context ctx = new Context(new HtmlKit(), "<a class=\"|\" ");
+        ctx.typeChar('\b');
+        ctx.assertDocumentTextEquals("<a class= ");
+    }
+    
+    public void testDeleteSingleQuote() throws InterruptedException, InvocationTargetException, Exception {
+        Context ctx = new Context(new HtmlKit(), "<a class='|'");
+        ctx.typeChar('\b');
+        ctx.assertDocumentTextEquals("<a class=");
+        
+        //but do not delete if there's a text after the caret
+        ctx = new Context(new HtmlKit(), "<a class='|x'");
+        ctx.typeChar('\b');
+        ctx.assertDocumentTextEquals("<a class=x'");
+        
+    }
+    
+    public void testDoNotAutocompleteQuoteInValue() throws InterruptedException, InvocationTargetException, Exception {
+        Context ctx = new Context(new HtmlKit(), "<a x=\"|test\"");
+        ctx.typeChar('\b');
+        ctx.assertDocumentTextEquals("<a x=|test\"");
+        ctx.typeChar('"');
+        
+        //do not autocomplete in this case
+        ctx.assertDocumentTextEquals("<a x=\"|test\"");
+        
+    }
+    
+    public void testInClassDoNotAutocompleteQuoteInValue() throws InterruptedException, InvocationTargetException, Exception {
+        Context ctx = new Context(new HtmlKit(), "<a class=\"|test\"");
+        ctx.typeChar('\b');
+        ctx.assertDocumentTextEquals("<a class=|test\"");
+        ctx.typeChar('"');
+        
+        //do not autocomplete in this case
+        ctx.assertDocumentTextEquals("<a class=\"|test\"");
+        
+    }
+    
     private static final class Context {
         
         private JEditorPane pane;
