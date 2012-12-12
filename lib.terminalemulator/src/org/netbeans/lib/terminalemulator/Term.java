@@ -46,20 +46,20 @@
 package org.netbeans.lib.terminalemulator;
 
 import java.awt.*;
+import java.awt.datatransfer.Clipboard;
+import java.awt.datatransfer.DataFlavor;
+import java.awt.datatransfer.StringSelection;
+import java.awt.datatransfer.Transferable;
 import java.awt.event.*;
-import java.awt.datatransfer.*;
-import javax.swing.*;
-import javax.accessibility.*;
-
-import java.awt.font.*;
+import java.awt.font.FontRenderContext;
+import java.awt.font.GlyphVector;
 import java.awt.geom.Point2D;
-
-import java.util.HashSet;
-import java.util.Date;
-import java.util.LinkedList;
-import java.util.ListIterator;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
+import javax.accessibility.Accessible;
+import javax.accessibility.AccessibleContext;
+import javax.accessibility.AccessibleRole;
+import javax.swing.JComponent.AccessibleJComponent;
+import javax.swing.*;
 import javax.swing.text.Keymap;
 
 /**
@@ -461,6 +461,7 @@ public class Term extends JComponent implements Accessible {
     /*
      * Debugging utilities
      */
+    @SuppressWarnings("PointlessBitwiseExpression")
     public static final int DEBUG_OPS = 1 << 0;
     public static final int DEBUG_KEYS = 1 << 1;
     public static final int DEBUG_INPUT = 1 << 2;
@@ -1482,8 +1483,8 @@ public class Term extends JComponent implements Accessible {
 
                 BCoord x = sel.sel_extent.toBCoord(firsta);
                 BCoord v = toViewCoord(x);
-                int r = v.row;
-                int c = v.col;
+                int r;
+                int c;
 
                 if ((direction & DOWN) == DOWN) {
                     lineDown(1);
@@ -1527,6 +1528,7 @@ public class Term extends JComponent implements Accessible {
         }
 
         @Override
+        @SuppressWarnings("SleepWhileInLoop")
         public void run() {
             while (true) {
 
@@ -2634,7 +2636,7 @@ public class Term extends JComponent implements Accessible {
         boolean active = ((attr & Attr.ACTIVE) == Attr.ACTIVE);
 
         // choose background color
-        Color bg = null;
+        Color bg;
 
         if (active) {
             bg = active_color;
@@ -2890,7 +2892,7 @@ public class Term extends JComponent implements Accessible {
         // iterate through runs
 
         int rbegin = firstcol;
-        int rend = rbegin;
+        int rend;
 
         while (true) {
 
@@ -3258,6 +3260,7 @@ public class Term extends JComponent implements Accessible {
     private class OpsImpl implements Ops {
 
 	@Override
+        @SuppressWarnings("CallToThreadYield")
         public void op_pause() {
 
             // This yields slighlty more reasonable results.
@@ -5225,7 +5228,7 @@ public class Term extends JComponent implements Accessible {
      * we create a monospaced version of it with the same style and size.
      */
     @Override
-    public void setFont(Font new_font) {
+    public final void setFont(Font new_font) {
         Font font;
         if (isFixedFont()) {
             font = new_font;
@@ -5498,7 +5501,7 @@ public class Term extends JComponent implements Accessible {
     }
 
     Color foregroundColor(boolean reverse, int attr) {
-        Color fg = null;
+        final Color fg;
         if (reverse) {
             int bcx = Attr.backgroundColor(attr);
             if (bcx != 0 && bcx <= 8) {
