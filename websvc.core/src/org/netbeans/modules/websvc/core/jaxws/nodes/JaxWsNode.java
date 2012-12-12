@@ -60,6 +60,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.lang.model.element.AnnotationMirror;
@@ -378,7 +379,7 @@ public class JaxWsNode extends AbstractNode implements
     // Create the popup menu:
     @Override
     public Action[] getActions(boolean context) {
-        DataObject dobj = getCookie(DataObject.class);
+        //DataObject dobj = getCookie(DataObject.class);
         ArrayList<Action> actions = new ArrayList<Action>(Arrays.asList(
                 SystemAction.get(OpenAction.class),
                 SystemAction.get(JaxWsRefreshAction.class),
@@ -486,6 +487,7 @@ public class JaxWsNode extends AbstractNode implements
         return new ServerContextInfo(hostName, portNumber, contextRoot);
     }
 
+    @org.netbeans.api.annotations.common.SuppressWarnings("DE_MIGHT_IGNORE")
     private ServiceInfo getServiceInfo() {
         ServiceInfo serviceInfo = new ServiceInfo();
         J2eeModuleProvider provider = project.getLookup().lookup(J2eeModuleProvider.class);
@@ -527,7 +529,7 @@ public class JaxWsNode extends AbstractNode implements
                     if (uriDescriptor != null) {
                         fromStack = true;
 
-                        ServerContextInfo serverContextInfo = getServerContextInfo();
+                        //ServerContextInfo serverContextInfo = getServerContextInfo();
                         wsURI = uriDescriptor.getServiceUri(contextRoot, serviceInfo.getServiceName(), serviceInfo.getPortName(), serviceInfo.isEjb());
                     }
                 }
@@ -883,6 +885,7 @@ public class JaxWsNode extends AbstractNode implements
     /**
      * Implementation of the ConfigureHandlerCookie
      */
+    @org.netbeans.api.annotations.common.SuppressWarnings("NP_NULL_ON_SOME_PATH_FROM_RETURN_VALUE")
     @Override
     public void configureHandler() {
         FileObject implBeanFo = getImplBean();
@@ -917,9 +920,11 @@ public class JaxWsNode extends AbstractNode implements
                     Map<? extends ExecutableElement, 
                             ? extends AnnotationValue> expressions = 
                                 handlerAnnotation.getElementValues();
-                    for (ExecutableElement ex : expressions.keySet()) {
+                    for (Entry<? extends ExecutableElement, 
+                            ? extends AnnotationValue> entry : expressions.entrySet()) {
+                        ExecutableElement ex = entry.getKey();
                         if (ex.getSimpleName().contentEquals("file")) {   //NOI18N
-                            handlerFileName[0] = (String) expressions.get(ex).getValue();
+                            handlerFileName[0] = (String) entry.getValue().getValue();
                             break;
                         }
                     }
@@ -1018,9 +1023,7 @@ public class JaxWsNode extends AbstractNode implements
                     //TODO: throw exception here?
                     url = null;
                 } finally {
-                    if (httpConnection != null) {
-                        httpConnection.disconnect();
-                    }
+                    httpConnection.disconnect();
                 }
                 if (!connectionOK) {
                     //TODO: throw exception here?
@@ -1132,7 +1135,7 @@ public class JaxWsNode extends AbstractNode implements
         return hostName;
     }
     
-    private class ServerContextInfo {
+    private static class ServerContextInfo {
         private String host, port, contextRoot;
 
         public ServerContextInfo(String host, String port, String contextRoot) {
@@ -1155,7 +1158,7 @@ public class JaxWsNode extends AbstractNode implements
         }
     }
 
-    private class ServiceInfo {
+    private static class ServiceInfo {
         private String serviceName, portName;
         private boolean ejb;
 
