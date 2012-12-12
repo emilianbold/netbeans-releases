@@ -92,7 +92,7 @@ import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 
 public final class Item implements NativeFileItem, PropertyChangeListener {
-    private static final Logger logger = Logger.getLogger("makeproject.folder"); // NOI18N
+    private static final Logger LOG = Logger.getLogger("makeproject.folder"); // NOI18N
 
     private final String path;
     private Folder folder;
@@ -340,7 +340,7 @@ public final class Item implements NativeFileItem, PropertyChangeListener {
             }
         }
         if (file == null) {
-            logger.log(Level.SEVERE, "Can not resolve file {0}", getAbsPath());
+            LOG.log(Level.SEVERE, "Can not resolve file {0}", getAbsPath());
         }
     }
 
@@ -467,7 +467,7 @@ public final class Item implements NativeFileItem, PropertyChangeListener {
             } catch (DataObjectNotFoundException e) {
                 // that's normal, for example, "myfile.xyz" won't have data object
                 // ErrorManager.getDefault().notify(e);
-                logger.log(Level.FINE, "Can not find data object", e); //NOI18N
+                LOG.log(Level.FINE, "Can not find data object", e); //NOI18N
             }
         }
         synchronized (this) {
@@ -483,7 +483,7 @@ public final class Item implements NativeFileItem, PropertyChangeListener {
     
     private void attachTo(DataObject dataObject) {
         if (dataObject != null) {
-            logger.log(Level.INFO, "attaching {0} to {1}", new Object[]{System.identityHashCode(this), dataObject});
+            LOG.log(Level.FINEST, "attaching {0} to {1}", new Object[]{System.identityHashCode(this), dataObject});
             dataObject.removePropertyChangeListener(this);
             dataObject.addPropertyChangeListener(this);
             NativeFileItemSet set = dataObject.getLookup().lookup(NativeFileItemSet.class);
@@ -503,7 +503,7 @@ public final class Item implements NativeFileItem, PropertyChangeListener {
     
     private void detachFrom(DataObject dao) {
         if (dao != null) {
-            logger.log(Level.FINE, "detaching {0} from {1}", new Object[]{System.identityHashCode(this), dao});
+            LOG.log(Level.FINEST, "detaching {0} from {1}", new Object[]{System.identityHashCode(this), dao});
             dao.removePropertyChangeListener(this);
             NativeFileItemSet set = dao.getLookup().lookup(NativeFileItemSet.class);
             if (set != null) {
