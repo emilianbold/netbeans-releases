@@ -1,3 +1,107 @@
+207965 - Terminal incorrectly displays prompt string
+187345 - wrong characters in Terminals
+	Distribute "text parameter" sequence interpretation properly
+	between InterpXTerm and InterpProtoANSIX.
+
+207965 - Terminal incorrectly displays prompt string
+187345 - wrong characters in Terminals
+	Barebones xterm support
+
+	changeset:   240886:95ea4996d8d5
+
+	Introduced package scoped class InterpXTerm.
+
+	Term.setEmulation() now accepts "xterm". xterm sequences are
+	similar to those of ansi and dtterm so this barebones implementation
+	isn't really differentiated.
+
+	In particular xterm emulation doesn't handle alternative renditions,
+	the main issue in this bug, correctly yet which is why ansi
+	should still be used as the default emulation.
+
+	TermApp enhanced with a -t option which allows setting of the 
+	terminal type to one of dumb|ansi|dtterm|xterm.
+
+nobugid - Cleanup and better naming for examples directory
+	changeset:   240885:eaea739e914d
+
+	- demosrc/lib.termsupport/nbterm -> examples/TermApp
+	- demosrc/lib.termsupport -> <rm>
+	- demosrc/Suite -> examples/TermSuite
+	- demosrc/Examples -> examples/TermExample
+	- demosrc -> examples
+	
+nobugid - sequence logging for debugging and testing
+	changeset:   240884:6efe424d9990
+
+        API enhanced with the following:
+
+            void Term.setSequenceLogging(boolean)
+            boolean Term.isSequenceLogging()
+
+            Set<String> Term.getCompletedSequences();
+            Set<String> Term.getUnrecognizedSequences();
+
+            void Ops.logCompletedSequence(String);
+            void Ops.logUnrecognizedSequence(String);
+
+        The idea is to turn this logging on, run some terminal-heavy
+        apps like vim, rogue/nethack, mc, alsamixer etc and see what 
+        escape sequences were actually processed and which were, 
+        silently, ignored. This can help with determining coverage
+        of a given application.
+
+        A corresponding change in the Terminal module enables 
+        logging if -J-DTerm.debug=sequences is used on the NB cmdline.
+        The property will additionally enable a Terminal context menu item
+        "Dump Sequences" which will dump the above respectively into
+                /tmp/term-sequences-completed
+                /tmp/term-sequences-unrecognized
+
+        So, if a user complains about some fancy sequence not working,
+        the thing to do is to run NB with -J-DTerm.debug=sequences, run
+        the misbehaving application and then issue "Dump Sequences" from
+        the terminal context menu. "term-sequences-unrecognized" is likely
+        to contain a sequence that is not yet implemented.
+
+        Implementation:
+            protected String InterDumb.ctl_sequence
+        was replaced with a more comprehensive and efficient
+            private StringBuilder ctlSequence
+
+207965 - Terminal incorrectly displays prompt string
+187345 - wrong characters in Terminals
+	changeset   : 240883:4e7a19ec8f00
+
+	Preparation for introduction of xterm emulation.
+
+	Introduced a table to track control sequences common to ansi, dtterm
+	and xterm:
+		lib.terminalemulator/doc-files/sequences
+
+	Introduced InterpProtoANSI and InterpProtoANSIX.
+	- InterpProtoANSI is intended to factor Interp states and actions that
+	  are common to ansi, dtterm and xterm.
+	- InterpProtoANSIX is intended to factor Interp states and actions
+	  that are common to dtterm and xterm.
+
+nobugid - debugging printfs for Failed and Successful sequences
+	changeset   : 240882:a7abd9388502
+
+	The idea is to log seen control sequences, both those which
+	succeeded and those which failed. 
+	Later this output will be controllable using Term debug flags.
+
+nobugid - Get lib.richexecution and TermApp projects compilable again
+	changeset   : 240881:d942f87bcfdd
+
+	Fixing of various dependencies and project file regenerations.
+
+nobugid - move documentation out of src directory
+	changeset:   240878:8323630292f9
+
+	... and into lib.terminalemulator/doc-files
+................................................................................
 nobugid - fix op_ce (clear to end of line) so there are no "boxes" when
           running nethack.
 	This in response to Jesse's comment that nethack doesn't work

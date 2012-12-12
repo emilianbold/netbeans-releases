@@ -69,6 +69,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileRenameEvent;
 import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
+import org.openide.util.WeakListeners;
 
 public class ConfigurationDescriptorProvider {
     public static final boolean VCS_WRITE = true; // Boolean.getBoolean("cnd.make.vcs.write");//org.netbeans.modules.cnd.makeproject.configurations.CommonConfigurationXMLCodec.VCS_WRITE;
@@ -133,7 +134,7 @@ public class ConfigurationDescriptorProvider {
                                     "nbproject/private/configurations.xml"}) { //NOI18N
                             FileObject fo = projectDirectory.getFileObject(path);
                             if (fo != null) {
-                                fo.addFileChangeListener(fcl);
+                                fo.addFileChangeListener(WeakListeners.create(FileChangeListener.class, fcl, fo));
                                 // We have to store tracked files somewhere.
                                 // Otherwise they will be GCed, and we won't get notifications.
                                 files.add(fo);
