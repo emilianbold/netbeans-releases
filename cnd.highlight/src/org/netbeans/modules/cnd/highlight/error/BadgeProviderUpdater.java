@@ -89,8 +89,8 @@ public class BadgeProviderUpdater implements CsmModelListener, CsmProgressListen
 
     @Override
     public void modelChanged(CsmChangeEvent e) {
-        for (Iterator it = e.getRemovedFiles().iterator(); it.hasNext();) {
-            CsmFile file = (CsmFile) it.next();
+        for (Iterator<CsmFile> it = e.getRemovedFiles().iterator(); it.hasNext();) {
+            CsmFile file = it.next();
             BadgeProvider.getInstance().onFileRemoved(file);
         }
     }
