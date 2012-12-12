@@ -74,6 +74,7 @@ public class C2CExecutor {
     }
     
     public void execute(BugtrackingCommand cmd, boolean ensureCredentials, boolean handleExceptions) {
+        cmd.setFailed(true);
         try {
             if (ensureCredentials) {
                 repository.ensureCredentials();
@@ -82,6 +83,8 @@ public class C2CExecutor {
             if(cmd instanceof PerformQueryCommand) {
                 handleStatus((PerformQueryCommand) cmd, handleExceptions);
             }
+            cmd.setFailed(false);
+            cmd.setErrorMessage(null);
         } catch (CoreException ex) {
             notifyError(ex);
         } catch (MalformedURLException ex) {
