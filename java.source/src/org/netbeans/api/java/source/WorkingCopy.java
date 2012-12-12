@@ -496,6 +496,9 @@ public class WorkingCopy extends CompilationController {
                         if (currentParent == null) {
                             clearCurrentParent = true;
                             currentParent = getParentPath(getCurrentPath(), tree);
+                            if (currentParent.getParentPath() != null && currentParent.getParentPath().getLeaf().getKind() == Kind.COMPILATION_UNIT) {
+                                currentParent = currentParent.getParentPath();
+                            }
                             pathsToRewrite.add(currentParent);
                             if (!parent2Rewrites.containsKey(currentParent)) {
                                 parent2Rewrites.put(currentParent, new IdentityHashMap<Tree, Tree>());
