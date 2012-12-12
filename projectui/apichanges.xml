@@ -54,6 +54,22 @@ made subject to such option by the copyright holder.
     </apidefs>
 
     <changes>
+        <change id="TemplateCategorySorter">
+            <api name="recent"/>
+            <summary>Added <code>TemplateCategorySorter</code></summary>
+            <version major="1" minor="40"/>
+            <date year="2012" month="12" day="11"/>
+            <author login="mkleint"/>
+            <compatibility addition="yes"/>
+            <description>
+                <p>
+                    Added a new SPI interface <code>TemplatesCategorySorter</code> allowing to post process the order of template categories for given project.
+                    Implementations of this interface are to be put into project's lookup. If not present, standard layer ordering rules apply.
+                </p>
+            </description>
+            <class package="org.netbeans.modules.project.ui.spi" name="TemplatesCategorySorter"/>
+            <issue number="206126"/>
+        </change>
         <change id="ProjectTemplates">
             <api name="recent"/>
             <summary>Added <code>ProjectTemplates</code></summary>
