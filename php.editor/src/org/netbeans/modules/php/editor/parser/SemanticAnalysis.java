@@ -131,6 +131,7 @@ public class SemanticAnalysis extends SemanticAnalyzer {
             ColoringAttributes.METHOD,
             ColoringAttributes.UNUSED);
     public static final EnumSet<ColoringAttributes> UNUSED_USES_SET = EnumSet.of(ColoringAttributes.UNUSED);
+    public static final EnumSet<ColoringAttributes> DEPRECATED_UNUSED_USES_SET = EnumSet.of(ColoringAttributes.DEPRECATED, ColoringAttributes.UNUSED);
     public static final EnumSet<ColoringAttributes> DEPRECATED_CLASS_SET = EnumSet.of(ColoringAttributes.DEPRECATED, ColoringAttributes.CLASS);
     public static final EnumSet<ColoringAttributes> DEPRECATED_SET = EnumSet.of(ColoringAttributes.DEPRECATED);
     public static final EnumSet<ColoringAttributes> DEPRECATED_STATIC_SET = EnumSet.of(ColoringAttributes.DEPRECATED, ColoringAttributes.STATIC);
@@ -692,6 +693,13 @@ public class SemanticAnalysis extends SemanticAnalyzer {
                 String firstSegmentName = typeName.getSegments().getFirst();
                 processFirstSegmentName(firstSegmentName);
             }
+            if (isDeprecatedTypeNode(node)) {
+                addOffsetRange(node, DEPRECATED_SET);
+            }
+        }
+
+        private boolean isDeprecatedTypeNode(PHPDocTypeNode node) {
+            return isDeprecatedType(QualifiedName.create(node.getValue()), node.getStartOffset());
         }
 
         @Override
@@ -704,6 +712,26 @@ public class SemanticAnalysis extends SemanticAnalyzer {
                 String firstSegmentName = firstSegment.getName();
                 processFirstSegmentName(firstSegmentName);
             }
+            if (isDeprecatedNamespaceName(node)) {
+                addOffsetRange(node, DEPRECATED_SET);
+            }
+        }
+
+        private boolean isDeprecatedNamespaceName(NamespaceName node) {
+            return isDeprecatedType(QualifiedName.create(node), node.getStartOffset());
+        }
+
+        private boolean isDeprecatedType(QualifiedName qualifiedName, int offset) {
+            boolean isDeprecated = false;
+            VariableScope variableScope = model.getVariableScope(offset);
+            QualifiedName fullyQualifiedName = VariousUtils.getFullyQualifiedName(qualifiedName, offset, variableScope);
+            for (TypeElement typeElement : deprecatedTypes) {
+                if (typeElement.getFullyQualifiedName().equals(fullyQualifiedName)) {
+                    isDeprecated = true;
+                    break;
+                }
+            }
+            return isDeprecated;
         }
 
         private void processFirstSegmentName(final String firstSegmentName) {
@@ -729,9 +757,13 @@ public class SemanticAnalysis extends SemanticAnalyzer {
             if (parts.size() == 1) {
                 UseStatementPart useStatementPart = parts.get(0);
                 String correctName = getCorrectName(useStatementPart);
-                unusedUses.put(correctName, new ASTNodeColoring(node, UNUSED_USES_SET));
+                boolean isDeprecated = isDeprecatedNamespaceName(useStatementPart.getName());
+                unusedUses.put(correctName, new ASTNodeColoring(node, isDeprecated ? DEPRECATED_UNUSED_USES_SET : UNUSED_USES_SET));
                 OffsetRange offsetRange = new OffsetRange(node.getStartOffset(), node.getEndOffset());
                 unusedUsesOffsetRanges.put(correctName, new UnusedOffsetRanges(offsetRange, offsetRange));
+                if (isDeprecated) {
+                    addOffsetRange(useStatementPart.getName(), DEPRECATED_SET);
+                }
             } else {
                 processUseStatementsParts(parts);
             }
@@ -749,11 +781,15 @@ public class SemanticAnalysis extends SemanticAnalyzer {
                     endOffset = nextPart.getStartOffset();
                 }
                 String correctName = getCorrectName(useStatementPart);
-                unusedUses.put(correctName, new ASTNodeColoring(useStatementPart, UNUSED_USES_SET));
+                boolean isDeprecated = isDeprecatedNamespaceName(useStatementPart.getName());
+                unusedUses.put(correctName, new ASTNodeColoring(useStatementPart, isDeprecated ? DEPRECATED_UNUSED_USES_SET : UNUSED_USES_SET));
                 OffsetRange rangeToVisualise = new OffsetRange(useStatementPart.getStartOffset(), useStatementPart.getEndOffset());
                 OffsetRange rangeToReplace = new OffsetRange(lastStartOffset, endOffset);
                 unusedUsesOffsetRanges.put(correctName, new UnusedOffsetRanges(rangeToVisualise, rangeToReplace));
                 lastStartOffset = useStatementPart.getEndOffset();
+                if (isDeprecated) {
+                    addOffsetRange(useStatementPart.getName(), DEPRECATED_SET);
+                }
             }
         }
 
