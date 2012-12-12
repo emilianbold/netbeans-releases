@@ -704,6 +704,10 @@ public class C2CIssue {
         String value = getFieldValue(IssueField.PRIORITY);
         return C2CUtil.getPriorityByValue(C2C.getInstance().getClientData(repository), value);
     }
+    
+    String getType() {
+        return getFieldValue(IssueField.TASK_TYPE);
+    }
 
     TaskSeverity getSeverity() {
         String value = getFieldValue(IssueField.SEVERITY);
