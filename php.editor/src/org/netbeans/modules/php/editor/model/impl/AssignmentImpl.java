@@ -75,15 +75,16 @@ class  AssignmentImpl<Container extends ModelElementImpl>  extends ScopeImpl {
             OffsetRange scopeRange,
             OffsetRange nameRange,
             Assignment assignment,
-            Map<String, AssignmentImpl> allAssignments) {
-        this(container, scope, scopeRange, nameRange, VariousUtils.extractVariableTypeFromAssignment(assignment, allAssignments));
+            Map<String, AssignmentImpl> allAssignments,
+            boolean isDeprecated) {
+        this(container, scope, scopeRange, nameRange, VariousUtils.extractVariableTypeFromAssignment(assignment, allAssignments), isDeprecated);
         if (assignment.getLeftHandSide() instanceof ArrayAccess) {
             arrayAccess = true;
         }
     }
 
-    AssignmentImpl(Container container, Scope scope, OffsetRange scopeRange, OffsetRange nameRange, String typeName) {
-        super(scope, container.getName(), container.getFile(), nameRange, container.getPhpElementKind());
+    AssignmentImpl(Container container, Scope scope, OffsetRange scopeRange, OffsetRange nameRange, String typeName, boolean isDeprecated) {
+        super(scope, container.getName(), container.getFile(), nameRange, container.getPhpElementKind(), isDeprecated);
         this.container = container;
         String modifiedTypeName = typeName;
         if (typeName != null && !typeName.contains(VariousUtils.PRE_OPERATION_TYPE_DELIMITER)) { //NOI18N

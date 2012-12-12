@@ -77,9 +77,10 @@ public final class FunctionElementImpl extends FullyQualifiedElementImpl impleme
             final String fileUrl,
             final ElementQuery elementQuery,
             final List<ParameterElement> parameters,
-            final Set<TypeResolver> returnTypes) {
+            final Set<TypeResolver> returnTypes,
+            final boolean isDeprecated) {
         super(qualifiedName.toName().toString(), qualifiedName.toNamespaceName().toString(),
-                fileUrl, offset, elementQuery);
+                fileUrl, offset, elementQuery, isDeprecated);
         this.functionSupport = new BaseFunctionElementSupport(parameters, returnTypes);
     }
 
@@ -108,7 +109,8 @@ public final class FunctionElementImpl extends FullyQualifiedElementImpl impleme
         if (matchesQuery(query, signParser)) {
             retval = new FunctionElementImpl(signParser.getQualifiedName(),
                     signParser.getOffset(), indexResult.getUrl().toString(),
-                    indexScopeQuery, signParser.getParameters(), signParser.getReturnTypes());
+                    indexScopeQuery, signParser.getParameters(), signParser.getReturnTypes(),
+                    signParser.isDeprecated());
         }
         return retval;
     }
@@ -121,7 +123,8 @@ public final class FunctionElementImpl extends FullyQualifiedElementImpl impleme
         return new FunctionElementImpl(
                 fullyQualifiedName.append(info.getName()), info.getRange().getStart(),
                 fileQuery.getURL().toExternalForm(), fileQuery, info.getParameters(),
-                TypeResolverImpl.parseTypes(VariousUtils.getReturnTypeFromPHPDoc(fileQuery.getResult().getProgram(), node)));
+                TypeResolverImpl.parseTypes(VariousUtils.getReturnTypeFromPHPDoc(fileQuery.getResult().getProgram(), node)),
+                VariousUtils.isDeprecatedFromPHPDoc(fileQuery.getResult().getProgram(), node));
     }
 
     private static boolean matchesQuery(final NameKind query, FunctionSignatureParser signParser) {
@@ -163,6 +166,7 @@ public final class FunctionElementImpl extends FullyQualifiedElementImpl impleme
         }
         sb.append(Separator.SEMICOLON); //NOI18N
         sb.append(getPhpModifiers().toFlags()).append(Separator.SEMICOLON);
+        sb.append(isDeprecated() ? 1 : 0).append(Separator.SEMICOLON);
         return sb.toString();
     }
 
@@ -222,6 +226,10 @@ public final class FunctionElementImpl extends FullyQualifiedElementImpl impleme
 
         Set<TypeResolver> getReturnTypes() {
             return TypeResolverImpl.parseTypes(signature.string(4));
+        }
+
+        boolean isDeprecated() {
+            return signature.integer(6) == 1;
         }
     }
 }
