@@ -91,6 +91,11 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<Token
     private MacroCallback macroCallback = null;
     
     private List<OffsetableToken> lookaheadTokens = new ArrayList<OffsetableToken>();
+    private int lookaheadTokensParensLevel = 0;
+    private int lookaheadTokensBracketsLevel = 0;
+    private int lookaheadTokensBracesLevel = 0;
+    private int lookaheadTokensLtgtsLevel = 0;
+    
     
     CsmCompletionTokenProcessor(int endScanOffset, int lastSeparatorOffset) {
         this.endScanOffset = endScanOffset;
@@ -296,9 +301,40 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<Token
     }
     
     private void lookahead(Token<TokenId> token, int tokenOffset) {
-        if(isTemplateAmbiguity(token) && isLookaheadNeeded(token)) {
-            lookaheadTokens.add(new OffsetableToken(token, tokenOffset, isMacroExpansion(), inPP));
-        } else {
+        boolean lookahead = false;
+        if(isTemplateAmbiguity(token)) {
+            if(isLookaheadNeeded(token)) {
+                lookahead = true;
+                lookaheadTokens.add(new OffsetableToken(token, tokenOffset, isMacroExpansion(), inPP));
+                switch ((CppTokenId) token.id()) {
+                    case LT:
+                        lookaheadTokensLtgtsLevel++;
+                        break;
+                    case GT:
+                        lookaheadTokensLtgtsLevel--;
+                        break;
+                    case LPAREN:
+                        lookaheadTokensParensLevel++;
+                        break;
+                    case RPAREN:
+                        lookaheadTokensParensLevel--;
+                        break;
+                    case LBRACKET:
+                        lookaheadTokensBracketsLevel++;
+                        break;
+                    case RBRACKET:
+                        lookaheadTokensBracketsLevel--;
+                        break;
+                    case LBRACE:
+                        lookaheadTokensBracesLevel++;
+                        break;
+                    case RBRACE:
+                        lookaheadTokensBracesLevel--;
+                        break;
+                }            
+            }
+        } 
+        if(!lookahead) {
             if(lookaheadTokens.isEmpty()) {
                 tokenImpl(token, tokenOffset, isMacroExpansion());                
             } else {
@@ -307,74 +343,51 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<Token
                     inPP = offsetableToken.inPP;
                     tokenImpl(offsetableToken.token, offsetableToken.offset, offsetableToken.macro);
                 }
-                lookaheadTokens.clear();
+                lookaheadTokens.clear();                
                 tokenImpl(token, tokenOffset, isMacroExpansion());
                 inPP = oldInPP;
+                lookaheadTokensParensLevel = 0;
+                lookaheadTokensBracketsLevel = 0;
+                lookaheadTokensBracesLevel = 0;
+                lookaheadTokensLtgtsLevel = 0;
             }
         }
     }
     
     private boolean isLookaheadNeeded(Token<TokenId> token) {
+        int tempLookaheadTokensParensLevel = lookaheadTokensParensLevel;
+        int tempLookaheadTokensBracketsLevel = lookaheadTokensBracketsLevel;
+        int tempLookaheadTokensBracesLevel = lookaheadTokensBracesLevel;
+        int tempLookaheadTokensLtgtsLevel = lookaheadTokensLtgtsLevel;
+        
+        switch ((CppTokenId) token.id()) {
+            case LT:
+                tempLookaheadTokensLtgtsLevel++;
+                break;
+            case GT:
+                tempLookaheadTokensLtgtsLevel--;
+                break;
+            case LPAREN:
+                tempLookaheadTokensParensLevel++;
+                break;
+            case RPAREN:
+                tempLookaheadTokensParensLevel--;
+                break;
+            case LBRACKET:
+                tempLookaheadTokensBracketsLevel++;
+                break;
+            case RBRACKET:
+                tempLookaheadTokensBracketsLevel--;
+                break;
+            case LBRACE:
+                tempLookaheadTokensBracesLevel++;
+                break;
+            case RBRACE:
+                tempLookaheadTokensBracesLevel--;
+                break;
+        }        
         if (!lookaheadTokens.isEmpty()) {
-            int parensLevel = 0;
-            int bracketsLevel = 0;
-            int bracesLevel = 0;
-            int ltgtsLevel = 0;
-            for (OffsetableToken offsetableToken : lookaheadTokens) {
-                switch ((CppTokenId) offsetableToken.token.id()) {
-                    case LT:
-                        ltgtsLevel++;
-                        break;
-                    case GT:
-                        ltgtsLevel--;
-                        break;
-                    case LPAREN:
-                        parensLevel++;
-                        break;
-                    case RPAREN:
-                        parensLevel--;
-                        break;
-                    case LBRACKET:
-                        bracketsLevel++;
-                        break;
-                    case RBRACKET:
-                        bracketsLevel--;
-                        break;
-                    case LBRACE:
-                        bracesLevel++;
-                        break;
-                    case RBRACE:
-                        bracesLevel--;
-                        break;
-                }
-            }
-            switch ((CppTokenId) token.id()) {
-                case LT:
-                    ltgtsLevel++;
-                    break;
-                case GT:
-                    ltgtsLevel--;
-                    break;
-                case LPAREN:
-                    parensLevel++;
-                    break;
-                case RPAREN:
-                    parensLevel--;
-                    break;
-                case LBRACKET:
-                    bracketsLevel++;
-                    break;
-                case RBRACKET:
-                    bracketsLevel--;
-                    break;
-                case LBRACE:
-                    bracesLevel++;
-                    break;
-                case RBRACE:
-                    bracesLevel--;
-                    break;
-            }
-            return !(parensLevel == 0 && bracketsLevel == 0 && bracesLevel == 0 && ltgtsLevel == 0);
+            return !(tempLookaheadTokensParensLevel == 0 && tempLookaheadTokensBracketsLevel == 0 && tempLookaheadTokensBracesLevel == 0 && tempLookaheadTokensLtgtsLevel == 0);
         } else {
             return true;
         }
@@ -840,7 +853,7 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<Token
     }
 
     @SuppressWarnings("fallthrough")
-    public void tokenImpl(Token<TokenId> token, int tokenOffset, boolean macro) {
+    private void tokenImpl(Token<TokenId> token, int tokenOffset, boolean macro) {
         int tokenLen = token.length();
         tokenOffset += bufferOffsetDelta;
         CppTokenId tokenID = (CppTokenId)token.id();
