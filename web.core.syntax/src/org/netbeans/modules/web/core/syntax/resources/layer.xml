@@ -348,7 +348,7 @@ made subject to such option by the copyright holder.
                         <attr name="instanceOf" stringvalue="org.netbeans.lib.editor.hyperlink.spi.HyperlinkProviderExt"/>
                     </file>
                     <file name="ELHyperlinkProvider.instance">
-                        <attr name="instanceClass" stringvalue="org.netbeans.modules.web.el.ELHyperlinkProvider"/>
+                        <attr name="instanceClass" stringvalue="org.netbeans.modules.web.el.navigation.ELHyperlinkProvider"/>
                         <attr name="instanceOf" stringvalue="org.netbeans.lib.editor.hyperlink.spi.HyperlinkProviderExt"/>
                     </file>
                 </folder>
