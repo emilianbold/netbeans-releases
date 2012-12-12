@@ -54,8 +54,6 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.api.remote.ServerListUI;
 import org.netbeans.modules.cnd.api.toolchain.CompilerFlavor;
 import org.netbeans.modules.cnd.makeproject.api.MakeCustomizerProvider;
-import org.netbeans.modules.cnd.makeproject.api.MakeProjectCustomizer;
-import org.netbeans.modules.cnd.makeproject.api.MakeProjectCustomizerAdaptor;
 import org.netbeans.modules.cnd.spi.toolchain.ErrorParserProvider;
 import org.netbeans.modules.cnd.spi.toolchain.ErrorParserProvider.OutputListenerRegistry;
 import org.netbeans.modules.cnd.spi.toolchain.ErrorParserProvider.Result;
@@ -126,7 +124,7 @@ public final class LDErrorParser implements ErrorParserProvider.ErrorParser {
     }
 
     @Override
-    public Result handleLine(final String line) throws IOException {
+    public Result handleLine(final String line) {
         if (checkBuildTrace) {
             Matcher m = LD_LIB_BUILD_TRACE.matcher(line);
             if (m.find()) {

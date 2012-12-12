@@ -42,7 +42,6 @@
 
 package org.netbeans.modules.cnd.toolchain.execution;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
@@ -95,7 +94,7 @@ public final class SUNErrorParser extends ErrorParser {
     }
 
     @Override
-    public Result handleLine(String line) throws IOException {
+    public Result handleLine(String line) {
         Result res = handleLineImpl(line);
         if (res == null || res == ErrorParserProvider.NO_RESULT) {
             // Remove lines extra lines from Sun Compiler output
@@ -110,7 +109,7 @@ public final class SUNErrorParser extends ErrorParser {
         return res;
     }
 
-    private Result handleLineImpl(String line) throws IOException {
+    private Result handleLineImpl(String line) {
         for (Pattern p : patterns) {
             Matcher m = p.matcher(line);
             boolean found = m.find();
@@ -121,7 +120,7 @@ public final class SUNErrorParser extends ErrorParser {
         return null;
     }
 
-    private Result handleLine(String line, Matcher m) throws IOException {
+    private Result handleLine(String line, Matcher m) {
         if (m.pattern() == SUN_DIRECTORY_ENTER) {
             FileObject myObj = resolveFile(m.group(1));
             if (myObj != null) {
