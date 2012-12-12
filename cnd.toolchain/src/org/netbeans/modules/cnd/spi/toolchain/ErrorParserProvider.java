@@ -106,7 +106,7 @@ public abstract class ErrorParserProvider {
     }
     
     public interface ErrorParser {
-	Result handleLine(String line) throws IOException;
+	Result handleLine(String line);
         void setOutputListenerRegistry(OutputListenerRegistry regestry);
     }
     public interface Result {

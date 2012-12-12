@@ -129,7 +129,7 @@ final class ViewItemPasteType extends PasteType {
                 // Move within same project
                 if (toFolder.isDiskFolder()) {
                     FileObject itemFO = fromItem.getFileObject();
-                    String toFolderPath = CndPathUtilitities.toAbsolutePath(toFolder.getConfigurationDescriptor().getBaseDir(), toFolder.getRootPath());
+                    String toFolderPath = CndPathUtilitities.toAbsolutePath(toFolder.getConfigurationDescriptor().getBaseDirFileObject(), toFolder.getRootPath());
                     FileObject toFolderFO = CndFileUtils.toFileObject(toFolder.getConfigurationDescriptor().getBaseDirFileObject().getFileSystem(), toFolderPath); // should it be normalized?
                     String newName = CndPathUtilitities.createUniqueFileName(toFolderFO, itemFO.getName(), itemFO.getExt());
                     FileObject movedFileFO = FileUtil.moveFile(itemFO, toFolderFO, newName);
@@ -150,7 +150,7 @@ final class ViewItemPasteType extends PasteType {
             } else {
                 FileObject itemFO = fromItem.getFileObject();
                 if (toFolder.isDiskFolder()) {
-                    String toFolderPath = CndPathUtilitities.toAbsolutePath(toFolder.getConfigurationDescriptor().getBaseDir(), toFolder.getRootPath());
+                    String toFolderPath = CndPathUtilitities.toAbsolutePath(toFolder.getConfigurationDescriptor().getBaseDirFileObject(), toFolder.getRootPath());
                     FileObject toFolderFO = CndFileUtils.toFileObject(toFolder.getConfigurationDescriptor().getBaseDirFileObject().getFileSystem(), toFolderPath); // should it be normalized?
                     String newName = CndPathUtilitities.createUniqueFileName(toFolderFO, itemFO.getName(), itemFO.getExt());
                     FileObject movedFileFO = FileUtil.moveFile(itemFO, toFolderFO, newName);
@@ -198,7 +198,7 @@ final class ViewItemPasteType extends PasteType {
                     FileObject fo = fromItem.getFileObject();
                     String ext = fo.getExt();
                     if (toFolder.isDiskFolder()) {
-                        String toFolderPath = CndPathUtilitities.toAbsolutePath(toFolder.getConfigurationDescriptor().getBaseDir(), toFolder.getRootPath());
+                        String toFolderPath = CndPathUtilitities.toAbsolutePath(toFolder.getConfigurationDescriptor().getBaseDirFileObject(), toFolder.getRootPath());
                         FileObject toFolderFO = CndFileUtils.toFileObject(toFolder.getConfigurationDescriptor().getBaseDirFileObject().getFileSystem(), toFolderPath); // should it be normalized?
                         String newName = CndPathUtilitities.createUniqueFileName(toFolderFO, fo.getName(), ext);
                         FileObject copiedFileObject = fo.copy(toFolderFO, newName, ext);
@@ -228,7 +228,7 @@ final class ViewItemPasteType extends PasteType {
                 FileObject fo = fromItem.getFileObject();
                 if (toFolder.isDiskFolder()) {
                     String ext = fo.getExt();
-                    String toFolderPath = CndPathUtilitities.toAbsolutePath(toFolder.getConfigurationDescriptor().getBaseDir(), toFolder.getRootPath());
+                    String toFolderPath = CndPathUtilitities.toAbsolutePath(toFolder.getConfigurationDescriptor().getBaseDirFileObject(), toFolder.getRootPath());
                     FileObject toFolderFO = CndFileUtils.toFileObject(toFolder.getConfigurationDescriptor().getBaseDirFileObject().getFileSystem(),toFolderPath);
                     String newName = CndPathUtilitities.createUniqueFileName(toFolderFO, fo.getName(), ext);
                     fo.copy(toFolderFO, newName, ext);
