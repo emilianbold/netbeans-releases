@@ -44,74 +44,75 @@
  * Contributor(s): Ivan Soleimanipour.
  */
 
-/*
- * "InterpDtTerm.java"
- * InterpDtTerm.java 1.2 01/07/23
- * Input stream interpreter
- * Decodes incoming characters into cursor motion etc.
- * 
- * See
- * http://h30097.www3.hp.com/docs/base_doc/DOCUMENTATION/V51_HTML/MAN/MAN5/0200____.HTM
- */
-
 package org.netbeans.lib.terminalemulator;
 
 
-class InterpDtTerm extends InterpProtoANSIX {
+class InterpXTerm extends InterpProtoANSIX {
 
-    protected static class InterpTypeDtTerm extends InterpTypeProtoANSIX {
+    protected static class InterpTypeXTerm extends InterpTypeProtoANSIX {
 
-	protected final State st_esc_rb_L = new State("esc_rb_N");// NOI18N
+	protected final Actor act_done_collect_escbs = new ACT_DONE_COLLECT_ESCBS();
 
-	protected final Actor act_done_collect3 = new ACT_DONE_COLLECT3();
-
-	protected InterpTypeDtTerm() {
-            st_esc_rb.setAction('l', st_esc_rb_L, act_collect);
-            // LATER st_esc_rb.setAction('I', st_esc_rb_L, act_collect);
-            st_esc_rb.setAction('L', st_esc_rb_L, act_collect);
-	    for (char c = 0; c < 128; c++)
-		st_esc_rb_L.setAction(c, st_esc_rb_L, act_collect);
-
-	    st_esc_rb_L.setAction((char) 27, st_wait, act_nop);         // ESC
-	    st_wait.setAction('\\', st_base, act_done_collect3);
+	protected InterpTypeXTerm() {
+	    st_esc_rb_N.setAction((char) 27, st_wait, act_nop);         // ESC
+	    st_wait.setAction('\\', st_base, act_done_collect_escbs);
 	}
 
-	static final class ACT_DONE_COLLECT3 implements Actor {
+	static final class ACT_DONE_COLLECT_ESCBS implements Actor {
             @Override
 	    public String action(AbstractInterp ai, char c) {
 		InterpProtoANSIX i = (InterpProtoANSIX) ai;
-                String s = i.text.substring(1);
-                switch (i.text.charAt(0)) {
-                    case 'l':
-                        ai.ops.op_win_title(s);
+                int semix = i.text.indexOf(';');
+                if (semix == -1)
+                    return null;
+                String p1 = i.text.substring(0, semix);
+                String p2 = i.text.substring(semix+1);
+                int code = Integer.parseInt(p1);
+                switch (code) {
+                    case 0:
+                        ai.ops.op_icon_name(p2);
+                        ai.ops.op_win_title(p2);
                         break;
-                    case 'I':
-                        // LATER ai.ops.op_icon_imagefile(s);
+                    case 1:
+                        ai.ops.op_icon_name(p2);
                         break;
-                    case 'L':
-                        ai.ops.op_icon_name(s);
+                    case 2:
+                        ai.ops.op_win_title(p2);
                         break;
+                    case 3:
+                        /* LATER
+                        cwd is a dttermism. For xterm we're supposed to set X properties
+                        ai.ops.op_cwd(p2);
+                        */
+                        break;
+
+                    case 10: {
+                        // This is specific to nbterm!
+                        int semix2 = p2.indexOf(';');
+                        if (semix == -1)
+                            return null;
+                        String p3 = p2.substring(semix2+1);
+                        p2 = p2.substring(0, semix2);
+                        ai.ops.op_hyperlink(p2, p3);
+                    }
                 }
-		/* DEBUG
-		System.out.println("DtTerm emulation: got '" + text + "'");	// NOI18N
-		*/
 		return null;
 	    }
 	}
 
     }
 
-    private InterpTypeDtTerm type;
+    private InterpTypeXTerm type;
 
-    private static final InterpTypeDtTerm type_singleton = new InterpTypeDtTerm();
+    private static final InterpTypeXTerm type_singleton = new InterpTypeXTerm();
 
-    public InterpDtTerm(Ops ops) {
+    public InterpXTerm(Ops ops) {
 	super(ops, type_singleton);
 	this.type = type_singleton;
 	setup();
     } 
 
-    protected InterpDtTerm(Ops ops, InterpTypeDtTerm type) {
+    protected InterpXTerm(Ops ops, InterpTypeXTerm type) {
 	super(ops, type);
 	this.type = type;
 	setup();
@@ -119,7 +120,7 @@ class InterpDtTerm extends InterpProtoANSIX {
 
     @Override
     public String name() {
-	return "dtterm";	// NOI18N
+	return "xterm";	// NOI18N
     } 
 
     @Override
@@ -128,6 +129,5 @@ class InterpDtTerm extends InterpProtoANSIX {
     }
 
     private void setup() {
-	state = type.st_base;
     }
 }
