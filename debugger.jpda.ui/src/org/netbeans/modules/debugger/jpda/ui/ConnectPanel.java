@@ -49,7 +49,6 @@ import com.sun.jdi.VirtualMachineManager;
 import com.sun.jdi.connect.Connector.Argument;
 import com.sun.jdi.connect.*;
 
-import java.awt.Component;
 import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.GridBagConstraints;
@@ -118,7 +117,7 @@ public class ConnectPanel extends JPanel implements ActionListener, HelpCtx.Prov
     private static final Logger USG_LOGGER = Logger.getLogger("org.netbeans.ui.metrics.debugger"); // NOI18N
 
     /** List of all AttachingConnectors.*/
-    private final List              connectors;
+    private final List<Connector>   connectors;
     /** Combo with list of all AttachingConnector names.*/
     private JComboBox               cbConnectors;
     /** List of JTextFields containing all parameters of curentConnector. */
@@ -131,7 +130,7 @@ public class ConnectPanel extends JPanel implements ActionListener, HelpCtx.Prov
 
 
     public ConnectPanel () {
-        connectors = new ArrayList ();
+        connectors = new ArrayList<Connector>();
         standardCursor = getCursor();
         setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
         RP.post(new Runnable() {
@@ -155,16 +154,17 @@ public class ConnectPanel extends JPanel implements ActionListener, HelpCtx.Prov
            
         // We temporary do not support these three connectors
         // use --cp:a ${JDK_HOME}/lib/sa-jdi.jar to activate them if you uncomment this
-        for (Iterator ci = connectors.iterator(); ci.hasNext(); ) {
-            String name = ((Connector)ci.next()).name();
+        for (Iterator<Connector> ci = connectors.iterator(); ci.hasNext(); ) {
+            String name = ci.next().name();
             int index = name.lastIndexOf('.');
-            if (index >= 0)
-                    name = name.substring(index + 1);
-           
+            if (index >= 0) {
+                name = name.substring(index + 1);
+            }
             if (name.equalsIgnoreCase("SACoreAttachingConnector") || 
                 name.equalsIgnoreCase("SAPIDAttachingConnector") ||
-                name.equalsIgnoreCase("SADebugServerAttachingConnector"))
+                name.equalsIgnoreCase("SADebugServerAttachingConnector")) {
                 ci.remove();
+            }
         }
         
         int defaultIndex = 0;
@@ -172,7 +172,7 @@ public class ConnectPanel extends JPanel implements ActionListener, HelpCtx.Prov
             getString ("last_attaching_connector", "");
         int i, k = connectors.size ();
         for (i = 0; i < k; i++) {
-            Connector connector = (Connector) connectors.get (i);
+            Connector connector = connectors.get (i);
             if ((lacn != null) && connector.name ().equals (lacn)) {
                 defaultIndex = i;
             }
@@ -227,7 +227,7 @@ public class ConnectPanel extends JPanel implements ActionListener, HelpCtx.Prov
             );
             int i, k = connectors.size ();
             for (i = 0; i < k; i++) {
-                Connector connector = (Connector) connectors.get (i);
+                Connector connector = connectors.get (i);
                 int jj = connector.name ().lastIndexOf ('.');
                               
                 String s = (jj < 0) ? 
@@ -251,7 +251,7 @@ public class ConnectPanel extends JPanel implements ActionListener, HelpCtx.Prov
         assert SwingUtilities.isEventDispatchThread();
         removeAll();
         
-        Connector connector = (Connector) connectors.get (index);
+        Connector connector = connectors.get (index);
 
         GridBagConstraints c;
         GridBagLayout layout = new GridBagLayout ();
@@ -262,7 +262,7 @@ public class ConnectPanel extends JPanel implements ActionListener, HelpCtx.Prov
             // selector
                 c = new GridBagConstraints ();
                 c.insets = new Insets (0, 0, 3, 3);
-                c.anchor = c.WEST;
+                c.anchor = GridBagConstraints.WEST;
                 JLabel lblConnectors = new JLabel();
                 Mnemonics.setLocalizedText(
                         lblConnectors,
@@ -285,7 +285,7 @@ public class ConnectPanel extends JPanel implements ActionListener, HelpCtx.Prov
         // second line => transport
             c = new GridBagConstraints ();
             c.insets = new Insets (3, 0, 0, 6);
-            c.anchor = c.WEST;
+            c.anchor = GridBagConstraints.WEST;
             JLabel lblTransport = new JLabel();
             Mnemonics.setLocalizedText(
                     lblTransport,
@@ -310,6 +310,7 @@ public class ConnectPanel extends JPanel implements ActionListener, HelpCtx.Prov
                 NbBundle.getMessage (ConnectPanel.class, "ACSD_CTL_Transport")
             );
             tfTransport.addFocusListener (new FocusAdapter () {
+                @Override
                 public void focusGained (FocusEvent evt) {
                     tfTransport.selectAll ();
                 }
@@ -317,13 +318,13 @@ public class ConnectPanel extends JPanel implements ActionListener, HelpCtx.Prov
         add (tfTransport);
         
         // other lines
-        Map args = getSavedArgs (connector, properties);
+        Map<String, Argument> args = getSavedArgs (connector, properties);
         tfParams = new JTextField [args.size ()];
-        Iterator it = new TreeSet (args.keySet ()).iterator ();
+        Iterator<String> it = new TreeSet<String>(args.keySet ()).iterator ();
         int i = 0;
         while (it.hasNext ()) {
-            String name = (String) it.next ();
-            Argument a = (Argument) args.get (name);
+            String name = it.next ();
+            Argument a = args.get (name);
             String label = translate (a.name());
             if (label == null) {
                 label = "&"+a.label();
@@ -363,6 +364,7 @@ public class ConnectPanel extends JPanel implements ActionListener, HelpCtx.Prov
             p.setPreferredSize (new Dimension (1, 1));
         add (p, c);
         SwingUtilities.invokeLater(new Runnable(){
+            @Override
             public void run() {
                 checkValid();
             }
@@ -373,22 +375,21 @@ public class ConnectPanel extends JPanel implements ActionListener, HelpCtx.Prov
      * Refreshes panel with options corresponding to the selected connector type.
      * This method is called when a user selects new connector type.
      */
+    @Override
     public void actionPerformed (ActionEvent e) {
         refresh (((JComboBox) e.getSource ()).getSelectedIndex (), Properties.getDefault ().getProperties ("debugger"));
-        Component w = getParent ();
-        while ( (w != null) && 
-                !(w instanceof Window))
-            w = w.getParent ();
-        if (w != null) ((Window) w).pack (); // ugly hack...
-        return;
+        Window w = SwingUtilities.getWindowAncestor(this);
+        if (w != null) {
+            w.pack ();  // ugly hack...
+        }
     }
     
-    private static void log(Connector c, Map<Object, Object> args) {
+    private static void log(Connector c, Map<String, Argument> args) {
         LogRecord record = new LogRecord(Level.INFO, "USG_DEBUG_ATTACH_JPDA");
         record.setResourceBundle(NbBundle.getBundle(ConnectPanel.class));
         record.setResourceBundleName(ConnectPanel.class.getPackage().getName() + ".Bundle"); // NOI18N
         record.setLoggerName(USG_LOGGER.getName());
-        List params = new ArrayList();
+        List<Object> params = new ArrayList<Object>();
         params.add(c.name());
         StringBuilder arguments = new StringBuilder();
         for (Map.Entry argEntry : args.entrySet()) {
@@ -409,9 +410,9 @@ public class ConnectPanel extends JPanel implements ActionListener, HelpCtx.Prov
     // private helper methods ..................................................
     
     /**
-     * Is hostname unknown? This method resolves if the specified
+     * Is host name unknown? This method resolves if the specified
      * string means &quot;hostname&nbsp;unknown&quot;.
-     * Hostname is considered unknown if:
+     * Host name is considered unknown if:
      * <UL>
      *     <LI>the hostname is <TT>null</TT>
      *     <LI>the hostname is an empty string
@@ -421,8 +422,8 @@ public class ConnectPanel extends JPanel implements ActionListener, HelpCtx.Prov
      *         <TT>'-'</TT>.
      * </UL>
      *
-     * @param  hostname  hostname to be resolved
-     * @return  <TT>true</TT> if the hostname is considered as unknown,
+     * @param  hostname  host name to be resolved
+     * @return  <TT>true</TT> if the host name is considered as unknown,
      *          <TT>false</TT> otherwise
      */
     private static boolean isUnknownHost (String hostname) {
@@ -466,32 +467,35 @@ public class ConnectPanel extends JPanel implements ActionListener, HelpCtx.Prov
 //        return settings.getLastConnector ();
 //    }
     
-    private static Map getSavedArgs (Connector connector, Properties properties) {
+    private static Map<String, Argument> getSavedArgs (Connector connector, Properties properties) {
         // 1) get default set of args
-        Map args = connector.defaultArguments ();
+        Map<String, Argument> args = connector.defaultArguments ();
 
         // 2) load saved version of args
         Map savedArgs = properties.getMap ("connection_settings", new HashMap ());
         savedArgs = (Map) savedArgs.get (connector.name ());
-        if (savedArgs == null) return args;
+        if (savedArgs == null) {
+            return args;
+        }
         
         // 3) refres default args about saved values
-        Iterator i = args.keySet ().iterator ();
+        Iterator<String> i = args.keySet ().iterator ();
         while (i.hasNext()) {
-            String argName = (String) i.next ();
+            String argName = i.next ();
             String savedValue = (String) savedArgs.get (argName);
-            if (savedValue != null)
-                ((Argument) args.get (argName)).setValue (savedValue);
+            if (savedValue != null) {
+                args.get(argName).setValue(savedValue);
+            }
         }
         return args;
     }
 
-    private static Map getEditedArgs (
+    private static Map<String, Argument> getEditedArgs (
         JTextField[]        tfParams, 
         Connector           connector
     ) {
         // 1) get default set of args
-        Map args = connector.defaultArguments ();
+        Map<String, Argument> args = connector.defaultArguments ();
 
         // 2) update values from text fields
         int i, k = tfParams.length;
@@ -499,13 +503,13 @@ public class ConnectPanel extends JPanel implements ActionListener, HelpCtx.Prov
             JTextField tf = tfParams [i];
             String paramName = tf.getName ();
             String paramValue = tf.getText ();
-            Argument a = (Argument) args.get (paramName);
+            Argument a = args.get (paramName);
             while ( ((!a.isValid (paramValue)) && (!"".equals (paramValue))) ||
                     ( "".equals (paramValue) && a.mustSpecify () )
             ) {
-                NotifyDescriptor.InputLine in = null;
+                NotifyDescriptor.InputLine in;
                 String label = getLabel(a);
-                if ( "".equals (paramValue) && a.mustSpecify ())
+                if ( "".equals (paramValue) && a.mustSpecify ()) {
                     in = new NotifyDescriptor.InputLine (
                         label,
                         NbBundle.getMessage (
@@ -513,7 +517,7 @@ public class ConnectPanel extends JPanel implements ActionListener, HelpCtx.Prov
                             "CTL_Required_value_title"
                         )
                     );
-                else
+                } else {
                     in = new NotifyDescriptor.InputLine (
                         label,
                         NbBundle.getMessage (
@@ -521,9 +525,12 @@ public class ConnectPanel extends JPanel implements ActionListener, HelpCtx.Prov
                             "CTL_Invalid_value_title"
                         )
                     );
+                }
                 if (DialogDisplayer.getDefault ().notify (in) == 
                     NotifyDescriptor.CANCEL_OPTION
-                ) return null;
+                ) {
+                    return null;
+                }
                 paramValue = in.getInputText ();
             }
             a.setValue (paramValue);
@@ -533,21 +540,20 @@ public class ConnectPanel extends JPanel implements ActionListener, HelpCtx.Prov
     }
     
     private static void saveArgs (
-        Map                 args,
-        Connector           connector
+        Map<String, Argument> args,
+        Connector             connector
     ) {
-        Map defaultValues = connector.defaultArguments ();
-        Map argsToSave = new HashMap ();
-        Iterator i = args.keySet ().iterator ();
-        while (i.hasNext()) {
-            String argName = (String) i.next ();
-            Argument value = (Argument) args.get (argName);
-            Argument defaultValue = (Argument) defaultValues.get (argName);
+        Map<String, Argument> defaultValues = connector.defaultArguments ();
+        Map<String, String> argsToSave = new HashMap<String, String>();
+        for(String argName : args.keySet ()) {
+            Argument value = args.get (argName);
+            Argument defaultValue = defaultValues.get (argName);
             if ( value != null &&
                  value != defaultValue &&
                  !value.equals (defaultValue)
-            )
+            ) {
                 argsToSave.put (argName, value.value ());
+            }
         }
 
         Map m = Properties.getDefault ().getProperties ("debugger").
@@ -585,7 +591,7 @@ public class ConnectPanel extends JPanel implements ActionListener, HelpCtx.Prov
     private void checkValid() {
         assert connectorsLoaded.get();
         int index = cbConnectors.getSelectedIndex ();
-        final Connector connector = (Connector) connectors.get (index);
+        final Connector connector = connectors.get (index);
         int i, k = tfParams.length;
         Map args = connector.defaultArguments ();
         for (i = 0; i < k; i++) {
@@ -622,12 +628,15 @@ public class ConnectPanel extends JPanel implements ActionListener, HelpCtx.Prov
     }
 
     private class ValidityDocumentListener implements DocumentListener {
+        @Override
         public void insertUpdate(DocumentEvent e) {
             checkValid();
         }
+        @Override
         public void removeUpdate(DocumentEvent e) {
             checkValid();
         }
+        @Override
         public void changedUpdate(DocumentEvent e) {
             checkValid();
         }
@@ -638,27 +647,33 @@ public class ConnectPanel extends JPanel implements ActionListener, HelpCtx.Prov
         PropertyChangeSupport pcs = new PropertyChangeSupport(this);
         private boolean valid = true;
 
+        @Override
         public boolean cancel () {
             return true;
         }
 
+        @Override
         public boolean ok () {
             assert connectorsLoaded.get();
             int index = cbConnectors.getSelectedIndex ();
-            final Connector connector = (Connector) connectors.get (index);
-            final Map args = getEditedArgs (tfParams, connector);
-            if (args == null) return true; // CANCEL
+            final Connector connector = connectors.get (index);
+            final Map<String, Argument> args = getEditedArgs (tfParams, connector);
+            if (args == null) {
+                return true;
+            } // CANCEL
             saveArgs (args, connector);
             log(connector, args);
 
             // Take the start off the AWT EQ:
             final RequestProcessor.Task[] startTaskPtr = new RequestProcessor.Task[1];
             startTaskPtr[0] = new RequestProcessor("JPDA Debugger Starting").create(new Runnable() {
+                @Override
                 public void run() {
                     final Thread theCurrentThread = Thread.currentThread();
                     ProgressHandle progress = ProgressHandleFactory.createHandle(
                             NbBundle.getMessage(ConnectPanel.class, "CTL_connectProgress"),
                             new Cancellable() {
+                                @Override
                                 public boolean cancel() {
                                     theCurrentThread.interrupt();
                                     return startTaskPtr[0].isFinished();
@@ -669,7 +684,7 @@ public class ConnectPanel extends JPanel implements ActionListener, HelpCtx.Prov
                         progress.start();
                         //System.out.println("After progress.start()");
                         DebuggerEngine[] es = null;
-                        if (connector instanceof AttachingConnector)
+                        if (connector instanceof AttachingConnector) {
                             es = DebuggerManager.getDebuggerManager ().startDebugging (
                                 DebuggerInfo.create (
                                     AttachingDICookie.ID,
@@ -681,8 +696,8 @@ public class ConnectPanel extends JPanel implements ActionListener, HelpCtx.Prov
                                     }
                                 )
                             );
-                        else
-                        if (connector instanceof ListeningConnector)
+                        } else
+                        if (connector instanceof ListeningConnector) {
                             es = DebuggerManager.getDebuggerManager ().startDebugging (
                                 DebuggerInfo.create (
                                     ListeningDICookie.ID,
@@ -694,14 +709,18 @@ public class ConnectPanel extends JPanel implements ActionListener, HelpCtx.Prov
                                     }
                                 )
                             );
+                        }
                         if (es != null) {
                             for (int i = 0; i < es.length; i++) {
                                 JPDADebugger d = es[i].lookupFirst(null, JPDADebugger.class);
-                                if (d == null) continue;
+                                if (d == null) {
+                                    continue;
+                                }
                                 try {
                                     // workaround for #64227
-                                    if (d.getState() != d.STATE_RUNNING)
+                                    if (d.getState() != JPDADebugger.STATE_RUNNING) {
                                         d.waitRunning ();
+                                    }
                                 } catch (DebuggerStartException dsex) {
                                     //ErrorManager.getDefault().notify(ErrorManager.USER, dsex);
                                     // Not necessary to notify - message written to debugger console.
@@ -734,7 +753,7 @@ public class ConnectPanel extends JPanel implements ActionListener, HelpCtx.Prov
             int index, k = connectors.size ();
             boolean found = false;
             for (index = 0; index < k; index++) {
-                Connector connector = (Connector) connectors.get (index);
+                Connector connector = connectors.get (index);
                 if (connector.name ().equals (connectorName)) {
                     cbConnectors.setSelectedIndex(index);
                     found = true;
@@ -751,16 +770,18 @@ public class ConnectPanel extends JPanel implements ActionListener, HelpCtx.Prov
         public void save(Properties props) {
             assert connectorsLoaded.get();
             int index = cbConnectors.getSelectedIndex ();
-            final Connector connector = (Connector) connectors.get (index);
-            final Map args = getEditedArgs (tfParams, connector);
-            if (args == null) return; // nothing stored
-            Map defaultValues = connector.defaultArguments ();
-            Map argsToSave = new HashMap ();
-            Iterator i = args.keySet ().iterator ();
+            final Connector connector = connectors.get (index);
+            final Map<String, Argument> args = getEditedArgs (tfParams, connector);
+            if (args == null) {
+                return;  // nothing stored
+            }
+            Map<String, Argument> defaultValues = connector.defaultArguments ();
+            Map<String, String> argsToSave = new HashMap<String, String>();
+            Iterator<String> i = args.keySet ().iterator ();
             while (i.hasNext()) {
-                String argName = (String) i.next ();
-                Argument value = (Argument) args.get (argName);
-                Argument defaultValue = (Argument) defaultValues.get (argName);
+                String argName = i.next ();
+                Argument value = args.get (argName);
+                Argument defaultValue = defaultValues.get (argName);
                 if (value != null && value != defaultValue && !value.equals (defaultValue)) {
                     argsToSave.put (argName, value.value ());
                 } // if
@@ -776,9 +797,11 @@ public class ConnectPanel extends JPanel implements ActionListener, HelpCtx.Prov
         public String getDisplayName() {
             assert connectorsLoaded.get();
             int index = cbConnectors.getSelectedIndex ();
-            final Connector connector = (Connector) connectors.get (index);
-            final Map args = getEditedArgs (tfParams, connector);
-            if (args == null) return ""; // NOI18N
+            final Connector connector = connectors.get (index);
+            final Map<String, Argument> args = getEditedArgs (tfParams, connector);
+            if (args == null) {
+                return "";  // NOI18N
+            }
             if (connector instanceof AttachingConnector) {
                 AttachingDICookie c = AttachingDICookie.create ((AttachingConnector) connector, args);
                 if (c.getHostName () != null) {
@@ -813,6 +836,7 @@ public class ConnectPanel extends JPanel implements ActionListener, HelpCtx.Prov
          * @return <code>true</code> whether value of this customizer
          * is valid
          */
+        @Override
         public boolean isValid () {
             return valid;
         }
@@ -834,10 +858,12 @@ public class ConnectPanel extends JPanel implements ActionListener, HelpCtx.Prov
             pcs.firePropertyChange(propertyName, oldValue, newValue);
         }
 
+        @Override
         public void addPropertyChangeListener(PropertyChangeListener l) {
             pcs.addPropertyChangeListener(l);
         }
 
+        @Override
         public void removePropertyChangeListener(PropertyChangeListener l) {
             pcs.removePropertyChangeListener(l);
         }
