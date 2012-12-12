@@ -60,9 +60,13 @@ import java.util.Collections;
 
 import java.util.EnumSet;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.prefs.Preferences;
 import java.util.regex.Pattern;
 import javax.lang.model.element.Modifier;
+
+import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.GeneratorUtilities;
@@ -247,6 +251,8 @@ public class ImportAnalysis2Test extends GeneratorTestMDRCompat {
             "}\n";
 
         JavaSource src = getJavaSource(testFile);
+        Preferences preferences = MimeLookup.getLookup(JavaTokenId.language().mimeType()).lookup(Preferences.class);
+        preferences.putBoolean("importInnerClasses", true);
         Task<WorkingCopy> task = new Task<WorkingCopy>() {
 
             public void run(WorkingCopy workingCopy) throws IOException {
@@ -266,6 +272,7 @@ public class ImportAnalysis2Test extends GeneratorTestMDRCompat {
 
         };
         src.runModificationTask(task).commit();
+        preferences.remove("importInnerClasses");
         String res = TestUtilities.copyFileToString(testFile);
         System.err.println(res);
         assertEquals(golden, res);
@@ -717,6 +724,8 @@ public class ImportAnalysis2Test extends GeneratorTestMDRCompat {
         try {
             ClasspathInfo cpInfo = ClasspathInfoAccessor.getINSTANCE().create (ClassPathSupport.createClassPath(System.getProperty("sun.boot.class.path")), ClassPath.EMPTY, ClassPathSupport.createClassPath(getSourcePath()), null, true, false, false, true);
             JavaSource src = JavaSource.create(cpInfo, FileUtil.toFileObject(testFile));
+            Preferences preferences = MimeLookup.getLookup(JavaTokenId.language().mimeType()).lookup(Preferences.class);
+            preferences.putBoolean("importInnerClasses", true);
             Task<WorkingCopy> task = new Task<WorkingCopy>() {
                 public void run(WorkingCopy workingCopy) throws IOException {
                     workingCopy.toPhase(Phase.RESOLVED);
@@ -728,6 +737,7 @@ public class ImportAnalysis2Test extends GeneratorTestMDRCompat {
 
             };
             src.runModificationTask(task).commit();
+            preferences.remove("importInnerClasses");
             String res = TestUtilities.copyFileToString(testFile);
             System.err.println(res);
             assertEquals(golden, res);
@@ -854,6 +864,8 @@ public class ImportAnalysis2Test extends GeneratorTestMDRCompat {
             "}\n";
 
         JavaSource src = getJavaSource(testFile);
+        Preferences preferences = MimeLookup.getLookup(JavaTokenId.language().mimeType()).lookup(Preferences.class);
+        preferences.putBoolean("importInnerClasses", true);
         Task<WorkingCopy> task = new Task<WorkingCopy>() {
 
             public void run(WorkingCopy workingCopy) throws IOException {
@@ -871,6 +883,7 @@ public class ImportAnalysis2Test extends GeneratorTestMDRCompat {
 
         };
         src.runModificationTask(task).commit();
+        preferences.remove("importInnerClasses");
         String res = TestUtilities.copyFileToString(testFile);
         System.err.println(res);
         assertEquals(golden, res);
@@ -898,6 +911,8 @@ public class ImportAnalysis2Test extends GeneratorTestMDRCompat {
             "}\n";
 
         JavaSource src = getJavaSource(testFile);
+        Preferences preferences = MimeLookup.getLookup(JavaTokenId.language().mimeType()).lookup(Preferences.class);
+        preferences.putBoolean("importInnerClasses", true);
         Task<WorkingCopy> task = new Task<WorkingCopy>() {
 
             public void run(WorkingCopy workingCopy) throws IOException {
@@ -916,6 +931,7 @@ public class ImportAnalysis2Test extends GeneratorTestMDRCompat {
 
         };
         src.runModificationTask(task).commit();
+        preferences.remove("importInnerClasses");
         String res = TestUtilities.copyFileToString(testFile);
         System.err.println(res);
         assertEquals(golden, res);
