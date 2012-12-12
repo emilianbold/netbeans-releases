@@ -545,7 +545,7 @@ public final class Terminal extends JComponent {
         }
 
         private void dump(String title, Set<String> set) {
-            File file = new File(String.format("/tmp/term-sequences-%s", title));
+            File file = new File(String.format("/tmp/term-sequences-%s", title)); // NOI18N
             PrintStream ps;
             try {
                 ps = new PrintStream(file);
@@ -555,8 +555,9 @@ public final class Terminal extends JComponent {
             }
 
             if (set != null) {
-                for (String s : set)
-                    ps.printf("%s\n", s);
+                for (String s : set) {
+                    ps.printf("%s\n", s); // NOI18N
+		}
             }
 
             ps.close();
@@ -564,10 +565,11 @@ public final class Terminal extends JComponent {
 
         @Override
         public void actionPerformed(ActionEvent e) {
-            if (!isEnabled())
-                return;
-            dump("completed", term.getCompletedSequences());
-            dump("unrecognized", term.getUnrecognizedSequences());
+            if (!isEnabled()) {
+		return;
+	    }
+            dump("completed", term.getCompletedSequences()); // NOI18N
+            dump("unrecognized", term.getUnrecognizedSequences()); // NOI18N
         }
     }
     
