@@ -86,34 +86,34 @@ public class PHP54FeaturesTest extends PHPLexerTestBase {
     }
 
     public void testShortArrays_01() throws Exception {
-        performTest("shortArrays_01");
+        performTest("lexer/shortArrays_01");
     }
 
     public void testShortArrays_02() throws Exception {
-        performTest("shortArrays_02");
+        performTest("lexer/shortArrays_02");
     }
 
     public void testShortArraysStaticScalar_01() throws Exception {
-        performTest("shortArraysStaticScalar_01");
+        performTest("lexer/shortArraysStaticScalar_01");
     }
 
     public void testShortArraysStaticScalar_02() throws Exception {
-        performTest("shortArraysStaticScalar_02");
+        performTest("lexer/shortArraysStaticScalar_02");
     }
 
     public void testBinaryNotation_01() throws Exception {
-        performTest("binaryNotation_01");
+        performTest("lexer/binaryNotation_01");
     }
 
     public void testBinaryNotation_02() throws Exception {
-        performTest("binaryNotation_02");
+        performTest("lexer/binaryNotation_02");
     }
 
     public void testBinaryNotation_03() throws Exception {
-        performTest("binaryNotation_03");
+        performTest("lexer/binaryNotation_03");
     }
 
     public void testBinaryNotation_04() throws Exception {
-        performTest("binaryNotation_04");
+        performTest("lexer/binaryNotation_04");
     }
 }

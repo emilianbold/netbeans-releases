@@ -128,152 +128,152 @@ public class ASTPHP5ParserTest extends ParserTestBase {
     }
     public void testTextSearchQuery () throws Exception {
         // testing real file from phpwiki
-        performTest("TextSearchQuery");
+        performTest("parser/TextSearchQuery");
     }
 
     public void testPHPDoc () throws Exception {
         //unfinished phpdoc
-        performTest("test01");
+        performTest("parser/test01");
     }
 
     public void testNowdoc_01 () throws Exception {
-        performTest("nowdoc01");
+        performTest("parser/nowdoc01");
     }
 
     public void testNowdoc_02() throws Exception {
-        performTest("nowdoc02");
+        performTest("parser/nowdoc02");
     }
 
     public void testNowdoc_03() throws Exception {
-        performTest("nowdoc_000");
+        performTest("parser/nowdoc_000");
     }
 
     public void testNowdoc_04() throws Exception {
-        performTest("nowdoc_001");
+        performTest("parser/nowdoc_001");
     }
 
     public void testNowdoc_05() throws Exception {
-        performTest("nowdoc_002");
+        performTest("parser/nowdoc_002");
     }
 
     public void testNowdoc_06() throws Exception {
-        performTest("nowdoc_003");
+        performTest("parser/nowdoc_003");
     }
 
     public void testNowdoc_07() throws Exception {
-        performTest("nowdoc_004");
+        performTest("parser/nowdoc_004");
     }
 
     public void testNowdoc_08() throws Exception {
-        performTest("nowdoc_005");
+        performTest("parser/nowdoc_005");
     }
 
     public void testNowdoc_09() throws Exception {
-        performTest("nowdoc_006");
+        performTest("parser/nowdoc_006");
     }
 
     public void testNowdoc_10() throws Exception {
-        performTest("nowdoc_007");
+        performTest("parser/nowdoc_007");
     }
 
     public void testNowdoc_11() throws Exception {
-        performTest("nowdoc_008");
+        performTest("parser/nowdoc_008");
     }
 
     public void testNowdoc_12() throws Exception {
-        performTest("nowdoc_009");
+        performTest("parser/nowdoc_009");
     }
 
     public void testNowdoc_13() throws Exception {
-        performTest("nowdoc_010");
+        performTest("parser/nowdoc_010");
     }
 
     public void testNowdoc_14() throws Exception {
-        performTest("nowdoc_011");
+        performTest("parser/nowdoc_011");
     }
 
     public void testNowdoc_15() throws Exception {
-        performTest("nowdoc_012");
+        performTest("parser/nowdoc_012");
     }
 
     public void testNowdoc_16() throws Exception {
-        performTest("nowdoc_013");
+        performTest("parser/nowdoc_013");
     }
 
     public void testNowdoc_17() throws Exception {
-        performTest("nowdoc_014");
+        performTest("parser/nowdoc_014");
     }
 
     public void testNowdoc_18() throws Exception {
-        performTest("nowdoc_015");
+        performTest("parser/nowdoc_015");
     }
 
     public void testHereDoc_01() throws Exception {
-        performTest("heredoc00");
+        performTest("parser/heredoc00");
     }
 
     public void testHereDoc_02() throws Exception {
-        performTest("heredoc01");
+        performTest("parser/heredoc01");
     }
 
     public void testHereDoc_03() throws Exception {
-        performTest("heredoc_001");
+        performTest("parser/heredoc_001");
     }
 
     public void testHereDoc_04() throws Exception {
-        performTest("heredoc_002");
+        performTest("parser/heredoc_002");
     }
 
     public void testHereDoc_05() throws Exception {
-        performTest("heredoc_003");
+        performTest("parser/heredoc_003");
     }
 
     public void testHereDoc_06() throws Exception {
-        performTest("heredoc_004");
+        performTest("parser/heredoc_004");
     }
 
     public void testHereDoc_07() throws Exception {
-        performTest("heredoc_005");
+        performTest("parser/heredoc_005");
     }
 
     public void testHereDoc_08() throws Exception {
-        performTest("heredoc_006");
+        performTest("parser/heredoc_006");
     }
 
     public void testHereDoc_09() throws Exception {
-        performTest("heredoc_007");
+        performTest("parser/heredoc_007");
     }
 
     public void testHereDoc_10() throws Exception {
-        performTest("heredoc_008");
+        performTest("parser/heredoc_008");
     }
 
     public void testHereDoc_11() throws Exception {
-        performTest("heredoc_009");
+        performTest("parser/heredoc_009");
     }
 
     public void testHereDoc_12() throws Exception {
-        performTest("heredoc_010");
+        performTest("parser/heredoc_010");
     }
 
     public void testHereDoc_13() throws Exception {
-        performTest("heredoc_011");
+        performTest("parser/heredoc_011");
     }
 
     public void testHereDoc_14() throws Exception {
-        performTest("heredoc_012");
+        performTest("parser/heredoc_012");
     }
 
     public void testHereDoc_15() throws Exception {
-        performTest("heredoc_013");
+        performTest("parser/heredoc_013");
     }
 
     public void testHereDoc_16() throws Exception {
-        performTest("heredoc_014");
+        performTest("parser/heredoc_014");
     }
 
     public void testHereDoc_17() throws Exception {
-        performTest("heredoc_015");
+        performTest("parser/heredoc_015");
     }
 
     public void testVarCommentSimple01() throws Exception {
@@ -345,99 +345,99 @@ public class ASTPHP5ParserTest extends ParserTestBase {
     }
 
     public void testShortArrays_01() throws Exception {
-        performTest("shortArrays_01");
+        performTest("parser/shortArrays_01");
     }
 
     public void testShortArrays_02() throws Exception {
-        performTest("shortArrays_02");
+        performTest("parser/shortArrays_02");
     }
 
     public void testShortArraysStaticScalar_01() throws Exception {
-        performTest("shortArraysStaticScalar_01");
+        performTest("parser/shortArraysStaticScalar_01");
     }
 
     public void testShortArraysStaticScalar_02() throws Exception {
-        performTest("shortArraysStaticScalar_02");
+        performTest("parser/shortArraysStaticScalar_02");
     }
 
     public void testShortEchoSyntax() throws Exception {
-        performTest("shortEchoSyntax");
+        performTest("parser/shortEchoSyntax");
     }
 
     public void testAnonymousObjectVariable() throws Exception {
-        performTest("anonymousObjectVariable");
+        performTest("parser/anonymousObjectVariable");
     }
 
     public void testFieldArraysWithArrayDereferencing() throws Exception {
-        performTest("fieldArraysWithArrayDereferencing");
+        performTest("parser/fieldArraysWithArrayDereferencing");
     }
 
     public void testArrayDereferencing_01() throws Exception {
-        performTest("arrayDereferencing_01");
+        performTest("parser/arrayDereferencing_01");
     }
 
     public void testArrayDereferencing_02() throws Exception {
-        performTest("arrayDereferencing_02");
+        performTest("parser/arrayDereferencing_02");
     }
 
     public void testArrayDereferencing_03() throws Exception {
-        performTest("arrayDereferencing_03");
+        performTest("parser/arrayDereferencing_03");
     }
 
     public void testArrayDereferencing_04() throws Exception {
-        performTest("arrayDereferencing_04");
+        performTest("parser/arrayDereferencing_04");
     }
 
     public void testArrayDereferencing_05() throws Exception {
-        performTest("arrayDereferencing_05");
+        performTest("parser/arrayDereferencing_05");
     }
 
     public void testArrayDereferencing_06() throws Exception {
-        performTest("arrayDereferencing_06");
+        performTest("parser/arrayDereferencing_06");
     }
 
     public void testArrayDereferencing_07() throws Exception {
-        performTest("arrayDereferencing_07");
+        performTest("parser/arrayDereferencing_07");
     }
 
     public void testArrayDereferencing_08() throws Exception {
-        performTest("arrayDereferencing_08");
+        performTest("parser/arrayDereferencing_08");
     }
 
     public void testArrayDereferencing_09() throws Exception {
-        performTest("arrayDereferencing_09");
+        performTest("parser/arrayDereferencing_09");
     }
 
     public void testBinaryNotation_01() throws Exception {
-        performTest("binaryNotation_01");
+        performTest("parser/binaryNotation_01");
     }
 
     public void testBinaryNotation_02() throws Exception {
-        performTest("binaryNotation_02");
+        performTest("parser/binaryNotation_02");
     }
 
     public void testBinaryNotation_03() throws Exception {
-        performTest("binaryNotation_03");
+        performTest("parser/binaryNotation_03");
     }
 
     public void testBinaryNotation_04() throws Exception {
-        performTest("binaryNotation_04");
+        performTest("parser/binaryNotation_04");
     }
 
     public void testStaticExpressionCall_01() throws Exception {
-        performTest("staticExpressionCall_01");
+        performTest("parser/staticExpressionCall_01");
     }
 
     public void testStaticExpressionCall_02() throws Exception {
-        performTest("staticExpressionCall_02");
+        performTest("parser/staticExpressionCall_02");
     }
 
     public void testCfunction() throws Exception {
-        performTest("cfunction");
+        performTest("parser/cfunction");
     }
 
     public void testInstanceOfExpression() throws Exception {
-        performTest("instanceOfExpression");
+        performTest("parser/instanceOfExpression");
     }
 
     public void testIssue170712() throws Exception {
@@ -449,7 +449,7 @@ public class ASTPHP5ParserTest extends ParserTestBase {
     }
 
     public void testIssue213423() throws Exception {
-        performTest("issue213423");
+        performTest("parser/issue213423");
     }
 
     @Override
