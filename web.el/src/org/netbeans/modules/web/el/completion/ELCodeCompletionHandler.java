@@ -275,17 +275,19 @@ public final class ELCodeCompletionHandler implements CodeCompletionHandler {
                     proposals.add(completionItem);
                 } else {
                     ELJavaCompletionItem completionItem;
-                    
-                    if (enclosed.getParameters().isEmpty() && !contains(proposals, propertyName)) {
-                        completionItem = new ELJavaCompletionItem(info, enclosed, elElement); //
-                    } else {
-                        completionItem = new ELJavaCompletionItem(info, enclosed, methodName, elElement);
-                    }
-                    
-                    completionItem.setSmart(false);
-                    completionItem.setAnchorOffset(context.getCaretOffset() - prefix.length());
 
-                    proposals.add(completionItem);
+                    if (!contains(proposals, propertyName)) {
+                        if (enclosed.getParameters().isEmpty()) {
+                            completionItem = new ELJavaCompletionItem(info, enclosed, elElement); //
+                        } else {
+                            completionItem = new ELJavaCompletionItem(info, enclosed, methodName, elElement);
+                        }
+
+                        completionItem.setSmart(false);
+                        completionItem.setAnchorOffset(context.getCaretOffset() - prefix.length());
+
+                        proposals.add(completionItem);
+                    }
                 }
             }
         }
