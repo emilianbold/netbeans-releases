@@ -54,6 +54,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
+import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectUtils;
@@ -65,6 +67,7 @@ import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.text.Line;
 import org.openide.util.ImageUtilities;
+import org.openide.util.Parameters;
 
 /** Contains interesting information about file found in the search.
  *
@@ -91,7 +94,13 @@ public class FileDescription extends FileDescriptor {
     private String projectName;
     private Icon projectIcon;
 
-    public FileDescription(FileObject file, String ownerPath, Project project, int lineNr) {
+    public FileDescription(
+            @NonNull final FileObject file,
+            @NonNull final String ownerPath,
+            @NullAllowed final Project project,
+            final int lineNr) {
+        Parameters.notNull("file", file);   //NOI18N
+        Parameters.notNull("ownerPath", ownerPath); //NOI18N
         this.fileObject = file;
         this.ownerPath = ownerPath;
         this.project = project;
