@@ -1509,13 +1509,17 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
     }
 
     void genericRunning() {
+        final NativeSession s = session();
+        
         clearFiredEvents();
         deleteMarkLocations();
         deliverSignal = -1;
 
         stateSetRunning(true);
         stateChanged();
-	session().setSessionState(state());
+        if (s != null) {
+            s.setSessionState(state());
+        }
         setStatusText(Catalog.get("MSG_running"));//NOI18N
     }
 
