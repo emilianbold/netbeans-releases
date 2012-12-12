@@ -277,7 +277,7 @@ public class ASTPHP5ParserTest extends ParserTestBase {
     }
 
     public void testVarCommentSimple01() throws Exception {
-        performTest("varcomment/simple01");
+        performTest("parser/simple01");
     }
 
     public void testVarCommentSimple02() throws Exception {
@@ -285,7 +285,7 @@ public class ASTPHP5ParserTest extends ParserTestBase {
     }
 
     public void testVarCommentMixedType01() throws Exception {
-        performTest("varcomment/mixed01");
+        performTest("parser/mixed01");
     }
 
     public void testVarCommentMixedType02() throws Exception {
@@ -321,27 +321,27 @@ public class ASTPHP5ParserTest extends ParserTestBase {
     }
 
     public void testTraits_01() throws Exception {
-        performTest("traits_01");
+        performTest("parser/traits_01");
     }
 
     public void testTraits_02() throws Exception {
-        performTest("traits_02");
+        performTest("parser/traits_02");
     }
 
     public void testTraits_03() throws Exception {
-        performTest("traits_03");
+        performTest("parser/traits_03");
     }
 
     public void testTraits_04() throws Exception {
-        performTest("traits_04");
+        performTest("parser/traits_04");
     }
 
     public void testTraits_05() throws Exception {
-        performTest("traits_05");
+        performTest("parser/traits_05");
     }
 
     public void testTraits_06() throws Exception {
-        performTest("traits_06");
+        performTest("parser/traits_06");
     }
 
     public void testShortArrays_01() throws Exception {

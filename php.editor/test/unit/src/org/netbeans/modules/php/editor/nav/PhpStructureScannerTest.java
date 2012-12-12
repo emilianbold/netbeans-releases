@@ -107,11 +107,11 @@ public class PhpStructureScannerTest extends ParserTestBase{
     }
 
     public void testClass() throws Exception {
-        performTest("class005");
+        performTest("structure/class005");
     }
 
     public void testIssue142644() throws Exception {
-        performTest("issue142644");
+        performTest("structure/issue142644");
     }
 
     public void testIssue148558() throws Exception {
