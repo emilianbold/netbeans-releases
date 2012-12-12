@@ -171,6 +171,7 @@ public class JaxWsAddOperation implements AddOperationCookie {
         return null;
     }
     
+    @org.netbeans.api.annotations.common.SuppressWarnings("NP_NULL_ON_SOME_PATH_FROM_RETURN_VALUE")
     public static String getMainClassName(final FileObject classFO) throws IOException {
         JavaSource javaSource = JavaSource.forFileObject(classFO);
         final String[] result = new String[1];
