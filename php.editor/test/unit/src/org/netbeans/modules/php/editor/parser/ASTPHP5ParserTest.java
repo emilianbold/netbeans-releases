@@ -70,61 +70,61 @@ public class ASTPHP5ParserTest extends ParserTestBase {
     }
 
     public void testGotoStatment() throws Exception {
-        performTest("php53/gotostatement");
+        performTest("parser/gotostatement");
     }
     public void testLambdaFunction() throws Exception {
-        performTest("php53/lambdaFunction");
+        performTest("parser/lambdaFunction");
     }
     public void testLambdaFunctionWithParams() throws Exception {
-        performTest("php53/lambdaFunctionWithParams");
+        performTest("parser/lambdaFunctionWithParams");
     }
     public void testLambdaFunctionWithParamsWithVars() throws Exception {
-        performTest("php53/lambdaFunctionWithParamsWithVars");
+        performTest("parser/lambdaFunctionWithParamsWithVars");
     }
     public void testLambdaFunctionWithParamsWithVarsWithStatements() throws Exception {
-        performTest("php53/lambdaFunctionWithParamsWithVarsWithStatements");
+        performTest("parser/lambdaFunctionWithParamsWithVarsWithStatements");
     }
     public void testMultipleBracketedNamespaces() throws Exception {
-        performTest("php53/multipleBracketedNamespaces");
+        performTest("parser/multipleBracketedNamespaces");
     }
     public void testMultipleUnBracketedNamespaces1() throws Exception {
-        performTest("php53/multipleUnBracketedNamespaces1");
+        performTest("parser/multipleUnBracketedNamespaces1");
     }
     public void testMultipleUnBracketedNamespaces2() throws Exception {
-        performTest("php53/multipleUnBracketedNamespaces2");
+        performTest("parser/multipleUnBracketedNamespaces2");
     }
     public void testNamespaceDeclaration() throws Exception {
-        performTest("php53/namespaceDeclaration");
+        performTest("parser/namespaceDeclaration");
     }
     public void testSubNamespaceDeclaration() throws Exception {
-        performTest("php53/subNamespaceDeclaration");
+        performTest("parser/subNamespaceDeclaration");
     }
     public void testNamespaceElementDeclarations() throws Exception {
-        performTest("php53/namespaceElementDeclarations");
+        performTest("parser/namespaceElementDeclarations");
     }
     public void testNowDoc() throws Exception {
-        performTest("php53/nowDoc");
+        performTest("parser/nowDoc");
     }
     public void testRefLambdaFunctionWithParamsWithVarsWithStatements() throws Exception {
-        performTest("php53/refLambdaFunctionWithParamsWithVarsWithStatements");
+        performTest("parser/refLambdaFunctionWithParamsWithVarsWithStatements");
     }
     public void testTernaryOperator() throws Exception {
-        performTest("php53/ternaryOperator");
+        performTest("parser/ternaryOperator");
     }
     public void testUseGlobal() throws Exception {
-        performTest("php53/useGlobal");
+        performTest("parser/useGlobal");
     }
     public void testUseGlobalSubNamespace() throws Exception {
-        performTest("php53/useGlobalSubNamespace");
+        performTest("parser/useGlobalSubNamespace");
     }
     public void testUseNamespaceAs() throws Exception {
-        performTest("php53/useNamespaceAs");
+        performTest("parser/useNamespaceAs");
     }
     public void testUseSimple() throws Exception {
-        performTest("php53/useSimple");
+        performTest("parser/useSimple");
     }
     public void testUseSubNamespace() throws Exception {
-        performTest("php53/useSubNamespace");
+        performTest("parser/useSubNamespace");
     }
     public void testTextSearchQuery () throws Exception {
         // testing real file from phpwiki
@@ -281,7 +281,7 @@ public class ASTPHP5ParserTest extends ParserTestBase {
     }
 
     public void testVarCommentSimple02() throws Exception {
-        performTest("varcomment/simple02");
+        performTest("parser/simple02");
     }
 
     public void testVarCommentMixedType01() throws Exception {
@@ -289,35 +289,35 @@ public class ASTPHP5ParserTest extends ParserTestBase {
     }
 
     public void testVarCommentMixedType02() throws Exception {
-        performTest("varcomment/mixed02");
+        performTest("parser/mixed02");
     }
 
     public void testMagicMethod01() throws Exception {
-        performTest("phpdoc/magicMethod01");
+        performTest("parser/magicMethod01");
     }
 
     public void testMagicMethod02() throws Exception {
-        performTest("phpdoc/magicMethod02");
+        performTest("parser/magicMethod02");
     }
 
     public void testMagicMethod03() throws Exception {
-        performTest("phpdoc/magicMethod03");
+        performTest("parser/magicMethod03");
     }
 
     public void testMagicMethod04() throws Exception {
-        performTest("phpdoc/magicMethod04");
+        performTest("parser/magicMethod04");
     }
 
     public void testMagicMethod05() throws Exception {
-        performTest("phpdoc/magicMethod05");
+        performTest("parser/magicMethod05");
     }
 
     public void testMagicMethod06() throws Exception {
-        performTest("phpdoc/magicMethod06");
+        performTest("parser/magicMethod06");
     }
 
     public void testMagicMethod07() throws Exception {
-        performTest("phpdoc/magicMethod07");
+        performTest("parser/magicMethod07");
     }
 
     public void testTraits_01() throws Exception {
@@ -441,11 +441,11 @@ public class ASTPHP5ParserTest extends ParserTestBase {
     }
 
     public void testIssue170712() throws Exception {
-        performTest("php53/issue170712");
+        performTest("parser/issue170712");
     }
 
     public void testIssue200501() throws Exception {
-        performTest("varcomment/issue200501");
+        performTest("parser/issue200501");
     }
 
     public void testIssue213423() throws Exception {

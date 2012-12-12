@@ -210,7 +210,7 @@ public class PHPTopLexerTest extends PHPLexerTestBase {
     }
 
     public void testPHPTopParser01() throws Exception {
-        performTest("phptopparser/test01");
+        performTest("lexer/test01");
     }
 
     public void testPHPTopParser02() throws Exception {
