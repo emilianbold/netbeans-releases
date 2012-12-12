@@ -368,7 +368,7 @@ public class C2CIssue {
     public Date getLastModifyDate() {
         String value = getFieldValue(IssueField.MODIFIED);
         if(value != null && !value.trim().equals("")) {
-            return C2CUtil.parseDate(value);
+            return C2CUtil.parseLongDate(value);
         }
         return null;
     }
@@ -385,7 +385,7 @@ public class C2CIssue {
     public Date getCreatedDate() {
         String value = getFieldValue(IssueField.CREATED);
         if(value != null && !value.trim().equals("")) { // NOI18N
-            return C2CUtil.parseDate(value);
+            return C2CUtil.parseLongDate(value);
         }
         return null;
     }
@@ -1103,7 +1103,7 @@ public class C2CIssue {
             Date d = null;
             String s = getMappedValue(a, TaskAttribute.COMMENT_DATE);
             if (s != null && !s.trim().equals("")) {                         // NOI18N
-                d = C2CUtil.parseDate(s);
+                d = C2CUtil.parseLongDate(s);
             }
             when = d;
             TaskAttribute authorAttr = a.getMappedAttribute(TaskAttribute.COMMENT_AUTHOR);
@@ -1149,7 +1149,7 @@ public class C2CIssue {
 
         public Time(TaskAttribute a) {
             String s = getMappedValue(a, TaskAttribute.COMMENT_DATE);
-            Date d = C2CUtil.parseDate(s);
+            Date d = C2CUtil.parseLongDate(s);
             when = d;
             TaskAttribute authorAttr = a.getMappedAttribute(TaskAttribute.COMMENT_AUTHOR);
             if (authorAttr != null) {
@@ -1203,7 +1203,7 @@ public class C2CIssue {
             this.ta = ta;
             id = ta.getValue();
             String s = getMappedValue(ta, TaskAttribute.ATTACHMENT_DATE);
-            Date d = C2CUtil.parseDate(s);
+            Date d = C2CUtil.parseLongDate(s);
             date = d;
             filename = getMappedValue(ta, TaskAttribute.ATTACHMENT_FILENAME);
             desc = getMappedValue(ta, TaskAttribute.ATTACHMENT_DESCRIPTION);

@@ -340,11 +340,11 @@ public class C2CUtil {
         }       
     }
 
-    public static Date parseDate (String text) {
-        return parseDate(text, new DateFormat[0]);
+    public static Date parseLongDate (String text) {
+        return parseLongDate(text, null);
     }
     
-    public static Date parseDate (String text, DateFormat[] additionalFormats) {
+    public static Date parseLongDate (String text, DateFormat[] additionalFormats) {
         Date date = null;
         try {
             date = new Date(Long.parseLong(text));
@@ -364,6 +364,21 @@ public class C2CUtil {
                     } catch (ParseException ex) {
                     }
                 }
+            }
+        }
+        if (date == null) {
+            C2C.LOG.log(Level.FINE, "Cannot parse date: {0}", text);
+        }
+        return date;
+    }
+    
+    public static Date parseTextDate (String text, DateFormat... formats) {
+        Date date = null;
+        for (DateFormat format : formats) {
+            try {
+                date = format.parse(text);
+                break;
+            } catch (ParseException ex) {
             }
         }
         if (date == null) {

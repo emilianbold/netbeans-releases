@@ -66,9 +66,9 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.text.DateFormat;
 import java.text.MessageFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Calendar;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
@@ -122,7 +122,6 @@ import org.netbeans.modules.bugtracking.util.UIUtils;
 import org.netbeans.modules.mylyn.util.WikiPanel;
 import org.netbeans.modules.mylyn.util.WikiUtils;
 import org.netbeans.modules.odcs.tasks.C2C;
-import org.netbeans.modules.odcs.tasks.issue.Bundle;
 import org.netbeans.modules.odcs.tasks.issue.C2CIssue.C2CAttachment;
 import org.netbeans.modules.odcs.tasks.repository.C2CRepository;
 import org.netbeans.modules.odcs.tasks.spi.C2CData;
@@ -140,7 +139,7 @@ import org.openide.util.NbBundle.Messages;
  * @author tomas
  */
 public class IssuePanel extends javax.swing.JPanel implements Scrollable {
-    static final DateFormat DEFAULT_DATE_FORMAT = DateFormat.getDateInstance(DateFormat.MEDIUM);
+    final SimpleDateFormat INPUT_DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd"); // NOI18N
     
     private static final Color HIGHLIGHT_COLOR = new Color(217, 255, 217);
     private static final String RESOLUTION_RESOLVED = "RESOLVED";               // NOI18N    
@@ -181,7 +180,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
     private static String wikiLanguage = "";
     private static final RequestProcessor RP = new RequestProcessor("ODCS Task Panel", 5, false); //NOI18N
     private Set<String> invalidDateFields = new HashSet<String>(2);
-    private static final Set<IssueField> DATE_FIELDS = new HashSet<IssueField>(Arrays.asList(IssueField.DUEDATE));
+    private static final Set<IssueField> DATE_INPUT_FIELDS = new HashSet<IssueField>(Arrays.asList(IssueField.DUEDATE));
     
     
     /**
@@ -498,7 +497,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
                 // reported field
                 format = NbBundle.getMessage(IssuePanel.class, "IssuePanel.reportedLabel.format"); // NOI18N
                 Date creation = issue.getCreatedDate();
-                String creationTxt = creation != null ? DEFAULT_DATE_FORMAT.format(creation) : ""; // NOI18N
+                String creationTxt = creation != null ? DateFormat.getDateTimeInstance().format(creation) : ""; // NOI18N
                 
                 String reporter = issue.getFieldValue(IssueField.REPORTER);
                 String reporterName = issue.getPersonName(IssueField.REPORTER);
@@ -599,8 +598,8 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
                 }
             } else if (component instanceof JTextComponent) {
                 currentValue = ((JTextComponent)component).getText();
-                if (DATE_FIELDS.contains(field) && !currentValue.trim().isEmpty()) {
-                    Date date = C2CUtil.parseDate(currentValue.trim());
+                if (DATE_INPUT_FIELDS.contains(field) && !currentValue.trim().isEmpty()) {
+                    Date date = C2CUtil.parseTextDate(currentValue.trim(), INPUT_DATE_FORMAT);
                     if (date != null) {
                         currentValue = Long.toString(date.getTime());
                     }
@@ -641,14 +640,10 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
                 selectInCombo(combo, newValue, true);
             } else if (component instanceof JTextComponent) {
                 String value = newValue;
-                if (DATE_FIELDS.contains(field) && !newValue.isEmpty()) {
-                    Date date = C2CUtil.parseDate(newValue, new DateFormat[] { DEFAULT_DATE_FORMAT });
+                if (DATE_INPUT_FIELDS.contains(field) && !newValue.isEmpty()) {
+                    Date date = C2CUtil.parseLongDate(newValue, new DateFormat[] { INPUT_DATE_FORMAT });
                     if (date != null) {
-                        Calendar cal = Calendar.getInstance();
-                        cal.setTime(date);
-                        boolean fullFormat = cal.get(Calendar.HOUR) > 0 || cal.get(Calendar.MINUTE) > 0 
-                                || cal.get(Calendar.SECOND) > 0 || cal.get(Calendar.MILLISECOND) > 0;
-                        value = (fullFormat ? C2CUtil.DATE_TIME_FORMAT_DEFAULT : DEFAULT_DATE_FORMAT).format(date);
+                        value = INPUT_DATE_FORMAT.format(date);
                     }
                 }
                 ((JTextComponent)component).setText(value);
@@ -1281,7 +1276,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
             invalidDateFields.remove(fieldName(fieldLabel));
             String dateText = comp.getText().trim();
             if (!dateText.isEmpty()) {
-                Date date = C2CUtil.parseDate(dateText, new DateFormat[] { DEFAULT_DATE_FORMAT });
+                Date date = C2CUtil.parseTextDate(dateText, INPUT_DATE_FORMAT);
                 if (date == null) {
                     invalidDateFields.add(fieldName(fieldLabel));
                 }
@@ -1342,7 +1337,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         }
         if (!invalidDateFields.isEmpty()) {
             JLabel invalidDateLabel = new JLabel();
-            invalidDateLabel.setText(NbBundle.getMessage(IssuePanel.class, "IssuePanel.invalidDateField", invalidDateFields.iterator().next())); // NOI18N
+            invalidDateLabel.setText(NbBundle.getMessage(IssuePanel.class, "IssuePanel.invalidDateField", invalidDateFields.iterator().next(), INPUT_DATE_FORMAT.toPattern())); // NOI18N
             invalidDateLabel.setIcon(new ImageIcon(ImageUtilities.loadImage(ICON_PATH_ERROR)));
             messagePanel.add(invalidDateLabel);
         }
@@ -2323,7 +2318,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         storeFieldValue(IssueField.SEVERITY, severityCombo);
         storeFieldValue(IssueField.STATUS, statusCombo);
         storeFieldValues(IssueField.CC, list(ccField.getText()));
-        Date dueDate = C2CUtil.parseDate(dueDateField.getText().trim(), new DateFormat[] { DEFAULT_DATE_FORMAT });
+        Date dueDate = C2CUtil.parseTextDate(dueDateField.getText().trim(), INPUT_DATE_FORMAT);
         storeFieldValue(IssueField.DUEDATE, dueDate == null ? "" : Long.toString(dueDate.getTime())); //NOI18N
         storeFieldValue(IssueField.OWNER, ((TaskUserProfile) ownerCombo.getSelectedItem()).getLoginName());
         storeFieldValues(IssueField.PARENT, bugs(parentField.getText()));

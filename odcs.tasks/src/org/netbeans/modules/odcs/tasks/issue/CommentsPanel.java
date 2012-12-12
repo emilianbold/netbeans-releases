@@ -158,7 +158,7 @@ public class CommentsPanel extends JPanel {
         layout.setVerticalGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING).addGroup(verticalGroup));
         DateFormat format = DateFormat.getDateTimeInstance(DateFormat.DEFAULT, DateFormat.SHORT);
         String creationTxt = issue.getFieldValue(IssueField.CREATED);
-        Date creation = C2CUtil.parseDate(creationTxt);
+        Date creation = C2CUtil.parseLongDate(creationTxt);
         if (creation != null) {
             creationTxt = format.format(creation);
         }
