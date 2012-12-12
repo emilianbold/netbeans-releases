@@ -39,7 +39,7 @@
  *
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.web.el;
+package org.netbeans.modules.web.el.navigation;
 
 import com.sun.el.parser.AstDotSuffix;
 import com.sun.el.parser.AstIdentifier;
@@ -88,7 +88,13 @@ import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.web.common.api.LexerUtils;
 import org.netbeans.modules.web.common.api.WebUtils;
-import org.netbeans.modules.web.el.spi.ResolverContext;
+import org.netbeans.modules.web.el.CompilationContext;
+import org.netbeans.modules.web.el.ELElement;
+import org.netbeans.modules.web.el.ELLanguage;
+import org.netbeans.modules.web.el.ELParserResult;
+import org.netbeans.modules.web.el.ELTypeUtilities;
+import org.netbeans.modules.web.el.Pair;
+import org.netbeans.modules.web.el.ResourceBundles;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
@@ -218,7 +224,7 @@ public final class ELHyperlinkProvider implements HyperlinkProviderExt {
      * Resolves the Node at the given offset.
      * @return the node and the ELElement containing it or null.
      */
-    private Pair<Node, ELElement> resolveNodeAndElement(final Document doc, final int offset, final AtomicBoolean cancel) {
+    protected static Pair<Node, ELElement> resolveNodeAndElement(final Document doc, final int offset, final AtomicBoolean cancel) {
         final List<Pair<Node,ELElement>> result = new ArrayList<Pair<Node,ELElement>>(1);
         Source source = Source.create(doc);
         try {
@@ -284,7 +290,7 @@ public final class ELHyperlinkProvider implements HyperlinkProviderExt {
         
     }
 
-    private int[] getELIdentifierSpan(Document doc, int offset) {
+    protected static int[] getELIdentifierSpan(Document doc, int offset) {
         TokenSequence<?> elTokenSequence = LexerUtils.getTokenSequence(doc, offset, ELTokenId.language(), false);
         if (elTokenSequence == null) {
             return null;

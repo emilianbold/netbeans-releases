@@ -236,7 +236,7 @@ public class JaxWsExplorerPanel extends JPanel implements ExplorerManager.Provid
         }
     }
     
-    private class ProjectNode extends AbstractNode {
+    private static class ProjectNode extends AbstractNode {
         private Node rootNode;
         
         ProjectNode(Children children, Node rootNode) {
@@ -256,7 +256,8 @@ public class JaxWsExplorerPanel extends JPanel implements ExplorerManager.Provid
         }
     }
 
-    private class ServiceNode extends FilterNode implements WsWsdlCookie {
+    @org.netbeans.api.annotations.common.SuppressWarnings("EQ_DOESNT_OVERRIDE_EQUALS")
+    private static class ServiceNode extends FilterNode implements WsWsdlCookie {
 
         private Node serviceNode;
 
@@ -278,6 +279,6 @@ public class JaxWsExplorerPanel extends JPanel implements ExplorerManager.Provid
             }
             return null;
         }
-
+        
     }
 }
