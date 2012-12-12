@@ -297,7 +297,7 @@ public class ModelImpl implements CsmModel, LowMemoryListener {
     }
 
     private void _closeProject2_pre(ProjectBase csmProject, Object platformProjectKey) {
-        ProjectBase prj = (csmProject == null) ? (ProjectBase) getProject(platformProjectKey) : csmProject;
+        ProjectBase prj = (csmProject == null) ? getProject(platformProjectKey) : csmProject;
         if (prj != null) {
             prj.setDisposed();
         }
@@ -635,7 +635,7 @@ public class ModelImpl implements CsmModel, LowMemoryListener {
         synchronized (lock) {
             disabledProjects.add(nativeProject);
         }
-        ProjectBase csmProject = (ProjectBase) findProject(nativeProject);
+        ProjectBase csmProject = findProject(nativeProject);
         if (csmProject != null) {
             disableProject2(csmProject);
         }

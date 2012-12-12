@@ -483,6 +483,8 @@ public final class Item implements NativeFileItem, PropertyChangeListener {
     
     private void attachTo(DataObject dataObject) {
         if (dataObject != null) {
+            logger.log(Level.INFO, "attaching {0} to {1}", new Object[]{System.identityHashCode(this), dataObject});
+            dataObject.removePropertyChangeListener(this);
             dataObject.addPropertyChangeListener(this);
             NativeFileItemSet set = dataObject.getLookup().lookup(NativeFileItemSet.class);
             if (set != null) {
@@ -501,6 +503,7 @@ public final class Item implements NativeFileItem, PropertyChangeListener {
     
     private void detachFrom(DataObject dao) {
         if (dao != null) {
+            logger.log(Level.FINE, "detaching {0} from {1}", new Object[]{System.identityHashCode(this), dao});
             dao.removePropertyChangeListener(this);
             NativeFileItemSet set = dao.getLookup().lookup(NativeFileItemSet.class);
             if (set != null) {

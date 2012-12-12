@@ -72,6 +72,12 @@ public class J2seJaxWsOpenHook extends ProjectOpenedHook {
     /** Creates a new instance of J2seJaxWsOpenHook */
     public J2seJaxWsOpenHook(Project prj) {
         this.prj = prj;
+        try {
+            Class.forName(WSUtils.class.getName());
+        }
+        catch (ClassNotFoundException e) {
+            assert false;
+        }
     }
     
     @Override

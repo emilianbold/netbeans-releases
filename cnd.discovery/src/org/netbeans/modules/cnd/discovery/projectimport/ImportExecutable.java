@@ -772,7 +772,7 @@ public class ImportExecutable implements PropertyChangeListener {
             return null;
         }
         if (root.isDiskFolder()) {
-            String AbsRootPath = CndPathUtilitities.toAbsolutePath(configurationDescriptor.getBaseDir(), root.getRoot());
+            String AbsRootPath = CndPathUtilitities.toAbsolutePath(configurationDescriptor.getBaseDirFileObject(), root.getRoot());
             return RemoteFileUtil.normalizeAbsolutePath(AbsRootPath, configurationDescriptor.getProject());
         }
         List<String> candidates = new ArrayList<String>();

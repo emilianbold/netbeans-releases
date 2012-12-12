@@ -115,7 +115,7 @@ public class CaretListeningTask implements CancellableTask<CompilationInfo> {
                 inJavadoc = true;                
             }
             
-            if ( shouldGoBack( token.toString(), offset < 0 ? 0 : offset ) ) {
+            if ( tid == JavaTokenId.WHITESPACE && shouldGoBack(token.text().toString(), offset < 0 ? 0 : offset ) ) {
                 if ( ts.movePrevious() ) {
                     token = ts.token();
                     tid = token.id();

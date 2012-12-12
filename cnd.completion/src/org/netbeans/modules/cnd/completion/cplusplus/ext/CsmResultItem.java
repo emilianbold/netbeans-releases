@@ -770,7 +770,7 @@ public abstract class CsmResultItem implements CompletionItem {
 
         @Override
         public java.awt.Component getPaintComponent(boolean isSelected) {
-            CsmPaintComponent.FieldPaintComponent comp = null;
+            CsmPaintComponent.FieldPaintComponent comp;
             assert (CsmKindUtilities.isCsmObject(getAssociatedObject())) : "must be csm object"; //NOI18N
             CsmObject var = (CsmObject) getAssociatedObject();
             if (CsmKindUtilities.isField(var)) {
@@ -920,7 +920,7 @@ public abstract class CsmResultItem implements CompletionItem {
 
         @Override
         public Component getPaintComponent(boolean isSelected) {
-            CsmPaintComponent.MethodPaintComponent comp = null;
+            CsmPaintComponent.MethodPaintComponent comp;
             assert (CsmKindUtilities.isCsmObject(getAssociatedObject())) : "must be csm object"; //NOI18N
             CsmObject mtd = (CsmObject) getAssociatedObject();
             if (CsmKindUtilities.isMethod(mtd)) {
@@ -980,12 +980,12 @@ public abstract class CsmResultItem implements CompletionItem {
                 String paramValue = (prm.getInitialValue() != null) ? " = " + prm.getInitialValue().getText().toString() : ""; // NOI18N
                 if (type == null) {
                     // only var args parameters could have null types
-                    assert (((CsmParameter) prm).isVarArgs()) : " non var arg " + prm + " of class " + prm.getClass().getName();
-                    params.add(new ParamStr("", "", ((CsmParameter) prm).getName().toString(), prm.getText().toString() + paramValue, true, LFCustoms.shiftColor(KEYWORD_COLOR))); //NOI18N
+                    assert (prm.isVarArgs()) : " non var arg " + prm + " of class " + prm.getClass().getName();
+                    params.add(new ParamStr("", "", prm.getName().toString(), prm.getText().toString() + paramValue, true, LFCustoms.shiftColor(KEYWORD_COLOR))); //NOI18N
                     varArgIndex = i;
                 } else {
                     String typeName = getTypeName(type, instantiateTypes);
-                    params.add(new ParamStr(typeName, typeName, ((CsmParameter) prm).getName().toString(), prm.getText().toString() + paramValue, false, LFCustoms.getTextFgColor() /*getTypeColor(type.getClassifier())*/));
+                    params.add(new ParamStr(typeName, typeName, prm.getName().toString(), prm.getText().toString() + paramValue, false, LFCustoms.getTextFgColor() /*getTypeColor(type.getClassifier())*/));
                 }
                 i++;
             }

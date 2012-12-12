@@ -87,16 +87,19 @@ public enum JAXWSQName {
     public QName getQName(){
         return qName;
     }
-    private static Set<QName> qnames = null;
+    private static Set<QName> qnames ;
+    
     public static Set<QName> getQNames() {
-        if (qnames == null) {
-            qnames = new HashSet<QName>();
-            for (JAXWSQName wq : values()) {
-                qnames.add(wq.getQName());
-            }
-        }
         return qnames;
     }
+    
+    static {
+        qnames = new HashSet<QName>();
+        for (JAXWSQName wq : values()) {
+            qnames.add(wq.getQName());
+        }
+    }
+    
     private final QName qName;
 
 }
