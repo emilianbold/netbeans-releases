@@ -46,7 +46,7 @@ package org.netbeans.modules.cnd.completion.cplusplus.ext;
 import org.netbeans.api.lexer.TokenId;
 import java.util.List;
 import java.util.ArrayList;
-import java.util.Stack;
+import java.util.LinkedList;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.cnd.api.lexer.CndLexerUtilities;
 import org.netbeans.cnd.api.lexer.CppTokenId;
@@ -413,9 +413,8 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<Token
         return false;
     }
     
-    private boolean isSupportTemplates(Token<TokenId> token) {
-        Stack<CppTokenId> stack = new Stack<CppTokenId>();
-        
+    private boolean isSupportTemplates() {
+        LinkedList<CppTokenId> stack = new LinkedList<CppTokenId>();
         for (OffsetableToken offsetableToken : lookaheadTokens) {
             switch((CppTokenId)offsetableToken.token.id()) {
                 case LT:
@@ -444,30 +443,6 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<Token
                     break;
                 case LBRACE:
                     stack.push(CppTokenId.LBRACE);
-                    break;
-                case RBRACE:
-                    if(!stack.isEmpty() && stack.pop() != CppTokenId.LBRACE) {
-                        return false;
-                    }
-                    break;
-            }
-        }
-        if(token != null) {
-            switch((CppTokenId)token.id()) {
-                case GT:
-                    if(!stack.isEmpty() && stack.pop() != CppTokenId.LT) {
-                        return false;
-                    }
-                    break;
-                case RPAREN:
-                    if(!stack.isEmpty() && stack.pop() != CppTokenId.LPAREN) {
-                        return false;
-                    }
-                    break;
-                case RBRACKET:
-                    if(!stack.isEmpty() && stack.pop() != CppTokenId.LBRACKET) {
-                        return false;
-                    }
                     break;
                 case RBRACE:
                     if(!stack.isEmpty() && stack.pop() != CppTokenId.LBRACE) {
@@ -2476,11 +2451,24 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<Token
         boolean oldSupportTemplates = supportTemplates;
         Boolean oldInPP = inPP;
         int lookaheadSize = lookaheadTokens.size();
+        supportTemplates = isSupportTemplates();
         for (int i = 0; i < lookaheadSize; i++) {
-            supportTemplates = isSupportTemplates(null);
             OffsetableToken offsetableToken = lookaheadTokens.remove(0);
             inPP = offsetableToken.inPP;
             tokenImpl(offsetableToken.token, offsetableToken.offset, offsetableToken.macro);
+            switch ((CppTokenId) offsetableToken.token.id()) {
+                case LT:
+                case GT:
+                case LPAREN:
+                case RPAREN:
+                case LBRACKET:
+                case RBRACKET:
+                case LBRACE:
+                case RBRACE:
+                    supportTemplates = isSupportTemplates();
+                    break;
+            }        
+            
         }
         lookaheadTokens.clear();
         supportTemplates = oldSupportTemplates;
