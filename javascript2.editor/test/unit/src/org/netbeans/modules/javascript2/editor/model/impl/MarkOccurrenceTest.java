@@ -638,7 +638,14 @@ public class MarkOccurrenceTest extends JsTestBase {
     public void testIssue223465() throws Exception {
         checkOccurrences("testfiles/markoccurences/issue223465.js", "var so^me = {", true);
     }
+   
+    public void testIssue223699_01() throws Exception {
+        checkOccurrences("testfiles/coloring/issue223699.js","        this[bug].init( a, b^ug, this );", true);
+    }
 
+    public void testIssue223699_02() throws Exception {
+        checkOccurrences("testfiles/coloring/issue223699.js","        this[bug].init( a^, bug, this );", true);
+    }
         
     private String getTestPath() {
         return getTestFolderPath() + "/" + getTestName() + ".js";//NOI18N
