@@ -44,6 +44,9 @@ package org.netbeans.lib.editor.util;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * @since 1.52
+ */
 public class StringEscapeUtils {
 
     private static enum Escape {

@@ -52,9 +52,12 @@ import org.openide.filesystems.URLMapper;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.Exceptions;
+import org.openide.util.RequestProcessor;
 
 
 public class AttachSourcePanel extends javax.swing.JPanel {
+
+    private static final RequestProcessor RP = new RequestProcessor(AttachSourcePanel.class);
 
     private final URL root;
     private final URL file;
@@ -115,49 +118,56 @@ public class AttachSourcePanel extends javax.swing.JPanel {
 
 private void attachSources(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_attachSources
         jButton1.setEnabled(false);
-        SourceJavadocAttacher.attachSources(root, new SourceJavadocAttacher.AttachmentListener() {
+        RP.execute(new Runnable() {
             @Override
-            public void attachmentSucceeded() {
-                boolean success = false;
-                final FileObject rootFo = URLMapper.findFileObject(root);
-                final FileObject fileFo = URLMapper.findFileObject(file);
-                if (rootFo != null && fileFo != null) {
-                    final FileObject[] fos = SourceForBinaryQuery.findSourceRoots(root).getRoots();
-                    if (fos.length > 0) {
-                        final ClassPath cp = ClassPathSupport.createClassPath(fos);
-                        final FileObject newFileFo = cp.findResource(binaryName + ".java"); //NOI18N
-                        if (newFileFo != null) {
-                            try {
-                                final EditorCookie ec = DataObject.find(fileFo).getLookup().lookup(EditorCookie.class);
-                                final Openable open = DataObject.find(newFileFo).getLookup().lookup(Openable.class);
-                                if (ec != null && open != null) {
-                                    ec.close();
-                                    open.open();
-                                    success = true;
+            public void run() {
+                SourceJavadocAttacher.attachSources(
+                    root,
+                    new SourceJavadocAttacher.AttachmentListener() {
+                        @Override
+                        public void attachmentSucceeded() {
+                            boolean success = false;
+                            final FileObject rootFo = URLMapper.findFileObject(root);
+                            final FileObject fileFo = URLMapper.findFileObject(file);
+                            if (rootFo != null && fileFo != null) {
+                                final FileObject[] fos = SourceForBinaryQuery.findSourceRoots(root).getRoots();
+                                if (fos.length > 0) {
+                                    final ClassPath cp = ClassPathSupport.createClassPath(fos);
+                                    final FileObject newFileFo = cp.findResource(binaryName + ".java"); //NOI18N
+                                    if (newFileFo != null) {
+                                        try {
+                                            final EditorCookie ec = DataObject.find(fileFo).getLookup().lookup(EditorCookie.class);
+                                            final Openable open = DataObject.find(newFileFo).getLookup().lookup(Openable.class);
+                                            if (ec != null && open != null) {
+                                                ec.close();
+                                                open.open();
+                                                success = true;
+                                            }
+                                        } catch (DataObjectNotFoundException ex) {
+                                            Exceptions.printStackTrace(ex);
+                                        }
+                                    }
                                 }
-                            } catch (DataObjectNotFoundException ex) {
-                                Exceptions.printStackTrace(ex);
+                            }
+                            if (!success) {
+                                enableAttach();
                             }
                         }
-                    }
-                }
-                if (!success) {
-                    enableAttach();
-                }
-            }
 
-            @Override
-            public void attachmentFailed() {
-                enableAttach();
-            }
+                        @Override
+                        public void attachmentFailed() {
+                            enableAttach();
+                        }
 
-            private void enableAttach() {
-                SwingUtilities.invokeLater(new Runnable() {
-                    @Override
-                    public void run() {
-                        jButton1.setEnabled(true);
-                    }
-                });
+                        private void enableAttach() {
+                            SwingUtilities.invokeLater(new Runnable() {
+                                @Override
+                                public void run() {
+                                    jButton1.setEnabled(true);
+                                }
+                            });
+                        }
+                    });
             }
         });
 }//GEN-LAST:event_attachSources
