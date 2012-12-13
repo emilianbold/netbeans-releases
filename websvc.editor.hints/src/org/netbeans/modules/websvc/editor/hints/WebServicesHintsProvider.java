@@ -111,11 +111,10 @@ public class WebServicesHintsProvider {
     }
     
     public void run(final CompilationInfo info) throws Exception{
-        if (runningInstance != null){
-            runningInstance.cancel();
-        }
-        
         synchronized(singleInstanceLock){
+            if (runningInstance != null){
+                runningInstance.cancel();
+            }
             runningInstance = this;
             // the 'cancelled' flag must be reset as the instance of WebServicesHintsProvider is reused
             cancelled = false;

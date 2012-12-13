@@ -54,6 +54,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
@@ -235,32 +236,31 @@ public class Utils {
                         boolean serviceNameFound=false;
                         boolean portNameFound=false;
                         boolean tnsFound = false;
-                        for(ExecutableElement ex:expressions.keySet()) {
+                        for(Entry<? extends ExecutableElement, 
+                                ? extends AnnotationValue> entry: expressions.entrySet()) 
+                        {
+                            ExecutableElement ex = entry.getKey();
+                            AnnotationValue value = entry.getValue();
                             if (ex.getSimpleName().contentEquals("serviceName")) { //NOI18N
-                                serviceModel.serviceName = (String)expressions.
-                                    get(ex).getValue();
+                                serviceModel.serviceName = (String)value.getValue();
                                 serviceNameFound=true;
                             } else if (ex.getSimpleName().contentEquals("name")) { //NOI18N
-                                serviceModel.name = (String)expressions.get(ex).
-                                    getValue();
+                                serviceModel.name = (String)value.getValue();
                                 nameFound=true;
                             } else if (ex.getSimpleName().contentEquals("portName")) { //NOI18N
-                                serviceModel.portName = (String)expressions.get(ex).getValue();
+                                serviceModel.portName = (String)value.getValue();
                                 portNameFound=true;
                             } else if (ex.getSimpleName().contentEquals(
                                     "targetNamespace"))  //NOI18N
                             {
-                                serviceModel.targetNamespace = (String)expressions.
-                                    get(ex).getValue();
+                                serviceModel.targetNamespace = (String)value.getValue();
                                 tnsFound = true;
                             } else if (ex.getSimpleName().contentEquals(
                                     "endpointInterface")) //NOI18N
                             {
-                                serviceModel.endpointInterface = (String)expressions.
-                                    get(ex).getValue();
+                                serviceModel.endpointInterface = (String)value.getValue();
                             } else if (ex.getSimpleName().contentEquals("wsdlLocation")) { //NOI18N
-                                serviceModel.wsdlLocation = (String)expressions.
-                                    get(ex).getValue();
+                                serviceModel.wsdlLocation = (String)value.getValue();
                             }
                         }
                         // set default names
@@ -422,25 +422,31 @@ public class Utils {
         for (AnnotationMirror anMirror : methodAnnotations) {
             if (controller.getTypes().isSameType(methodAnotationEl.asType(), anMirror.getAnnotationType())) {
                 Map<? extends ExecutableElement, ? extends AnnotationValue> expressions = anMirror.getElementValues();
-                for(ExecutableElement ex:expressions.keySet()) {
+                for(Entry<? extends ExecutableElement, ? extends AnnotationValue> entry:
+                    expressions.entrySet()) 
+                {
+                    ExecutableElement ex = entry.getKey();
                     if (ex.getSimpleName().contentEquals("operationName")) { //NOI18N
-                        methodModel.operationName = (String)expressions.get(ex).getValue();
+                        methodModel.operationName = (String)entry.getValue().getValue();
                         nameFound=true;
                     } else if (ex.getSimpleName().contentEquals("action")) { //NOI18N
-                        methodModel.action = (String)expressions.get(ex).getValue();
+                        methodModel.action = (String)entry.getValue().getValue();
                     }
                 }
                 
             } else if (controller.getTypes().isSameType(resultAnotationEl.asType(), anMirror.getAnnotationType())) {
                 Map<? extends ExecutableElement, ? extends AnnotationValue> expressions = anMirror.getElementValues();
-                for(ExecutableElement ex:expressions.keySet()) {
+                for(Entry<? extends ExecutableElement, ? extends AnnotationValue> entry:
+                    expressions.entrySet()) 
+                {
+                    ExecutableElement ex = entry.getKey();
                     if (ex.getSimpleName().contentEquals("name")) { //NOI18N
-                        resultModel.setName((String)expressions.get(ex).getValue());
+                        resultModel.setName((String)entry.getValue().getValue());
                         resultNameFound=true;
                     } else if (ex.getSimpleName().contentEquals("partName")) { //NOI18N
-                        resultModel.setPartName((String)expressions.get(ex).getValue());
+                        resultModel.setPartName((String)entry.getValue().getValue());
                     } else if (ex.getSimpleName().contentEquals("targetNamespace")) { //NOI18N
-                        resultModel.setTargetNamespace((String)expressions.get(ex).getValue());
+                        resultModel.setTargetNamespace((String)entry.getValue().getValue());
                     }
                 }
             } else if (controller.getTypes().isSameType(onewayAnotationEl.asType(), anMirror.getAnnotationType())) {
@@ -568,15 +574,19 @@ public class Utils {
         for (AnnotationMirror anMirror : paramAnnotations) {
             if (controller.getTypes().isSameType(paramAnotationEl.asType(), anMirror.getAnnotationType())) {
                 Map<? extends ExecutableElement, ? extends AnnotationValue> expressions = anMirror.getElementValues();
-                for(ExecutableElement ex:expressions.keySet()) {
+                for(Entry<? extends ExecutableElement, ? extends AnnotationValue> entry:
+                    expressions.entrySet()) 
+                {
+                    ExecutableElement ex = entry.getKey();
+                    AnnotationValue value = entry.getValue();
                     if (ex.getSimpleName().contentEquals("name")) { //NOI18N
-                        paramModel.name = (String)expressions.get(ex).getValue();
+                        paramModel.name = (String)value.getValue();
                     } else if (ex.getSimpleName().contentEquals("partName")) { //NOI18N
-                        paramModel.setPartName((String)expressions.get(ex).getValue());
+                        paramModel.setPartName((String)value.getValue());
                     } else if (ex.getSimpleName().contentEquals("targetNamespace")) { //NOI18N
-                        paramModel.setTargetNamespace((String)expressions.get(ex).getValue());
+                        paramModel.setTargetNamespace((String)value.getValue());
                     } else if (ex.getSimpleName().contentEquals("mode")) { //NOI18N
-                        paramModel.setMode(Mode.valueOf(expressions.get(ex).getValue().toString()));
+                        paramModel.setMode(Mode.valueOf(value.getValue().toString()));
                     }
                 }
             }
@@ -781,9 +791,14 @@ public class Utils {
                         for (AnnotationMirror anMirror : methodAnnotations) {
                             if (workingCopy.getTypes().isSameType(methodAnotationEl.asType(), anMirror.getAnnotationType())) {
                                 Map<? extends ExecutableElement, ? extends AnnotationValue> expressions = anMirror.getElementValues();
-                                for(ExecutableElement ex:expressions.keySet()) {
+                                for(Entry<? extends ExecutableElement, ? extends AnnotationValue> entry:
+                                    expressions.entrySet()) 
+                                {
+                                    ExecutableElement ex = entry.getKey();
                                     if (ex.getSimpleName().contentEquals("operationName")) { //NOI18N
-                                        if (methodModel.getOperationName().equals(expressions.get(ex).getValue())) {
+                                        if (methodModel.getOperationName().equals(
+                                                entry.getValue().getValue())) 
+                                        {
                                             targetMethod = method;
                                         }
                                         break;
@@ -861,7 +876,7 @@ public class Utils {
     public static  String getFormatedDocument(SOAPMessage message) {
         try {
             TransformerFactory transformerFactory = TransformerFactory.newInstance();
-            transformerFactory.setAttribute("indent-number", new Integer(4));
+            transformerFactory.setAttribute("indent-number", 4);
             Transformer transformer = transformerFactory.newTransformer();
             transformer.setOutputProperty(OutputKeys.INDENT, "yes");
             
@@ -972,9 +987,12 @@ public class Utils {
                             }
                             Map<? extends ExecutableElement, ? extends AnnotationValue> 
                                 expressions = anMirror.getElementValues();
-                            for(ExecutableElement ex:expressions.keySet()) {
+                            for(Entry<? extends ExecutableElement, ? extends AnnotationValue> entry:
+                                expressions.entrySet()) 
+                            {
+                                ExecutableElement ex = entry.getKey();
                                 if (ex.getSimpleName().contentEquals(attributeName)) {
-                                    String interfaceName =  (String)expressions.get(ex).getValue();
+                                    String interfaceName =  (String)entry.getValue().getValue();
                                     if(interfaceName != null){
                                         attributeValue[0] = URLEncoder.encode(interfaceName,"UTF-8"); //NOI18N
                                         break;

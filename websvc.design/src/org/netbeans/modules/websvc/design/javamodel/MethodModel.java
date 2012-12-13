@@ -104,8 +104,9 @@ public class MethodModel {
     }
     
     public void setOperationName(String operationName) {
-        if (this.operationName != operationName) {
-            JaxWsUtils.setWebMethodAttrValue(getImplementationClass(), methodHandle, "operationName", operationName); //NOI18N
+        if (this.operationName == null || !this.operationName.equals(operationName)) {
+            JaxWsUtils.setWebMethodAttrValue(getImplementationClass(), methodHandle, 
+                    "operationName", operationName); //NOI18N
             
             this.operationName=operationName==null?javaName:operationName;
         }
