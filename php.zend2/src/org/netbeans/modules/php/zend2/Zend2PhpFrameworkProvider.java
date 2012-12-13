@@ -134,12 +134,18 @@ public final class Zend2PhpFrameworkProvider extends PhpFrameworkProvider {
 
     @Override
     public PhpModuleExtender createPhpModuleExtender(PhpModule phpModule) {
-        return null;
+        return new Zend2PhpModuleExtender();
     }
 
     @Override
     public PhpModuleProperties getPhpModuleProperties(PhpModule phpModule) {
-        return new PhpModuleProperties();
+        PhpModuleProperties properties = new PhpModuleProperties();
+        FileObject sourceDirectory = phpModule.getSourceDirectory();
+        if (sourceDirectory == null) {
+            return properties;
+        }
+        return properties
+                .setWebRoot(sourceDirectory.getFileObject("public")); // NOI18N
     }
 
     @Override
