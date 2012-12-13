@@ -349,6 +349,188 @@ public class FileListWorkOrderingTest extends NbTestCase {
         }
     }
 
+    /**
+     * Tests that consequent file list works on single roots with intermediate delete work on same root
+     * are collapsed if there is at least one FLW following the delete work.
+     * Runs special work at start which in execution schedules FLW(src1), DEL(src1), FLW(src1), FLW(1) -> 2 FLWs should
+     * be executed.
+     */
+    public void testFLWOnSingleRootsWithIntermediateDelWorkFollowedByFLWOnSameRootAreAbsorbed() throws InterruptedException, IOException {
+
+        assertTrue(GlobalPathRegistry.getDefault().getPaths(FOO_SOURCES).isEmpty());
+        final RepositoryUpdaterTest.TestHandler handler = new RepositoryUpdaterTest.TestHandler();
+        final Logger logger = Logger.getLogger(RepositoryUpdater.class.getName()+".tests"); //NOI18N
+        logger.setLevel (Level.FINEST);
+        logger.addHandler(handler);
+        try {
+            globalPathRegistry_register(FOO_SOURCES,new ClassPath[]{cp1});
+            assertTrue (handler.await());
+            assertEquals(0, handler.getBinaries().size());
+            assertEquals(2, handler.getSources().size());
+
+            handler.reset(RepositoryUpdaterTest.TestHandler.Type.FILELIST);
+            MimeLookup.getLookup(MimePath.get(FOO_MIME)).
+                    lookup(FooIndexerFactory.class).
+                    reset();
+            RepositoryUpdater.getDefault().runAsWork(
+                new Runnable() {
+                   @Override
+                   public void run() {
+                       //First schedule of refresh for src1
+                       IndexingManager.getDefault().refreshIndex(
+                          src1.toURL(),
+                          Collections.<URL>emptyList(),
+                          false);
+                       //Second schedulte some delete in src2
+                       RepositoryUpdater.getDefault().addDeleteJob(
+                          src1.toURL(),
+                          Collections.<String>emptySet(),
+                          LogContext.create(LogContext.EventType.PATH, "Test"));    //NOI18N
+                       //Third schedule of refresh for src1
+                       IndexingManager.getDefault().refreshIndex(
+                          src1.toURL(),
+                          Collections.<URL>emptyList(),
+                          false);
+                       //Fourth schedule of refresh for src1
+                       IndexingManager.getDefault().refreshIndex(
+                          src1.toURL(),
+                          Collections.<URL>emptyList(),
+                          false);
+                   }
+                });
+            assertTrue (handler.await());
+            assertTrue (awaitRUSilence());
+            assertEquals(2, MimeLookup.getLookup(MimePath.get(FOO_MIME)).
+                            lookup(FooIndexerFactory.class).
+                            getIndexingCount());
+        } finally {
+            logger.removeHandler(handler);
+        }
+    }
+
+
+    /**
+     * Tests that consequent file list works on different roots with intermediate delete work on first root
+     * are not collapsed.
+     * Runs special work at start which in execution schedules FLW(src1), DEL(src1), FLW(src2), FLW(src1) -> 3 FLWs should
+     * be executed.
+     */
+    public void testFLWOnMultipleRootsWithIntermediateDelWorkFollowedByFLWNotAbsorbed() throws InterruptedException, IOException {
+
+        assertTrue(GlobalPathRegistry.getDefault().getPaths(FOO_SOURCES).isEmpty());
+        final RepositoryUpdaterTest.TestHandler handler = new RepositoryUpdaterTest.TestHandler();
+        final Logger logger = Logger.getLogger(RepositoryUpdater.class.getName()+".tests"); //NOI18N
+        logger.setLevel (Level.FINEST);
+        logger.addHandler(handler);
+        try {
+            globalPathRegistry_register(FOO_SOURCES,new ClassPath[]{cp1});
+            assertTrue (handler.await());
+            assertEquals(0, handler.getBinaries().size());
+            assertEquals(2, handler.getSources().size());
+
+            handler.reset(RepositoryUpdaterTest.TestHandler.Type.FILELIST);
+            MimeLookup.getLookup(MimePath.get(FOO_MIME)).
+                    lookup(FooIndexerFactory.class).
+                    reset();
+            RepositoryUpdater.getDefault().runAsWork(
+                new Runnable() {
+                   @Override
+                   public void run() {
+                       //First schedule of refresh for src1
+                       IndexingManager.getDefault().refreshIndex(
+                          src1.toURL(),
+                          Collections.<URL>emptyList(),
+                          false);
+                       //Second schedulte some delete in src2
+                       RepositoryUpdater.getDefault().addDeleteJob(
+                          src1.toURL(),
+                          Collections.<String>emptySet(),
+                          LogContext.create(LogContext.EventType.PATH, "Test"));    //NOI18N
+                       //Third schedule of refresh for src1
+                       IndexingManager.getDefault().refreshIndex(
+                          src2.toURL(),
+                          Collections.<URL>emptyList(),
+                          false);
+                       //Fourth schedule of refresh for src1
+                       IndexingManager.getDefault().refreshIndex(
+                          src1.toURL(),
+                          Collections.<URL>emptyList(),
+                          false);
+                   }
+                });
+            assertTrue (handler.await());
+            assertTrue (awaitRUSilence());
+            assertEquals(3, MimeLookup.getLookup(MimePath.get(FOO_MIME)).
+                            lookup(FooIndexerFactory.class).
+                            getIndexingCount());
+        } finally {
+            logger.removeHandler(handler);
+        }
+    }
+
+    /**
+     * Tests that consequent file list works on same root with intermediate delete works are collapsed.
+     * Runs special work at start which in execution schedules FLW(src1), DEL(src1), FLW(src1), DEL(src1), FLW(src1)
+     * FLW, DEL+DEL, FLW+FLW -> 2 FLWs should be executed.
+     */
+    public void testFLWOnSingleRootsWithIntermediateDelWorksFollowedByFLWNotAbsorbed() throws InterruptedException, IOException {
+
+        assertTrue(GlobalPathRegistry.getDefault().getPaths(FOO_SOURCES).isEmpty());
+        final RepositoryUpdaterTest.TestHandler handler = new RepositoryUpdaterTest.TestHandler();
+        final Logger logger = Logger.getLogger(RepositoryUpdater.class.getName()+".tests"); //NOI18N
+        logger.setLevel (Level.FINEST);
+        logger.addHandler(handler);
+        try {
+            globalPathRegistry_register(FOO_SOURCES,new ClassPath[]{cp1});
+            assertTrue (handler.await());
+            assertEquals(0, handler.getBinaries().size());
+            assertEquals(2, handler.getSources().size());
+
+            handler.reset(RepositoryUpdaterTest.TestHandler.Type.FILELIST);
+            MimeLookup.getLookup(MimePath.get(FOO_MIME)).
+                    lookup(FooIndexerFactory.class).
+                    reset();
+            RepositoryUpdater.getDefault().runAsWork(
+                new Runnable() {
+                   @Override
+                   public void run() {
+                       //First schedule of refresh for src1
+                       IndexingManager.getDefault().refreshIndex(
+                          src1.toURL(),
+                          Collections.<URL>emptyList(),
+                          false);
+                       //Second schedulte some delete in src2
+                       RepositoryUpdater.getDefault().addDeleteJob(
+                          src1.toURL(),
+                          Collections.<String>emptySet(),
+                          LogContext.create(LogContext.EventType.PATH, "Test"));    //NOI18N
+                       //Third schedule of refresh for src1
+                       IndexingManager.getDefault().refreshIndex(
+                          src1.toURL(),
+                          Collections.<URL>emptyList(),
+                          false);
+                       //Second schedulte some delete in src2
+                       RepositoryUpdater.getDefault().addDeleteJob(
+                          src1.toURL(),
+                          Collections.<String>emptySet(),
+                          LogContext.create(LogContext.EventType.PATH, "Test"));    //NOI18N
+                       //Fourth schedule of refresh for src1
+                       IndexingManager.getDefault().refreshIndex(
+                          src1.toURL(),
+                          Collections.<URL>emptyList(),
+                          false);
+                   }
+                });
+            assertTrue (handler.await());
+            assertTrue (awaitRUSilence());
+            assertEquals(2, MimeLookup.getLookup(MimePath.get(FOO_MIME)).
+                            lookup(FooIndexerFactory.class).
+                            getIndexingCount());
+        } finally {
+            logger.removeHandler(handler);
+        }
+    }
+
     private void globalPathRegistry_register(String id, ClassPath [] classpaths) {
         Map<ClassPath,Void> map = registeredClasspaths.get(id);
         if (map == null) {
