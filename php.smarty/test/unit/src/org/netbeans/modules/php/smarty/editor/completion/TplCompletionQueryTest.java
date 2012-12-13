@@ -41,16 +41,13 @@
  */
 package org.netbeans.modules.php.smarty.editor.completion;
 
-import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import javax.swing.JEditorPane;
-import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import junit.framework.AssertionFailedError;
-import junit.framework.TestCase;
 import org.netbeans.modules.csl.api.test.CslTestBase;
 import org.netbeans.modules.csl.spi.DefaultLanguageConfig;
 import org.netbeans.modules.php.smarty.editor.TplDataLoader;
@@ -70,6 +67,10 @@ public class TplCompletionQueryTest extends CslTestBase {
     // 
     public void testTagAttributeValues() throws Exception {
         assertItems("{|", arr("append", "if", "section"), Match.CONTAINS);
+    }
+
+    public void testIssue22376() throws Exception {
+        assertItems("{|\n", arr("append", "if", "section"), Match.CONTAINS);
     }
 
     protected void assertItems(String documentText, final String[] expectedItemsNames, final Match type) throws Exception {
