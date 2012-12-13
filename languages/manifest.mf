@@ -6,3 +6,4 @@ OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/languages/Bundle.properti
 OpenIDE-Module-Implementation-Version: 2
 AutoUpdate-Show-In-Client: false
 OpenIDE-Module-Deprecated: true
+OpenIDE-Module-Recommends: languages.refactoring

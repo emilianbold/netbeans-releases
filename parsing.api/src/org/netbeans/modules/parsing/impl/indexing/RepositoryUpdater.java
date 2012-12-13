@@ -5111,7 +5111,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                     // coalesce ordinary jobs
                     Work absorbedBy = null;
                     if (!wait) {
-                        boolean allowAbsorb = true;
+                        Work lastDel = null;
 
                         //XXX (#198565): don't let FileListWork forerun delete works:
                         if (work instanceof FileListWork) {
@@ -5119,18 +5119,19 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                             for (Work w : todo) {
                                 if (w instanceof DeleteWork &&
                                     ((DeleteWork)w).root.equals(flw.root)) {
-                                    allowAbsorb = false;
-                                    break;
+                                    lastDel = w;
                                 }
                             }
                         }
 
-                        if (allowAbsorb) {
-                            for(Work w : todo) {
+                        for(Work w : todo) {
+                            if (lastDel == null) {
                                 if (w.absorb(work)) {
                                     absorbedBy = w;
                                     break;
                                 }
+                            } else if (w == lastDel) {
+                                lastDel = null;
                             }
                         }
                     }
