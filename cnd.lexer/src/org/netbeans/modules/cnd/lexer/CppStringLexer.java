@@ -259,7 +259,14 @@ public class CppStringLexer implements Lexer<CppStringTokenId> {
                 case 'L':
                     if (startState == INIT) {
                         state = PREFIX;
-                        return token(CppStringTokenId.PREFIX_L);
+                        int next = read();
+                        if (next == 'R') {
+                            assert rawString;
+                            return token(CppStringTokenId.PREFIX_LR);
+                        } else {
+                            input.backup(1);
+                            return token(CppStringTokenId.PREFIX_L);
+                        }                        
                     }
                     break;
                 case 'U':

@@ -325,6 +325,38 @@ public class RemoteLinksTestCase extends RemoteFileTestBase {
     }
     
     @ForAllEnvironments
+    public void testCyclicLinksNonExistentIsFolder() throws Exception {
+        //bz#216212 - StackOverflowError at org.netbeans.modules.remote.impl.fs.RemoteDirectory.getStorageFile
+        String baseDir = null;
+        try {
+            baseDir = mkTempAndRefreshParent(true);
+            String folderName = "folder";            
+            String selfLinkName = "linkToFolder";
+            String script =
+                    "cd " + baseDir + "; " +
+                    "mkdir " + folderName + ";" + 
+                    "ln -s " + folderName + ' ' + selfLinkName + ";" +
+                    " rm -rf " + folderName + ";" + 
+                    "ln -s " + selfLinkName + ' ' + folderName + ";";
+            ProcessUtils.ExitStatus res = ProcessUtils.execute(execEnv, "sh", "-c", script);
+            assertEquals("Error executing script \"" + script + "\": " + res.error, 0, res.exitCode);
+
+            FileObject baseDirFO = getFileObject(baseDir);
+            baseDirFO.refresh();
+            FileObject folderFO = baseDirFO.getFileObject(folderName);
+            FileObject linkFO = baseDirFO.getFileObject(selfLinkName);
+            assertTrue(!folderFO.canRead());
+            assertTrue(folderFO.isData());
+            assertTrue(!folderFO.isFolder());
+            assertTrue(!linkFO.canRead());
+            assertTrue(linkFO.isData());
+            assertTrue(!linkFO.isFolder());            
+        } finally {
+            removeRemoteDirIfNotNull(baseDir);
+        }
+    }    
+    
+    @ForAllEnvironments
     public void testLinkLastModificationTime() throws Exception {
         String baseDir = null;
         try {

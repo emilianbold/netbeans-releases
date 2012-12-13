@@ -17,19 +17,22 @@
         create custom goals and invoke the goals individually.
         When you execute a goal, the Maven output with the plugin and goal identifiers are displayed in the Output window.</p>
 
-        <p>You do not need to build the project or compile individual classes to run the project in the IDE.
-        By default, the IDE automatically compiles classes when you save them.
-        These incrementally compiled files are stored in a cache in your user directory and are copied to your project's build folder
-        when you run or debug your project.</p>
+        <p>When you want to generate distributable files for the project, such as JAR files or WAR files, you need to build the project.
+        When you build a Maven project using the IDE's Build command, by default the IDE executes the plugin goals in the
+        <tt>install</tt> phase of the Maven lifecycle (builds the project and adds the artifact to the local repository).</p>
+        
 
         <ul class="note">
-            <li>You can disable the Compile on Save option in the Compile category of the project's Properties window.</li>
+            <li>The IDE can automatically compile classes when you save them if you enable the Compile on Save option 
+                in the Compile category of the project's Properties window.
+                When Compile on Save is enabled you do not need to build the project or compile individual classes 
+                to run or test the project in the IDE.
+                The incrementally compiled files are stored in a cache in your user directory and are copied to your 
+                project's build folder when you run or debug your project.
+            <p>Compile on Save is enabled by default for WAR, EJB and EAR projects.</p>
+            </li>
         </ul>
 
-        <p>If you want to generate distributable files for the project, such as JAR files or WAR files, you need to build the project.
-        When you build a Maven project using the IDE's Build command, by default the IDE executes the plugin goals in the
-        <tt>install</tt> phase of the Maven lifecycle (builds the project and adds the artifact to the local repository).
-        </p>
 
         <p><strong>To build a Maven project:</strong></p>
         <ol>

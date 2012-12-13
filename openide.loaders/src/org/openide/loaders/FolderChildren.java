@@ -142,7 +142,28 @@ implements PropertyChangeListener, ChangeListener, FileChangeListener {
     @Override
     public void stateChanged(ChangeEvent e) {
         // Filtering changed need to recompute children
-        refreshChildren(RefreshMode.DEEP);
+        Object source = e.getSource();
+        FileObject fo = null;
+        if (source instanceof DataObject) {
+            DataObject dobj = (DataObject) source;
+            fo = dobj.getPrimaryFile();
+        } else if (source instanceof FileObject) {
+            fo = (FileObject) source;
+        }
+        boolean doRefresh;
+        if (fo != null) {
+            FileObject folderFO = folder.getPrimaryFile();
+            if (!fo.isFolder()) {
+                doRefresh = (fo.getParent() == folderFO);
+            } else {
+                doRefresh = (fo == folderFO);
+            }
+        } else {
+            doRefresh = true;
+        }
+        if (doRefresh) {
+            refreshChildren(RefreshMode.DEEP);
+        }
     }
 
     private enum RefreshMode {SHALLOW, SHALLOW_IMMEDIATE, DEEP, DEEP_LATER, CLEAR}

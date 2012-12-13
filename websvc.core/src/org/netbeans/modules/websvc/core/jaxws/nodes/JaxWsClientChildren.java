@@ -260,7 +260,7 @@ public class JaxWsClientChildren extends Children.Keys<WsdlService> {
             });
         }
         // re-generate java artifacts
-        FileObject sourceRoot = getNode().getLookup().lookup(FileObject.class);
+        //FileObject sourceRoot = getNode().getLookup().lookup(FileObject.class);
         Project project = FileOwnerQuery.getOwner(srcRoot);
         if (project != null) {
             FileObject buildImplFo = project.getProjectDirectory().getFileObject(GeneratedFilesHelper.BUILD_XML_PATH);

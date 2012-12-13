@@ -468,7 +468,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
                         }
                     }
                 } catch (IOException ex) {
-                    ex.printStackTrace();
+                    ex.printStackTrace(System.err);
                 }
             }
         }
@@ -530,7 +530,19 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         CndUtils.assertTrue(this.platformProject == null);
         CndUtils.assertNotNull(platformProject, "Passing null project for ", this);
         this.platformProject = platformProject;
-        CndUtils.assertTrue(this.uniqueName.equals(getUniqueName(fileSystem, platformProject)));
+        checkUniqueNameConsistency();
+    }
+    
+    private void checkUniqueNameConsistency() {
+        if (CndUtils.isDebugMode()) {
+            CharSequence expectedUniqueName = getUniqueName(fileSystem, platformProject);
+            CharSequence defactoUniqueName = this.uniqueName;
+            if (!defactoUniqueName.equals(expectedUniqueName)) {
+                CndUtils.assertTrue(false,
+                        "Existing project unique name differ: " + defactoUniqueName + " - expected " + expectedUniqueName + //NOI18N
+                        " Cache location " + cacheLocation); //NOI18N
+            }
+        }
     }
 
     /** Finds namespace by its qualified name */
@@ -2830,13 +2842,32 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         return res;
     }
 
+
+    /**
+     * Creates a dummy ClassImpl for unresolved name, stores in map
+     * @param nameTokens name
+     * @param owner an owner to get file and offset from 
+     */
+    public static CsmClass getDummyForUnresolved(CharSequence[] nameTokens, OffsetableBase owner) {
+        if  (owner != null) {
+            CsmFile file = owner.getContainingFile();
+            if (file != null) {
+                ProjectBase project = (ProjectBase) file.getProject();
+                if (project != null) {
+                    return project.getDummyForUnresolved(nameTokens, file, owner.getStartOffset());
+                }
+            }            
+        }
+        return null;
+    }
+
     /**
      * Creates a dummy ClassImpl for unresolved name, stores in map
      * @param nameTokens name
      * @param file file that contains unresolved name (used for the purpose of statistics)
      * @param name offset that contains unresolved name (used for the purpose of statistics)
      */
-    public final CsmClass getDummyForUnresolved(CharSequence[] nameTokens, CsmFile file, int offset) {
+    private CsmClass getDummyForUnresolved(CharSequence[] nameTokens, CsmFile file, int offset) {
         if (Diagnostic.needStatistics()) {
             Diagnostic.onUnresolvedError(nameTokens, file, offset);
         }
@@ -3609,6 +3640,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
 
         APTSerializeUtils.writeFileNameIndex(this.uniqueName, aStream, unitId);
         aStream.writeBoolean(hasFileSystemProblems);
+        checkUniqueNameConsistency();
     }
 
     protected ProjectBase(RepositoryDataInput aStream) throws IOException {        

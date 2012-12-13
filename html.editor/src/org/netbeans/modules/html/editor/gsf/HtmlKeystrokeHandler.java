@@ -89,7 +89,7 @@ public class HtmlKeystrokeHandler implements KeystrokeHandler {
 
     @Override
     public boolean charBackspaced(Document doc, int caretOffset, JTextComponent target, char ch) throws BadLocationException {
-        return false;
+        return HtmlAutoCompletion.charBackspaced((BaseDocument)doc, caretOffset, target.getCaret(), ch);
     }
 
     @Override

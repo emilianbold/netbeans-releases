@@ -99,4 +99,21 @@ public class Symfony2CommandsXmlParserTest extends NbTestCase {
         assertEquals("swiftmailer:spool:send", command.getCommand());
     }
 
+    public void testIssue223639() throws Exception {
+        Reader reader = new BufferedReader(new FileReader(new File(getDataDir(), "issue223639.xml")));
+
+        List<Symfony2CommandVO> commands = new ArrayList<Symfony2CommandVO>();
+        Symfony2CommandsXmlParser.parse(reader, commands);
+
+        assertFalse(commands.isEmpty());
+        assertSame(36, commands.size());
+
+        Symfony2CommandVO command = commands.get(0);
+        assertEquals("help", command.getCommand());
+        assertEquals("Displays help for a command", command.getDescription());
+
+        command = commands.get(35);
+        assertEquals("twig:lint", command.getCommand());
+    }
+
 }

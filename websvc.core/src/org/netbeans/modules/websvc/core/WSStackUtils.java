@@ -131,6 +131,9 @@ public class WSStackUtils {
     public boolean hasJAXWSLibrary() {
         SourceGroup[] sgs = ProjectUtils.getSources(project).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
         ClassPath classPath = ClassPath.getClassPath(sgs[0].getRootFolder(),ClassPath.COMPILE);
+        if ( classPath == null ){
+            return false;
+        }
         FileObject wsimportFO = classPath.findResource("com/sun/tools/ws/ant/WsImport.class"); // NOI18N
         return wsimportFO != null;
     }

@@ -471,12 +471,12 @@ public final class MarkOccurrencesHighlighter extends HighlighterBase {
     }
 
     private static Collection<CsmReference> getPreprocReferences(AbstractDocument doc, CsmFile file, int searchOffset, Interrupter interrupter) {
-        TokenSequence<?> origPreprocTS = cppTokenSequence(doc, searchOffset, false);
-        if (origPreprocTS == null || origPreprocTS.language() != CppTokenId.languagePreproc()) {
-            return Collections.<CsmReference>emptyList();
-        }
         doc.readLock();
         try {
+            TokenSequence<?> origPreprocTS = cppTokenSequence(doc, searchOffset, false);
+            if (origPreprocTS == null || origPreprocTS.language() != CppTokenId.languagePreproc()) {
+                return Collections.<CsmReference>emptyList();
+            }
             TokenHierarchy<AbstractDocument> th = TokenHierarchy.get(doc);
             List<TokenSequence<?>> ppSequences = th.tokenSequenceList(origPreprocTS.languagePath(), 0, doc.getLength());
             ConditionalBlock top = new ConditionalBlock(null);

@@ -43,6 +43,7 @@
  */
 package org.netbeans.modules.html.editor;
 
+import java.util.concurrent.atomic.AtomicBoolean;
 import javax.swing.SwingUtilities;
 import javax.swing.text.Position;
 import org.netbeans.api.lexer.LanguagePath;
@@ -62,20 +63,19 @@ import org.netbeans.modules.html.editor.xhtml.XhtmlElTokenId;
 import org.openide.util.Exceptions;
 
 /**
- * This static class groups the whole aspect of bracket
- * completion. It is defined to clearly separate the functionality
- * and keep actions clean.
- * The methods of the class are called from different actions as
- * KeyTyped, DeletePreviousChar.
+ * This static class groups the whole aspect of bracket completion. It is
+ * defined to clearly separate the functionality and keep actions clean. The
+ * methods of the class are called from different actions as KeyTyped,
+ * DeletePreviousChar.
  */
 public class HtmlAutoCompletion {
 
     private static DocumentInsertIgnore insertIgnore;
 
-    /** Hook for before char inserted actions
+    /**
+     * Hook for before char inserted actions
      *
-     * <b>Runs under document atomic lock.</b>
-     * <b>Always runs in AWT.</b>
+     * <b>Runs under document atomic lock.</b> <b>Always runs in AWT.</b>
      *
      * @return false if the char should be inserted, true otherwise
      */
@@ -111,15 +111,72 @@ public class HtmlAutoCompletion {
 
     }
 
+    public static boolean charBackspaced(final BaseDocument doc,
+            final int dotPos,
+            Caret caret,
+            char ch) throws BadLocationException {
+
+        if (ch == '\'' || ch == '"') {
+            TokenSequence<HTMLTokenId> ts = LexUtilities.getTokenSequence((BaseDocument) doc, dotPos, HTMLTokenId.language());
+            if (ts != null) {
+                int diff = ts.move(dotPos);
+                if (diff == 0) {
+                    if (!ts.movePrevious()) {
+                        return false;
+                    }
+                } else if (diff > 0) {
+                    if (!(ts.moveNext())) {
+                        return false;
+                    }
+                } else {
+                    //before embedded ts
+                    return false;
+                }
+                Token<HTMLTokenId> token = ts.token();
+                if (token.id() == HTMLTokenId.OPERATOR) {
+                    if (ts.moveNext()) {
+                        token = ts.token();
+                        if(token.id() == HTMLTokenId.VALUE || token.id() == HTMLTokenId.VALUE_CSS || token.id() == HTMLTokenId.VALUE_JAVASCRIPT) {
+                            if(token.length() > 0) {
+                                char first = token.text().charAt(0);
+                                if(first == ch) {
+                                    //user pressed backspace in empty value: <div class="|" + BACKSPACE
+                                    //now the text is: <div class=|"
+                                    //expected result: remove the second quote
+                                    final AtomicBoolean result_ref = new AtomicBoolean();
+                                    doc.runAtomic(new Runnable() {
+
+                                        @Override
+                                        public void run() {
+                                            try {
+                                                doc.remove(dotPos, 1);
+                                                result_ref.set(true);
+                                            } catch (BadLocationException ex) {
+                                                Exceptions.printStackTrace(ex);
+                                            }
+                                        }
+                                        
+                                    });
+                                    return result_ref.get();
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+        }
+
+        return false; //unhandled
+    }
+
     /**
-     * A hook method called after a character was inserted into the
-     * document. The function checks for special characters for
-     * completion ()[]'"{} and other conditions and optionally performs
-     * changes to the doc and or caret (completes braces, moves caret,
-     * etc.)
+     * A hook method called after a character was inserted into the document.
+     * The function checks for special characters for completion ()[]'"{} and
+     * other conditions and optionally performs changes to the doc and or caret
+     * (completes braces, moves caret, etc.)
      *
-     * <b>Runs under document atomic lock.</b>
-     * <b>Always runs in AWT.</b>
+     * <b>Runs under document atomic lock.</b> <b>Always runs in AWT.</b>
      *
      * @param doc the document where the change occurred
      * @param dotPos position of the character insertion
@@ -196,14 +253,12 @@ public class HtmlAutoCompletion {
                 final Position from = doc.createPosition(Utilities.getRowStart(doc, dotPos));
                 final Position to = doc.createPosition(Utilities.getRowEnd(doc, dotPos));
                 SwingUtilities.invokeLater(new Runnable() {
-
                     @Override
                     public void run() {
                         final Indent indent = Indent.get(doc);
                         indent.lock();
                         try {
                             doc.runAtomic(new Runnable() {
-
                                 @Override
                                 public void run() {
                                     try {
@@ -240,9 +295,9 @@ public class HtmlAutoCompletion {
 
         Token<HTMLTokenId> token = ts.token();
         if (token.id() == HTMLTokenId.ERROR) {
-            if (ts.movePrevious() && (ts.token().id() == HTMLTokenId.TAG_OPEN ||
-                    ts.token().id() == HTMLTokenId.WS ||
-                    isHtmlValueToken(ts.token()))) {
+            if (ts.movePrevious() && (ts.token().id() == HTMLTokenId.TAG_OPEN
+                    || ts.token().id() == HTMLTokenId.WS
+                    || isHtmlValueToken(ts.token()))) {
                 // slash typed just after open tag name => autocomplete the > symbol
                 doc.insertString(dotPos + 1, ">", null); // NOI18N
 
@@ -272,7 +327,7 @@ public class HtmlAutoCompletion {
 
         Token<HTMLTokenId> token = ts.token();
         try {
-            if(isHtmlValueToken(token)) {
+            if (isHtmlValueToken(token)) {
                 //test if the user inserted the qutation in an attribute value and before
                 //an already existing end quotation
                 //the text looks following in such a situation:
@@ -282,8 +337,21 @@ public class HtmlAutoCompletion {
                     caret.setDot(dotPos + 1);
                     return true;
                 }
-                
+
             } else if (token.id() == HTMLTokenId.OPERATOR) {
+                //check if the next token isn't a value closed already by the same quote
+                if(ts.moveNext()) {
+                    Token<HTMLTokenId> next = ts.token();
+                    if(isHtmlValueToken(next)) {
+                        if(next.length() > 0) {
+                            char last = next.text().charAt(next.length() - 1);
+                            if(last == qchar) {
+                                return false; //ignore
+                            }
+                        }
+                    }
+                }
+                
                 //user typed quation just after equal sign after tag attribute name => complete the second quote
                 StringBuilder insert = new StringBuilder().append(qchar).append(qchar);
                 doc.insertString(dotPos, insert.toString(), null); // NOI18N
@@ -301,9 +369,9 @@ public class HtmlAutoCompletion {
     private static boolean isHtmlValueToken(Token token) {
         TokenId id = token.id();
 
-        return id == HTMLTokenId.VALUE ||
-                id == HTMLTokenId.VALUE_CSS ||
-                id == HTMLTokenId.VALUE_JAVASCRIPT;
+        return id == HTMLTokenId.VALUE
+                || id == HTMLTokenId.VALUE_CSS
+                || id == HTMLTokenId.VALUE_JAVASCRIPT;
     }
 
     private static void completeQuotes(final BaseDocument doc, final int dotPos, final Caret caret) {

@@ -69,6 +69,12 @@ public class AppClientJaxWsOpenHook extends ProjectOpenedHook {
     /** Creates a new instance of AppClientJaxWsOpenHook */
     public AppClientJaxWsOpenHook(Project prj) {
         this.prj = prj;
+        try {
+            Class.forName(WSUtils.class.getName());
+        }
+        catch (ClassNotFoundException e) {
+            assert false;
+        }
     }
     
     @Override
