@@ -101,11 +101,10 @@ import org.openide.util.NbBundle;
  */
 public final class UncaughtException implements ErrorRule<Void> {
     
-    /**
-     * Creates a new instance of UncaughtExceptionCreator
-     */
-    public UncaughtException() {
-    }
+    /*only for tests, currently:*/
+    static boolean allowMagicSurround = false;
+    
+    public UncaughtException() {}
 
     private List<? extends TypeMirror> findUncaughtExceptions(CompilationInfo info, TreePath path, List<? extends TypeMirror> exceptions) {
         List<TypeMirror> result = new ArrayList<TypeMirror>();
@@ -298,12 +297,16 @@ public final class UncaughtException implements ErrorRule<Void> {
                 }
                 
                 if (ErrorFixesFakeHint.enabled(ErrorFixesFakeHint.FixKind.SURROUND_WITH_TRY_CATCH)) {
+                    TreePath tryTree = MagicSurroundWithTryCatchFix.enclosingTry(path);
+                    if (tryTree != null) {
+                        result.add(new AddCatchFix(info, tryTree, thandles).toEditorFix());
+                    }
                     result.add(new OrigSurroundWithTryCatchFix(info.getJavaSource(), thandles, TreePathHandle.create(path, info), fqns));
                     //#134408: "Surround Block with try-catch" is redundant when the block contains just a single statement
                     TreePath tp = findBlock(path);
-                    boolean magic = true;
+                    boolean magic = tryTree == null || allowMagicSurround;
                     if(tp != null && tp.getLeaf().getKind() == Kind.BLOCK) {
-                        magic = ((BlockTree) tp.getLeaf()).getStatements().size() != 1;
+                        magic &= ((BlockTree) tp.getLeaf()).getStatements().size() != 1;
                     }
                     if(magic)
                         result.add(new MagicSurroundWithTryCatchFix(info.getJavaSource(), thandles, offset, method != null ? ElementHandle.create(method) : null, fqns));

@@ -253,14 +253,22 @@ public class ResultsOutlineSupport {
         if (details) {
             outlineView.addPropertyColumn(
                     "detailsCount", UiUtils.getText( //NOI18N
-                    "BasicSearchResultsPanel.outline.detailsCount"));   //NOI18N
+                    "BasicSearchResultsPanel.outline.detailsCount"), //NOI18N
+                    UiUtils.getText(
+                    "BasicSearchResultsPanel.outline.detailsCount.desc"));//NOI18N
         }
         outlineView.addPropertyColumn("path", UiUtils.getText(
-                "BasicSearchResultsPanel.outline.path"));               //NOI18N
+                "BasicSearchResultsPanel.outline.path"), //NOI18N
+                UiUtils.getText(
+                "BasicSearchResultsPanel.outline.path.desc")); //NOI18N
         outlineView.addPropertyColumn("size", UiUtils.getText(
-                "BasicSearchResultsPanel.outline.size"));               //NOI18N
+                "BasicSearchResultsPanel.outline.size"), //NOI18N
+                UiUtils.getText(
+                "BasicSearchResultsPanel.outline.size.desc"));          //NOI18N
         outlineView.addPropertyColumn("lastModified", UiUtils.getText(
-                "BasicSearchResultsPanel.outline.lastModified"));       //NOI18N
+                "BasicSearchResultsPanel.outline.lastModified"),//NOI18N
+                UiUtils.getText(
+                "BasicSearchResultsPanel.outline.lastModified.desc"));  //NOI18N
         outlineView.getOutline().setAutoResizeMode(
                 Outline.AUTO_RESIZE_SUBSEQUENT_COLUMNS);
         this.columnModel =

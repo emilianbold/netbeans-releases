@@ -43,7 +43,7 @@ package org.netbeans.modules.php.project.connections.sftp;
 
 import java.io.File;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.php.project.validation.ValidationResult;
+import org.netbeans.modules.php.api.validation.ValidationResult;
 
 public class SftpConfigurationValidatorTest extends NbTestCase {
 

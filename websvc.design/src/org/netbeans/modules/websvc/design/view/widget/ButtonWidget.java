@@ -81,7 +81,7 @@ public class ButtonWidget extends ImageLabelWidget implements PropertyChangeList
     private Action action;
     private char mnemonics_key = KeyEvent.CHAR_UNDEFINED;
     private HotKeyAction mnemAction;
-    public static int BORDER_RADIUS = 3;
+    public static final int BORDER_RADIUS = 3;
     private Object key = new Object();
     
     private Object selectedImage;
@@ -304,7 +304,7 @@ public class ButtonWidget extends ImageLabelWidget implements PropertyChangeList
 
     protected static class ButtonBorder implements Border {
         private ButtonWidget button;
-        private Color borderColor;
+        //private Color borderColor;
         private Insets insets;
         private int radius;
         
@@ -312,7 +312,7 @@ public class ButtonWidget extends ImageLabelWidget implements PropertyChangeList
             this.button = button;
             this.insets = insets;
             this.radius = radius;
-            this.borderColor = borderColor!=null?borderColor:BORDER_COLOR;
+            //this.borderColor = borderColor!=null?borderColor:BORDER_COLOR;
         }
         
         public Insets getInsets() {

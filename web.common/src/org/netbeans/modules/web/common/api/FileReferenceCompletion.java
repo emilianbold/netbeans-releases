@@ -42,6 +42,8 @@
 package org.netbeans.modules.web.common.api;
 
 import java.awt.Color;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Enumeration;
@@ -57,7 +59,9 @@ import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileSystem;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
+import org.openide.util.RequestProcessor;
 
 /**
  *
@@ -65,6 +69,8 @@ import org.openide.util.ImageUtilities;
  */
 public abstract class FileReferenceCompletion<T> implements ValueCompletion<T> {
 
+    private static RequestProcessor RP = new RequestProcessor();
+    
     private static final ImageIcon PACKAGE_ICON =
             ImageUtilities.loadImageIcon("org/openide/loaders/defaultFolder.gif", false); // NOI18N
 
@@ -139,19 +145,32 @@ public abstract class FileReferenceCompletion<T> implements ValueCompletion<T> {
 
         Enumeration<? extends FileObject> files = folder.getChildren(false);
         while (files.hasMoreElements()) {
-            FileObject file = files.nextElement();
+            final FileObject file = files.nextElement();
             String fname = file.getNameExt();
             if (fname.startsWith(prefix) && !"cvs".equalsIgnoreCase(fname)) {
 
                 if (file.isFolder()) {
                     resFolders.put(file.getNameExt(), createFileItem(offset, file.getNameExt() + "/", java.awt.Color.BLUE, PACKAGE_ICON));
                 } else {
-                    java.awt.Image icon = getIcon(file);
-                    if (icon != null) {
-                        resFiles.put(file.getNameExt(), createFileItem(offset, file.getNameExt(), java.awt.Color.BLACK, new javax.swing.ImageIcon(icon)));
+                    T fileItem = createFileItem(offset, file.getNameExt(), java.awt.Color.BLACK, null);
+                    if(fileItem instanceof PropertyChangeListener) { //"bit" hacky :-)
+                        //lazy load icons
+                        final PropertyChangeListener plistener = (PropertyChangeListener)fileItem;
+                        RP.post(new Runnable() {
+                            @Override
+                            public void run() {
+                                ImageIcon icon = new ImageIcon(getIcon(file));
+                                plistener.propertyChange(
+                                        new PropertyChangeEvent(this, "iconLoaded", null, icon)); //NOI18N
+                            }
+                            
+                        });
                     } else {
-                        resFiles.put(file.getNameExt(), createFileItem(offset, file.getNameExt(), java.awt.Color.BLACK, null));
+                        //direct icons load
+                        ImageIcon icon = new ImageIcon(getIcon(file));
+                        fileItem = createFileItem(offset, file.getNameExt(), java.awt.Color.BLACK, icon);
                     }
+                    resFiles.put(file.getNameExt(), fileItem);
                 }
             }
         }

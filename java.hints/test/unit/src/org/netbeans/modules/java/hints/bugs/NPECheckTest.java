@@ -167,6 +167,10 @@ public class NPECheckTest extends NbTestCase {
         performAnalysisTest("test/Test.java", "package test; class Test {private void test(int i) {String s2 = null; if (i == 0) {s2 = \"\";} s = s2;} @NotNull private String s; @interface NotNull {}}", "0:93-0:99:verifier:PANNNV");
     }
     
+    public void testAssignNullToNotNullVarInitializer1() throws Exception {
+        performAnalysisTest("test/Test.java", "package test; class Test {private void test() {@NotNull String s = null;} @interface NotNull {}}", "0:47-0:72:verifier:ANNNV");
+    }
+    
     public void testNullCheckAnd1() throws Exception {
         performAnalysisTest("test/Test.java", "package test; class Test {private void test() {String s = null; if (s != null && s.length() > 0) {}}}");
     }

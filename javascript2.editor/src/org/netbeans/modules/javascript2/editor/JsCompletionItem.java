@@ -58,6 +58,7 @@ import org.netbeans.modules.javascript2.editor.model.JsElement;
 import org.netbeans.modules.javascript2.editor.model.JsFunction;
 import org.netbeans.modules.javascript2.editor.model.JsObject;
 import org.netbeans.modules.javascript2.editor.model.TypeUsage;
+import org.netbeans.modules.javascript2.editor.model.impl.ModelUtils;
 import org.netbeans.modules.javascript2.editor.parser.JsParserResult;
 import org.openide.filesystems.FileObject;
 import org.openide.util.ImageUtilities;
@@ -375,9 +376,11 @@ public class JsCompletionItem implements CompletionProposal {
             }
             if (assignment != null) {
                 if (!assignment.isEmpty()) {
+                    Collection<TypeUsage> resolved = new ArrayList<TypeUsage>(assignment);
+                    resolved = ModelUtils.resolveTypes(resolved, request.result);
                     formatter.type(true);
                     formatter.appendText(": ");  //NOI18N
-                    for (Iterator<? extends TypeUsage> it = assignment.iterator(); it.hasNext();) {
+                    for (Iterator<? extends TypeUsage> it = resolved.iterator(); it.hasNext();) {
                         formatter.appendText(it.next().getType());
                         if (it.hasNext()) {
                             formatter.appendText("|");   //NOI18N

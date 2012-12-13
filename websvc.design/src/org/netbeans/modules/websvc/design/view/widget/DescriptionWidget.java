@@ -187,7 +187,7 @@ public class DescriptionWidget extends FlushableWidget implements TabWidget {
         }
     }
     
-    class DescriptionListener implements DocumentListener{
+    static class DescriptionListener implements DocumentListener{
             
         /* (non-Javadoc)
          * @see javax.swing.event.DocumentListener#changedUpdate(javax.swing.event.DocumentEvent)
