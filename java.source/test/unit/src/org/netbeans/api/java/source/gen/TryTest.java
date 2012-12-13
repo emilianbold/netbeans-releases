@@ -766,6 +766,53 @@ public class TryTest extends GeneratorTestMDRCompat {
         assertEquals(golden, res);
     }
     
+    public void testAddFirstCatchToTWR() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile,
+            "package hierbas.del.litoral;\n" +
+            "\n" +
+            "import java.io.*;\n" +
+            "\n" +
+            "public class Test {\n" +
+            "    public void taragui() {\n" +
+            "        try (InputStream in = new FileInputStream(\"\")) {\n" +
+            "        }\n" +
+            "    }\n" +
+            "}\n"
+            );
+        String golden =
+            "package hierbas.del.litoral;\n" +
+            "\n" +
+            "import java.io.*;\n" +
+            "\n" +
+            "public class Test {\n" +
+            "    public void taragui() {\n" +
+            "        try (InputStream in = new FileInputStream(\"\")) {\n" +
+            "        } catch (Exception ex) {\n" +
+            "        }\n" +
+            "    }\n" +
+            "}\n";
+        JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws java.io.IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                TreeMaker make = workingCopy.getTreeMaker();
+
+                ClassTree clazz = (ClassTree) workingCopy.getCompilationUnit().getTypeDecls().get(0);
+                MethodTree method = (MethodTree) clazz.getMembers().get(1);
+                TryTree tt = (TryTree) method.getBody().getStatements().get(0);
+                TryTree nue = make.addTryCatch(tt, make.Catch(make.Variable(make.Modifiers(EnumSet.noneOf(Modifier.class)), "ex", make.Type("java.lang.Exception"), null), make.Block(Collections.<StatementTree>emptyList(), false)));
+                workingCopy.rewrite(tt, nue);
+            }
+
+        };
+        testSource.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+    
     private void setValues(Preferences p, Map<String, String> values) {
         for (Entry<String, String> e : values.entrySet()) {
             if (e.getValue() != null) {

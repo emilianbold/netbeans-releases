@@ -271,6 +271,7 @@ public class OptionsPanel extends javax.swing.JPanel {
                     case 1:
                         result = option.getWsimportOptionValue();
                         break;
+                    default:
                 }
             }
             return result;

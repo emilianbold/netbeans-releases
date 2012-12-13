@@ -394,9 +394,11 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<Token
     }
     
     private boolean isTemplateAmbiguity(Token<TokenId> token) {
-        if(supportTemplates && token.id() == CppTokenId.LT || (!lookaheadTokens.isEmpty() && lookaheadTokens.get(0).token.id() == CppTokenId.LT)) {
+        if(supportTemplates && (token.id() == CppTokenId.LT || 
+                (!lookaheadTokens.isEmpty() && lookaheadTokens.get(0).token.id() == CppTokenId.LT))) {
             CsmCompletionExpression top = peekExp();
             if(top != null) {
+                // from rule about generic types in tokenImpl
                 switch(top.getExpID()) {
                     case VARIABLE:
                     case DOT:
@@ -413,7 +415,7 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<Token
         return false;
     }
     
-    private boolean isSupportTemplates() {
+    private OffsetableToken isSupportTemplates() {
         LinkedList<CppTokenId> stack = new LinkedList<CppTokenId>();
         for (OffsetableToken offsetableToken : lookaheadTokens) {
             switch((CppTokenId)offsetableToken.token.id()) {
@@ -422,7 +424,7 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<Token
                     break;
                 case GT:
                     if(!stack.isEmpty() && stack.pop() != CppTokenId.LT) {
-                        return false;
+                        return offsetableToken;
                     }
                     break;
                 case LPAREN:
@@ -430,7 +432,7 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<Token
                     break;
                 case RPAREN:
                     if(!stack.isEmpty() && stack.pop() != CppTokenId.LPAREN) {
-                        return false;
+                        return offsetableToken;
                     }
                     break;
                 case LBRACKET:
@@ -438,7 +440,7 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<Token
                     break;
                 case RBRACKET:
                     if(!stack.isEmpty() && stack.pop() != CppTokenId.LBRACKET) {
-                        return false;
+                        return offsetableToken;
                     }
                     break;
                 case LBRACE:
@@ -446,12 +448,12 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<Token
                     break;
                 case RBRACE:
                     if(!stack.isEmpty() && stack.pop() != CppTokenId.LBRACE) {
-                        return false;
+                        return offsetableToken;
                     }
                     break;
             }
         }
-        return true;
+        return null;
     }
     
     /** Check whether there can be any joining performed
@@ -1987,6 +1989,13 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<Token
                                             top3.addParameter(top2);
                                             top3.setExpID(CONVERSION);
                                             addTokenTo(top3);
+                                        } else if(getValidExpID(top3) == METHOD_OPEN) {
+                                            popExp();
+                                            popExp();
+                                            top3.addParameter(top);
+                                            top = top3;
+                                            mtd = true;
+                                            break;
                                         }
                                         break;
                                     case PARENTHESIS_OPEN:
@@ -2451,24 +2460,16 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<Token
         boolean oldSupportTemplates = supportTemplates;
         Boolean oldInPP = inPP;
         int lookaheadSize = lookaheadTokens.size();
-        supportTemplates = isSupportTemplates();
+        OffsetableToken disableTillToken = isSupportTemplates();
+        supportTemplates = disableTillToken == null;
         for (int i = 0; i < lookaheadSize; i++) {
-            OffsetableToken offsetableToken = lookaheadTokens.remove(0);
-            inPP = offsetableToken.inPP;
-            tokenImpl(offsetableToken.token, offsetableToken.offset, offsetableToken.macro);
-            switch ((CppTokenId) offsetableToken.token.id()) {
-                case LT:
-                case GT:
-                case LPAREN:
-                case RPAREN:
-                case LBRACKET:
-                case RBRACKET:
-                case LBRACE:
-                case RBRACE:
-                    supportTemplates = isSupportTemplates();
-                    break;
-            }        
-            
+            OffsetableToken currentToken = lookaheadTokens.remove(0);
+            inPP = currentToken.inPP;
+            tokenImpl(currentToken.token, currentToken.offset, currentToken.macro);
+            if(currentToken == disableTillToken) {
+                disableTillToken = isSupportTemplates();
+                supportTemplates = disableTillToken == null;
+            }
         }
         lookaheadTokens.clear();
         supportTemplates = oldSupportTemplates;
