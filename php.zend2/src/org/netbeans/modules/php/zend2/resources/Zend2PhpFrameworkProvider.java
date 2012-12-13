@@ -42,16 +42,21 @@
 package org.netbeans.modules.php.zend2.resources;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.Enumeration;
+import java.util.List;
 import org.netbeans.api.annotations.common.StaticResource;
 import org.netbeans.modules.php.api.framework.BadgeIcon;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
 import org.netbeans.modules.php.api.phpmodule.PhpModuleProperties;
+import org.netbeans.modules.php.api.util.FileUtils;
 import org.netbeans.modules.php.spi.framework.PhpFrameworkProvider;
 import org.netbeans.modules.php.spi.framework.PhpModuleActionsExtender;
 import org.netbeans.modules.php.spi.framework.PhpModuleExtender;
 import org.netbeans.modules.php.spi.framework.PhpModuleIgnoredFilesExtender;
 import org.netbeans.modules.php.spi.framework.commands.FrameworkCommandSupport;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 
@@ -104,7 +109,27 @@ public final class Zend2PhpFrameworkProvider extends PhpFrameworkProvider {
 
     @Override
     public File[] getConfigurationFiles(PhpModule phpModule) {
-        return new File[0];
+        FileObject sourceDirectory = phpModule.getSourceDirectory();
+        if (sourceDirectory == null) {
+            // broken project
+            return new File[0];
+        }
+        FileObject config = sourceDirectory.getFileObject("config");
+        assert config != null : "Config dir not found?!";
+        List<File> files = new ArrayList<File>();
+        Enumeration<? extends FileObject> children = config.getChildren(true);
+        while (children.hasMoreElements()) {
+            FileObject child = children.nextElement();
+            if (child.isData()
+                    && child.isValid()
+                    && FileUtils.isPhpFile(child)) {
+                File file = FileUtil.toFile(child);
+                assert file != null : "File must be found for fileobject: " + child;
+                files.add(file);
+            }
+        }
+        // XXX add module configs as well
+        return files.toArray(new File[files.size()]);
     }
 
     @Override
