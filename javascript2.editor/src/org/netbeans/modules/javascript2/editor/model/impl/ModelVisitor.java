@@ -340,7 +340,8 @@ public class ModelVisitor extends PathNodeVisitor {
             if (binaryNode.rhs() instanceof IdentNode) {
                 addOccurence((IdentNode)binaryNode.rhs(), false);
             }
-        } else if(binaryNode.tokenType() != TokenType.ASSIGN) {
+        } else if(binaryNode.tokenType() != TokenType.ASSIGN
+                || (binaryNode.tokenType() == TokenType.ASSIGN && binaryNode.lhs() instanceof IndexNode)) {
             if (binaryNode.lhs() instanceof IdentNode) {
                 addOccurence((IdentNode)binaryNode.lhs(), true);
             }
@@ -385,12 +386,31 @@ public class ModelVisitor extends PathNodeVisitor {
             if (base instanceof AccessNode) {
                 parent = fromAN;
             } else if (base instanceof IdentNode) {
-                Identifier parentName = ModelElementFactory.create(parserResult, (IdentNode)base);
-                if (parentName != null) {
-                    List<Identifier> fqName = new ArrayList<Identifier>();
-                    fqName.add(parentName);
-                    parent = ModelUtils.getJsObject(modelBuilder, fqName, false);
-                    parent.addOccurrence(parentName.getOffsetRange());
+                IdentNode iNode = (IdentNode)base;
+                if (!"this".equals(iNode.getName())) {
+                    Identifier parentName = ModelElementFactory.create(parserResult, iNode);
+                    if (parentName != null) {
+                        List<Identifier> fqName = new ArrayList<Identifier>();
+                        fqName.add(parentName);
+                        parent = ModelUtils.getJsObject(modelBuilder, fqName, false);
+                        parent.addOccurrence(parentName.getOffsetRange());
+                    }
+                } else {
+                    JsObject current = modelBuilder.getCurrentDeclarationScope();
+                    JsObject property = current.getProperty(iNode.getName());
+                    if (property == null && current.getParent() != null && (current.getParent().getJSKind() == JsElement.Kind.CONSTRUCTOR
+                            || current.getParent().getJSKind() == JsElement.Kind.OBJECT
+                            || current.getParent().getJSKind() == JsElement.Kind.OBJECT_LITERAL)) {
+                        Node previous = getPreviousFromPath(2);
+                        // check whether is not a part of method in constructor
+                        if (!(previous instanceof BinaryNode && ((BinaryNode)previous).rhs() instanceof ReferenceNode)) {
+                            current = current.getParent();
+                            if (current.getName().equals("prototype")) {
+                                current = current.getParent();
+                            }
+                        }
+                    }
+                    fromAN = (JsObjectImpl)current;
                 }
             }
             if (parent != null && indexNode.getIndex() instanceof LiteralNode) {

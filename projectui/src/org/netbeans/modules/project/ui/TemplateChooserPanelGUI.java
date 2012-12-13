@@ -49,7 +49,9 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.ListCellRenderer;
@@ -57,6 +59,7 @@ import javax.swing.event.ChangeListener;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.project.Project;
 import static org.netbeans.modules.project.ui.Bundle.*;
+import org.netbeans.modules.project.ui.spi.TemplateCategorySorter;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataFolder;
@@ -281,9 +284,11 @@ final class TemplateChooserPanelGUI extends javax.swing.JPanel implements Proper
     private final class TemplateChildren extends ChildFactory.Detachable<TemplateKey> implements ActionListener {
         
         private final DataFolder folder;
+        private final boolean isRoot;
         
-        TemplateChildren(DataFolder folder) {
+        TemplateChildren(DataFolder folder, boolean root) {
             this.folder = folder;
+            isRoot = root;
         }
         
         @Override protected void addNotify() {
@@ -295,7 +300,24 @@ final class TemplateChooserPanelGUI extends javax.swing.JPanel implements Proper
         }
 
         @Override protected boolean createKeys(List<TemplateKey> keys) {
-            for (DataObject d : folder.getChildren()) {
+            DataObject[] children = folder.getChildren();
+            if (isRoot) {
+                Project p = getProject();
+                TemplateCategorySorter tcs = p != null ? p.getLookup().lookup(TemplateCategorySorter.class) : null;
+                if (tcs != null) {
+                    List<DataObject> dobjs = new ArrayList<DataObject>();                    
+                    for (DataObject d : children) {
+                        if (isFolderOfTemplates(d)) {
+                            dobjs.add(d);
+                        }
+                    }
+                    List<DataObject> sorted = tcs.sort(dobjs);
+                    assert sorted.size() == dobjs.size() && new HashSet<DataObject>(dobjs).equals(new HashSet<DataObject>(sorted));
+                    children = sorted.toArray(new DataObject[children.length]);
+                }
+            }
+            
+            for (DataObject d : children) {
                 if (isFolderOfTemplates(d)) {
                     boolean leaf = true;
                     for (DataObject child : ((DataFolder) d).getChildren()) {
@@ -311,7 +333,7 @@ final class TemplateChooserPanelGUI extends javax.swing.JPanel implements Proper
         }
         
         @Override protected Node createNodeForKey(TemplateKey k) {
-            return new FilterNode(k.d.getNodeDelegate(), k.leaf ? Children.LEAF : Children.create(new TemplateChildren((DataFolder) k.d), true));
+            return new FilterNode(k.d.getNodeDelegate(), k.leaf ? Children.LEAF : Children.create(new TemplateChildren((DataFolder) k.d, false), true));
         }
         
         @Override public void actionPerformed (ActionEvent event) {
@@ -369,7 +391,7 @@ final class TemplateChooserPanelGUI extends javax.swing.JPanel implements Proper
     final class FileChooserBuilder implements TemplatesPanelGUI.Builder {
         
         @Override public Children createCategoriesChildren(DataFolder folder) {
-            return Children.create(new TemplateChildren(folder), true);
+            return Children.create(new TemplateChildren(folder, true), true);
         }
         
         @Override public Children createTemplatesChildren(DataFolder folder) {

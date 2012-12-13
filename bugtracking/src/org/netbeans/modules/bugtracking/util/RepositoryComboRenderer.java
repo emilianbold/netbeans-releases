@@ -44,8 +44,10 @@ package org.netbeans.modules.bugtracking.util;
 
 import java.awt.Component;
 import java.awt.Font;
+import java.awt.Image;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.Icon;
+import javax.swing.ImageIcon;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import org.netbeans.modules.bugtracking.RepositoryImpl;
@@ -100,7 +102,12 @@ public class RepositoryComboRenderer extends DefaultListCellRenderer {
         if (result instanceof JLabel) {
             JLabel label = (JLabel) result;
             if (repo != null) {
-                label.setIcon((Icon) repo.getIcon());
+                Image icon = repo.getIcon();
+                if(icon instanceof Icon) {
+                    label.setIcon((Icon) icon);
+            } else {
+                    label.setIcon(new ImageIcon(icon));
+                }
             } else {
                 Font font = label.getFont();
                 label.setFont(new Font(font.getName(),

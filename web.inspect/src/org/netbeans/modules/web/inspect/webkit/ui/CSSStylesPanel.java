@@ -368,7 +368,7 @@ public class CSSStylesPanel extends JPanel implements PageModel.CSSStylesView {
     /**
      * User task that updates the rules editor window (to show the specified rule).
      */
-    static class RuleEditorTask extends UserTask {
+    class RuleEditorTask extends UserTask {
         /** Rule to show in the rules editor. */
         private Rule rule;
         /** Additional rule information. */
@@ -420,6 +420,10 @@ public class CSSStylesPanel extends JPanel implements PageModel.CSSStylesView {
                     public void run(StyleSheet styleSheet) {
                         org.netbeans.modules.css.model.api.Rule modelRule = Utilities.findRuleInStyleSheet(sourceModel, styleSheet, rule);
                         if (modelRule != null) {
+                            found[0] = true;
+                            if (!active) {
+                                return;
+                            }
                             controller.setModel(sourceModel);
                             controller.setRule(modelRule);
                             if (ruleInfo != null) {
@@ -453,7 +457,6 @@ public class CSSStylesPanel extends JPanel implements PageModel.CSSStylesView {
                                     }
                                 }
                             }
-                            found[0] = true;
                         }
                     }
                 });
@@ -461,7 +464,7 @@ public class CSSStylesPanel extends JPanel implements PageModel.CSSStylesView {
                     break;
                 }
             }
-            if (!found[0]) {
+            if (active && !found[0]) {
                 controller.setNoRuleState();
             }
         }

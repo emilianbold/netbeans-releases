@@ -139,6 +139,7 @@
                 <friend>org.netbeans.modules.php.symfony</friend>
                 <friend>org.netbeans.modules.php.symfony2</friend>
                 <friend>org.netbeans.modules.php.zend</friend>
+                <friend>org.netbeans.modules.php.zend2</friend>
                 <package>org.netbeans.modules.php.api.framework</package>
                 <package>org.netbeans.modules.php.spi.framework</package>
                 <package>org.netbeans.modules.php.spi.framework.actions</package>
