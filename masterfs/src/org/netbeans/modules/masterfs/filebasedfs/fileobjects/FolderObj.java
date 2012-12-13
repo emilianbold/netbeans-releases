@@ -648,6 +648,13 @@ public final class FolderObj extends BaseFileObj {
         }
     }
     
+    @Override
+    protected void afterRename() {
+        synchronized (FolderChildrenCache.class) {
+            folderChildren = null;
+        }
+    }
+    
     public final boolean hasRecursiveListener() {
         FileObjectKeeper k = keeper;
         return k != null && k.isOn();
