@@ -5115,8 +5115,10 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
 
                         //XXX (#198565): don't let FileListWork forerun delete works:
                         if (work instanceof FileListWork) {
+                            final FileListWork flw = (FileListWork) work;
                             for (Work w : todo) {
-                                if (w instanceof DeleteWork) {
+                                if (w instanceof DeleteWork &&
+                                    ((DeleteWork)w).root.equals(flw.root)) {
                                     allowAbsorb = false;
                                     break;
                                 }
