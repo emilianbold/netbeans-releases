@@ -160,15 +160,20 @@ public class FileObj extends BaseFileObj {
         return retVal;
     }
 
+    @Override
     public InputStream getInputStream() throws FileNotFoundException {
         if (LOGGER.isLoggable(Level.FINE) && EventQueue.isDispatchThread()) {
             LOGGER.log(Level.WARNING, "reading " + this, new IllegalStateException("getInputStream invoked in AWT"));
         }
+        final File f = getFileName().getFile();
         if (!isValid()) {
-            throw new FileNotFoundException("FileObject " + this + " is not valid.");  //NOI18N
+            FileNotFoundException ex = new FileNotFoundException("FileObject " + this + " is not valid."); //NOI18N
+            String msg = NbBundle.getMessage(FileBasedFileSystem.class, "EXC_CannotRead", f.getName(), f.getParent()); // NOI18N
+            Exceptions.attachLocalizedMessage(ex, msg);
+            dumpFileInfo(f, ex);
+            throw ex;
         }
         LOGGER.log(Level.FINEST,"FileObj.getInputStream_after_is_valid");   //NOI18N - Used by unit test
-        final File f = getFileName().getFile();
         if (!f.exists()) {
             FileNotFoundException ex = new FileNotFoundException("Can't read " + f); // NOI18N
             String msg = NbBundle.getMessage(FileBasedFileSystem.class, "EXC_CannotRead", f.getName(), f.getParent()); // NOI18N
