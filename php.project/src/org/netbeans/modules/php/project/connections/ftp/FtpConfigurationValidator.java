@@ -41,9 +41,9 @@
  */
 package org.netbeans.modules.php.project.connections.ftp;
 
+import org.netbeans.modules.php.api.validation.ValidationResult;
 import org.netbeans.modules.php.project.connections.common.RemoteUtils;
 import org.netbeans.modules.php.project.connections.common.RemoteValidator;
-import org.netbeans.modules.php.project.validation.ValidationResult;
 import org.openide.util.NbBundle;
 
 /**

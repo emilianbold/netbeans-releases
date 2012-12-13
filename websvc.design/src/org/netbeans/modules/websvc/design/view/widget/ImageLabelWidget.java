@@ -249,6 +249,7 @@ public class ImageLabelWidget extends Widget {
 
         protected abstract Shape createImage(int width, int height);
 
+        @org.netbeans.api.annotations.common.SuppressWarnings(" NP_NULL_ON_SOME_PATH_FROM_RETURN_VALUE")
         protected final Shape getImage() {
             if (shape==null) {
                 shape = createImage(getBounds().width, getBounds().height);

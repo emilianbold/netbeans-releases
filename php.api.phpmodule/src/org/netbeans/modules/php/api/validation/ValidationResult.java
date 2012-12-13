@@ -39,15 +39,17 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.php.project.validation;
+package org.netbeans.modules.php.api.validation;
 
 import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Validation result.
+ * Validation result. This class can used by miscellaneous validators
+ * for collecting errors and warnings.
  * <p>
  * This class is not thread safe.
+ * @since 2.9
  */
 public final class ValidationResult {
 
@@ -55,6 +57,9 @@ public final class ValidationResult {
     private final List<Message> warnings = new ArrayList<Message>();
 
 
+    /**
+     * Create new validation result.
+     */
     public ValidationResult() {
     }
 
@@ -65,31 +70,62 @@ public final class ValidationResult {
         merge(anotherResult);
     }
 
+    /**
+     * Check whether there are some errors present.
+     * @return {@code true} if the validation result contains any error
+     */
     public boolean hasErrors() {
         return !errors.isEmpty();
     }
 
+    /**
+     * Get errors.
+     * @return list of errors, can be empty but never {@code null}
+     */
     public List<Message> getErrors() {
         return new ArrayList<Message>(errors);
     }
 
+    /**
+     * Check whether there are some warnings present.
+     * @return {@code true} if the validation result contains any warning
+     */
     public boolean hasWarnings() {
         return !warnings.isEmpty();
     }
 
+    /**
+     * Get warnings.
+     * @return list of warnings, can be empty but never {@code null}
+     */
     public List<Message> getWarnings() {
         return new ArrayList<Message>(warnings);
 
     }
 
+    /**
+     * Add error.
+     * @param error error to be added
+     */
     public void addError(Message error) {
         errors.add(error);
     }
 
+    /**
+     * Add warning.
+     * @param warning  warning to be added
+     */
     public void addWarning(Message warning) {
         warnings.add(warning);
     }
 
+    /**
+     * Merge with some other validation result.
+     * <p>
+     * This method simply merges all errros and warnings from {@code otherResult} to this one.
+     * It can be useful if one validator uses another one for validation.
+     * @param otherResult validation result to be merged to this one
+     */
     public void merge(ValidationResult otherResult) {
         errors.addAll(otherResult.errors);
         warnings.addAll(otherResult.warnings);

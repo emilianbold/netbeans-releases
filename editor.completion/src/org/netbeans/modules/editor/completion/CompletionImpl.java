@@ -1545,6 +1545,16 @@ outer:      for (Iterator it = localCompletionResult.getResultSets().iterator();
     }
 
     // ..........................................................................
+
+    /**
+     * Workaround for http://netbeans.org/bugzilla/show_bug.cgi?id=223290 .
+     * 
+     * Client needs to explicitly repaint its CompletionItem-s when their full 
+     * state is computation is finished in a background thread.
+     */
+    public void repaintCompletionView() {
+        layout.repaintCompletionView();
+    }
     
     private final class CompletionShowAction extends AbstractAction {
         private int queryType;

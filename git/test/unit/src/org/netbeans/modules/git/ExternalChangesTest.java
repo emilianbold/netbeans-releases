@@ -311,7 +311,8 @@ public class ExternalChangesTest extends AbstractGitTestCase {
         // create
         toAdd.createNewFile();
         FileUtil.refreshFor(repositoryLocation);
-        pause();        
+        pause();
+        Thread.sleep(1100);
         assertTrue(lockFile.delete());
         FileUtil.refreshFor(repositoryLocation);
         

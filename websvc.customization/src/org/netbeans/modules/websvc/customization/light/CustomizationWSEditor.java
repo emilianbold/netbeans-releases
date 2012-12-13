@@ -272,14 +272,13 @@ public class CustomizationWSEditor implements WSEditor {
             throws MalformedURLException, IOException, InvalidDataException {
         WSDLModel model = null;
         FileObject wsdlFO = null;
+        if ( jaxWsSupport == null ){
+            return null;
+        }
         FileObject wsdlFolder = jaxWsSupport.getWsdlFolder(false);
 
         if (wsdlFolder != null) {
-            if (jaxWsSupport != null) { //its a client
-                wsdlFO = wsdlFolder.getFileObject(service.getLocalWsdl());
-            } else { //neither a client nor a service, get out of here
-                throw new IOException("Unable to identify node type");
-            }
+            wsdlFO = wsdlFolder.getFileObject(service.getLocalWsdl());
             if (wsdlFO != null) { //found the wsdl
                 ModelSource ms = Utilities.getModelSource(wsdlFO, true);
                 model = WSDLModelFactory.getDefault().getModel(ms);

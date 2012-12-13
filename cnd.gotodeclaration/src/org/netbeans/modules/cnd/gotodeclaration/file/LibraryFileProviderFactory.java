@@ -50,7 +50,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.Icon;
-import javax.swing.SwingUtilities;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmModelAccessor;
 import org.netbeans.modules.cnd.api.model.CsmModelState;
@@ -67,7 +66,6 @@ import org.netbeans.spi.jumpto.file.FileProvider;
 import org.netbeans.spi.jumpto.file.FileProviderFactory;
 import org.netbeans.spi.jumpto.type.SearchType;
 import org.openide.filesystems.FileObject;
-import org.openide.util.RequestProcessor;
 
 /**
  *
@@ -77,8 +75,6 @@ import org.openide.util.RequestProcessor;
 // and have a chance to contribute libraries even if MakeProjectFileProviderFactory consumes src root
 @org.openide.util.lookup.ServiceProvider(service = org.netbeans.spi.jumpto.file.FileProviderFactory.class, position = 900)
 public final class LibraryFileProviderFactory implements FileProviderFactory {
-
-    private static final RequestProcessor openRP = new RequestProcessor(LibraryFileProviderFactory.class.getName(), 1);
 
     @Override
     public String name() {
@@ -235,12 +231,7 @@ public final class LibraryFileProviderFactory implements FileProviderFactory {
                     CsmUtilities.openSource(file.getObject());
                 }
             };
-
-            if (SwingUtilities.isEventDispatchThread()) {
-                openRP.post(r);
-            } else {
-                r.run();
-            }
+            CsmModelAccessor.getModel().enqueue(r, "LibraryFileFD.open(" + getFileDisplayPath() + ")"); // NOI18N
         }
 
         @Override
