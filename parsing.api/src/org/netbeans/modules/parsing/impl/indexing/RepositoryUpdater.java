@@ -1309,7 +1309,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
         final Reference<Document> ref = activeDocumentRef;
         Document activeDocument = ref == null ? null : ref.get();
 
-        Pair<URL, FileObject> root = getOwningSourceRoot(document);
+        final Pair<URL, FileObject> root = getOwningSourceRoot(document);
         if (root != null) {
             if (root.second == null) {
                 LOGGER.log(
@@ -1344,12 +1344,23 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
 
                     TransientUpdateSupport.setTransientUpdate(true);
                     try {
+                        final Callable<FileObject> indexFolderFactory =
+                            new Callable<FileObject>() {
+                                private FileObject cache;
+                                @Override
+                                public FileObject call() throws Exception {
+                                    if (cache == null) {
+                                        cache = CacheFolder.getDataFolder(root.first);
+                                    }
+                                    return cache;
+                                }
+                            };
                         Collection<? extends IndexerCache.IndexerInfo<CustomIndexerFactory>> cifInfos = IndexerCache.getCifCache().getIndexersFor(mimeType, true);
                         for(IndexerCache.IndexerInfo<CustomIndexerFactory> info : cifInfos) {
                             try {
-                                CustomIndexerFactory factory = info.getIndexerFactory();
-                                Context ctx = SPIAccessor.getInstance().createContext(
-                                        CacheFolder.getDataFolder(root.first),
+                                final CustomIndexerFactory factory = info.getIndexerFactory();
+                                final Context ctx = SPIAccessor.getInstance().createContext(
+                                        indexFolderFactory,
                                         root.first,
                                         factory.getIndexerName(),
                                         factory.getIndexVersion(),
@@ -1369,9 +1380,9 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                         Collection<? extends IndexerCache.IndexerInfo<EmbeddingIndexerFactory>> eifInfos = collectEmbeddingIndexers(mimeType);
                         for(IndexerCache.IndexerInfo<EmbeddingIndexerFactory> info : eifInfos) {
                             try {
-                                EmbeddingIndexerFactory factory = info.getIndexerFactory();
-                                Context ctx = SPIAccessor.getInstance().createContext(
-                                        CacheFolder.getDataFolder(root.first),
+                                final EmbeddingIndexerFactory factory = info.getIndexerFactory();
+                                final Context ctx = SPIAccessor.getInstance().createContext(
+                                        indexFolderFactory,
                                         root.first,
                                         factory.getIndexerName(),
                                         factory.getIndexVersion(),
