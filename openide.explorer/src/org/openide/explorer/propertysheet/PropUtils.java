@@ -1589,6 +1589,15 @@ final class PropUtils {
         return externallyEdited.contains(p);
     }
 
+    static void notifyEditingCancelled( PropertyEnv env ) {
+        if( null == env || null == env.getFeatureDescriptor() )
+            return;
+        Object o = env.getFeatureDescriptor().getValue( "nb.property.editor.callback" ); //NOI18N
+        if( o instanceof PropertyChangeListener ) {
+            ((PropertyChangeListener)o).propertyChange( new PropertyChangeEvent( env.getFeatureDescriptor(), "editingCancelled", null, Boolean.TRUE) ); //NOI18N
+        }
+    }
+
     static boolean supportsValueIncrement( PropertyEnv env ) {
         if( null == env || null == env.getFeatureDescriptor() )
             return false;
