@@ -193,5 +193,57 @@ public class DeclarationsITest extends ModelTestBase {
         
     }
     
+     public void testAddSecondDeclarationWithSemi() {
+         //first declaration not followed by semicolon
+        String code = "div {\n"
+                + "    font-size: 222px\n"
+                + "}\n";
+        
+        Model model = createModel(code);
+        StyleSheet styleSheet = getStyleSheet(model);
+        Declarations ds = styleSheet.getBody().getRules().get(0).getDeclarations();
+        assertNotNull(ds);
+        
+        ElementFactory ef = model.getElementFactory();
+        Declaration newMargin = ef.createDeclaration(
+                ef.createProperty("margin"),
+                ef.createPropertyValue(ef.createExpression("3px")),
+                false);
+        
+        ds.addDeclaration(newMargin);
+        
+        assertEquals("div {\n"
+                + "    font-size: 222px;\n"
+                + "    margin: 3px;\n"
+                + "}\n", model.getModelSource().toString());
+        
+    }
+    
+     public void testAddSecondDeclaration() {
+         //first declaration not followed by semicolon
+        String code = "div {\n"
+                + "    font-size: 222px;\n"
+                + "}\n";
+        
+        Model model = createModel(code);
+        StyleSheet styleSheet = getStyleSheet(model);
+        Declarations ds = styleSheet.getBody().getRules().get(0).getDeclarations();
+        assertNotNull(ds);
+        
+        ElementFactory ef = model.getElementFactory();
+        Declaration newMargin = ef.createDeclaration(
+                ef.createProperty("margin"),
+                ef.createPropertyValue(ef.createExpression("3px")),
+                false);
+        
+        ds.addDeclaration(newMargin);
+        
+        assertEquals("div {\n"
+                + "    font-size: 222px;\n"
+                + "    margin: 3px;\n"
+                + "}\n", model.getModelSource().toString());
+        
+    }
+    
     
 }
