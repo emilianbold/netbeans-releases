@@ -39,7 +39,7 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.php.zend2.resources;
+package org.netbeans.modules.php.zend2;
 
 import java.io.File;
 import java.util.ArrayList;
