@@ -273,27 +273,31 @@ public final class AnnotationHolder implements ChangeListener, DocumentListener 
 
     Attacher attacher = new NbDocumentAttacher();
 
-    void attachAnnotation(Position line, ParseErrorAnnotation a) throws BadLocationException {
-        attacher.attachAnnotation(line, a);
+    void attachAnnotation(Position line, ParseErrorAnnotation a, boolean synchronous) throws BadLocationException {
+        attacher.attachAnnotation(line, a, synchronous);
     }
 
-    void detachAnnotation(ParseErrorAnnotation a) {
-        attacher.detachAnnotation(a);
+    void detachAnnotation(ParseErrorAnnotation a, boolean synchronous) {
+        attacher.detachAnnotation(a, synchronous);
     }
 
     static interface Attacher {
-        public void attachAnnotation(Position line, ParseErrorAnnotation a) throws BadLocationException;
-        public void detachAnnotation(ParseErrorAnnotation a);
+        public void attachAnnotation(Position line, ParseErrorAnnotation a, boolean synchronous) throws BadLocationException;
+        public void detachAnnotation(ParseErrorAnnotation a, boolean synchronous);
     }
 
     final class NbDocumentAttacher implements Attacher {
-        public void attachAnnotation(Position lineStart, ParseErrorAnnotation a) throws BadLocationException {
-            addToToDo(new ToDo(lineStart, a));
+        public void attachAnnotation(Position lineStart, ParseErrorAnnotation a, boolean synchronous) throws BadLocationException {
+            addToToDo(new ToDo(lineStart, a), synchronous);
         }
-        public void detachAnnotation(ParseErrorAnnotation a) {
-            addToToDo(new ToDo(null, a));
+        public void detachAnnotation(ParseErrorAnnotation a, boolean synchronous) {
+            addToToDo(new ToDo(null, a), synchronous);
         }
-        private void addToToDo(ToDo item) {
+        private void addToToDo(ToDo item, boolean synchronous) {
+            if (synchronous) {
+                attachDetach(item);
+                return ;
+            }
             synchronized (todoLock) {
                 if (todo == null) {
                     todo = new ArrayList<ToDo>();
@@ -313,6 +317,23 @@ public final class AnnotationHolder implements ChangeListener, DocumentListener 
         }
     }
     
+    private void attachDetach(ToDo t) {
+        if (t.lineStart != null) {
+            if (LOG.isLoggable(Level.FINE)) {
+                LOG.fine("addAnnotation: pos=" + t.lineStart.getOffset() + ", a="+ t.a + ", doc=" +
+                        System.identityHashCode(doc) + "\n");
+            }
+            t.a.attachAnnotation((StyledDocument) doc, t.lineStart);
+        } else {
+            if (doc != null) {
+                if (LOG.isLoggable(Level.FINE)) {
+                    LOG.fine("removeAnnotation: a=" + t.a + ", doc=" + System.identityHashCode(doc) + "\n");
+                }
+                t.a.detachAnnotation((StyledDocument) doc);
+            }
+        }
+    }
+    
     private static final RequestProcessor ATTACHING_THREAD = new RequestProcessor(AnnotationHolder.class.getName(), 1, false, false);
     private List<ToDo> todo;
     private final Object todoLock = new Object();
@@ -327,20 +348,7 @@ public final class AnnotationHolder implements ChangeListener, DocumentListener 
             if (todo == null) return;
             
             for (ToDo t : todo) {
-                if (t.lineStart != null) {
-                    if (LOG.isLoggable(Level.FINE)) {
-                        LOG.fine("addAnnotation: pos=" + t.lineStart.getOffset() + ", a="+ t.a + ", doc=" +
-                                System.identityHashCode(doc) + "\n");
-                    }
-                    t.a.attachAnnotation((StyledDocument) doc, t.lineStart);
-                } else {
-                    if (doc != null) {
-                        if (LOG.isLoggable(Level.FINE)) {
-                            LOG.fine("removeAnnotation: a=" + t.a + ", doc=" + System.identityHashCode(doc) + "\n");
-                        }
-                        t.a.detachAnnotation((StyledDocument) doc);
-                    }
-                }
+                attachDetach(t);
             }
         }
     });
@@ -348,7 +356,7 @@ public final class AnnotationHolder implements ChangeListener, DocumentListener 
     private synchronized void clearAll() {
         //remove all annotations:
         for (ParseErrorAnnotation a : line2Annotations.values()) {
-            detachAnnotation(a);
+            detachAnnotation(a, false);
         }
         line2Annotations.clear();
 
@@ -442,7 +450,7 @@ public final class AnnotationHolder implements ChangeListener, DocumentListener 
             }
 
             for (Position lineToken : modifiedLines) {
-                updateAnnotationOnLine(lineToken);
+                updateAnnotationOnLine(lineToken, false);
                 updateHighlightsOnLine(lineToken);
             }
         } catch (IOException ex) {
@@ -521,7 +529,7 @@ public final class AnnotationHolder implements ChangeListener, DocumentListener 
             }
 
             for (Position line : modifiedLinesTokens) {
-                updateAnnotationOnLine(line);
+                updateAnnotationOnLine(line, false);
                 updateHighlightsOnLine(line);
             }
         } catch (IOException ex) {
@@ -739,14 +747,14 @@ public final class AnnotationHolder implements ChangeListener, DocumentListener 
         return ErrorDescriptionFactory.lazyListForDelegates(result);
     }
 
-    private void updateAnnotationOnLine(Position line) throws BadLocationException {
+    private void updateAnnotationOnLine(Position line, boolean synchronous) throws BadLocationException {
         List<ErrorDescription> errorDescriptions = getErrorsForLine(line, false);
 
         if (errorDescriptions == null) {
             //nothing to do, remove old:
             ParseErrorAnnotation ann = line2Annotations.remove(line);
             if (ann != null) {
-                detachAnnotation(ann);
+                detachAnnotation(ann, synchronous);
             }
             return;
         }
@@ -793,10 +801,10 @@ public final class AnnotationHolder implements ChangeListener, DocumentListener 
         ParseErrorAnnotation previous = line2Annotations.put(line, pea);
 
         if (previous != null) {
-            detachAnnotation(previous);
+            detachAnnotation(previous, synchronous);
         }
 
-        attachAnnotation(line, pea);   
+        attachAnnotation(line, pea, synchronous);   
     }
 
     void updateHighlightsOnLine(Position line) throws IOException {
@@ -997,10 +1005,14 @@ public final class AnnotationHolder implements ChangeListener, DocumentListener 
     }
 
     public void setErrorDescriptions(final String layer, final Collection<? extends ErrorDescription> errors) {
+        setErrorDescriptions(layer, errors, false);
+    }
+    
+    private void setErrorDescriptions(final String layer, final Collection<? extends ErrorDescription> errors, final boolean synchronous) {
         doc.render(new Runnable() {
             public void run() {
                 try {
-                    setErrorDescriptionsImpl(file, layer, errors);
+                    setErrorDescriptionsImpl(file, layer, errors, synchronous);
                 } catch (IOException e) {
                     LOG.log(Level.WARNING, e.getMessage(), e);
                 }
@@ -1008,7 +1020,7 @@ public final class AnnotationHolder implements ChangeListener, DocumentListener 
         });
     }
 
-    private synchronized void setErrorDescriptionsImpl(FileObject file, String layer, Collection<? extends ErrorDescription> errors) throws IOException {
+    private synchronized void setErrorDescriptionsImpl(FileObject file, String layer, Collection<? extends ErrorDescription> errors, boolean synchronous) throws IOException {
         long start = System.currentTimeMillis();
 
         try {
@@ -1087,7 +1099,7 @@ public final class AnnotationHolder implements ChangeListener, DocumentListener 
             layersErrors.addAll(validatedErrors);
 
             for (Position line : primaryLines) {
-                updateAnnotationOnLine(line);
+                updateAnnotationOnLine(line, synchronous);
             }
 
             for (Position line : allLines) {
@@ -1249,7 +1261,7 @@ public final class AnnotationHolder implements ChangeListener, DocumentListener 
 
         for (Entry<String, List<ErrorDescription>> e : errs.entrySet()) {
             final List<ErrorDescription> eds = e.getValue();
-            setErrorDescriptions(e.getKey(), eds); //set updated
+            setErrorDescriptions(e.getKey(), eds, true); //set updated
         }
     }
 
