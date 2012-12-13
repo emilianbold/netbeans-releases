@@ -587,7 +587,7 @@ public class ETable extends JTable {
     }
 
     /**
-     * Overriden to use ETableColumns instead of the original TableColumns.
+     * Overridden to use ETableColumns instead of the original TableColumns.
      * @see javax.swing.JTable#createDefaultColumnModel()
      */
     @Override

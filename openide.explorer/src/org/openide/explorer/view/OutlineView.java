@@ -943,7 +943,7 @@ public class OutlineView extends JScrollPane {
     }
     
     /**
-     * Deinitializes listeners.
+     * De-initializes listeners.
      */
     @Override
     public void removeNotify () {
@@ -1270,7 +1270,7 @@ public class OutlineView extends JScrollPane {
         getOutline().collapsePath(treePath);
     }
 
-    /** Expandes the node in the tree.
+    /** Expands the node in the tree.
     *
     * @param n node
     */
