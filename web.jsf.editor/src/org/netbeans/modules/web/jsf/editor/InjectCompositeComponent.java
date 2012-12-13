@@ -44,6 +44,7 @@ package org.netbeans.modules.web.jsf.editor;
 import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
@@ -235,11 +236,11 @@ public class InjectCompositeComponent {
                 AbstractFaceletsLibrary lib = jsfs.getLibraries().get(compositeLibURL);
                 if (lib != null) {
                     if (!LibraryUtils.importLibrary(document, lib, prefix)) { //XXX: fix the damned static prefix !!!
-                        logger.warning("Cannot import composite components library " + compositeLibURL); //NOI18N
+                        logger.log(Level.WARNING, "Cannot import composite components library {0}", compositeLibURL); //NOI18N
                     }
                 } else {
                     //error
-                    logger.warning("Composite components library for uri " + compositeLibURL + " seems not to be created."); //NOI18N
+                    logger.log(Level.WARNING, "Composite components library for uri {0} seems not to be created.", compositeLibURL); //NOI18N
                 }
                 progressHandle.finish();
             }
