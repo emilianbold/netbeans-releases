@@ -44,11 +44,14 @@ package org.netbeans.modules.web.jsf.editor;
 import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.editor.EditorRegistry;
+import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.editor.BaseDocument;
@@ -85,6 +88,7 @@ import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.loaders.TemplateWizard;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
+import org.openide.util.NbBundle.Messages;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -141,6 +145,9 @@ public class InjectCompositeComponent {
 		HINT_PRIORITY);
     }
 
+    @Messages({
+        "InjectCompositeComponent.lbl.importing.namespace=Completing page namespaces..."
+    })
     private static void instantiateTemplate(Project project, FileObject file, final Document document, final int startOffset, final int endOffset) throws BadLocationException, DataObjectNotFoundException, IOException, ParseException {
 	String selectedText = startOffset == endOffset ? null : document.getText(startOffset, endOffset - startOffset);
 
@@ -221,20 +228,22 @@ public class InjectCompositeComponent {
 	    //get indexed and the library is created
 	    final String compositeLibURL = LibraryUtils.getCompositeLibraryURL(compFolder);
 	    Source documentSource = Source.create(document);
+        final ProgressHandle progressHandle = ProgressHandleFactory.createHandle(Bundle.InjectCompositeComponent_lbl_importing_namespace());
+        progressHandle.start();
 	    ParserManager.parseWhenScanFinished(Collections.singletonList(documentSource), new UserTask() { //NOI18N
-
-		@Override
-		public void run(ResultIterator resultIterator) throws Exception {
-		    AbstractFaceletsLibrary lib = jsfs.getLibraries().get(compositeLibURL);
-		    if (lib != null) {
-			if (!LibraryUtils.importLibrary(document, lib, prefix)) { //XXX: fix the damned static prefix !!!
-			    logger.warning("Cannot import composite components library " + compositeLibURL); //NOI18N
-			}
-		    } else {
-			//error
-			logger.warning("Composite components library for uri " + compositeLibURL + " seems not to be created."); //NOI18N
-		    }
-		}
+            @Override
+            public void run(ResultIterator resultIterator) throws Exception {
+                AbstractFaceletsLibrary lib = jsfs.getLibraries().get(compositeLibURL);
+                if (lib != null) {
+                    if (!LibraryUtils.importLibrary(document, lib, prefix)) { //XXX: fix the damned static prefix !!!
+                        logger.log(Level.WARNING, "Cannot import composite components library {0}", compositeLibURL); //NOI18N
+                    }
+                } else {
+                    //error
+                    logger.log(Level.WARNING, "Composite components library for uri {0} seems not to be created.", compositeLibURL); //NOI18N
+                }
+                progressHandle.finish();
+            }
 	    });
 
 	    //now we need to import all the namespaces refered in the snipet
