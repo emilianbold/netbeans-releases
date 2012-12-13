@@ -105,6 +105,7 @@ public class JTabbedPaneAdapter extends NBTabbedPane implements Tabbed.Accessor,
         public void setTitleAt( int index, String title ) {
             CloseableTabComponent ctc = ( CloseableTabComponent ) getTabComponentAt( index );
             ctc.setTitle( title );
+            getTabModel().setText( index, title );
         }
 
         @Override
