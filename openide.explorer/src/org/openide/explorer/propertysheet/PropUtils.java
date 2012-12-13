@@ -1608,10 +1608,6 @@ final class PropUtils {
         return res;
     }
     
-        private static final String DOWN = "selectNext";
-        private static final String DOWN_2 = "selectNext2";
-        private static final String UP = "selectPrevious";
-        private static final String UP_2 = "selectPrevious2";
     static void wrapUpDownArrowActions(JComponent inplaceEditor, final IncrementPropertyValueSupport incrementSupport) {
         InputMap im = inplaceEditor.getInputMap( JComponent.WHEN_FOCUSED );
         wrapAction( im.get(KeyStroke.getKeyStroke(KeyEvent.VK_UP, 0)), inplaceEditor.getActionMap(), incrementSupport, true );
