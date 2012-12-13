@@ -1989,6 +1989,13 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<Token
                                             top3.addParameter(top2);
                                             top3.setExpID(CONVERSION);
                                             addTokenTo(top3);
+                                        } else if(getValidExpID(top3) == METHOD_OPEN) {
+                                            popExp();
+                                            popExp();
+                                            top3.addParameter(top);
+                                            top = top3;
+                                            mtd = true;
+                                            break;
                                         }
                                         break;
                                     case PARENTHESIS_OPEN:
