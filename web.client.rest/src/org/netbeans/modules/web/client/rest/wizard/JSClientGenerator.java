@@ -606,7 +606,7 @@ class JSClientGenerator {
     private void generateHeadTemplate( RouterGenerator generator ) {
         myTmplList.append("<script type='text/template' id='");                 // NOI18N
         myTmplList.append(generator.getTableHeadId());
-        myTmplList.append("'>\n<thead>");                                       // NOI18N
+        myTmplList.append("'>\n<thead>\n<tr>\n");                               // NOI18N
          
         if (generator.getModelGenerator().getIdAttribute() != null) {
             String id = generator.getModelGenerator().getIdAttribute()
@@ -623,7 +623,7 @@ class JSClientGenerator {
             myTmplList.append("</th>\n");                                       // NOI18N
         }
         
-        myTmplList.append("</thead>\n</script>\n");                             // NOI18N
+        myTmplList.append("</tr>\n</thead>\n</script>\n");                      // NOI18N
     }
 
     private void generateItemContent( RouterGenerator generator ) {

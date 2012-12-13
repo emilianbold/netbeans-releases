@@ -46,6 +46,7 @@ import com.oracle.nashorn.ir.BinaryNode;
 import com.oracle.nashorn.ir.CallNode;
 import com.oracle.nashorn.ir.FunctionNode;
 import com.oracle.nashorn.ir.IdentNode;
+import com.oracle.nashorn.ir.IndexNode;
 import com.oracle.nashorn.ir.LiteralNode;
 import com.oracle.nashorn.ir.Node;
 import com.oracle.nashorn.ir.ObjectNode;
@@ -1042,6 +1043,11 @@ public class ModelUtils {
             return null;
         }
 
+        @Override
+        public Node enter(IndexNode indexNode) {
+            return null;
+        }
+        
         @Override
         public Node enter(LiteralNode lNode) {
             Object value = lNode.getObject();

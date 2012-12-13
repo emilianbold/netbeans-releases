@@ -43,8 +43,8 @@ package org.netbeans.modules.php.project.connections.sftp;
 
 import org.netbeans.modules.php.api.util.FileUtils;
 import org.netbeans.modules.php.api.util.StringUtils;
+import org.netbeans.modules.php.api.validation.ValidationResult;
 import org.netbeans.modules.php.project.connections.common.RemoteValidator;
-import org.netbeans.modules.php.project.validation.ValidationResult;
 import org.openide.util.NbBundle;
 
 /**

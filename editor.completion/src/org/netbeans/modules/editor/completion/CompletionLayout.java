@@ -47,6 +47,7 @@ package org.netbeans.modules.editor.completion;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.EventQueue;
 import java.awt.Rectangle;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
@@ -298,6 +299,14 @@ public final class CompletionLayout {
     
     CompletionPopup testGetCompletionPopup() {
         return completionPopup;
+    }
+    
+     void repaintCompletionView() {
+        assert EventQueue.isDispatchThread();
+        JComponent completionView = completionPopup.completionScrollPane;
+        if(completionView != null && completionView.isVisible()) {
+            completionView.repaint();
+        }
     }
     
     private static final class CompletionPopup extends CompletionLayoutPopup {

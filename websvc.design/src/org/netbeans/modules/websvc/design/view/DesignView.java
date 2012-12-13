@@ -96,6 +96,7 @@ import org.openide.util.NbBundle;
  *
  * @author Ajit Bhate
  */
+@org.netbeans.api.annotations.common.SuppressWarnings("SE_BAD_FIELD")
 public class DesignView extends JPanel  implements Flushable {
     
     public static final Object messageLayerKey = new Object();
