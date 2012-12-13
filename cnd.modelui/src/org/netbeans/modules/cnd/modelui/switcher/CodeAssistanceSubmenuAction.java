@@ -93,7 +93,7 @@ public class CodeAssistanceSubmenuAction extends NodeAction {
         return HelpCtx.DEFAULT_HELP;
     }
     
-    private final static class LazyPopupMenu extends JMenu {
+    private final static class LazyPopupMenu extends JMenu implements PopupMenuListener {
         private final Collection<Action> items;
         public LazyPopupMenu(String name, Collection<Action> items) {
             super(name);
@@ -116,22 +116,25 @@ public class CodeAssistanceSubmenuAction extends NodeAction {
                 }
             }
             JPopupMenu out = super.getPopupMenu();
-            out.addPopupMenuListener(new PopupMenuListener() {
-
-                @Override
-                public void popupMenuWillBecomeVisible(PopupMenuEvent e) {
-                }
-
-                @Override
-                public void popupMenuWillBecomeInvisible(PopupMenuEvent e) {
-                    LazyPopupMenu.this.removeAll();
-                }
-
-                @Override
-                public void popupMenuCanceled(PopupMenuEvent e) {
-                }
-            });
+            out.removePopupMenuListener(this);
+            out.addPopupMenuListener(this);
             return out;
+        }
+
+        @Override
+        public void popupMenuWillBecomeVisible(PopupMenuEvent e) {
+        }
+
+        @Override
+        public void popupMenuWillBecomeInvisible(PopupMenuEvent e) {
+            if (e.getSource() instanceof JPopupMenu) {
+                ((JPopupMenu)e.getSource()).removePopupMenuListener(this);
+            }
+            super.removeAll();
+        }
+
+        @Override
+        public void popupMenuCanceled(PopupMenuEvent e) {
         }
     }
 }
