@@ -297,6 +297,14 @@
                     <file name="org-netbeans-modules-php-editor-verification-UnusedUsesHint.instance"/>
                     <file name="org-netbeans-modules-php-editor-verification-UnusedVariableHint.instance"/>
                     <file name="org-netbeans-modules-php-editor-verification-WrongOrderOfArgsHint.instance"/>
+                    <folder name="braces">
+                        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.php.editor.verification.Bundle"/>
+                        <file name="org-netbeans-modules-php-editor-verification-BracesHint$IfBracesHint.instance"/>
+                        <file name="org-netbeans-modules-php-editor-verification-BracesHint$DoWhileBracesHint.instance"/>
+                        <file name="org-netbeans-modules-php-editor-verification-BracesHint$WhileBracesHint.instance"/>
+                        <file name="org-netbeans-modules-php-editor-verification-BracesHint$ForBracesHint.instance"/>
+                        <file name="org-netbeans-modules-php-editor-verification-BracesHint$ForEachBracesHint.instance"/>
+                    </folder>
                 </folder>
                 <folder name="suggestions">
                     <attr name="position" intvalue="110"/>

@@ -1,0 +1,16 @@
+            echo "";
+            --------
+HINT:If-Else Statements Must Use Braces
+FIX:Add Braces
+            if (true)
+            
+HINT:If-Else Statements Must Use Braces
+FIX:Add Braces
+                echo "";
+                --------
+HINT:If-Else Statements Must Use Braces
+FIX:Add Braces
+                echo "";
+                --------
+HINT:If-Else Statements Must Use Braces
+FIX:Add Braces
