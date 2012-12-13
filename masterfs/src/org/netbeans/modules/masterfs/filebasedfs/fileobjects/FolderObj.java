@@ -651,7 +651,9 @@ public final class FolderObj extends BaseFileObj {
     @Override
     protected void afterRename() {
         synchronized (FolderChildrenCache.class) {
-            folderChildren = null;
+            if (folderChildren != null) {
+                folderChildren = folderChildren.cloneFor(getFileName());
+            }
         }
     }
     
@@ -709,6 +711,12 @@ public final class FolderObj extends BaseFileObj {
         @Override
         public void removeChild(FileNaming childName) {
             removeChild(getFileName(), childName);
+        }
+
+        final FolderChildrenCache cloneFor(FileNaming fileName) {
+            FolderChildrenCache newCache = new FolderChildrenCache();
+            copyTo(newCache, getFileName());
+            return newCache;
         }
     }
 
