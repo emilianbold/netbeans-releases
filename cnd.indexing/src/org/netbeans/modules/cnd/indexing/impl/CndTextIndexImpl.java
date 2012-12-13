@@ -60,11 +60,13 @@ import org.openide.util.RequestProcessor;
 /**
  *
  * @author Egor Ushakov <gorrus@netbeans.org>
+ * @author Vladimir Voskresensky
  */
-public class CndTextIndexImpl {
+public final class CndTextIndexImpl {
+    private final static Logger LOG = Logger.getLogger("CndTextIndexImpl"); // NOI18N
     private final DocumentIndex index;
     private final HashMap<CndTextIndexKey, Set<String>> unsaved = new HashMap<CndTextIndexKey, Set<String>>();
-    private static final RequestProcessor RP = new RequestProcessor("Index saver", 1); //NOI18N
+    private static final RequestProcessor RP = new RequestProcessor("CndTextIndexImpl saver", 1); //NOI18N
     private final RequestProcessor.Task storeTask = RP.create(new Runnable() {
         @Override
         public void run() {
@@ -79,6 +81,13 @@ public class CndTextIndexImpl {
 
     public void put(CndTextIndexKey key, Collection<String> values) {
         synchronized (unsaved) {
+            if (LOG.isLoggable(Level.FINE)) {
+                if (key.getFileNameIndex() < 2) {
+                    LOG.log(Level.FINE, "Cnd Text Index put for {0}:\n\t{1}", new Object[]{key, values});
+                } else {
+                    LOG.log(Level.FINE, "Cnd Text Index put for {0}:{1}", new Object[] {key, values.size()});
+                }
+            }
             unsaved.put(key, new HashSet<String>(values));
         }
         storeTask.schedule(STORE_DELAY);
@@ -92,9 +101,9 @@ public class CndTextIndexImpl {
             long start = System.currentTimeMillis();
             for (Map.Entry<CndTextIndexKey, Set<String>> entry : unsaved.entrySet()) {
                 final CndTextIndexKey key = entry.getKey();
-                IndexDocument doc = IndexManager.createDocument(String.valueOf(key.getFileNameIndex()));
+                // use unitID+fileID for primary key, otherwise indexed files from different projects overwrite each others
+                IndexDocument doc = IndexManager.createDocument(toPrimaryKey(key));
                 for (String id : entry.getValue()) {
-                    doc.addPair(CndTextIndexManager.FIELD_UNIT_ID, String.valueOf(key.getUnitId()), false, true);
                     doc.addPair(CndTextIndexManager.FIELD_IDS, id, true, true);
                 }
                 index.addDocument(doc);
@@ -105,8 +114,7 @@ public class CndTextIndexImpl {
             } catch (Exception ex) {
                 Exceptions.printStackTrace(ex);
             }
-            Logger.getLogger(CndTextIndexImpl.class.getName()).log(Level.FINE, 
-                    "Cnd Text Index store took {0}ms", System.currentTimeMillis() - start); //NOI18N
+            LOG.log(Level.FINE, "Cnd Text Index store took {0}ms", System.currentTimeMillis() - start); 
         }
     }
 
@@ -115,17 +123,29 @@ public class CndTextIndexImpl {
         store();
         
         try {
-            Collection<? extends IndexDocument> queryRes = index.query(CndTextIndexManager.FIELD_IDS, value, Queries.QueryKind.EXACT, null);
+            // load light weight document with primary key field _sn only
+            // it's enough to restore CndTextIndexKey, but reduces memory by not loading FIELD_IDS set
+            Collection<? extends IndexDocument> queryRes = index.query(CndTextIndexManager.FIELD_IDS, value, Queries.QueryKind.EXACT, "_sn"); // NOI18N
             HashSet<CndTextIndexKey> res = new HashSet<CndTextIndexKey>(queryRes.size());
             for (IndexDocument doc : queryRes) {
-                res.add(new CndTextIndexKey(
-                        Integer.parseInt(doc.getValue(CndTextIndexManager.FIELD_UNIT_ID)),
-                        Integer.parseInt(doc.getPrimaryKey())));
+                res.add(fromPrimaryKey(doc.getPrimaryKey()));
             }
+            LOG.log(Level.FINE, "Cnd Text Index query for {0}:\n\t{1}", new Object[] {value, res});
             return res;
         } catch (Exception ex) {
             Exceptions.printStackTrace(ex);
         }
         return Collections.emptySet();
     }
+    
+    private static String toPrimaryKey(CndTextIndexKey key) {
+        return String.valueOf(((long) key.getUnitId() << 32) + (long) key.getFileNameIndex());
+    }
+
+    private static CndTextIndexKey fromPrimaryKey(String ext) {
+        long value = Long.parseLong(ext);
+        int unitId = (int) (value >> 32);
+        int fileNameIndex = (int) (value & 0xFFFFFFFF);
+        return new CndTextIndexKey(unitId, fileNameIndex);
+    }    
 }

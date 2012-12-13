@@ -1370,6 +1370,7 @@ public final class MakeProject implements Project, MakeProjectListener, Runnable
                 final ExecutionEnvironment env = FileSystemProvider.getExecutionEnvironment(dir);
                 ConnectionHelper.INSTANCE.ensureConnection(env);
             }     
+            helper.removeMakeProjectListener(MakeProject.this);
             helper.addMakeProjectListener(MakeProject.this);
             checkNeededExtensions();
             if (openedTasks != null) {
