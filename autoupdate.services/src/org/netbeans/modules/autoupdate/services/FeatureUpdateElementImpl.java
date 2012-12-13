@@ -46,7 +46,6 @@ package org.netbeans.modules.autoupdate.services;
 
 import java.text.ParseException;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -81,12 +80,17 @@ public class FeatureUpdateElementImpl extends UpdateElementImpl {
     private InstallInfo installInfo;
     private static final Logger LOG = Logger.getLogger (FeatureUpdateElementImpl.class.getName ());
     private Set<ModuleUpdateElementImpl> moduleElementsImpl;
+    private Set<FeatureUpdateElementImpl> featureElementsImpl;
     private UpdateManager.TYPE type;
     
-    public FeatureUpdateElementImpl (FeatureItem item, String providerName, Set<ModuleUpdateElementImpl> moduleElementsImpl, UpdateManager.TYPE type) {
+    public FeatureUpdateElementImpl (FeatureItem item, String providerName,
+            Set<ModuleUpdateElementImpl> moduleElementsImpl,
+            Set<FeatureUpdateElementImpl> featureElementsImpl,
+            UpdateManager.TYPE type) {
         super (item, providerName);
         this.type = type;
         this.moduleElementsImpl = moduleElementsImpl;
+        this.featureElementsImpl = featureElementsImpl;
         codeName = item.getCodeName ();
         String itemSpec = item.getSpecificationVersion ();
         if (itemSpec == null) {
@@ -249,6 +253,13 @@ public class FeatureUpdateElementImpl extends UpdateElementImpl {
                 infos.add (impl.getModuleInfo ());
             }
         }
+        for (FeatureUpdateElementImpl featureImpl : getDependingFeatures()) {
+            for (ModuleUpdateElementImpl modImpl : featureImpl.getContainedModuleElements()) {
+                if (!infos.contains(modImpl.getModuleInfo())) {
+                    infos.add(modImpl.getModuleInfo());
+                }
+            }
+        }
         return infos;
     }
     
@@ -258,7 +269,8 @@ public class FeatureUpdateElementImpl extends UpdateElementImpl {
     }
     
     public Set<FeatureUpdateElementImpl> getDependingFeatures() {
-        return Collections.emptySet();
+        assert featureElementsImpl != null : "FeatureUpdateElementImpl contains features " + featureElementsImpl;
+        return featureElementsImpl;
     }
 
     @Override
@@ -272,6 +284,9 @@ public class FeatureUpdateElementImpl extends UpdateElementImpl {
         for (ModuleUpdateElementImpl impl : getContainedModuleElements ()) {
             res &= impl.isEnabled ();
         }
+        for (FeatureUpdateElementImpl featureImpl : getDependingFeatures()) {
+            res &= featureImpl.isEnabled();
+        }
         return res;
     }
     
@@ -280,6 +295,9 @@ public class FeatureUpdateElementImpl extends UpdateElementImpl {
         boolean res = true;
         for (ModuleUpdateElementImpl impl : getContainedModuleElements ()) {
             res &= impl.isAutoload ();
+        }
+        for (FeatureUpdateElementImpl featureImpl : getDependingFeatures()) {
+            res &= featureImpl.isAutoload();
         }
         return res;
     }
@@ -290,6 +308,9 @@ public class FeatureUpdateElementImpl extends UpdateElementImpl {
         for (ModuleUpdateElementImpl impl : getContainedModuleElements ()) {
             res &= impl.isEager ();
         }
+        for (FeatureUpdateElementImpl featureImpl : getDependingFeatures()) {
+            res &= featureImpl.isEager();
+        }
         return res;
     }
     
@@ -299,6 +320,9 @@ public class FeatureUpdateElementImpl extends UpdateElementImpl {
         for (ModuleUpdateElementImpl impl : getContainedModuleElements ()) {
             res &= impl.isFixed ();
         }
+        for (FeatureUpdateElementImpl featureImpl : getDependingFeatures()) {
+            res &= featureImpl.isFixed();
+        }
         return res;
     }
     
@@ -307,6 +331,9 @@ public class FeatureUpdateElementImpl extends UpdateElementImpl {
         boolean res = true;
         for (ModuleUpdateElementImpl impl : getContainedModuleElements()) {
             res &= impl.isPreferredUpdate();
+        }
+        for (FeatureUpdateElementImpl featureImpl : getDependingFeatures()) {
+            res &= featureImpl.isPreferredUpdate();
         }
         return res;
     }
@@ -357,7 +384,7 @@ public class FeatureUpdateElementImpl extends UpdateElementImpl {
         private FeatureItem featureItem;
         
         public Agent (FeatureItem item, String providerName, UpdateManager.TYPE type) {
-            super (item, providerName, null, type);
+            super (item, providerName, null, null, type);
             this.featureItem = item;
         }
         

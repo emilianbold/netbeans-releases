@@ -113,14 +113,22 @@ public class FeatureUpdateUnitImpl extends UpdateUnitImpl {
         
         UpdateElement installedFeatureElement = null;
         FeatureUpdateElementImpl featureImpl = null;
+        
         Set<ModuleUpdateElementImpl> installedModules = new HashSet<ModuleUpdateElementImpl> ();
+        Set<FeatureUpdateElementImpl> installedFeatures = new HashSet<FeatureUpdateElementImpl> ();
+        
         Set<ModuleUpdateElementImpl> availableModules = new HashSet<ModuleUpdateElementImpl> ();
         Set<FeatureUpdateElementImpl> availableFeatures = new HashSet<FeatureUpdateElementImpl> ();
+        
         Set<ModuleUpdateElementImpl> missingModules = new HashSet<ModuleUpdateElementImpl> ();
+        Set<FeatureUpdateElementImpl> missingFeatures = new HashSet<FeatureUpdateElementImpl> ();
+
         assert featureElements != null : "FeatureUpdateUnitImpl " + getCodeName () + " contains some available elements.";
         for (UpdateElement el : featureElements) {
+            
             featureImpl = (FeatureUpdateElementImpl) Trampoline.API.impl (el);
             boolean installed = false;
+            
             for (ModuleUpdateElementImpl moduleImpl : featureImpl.getContainedModuleElements ()) {
                 installed |= moduleImpl.getUpdateUnit ().getInstalled () != null;
                 UpdateElement iue = moduleImpl.getUpdateUnit ().getInstalled ();
@@ -140,8 +148,18 @@ public class FeatureUpdateUnitImpl extends UpdateUnitImpl {
                     LOG.log (Level.FINER, this + " has a update of module " + moduleImpl.getUpdateElement () + " to " + auei.getUpdateElement ());
                 }
             }
+            
             for (FeatureUpdateElementImpl dependingFeatureImpl : featureImpl.getDependingFeatures()) {
                 installed |= dependingFeatureImpl.getUpdateUnit().getInstalled() != null;
+                UpdateElement iue = dependingFeatureImpl.getUpdateUnit().getInstalled();
+                UpdateElementImpl iuei = iue == null ? null : Trampoline.API.impl(iue);
+                assert iuei == null || iuei instanceof FeatureUpdateElementImpl : "Impl of " + iue + " is instanceof FeatureUpdateElementImpl";
+                if (iuei != null) {
+                    installedFeatures.add((FeatureUpdateElementImpl) iuei);
+                } else {
+                    LOG.log(Level.FINER, this.getCodeName() + " misses required module " + featureImpl.getUpdateElement());
+                    missingFeatures.add(featureImpl);
+                }
                 if (! dependingFeatureImpl.getUpdateUnit().getAvailableUpdates().isEmpty()) {
                     UpdateElement aue = dependingFeatureImpl.getUpdateUnit().getAvailableUpdates().get(0);
                     UpdateElementImpl auei = Trampoline.API.impl(aue);
@@ -150,6 +168,7 @@ public class FeatureUpdateUnitImpl extends UpdateUnitImpl {
                     LOG.log(Level.FINER, this + " has a update of feature " + dependingFeatureImpl.getUpdateElement() + " to " + auei.getUpdateElement());
                 }
             }
+            
             if (installed) {
                 installedFeatureElement = el;
             }
@@ -163,12 +182,14 @@ public class FeatureUpdateUnitImpl extends UpdateUnitImpl {
             FeatureItem item = ArtificialFeaturesProvider.createFeatureItem (
                     getCodeName (),
                     installedModules,
+                    installedFeatures,
                     featureImpl,
                     isStandalone ? null : presentAddionallyDescription (installedModules, presentMissingModules (missingModules)));
             FeatureUpdateElementImpl featureElementImpl = new FeatureUpdateElementImpl (
                     item,
                     installedFeatureElement.getSource (),
                     installedModules,
+                    installedFeatures,
                     featureImpl.getType ());
             installedElement = Trampoline.API.createUpdateElement (featureElementImpl);
             featureElementImpl.setUpdateUnit (installedFeatureElement.getUpdateUnit ());
@@ -176,36 +197,24 @@ public class FeatureUpdateUnitImpl extends UpdateUnitImpl {
         
         // add also new update element
         if (! featureElements.isEmpty ()) {
-            if (! availableModules.isEmpty ()) {
-                // add available modules to missing
+            if (! availableModules.isEmpty () || ! availableFeatures.isEmpty()) {
+                // add available modules or features to missing
                 missingModules.addAll (availableModules);
                 FeatureItem item = ArtificialFeaturesProvider.createFeatureItem (
                         getCodeName (),
                         availableModules,
+                        availableFeatures,
                         featureImpl,
-                        isStandalone ? null : presentAddionallyDescription (presentUpdatableModules (missingModules), installedModules));
+                        isStandalone ? null : presentAddionallyDescription (presentUpdatableModules (/* XXX */missingModules), installedModules));
                 FeatureUpdateElementImpl featureElementImpl = new FeatureUpdateElementImpl (
                         item,
                         featureElements.get (0).getSource (),
                         availableModules,
+                        availableFeatures,
                         featureImpl.getType ());
                 updateElement = Trampoline.API.createUpdateElement (featureElementImpl);
                 featureElementImpl.setUpdateUnit (featureElements.get (0).getUpdateUnit ());
                 addUpdate (updateElement);
-            } else if (! availableFeatures.isEmpty()) {
-                FeatureItem item = ArtificialFeaturesProvider.createFeatureItem(
-                        getCodeName(),
-                        availableModules,
-                        featureImpl,
-                        isStandalone ? null : presentAddionallyDescription(presentUpdatableModules(missingModules), installedModules));
-                FeatureUpdateElementImpl featureElementImpl = new FeatureUpdateElementImpl(
-                        item,
-                        featureElements.get(0).getSource(),
-                        availableModules,
-                        featureImpl.getType());
-                updateElement = Trampoline.API.createUpdateElement(featureElementImpl);
-                featureElementImpl.setUpdateUnit(featureElements.get(0).getUpdateUnit());
-                addUpdate(updateElement);
             }
         }
         
