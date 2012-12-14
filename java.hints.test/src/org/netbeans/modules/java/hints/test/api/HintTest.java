@@ -84,6 +84,8 @@ import static junit.framework.Assert.assertFalse;
 import static junit.framework.Assert.assertNotNull;
 import static junit.framework.Assert.assertNotSame;
 import static junit.framework.Assert.assertTrue;
+
+import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.java.queries.SourceForBinaryQuery;
@@ -858,7 +860,13 @@ public class HintTest {
 
             assertEquals(1, fixes.size());
 
-            fixes.get(0).implement();
+            Preferences preferences = MimeLookup.getLookup(JavaTokenId.language().mimeType()).lookup(Preferences.class);
+            preferences.putBoolean("importInnerClasses", true);
+            try {
+                fixes.get(0).implement();
+            } finally {
+                preferences.remove("importInnerClasses");
+            }
 
             if (saveAll)
                 LifecycleManager.getDefault().saveAll();
