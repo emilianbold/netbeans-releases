@@ -70,6 +70,7 @@ import org.netbeans.modules.cnd.api.project.NativeProjectType;
 import org.netbeans.modules.cnd.api.remote.RemoteProject;
 import org.netbeans.modules.cnd.api.xml.LineSeparatorDetector;
 import org.netbeans.modules.cnd.makeproject.api.ProjectGenerator;
+import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.support.MakeProjectEvent;
 import org.netbeans.modules.cnd.makeproject.api.support.MakeProjectHelper;
 import org.netbeans.modules.cnd.makeproject.api.support.MakeProjectListener;
@@ -1044,7 +1045,7 @@ public final class MakeProjectHelperImpl implements MakeProjectHelper {
         includes[sourceRoots.length] = ""; // NOI18N
         String[] excludes = new String[buildDirectories.length + 1];
         System.arraycopy(buildDirectories, 0, excludes, 0, buildDirectories.length);
-        excludes[buildDirectories.length] = "nbproject/private"; // NOI18N
+        excludes[buildDirectories.length] = MakeConfiguration.NBPROJECT_PRIVATE_FOLDER;
         return new SharabilityQueryImpl(this, includes, excludes);
     }
 
