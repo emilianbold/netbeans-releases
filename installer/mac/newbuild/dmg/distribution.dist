@@ -62,8 +62,7 @@ function checkSystemversion() {
                 var java7u10_or_newer = false;
                 var java7_older = false;
                 var java6 = false;
-                var no_java = false;
-		try {
+                try {
                     if(system.files.fileExistsAtPath('/usr/libexec/java_home')) {
                        var res = system.run("/usr/libexec/java_home", "--version", "1.7.0_10+", "--failfast");                       
                        java7u10_or_newer = (0 == res);
@@ -76,27 +75,31 @@ function checkSystemversion() {
                            java7_older = (0 == res);
                        }
                     }
-		} catch (e) {}
+                } catch (e) {}
 		
-		if(!java7u10_or_newer) {
-                    if(java7_older && java6) {
-                        my.result.type = 'Warning';
-                        my.result.title = system.localizedStringWithFormat('WARN_JAVA6_OLDER_JAVA7_TITLE');
-                        my.result.message = system.localizedStringWithFormat('WARN_JAVA6_OLDER_JAVA7_MSG');
-                        result = true;
-                    } else {
-                        if (java7_older) {
+		if(java7u10_or_newer) {
+                    result = true;
+                } else {
+                    if(java7_older) {
+                        if (java6) {
+                            my.result.type = 'Warning';
+                            my.result.title = system.localizedStringWithFormat('WARN_JAVA6_OLDER_JAVA7_TITLE');
+                            my.result.message = system.localizedStringWithFormat('WARN_JAVA6_OLDER_JAVA7_MSG');
+                            result = true;
+                        } else {
                             my.result.type = 'Fatal';
                             my.result.title = system.localizedStringWithFormat('ERR_OLDER_JAVA7_TITLE');
                             my.result.message = system.localizedStringWithFormat('ERR_OLDER_JAVA7_MSG');
+                            result = false;
+                        }
+                    } else {
+                        if (java6) {
+                            result = true;
                         } else {
-                            if (java6) {
-                                result = true;
-                            } else {
-                                my.result.type = 'Fatal';
-                                my.result.title = system.localizedStringWithFormat('ERR_NO_JAVA_TITLE');
-                                my.result.message = system.localizedStringWithFormat('ERR_NO_JAVA_MSG');
-                            }
+                            my.result.type = 'Fatal';
+                            my.result.title = system.localizedStringWithFormat('ERR_NO_JAVA_TITLE');
+                            my.result.message = system.localizedStringWithFormat('ERR_NO_JAVA_MSG');
+                            result = false;
                         }
                     }
 		}
