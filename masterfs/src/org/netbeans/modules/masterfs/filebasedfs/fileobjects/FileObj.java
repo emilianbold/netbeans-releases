@@ -65,6 +65,7 @@ import org.netbeans.modules.masterfs.filebasedfs.utils.Utils;
 import org.netbeans.modules.masterfs.providers.ProvidedExtensions;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileStateInvalidException;
 import org.openide.util.Enumerations;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
@@ -110,6 +111,10 @@ public class FileObj extends BaseFileObj {
         }
         final File f = getFileName().getFile();
         if (!isValid()) {
+            FileObject recreated = this.getFileSystem().findResource(getPath());
+            if (recreated instanceof FileObj && recreated != this) {
+                return ((FileObj)recreated).getOutputStream(lock, extensions, mfo);
+            }
             FileNotFoundException fnf = new FileNotFoundException("FileObject " + this + " is not valid; isFile=" + f.isFile()); //NOI18N
             Exceptions.attachLocalizedMessage(fnf, Bundle.EXC_INVALID_FILE(this));
             throw fnf;
@@ -167,6 +172,15 @@ public class FileObj extends BaseFileObj {
         }
         final File f = getFileName().getFile();
         if (!isValid()) {
+            FileObject recreated = null;
+            try {
+                recreated = this.getFileSystem().findResource(getPath());
+            } catch (FileStateInvalidException ex) {
+                LOGGER.log(Level.FINE, "Can't get filesystem for " + getPath(), ex);
+            }
+            if (recreated != null && recreated != this) {
+                return recreated.getInputStream();
+            }
             FileNotFoundException ex = new FileNotFoundException("FileObject " + this + " is not valid."); //NOI18N
             String msg = NbBundle.getMessage(FileBasedFileSystem.class, "EXC_CannotRead", f.getName(), f.getParent()); // NOI18N
             Exceptions.attachLocalizedMessage(ex, msg);
