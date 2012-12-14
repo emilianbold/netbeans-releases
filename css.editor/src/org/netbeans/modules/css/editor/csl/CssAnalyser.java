@@ -48,11 +48,11 @@ import java.util.List;
 import org.netbeans.modules.csl.api.Error;
 import org.netbeans.modules.csl.api.Severity;
 import org.netbeans.modules.css.editor.Css3Utils;
+import org.netbeans.modules.css.editor.CssDeclarationContext;
 import org.netbeans.modules.css.lib.api.CssParserResult;
 import org.netbeans.modules.css.lib.api.ErrorsProvider;
 import org.netbeans.modules.css.lib.api.Node;
 import org.netbeans.modules.css.lib.api.NodeType;
-import org.netbeans.modules.css.lib.api.NodeUtil;
 import org.netbeans.modules.css.lib.api.NodeVisitor;
 import org.netbeans.modules.css.lib.api.properties.Properties;
 import org.netbeans.modules.css.lib.api.properties.PropertyDefinition;
@@ -98,12 +98,13 @@ public class CssAnalyser implements ErrorsProvider {
                                 return false; 
                         }
                     }
+                    CssDeclarationContext ctx = new CssDeclarationContext(node);
                     
-                    Node propertyNode = NodeUtil.getChildByType(node, NodeType.property);
-                    Node valueNode = NodeUtil.getChildByType(node, NodeType.propertyValue);
-
+                    Node propertyNode = ctx.getProperty();
+                    Node valueNode = ctx.getPropertyValue();
+                    
                     if (propertyNode != null) {
-                        String propertyName = propertyNode.image().toString().trim();
+                        String propertyName = ctx.getPropertyNameImage();
 
                         //check non css 2.1 compatible properties and ignore them
                         //values are not checked as well
@@ -131,7 +132,7 @@ public class CssAnalyser implements ErrorsProvider {
 
                         //check value
                         if (valueNode != null && property != null) {
-                            String valueImage = valueNode.image().toString().trim();
+                            String valueImage = ctx.getPropertyValueImage();
                             
                             //do not check values which contains generated code
                             //we are no able to identify the templating semantic
@@ -140,33 +141,35 @@ public class CssAnalyser implements ErrorsProvider {
                                     && !Css3Utils.isVendorSpecificPropertyValue(file, valueImage)) {
                                 ResolvedProperty pv = new ResolvedProperty(file, property, valueImage);
                                 if (!pv.isResolved()) {
-                                    String errorMsg = null;
+                                    if(!ctx.containsIEBS9Hack() && !ctx.containsIEStarHack()) {
+                                        String errorMsg = null;
 
-                                    //error in property 
-                                    List<Token> unresolved = pv.getUnresolvedTokens();
-                                    if(unresolved.isEmpty()) {
-                                        return false;
-                                    }
-                                    Token unexpectedToken = unresolved.iterator().next();
+                                        //error in property 
+                                        List<Token> unresolved = pv.getUnresolvedTokens();
+                                        if(unresolved.isEmpty()) {
+                                            return false;
+                                        }
+                                        Token unexpectedToken = unresolved.iterator().next();
 
-                                    if(isNonCss21CompatiblePropertyValue(unexpectedToken.toString())) {
-                                        return false;
-                                    }
+                                        if(isNonCss21CompatiblePropertyValue(unexpectedToken.toString())) {
+                                            return false;
+                                        }
 
-                                    if (errorMsg == null) {
-                                        errorMsg = NbBundle.getMessage(CssAnalyser.class, INVALID_PROPERTY_VALUE, unexpectedToken.image().toString());
-                                    }
+                                        if (errorMsg == null) {
+                                            errorMsg = NbBundle.getMessage(CssAnalyser.class, INVALID_PROPERTY_VALUE, unexpectedToken.image().toString());
+                                        }
 
-                                    Error error = makeError(valueNode.from(),
-                                            valueNode.to(),
-                                            snapshot,
-                                            INVALID_PROPERTY_VALUE,
-                                            errorMsg,
-                                            errorMsg,
-                                            false /* not line error */,
-                                            Severity.WARNING);
-                                    if(error != null) {
-                                        getResult().add(error);
+                                        Error error = makeError(valueNode.from(),
+                                                valueNode.to(),
+                                                snapshot,
+                                                INVALID_PROPERTY_VALUE,
+                                                errorMsg,
+                                                errorMsg,
+                                                false /* not line error */,
+                                                Severity.WARNING);
+                                        if(error != null) {
+                                            getResult().add(error);
+                                        }
                                     }
                                 }
                             }
