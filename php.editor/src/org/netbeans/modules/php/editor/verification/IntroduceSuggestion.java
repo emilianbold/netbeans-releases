@@ -224,7 +224,7 @@ public class IntroduceSuggestion extends AbstractSuggestion {
                 String methName = CodeUtils.extractFunctionName(methodInvocation.getMethod());
                 String clzName = CodeUtils.extractUnqualifiedClassName(methodInvocation);
 
-                if (clzName != null) {
+                if (clzName != null && StringUtils.hasText(methName)) {
                     Collection<? extends TypeScope> allTypes = ModelUtils.resolveType(model, methodInvocation);
                     if (allTypes.size() == 1) {
                         TypeScope type = ModelUtils.getFirst(allTypes);
