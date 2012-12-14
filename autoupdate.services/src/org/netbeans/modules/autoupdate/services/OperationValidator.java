@@ -395,7 +395,9 @@ abstract class OperationValidator {
                 List<Module> toEnable = getModulesToEnable(mm, modules);
                 for (Module module : toEnable) {
                     if (!modules.contains(module) && Utilities.canEnable (module)) {
-                        retval.add(Utilities.toUpdateUnit(module).getInstalled());
+                        if (Utilities.toUpdateUnit(module).getInstalled() != null) {
+                            retval.add(Utilities.toUpdateUnit(module).getInstalled());
+                        }
                     }
                 }
             }

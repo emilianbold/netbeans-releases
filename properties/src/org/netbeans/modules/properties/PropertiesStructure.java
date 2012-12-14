@@ -152,7 +152,7 @@ public class PropertiesStructure extends Element {
     }
 
     /** Gets bundle structure of bundles where this .properties file belongs to. */
-    private BundleStructure getParentBundleStructure() {
+    protected BundleStructure getParentBundleStructure() {
         PropertiesDataObject dataObj;
         dataObj = (PropertiesDataObject) getParent().getEntry().getDataObject();
         return dataObj.getBundleStructure();
