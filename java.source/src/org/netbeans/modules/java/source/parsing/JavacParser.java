@@ -63,6 +63,7 @@ import org.netbeans.lib.nbjavac.services.CancelService;
 import com.sun.tools.javac.util.Context;
 import com.sun.tools.javac.util.CouplingAbort;
 import com.sun.tools.javac.util.Log;
+import com.sun.tools.javac.util.Options;
 import com.sun.tools.javac.util.Position.LineMapImpl;
 import com.sun.tools.javadoc.Messager;
 import java.beans.PropertyChangeEvent;
@@ -180,6 +181,7 @@ public class JavacParser extends Parser {
     private static final int MAX_DUMPS = Integer.getInteger("org.netbeans.modules.java.source.parsing.JavacParser.maxDumps", 255);  //NOI18N
     //Command line switch disabling partial reparse
     private static final boolean DISABLE_PARTIAL_REPARSE = Boolean.getBoolean("org.netbeans.modules.java.source.parsing.JavacParser.no_reparse");   //NOI18N
+    private static final String LOMBOK_DETECTED = "lombokDetected";
 
     /**
      * Helper map mapping the {@link Phase} to message for performance logger
@@ -755,8 +757,16 @@ public class JavacParser extends Parser {
         Collection<? extends Processor> processors = null;
         if (aptEnabled) {
             processors = aptUtils.resolveProcessors(backgroundCompilation);
-            if (processors.isEmpty())
+            if (processors.isEmpty()) {
                 aptEnabled = false;
+            } else {
+                for (Processor p : processors) {
+                    if ("lombok.core.AnnotationProcessor".equals(p.getClass().getName())) {
+                        options.add("-XD" + LOMBOK_DETECTED);
+                        break;
+                    }
+                }
+            }
         }
         if (aptEnabled) {
             for (Map.Entry<? extends String, ? extends String> entry : aptUtils.processorOptions().entrySet()) {
@@ -954,6 +964,7 @@ public class JavacParser extends Parser {
                 return false;
             }
             final JavacTaskImpl task = ci.getJavacTask();
+            if (Options.instance(task.getContext()).isSet(LOMBOK_DETECTED)) return false;
             PartialReparser pr = PartialReparser.instance(task.getContext());
             final JavacTrees jt = JavacTrees.instance(task);
             final int origStartPos = (int) jt.getSourcePositions().getStartPosition(cu, orig.getBody());
