@@ -1370,6 +1370,7 @@ public final class MakeProject implements Project, MakeProjectListener, Runnable
                 final ExecutionEnvironment env = FileSystemProvider.getExecutionEnvironment(dir);
                 ConnectionHelper.INSTANCE.ensureConnection(env);
             }     
+            helper.removeMakeProjectListener(MakeProject.this);
             helper.addMakeProjectListener(MakeProject.this);
             checkNeededExtensions();
             if (openedTasks != null) {
@@ -1505,15 +1506,20 @@ public final class MakeProject implements Project, MakeProjectListener, Runnable
         @Override
         public List<SearchRoot> getSearchRoots() {
             List<SearchRoot> roots = new ArrayList<SearchRoot>();
-            FileObject baseDirFileObject = projectDescriptorProvider.getConfigurationDescriptor().getBaseDirFileObject();
-            roots.add(new SearchRoot(baseDirFileObject, null));
-            for (String root : projectDescriptorProvider.getConfigurationDescriptor().getAbsoluteSourceRoots()) {
-                try {
-                    FileObject fo = new FSPath(baseDirFileObject.getFileSystem(), root).getFileObject();
-                    if (fo != null) {
-                        roots.add(new SearchRoot(fo, null));
+            if (projectDescriptorProvider.gotDescriptor()) {
+                final MakeConfigurationDescriptor configurationDescriptor = projectDescriptorProvider.getConfigurationDescriptor();
+                if (configurationDescriptor != null) {
+                    FileObject baseDirFileObject = configurationDescriptor.getBaseDirFileObject();
+                    roots.add(new SearchRoot(baseDirFileObject, null));
+                    for (String root : configurationDescriptor.getAbsoluteSourceRoots()) {
+                        try {
+                            FileObject fo = new FSPath(baseDirFileObject.getFileSystem(), root).getFileObject();
+                            if (fo != null) {
+                                roots.add(new SearchRoot(fo, null));
+                            }
+                        } catch (FileStateInvalidException ex) {
+                        }
                     }
-                } catch (FileStateInvalidException ex) {
                 }
             }
             return roots;
@@ -1522,13 +1528,18 @@ public final class MakeProject implements Project, MakeProjectListener, Runnable
         @Override
         public Iterator<FileObject> filesToSearch(final SearchScopeOptions options, SearchListener listener, final AtomicBoolean terminated) {
             FileObjectNameMatcherImpl matcher = new FileObjectNameMatcherImpl(options, terminated);
-            MakeConfigurationDescriptor projectDescriptor = projectDescriptorProvider.getConfigurationDescriptor();
-            Folder rootFolder = projectDescriptor.getLogicalFolders();
-            Set<FileObject> res = rootFolder.getAllItemsAsFileObjectSet(false, matcher);
-            FileObject baseDirFileObject = projectDescriptorProvider.getConfigurationDescriptor().getBaseDirFileObject();
-            addFolder(res, baseDirFileObject.getFileObject("nbproject"), matcher); // NOI18N
-            addFolder(res, baseDirFileObject.getFileObject("nbproject/private"), matcher); // NOI18N
-            return res.iterator();
+            if (projectDescriptorProvider.gotDescriptor()) {
+                MakeConfigurationDescriptor configurationDescriptor = projectDescriptorProvider.getConfigurationDescriptor();
+                if (configurationDescriptor != null) {
+                    Folder rootFolder = configurationDescriptor.getLogicalFolders();
+                    Set<FileObject> res = rootFolder.getAllItemsAsFileObjectSet(false, matcher);
+                    FileObject baseDirFileObject = projectDescriptorProvider.getConfigurationDescriptor().getBaseDirFileObject();
+                    addFolder(res, baseDirFileObject.getFileObject(MakeConfiguration.NBPROJECT_FOLDER), matcher);
+                    addFolder(res, baseDirFileObject.getFileObject(MakeConfiguration.NBPROJECT_PRIVATE_FOLDER), matcher);
+                    return res.iterator();
+                }
+            }
+            return new ArrayList<FileObject>().iterator();
         }
 
         private void addFolder(Set<FileObject> res, FileObject fo, FileObjectNameMatcher matcher) {

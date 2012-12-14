@@ -75,6 +75,9 @@ public class ServerURLMappingImpl implements ServerURLMappingImplementation {
             } else {
                 String relPath = FileUtil.getRelativePath(project.getSiteRootFolder(), projectFile);
                 String root = project.getEvaluator().getProperty(ClientSideProjectConstants.PROJECT_PROJECT_URL);
+                if (root == null) {
+                    return null;
+                }
                 if (!root.endsWith("/")) { //NOI18N
                     root += "/"; //NOI18N
                 }
@@ -92,13 +95,21 @@ public class ServerURLMappingImpl implements ServerURLMappingImplementation {
             fo = WebServer.getWebserver().fromServer(serverURL);
         } else {
             String root = project.getEvaluator().getProperty(ClientSideProjectConstants.PROJECT_PROJECT_URL);
+            if (root == null) {
+                return null;
+            }
             String u = WebUtils.urlToString(serverURL);
             if (u.startsWith(root)) {
                 u = u.substring(root.length());
                 if (u.startsWith("/")) { //NOI18N
                     u = u.substring(1);
                 }
-                fo = project.getSiteRootFolder().getFileObject(u);
+                FileObject siteRoot = project.getSiteRootFolder();
+                if (siteRoot != null) {
+                    fo = siteRoot.getFileObject(u);
+                } else {
+                    return null;
+                }
             }
         }
         if (fo == null) {

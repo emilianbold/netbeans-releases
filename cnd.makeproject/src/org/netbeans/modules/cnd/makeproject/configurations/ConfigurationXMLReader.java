@@ -99,7 +99,7 @@ public class ConfigurationXMLReader extends XMLDocReader {
         final String tag;
         final FileObject xml;
         // Try first new style file
-        FileObject fo = projectDirectory.getFileObject("nbproject/configurations.xml"); // NOI18N
+        FileObject fo = projectDirectory.getFileObject(MakeConfiguration.NBPROJECT_FOLDER + '/' + MakeConfiguration.CONFIGURATIONS_XML); // NOI18N
         if (fo == null) {
             // then try old style file....
             tag = CommonConfigurationXMLCodec.PROJECT_DESCRIPTOR_ELEMENT;
@@ -175,7 +175,7 @@ public class ConfigurationXMLReader extends XMLDocReader {
         // Now for the auxiliary/private entry
         //
 
-        xml = projectDirectory.getFileObject("nbproject/private/configurations.xml"); // NOI18N
+        xml = projectDirectory.getFileObject(MakeConfiguration.NBPROJECT_PRIVATE_FOLDER + '/' + MakeConfiguration.CONFIGURATIONS_XML); // NOI18N
         if (xml != null) {
             // Don't post an error.
             // It's OK to sometimes not have a private config

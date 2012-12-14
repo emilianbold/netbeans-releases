@@ -69,7 +69,6 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileRenameEvent;
 import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
-import org.openide.util.WeakListeners;
 
 public class ConfigurationDescriptorProvider {
     public static final boolean VCS_WRITE = true; // Boolean.getBoolean("cnd.make.vcs.write");//org.netbeans.modules.cnd.makeproject.configurations.CommonConfigurationXMLCodec.VCS_WRITE;
@@ -85,8 +84,9 @@ public class ConfigurationDescriptorProvider {
     private volatile MakeConfigurationDescriptor projectDescriptor = null;
     private volatile boolean hasTried = false;
     private String relativeOffset = null;
-    private List<FileObject> trackedFiles;
-    private volatile boolean needReload;
+    private final FileChangeListener configFilesListener = new ConfigurationXMLChangeListener();
+    private final List<FileObject> trackedConfigFiles = new ArrayList(2);
+    private volatile boolean needReload;   
 
     // for unit tests only
     public ConfigurationDescriptorProvider(FileObject projectDirectory) {
@@ -124,32 +124,6 @@ public class ConfigurationDescriptorProvider {
                     // projectDescriptor.assign(), otherwise there will be
                     // infinite recursion.
                     needReload = false;
-
-                    if (trackedFiles == null) {
-                        FileChangeListener fcl = new ConfigurationXMLChangeListener();
-                        List<FileObject> files = new ArrayList<FileObject>(2);
-                        boolean first = true;
-                        for (String path : new String[]{
-                                    "nbproject/configurations.xml", //NOI18N
-                                    "nbproject/private/configurations.xml"}) { //NOI18N
-                            FileObject fo = projectDirectory.getFileObject(path);
-                            if (fo != null) {
-                                fo.addFileChangeListener(WeakListeners.create(FileChangeListener.class, fcl, fo));
-                                // We have to store tracked files somewhere.
-                                // Otherwise they will be GCed, and we won't get notifications.
-                                files.add(fo);
-                            } else {
-                                if (first) {
-                                    // prevent reading configurations before project cration
-                                    CndUtils.threadsDump();
-                                    new Exception("Attempt to read project before creation. Not found file " + projectDirectory.getPath() + "/" + path).printStackTrace(System.err); // NOI18N
-                                    return null;
-                                }
-                            }
-                            first = false;
-                        }
-                        trackedFiles = files;
-                    }
 
                     ConfigurationXMLReader reader = new ConfigurationXMLReader(project, projectDirectory);
 
@@ -422,6 +396,7 @@ public class ConfigurationDescriptorProvider {
     }
 
     public void closed() {
+        detachConfigurationFilesListener();
         MakeConfigurationDescriptor descr = getConfigurationDescriptor();
         if (descr != null) {
             descr.closed();
@@ -433,8 +408,57 @@ public class ConfigurationDescriptorProvider {
         if (descr != null) {
             descr.opened();
         }
+        attachConfigurationFilesListener();
     }
 
+    private void attachConfigurationFilesListener() {
+        synchronized (trackedConfigFiles) {
+            initTrackedConfigFiles();
+            if (trackedConfigFiles.size() == 2) {
+                for (FileObject fileObject : trackedConfigFiles) {
+                    fileObject.addFileChangeListener(configFilesListener);
+                    LOGGER.log(Level.FINE, "attached config file {2} listener for project {0} in ConfigurationDescriptorProvider@{1}", new Object[]{projectDirectory, System.identityHashCode(this), fileObject}); // NOI18N
+                }
+            }
+        }
+    }
+    
+    private void detachConfigurationFilesListener() {
+        synchronized (trackedConfigFiles) {
+            for (FileObject fileObject : trackedConfigFiles) {
+                fileObject.removeFileChangeListener(configFilesListener);
+                LOGGER.log(Level.FINE, "detached config file {2} listener for project {0} in ConfigurationDescriptorProvider@{1}", new Object[]{projectDirectory, System.identityHashCode(this), fileObject}); // NOI18N
+            }
+        }
+    }
+
+    private void initTrackedConfigFiles() {
+        assert Thread.holdsLock(trackedConfigFiles);
+        if (trackedConfigFiles.size() != 2) {
+            LOGGER.log(Level.FINE, "(re)initializing config files {2} for project {0} in ConfigurationDescriptorProvider@{1}", new Object[]{projectDirectory, System.identityHashCode(this), trackedConfigFiles}); // NOI18N
+            trackedConfigFiles.clear();
+            boolean first = true;
+            for (String path : new String[]{
+                        MakeConfiguration.NBPROJECT_FOLDER + '/' + MakeConfiguration.CONFIGURATIONS_XML, //NOI18N
+                        MakeConfiguration.NBPROJECT_PRIVATE_FOLDER + '/' + MakeConfiguration.CONFIGURATIONS_XML}) { //NOI18N
+                FileObject fo = projectDirectory.getFileObject(path);
+                if (fo != null) {
+                    // We have to store tracked files somewhere.
+                    // Otherwise they will be GCed, and we won't get notifications.
+                    trackedConfigFiles.add(fo);
+                } else {
+                    if (first) {
+                        // prevent reading configurations before project cration
+                        CndUtils.threadsDump();
+                        new Exception("Attempt to read project before creation. Not found file " + projectDirectory.getPath() + "/" + path).printStackTrace(System.err); // NOI18N
+                    }
+                }
+                first = false;
+            }
+            LOGGER.log(Level.FINE, "initialized config files {2} for project {0} in ConfigurationDescriptorProvider@{1}", new Object[]{projectDirectory, System.identityHashCode(this), trackedConfigFiles}); // NOI18N
+        }
+    }
+            
     /**
      * This listener will be notified about updates of files
      * <code>nbproject/configurations.xml</code> and

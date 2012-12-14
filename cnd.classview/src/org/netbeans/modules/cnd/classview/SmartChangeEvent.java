@@ -142,7 +142,10 @@ public class SmartChangeEvent {
             }
         }
         for (CsmProject proj : e.getProjectsWithChangedLibs()) {
-            getStorage(proj).setChangedLibs(true);
+            Storage storage = getStorage(proj);
+            if (storage != null){
+                storage.setChangedLibs(true);
+            }
         }
     }
     
